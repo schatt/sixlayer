@@ -55,11 +55,13 @@ let package = Package(
             ]
         ),
         
-        // Unit tests - non-UI tests without ViewInspector dependency
+        // Unit tests - includes ViewInspector tests (moved from UITests)
         .testTarget(
             name: "SixLayerFrameworkUnitTests",
             dependencies: [
-                "SixLayerFramework"
+                "SixLayerFramework",
+                // ViewInspector for testing view structure and modifiers
+                .product(name: "ViewInspector", package: "ViewInspector")
             ],
             path: "Development/Tests/SixLayerFrameworkUnitTests",
             exclude: [
@@ -71,31 +73,24 @@ let package = Package(
                 "BugReports/PlatformPhotoPicker_v4.6.5/README.md",
                 "BugReports/PlatformTypes_v4.6.6/README.md",
                 // Documentation files
-                "Utilities/TestHelpers/CoreDataTestingGuide.md"
-            ]
-        ),
-        
-        // UI tests - ViewInspector-dependent tests for UI/view inspection
-        .testTarget(
-            name: "SixLayerFrameworkUITests",
-            dependencies: [
-                "SixLayerFramework",
-                // ✅ ViewInspector macOS support verified - builds successfully on macOS SDK 26.2
-                // All types (VideoPlayer, SignInWithAppleButton, MapAnnotation, etc.) compile on macOS
-                .product(name: "ViewInspector", package: "ViewInspector")
-            ],
-            path: "Development/Tests/SixLayerFrameworkUITests",
-            exclude: [
-                // Documentation files
-                "Utilities/TestHelpers/CoreDataTestingGuide.md"
+                "Utilities/TestHelpers/CoreDataTestingGuide.md",
+                "ViewInspectorTests/Utilities/TestHelpers/CoreDataTestingGuide.md"
             ],
             swiftSettings: [
-                // ✅ VERIFIED: ViewInspector builds successfully on macOS SDK 26.2
-                // Investigation confirmed all types compile on macOS - issue was incorrect
-                // This flag enables ViewInspector-dependent tests on macOS
+                // Enable ViewInspector on macOS
                 .define("VIEW_INSPECTOR_MAC_FIXED")
             ]
         ),
+        
+        // Real UI tests - TODO: Create actual UI tests that render views in windows
+        // ViewInspector tests have been moved to SixLayerFrameworkUnitTests
+        // .testTarget(
+        //     name: "SixLayerFrameworkUITests",
+        //     dependencies: [
+        //         "SixLayerFramework"
+        //     ],
+        //     path: "Development/Tests/SixLayerFrameworkUITests"
+        // ),
         
         // External integration tests - uses normal import (no @testable)
         // Tests the framework from external module perspective
