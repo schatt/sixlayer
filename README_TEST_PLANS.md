@@ -23,10 +23,11 @@ Test Plans organize tests into smaller, manageable groups. When you select a tes
 - **Focus**: Form components, validation, state management
 - **Use when**: Testing form functionality
 
-### 4. UI Tests - Accessibility
+### 4. ViewInspector Tests - Accessibility
 - **File**: `04-UITests-Accessibility.xctestplan`
-- **Focus**: UI accessibility testing with ViewInspector
-- **Use when**: Testing UI accessibility features
+- **Focus**: View structure and modifier testing with ViewInspector (unit tests)
+- **Use when**: Testing view structure, modifiers, and accessibility identifiers
+- **Note**: These are unit tests that verify view structure, not actual UI rendering tests
 
 ### 5. All Unit Tests
 - **File**: `05-AllUnitTests.xctestplan`
