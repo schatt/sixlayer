@@ -732,7 +732,28 @@ else
         echo "🎉 Release v$VERSION completed successfully!"
         echo "📦 Tag: v$VERSION"
         echo "🌐 Pushed to all remotes (GitHub, Codeberg, GitLab)"
-        echo "💡 You can now delete branch $CURRENT_BRANCH if desired"
+        echo ""
+        
+        # Optionally delete the release branch
+        read -p "🗑️  Delete branch $CURRENT_BRANCH (local and remote)? (y/N): " -n 1 -r
+        echo
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
+            echo "🗑️  Deleting branch $CURRENT_BRANCH..."
+            
+            # Delete remote branches (try all remotes, ignore errors if branch doesn't exist)
+            echo "📤 Deleting remote branch from all remotes..."
+            git push all --delete "$CURRENT_BRANCH" 2>/dev/null || true
+            
+            # Delete local branch (only if we're not on it, which we're not since we switched to main)
+            if git show-ref --verify --quiet refs/heads/"$CURRENT_BRANCH"; then
+                git branch -d "$CURRENT_BRANCH" 2>/dev/null || git branch -D "$CURRENT_BRANCH" 2>/dev/null || true
+                echo "✅ Local branch deleted"
+            fi
+            
+            echo "✅ Branch $CURRENT_BRANCH deleted from all remotes"
+        else
+            echo "💡 Branch $CURRENT_BRANCH kept for reference"
+        fi
     else
         echo "🚀 Ready to merge and create release tag v$VERSION"
         echo ""
