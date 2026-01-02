@@ -56,6 +56,7 @@ let package = Package(
         ),
         
         // Unit tests - includes ViewInspector tests (moved from UITests)
+        // Note: Shared test helpers are accessible via SharedTestHelpers symlink
         .testTarget(
             name: "SixLayerFrameworkUnitTests",
             dependencies: [

@@ -74,6 +74,7 @@ targets:
     type: bundle.unit-test
     platform: iOS
     sources:
+      - path: Development/Tests/Shared/TestHelpers
       - path: Development/Tests/SixLayerFrameworkUnitTests
         excludes:
           - "**/README.md"
@@ -99,6 +100,7 @@ targets:
     type: bundle.unit-test
     platform: macOS
     sources:
+      - path: Development/Tests/Shared/TestHelpers
       - path: Development/Tests/SixLayerFrameworkUnitTests
         excludes:
           - "**/README.md"
@@ -127,6 +129,7 @@ targets:
     type: bundle.unit-test
     platform: iOS
     sources:
+      - path: Development/Tests/Shared/TestHelpers
       - path: Development/Tests/SixLayerFrameworkRealUITests
     settings:
       PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.framework.real-ui-tests
@@ -146,6 +149,7 @@ targets:
     type: bundle.unit-test
     platform: macOS
     sources:
+      - path: Development/Tests/Shared/TestHelpers
       - path: Development/Tests/SixLayerFrameworkRealUITests
     settings:
       PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.framework.real-ui-tests
@@ -164,6 +168,7 @@ targets:
     type: bundle.unit-test
     platform: iOS
     sources:
+      - path: Development/Tests/Shared/TestHelpers
       - path: Development/Tests/SixLayerFrameworkExternalIntegrationTests
         excludes:
           - "**/README.md"
@@ -183,6 +188,7 @@ targets:
     type: bundle.unit-test
     platform: macOS
     sources:
+      - path: Development/Tests/Shared/TestHelpers
       - path: Development/Tests/SixLayerFrameworkExternalIntegrationTests
         excludes:
           - "**/README.md"
