@@ -120,42 +120,40 @@ targets:
       - package: ViewInspector
         product: ViewInspector
 
-  # Real UI tests - iOS (TODO: Create actual UI tests that render in windows)
-  # ViewInspector tests have been moved to SixLayerFrameworkUnitTests
-  # SixLayerFrameworkUITests_iOS:
-  #   type: bundle.ui-test
-  #   platform: iOS
-  #   sources:
-  #     - path: Development/Tests/SixLayerFrameworkUITests
-  #   settings:
-  #     PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.framework.ui-tests
-  #     SWIFT_VERSION: "6.0"
-  #     GENERATE_INFOPLIST_FILE: YES
-  #     CODE_SIGN_STYLE: Automatic
-  #     ENABLE_TESTING_SEARCH_PATHS: YES
-  #     DEVELOPMENT_TEAM: Y53G7YPJSZ
-  #     developmentTeam: Y53G7YPJSZ
-  #   dependencies:
-  #     - target: SixLayerFramework_iOS
+  # Real UI tests - iOS (render views in actual windows)
+  SixLayerFrameworkRealUITests_iOS:
+    type: bundle.ui-test
+    platform: iOS
+    sources:
+      - path: Development/Tests/SixLayerFrameworkRealUITests
+    settings:
+      PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.framework.real-ui-tests
+      SWIFT_VERSION: "6.0"
+      GENERATE_INFOPLIST_FILE: YES
+      CODE_SIGN_STYLE: Automatic
+      ENABLE_TESTING_SEARCH_PATHS: YES
+      DEVELOPMENT_TEAM: Y53G7YPJSZ
+      developmentTeam: Y53G7YPJSZ
+    dependencies:
+      - target: SixLayerFramework_iOS
 
-  # Real UI tests - macOS (TODO: Create actual UI tests that render in windows)
-  # ViewInspector tests have been moved to SixLayerFrameworkUnitTests
-  # SixLayerFrameworkUITests_macOS:
-  #   type: bundle.ui-test
-  #   platform: macOS
-  #   sources:
-  #     - path: Development/Tests/SixLayerFrameworkUITests
-  #   settings:
-  #     PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.framework.ui-tests
-  #     SWIFT_VERSION: "6.0"
-  #     GENERATE_INFOPLIST_FILE: YES
-  #     CODE_SIGN_STYLE: Automatic
-  #     ENABLE_TESTING_SEARCH_PATHS: YES
-  #     DEVELOPMENT_TEAM: Y53G7YPJSZ
-  #     developmentTeam: Y53G7YPJSZ
-  #     DEAD_CODE_STRIPPING: YES
-  #   dependencies:
-  #     - target: SixLayerFramework_macOS
+  # Real UI tests - macOS (render views in actual windows)
+  SixLayerFrameworkRealUITests_macOS:
+    type: bundle.ui-test
+    platform: macOS
+    sources:
+      - path: Development/Tests/SixLayerFrameworkRealUITests
+    settings:
+      PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.framework.real-ui-tests
+      SWIFT_VERSION: "6.0"
+      GENERATE_INFOPLIST_FILE: YES
+      CODE_SIGN_STYLE: Automatic
+      ENABLE_TESTING_SEARCH_PATHS: YES
+      DEVELOPMENT_TEAM: Y53G7YPJSZ
+      developmentTeam: Y53G7YPJSZ
+      DEAD_CODE_STRIPPING: YES
+    dependencies:
+      - target: SixLayerFramework_macOS
 
   # External integration tests - iOS
   SixLayerFrameworkExternalIntegrationTests_iOS:
@@ -228,7 +226,7 @@ schemes:
     test:
       targets:
         - SixLayerFrameworkUnitTests_iOS
-        # - SixLayerFrameworkUITests_iOS  # ViewInspector tests moved to UnitTests
+        - SixLayerFrameworkRealUITests_iOS
         - SixLayerFrameworkExternalIntegrationTests_iOS
 
   SixLayerFramework-AllTests-macOS:
@@ -238,7 +236,7 @@ schemes:
     test:
       targets:
         - SixLayerFrameworkUnitTests_macOS
-        # - SixLayerFrameworkUITests_macOS  # ViewInspector tests moved to UnitTests
+        - SixLayerFrameworkRealUITests_macOS
         - SixLayerFrameworkExternalIntegrationTests_macOS
 
   SixLayerFramework-UnitTestsOnly-iOS:
