@@ -517,7 +517,7 @@
 - `PlatformTypes.swift`, `PlatformOCRTypes.swift`
 - `Framework/docs/FieldHintsGuide.md`, `Framework/docs/HintsFileOCRAndCalculationsGuide.md`
 - `README.md`, `Framework/README.md`, `Framework/Examples/README.md`
-- `Development/RELEASES.md`, `Development/PROJECT_STATUS.md`, `Development/todo.md`
+- `Development/RELEASES.md`, `Development/PROJECT_STATUS.md`, `Development/ROADMAP.md`
 - `Development/RELEASE_v5.7.1.md`, `Development/AI_AGENT_v5.7.1.md` (new)
 - `Package.swift` comment updated to reference v5.7.1 release headline
 
@@ -555,7 +555,7 @@
 ### **Documentation & Files Updated**
 - `OCRServiceAutomaticHintsTests.swift`, `OCRService.swift`, and `PlatformPhotoComponentsLayer4IntegrationTests.swift`
 - `README.md`, `Framework/README.md`, `Framework/Examples/README.md`
-- `Development/RELEASES.md`, `Development/PROJECT_STATUS.md`, `Development/todo.md`
+- `Development/RELEASES.md`, `Development/PROJECT_STATUS.md`, `Development/ROADMAP.md`
 - `Development/RELEASE_v5.7.0.md`, `Development/AI_AGENT_v5.7.0.md` (new)
 - `Package.swift` comment updated to reference v5.7.0 release headline
 

@@ -31,7 +31,7 @@
 - **`Framework/README.md`**: Must show current version badge and updated features
 - **`Framework/Examples/README.md`**: Must list all current example files
 - **`Development/PROJECT_STATUS.md`**: Must reflect current release status
-- **`Development/todo.md`**: Must show current release as completed
+- **`Development/ROADMAP.md`**: Must show current release status and validate roadmap items with GitHub issues are included in release
 
 #### AI Agent Documentation (Major/Minor releases):
 - **`Development/AI_AGENT_vX.X.X.md`**: Detailed AI agent guide for the release

@@ -12,7 +12,7 @@ This repository contains the SixLayer Framework, a comprehensive SwiftUI framewo
 │   ├── README.md             ← Framework documentation
 │   └── Stubs/                ← Framework stubs
 └── Development/               ← Development files (not in package)
-    ├── todo.md                ← Project roadmap
+    ├── ROADMAP.md              ← Project roadmap
     ├── PROJECT_STATUS.md      ← Current status
     ├── Tests/                 ← Test suite
     ├── docs/                  ← Technical documentation
@@ -34,7 +34,7 @@ dependencies: [
 ### **For Developers (Contributing):**
 - **Framework Code**: `Framework/Sources/`
 - **Documentation**: `Framework/docs/`
-- **Project Status**: `Development/todo.md`
+- **Project Status**: `Development/ROADMAP.md`
 - **Tests**: `Development/Tests/`
 
 ## 📦 Swift Package
@@ -138,7 +138,7 @@ platformPresentItemCollection_L1(
 
 - **[Framework README](Framework/README.md)** - Complete framework documentation
 - **[Project Status](Development/PROJECT_STATUS.md)** - Current development status
-- **[Roadmap](Development/todo.md)** - Development phases and progress
+- **[Roadmap](Development/ROADMAP.md)** - Development phases and progress
 - **[Documentation](Framework/docs/)** - Technical implementation details
 - **[Release Notes v4.1.3](Development/RELEASE_v4.1.3.md)** - Fix Critical Automatic Accessibility Identifier Bug
 - **[OCR Overlay Guide](Framework/docs/OCROverlayGuide.md)** - Interactive visual text correction
