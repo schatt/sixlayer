@@ -1,5 +1,5 @@
 //
-//  AccessibilityTestUtilities.swift
+//  AccessibilityTestUtilitiesViewInspector.swift
 //  SixLayerFrameworkTests
 //
 //  BUSINESS PURPOSE:
