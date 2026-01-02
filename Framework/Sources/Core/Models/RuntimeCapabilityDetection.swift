@@ -1023,3 +1023,4 @@ public extension RuntimeCapabilityDetection {
         }
     }
 }
+
