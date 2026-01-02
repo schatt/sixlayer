@@ -121,8 +121,10 @@ targets:
         product: ViewInspector
 
   # Real UI tests - iOS (render views in actual windows)
+  # Note: Using bundle.unit-test for now - xcodegen doesn't support bundle.ui-test
+  # These tests render views in windows but don't require an app target
   SixLayerFrameworkRealUITests_iOS:
-    type: bundle.ui-test
+    type: bundle.unit-test
     platform: iOS
     sources:
       - path: Development/Tests/SixLayerFrameworkRealUITests
@@ -138,8 +140,10 @@ targets:
       - target: SixLayerFramework_iOS
 
   # Real UI tests - macOS (render views in actual windows)
+  # Note: Using bundle.unit-test for now - xcodegen doesn't support bundle.ui-test
+  # These tests render views in windows but don't require an app target
   SixLayerFrameworkRealUITests_macOS:
-    type: bundle.ui-test
+    type: bundle.unit-test
     platform: macOS
     sources:
       - path: Development/Tests/SixLayerFrameworkRealUITests

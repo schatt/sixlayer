@@ -55,6 +55,17 @@
             parallelizable = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
+               BlueprintIdentifier = "6F7A756959988745ECBAE269"
+               BuildableName = "SixLayerFrameworkRealUITests_iOS.xctest"
+               BlueprintName = "SixLayerFrameworkRealUITests_iOS"
+               ReferencedContainer = "container:SixLayerFramework.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
                BlueprintIdentifier = "257257DB7C1F4BC76621E0F2"
                BuildableName = "SixLayerFrameworkExternalIntegrationTests_iOS.xctest"
                BlueprintName = "SixLayerFrameworkExternalIntegrationTests_iOS"
