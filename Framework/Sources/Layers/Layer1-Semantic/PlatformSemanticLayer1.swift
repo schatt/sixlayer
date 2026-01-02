@@ -1697,9 +1697,86 @@ public struct GenericItemCollectionView<Item: Identifiable>: View {
         case .coverFlow:
             return .coverFlow
         case .automatic:
+            // Count-aware logic for generic/collection content
+            if hints.dataType == .generic || hints.dataType == .collection {
+                // Safety override: very large collections → list
+                if items.count > 200 {
+                    return .list
+                }
+                
+                // Count-aware automatic selection
+                return determineCountAwareStrategy(
+                    count: items.count,
+                    dataType: hints.dataType,
+                    platform: platform,
+                    deviceType: deviceType
+                )
+            }
+            // For other content types with .automatic, use adaptive
             return .adaptive
         default:
             return .adaptive
+        }
+    }
+    
+    /// Determine count-aware presentation strategy for generic/collection content
+    private func determineCountAwareStrategy(
+        count: Int,
+        dataType: DataTypeHint,
+        platform: SixLayerPlatform,
+        deviceType: DeviceType
+    ) -> PresentationStrategy {
+        let threshold = getCountThreshold(
+            dataType: dataType,
+            platform: platform,
+            deviceType: deviceType
+        )
+        
+        if count <= threshold {
+            // Small collection: prefer cards/grid
+            switch (platform, deviceType) {
+            case (.macOS, _), (.iOS, .pad):
+                return .grid
+            case (.iOS, .phone):
+                return count <= 4 ? .expandableCards : .grid
+            default:
+                return .grid
+            }
+        } else {
+            // Large collection: prefer list
+            return .list
+        }
+    }
+    
+    /// Get count threshold based on content type, platform, and device
+    private func getCountThreshold(
+        dataType: DataTypeHint,
+        platform: SixLayerPlatform,
+        deviceType: DeviceType
+    ) -> Int {
+        // Base threshold by content type
+        let baseThreshold: Int
+        switch dataType {
+        case .media:
+            baseThreshold = 15  // Media handled separately (shouldn't reach here)
+        case .navigation:
+            baseThreshold = 6  // Navigation handled separately (shouldn't reach here)
+        case .generic, .collection:
+            baseThreshold = 8
+        default:
+            baseThreshold = 8
+        }
+        
+        // Adjust by platform/device
+        switch (platform, deviceType) {
+        case (.macOS, _), (.iOS, .pad):
+            return baseThreshold + 4  // More screen space
+        case (.iOS, .phone):
+            return baseThreshold
+        case (.watchOS, _), (.tvOS, _):
+            return 3  // Always prefer list
+        default:
+            return baseThreshold
         }
     }
 }
