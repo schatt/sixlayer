@@ -1,12 +1,28 @@
 # 🚀 Six-Layer Framework Release History
 
-## 📍 **Current Release: v6.6.2 - Swift 6 Compilation Fixes** 🎯
+## 📍 **Current Release: v6.6.3 - ScrollView Wrapper Fixes** 🎯
 
-**Release Date**: December 19, 2025
+**Release Date**: January 2, 2026
 **Status**: ✅ **COMPLETE**
-**Previous Release**: v6.6.1 - SPM Bundle Name Fix
-**Note**: Patch release fixing Swift 6 compilation errors and deprecation warnings. Includes main actor isolation fixes, iOS 17+ API updates, switch exhaustiveness fixes, and removal of unnecessary availability checks.
+**Previous Release**: v6.6.2 - Swift 6 Compilation Fixes
+**Note**: Patch release fixing missing ScrollView wrappers in collection views. All collection views (GridCollectionView, ListCollectionView, ExpandableCardCollectionView, MasonryCollectionView) now properly scroll when content exceeds view bounds, maintaining the framework's abstraction layer.
 **Next Release**: TBD
+
+---
+
+## 🎯 **v6.6.3 - ScrollView Wrapper Fixes** (January 2, 2026)
+
+### **What's Fixed:**
+
+#### **🔧 Collection View ScrollView Wrappers**
+- **GridCollectionView**: Added ScrollView wrapper around LazyVGrid inside GeometryReader
+- **ListCollectionView**: Added ScrollView wrapper around platformLazyVStackContainer
+- **ExpandableCardCollectionView**: Added ScrollView wrapper around LazyVGrid in renderCardLayout
+- **MasonryCollectionView**: Added ScrollView wrapper around LazyVGrid
+- **Pattern Consistency**: All collection views now match the pattern used in CustomGridCollectionView and CustomListCollectionView
+- **Abstraction Maintenance**: platformPresentItemCollection_L1 no longer requires manual ScrollView wrapping
+
+**See [RELEASE_v6.6.3.md](RELEASE_v6.6.3.md) for complete release notes.**
 
 ---
 

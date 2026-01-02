@@ -27,7 +27,7 @@ Navigate to the `Framework/` directory and use it as a Swift Package:
 ```swift
 // In your Package.swift
 dependencies: [
-    .package(url: "https://github.com/schatt/sixlayer.git", from: "6.6.2")
+    .package(url: "https://github.com/schatt/sixlayer.git", from: "6.6.3")
 ]
 ```
 
@@ -41,9 +41,12 @@ dependencies: [
 
 The framework is distributed as a Swift Package from the `Framework/` directory. This ensures that only the essential framework code is included when other projects consume it.
 
-## 🆕 Latest Release: v6.6.2
+## 🆕 Latest Release: v6.6.3
 
-### **Swift 6 Compilation Fixes**
+### **ScrollView Wrapper Fixes**
+🔧 **Collection View Scrolling**: Fixed missing ScrollView wrappers in all collection views. GridCollectionView, ListCollectionView, ExpandableCardCollectionView, and MasonryCollectionView now properly scroll when content exceeds view bounds, maintaining the framework's abstraction layer.
+
+### **Previous Release: v6.6.2 - Swift 6 Compilation Fixes**
 🔧 **Swift 6 Compatibility**: Fixed Swift 6 compilation errors and deprecation warnings. Includes main actor isolation fixes, iOS 17+ API updates, switch exhaustiveness fixes, and removal of unnecessary availability checks.
 
 ### **Previous Release: v6.6.1 - SPM Bundle Name Fix**
@@ -152,8 +155,8 @@ These guides contain critical information about the Layer 1 Semantic Intent phil
 
 ## 📋 Current Status
 
-**Version**: v6.6.2 (Swift 6 Compilation Fixes)
-**Phase**: Minor Release
+**Version**: v6.6.3 (ScrollView Wrapper Fixes)
+**Phase**: Patch Release
 **Next**: Continue framework development and stability improvements
 
 ## 🤝 Contributing

@@ -89,26 +89,28 @@ public struct ExpandableCardCollectionView<Item: Identifiable>: View {
         layoutDecision: IntelligentCardLayoutDecision,
         strategy: CardExpansionStrategy
     ) -> some View {
-        LazyVGrid(
-            columns: Array(repeating: GridItem(.flexible(), spacing: layoutDecision.spacing), count: layoutDecision.columns),
-            spacing: layoutDecision.spacing
-        ) {
-            ForEach(items) { item in
-                ExpandableCardComponent(
-                    item: item,
-                    layoutDecision: layoutDecision,
-                    strategy: strategy,
-                    isExpanded: expandedItem == item.id,
-                    isHovered: hoveredItem == item.id,
-                    onExpand: { expandedItem = item.id },
-                    onCollapse: { expandedItem = nil },
-                    onHover: { isHovering in
-                        hoveredItem = isHovering ? item.id : nil
-                    },
-                    onItemSelected: onItemSelected,
-                    onItemDeleted: onItemDeleted,
-                    onItemEdited: onItemEdited
-                )
+        ScrollView {
+            LazyVGrid(
+                columns: Array(repeating: GridItem(.flexible(), spacing: layoutDecision.spacing), count: layoutDecision.columns),
+                spacing: layoutDecision.spacing
+            ) {
+                ForEach(items) { item in
+                    ExpandableCardComponent(
+                        item: item,
+                        layoutDecision: layoutDecision,
+                        strategy: strategy,
+                        isExpanded: expandedItem == item.id,
+                        isHovered: hoveredItem == item.id,
+                        onExpand: { expandedItem = item.id },
+                        onCollapse: { expandedItem = nil },
+                        onHover: { isHovering in
+                            hoveredItem = isHovering ? item.id : nil
+                        },
+                        onItemSelected: onItemSelected,
+                        onItemDeleted: onItemDeleted,
+                        onItemEdited: onItemEdited
+                    )
+                }
             }
             .padding(layoutDecision.padding)
         }
@@ -485,22 +487,24 @@ public struct GridCollectionView<Item: Identifiable>: View {
                         contentComplexity: hints.complexity
                     )
                     
-                    LazyVGrid(
-                        columns: Array(repeating: GridItem(.flexible(), spacing: layoutDecision.spacing), count: layoutDecision.columns),
-                        spacing: layoutDecision.spacing
-                    ) {
-                        ForEach(items) { item in
-                            SimpleCardComponent(
-                                item: item, 
-                                layoutDecision: layoutDecision,
-                                hints: hints,
-                                onItemSelected: onItemSelected,
-                                onItemDeleted: onItemDeleted,
-                                onItemEdited: onItemEdited
-                            )
+                    ScrollView {
+                        LazyVGrid(
+                            columns: Array(repeating: GridItem(.flexible(), spacing: layoutDecision.spacing), count: layoutDecision.columns),
+                            spacing: layoutDecision.spacing
+                        ) {
+                            ForEach(items) { item in
+                                SimpleCardComponent(
+                                    item: item, 
+                                    layoutDecision: layoutDecision,
+                                    hints: hints,
+                                    onItemSelected: onItemSelected,
+                                    onItemDeleted: onItemDeleted,
+                                    onItemEdited: onItemEdited
+                                )
+                            }
                         }
+                        .padding(layoutDecision.padding)
                     }
-                    .padding(layoutDecision.padding)
                 }
             }
         }
@@ -556,18 +560,20 @@ public struct ListCollectionView<Item: Identifiable>: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .background(Color.platformBackground)
             } else {
-                platformLazyVStackContainer(spacing: 12) {
-                    ForEach(items) { item in
-                        ListCardComponent(
-                            item: item,
-                            hints: hints,
-                            onItemSelected: onItemSelected,
-                            onItemDeleted: onItemDeleted,
-                            onItemEdited: onItemEdited
-                        )
+                ScrollView {
+                    platformLazyVStackContainer(spacing: 12) {
+                        ForEach(items) { item in
+                            ListCardComponent(
+                                item: item,
+                                hints: hints,
+                                onItemSelected: onItemSelected,
+                                onItemDeleted: onItemDeleted,
+                                onItemEdited: onItemEdited
+                            )
+                        }
                     }
+                    .padding(16)
                 }
-                .padding(16)
             }
         }
         .automaticCompliance(named: "ListCollectionView")
@@ -622,15 +628,17 @@ public struct MasonryCollectionView<Item: Identifiable>: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .background(Color.platformBackground)
             } else {
-                LazyVGrid(
-                    columns: Array(repeating: GridItem(.flexible()), count: 3),
-                    spacing: 16
-                ) {
-                    ForEach(items) { item in
-                        MasonryCardComponent(item: item, hints: hints)
+                ScrollView {
+                    LazyVGrid(
+                        columns: Array(repeating: GridItem(.flexible()), count: 3),
+                        spacing: 16
+                    ) {
+                        ForEach(items) { item in
+                            MasonryCardComponent(item: item, hints: hints)
+                        }
                     }
+                    .padding(16)
                 }
-                .padding(16)
             }
         }
         .automaticCompliance(named: "MasonryCollectionView")
