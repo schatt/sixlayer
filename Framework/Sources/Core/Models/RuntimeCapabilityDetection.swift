@@ -316,18 +316,44 @@ public struct RuntimeCapabilityDetection {
     }
     
     #if os(iOS)
-    /// iOS hover detection - checks for iPad with Apple Pencil
+    /// iOS hover detection - checks for iPad with Apple Pencil hover support
+    /// 
+    /// Hover is supported on:
+    /// - iPad Pro 11-inch (4th gen+) and 12.9-inch (6th gen+)
+    /// - iPad Air 11-inch and 13-inch (M2/M3)
+    /// - iPad Mini (A17 Pro)
+    /// - iPad Pro 11-inch and 13-inch (M4/M5)
+    /// When paired with Apple Pencil 2 or Apple Pencil Pro
+    /// 
+    /// Note: This checks device capability, not whether a pencil is currently connected.
+    /// If a pencil is connected/disconnected during runtime, this property will reflect
+    /// the current state when accessed, but views won't automatically update unless
+    /// they re-evaluate the property (e.g., on view refresh or state change).
+    /// 
     /// Note: Uses Thread.isMainThread check to prevent crashes during parallel test execution
     private static func detectiOSHoverSupport() -> Bool {
-        // Check if we're on iPad with Apple Pencil or hover-capable device
+        // Check if we're on iPad with hover-capable device
         // Use Thread.isMainThread check with MainActor.assumeIsolated to satisfy compiler
         // while preventing crashes during parallel test execution
         if Thread.isMainThread {
             return MainActor.assumeIsolated {
-                if UIDevice.current.userInterfaceIdiom == .pad {
-                    // iPad with Apple Pencil 2 or later supports hover
-                    return true
+                guard UIDevice.current.userInterfaceIdiom == .pad else {
+                    return false
                 }
+                
+                // Check if device supports hover (iOS 16.1+)
+                // UIPencilInteraction.isAvailable indicates if the device supports hover
+                // This is a runtime check that reflects current pencil connection state
+                if #available(iOS 16.1, *) {
+                    // UIPencilInteraction.isAvailable returns true if:
+                    // 1. Device supports hover (certain iPad models)
+                    // 2. A compatible pencil is connected (Pencil 2 or Pro)
+                    // This handles dynamic connection/disconnection
+                    return UIPencilInteraction.isAvailable
+                }
+                
+                // For iOS < 16.1, fall back to device type check
+                // Older iPads don't support hover, so this is conservative
                 return false
             }
         } else {
@@ -964,7 +990,17 @@ public extension RuntimeCapabilityDetection {
     }
     
     /// Hover delay for platforms that support hover
-    /// Respects test platform override - returns platform-correct value based on mocked platform
+    /// Returns platform-appropriate hover delay values.
+    /// Note: Actual hover support is determined by `supportsHover` property at runtime.
+    /// This property returns the delay value that would be used if hover is supported.
+    /// 
+    /// Platform hover delays:
+    /// - macOS: 0.5s (mouse/trackpad hover)
+    /// - visionOS: 0.5s (hand tracking hover)
+    /// - iOS: 0.5s (iPad with Apple Pencil hover, 0.0 for iPhone - determined at runtime)
+    /// - watchOS: 0.0s (no hover support)
+    /// - tvOS: 0.0s (no hover support)
+    /// 
     /// Note: nonisolated - this property only does platform switching, no MainActor APIs accessed
     nonisolated static var hoverDelay: TimeInterval {
         // Use real platform detection - tests should run on actual platforms/simulators
@@ -972,9 +1008,18 @@ public extension RuntimeCapabilityDetection {
         
         switch platform {
         case .macOS:
-            return 0.5   // macOS hover delay
-        case .iOS, .watchOS, .tvOS, .visionOS:
-            return 0.0   // No hover on these platforms
+            return 0.5   // macOS hover delay (mouse/trackpad)
+        case .visionOS:
+            return 0.5   // visionOS hover delay (hand tracking)
+        case .iOS:
+            // iOS hover is device-dependent (iPad supports it, iPhone doesn't)
+            // Return 0.5 as the potential delay; actual support checked via supportsHover
+            // If hover is not supported, the delay value is irrelevant
+            return 0.5   // iPad with Apple Pencil hover delay
+        case .watchOS:
+            return 0.0   // watchOS doesn't support hover
+        case .tvOS:
+            return 0.0   // tvOS doesn't support hover
         }
     }
 }
