@@ -22,11 +22,13 @@ public protocol Inspectable {
     func sixLayerText() throws -> Inspectable
     func sixLayerText(_ index: Int) throws -> Inspectable
     func sixLayerAnyView() throws -> Inspectable
+    func sixLayerLabelView() throws -> Inspectable
     func sixLayerFindAll<T>(_ type: T.Type) -> [Inspectable]
     func sixLayerFind<T>(_ type: T.Type) throws -> Inspectable
     func sixLayerTryFind<T>(_ type: T.Type) -> Inspectable?
     func sixLayerAccessibilityIdentifier() throws -> String
     func sixLayerString() throws -> String
+    var sixLayerCount: Int { get }
 }
 
 // MARK: - InspectableView Conformance
@@ -53,6 +55,11 @@ extension ViewInspector.InspectableView: Inspectable {
         return result
     }
 
+    public func sixLayerLabelView() throws -> Inspectable {
+        let result = try self.labelView()
+        return result
+    }
+
     public func sixLayerFindAll<T>(_ type: T.Type) -> [Inspectable] {
         let results = (try? self.findAll(type)) ?? []
         return results.map { $0 as Inspectable }
@@ -73,6 +80,10 @@ extension ViewInspector.InspectableView: Inspectable {
 
     public func sixLayerString() throws -> String {
         return try self.string()
+    }
+
+    public var sixLayerCount: Int {
+        return self.count
     }
 }
 
