@@ -104,9 +104,6 @@ open class CardActionButtonTests: BaseTestClass {
         let item = TestItem(
             title: "Test Item",
             subtitle: "Test Subtitle",
-            description: nil,
-            icon: nil,
-            color: nil
             description: "Test Description",
             icon: "star",
             color: Color.blue
@@ -402,9 +399,6 @@ open class CardActionButtonTests: BaseTestClass {
         let emptyItem = TestItem(
             title: "",
             subtitle: nil,
-            description: nil,
-            icon: nil,
-            color: nil
             description: nil,
             icon: nil,
             color: nil
