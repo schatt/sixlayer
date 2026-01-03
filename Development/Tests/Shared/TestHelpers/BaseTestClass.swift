@@ -13,6 +13,7 @@
 //
 
 import Testing
+import SwiftUI
 @testable import SixLayerFramework
 
 /// Base class for all test classes
