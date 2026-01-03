@@ -457,21 +457,18 @@ open class IntelligentCardExpansionComprehensiveTests: BaseTestClass {    // MAR
     // or when testing the actual platform.
     
     @Test @MainActor func testGetCardExpansionPlatformConfig_iOS() async {
-        TestSetupUtilities.shared.simulateiOSCapabilities()
+        TestSetupUtilities.setCapabilitiesForPlatform(.iOS)
         let config = getCardExpansionPlatformConfig()
 
         // Check runtime platform instead of compile-time platform
         let runtimePlatform = RuntimeCapabilityDetection.currentPlatform
         if runtimePlatform == .iOS {
-            TestSetupUtilities.shared.assertCardExpansionConfig(
-                config,
-                touch: true,
-                haptic: true,
-                hover: false,
-                voiceOver: true,
-                switchControl: true,
-                assistiveTouch: true
-            )
+            #expect(config.supportsTouch == true, "iOS should support touch")
+            #expect(config.supportsHapticFeedback == true, "iOS should support haptic feedback")
+            #expect(config.supportsHover == false, "iOS should not support hover by default")
+            #expect(config.supportsVoiceOver == true, "iOS should support VoiceOver")
+            #expect(config.supportsSwitchControl == true, "iOS should support Switch Control")
+            #expect(config.supportsAssistiveTouch == true, "iOS should support AssistiveTouch")
         } else {
             // On other platforms, simulation may not work due to thread/actor isolation
             // Skip assertions - this is expected behavior
@@ -479,66 +476,54 @@ open class IntelligentCardExpansionComprehensiveTests: BaseTestClass {    // MAR
     }
     
     @Test @MainActor func testGetCardExpansionPlatformConfig_macOS() async {
-        TestSetupUtilities.shared.simulateMacOSCapabilities()
+        TestSetupUtilities.setCapabilitiesForPlatform(.macOS)
         let config = getCardExpansionPlatformConfig()
 
-        TestSetupUtilities.shared.assertCardExpansionConfig(
-            config,
-            touch: false,
-            haptic: false,
-            hover: true,
-            voiceOver: true,
-            switchControl: true,
-            assistiveTouch: false
-        )
+        #expect(config.supportsTouch == false, "macOS should not support touch")
+        #expect(config.supportsHapticFeedback == false, "macOS should not support haptic feedback")
+        #expect(config.supportsHover == true, "macOS should support hover")
+        #expect(config.supportsVoiceOver == true, "macOS should support VoiceOver")
+        #expect(config.supportsSwitchControl == true, "macOS should support Switch Control")
+        #expect(config.supportsAssistiveTouch == false, "macOS should not support AssistiveTouch")
     }
     
     @Test @MainActor func testGetCardExpansionPlatformConfig_watchOS() async {
-        TestSetupUtilities.shared.simulateWatchOSCapabilities()
+        TestSetupUtilities.setCapabilitiesForPlatform(.watchOS)
         let config = getCardExpansionPlatformConfig()
 
-        TestSetupUtilities.shared.assertCardExpansionConfig(
-            config,
-            touch: true,
-            haptic: true,
-            hover: false,
-            voiceOver: true,
-            switchControl: true,
-            assistiveTouch: true
-        )
+        #expect(config.supportsTouch == true, "watchOS should support touch")
+        #expect(config.supportsHapticFeedback == true, "watchOS should support haptic feedback")
+        #expect(config.supportsHover == false, "watchOS should not support hover")
+        #expect(config.supportsVoiceOver == true, "watchOS should support VoiceOver")
+        #expect(config.supportsSwitchControl == true, "watchOS should support Switch Control")
+        #expect(config.supportsAssistiveTouch == true, "watchOS should support AssistiveTouch")
     }
     
     @Test @MainActor func testGetCardExpansionPlatformConfig_tvOS() async {
-        TestSetupUtilities.shared.simulateTVOSCapabilities()
+        TestSetupUtilities.setCapabilitiesForPlatform(.tvOS)
         let config = getCardExpansionPlatformConfig()
 
-        TestSetupUtilities.shared.assertCardExpansionConfig(
-            config,
-            touch: false,
-            haptic: false,
-            hover: false,
-            voiceOver: true,
-            switchControl: true,
-            assistiveTouch: false
-        )
+        #expect(config.supportsTouch == false, "tvOS should not support touch")
+        #expect(config.supportsHapticFeedback == false, "tvOS should not support haptic feedback")
+        #expect(config.supportsHover == false, "tvOS should not support hover")
+        #expect(config.supportsVoiceOver == true, "tvOS should support VoiceOver")
+        #expect(config.supportsSwitchControl == true, "tvOS should support Switch Control")
+        #expect(config.supportsAssistiveTouch == false, "tvOS should not support AssistiveTouch")
     }
     
     @Test @MainActor func testGetCardExpansionPlatformConfig_visionOS() async {
-        TestSetupUtilities.shared.simulateVisionOSCapabilities()
+        TestSetupUtilities.setCapabilitiesForPlatform(.visionOS)
         let config = getCardExpansionPlatformConfig()
 
         // Check runtime platform instead of compile-time platform
         let runtimePlatform = RuntimeCapabilityDetection.currentPlatform
         if runtimePlatform == .visionOS {
-            TestSetupUtilities.shared.assertCardExpansionConfig(
-                config,
-                touch: true,
-                haptic: true,
-                hover: true,
-                voiceOver: true,
-                switchControl: true,
-                assistiveTouch: true
-            )
+            #expect(config.supportsTouch == false, "visionOS should not support touch")
+            #expect(config.supportsHapticFeedback == false, "visionOS should not support haptic feedback")
+            #expect(config.supportsHover == true, "visionOS should support hover")
+            #expect(config.supportsVoiceOver == true, "visionOS should support VoiceOver")
+            #expect(config.supportsSwitchControl == true, "visionOS should support Switch Control")
+            #expect(config.supportsAssistiveTouch == false, "visionOS should not support AssistiveTouch")
 
             // visionOS should have platform-correct minTouchTarget (0.0, not 44.0)
             #expect(config.minTouchTarget == 0.0, "visionOS should have 0.0 touch target (platform-native)")

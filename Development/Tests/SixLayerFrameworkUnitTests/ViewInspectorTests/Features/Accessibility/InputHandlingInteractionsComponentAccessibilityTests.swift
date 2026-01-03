@@ -58,7 +58,7 @@ open class InputHandlingInteractionsComponentAccessibilityTests: BaseTestClass {
         
         // Then: Should generate accessibility identifiers
         // VERIFIED: Framework function has .automaticCompliance() modifier applied
-        let hasAccessibilityID = hasAccessibilityIdentifierWithPattern(
+        let hasAccessibilityID = testComponentComplianceSinglePlatform(
             view,
             expectedPattern: "SixLayer.main.ui.*",
             platform: SixLayerPlatform.iOS,

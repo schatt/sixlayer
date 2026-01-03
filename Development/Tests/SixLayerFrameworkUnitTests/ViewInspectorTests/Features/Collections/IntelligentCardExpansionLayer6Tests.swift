@@ -17,7 +17,7 @@ open class IntelligentCardExpansionLayer6Tests: BaseTestClass {
     
     // MARK: - Test Data
     
-    let testItem = TestItem(title: "Test Card", description: "Test content for expansion")
+    let testItem = TestPatterns.TestItem(id: "test-card", title: "Test Card")
     
     // MARK: - NativeExpandableCardView Tests
     
