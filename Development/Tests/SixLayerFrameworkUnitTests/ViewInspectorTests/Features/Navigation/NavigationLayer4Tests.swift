@@ -44,7 +44,7 @@ open class NavigationLayer4Tests: BaseTestClass {
             #expect(!viewText.isEmpty, "Navigation link should contain text elements")
             
             // Should contain the label text - use helper function for DRY text verification
-            TestPatterns.verifyViewContainsText(link, expectedText: "Label", testName: "Navigation link label")
+            verifyViewContainsText(link, expectedText: "Label", testName: "Navigation link label")
             
         } catch {
             Issue.record("Failed to inspect navigation link structure")

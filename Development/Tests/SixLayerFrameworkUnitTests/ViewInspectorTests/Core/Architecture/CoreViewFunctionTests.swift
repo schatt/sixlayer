@@ -122,7 +122,7 @@ open class CoreViewFunctionTests: BaseTestClass {
         let view = TestPatterns.createIntelligentDetailView(item: item)
         
         // THEN: Should generate correct view for this combination
-        TestPatterns.verifyViewGeneration(view, testName: testName)
+        verifyViewGeneration(view, testName: testName)
         
         let viewInfo = extractViewInfo(from: view)
         
@@ -206,7 +206,7 @@ open class CoreViewFunctionTests: BaseTestClass {
         let view = TestPatterns.createSimpleCardComponent(item: item)
         
         // THEN: Should generate correct view for this combination
-        TestPatterns.verifyViewGeneration(view, testName: testName)
+        verifyViewGeneration(view, testName: testName)
         
         let viewInfo = extractViewInfo(from: view)
         

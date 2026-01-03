@@ -16,6 +16,10 @@ import Testing
 import SwiftUI
 @testable import SixLayerFramework
 
+#if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+import ViewInspector
+#endif
+
 /// Base class for all test classes
 /// Provides isolated test configuration and setup utilities
 /// NOTE: Not marked @MainActor on class to allow parallel execution
@@ -125,27 +129,85 @@ open class BaseTestClass {
     // MARK: - View Verification Helpers
     
     /// Verify that a view is created and contains expected content
-    /// Delegates to TestPatterns for implementation
     /// Override this method in subclasses to provide custom verification logic
     @MainActor
     open func verifyViewGeneration(_ view: some View, testName: String) {
-        TestPatterns.verifyViewGeneration(view, testName: testName)
+        // 1. View created - The view can be instantiated successfully
+        // view is a non-optional View parameter, so it exists if we reach here
+        
+        // 2. Contains what it needs to contain - The view has proper structure
+        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        if view.tryInspect() == nil {
+            Issue.record("Failed to inspect view structure for \(testName)")
+        }
+        #else
+        // ViewInspector not available on macOS - view creation is verified by non-optional parameter
+        // Test passes by verifying compilation and view creation
+        #endif
     }
     
     /// Verify that a view contains specific text content
-    /// Delegates to TestPatterns for implementation
     /// Override this method in subclasses to provide custom verification logic
     @MainActor
     open func verifyViewContainsText(_ view: some View, expectedText: String, testName: String) {
-        TestPatterns.verifyViewContainsText(view, expectedText: expectedText, testName: testName)
+        // 1. View created - The view can be instantiated successfully
+        // view is a non-optional View parameter, so it exists if we reach here
+        
+        // 2. Contains what it needs to contain - The view should contain expected text
+        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        let inspectionResult = withInspectedView(view) { inspected in
+            let viewText = inspected.sixLayerFindAll(ViewType.Text.self)
+            #expect(!viewText.isEmpty, "View should contain text elements for \(testName)")
+
+            let hasExpectedText = viewText.contains { text in
+                if let textContent = try? text.sixLayerString() {
+                    return textContent.contains(expectedText)
+                }
+                return false
+            }
+            #expect(hasExpectedText, "View should contain text '\(expectedText)' for \(testName)")
+            return true
+        }
+        #else
+        let inspectionResult: Bool? = nil
+        #endif
+
+        if inspectionResult == nil {
+            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            Issue.record("View inspection failed on this platform for \(testName)")
+            #else
+            // ViewInspector not available on macOS - test passes by verifying view creation
+            #expect(Bool(true), "View created for \(testName) (ViewInspector not available on macOS)")
+            #endif
+        }
     }
     
     /// Verify that a view contains specific image elements
-    /// Delegates to TestPatterns for implementation
     /// Override this method in subclasses to provide custom verification logic
     @MainActor
     open func verifyViewContainsImage(_ view: some View, testName: String) {
-        TestPatterns.verifyViewContainsImage(view, testName: testName)
+        // 1. View created - The view can be instantiated successfully
+        // view is a non-optional View parameter, so it exists if we reach here
+        
+        // 2. Contains what it needs to contain - The view should contain image elements
+        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        let inspectionResult = withInspectedView(view) { inspected in
+            let viewImages = inspected.sixLayerFindAll(ViewType.Image.self)
+            #expect(!viewImages.isEmpty, "View should contain image elements for \(testName)")
+            return true
+        }
+        #else
+        let inspectionResult: Bool? = nil
+        #endif
+
+        if inspectionResult == nil {
+            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            Issue.record("View inspection failed on this platform for \(testName)")
+            #else
+            // ViewInspector not available on macOS - test passes by verifying view creation
+            #expect(Bool(true), "View created for \(testName) (ViewInspector not available on macOS)")
+            #endif
+        }
     }
     
     // MARK: - Common Test Data Creation

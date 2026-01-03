@@ -52,7 +52,7 @@ open class Layer4FormContainerTests: BaseTestClass {
             #expect(!viewText.isEmpty, "Form container should contain text elements")
 
             // Should contain the test content - use helper function for DRY text verification
-            TestPatterns.verifyViewContainsText(view, expectedText: "Test Form Content", testName: "Form container content")
+            verifyViewContainsText(view, expectedText: "Test Form Content", testName: "Form container content")
         }
 
         if inspectionResult == nil {

@@ -158,7 +158,7 @@ open class PlatformPresentContentL1Tests: BaseTestClass {
             
             // Should contain our actual number content
             // Use helper function for DRY text verification
-            TestPatterns.verifyViewContainsText(view, expectedText: "42", testName: "Number content view")
+            verifyViewContainsText(view, expectedText: "42", testName: "Number content view")
             
         } catch {
             Issue.record("Failed to inspect number content view")

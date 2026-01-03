@@ -156,94 +156,41 @@ public enum TestPatterns {
         )
     }
     
-    // MARK: - Verification Factory
+    // MARK: - Verification Factory (Deprecated - Use BaseTestClass methods instead)
     
     /// BUSINESS PURPOSE: Verify that a view is created and contains expected content
-    /// TESTING SCOPE: Tests the two critical aspects: view creation + content verification
-    /// METHODOLOGY: Uses ViewInspector to verify actual view structure and content
+    /// DEPRECATED: Use BaseTestClass.verifyViewGeneration() instead
+    /// This method is kept for backward compatibility but delegates to BaseTestClass
     @MainActor
+    @available(*, deprecated, message: "Use BaseTestClass.verifyViewGeneration() instead")
     public static func verifyViewGeneration(_ view: some View, testName: String) {
-        // 1. View created - The view can be instantiated successfully
-        // view is a non-optional View parameter, so it exists if we reach here
-        
-        // 2. Contains what it needs to contain - The view has proper structure
-        // Using wrapper - when ViewInspector works on macOS, no changes needed here
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
-        if view.tryInspect() == nil {
-            Issue.record("Failed to inspect view structure for \(testName)")
-        }
-        #else
-        // ViewInspector not available on macOS - view creation is verified by non-optional parameter
-        // Test passes by verifying compilation and view creation
-        #endif
+        // Create a temporary instance to call the instance method
+        // This is a workaround - ideally tests should extend BaseTestClass and call the instance method
+        let temp = BaseTestClass()
+        temp.verifyViewGeneration(view, testName: testName)
     }
     
     /// BUSINESS PURPOSE: Verify that a view contains specific text content
-    /// TESTING SCOPE: Tests that views contain expected text elements
-    /// METHODOLOGY: Uses ViewInspector to find and verify text content
-    /// Using wrapper - when ViewInspector works on macOS, no changes needed here
+    /// DEPRECATED: Use BaseTestClass.verifyViewContainsText() instead
+    /// This method is kept for backward compatibility but delegates to BaseTestClass
     @MainActor
+    @available(*, deprecated, message: "Use BaseTestClass.verifyViewContainsText() instead")
     public static func verifyViewContainsText(_ view: some View, expectedText: String, testName: String) {
-        // 1. View created - The view can be instantiated successfully
-        // view is a non-optional View parameter, so it exists if we reach here
-        
-        // 2. Contains what it needs to contain - The view should contain expected text
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
-        let inspectionResult = withInspectedView(view) { inspected in
-            let viewText = inspected.sixLayerFindAll(ViewType.Text.self)
-            #expect(!viewText.isEmpty, "View should contain text elements for \(testName)")
-
-            let hasExpectedText = viewText.contains { text in
-                if let textContent = try? text.sixLayerString() {
-                    return textContent.contains(expectedText)
-                }
-                return false
-            }
-            #expect(hasExpectedText, "View should contain text '\(expectedText)' for \(testName)")
-            return true
-        }
-        #else
-        let inspectionResult: Bool? = nil
-        #endif
-
-        if inspectionResult == nil {
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
-            Issue.record("View inspection failed on this platform for \(testName)")
-            #else
-            // ViewInspector not available on macOS - test passes by verifying view creation
-            #expect(Bool(true), "View created for \(testName) (ViewInspector not available on macOS)")
-            #endif
-        }
+        // Create a temporary instance to call the instance method
+        // This is a workaround - ideally tests should extend BaseTestClass and call the instance method
+        let temp = BaseTestClass()
+        temp.verifyViewContainsText(view, expectedText: expectedText, testName: testName)
     }
     
     /// BUSINESS PURPOSE: Verify that a view contains specific image elements
-    /// TESTING SCOPE: Tests that views contain expected image elements
-    /// METHODOLOGY: Uses ViewInspector to find and verify image content
-    /// Using wrapper - when ViewInspector works on macOS, no changes needed here
+    /// DEPRECATED: Use BaseTestClass.verifyViewContainsImage() instead
+    /// This method is kept for backward compatibility but delegates to BaseTestClass
     @MainActor
+    @available(*, deprecated, message: "Use BaseTestClass.verifyViewContainsImage() instead")
     public static func verifyViewContainsImage(_ view: some View, testName: String) {
-        // 1. View created - The view can be instantiated successfully
-        // view is a non-optional View parameter, so it exists if we reach here
-        
-        // 2. Contains what it needs to contain - The view should contain image elements
-        // Using wrapper - when ViewInspector works on macOS, no changes needed here
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
-        let inspectionResult = withInspectedView(view) { inspected in
-            let viewImages = inspected.sixLayerFindAll(ViewType.Image.self)
-            #expect(!viewImages.isEmpty, "View should contain image elements for \(testName)")
-            return true
-        }
-        #else
-        let inspectionResult: Bool? = nil
-        #endif
-
-        if inspectionResult == nil {
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
-            Issue.record("View inspection failed on this platform for \(testName)")
-            #else
-            // ViewInspector not available on macOS - test passes by verifying view creation
-            #expect(Bool(true), "View created for \(testName) (ViewInspector not available on macOS)")
-            #endif
-        }
+        // Create a temporary instance to call the instance method
+        // This is a workaround - ideally tests should extend BaseTestClass and call the instance method
+        let temp = BaseTestClass()
+        temp.verifyViewContainsImage(view, testName: testName)
     }
 }

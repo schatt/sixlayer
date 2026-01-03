@@ -75,8 +75,8 @@ struct ViewGenerationVerificationTests {
 
             // Should contain the title and subtitle from our test data
             // Use helper function for DRY text verification
-            TestPatterns.verifyViewContainsText(detailView, expectedText: "Item 1", testName: "Detail view title")
-            TestPatterns.verifyViewContainsText(detailView, expectedText: "Subtitle 1", testName: "Detail view subtitle")
+            verifyViewContainsText(detailView, expectedText: "Item 1", testName: "Detail view title")
+            verifyViewContainsText(detailView, expectedText: "Subtitle 1", testName: "Detail view subtitle")
             
         }
         #else
@@ -125,7 +125,7 @@ struct ViewGenerationVerificationTests {
             let compactText = compactInspected.sixLayerFindAll(ViewType.Text.self)
             #expect(!compactText.isEmpty, "Compact view should contain text elements")
             // Use helper function for DRY text verification
-            TestPatterns.verifyViewContainsText(compactView, expectedText: "Item 1", testName: "Compact view title")
+            verifyViewContainsText(compactView, expectedText: "Item 1", testName: "Compact view title")
         }
 
         let detailedInspectionResult = withInspectedView(detailedView) { detailedInspected in
@@ -133,7 +133,7 @@ struct ViewGenerationVerificationTests {
             let detailedText = detailedInspected.sixLayerFindAll(ViewType.Text.self)
             #expect(!detailedText.isEmpty, "Detailed view should contain text elements")
             // Use helper function for DRY text verification
-            TestPatterns.verifyViewContainsText(detailedView, expectedText: "Item 1", testName: "Detailed view title")
+            verifyViewContainsText(detailedView, expectedText: "Item 1", testName: "Detailed view title")
         }
         #else
         let compactInspectionResult: Bool? = nil
@@ -202,8 +202,8 @@ struct ViewGenerationVerificationTests {
             
             // Should contain the title and description (which are not nil)
             // Use helper function for DRY text verification
-            TestPatterns.verifyViewContainsText(detailView, expectedText: "Item 2", testName: "Detail view title with nil subtitle")
-            TestPatterns.verifyViewContainsText(detailView, expectedText: "Description 2", testName: "Detail view description")
+            verifyViewContainsText(detailView, expectedText: "Item 2", testName: "Detail view title with nil subtitle")
+            verifyViewContainsText(detailView, expectedText: "Description 2", testName: "Detail view description")
             
         } catch {
             Issue.record("Failed to inspect detail view with nil values")
