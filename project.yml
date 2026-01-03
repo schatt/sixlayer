@@ -129,9 +129,6 @@ targets:
     type: bundle.unit-test
     platform: iOS
     sources:
-      - path: Development/Tests/Shared/TestHelpers
-        excludes:
-          - "ViewInspectorWrapper.swift"
       - path: Development/Tests/SixLayerFrameworkRealUITests
     settings:
       PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.framework.real-ui-tests
@@ -151,9 +148,6 @@ targets:
     type: bundle.unit-test
     platform: macOS
     sources:
-      - path: Development/Tests/Shared/TestHelpers
-        excludes:
-          - "ViewInspectorWrapper.swift"
       - path: Development/Tests/SixLayerFrameworkRealUITests
     settings:
       PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.framework.real-ui-tests
