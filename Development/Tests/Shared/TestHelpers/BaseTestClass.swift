@@ -233,4 +233,3 @@ open class BaseTestClass {
             deviceCapabilities: deviceCapabilities
         )
     }
-}
