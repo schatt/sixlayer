@@ -9370,11 +9370,11 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         RuntimeCapabilityDetection.setTestAssistiveTouch(false)
         #expect(!RuntimeCapabilityDetection.supportsAssistiveTouch, "AssistiveTouch should be disabled")
 
-        for platform in SixLayerPlatform.allCases {
-            let config = AssistiveTouchConfig(enableIntegration: true)
-            let manager = AssistiveTouchManager(config: config)
-            #expect(manager.supportsIntegration(), "Integration should be supported on \(platform)")
-        }
+        // Given: Current platform
+        let currentPlatform = SixLayerPlatform.current
+        let config = AssistiveTouchConfig(enableIntegration: true)
+        let manager = AssistiveTouchManager(config: config)
+        #expect(manager.supportsIntegration(), "Integration should be supported on \(currentPlatform)")
 
         RuntimeCapabilityDetection.setTestAssistiveTouch(false)
     }
@@ -9390,10 +9390,10 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #expect(menuResult.success)
         #expect(menuResult.menuElement != nil)
 
-        for platform in SixLayerPlatform.allCases {
-            let platformResult = manager.manageMenu(for: .toggle)
-            #expect(platformResult.success, "Menu should work on \(platform)")
-        }
+        // Given: Current platform
+        let currentPlatform = SixLayerPlatform.current
+        let platformResult = manager.manageMenu(for: .toggle)
+        #expect(platformResult.success, "Menu should work on \(currentPlatform)")
 
         RuntimeCapabilityDetection.setTestAssistiveTouch(false)
     }
@@ -13831,22 +13831,21 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         TestPatterns.TestItem(id: "2", title: "Test Item 2")
     ]
 
-    // Test across all platforms
-    for platform in SixLayerPlatform.allCases {
-        // Given: Platform set
+    // Given: Current platform
+    let currentPlatform = SixLayerPlatform.current
 
     // When: Creating view using Layer 1 function
-        let view = platformPresentItemCollection_L1(
-            items: testItems,
-            hints: PresentationHints()
-        )
+    let view = platformPresentItemCollection_L1(
+        items: testItems,
+        hints: PresentationHints()
+    )
 
     // Then: View should automatically have platform-specific patterns
-    #expect(Bool(true), "Layer 1 function should create a valid view on \(platform)")  // view is non-optional
+    #expect(Bool(true), "Layer 1 function should create a valid view on \(currentPlatform)")  // view is non-optional
 
     // Verify that automatic platform patterns are applied
     // The view should automatically adapt to the current platform
-    #expect(Bool(true), "Automatic platform patterns should be applied on \(platform)")
+    #expect(Bool(true), "Automatic platform patterns should be applied on \(currentPlatform)")
     }
 }
 
@@ -16107,17 +16106,16 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     ]
     let testHints = PresentationHints()
 
-    // Test across all platforms
-    for platform in SixLayerPlatform.allCases {
+    // Given: Current platform
+    let currentPlatform = SixLayerPlatform.current
 
     let view = platformPresentItemCollection_L1(
-            items: testItems,
-            hints: testHints
-        )
+        items: testItems,
+        hints: testHints
+    )
 
-    #expect(Bool(true), "View should work on \(platform)")  // view is non-optional
-        #expect(Bool(true), "Automatic HIG compliance works on \(platform)")
-    }
+    #expect(Bool(true), "View should work on \(currentPlatform)")  // view is non-optional
+    #expect(Bool(true), "Automatic HIG compliance works on \(currentPlatform)")
 }
 
     @Test @MainActor func testDemonstrateAllLayer1FunctionsHaveAutomaticCompliance() async {
