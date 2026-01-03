@@ -22,9 +22,6 @@ let package = Package(
             targets: ["SixLayerTestKit"]
         )
     ],
-        dependencies: [
-            .package(url: "https://github.com/nalexn/ViewInspector", from: "0.9.0")
-        ],
     targets: [
         // Main framework target - organized into logical structure
         .target(
@@ -54,58 +51,6 @@ let package = Package(
                 // .define("ENABLE_PREVIEWS")
             ]
         ),
-        
-        // Unit tests - includes ViewInspector tests (moved from UITests)
-        // Note: Shared test helpers are accessible via SharedTestHelpers symlink
-        .testTarget(
-            name: "SixLayerFrameworkUnitTests",
-            dependencies: [
-                "SixLayerFramework",
-                // ViewInspector for testing view structure and modifiers
-                .product(name: "ViewInspector", package: "ViewInspector")
-            ],
-            path: "Development/Tests/SixLayerFrameworkUnitTests",
-            exclude: [
-                // Function index moved to docs directory
-                "BugReports/README.md",
-                "BugReports/PlatformImage_v4.6.2/README.md",
-                "BugReports/ButtonStyle_v4.6.3/README.md",
-                "BugReports/PlatformTypes_v4.6.4/README.md",
-                "BugReports/PlatformPhotoPicker_v4.6.5/README.md",
-                "BugReports/PlatformTypes_v4.6.6/README.md",
-                // Documentation files
-                "Utilities/TestHelpers/CoreDataTestingGuide.md",
-                "ViewInspectorTests/Utilities/TestHelpers/CoreDataTestingGuide.md"
-            ],
-            swiftSettings: [
-                // Enable ViewInspector on macOS
-                .define("VIEW_INSPECTOR_MAC_FIXED")
-            ]
-        ),
-        
-        // Real UI tests - TODO: Create actual UI tests that render views in windows
-        // ViewInspector tests have been moved to SixLayerFrameworkUnitTests
-        // .testTarget(
-        //     name: "SixLayerFrameworkUITests",
-        //     dependencies: [
-        //         "SixLayerFramework"
-        //     ],
-        //     path: "Development/Tests/SixLayerFrameworkUITests"
-        // ),
-        
-        // External integration tests - uses normal import (no @testable)
-        // Tests the framework from external module perspective
-        .testTarget(
-            name: "SixLayerFrameworkExternalIntegrationTests",
-            dependencies: [
-                "SixLayerFramework"
-            ],
-            path: "Development/Tests/SixLayerFrameworkExternalIntegrationTests",
-            exclude: [
-                // Documentation files
-                "README.md"
-            ]
-        ),
 
         // SixLayerTestKit - Testing utilities for consumers of the framework
         .target(
@@ -114,21 +59,6 @@ let package = Package(
                 "SixLayerFramework"
             ],
             path: "Framework/TestKit/Sources",
-            exclude: [
-                // Documentation files
-                "README.md"
-            ]
-        ),
-
-        // TestKit unit tests
-        .testTarget(
-            name: "SixLayerTestKitTests",
-            dependencies: [
-                "SixLayerTestKit",
-                "SixLayerFramework",
-                .product(name: "ViewInspector", package: "ViewInspector")
-            ],
-            path: "Framework/TestKit/Tests",
             exclude: [
                 // Documentation files
                 "README.md"

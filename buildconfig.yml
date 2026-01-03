@@ -22,7 +22,7 @@ platforms:
       - build/macos/*.app
     # scheme: Required. The Xcode scheme to build for this platform.
   - name: macOS_tests
-    build_command: swift test
+    build_command: xcodebuild test -project SixLayerFramework.xcodeproj -scheme SixLayerFramework-AllTests-macOS -destination "platform=macOS,arch=arm64" -parallel-testing-enabled YES
     artifact_dir: build/macos
     artifact_patterns:
       - build/macos/*.app
@@ -34,7 +34,7 @@ platforms:
       - build/ios/*.ipa
     # scheme: Required. The Xcode scheme to build for this platform.
   - name: iOS_tests
-    build_command: xcodebuild test -workspace .swiftpm/xcode/package.xcworkspace -scheme SixLayerFramework -destination "platform=iOS Simulator,name=iPhone 17 Pro Max" -parallel-testing-enabled YES -maximum-concurrent-test-simulator-destinations 2
+    build_command: xcodebuild test -project SixLayerFramework.xcodeproj -scheme SixLayerFramework-AllTests-iOS -destination "platform=iOS Simulator,name=iPhone 17 Pro Max" -parallel-testing-enabled YES -maximum-concurrent-test-simulator-destinations 2
     artifact_dir: build/ios
     artifact_patterns:
       - build/ios/*.ipa
