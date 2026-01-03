@@ -471,9 +471,9 @@ open class PlatformPresentFormDataL1ComprehensiveTests: BaseTestClass {
         // When: Creating form with edge case values
         _ = platformPresentFormData_L1(fields: edgeCaseFields, hints: PlatformPresentFormDataL1ComprehensiveTests.enhancedHints(from: standardHints))
 
-        // Verify edge case handling
-        let emptyValueFields = edgeCaseFields.filter { $0.defaultValue?.isEmpty == true }
-        #expect(emptyValueFields.count == 3, "Should have 3 fields with empty values")
+        // Verify edge case handling - count both nil and empty string values
+        let emptyValueFields = edgeCaseFields.filter { $0.defaultValue == nil || $0.defaultValue?.isEmpty == true }
+        #expect(emptyValueFields.count == 3, "Should have 3 fields with empty or nil values")
 
         let nilPlaceholderFields = edgeCaseFields.filter { $0.placeholder == nil }
         #expect(nilPlaceholderFields.count == 4, "Should have 4 fields with nil placeholders")
