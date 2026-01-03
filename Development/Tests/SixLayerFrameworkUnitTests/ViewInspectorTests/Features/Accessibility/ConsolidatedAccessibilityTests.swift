@@ -3529,9 +3529,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
             view,
-            componentName: "DynamicFormHeader"
             expectedPattern: "SixLayer.*ui.*DynamicFormHeader.*",
             platform: SixLayerPlatform.iOS,
+            componentName: "DynamicFormHeader"
             
         )
         #expect(hasAccessibilityID, "DynamicFormHeader should generate accessibility identifiers ")
@@ -7257,7 +7257,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
             view,
             expectedPattern: "SixLayer.main.ui.*ExpandableCardComponent.*",
-            platform: SixLayerPlatform.macOS
+            platform: SixLayerPlatform.macOS,
             componentName: "ExpandableCardComponent"
         )
         #expect(hasAccessibilityID, "ExpandableCardComponent should generate accessibility identifiers with component name on macOS ")
@@ -7288,7 +7288,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
             view,
             expectedPattern: "SixLayer.main.ui.*CoverFlowCollectionView.*",
-            platform: SixLayerPlatform.macOS
+            platform: SixLayerPlatform.macOS,
             componentName: "CoverFlowCollectionView"
         )
         #expect(hasAccessibilityID, "CoverFlowCollectionView should generate accessibility identifiers with component name on macOS ")
@@ -7312,7 +7312,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
             view,
             expectedPattern: "SixLayer.main.ui.*CoverFlowCardComponent.*",
-            platform: SixLayerPlatform.macOS
+            platform: SixLayerPlatform.macOS,
             componentName: "CoverFlowCardComponent"
         )
         #expect(hasAccessibilityID, "CoverFlowCardComponent should generate accessibility identifiers with component name on macOS ")
@@ -8238,9 +8238,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
             view,
-            componentName: "DynamicFormSectionView"
             expectedPattern: "SixLayer.*ui.*DynamicFormSectionView.*",
             platform: SixLayerPlatform.iOS,
+            componentName: "DynamicFormSectionView"
             
         )
         #expect(hasAccessibilityID, "DynamicFormSectionView should generate accessibility identifiers ")
@@ -8266,9 +8266,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
             view,
-            componentName: "DynamicFormActions"
             expectedPattern: "SixLayer.*ui.*DynamicFormActions.*",
             platform: SixLayerPlatform.iOS,
+            componentName: "DynamicFormActions"
             
         )
         #expect(hasAccessibilityID, "DynamicFormActions should generate accessibility identifiers ")
@@ -15559,7 +15559,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             
         #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
         let testPassed = testComponentAccessibility(
-            componentName: "AutomaticAccessibilityIdentifiers"
+            componentName: "AutomaticAccessibilityIdentifiers",
             createComponent: {
                 PlatformInteractionButton(style: .primary, action: {}) {
                     platformPresentContent_L1(content: "Test Button", hints: PresentationHints())
@@ -15592,7 +15592,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         // Test: Use centralized component accessibility testing
         #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
         let testPassed = testComponentAccessibility(
-            componentName: "NamedModifier"
+            componentName: "NamedModifier",
             createComponent: {
                 PlatformInteractionButton(style: .primary, action: {}) {
                     platformPresentContent_L1(content: "Add Fuel", hints: PresentationHints())
@@ -15956,7 +15956,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
             view,
             expectedPattern: "SixLayer.main.ui.*",
-            platform: SixLayerPlatform.macOS
+            platform: SixLayerPlatform.macOS,
             componentName: "AppleHIGCompliant"
         )
  #expect(hasAccessibilityID, "View with .appleHIGCompliant() (using AppleHIGComplianceManager) should generate accessibility identifiers on macOS ")             #else
@@ -16031,7 +16031,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
             view,
             expectedPattern: "SixLayer.main.ui.*",
-            platform: SixLayerPlatform.macOS
+            platform: SixLayerPlatform.macOS,
             componentName: "AssistiveTouchEnabled"
         )
  #expect(hasAccessibilityID, "View with .assistiveTouchEnabled() (using AssistiveTouchManager) should generate accessibility identifiers on macOS ")             #else
@@ -16450,7 +16450,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
             view,
             expectedPattern: "SixLayer.main.ui.*",
-            platform: SixLayerPlatform.macOS
+            platform: SixLayerPlatform.macOS,
             componentName: "EyeTrackingModifier"
         )
  #expect(hasAccessibilityID, "View with EyeTrackingModifier (using EyeTrackingManager) should generate accessibility identifiers on macOS ")             #else
@@ -16648,7 +16648,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     #expect(testComponentComplianceSinglePlatform(
         collectionView, 
         expectedPattern: "SixLayer.*ui", 
-        platform: SixLayerPlatform.macOS
+        platform: SixLayerPlatform.macOS,
         componentName: "ExpandableCardCollectionView"
     ) , "ExpandableCardCollectionView should generate standard accessibility ID")
     #else
@@ -17164,7 +17164,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
             view,
             expectedPattern: "SixLayer.main.ui.*",
-            platform: SixLayerPlatform.macOS
+            platform: SixLayerPlatform.macOS,
             componentName: "Image"
         )
  #expect(hasAccessibilityID, "Image view (that could use ImageProcessor) should generate accessibility identifiers on macOS ")             #else
@@ -17277,7 +17277,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
             view,
             expectedPattern: "SixLayer.main.ui.*platformPresentLocalizedContent_L1.*",
-            platform: SixLayerPlatform.macOS
+            platform: SixLayerPlatform.macOS,
             componentName: "platformPresentLocalizedContent_L1"
         )
  #expect(hasAccessibilityID, "View with platformPresentLocalizedContent_L1 (using InternationalizationService) should generate accessibility identifiers on macOS ")             #else
@@ -17349,7 +17349,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
             view,
             expectedPattern: "SixLayer.main.ui.*",
-            platform: SixLayerPlatform.macOS
+            platform: SixLayerPlatform.macOS,
             componentName: "MaterialAccessibilityEnhancedView"
         )
  #expect(hasAccessibilityID, "View with MaterialAccessibilityManager should generate accessibility identifiers on macOS ")
@@ -17446,7 +17446,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     #expect(testComponentComplianceSinglePlatform(
         ocrView, 
         expectedPattern: "SixLayer.*ui", 
-        platform: SixLayerPlatform.macOS
+        platform: SixLayerPlatform.macOS,
         componentName: "OCROverlayView"
     ) , "OCROverlayView should generate OCR-specific accessibility ID on macOS")
     #else
@@ -17532,7 +17532,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
             view,
             expectedPattern: "SixLayer.main.ui.*OCROverlayView.*",
-            platform: SixLayerPlatform.macOS
+            platform: SixLayerPlatform.macOS,
             componentName: "OCROverlayView"
         )
  #expect(hasAccessibilityID, "OCROverlayView (using OCRService) should generate accessibility identifiers on macOS ")             #else
@@ -17966,7 +17966,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
             view,
             expectedPattern: "SixLayer.main.ui.*",
-            platform: SixLayerPlatform.macOS
+            platform: SixLayerPlatform.macOS,
             componentName: "SwitchControlEnabled"
         )
  #expect(hasAccessibilityID, "View with .switchControlEnabled() (using SwitchControlManager) should generate accessibility identifiers on macOS ")             #else
