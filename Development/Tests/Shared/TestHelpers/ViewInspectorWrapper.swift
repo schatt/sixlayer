@@ -9,14 +9,10 @@
 
 import Foundation
 import SwiftUI
-
-#if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
 import ViewInspector
-#endif
 
 // MARK: - View Extensions
 
-#if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
 extension View {
     /// Safe, non-throwing inspection of a view
     /// Returns nil if inspection fails (instead of throwing)
@@ -91,21 +87,3 @@ public func withInspectedViewThrowing<V: View, T>(
     let inspected = try view.inspectView()
     return try body(inspected)
 }
-
-#else
-// MARK: - Fallback for platforms without ViewInspector
-
-extension View {
-    /// Fallback implementation when ViewInspector is not available
-    @MainActor
-    public func tryInspect() -> Any? {
-        return nil
-    }
-    
-    @MainActor
-    public func inspectView() throws -> Any {
-        throw NSError(domain: "ViewInspectorWrapper", code: 1, userInfo: [NSLocalizedDescriptionKey: "ViewInspector not available on this platform"])
-    }
-}
-
-#endif
