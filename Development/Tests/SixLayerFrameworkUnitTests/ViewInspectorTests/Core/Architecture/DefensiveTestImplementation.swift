@@ -1,24 +1,24 @@
 import Foundation
 import Testing
-import SixLayerFramework
+import SwiftUI
+@testable import SixLayerFramework
 
 /// Defensive test implementation that prevents crashes
 struct DefensiveTestImplementation {
-    
-    /// Safe test method using enums (compile-time safe)
+
+    /// Safe test method using platform types (compile-time safe)
     static func testSimpleCardComponentWithEnums(
-        capabilityType: CapabilityType,
-        accessibilityType: AccessibilityType
+        platform: SixLayerPlatform
     ) async {
-        // Set capabilities based on capability type using RuntimeCapabilityDetection
-        DefensiveTestPatterns.setCapabilitiesForType(capabilityType)
+        // Set capabilities based on platform using TestSetupUtilities
+        TestSetupUtilities.setCapabilitiesForPlatform(platform)
         
         await performTest(
             testName: "SimpleCard \(capabilityType.rawValue) + \(accessibilityType.rawValue)"
         )
         
-        // Clean up test platform
-        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        // Clean up test capabilities
+        TestSetupUtilities.cleanupTestEnvironment()
     }
     
     /// Common test logic extracted to avoid duplication
