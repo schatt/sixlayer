@@ -164,11 +164,11 @@ open class BaseTestClass {
         #if canImport(ViewInspector)
         do {
             let inspected = try view.inspect()
-            let viewText = inspected.findAll(ViewType.Text.self)
+            let viewText = inspected.sixLayerFindAll(ViewType.Text.self)
             #expect(!viewText.isEmpty, "View should contain text elements for \(testName)")
 
             let hasExpectedText = viewText.contains { text in
-                if let textContent = try? text.string() {
+                if let textContent = try? text.sixLayerString() {
                     return textContent.contains(expectedText)
                 }
                 return false
@@ -194,7 +194,7 @@ open class BaseTestClass {
         #if canImport(ViewInspector)
         do {
             let inspected = try view.inspect()
-            let viewImages = inspected.findAll(ViewType.Image.self)
+            let viewImages = inspected.sixLayerFindAll(ViewType.Image.self)
             #expect(!viewImages.isEmpty, "View should contain image elements for \(testName)")
         } catch {
             Issue.record("View inspection failed for \(testName): \(error)")

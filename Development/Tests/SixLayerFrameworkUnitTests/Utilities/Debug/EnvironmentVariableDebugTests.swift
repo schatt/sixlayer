@@ -29,24 +29,25 @@ open class EnvironmentVariableDebugTests: BaseTestClass {
                 .automaticCompliance()  // ← This should set autoIDsEnabled = true
             
             // 3. Try to inspect for accessibility identifier
-            // Using wrapper - when ViewInspector works on macOS, no changes needed here
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            // Using wrapper
+            #if canImport(ViewInspector)
             if let inspectedView = view.tryInspect(),
                let button = try? inspectedView.sixLayerButton(),
                let accessibilityID = try? button.sixLayerAccessibilityIdentifier() {
                 print("🔍 Generated ID: '\(accessibilityID)'")
-                
+
                 if accessibilityID.isEmpty {
                     print("❌ FAILED: No ID generated - environment variable not working")
                     Issue.record("Environment variable not working - no ID generated")
                 } else {
+                    print("✅ SUCCESS: ID generated - '\(accessibilityID)'")
                 }
             } else {
                 print("❌ FAILED: Could not inspect view")
                 Issue.record("Could not inspect view")
             }
             #else
-            // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+            // ViewInspector not available on this platform - this is expected, not a failure
             #endif
         }
     }
@@ -71,7 +72,7 @@ open class EnvironmentVariableDebugTests: BaseTestClass {
             
             // 3. Try to inspect for accessibility identifier
             // Using wrapper - when ViewInspector works on macOS, no changes needed here
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             if let inspectedView = view.tryInspect(),
                let button = try? inspectedView.sixLayerButton(),
                let accessibilityID = try? button.sixLayerAccessibilityIdentifier() {
