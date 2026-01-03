@@ -221,7 +221,7 @@ open class AccessibilityIdentifierGenerationVerificationTests: BaseTestClass {
             #endif
                 
             // Test Case 2: When automatic IDs are enabled
-            testConfig.enableAutoIDs = true
+            config.enableAutoIDs = true
                 
             let testView2 = PlatformInteractionButton(style: .primary, action: {}) {
                 platformPresentContent_L1(content: "Test", hints: PresentationHints())
