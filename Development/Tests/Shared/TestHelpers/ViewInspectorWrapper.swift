@@ -17,11 +17,9 @@ extension View {
     /// Safe, non-throwing inspection of a view
     /// Returns nil if inspection fails (instead of throwing)
     @MainActor
-    public func tryInspect() -> InspectableView<ViewType.View<AnyView>>? {
+    public func tryInspect() -> InspectableView<ViewType.View<Self>>? {
         do {
-            // Type-erase to AnyView to work around Inspectable conformance issues
-            let anyView = AnyView(self)
-            return try anyView.inspect()
+            return try inspect()
         } catch {
             return nil
         }
@@ -29,10 +27,8 @@ extension View {
     
     /// Throwing inspection of a view
     @MainActor
-    public func inspectView() throws -> InspectableView<ViewType.View<AnyView>> {
-        // Type-erase to AnyView to work around Inspectable conformance issues
-        let anyView = AnyView(self)
-        return try anyView.inspect()
+    public func inspectView() throws -> InspectableView<ViewType.View<Self>> {
+        return try inspect()
     }
 }
 
@@ -74,7 +70,7 @@ extension InspectableView {
 @MainActor
 public func withInspectedView<V: View, T>(
     _ view: V,
-    body: (InspectableView<ViewType.View<AnyView>>) -> T
+    body: (InspectableView<ViewType.View<V>>) -> T
 ) -> T? {
     guard let inspected = view.tryInspect() else {
         return nil
@@ -86,7 +82,7 @@ public func withInspectedView<V: View, T>(
 @MainActor
 public func withInspectedViewThrowing<V: View, T>(
     _ view: V,
-    body: (InspectableView<ViewType.View<AnyView>>) throws -> T
+    body: (InspectableView<ViewType.View<V>>) throws -> T
 ) throws -> T {
     let inspected = try view.inspectView()
     return try body(inspected)

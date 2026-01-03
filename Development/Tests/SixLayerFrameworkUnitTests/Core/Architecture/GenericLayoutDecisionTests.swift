@@ -34,12 +34,11 @@ open class GenericLayoutDecisionTests: BaseTestClass {
     
     // MARK: - Test Data
     
-    public func createTestItems(count: Int) -> [TestItem] {
+    public func createTestItems(count: Int) -> [TestPatterns.TestItem] {
         return (0..<count).map { index in
-            TestItem(
-                title: "Item \(index + 1)",
-                subtitle: nil,
-                description: "Content for item \(index + 1)"
+            TestPatterns.TestItem(
+                id: "\(index + 1)",
+                title: "Item \(index + 1)"
             )
         }
     }
@@ -73,11 +72,11 @@ open class GenericLayoutDecisionTests: BaseTestClass {
     @Test @MainActor func testDetermineOptimalLayout_L2_EmptyItems() {
         initializeTestConfig()
         // Given
-        let items: [TestItem] = []
+        let items: [TestPatterns.TestItem] = []
         let hints = createBasicHints()
         
         // When
-        let decision = determineOptimalLayout_L2(
+        let decision = determineOptimalLayout_L2<TestPatterns.TestItem>(
             items: items,
             hints: hints,
             screenWidth: 375,
@@ -97,7 +96,7 @@ open class GenericLayoutDecisionTests: BaseTestClass {
         let hints = createBasicHints()
         
         // When
-        let decision = determineOptimalLayout_L2(
+        let decision = determineOptimalLayout_L2<TestPatterns.TestItem>(
             items: items,
             hints: hints,
             screenWidth: 375,
@@ -616,6 +615,6 @@ open class GenericLayoutDecisionTests: BaseTestClass {
         // All decisions should be consistent
         #expect(layoutDecision.approach == LayoutApproach.responsive) // 20 items = complex = responsive
         #expect(formDecision.preferredContainer == .adaptive)
-        #expect(cardDecision.layout == .uniform)
+        #expect(cardDecision.layout == CardLayoutType.uniform)
     }
 }
