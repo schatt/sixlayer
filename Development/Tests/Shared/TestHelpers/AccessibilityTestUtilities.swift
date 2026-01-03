@@ -230,7 +230,7 @@ public enum AccessibilityTestUtilities {
         componentName: String,
         testHIGCompliance: Bool = true
     ) -> Bool {
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         do {
             let inspectedView = try view.inspect()
             // Search for accessibility identifiers matching the pattern
@@ -254,7 +254,7 @@ public enum AccessibilityTestUtilities {
         componentName: String,
         testName: String? = nil
     ) -> Bool {
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         do {
             let inspectedView = try view.inspect()
             // Search for accessibility identifiers matching the pattern

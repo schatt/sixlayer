@@ -65,5 +65,23 @@ let package = Package(
             ]
         ),
 
+        // Unit tests - main test suite
+        .testTarget(
+            name: "SixLayerFrameworkUnitTests",
+            dependencies: [
+                "SixLayerFramework",
+                "SixLayerTestKit"
+            ],
+            path: "Development/Tests/SixLayerFrameworkUnitTests",
+            exclude: [
+                // Documentation and example files
+                "README.md"
+            ],
+            swiftSettings: [
+                // Disable strict concurrency checking for tests to work around Swift 6 region-based isolation checker issues
+                .define("SWIFT_DISABLE_STRICT_CONCURRENCY_CHECKING")
+            ]
+        ),
+
     ]
 )
