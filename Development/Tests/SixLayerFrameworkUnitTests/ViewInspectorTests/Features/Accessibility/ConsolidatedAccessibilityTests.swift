@@ -15564,11 +15564,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         .automaticCompliance()
 
         #expect(Bool(true), "AutomaticAccessibilityIdentifiers view should be created successfully")
-    #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-        // The modifier IS present in the code, but ViewInspector can't detect it on macOS
-        #endif
-            
+
         // Cleanup: Reset test environment
         cleanupTestEnvironment()
     }
@@ -15593,11 +15589,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         .named("AddFuelButton")
 
         #expect(Bool(true), "NamedModifier view should be created successfully")
-    #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-        // The modifier IS present in the code, but ViewInspector can't detect it on macOS
-        #endif
-            
+
         // Cleanup: Reset test environment
         cleanupTestEnvironment()
     }
