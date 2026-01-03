@@ -105,6 +105,22 @@ open class BaseTestClass {
         return TestSetupUtilities.hostRootPlatformView(view)
     }
     
+    // MARK: - Test Environment Setup
+    
+    /// Setup test environment
+    /// Clears any existing test overrides to ensure clean test state
+    @MainActor
+    public func setupTestEnvironment() {
+        TestSetupUtilities.setupTestEnvironment()
+    }
+    
+    /// Cleanup test environment
+    /// Clears all test overrides after test execution
+    @MainActor
+    public func cleanupTestEnvironment() {
+        TestSetupUtilities.cleanupTestEnvironment()
+    }
+    
     // MARK: - Common Test Data Creation
     
     /// Creates a default layout decision for testing

@@ -13,7 +13,7 @@ open class FrameworkComponentGlobalConfigTests: BaseTestClass {
     @Test @MainActor func testFrameworkComponentsRespectGlobalConfigWhenDisabled() {
             initializeTestConfig()
         runWithTaskLocalConfig {
-            TestSetupUtilities.setupTestEnvironment()
+            setupTestEnvironment()
             
             // Test that framework components don't generate IDs when global config is disabled
             
@@ -47,14 +47,14 @@ open class FrameworkComponentGlobalConfigTests: BaseTestClass {
             #else
             #endif
             
-            TestSetupUtilities.cleanupTestEnvironment()
+            cleanupTestEnvironment()
         }
     }
     
     @Test @MainActor func testFrameworkComponentsGenerateIDsWhenGlobalConfigEnabled() {
             initializeTestConfig()
         runWithTaskLocalConfig {
-            TestSetupUtilities.setupTestEnvironment()
+            setupTestEnvironment()
             
             // Test that framework components DO generate IDs when global config is enabled
             // Note: .named() modifier always generates IDs regardless of global config
@@ -94,7 +94,7 @@ open class FrameworkComponentGlobalConfigTests: BaseTestClass {
             // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
             #endif
             
-            TestSetupUtilities.cleanupTestEnvironment()
+            cleanupTestEnvironment()
         }
     }
 }
