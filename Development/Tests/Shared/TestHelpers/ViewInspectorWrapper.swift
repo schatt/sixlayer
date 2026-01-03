@@ -194,17 +194,12 @@ extension InspectableView: Inspectable {
     }
     
     public func sixLayerFindAll<T>(_ type: T.Type) -> [Inspectable] {
-        // Use findAll(where:) to search for views matching the type
-        // This works for all types but requires runtime type checking
-        // Non-throwing version - returns empty array on failure
-        guard let allViews = try? self.findAll(where: { view in
-            // Check if the view matches the requested type by trying to access it
-            // This is a best-effort approach since we can't use internal ViewInspector APIs
-            return true // Accept all views - filtering happens at usage site
-        }) else {
+        // Use ViewInspector's findAll method to search for views matching the type
+        // This properly filters by the ViewType
+        guard let matchingViews = try? self.findAll(type) else {
             return []
         }
-        return allViews.map { $0 as Inspectable }
+        return matchingViews.map { $0 as Inspectable }
     }
     
     public func sixLayerFind<T>(_ type: T.Type) throws -> Inspectable {
