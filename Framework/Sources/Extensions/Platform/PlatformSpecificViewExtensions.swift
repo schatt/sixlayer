@@ -70,23 +70,28 @@ public extension View {
     // to consolidate with existing styling logic and avoid naming conflicts
 
     /// Platform-specific frame constraints
-    /// On macOS, applies minimum frame constraints. On iOS, returns the view unchanged.
+    /// On macOS, applies minimum frame constraints clamped to available screen size.
+    /// On iOS, returns the view unchanged.
     func platformFrame() -> some View {
         #if os(iOS)
         return self
         #elseif os(macOS)
-        return self.frame(minWidth: 600, minHeight: 800)
+        let clampedWidth = clampFrameSize(600, dimension: .width)
+        let clampedHeight = clampFrameSize(800, dimension: .height)
+        return self.frame(minWidth: clampedWidth, minHeight: clampedHeight)
         #else
         return self
         #endif
     }
 
     /// Platform-specific frame constraints with custom sizes
-    /// Provides flexible frame constraints that are only applied on macOS
+    /// Provides flexible frame constraints that are only applied on macOS.
+    /// Minimum sizes are automatically clamped to available screen space to prevent
+    /// windows that are too large for the device.
     ///
     /// - Parameters:
-    ///   - minWidth: Minimum width constraint (macOS only)
-    ///   - minHeight: Minimum height constraint (macOS only)
+    ///   - minWidth: Minimum width constraint (macOS only, clamped to screen size)
+    ///   - minHeight: Minimum height constraint (macOS only, clamped to screen size)
     ///   - maxWidth: Maximum width constraint (macOS only)
     ///   - maxHeight: Maximum height constraint (macOS only)
     /// - Returns: A view with platform-specific frame constraints
@@ -94,15 +99,19 @@ public extension View {
         #if os(iOS)
         return AnyView(self)
         #elseif os(macOS)
-        if let minWidth = minWidth, let minHeight = minHeight {
+        // Clamp minimum sizes to available screen space
+        let clampedMinWidth = minWidth.map { clampFrameSize($0, dimension: .width) }
+        let clampedMinHeight = minHeight.map { clampFrameSize($0, dimension: .height) }
+        
+        if let minWidth = clampedMinWidth, let minHeight = clampedMinHeight {
             if let maxWidth = maxWidth, let maxHeight = maxHeight {
                 return AnyView(self.frame(minWidth: minWidth, maxWidth: maxWidth, minHeight: minHeight, maxHeight: maxHeight))
             } else {
                 return AnyView(self.frame(minWidth: minWidth, minHeight: minHeight))
             }
-        } else if let minWidth = minWidth {
+        } else if let minWidth = clampedMinWidth {
             return AnyView(self.frame(minWidth: minWidth))
-        } else if let minHeight = minHeight {
+        } else if let minHeight = clampedMinHeight {
             return AnyView(self.frame(minHeight: minHeight))
         } else {
             return AnyView(self)
@@ -111,6 +120,42 @@ public extension View {
         return AnyView(self)
         #endif
     }
+    
+    #if os(macOS)
+    /// Clamp frame size to available screen space
+    /// Prevents minimum sizes that are too large for the device
+    /// - Parameter size: The desired size
+    /// - Parameter dimension: Whether this is width or height
+    /// - Returns: Clamped size that fits within screen bounds
+    private func clampFrameSize(_ size: CGFloat, dimension: FrameDimension) -> CGFloat {
+        // Get available screen size (AppKit is already imported at file level)
+        let screenSize: CGSize
+        if let mainScreen = NSScreen.main {
+            screenSize = mainScreen.visibleFrame.size
+        } else {
+            // Fallback to reasonable defaults if screen unavailable
+            screenSize = CGSize(width: 1920, height: 1080)
+        }
+        
+        // Use 90% of available screen space as maximum to leave some margin
+        let maxSize = dimension == .width ? screenSize.width * 0.9 : screenSize.height * 0.9
+        
+        // Absolute minimums to ensure usability
+        let absoluteMin: CGFloat = dimension == .width ? 300 : 400
+        // Absolute maximums to prevent unreasonably large windows
+        let absoluteMax: CGFloat = dimension == .width ? 3840 : 2160 // 4K display max
+        
+        // Clamp between absolute minimum and the smaller of maxSize or absoluteMax
+        let effectiveMax = min(maxSize, absoluteMax)
+        return max(absoluteMin, min(size, effectiveMax))
+    }
+    
+    /// Helper enum for frame dimension
+    private enum FrameDimension {
+        case width
+        case height
+    }
+    #endif
 
     // Note: platformAdaptiveFrame moved to PlatformStylingLayer4.swift
     // to consolidate with existing styling logic and avoid naming conflicts
