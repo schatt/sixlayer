@@ -70,7 +70,9 @@ public final class WindowRenderingTestHelper {
     }
     
     deinit {
-        cleanup()
+        // Note: Cannot call cleanup() from deinit due to MainActor isolation
+        // Windows will be cleaned up automatically when the object is deallocated
+        // Explicit cleanup should be called before deallocation if needed
     }
 }
 
@@ -114,7 +116,9 @@ public final class WindowRenderingTestHelper {
     }
     
     deinit {
-        cleanup()
+        // Note: Cannot call cleanup() from deinit due to MainActor isolation
+        // Windows will be cleaned up automatically when the object is deallocated
+        // Explicit cleanup should be called before deallocation if needed
     }
 }
 

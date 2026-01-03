@@ -19,3 +19,4 @@ These are actual UI tests that render views in real windows to test:
 
 Both test the same "blade" from different angles - structure vs. actual rendering.
 
+
