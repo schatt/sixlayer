@@ -18,15 +18,25 @@ import ViewInspector
 /// This allows the wrapper to return a consistent type regardless of platform
 /// Uses prefixed method names to avoid naming conflicts with ViewInspector and prevent infinite recursion
 public protocol Inspectable {
+    func sixLayerButton() throws -> Inspectable
     func sixLayerText() throws -> Inspectable
     func sixLayerText(_ index: Int) throws -> Inspectable
     func sixLayerFindAll<T>(_ type: T.Type) -> [Inspectable]
+    func sixLayerFind<T>(_ type: T.Type) throws -> Inspectable
+    func sixLayerTryFind<T>(_ type: T.Type) -> Inspectable?
+    func sixLayerAccessibilityIdentifier() throws -> String
     func sixLayerString() throws -> String
 }
 
 // MARK: - InspectableView Conformance
 
 extension ViewInspector.InspectableView: Inspectable {
+    public func sixLayerButton() throws -> Inspectable {
+        // This is a simplified implementation - actual button detection would be more complex
+        let result = try self.find(ViewType.Button.self)
+        return result
+    }
+
     public func sixLayerText() throws -> Inspectable {
         let result = try self.text()
         return result
@@ -40,6 +50,19 @@ extension ViewInspector.InspectableView: Inspectable {
     public func sixLayerFindAll<T>(_ type: T.Type) -> [Inspectable] {
         let results = (try? self.findAll(type)) ?? []
         return results.map { $0 as Inspectable }
+    }
+
+    public func sixLayerFind<T>(_ type: T.Type) throws -> Inspectable {
+        let result = try self.find(type)
+        return result
+    }
+
+    public func sixLayerTryFind<T>(_ type: T.Type) -> Inspectable? {
+        return try? self.find(type)
+    }
+
+    public func sixLayerAccessibilityIdentifier() throws -> String {
+        return try self.accessibilityIdentifier()
     }
 
     public func sixLayerString() throws -> String {
