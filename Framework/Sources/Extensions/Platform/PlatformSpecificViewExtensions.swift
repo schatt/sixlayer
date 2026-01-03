@@ -152,9 +152,6 @@ public extension View {
                 return AnyView(self)
             }
         }
-        #else
-        return AnyView(self)
-        #endif
     }
     
     // Frame size helpers moved to PlatformFrameHelpers.swift for DRY reuse
@@ -2219,19 +2216,6 @@ public extension View {
         self
         #endif
     }
-
-    /// Platform-specific system colors
-    /// iOS: Uses UIColor; macOS: Uses NSColor
-    static func platformSystemGray6() -> Color {
-        #if os(iOS)
-        return Color.platformSecondaryBackground
-        #else
-        return Color.platformSecondaryBackground
-        #endif
-    }
-
-
-
 
 
 
