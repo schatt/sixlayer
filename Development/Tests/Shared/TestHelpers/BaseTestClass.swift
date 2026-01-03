@@ -106,7 +106,7 @@ open class BaseTestClass {
     /// Host a SwiftUI view and return the platform root view (delegates to TestSetupUtilities)
     @MainActor
     func hostRootPlatformView<V: View>(_ view: V) -> Any? {
-        return TestSetupUtilities.hostRootPlatformView(view)
+        return Self.hostRootPlatformView(view)
     }
 
     /// Static version of hostRootPlatformView for use in @Test functions (delegates to TestSetupUtilities)
