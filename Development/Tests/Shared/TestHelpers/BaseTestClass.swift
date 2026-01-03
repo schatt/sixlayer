@@ -98,4 +98,36 @@ open class BaseTestClass {
     public func hostRootPlatformView<V: View>(_ view: V) -> Any? {
         return TestSetupUtilities.hostRootPlatformView(view)
     }
+    
+    // MARK: - Common Test Data Creation
+    
+    /// Creates a default layout decision for testing
+    /// Override this method in subclasses to provide specific layout decisions
+    open func createLayoutDecision() -> IntelligentCardLayoutDecision {
+        return IntelligentCardLayoutDecision(
+            columns: 2,
+            spacing: 16,
+            cardWidth: 200,
+            cardHeight: 150,
+            padding: 16
+        )
+    }
+    
+    // MARK: - Common Context Creation
+    
+    /// Creates a PhotoContext for testing
+    /// Each test should call this to create fresh context (test isolation)
+    open func createPhotoContext(
+        screenSize: CGSize = CGSize(width: 375, height: 667),
+        availableSpace: CGSize? = nil,
+        userPreferences: PhotoPreferences = PhotoPreferences(),
+        deviceCapabilities: PhotoDeviceCapabilities = PhotoDeviceCapabilities()
+    ) -> PhotoContext {
+        return PhotoContext(
+            screenSize: screenSize,
+            availableSpace: availableSpace ?? screenSize,
+            userPreferences: userPreferences,
+            deviceCapabilities: deviceCapabilities
+        )
+    }
 }

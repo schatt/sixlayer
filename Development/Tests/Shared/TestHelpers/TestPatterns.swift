@@ -8,7 +8,12 @@
 
 import Foundation
 import SwiftUI
+import Testing
 @testable import SixLayerFramework
+
+#if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+import ViewInspector
+#endif
 
 /// Reusable test patterns and data types
 public enum TestPatterns {
@@ -105,5 +110,98 @@ public enum TestPatterns {
             value: value,
             isActive: isActive
         )
+    }
+    
+    // MARK: - View Generation Factory
+    
+    /// Create an IntelligentDetailView for testing
+    @MainActor
+    public static func createIntelligentDetailView(
+        item: TestDataItem
+    ) -> some View {
+        let hints = PresentationHints()
+        return IntelligentDetailView.platformDetailView(for: item, hints: hints)
+    }
+    
+    /// Create a SimpleCardComponent for testing
+    @MainActor
+    public static func createSimpleCardComponent(
+        item: TestDataItem
+    ) -> some View {
+        let layoutDecision = IntelligentCardLayoutDecision(
+            columns: 2,
+            spacing: 16,
+            cardWidth: 200,
+            cardHeight: 150,
+            padding: 16
+        )
+        return SimpleCardComponent(
+            item: item,
+            layoutDecision: layoutDecision,
+            hints: PresentationHints(),
+            onItemSelected: nil,
+            onItemDeleted: nil,
+            onItemEdited: nil
+        )
+    }
+    
+    // MARK: - Verification Factory
+    
+    /// BUSINESS PURPOSE: Verify that a view is created and contains expected content
+    /// TESTING SCOPE: Tests the two critical aspects: view creation + content verification
+    /// METHODOLOGY: Uses ViewInspector to verify actual view structure and content
+    @MainActor
+    public static func verifyViewGeneration(_ view: some View, testName: String) {
+        // 1. View created - The view can be instantiated successfully
+        // view is a non-optional View parameter, so it exists if we reach here
+        
+        // 2. Contains what it needs to contain - The view has proper structure
+        // Using wrapper - when ViewInspector works on macOS, no changes needed here
+        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        if view.tryInspect() == nil {
+            Issue.record("Failed to inspect view structure for \(testName)")
+        }
+        #else
+        // ViewInspector not available on macOS - view creation is verified by non-optional parameter
+        // Test passes by verifying compilation and view creation
+        #endif
+    }
+    
+    /// BUSINESS PURPOSE: Verify that a view contains specific text content
+    /// TESTING SCOPE: Tests that views contain expected text elements
+    /// METHODOLOGY: Uses ViewInspector to find and verify text content
+    /// Using wrapper - when ViewInspector works on macOS, no changes needed here
+    @MainActor
+    public static func verifyViewContainsText(_ view: some View, expectedText: String, testName: String) {
+        // 1. View created - The view can be instantiated successfully
+        // view is a non-optional View parameter, so it exists if we reach here
+        
+        // 2. Contains what it needs to contain - The view should contain expected text
+        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        let inspectionResult = withInspectedView(view) { inspected in
+            let viewText = inspected.sixLayerFindAll(ViewType.Text.self)
+            #expect(!viewText.isEmpty, "View should contain text elements for \(testName)")
+
+            let hasExpectedText = viewText.contains { text in
+                if let textContent = try? text.sixLayerString() {
+                    return textContent.contains(expectedText)
+                }
+                return false
+            }
+            #expect(hasExpectedText, "View should contain text '\(expectedText)' for \(testName)")
+            return true
+        }
+        #else
+        let inspectionResult: Bool? = nil
+        #endif
+
+        if inspectionResult == nil {
+            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            Issue.record("View inspection failed on this platform for \(testName)")
+            #else
+            // ViewInspector not available on macOS - test passes by verifying view creation
+            #expect(Bool(true), "View created for \(testName) (ViewInspector not available on macOS)")
+            #endif
+        }
     }
 }

@@ -18,6 +18,34 @@ import UIKit
 import AppKit
 #endif
 
+// MARK: - Hosting Controller Storage
+
+/// Thread-local storage for hosting controllers to prevent deallocation during test execution
+/// Made internal for navigation view tests that need to host views directly
+@MainActor
+final class HostingControllerStorage {
+    private static var storage: [ObjectIdentifier: Any] = [:]
+    private static let lock = NSLock()
+    
+    static func store(_ controller: Any, for view: Any) {
+        lock.lock()
+        defer { lock.unlock() }
+        storage[ObjectIdentifier(view as AnyObject)] = controller
+    }
+    
+    static func remove(for view: Any) {
+        lock.lock()
+        defer { lock.unlock() }
+        storage.removeValue(forKey: ObjectIdentifier(view as AnyObject))
+    }
+    
+    static func cleanup() {
+        lock.lock()
+        defer { lock.unlock() }
+        storage.removeAll()
+    }
+}
+
 /// Test setup utilities for configuring test environments
 public enum TestSetupUtilities {
     
@@ -89,14 +117,52 @@ public enum TestSetupUtilities {
     // MARK: - View Hosting
     
     /// Host a SwiftUI view and return the platform root view for inspection
+    /// CRITICAL: The hosting controller is retained in static storage to prevent crashes
+    /// when the view is accessed after the function returns.
+    /// 
+    /// WARNING: This function can hang if the view contains NavigationStack/NavigationView
+    /// or complex hierarchies like GenericContentView in test environments without proper window hierarchy.
+    /// The hang occurs when accessing `hosting.view` - a synchronous UIKit/AppKit call that cannot be timed out.
     @MainActor
     public static func hostRootPlatformView<V: View>(_ view: V) -> Any? {
         #if canImport(UIKit)
-        let hostingController = UIHostingController(rootView: view)
-        return hostingController.view
+        let hosting = UIHostingController(rootView: view)
+        // CRITICAL: Accessing hosting.view can hang on complex views in test environments.
+        // This is a synchronous UIKit call that cannot be timed out or cancelled.
+        // If this hangs, the test will hang indefinitely.
+        let root = hosting.view
+        // CRITICAL: Store the hosting controller to prevent deallocation
+        if let root = root {
+            HostingControllerStorage.store(hosting, for: root)
+        }
+        // CRITICAL: Skip layoutIfNeeded() - it hangs indefinitely on NavigationStack/NavigationView
+        // and complex views like platformPresentContent_L1 in test environments without proper window hierarchy.
+        // Accessibility identifiers can be found without forcing layout.
+        // root?.setNeedsLayout()
+        // root?.layoutIfNeeded()
+        
+        // Force accessibility update (doesn't require layout)
+        root?.accessibilityElementsHidden = false
+        root?.isAccessibilityElement = true
+        
+        return root
         #elseif canImport(AppKit)
-        let hostingController = NSHostingController(rootView: view)
-        return hostingController.view
+        let hosting = NSHostingController(rootView: view)
+        // CRITICAL: Accessing hosting.view can hang on complex views in test environments.
+        // This is a synchronous AppKit call that cannot be timed out or cancelled.
+        // If this hangs, the test will hang indefinitely.
+        let root = hosting.view
+        // CRITICAL: Store the hosting controller to prevent deallocation
+        HostingControllerStorage.store(hosting, for: root)
+        // CRITICAL: Skip layoutSubtreeIfNeeded() - it hangs indefinitely on NavigationStack/NavigationView
+        // and complex views like platformPresentContent_L1 in test environments without proper window hierarchy.
+        // Accessibility identifiers can be found without forcing layout.
+        // root.needsLayout = true
+        // root.layoutSubtreeIfNeeded()
+        
+        // Force accessibility update (doesn't require layout)
+        root.setAccessibilityElement(true)
+        return root
         #else
         return nil
         #endif

@@ -45,6 +45,7 @@ public protocol Inspectable {
 }
 
 // Make InspectableView conform to our protocol
+// This extension applies to all InspectableView types from ViewInspector
 extension InspectableView: Inspectable {
     public func sixLayerButton() throws -> Inspectable {
         // Use findAll(where:) to find buttons - Button types vary by label
@@ -278,6 +279,16 @@ extension InspectableView: Inspectable {
     }
 }
 
+// MARK: - Type Conversion Helper
+
+/// Helper function to convert InspectableView to Inspectable
+/// This ensures type erasure works correctly for all InspectableView types
+/// The InspectableView extension makes it conform to Inspectable, so this cast is safe
+@MainActor
+private func _toInspectable<T>(_ inspected: T) -> Inspectable where T: Inspectable {
+    return inspected
+}
+
 // MARK: - Crash-Safe ViewInspector Wrapper
 
 /// Crash-safe wrapper for ViewInspector operations
@@ -297,7 +308,10 @@ private func _tryInspectWithExceptionHandling<V: View>(_ view: V) -> Inspectable
         // Note: This cannot prevent hangs - inspect() hangs (doesn't throw) on NavigationStack/NavigationView
         // For true crash protection, we'd need Objective-C exception handling via a .m file
         do {
-            return try view.inspect() as Inspectable?
+            let inspected = try view.inspect()
+            // InspectableView conforms to Inspectable via extension, so this cast is safe
+            // Use helper function to ensure proper type erasure
+            return _toInspectable(inspected)
         } catch {
             // ViewInspector threw an error (not a crash) - this is expected for some view types
             return nil
@@ -324,7 +338,10 @@ extension View {
     /// Throws when ViewInspector cannot inspect the view
     @MainActor
     public func inspectView() throws -> Inspectable {
-        return try self.inspect() as Inspectable
+        let inspected = try self.inspect()
+        // InspectableView conforms to Inspectable via extension, so this cast is safe
+        // Use helper function to ensure proper type erasure
+        return _toInspectable(inspected)
     }
 }
 
