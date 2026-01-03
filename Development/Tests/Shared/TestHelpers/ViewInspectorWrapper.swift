@@ -44,9 +44,16 @@ public protocol Inspectable {
     func sixLayerContains(_ element: Inspectable) -> Bool
 }
 
-// Make InspectableView conform to our protocol
-// This extension applies to all InspectableView types from ViewInspector
-extension InspectableView: Inspectable {
+// Simple extension to add convenience methods directly to ViewInspector's InspectableView
+extension ViewInspector.InspectableView {
+    func sixLayerFindAll<T>(_ type: T.Type) -> [ViewInspector.InspectableView] {
+        return (try? self.findAll(type)) ?? []
+    }
+
+    func sixLayerString() throws -> String {
+        return try self.string()
+    }
+}
     public func sixLayerButton() throws -> Inspectable {
         // Use findAll(where:) to find buttons - Button types vary by label
         // Try to find any button by checking if we can access button-specific methods
