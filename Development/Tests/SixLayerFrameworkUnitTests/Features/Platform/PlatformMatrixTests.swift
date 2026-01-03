@@ -169,19 +169,16 @@ open class PlatformMatrixTests: BaseTestClass {
     // MARK: - Screen Size and Device Type Matrix
     
     @Test @MainActor func testScreenSizeCapabilityMatrix() {
-        // Test with each platform to verify platform-correct values
-        // Verify platform-appropriate minTouchTarget value for current platform
+        // Test screen size capabilities for current platform
         let currentPlatform = SixLayerPlatform.current
         let expectedMinTouchTarget: CGFloat = (currentPlatform == .iOS || currentPlatform == .watchOS) ? 44.0 : 0.0
-        
-        for platform in SixLayerPlatform.allCases {
-            let config = getCardExpansionPlatformConfig()
-            
-            // Verify platform-appropriate minTouchTarget value for current platform
-            #expect(config.minTouchTarget == expectedMinTouchTarget, 
-                   "Current platform \(currentPlatform) should have platform-appropriate minTouchTarget (\(expectedMinTouchTarget))")
-        }
-        
+
+        let config = getCardExpansionPlatformConfig()
+
+        // Verify platform-appropriate minTouchTarget value for current platform
+        #expect(config.minTouchTarget == expectedMinTouchTarget,
+               "Current platform \(currentPlatform) should have platform-appropriate minTouchTarget (\(expectedMinTouchTarget))")
+
         // Clean up
         RuntimeCapabilityDetection.clearAllCapabilityOverrides()
     }
