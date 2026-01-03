@@ -48,6 +48,7 @@ open class BaseTestClass {
     
     /// Run code with task-local config isolation
     /// Ensures each test runs with its own isolated configuration
+    @MainActor
     public func runWithTaskLocalConfig<T>(_ body: () throws -> T) rethrows -> T {
         guard let config = testConfig else {
             // If testConfig is nil, initialize it
@@ -66,6 +67,7 @@ open class BaseTestClass {
     
     /// Run async code with task-local config isolation
     /// Ensures each test runs with its own isolated configuration
+    @MainActor
     public func runWithTaskLocalConfig<T>(_ body: () async throws -> T) async rethrows -> T {
         guard let config = testConfig else {
             // If testConfig is nil, initialize it

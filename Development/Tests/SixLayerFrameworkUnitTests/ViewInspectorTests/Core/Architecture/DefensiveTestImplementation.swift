@@ -30,7 +30,7 @@ struct DefensiveTestImplementation {
         
         let view = TestPatterns.createSimpleCardComponent(item: item)
         
-        verifyViewGeneration(view, testName: testName)
+        TestPatterns.verifyViewGeneration(view, testName: testName)
     }
 }
 

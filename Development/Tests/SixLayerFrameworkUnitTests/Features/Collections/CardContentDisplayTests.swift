@@ -40,7 +40,7 @@ open class CardContentDisplayTests: BaseTestClass {
     
     /// Creates specific test items for CardContentDisplayTests
     @MainActor
-    public func createCardTestItems() -> [TestItem] {
+    func createCardTestItems() -> [TestItem] {
         return [
             TestItem(title: "Test Item 1", subtitle: "Subtitle 1", description: "Description 1", icon: "star.fill", color: Color.blue),
             TestItem(title: "Test Item 2", subtitle: "Subtitle 2", description: "Description 2", icon: "heart.fill", color: Color.red),
