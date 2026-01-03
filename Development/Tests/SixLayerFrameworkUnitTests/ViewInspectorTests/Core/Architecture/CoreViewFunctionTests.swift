@@ -182,13 +182,11 @@ open class CoreViewFunctionTests: BaseTestClass {
     @MainActor func testSimpleCardComponentWithSpecificPlatform(
         platform: SixLayerPlatform
     ) async {
-        // GIVEN: Specific capability and accessibility combination
+        // GIVEN: Platform-specific configuration
         let item = createTestItem()
-        
-        // Set capabilities based on capability type using RuntimeCapabilityDetection
-        DefensiveTestPatterns.setCapabilitiesForType(capabilityType)
-        
-        let testName = "SimpleCard \(capabilityType.displayName) + \(accessibilityType.displayName)"
+
+        // Set capabilities for the platform
+        TestSetupUtilities.setCapabilitiesForPlatform(platform)
         
         // WHEN: Generating simple card component
         let view = TestPatterns.createSimpleCardComponent(item: item)
