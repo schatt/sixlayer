@@ -163,19 +163,19 @@ open class PlatformPresentFormDataL1ComprehensiveTests: BaseTestClass {
         let fieldsWithOptions = [
             TestSetupUtilities.createTestField(
                 label: "Select Field",
-                value: "option1", contentType: .select
+                value: "option1", contentType: DynamicContentType.select
             ),
             TestSetupUtilities.createTestField(
                 label: "Multiselect Field",
-                value: "option1,option2", contentType: .multiselect
+                value: "option1,option2", contentType: DynamicContentType.multiselect
             ),
             TestSetupUtilities.createTestField(
                 label: "Radio Field",
-                value: "option1", contentType: .radio
+                value: "option1", contentType: DynamicContentType.radio
             ),
             TestSetupUtilities.createTestField(
                 label: "Checkbox Field",
-                value: "true", contentType: .checkbox
+                value: "true", contentType: DynamicContentType.checkbox
             )
         ]
 

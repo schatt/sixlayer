@@ -17,7 +17,7 @@ extension View {
     /// Safe, non-throwing inspection of a view
     /// Returns nil if inspection fails (instead of throwing)
     @MainActor
-    public func tryInspect() -> InspectedView? {
+    public func tryInspect() -> InspectableView<ViewType.View<Self>>? {
         do {
             return try inspect()
         } catch {
@@ -27,14 +27,14 @@ extension View {
     
     /// Throwing inspection of a view
     @MainActor
-    public func inspectView() throws -> InspectedView {
+    public func inspectView() throws -> InspectableView<ViewType.View<Self>> {
         return try inspect()
     }
 }
 
-// MARK: - InspectedView Extensions
+// MARK: - InspectableView Extensions
 
-extension InspectedView {
+extension InspectableView {
     /// Get accessibility identifier from a view using ViewInspector
     /// Returns empty string if not found or if inspection fails
     public func sixLayerAccessibilityIdentifier() throws -> String {
@@ -45,7 +45,7 @@ extension InspectedView {
     
     /// Try to find a view of a specific type
     /// Returns nil if not found (instead of throwing)
-    public func sixLayerTryFind<T>(_ type: T.Type) -> T? where T: InspectedView {
+    public func sixLayerTryFind<T>(_ type: T.Type) -> T? where T: InspectableView {
         do {
             return try find(type)
         } catch {
@@ -55,7 +55,7 @@ extension InspectedView {
     
     /// Find all views of a specific type (non-throwing)
     /// Returns empty array if none found or if inspection fails
-    public func sixLayerFindAll<T>(_ type: T.Type) -> [T] where T: InspectedView {
+    public func sixLayerFindAll<T>(_ type: T.Type) -> [T] where T: InspectableView {
         do {
             return try findAll(type)
         } catch {
@@ -70,7 +70,7 @@ extension InspectedView {
 @MainActor
 public func withInspectedView<V: View, T>(
     _ view: V,
-    body: (InspectedView) -> T
+    body: (InspectableView<ViewType.View<V>>) -> T
 ) -> T? {
     guard let inspected = view.tryInspect() else {
         return nil
@@ -82,7 +82,7 @@ public func withInspectedView<V: View, T>(
 @MainActor
 public func withInspectedViewThrowing<V: View, T>(
     _ view: V,
-    body: (InspectedView) throws -> T
+    body: (InspectableView<ViewType.View<V>>) throws -> T
 ) throws -> T {
     let inspected = try view.inspectView()
     return try body(inspected)

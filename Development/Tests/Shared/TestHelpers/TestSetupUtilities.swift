@@ -149,4 +149,27 @@ public enum TestSetupUtilities {
             return .richtext
         }
     }
+    
+    // MARK: - Test Field Creation
+    
+    /// Create a test form field with the specified parameters
+    public static func createTestField(
+        label: String,
+        placeholder: String? = nil,
+        value: String? = nil,
+        isRequired: Bool = false,
+        contentType: DynamicContentType,
+        options: [String]? = nil
+    ) -> DynamicFormField {
+        let fieldId = label.lowercased().replacingOccurrences(of: " ", with: "_")
+        return DynamicFormField(
+            id: fieldId,
+            contentType: contentType,
+            label: label,
+            placeholder: placeholder,
+            isRequired: isRequired,
+            options: options,
+            defaultValue: value
+        )
+    }
 }
