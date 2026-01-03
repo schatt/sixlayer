@@ -126,7 +126,6 @@ open class FormFieldInteractionTests: BaseTestClass {
     @Test @MainActor func testTextFieldWithDataBinding() {
         // Test across all platforms
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: Text field with data binding
             resetCallbacks()

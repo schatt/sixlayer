@@ -99,7 +99,6 @@ final class CrossComponentIntegrationTests: BaseTestClass {
     /// METHODOLOGY: Create OCR-enabled form, verify OCR field configuration
     @Test func testFormWithOCRInputIntegration() async {
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: Form with OCR-enabled fields
             let ocrFields = [
@@ -128,7 +127,6 @@ final class CrossComponentIntegrationTests: BaseTestClass {
     /// METHODOLOGY: Simulate OCR result, validate against form rules
     @Test func testOCRResultFormValidationIntegration() async {
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: OCR result and form validation rules
             let ocrResult = OCRResult(
@@ -175,7 +173,6 @@ final class CrossComponentIntegrationTests: BaseTestClass {
         initializeTestConfig()
         
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: Form with various field types
             let fields = [
@@ -219,7 +216,6 @@ final class CrossComponentIntegrationTests: BaseTestClass {
     /// METHODOLOGY: Create form with errors, verify error accessibility
     @Test func testFormValidationErrorAccessibility() async {
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: Form field with validation error
             let field = DynamicFormField(
@@ -256,7 +252,6 @@ final class CrossComponentIntegrationTests: BaseTestClass {
         initializeTestConfig()
         
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: Collection items
             let items = createTestCollectionItems(count: 5)
@@ -292,7 +287,6 @@ final class CrossComponentIntegrationTests: BaseTestClass {
     /// METHODOLOGY: Create navigation structure, verify accessibility
     @Test func testNavigationAccessibilityIntegration() async {
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: Navigation structure
             struct NavigationItem {
@@ -346,7 +340,6 @@ final class CrossComponentIntegrationTests: BaseTestClass {
         initializeTestConfig()
         
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: Data for presentation
             let numericData = [10.0, 25.0, 15.0, 30.0, 20.0]
@@ -383,7 +376,6 @@ final class CrossComponentIntegrationTests: BaseTestClass {
         initializeTestConfig()
         
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: Multi-component scenario (Receipt scanning workflow)
             // Component 1: OCR for receipt scanning
@@ -427,7 +419,6 @@ final class CrossComponentIntegrationTests: BaseTestClass {
     /// METHODOLOGY: Create shared state scenario, verify consistency
     @Test func testComponentStateSharing() async {
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: Shared state between components
             struct SharedAppState {
@@ -475,7 +466,6 @@ final class CrossComponentIntegrationTests: BaseTestClass {
         initializeTestConfig()
         
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: Multiple components that might conflict
             let formHints = PresentationHints(
@@ -512,7 +502,6 @@ final class CrossComponentIntegrationTests: BaseTestClass {
     /// METHODOLOGY: Combine components, verify accessibility not degraded
     @Test func testCrossComponentAccessibilityPreservation() async {
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: Multiple components with accessibility requirements
             struct ComponentAccessibilityCheck {

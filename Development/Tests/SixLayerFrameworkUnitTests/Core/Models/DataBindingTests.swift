@@ -49,7 +49,6 @@ open class DataBindingTests: BaseTestClass {
         initializeTestConfig()
         // Test across all platforms
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             let testModel = TestModel(name: "John", age: 30, isActive: true)
             let binder = DataBinder(testModel)
@@ -86,7 +85,6 @@ open class DataBindingTests: BaseTestClass {
         initializeTestConfig()
         // Test across all platforms
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             let testModel = TestModel(name: "John", age: 30, isActive: true)
             let binder = DataBinder(testModel)

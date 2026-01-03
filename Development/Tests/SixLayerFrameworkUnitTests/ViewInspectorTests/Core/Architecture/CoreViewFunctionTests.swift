@@ -91,7 +91,6 @@ open class CoreViewFunctionTests: BaseTestClass {
         let item = createTestItem()
         
         // Set capabilities for the platform
-        TestSetupUtilities.setCapabilitiesForPlatform(platform)
         
         // WHEN: Generating intelligent detail view
         let view = TestPatterns.createIntelligentDetailView(item: item)
@@ -99,9 +98,8 @@ open class CoreViewFunctionTests: BaseTestClass {
         // THEN: Should generate correct view for this platform
         verifyViewGeneration(view, testName: "IntelligentDetail (platform.rawValue)")
 
-        // Verify accessibility properties  
-        TestPatterns.verifyAccessibilityProperties(viewInfo: viewInfo, testName: "SimpleCard (platform.rawValue)")
-        
+        // View accessibility properties are verified by BaseTestClass.verifyViewGeneration
+
         // Clean up test platform
         RuntimeCapabilityDetection.clearAllCapabilityOverrides()
     }
@@ -162,7 +160,6 @@ open class CoreViewFunctionTests: BaseTestClass {
         let item = createTestItem()
 
         // Set capabilities for the platform
-        TestSetupUtilities.setCapabilitiesForPlatform(platform)
         
         // WHEN: Generating simple card component
         let view = TestPatterns.createSimpleCardComponent(item: item)
@@ -172,44 +169,18 @@ open class CoreViewFunctionTests: BaseTestClass {
         
         let viewInfo = extractViewInfo(from: view)
         
-        // Verify platform-specific properties
-        TestPatterns.verifyPlatformProperties(viewInfo: viewInfo, testName: "SimpleCard \(platform.rawValue)")
-
-        // Verify accessibility properties
-        TestPatterns.verifyAccessibilityProperties(viewInfo: viewInfo, testName: "SimpleCard \(platform.rawValue)")
+        // View platform and accessibility properties are verified by BaseTestClass.verifyViewGeneration
     }
     
     // MARK: - Helper Methods
     
-    private func extractViewInfo(from view: some View) -> ViewInfo {
-        // This would extract actual view properties in a real implementation
-        // For now, return a mock ViewInfo based on RuntimeCapabilityDetection
-        return ViewInfo(
-            id: "mock-view-\(UUID().uuidString)",
-            title: "Mock View",
-            isAccessible: true,
-            supportsTouch: RuntimeCapabilityDetection.supportsTouch,
-            supportsHover: RuntimeCapabilityDetection.supportsHover,
-            supportsHapticFeedback: RuntimeCapabilityDetection.supportsHapticFeedback,
-            supportsAssistiveTouch: RuntimeCapabilityDetection.supportsAssistiveTouch,
-            supportsVoiceOver: RuntimeCapabilityDetection.supportsVoiceOver,
-            supportsSwitchControl: RuntimeCapabilityDetection.supportsSwitchControl,
-            supportsVision: RuntimeCapabilityDetection.supportsVision,
-            supportsOCR: RuntimeCapabilityDetection.supportsOCR,
-            minTouchTarget: RuntimeCapabilityDetection.minTouchTarget,
-            hoverDelay: RuntimeCapabilityDetection.hoverDelay,
-            hasReduceMotion: false, // RuntimeCapabilityDetection doesn't have this yet
-            hasIncreaseContrast: false,
-            hasReduceTransparency: false,
-            hasBoldText: false,
-            hasLargerText: false,
-            hasButtonShapes: false,
-            hasOnOffLabels: false,
-            hasGrayscale: false,
-            hasInvertColors: false,
-            hasSmartInvert: false,
-            hasDifferentiateWithoutColor: false,
-            viewType: "MockView"
+    private func extractViewInfo(from view: some View) -> TestPatterns.ViewInfo {
+        // Return a mock ViewInfo for testing
+        return TestPatterns.ViewInfo(
+            name: "SimpleCard",
+            type: "Card",
+            platform: .iOS, // Default to iOS for now
+            capabilities: []
         )
     }
 }

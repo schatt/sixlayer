@@ -46,7 +46,6 @@ open class DynamicFormProgressIntegrationTests: BaseTestClass {
     @Test @MainActor func testProgressWithAllFieldTypes() {
         // Test across all platforms
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             let config = DynamicFormConfiguration(
                 id: "allFieldTypes",

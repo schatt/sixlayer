@@ -154,7 +154,6 @@ open class PlatformLogicTests: BaseTestClass {
     ])
     func testCapabilityConsistency(_ config: PlatformCapabilities, platform: SixLayerPlatform, deviceType: DeviceType) {
         // Set the test platform for this test case
-        setCapabilitiesForPlatform(platform)
         
         // Haptic feedback should only be available with touch
         if config.supportsHapticFeedback {

@@ -86,7 +86,6 @@ final class OCRAccessibilityWorkflowIntegrationTests: BaseTestClass {
         
         // Test across all platforms
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: OCR context configured for accessibility
             let context = createTestOCRContext(textTypes: [.price, .date, .general])
@@ -123,7 +122,6 @@ final class OCRAccessibilityWorkflowIntegrationTests: BaseTestClass {
         
         // Test across all platforms
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: OCR result with extracted text
             let ocrResult = createMockOCRResult(text: "$12.50 - Receipt Total", confidence: 0.95)
@@ -148,7 +146,6 @@ final class OCRAccessibilityWorkflowIntegrationTests: BaseTestClass {
         
         // Test across all platforms
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: OCR context with editing enabled (keyboard interaction)
             let context = createTestOCRContext()
@@ -180,7 +177,6 @@ final class OCRAccessibilityWorkflowIntegrationTests: BaseTestClass {
     @Test func testOCRErrorAccessibility() async {
         // Test across all platforms
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: Various OCR error types
             let errorTypes: [OCRError] = [
@@ -208,7 +204,6 @@ final class OCRAccessibilityWorkflowIntegrationTests: BaseTestClass {
         
         // Test across all platforms
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Step 1: Create OCR context with accessibility considerations
             let context = OCRContext(
@@ -252,7 +247,6 @@ final class OCRAccessibilityWorkflowIntegrationTests: BaseTestClass {
         
         // Test across all platforms
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: OCR view with compliance applied
             let context = createTestOCRContext()
@@ -281,7 +275,6 @@ final class OCRAccessibilityWorkflowIntegrationTests: BaseTestClass {
         
         // Test across all platforms
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: Context configured for structured data extraction
             let context = OCRContext(
@@ -324,7 +317,6 @@ final class OCRAccessibilityWorkflowIntegrationTests: BaseTestClass {
         ]
         
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             for (confidence, description) in confidenceLevels {
                 // Given: OCR result with specific confidence
@@ -349,7 +341,6 @@ final class OCRAccessibilityWorkflowIntegrationTests: BaseTestClass {
     /// METHODOLOGY: Create OCR results with bounding boxes, verify they support navigation
     @Test func testOCRBoundingBoxAccessibilityNavigation() async {
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: OCR result with multiple bounding boxes
             let boundingBoxes = [

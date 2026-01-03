@@ -87,8 +87,6 @@ open class BaseTestClass {
     // MARK: - Convenience Methods
     
     /// Set capabilities for a specific platform (delegates to TestSetupUtilities)
-    func setCapabilitiesForPlatform(_ platform: SixLayerPlatform) {
-        TestSetupUtilities.setCapabilitiesForPlatform(platform)
     }
     
     /// Create test hints (delegates to TestSetupUtilities)

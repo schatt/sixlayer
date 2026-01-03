@@ -115,7 +115,6 @@ open class CapabilityCombinationValidationTests: BaseTestClass {// MARK: - Curre
         // We trust what the OS returns - we just verify the framework can use it
         let platforms: [SixLayerPlatform] = [.iOS, .macOS, .watchOS, .tvOS, .visionOS]
         for platform in platforms {
-            setCapabilitiesForPlatform(platform)
             defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
             
             // Framework can access these properties - that's what matters

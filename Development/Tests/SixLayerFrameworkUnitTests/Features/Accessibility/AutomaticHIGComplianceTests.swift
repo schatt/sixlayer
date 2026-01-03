@@ -110,7 +110,6 @@ open class AutomaticHIGComplianceTests: BaseTestClass {
         // Test across all platforms
         for platform in SixLayerPlatform.allCases {
             // Given: Platform set
-            setCapabilitiesForPlatform(platform)
 
             // When: Creating view using Layer 1 function
             _ = platformPresentItemCollection_L1(

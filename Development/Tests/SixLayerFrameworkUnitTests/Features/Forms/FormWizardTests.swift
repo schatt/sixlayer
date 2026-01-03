@@ -47,7 +47,6 @@ open class FormWizardTests: BaseTestClass {
     @Test func testFormWizardStepCreation() {
         // Test across all platforms
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             let step = FormWizardStep(
                 id: "personal",

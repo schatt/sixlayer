@@ -75,7 +75,6 @@ final class ErrorPropagationTests: BaseTestClass {
     /// METHODOLOGY: Create various OCR errors, verify propagation and messages
     @Test func testOCRErrorPropagation() async {
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: All OCR error types
             let ocrErrors: [OCRError] = [
@@ -108,7 +107,6 @@ final class ErrorPropagationTests: BaseTestClass {
     /// METHODOLOGY: Test various invalid image conditions
     @Test func testOCRInvalidImageErrorFlow() async {
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: Invalid image error
             let error = OCRError.invalidImage
@@ -133,7 +131,6 @@ final class ErrorPropagationTests: BaseTestClass {
     /// METHODOLOGY: Test no text found error messaging
     @Test func testOCRNoTextFoundErrorFlow() async {
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: No text found error
             let error = OCRError.noTextFound
@@ -160,7 +157,6 @@ final class ErrorPropagationTests: BaseTestClass {
     /// METHODOLOGY: Create invalid configurations, verify error handling
     @Test func testAccessibilityConfigurationErrorFlow() async {
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: Various accessibility configurations
             let validConfig = AccessibilityConfiguration(
@@ -185,7 +181,6 @@ final class ErrorPropagationTests: BaseTestClass {
     /// METHODOLOGY: Create validation results with issues, verify handling
     @Test func testAccessibilityValidationErrorFlow() async {
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: Validation result with issues
             let validResult = AccessibilityValidationResult(
@@ -220,7 +215,6 @@ final class ErrorPropagationTests: BaseTestClass {
         var errorResults: [SixLayerPlatform: [String: String]] = [:]
         
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Collect error descriptions for this platform
             var descriptions: [String: String] = [:]
@@ -261,7 +255,6 @@ final class ErrorPropagationTests: BaseTestClass {
     /// METHODOLOGY: Trace error flow through layer hierarchy
     @Test func testLayerErrorPropagation() async {
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: Error at different layers
             // Layer 1 (Semantic): User intent errors
@@ -285,7 +278,6 @@ final class ErrorPropagationTests: BaseTestClass {
     /// METHODOLOGY: Create error states, test recovery paths
     @Test func testErrorRecoveryMechanisms() async {
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: Various error states
             var hasError = true
@@ -320,7 +312,6 @@ final class ErrorPropagationTests: BaseTestClass {
     /// METHODOLOGY: Verify error messages are clear and actionable
     @Test func testErrorMessageAccessibility() async {
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: OCR errors
             let errors: [OCRError] = [
@@ -360,7 +351,6 @@ final class ErrorPropagationTests: BaseTestClass {
     /// METHODOLOGY: Create issues at different severity levels, verify categorization
     @Test func testAccessibilityIssueSeverityLevels() async {
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: Issues at different severity levels
             let issues = [
@@ -418,7 +408,6 @@ final class ErrorPropagationTests: BaseTestClass {
     /// METHODOLOGY: Create validation errors, verify propagation to UI
     @Test func testFormValidationErrorPropagation() async {
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: Form with validation errors
             struct FormError {
@@ -461,7 +450,6 @@ final class ErrorPropagationTests: BaseTestClass {
     /// METHODOLOGY: Create error scenarios, verify containment
     @Test func testErrorBoundaryContainment() async {
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: Multiple potential error sources
             var errors: [String] = []
@@ -496,7 +484,6 @@ final class ErrorPropagationTests: BaseTestClass {
     /// METHODOLOGY: Create error scenarios, verify fallback behavior
     @Test func testGracefulDegradationOnError() async {
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: Feature that might not be available
             let isFeatureAvailable = false

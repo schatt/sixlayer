@@ -175,7 +175,6 @@ open class PlatformMatrixTests: BaseTestClass {
         let expectedMinTouchTarget: CGFloat = (currentPlatform == .iOS || currentPlatform == .watchOS) ? 44.0 : 0.0
         
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             let config = getCardExpansionPlatformConfig()
             
             // Verify platform-appropriate minTouchTarget value for current platform

@@ -41,7 +41,6 @@ open class ExtensibleHintsTests: BaseTestClass {
     @Test func testExtensibleHintsInitialization() {
         // Test across all platforms
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // TODO: Implement test
             

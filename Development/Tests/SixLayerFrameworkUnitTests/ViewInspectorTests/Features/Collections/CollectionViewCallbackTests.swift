@@ -15,11 +15,11 @@ open class CollectionViewCallbackTests: BaseTestClass {
     
     // MARK: - Test Data
     
-    private var sampleItems: [TestPatterns.TestItem] {
+    private var sampleItems: [TestPatterns.TestPatterns.TestItem] {
         [
-            TestPatterns.TestItem(id: "1", title: "Item 1"),
-            TestPatterns.TestItem(id: "2", title: "Item 2"),
-            TestPatterns.TestItem(id: "3", title: "Item 3")
+            TestPatterns.TestPatterns.TestItem(id: "1", title: "Item 1"),
+            TestPatterns.TestPatterns.TestItem(id: "2", title: "Item 2"),
+            TestPatterns.TestPatterns.TestItem(id: "3", title: "Item 3")
         ]
     }
     
@@ -45,9 +45,9 @@ open class CollectionViewCallbackTests: BaseTestClass {
     
     // MARK: - Callback Tracking
     
-    private var selectedItems: [TestPatterns.TestItem] = []
-    private var deletedItems: [TestPatterns.TestItem] = []
-    private var editedItems: [TestPatterns.TestItem] = []
+    private var selectedItems: [TestPatterns.TestPatterns.TestItem] = []
+    private var deletedItems: [TestPatterns.TestPatterns.TestItem] = []
+    private var editedItems: [TestPatterns.TestPatterns.TestItem] = []
     private var createdItems: Int = 0
     
     private func resetCallbacks() {
@@ -229,7 +229,7 @@ open class CollectionViewCallbackTests: BaseTestClass {
         // Given: Track if callbacks are invoked
         resetCallbacks()
         var callbackInvoked = false
-        var receivedItem: TestItem?
+        var receivedItem: TestPatterns.TestItem?
         
         let view = ListCollectionView(
             items: sampleItems,
@@ -246,7 +246,7 @@ open class CollectionViewCallbackTests: BaseTestClass {
         #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
         let inspectionResult = withInspectedView(view) { inspector in
             // Find the ListCardComponent instances
-            let listCardComponents = inspector.sixLayerFindAll(ListCardComponent<TestItem>.self)
+            let listCardComponents = inspector.sixLayerFindAll(ListCardComponent<TestPatterns.TestItem>.self)
 
             // Then: Verify the view structure
             #expect(listCardComponents.count == sampleItems.count, "Should have cards for each item")
@@ -323,7 +323,7 @@ open class CollectionViewCallbackTests: BaseTestClass {
         // Rule 6.2 & 7.4: Functional testing - Must verify callbacks ACTUALLY invoke
         
         var callbackInvoked = false
-        var receivedItem: TestItem?
+        var receivedItem: TestPatterns.TestItem?
         
         let view = ListCollectionView(
             items: sampleItems,
@@ -347,7 +347,7 @@ open class CollectionViewCallbackTests: BaseTestClass {
         // Rule 6.2 & 7.4: Functional testing
         
         var callbackInvoked = false
-        var receivedItem: TestItem?
+        var receivedItem: TestPatterns.TestItem?
         
         let view = ListCollectionView(
             items: sampleItems,
@@ -482,7 +482,7 @@ open class CollectionViewCallbackTests: BaseTestClass {
         
         // When: Creating view with empty collection
         let view = platformPresentItemCollection_L1(
-            items: [TestItem]() as [TestItem],
+            items: [TestPatterns.TestItem]() as [TestPatterns.TestItem],
             hints: basicHints,
             onCreateItem: { self.createdItems += 1 }
         )
@@ -498,7 +498,7 @@ open class CollectionViewCallbackTests: BaseTestClass {
         
         // When: Creating view with empty collection
         let view = platformPresentItemCollection_L1(
-            items: [TestItem]() as [TestItem],
+            items: [TestPatterns.TestItem]() as [TestPatterns.TestItem],
             hints: basicHints
         )
         
@@ -586,7 +586,7 @@ open class CollectionViewCallbackTests: BaseTestClass {
         // Given: Collection with many items
         resetCallbacks()
         let largeCollection = (1...100).map { i in
-            TestPatterns.TestItem(id: "\(i)", title: "Item \(i)")
+            TestPatterns.TestPatterns.TestItem(id: "\(i)", title: "Item \(i)")
         }
         
         // When: Creating view with large collection

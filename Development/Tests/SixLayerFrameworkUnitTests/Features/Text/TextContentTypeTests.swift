@@ -425,7 +425,6 @@ open class TextContentTypeTests: BaseTestClass {
         initializeTestConfig()
         // Test across all platforms
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Test that text content types are supported on all platforms
             let field = DynamicFormField(

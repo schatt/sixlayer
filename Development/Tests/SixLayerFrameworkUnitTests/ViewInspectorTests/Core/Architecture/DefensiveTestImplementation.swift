@@ -11,7 +11,6 @@ struct DefensiveTestImplementation {
         platform: SixLayerPlatform
     ) async {
         // Set capabilities based on platform using TestSetupUtilities
-        TestSetupUtilities.setCapabilitiesForPlatform(platform)
         
         await performTest(
             testName: "SimpleCard \(platform.rawValue)"

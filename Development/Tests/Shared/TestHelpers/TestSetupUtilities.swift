@@ -53,7 +53,6 @@ public enum TestSetupUtilities {
     
     /// Set capabilities for a specific platform for testing
     /// This configures RuntimeCapabilityDetection test overrides based on platform
-    public static func setCapabilitiesForPlatform(_ platform: SixLayerPlatform) {
         // Clear all existing overrides first
         RuntimeCapabilityDetection.clearAllCapabilityOverrides()
         

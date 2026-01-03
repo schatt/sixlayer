@@ -18,30 +18,30 @@ import ViewInspector
 /// This allows the wrapper to return a consistent type regardless of platform
 /// Uses prefixed method names to avoid naming conflicts with ViewInspector and prevent infinite recursion
 public protocol Inspectable {
-    public func sixLayerButton() throws -> Inspectable
-    public func sixLayerText() throws -> Inspectable
-    public func sixLayerText(_ index: Int) throws -> Inspectable
-    public func sixLayerVStack() throws -> Inspectable
-    public func sixLayerVStack(_ index: Int) throws -> Inspectable
-    public func sixLayerHStack() throws -> Inspectable
-    public func sixLayerHStack(_ index: Int) throws -> Inspectable
-    public func sixLayerZStack() throws -> Inspectable
-    public func sixLayerTextField() throws -> Inspectable
-    public func sixLayerTextField(_ index: Int) throws -> Inspectable
-    public func sixLayerLink() throws -> Inspectable
-    public func sixLayerFindAllLinks() -> [Inspectable]
-    public func sixLayerAccessibilityIdentifier() throws -> String
-    public func sixLayerFindAll<T>(_ type: T.Type) -> [Inspectable]
-    public func sixLayerFind<T>(_ type: T.Type) throws -> Inspectable
-    public func sixLayerTryFind<T>(_ type: T.Type) -> Inspectable?
-    public func sixLayerAnyView() throws -> Inspectable
-    public func sixLayerString() throws -> String
-    public func sixLayerCallOnTapGesture() throws
-    public func sixLayerLabelView() throws -> Inspectable
-    public func sixLayerTap() throws
-    public var sixLayerCount: Int { get }
-    public var sixLayerIsEmpty: Bool { get }
-    public func sixLayerContains(_ element: Inspectable) -> Bool
+    func sixLayerButton() throws -> Inspectable
+    func sixLayerText() throws -> Inspectable
+    func sixLayerText(_ index: Int) throws -> Inspectable
+    func sixLayerVStack() throws -> Inspectable
+    func sixLayerVStack(_ index: Int) throws -> Inspectable
+    func sixLayerHStack() throws -> Inspectable
+    func sixLayerHStack(_ index: Int) throws -> Inspectable
+    func sixLayerZStack() throws -> Inspectable
+    func sixLayerTextField() throws -> Inspectable
+    func sixLayerTextField(_ index: Int) throws -> Inspectable
+    func sixLayerLink() throws -> Inspectable
+    func sixLayerFindAllLinks() -> [Inspectable]
+    func sixLayerAccessibilityIdentifier() throws -> String
+    func sixLayerFindAll<T>(_ type: T.Type) -> [Inspectable]
+    func sixLayerFind<T>(_ type: T.Type) throws -> Inspectable
+    func sixLayerTryFind<T>(_ type: T.Type) -> Inspectable?
+    func sixLayerAnyView() throws -> Inspectable
+    func sixLayerString() throws -> String
+    func sixLayerCallOnTapGesture() throws
+    func sixLayerLabelView() throws -> Inspectable
+    func sixLayerTap() throws
+    var sixLayerCount: Int { get }
+    var sixLayerIsEmpty: Bool { get }
+    func sixLayerContains(_ element: Inspectable) -> Bool
 }
 
 // Make InspectableView conform to our protocol

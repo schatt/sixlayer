@@ -9371,7 +9371,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #expect(!RuntimeCapabilityDetection.supportsAssistiveTouch, "AssistiveTouch should be disabled")
 
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             let config = AssistiveTouchConfig(enableIntegration: true)
             let manager = AssistiveTouchManager(config: config)
             #expect(manager.supportsIntegration(), "Integration should be supported on \(platform)")
@@ -9392,7 +9391,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #expect(menuResult.menuElement != nil)
 
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             let platformResult = manager.manageMenu(for: .toggle)
             #expect(platformResult.success, "Menu should work on \(platform)")
         }
@@ -13238,7 +13236,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     #expect(RuntimeCapabilityDetection.supportsHover, "Should support hover (visionOS-like)")
     
     // Reset to original platform
-    setCapabilitiesForPlatform(originalPlatform)
 }
 
     @Test @MainActor func testAppleHIGComplianceBusinessPurpose() {
@@ -13837,7 +13834,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     // Test across all platforms
     for platform in SixLayerPlatform.allCases {
         // Given: Platform set
-        setCapabilitiesForPlatform(platform)
 
     // When: Creating view using Layer 1 function
         let view = platformPresentItemCollection_L1(
@@ -15140,7 +15136,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         let hoverPlatforms: [SixLayerPlatform] = [.macOS, .visionOS]
         
         for platform in hoverPlatforms {
-            setCapabilitiesForPlatform(platform)
             let supportsHover = RuntimeCapabilityDetection.supportsHover
             
             if supportsHover {
@@ -15858,7 +15853,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     // When: Check accessibility features for each platform
     for platform in simulatedPlatforms {
         // Set the test platform before getting the config
-        setCapabilitiesForPlatform(platform)
         defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
         
         // Get platform capabilities using the framework's capability detection
@@ -16115,7 +16109,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 
     // Test across all platforms
     for platform in SixLayerPlatform.allCases {
-        setCapabilitiesForPlatform(platform)
 
     let view = platformPresentItemCollection_L1(
             items: testItems,
@@ -16968,7 +16961,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         
         for platform in platforms {
             // Set test platform to get correct runtime detection values
-            setCapabilitiesForPlatform(platform)
             
             // Get the expected minimum touch target from runtime detection
             let expectedMinTouchTarget = RuntimeCapabilityDetection.minTouchTarget
@@ -17013,7 +17005,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         let touchPlatforms: [SixLayerPlatform] = [.iOS, .watchOS]
         
         for platform in touchPlatforms {
-            setCapabilitiesForPlatform(platform)
             let expectedMinTouchTarget = RuntimeCapabilityDetection.minTouchTarget
             
             // RED PHASE: This will fail until touch target sizing is implemented
@@ -17050,7 +17041,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         let touchPlatforms: [SixLayerPlatform] = [.iOS, .watchOS]
         
         for platform in touchPlatforms {
-            setCapabilitiesForPlatform(platform)
             let expectedMinTouchTarget = RuntimeCapabilityDetection.minTouchTarget
             
             // RED PHASE: This will fail until touch target sizing is implemented
@@ -17086,7 +17076,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         let nonTouchPlatforms: [SixLayerPlatform] = [.macOS, .tvOS, .visionOS]
         
         for platform in nonTouchPlatforms {
-            setCapabilitiesForPlatform(platform)
             let expectedMinTouchTarget = RuntimeCapabilityDetection.minTouchTarget
             
             // Verify runtime detection says no touch target required

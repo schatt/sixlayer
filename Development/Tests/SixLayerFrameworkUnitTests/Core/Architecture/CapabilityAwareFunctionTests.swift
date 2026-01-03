@@ -65,7 +65,6 @@ open class CapabilityAwareFunctionTests: BaseTestClass {
         
         // Test across all platforms
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Test the capabilities directly - only check touch-dependent capabilities if touch is enabled
             if platform == .iOS || platform == .watchOS {
@@ -109,14 +108,11 @@ open class CapabilityAwareFunctionTests: BaseTestClass {
         let expectedMinTouchTarget: CGFloat = (currentPlatform == .iOS || currentPlatform == .watchOS) ? 44.0 : 0.0
         
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             let config = getCardExpansionPlatformConfig()
             
             // Test that touch-related functions handle disabled state gracefully
-            // Note: We disabled touch, but setCapabilitiesForPlatform may re-enable it for touch platforms
             // So we check if the platform is a touch platform - if so, capabilities will be enabled
             if platform == .iOS || platform == .watchOS {
-                // Touch platforms will have touch enabled by setCapabilitiesForPlatform
                 // So we skip the disabled checks for these platforms
             } else {
                 #expect(!config.supportsTouch, "Touch should not be supported when disabled on \(platform)")
@@ -215,11 +211,9 @@ open class CapabilityAwareFunctionTests: BaseTestClass {
         let expectedHoverDelay: TimeInterval = (currentPlatform == .macOS) ? 0.5 : 0.0
         
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             let config = getCardExpansionPlatformConfig()
             
             // Test that hover-related functions work when hover is supported
-            // Note: setCapabilitiesForPlatform sets hover for macOS/visionOS, so check accordingly
             if platform == .macOS || platform == .visionOS {
                 #expect(config.supportsHover, "Hover should be supported when enabled on \(platform)")
             }
@@ -243,11 +237,9 @@ open class CapabilityAwareFunctionTests: BaseTestClass {
         
         // Test across all platforms
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             let config = getCardExpansionPlatformConfig()
             
             // Test that hover-related functions handle disabled state gracefully
-            // Note: setCapabilitiesForPlatform may enable hover for macOS/visionOS, so we check accordingly
             if platform != .macOS && platform != .visionOS {
                 #expect(!config.supportsHover, "Hover should not be supported when disabled on \(platform)")
             }
@@ -439,7 +431,6 @@ open class CapabilityAwareFunctionTests: BaseTestClass {
     @Test @MainActor func testCapabilityStateConsistency() {
         // Test capability state consistency across all platforms
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             let config = getCardExpansionPlatformConfig()
             

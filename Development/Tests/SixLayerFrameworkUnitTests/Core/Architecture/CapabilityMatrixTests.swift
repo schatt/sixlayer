@@ -157,7 +157,6 @@ open class CapabilityMatrixTests: BaseTestClass {
         
         for platform in allPlatforms {
             // Set the test platform to simulate different OS environments
-            setCapabilitiesForPlatform(platform)
             defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
             
             // Test behaviors for this platform

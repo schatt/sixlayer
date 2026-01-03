@@ -51,7 +51,6 @@ open class DynamicFormTests: BaseTestClass {
     @Test func testDynamicFormFieldCreation() {
         // Test across all platforms
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             let field = DynamicFormField(
                 id: "testField",
@@ -356,7 +355,6 @@ open class DynamicFormTests: BaseTestClass {
     @Test @MainActor func testDynamicFormStateCreation() {
         // Test across all platforms
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             let config = DynamicFormConfiguration(
                 id: "testForm",

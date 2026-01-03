@@ -46,7 +46,6 @@ final class CrossPlatformWorkflowParityTests: BaseTestClass {
         var platformResults: [SixLayerPlatform: Bool] = [:]
         
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: Same form configuration
             let fields = [
@@ -98,7 +97,6 @@ final class CrossPlatformWorkflowParityTests: BaseTestClass {
         var platformResults: [SixLayerPlatform: Bool] = [:]
         
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: Same OCR context
             let context = OCRContext(
@@ -134,7 +132,6 @@ final class CrossPlatformWorkflowParityTests: BaseTestClass {
         var platformResults: [SixLayerPlatform: ComplianceLevel] = [:]
         
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: Same view configuration
             let testView = Text("Test View").padding()
@@ -170,7 +167,6 @@ final class CrossPlatformWorkflowParityTests: BaseTestClass {
         var platformResults: [SixLayerPlatform: Bool] = [:]
         
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: Same multi-component configuration
             let formFields = [
@@ -208,7 +204,6 @@ final class CrossPlatformWorkflowParityTests: BaseTestClass {
         var platformResults: [SixLayerPlatform: Bool] = [:]
         
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: OCR error types
             let ocrErrors: [OCRError] = [
@@ -249,7 +244,6 @@ final class CrossPlatformWorkflowParityTests: BaseTestClass {
         var accessibilityResults: [SixLayerPlatform: ComplianceLevel] = [:]
         
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Form workflow
             let formFields = [

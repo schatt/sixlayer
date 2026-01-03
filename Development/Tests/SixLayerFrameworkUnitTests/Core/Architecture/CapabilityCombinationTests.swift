@@ -200,7 +200,6 @@ open class CapabilityCombinationTests: BaseTestClass {// MARK: - Capability Comb
         supportsOCR: Bool
     ) -> SixLayerFramework.CardExpansionPlatformConfig {
         // Use RuntimeCapabilityDetection's built-in test overrides instead of manual mocks
-        setCapabilitiesForPlatform(platform)
         RuntimeCapabilityDetection.setTestTouchSupport(supportsTouch)
         RuntimeCapabilityDetection.setTestHover(supportsHover)
         RuntimeCapabilityDetection.setTestHapticFeedback(supportsHaptic)
@@ -236,7 +235,6 @@ open class CapabilityCombinationTests: BaseTestClass {// MARK: - Capability Comb
         
         // Test across all platforms
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             // Only check touch-dependent capabilities for touch platforms
             if platform == .iOS || platform == .watchOS {
                 #expect(RuntimeCapabilityDetection.supportsTouch, "Touch should be supported when enabled on \(platform)")
@@ -309,7 +307,6 @@ open class CapabilityCombinationTests: BaseTestClass {// MARK: - Capability Comb
         
         // Test across all platforms
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             RuntimeCapabilityDetection.setTestTouchSupport(true)
             RuntimeCapabilityDetection.setTestHover(true)
             RuntimeCapabilityDetection.setTestHapticFeedback(true)
@@ -425,7 +422,6 @@ open class CapabilityCombinationTests: BaseTestClass {// MARK: - Capability Comb
         
         // Test across all platforms
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             RuntimeCapabilityDetection.setTestTouchSupport(true)
             RuntimeCapabilityDetection.setTestHapticFeedback(true)
             RuntimeCapabilityDetection.setTestAssistiveTouch(true)
@@ -605,7 +601,6 @@ open class CapabilityCombinationTests: BaseTestClass {// MARK: - Capability Comb
             return
         }
         
-        setCapabilitiesForPlatform(testPlatform)
         
         // Set up capabilities based on the combination
         for (capability, value) in combination.capabilities {
@@ -668,7 +663,6 @@ open class CapabilityCombinationTests: BaseTestClass {// MARK: - Capability Comb
         let allPlatforms = SixLayerPlatform.allCases
         let nonMatchingPlatform = allPlatforms.first { !combination.expectedPlatforms.contains($0) } ?? .iOS
         
-        setCapabilitiesForPlatform(nonMatchingPlatform)
         
         // Set up capabilities that don't match the combination
         // For non-matching platforms, we want at least one capability to differ

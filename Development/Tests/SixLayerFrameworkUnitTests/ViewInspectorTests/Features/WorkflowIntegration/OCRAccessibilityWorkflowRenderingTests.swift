@@ -66,7 +66,6 @@ final class OCRAccessibilityWorkflowRenderingTests: BaseTestClass {
         initializeTestConfig()
         
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: OCR context
             let context = createTestOCRContext(textTypes: [.price, .date, .general])
@@ -94,7 +93,6 @@ final class OCRAccessibilityWorkflowRenderingTests: BaseTestClass {
         initializeTestConfig()
         
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: OCR context with accessibility considerations
             let context = createTestOCRContext(textTypes: [.price, .date, .general])
@@ -122,7 +120,6 @@ final class OCRAccessibilityWorkflowRenderingTests: BaseTestClass {
         initializeTestConfig()
         
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: OCR context
             let context = createTestOCRContext(textTypes: [.price, .date, .general])
@@ -152,7 +149,6 @@ final class OCRAccessibilityWorkflowRenderingTests: BaseTestClass {
         var renderingResults: [SixLayerPlatform: Bool] = [:]
         
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: Same OCR configuration
             let context = createTestOCRContext(textTypes: [.price, .date, .general])
@@ -184,7 +180,6 @@ final class OCRAccessibilityWorkflowRenderingTests: BaseTestClass {
         initializeTestConfig()
         
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: OCR context configured for accessibility
             let context = createTestOCRContext(textTypes: [.price, .date, .general])
@@ -210,7 +205,6 @@ final class OCRAccessibilityWorkflowRenderingTests: BaseTestClass {
         initializeTestConfig()
         
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: OCR context
             let context = createTestOCRContext(textTypes: [.price, .date, .general])

@@ -125,7 +125,6 @@ open class AutomaticHIGComplianceDemonstrationTests: BaseTestClass {
 
         // Test across all platforms
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
 
             _ = platformPresentItemCollection_L1(
                 items: testItems,

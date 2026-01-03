@@ -50,7 +50,6 @@ final class CrossPlatformWorkflowParityRenderingTests: BaseTestClass {
         var renderingResults: [SixLayerPlatform: Bool] = [:]
         
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: Same form configuration
             let fields = [
@@ -96,7 +95,6 @@ final class CrossPlatformWorkflowParityRenderingTests: BaseTestClass {
         var renderingResults: [SixLayerPlatform: Bool] = [:]
         
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: Same OCR configuration
             let context = OCRContext(
@@ -137,7 +135,6 @@ final class CrossPlatformWorkflowParityRenderingTests: BaseTestClass {
         var renderingResults: [SixLayerPlatform: Bool] = [:]
         
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: Same view configuration
             let testView = Text("Test View").padding()
@@ -171,7 +168,6 @@ final class CrossPlatformWorkflowParityRenderingTests: BaseTestClass {
         var ocrResults: [SixLayerPlatform: Bool] = [:]
         
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: Same multi-component configuration
             let formFields = [
@@ -228,7 +224,6 @@ final class CrossPlatformWorkflowParityRenderingTests: BaseTestClass {
         var accessibilityResults: [SixLayerPlatform: Bool] = [:]
         
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Form workflow rendering
             let formFields = [

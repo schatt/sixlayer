@@ -80,7 +80,6 @@ final class FormProcessingWorkflowRenderingTests: BaseTestClass {
         initializeTestConfig()
         
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: Form fields
             let fields = createStandardTestForm()
@@ -111,7 +110,6 @@ final class FormProcessingWorkflowRenderingTests: BaseTestClass {
         initializeTestConfig()
         
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: Form with accessibility enabled
             let fields = createStandardTestForm()
@@ -145,7 +143,6 @@ final class FormProcessingWorkflowRenderingTests: BaseTestClass {
         initializeTestConfig()
         
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: Form fields
             let fields = createStandardTestForm()
@@ -178,7 +175,6 @@ final class FormProcessingWorkflowRenderingTests: BaseTestClass {
         var renderingResults: [SixLayerPlatform: Bool] = [:]
         
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: Same form configuration
             let fields = createStandardTestForm()
@@ -215,7 +211,6 @@ final class FormProcessingWorkflowRenderingTests: BaseTestClass {
         initializeTestConfig()
         
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: Form ready for submission (all fields valid)
             let fields = createStandardTestForm()
@@ -246,7 +241,6 @@ final class FormProcessingWorkflowRenderingTests: BaseTestClass {
         initializeTestConfig()
         
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: Form with fields that would have errors
             let fields = createStandardTestForm()

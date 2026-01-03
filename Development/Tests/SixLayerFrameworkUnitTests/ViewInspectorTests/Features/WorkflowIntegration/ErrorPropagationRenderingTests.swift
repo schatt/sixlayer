@@ -47,7 +47,6 @@ final class ErrorPropagationRenderingTests: BaseTestClass {
         initializeTestConfig()
         
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: OCR context (error would occur during processing)
             let context = OCRContext(
@@ -80,7 +79,6 @@ final class ErrorPropagationRenderingTests: BaseTestClass {
         initializeTestConfig()
         
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: OCR context
             let context = OCRContext(
@@ -111,7 +109,6 @@ final class ErrorPropagationRenderingTests: BaseTestClass {
         initializeTestConfig()
         
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: Form fields (validation errors would occur)
             let fields = [
@@ -150,7 +147,6 @@ final class ErrorPropagationRenderingTests: BaseTestClass {
         initializeTestConfig()
         
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: OCR context (recovery would be shown after error)
             let context = OCRContext(
@@ -183,7 +179,6 @@ final class ErrorPropagationRenderingTests: BaseTestClass {
         var renderingResults: [SixLayerPlatform: Bool] = [:]
         
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: Same error scenario
             let context = OCRContext(
@@ -220,7 +215,6 @@ final class ErrorPropagationRenderingTests: BaseTestClass {
         initializeTestConfig()
         
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: Form view (errors could come from validation layer)
             let fields = [

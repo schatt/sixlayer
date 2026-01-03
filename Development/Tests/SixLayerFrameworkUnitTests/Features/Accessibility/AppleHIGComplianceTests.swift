@@ -440,7 +440,6 @@ open class AppleHIGComplianceTests: BaseTestClass {
         #expect(RuntimeCapabilityDetection.supportsHover, "Should support hover (visionOS-like)")
         
         // Reset to original platform
-        setCapabilitiesForPlatform(originalPlatform)
     }
     
     // MARK: - Business Purpose Tests

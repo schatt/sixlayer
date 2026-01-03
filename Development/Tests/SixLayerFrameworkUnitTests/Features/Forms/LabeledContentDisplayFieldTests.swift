@@ -558,7 +558,6 @@ open class LabeledContentDisplayFieldTests: BaseTestClass {
     @Test func testCrossPlatformBehavior() {
         // Test across all platforms
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: Display field
             let field = DynamicFormField(

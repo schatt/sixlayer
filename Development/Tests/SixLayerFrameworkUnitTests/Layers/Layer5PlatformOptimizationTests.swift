@@ -94,7 +94,6 @@ open class Layer5PlatformOptimizationTests: BaseTestClass {
         let expectedHoverDelay: TimeInterval = (currentPlatform == .macOS) ? 0.5 : 0.0
         
         for platform in platforms {
-            setCapabilitiesForPlatform(platform)
             let config = getCardExpansionPlatformConfig()
             
             // Verify platform-appropriate values for current platform
@@ -167,7 +166,6 @@ open class Layer5PlatformOptimizationTests: BaseTestClass {
         let platforms: [SixLayerPlatform] = [.iOS, .macOS, .visionOS, .watchOS, .tvOS]
         
         for platform in platforms {
-            setCapabilitiesForPlatform(platform)
             let config = getCardExpansionPerformanceConfig()
             
             #expect(config.targetFrameRate > 0, "Platform \(platform) should have positive target frame rate")
@@ -256,7 +254,6 @@ open class Layer5PlatformOptimizationTests: BaseTestClass {
         let platforms: [SixLayerPlatform] = [.iOS, .macOS, .visionOS, .watchOS, .tvOS]
         
         for platform in platforms {
-            setCapabilitiesForPlatform(platform)
             let config = getCardExpansionAccessibilityConfig()
             
             #expect(config.supportsVoiceOver == true, "Platform \(platform) should support VoiceOver")

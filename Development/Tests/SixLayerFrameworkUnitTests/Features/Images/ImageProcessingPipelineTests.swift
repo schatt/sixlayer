@@ -59,7 +59,6 @@ open class ImageProcessingPipelineTests: BaseTestClass {
     @Test func testImageProcessingPipeline_ProcessForOCR() async throws {
         // Test across all platforms
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given
             let image = PlatformImage.createPlaceholder()

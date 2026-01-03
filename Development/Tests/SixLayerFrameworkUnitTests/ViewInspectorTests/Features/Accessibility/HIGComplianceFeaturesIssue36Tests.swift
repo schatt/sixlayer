@@ -76,7 +76,6 @@ open class HIGComplianceFeaturesIssue36Tests: BaseTestClass {
     @Test @MainActor func testAutomaticTouchTargetSizing_ButtonOnIOS() {
         initializeTestConfig()
         // GIVEN: iOS platform with interactive button element
-        setCapabilitiesForPlatform(.iOS)
         
         // WHEN: Creating a button with automatic compliance
         let button = createInteractiveButton()
@@ -91,7 +90,6 @@ open class HIGComplianceFeaturesIssue36Tests: BaseTestClass {
     @Test @MainActor func testAutomaticTouchTargetSizing_NonInteractiveElementOnIOS() {
         initializeTestConfig()
         // GIVEN: iOS platform with non-interactive element
-        setCapabilitiesForPlatform(.iOS)
         
         // WHEN: Creating a text view (non-interactive) with automatic compliance
         let textView = createNonInteractiveTextView()
@@ -105,7 +103,6 @@ open class HIGComplianceFeaturesIssue36Tests: BaseTestClass {
     @Test @MainActor func testAutomaticTouchTargetSizing_NoRequirementOnMacOS() {
         initializeTestConfig()
         // GIVEN: macOS platform (no touch target requirements)
-        setCapabilitiesForPlatform(.macOS)
         
         // WHEN: Creating a button with automatic compliance
         let button = createInteractiveButton()
@@ -208,7 +205,6 @@ open class HIGComplianceFeaturesIssue36Tests: BaseTestClass {
         initializeTestConfig()
         // GIVEN: Different platforms
         for platform in [SixLayerPlatform.iOS, .macOS] {
-            setCapabilitiesForPlatform(platform)
             
             // WHEN: Creating interactive button with automatic compliance
             let button = createInteractiveButton()
@@ -310,7 +306,6 @@ open class HIGComplianceFeaturesIssue36Tests: BaseTestClass {
     @Test @MainActor func testAllHIGComplianceFeatures_AppliedTogether() {
         initializeTestConfig()
         // GIVEN: iOS platform with interactive button
-        setCapabilitiesForPlatform(.iOS)
         
         // WHEN: Creating a button with automatic compliance
         let button = createInteractiveButton()

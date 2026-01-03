@@ -76,7 +76,6 @@ final class AccessibilityWorkflowTests: BaseTestClass {
         initializeTestConfig()
         
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: A test view
             let testView = createTestView()
@@ -98,7 +97,6 @@ final class AccessibilityWorkflowTests: BaseTestClass {
         initializeTestConfig()
         
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: A form view
             let formView = createTestFormView()
@@ -122,7 +120,6 @@ final class AccessibilityWorkflowTests: BaseTestClass {
         initializeTestConfig()
         
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: Enhanced view
             let testView = createTestView()
@@ -147,7 +144,6 @@ final class AccessibilityWorkflowTests: BaseTestClass {
         initializeTestConfig()
         
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: Enhanced form view
             let formView = createTestFormView()
@@ -174,7 +170,6 @@ final class AccessibilityWorkflowTests: BaseTestClass {
         initializeTestConfig()
         
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: Enhanced view
             let testView = createTestView()
@@ -199,7 +194,6 @@ final class AccessibilityWorkflowTests: BaseTestClass {
         initializeTestConfig()
         
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Step 1: Create view
             let testView = createTestView()
@@ -233,7 +227,6 @@ final class AccessibilityWorkflowTests: BaseTestClass {
         var platformResults: [SixLayerPlatform: ComplianceLevel] = [:]
         
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: Same view configuration
             let testView = createTestView()

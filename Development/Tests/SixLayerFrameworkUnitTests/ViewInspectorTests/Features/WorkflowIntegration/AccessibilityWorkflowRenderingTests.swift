@@ -77,7 +77,6 @@ final class AccessibilityWorkflowRenderingTests: BaseTestClass {
         initializeTestConfig()
         
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: Enhanced view
             let testView = createTestView()
@@ -100,7 +99,6 @@ final class AccessibilityWorkflowRenderingTests: BaseTestClass {
         initializeTestConfig()
         
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: Enhanced view
             let testView = createTestView()
@@ -124,7 +122,6 @@ final class AccessibilityWorkflowRenderingTests: BaseTestClass {
         initializeTestConfig()
         
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: Enhanced form view
             let formView = createTestFormView()
@@ -147,7 +144,6 @@ final class AccessibilityWorkflowRenderingTests: BaseTestClass {
         initializeTestConfig()
         
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: Enhanced view
             let testView = createTestView()
@@ -172,7 +168,6 @@ final class AccessibilityWorkflowRenderingTests: BaseTestClass {
         initializeTestConfig()
         
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Step 1: Create view
             let testView = createTestView()
@@ -207,7 +202,6 @@ final class AccessibilityWorkflowRenderingTests: BaseTestClass {
         var renderingResults: [SixLayerPlatform: Bool] = [:]
         
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: Same view configuration
             let testView = createTestView()

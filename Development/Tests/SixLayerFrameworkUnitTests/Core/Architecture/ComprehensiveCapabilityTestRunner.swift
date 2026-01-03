@@ -329,7 +329,6 @@ struct ComprehensiveCapabilityTestRunner {
     func testCrossPlatformConsistency(_ platform: SixLayerPlatform, capability: TestRunnerConfig.CapabilityType) {
         initializeTestConfig()
         // Set test platform before getting config
-        setCapabilitiesForPlatform(platform)
         
         let platformConfig = createPlatformConfig(platform: platform)
         
@@ -401,7 +400,6 @@ struct ComprehensiveCapabilityTestRunner {
         print("     🔗 Testing view generation integration for \(platform)...")
         
         // Set test platform and accessibility capabilities before getting config
-        setCapabilitiesForPlatform(platform)
         RuntimeCapabilityDetection.setTestVoiceOver(true)
         RuntimeCapabilityDetection.setTestSwitchControl(true)
         

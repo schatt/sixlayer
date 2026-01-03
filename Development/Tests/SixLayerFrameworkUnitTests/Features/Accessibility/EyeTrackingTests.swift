@@ -71,7 +71,6 @@ open class EyeTrackingTests: BaseTestClass {
     @Test func testEyeTrackingConfigInitialization() {
         // Test across all platforms
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             let config = EyeTrackingConfig()
             

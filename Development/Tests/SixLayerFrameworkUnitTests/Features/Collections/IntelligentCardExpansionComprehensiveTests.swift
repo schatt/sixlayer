@@ -457,7 +457,6 @@ open class IntelligentCardExpansionComprehensiveTests: BaseTestClass {    // MAR
     // or when testing the actual platform.
     
     @Test @MainActor func testGetCardExpansionPlatformConfig_iOS() async {
-        TestSetupUtilities.setCapabilitiesForPlatform(.iOS)
         let config = getCardExpansionPlatformConfig()
 
         // Check runtime platform instead of compile-time platform
@@ -476,7 +475,6 @@ open class IntelligentCardExpansionComprehensiveTests: BaseTestClass {    // MAR
     }
     
     @Test @MainActor func testGetCardExpansionPlatformConfig_macOS() async {
-        TestSetupUtilities.setCapabilitiesForPlatform(.macOS)
         let config = getCardExpansionPlatformConfig()
 
         #expect(config.supportsTouch == false, "macOS should not support touch")
@@ -488,7 +486,6 @@ open class IntelligentCardExpansionComprehensiveTests: BaseTestClass {    // MAR
     }
     
     @Test @MainActor func testGetCardExpansionPlatformConfig_watchOS() async {
-        TestSetupUtilities.setCapabilitiesForPlatform(.watchOS)
         let config = getCardExpansionPlatformConfig()
 
         #expect(config.supportsTouch == true, "watchOS should support touch")
@@ -500,7 +497,6 @@ open class IntelligentCardExpansionComprehensiveTests: BaseTestClass {    // MAR
     }
     
     @Test @MainActor func testGetCardExpansionPlatformConfig_tvOS() async {
-        TestSetupUtilities.setCapabilitiesForPlatform(.tvOS)
         let config = getCardExpansionPlatformConfig()
 
         #expect(config.supportsTouch == false, "tvOS should not support touch")
@@ -512,7 +508,6 @@ open class IntelligentCardExpansionComprehensiveTests: BaseTestClass {    // MAR
     }
     
     @Test @MainActor func testGetCardExpansionPlatformConfig_visionOS() async {
-        TestSetupUtilities.setCapabilitiesForPlatform(.visionOS)
         let config = getCardExpansionPlatformConfig()
 
         // Check runtime platform instead of compile-time platform

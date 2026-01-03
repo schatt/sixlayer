@@ -88,7 +88,6 @@ final class CrossComponentIntegrationRenderingTests: BaseTestClass {
         initializeTestConfig()
         
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: Form fields that support OCR
             let formFields = createTestFormFields()
@@ -131,7 +130,6 @@ final class CrossComponentIntegrationRenderingTests: BaseTestClass {
         initializeTestConfig()
         
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: Form fields with accessibility
             let formFields = createTestFormFields()
@@ -162,7 +160,6 @@ final class CrossComponentIntegrationRenderingTests: BaseTestClass {
         initializeTestConfig()
         
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: Multi-component scenario (Receipt scanning workflow)
             // Component 1: OCR
@@ -205,7 +202,6 @@ final class CrossComponentIntegrationRenderingTests: BaseTestClass {
         var renderingResults: [SixLayerPlatform: Bool] = [:]
         
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: Same multi-component configuration
             let formFields = createTestFormFields()
@@ -249,7 +245,6 @@ final class CrossComponentIntegrationRenderingTests: BaseTestClass {
         initializeTestConfig()
         
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: Components with accessibility
             let formFields = createTestFormFields()
@@ -288,7 +283,6 @@ final class CrossComponentIntegrationRenderingTests: BaseTestClass {
         initializeTestConfig()
         
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: Multiple components that might conflict
             let formFields = [

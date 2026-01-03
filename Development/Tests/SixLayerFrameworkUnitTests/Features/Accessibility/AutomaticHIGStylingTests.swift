@@ -47,7 +47,6 @@ open class AutomaticHIGStylingTests: BaseTestClass {
         // Test across all platforms
         for platform in SixLayerPlatform.allCases {
             // Given: Platform set
-            setCapabilitiesForPlatform(platform)
             
             // When: Creating view with automatic compliance
             _ = Text("Test")
@@ -87,7 +86,6 @@ open class AutomaticHIGStylingTests: BaseTestClass {
         // Test across all platforms
         for platform in SixLayerPlatform.allCases {
             // Given: Platform set
-            setCapabilitiesForPlatform(platform)
             
             // When: Creating view with automatic compliance
             _ = Text("Test")
@@ -124,7 +122,6 @@ open class AutomaticHIGStylingTests: BaseTestClass {
         // Test across all platforms
         for platform in SixLayerPlatform.allCases {
             // Given: Platform set
-            setCapabilitiesForPlatform(platform)
             
             // When: Creating view with automatic compliance
             _ = Text("Test")
@@ -144,13 +141,11 @@ open class AutomaticHIGStylingTests: BaseTestClass {
         initializeTestConfig()
         
         // Test iOS patterns
-        setCapabilitiesForPlatform(.iOS)
         _ = Text("iOS Content")
             .automaticCompliance()
         #expect(Bool(true), "iOS-specific patterns should be applied")
         
         // Test macOS patterns
-        setCapabilitiesForPlatform(.macOS)
         _ = Text("macOS Content")
             .automaticCompliance()
         #expect(Bool(true), "macOS-specific patterns should be applied")

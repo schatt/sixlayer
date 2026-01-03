@@ -91,7 +91,6 @@ open class CoreArchitectureTests: BaseTestClass {
         
         // Test across all platforms
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             let platformHints = EnhancedPresentationHints(
                 dataType: dataType,
@@ -284,7 +283,6 @@ open class CoreArchitectureTests: BaseTestClass {
         
         // Test across all platforms
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             for context in PresentationContext.allCases {
                 let platformFields = createDynamicFormFields(context: context)
@@ -756,7 +754,6 @@ open class CoreArchitectureTests: BaseTestClass {
         
         // Test platform detection with mock framework
         for platform in platforms {
-            setCapabilitiesForPlatform(platform)
             
             // Test platform-specific behavior
             let platformHints = PresentationHints(context: .dashboard)
@@ -788,7 +785,6 @@ open class CoreArchitectureTests: BaseTestClass {
         
         // Test across all platforms
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             let platformBehavior = ResponsiveBehavior(
                 type: type,

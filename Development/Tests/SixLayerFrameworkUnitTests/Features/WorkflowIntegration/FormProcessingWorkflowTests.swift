@@ -149,7 +149,6 @@ final class FormProcessingWorkflowTests: BaseTestClass {
     /// METHODOLOGY: Create form, set values, validate, verify results
     @Test func testFormInputToValidationWorkflow() async {
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: Form with validation rules
             let fields = createStandardTestForm()
@@ -172,7 +171,6 @@ final class FormProcessingWorkflowTests: BaseTestClass {
     /// METHODOLOGY: Simulate value changes, verify validation triggers
     @Test func testRealTimeValidationOnFieldChange() async {
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: Form field with validation rules
             let field = DynamicFormField(
@@ -212,7 +210,6 @@ final class FormProcessingWorkflowTests: BaseTestClass {
     /// METHODOLOGY: Track state changes through form lifecycle
     @Test func testFormStateManagementWorkflow() async {
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: Form with initial state
             let fields = createStandardTestForm()
@@ -253,7 +250,6 @@ final class FormProcessingWorkflowTests: BaseTestClass {
     /// METHODOLOGY: Provide valid data, attempt submission, verify success
     @Test func testFormSubmissionWithValidData() async {
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: Form with valid data
             let fields = createStandardTestForm()
@@ -301,7 +297,6 @@ final class FormProcessingWorkflowTests: BaseTestClass {
     /// METHODOLOGY: Trigger validation errors, verify error handling
     @Test func testFormValidationErrorHandling() async {
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: Form with invalid data
             let fields = createStandardTestForm()
@@ -354,7 +349,6 @@ final class FormProcessingWorkflowTests: BaseTestClass {
     /// METHODOLOGY: Create sectioned form, validate section-by-section
     @Test func testMultiSectionFormWorkflow() async {
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: Form with multiple sections
             let personalFields = [
@@ -399,7 +393,6 @@ final class FormProcessingWorkflowTests: BaseTestClass {
     /// METHODOLOGY: Create comprehensive form, test each field type
     @Test func testFieldTypeValidationWorkflow() async {
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: Form with various field types
             let fields = createComprehensiveTestForm()
@@ -449,7 +442,6 @@ final class FormProcessingWorkflowTests: BaseTestClass {
         initializeTestConfig()
         
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: Form fields and presentation hints
             let fields = createStandardTestForm()
@@ -484,7 +476,6 @@ final class FormProcessingWorkflowTests: BaseTestClass {
         initializeTestConfig()
         
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: Accessible form configuration
             let fields = createStandardTestForm()
@@ -521,7 +512,6 @@ final class FormProcessingWorkflowTests: BaseTestClass {
     /// METHODOLOGY: Create error state, test recovery path
     @Test func testFormErrorRecoveryWorkflow() async {
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: Form with validation error
             var formState: [String: String] = ["email": "invalid"]
@@ -551,7 +541,6 @@ final class FormProcessingWorkflowTests: BaseTestClass {
     /// METHODOLOGY: Modify form, reset, verify initial state restored
     @Test func testFormResetWorkflow() async {
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: Form with initial and modified state
             let _ = createStandardTestForm()
@@ -596,7 +585,6 @@ final class FormProcessingWorkflowTests: BaseTestClass {
         var platformResults: [SixLayerPlatform: Bool] = [:]
         
         for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
             
             // Given: Same form configuration
             let fields = createStandardTestForm()

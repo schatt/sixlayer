@@ -298,7 +298,6 @@ open class AccessibilityPreferenceTests: BaseTestClass {
         // When: Check accessibility features for each platform
         for platform in simulatedPlatforms {
             // Set the test platform before getting the config
-            setCapabilitiesForPlatform(platform)
             defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
             
             // Get platform capabilities using the framework's capability detection
