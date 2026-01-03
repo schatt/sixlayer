@@ -108,6 +108,12 @@ open class BaseTestClass {
     func hostRootPlatformView<V: View>(_ view: V) -> Any? {
         return TestSetupUtilities.hostRootPlatformView(view)
     }
+
+    /// Static version of hostRootPlatformView for use in @Test functions (delegates to TestSetupUtilities)
+    @MainActor
+    static func hostRootPlatformView<V: View>(_ view: V) -> Any? {
+        return TestSetupUtilities.hostRootPlatformView(view)
+    }
     
     // MARK: - Test Environment Setup
     
