@@ -293,7 +293,7 @@ open class AccessibilityPreferenceTests: BaseTestClass {
     /// Tests that accessibility features are consistently available across platforms
     @Test @MainActor func testCrossPlatformAccessibilityConsistency() {
         // Given: Different platform configurations
-        let simulatedPlatforms = PlatformSimulationTests.testPlatforms
+        let simulatedPlatforms = PlatformSimulationTestUtilities.testPlatforms
         
         // When: Check accessibility features for each platform
         for platform in simulatedPlatforms {

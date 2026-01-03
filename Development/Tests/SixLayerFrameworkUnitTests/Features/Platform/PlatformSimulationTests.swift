@@ -185,7 +185,7 @@ open class PlatformSimulationTests: BaseTestClass {
         RuntimeCapabilityDetection.setTestVoiceOver(true)
         RuntimeCapabilityDetection.setTestSwitchControl(true)
         
-        for platform in PlatformSimulationTests.testPlatforms {
+        for platform in PlatformSimulationTestUtilities.testPlatforms {
             // All platforms should support VoiceOver (when enabled)
             #expect(RuntimeCapabilityDetection.supportsVoiceOver, 
                          "Platform \(platform.rawValue) should support VoiceOver")
@@ -200,7 +200,7 @@ open class PlatformSimulationTests: BaseTestClass {
     }
     
     @Test func testPlatformCapabilityConsistency() {
-        for platform in PlatformSimulationTests.testPlatforms {
+        for platform in PlatformSimulationTestUtilities.testPlatforms {
             // We trust what the OS reports - touch and hover CAN coexist
             // (iPad with mouse, macOS with touchscreen, visionOS)
             // No mutual exclusivity check needed
@@ -218,7 +218,7 @@ open class PlatformSimulationTests: BaseTestClass {
     
     @Test func testPlatformEdgeCases() {
         // Test that all platforms have valid configurations
-        for platform in PlatformSimulationTests.testPlatforms {
+        for platform in PlatformSimulationTestUtilities.testPlatforms {
             #expect(platform.rawValue.count > 0, "Platform should have valid name")
         }
     }

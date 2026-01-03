@@ -67,7 +67,7 @@ fileprivate struct CardTestItem: Identifiable {
 }
 
 /// Platform simulation test utilities
-public enum PlatformSimulationTests {
+public enum PlatformSimulationTestUtilities {
     // Test the real framework platform types directly
     public static let testPlatforms: [SixLayerPlatform] = [
         .iOS,
@@ -15870,7 +15870,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 
     @Test @MainActor func testCrossPlatformAccessibilityConsistency() {
     // Given: Different platform configurations
-    let simulatedPlatforms = PlatformSimulationTests.testPlatforms
+    let simulatedPlatforms = PlatformSimulationTestUtilities.testPlatforms
     
     // When: Check accessibility features for each platform
     for platform in simulatedPlatforms {
