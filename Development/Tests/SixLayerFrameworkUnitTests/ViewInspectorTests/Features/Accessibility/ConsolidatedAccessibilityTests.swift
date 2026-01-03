@@ -659,8 +659,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     // Helper method for Layer 1 tests
     private func createLayer1TestItems() -> [Layer1TestItem] {
         return [
-            TestPatterns.TestDataItem(title: "Alice", subtitle: "Developer"),
-            TestPatterns.TestDataItem(title: "Bob", subtitle: "Designer")
+            Layer1TestItem(id: "alice", title: "Alice", subtitle: "Developer"),
+            Layer1TestItem(id: "bob", title: "Bob", subtitle: "Designer")
         ]
     }
     
@@ -1696,8 +1696,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     private func setupTestData() {
         testItems = [
-            TestPatterns.TestDataItem(title: "Alice", subtitle: "Developer"),
-            TestPatterns.TestDataItem(title: "Bob", subtitle: "Designer")
+            AccessibilityTestItem(id: "alice", title: "Alice", subtitle: "Developer"),
+            AccessibilityTestItem(id: "bob", title: "Bob", subtitle: "Designer")
         ]
         testHints = PresentationHints(
             dataType: .generic,
@@ -13781,7 +13781,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     @Test @MainActor func testPlatformPresentItemCollection_L1_AutomaticHIGCompliance() async {
     initializeTestConfig()
     // Given: Test items and hints
-    let items = [TestPatterns.TestItem(id: "1", title: "Test Item 1", subtitle: "Test Description 1")]
+    let items: [TestPatterns.TestItem] = [TestPatterns.TestItem(id: "1", title: "Test Item 1")]
     let hints = PresentationHints()
 
     // When: Creating view using Layer 1 function
@@ -13807,7 +13807,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 
     // When: Creating view using Layer 1 function
     let view = platformPresentItemCollection_L1(
-        items: [TestPatterns.TestItem(id: "1", title: "Test Item 1", subtitle: "Test Description 1")],
+        items: [TestPatterns.TestItem(id: "1", title: "Test Item 1")],
         hints: PresentationHints()
     )
 
@@ -13827,8 +13827,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         initializeTestConfig()
     // Setup test data
     let testItems = [
-        TestPatterns.TestItem(id: "1", title: "Test Item 1", subtitle: "Test Description 1"),
-        TestPatterns.TestItem(id: "2", title: "Test Item 2", subtitle: "Test Description 2")
+        TestPatterns.TestItem(id: "1", title: "Test Item 1"),
+        TestPatterns.TestItem(id: "2", title: "Test Item 2")
     ]
 
     // Test across all platforms
@@ -13854,7 +13854,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     initializeTestConfig()
     // When: Creating view using Layer 1 function
     let view = platformPresentItemCollection_L1(
-        items: [TestPatterns.TestItem(id: "1", title: "Test Item 1", subtitle: "Test Description 1")],
+        items: [TestPatterns.TestItem(id: "1", title: "Test Item 1")],
         hints: PresentationHints()
     )
 
@@ -13870,7 +13870,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     initializeTestConfig()
     // Test platformPresentItemCollection_L1
     let collectionView = platformPresentItemCollection_L1(
-        items: [TestPatterns.TestItem(id: "1", title: "Test Item 1", subtitle: "Test Description 1")],
+        items: [TestPatterns.TestItem(id: "1", title: "Test Item 1")],
         hints: PresentationHints()
     )
     // Test that collection view can be hosted and has proper structure
@@ -16156,7 +16156,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     RuntimeCapabilityDetection.setTestAssistiveTouch(false)
 
     let viewWithVoiceOver = platformPresentItemCollection_L1(
-        items: [TestPatterns.TestItem(id: "1", title: "Test Item 1", subtitle: "Test Description 1")],
+        items: [TestPatterns.TestItem(id: "1", title: "Test Item 1")],
         hints: PresentationHints()
     )
     // Test that VoiceOver-enabled view can be hosted
@@ -16169,7 +16169,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     RuntimeCapabilityDetection.setTestAssistiveTouch(false)
 
     let viewWithSwitchControl = platformPresentItemCollection_L1(
-        items: [TestPatterns.TestItem(id: "1", title: "Test Item 1", subtitle: "Test Description 1")],
+        items: [TestPatterns.TestItem(id: "1", title: "Test Item 1")],
         hints: PresentationHints()
     )
 
@@ -16183,7 +16183,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     RuntimeCapabilityDetection.setTestAssistiveTouch(true)
 
     let viewWithAssistiveTouch = platformPresentItemCollection_L1(
-        items: [TestPatterns.TestItem(id: "1", title: "Test Item 1", subtitle: "Test Description 1")],
+        items: [TestPatterns.TestItem(id: "1", title: "Test Item 1")],
         hints: PresentationHints()
     )
 
@@ -16197,7 +16197,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     RuntimeCapabilityDetection.setTestAssistiveTouch(true)
 
     let viewWithAllAccessibility = platformPresentItemCollection_L1(
-        items: [TestPatterns.TestItem(id: "1", title: "Test Item 1", subtitle: "Test Description 1")],
+        items: [TestPatterns.TestItem(id: "1", title: "Test Item 1")],
         hints: PresentationHints()
     )
 
