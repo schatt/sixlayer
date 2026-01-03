@@ -31,12 +31,13 @@ public enum CoreDataTestUtilities {
             model = providedModel
         } else {
             // Try to load the model from the bundle
-            guard let modelURL = Bundle.main.url(forResource: name, withExtension: "momd"),
-                  let loadedModel = NSManagedObjectModel(contentsOf: modelURL) else {
+            if let modelURL = Bundle.main.url(forResource: name, withExtension: "momd"),
+               let loadedModel = NSManagedObjectModel(contentsOf: modelURL) {
+                model = loadedModel
+            } else {
                 // Create a minimal model if we can't find one
                 model = NSManagedObjectModel()
             }
-            model = NSManagedObjectModel(contentsOf: modelURL) ?? NSManagedObjectModel()
         }
         
         let container = NSPersistentContainer(name: name, managedObjectModel: model)
@@ -80,11 +81,12 @@ public enum CoreDataTestUtilities {
         if let providedModel = managedObjectModel {
             model = providedModel
         } else {
-            guard let modelURL = Bundle.main.url(forResource: name, withExtension: "momd"),
-                  let loadedModel = NSManagedObjectModel(contentsOf: modelURL) else {
+            if let modelURL = Bundle.main.url(forResource: name, withExtension: "momd"),
+               let loadedModel = NSManagedObjectModel(contentsOf: modelURL) {
+                model = loadedModel
+            } else {
                 model = NSManagedObjectModel()
             }
-            model = NSManagedObjectModel(contentsOf: modelURL) ?? NSManagedObjectModel()
         }
         
         let container = NSPersistentContainer(name: name, managedObjectModel: model)
