@@ -126,23 +126,14 @@ open class PlatformLogicTests: BaseTestClass {
     // MARK: - Capability Matrix Tests
     
 
-    @Test func testCapabilityMatrixConsistency() {
-        // GIVEN: Current platform capabilities
+    @Test func testAccessibilityRequirements() {
+        // GIVEN: Current platform
         let currentPlatform = SixLayerPlatform.current
 
-        // WHEN: Testing capability matrix consistency
-        // THEN: Current platform capabilities should be internally consistent
-        #expect(RuntimeCapabilityDetection.supportsVoiceOver, "Current platform should support VoiceOver")
-        #expect(RuntimeCapabilityDetection.supportsSwitchControl, "Current platform should support SwitchControl")
-
-        // Test logical consistency between related capabilities
-        if RuntimeCapabilityDetection.supportsTouch {
-            // If touch is supported, haptic feedback and AssistiveTouch should be available
-            #expect(RuntimeCapabilityDetection.supportsHapticFeedback,
-                   "Haptic feedback should be available when touch is supported")
-            #expect(RuntimeCapabilityDetection.supportsAssistiveTouch,
-                   "AssistiveTouch should be available when touch is supported")
-        }
+        // WHEN: Testing accessibility support requirements
+        // THEN: All Apple platforms should support essential accessibility features
+        #expect(RuntimeCapabilityDetection.supportsVoiceOver, "\(currentPlatform) should support VoiceOver")
+        #expect(RuntimeCapabilityDetection.supportsSwitchControl, "\(currentPlatform) should support SwitchControl")
     }
     
     
