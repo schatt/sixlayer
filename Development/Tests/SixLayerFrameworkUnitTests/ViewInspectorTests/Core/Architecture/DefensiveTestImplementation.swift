@@ -26,10 +26,16 @@ struct DefensiveTestImplementation {
         testName: String
     ) async {
         // Test implementation here
-        let item = sampleData[0]
-        
+        let item = TestPatterns.TestDataItem(
+            title: "Test Item",
+            subtitle: "Test Subtitle",
+            description: "Test Description",
+            value: 42,
+            isActive: true
+        )
+
         let view = TestPatterns.createSimpleCardComponent(item: item)
-        
+
         TestPatterns.verifyViewGeneration(view, testName: testName)
     }
 }
