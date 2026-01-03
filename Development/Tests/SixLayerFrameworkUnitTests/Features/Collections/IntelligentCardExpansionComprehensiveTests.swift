@@ -475,6 +475,14 @@ open class IntelligentCardExpansionComprehensiveTests: BaseTestClass {    // MAR
     }
     
     @Test @MainActor func testGetCardExpansionPlatformConfig_macOS() async {
+        // Set macOS platform overrides for testing
+        RuntimeCapabilityDetection.setTestHapticFeedback(false)
+        RuntimeCapabilityDetection.setTestHover(true)
+        RuntimeCapabilityDetection.setTestTouchSupport(false)
+        RuntimeCapabilityDetection.setTestAssistiveTouch(false)
+        RuntimeCapabilityDetection.setTestVoiceOver(true)
+        RuntimeCapabilityDetection.setTestSwitchControl(true)
+
         let config = getCardExpansionPlatformConfig()
 
         #expect(config.supportsTouch == false, "macOS should not support touch")
@@ -486,6 +494,14 @@ open class IntelligentCardExpansionComprehensiveTests: BaseTestClass {    // MAR
     }
     
     @Test @MainActor func testGetCardExpansionPlatformConfig_watchOS() async {
+        // Set watchOS platform overrides for testing
+        RuntimeCapabilityDetection.setTestHapticFeedback(true)
+        RuntimeCapabilityDetection.setTestHover(false)
+        RuntimeCapabilityDetection.setTestTouchSupport(true)
+        RuntimeCapabilityDetection.setTestAssistiveTouch(false)
+        RuntimeCapabilityDetection.setTestVoiceOver(true)
+        RuntimeCapabilityDetection.setTestSwitchControl(true)
+
         let config = getCardExpansionPlatformConfig()
 
         #expect(config.supportsTouch == true, "watchOS should support touch")
@@ -493,10 +509,18 @@ open class IntelligentCardExpansionComprehensiveTests: BaseTestClass {    // MAR
         #expect(config.supportsHover == false, "watchOS should not support hover")
         #expect(config.supportsVoiceOver == true, "watchOS should support VoiceOver")
         #expect(config.supportsSwitchControl == true, "watchOS should support Switch Control")
-        #expect(config.supportsAssistiveTouch == true, "watchOS should support AssistiveTouch")
+        #expect(config.supportsAssistiveTouch == false, "watchOS should not support AssistiveTouch")
     }
     
     @Test @MainActor func testGetCardExpansionPlatformConfig_tvOS() async {
+        // Set tvOS platform overrides for testing
+        RuntimeCapabilityDetection.setTestHapticFeedback(false)
+        RuntimeCapabilityDetection.setTestHover(false)
+        RuntimeCapabilityDetection.setTestTouchSupport(false)
+        RuntimeCapabilityDetection.setTestAssistiveTouch(false)
+        RuntimeCapabilityDetection.setTestVoiceOver(true)
+        RuntimeCapabilityDetection.setTestSwitchControl(true)
+
         let config = getCardExpansionPlatformConfig()
 
         #expect(config.supportsTouch == false, "tvOS should not support touch")

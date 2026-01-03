@@ -17,13 +17,13 @@
 //  - Use hostRootPlatformView() to actually render views (Layer 2)
 //  - Verify error views render without crashes
 //  - Verify accessibility identifiers are present in error view hierarchy
-//  - Test across all platforms using SixLayerPlatform.allCases
+//  - Test on current platform (tests run on actual platforms via simulators)
 //  - MUST run with xcodebuild test (not swift test) to catch rendering issues
 //
 //  AUDIT STATUS: ✅ COMPLIANT
 //  - ✅ File Documentation: Complete with business purpose, testing scope, methodology
 //  - ✅ Function Documentation: All functions documented with business purpose
-//  - ✅ Platform Testing: Tests across all platforms using SixLayerPlatform.allCases
+//  - ✅ Platform Testing: Tests current platform capabilities using runtime detection
 //  - ✅ Layer 2 Focus: Tests actual view rendering, not just logic
 //
 
@@ -46,30 +46,26 @@ final class ErrorPropagationRenderingTests: BaseTestClass {
     @Test @MainActor func testOCRErrorViewRendering() async {
         initializeTestConfig()
         
-        for platform in SixLayerPlatform.allCases {
-            
-            // Given: OCR context (error would occur during processing)
-            let context = OCRContext(
-                textTypes: [.price, .date, .general],
-                language: .english,
-                confidenceThreshold: 0.8,
-                allowsEditing: true
-            )
-            
-            // When: Creating OCR view (error state would be shown in actual implementation)
-            let ocrView = platformOCRWithVisualCorrection_L1(
-                image: PlatformImage(),
-                context: context
-            ) { result in
-                // Error would be handled here in actual implementation
-            }
-            
-            // Then: View should render even with error state
-            let hostedView = hostRootPlatformView(ocrView.enableGlobalAutomaticCompliance())
-            #expect(hostedView != nil, "OCR error view should render on \(platform)")
-            
-            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        // Given: OCR context (error would occur during processing)
+        let context = OCRContext(
+            textTypes: [.price, .date, .general],
+            language: .english,
+            confidenceThreshold: 0.8,
+            allowsEditing: true
+        )
+        
+        // When: Creating OCR view (error state would be shown in actual implementation)
+        let ocrView = platformOCRWithVisualCorrection_L1(
+            image: PlatformImage(),
+            context: context
+        ) { result in
+            // Error would be handled here in actual implementation
         }
+        
+        // Then: View should render even with error state
+        let hostedView = hostRootPlatformView(ocrView.enableGlobalAutomaticCompliance())
+        let currentPlatform = SixLayerPlatform.current
+        #expect(hostedView != nil, "OCR error view should render on \(currentPlatform)")
     }
     
     /// BUSINESS PURPOSE: Validate that OCR error messages are accessible in rendered views
@@ -78,28 +74,24 @@ final class ErrorPropagationRenderingTests: BaseTestClass {
     @Test @MainActor func testOCRErrorAccessibilityRendering() async {
         initializeTestConfig()
         
-        for platform in SixLayerPlatform.allCases {
-            
-            // Given: OCR context
-            let context = OCRContext(
-                textTypes: [.price, .date, .general],
-                language: .english,
-                confidenceThreshold: 0.8,
-                allowsEditing: true
-            )
-            
-            // When: Rendering OCR view with error state
-            let ocrView = platformOCRWithVisualCorrection_L1(
-                image: PlatformImage(),
-                context: context
-            ) { _ in }
-            let hostedView = hostRootPlatformView(ocrView.enableGlobalAutomaticCompliance())
-            
-            // Then: View should render with accessibility
-            #expect(hostedView != nil, "OCR error view should render with accessibility on \(platform)")
-            
-            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-        }
+        // Given: OCR context
+        let context = OCRContext(
+            textTypes: [.price, .date, .general],
+            language: .english,
+            confidenceThreshold: 0.8,
+            allowsEditing: true
+        )
+        
+        // When: Rendering OCR view with error state
+        let ocrView = platformOCRWithVisualCorrection_L1(
+            image: PlatformImage(),
+            context: context
+        ) { _ in }
+        let hostedView = hostRootPlatformView(ocrView.enableGlobalAutomaticCompliance())
+        
+        // Then: View should render with accessibility
+        let currentPlatform = SixLayerPlatform.current
+        #expect(hostedView != nil, "OCR error view should render with accessibility on \(currentPlatform)")
     }
     
     /// BUSINESS PURPOSE: Validate that form error views render correctly
@@ -108,36 +100,32 @@ final class ErrorPropagationRenderingTests: BaseTestClass {
     @Test @MainActor func testFormErrorViewRendering() async {
         initializeTestConfig()
         
-        for platform in SixLayerPlatform.allCases {
-            
-            // Given: Form fields (validation errors would occur)
-            let fields = [
-                DynamicFormField(
-                    id: "email",
-                    contentType: .email,
-                    label: "Email",
-                    isRequired: true,
-                    validationRules: ["required": "true", "email": "true"]
-                )
-            ]
-            let hints = EnhancedPresentationHints(
-                dataType: .form,
-                presentationPreference: .form,
-                complexity: .simple
+        // Given: Form fields (validation errors would occur)
+        let fields = [
+            DynamicFormField(
+                id: "email",
+                contentType: .email,
+                label: "Email",
+                isRequired: true,
+                validationRules: ["required": "true", "email": "true"]
             )
-            
-            // When: Creating form view (error state would be shown in actual implementation)
-            let formView = platformPresentFormData_L1(
-                fields: fields,
-                hints: hints
-            )
-            
-            // Then: View should render even with error state
-            let hostedView = hostRootPlatformView(formView.enableGlobalAutomaticCompliance())
-            #expect(hostedView != nil, "Form error view should render on \(platform)")
-            
-            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-        }
+        ]
+        let hints = EnhancedPresentationHints(
+            dataType: .form,
+            presentationPreference: .form,
+            complexity: .simple
+        )
+        
+        // When: Creating form view (error state would be shown in actual implementation)
+        let formView = platformPresentFormData_L1(
+            fields: fields,
+            hints: hints
+        )
+        
+        // Then: View should render even with error state
+        let hostedView = hostRootPlatformView(formView.enableGlobalAutomaticCompliance())
+        let currentPlatform = SixLayerPlatform.current
+        #expect(hostedView != nil, "Form error view should render on \(currentPlatform)")
     }
     
     /// BUSINESS PURPOSE: Validate that error recovery views render correctly
@@ -146,66 +134,50 @@ final class ErrorPropagationRenderingTests: BaseTestClass {
     @Test @MainActor func testErrorRecoveryViewRendering() async {
         initializeTestConfig()
         
-        for platform in SixLayerPlatform.allCases {
-            
-            // Given: OCR context (recovery would be shown after error)
-            let context = OCRContext(
-                textTypes: [.price, .date, .general],
-                language: .english,
-                confidenceThreshold: 0.8,
-                allowsEditing: true
-            )
-            
-            // When: Creating OCR view (recovery state would be shown in actual implementation)
-            let ocrView = platformOCRWithVisualCorrection_L1(
-                image: PlatformImage(),
-                context: context
-            ) { _ in }
-            
-            // Then: View should render with recovery options
-            let hostedView = hostRootPlatformView(ocrView.enableGlobalAutomaticCompliance())
-            #expect(hostedView != nil, "Error recovery view should render on \(platform)")
-            
-            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-        }
+        // Given: OCR context (recovery would be shown after error)
+        let context = OCRContext(
+            textTypes: [.price, .date, .general],
+            language: .english,
+            confidenceThreshold: 0.8,
+            allowsEditing: true
+        )
+        
+        // When: Creating OCR view (recovery state would be shown in actual implementation)
+        let ocrView = platformOCRWithVisualCorrection_L1(
+            image: PlatformImage(),
+            context: context
+        ) { _ in }
+        
+        // Then: View should render with recovery options
+        let hostedView = hostRootPlatformView(ocrView.enableGlobalAutomaticCompliance())
+        let currentPlatform = SixLayerPlatform.current
+        #expect(hostedView != nil, "Error recovery view should render on \(currentPlatform)")
     }
     
-    /// BUSINESS PURPOSE: Validate that error views render correctly across platforms
-    /// TESTING SCOPE: Tests that error views render consistently on iOS and macOS
-    /// METHODOLOGY: Render same error view on all platforms, verify rendering works
+    /// BUSINESS PURPOSE: Validate that error views render correctly on current platform
+    /// TESTING SCOPE: Tests that error views render correctly on the current platform
+    /// METHODOLOGY: Render error view on current platform, verify rendering works
     @Test @MainActor func testErrorViewCrossPlatformRendering() async {
         initializeTestConfig()
         
-        var renderingResults: [SixLayerPlatform: Bool] = [:]
+        // Given: Same error scenario
+        let context = OCRContext(
+            textTypes: [.price, .date, .general],
+            language: .english,
+            confidenceThreshold: 0.8,
+            allowsEditing: true
+        )
         
-        for platform in SixLayerPlatform.allCases {
-            
-            // Given: Same error scenario
-            let context = OCRContext(
-                textTypes: [.price, .date, .general],
-                language: .english,
-                confidenceThreshold: 0.8,
-                allowsEditing: true
-            )
-            
-            // When: Rendering error view
-            let ocrView = platformOCRWithVisualCorrection_L1(
-                image: PlatformImage(),
-                context: context
-            ) { _ in }
-            let hostedView = hostRootPlatformView(ocrView.enableGlobalAutomaticCompliance())
-            
-            // Then: View should render on this platform
-            let rendered = hostedView != nil
-            renderingResults[platform] = rendered
-            #expect(rendered, "Error view should render on \(platform)")
-            
-            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-        }
+        // When: Rendering error view
+        let ocrView = platformOCRWithVisualCorrection_L1(
+            image: PlatformImage(),
+            context: context
+        ) { _ in }
+        let hostedView = hostRootPlatformView(ocrView.enableGlobalAutomaticCompliance())
         
-        // Verify all platforms rendered successfully
-        let allRendered = renderingResults.values.allSatisfy { $0 }
-        #expect(allRendered, "Error view should render on all platforms")
+        // Then: View should render on current platform
+        let currentPlatform = SixLayerPlatform.current
+        #expect(hostedView != nil, "Error view should render on \(currentPlatform)")
     }
     
     /// BUSINESS PURPOSE: Validate that layer error propagation views render correctly
@@ -214,35 +186,31 @@ final class ErrorPropagationRenderingTests: BaseTestClass {
     @Test @MainActor func testLayerErrorPropagationRendering() async {
         initializeTestConfig()
         
-        for platform in SixLayerPlatform.allCases {
-            
-            // Given: Form view (errors could come from validation layer)
-            let fields = [
-                DynamicFormField(
-                    id: "email",
-                    contentType: .email,
-                    label: "Email",
-                    isRequired: true,
-                    validationRules: ["required": "true", "email": "true"]
-                )
-            ]
-            let hints = EnhancedPresentationHints(
-                dataType: .form,
-                presentationPreference: .form,
-                complexity: .simple
+        // Given: Form view (errors could come from validation layer)
+        let fields = [
+            DynamicFormField(
+                id: "email",
+                contentType: .email,
+                label: "Email",
+                isRequired: true,
+                validationRules: ["required": "true", "email": "true"]
             )
-            let formView = platformPresentFormData_L1(
-                fields: fields,
-                hints: hints
-            )
-            
-            // When: Rendering form view (layer errors would be shown in actual implementation)
-            let hostedView = hostRootPlatformView(formView.enableGlobalAutomaticCompliance())
-            
-            // Then: View should render with layer error handling
-            #expect(hostedView != nil, "Layer error propagation view should render on \(platform)")
-            
-            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-        }
+        ]
+        let hints = EnhancedPresentationHints(
+            dataType: .form,
+            presentationPreference: .form,
+            complexity: .simple
+        )
+        let formView = platformPresentFormData_L1(
+            fields: fields,
+            hints: hints
+        )
+        
+        // When: Rendering form view (layer errors would be shown in actual implementation)
+        let hostedView = hostRootPlatformView(formView.enableGlobalAutomaticCompliance())
+        
+        // Then: View should render with layer error handling
+        let currentPlatform = SixLayerPlatform.current
+        #expect(hostedView != nil, "Layer error propagation view should render on \(currentPlatform)")
     }
 }

@@ -17,13 +17,13 @@
 //  - Use hostRootPlatformView() to actually render views (Layer 2)
 //  - Verify views combining multiple components render without crashes
 //  - Verify accessibility identifiers are present in rendered view hierarchy
-//  - Test across all platforms using SixLayerPlatform.allCases
+//  - Test on current platform (tests run on actual platforms via simulators)
 //  - MUST run with xcodebuild test (not swift test) to catch rendering issues
 //
 //  AUDIT STATUS: ✅ COMPLIANT
 //  - ✅ File Documentation: Complete with business purpose, testing scope, methodology
 //  - ✅ Function Documentation: All functions documented with business purpose
-//  - ✅ Platform Testing: Tests across all platforms using SixLayerPlatform.allCases
+//  - ✅ Platform Testing: Tests current platform capabilities using runtime detection
 //  - ✅ Layer 2 Focus: Tests actual view rendering, not just logic
 //
 
@@ -87,40 +87,36 @@ final class CrossComponentIntegrationRenderingTests: BaseTestClass {
     @Test @MainActor func testFormOCRIntegrationRendering() async {
         initializeTestConfig()
         
-        for platform in SixLayerPlatform.allCases {
-            
-            // Given: Form fields that support OCR
-            let formFields = createTestFormFields()
-            let formHints = EnhancedPresentationHints(
-                dataType: .form,
-                presentationPreference: .form,
-                complexity: .simple
-            )
-            
-            // Given: OCR context
-            let ocrContext = createTestOCRContext()
-            
-            // When: Creating form view (OCR would be integrated in actual implementation)
-            let formView = platformPresentFormData_L1(
-                fields: formFields,
-                hints: formHints
-            )
-            
-            // When: Creating OCR view
-            let ocrView = platformOCRWithVisualCorrection_L1(
-                image: PlatformImage(),
-                context: ocrContext
-            ) { _ in }
-            
-            // Then: Both views should render (Layer 2 - actual rendering)
-            let formHostedView = hostRootPlatformView(formView.enableGlobalAutomaticCompliance())
-            let ocrHostedView = hostRootPlatformView(ocrView.enableGlobalAutomaticCompliance())
-            
-            #expect(formHostedView != nil, "Form view should render in integration on \(platform)")
-            #expect(ocrHostedView != nil, "OCR view should render in integration on \(platform)")
-            
-            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-        }
+        // Given: Form fields that support OCR
+        let formFields = createTestFormFields()
+        let formHints = EnhancedPresentationHints(
+            dataType: .form,
+            presentationPreference: .form,
+            complexity: .simple
+        )
+        
+        // Given: OCR context
+        let ocrContext = createTestOCRContext()
+        
+        // When: Creating form view (OCR would be integrated in actual implementation)
+        let formView = platformPresentFormData_L1(
+            fields: formFields,
+            hints: formHints
+        )
+        
+        // When: Creating OCR view
+        let ocrView = platformOCRWithVisualCorrection_L1(
+            image: PlatformImage(),
+            context: ocrContext
+        ) { _ in }
+        
+        // Then: Both views should render (Layer 2 - actual rendering)
+        let formHostedView = hostRootPlatformView(formView.enableGlobalAutomaticCompliance())
+        let ocrHostedView = hostRootPlatformView(ocrView.enableGlobalAutomaticCompliance())
+        
+        let currentPlatform = SixLayerPlatform.current
+        #expect(formHostedView != nil, "Form view should render in integration on \(currentPlatform)")
+        #expect(ocrHostedView != nil, "OCR view should render in integration on \(currentPlatform)")
     }
     
     /// BUSINESS PURPOSE: Validate that Form + Accessibility integration views render correctly
@@ -129,28 +125,24 @@ final class CrossComponentIntegrationRenderingTests: BaseTestClass {
     @Test @MainActor func testFormAccessibilityIntegrationRendering() async {
         initializeTestConfig()
         
-        for platform in SixLayerPlatform.allCases {
-            
-            // Given: Form fields with accessibility
-            let formFields = createTestFormFields()
-            let formHints = EnhancedPresentationHints(
-                dataType: .form,
-                presentationPreference: .form,
-                complexity: .simple
-            )
-            
-            // When: Creating form view with accessibility
-            let formView = platformPresentFormData_L1(
-                fields: formFields,
-                hints: formHints
-            )
-            
-            // Then: View should render with accessibility
-            let hostedView = hostRootPlatformView(formView.enableGlobalAutomaticCompliance())
-            #expect(hostedView != nil, "Form view with accessibility should render on \(platform)")
-            
-            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-        }
+        // Given: Form fields with accessibility
+        let formFields = createTestFormFields()
+        let formHints = EnhancedPresentationHints(
+            dataType: .form,
+            presentationPreference: .form,
+            complexity: .simple
+        )
+        
+        // When: Creating form view with accessibility
+        let formView = platformPresentFormData_L1(
+            fields: formFields,
+            hints: formHints
+        )
+        
+        // Then: View should render with accessibility
+        let hostedView = hostRootPlatformView(formView.enableGlobalAutomaticCompliance())
+        let currentPlatform = SixLayerPlatform.current
+        #expect(hostedView != nil, "Form view with accessibility should render on \(currentPlatform)")
     }
     
     /// BUSINESS PURPOSE: Validate that multi-component workflow views render correctly
@@ -159,83 +151,68 @@ final class CrossComponentIntegrationRenderingTests: BaseTestClass {
     @Test @MainActor func testMultiComponentWorkflowRendering() async {
         initializeTestConfig()
         
-        for platform in SixLayerPlatform.allCases {
-            
-            // Given: Multi-component scenario (Receipt scanning workflow)
-            // Component 1: OCR
-            let ocrContext = createTestOCRContext()
-            let ocrView = platformOCRWithVisualCorrection_L1(
-                image: PlatformImage(),
-                context: ocrContext
-            ) { _ in }
-            
-            // Component 2: Form
-            let formFields = createTestFormFields()
-            let formHints = EnhancedPresentationHints(
-                dataType: .form,
-                presentationPreference: .form,
-                complexity: .simple
-            )
-            let formView = platformPresentFormData_L1(
-                fields: formFields,
-                hints: formHints
-            )
-            
-            // When: Rendering both components (would be combined in actual implementation)
-            let ocrHostedView = hostRootPlatformView(ocrView.enableGlobalAutomaticCompliance())
-            let formHostedView = hostRootPlatformView(formView.enableGlobalAutomaticCompliance())
-            
-            // Then: Both should render successfully
-            #expect(ocrHostedView != nil, "OCR component should render in multi-component workflow on \(platform)")
-            #expect(formHostedView != nil, "Form component should render in multi-component workflow on \(platform)")
-            
-            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-        }
+        // Given: Multi-component scenario (Receipt scanning workflow)
+        // Component 1: OCR
+        let ocrContext = createTestOCRContext()
+        let ocrView = platformOCRWithVisualCorrection_L1(
+            image: PlatformImage(),
+            context: ocrContext
+        ) { _ in }
+        
+        // Component 2: Form
+        let formFields = createTestFormFields()
+        let formHints = EnhancedPresentationHints(
+            dataType: .form,
+            presentationPreference: .form,
+            complexity: .simple
+        )
+        let formView = platformPresentFormData_L1(
+            fields: formFields,
+            hints: formHints
+        )
+        
+        // When: Rendering both components (would be combined in actual implementation)
+        let ocrHostedView = hostRootPlatformView(ocrView.enableGlobalAutomaticCompliance())
+        let formHostedView = hostRootPlatformView(formView.enableGlobalAutomaticCompliance())
+        
+        // Then: Both should render successfully
+        let currentPlatform = SixLayerPlatform.current
+        #expect(ocrHostedView != nil, "OCR component should render in multi-component workflow on \(currentPlatform)")
+        #expect(formHostedView != nil, "Form component should render in multi-component workflow on \(currentPlatform)")
     }
     
-    /// BUSINESS PURPOSE: Validate that cross-component views render correctly across platforms
-    /// TESTING SCOPE: Tests that multi-component views render consistently on iOS and macOS
-    /// METHODOLOGY: Render same multi-component view on all platforms, verify rendering works
+    /// BUSINESS PURPOSE: Validate that cross-component views render correctly on current platform
+    /// TESTING SCOPE: Tests that multi-component views render correctly on the current platform
+    /// METHODOLOGY: Render multi-component view on current platform, verify rendering works
     @Test @MainActor func testCrossComponentCrossPlatformRendering() async {
         initializeTestConfig()
         
-        var renderingResults: [SixLayerPlatform: Bool] = [:]
+        // Given: Same multi-component configuration
+        let formFields = createTestFormFields()
+        let formHints = EnhancedPresentationHints(
+            dataType: .form,
+            presentationPreference: .form,
+            complexity: .simple
+        )
+        let formView = platformPresentFormData_L1(
+            fields: formFields,
+            hints: formHints
+        )
         
-        for platform in SixLayerPlatform.allCases {
-            
-            // Given: Same multi-component configuration
-            let formFields = createTestFormFields()
-            let formHints = EnhancedPresentationHints(
-                dataType: .form,
-                presentationPreference: .form,
-                complexity: .simple
-            )
-            let formView = platformPresentFormData_L1(
-                fields: formFields,
-                hints: formHints
-            )
-            
-            let ocrContext = createTestOCRContext()
-            let ocrView = platformOCRWithVisualCorrection_L1(
-                image: PlatformImage(),
-                context: ocrContext
-            ) { _ in }
-            
-            // When: Rendering components
-            let formHostedView = hostRootPlatformView(formView.enableGlobalAutomaticCompliance())
-            let ocrHostedView = hostRootPlatformView(ocrView.enableGlobalAutomaticCompliance())
-            
-            // Then: Both should render on this platform
-            let rendered = (formHostedView != nil) && (ocrHostedView != nil)
-            renderingResults[platform] = rendered
-            #expect(rendered, "Multi-component views should render on \(platform)")
-            
-            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-        }
+        let ocrContext = createTestOCRContext()
+        let ocrView = platformOCRWithVisualCorrection_L1(
+            image: PlatformImage(),
+            context: ocrContext
+        ) { _ in }
         
-        // Verify all platforms rendered successfully
-        let allRendered = renderingResults.values.allSatisfy { $0 }
-        #expect(allRendered, "Multi-component views should render on all platforms")
+        // When: Rendering components
+        let formHostedView = hostRootPlatformView(formView.enableGlobalAutomaticCompliance())
+        let ocrHostedView = hostRootPlatformView(ocrView.enableGlobalAutomaticCompliance())
+        
+        // Then: Both should render on current platform
+        let currentPlatform = SixLayerPlatform.current
+        let rendered = (formHostedView != nil) && (ocrHostedView != nil)
+        #expect(rendered, "Multi-component views should render on \(currentPlatform)")
     }
     
     /// BUSINESS PURPOSE: Validate that component accessibility is preserved when combined
@@ -244,36 +221,32 @@ final class CrossComponentIntegrationRenderingTests: BaseTestClass {
     @Test @MainActor func testCrossComponentAccessibilityRendering() async {
         initializeTestConfig()
         
-        for platform in SixLayerPlatform.allCases {
-            
-            // Given: Components with accessibility
-            let formFields = createTestFormFields()
-            let formHints = EnhancedPresentationHints(
-                dataType: .form,
-                presentationPreference: .form,
-                complexity: .simple
-            )
-            let formView = platformPresentFormData_L1(
-                fields: formFields,
-                hints: formHints
-            )
-            
-            let ocrContext = createTestOCRContext()
-            let ocrView = platformOCRWithVisualCorrection_L1(
-                image: PlatformImage(),
-                context: ocrContext
-            ) { _ in }
-            
-            // When: Rendering with accessibility enabled
-            let formHostedView = hostRootPlatformView(formView.enableGlobalAutomaticCompliance())
-            let ocrHostedView = hostRootPlatformView(ocrView.enableGlobalAutomaticCompliance())
-            
-            // Then: Both should render with accessibility
-            #expect(formHostedView != nil, "Form should render with accessibility on \(platform)")
-            #expect(ocrHostedView != nil, "OCR should render with accessibility on \(platform)")
-            
-            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-        }
+        // Given: Components with accessibility
+        let formFields = createTestFormFields()
+        let formHints = EnhancedPresentationHints(
+            dataType: .form,
+            presentationPreference: .form,
+            complexity: .simple
+        )
+        let formView = platformPresentFormData_L1(
+            fields: formFields,
+            hints: formHints
+        )
+        
+        let ocrContext = createTestOCRContext()
+        let ocrView = platformOCRWithVisualCorrection_L1(
+            image: PlatformImage(),
+            context: ocrContext
+        ) { _ in }
+        
+        // When: Rendering with accessibility enabled
+        let formHostedView = hostRootPlatformView(formView.enableGlobalAutomaticCompliance())
+        let ocrHostedView = hostRootPlatformView(ocrView.enableGlobalAutomaticCompliance())
+        
+        // Then: Both should render with accessibility
+        let currentPlatform = SixLayerPlatform.current
+        #expect(formHostedView != nil, "Form should render with accessibility on \(currentPlatform)")
+        #expect(ocrHostedView != nil, "OCR should render with accessibility on \(currentPlatform)")
     }
     
     /// BUSINESS PURPOSE: Validate that component compatibility is maintained in rendering
@@ -282,29 +255,25 @@ final class CrossComponentIntegrationRenderingTests: BaseTestClass {
     @Test @MainActor func testComponentCompatibilityRendering() async {
         initializeTestConfig()
         
-        for platform in SixLayerPlatform.allCases {
-            
-            // Given: Multiple components that might conflict
-            let formFields = [
-                DynamicFormField(id: "name", contentType: .text, label: "Name")
-            ]
-            let formHints = EnhancedPresentationHints(
-                dataType: .form,
-                presentationPreference: .form,
-                complexity: .simple
-            )
-            let formView = platformPresentFormData_L1(
-                fields: formFields,
-                hints: formHints
-            )
-            
-            // When: Rendering form view
-            let formHostedView = hostRootPlatformView(formView.enableGlobalAutomaticCompliance())
-            
-            // Then: View should render without conflicts
-            #expect(formHostedView != nil, "Form should render without conflicts on \(platform)")
-            
-            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-        }
+        // Given: Multiple components that might conflict
+        let formFields = [
+            DynamicFormField(id: "name", contentType: .text, label: "Name")
+        ]
+        let formHints = EnhancedPresentationHints(
+            dataType: .form,
+            presentationPreference: .form,
+            complexity: .simple
+        )
+        let formView = platformPresentFormData_L1(
+            fields: formFields,
+            hints: formHints
+        )
+        
+        // When: Rendering form view
+        let formHostedView = hostRootPlatformView(formView.enableGlobalAutomaticCompliance())
+        
+        // Then: View should render without conflicts
+        let currentPlatform = SixLayerPlatform.current
+        #expect(formHostedView != nil, "Form should render without conflicts on \(currentPlatform)")
     }
 }

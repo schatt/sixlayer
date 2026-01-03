@@ -24,65 +24,52 @@ public enum PlatformTestUtilities {
         public let hoverDelay: TimeInterval
     }
     
-    /// Get platform configuration for a specific platform
+    /// Get platform configuration for a specific platform using runtime detection with overrides
     public static func getPlatformConfig(for platform: SixLayerPlatform) -> PlatformConfig {
+        // Set platform-specific overrides for testing
         switch platform {
         case .iOS:
-            return PlatformConfig(
-                supportsHapticFeedback: true,
-                supportsHover: false, // Device-dependent, default to false
-                supportsTouch: true,
-                supportsVoiceOver: true,
-                supportsSwitchControl: true,
-                supportsAssistiveTouch: true,
-                minTouchTarget: 44.0,
-                hoverDelay: 0.5 // iPad with Apple Pencil
-            )
+            RuntimeCapabilityDetection.setTestHapticFeedback(true)
+            RuntimeCapabilityDetection.setTestHover(false)
+            RuntimeCapabilityDetection.setTestTouchSupport(true)
+            RuntimeCapabilityDetection.setTestAssistiveTouch(true)
         case .macOS:
-            return PlatformConfig(
-                supportsHapticFeedback: false,
-                supportsHover: true,
-                supportsTouch: false,
-                supportsVoiceOver: true,
-                supportsSwitchControl: true,
-                supportsAssistiveTouch: false,
-                minTouchTarget: 0.0,
-                hoverDelay: 0.5
-            )
+            RuntimeCapabilityDetection.setTestHapticFeedback(false)
+            RuntimeCapabilityDetection.setTestHover(true)
+            RuntimeCapabilityDetection.setTestTouchSupport(false) // Default, but can be overridden for touchscreen Macs
+            RuntimeCapabilityDetection.setTestAssistiveTouch(false)
         case .watchOS:
-            return PlatformConfig(
-                supportsHapticFeedback: true,
-                supportsHover: false,
-                supportsTouch: true,
-                supportsVoiceOver: true,
-                supportsSwitchControl: true,
-                supportsAssistiveTouch: false,
-                minTouchTarget: 44.0,
-                hoverDelay: 0.0
-            )
+            RuntimeCapabilityDetection.setTestHapticFeedback(true)
+            RuntimeCapabilityDetection.setTestHover(false)
+            RuntimeCapabilityDetection.setTestTouchSupport(true)
+            RuntimeCapabilityDetection.setTestAssistiveTouch(false)
         case .tvOS:
-            return PlatformConfig(
-                supportsHapticFeedback: false,
-                supportsHover: false,
-                supportsTouch: false,
-                supportsVoiceOver: true,
-                supportsSwitchControl: true,
-                supportsAssistiveTouch: false,
-                minTouchTarget: 0.0,
-                hoverDelay: 0.0
-            )
+            RuntimeCapabilityDetection.setTestHapticFeedback(false)
+            RuntimeCapabilityDetection.setTestHover(false)
+            RuntimeCapabilityDetection.setTestTouchSupport(false)
+            RuntimeCapabilityDetection.setTestAssistiveTouch(false)
         case .visionOS:
-            return PlatformConfig(
-                supportsHapticFeedback: false,
-                supportsHover: true,
-                supportsTouch: false,
-                supportsVoiceOver: true,
-                supportsSwitchControl: true,
-                supportsAssistiveTouch: false,
-                minTouchTarget: 0.0,
-                hoverDelay: 0.5
-            )
+            RuntimeCapabilityDetection.setTestHapticFeedback(false)
+            RuntimeCapabilityDetection.setTestHover(true)
+            RuntimeCapabilityDetection.setTestTouchSupport(false)
+            RuntimeCapabilityDetection.setTestAssistiveTouch(false)
         }
+
+        // VoiceOver and SwitchControl are always available on Apple platforms
+        RuntimeCapabilityDetection.setTestVoiceOver(true)
+        RuntimeCapabilityDetection.setTestSwitchControl(true)
+
+        // Return runtime-detected values (which now use the overrides above)
+        return PlatformConfig(
+            supportsHapticFeedback: RuntimeCapabilityDetection.supportsHapticFeedback,
+            supportsHover: RuntimeCapabilityDetection.supportsHover,
+            supportsTouch: RuntimeCapabilityDetection.supportsTouch,
+            supportsVoiceOver: RuntimeCapabilityDetection.supportsVoiceOver,
+            supportsSwitchControl: RuntimeCapabilityDetection.supportsSwitchControl,
+            supportsAssistiveTouch: RuntimeCapabilityDetection.supportsAssistiveTouch,
+            minTouchTarget: RuntimeCapabilityDetection.minTouchTarget,
+            hoverDelay: RuntimeCapabilityDetection.hoverDelay
+        )
     }
     
     /// Get OCR availability for a platform

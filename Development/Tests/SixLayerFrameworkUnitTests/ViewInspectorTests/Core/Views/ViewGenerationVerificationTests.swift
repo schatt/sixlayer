@@ -62,23 +62,18 @@ open class ViewGenerationVerificationTests: BaseTestClass {
         // detailView is a non-optional View, so it exists if we reach here
         
         // 2. Contains what it needs to contain - The view has the expected structure and content
-        // Using wrapper - when ViewInspector works on macOS, no changes needed here
+        // Using direct ViewInspector API
         #if canImport(ViewInspector)
-        let inspectionResult = withInspectedView(detailView) { inspected in
-            // The view should be wrapped in AnyView
-            let anyView = try inspected.sixLayerAnyView()
-            // Detail view creation succeeded (non-optional result)
+        let inspected = try detailView.inspect()
 
-            // The view should contain text elements with our data
-            let viewText = inspected.sixLayerFindAll(ViewType.Text.self)
-            #expect(!viewText.isEmpty, "Detail view should contain text elements")
+        // The view should contain text elements with our data
+        let viewText = try inspected.findAll(ViewType.Text.self)
+        #expect(!viewText.isEmpty, "Detail view should contain text elements")
 
-            // Should contain the title and subtitle from our test data
-            // Use helper function for DRY text verification
-            self.verifyViewContainsText(detailView, expectedText: "Item 1", testName: "Detail view title")
-            self.verifyViewContainsText(detailView, expectedText: "Subtitle 1", testName: "Detail view subtitle")
-            
-        }
+        // Should contain the title and subtitle from our test data
+        // Use helper function for DRY text verification
+        self.verifyViewContainsText(detailView, expectedText: "Item 1", testName: "Detail view title")
+        self.verifyViewContainsText(detailView, expectedText: "Subtitle 1", testName: "Detail view subtitle")
         #else
         // ViewInspector not available on macOS - test passes by verifying compilation
         #expect(Bool(true), "View inspection not available on this platform (likely macOS) - test passes by verifying compilation")
@@ -120,21 +115,17 @@ open class ViewGenerationVerificationTests: BaseTestClass {
         // 2. Contains what it needs to contain - Both views should contain our data
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
         #if canImport(ViewInspector)
-        let compactInspectionResult = withInspectedView(compactView) { compactInspected in
-            // Compact view should contain our test data
-            let compactText = compactInspected.sixLayerFindAll(ViewType.Text.self)
-            #expect(!compactText.isEmpty, "Compact view should contain text elements")
-            // Use helper function for DRY text verification
-            self.verifyViewContainsText(compactView, expectedText: "Item 1", testName: "Compact view title")
-        }
+        let compactInspected = try compactView.inspect()
+        let compactText = try compactInspected.findAll(ViewType.Text.self)
+        #expect(!compactText.isEmpty, "Compact view should contain text elements")
+        // Use helper function for DRY text verification
+        self.verifyViewContainsText(compactView, expectedText: "Item 1", testName: "Compact view title")
 
-        let detailedInspectionResult = withInspectedView(detailedView) { detailedInspected in
-            // Detailed view should contain our test data
-            let detailedText = detailedInspected.sixLayerFindAll(ViewType.Text.self)
-            #expect(!detailedText.isEmpty, "Detailed view should contain text elements")
-            // Use helper function for DRY text verification
-            self.verifyViewContainsText(detailedView, expectedText: "Item 1", testName: "Detailed view title")
-        }
+        let detailedInspected = try detailedView.inspect()
+        let detailedText = try detailedInspected.findAll(ViewType.Text.self)
+        #expect(!detailedText.isEmpty, "Detailed view should contain text elements")
+        // Use helper function for DRY text verification
+        self.verifyViewContainsText(detailedView, expectedText: "Item 1", testName: "Detailed view title")
         #else
         let compactInspectionResult: Bool? = nil
         let detailedInspectionResult: Bool? = nil

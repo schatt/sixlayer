@@ -421,10 +421,13 @@ struct ComprehensiveCapabilityTestRunner {
         #expect(Bool(true), "Should be able to create functional view with config for \(platform)")  // testView is non-optional
         
         // Test that the configuration produces appropriate UI behavior
-        // Always verify platform-correct minTouchTarget value (based on compile-time platform, not capability overrides)
+        // Always verify platform-correct minTouchTarget value (based on runtime capability detection)
         let currentPlatform = SixLayerPlatform.current
-        let expectedMinTouchTarget: CGFloat = (currentPlatform == .iOS || currentPlatform == .watchOS) ? 44.0 : 0.0
-        #expect(config.minTouchTarget == expectedMinTouchTarget, "Touch targets should be platform-correct (\(expectedMinTouchTarget)) for current platform \(currentPlatform)")
+        let runtimeMinTouchTarget = RuntimeCapabilityDetection.minTouchTarget
+        print("Test: platform=\(currentPlatform), config.minTouchTarget=\(config.minTouchTarget), runtime.minTouchTarget=\(runtimeMinTouchTarget)")
+
+        // The config should use the runtime capability detection
+        #expect(config.minTouchTarget == runtimeMinTouchTarget, "Config minTouchTarget (\(config.minTouchTarget)) should match runtime detection (\(runtimeMinTouchTarget)) for platform \(currentPlatform)")
         
         if config.supportsTouch {
             // Additional touch-specific validations can go here

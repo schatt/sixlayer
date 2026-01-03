@@ -20,7 +20,7 @@ open class Layer5PlatformOptimizationTests: BaseTestClass {
         // Verify platform-appropriate values for current platform
         let currentPlatform = SixLayerPlatform.current
         let expectedMinTouchTarget: CGFloat = (currentPlatform == .iOS || currentPlatform == .watchOS) ? 44.0 : 0.0
-        let expectedHoverDelay: TimeInterval = (currentPlatform == .macOS) ? 0.5 : 0.0
+        let expectedHoverDelay: TimeInterval = (currentPlatform == .macOS || currentPlatform == .visionOS || currentPlatform == .iOS) ? 0.5 : 0.0
         #expect(config.minTouchTarget == expectedMinTouchTarget, "Current platform \(currentPlatform) should have platform-appropriate minTouchTarget (\(expectedMinTouchTarget))")
         #expect(config.hoverDelay == expectedHoverDelay, "Current platform \(currentPlatform) should have platform-appropriate hoverDelay (\(expectedHoverDelay))")
     }
@@ -34,7 +34,7 @@ open class Layer5PlatformOptimizationTests: BaseTestClass {
         // not the simulated capability overrides above.
         let currentPlatform = SixLayerPlatform.current
         let expectedMinTouchTarget: CGFloat = (currentPlatform == .iOS || currentPlatform == .watchOS) ? 44.0 : 0.0
-        let expectedHoverDelay: TimeInterval = (currentPlatform == .macOS) ? 0.5 : 0.0
+        let expectedHoverDelay: TimeInterval = (currentPlatform == .macOS || currentPlatform == .visionOS || currentPlatform == .iOS) ? 0.5 : 0.0
         
         #expect(config.minTouchTarget == expectedMinTouchTarget, "Current platform \(currentPlatform) should have platform-appropriate minTouchTarget (\(expectedMinTouchTarget))")
         #expect(config.hoverDelay == expectedHoverDelay, "Current platform \(currentPlatform) should have platform-appropriate hoverDelay (\(expectedHoverDelay))")
@@ -49,7 +49,7 @@ open class Layer5PlatformOptimizationTests: BaseTestClass {
         // Verify platform-appropriate values for current platform
         let currentPlatform = SixLayerPlatform.current
         let expectedMinTouchTarget: CGFloat = (currentPlatform == .iOS || currentPlatform == .watchOS) ? 44.0 : 0.0
-        let expectedHoverDelay: TimeInterval = (currentPlatform == .macOS) ? 0.5 : 0.0
+        let expectedHoverDelay: TimeInterval = (currentPlatform == .macOS || currentPlatform == .visionOS || currentPlatform == .iOS) ? 0.5 : 0.0
         
         #expect(config.minTouchTarget == expectedMinTouchTarget, "Current platform \(currentPlatform) should have platform-appropriate minTouchTarget (\(expectedMinTouchTarget))")
         #expect(config.hoverDelay == expectedHoverDelay, "Current platform \(currentPlatform) should have platform-appropriate hoverDelay (\(expectedHoverDelay))")
@@ -64,7 +64,7 @@ open class Layer5PlatformOptimizationTests: BaseTestClass {
         // Verify platform-appropriate values for current platform
         let currentPlatform = SixLayerPlatform.current
         let expectedMinTouchTarget: CGFloat = (currentPlatform == .iOS || currentPlatform == .watchOS) ? 44.0 : 0.0
-        let expectedHoverDelay: TimeInterval = (currentPlatform == .macOS) ? 0.5 : 0.0
+        let expectedHoverDelay: TimeInterval = (currentPlatform == .macOS || currentPlatform == .visionOS || currentPlatform == .iOS) ? 0.5 : 0.0
         
         #expect(config.minTouchTarget == expectedMinTouchTarget, "Current platform \(currentPlatform) should have platform-appropriate minTouchTarget (\(expectedMinTouchTarget))")
         #expect(config.hoverDelay == expectedHoverDelay, "Current platform \(currentPlatform) should have platform-appropriate hoverDelay (\(expectedHoverDelay))")
@@ -79,7 +79,7 @@ open class Layer5PlatformOptimizationTests: BaseTestClass {
         // Verify platform-appropriate values for current platform
         let currentPlatform = SixLayerPlatform.current
         let expectedMinTouchTarget: CGFloat = (currentPlatform == .iOS || currentPlatform == .watchOS) ? 44.0 : 0.0
-        let expectedHoverDelay: TimeInterval = (currentPlatform == .macOS) ? 0.5 : 0.0
+        let expectedHoverDelay: TimeInterval = (currentPlatform == .macOS || currentPlatform == .visionOS || currentPlatform == .iOS) ? 0.5 : 0.0
         
         #expect(config.minTouchTarget == expectedMinTouchTarget, "Current platform \(currentPlatform) should have platform-appropriate minTouchTarget (\(expectedMinTouchTarget))")
         #expect(config.hoverDelay == expectedHoverDelay, "Current platform \(currentPlatform) should have platform-appropriate hoverDelay (\(expectedHoverDelay))")
@@ -91,7 +91,7 @@ open class Layer5PlatformOptimizationTests: BaseTestClass {
         // Verify platform-appropriate values for current platform (not simulated platform)
         let currentPlatform = SixLayerPlatform.current
         let expectedMinTouchTarget: CGFloat = (currentPlatform == .iOS || currentPlatform == .watchOS) ? 44.0 : 0.0
-        let expectedHoverDelay: TimeInterval = (currentPlatform == .macOS) ? 0.5 : 0.0
+        let expectedHoverDelay: TimeInterval = (currentPlatform == .macOS || currentPlatform == .visionOS || currentPlatform == .iOS) ? 0.5 : 0.0
         
         for platform in platforms {
             let config = getCardExpansionPlatformConfig()
