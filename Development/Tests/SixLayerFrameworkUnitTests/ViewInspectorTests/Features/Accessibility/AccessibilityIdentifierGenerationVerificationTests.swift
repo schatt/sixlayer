@@ -63,14 +63,14 @@ open class AccessibilityIdentifierGenerationVerificationTests: BaseTestClass {
                 
             // Test: Use centralized component accessibility testing
             #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
-            let testPassed = testComponentAccessibility(
-                componentName: "NamedModifier",
-                createComponent: {
-                    PlatformInteractionButton(style: .primary, action: {}) {
-                        platformPresentContent_L1(content: "Add Fuel", hints: PresentationHints())
-                    }
-                    .named("AddFuelButton")
+            let testPassed = testComponentComplianceSinglePlatform(
+                PlatformInteractionButton(style: .primary, action: {}) {
+                    platformPresentContent_L1(content: "Add Fuel", hints: PresentationHints())
                 }
+                .named("AddFuelButton"),
+                expectedPattern: "SixLayer.main.ui.*",
+                platform: SixLayerPlatform.iOS,
+                componentName: "NamedModifier"
             )
  #expect(testPassed, "NamedModifier should generate accessibility identifiers ")
         #else
