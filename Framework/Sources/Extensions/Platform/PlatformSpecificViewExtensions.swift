@@ -71,8 +71,8 @@ public extension View {
 
     /// Platform-specific frame constraints
     /// On macOS, applies minimum frame constraints clamped to available screen size.
-    /// On iOS, applies maximum constraints clamped to available screen/window size
-    /// to prevent views from exceeding device bounds (handles Split View, Stage Manager, etc.).
+    /// On iOS, watchOS, tvOS, and visionOS, applies maximum constraints clamped to available
+    /// screen/window size to prevent views from exceeding device bounds.
     func platformFrame() -> some View {
         #if os(iOS)
         // iOS: Apply maximum constraints to prevent overflow
@@ -83,6 +83,10 @@ public extension View {
         let clampedWidth = clampFrameSize(600, dimension: .width)
         let clampedHeight = clampFrameSize(800, dimension: .height)
         return self.frame(minWidth: clampedWidth, minHeight: clampedHeight)
+        #elseif os(watchOS) || os(tvOS) || os(visionOS)
+        // watchOS, tvOS, visionOS: Apply maximum constraints to prevent overflow
+        let maxSize = getOtherPlatformMaxFrameSize()
+        return self.frame(maxWidth: maxSize.width, maxHeight: maxSize.height)
         #else
         return self
         #endif
@@ -137,6 +141,25 @@ public extension View {
         } else {
             return AnyView(self)
         }
+        #elseif os(watchOS) || os(tvOS) || os(visionOS)
+        // watchOS, tvOS, visionOS: Clamp maximum sizes to available screen space
+        let maxSize = getOtherPlatformMaxFrameSize()
+        let clampedMaxWidth = maxWidth.map { min($0, maxSize.width) } ?? maxSize.width
+        let clampedMaxHeight = maxHeight.map { min($0, maxSize.height) } ?? maxSize.height
+        
+        // Apply constraints if provided
+        if let minWidth = minWidth, let minHeight = minHeight {
+            return AnyView(self.frame(minWidth: minWidth, maxWidth: clampedMaxWidth, minHeight: minHeight, maxHeight: clampedMaxHeight))
+        } else if let minWidth = minWidth {
+            return AnyView(self.frame(minWidth: minWidth, maxWidth: clampedMaxWidth))
+        } else if let minHeight = minHeight {
+            return AnyView(self.frame(minHeight: minHeight, maxHeight: clampedMaxHeight))
+        } else if maxWidth != nil || maxHeight != nil {
+            return AnyView(self.frame(maxWidth: clampedMaxWidth, maxHeight: clampedMaxHeight))
+        } else {
+            // No constraints provided, apply default max constraints for safety
+            return AnyView(self.frame(maxWidth: clampedMaxWidth, maxHeight: clampedMaxHeight))
+        }
         #else
         return AnyView(self)
         #endif
@@ -161,6 +184,24 @@ public extension View {
         // Use 100% of window size (iOS views should fill available space)
         // No margin needed since iOS handles safe areas separately
         return windowSize
+    }
+    #endif
+    
+    #if os(watchOS) || os(tvOS) || os(visionOS)
+    /// Get maximum frame size for watchOS, tvOS, and visionOS based on screen size
+    /// - Returns: Maximum size that fits within available screen space
+    private func getOtherPlatformMaxFrameSize() -> CGSize {
+        #if os(watchOS)
+        import WatchKit
+        // watchOS: Use WKInterfaceDevice for accurate screen size
+        let screenSize = WKInterfaceDevice.current().screenBounds.size
+        #else
+        // tvOS and visionOS: Use UIScreen (same API as iOS)
+        let screenSize = UIScreen.main.bounds.size
+        #endif
+        
+        // Use 100% of screen size (these platforms typically use full-screen layouts)
+        return screenSize
     }
     #endif
     
