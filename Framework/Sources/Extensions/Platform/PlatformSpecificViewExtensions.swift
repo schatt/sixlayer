@@ -81,15 +81,15 @@ public extension View {
         #if os(iOS)
         // iOS: Apply maximum constraints to prevent overflow
         // Uses actual window size to handle Split View, Stage Manager, etc.
-        let maxSize = getIOSMaxFrameSize()
+        let maxSize = PlatformFrameHelpers.getMaxFrameSize()
         return self.frame(maxWidth: maxSize.width, maxHeight: maxSize.height)
         #elseif os(macOS)
-        let clampedWidth = clampFrameSize(600, dimension: .width)
-        let clampedHeight = clampFrameSize(800, dimension: .height)
+        let clampedWidth = PlatformFrameHelpers.clampFrameSize(600, dimension: .width)
+        let clampedHeight = PlatformFrameHelpers.clampFrameSize(800, dimension: .height)
         return self.frame(minWidth: clampedWidth, minHeight: clampedHeight)
         #elseif os(watchOS) || os(tvOS) || os(visionOS)
         // watchOS, tvOS, visionOS: Apply maximum constraints to prevent overflow
-        let maxSize = getOtherPlatformMaxFrameSize()
+        let maxSize = PlatformFrameHelpers.getMaxFrameSize()
         return self.frame(maxWidth: maxSize.width, maxHeight: maxSize.height)
         #else
         return self
@@ -107,142 +107,42 @@ public extension View {
     ///   - maxHeight: Maximum height constraint (clamped to screen/window size on both platforms)
     /// - Returns: A view with platform-specific frame constraints
     func platformFrame(minWidth: CGFloat? = nil, minHeight: CGFloat? = nil, maxWidth: CGFloat? = nil, maxHeight: CGFloat? = nil) -> some View {
-        #if os(iOS)
-        // iOS: Clamp maximum sizes to available window/screen space
-        // Handles Split View, Stage Manager, and orientation changes
-        let maxSize = getIOSMaxFrameSize()
-        let clampedMaxWidth = maxWidth.map { min($0, maxSize.width) } ?? maxSize.width
-        let clampedMaxHeight = maxHeight.map { min($0, maxSize.height) } ?? maxSize.height
+        // Use shared helper for DRY implementation
+        let clamped = PlatformFrameHelpers.clampFrameConstraints(
+            minWidth: minWidth,
+            minHeight: minHeight,
+            maxWidth: maxWidth,
+            maxHeight: maxHeight
+        )
         
         // Apply constraints if provided
-        if let minWidth = minWidth, let minHeight = minHeight {
-            return AnyView(self.frame(minWidth: minWidth, maxWidth: clampedMaxWidth, minHeight: minHeight, maxHeight: clampedMaxHeight))
-        } else if let minWidth = minWidth {
-            return AnyView(self.frame(minWidth: minWidth, maxWidth: clampedMaxWidth))
-        } else if let minHeight = minHeight {
-            return AnyView(self.frame(minHeight: minHeight, maxHeight: clampedMaxHeight))
-        } else if maxWidth != nil || maxHeight != nil {
-            return AnyView(self.frame(maxWidth: clampedMaxWidth, maxHeight: clampedMaxHeight))
-        } else {
-            // No constraints provided, apply default max constraints for safety
-            return AnyView(self.frame(maxWidth: clampedMaxWidth, maxHeight: clampedMaxHeight))
-        }
-        #elseif os(macOS)
-        // Clamp minimum sizes to available screen space
-        let clampedMinWidth = minWidth.map { clampFrameSize($0, dimension: .width) }
-        let clampedMinHeight = minHeight.map { clampFrameSize($0, dimension: .height) }
-        
-        if let minWidth = clampedMinWidth, let minHeight = clampedMinHeight {
-            if let maxWidth = maxWidth, let maxHeight = maxHeight {
+        if let minWidth = clamped.minWidth, let minHeight = clamped.minHeight {
+            if let maxWidth = clamped.maxWidth, let maxHeight = clamped.maxHeight {
                 return AnyView(self.frame(minWidth: minWidth, maxWidth: maxWidth, minHeight: minHeight, maxHeight: maxHeight))
             } else {
                 return AnyView(self.frame(minWidth: minWidth, minHeight: minHeight))
             }
-        } else if let minWidth = clampedMinWidth {
-            return AnyView(self.frame(minWidth: minWidth))
-        } else if let minHeight = clampedMinHeight {
-            return AnyView(self.frame(minHeight: minHeight))
+        } else if let minWidth = clamped.minWidth {
+            return AnyView(self.frame(minWidth: minWidth, maxWidth: clamped.maxWidth))
+        } else if let minHeight = clamped.minHeight {
+            return AnyView(self.frame(minHeight: minHeight, maxHeight: clamped.maxHeight))
+        } else if clamped.maxWidth != nil || clamped.maxHeight != nil {
+            return AnyView(self.frame(maxWidth: clamped.maxWidth ?? .infinity, maxHeight: clamped.maxHeight ?? .infinity))
         } else {
+            // No constraints provided, apply default max constraints for safety on mobile platforms
+            #if os(iOS) || os(watchOS) || os(tvOS) || os(visionOS)
+            let maxSize = PlatformFrameHelpers.getMaxFrameSize()
+            return AnyView(self.frame(maxWidth: maxSize.width, maxHeight: maxSize.height))
+            #else
             return AnyView(self)
-        }
-        #elseif os(watchOS) || os(tvOS) || os(visionOS)
-        // watchOS, tvOS, visionOS: Clamp maximum sizes to available screen space
-        let maxSize = getOtherPlatformMaxFrameSize()
-        let clampedMaxWidth = maxWidth.map { min($0, maxSize.width) } ?? maxSize.width
-        let clampedMaxHeight = maxHeight.map { min($0, maxSize.height) } ?? maxSize.height
-        
-        // Apply constraints if provided
-        if let minWidth = minWidth, let minHeight = minHeight {
-            return AnyView(self.frame(minWidth: minWidth, maxWidth: clampedMaxWidth, minHeight: minHeight, maxHeight: clampedMaxHeight))
-        } else if let minWidth = minWidth {
-            return AnyView(self.frame(minWidth: minWidth, maxWidth: clampedMaxWidth))
-        } else if let minHeight = minHeight {
-            return AnyView(self.frame(minHeight: minHeight, maxHeight: clampedMaxHeight))
-        } else if maxWidth != nil || maxHeight != nil {
-            return AnyView(self.frame(maxWidth: clampedMaxWidth, maxHeight: clampedMaxHeight))
-        } else {
-            // No constraints provided, apply default max constraints for safety
-            return AnyView(self.frame(maxWidth: clampedMaxWidth, maxHeight: clampedMaxHeight))
+            #endif
         }
         #else
         return AnyView(self)
         #endif
     }
     
-    #if os(iOS)
-    /// Get maximum frame size for iOS based on actual window/screen size
-    /// Handles Split View, Stage Manager, and orientation changes
-    /// - Returns: Maximum size that fits within available window space
-    private func getIOSMaxFrameSize() -> CGSize {
-        // Get actual window size (handles Split View, Stage Manager, etc.)
-        let windowSize: CGSize
-        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-           let window = windowScene.windows.first {
-            // Use actual window size for responsive layouts
-            windowSize = window.bounds.size
-        } else {
-            // Fallback to screen size if no window available
-            windowSize = UIScreen.main.bounds.size
-        }
-        
-        // Use 100% of window size (iOS views should fill available space)
-        // No margin needed since iOS handles safe areas separately
-        return windowSize
-    }
-    #endif
-    
-    #if os(watchOS) || os(tvOS) || os(visionOS)
-    /// Get maximum frame size for watchOS, tvOS, and visionOS based on screen size
-    /// - Returns: Maximum size that fits within available screen space
-    private func getOtherPlatformMaxFrameSize() -> CGSize {
-        #if os(watchOS)
-        // watchOS: Use WKInterfaceDevice for accurate screen size
-        let screenSize = WKInterfaceDevice.current().screenBounds.size
-        #else
-        // tvOS and visionOS: Use UIScreen (same API as iOS)
-        let screenSize = UIScreen.main.bounds.size
-        #endif
-        
-        // Use 100% of screen size (these platforms typically use full-screen layouts)
-        return screenSize
-    }
-    #endif
-    
-    #if os(macOS)
-    /// Clamp frame size to available screen space
-    /// Prevents minimum sizes that are too large for the device
-    /// - Parameter size: The desired size
-    /// - Parameter dimension: Whether this is width or height
-    /// - Returns: Clamped size that fits within screen bounds
-    private func clampFrameSize(_ size: CGFloat, dimension: FrameDimension) -> CGFloat {
-        // Get available screen size (AppKit is already imported at file level)
-        let screenSize: CGSize
-        if let mainScreen = NSScreen.main {
-            screenSize = mainScreen.visibleFrame.size
-        } else {
-            // Fallback to reasonable defaults if screen unavailable
-            screenSize = CGSize(width: 1920, height: 1080)
-        }
-        
-        // Use 90% of available screen space as maximum to leave some margin
-        let maxSize = dimension == .width ? screenSize.width * 0.9 : screenSize.height * 0.9
-        
-        // Absolute minimums to ensure usability
-        let absoluteMin: CGFloat = dimension == .width ? 300 : 400
-        // Absolute maximums to prevent unreasonably large windows
-        let absoluteMax: CGFloat = dimension == .width ? 3840 : 2160 // 4K display max
-        
-        // Clamp between absolute minimum and the smaller of maxSize or absoluteMax
-        let effectiveMax = min(maxSize, absoluteMax)
-        return max(absoluteMin, min(size, effectiveMax))
-    }
-    
-    /// Helper enum for frame dimension
-    private enum FrameDimension {
-        case width
-        case height
-    }
-    #endif
+    // Frame size helpers moved to PlatformFrameHelpers.swift for DRY reuse
 
     // Note: platformAdaptiveFrame moved to PlatformStylingLayer4.swift
     // to consolidate with existing styling logic and avoid naming conflicts
@@ -2216,9 +2116,13 @@ public extension View {
     /// iOS: No frame constraints; macOS: Sets minimum width and height
     func platformDetailViewFrame() -> some View {
         #if os(macOS)
-        self.frame(minWidth: 800, minHeight: 600)
+        let clampedWidth = PlatformFrameHelpers.clampFrameSize(800, dimension: .width)
+        let clampedHeight = PlatformFrameHelpers.clampFrameSize(600, dimension: .height)
+        return self.frame(minWidth: clampedWidth, minHeight: clampedHeight)
         #else
-        self
+        // iOS and other platforms: Apply max constraints for safety
+        let maxSize = PlatformFrameHelpers.getMaxFrameSize()
+        return self.frame(maxWidth: maxSize.width, maxHeight: maxSize.height)
         #endif
     }
 
