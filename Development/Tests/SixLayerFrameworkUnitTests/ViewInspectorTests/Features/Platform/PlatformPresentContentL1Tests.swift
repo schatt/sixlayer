@@ -157,15 +157,8 @@ open class PlatformPresentContentL1Tests: BaseTestClass {
             #expect(!viewText.isEmpty, "Number content view should contain text elements")
             
             // Should contain our actual number content
-            let hasNumberContent = viewText.contains { text in
-                do {
-                    let textContent = try text.sixLayerString()
-                    return textContent.contains("42")
-                } catch {
-                    return false
-                }
-            }
-            #expect(hasNumberContent, "View should contain the actual number content '42'")
+            // Use helper function for DRY text verification
+            TestPatterns.verifyViewContainsText(view, expectedText: "42", testName: "Number content view")
             
         } catch {
             Issue.record("Failed to inspect number content view")

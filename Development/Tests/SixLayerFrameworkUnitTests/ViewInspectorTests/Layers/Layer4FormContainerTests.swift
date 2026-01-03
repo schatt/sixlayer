@@ -51,14 +51,8 @@ open class Layer4FormContainerTests: BaseTestClass {
             let viewText = inspected.sixLayerFindAll(ViewType.Text.self)
             #expect(!viewText.isEmpty, "Form container should contain text elements")
 
-            // Should contain the test content
-            let hasTestContent = viewText.contains { text in
-                if let textContent = try? text.sixLayerString() {
-                    return textContent.contains("Test Form Content")
-                }
-                return false
-            }
-            #expect(hasTestContent, "Form container should contain the test content")
+            // Should contain the test content - use helper function for DRY text verification
+            TestPatterns.verifyViewContainsText(view, expectedText: "Test Form Content", testName: "Form container content")
         }
 
         if inspectionResult == nil {
@@ -128,14 +122,8 @@ open class Layer4FormContainerTests: BaseTestClass {
             let viewText = inspected.sixLayerFindAll(ViewType.Text.self)
             #expect(!viewText.isEmpty, "Standard container should contain text elements")
 
-            // Should contain the test content
-            let hasTestContent = viewText.contains { text in
-                if let textContent = try? text.sixLayerString() {
-                    return textContent.contains("Test Form Content")
-                }
-                return false
-            }
-            #expect(hasTestContent, "Standard container should contain the test content")
+            // Should contain the test content - use helper function for DRY text verification
+            TestPatterns.verifyViewContainsText(view, expectedText: "Test Form Content", testName: "Standard container content")
         }
         #else
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure

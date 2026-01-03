@@ -208,18 +208,8 @@ open class PhotoComponentsLayer4Tests: BaseTestClass {
             
             // 2. Does that structure contain what it should?
             #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
-            if let inspected = result.tryInspect() {
-               let viewImages = inspected.sixLayerFindAll(ViewType.Image.self)
-               if !viewImages.isEmpty {
-                // The photo display should contain an image
-                #expect(!viewImages.isEmpty, "Photo display should contain an image")
-
-                // Verify the view structure is inspectable
-                let _ = result.tryInspect()
-               } else {
-                Issue.record("Failed to inspect photo display structure")
-               }
-            }
+            // Use helper function for DRY image verification
+            TestPatterns.verifyViewContainsImage(result, testName: "Photo display")
             #else
             // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
             #endif

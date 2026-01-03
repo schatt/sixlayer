@@ -43,16 +43,8 @@ open class NavigationLayer4Tests: BaseTestClass {
             let viewText = inspected.sixLayerFindAll(ViewType.Text.self)
             #expect(!viewText.isEmpty, "Navigation link should contain text elements")
             
-            // Should contain the label text
-            let hasLabelText = viewText.contains { text in
-                do {
-                    let textContent = try text.sixLayerString()
-                    return textContent.contains("Label")
-                } catch {
-                    return false
-                }
-            }
-            #expect(hasLabelText, "Navigation link should contain the label text 'Label'")
+            // Should contain the label text - use helper function for DRY text verification
+            TestPatterns.verifyViewContainsText(link, expectedText: "Label", testName: "Navigation link label")
             
         } catch {
             Issue.record("Failed to inspect navigation link structure")

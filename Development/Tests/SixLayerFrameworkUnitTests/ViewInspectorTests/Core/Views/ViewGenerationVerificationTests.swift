@@ -73,27 +73,10 @@ struct ViewGenerationVerificationTests {
             let viewText = inspected.sixLayerFindAll(ViewType.Text.self)
             #expect(!viewText.isEmpty, "Detail view should contain text elements")
 
-            // Should contain the title from our test data
-            let hasTitleContent = viewText.contains { text in
-                do {
-                    let textContent = try text.sixLayerString()
-                    return textContent.contains("Item 1")
-                } catch {
-                    return false
-                }
-            }
-            #expect(hasTitleContent, "Detail view should contain the title 'Item 1'")
-
-            // Should contain the subtitle from our test data
-            let hasSubtitleContent = viewText.contains { text in
-                do {
-                    let textContent = try text.sixLayerString()
-                    return textContent.contains("Subtitle 1")
-                } catch {
-                    return false
-                }
-            }
-            #expect(hasSubtitleContent, "Detail view should contain the subtitle 'Subtitle 1'")
+            // Should contain the title and subtitle from our test data
+            // Use helper function for DRY text verification
+            TestPatterns.verifyViewContainsText(detailView, expectedText: "Item 1", testName: "Detail view title")
+            TestPatterns.verifyViewContainsText(detailView, expectedText: "Subtitle 1", testName: "Detail view subtitle")
             
         }
         #else
@@ -141,34 +124,16 @@ struct ViewGenerationVerificationTests {
             // Compact view should contain our test data
             let compactText = compactInspected.sixLayerFindAll(ViewType.Text.self)
             #expect(!compactText.isEmpty, "Compact view should contain text elements")
-
-            // Should contain the title
-            let compactHasTitle = compactText.contains { text in
-                do {
-                    let textContent = try text.sixLayerString()
-                    return textContent.contains("Item 1")
-                } catch {
-                    return false
-                }
-            }
-            #expect(compactHasTitle, "Compact view should contain the title")
+            // Use helper function for DRY text verification
+            TestPatterns.verifyViewContainsText(compactView, expectedText: "Item 1", testName: "Compact view title")
         }
 
         let detailedInspectionResult = withInspectedView(detailedView) { detailedInspected in
             // Detailed view should contain our test data
             let detailedText = detailedInspected.sixLayerFindAll(ViewType.Text.self)
             #expect(!detailedText.isEmpty, "Detailed view should contain text elements")
-
-            // Should contain the title
-            let detailedHasTitle = detailedText.contains { text in
-                do {
-                    let textContent = try text.sixLayerString()
-                    return textContent.contains("Item 1")
-                } catch {
-                    return false
-                }
-            }
-            #expect(detailedHasTitle, "Detailed view should contain the title")
+            // Use helper function for DRY text verification
+            TestPatterns.verifyViewContainsText(detailedView, expectedText: "Item 1", testName: "Detailed view title")
         }
         #else
         let compactInspectionResult: Bool? = nil
@@ -203,25 +168,10 @@ struct ViewGenerationVerificationTests {
         
         // 2. Contains what it needs to contain - The view should contain custom field content
         #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
-        do {
-            // The view should contain text elements
-            let viewText = try detailView.inspect().findAll(ViewType.Text.self)
-            #expect(!viewText.isEmpty, "Detail view should contain text elements")
-            
-            // Should contain custom field content
-            let hasCustomContent = viewText.contains { text in
-                do {
-                    let textContent = try text.sixLayerString()
-                    return textContent.contains("Custom:") && textContent.contains("=")
-                } catch {
-                    return false
-                }
-            }
-            #expect(hasCustomContent, "Detail view should contain custom field content")
-            
-        } catch {
-            Issue.record("Failed to inspect detail view with custom field view")
-        }
+        // Use helper function for DRY text verification
+        // Check for both "Custom:" and "=" to verify custom field content
+        TestPatterns.verifyViewContainsText(detailView, expectedText: "Custom:", testName: "Detail view custom field")
+        TestPatterns.verifyViewContainsText(detailView, expectedText: "=", testName: "Detail view custom field separator")
         #else
         // ViewInspector not available on macOS - test passes by verifying compilation
         #expect(Bool(true), "View inspection not available on this platform (likely macOS) - test passes by verifying compilation")
@@ -250,27 +200,10 @@ struct ViewGenerationVerificationTests {
             let viewText = try detailView.inspect().findAll(ViewType.Text.self)
             #expect(!viewText.isEmpty, "Detail view should contain text elements")
             
-            // Should contain the title (which is not nil)
-            let hasTitleContent = viewText.contains { text in
-                do {
-                    let textContent = try text.sixLayerString()
-                    return textContent.contains("Item 2")
-                } catch {
-                    return false
-                }
-            }
-            #expect(hasTitleContent, "Detail view should contain the title 'Item 2'")
-            
-            // Should contain the description (which is not nil)
-            let hasDescriptionContent = viewText.contains { text in
-                do {
-                    let textContent = try text.sixLayerString()
-                    return textContent.contains("Description 2")
-                } catch {
-                    return false
-                }
-            }
-            #expect(hasDescriptionContent, "Detail view should contain the description 'Description 2'")
+            // Should contain the title and description (which are not nil)
+            // Use helper function for DRY text verification
+            TestPatterns.verifyViewContainsText(detailView, expectedText: "Item 2", testName: "Detail view title with nil subtitle")
+            TestPatterns.verifyViewContainsText(detailView, expectedText: "Description 2", testName: "Detail view description")
             
         } catch {
             Issue.record("Failed to inspect detail view with nil values")
