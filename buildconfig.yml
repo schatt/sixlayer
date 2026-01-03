@@ -39,6 +39,36 @@ platforms:
     artifact_patterns:
       - build/ios/*.ipa
     # scheme: Required. The Xcode scheme to build for this platform.
+  - name: tvOS_build
+    build_command: xcodebuild build -workspace .swiftpm/xcode/package.xcworkspace -scheme SixLayerFramework -destination "platform=tvOS Simulator,name=Apple TV"
+    artifact_dir: build/tvos
+    artifact_patterns:
+      - build/tvos/*.app
+  - name: tvOS_tests
+    build_command: xcodebuild test -project SixLayerFramework.xcodeproj -scheme SixLayerFramework-AllTests-tvOS -destination "platform=tvOS Simulator,name=Apple TV" -parallel-testing-enabled YES
+    artifact_dir: build/tvos
+    artifact_patterns:
+      - build/tvos/*.app
+  - name: watchOS_build
+    build_command: xcodebuild build -workspace .swiftpm/xcode/package.xcworkspace -scheme SixLayerFramework -destination "platform=watchOS Simulator,name=Apple Watch Series 9 (45mm)"
+    artifact_dir: build/watchos
+    artifact_patterns:
+      - build/watchos/*.app
+  - name: watchOS_tests
+    build_command: xcodebuild test -project SixLayerFramework.xcodeproj -scheme SixLayerFramework-AllTests-watchOS -destination "platform=watchOS Simulator,name=Apple Watch Series 9 (45mm)" -parallel-testing-enabled YES
+    artifact_dir: build/watchos
+    artifact_patterns:
+      - build/watchos/*.app
+  - name: visionOS_build
+    build_command: xcodebuild build -workspace .swiftpm/xcode/package.xcworkspace -scheme SixLayerFramework -destination "platform=visionOS Simulator,name=Apple Vision Pro"
+    artifact_dir: build/visionos
+    artifact_patterns:
+      - build/visionos/*.app
+  - name: visionOS_tests
+    build_command: xcodebuild test -project SixLayerFramework.xcodeproj -scheme SixLayerFramework-AllTests-visionOS -destination "platform=visionOS Simulator,name=Apple Vision Pro" -parallel-testing-enabled YES
+    artifact_dir: build/visionos
+    artifact_patterns:
+      - build/visionos/*.app
 tasks:
   - name: generate-file-list
     # Example: passing a secret as an environment variable (uncomment to use)
@@ -74,12 +104,18 @@ build_groups:
     targets:
       - macOS
       - iOS_build
+      - tvOS_build
+      - watchOS_build
+      - visionOS_build
   test:
     continue_on_error: true
     parallel: true
     targets:
       - macOS_tests
       - iOS_tests
+      - tvOS_tests
+      - watchOS_tests
+      - visionOS_tests
   mac:
     targets:
       - xcodegen
@@ -98,3 +134,30 @@ build_groups:
     targets:
       - xcodegen
       - iOS_tests
+  tvos:
+    targets:
+      - xcodegen
+      - tvOS_build
+      - tvOS_tests
+  tvos_test:
+    targets:
+      - xcodegen
+      - tvOS_tests
+  watchos:
+    targets:
+      - xcodegen
+      - watchOS_build
+      - watchOS_tests
+  watchos_test:
+    targets:
+      - xcodegen
+      - watchOS_tests
+  visionos:
+    targets:
+      - xcodegen
+      - visionOS_build
+      - visionOS_tests
+  visionos_test:
+    targets:
+      - xcodegen
+      - visionOS_tests
