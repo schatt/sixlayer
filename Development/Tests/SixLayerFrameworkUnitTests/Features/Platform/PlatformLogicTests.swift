@@ -125,61 +125,6 @@ open class PlatformLogicTests: BaseTestClass {
     
     // MARK: - Capability Matrix Tests
     
-    @Test func testCapabilityConsistency_iOS() {
-        let config = PlatformCapabilities(supportsHapticFeedback: true, supportsHover: false, supportsTouch: true, supportsVoiceOver: true, supportsSwitchControl: false, supportsAssistiveTouch: false, minTouchTarget: 44, hoverDelay: 0)
-        let platform = SixLayerPlatform.iOS
-        let deviceType = DeviceType.phone
-
-        // Haptic feedback should only be available with touch
-        if config.supportsHapticFeedback {
-            #expect(config.supportsTouch, "Haptic feedback should only be available with touch on \(platform) \(deviceType)")
-        }
-
-        // AssistiveTouch should only be available with touch
-        if config.supportsAssistiveTouch {
-            #expect(config.supportsTouch, "AssistiveTouch should only be available with touch on \(platform) \(deviceType)")
-        }
-
-        // Hover delay should be zero if hover is not supported
-        if !config.supportsHover {
-            #expect(config.hoverDelay == 0, "Hover delay should be zero when hover is not supported on \(platform) \(deviceType)")
-        }
-
-        // Touch target should be appropriate for touch platforms
-        if config.supportsTouch {
-            #expect(config.minTouchTarget >= 44, "Touch target should be adequate for touch platforms on \(platform) \(deviceType)")
-        } else {
-            #expect(config.minTouchTarget == 0, "Touch target should be zero for non-touch platforms on \(platform) \(deviceType)")
-        }
-    }
-
-    @Test func testCapabilityConsistency_macOS() {
-        let config = PlatformCapabilities(supportsHapticFeedback: false, supportsHover: true, supportsTouch: false, supportsVoiceOver: true, supportsSwitchControl: false, supportsAssistiveTouch: false, minTouchTarget: 0, hoverDelay: 0.1)
-        let platform = SixLayerPlatform.macOS
-        let deviceType = DeviceType.mac
-
-        // Haptic feedback should only be available with touch
-        if config.supportsHapticFeedback {
-            #expect(config.supportsTouch, "Haptic feedback should only be available with touch on \(platform) \(deviceType)")
-        }
-
-        // AssistiveTouch should only be available with touch
-        if config.supportsAssistiveTouch {
-            #expect(config.supportsTouch, "AssistiveTouch should only be available with touch on \(platform) \(deviceType)")
-        }
-
-        // Hover delay should be zero if hover is not supported
-        if !config.supportsHover {
-            #expect(config.hoverDelay == 0, "Hover delay should be zero when hover is not supported on \(platform) \(deviceType)")
-        }
-
-        // Touch target should be appropriate for touch platforms
-        if config.supportsTouch {
-            #expect(config.minTouchTarget >= 44, "Touch target should be adequate for touch platforms on \(platform) \(deviceType)")
-        } else {
-            #expect(config.minTouchTarget == 0, "Touch target should be zero for non-touch platforms on \(platform) \(deviceType)")
-        }
-    }
 
     @Test func testCapabilityMatrixConsistency() {
         // GIVEN: Current platform capabilities
