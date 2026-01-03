@@ -172,4 +172,22 @@ public enum TestSetupUtilities {
             defaultValue: value
         )
     }
+    
+    // MARK: - Test Environment Setup
+    
+    /// Setup test environment (placeholder - can be extended as needed)
+    @MainActor
+    public static func setupTestEnvironment() {
+        // Clear any existing test overrides
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        // Additional setup can be added here as needed
+    }
+    
+    /// Cleanup test environment (placeholder - can be extended as needed)
+    @MainActor
+    public static func cleanupTestEnvironment() {
+        // Clear all test overrides
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        // Additional cleanup can be added here as needed
+    }
 }

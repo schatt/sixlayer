@@ -39,6 +39,17 @@ public enum TestPatterns {
         }
     }
     
+    /// Simple test item with id and title (for basic testing)
+    public struct TestItem: Identifiable {
+        public let id: AnyHashable
+        public let title: String
+        
+        public init(id: AnyHashable, title: String) {
+            self.id = id
+            self.title = title
+        }
+    }
+    
     /// View information for testing
     public struct ViewInfo {
         public let name: String
