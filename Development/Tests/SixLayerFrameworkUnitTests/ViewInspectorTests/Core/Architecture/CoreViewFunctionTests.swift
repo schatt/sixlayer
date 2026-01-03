@@ -82,16 +82,10 @@ open class CoreViewFunctionTests: BaseTestClass {
     
     /// BUSINESS PURPOSE: Validate intelligent detail view functionality with specific capability combinations
     /// TESTING SCOPE: Intelligent detail view specific capability testing, capability combination validation, specific capability testing
-    /// METHODOLOGY: Use RuntimeCapabilityDetection mock framework to test intelligent detail view with specific capabilities
-    @Test(arguments: [
-        (CapabilityType.touchOnly, AccessibilityType.noAccessibility),
-        (CapabilityType.hoverOnly, AccessibilityType.allAccessibility),
-        (CapabilityType.allCapabilities, AccessibilityType.noAccessibility),
-        (CapabilityType.noCapabilities, AccessibilityType.allAccessibility)
-    ])
-    @MainActor func testIntelligentDetailViewWithSpecificCombination(
-        capabilityType: CapabilityType,
-        accessibilityType: AccessibilityType
+    /// METHODOLOGY: Test intelligent detail view with different platform configurations
+    @Test(arguments: [SixLayerPlatform.iOS, SixLayerPlatform.macOS, SixLayerPlatform.visionOS])
+    @MainActor func testIntelligentDetailViewWithSpecificPlatform(
+        platform: SixLayerPlatform
     ) async {
         // GIVEN: Specific capability and accessibility combination
         let item = createTestItem()
@@ -182,17 +176,11 @@ open class CoreViewFunctionTests: BaseTestClass {
     
     
     /// BUSINESS PURPOSE: Validate simple card component functionality with specific capability combinations
-    /// TESTING SCOPE: Simple card component specific capability testing, capability combination validation, specific capability testing
-    /// METHODOLOGY: Use RuntimeCapabilityDetection mock framework to test simple card component with specific capabilities
-    @Test(arguments: [
-        (CapabilityType.touchOnly, AccessibilityType.noAccessibility),
-        (CapabilityType.hoverOnly, AccessibilityType.allAccessibility),
-        (CapabilityType.allCapabilities, AccessibilityType.noAccessibility),
-        (CapabilityType.noCapabilities, AccessibilityType.allAccessibility)
-    ])
-    @MainActor func testSimpleCardComponentWithSpecificCombination(
-        capabilityType: CapabilityType,
-        accessibilityType: AccessibilityType
+    /// TESTING SCOPE: Simple card component platform-specific testing
+    /// METHODOLOGY: Test simple card component with different platform configurations
+    @Test(arguments: [SixLayerPlatform.iOS, SixLayerPlatform.macOS, SixLayerPlatform.visionOS])
+    @MainActor func testSimpleCardComponentWithSpecificPlatform(
+        platform: SixLayerPlatform
     ) async {
         // GIVEN: Specific capability and accessibility combination
         let item = createTestItem()
