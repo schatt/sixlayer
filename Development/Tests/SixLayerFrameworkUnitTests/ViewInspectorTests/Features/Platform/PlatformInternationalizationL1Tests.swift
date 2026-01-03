@@ -24,8 +24,7 @@ open class PlatformInternationalizationL1Tests: BaseTestClass {
             let hasAccessibilityID = testComponentComplianceCrossPlatform(
                 view, 
                 expectedPattern: "SixLayer.main.ui.*", 
-                componentName: "platformPresentLocalizedContent_L1",
-                testName: "PlatformTest"
+                componentName: "platformPresentLocalizedContent_L1"
             )
             #expect(hasAccessibilityID, "platformPresentLocalizedContent_L1 should generate accessibility identifiers on iOS ")
         }
@@ -46,8 +45,7 @@ open class PlatformInternationalizationL1Tests: BaseTestClass {
             let hasAccessibilityID = testComponentComplianceCrossPlatform(
                 view, 
                 expectedPattern: "SixLayer.main.ui.*", 
-                componentName: "platformPresentLocalizedContent_L1",
-                testName: "PlatformTest"
+                componentName: "platformPresentLocalizedContent_L1"
             )
             #expect(hasAccessibilityID, "platformPresentLocalizedContent_L1 should generate accessibility identifiers on macOS ")
         }
@@ -66,8 +64,7 @@ open class PlatformInternationalizationL1Tests: BaseTestClass {
             let hasAccessibilityID = testComponentComplianceCrossPlatform(
                 view, 
                 expectedPattern: "SixLayer.main.ui.*", 
-                componentName: "platformPresentLocalizedText_L1",
-                testName: "PlatformTest"
+                componentName: "platformPresentLocalizedText_L1"
             )
             #expect(hasAccessibilityID, "platformPresentLocalizedText_L1 should generate accessibility identifiers on iOS ")
         }
@@ -84,8 +81,7 @@ open class PlatformInternationalizationL1Tests: BaseTestClass {
             let hasAccessibilityID = testComponentComplianceCrossPlatform(
                 view, 
                 expectedPattern: "SixLayer.main.ui.*", 
-                componentName: "platformPresentLocalizedText_L1",
-                testName: "PlatformTest"
+                componentName: "platformPresentLocalizedText_L1"
             )
             #expect(hasAccessibilityID, "platformPresentLocalizedText_L1 should generate accessibility identifiers on macOS ")
         }
