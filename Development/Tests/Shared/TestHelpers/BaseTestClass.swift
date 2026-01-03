@@ -134,22 +134,25 @@ open class BaseTestClass {
     
     /// Verify that a view is created and contains expected content
     /// Delegates to TestPatterns for implementation
+    /// Override this method in subclasses to provide custom verification logic
     @MainActor
-    public func verifyViewGeneration(_ view: some View, testName: String) {
+    open func verifyViewGeneration(_ view: some View, testName: String) {
         TestPatterns.verifyViewGeneration(view, testName: testName)
     }
     
     /// Verify that a view contains specific text content
     /// Delegates to TestPatterns for implementation
+    /// Override this method in subclasses to provide custom verification logic
     @MainActor
-    public func verifyViewContainsText(_ view: some View, expectedText: String, testName: String) {
+    open func verifyViewContainsText(_ view: some View, expectedText: String, testName: String) {
         TestPatterns.verifyViewContainsText(view, expectedText: expectedText, testName: testName)
     }
     
     /// Verify that a view contains specific image elements
     /// Delegates to TestPatterns for implementation
+    /// Override this method in subclasses to provide custom verification logic
     @MainActor
-    public func verifyViewContainsImage(_ view: some View, testName: String) {
+    open func verifyViewContainsImage(_ view: some View, testName: String) {
         TestPatterns.verifyViewContainsImage(view, testName: testName)
     }
     
