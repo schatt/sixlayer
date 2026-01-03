@@ -463,7 +463,7 @@ open class Layer2LayoutDecisionTests: BaseTestClass {
         #expect(Bool(true), "decision is non-optional")  // decision is non-optional
         #expect(decision.columns > 0)
         #expect(decision.spacing >= 0)
-        #expect(decision.performance == .maximumPerformance) // Very complex should use maximum performance
+        #expect(decision.performance == PerformanceStrategy.maximumPerformance) // Very complex should use maximum performance
         #expect(!decision.reasoning.isEmpty)
     }
     
