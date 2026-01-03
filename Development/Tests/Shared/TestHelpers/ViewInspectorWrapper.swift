@@ -279,7 +279,6 @@ extension ViewInspector.InspectableView {
         // InspectableView doesn't have contains directly
         return false
     }
-}
 
 // MARK: - Type Conversion Helper
 
