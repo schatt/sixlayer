@@ -13,7 +13,7 @@ import ViewInspector
 
 // MARK: - View Extensions
 
-extension View {
+extension View where Self: Inspectable {
     /// Safe, non-throwing inspection of a view
     /// Returns nil if inspection fails (instead of throwing)
     @MainActor
@@ -62,13 +62,38 @@ extension InspectableView {
             return []
         }
     }
+    
+    /// Find Text view
+    public func sixLayerText() throws -> InspectableView<ViewType.Text> {
+        return try find(ViewType.Text.self)
+    }
+    
+    /// Get string from Text view
+    public func sixLayerString() throws -> String {
+        return try string()
+    }
+    
+    /// Find Label view
+    public func sixLayerLabelView() throws -> InspectableView<ViewType.Label<Text, Text>> {
+        return try find(ViewType.Label<Text, Text>.self)
+    }
+    
+    /// Tap a button
+    public func sixLayerTap() throws {
+        try tap()
+    }
+    
+    /// Find AnyView
+    public func sixLayerAnyView() throws -> InspectableView<ViewType.AnyView> {
+        return try find(ViewType.AnyView.self)
+    }
 }
 
 // MARK: - Helper Functions
 
 /// Execute code with an inspected view (non-throwing)
 @MainActor
-public func withInspectedView<V: View, T>(
+public func withInspectedView<V: View & Inspectable, T>(
     _ view: V,
     body: (InspectableView<ViewType.View<V>>) -> T
 ) -> T? {

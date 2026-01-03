@@ -76,7 +76,7 @@ open class GenericLayoutDecisionTests: BaseTestClass {
         let hints = createBasicHints()
         
         // When
-        let decision = determineOptimalLayout_L2<TestPatterns.TestItem>(
+        let decision = determineOptimalLayout_L2(
             items: items,
             hints: hints,
             screenWidth: 375,
@@ -96,7 +96,7 @@ open class GenericLayoutDecisionTests: BaseTestClass {
         let hints = createBasicHints()
         
         // When
-        let decision = determineOptimalLayout_L2<TestPatterns.TestItem>(
+        let decision = determineOptimalLayout_L2(
             items: items,
             hints: hints,
             screenWidth: 375,
