@@ -2,7 +2,7 @@ import Testing
 import SwiftUI
 @testable import SixLayerFramework
 
-#if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+#if canImport(ViewInspector)
 import ViewInspector
 #endif
 
@@ -69,7 +69,7 @@ struct IntelligentDetailViewSheetTests {
         .frame(minWidth: 400, minHeight: 500)
         
         // Verify the view can be inspected with ViewInspector
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         if let inspector = sheetContent.tryInspect() {
             // Try to find VStack (standard layout structure)
             // This proves the view has actual content structure, not blank
@@ -110,7 +110,7 @@ struct IntelligentDetailViewSheetTests {
         )
         
         // Verify the view can be inspected (proves it's not blank)
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         do {
             guard let inspector = detailView.tryInspect() else {
                 Issue.record("platformDetailView should be inspectable (indicates it has content)")
@@ -119,7 +119,7 @@ struct IntelligentDetailViewSheetTests {
             
             // Try to find Text views (which would contain the field values)
             do {
-                #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+                #if canImport(ViewInspector)
                 let texts = inspector.sixLayerFindAll(ViewType.Text.self)
                 #else
                 let texts: [Inspectable] = []
@@ -152,7 +152,7 @@ struct IntelligentDetailViewSheetTests {
             .frame(idealWidth: 600, idealHeight: 700)
         
         // Verify the view compiles and can be inspected with frame constraints
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         if let inspector = detailView.tryInspect() {
             // If we can inspect with frame constraints, the view respects them
             #expect(Bool(true), "platformDetailView should accept frame constraints for sheet sizing")
@@ -182,7 +182,7 @@ struct IntelligentDetailViewSheetTests {
         }
         
         // Verify NavigationStack + platformDetailView works
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         if let inspector = sheetContent.tryInspect() {
             #expect(Bool(true), "platformDetailView should work with NavigationStack in sheets")
         } else {
@@ -228,7 +228,7 @@ struct IntelligentDetailViewSheetTests {
             .automaticCompliance()
         
         // Verify accessibility identifiers are generated
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
             detailView,
             expectedPattern: "SixLayer.main.ui",

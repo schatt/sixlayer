@@ -44,7 +44,7 @@ open class PlatformOCRDisambiguationLayer1Tests: BaseTestClass {
             onResult: { _ in }
         )
         
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let hasAccessibilityID = testAccessibilityIdentifiersCrossPlatform(
             view, 
             expectedPattern: "SixLayer.*ui", 
@@ -79,7 +79,7 @@ open class PlatformOCRDisambiguationLayer1Tests: BaseTestClass {
             onResult: { _ in }
         )
         
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let hasAccessibilityID = testAccessibilityIdentifiersCrossPlatform(
             view, 
             expectedPattern: "SixLayer.*ui", 

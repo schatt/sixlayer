@@ -1,6 +1,6 @@
 import Testing
 
-#if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+#if canImport(ViewInspector)
 import ViewInspector
 #endif
 
@@ -34,7 +34,7 @@ open class PlatformNavigationSplitViewHelperTests: BaseTestClass {
         }
         
         // Then: Should create a valid view structure
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         do {
             guard let inspected = view.tryInspect() else { return }
             
@@ -78,7 +78,7 @@ open class PlatformNavigationSplitViewHelperTests: BaseTestClass {
         
         // Then: Should create a valid view structure
         // On iPhone portrait, should use NavigationStack (iOS 16+) or NavigationView with StackNavigationViewStyle (iOS 15)
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         do {
             guard let inspected = view.tryInspect() else { return }
             
@@ -114,7 +114,7 @@ open class PlatformNavigationSplitViewHelperTests: BaseTestClass {
         }
         
         // Then: Should create a valid view structure
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         do {
             guard let inspected = view.tryInspect() else { return }
             
@@ -155,7 +155,7 @@ open class PlatformNavigationSplitViewHelperTests: BaseTestClass {
         }
         
         // Then: Should create a valid view structure
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         do {
             guard let inspected = view.tryInspect() else { return }
             
@@ -201,7 +201,7 @@ open class PlatformNavigationSplitViewHelperTests: BaseTestClass {
         
         // Then: Should create a valid view structure
         // On iPhone portrait, should use NavigationStack (iOS 16+) or NavigationView with StackNavigationViewStyle (iOS 15)
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         do {
             guard let inspected = view.tryInspect() else { return }
             
@@ -240,7 +240,7 @@ open class PlatformNavigationSplitViewHelperTests: BaseTestClass {
         }
         
         // Then: Should create a valid view structure
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         do {
             guard let inspected = view.tryInspect() else { return }
             
@@ -281,7 +281,7 @@ open class PlatformNavigationSplitViewHelperTests: BaseTestClass {
         // Note: ViewInspector has limitations finding nested content in NavigationStack/NavigationSplitView
         // The structure tests above verify the correct navigation pattern is used
         // This test just verifies the view is created successfully
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         if view.tryInspect() != nil {
             // View is inspectable, which means it was created successfully
             #expect(Bool(true), "Navigation split view should be inspectable")
@@ -312,7 +312,7 @@ open class PlatformNavigationSplitViewHelperTests: BaseTestClass {
         // Note: ViewInspector has limitations finding nested content in NavigationStack/NavigationSplitView
         // The structure tests above verify the correct navigation pattern is used
         // This test just verifies the view is created successfully
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         if view.tryInspect() != nil {
             // View is inspectable, which means it was created successfully
             #expect(Bool(true), "Navigation split view should be inspectable")

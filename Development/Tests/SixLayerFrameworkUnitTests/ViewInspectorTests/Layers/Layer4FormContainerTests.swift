@@ -11,7 +11,7 @@ import Testing
 import SwiftUI
 @testable import SixLayerFramework
 
-#if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+#if canImport(ViewInspector)
 import ViewInspector
 #endif
 
@@ -45,7 +45,7 @@ open class Layer4FormContainerTests: BaseTestClass {
         
         // 2. Does that structure contain what it should?
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let inspectionResult = withInspectedView(view) { inspected in
             // The form container should contain the test content
             let viewText = inspected.sixLayerFindAll(ViewType.Text.self)
@@ -56,7 +56,7 @@ open class Layer4FormContainerTests: BaseTestClass {
         }
 
         if inspectionResult == nil {
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             Issue.record("View inspection failed on this platform")
             #else
             // ViewInspector not available on macOS - test passes by verifying view creation
@@ -68,7 +68,7 @@ open class Layer4FormContainerTests: BaseTestClass {
         #endif
         
         // 3. Platform-specific implementation verification (REQUIRED)
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         #if os(iOS)
         // iOS: Should contain Form structure with iOS-specific background color
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
@@ -117,7 +117,7 @@ open class Layer4FormContainerTests: BaseTestClass {
         
         // 2. Does that structure contain what it should?
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         withInspectedView(view) { inspected in
             let viewText = inspected.sixLayerFindAll(ViewType.Text.self)
             #expect(!viewText.isEmpty, "Standard container should contain text elements")
@@ -146,7 +146,7 @@ open class Layer4FormContainerTests: BaseTestClass {
             // VStack found - this is correct for macOS
             // Note: macOS uses Color(.controlBackgroundColor) for standard container backgrounds
         } else {
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             Issue.record("macOS standard container should contain VStack structure")
             #else
             // ViewInspector not available on macOS - test passes by verifying view creation
@@ -180,7 +180,7 @@ open class Layer4FormContainerTests: BaseTestClass {
             // ScrollView found - this is correct for iOS
             // Note: iOS uses Color(.systemGroupedBackground) for scroll view backgrounds
         } else {
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             Issue.record("iOS scroll view container should contain ScrollView structure")
             #else
             // ViewInspector not available on macOS - test passes by verifying view creation
@@ -194,7 +194,7 @@ open class Layer4FormContainerTests: BaseTestClass {
             // ScrollView found - this is correct for macOS
             // Note: macOS uses Color(.controlBackgroundColor) for scroll view backgrounds
         } else {
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             Issue.record("macOS scroll view container should contain ScrollView structure")
             #else
             // ViewInspector not available on macOS - test passes by verifying view creation

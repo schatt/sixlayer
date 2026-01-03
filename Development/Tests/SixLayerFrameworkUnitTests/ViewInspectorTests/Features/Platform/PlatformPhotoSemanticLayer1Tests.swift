@@ -51,7 +51,7 @@ open class PlatformPhotoSemanticLayer1Tests: BaseTestClass {
         // view is a non-optional View, so it exists if we reach here
         
         // Test accessibility identifier generation
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
 
         let hasAccessibilityID =         testAccessibilityIdentifiersCrossPlatform(
             view, 
@@ -104,7 +104,7 @@ open class PlatformPhotoSemanticLayer1Tests: BaseTestClass {
         // view is a non-optional View, so it exists if we reach here
         
         // Test accessibility identifier generation
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
 
         let hasAccessibilityID =         testAccessibilityIdentifiersCrossPlatform(
             view, 

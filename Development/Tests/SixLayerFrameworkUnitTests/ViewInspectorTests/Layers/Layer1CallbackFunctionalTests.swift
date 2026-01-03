@@ -118,7 +118,7 @@ open class Layer1CallbackFunctionalTests: BaseTestClass {
         }
 
         if inspectionResult == nil {
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             Issue.record("View inspection failed on this platform")
             #else
             // ViewInspector not available on macOS - test passes by verifying callback signature

@@ -23,7 +23,7 @@ import Testing
 import SwiftUI
 @testable import SixLayerFramework
 
-#if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+#if canImport(ViewInspector)
 import ViewInspector
 #endif
 
@@ -121,7 +121,7 @@ open class BarcodeScanningUITests: BaseTestClass {
         let regularFieldView = CustomFieldView(field: regularField, formState: formState)
         
         // Barcode field should show barcode button
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         if let inspected = barcodeFieldView.tryInspect() {
             // Look for barcode button by finding the HStack that contains both TextField and Button
             if let hStack = inspected.sixLayerTryFind(ViewType.HStack.self) {
@@ -137,7 +137,7 @@ open class BarcodeScanningUITests: BaseTestClass {
         #endif
         
         // Regular field should not show barcode button
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         if let inspected = regularFieldView.tryInspect() {
             // Regular field should not have HStack with barcode button
             let hStack = inspected.sixLayerTryFind(ViewType.HStack.self)
@@ -182,7 +182,7 @@ open class BarcodeScanningUITests: BaseTestClass {
         #expect(dualField.supportsBarcodeScanning == true, "Field should support barcode scanning")
         
         // Both buttons should be rendered
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         if let inspected = dualFieldView.tryInspect() {
             if let hStack = inspected.sixLayerTryFind(ViewType.HStack.self) {
                 // Should have at least 3 items: TextField, OCR button, Barcode button

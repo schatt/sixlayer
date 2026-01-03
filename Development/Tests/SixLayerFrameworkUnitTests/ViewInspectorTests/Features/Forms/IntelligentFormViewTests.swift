@@ -8,7 +8,7 @@ import SwiftUI
 import CoreData
 #endif
 
-#if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+#if canImport(ViewInspector)
 import ViewInspector
 #endif
 /// Tests for IntelligentFormView.swift
@@ -30,7 +30,7 @@ open class IntelligentFormViewTests: BaseTestClass {
                 for: TestFormDataModel.self,
                 initialData: testData
             )
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             let hasAccessibilityID = testComponentComplianceSinglePlatform(
                 view, 
                 expectedPattern: "SixLayer.*ui", 
@@ -56,7 +56,7 @@ open class IntelligentFormViewTests: BaseTestClass {
                 for: TestFormDataModel.self,
                 initialData: testData
             )
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             let hasAccessibilityID = testComponentComplianceSinglePlatform(
                 view, 
                 expectedPattern: "SixLayer.*ui", 
@@ -96,7 +96,7 @@ open class IntelligentFormViewTests: BaseTestClass {
             )
 
             // Find and tap the Update button
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             if let inspected = view.tryInspect() {
                 // Find the Update button
                 let buttons = inspected.sixLayerFindAll(ViewType.Button.self)
@@ -147,7 +147,7 @@ open class IntelligentFormViewTests: BaseTestClass {
             )
 
             // Find and tap the Update button
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             if let inspected = view.tryInspect() {
                 let buttons = inspected.sixLayerFindAll(ViewType.Button.self)
                 let updateButton = buttons.first { button in
@@ -196,7 +196,7 @@ open class IntelligentFormViewTests: BaseTestClass {
             // TDD RED: Should FAIL until visual feedback is implemented
             // For now, we can only verify the button exists and is clickable
             // After fix, we should verify that feedback (success message, form dismissal, etc.) occurs
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             if let inspected = view.tryInspect() {
                 let buttons = inspected.sixLayerFindAll(ViewType.Button.self)
                 let updateButton = buttons.first { button in

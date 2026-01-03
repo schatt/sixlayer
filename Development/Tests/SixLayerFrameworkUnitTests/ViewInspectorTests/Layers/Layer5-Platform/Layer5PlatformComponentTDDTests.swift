@@ -33,7 +33,7 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
             let view = PlatformRecognitionLayer5()
 
             // Should render AI recognition interface
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             if let inspected = view.tryInspect() {
                 do {
                     // Should have proper UI structure for recognition features
@@ -41,7 +41,7 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
                     #expect(vStack.sixLayerCount >= 1, "Should have recognition interface elements")
 
                 // Should have accessibility identifier
-                #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+                #if canImport(ViewInspector)
                 let hasAccessibilityID = testComponentComplianceSinglePlatform(
                     view,
                     expectedPattern: "SixLayer.main.ui.*PlatformRecognitionLayer5.*",
@@ -77,7 +77,7 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
         let view = PlatformPrivacyLayer5()
 
         // Should render privacy management interface
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         if let inspected = view.tryInspect() {
             do {
                 // Should have proper UI structure for privacy controls
@@ -85,7 +85,7 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
                     #expect(vStack.sixLayerCount >= 1, "Should have privacy interface elements")
 
                 // Should have accessibility identifier
-                #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+                #if canImport(ViewInspector)
                 let hasAccessibilityID = testComponentComplianceSinglePlatform(
                     view,
                     expectedPattern: "SixLayer.main.ui.*PlatformPrivacyLayer5.*",
@@ -120,7 +120,7 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
         let view = PlatformPerformanceLayer6()
 
         // Should render performance monitoring interface
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         if let inspected = view.tryInspect() {
             do {
                 // Should have proper UI structure for performance metrics
@@ -128,7 +128,7 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
                 #expect(vStack.sixLayerCount >= 1, "Should have performance monitoring elements")
 
             // Should have accessibility identifier
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             let hasAccessibilityID = testComponentComplianceSinglePlatform(
                 view,
                 expectedPattern: "SixLayer.main.ui.*PlatformPerformanceLayer6.*",
@@ -163,7 +163,7 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
         let view = PlatformProfilingLayer5()
 
         // Should render user profiling interface
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         if let inspected = view.tryInspect() {
             do {
                 // Should have proper UI structure for profiling features
@@ -171,7 +171,7 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
                 #expect(vStack.sixLayerCount >= 1, "Should have profiling interface elements")
 
                 // Should have accessibility identifier
-                #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+                #if canImport(ViewInspector)
                 let hasAccessibilityID = testComponentComplianceSinglePlatform(
                     view,
                     expectedPattern: "SixLayer.main.ui.*PlatformProfilingLayer5.*",
@@ -206,7 +206,7 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
         let view = PlatformSafetyLayer5()
 
         // Should render safety features interface
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         if let inspected = view.tryInspect() {
             do {
                 // Should have proper UI structure for safety features
@@ -214,7 +214,7 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
                 #expect(vStack.sixLayerCount >= 1, "Should have safety interface elements")
 
                 // Should have accessibility identifier
-                #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+                #if canImport(ViewInspector)
                 let hasAccessibilityID = testComponentComplianceSinglePlatform(
                     view,
                     expectedPattern: "SixLayer.main.ui.*PlatformSafetyLayer5.*",
@@ -249,7 +249,7 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
         let view = PlatformRoutingLayer5()
 
         // Should render navigation interface
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         if let inspected = view.tryInspect() {
             do {
                 // Should have proper UI structure for routing features
@@ -257,7 +257,7 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
                 #expect(vStack.sixLayerCount >= 1, "Should have routing interface elements")
 
                 // Should have accessibility identifier
-                #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+                #if canImport(ViewInspector)
                 let hasAccessibilityID = testComponentComplianceSinglePlatform(
                     view,
                     expectedPattern: "SixLayer.main.ui.*PlatformRoutingLayer5.*",
@@ -292,7 +292,7 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
         let view = PlatformOrchestrationLayer5()
 
         // Should render service orchestration interface
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         if let inspected = view.tryInspect() {
             do {
                 // Should have proper UI structure for orchestration features
@@ -300,7 +300,7 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
                 #expect(vStack.sixLayerCount >= 1, "Should have orchestration interface elements")
 
                 // Should have accessibility identifier
-                #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+                #if canImport(ViewInspector)
                 let hasAccessibilityID = testComponentComplianceSinglePlatform(
                     view,
                     expectedPattern: "SixLayer.main.ui.*PlatformOrchestrationLayer5.*",
@@ -335,7 +335,7 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
         let view = PlatformOptimizationLayer5()
 
         // Should render optimization recommendations interface
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         if let inspected = view.tryInspect() {
             do {
                 // Should have proper UI structure for optimization features
@@ -343,7 +343,7 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
                 #expect(vStack.sixLayerCount >= 1, "Should have optimization interface elements")
 
                 // Should have accessibility identifier
-                #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+                #if canImport(ViewInspector)
                 let hasAccessibilityID = testComponentComplianceSinglePlatform(
                     view,
                     expectedPattern: "SixLayer.main.ui.*PlatformOptimizationLayer5.*",
@@ -378,7 +378,7 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
         let view = PlatformOrganizationLayer5()
 
         // Should render data organization interface
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         if let inspected = view.tryInspect() {
             do {
                 // Should have proper UI structure for organization features
@@ -386,7 +386,7 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
                 #expect(vStack.sixLayerCount >= 1, "Should have organization interface elements")
 
                 // Should have accessibility identifier
-                #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+                #if canImport(ViewInspector)
 
                 let hasAccessibilityID =                 testComponentComplianceSinglePlatform(
                     view,
@@ -426,7 +426,7 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
         let view = PlatformNotificationLayer5()
 
         // Should render notification management interface
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         if let inspected = view.tryInspect() {
             do {
                 // Should have proper UI structure for notification features
@@ -434,7 +434,7 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
                 #expect(vStack.sixLayerCount >= 1, "Should have notification interface elements")
 
                 // Should have accessibility identifier
-                #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+                #if canImport(ViewInspector)
 
                 let hasAccessibilityID =                 testComponentComplianceSinglePlatform(
                     view,
@@ -474,7 +474,7 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
         let view = PlatformInterpretationLayer5()
 
         // Should render context interpretation interface
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         if let inspected = view.tryInspect() {
             do {
                 // Should have proper UI structure for interpretation features
@@ -482,7 +482,7 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
                 #expect(vStack.sixLayerCount >= 1, "Should have interpretation interface elements")
 
                 // Should have accessibility identifier
-                #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+                #if canImport(ViewInspector)
 
                 let hasAccessibilityID =                 testComponentComplianceSinglePlatform(
                     view,

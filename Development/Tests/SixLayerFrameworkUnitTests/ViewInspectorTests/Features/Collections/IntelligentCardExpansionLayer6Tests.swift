@@ -46,7 +46,7 @@ open class IntelligentCardExpansionLayer6Tests: BaseTestClass {
             // The card view should be inspectable
             // If we get here, the view is properly structured
         } else {
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             Issue.record("Failed to inspect NativeExpandableCardView structure")
             #else
             // ViewInspector not available on macOS - test passes by verifying view creation
@@ -341,7 +341,7 @@ open class IntelligentCardExpansionLayer6Tests: BaseTestClass {
         #expect(Bool(true), "Platform-aware card should be created")  // platformAwareCard is non-optional
         
         // Test that all card types are inspectable
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         if let _ = nativeCard.tryInspect(),
            let _ = platformAwareCard.tryInspect() {
             // All card types are inspectable

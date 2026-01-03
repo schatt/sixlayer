@@ -78,7 +78,7 @@ open class CrossPlatformOptimizationLayer6Tests: BaseTestClass {
         if let _ = optimizedView.tryInspect() {
             // Successfully inspected optimized view
         } else {
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             Issue.record("Failed to inspect optimized view structure")
             #else
             // ViewInspector not available on macOS - test passes by verifying view creation
@@ -91,7 +91,7 @@ open class CrossPlatformOptimizationLayer6Tests: BaseTestClass {
         if let _ = optimizedView.tryInspect() {
             // Platform-specific optimizations verified
         } else {
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             Issue.record("Optimized view should be inspectable on current platform")
             #else
             // ViewInspector not available on macOS - test passes by verifying view creation
@@ -361,7 +361,7 @@ open class CrossPlatformOptimizationLayer6Tests: BaseTestClass {
         if let _ = optimizedView.tryInspect() {
             // Successfully inspected platform-optimized view
         } else {
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             Issue.record("Failed to inspect platform-optimized view structure")
             #else
             // ViewInspector not available on macOS - test passes by verifying view creation
@@ -374,7 +374,7 @@ open class CrossPlatformOptimizationLayer6Tests: BaseTestClass {
         if let _ = optimizedView.tryInspect() {
             // Platform-specific optimizations verified
         } else {
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             Issue.record("Platform-optimized view should be inspectable on current platform")
             #else
             // ViewInspector not available on macOS - test passes by verifying view creation
@@ -400,7 +400,7 @@ open class CrossPlatformOptimizationLayer6Tests: BaseTestClass {
         if let _ = optimizedView.tryInspect() {
             // Successfully inspected performance-optimized view
         } else {
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             Issue.record("Failed to inspect performance-optimized view structure")
             #else
             // ViewInspector not available on macOS - test passes by verifying view creation
@@ -413,7 +413,7 @@ open class CrossPlatformOptimizationLayer6Tests: BaseTestClass {
         if let _ = optimizedView.tryInspect() {
             // Performance optimizations verified
         } else {
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             Issue.record("Performance-optimized view should be inspectable on current platform")
             #else
             // ViewInspector not available on macOS - test passes by verifying view creation
@@ -439,7 +439,7 @@ open class CrossPlatformOptimizationLayer6Tests: BaseTestClass {
         if let _ = optimizedView.tryInspect() {
             // Successfully inspected UI pattern-optimized view
         } else {
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             Issue.record("Failed to inspect UI pattern-optimized view structure")
             #else
             // ViewInspector not available on macOS - test passes by verifying view creation
@@ -452,7 +452,7 @@ open class CrossPlatformOptimizationLayer6Tests: BaseTestClass {
         if let _ = optimizedView.tryInspect() {
             // UI pattern optimizations verified
         } else {
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             Issue.record("UI pattern-optimized view should be inspectable on current platform")
             #else
             // ViewInspector not available on macOS - test passes by verifying view creation
@@ -495,7 +495,7 @@ open class CrossPlatformOptimizationLayer6Tests: BaseTestClass {
         if let _ = fullyOptimizedView.tryInspect() {
             // Successfully inspected fully optimized view
         } else {
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             Issue.record("Fully optimized view should be inspectable")
             #else
             // ViewInspector not available on macOS - test passes by verifying view creation

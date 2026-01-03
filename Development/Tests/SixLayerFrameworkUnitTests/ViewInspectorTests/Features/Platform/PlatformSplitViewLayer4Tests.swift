@@ -78,7 +78,7 @@ open class PlatformSplitViewLayer4Tests: BaseTestClass {
         // Then: Should generate accessibility identifiers
         // Note: ViewInspector has limitations detecting identifiers on macOS split views
         // The modifier IS applied (verified in code) - this is a ViewInspector limitation
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let hasAccessibilityID = testAccessibilityIdentifiersCrossPlatform(
             view,
             expectedPattern: "SixLayer.*platformVerticalSplit_L4",
@@ -182,7 +182,7 @@ open class PlatformSplitViewLayer4Tests: BaseTestClass {
         // Then: Should generate accessibility identifiers
         // Note: ViewInspector has limitations detecting identifiers on macOS split views
         // The modifier IS applied (verified in code) - this is a ViewInspector limitation
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let hasAccessibilityID = testAccessibilityIdentifiersCrossPlatform(
             view,
             expectedPattern: "SixLayer.*platformHorizontalSplit_L4",

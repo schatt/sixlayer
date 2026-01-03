@@ -751,7 +751,7 @@ open class ViewGenerationIntegrationTests: BaseTestClass {
             // Test that the configuration produces the expected view behavior
             testViewGenerationBehavior(mockConfig, configName: config.name)
         } else {
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             Issue.record("Failed to inspect view structure for \(config.name)")
             #else
             // ViewInspector not available on macOS - test passes by verifying view creation

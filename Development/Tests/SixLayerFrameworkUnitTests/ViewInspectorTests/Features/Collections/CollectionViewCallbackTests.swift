@@ -4,7 +4,7 @@ import Testing
 import SwiftUI
 @testable import SixLayerFramework
 
-#if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+#if canImport(ViewInspector)
 import ViewInspector
 #endif
 /// Tests for Collection View Callback Functionality
@@ -75,7 +75,7 @@ open class CollectionViewCallbackTests: BaseTestClass {
         )
 
         // Then: View should be created successfully and contain expected elements
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let inspectionResult = withInspectedView(view) { inspected in
             // The view should contain the collection items
             let viewText = inspected.sixLayerFindAll(ViewType.Text.self)
@@ -94,7 +94,7 @@ open class CollectionViewCallbackTests: BaseTestClass {
         #endif
 
         if inspectionResult == nil {
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             Issue.record("View inspection failed on this platform")
             #else
             // ViewInspector not available on macOS - test passes by verifying callback signature
@@ -115,7 +115,7 @@ open class CollectionViewCallbackTests: BaseTestClass {
         )
 
         // Then: View should be created successfully and contain expected elements
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let inspectionResult = withInspectedView(view) { inspected in
             // The view should contain the collection items
             let viewText = inspected.sixLayerFindAll(ViewType.Text.self)
@@ -134,7 +134,7 @@ open class CollectionViewCallbackTests: BaseTestClass {
         #endif
 
         if inspectionResult == nil {
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             Issue.record("View inspection failed on this platform")
             #else
             // ViewInspector not available on macOS - test passes by verifying callback signature
@@ -243,7 +243,7 @@ open class CollectionViewCallbackTests: BaseTestClass {
         
         // When: Simulating a tap using ViewInspector
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let inspectionResult = withInspectedView(view) { inspector in
             // Find the ListCardComponent instances
             let listCardComponents = inspector.sixLayerFindAll(ListCardComponent<TestPatterns.TestItem>.self)
@@ -271,7 +271,7 @@ open class CollectionViewCallbackTests: BaseTestClass {
         #endif
 
         if inspectionResult == nil {
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             Issue.record("View inspection failed on this platform")
             #else
             // ViewInspector not available on macOS - test passes by verifying callback signature

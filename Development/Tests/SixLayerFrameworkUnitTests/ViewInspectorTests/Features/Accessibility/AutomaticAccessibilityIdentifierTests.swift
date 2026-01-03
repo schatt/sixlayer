@@ -276,7 +276,7 @@ open class AutomaticAccessibilityIdentifierTests: BaseTestClass {
             // Then: Manual identifier should be used
             // We test this by verifying the view has the manual identifier
             // The manual identifier should take precedence over automatic generation
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             let hasManualID = testComponentComplianceSinglePlatform(
                 view,
                 expectedPattern: "\(manualID)",
@@ -315,7 +315,7 @@ open class AutomaticAccessibilityIdentifierTests: BaseTestClass {
             // Then: No automatic identifier should be generated
             // We test this by verifying the view does NOT have an automatic identifier
             // The modifier should not generate an identifier when enableAutoIDs is false
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             let hasAutomaticID = testComponentComplianceSinglePlatform(
                 view,
                 expectedPattern: "*.auto.*",
@@ -399,7 +399,7 @@ open class AutomaticAccessibilityIdentifierTests: BaseTestClass {
             // This is a ViewInspector limitation, not a missing modifier issue.
             // TODO: Temporarily passing test - framework function HAS modifier but ViewInspector can't detect it
             // Remove this workaround once ViewInspector detection is fixed
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             #expect(testComponentComplianceSinglePlatform(
                 view, 
                 expectedPattern: "SixLayer.layer1.*element.*", 
@@ -826,7 +826,7 @@ open class AutomaticAccessibilityIdentifierTests: BaseTestClass {
             // This is a ViewInspector limitation, not a missing modifier issue.
             // TODO: Temporarily passing test - framework function HAS modifier but ViewInspector can't detect it
             // Remove this workaround once ViewInspector detection is fixed
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             #expect(testComponentComplianceSinglePlatform(
                 testView, 
                 expectedPattern: "SixLayer.*AddFuelButton", 
@@ -931,7 +931,7 @@ open class AutomaticAccessibilityIdentifierTests: BaseTestClass {
                 
             // When: Inspecting the view's accessibility identifier
             // Using wrapper - when ViewInspector works on macOS, no changes needed here
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             if let inspected = view.tryInspect(),
                let identifier = try? inspected.sixLayerAccessibilityIdentifier() {
                 // Then: The identifier should include the component name

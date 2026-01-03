@@ -75,7 +75,7 @@ open class IntelligentFormViewComponentAccessibilityTests: BaseTestClass {
             
             // Then: Should generate accessibility identifiers
             // The view will initially show ProgressView, then switch to form once entity is created
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             let hasAccessibilityID = testComponentComplianceSinglePlatform(
                 view,
                 expectedPattern: "SixLayer.main.ui.*IntelligentFormView.*",
@@ -118,7 +118,7 @@ open class IntelligentFormViewComponentAccessibilityTests: BaseTestClass {
             )
             
             // Then: Should generate accessibility identifiers
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             let hasAccessibilityID = testComponentComplianceSinglePlatform(
                 view,
                 expectedPattern: "SixLayer.main.ui.*IntelligentFormView.*",
@@ -197,7 +197,7 @@ open class IntelligentFormViewComponentAccessibilityTests: BaseTestClass {
             // Then: Should render fields with asterisk for required fields
             // Note: ViewInspector may not be able to detect the asterisk directly,
             // but we verify the view structure is correct
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             let hasAccessibilityID = testComponentComplianceSinglePlatform(
                 view,
                 expectedPattern: "SixLayer.main.ui.*IntelligentFormView.*",

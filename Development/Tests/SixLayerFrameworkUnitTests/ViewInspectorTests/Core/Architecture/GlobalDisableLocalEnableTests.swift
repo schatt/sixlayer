@@ -4,7 +4,7 @@ import Testing
 import SwiftUI
 @testable import SixLayerFramework
 
-#if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+#if canImport(ViewInspector)
 import ViewInspector
 #endif
 /// TDD Tests for "Global Disable, Local Enable" Functionality
@@ -40,7 +40,7 @@ open class GlobalDisableLocalEnableTDDTests: BaseTestClass {
             
             // 3. Generate ID
             // VERIFIED: Framework function has .automaticCompliance() modifier applied
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             let id = generateIDForView(view)
             
             // This should work because framework components handle their own ID generation
@@ -77,7 +77,7 @@ open class GlobalDisableLocalEnableTDDTests: BaseTestClass {
             
             // 3. Generate ID
             // VERIFIED: .named() modifier DOES apply accessibility identifiers
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             let id = generateIDForView(view)
             
             // .named() should always work regardless of global settings
@@ -113,7 +113,7 @@ open class GlobalDisableLocalEnableTDDTests: BaseTestClass {
             
             // 3. Generate ID
             // VERIFIED: .named() modifier DOES apply accessibility identifiers
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             let id = generateIDForView(view)
             
             // .named() should always work regardless of global settings
@@ -148,7 +148,7 @@ open class GlobalDisableLocalEnableTDDTests: BaseTestClass {
             
             // 3. Generate ID
             // VERIFIED: .named() modifier DOES apply accessibility identifiers
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             let id = generateIDForView(view)
             
             // .named() should always work regardless of global settings
@@ -171,7 +171,7 @@ open class GlobalDisableLocalEnableTDDTests: BaseTestClass {
             return ""
         }
 
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         // Optimized: Check root view first (most common case)
         if let id = try? inspectedView.sixLayerAccessibilityIdentifier(), !id.isEmpty {
             return id

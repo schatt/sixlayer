@@ -31,7 +31,7 @@ open class PlatformPhotoComponentsLayer4Tests: BaseTestClass {
         
         // Camera interface generates "SixLayer.main.ui" pattern
         // This is correct for a basic UI component without specific element naming
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let hasAccessibilityID = testAccessibilityIdentifiersCrossPlatform(
             view, 
             expectedPattern: "SixLayer.main.ui", 
@@ -53,7 +53,7 @@ open class PlatformPhotoComponentsLayer4Tests: BaseTestClass {
         
         // Camera interface generates "SixLayer.main.ui" pattern
         // This is correct for a basic UI component without specific element naming
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let hasAccessibilityID = testAccessibilityIdentifiersCrossPlatform(
             view, 
             expectedPattern: "SixLayer.main.ui", 

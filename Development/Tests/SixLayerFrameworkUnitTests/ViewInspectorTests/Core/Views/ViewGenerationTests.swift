@@ -3,7 +3,7 @@ import Testing
 import SwiftUI
 @testable import SixLayerFramework
 
-#if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+#if canImport(ViewInspector)
 import ViewInspector
 #endif
 /// View Generation Tests
@@ -60,7 +60,7 @@ open class ViewGenerationTests: BaseTestClass {
         // THEN: View should be created successfully
         // View creation itself is the test - if it fails to compile or crashes, test fails
         // Optimized: Use minimal ViewInspector check only if available and fast
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         // Quick check that view is inspectable (doesn't do expensive deep searches)
         if detailView.tryInspect() == nil {
             Issue.record("View inspection not available")
@@ -83,7 +83,7 @@ open class ViewGenerationTests: BaseTestClass {
         // THEN: View should be created successfully
         // View creation itself is the test - if it fails to compile or crashes, test fails
         // Optimized: Use minimal ViewInspector check only if available and fast
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         if detailView.tryInspect() == nil {
             Issue.record("View inspection not available")
         }
@@ -106,7 +106,7 @@ open class ViewGenerationTests: BaseTestClass {
         // THEN: View should be created successfully
         // View creation itself is the test - if it fails to compile or crashes, test fails
         // Optimized: Use minimal ViewInspector check only if available and fast
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         if detailView.tryInspect() == nil {
             Issue.record("View inspection not available")
         }

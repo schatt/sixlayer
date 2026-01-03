@@ -1,5 +1,5 @@
 import Testing
-#if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+#if canImport(ViewInspector)
 import ViewInspector
 #endif
 @testable import SixLayerFramework
@@ -31,7 +31,7 @@ import ViewInspector
 //
 
 import SwiftUI
-#if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+#if canImport(ViewInspector)
 import ViewInspector
 #endif
 @testable import SixLayerFramework
@@ -92,7 +92,7 @@ open class PhotoComponentsLayer4Tests: BaseTestClass {
             // modifier applied in Framework/Sources/Layers/Layer4-Component/PlatformPhotoComponentsLayer4.swift:24,27,30.
             // The test needs to be updated to handle ViewInspector's inability to detect these identifiers reliably.
             // This is a ViewInspector limitation, not a missing modifier issue.
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             #expect(testComponentComplianceSinglePlatform(
                 result, 
                 expectedPattern: "SixLayer.main.ui", 
@@ -107,7 +107,7 @@ open class PhotoComponentsLayer4Tests: BaseTestClass {
             // 3. Platform-specific implementation verification (REQUIRED)
             #if os(macOS)
             // macOS should return a MacOSCameraView (AVCaptureSession wrapper)
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             if let _ = result.tryInspect() {
                 // macOS camera interface should be inspectable (MacOSCameraView)
                 // Note: We can't easily test the underlying AVCaptureSession type
@@ -121,7 +121,7 @@ open class PhotoComponentsLayer4Tests: BaseTestClass {
             #elseif os(iOS)
             // iOS should return a CameraView (UIImagePickerController wrapper)
             // This will be wrapped in UIHostingView by SwiftUI
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             if let _ = result.tryInspect() {
                 // iOS camera interface should be inspectable (CameraView)
                 // Note: We can't easily test the underlying UIImagePickerController type
@@ -167,7 +167,7 @@ open class PhotoComponentsLayer4Tests: BaseTestClass {
             // Note: PhotoPickerView is a UIViewControllerRepresentable, so it wraps UIKit
             // components that may not be inspectable through ViewInspector. We verify
             // that the view structure is valid and the accessibility identifier is applied.
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             if let _ = result.tryInspect() {
                 // Verify the view structure is inspectable
             } else {
@@ -207,7 +207,7 @@ open class PhotoComponentsLayer4Tests: BaseTestClass {
             // result is non-optional View, so it exists if we reach here
             
             // 2. Does that structure contain what it should?
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             // Use helper function for DRY image verification
             verifyViewContainsImage(result, testName: "Photo display")
             #else

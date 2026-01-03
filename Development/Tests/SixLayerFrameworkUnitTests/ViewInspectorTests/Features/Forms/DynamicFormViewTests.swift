@@ -2,7 +2,7 @@ import Testing
 import CoreData
 
 import SwiftUI
-#if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+#if canImport(ViewInspector)
 import ViewInspector
 #endif
 @testable import SixLayerFramework
@@ -74,7 +74,7 @@ open class DynamicFormViewTests: BaseTestClass {
             #expect(vStack.sixLayerCount >= 3, "Should have title, sections, and submit button")
 
             // Should have accessibility identifier
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             let hasAccessibilityID = testComponentComplianceSinglePlatform(
                 view,
                 expectedPattern: "SixLayer.main.ui.*DynamicFormView.*",
@@ -88,7 +88,7 @@ open class DynamicFormViewTests: BaseTestClass {
             #endif
         }
 
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         // ViewInspector available - inspectionResult should be non-nil if inspection succeeded
         // If nil, it means inspection failed (which is an issue on iOS)
         if inspectionResult == nil {
@@ -135,7 +135,7 @@ open class DynamicFormViewTests: BaseTestClass {
             #expect(try titleText.sixLayerString() == "Contact Information", "Should show section title")
 
             // Should have accessibility identifier
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             let hasAccessibilityID = testComponentComplianceSinglePlatform(
                 view,
                 expectedPattern: "SixLayer.main.ui.*DynamicFormSectionView.*",
@@ -149,7 +149,7 @@ open class DynamicFormViewTests: BaseTestClass {
             #endif
         }
 
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         // ViewInspector available - inspectionResult should be non-nil if inspection succeeded
         // If nil, it means inspection failed (which is an issue on iOS)
         if inspectionResult == nil {
@@ -186,7 +186,7 @@ open class DynamicFormViewTests: BaseTestClass {
         let view = DynamicFormSectionView(section: regularSection, formState: formState)
         
         // Should render normally without DisclosureGroup
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let inspectionResult = withInspectedView(view) { inspected in
             let vStack = try inspected.sixLayerVStack()
             #expect(vStack.sixLayerCount >= 2, "Should have section title and fields")
@@ -229,7 +229,7 @@ open class DynamicFormViewTests: BaseTestClass {
         
         // Should have .id() modifier (ViewInspector may not be able to detect this directly)
         // But we can verify the view structure is correct
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let inspectionResult = withInspectedView(view) { inspected in
             let vStack = try inspected.sixLayerVStack()
             #expect(vStack.sixLayerCount >= 2, "Should have field label and field control")
@@ -288,7 +288,7 @@ open class DynamicFormViewTests: BaseTestClass {
             #expect(try labelText.sixLayerString() == "Username", "Should show field label")
 
             // Should have accessibility identifier
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             let hasAccessibilityID = testComponentComplianceSinglePlatform(
                 view,
                 expectedPattern: "SixLayer.main.ui.*DynamicFormFieldView.*",
@@ -302,7 +302,7 @@ open class DynamicFormViewTests: BaseTestClass {
             #endif
         }
 
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         // ViewInspector available - inspectionResult should be non-nil if inspection succeeded
         // If nil, it means inspection failed (which is an issue on iOS)
         if inspectionResult == nil {
@@ -341,7 +341,7 @@ open class DynamicFormViewTests: BaseTestClass {
         let view = DynamicFormFieldView(field: requiredField, formState: formState)
 
         // Should render HStack with label and asterisk
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let inspectionResult = withInspectedView(view) { inspected in
             let vStack = try inspected.sixLayerVStack()
             // First element should be HStack containing label and asterisk
@@ -390,7 +390,7 @@ open class DynamicFormViewTests: BaseTestClass {
         let view = DynamicFormFieldView(field: optionalField, formState: formState)
 
         // Should render HStack with only label (no asterisk)
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let inspectionResult = withInspectedView(view) { inspected in
             let vStack = try inspected.sixLayerVStack()
             // First element should be HStack containing only label
@@ -435,7 +435,7 @@ open class DynamicFormViewTests: BaseTestClass {
         let view = DynamicFormFieldView(field: requiredField, formState: formState)
 
         // Should have accessibility label with "required"
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let hasAccessibilityLabel = testComponentComplianceSinglePlatform(
             view,
             expectedPattern: "SixLayer.main.ui.*DynamicFormFieldView.*",
@@ -475,7 +475,7 @@ open class DynamicFormViewTests: BaseTestClass {
         let view = DynamicFormFieldView(field: optionalField, formState: formState)
 
         // Should have accessibility identifier (label modifier is applied)
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let hasAccessibilityLabel = testComponentComplianceSinglePlatform(
             view,
             expectedPattern: "SixLayer.main.ui.*DynamicFormFieldView.*",
@@ -519,7 +519,7 @@ open class DynamicFormViewTests: BaseTestClass {
         let view = DynamicFormFieldView(field: fieldWithDescription, formState: formState)
 
         // Should render HStack with label and info button
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let inspectionResult = withInspectedView(view) { inspected in
             let vStack = try inspected.sixLayerVStack()
             // First element should be HStack containing label and info button
@@ -565,7 +565,7 @@ open class DynamicFormViewTests: BaseTestClass {
         let view = DynamicFormFieldView(field: fieldWithoutDescription, formState: formState)
 
         // Should render HStack with only label (no info button)
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let inspectionResult = withInspectedView(view) { inspected in
             let vStack = try inspected.sixLayerVStack()
             // First element should be HStack containing only label
@@ -609,7 +609,7 @@ open class DynamicFormViewTests: BaseTestClass {
         let view = DynamicFormFieldView(field: fieldWithDescription, formState: formState)
 
         // Should have proper accessibility identifiers
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
             view,
             expectedPattern: "SixLayer.main.ui.*DynamicFormFieldView.*",
@@ -650,7 +650,7 @@ open class DynamicFormViewTests: BaseTestClass {
         let view = DynamicFormFieldView(field: fieldWithDescription, formState: formState)
 
         // Description should not be rendered as Text in VStack
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let inspectionResult = withInspectedView(view) { inspected in
             let vStack = try inspected.sixLayerVStack()
             // Should not have description text as a separate Text element
@@ -703,7 +703,7 @@ open class DynamicFormViewTests: BaseTestClass {
         )
 
         // Should render proper wizard structure
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         if let inspected = view.tryInspect() {
             // Should have a VStack
             if let vStack = try? inspected.sixLayerVStack() {
@@ -711,7 +711,7 @@ open class DynamicFormViewTests: BaseTestClass {
             }
 
             // Should have accessibility identifier
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             let hasAccessibilityID = testComponentComplianceSinglePlatform(
                 view,
                 expectedPattern: "SixLayer.main.ui.*FormWizardView.*",
@@ -762,7 +762,7 @@ open class DynamicFormViewTests: BaseTestClass {
         )
         
         // When: Testing accessibility identifier generation
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
             view, 
             expectedPattern: "SixLayer.*ui.*DynamicFormView.*",
@@ -907,7 +907,7 @@ open class DynamicFormViewTests: BaseTestClass {
         let regularFieldView = CustomFieldView(field: regularField, formState: formState)
 
         // OCR field should show OCR button (will fail until implemented)
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         if let inspected = ocrFieldView.tryInspect() {
             // Look for OCR button by finding the HStack that contains both TextField and Button
             if let hStack = inspected.sixLayerTryFind(ViewType.HStack.self) {
@@ -923,7 +923,7 @@ open class DynamicFormViewTests: BaseTestClass {
         #endif
 
         // Regular field should not show OCR button (no HStack)
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         if let inspected = regularFieldView.tryInspect() {
             // Regular field should not have HStack (just VStack with label and TextField)
             let hStack = inspected.sixLayerTryFind(ViewType.HStack.self)
@@ -1170,7 +1170,7 @@ open class DynamicFormViewTests: BaseTestClass {
         let viewWithoutOCR = DynamicFormView(configuration: configWithoutOCR, onSubmit: { _ in })
 
         // OCR form should show batch OCR button
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         if let inspected = viewWithOCR.tryInspect() {
             // Should find the batch OCR button by finding buttons and checking their accessibility identifiers
             let buttons = inspected.sixLayerFindAll(Button<Text>.self)
@@ -1281,7 +1281,7 @@ open class DynamicFormViewTests: BaseTestClass {
 
         // Test that button exists and can be triggered
         // Note: Actual OCR triggering requires camera access, so we test the button presence
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         if let inspected = view.tryInspect() {
             let buttons = inspected.sixLayerFindAll(Button<Text>.self)
             let hasBatchOCRButton = buttons.contains { button in

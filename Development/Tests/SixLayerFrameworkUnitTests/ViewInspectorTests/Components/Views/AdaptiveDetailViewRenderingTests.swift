@@ -39,7 +39,7 @@ open class AdaptiveDetailViewRenderingTests: BaseTestClass {
         if let _ = view.tryInspect() {
             #expect(Bool(true), "platformAdaptiveDetailView should be inspectable (proves it rendered)")
         } else {
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             Issue.record("platformAdaptiveDetailView should be inspectable")
             #else
             // ViewInspector not available on macOS - test passes by verifying view creation
@@ -82,7 +82,7 @@ open class AdaptiveDetailViewRenderingTests: BaseTestClass {
         if let _ = view.tryInspect() {
             #expect(Bool(true), "platformAdaptiveDetailView on phone should render (proves it called platformStandardDetailView)")
         } else {
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             Issue.record("platformAdaptiveDetailView should render on phone")
             #else
             // ViewInspector not available on macOS - test passes by verifying view creation
@@ -126,7 +126,7 @@ open class AdaptiveDetailViewRenderingTests: BaseTestClass {
         )
         
         // Then: Test that the ACTUAL framework code generates accessibility identifiers
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
             view,
             expectedPattern: "SixLayer.main.ui.*",

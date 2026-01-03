@@ -61,7 +61,7 @@ open class AutomaticAccessibilityIdentifiersTests: BaseTestClass {
         )
             .automaticCompliance()
         
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
             view, 
             expectedPattern: "SixLayer.*ui", 
@@ -83,7 +83,7 @@ open class AutomaticAccessibilityIdentifiersTests: BaseTestClass {
         )
             .automaticCompliance()
         
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
             view, 
             expectedPattern: "SixLayer.*ui", 
@@ -106,7 +106,7 @@ open class AutomaticAccessibilityIdentifiersTests: BaseTestClass {
         )
             .named("TestElement")
         
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
             view, 
             expectedPattern: "SixLayer.*ui", 
@@ -128,7 +128,7 @@ open class AutomaticAccessibilityIdentifiersTests: BaseTestClass {
         )
             .named("TestElement")
         
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
             view, 
             expectedPattern: "SixLayer.*ui", 
@@ -164,7 +164,7 @@ open class AutomaticAccessibilityIdentifiersTests: BaseTestClass {
             // 1. The modifier works correctly
             // 2. Environment values are accessed only when view is installed
             
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             // Verify the view can be inspected (which means it was properly installed)
             if let inspected = rootView.tryInspect() {
                 // If we can inspect it, the environment was accessed correctly
@@ -204,7 +204,7 @@ open class AutomaticAccessibilityIdentifiersTests: BaseTestClass {
             
             // The modifier should use helper view pattern to defer environment access
             // We verify this by checking that the view works correctly when inspected
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             if let inspected = view.tryInspect() {
                 let identifier = try? inspected.sixLayerAccessibilityIdentifier()
                 // TDD RED: Should PASS - environment should be accessed only when view is installed
@@ -248,7 +248,7 @@ open class AutomaticAccessibilityIdentifiersTests: BaseTestClass {
                 .environment(\.accessibilityIdentifierConfig, testConfig)
             
             // All should work without environment access warnings
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             // Handle each view separately to avoid Any type issues
             if let inspected1 = view1.tryInspect() {
                 let identifier1 = try? inspected1.sixLayerAccessibilityIdentifier()

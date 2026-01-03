@@ -44,7 +44,7 @@ open class MetalRenderingCrashTDDTests: BaseTestClass {
         
         // Try to inspect the view (should not crash)
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         if let _ = view.tryInspect() {
         } else {
             Issue.record("platformPresentItemCollection_L1 should not crash during inspection")
@@ -85,7 +85,7 @@ open class MetalRenderingCrashTDDTests: BaseTestClass {
         
         // Try to inspect the view (should not crash)
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         if let _ = view.tryInspect() {
         } else {
             Issue.record("GenericItemCollectionView should not crash during inspection")
@@ -133,7 +133,7 @@ open class MetalRenderingCrashTDDTests: BaseTestClass {
         
         // Try to inspect the view (should not crash)
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         if let _ = view.tryInspect() {
         } else {
             Issue.record("Metal rendering should not crash during inspection")
@@ -171,7 +171,7 @@ open class MetalRenderingCrashTDDTests: BaseTestClass {
         
         // Try to inspect the view (should not crash)
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         if let _ = view.tryInspect() {
         } else {
             Issue.record("SimpleCardComponent should not crash during inspection")

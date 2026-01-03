@@ -47,7 +47,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
 
         // Should render all options from field
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         withInspectedView(view) { inspected in
             // Find all text elements and check if they contain the options
             let allTexts = inspected.sixLayerFindAll(Text.self)
@@ -80,7 +80,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         #endif
 
         // Should generate accessibility identifier
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
             view,
             expectedPattern: "SixLayer.main.ui.*DynamicMultiSelectField.*",
@@ -128,7 +128,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
 
         // Should render all radio options
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         withInspectedView(view) { inspected in
             let allTexts = inspected.sixLayerFindAll(Text.self)
             if !allTexts.isEmpty {
@@ -149,7 +149,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         #endif
 
         // Should generate accessibility identifier
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
             view,
             expectedPattern: "SixLayer.main.ui.*DynamicRadioField.*",
@@ -196,7 +196,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
 
         // Should render checkbox options
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         withInspectedView(view) { inspected in
             let allTexts = inspected.sixLayerFindAll(Text.self)
             if !allTexts.isEmpty {
@@ -217,7 +217,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         #endif
 
         // Should generate accessibility identifier
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
             view,
             expectedPattern: "SixLayer.main.ui.*DynamicCheckboxField.*",
@@ -258,7 +258,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
 
         // Should render text input interface
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         if let inspected = view.tryInspect() {
             // Should have text input capability - check if we can find text fields
             let textFields = inspected.sixLayerFindAll(TextField<Text>.self)
@@ -266,7 +266,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
                 #expect(!textFields.isEmpty, "Should provide text input interface")
             }
         } else {
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             Issue.record("DynamicRichTextField interface not found")
             #else
             #expect(Bool(true), "DynamicRichTextField created (ViewInspector not available on macOS)")
@@ -277,7 +277,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         #endif
 
         // Should generate accessibility identifier
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
             view,
             expectedPattern: "SixLayer.main.ui.*DynamicRichTextField.*",
@@ -318,12 +318,12 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
 
         // Should render file picker interface
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         if let _ = view.tryInspect() {
             // View is inspectable - file picker interface should be present
             #expect(Bool(true), "Should provide file picker interface")
         } else {
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             Issue.record("DynamicFileField interface not found")
             #else
             #expect(Bool(true), "DynamicFileField created (ViewInspector not available on macOS)")
@@ -334,7 +334,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         #endif
 
         // Should generate accessibility identifier
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
             view,
             expectedPattern: "SixLayer.main.ui.*DynamicFileField.*",
@@ -375,12 +375,12 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
 
         // Should render image picker interface
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         if let _ = view.tryInspect() {
             // View is inspectable - image picker interface should be present
             #expect(Bool(true), "Should provide image picker interface")
         } else {
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             Issue.record("DynamicImageField interface not found")
             #else
             #expect(Bool(true), "DynamicImageField created (ViewInspector not available on macOS)")
@@ -391,7 +391,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         #endif
 
         // Should generate accessibility identifier
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
             view,
             expectedPattern: "SixLayer.main.ui.*DynamicImageField.*",
@@ -432,12 +432,12 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
 
         // Should render array input interface
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         if let _ = view.tryInspect() {
             // View is inspectable - array input interface should be present
             #expect(Bool(true), "Should provide array input interface")
         } else {
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             Issue.record("DynamicArrayField interface not found")
             #else
             #expect(Bool(true), "DynamicArrayField created (ViewInspector not available on macOS)")
@@ -448,7 +448,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         #endif
 
         // Should generate accessibility identifier
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
             view,
             expectedPattern: "SixLayer.main.ui.*DynamicArrayField.*",
@@ -489,12 +489,12 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
 
         // Should render data input interface
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         if let _ = view.tryInspect() {
             // View is inspectable - data input interface should be present
             #expect(Bool(true), "Should provide data input interface")
         } else {
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             Issue.record("DynamicDataField interface not found")
             #else
             #expect(Bool(true), "DynamicDataField created (ViewInspector not available on macOS)")
@@ -505,7 +505,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         #endif
 
         // Should generate accessibility identifier
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
             view,
             expectedPattern: "SixLayer.main.ui.*DynamicDataField.*",
@@ -552,7 +552,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             let hasAutocomplete = inspected.sixLayerCount > 0
             #expect(hasAutocomplete, "Should provide autocomplete interface")
         } else {
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             Issue.record("DynamicAutocompleteField interface not found")
             #else
             // ViewInspector not available on macOS - test passes by verifying view creation
@@ -561,7 +561,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         }
 
         // Should generate accessibility identifier
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
             view,
             expectedPattern: "SixLayer.main.ui.*DynamicAutocompleteField.*",
@@ -603,7 +603,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
 
         // Should render enum options
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         withInspectedView(view) { inspected in
             let allTexts = inspected.sixLayerFindAll(Text.self)
             if !allTexts.isEmpty {
@@ -624,7 +624,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         #endif
 
         // Should generate accessibility identifier
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
             view,
             expectedPattern: "SixLayer.main.ui.*DynamicEnumField.*",
@@ -670,7 +670,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             let hasInterface = inspected.sixLayerCount > 0
             #expect(hasInterface, "Should render custom component or error message")
         } else {
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             Issue.record("DynamicCustomField interface not found")
             #else
             #expect(Bool(true), "DynamicCustomField created (ViewInspector not available on macOS)")
@@ -678,7 +678,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         }
 
         // Should generate accessibility identifier
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
             view,
             expectedPattern: "SixLayer.main.ui.*DynamicCustomField.*",
@@ -724,7 +724,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             let hasColorPicker = inspected.sixLayerCount > 0
             #expect(hasColorPicker, "Should provide color picker interface")
         } else {
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             Issue.record("DynamicColorField interface not found")
             #else
             #expect(Bool(true), "DynamicColorField created (ViewInspector not available on macOS)")
@@ -732,7 +732,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         }
 
         // Should generate accessibility identifier
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
             view,
             expectedPattern: "SixLayer.main.ui.*DynamicColorField.*",
@@ -778,7 +778,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             let hasTextArea = inspected.sixLayerCount > 0
             #expect(hasTextArea, "Should provide multi-line text editor")
         } else {
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             Issue.record("DynamicTextAreaField interface not found")
             #else
             #expect(Bool(true), "DynamicTextAreaField created (ViewInspector not available on macOS)")
@@ -786,7 +786,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         }
 
         // Should generate accessibility identifier
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
             view,
             expectedPattern: "SixLayer.main.ui.*DynamicTextAreaField.*",
@@ -832,7 +832,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
 
         // Should show character counter
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         withInspectedView(view) { inspected in
             let allTexts = inspected.sixLayerFindAll(Text.self)
             if !allTexts.isEmpty {
@@ -902,7 +902,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
 
         // Counter should be visible and show warning color
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         withInspectedView(view) { inspected in
             let allTexts = inspected.sixLayerFindAll(Text.self)
             if !allTexts.isEmpty {
@@ -938,7 +938,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
 
         // Should NOT show character counter
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         withInspectedView(view) { inspected in
             let allTexts = inspected.sixLayerFindAll(Text.self)
             if !allTexts.isEmpty {
@@ -975,7 +975,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
 
         // Should show character counter
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         withInspectedView(view) { inspected in
             let allTexts = inspected.sixLayerFindAll(Text.self)
             if !allTexts.isEmpty {
@@ -1039,7 +1039,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
 
         // Should have accessibility support
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
             view,
             expectedPattern: "SixLayer.main.ui.*DynamicTextField.*",
@@ -1073,7 +1073,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
 
         // Should show character counter
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         withInspectedView(view) { inspected in
             let allTexts = inspected.sixLayerFindAll(Text.self)
             if !allTexts.isEmpty {
@@ -1111,7 +1111,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         let view = DynamicEmailField(field: field, formState: formState)
             .enableGlobalAutomaticCompliance()
 
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         withInspectedView(view) { inspected in
             let allTexts = inspected.sixLayerFindAll(Text.self)
             if !allTexts.isEmpty {
@@ -1147,7 +1147,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         let view = DynamicPhoneField(field: field, formState: formState)
             .enableGlobalAutomaticCompliance()
 
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         withInspectedView(view) { inspected in
             let allTexts = inspected.sixLayerFindAll(Text.self)
             if !allTexts.isEmpty {
@@ -1183,7 +1183,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         let view = DynamicURLField(field: field, formState: formState)
             .enableGlobalAutomaticCompliance()
 
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         withInspectedView(view) { inspected in
             let allTexts = inspected.sixLayerFindAll(Text.self)
             if !allTexts.isEmpty {
@@ -1223,7 +1223,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         let view = DynamicURLField(field: field, formState: formState)
             .enableGlobalAutomaticCompliance()
 
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         withInspectedView(view) { inspected in
             // Should contain Link component, not TextField
             // Use specialized method to directly verify Link component is used
@@ -1269,7 +1269,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         let view = DynamicURLField(field: field, formState: formState)
             .enableGlobalAutomaticCompliance()
 
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         withInspectedView(view) { inspected in
             // Should contain Text component for invalid URL, not Link
             // Use specialized method to directly verify Link component is NOT used
@@ -1313,7 +1313,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         let view = DynamicURLField(field: field, formState: formState)
             .enableGlobalAutomaticCompliance()
 
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         withInspectedView(view) { inspected in
             // Should contain TextField, not Link
             let textFields = inspected.sixLayerFindAll(TextField<Text>.self)
@@ -1357,7 +1357,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         let view = DynamicURLField(field: field, formState: formState)
             .enableGlobalAutomaticCompliance()
 
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         withInspectedView(view) { inspected in
             // Should use Link for display-only field with valid URL
             // Use specialized method to directly verify Link component is used
@@ -1402,7 +1402,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         let view = DynamicURLField(field: field, formState: formState)
             .enableGlobalAutomaticCompliance()
 
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         withInspectedView(view) { inspected in
             // Should show placeholder text (—) for empty read-only URL
             let texts = inspected.sixLayerFindAll(Text.self)
@@ -1437,7 +1437,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         let view = DynamicPasswordField(field: field, formState: formState)
             .enableGlobalAutomaticCompliance()
 
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         withInspectedView(view) { inspected in
             let allTexts = inspected.sixLayerFindAll(Text.self)
             if !allTexts.isEmpty {
@@ -1473,7 +1473,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         let view = DynamicAutocompleteField(field: field, formState: formState)
             .enableGlobalAutomaticCompliance()
 
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         withInspectedView(view) { inspected in
             let allTexts = inspected.sixLayerFindAll(Text.self)
             if !allTexts.isEmpty {
@@ -1662,12 +1662,12 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
 
         // Should render stepper interface
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         if let _ = view.tryInspect() {
             // View is inspectable - stepper interface should be present
             #expect(Bool(true), "Should provide stepper interface")
         } else {
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             Issue.record("DynamicStepperField interface not found")
             #else
             #expect(Bool(true), "DynamicStepperField created (ViewInspector not available on macOS)")
@@ -1678,7 +1678,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         #endif
 
         // Should generate accessibility identifier
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
             view,
             expectedPattern: "SixLayer.main.ui.*DynamicStepperField.*",
@@ -1828,7 +1828,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
 
         // Should display current value
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         withInspectedView(view) { inspected in
             let allTexts = inspected.sixLayerFindAll(Text.self)
             if !allTexts.isEmpty {
@@ -1991,7 +1991,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         // On iOS 16+, should use TextField with axis: .vertical
         #if os(iOS)
         if #available(iOS 16.0, *) {
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             withInspectedView(view) { inspected in
                 // Should have TextField with axis parameter (multi-line)
                 // Note: ViewInspector may not directly detect axis, but we can verify
@@ -2005,7 +2005,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             #endif
         } else {
             // iOS < 16: Should fall back to TextEditor
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             withInspectedView(view) { inspected in
                 // Should use TextEditor as fallback
                 let textEditors = inspected.sixLayerFindAll(TextEditor.self)
@@ -2048,7 +2048,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             #expect(field.metadata?["multiLine"] == "true", "Field should have multiLine metadata")
         } else {
             // iOS < 16: Should use TextEditor
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             withInspectedView(view) { inspected in
                 let textEditors = inspected.sixLayerFindAll(TextEditor.self)
                 #expect(!textEditors.isEmpty, "Should use TextEditor as fallback on iOS < 16")
@@ -2152,7 +2152,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
 
         // Should show character counter
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         withInspectedView(view) { inspected in
             let allTexts = inspected.sixLayerFindAll(Text.self)
             if !allTexts.isEmpty {
@@ -2296,12 +2296,12 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
 
         // Should render gauge component
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         if let _ = view.tryInspect() {
             // View is inspectable - gauge should be present
             #expect(Bool(true), "Should provide gauge interface")
         } else {
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             Issue.record("DynamicGaugeField interface not found")
             #else
             #expect(Bool(true), "DynamicGaugeField created (ViewInspector not available on macOS)")
@@ -2312,7 +2312,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         #endif
 
         // Should generate accessibility identifier
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
             view,
             expectedPattern: "SixLayer.main.ui.*DynamicGaugeField.*",

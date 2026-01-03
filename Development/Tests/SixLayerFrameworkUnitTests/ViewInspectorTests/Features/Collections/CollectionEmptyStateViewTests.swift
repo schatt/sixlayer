@@ -2,7 +2,7 @@ import Testing
 import SwiftUI
 @testable import SixLayerFramework
 
-#if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+#if canImport(ViewInspector)
 import ViewInspector
 #endif
 /// Tests for CollectionEmptyStateView component
@@ -43,7 +43,7 @@ open class CollectionEmptyStateViewTests: BaseTestClass {
         setupTestEnvironment()
         
         // Test: Verify component works when accessibility IDs are disabled
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let view = createCollectionEmptyStateView()
         verifyViewGeneration(view, testName: "CollectionEmptyStateView with accessibility disabled")
         #expect(Bool(true), "CollectionEmptyStateView should work when accessibility IDs are disabled")
@@ -57,7 +57,7 @@ open class CollectionEmptyStateViewTests: BaseTestClass {
         initializeTestConfig()
         let view = createCollectionEmptyStateView()
         
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         // Test automatic mode
         testConfig?.mode = .automatic
         setupTestEnvironment()
@@ -122,7 +122,7 @@ open class CollectionEmptyStateViewTests: BaseTestClass {
             )
             
             // Using wrapper - when ViewInspector works on macOS, no changes needed here
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             if let inspected = view.tryInspect() {
                 // Find the message text in the VStack
                 if let vStack = inspected.sixLayerTryFind(ViewType.VStack.self) {
@@ -175,7 +175,7 @@ open class CollectionEmptyStateViewTests: BaseTestClass {
             )
             
             // Using wrapper - when ViewInspector works on macOS, no changes needed here
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             if let inspected = view.tryInspect() {
                 // Find the button in the view
                 let button = inspected.sixLayerTryFind(ViewType.Button.self)
@@ -233,7 +233,7 @@ open class CollectionEmptyStateViewTests: BaseTestClass {
             
             // THEN: The empty state should use the original hints (not overridden)
             // The empty state should show custom message and create button
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             if let inspected = view.tryInspect() {
                 // Find the empty state view
                 let emptyState = inspected.sixLayerTryFind(ViewType.VStack.self)
@@ -292,7 +292,7 @@ open class CollectionEmptyStateViewTests: BaseTestClass {
             )
             
             // Using wrapper - when ViewInspector works on macOS, no changes needed here
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             if let inspected = view.tryInspect() {
                 if let vStack = inspected.sixLayerTryFind(ViewType.VStack.self) {
                     let texts = vStack.sixLayerFindAll(ViewType.Text.self)

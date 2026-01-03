@@ -74,7 +74,7 @@ open class OCRDisambiguationTDDTests: BaseTestClass {
 
         // Should render disambiguation interface
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let inspectionResult = withInspectedView(view) { inspected in
             if let textElement = try? inspected.sixLayerText(),
                let text = try? textElement.sixLayerString() {
@@ -88,7 +88,7 @@ open class OCRDisambiguationTDDTests: BaseTestClass {
         #endif
 
         if inspectionResult == nil {
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             Issue.record("View inspection failed on this platform")
             #else
             // ViewInspector not available on macOS - test passes by verifying view creation
@@ -135,7 +135,7 @@ open class OCRDisambiguationTDDTests: BaseTestClass {
 
         // Should render confidence-based interface
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let inspectionResult = withInspectedView(view) { inspected in
             if let textElement = try? inspected.sixLayerText(),
                let text = try? textElement.sixLayerString() {
@@ -149,7 +149,7 @@ open class OCRDisambiguationTDDTests: BaseTestClass {
         #endif
 
         if inspectionResult == nil {
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             Issue.record("View inspection failed on this platform")
             #else
             // ViewInspector not available on macOS - test passes by verifying view creation

@@ -1,6 +1,6 @@
 import Testing
 import SwiftUI
-#if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+#if canImport(ViewInspector)
 import ViewInspector
 #endif
 @testable import SixLayerFramework
@@ -95,7 +95,7 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
         )
         
         // Then: Progress indicator should be visible
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let inspectionResult = withInspectedView(view) { inspected in
             // Find the FormProgressIndicator by structure (ViewInspector may not find custom struct types directly)
             let progressIndicator = findProgressIndicator(in: inspected)
@@ -145,7 +145,7 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
         )
         
         // Then: Progress indicator should NOT be visible
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let inspectionResult = withInspectedView(view) { inspected in
             // Attempt to find the FormProgressIndicator by structure
             let progressIndicator = findProgressIndicator(in: inspected)
@@ -192,7 +192,7 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
         )
         
         // Then: Progress indicator should show "0 of 3 fields"
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let inspectionResult = withInspectedView(view) { inspected in
             let progressIndicator = findProgressIndicator(in: inspected)
             if let indicator = progressIndicator {
@@ -252,7 +252,7 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
         )
         
         // Then: Progress bar should show 0% initially
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let inspectionResult = withInspectedView(view) { inspected in
             let progressIndicator = findProgressIndicator(in: inspected)
             if let indicator = progressIndicator {
@@ -309,7 +309,7 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
         )
         
         // Verify initial state: should show "0 of 2 fields"
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let initialInspection = withInspectedView(view) { inspected in
             let progressIndicator = findProgressIndicator(in: inspected)
             if let indicator = progressIndicator {
@@ -354,7 +354,7 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
             (3, 5, "3 of 5")
         ]
         
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         for testCase in testCases {
             let progress = FormProgress(
                 completed: testCase.completed,
@@ -400,7 +400,7 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
         let progressIndicator = FormProgressIndicator(progress: progress)
         
         // Then: Accessibility label should describe the progress
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let inspectionResult = withInspectedView(progressIndicator) { inspected in
             // Verify accessibility label is set
             let hasAccessibilityLabel = testComponentComplianceSinglePlatform(
@@ -432,7 +432,7 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
         let progressIndicator = FormProgressIndicator(progress: progress)
         
         // Then: Accessibility identifier should be set and component should have proper structure
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let inspectionResult = withInspectedView(progressIndicator) { inspected in
             // Verify accessibility identifier is set (as per implementation)
             let hasAccessibilityID = testComponentComplianceSinglePlatform(
@@ -481,7 +481,7 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
         let indicator3 = FormProgressIndicator(progress: progress3)
         
         // Then: Each indicator should have appropriate accessibility support
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         // Verify all indicators have accessibility modifiers
         for (indicator, expectedCompleted) in [(indicator0, 0), (indicator1, 1), (indicator3, 3)] {
             let inspectionResult = withInspectedView(indicator) { inspected in
@@ -522,7 +522,7 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
         let progressIndicator = FormProgressIndicator(progress: progress)
         
         // Then: Should have proper structure (VStack with HStack and ProgressView)
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let inspectionResult = withInspectedView(progressIndicator) { inspected in
             // Should have VStack as root
             let vStack = try? inspected.sixLayerVStack()
@@ -559,7 +559,7 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
         let progressIndicator = FormProgressIndicator(progress: progress)
         
         // Then: Should have visual styling for readability
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let inspectionResult = withInspectedView(progressIndicator) { inspected in
             // Verify the view structure indicates styling (VStack with proper hierarchy)
             // ViewInspector cannot directly detect padding/background/cornerRadius modifiers,
@@ -595,7 +595,7 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
         let progressIndicator = FormProgressIndicator(progress: progress)
         
         // Then: Should display all elements
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let inspectionResult = withInspectedView(progressIndicator) { inspected in
             // Find all Text elements
             let texts = inspected.sixLayerFindAll(Text.self)
@@ -643,7 +643,7 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
             .preferredColorScheme(.light)
         
         // Then: Should be visible and readable in light mode
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let inspectionResult = withInspectedView(progressIndicator) { inspected in
             // Verify structure is present (visibility)
             let vStack = try? inspected.sixLayerVStack()
@@ -679,7 +679,7 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
             .preferredColorScheme(.dark)
         
         // Then: Should be visible and readable in dark mode
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let inspectionResult = withInspectedView(progressIndicator) { inspected in
             // Verify structure is present (visibility)
             let vStack = try? inspected.sixLayerVStack()
@@ -712,7 +712,7 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
         // Test Case 1: Zero fields (0 of 0)
         let progress0 = FormProgress(completed: 0, total: 0, percentage: 0.0)
         let indicator0 = FormProgressIndicator(progress: progress0)
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let inspection0 = withInspectedView(indicator0) { inspected in
             let vStack = try? inspected.sixLayerVStack()
             #expect(vStack != nil, "Progress indicator should render even with 0 of 0 fields")
@@ -737,7 +737,7 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
         let indicator100 = FormProgressIndicator(progress: progress100)
         
         // Verify text uses singular/plural correctly
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         // Test singular "field" text
         let inspectionResult1 = withInspectedView(indicator1Empty) { inspected in
             let texts = inspected.sixLayerFindAll(Text.self)

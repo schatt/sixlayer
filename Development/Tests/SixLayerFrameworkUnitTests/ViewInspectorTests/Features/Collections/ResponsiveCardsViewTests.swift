@@ -35,7 +35,7 @@ open class ResponsiveCardsViewTests: BaseTestClass {
         
         let view = ResponsiveCardView(data: testData)
         
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
             view, 
             expectedPattern: "SixLayer.*ui", 
@@ -61,7 +61,7 @@ open class ResponsiveCardsViewTests: BaseTestClass {
         
         let view = ResponsiveCardView(data: testData)
         
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
             view, 
             expectedPattern: "SixLayer.*ui", 

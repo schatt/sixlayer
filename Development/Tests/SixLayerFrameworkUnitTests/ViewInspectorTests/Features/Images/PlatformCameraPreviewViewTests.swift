@@ -1,5 +1,5 @@
 import Testing
-#if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+#if canImport(ViewInspector)
 import ViewInspector
 #endif
 @testable import SixLayerFramework
@@ -112,7 +112,7 @@ open class PlatformCameraPreviewViewTests: BaseTestClass {
             let previewView = PlatformCameraPreviewView(session: session)
             
             // Then: View should have accessibility identifier applied
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             #expect(testComponentComplianceSinglePlatform(
                 previewView,
                 expectedPattern: "SixLayer.*ui",
@@ -141,7 +141,7 @@ open class PlatformCameraPreviewViewTests: BaseTestClass {
             let previewView = PlatformCameraPreviewView(session: session)
             
             // Then: View should be inspectable (wrapped in UIViewControllerRepresentable)
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             if let _ = previewView.tryInspect() {
                 // iOS camera preview should be inspectable
                 #expect(Bool(true), "iOS implementation should be inspectable")
@@ -172,7 +172,7 @@ open class PlatformCameraPreviewViewTests: BaseTestClass {
             let previewView = PlatformCameraPreviewView(session: session)
             
             // Then: View should be inspectable (wrapped in NSViewRepresentable)
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             if let _ = previewView.tryInspect() {
                 // macOS camera preview should be inspectable
                 #expect(Bool(true), "macOS implementation should be inspectable")

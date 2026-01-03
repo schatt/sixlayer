@@ -50,7 +50,7 @@ open class PlatformResponsiveCardsLayer4Tests: BaseTestClass {
             hints: hints
         )
         
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let hasAccessibilityID = testAccessibilityIdentifiersCrossPlatform(
             view, 
             expectedPattern: "SixLayer.*ui", 
@@ -83,7 +83,7 @@ open class PlatformResponsiveCardsLayer4Tests: BaseTestClass {
             hints: hints
         )
         
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let hasAccessibilityID = testAccessibilityIdentifiersCrossPlatform(
             view, 
             expectedPattern: "SixLayer.*ui", 
@@ -115,7 +115,7 @@ open class PlatformResponsiveCardsLayer4Tests: BaseTestClass {
         
         let view = GenericNumericDataView(data: testData, hints: hints)
         
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let hasAccessibilityID = testAccessibilityIdentifiersCrossPlatform(
             view, 
             expectedPattern: "SixLayer.*ui", 
@@ -145,7 +145,7 @@ open class PlatformResponsiveCardsLayer4Tests: BaseTestClass {
         
         let view = GenericNumericDataView(data: testData, hints: hints)
         
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let hasAccessibilityID = testAccessibilityIdentifiersCrossPlatform(
             view, 
             expectedPattern: "SixLayer.*ui", 
@@ -177,7 +177,7 @@ open class PlatformResponsiveCardsLayer4Tests: BaseTestClass {
         
         let view = GenericMediaView(media: testMedia, hints: hints)
         
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let hasAccessibilityID = testAccessibilityIdentifiersCrossPlatform(
             view, 
             expectedPattern: "SixLayer.*ui", 
@@ -207,7 +207,7 @@ open class PlatformResponsiveCardsLayer4Tests: BaseTestClass {
         
         let view = GenericMediaView(media: testMedia, hints: hints)
         
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let hasAccessibilityID = testAccessibilityIdentifiersCrossPlatform(
             view, 
             expectedPattern: "SixLayer.*ui", 
@@ -251,7 +251,7 @@ open class PlatformResponsiveCardsLayer4Tests: BaseTestClass {
             hints: hints
         )
         
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let hasAccessibilityID = testAccessibilityIdentifiersCrossPlatform(
             view, 
             expectedPattern: "SixLayer.*ui", 
@@ -293,7 +293,7 @@ open class PlatformResponsiveCardsLayer4Tests: BaseTestClass {
             hints: hints
         )
         
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let hasAccessibilityID = testAccessibilityIdentifiersCrossPlatform(
             view, 
             expectedPattern: "SixLayer.*ui", 
@@ -322,7 +322,7 @@ open class PlatformResponsiveCardsLayer4Tests: BaseTestClass {
         
         let view = GenericContentView(content: testContent, hints: hints)
         
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let hasAccessibilityID = testAccessibilityIdentifiersCrossPlatform(
             view, 
             expectedPattern: "SixLayer.*ui", 
@@ -348,7 +348,7 @@ open class PlatformResponsiveCardsLayer4Tests: BaseTestClass {
         
         let view = GenericContentView(content: testContent, hints: hints)
         
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let hasAccessibilityID = testAccessibilityIdentifiersCrossPlatform(
             view, 
             expectedPattern: "SixLayer.*ui", 
@@ -379,7 +379,7 @@ open class PlatformResponsiveCardsLayer4Tests: BaseTestClass {
             hints: hints
         )
         
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let hasAccessibilityID = testAccessibilityIdentifiersCrossPlatform(
             view, 
             expectedPattern: "SixLayer.*ui", 
@@ -408,7 +408,7 @@ open class PlatformResponsiveCardsLayer4Tests: BaseTestClass {
             hints: hints
         )
         
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let hasAccessibilityID = testAccessibilityIdentifiersCrossPlatform(
             view, 
             expectedPattern: "SixLayer.*ui", 
@@ -439,7 +439,7 @@ open class PlatformResponsiveCardsLayer4Tests: BaseTestClass {
             hints: hints
         )
         
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let hasAccessibilityID = testAccessibilityIdentifiersCrossPlatform(
             view, 
             expectedPattern: "SixLayer.*ui", 
@@ -468,7 +468,7 @@ open class PlatformResponsiveCardsLayer4Tests: BaseTestClass {
             hints: hints
         )
         
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let hasAccessibilityID = testAccessibilityIdentifiersCrossPlatform(
             view, 
             expectedPattern: "SixLayer.*ui", 

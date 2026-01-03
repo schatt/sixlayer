@@ -22,7 +22,7 @@ open class AccessibilityIdentifierGenerationTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
         
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         if let inspectedView = view.tryInspect(),
            let buttonID = try? inspectedView.sixLayerAccessibilityIdentifier() {
             // This test SHOULD FAIL initially - IDs are currently 400+ chars
@@ -58,7 +58,7 @@ open class AccessibilityIdentifierGenerationTests: BaseTestClass {
         .enableGlobalAutomaticCompliance()
         
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         if let inspectedView = view.tryInspect(),
            let vStackID = try? inspectedView.sixLayerAccessibilityIdentifier() {
             // This test SHOULD FAIL initially - contains duplicates like "container-container"
@@ -96,7 +96,7 @@ open class AccessibilityIdentifierGenerationTests: BaseTestClass {
         .enableGlobalAutomaticCompliance()
         
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         if let inspectedView = view.tryInspect(),
            let vStackID = try? inspectedView.sixLayerAccessibilityIdentifier() {
             // This test SHOULD FAIL initially - IDs are not semantic
@@ -142,7 +142,7 @@ open class AccessibilityIdentifierGenerationTests: BaseTestClass {
         .enableGlobalAutomaticCompliance()
         
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         if let inspectedView = view.tryInspect(),
            let vStackID = try? inspectedView.sixLayerAccessibilityIdentifier() {
             // This test SHOULD FAIL initially - complex hierarchies create massive IDs
@@ -176,7 +176,7 @@ open class AccessibilityIdentifierGenerationTests: BaseTestClass {
         let cancelButton = AdaptiveUIPatterns.AdaptiveButton("Cancel", action: { })
             .enableGlobalAutomaticCompliance()
         
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         if let submitInspected = submitButton.tryInspect(),
            let cancelInspected = cancelButton.tryInspect() {
             let submitID = try? submitInspected.sixLayerAccessibilityIdentifier()
@@ -203,7 +203,7 @@ open class AccessibilityIdentifierGenerationTests: BaseTestClass {
         let button = AdaptiveUIPatterns.AdaptiveButton("Add New Item", action: { })
             .enableGlobalAutomaticCompliance()
         
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         if let inspected = button.tryInspect() {
             let buttonID = try? inspected.sixLayerAccessibilityIdentifier()
             

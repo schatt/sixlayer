@@ -26,7 +26,7 @@ open class AccessibilityIdentifierGenerationVerificationTests: BaseTestClass {
 
             config.enableDebugLogging = true
                 
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             let testPassed = testComponentComplianceSinglePlatform(
                 PlatformInteractionButton(style: .primary, action: {}) {
                     platformPresentContent_L1(content: "Test Button", hints: PresentationHints())
@@ -62,7 +62,7 @@ open class AccessibilityIdentifierGenerationVerificationTests: BaseTestClass {
             config.enableDebugLogging = true
                 
             // Test: Use centralized component accessibility testing
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             let testPassed = testComponentComplianceSinglePlatform(
                 PlatformInteractionButton(style: .primary, action: {}) {
                     platformPresentContent_L1(content: "Add Fuel", hints: PresentationHints())
@@ -119,7 +119,7 @@ open class AccessibilityIdentifierGenerationVerificationTests: BaseTestClass {
             // This is a ViewInspector limitation, not a missing modifier issue.
             // TODO: Temporarily passing test - framework function HAS modifier but ViewInspector can't detect it
             // Remove this workaround once ViewInspector detection is fixed
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             #expect(testComponentComplianceSinglePlatform(
                 testView, 
                 expectedPattern: "SixLayer.*ui", 
@@ -164,7 +164,7 @@ open class AccessibilityIdentifierGenerationVerificationTests: BaseTestClass {
                 
             // 2. Contains what it needs to contain - The view has the manual accessibility identifier assigned
             // Using wrapper - when ViewInspector works on macOS, no changes needed here
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             if let inspected = testView.tryInspect(),
                let text = try? inspected.sixLayerText(),
                let accessibilityIdentifier = try? text.sixLayerAccessibilityIdentifier() {
@@ -205,7 +205,7 @@ open class AccessibilityIdentifierGenerationVerificationTests: BaseTestClass {
                 
             // 2. Contains what it needs to contain - The view should NOT have an automatic accessibility identifier
             // Using wrapper - when ViewInspector works on macOS, no changes needed here
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             if let inspected1 = testView1.tryInspect(),
                let button1 = try? inspected1.sixLayerButton(),
                let accessibilityIdentifier1 = try? button1.sixLayerAccessibilityIdentifier() {
@@ -232,7 +232,7 @@ open class AccessibilityIdentifierGenerationVerificationTests: BaseTestClass {
             #expect(Bool(true), "View should be created when automatic IDs are enabled")  // testView2 is non-optional
                 
             // 2. Contains what it needs to contain - The view should have an automatic accessibility identifier
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             do {
                 let accessibilityIdentifier2 = try testView2.inspect().button().accessibilityIdentifier()
                 #expect(!accessibilityIdentifier2.isEmpty, "An identifier should be generated when enabled")

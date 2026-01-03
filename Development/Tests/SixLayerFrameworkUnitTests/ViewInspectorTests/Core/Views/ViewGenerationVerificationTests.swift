@@ -4,7 +4,7 @@ import Testing
 import SwiftUI
 @testable import SixLayerFramework
 
-#if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+#if canImport(ViewInspector)
 import ViewInspector
 #endif
 /// View Generation Verification Tests
@@ -63,7 +63,7 @@ open class ViewGenerationVerificationTests: BaseTestClass {
         
         // 2. Contains what it needs to contain - The view has the expected structure and content
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let inspectionResult = withInspectedView(detailView) { inspected in
             // The view should be wrapped in AnyView
             let anyView = try inspected.sixLayerAnyView()
@@ -119,7 +119,7 @@ open class ViewGenerationVerificationTests: BaseTestClass {
         
         // 2. Contains what it needs to contain - Both views should contain our data
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let compactInspectionResult = withInspectedView(compactView) { compactInspected in
             // Compact view should contain our test data
             let compactText = compactInspected.sixLayerFindAll(ViewType.Text.self)
@@ -167,7 +167,7 @@ open class ViewGenerationVerificationTests: BaseTestClass {
         // Detail view with custom field view creation succeeded (non-optional result)
         
         // 2. Contains what it needs to contain - The view should contain custom field content
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         // Use helper function for DRY text verification
         // Check for both "Custom:" and "=" to verify custom field content
         TestPatterns.verifyViewContainsText(detailView, expectedText: "Custom:", testName: "Detail view custom field")
@@ -194,7 +194,7 @@ open class ViewGenerationVerificationTests: BaseTestClass {
         // Detail view with nil values creation succeeded (non-optional result)
         
         // 2. Contains what it needs to contain - The view should contain available data
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         do {
             // The view should contain text elements
             let viewText = try detailView.inspect().findAll(ViewType.Text.self)

@@ -38,7 +38,7 @@ open class AccessibilityGlobalLocalConfigTests: BaseTestClass {
             
             // Expect NO identifier when global config is disabled and no local enable is present
             // Using wrapper - when ViewInspector works on macOS, no changes needed here
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             if let inspectedView = view.tryInspect(),
                let text = try? inspectedView.sixLayerText(),
                let accessibilityID = try? text.sixLayerAccessibilityIdentifier() {
@@ -73,7 +73,7 @@ open class AccessibilityGlobalLocalConfigTests: BaseTestClass {
                 .automaticCompliance()
             
             // Test that the view has an accessibility identifier using the same method as working tests
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             let hasAccessibilityID = testComponentComplianceSinglePlatform(
                 view, 
                 expectedPattern: "SixLayer.*ui", 
@@ -113,7 +113,7 @@ open class AccessibilityGlobalLocalConfigTests: BaseTestClass {
             
             // Try to inspect for accessibility identifier
             // Using wrapper - when ViewInspector works on macOS, no changes needed here
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             if let inspectedView = view.tryInspect(),
                let button = try? inspectedView.sixLayerButton(),
                let accessibilityID = try? button.sixLayerAccessibilityIdentifier() {
@@ -148,7 +148,7 @@ open class AccessibilityGlobalLocalConfigTests: BaseTestClass {
                 .automaticCompliance()  // ← Local enable
             
             // Test that the view has an accessibility identifier using the same method as working tests
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             let hasAccessibilityID = testComponentComplianceSinglePlatform(
                 view, 
                 expectedPattern: "SixLayer.*ui", 
@@ -186,7 +186,7 @@ open class AccessibilityGlobalLocalConfigTests: BaseTestClass {
                 .automaticCompliance()
             
             // Try to inspect for accessibility identifier
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             do {
                 let inspectedView = try view.inspect()
                 let button = try inspectedView.button()
@@ -224,7 +224,7 @@ open class AccessibilityGlobalLocalConfigTests: BaseTestClass {
                 .automaticCompliance()  // ← Should override global disable
             
             // Test that the view has an accessibility identifier using the same method as working tests
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             let hasAccessibilityID = testComponentComplianceSinglePlatform(
                 view, 
                 expectedPattern: "SixLayer.*ui", 
@@ -262,7 +262,7 @@ open class AccessibilityGlobalLocalConfigTests: BaseTestClass {
                 .automaticCompliance()
             
             // Try to inspect for accessibility identifier
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             do {
                 let inspectedView = try view.inspect()
                 let button = try inspectedView.button()
@@ -285,7 +285,7 @@ open class AccessibilityGlobalLocalConfigTests: BaseTestClass {
     
     @MainActor
     private func generateIDForView(_ view: some View) -> String {
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         do {
             let inspectedView = try view.inspect()
             let button = try inspectedView.button()

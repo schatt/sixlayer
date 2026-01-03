@@ -1,6 +1,6 @@
 import Testing
 
-#if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+#if canImport(ViewInspector)
 import ViewInspector
 #endif
 
@@ -63,11 +63,11 @@ open class PlatformPresentContentL1Tests: BaseTestClass {
         // view is a non-optional View, so it exists if we reach here
         
         // 2. Contains what it needs to contain - The view should contain the actual string content
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         do {
             // The view should be wrapped in AnyView
             guard let inspected = view.tryInspect() else { return }
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             let anyView = try inspected.sixLayerAnyView()
             // anyView is non-optional InspectableView (throws on failure), so it exists if we reach here
             
@@ -140,11 +140,11 @@ open class PlatformPresentContentL1Tests: BaseTestClass {
         #expect(Bool(true), "platformPresentContent_L1 should return a view for number content")  // view is non-optional
         
         // 2. Contains what it needs to contain - The view should contain the actual number content
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         do {
             // The view should be wrapped in AnyView
             guard let inspected = view.tryInspect() else { return }
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+            #if canImport(ViewInspector)
             let anyView = try inspected.sixLayerAnyView()
             #expect(Bool(true), "Number content should be wrapped in AnyView")  // anyView is non-optional
             

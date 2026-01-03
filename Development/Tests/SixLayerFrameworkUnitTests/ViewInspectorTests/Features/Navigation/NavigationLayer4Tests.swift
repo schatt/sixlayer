@@ -1,6 +1,6 @@
 import Testing
 
-#if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+#if canImport(ViewInspector)
 import ViewInspector
 #endif
 
@@ -36,7 +36,7 @@ open class NavigationLayer4Tests: BaseTestClass {
         // link is a non-optional View, so it exists if we reach here
         
         // 2. Does that structure contain what it should?
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         do {
             // The navigation link should contain text elements
             guard let inspected = link.tryInspect() else { return }
@@ -55,7 +55,7 @@ open class NavigationLayer4Tests: BaseTestClass {
         
         // 3. Platform-specific implementation verification (REQUIRED)
         #if os(iOS)
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         // iOS: Should contain NavigationLink structure
         if let inspected = link.tryInspect(), let _ = try? inspected.sixLayerFind(ViewType.NavigationLink.self) {
             // NavigationLink found - this is correct for iOS
@@ -66,7 +66,7 @@ open class NavigationLayer4Tests: BaseTestClass {
         // ViewInspector not available on this platform - this is expected, not a failure
         #endif
         #elseif os(macOS)
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         // macOS: Should contain the content directly (no NavigationLink wrapper)
         if let _ = link.tryInspect() {
             // Direct content inspection works - this is correct for macOS

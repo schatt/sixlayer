@@ -29,7 +29,7 @@ open class IntelligentDetailViewTests: BaseTestClass {
         
         let view = IntelligentDetailView.platformDetailView(for: testData)
         
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
             view, 
             expectedPattern: "SixLayer.*ui", 
@@ -49,7 +49,7 @@ open class IntelligentDetailViewTests: BaseTestClass {
         
         let view = IntelligentDetailView.platformDetailView(for: testData)
         
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
             view, 
             expectedPattern: "SixLayer.*ui", 
@@ -78,7 +78,7 @@ open class IntelligentDetailViewTests: BaseTestClass {
         
         let view = IntelligentDetailView.platformDetailView(for: testData, hints: hints)
         
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
             view, 
             expectedPattern: "SixLayer.*ui", 
@@ -105,7 +105,7 @@ open class IntelligentDetailViewTests: BaseTestClass {
         
         let view = IntelligentDetailView.platformDetailView(for: testData, hints: hints)
         
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
             view, 
             expectedPattern: "SixLayer.*ui", 
@@ -132,7 +132,7 @@ open class IntelligentDetailViewTests: BaseTestClass {
         
         let view = IntelligentDetailView.platformDetailView(for: testData, hints: hints)
         
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
             view, 
             expectedPattern: "SixLayer.*ui", 
@@ -173,7 +173,7 @@ open class IntelligentDetailViewTests: BaseTestClass {
         
         let view = IntelligentDetailView.platformDetailView(for: testData, hints: hints)
         
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
             view, 
             expectedPattern: "SixLayer.*ui", 
@@ -193,7 +193,7 @@ open class IntelligentDetailViewTests: BaseTestClass {
         // Don't specify hints to trigger adaptive strategy
         let view = IntelligentDetailView.platformDetailView(for: testData, hints: nil)
 
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
             view,
             expectedPattern: "SixLayer.*ui",
@@ -248,7 +248,7 @@ open class IntelligentDetailViewTests: BaseTestClass {
             onEdit: { /* edit action */ }
         )
 
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
             view,
             expectedPattern: "SixLayer.*ui",
@@ -279,7 +279,7 @@ open class IntelligentDetailViewTests: BaseTestClass {
             onEdit: { /* edit action */ }
         )
 
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
             view,
             expectedPattern: "SixLayer.*ui",
@@ -310,7 +310,7 @@ open class IntelligentDetailViewTests: BaseTestClass {
             onEdit: { /* edit action */ }
         )
 
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
             view,
             expectedPattern: "SixLayer.*ui",
@@ -341,7 +341,7 @@ open class IntelligentDetailViewTests: BaseTestClass {
             onEdit: { /* edit action */ }
         )
 
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
             view,
             expectedPattern: "SixLayer.*ui",
@@ -386,7 +386,7 @@ open class IntelligentDetailViewTests: BaseTestClass {
             onEdit: { /* edit action */ }
         )
 
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
             view,
             expectedPattern: "SixLayer.*ui",
@@ -410,7 +410,7 @@ open class IntelligentDetailViewTests: BaseTestClass {
             onEdit: { /* edit action */ }
         )
 
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
             view,
             expectedPattern: "SixLayer.*ui",
