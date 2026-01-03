@@ -54,7 +54,7 @@ open class HIGComplianceFeaturesIssue36Tests: BaseTestClass {
     /// Verifies a view can be hosted and has automatic compliance applied
     @MainActor
     private func verifyViewIsHostable<V: View>(_ view: V, description: String) {
-        let hostingView = self.hostRootPlatformView(view.enableGlobalAutomaticCompliance())
+        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
         #expect(Bool(true), "\(description) should be hostable with automatic compliance")
     }
     
