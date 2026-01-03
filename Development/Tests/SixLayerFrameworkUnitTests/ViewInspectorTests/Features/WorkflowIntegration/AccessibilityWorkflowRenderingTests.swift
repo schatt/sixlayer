@@ -84,7 +84,7 @@ final class AccessibilityWorkflowRenderingTests: BaseTestClass {
             let enhancedView = testView.automaticCompliance()
             
             // When: Rendering enhanced view
-            let hostedView = hostRootPlatformView(enhancedView.withGlobalAutoIDsEnabled())
+            let hostedView = hostRootPlatformView(enhancedView.enableGlobalAutomaticCompliance())
             
             // Then: View should render successfully (Layer 2 - actual rendering)
             #expect(hostedView != nil, "Enhanced view should render successfully on \(platform)")
@@ -107,7 +107,7 @@ final class AccessibilityWorkflowRenderingTests: BaseTestClass {
             let enhancedView = testView.automaticCompliance()
             
             // When: Rendering enhanced view with global auto IDs enabled
-            let hostedView = hostRootPlatformView(enhancedView.withGlobalAutoIDsEnabled())
+            let hostedView = hostRootPlatformView(enhancedView.enableGlobalAutomaticCompliance())
             
             // Then: Rendered view should have accessibility identifiers (Layer 2 verification)
             // Note: On macOS without ViewInspector, this may be nil, but view should still render
@@ -131,7 +131,7 @@ final class AccessibilityWorkflowRenderingTests: BaseTestClass {
             let enhancedFormView = formView.automaticCompliance()
             
             // When: Rendering enhanced form view
-            let hostedView = hostRootPlatformView(enhancedFormView.withGlobalAutoIDsEnabled())
+            let hostedView = hostRootPlatformView(enhancedFormView.enableGlobalAutomaticCompliance())
             
             // Then: View should render successfully
             #expect(hostedView != nil, "Enhanced form view should render on \(platform)")
@@ -154,7 +154,7 @@ final class AccessibilityWorkflowRenderingTests: BaseTestClass {
             let enhancedView = testView.automaticCompliance()
             
             // When: Rendering and auditing view
-            let hostedView = hostRootPlatformView(enhancedView.withGlobalAutoIDsEnabled())
+            let hostedView = hostRootPlatformView(enhancedView.enableGlobalAutomaticCompliance())
             let audit = AccessibilityTesting.auditViewAccessibility(enhancedView)
             
             // Then: View should render and audit should work
@@ -181,7 +181,7 @@ final class AccessibilityWorkflowRenderingTests: BaseTestClass {
             let enhancedView = testView.automaticCompliance()
             
             // Step 3: Render enhanced view (Layer 2)
-            let hostedView = hostRootPlatformView(enhancedView.withGlobalAutoIDsEnabled())
+            let hostedView = hostRootPlatformView(enhancedView.enableGlobalAutomaticCompliance())
             
             // Step 4: Audit accessibility
             let audit = AccessibilityTesting.auditViewAccessibility(enhancedView)
@@ -214,7 +214,7 @@ final class AccessibilityWorkflowRenderingTests: BaseTestClass {
             let enhancedView = testView.automaticCompliance()
             
             // When: Rendering enhanced view
-            let hostedView = hostRootPlatformView(enhancedView.withGlobalAutoIDsEnabled())
+            let hostedView = hostRootPlatformView(enhancedView.enableGlobalAutomaticCompliance())
             
             // Then: View should render on this platform
             let rendered = hostedView != nil

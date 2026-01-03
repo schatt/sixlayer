@@ -114,8 +114,8 @@ final class CrossComponentIntegrationRenderingTests: BaseTestClass {
             ) { _ in }
             
             // Then: Both views should render (Layer 2 - actual rendering)
-            let formHostedView = hostRootPlatformView(formView.withGlobalAutoIDsEnabled())
-            let ocrHostedView = hostRootPlatformView(ocrView.withGlobalAutoIDsEnabled())
+            let formHostedView = hostRootPlatformView(formView.enableGlobalAutomaticCompliance())
+            let ocrHostedView = hostRootPlatformView(ocrView.enableGlobalAutomaticCompliance())
             
             #expect(formHostedView != nil, "Form view should render in integration on \(platform)")
             #expect(ocrHostedView != nil, "OCR view should render in integration on \(platform)")
@@ -148,7 +148,7 @@ final class CrossComponentIntegrationRenderingTests: BaseTestClass {
             )
             
             // Then: View should render with accessibility
-            let hostedView = hostRootPlatformView(formView.withGlobalAutoIDsEnabled())
+            let hostedView = hostRootPlatformView(formView.enableGlobalAutomaticCompliance())
             #expect(hostedView != nil, "Form view with accessibility should render on \(platform)")
             
             RuntimeCapabilityDetection.clearAllCapabilityOverrides()
@@ -185,8 +185,8 @@ final class CrossComponentIntegrationRenderingTests: BaseTestClass {
             )
             
             // When: Rendering both components (would be combined in actual implementation)
-            let ocrHostedView = hostRootPlatformView(ocrView.withGlobalAutoIDsEnabled())
-            let formHostedView = hostRootPlatformView(formView.withGlobalAutoIDsEnabled())
+            let ocrHostedView = hostRootPlatformView(ocrView.enableGlobalAutomaticCompliance())
+            let formHostedView = hostRootPlatformView(formView.enableGlobalAutomaticCompliance())
             
             // Then: Both should render successfully
             #expect(ocrHostedView != nil, "OCR component should render in multi-component workflow on \(platform)")
@@ -226,8 +226,8 @@ final class CrossComponentIntegrationRenderingTests: BaseTestClass {
             ) { _ in }
             
             // When: Rendering components
-            let formHostedView = hostRootPlatformView(formView.withGlobalAutoIDsEnabled())
-            let ocrHostedView = hostRootPlatformView(ocrView.withGlobalAutoIDsEnabled())
+            let formHostedView = hostRootPlatformView(formView.enableGlobalAutomaticCompliance())
+            let ocrHostedView = hostRootPlatformView(ocrView.enableGlobalAutomaticCompliance())
             
             // Then: Both should render on this platform
             let rendered = (formHostedView != nil) && (ocrHostedView != nil)
@@ -270,8 +270,8 @@ final class CrossComponentIntegrationRenderingTests: BaseTestClass {
             ) { _ in }
             
             // When: Rendering with accessibility enabled
-            let formHostedView = hostRootPlatformView(formView.withGlobalAutoIDsEnabled())
-            let ocrHostedView = hostRootPlatformView(ocrView.withGlobalAutoIDsEnabled())
+            let formHostedView = hostRootPlatformView(formView.enableGlobalAutomaticCompliance())
+            let ocrHostedView = hostRootPlatformView(ocrView.enableGlobalAutomaticCompliance())
             
             // Then: Both should render with accessibility
             #expect(formHostedView != nil, "Form should render with accessibility on \(platform)")
@@ -305,7 +305,7 @@ final class CrossComponentIntegrationRenderingTests: BaseTestClass {
             )
             
             // When: Rendering form view
-            let formHostedView = hostRootPlatformView(formView.withGlobalAutoIDsEnabled())
+            let formHostedView = hostRootPlatformView(formView.enableGlobalAutomaticCompliance())
             
             // Then: View should render without conflicts
             #expect(formHostedView != nil, "Form should render without conflicts on \(platform)")

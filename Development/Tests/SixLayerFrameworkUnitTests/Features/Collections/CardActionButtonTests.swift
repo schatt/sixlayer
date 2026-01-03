@@ -611,7 +611,7 @@ open class CardActionButtonTests: BaseTestClass {
             onItemDeleted: { _ in },
             onItemEdited: { _ in }
         )
-        _ = hostRootPlatformView(expandableCard.withGlobalAutoIDsEnabled())
+        _ = hostRootPlatformView(expandableCard.enableGlobalAutomaticCompliance())
         #expect(Bool(true), "ExpandableCardComponent should be hostable")
         
         // Test business logic: Accessibility should be properly configured

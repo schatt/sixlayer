@@ -97,7 +97,7 @@ final class FormProcessingWorkflowRenderingTests: BaseTestClass {
             )
             
             // Then: View should render successfully (Layer 2 - actual rendering)
-            let hostedView = hostRootPlatformView(formView.withGlobalAutoIDsEnabled())
+            let hostedView = hostRootPlatformView(formView.enableGlobalAutomaticCompliance())
             #expect(hostedView != nil, "Form view should render successfully on \(platform)")
             
             RuntimeCapabilityDetection.clearAllCapabilityOverrides()
@@ -126,7 +126,7 @@ final class FormProcessingWorkflowRenderingTests: BaseTestClass {
                 fields: fields,
                 hints: hints
             )
-            let hostedView = hostRootPlatformView(formView.withGlobalAutoIDsEnabled())
+            let hostedView = hostRootPlatformView(formView.enableGlobalAutomaticCompliance())
             
             // Then: Rendered view should have accessibility identifiers (Layer 2 verification)
             let accessibilityId = firstAccessibilityIdentifier(inHosted: hostedView)
@@ -162,7 +162,7 @@ final class FormProcessingWorkflowRenderingTests: BaseTestClass {
             )
             
             // Then: View should render in valid state
-            let hostedView = hostRootPlatformView(formView.withGlobalAutoIDsEnabled())
+            let hostedView = hostRootPlatformView(formView.enableGlobalAutomaticCompliance())
             #expect(hostedView != nil, "Form view should render in valid state on \(platform)")
             
             RuntimeCapabilityDetection.clearAllCapabilityOverrides()
@@ -193,7 +193,7 @@ final class FormProcessingWorkflowRenderingTests: BaseTestClass {
                 fields: fields,
                 hints: hints
             )
-            let hostedView = hostRootPlatformView(formView.withGlobalAutoIDsEnabled())
+            let hostedView = hostRootPlatformView(formView.enableGlobalAutomaticCompliance())
             
             // Then: View should render on this platform
             let rendered = hostedView != nil
@@ -232,7 +232,7 @@ final class FormProcessingWorkflowRenderingTests: BaseTestClass {
             )
             
             // Then: View should render in submission-ready state
-            let hostedView = hostRootPlatformView(formView.withGlobalAutoIDsEnabled())
+            let hostedView = hostRootPlatformView(formView.enableGlobalAutomaticCompliance())
             #expect(hostedView != nil, "Form view should render in submission state on \(platform)")
             
             RuntimeCapabilityDetection.clearAllCapabilityOverrides()
@@ -263,7 +263,7 @@ final class FormProcessingWorkflowRenderingTests: BaseTestClass {
             )
             
             // Then: View should render even with error state
-            let hostedView = hostRootPlatformView(formView.withGlobalAutoIDsEnabled())
+            let hostedView = hostRootPlatformView(formView.enableGlobalAutomaticCompliance())
             #expect(hostedView != nil, "Form view should render with error state on \(platform)")
             
             RuntimeCapabilityDetection.clearAllCapabilityOverrides()

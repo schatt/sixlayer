@@ -104,7 +104,7 @@ open class NavigationLayer4Tests: BaseTestClass {
             }
         
         // Then: Should create valid navigation link that can be hosted
-        let hostingView = hostRootPlatformView(link.withGlobalAutoIDsEnabled())
+        let hostingView = hostRootPlatformView(link.enableGlobalAutomaticCompliance())
         #expect(Bool(true), "Navigation link with title and system image should be hostable")  // hostingView is non-optional
         #expect(Bool(true), "Navigation link with title and system image should be created")  // link is non-optional
     }

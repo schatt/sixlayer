@@ -157,7 +157,7 @@ open class AutomaticHIGComplianceTests: BaseTestClass {
             hints: PresentationHints()
         )
         // Test that collection view can be hosted and has proper structure
-        _ = hostRootPlatformView(collectionView.withGlobalAutoIDsEnabled())
+        _ = hostRootPlatformView(collectionView.enableGlobalAutomaticCompliance())
         #expect(Bool(true), "Collection view should be hostable")
 
         // Test platformPresentNumericData_L1
@@ -170,7 +170,7 @@ open class AutomaticHIGComplianceTests: BaseTestClass {
         )
 
         // Test that numeric view can be hosted and has proper structure
-        _ = hostRootPlatformView(numericView.withGlobalAutoIDsEnabled())
+        _ = hostRootPlatformView(numericView.enableGlobalAutomaticCompliance())
         #expect(Bool(true), "Numeric view should be hostable")
 
         // Verify that both views are created successfully and can be hosted
@@ -193,7 +193,7 @@ open class AutomaticHIGComplianceTests: BaseTestClass {
             hints: PresentationHints()
         )
         // Test that VoiceOver-enabled view can be hosted
-        _ = hostRootPlatformView(viewWithVoiceOver.withGlobalAutoIDsEnabled())
+        _ = hostRootPlatformView(viewWithVoiceOver.enableGlobalAutomaticCompliance())
         #expect(Bool(true), "VoiceOver view should be hostable")
 
         // Test with Switch Control enabled
@@ -207,7 +207,7 @@ open class AutomaticHIGComplianceTests: BaseTestClass {
         )
 
         // Test that Switch Control-enabled view can be hosted
-        _ = hostRootPlatformView(viewWithSwitchControl.withGlobalAutoIDsEnabled())
+        _ = hostRootPlatformView(viewWithSwitchControl.enableGlobalAutomaticCompliance())
         #expect(Bool(true), "Switch Control view should be hostable")
 
         // Test with AssistiveTouch enabled
@@ -221,7 +221,7 @@ open class AutomaticHIGComplianceTests: BaseTestClass {
         )
 
         // Test that AssistiveTouch-enabled view can be hosted
-        _ = hostRootPlatformView(viewWithAssistiveTouch.withGlobalAutoIDsEnabled())
+        _ = hostRootPlatformView(viewWithAssistiveTouch.enableGlobalAutomaticCompliance())
         #expect(Bool(true), "AssistiveTouch view should be hostable")
 
         // Test with all accessibility features enabled
@@ -235,7 +235,7 @@ open class AutomaticHIGComplianceTests: BaseTestClass {
         )
 
         // Test that all-accessibility view can be hosted
-        _ = hostRootPlatformView(viewWithAllAccessibility.withGlobalAutoIDsEnabled())
+        _ = hostRootPlatformView(viewWithAllAccessibility.enableGlobalAutomaticCompliance())
         #expect(Bool(true), "All accessibility view should be hostable")
 
         // Verify that all views are created successfully and can be hosted

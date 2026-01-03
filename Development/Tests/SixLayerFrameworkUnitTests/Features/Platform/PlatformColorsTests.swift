@@ -98,32 +98,32 @@ open class PlatformColorsTests: BaseTestClass {
         case .iOS:
             // Test that iOS colors can actually be used in views
             let iosView = createTestViewWithPlatformColors()
-            _ = hostRootPlatformView(iosView.withGlobalAutoIDsEnabled())
+            _ = hostRootPlatformView(iosView.enableGlobalAutomaticCompliance())
             // Verify colors are valid by checking they're not clear
             #expect(Color.platformPrimaryLabel != Color.clear, "iOS primary label color should be valid")
             
         case .macOS:
             // Test that macOS colors can actually be used in views
             let macosView = createTestViewWithPlatformColors()
-            _ = hostRootPlatformView(macosView.withGlobalAutoIDsEnabled())
+            _ = hostRootPlatformView(macosView.enableGlobalAutomaticCompliance())
             #expect(Color.platformPrimaryLabel != Color.clear, "macOS primary label color should be valid")
             
         case .watchOS:
             // Test that watchOS colors can actually be used in views
             let watchosView = createTestViewWithPlatformColors()
-            _ = hostRootPlatformView(watchosView.withGlobalAutoIDsEnabled())
+            _ = hostRootPlatformView(watchosView.enableGlobalAutomaticCompliance())
             #expect(Color.platformPrimaryLabel != Color.clear, "watchOS primary label color should be valid")
             
         case .tvOS:
             // Test that tvOS colors can actually be used in views
             let tvosView = createTestViewWithPlatformColors()
-            _ = hostRootPlatformView(tvosView.withGlobalAutoIDsEnabled())
+            _ = hostRootPlatformView(tvosView.enableGlobalAutomaticCompliance())
             #expect(Color.platformPrimaryLabel != Color.clear, "tvOS primary label color should be valid")
             
         case .visionOS:
             // Test that visionOS colors can actually be used in views
             let visionosView = createTestViewWithPlatformColors()
-            _ = hostRootPlatformView(visionosView.withGlobalAutoIDsEnabled())
+            _ = hostRootPlatformView(visionosView.enableGlobalAutomaticCompliance())
             #expect(Color.platformPrimaryLabel != Color.clear, "visionOS primary label color should be valid")
         }
     }
@@ -763,7 +763,7 @@ open class PlatformColorsTests: BaseTestClass {
         // Then: View should render successfully
         // In high contrast mode, the system automatically adjusts these semantic colors
         // to provide better contrast ratios
-        _ = hostRootPlatformView(testView.withGlobalAutoIDsEnabled())
+        _ = hostRootPlatformView(testView.enableGlobalAutomaticCompliance())
         
         // Verify colors are valid semantic colors
         #expect(primaryLabel != Color.clear, "Primary label should be valid")

@@ -70,7 +70,7 @@ final class CrossPlatformWorkflowParityRenderingTests: BaseTestClass {
             let formView = platformPresentFormData_L1(fields: fields, hints: hints)
             
             // When: Rendering form view
-            let hostedView = hostRootPlatformView(formView.withGlobalAutoIDsEnabled())
+            let hostedView = hostRootPlatformView(formView.enableGlobalAutomaticCompliance())
             
             // Then: View should render on this platform
             let rendered = hostedView != nil
@@ -111,7 +111,7 @@ final class CrossPlatformWorkflowParityRenderingTests: BaseTestClass {
             ) { _ in }
             
             // When: Rendering OCR view
-            let hostedView = hostRootPlatformView(ocrView.withGlobalAutoIDsEnabled())
+            let hostedView = hostRootPlatformView(ocrView.enableGlobalAutomaticCompliance())
             
             // Then: View should render on this platform
             let rendered = hostedView != nil
@@ -144,7 +144,7 @@ final class CrossPlatformWorkflowParityRenderingTests: BaseTestClass {
             let enhancedView = testView.automaticCompliance()
             
             // When: Rendering enhanced view
-            let hostedView = hostRootPlatformView(enhancedView.withGlobalAutoIDsEnabled())
+            let hostedView = hostRootPlatformView(enhancedView.enableGlobalAutomaticCompliance())
             
             // Then: View should render on this platform
             let rendered = hostedView != nil
@@ -196,8 +196,8 @@ final class CrossPlatformWorkflowParityRenderingTests: BaseTestClass {
             ) { _ in }
             
             // When: Rendering both views
-            let formHostedView = hostRootPlatformView(formView.withGlobalAutoIDsEnabled())
-            let ocrHostedView = hostRootPlatformView(ocrView.withGlobalAutoIDsEnabled())
+            let formHostedView = hostRootPlatformView(formView.enableGlobalAutomaticCompliance())
+            let ocrHostedView = hostRootPlatformView(ocrView.enableGlobalAutomaticCompliance())
             
             // Then: Both should render on this platform
             formResults[platform] = formHostedView != nil
@@ -245,7 +245,7 @@ final class CrossPlatformWorkflowParityRenderingTests: BaseTestClass {
                 complexity: .simple
             )
             let formView = platformPresentFormData_L1(fields: formFields, hints: formHints)
-            let formHostedView = hostRootPlatformView(formView.withGlobalAutoIDsEnabled())
+            let formHostedView = hostRootPlatformView(formView.enableGlobalAutomaticCompliance())
             formResults[platform] = formHostedView != nil
             
             // OCR workflow rendering
@@ -259,13 +259,13 @@ final class CrossPlatformWorkflowParityRenderingTests: BaseTestClass {
                 image: PlatformImage(),
                 context: ocrContext
             ) { _ in }
-            let ocrHostedView = hostRootPlatformView(ocrView.withGlobalAutoIDsEnabled())
+            let ocrHostedView = hostRootPlatformView(ocrView.enableGlobalAutomaticCompliance())
             ocrResults[platform] = ocrHostedView != nil
             
             // Accessibility workflow rendering
             let testView = Text("Test View").padding()
             let enhancedView = testView.automaticCompliance()
-            let accessibilityHostedView = hostRootPlatformView(enhancedView.withGlobalAutoIDsEnabled())
+            let accessibilityHostedView = hostRootPlatformView(enhancedView.enableGlobalAutomaticCompliance())
             accessibilityResults[platform] = accessibilityHostedView != nil
             
             RuntimeCapabilityDetection.clearAllCapabilityOverrides()

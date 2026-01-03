@@ -393,7 +393,7 @@ open class EyeTrackingTests: BaseTestClass {
         let modifiedView = testView.eyeTrackingEnabled()
         
         // Test that the modifier can be applied and the view can be hosted
-        _ = hostRootPlatformView(modifiedView.withGlobalAutoIDsEnabled())
+        _ = hostRootPlatformView(modifiedView.enableGlobalAutomaticCompliance())
         #expect(Bool(true), "Eye tracking enabled view should be hostable")
         #expect(Bool(true), "Eye tracking enabled view should be created")
     }
@@ -411,7 +411,7 @@ open class EyeTrackingTests: BaseTestClass {
         let modifiedView = testView.eyeTrackingEnabled(config: config)
         
         // Test that the modifier with config can be applied and the view can be hosted
-        _ = hostRootPlatformView(modifiedView.withGlobalAutoIDsEnabled())
+        _ = hostRootPlatformView(modifiedView.enableGlobalAutomaticCompliance())
         #expect(Bool(true), "Eye tracking enabled view with config should be hostable")
         #expect(Bool(true), "Eye tracking enabled view with config should be created")
     }
@@ -431,7 +431,7 @@ open class EyeTrackingTests: BaseTestClass {
         )
         
         // Test that the modifier with callbacks can be applied and the view can be hosted
-        _ = hostRootPlatformView(modifiedView.withGlobalAutoIDsEnabled())
+        _ = hostRootPlatformView(modifiedView.enableGlobalAutomaticCompliance())
         #expect(Bool(true), "Eye tracking enabled view with callbacks should be hostable")
         #expect(Bool(true), "Eye tracking enabled view with callbacks should be created")
     }

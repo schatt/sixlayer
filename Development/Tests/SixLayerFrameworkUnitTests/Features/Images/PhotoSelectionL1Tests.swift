@@ -46,7 +46,7 @@ open class PhotoSelectionL1Tests: BaseTestClass {
         // view is a non-optional View, so it exists if we reach here
         
         // Test that the view can actually be hosted
-        _ = hostRootPlatformView(view.withGlobalAutoIDsEnabled())
+        _ = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
         #expect(Bool(true), "platformPhotoSelection_L1 view should be hostable")  // hostingView is non-optional
     }
     
@@ -67,7 +67,7 @@ open class PhotoSelectionL1Tests: BaseTestClass {
         #expect(Bool(true), "platformPhotoSelection_L1 with different purpose should return a view")  // view is non-optional
         
         // Test that the view can actually be hosted
-        _ = hostRootPlatformView(view.withGlobalAutoIDsEnabled())
+        _ = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
         #expect(Bool(true), "platformPhotoSelection_L1 view should be hostable")  // hostingView is non-optional
     }
     
@@ -90,7 +90,7 @@ open class PhotoSelectionL1Tests: BaseTestClass {
         #expect(Bool(true), "platformPhotoSelection_L1 for fuel receipt should return a view")  // view is non-optional
         
         // Test that the view can actually be hosted
-        _ = hostRootPlatformView(view.withGlobalAutoIDsEnabled())
+        _ = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
         #expect(Bool(true), "platformPhotoSelection_L1 view should be hostable")  // hostingView is non-optional
     }
     
@@ -111,7 +111,7 @@ open class PhotoSelectionL1Tests: BaseTestClass {
         #expect(Bool(true), "platformPhotoSelection_L1 for pump display should return a view")  // view is non-optional
         
         // Test that the view can actually be hosted
-        _ = hostRootPlatformView(view.withGlobalAutoIDsEnabled())
+        _ = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
         #expect(Bool(true), "platformPhotoSelection_L1 view should be hostable")  // hostingView is non-optional
     }
     
@@ -132,7 +132,7 @@ open class PhotoSelectionL1Tests: BaseTestClass {
         #expect(Bool(true), "platformPhotoSelection_L1 for odometer should return a view")  // view is non-optional
         
         // Test that the view can actually be hosted
-        _ = hostRootPlatformView(view.withGlobalAutoIDsEnabled())
+        _ = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
         #expect(Bool(true), "platformPhotoSelection_L1 view should be hostable")  // hostingView is non-optional
     }
     
@@ -153,7 +153,7 @@ open class PhotoSelectionL1Tests: BaseTestClass {
         #expect(Bool(true), "platformPhotoSelection_L1 for maintenance should return a view")  // view is non-optional
         
         // Test that the view can actually be hosted
-        _ = hostRootPlatformView(view.withGlobalAutoIDsEnabled())
+        _ = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
         #expect(Bool(true), "platformPhotoSelection_L1 view should be hostable")  // hostingView is non-optional
     }
     
@@ -174,7 +174,7 @@ open class PhotoSelectionL1Tests: BaseTestClass {
         #expect(Bool(true), "platformPhotoSelection_L1 for expense should return a view")  // view is non-optional
         
         // Test that the view can actually be hosted
-        _ = hostRootPlatformView(view.withGlobalAutoIDsEnabled())
+        _ = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
         #expect(Bool(true), "platformPhotoSelection_L1 view should be hostable")  // hostingView is non-optional
     }
     
@@ -195,7 +195,7 @@ open class PhotoSelectionL1Tests: BaseTestClass {
         #expect(Bool(true), "platformPhotoSelection_L1 for profile should return a view")  // view is non-optional
         
         // Test that the view can actually be hosted
-        _ = hostRootPlatformView(view.withGlobalAutoIDsEnabled())
+        _ = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
         #expect(Bool(true), "platformPhotoSelection_L1 view should be hostable")  // hostingView is non-optional
     }
     
@@ -216,7 +216,7 @@ open class PhotoSelectionL1Tests: BaseTestClass {
         #expect(Bool(true), "platformPhotoSelection_L1 for document should return a view")  // view is non-optional
         
         // Test that the view can actually be hosted
-        _ = hostRootPlatformView(view.withGlobalAutoIDsEnabled())
+        _ = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
         #expect(Bool(true), "platformPhotoSelection_L1 view should be hostable")  // hostingView is non-optional
     }
     
@@ -244,7 +244,7 @@ open class PhotoSelectionL1Tests: BaseTestClass {
         #expect(Bool(true), "platformPhotoSelection_L1 with empty context should return a view")  // view is non-optional
         
         // Test that the view can actually be hosted
-        _ = hostRootPlatformView(view.withGlobalAutoIDsEnabled())
+        _ = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
         #expect(Bool(true), "platformPhotoSelection_L1 view should be hostable")  // hostingView is non-optional
     }
     
@@ -274,7 +274,7 @@ open class PhotoSelectionL1Tests: BaseTestClass {
         )
         
         // Then: Should return a view with custom wrapper
-        _ = hostRootPlatformView(view.withGlobalAutoIDsEnabled())
+        _ = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
         #expect(Bool(true), "platformPhotoSelection_L1 with custom picker view should return a view")
     }
     
@@ -294,7 +294,7 @@ open class PhotoSelectionL1Tests: BaseTestClass {
         )
         
         // Then: Should return default view
-        _ = hostRootPlatformView(view.withGlobalAutoIDsEnabled())
+        _ = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
         #expect(Bool(true), "platformPhotoSelection_L1 with nil custom picker view should return default view")
     }
     

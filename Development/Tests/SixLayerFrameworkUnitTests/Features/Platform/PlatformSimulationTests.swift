@@ -39,8 +39,8 @@ import Foundation
 /// NOTE: Not marked @MainActor to allow parallel execution - these tests don't need UI access
 @Suite("Platform Simulation")
 open class PlatformSimulationTests: BaseTestClass {
-    public override init() {
-        super.init()
+    public init() {
+        // BaseTestClass doesn't require initialization, but Swift Testing framework needs accessible initializer
     }
     
     // MARK: - Platform Testing

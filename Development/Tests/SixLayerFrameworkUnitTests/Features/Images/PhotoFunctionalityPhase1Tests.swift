@@ -46,7 +46,7 @@ open class PhotoFunctionalityPhase1Tests: BaseTestClass {
             let testView = Image(platformImage: platformImage)
                 .resizable()
                 .aspectRatio(contentMode: .fit)
-            _ = hostRootPlatformView(testView.withGlobalAutoIDsEnabled())
+            _ = hostRootPlatformView(testView.enableGlobalAutomaticCompliance())
             #expect(Bool(true), "PlatformImage should work in actual views")
         }
     }
@@ -78,7 +78,7 @@ open class PhotoFunctionalityPhase1Tests: BaseTestClass {
         let testView = Image(platformImage: resizedImage)
             .resizable()
             .aspectRatio(contentMode: .fit)
-        _ = hostRootPlatformView(testView.withGlobalAutoIDsEnabled())
+        _ = hostRootPlatformView(testView.enableGlobalAutomaticCompliance())
         #expect(Bool(true), "Resized image should work in actual views")
     }
     
@@ -98,7 +98,7 @@ open class PhotoFunctionalityPhase1Tests: BaseTestClass {
         let testView = Image(platformImage: croppedImage)
             .resizable()
             .aspectRatio(contentMode: .fit)
-        _ = hostRootPlatformView(testView.withGlobalAutoIDsEnabled())
+        _ = hostRootPlatformView(testView.enableGlobalAutomaticCompliance())
         #expect(Bool(true), "Cropped image should work in actual views")
     }
     
@@ -270,7 +270,7 @@ open class PhotoFunctionalityPhase1Tests: BaseTestClass {
         // cameraInterface is a non-optional View, so it exists if we reach here
         
         // Test that the camera interface can actually be hosted
-        _ = hostRootPlatformView(cameraInterface.withGlobalAutoIDsEnabled())
+        _ = hostRootPlatformView(cameraInterface.enableGlobalAutomaticCompliance())
         #expect(Bool(true), "Camera interface should be hostable")
     }
     
@@ -288,7 +288,7 @@ open class PhotoFunctionalityPhase1Tests: BaseTestClass {
         // photoPicker is a non-optional View, so it exists if we reach here
         
         // Test that the photo picker can actually be hosted
-        _ = hostRootPlatformView(photoPicker.withGlobalAutoIDsEnabled())
+        _ = hostRootPlatformView(photoPicker.enableGlobalAutomaticCompliance())
         #expect(Bool(true), "Photo picker should be hostable")
     }
     
@@ -305,7 +305,7 @@ open class PhotoFunctionalityPhase1Tests: BaseTestClass {
         // photoDisplay is a non-optional View, so it exists if we reach here
         
         // Test that the photo display can actually be hosted
-        _ = hostRootPlatformView(photoDisplay.withGlobalAutoIDsEnabled())
+        _ = hostRootPlatformView(photoDisplay.enableGlobalAutomaticCompliance())
         #expect(Bool(true), "Photo display should be hostable")
     }
     
@@ -316,7 +316,7 @@ open class PhotoFunctionalityPhase1Tests: BaseTestClass {
         // Then: Platform system colors should be available and usable
         // Test that platform colors can actually be used in views
         let testView = createTestViewWithPlatformSystemColors()
-        _ = hostRootPlatformView(testView.withGlobalAutoIDsEnabled())
+        _ = hostRootPlatformView(testView.enableGlobalAutomaticCompliance())
         #expect(Bool(true), "Platform system colors should work in actual views")
     }
     
@@ -335,7 +335,7 @@ open class PhotoFunctionalityPhase1Tests: BaseTestClass {
         // modifiedView is a non-optional View, so it exists if we reach here
         
         // Test that the modified view can actually be hosted
-        _ = hostRootPlatformView(modifiedView.withGlobalAutoIDsEnabled())
+        _ = hostRootPlatformView(modifiedView.enableGlobalAutomaticCompliance())
         #expect(Bool(true), "Modified view with keyboard type should be hostable")
     }
     
@@ -352,7 +352,7 @@ open class PhotoFunctionalityPhase1Tests: BaseTestClass {
         // modifiedView is a non-optional View, so it exists if we reach here
         
         // Test that the modified view can actually be hosted
-        _ = hostRootPlatformView(modifiedView.withGlobalAutoIDsEnabled())
+        _ = hostRootPlatformView(modifiedView.enableGlobalAutomaticCompliance())
         #expect(Bool(true), "Modified view with text field style should be hostable")
     }
     

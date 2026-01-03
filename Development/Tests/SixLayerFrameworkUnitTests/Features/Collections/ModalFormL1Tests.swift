@@ -338,7 +338,7 @@ open class ModalFormL1Tests: BaseTestClass {
         )
         
         // Then: Should return a view with custom container
-        _ = hostRootPlatformView(view.withGlobalAutoIDsEnabled())
+        _ = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
         #expect(Bool(true), "platformPresentModalForm_L1 with custom form container should return a view")
     }
     
@@ -356,7 +356,7 @@ open class ModalFormL1Tests: BaseTestClass {
         )
         
         // Then: Should return default view
-        _ = hostRootPlatformView(view.withGlobalAutoIDsEnabled())
+        _ = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
         #expect(Bool(true), "platformPresentModalForm_L1 with nil custom form container should return default view")
     }
     
@@ -377,7 +377,7 @@ open class ModalFormL1Tests: BaseTestClass {
                         .background(Color.blue.opacity(0.1))
                 }
             )
-            _ = hostRootPlatformView(view.withGlobalAutoIDsEnabled())
+            _ = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
             #expect(Bool(true), "platformPresentModalForm_L1 with custom container should work for \(formType)")
         }
     }

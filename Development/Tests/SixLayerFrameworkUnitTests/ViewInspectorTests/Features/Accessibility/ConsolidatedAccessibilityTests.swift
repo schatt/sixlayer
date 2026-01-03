@@ -13283,7 +13283,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     let modifiedView = testView.eyeTrackingEnabled(config: config)
     
     // Test that the modifier with config can be applied and the view can be hosted
-    _ = hostRootPlatformView(modifiedView.withGlobalAutoIDsEnabled())
+    _ = hostRootPlatformView(modifiedView.enableGlobalAutomaticCompliance())
     #expect(Bool(true), "Eye tracking enabled view with config should be hostable")
     #expect(Bool(true), "Eye tracking enabled view with config should be created")
 }
@@ -13300,7 +13300,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     )
     
     // Test that the modifier with callbacks can be applied and the view can be hosted
-    _ = hostRootPlatformView(modifiedView.withGlobalAutoIDsEnabled())
+    _ = hostRootPlatformView(modifiedView.enableGlobalAutomaticCompliance())
     #expect(Bool(true), "Eye tracking enabled view with callbacks should be hostable")
     #expect(Bool(true), "Eye tracking enabled view with callbacks should be created")
 }
@@ -13879,7 +13879,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         hints: PresentationHints()
     )
     // Test that collection view can be hosted and has proper structure
-    let collectionHostingView = hostRootPlatformView(collectionView.withGlobalAutoIDsEnabled())
+    let collectionHostingView = hostRootPlatformView(collectionView.enableGlobalAutomaticCompliance())
     #expect(Bool(true), "Collection view should be hostable")  // collectionHostingView is non-optional
 
     // Test platformPresentNumericData_L1
@@ -13892,7 +13892,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     )
 
     // Test that numeric view can be hosted and has proper structure
-    let numericHostingView = hostRootPlatformView(numericView.withGlobalAutoIDsEnabled())
+    let numericHostingView = hostRootPlatformView(numericView.enableGlobalAutomaticCompliance())
     #expect(Bool(true), "Numeric view should be hostable")  // numericHostingView is non-optional
 
     // Verify that both views are created successfully and can be hosted
@@ -16184,7 +16184,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         hints: PresentationHints()
     )
     // Test that VoiceOver-enabled view can be hosted
-    let voiceOverHostingView = hostRootPlatformView(viewWithVoiceOver.withGlobalAutoIDsEnabled())
+    let voiceOverHostingView = hostRootPlatformView(viewWithVoiceOver.enableGlobalAutomaticCompliance())
     #expect(Bool(true), "VoiceOver view should be hostable")  // voiceOverHostingView is non-optional
 
     // Test with Switch Control enabled
@@ -16198,7 +16198,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     )
 
     // Test that Switch Control-enabled view can be hosted
-    let switchControlHostingView = hostRootPlatformView(viewWithSwitchControl.withGlobalAutoIDsEnabled())
+    let switchControlHostingView = hostRootPlatformView(viewWithSwitchControl.enableGlobalAutomaticCompliance())
     #expect(Bool(true), "Switch Control view should be hostable")  // switchControlHostingView is non-optional
 
     // Test with AssistiveTouch enabled
@@ -16212,7 +16212,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     )
 
     // Test that AssistiveTouch-enabled view can be hosted
-    let assistiveTouchHostingView = hostRootPlatformView(viewWithAssistiveTouch.withGlobalAutoIDsEnabled())
+    let assistiveTouchHostingView = hostRootPlatformView(viewWithAssistiveTouch.enableGlobalAutomaticCompliance())
     #expect(Bool(true), "AssistiveTouch view should be hostable")  // assistiveTouchHostingView is non-optional
 
     // Test with all accessibility features enabled
@@ -16226,7 +16226,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     )
 
     // Test that all-accessibility view can be hosted
-    let allAccessibilityHostingView = hostRootPlatformView(viewWithAllAccessibility.withGlobalAutoIDsEnabled())
+    let allAccessibilityHostingView = hostRootPlatformView(viewWithAllAccessibility.enableGlobalAutomaticCompliance())
     #expect(Bool(true), "All accessibility view should be hostable")  // allAccessibilityHostingView is non-optional
 
     // Verify that all views are created successfully and can be hosted

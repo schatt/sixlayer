@@ -66,7 +66,7 @@ final class ErrorPropagationRenderingTests: BaseTestClass {
             }
             
             // Then: View should render even with error state
-            let hostedView = hostRootPlatformView(ocrView.withGlobalAutoIDsEnabled())
+            let hostedView = hostRootPlatformView(ocrView.enableGlobalAutomaticCompliance())
             #expect(hostedView != nil, "OCR error view should render on \(platform)")
             
             RuntimeCapabilityDetection.clearAllCapabilityOverrides()
@@ -95,7 +95,7 @@ final class ErrorPropagationRenderingTests: BaseTestClass {
                 image: PlatformImage(),
                 context: context
             ) { _ in }
-            let hostedView = hostRootPlatformView(ocrView.withGlobalAutoIDsEnabled())
+            let hostedView = hostRootPlatformView(ocrView.enableGlobalAutomaticCompliance())
             
             // Then: View should render with accessibility
             #expect(hostedView != nil, "OCR error view should render with accessibility on \(platform)")
@@ -136,7 +136,7 @@ final class ErrorPropagationRenderingTests: BaseTestClass {
             )
             
             // Then: View should render even with error state
-            let hostedView = hostRootPlatformView(formView.withGlobalAutoIDsEnabled())
+            let hostedView = hostRootPlatformView(formView.enableGlobalAutomaticCompliance())
             #expect(hostedView != nil, "Form error view should render on \(platform)")
             
             RuntimeCapabilityDetection.clearAllCapabilityOverrides()
@@ -167,7 +167,7 @@ final class ErrorPropagationRenderingTests: BaseTestClass {
             ) { _ in }
             
             // Then: View should render with recovery options
-            let hostedView = hostRootPlatformView(ocrView.withGlobalAutoIDsEnabled())
+            let hostedView = hostRootPlatformView(ocrView.enableGlobalAutomaticCompliance())
             #expect(hostedView != nil, "Error recovery view should render on \(platform)")
             
             RuntimeCapabilityDetection.clearAllCapabilityOverrides()
@@ -198,7 +198,7 @@ final class ErrorPropagationRenderingTests: BaseTestClass {
                 image: PlatformImage(),
                 context: context
             ) { _ in }
-            let hostedView = hostRootPlatformView(ocrView.withGlobalAutoIDsEnabled())
+            let hostedView = hostRootPlatformView(ocrView.enableGlobalAutomaticCompliance())
             
             // Then: View should render on this platform
             let rendered = hostedView != nil
@@ -243,7 +243,7 @@ final class ErrorPropagationRenderingTests: BaseTestClass {
             )
             
             // When: Rendering form view (layer errors would be shown in actual implementation)
-            let hostedView = hostRootPlatformView(formView.withGlobalAutoIDsEnabled())
+            let hostedView = hostRootPlatformView(formView.enableGlobalAutomaticCompliance())
             
             // Then: View should render with layer error handling
             #expect(hostedView != nil, "Layer error propagation view should render on \(platform)")

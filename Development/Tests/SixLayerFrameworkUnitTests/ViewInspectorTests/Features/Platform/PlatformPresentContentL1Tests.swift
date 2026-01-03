@@ -380,7 +380,7 @@ open class PlatformPresentContentL1Tests: BaseTestClass {
             )
             
             // Force SwiftUI to actually render the view by hosting it
-            let hostingView = hostRootPlatformView(view.withGlobalAutoIDsEnabled())
+            let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
             #expect(Bool(true), "Performance test should successfully render the view")  // hostingView is non-optional
         // Performance test removed - performance monitoring was removed from framework
     }

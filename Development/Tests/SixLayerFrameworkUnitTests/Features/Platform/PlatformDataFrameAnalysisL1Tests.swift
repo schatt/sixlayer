@@ -259,7 +259,7 @@ open class PlatformDataFrameAnalysisL1Tests: BaseTestClass {
         )
         
         // Then: Should return a view with custom visualization
-        _ = hostRootPlatformView(view.withGlobalAutoIDsEnabled())
+        _ = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
         // Verify view was created successfully (non-optional, so it exists if we reach here)
     }
     
@@ -276,7 +276,7 @@ open class PlatformDataFrameAnalysisL1Tests: BaseTestClass {
         )
         
         // Then: Should return default view (non-optional, so it exists if we reach here)
-        _ = hostRootPlatformView(view.withGlobalAutoIDsEnabled())
+        _ = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
     }
     
     @Test @MainActor func testPlatformCompareDataFrames_L1_WithCustomVisualizationView() {
@@ -300,7 +300,7 @@ open class PlatformDataFrameAnalysisL1Tests: BaseTestClass {
         )
         
         // Then: Should return a view with custom visualization (non-optional, so it exists if we reach here)
-        _ = hostRootPlatformView(view.withGlobalAutoIDsEnabled())
+        _ = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
     }
     
     @Test @MainActor func testPlatformAssessDataQuality_L1_WithCustomVisualizationView() {
@@ -324,7 +324,7 @@ open class PlatformDataFrameAnalysisL1Tests: BaseTestClass {
         )
         
         // Then: Should return a view with custom visualization (non-optional, so it exists if we reach here)
-        _ = hostRootPlatformView(view.withGlobalAutoIDsEnabled())
+        _ = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
     }
     
     // MARK: - Helper Methods
