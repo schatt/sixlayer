@@ -19,6 +19,8 @@ import ViewInspector
 /// Uses prefixed method names to avoid naming conflicts with ViewInspector and prevent infinite recursion
 public protocol Inspectable {
     func sixLayerText() throws -> Inspectable
+    func sixLayerText(_ index: Int) throws -> Inspectable
+    func sixLayerFindAll<T>(_ type: T.Type) -> [Inspectable]
     func sixLayerString() throws -> String
 }
 
@@ -28,6 +30,16 @@ extension ViewInspector.InspectableView: Inspectable {
     public func sixLayerText() throws -> Inspectable {
         let result = try self.text()
         return result
+    }
+
+    public func sixLayerText(_ index: Int) throws -> Inspectable {
+        let result = try self.text(index)
+        return result
+    }
+
+    public func sixLayerFindAll<T>(_ type: T.Type) -> [Inspectable] {
+        let results = (try? self.findAll(type)) ?? []
+        return results.map { $0 as Inspectable }
     }
 
     public func sixLayerString() throws -> String {
