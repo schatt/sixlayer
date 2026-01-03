@@ -19,7 +19,7 @@ import ViewInspector
 @MainActor
 public func withInspectedViewThrowing<V: View, R>(
     _ view: V,
-    perform: (any ViewInspector.InspectableView) throws -> R
+    perform: (ViewInspector.InspectableView<ViewType.View<V>>) throws -> R
 ) throws -> R {
     let inspected = try view.inspect()
     return try perform(inspected)
@@ -30,7 +30,7 @@ public func withInspectedViewThrowing<V: View, R>(
 @MainActor
 public func withInspectedView<V: View, R>(
     _ view: V,
-    perform: (any ViewInspector.InspectableView) -> R?
+    perform: (ViewInspector.InspectableView<ViewType.View<V>>) -> R?
 ) -> R? {
     guard let inspected = try? view.inspect() else {
         return nil
