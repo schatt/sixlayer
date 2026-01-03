@@ -122,14 +122,6 @@ open class BaseTestClass {
         TestSetupUtilities.cleanupTestEnvironment()
     }
     
-    // MARK: - Test Data Type Aliases
-    
-    /// Convenience typealias for commonly used test item type
-    public typealias TestItem = TestPatterns.TestItem
-    
-    /// Convenience typealias for test data item with more properties
-    public typealias TestDataItem = TestPatterns.TestDataItem
-    
     // MARK: - View Verification Helpers
     
     /// Verify that a view is created and contains expected content
