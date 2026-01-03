@@ -147,8 +147,8 @@ public enum PlatformFrameHelpers {
     ) -> (minWidth: CGFloat?, minHeight: CGFloat?, maxWidth: CGFloat?, maxHeight: CGFloat?) {
         #if os(iOS)
         let maxSize = getMaxFrameSize()
-        let clampedMaxWidth = maxWidth.map { min($0, maxSize.width) } ?? maxSize.width
-        let clampedMaxHeight = maxHeight.map { min($0, maxSize.height) } ?? maxSize.height
+        let clampedMaxWidth = maxWidth.map { min($0, maxSize.width) }
+        let clampedMaxHeight = maxHeight.map { min($0, maxSize.height) }
         return (minWidth: minWidth, minHeight: minHeight, maxWidth: clampedMaxWidth, maxHeight: clampedMaxHeight)
         
         #elseif os(macOS)
@@ -160,12 +160,23 @@ public enum PlatformFrameHelpers {
         
         #elseif os(watchOS) || os(tvOS) || os(visionOS)
         let maxSize = getMaxFrameSize()
-        let clampedMaxWidth = maxWidth.map { min($0, maxSize.width) } ?? maxSize.width
-        let clampedMaxHeight = maxHeight.map { min($0, maxSize.height) } ?? maxSize.height
+        let clampedMaxWidth = maxWidth.map { min($0, maxSize.width) }
+        let clampedMaxHeight = maxHeight.map { min($0, maxSize.height) }
         return (minWidth: minWidth, minHeight: minHeight, maxWidth: clampedMaxWidth, maxHeight: clampedMaxHeight)
         
         #else
         return (minWidth: minWidth, minHeight: minHeight, maxWidth: maxWidth, maxHeight: maxHeight)
+        #endif
+    }
+    
+    /// Get default maximum frame size for platforms that need it
+    /// Used when no max constraints are provided but safety constraints are needed
+    @MainActor
+    public static func getDefaultMaxFrameSize() -> CGSize? {
+        #if os(iOS) || os(watchOS) || os(tvOS) || os(visionOS)
+        return getMaxFrameSize()
+        #else
+        return nil
         #endif
     }
 }

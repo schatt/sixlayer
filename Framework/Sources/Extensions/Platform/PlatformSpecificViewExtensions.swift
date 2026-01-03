@@ -119,23 +119,38 @@ public extension View {
         if let minWidth = clamped.minWidth, let minHeight = clamped.minHeight {
             if let maxWidth = clamped.maxWidth, let maxHeight = clamped.maxHeight {
                 return AnyView(self.frame(minWidth: minWidth, maxWidth: maxWidth, minHeight: minHeight, maxHeight: maxHeight))
+            } else if let maxWidth = clamped.maxWidth {
+                return AnyView(self.frame(minWidth: minWidth, maxWidth: maxWidth, minHeight: minHeight))
+            } else if let maxHeight = clamped.maxHeight {
+                return AnyView(self.frame(minWidth: minWidth, minHeight: minHeight, maxHeight: maxHeight))
             } else {
                 return AnyView(self.frame(minWidth: minWidth, minHeight: minHeight))
             }
         } else if let minWidth = clamped.minWidth {
-            return AnyView(self.frame(minWidth: minWidth, maxWidth: clamped.maxWidth))
+            if let maxWidth = clamped.maxWidth {
+                return AnyView(self.frame(minWidth: minWidth, maxWidth: maxWidth))
+            } else {
+                return AnyView(self.frame(minWidth: minWidth))
+            }
         } else if let minHeight = clamped.minHeight {
-            return AnyView(self.frame(minHeight: minHeight, maxHeight: clamped.maxHeight))
-        } else if clamped.maxWidth != nil || clamped.maxHeight != nil {
-            return AnyView(self.frame(maxWidth: clamped.maxWidth ?? .infinity, maxHeight: clamped.maxHeight ?? .infinity))
+            if let maxHeight = clamped.maxHeight {
+                return AnyView(self.frame(minHeight: minHeight, maxHeight: maxHeight))
+            } else {
+                return AnyView(self.frame(minHeight: minHeight))
+            }
+        } else if let maxWidth = clamped.maxWidth, let maxHeight = clamped.maxHeight {
+            return AnyView(self.frame(maxWidth: maxWidth, maxHeight: maxHeight))
+        } else if let maxWidth = clamped.maxWidth {
+            return AnyView(self.frame(maxWidth: maxWidth))
+        } else if let maxHeight = clamped.maxHeight {
+            return AnyView(self.frame(maxHeight: maxHeight))
         } else {
             // No constraints provided, apply default max constraints for safety on mobile platforms
-            #if os(iOS) || os(watchOS) || os(tvOS) || os(visionOS)
-            let maxSize = PlatformFrameHelpers.getMaxFrameSize()
-            return AnyView(self.frame(maxWidth: maxSize.width, maxHeight: maxSize.height))
-            #else
-            return AnyView(self)
-            #endif
+            if let defaultMax = PlatformFrameHelpers.getDefaultMaxFrameSize() {
+                return AnyView(self.frame(maxWidth: defaultMax.width, maxHeight: defaultMax.height))
+            } else {
+                return AnyView(self)
+            }
         }
         #else
         return AnyView(self)
