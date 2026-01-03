@@ -27,14 +27,14 @@ open class AccessibilityIdentifierGenerationVerificationTests: BaseTestClass {
             config.enableDebugLogging = true
                 
             #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
-            let testPassed = testComponentAccessibility(
-                componentName: "AutomaticAccessibilityIdentifiers",
-                createComponent: {
-                    PlatformInteractionButton(style: .primary, action: {}) {
-                        platformPresentContent_L1(content: "Test Button", hints: PresentationHints())
-                    }
-                    .automaticCompliance()
+            let testPassed = testComponentComplianceSinglePlatform(
+                PlatformInteractionButton(style: .primary, action: {}) {
+                    platformPresentContent_L1(content: "Test Button", hints: PresentationHints())
                 }
+                .automaticCompliance(),
+                expectedPattern: "SixLayer.main.ui.*",
+                platform: SixLayerPlatform.iOS,
+                componentName: "AutomaticAccessibilityIdentifiers"
             )
  #expect(testPassed, "AutomaticAccessibilityIdentifiers should generate accessibility identifiers ")
         #else
