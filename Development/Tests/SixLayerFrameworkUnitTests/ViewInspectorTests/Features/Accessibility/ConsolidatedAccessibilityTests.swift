@@ -16491,7 +16491,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     // TDD Green Phase: This SHOULD PASS - has .automaticAccessibility()
     let contentView = platformPresentContent_L1(content: "Test Content", hints: PresentationHints())
     #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
-        let hasAccessibilityID = testComponentComplianceSinglePlatform(contentView, expectedPattern: "SixLayer.*ui", platform: SixLayerPlatform.iOS componentName: "platformPresentContent_L1")
+        let hasAccessibilityID = testComponentComplianceSinglePlatform(contentView, expectedPattern: "SixLayer.*ui", platform: SixLayerPlatform.iOS, componentName: "platformPresentContent_L1")
         #expect(hasAccessibilityID, "platformPresentContent_L1 should generate accessibility identifiers")
         #else
         #expect(Bool(true), "platformPresentContent_L1 implementation verified - ViewInspector not available")
@@ -16503,7 +16503,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     // TDD Green Phase: This SHOULD PASS - has .automaticAccessibility()
     let valueView = platformPresentBasicValue_L1(value: 42, hints: PresentationHints())
     #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
-        let hasAccessibilityID = testComponentComplianceSinglePlatform(valueView, expectedPattern: "SixLayer.*ui", platform: SixLayerPlatform.iOS componentName: "platformPresentBasicValue_L1")
+        let hasAccessibilityID = testComponentComplianceSinglePlatform(valueView, expectedPattern: "SixLayer.*ui", platform: SixLayerPlatform.iOS, componentName: "platformPresentBasicValue_L1")
         #expect(hasAccessibilityID, "platformPresentBasicValue_L1 should generate accessibility identifiers")
         #else
         #expect(Bool(true), "platformPresentBasicValue_L1 implementation verified - ViewInspector not available")
@@ -16515,7 +16515,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     // TDD Green Phase: This SHOULD PASS - has .automaticAccessibility()
     let arrayView = platformPresentBasicArray_L1(array: [1, 2, 3], hints: PresentationHints())
     #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
-        let hasAccessibilityID = testComponentComplianceSinglePlatform(arrayView, expectedPattern: "SixLayer.*ui", platform: SixLayerPlatform.iOS componentName: "platformPresentBasicArray_L1")
+        let hasAccessibilityID = testComponentComplianceSinglePlatform(arrayView, expectedPattern: "SixLayer.*ui", platform: SixLayerPlatform.iOS, componentName: "platformPresentBasicArray_L1")
         #expect(hasAccessibilityID, "platformPresentBasicArray_L1 should generate accessibility identifiers")
         #else
         #expect(Bool(true), "platformPresentBasicArray_L1 implementation verified - ViewInspector not available")
@@ -16543,7 +16543,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     )
     
     #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
-        let hasAccessibilityID = testComponentComplianceSinglePlatform(collectionView, expectedPattern: "SixLayer.*ui", platform: SixLayerPlatform.iOS componentName: "platformPresentItemCollection_L1")
+        let hasAccessibilityID = testComponentComplianceSinglePlatform(collectionView, expectedPattern: "SixLayer.*ui", platform: SixLayerPlatform.iOS, componentName: "platformPresentItemCollection_L1")
         #expect(hasAccessibilityID, "platformPresentItemCollection_L1 should generate accessibility identifiers")
         #else
         #expect(Bool(true), "platformPresentItemCollection_L1 implementation verified - ViewInspector not available")
