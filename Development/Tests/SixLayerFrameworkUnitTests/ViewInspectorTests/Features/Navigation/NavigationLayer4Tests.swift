@@ -453,7 +453,7 @@ open class NavigationLayer4Tests: BaseTestClass {
                     
                     Text("Destination")
                         .platformNavigationDestination(item: item) { item in
-                            Text("Item: \(item.value)")
+                            Text("Item: \(item.title)")
                         }
                 }
             }
@@ -487,7 +487,7 @@ open class NavigationLayer4Tests: BaseTestClass {
         // Given: Nil bindings
         let nilIsActive = Binding<Bool>(get: { false }, set: { _ in })
         let nilSelection = Binding<String?>(get: { nil }, set: { _ in })
-        let nilItem = Binding<TestItem?>(get: { nil }, set: { _ in })
+        let nilItem = Binding<TestPatterns.TestItem?>(get: { nil }, set: { _ in })
         
         // Verify nil bindings are properly configured
         #expect(nilSelection.wrappedValue == nil, "Nil selection binding should return nil")
@@ -506,7 +506,7 @@ open class NavigationLayer4Tests: BaseTestClass {
         
         let nilDestination = Text("Nil Destination")
             .platformNavigationDestination(item: nilItem) { item in
-                Text("Nil: \(item.value)")
+                Text("Nil: \(item.title)")
             }
         
         // Then: Should handle nil bindings gracefully

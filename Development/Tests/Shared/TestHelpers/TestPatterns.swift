@@ -45,7 +45,8 @@ public enum TestPatterns {
     }
     
     /// Simple test item with id and title (for basic testing)
-    public struct TestItem: Identifiable {
+    /// Conforms to Hashable for use with navigation destination APIs
+    public struct TestItem: Identifiable, Hashable {
         public let id: AnyHashable
         public let title: String
         
