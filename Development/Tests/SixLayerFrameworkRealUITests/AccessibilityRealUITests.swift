@@ -77,7 +77,7 @@ final class AccessibilityRealUITests {
         // Access accessibility identifier through AppKit
         let accessibilityID = platformView.accessibilityIdentifier()
         #expect(accessibilityID != nil, "Accessibility identifier should be generated in real window")
-        #expect(!accessibilityID!.isEmpty, "Accessibility identifier should not be empty")
+        #expect(!accessibilityID.isEmpty, "Accessibility identifier should not be empty")
         
         #elseif os(iOS)
         let hostingController = window.rootViewController as! UIHostingController<Text>
@@ -117,7 +117,7 @@ final class AccessibilityRealUITests {
         let hostingController = window.contentViewController as! NSHostingController<Button<Text>>
         let platformView = hostingController.view
         let accessibilityID = platformView.accessibilityIdentifier()
-        #expect(accessibilityID != nil && !accessibilityID!.isEmpty, "Modifier body should execute in real window")
+        #expect(accessibilityID != nil && !accessibilityID.isEmpty, "Modifier body should execute in real window")
         
         #elseif os(iOS)
         let hostingController = window.rootViewController as! UIHostingController<Button<Text>>

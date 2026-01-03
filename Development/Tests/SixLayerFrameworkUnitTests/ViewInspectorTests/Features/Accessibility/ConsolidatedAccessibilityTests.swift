@@ -659,8 +659,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     // Helper method for Layer 1 tests
     private func createLayer1TestItems() -> [Layer1TestItem] {
         return [
-            Layer1TestPatterns.TestItem(id: "user-1", title: "Alice", subtitle: "Developer"),
-            Layer1TestPatterns.TestItem(id: "user-2", title: "Bob", subtitle: "Designer")
+            TestPatterns.TestDataItem(title: "Alice", subtitle: "Developer"),
+            TestPatterns.TestDataItem(title: "Bob", subtitle: "Designer")
         ]
     }
     
@@ -1560,9 +1560,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         initializeTestConfig()
         // Given: GenericItemCollectionView
         let testItems = [
-            TestPatterns.TestItem(title: "Item 1"),
-            TestPatterns.TestItem(title: "Item 2"),
-            TestPatterns.TestItem(title: "Item 3")
+            TestPatterns.TestItem(id: "Item 1", title: "Item 1"),
+            TestPatterns.TestItem(id: "Item 2", title: "Item 2"),
+            TestPatterns.TestItem(id: "Item 3", title: "Item 3")
         ]
         let hints = PresentationHints()
         let testView = GenericItemCollectionView(items: testItems, hints: hints)
@@ -1696,8 +1696,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     private func setupTestData() {
         testItems = [
-            AccessibilityTestPatterns.TestItem(id: "user-1", title: "Alice", subtitle: "Developer"),
-            AccessibilityTestPatterns.TestItem(id: "user-2", title: "Bob", subtitle: "Designer")
+            TestPatterns.TestDataItem(title: "Alice", subtitle: "Developer"),
+            TestPatterns.TestDataItem(title: "Bob", subtitle: "Designer")
         ]
         testHints = PresentationHints(
             dataType: .generic,
@@ -2600,7 +2600,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     // Tests from RemainingComponentsAccessibilityTests.swift
     @Test @MainActor func testExpandableCardComponentGeneratesAccessibilityIdentifiersOnIOS() async {
         initializeTestConfig()
-        let testItem = RemainingComponentsTestPatterns.TestItem(id: "1", title: "Test Card", subtitle: "Test Subtitle")
+        let testItem = TestPatterns.TestDataItem(title: "Test Card", subtitle: "Test Subtitle")
         let layoutDecision = IntelligentCardLayoutDecision(
             columns: 2,
             spacing: 16,
@@ -2647,8 +2647,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     @Test @MainActor func testCoverFlowCollectionViewGeneratesAccessibilityIdentifiersOnIOS() async {
         initializeTestConfig()
         let testItems = [
-            RemainingComponentsTestPatterns.TestItem(id: "1", title: "Item 1", subtitle: "Subtitle 1"),
-            RemainingComponentsTestPatterns.TestItem(id: "2", title: "Item 2", subtitle: "Subtitle 2")
+            TestPatterns.TestDataItem(title: "Item 1", subtitle: "Subtitle 1"),
+            TestPatterns.TestDataItem(title: "Item 2", subtitle: "Subtitle 2")
         ]
         let view = CoverFlowCollectionView(
             items: testItems,
@@ -3206,8 +3206,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         initializeTestConfig()
         await runWithTaskLocalConfig {
             let testItems = [
-                CardTestPatterns.TestItem(id: "1", title: "Card 1"),
-                CardTestPatterns.TestItem(id: "2", title: "Card 2")
+                TestPatterns.TestDataItem(title: "Card 1"),
+                TestPatterns.TestDataItem(title: "Card 2")
             ]
             let hints = PresentationHints()
             
@@ -3231,8 +3231,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         initializeTestConfig()
         await runWithTaskLocalConfig {
             let testItems = [
-                CardTestPatterns.TestItem(id: "1", title: "CoverFlow Card 1"),
-                CardTestPatterns.TestItem(id: "2", title: "CoverFlow Card 2")
+                TestPatterns.TestDataItem(title: "CoverFlow Card 1"),
+                TestPatterns.TestDataItem(title: "CoverFlow Card 2")
             ]
             let hints = PresentationHints()
             
@@ -3262,8 +3262,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         initializeTestConfig()
         await runWithTaskLocalConfig {
             let testItems = [
-                CardTestPatterns.TestItem(id: "1", title: "Grid Card 1"),
-                CardTestPatterns.TestItem(id: "2", title: "Grid Card 2")
+                TestPatterns.TestDataItem(title: "Grid Card 1"),
+                TestPatterns.TestDataItem(title: "Grid Card 2")
             ]
             let hints = PresentationHints()
             
@@ -4088,7 +4088,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testCoverFlowCardComponentGeneratesAccessibilityIdentifiersOnIOS() async {
         initializeTestConfig()
-        let testItem = RemainingComponentsTestPatterns.TestItem(id: "1", title: "Test Card", subtitle: "Test Subtitle")
+        let testItem = TestPatterns.TestDataItem(title: "Test Card", subtitle: "Test Subtitle")
         
         let view = CoverFlowCardComponent(
             item: testItem,
@@ -4113,8 +4113,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     @Test @MainActor func testGridCollectionViewGeneratesAccessibilityIdentifiersOnIOS() async {
         initializeTestConfig()
         let testItems = [
-            RemainingComponentsTestPatterns.TestItem(id: "1", title: "Item 1", subtitle: "Subtitle 1"),
-            RemainingComponentsTestPatterns.TestItem(id: "2", title: "Item 2", subtitle: "Subtitle 2")
+            TestPatterns.TestDataItem(title: "Item 1", subtitle: "Subtitle 1"),
+            TestPatterns.TestDataItem(title: "Item 2", subtitle: "Subtitle 2")
         ]
         
         let view = GridCollectionView(
@@ -4144,8 +4144,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     @Test @MainActor func testListCollectionViewGeneratesAccessibilityIdentifiersOnIOS() async {
         initializeTestConfig()
         let testItems = [
-            RemainingComponentsTestPatterns.TestItem(id: "1", title: "Item 1", subtitle: "Subtitle 1"),
-            RemainingComponentsTestPatterns.TestItem(id: "2", title: "Item 2", subtitle: "Subtitle 2")
+            TestPatterns.TestDataItem(title: "Item 1", subtitle: "Subtitle 1"),
+            TestPatterns.TestDataItem(title: "Item 2", subtitle: "Subtitle 2")
         ]
         
         let view = ListCollectionView(
@@ -5879,9 +5879,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         }
         
         let items = [
-            TestPatterns.TestItem(id: "1", name: "Alpha"),
-            TestPatterns.TestItem(id: "2", name: "Beta"),
-            TestPatterns.TestItem(id: "3", name: "Gamma")
+            TestPatterns.TestItem(id: "1", title: "Alpha"),
+            TestPatterns.TestItem(id: "2", title: "Beta"),
+            TestPatterns.TestItem(id: "3", title: "Gamma")
         ]
         
         let hints = PresentationHints()
@@ -6056,9 +6056,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         }
         
         let items = [
-            TestPatterns.TestItem(id: "grid-1", name: "Grid Item 1"),
-            TestPatterns.TestItem(id: "grid-2", name: "Grid Item 2"),
-            TestPatterns.TestItem(id: "grid-3", name: "Grid Item 3")
+            TestPatterns.TestItem(id: "grid-1", title: "Grid Item 1"),
+            TestPatterns.TestItem(id: "grid-2", title: "Grid Item 2"),
+            TestPatterns.TestItem(id: "grid-3", title: "Grid Item 3")
         ]
         
         let hints = PresentationHints()
@@ -7218,7 +7218,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testExpandableCardComponentGeneratesAccessibilityIdentifiersOnMacOS() async {
         initializeTestConfig()
-        let testItem = RemainingComponentsTestPatterns.TestItem(id: "1", title: "Test Card", subtitle: "Test Subtitle")
+        let testItem = TestPatterns.TestDataItem(title: "Test Card", subtitle: "Test Subtitle")
         
         let layoutDecision = IntelligentCardLayoutDecision(
             columns: 3,
@@ -7269,8 +7269,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     @Test @MainActor func testCoverFlowCollectionViewGeneratesAccessibilityIdentifiersOnMacOS() async {
         initializeTestConfig()
         let testItems = [
-            RemainingComponentsTestPatterns.TestItem(id: "1", title: "Item 1", subtitle: "Subtitle 1"),
-            RemainingComponentsTestPatterns.TestItem(id: "2", title: "Item 2", subtitle: "Subtitle 2")
+            TestPatterns.TestDataItem(title: "Item 1", subtitle: "Subtitle 1"),
+            TestPatterns.TestDataItem(title: "Item 2", subtitle: "Subtitle 2")
         ]
         
         let view = CoverFlowCollectionView(
@@ -7299,7 +7299,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testCoverFlowCardComponentGeneratesAccessibilityIdentifiersOnMacOS() async {
         initializeTestConfig()
-        let testItem = RemainingComponentsTestPatterns.TestItem(id: "1", title: "Test Card", subtitle: "Test Subtitle")
+        let testItem = TestPatterns.TestDataItem(title: "Test Card", subtitle: "Test Subtitle")
         
         let view = CoverFlowCardComponent(
             item: testItem,
@@ -7324,8 +7324,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     @Test @MainActor func testGridCollectionViewGeneratesAccessibilityIdentifiersOnMacOS() async {
         initializeTestConfig()
         let testItems = [
-            RemainingComponentsTestPatterns.TestItem(id: "1", title: "Item 1", subtitle: "Subtitle 1"),
-            RemainingComponentsTestPatterns.TestItem(id: "2", title: "Item 2", subtitle: "Subtitle 2")
+            TestPatterns.TestDataItem(title: "Item 1", subtitle: "Subtitle 1"),
+            TestPatterns.TestDataItem(title: "Item 2", subtitle: "Subtitle 2")
         ]
         
         let view = GridCollectionView(
@@ -7355,8 +7355,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     @Test @MainActor func testListCollectionViewGeneratesAccessibilityIdentifiersOnMacOS() async {
         initializeTestConfig()
         let testItems = [
-            RemainingComponentsTestPatterns.TestItem(id: "1", title: "Item 1", subtitle: "Subtitle 1"),
-            RemainingComponentsTestPatterns.TestItem(id: "2", title: "Item 2", subtitle: "Subtitle 2")
+            TestPatterns.TestDataItem(title: "Item 1", subtitle: "Subtitle 1"),
+            TestPatterns.TestDataItem(title: "Item 2", subtitle: "Subtitle 2")
         ]
         
         let view = ListCollectionView(
@@ -7518,7 +7518,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     @Test @MainActor func testExpandableCardComponentGeneratesAccessibilityIdentifiers() async {
         initializeTestConfig()
         await runWithTaskLocalConfig {
-            let testItem = CardTestPatterns.TestItem(id: "1", title: "Test Card")
+            let testItem = TestPatterns.TestDataItem(title: "Test Card")
             
             let view = ExpandableCardComponent(
                 item: testItem,
@@ -7562,7 +7562,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     @Test @MainActor func testCoverFlowCardComponentGeneratesAccessibilityIdentifiers() async {
         initializeTestConfig()
         await runWithTaskLocalConfig {
-            let testItem = CardTestPatterns.TestItem(id: "1", title: "CoverFlow Card")
+            let testItem = TestPatterns.TestDataItem(title: "CoverFlow Card")
             
             let view = CoverFlowCardComponent(
                 item: testItem,
@@ -7589,8 +7589,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         initializeTestConfig()
         await runWithTaskLocalConfig {
             let testItems = [
-                CardTestPatterns.TestItem(id: "1", title: "List Card 1"),
-                CardTestPatterns.TestItem(id: "2", title: "List Card 2")
+                TestPatterns.TestDataItem(title: "List Card 1"),
+                TestPatterns.TestDataItem(title: "List Card 2")
             ]
             let hints = PresentationHints()
             
@@ -7614,8 +7614,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         initializeTestConfig()
         await runWithTaskLocalConfig {
             let testItems = [
-                CardTestPatterns.TestItem(id: "1", title: "Masonry Card 1"),
-                CardTestPatterns.TestItem(id: "2", title: "Masonry Card 2")
+                TestPatterns.TestDataItem(title: "Masonry Card 1"),
+                TestPatterns.TestDataItem(title: "Masonry Card 2")
             ]
             let hints = PresentationHints()
             
@@ -7639,8 +7639,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         initializeTestConfig()
         await runWithTaskLocalConfig {
             let testItems = [
-                CardTestPatterns.TestItem(id: "1", title: "Adaptive Card 1"),
-                CardTestPatterns.TestItem(id: "2", title: "Adaptive Card 2")
+                TestPatterns.TestDataItem(title: "Adaptive Card 1"),
+                TestPatterns.TestDataItem(title: "Adaptive Card 2")
             ]
             let hints = PresentationHints()
             
@@ -8986,8 +8986,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         }
         
         let testItems = [
-            RemainingComponentsTestPatterns.TestItem(id: "1", title: "Item 1", subtitle: "Subtitle 1"),
-            RemainingComponentsTestPatterns.TestItem(id: "2", title: "Item 2", subtitle: "Subtitle 2")
+            TestPatterns.TestDataItem(title: "Item 1", subtitle: "Subtitle 1"),
+            TestPatterns.TestDataItem(title: "Item 2", subtitle: "Subtitle 2")
         ]
         
         let view = MasonryCollectionView(
@@ -9023,8 +9023,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         }
         
         let testItems = [
-            RemainingComponentsTestPatterns.TestItem(id: "1", title: "Item 1", subtitle: "Subtitle 1"),
-            RemainingComponentsTestPatterns.TestItem(id: "2", title: "Item 2", subtitle: "Subtitle 2")
+            TestPatterns.TestDataItem(title: "Item 1", subtitle: "Subtitle 1"),
+            TestPatterns.TestDataItem(title: "Item 2", subtitle: "Subtitle 2")
         ]
         
         let view = MasonryCollectionView(
@@ -9060,8 +9060,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         }
         
         let testItems = [
-            RemainingComponentsTestPatterns.TestItem(id: "1", title: "Item 1", subtitle: "Subtitle 1"),
-            RemainingComponentsTestPatterns.TestItem(id: "2", title: "Item 2", subtitle: "Subtitle 2")
+            TestPatterns.TestDataItem(title: "Item 1", subtitle: "Subtitle 1"),
+            TestPatterns.TestDataItem(title: "Item 2", subtitle: "Subtitle 2")
         ]
         
         let view = AdaptiveCollectionView(
@@ -9096,8 +9096,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         }
         
         let testItems = [
-            RemainingComponentsTestPatterns.TestItem(id: "1", title: "Item 1", subtitle: "Subtitle 1"),
-            RemainingComponentsTestPatterns.TestItem(id: "2", title: "Item 2", subtitle: "Subtitle 2")
+            TestPatterns.TestDataItem(title: "Item 1", subtitle: "Subtitle 1"),
+            TestPatterns.TestDataItem(title: "Item 2", subtitle: "Subtitle 2")
         ]
         
         let view = AdaptiveCollectionView(
@@ -10157,7 +10157,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             let subtitle: String
         }
         
-        let testItem = RemainingComponentsTestPatterns.TestItem(id: "1", title: "Test Card", subtitle: "Test Subtitle")
+        let testItem = TestPatterns.TestDataItem(title: "Test Card", subtitle: "Test Subtitle")
         
         let layoutDecision = IntelligentCardLayoutDecision(
             columns: 2,
@@ -10199,7 +10199,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             let subtitle: String
         }
         
-        let testItem = RemainingComponentsTestPatterns.TestItem(id: "1", title: "Test Card", subtitle: "Test Subtitle")
+        let testItem = TestPatterns.TestDataItem(title: "Test Card", subtitle: "Test Subtitle")
         
         let layoutDecision = IntelligentCardLayoutDecision(
             columns: 3,
@@ -10241,7 +10241,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             let subtitle: String
         }
         
-        let testItem = RemainingComponentsTestPatterns.TestItem(id: "1", title: "Test Card", subtitle: "Test Subtitle")
+        let testItem = TestPatterns.TestDataItem(title: "Test Card", subtitle: "Test Subtitle")
         
         let view = ListCardComponent(
             item: testItem,
@@ -10272,7 +10272,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             let subtitle: String
         }
         
-        let testItem = RemainingComponentsTestPatterns.TestItem(id: "1", title: "Test Card", subtitle: "Test Subtitle")
+        let testItem = TestPatterns.TestDataItem(title: "Test Card", subtitle: "Test Subtitle")
         
         let view = ListCardComponent(
             item: testItem,
@@ -10303,7 +10303,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             let subtitle: String
         }
         
-        let testItem = RemainingComponentsTestPatterns.TestItem(id: "1", title: "Test Card", subtitle: "Test Subtitle")
+        let testItem = TestPatterns.TestDataItem(title: "Test Card", subtitle: "Test Subtitle")
         
         let view = MasonryCardComponent(item: testItem, hints: PresentationHints())
         
@@ -10328,7 +10328,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             let subtitle: String
         }
         
-        let testItem = RemainingComponentsTestPatterns.TestItem(id: "1", title: "Test Card", subtitle: "Test Subtitle")
+        let testItem = TestPatterns.TestDataItem(title: "Test Card", subtitle: "Test Subtitle")
         
         let view = MasonryCardComponent(item: testItem, hints: PresentationHints())
         
@@ -11545,7 +11545,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         initializeTestConfig()
     await runWithTaskLocalConfig {
         // Given: Test item
-        let testItem = CardTestPatterns.TestItem(id: "1", title: "Simple Card")
+        let testItem = TestPatterns.TestDataItem(title: "Simple Card")
         
         // When: Creating SimpleCardComponent
         let view = SimpleCardComponent(
@@ -11583,7 +11583,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         initializeTestConfig()
     await runWithTaskLocalConfig {
         // Given: Test item
-        let testItem = CardTestPatterns.TestItem(id: "1", title: "List Card")
+        let testItem = TestPatterns.TestDataItem(title: "List Card")
         
         // When: Creating ListCardComponent
         let view = ListCardComponent(item: testItem, hints: PresentationHints())
@@ -11608,7 +11608,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         initializeTestConfig()
     await runWithTaskLocalConfig {
         // Given: Test item
-        let testItem = CardTestPatterns.TestItem(id: "1", title: "Masonry Card")
+        let testItem = TestPatterns.TestDataItem(title: "Masonry Card")
         
         // When: Creating MasonryCardComponent
         let view = MasonryCardComponent(item: testItem, hints: PresentationHints())
@@ -11633,7 +11633,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         initializeTestConfig()
     await runWithTaskLocalConfig {
         // Given: Test item and configurations
-        let testItem = CardTestPatterns.TestItem(id: "1", title: "Native Card")
+        let testItem = TestPatterns.TestDataItem(title: "Native Card")
         let expansionStrategy = ExpansionStrategy.hoverExpand
         
         // When: Creating NativeExpandableCardView
@@ -11662,7 +11662,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         initializeTestConfig()
     await runWithTaskLocalConfig {
         // Given: Test item and configurations
-        let testItem = CardTestPatterns.TestItem(id: "1", title: "iOS Card")
+        let testItem = TestPatterns.TestDataItem(title: "iOS Card")
         let expansionStrategy = ExpansionStrategy.hoverExpand
         
         // When: Creating iOSExpandableCardView
@@ -11691,7 +11691,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         initializeTestConfig()
     await runWithTaskLocalConfig {
         // Given: Test item and configurations
-        let testItem = CardTestPatterns.TestItem(id: "1", title: "macOS Card")
+        let testItem = TestPatterns.TestDataItem(title: "macOS Card")
         let expansionStrategy = ExpansionStrategy.hoverExpand
         
         // When: Creating macOSExpandableCardView
@@ -11720,7 +11720,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         initializeTestConfig()
     await runWithTaskLocalConfig {
         // Given: Test item and configurations
-        let testItem = CardTestPatterns.TestItem(id: "1", title: "visionOS Card")
+        let testItem = TestPatterns.TestDataItem(title: "visionOS Card")
         let expansionStrategy = ExpansionStrategy.hoverExpand
         
         // When: Creating visionOSExpandableCardView
@@ -11749,7 +11749,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         initializeTestConfig()
     await runWithTaskLocalConfig {
         // Given: Test item and configurations
-        let testItem = CardTestPatterns.TestItem(id: "1", title: "Platform Aware Card")
+        let testItem = TestPatterns.TestDataItem(title: "Platform Aware Card")
         let expansionStrategy = ExpansionStrategy.hoverExpand
         
         // When: Creating PlatformAwareExpandableCardView
@@ -15682,7 +15682,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #endif
             
         // Test Case 2: When automatic IDs are enabled
-        testConfig.enableAutoIDs = true
+        config.enableAutoIDs = true
             
         let testView2 = PlatformInteractionButton(style: .primary, action: {}) {
             platformPresentContent_L1(content: "Test", hints: PresentationHints())
@@ -16036,8 +16036,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 
     // NEW WAY (what developers do now):
     let testItems = [
-        DemonstrationTestPatterns.TestItem(id: "1", title: "Test Item 1", subtitle: "Subtitle 1"),
-        DemonstrationTestPatterns.TestItem(id: "2", title: "Test Item 2", subtitle: "Subtitle 2")
+        TestPatterns.TestDataItem(title: "Test Item 1", subtitle: "Subtitle 1"),
+        TestPatterns.TestDataItem(title: "Test Item 2", subtitle: "Subtitle 2")
     ]
     let testHints = PresentationHints(
         dataType: .generic,
@@ -16064,8 +16064,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     initializeTestConfig()
     // Setup test data
     let testItems = [
-        DemonstrationTestPatterns.TestItem(id: "1", title: "Test Item 1", subtitle: "Subtitle 1"),
-        DemonstrationTestPatterns.TestItem(id: "2", title: "Test Item 2", subtitle: "Subtitle 2")
+        TestPatterns.TestDataItem(title: "Test Item 1", subtitle: "Subtitle 1"),
+        TestPatterns.TestDataItem(title: "Test Item 2", subtitle: "Subtitle 2")
     ]
     let testHints = PresentationHints()
 
@@ -16108,8 +16108,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         initializeTestConfig()
     // Setup test data
     let testItems = [
-        DemonstrationTestPatterns.TestItem(id: "1", title: "Test Item 1", subtitle: "Subtitle 1"),
-        DemonstrationTestPatterns.TestItem(id: "2", title: "Test Item 2", subtitle: "Subtitle 2")
+        TestPatterns.TestDataItem(title: "Test Item 1", subtitle: "Subtitle 1"),
+        TestPatterns.TestDataItem(title: "Test Item 2", subtitle: "Subtitle 2")
     ]
     let testHints = PresentationHints()
 
@@ -16130,8 +16130,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     @Test @MainActor func testDemonstrateAllLayer1FunctionsHaveAutomaticCompliance() async {
     // Setup test data
     let testItems = [
-        DemonstrationTestPatterns.TestItem(id: "1", title: "Test Item 1", subtitle: "Subtitle 1"),
-        DemonstrationTestPatterns.TestItem(id: "2", title: "Test Item 2", subtitle: "Subtitle 2")
+        TestPatterns.TestDataItem(title: "Test Item 1", subtitle: "Subtitle 1"),
+        TestPatterns.TestDataItem(title: "Test Item 2", subtitle: "Subtitle 2")
     ]
     let testHints = PresentationHints()
 
