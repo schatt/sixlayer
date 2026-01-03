@@ -20,6 +20,12 @@ import SwiftUI
 /// Provides isolated test configuration and setup utilities
 /// NOTE: Not marked @MainActor on class to allow parallel execution
 open class BaseTestClass {
+    /// Public initializer required for Swift testing framework to instantiate test classes
+    public init() {
+        // BaseTestClass doesn't require any initialization
+        // Subclasses can override if needed
+    }
+    
     /// Isolated test configuration for this test
     /// Set by initializeTestConfig() and used via runWithTaskLocalConfig()
     public var testConfig: AccessibilityIdentifierConfig?
