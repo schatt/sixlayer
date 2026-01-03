@@ -32,11 +32,6 @@ import AppKit
 /// or complex hierarchies like GenericContentView in test environments without proper window hierarchy.
 /// The hang occurs when accessing `hosting.view` - a synchronous UIKit/AppKit call that cannot be timed out.
 /// 
-/// This is a global function that delegates to TestSetupUtilities.hostRootPlatformView
-@MainActor
-public func hostRootPlatformView<V: View>(_ view: V) -> Any? {
-    return TestSetupUtilities.hostRootPlatformView(view)
-}
 
 /// Depth-first search for the first non-empty accessibility identifier in the platform view hierarchy.
 @MainActor
