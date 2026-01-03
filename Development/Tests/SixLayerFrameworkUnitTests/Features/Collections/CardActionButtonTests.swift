@@ -49,6 +49,21 @@ open class CardActionButtonTests: BaseTestClass {
     
     // MARK: - Test Data
     
+    struct TestItem: Identifiable, CardDisplayable {
+        let id = UUID()
+        let title: String
+        let subtitle: String?
+        let description: String?
+        let icon: String?
+        let color: Color?
+        
+        var cardTitle: String { title }
+        var cardSubtitle: String? { subtitle }
+        var cardDescription: String? { description }
+        var cardIcon: String? { icon }
+        var cardColor: Color? { color }
+    }
+    
     nonisolated static let sampleItems: [TestItem] = [
         TestItem(
             title: "Test Item 1", 
@@ -89,9 +104,12 @@ open class CardActionButtonTests: BaseTestClass {
         let item = TestItem(
             title: "Test Item",
             subtitle: "Test Subtitle",
+            description: nil,
+            icon: nil,
+            color: nil
             description: "Test Description",
             icon: "star",
-            color: .blue
+            color: Color.blue
         )
         nonisolated(unsafe) var editCallbackCalled = false
         nonisolated(unsafe) var editCallbackItem: TestItem?
@@ -384,6 +402,9 @@ open class CardActionButtonTests: BaseTestClass {
         let emptyItem = TestItem(
             title: "",
             subtitle: nil,
+            description: nil,
+            icon: nil,
+            color: nil
             description: nil,
             icon: nil,
             color: nil

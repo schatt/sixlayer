@@ -19,15 +19,32 @@ open class CardContentDisplayTests: BaseTestClass {
         let metadata: [String: Any]
     }
     
+    // MARK: - Test Data
+    
+    struct TestItem: Identifiable, CardDisplayable {
+        let id = UUID()
+        let title: String
+        let subtitle: String?
+        let description: String?
+        let icon: String?
+        let color: Color?
+        
+        var cardTitle: String { title }
+        var cardSubtitle: String? { subtitle }
+        var cardDescription: String? { description }
+        var cardIcon: String? { icon }
+        var cardColor: Color? { color }
+    }
+    
     // MARK: - Helper Methods
     
     /// Creates specific test items for CardContentDisplayTests
     @MainActor
     public func createCardTestItems() -> [TestItem] {
         return [
-            TestItem(title: "Test Item 1", subtitle: "Subtitle 1", description: "Description 1", icon: "star.fill", color: .blue),
-            TestItem(title: "Test Item 2", subtitle: "Subtitle 2", description: "Description 2", icon: "heart.fill", color: .red),
-            TestItem(title: "Test Item 3", subtitle: nil, description: "Description 3", icon: nil, color: .green)
+            TestItem(title: "Test Item 1", subtitle: "Subtitle 1", description: "Description 1", icon: "star.fill", color: Color.blue),
+            TestItem(title: "Test Item 2", subtitle: "Subtitle 2", description: "Description 2", icon: "heart.fill", color: Color.red),
+            TestItem(title: "Test Item 3", subtitle: nil, description: "Description 3", icon: nil, color: Color.green)
         ]
     }
     
@@ -319,7 +336,7 @@ open class CardContentDisplayTests: BaseTestClass {
             subtitle: longText,
             description: longText,
             icon: "star.fill",
-            color: .blue
+            color: Color.blue
         )
         
         // WHEN: Creating card components

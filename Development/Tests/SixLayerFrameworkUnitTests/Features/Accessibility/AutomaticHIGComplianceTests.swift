@@ -52,7 +52,7 @@ open class AutomaticHIGComplianceTests: BaseTestClass {
     @Test @MainActor func testPlatformPresentItemCollection_L1_AutomaticHIGCompliance() async {
         initializeTestConfig()
         // Given: Test items and hints
-        let items = [TestItem(id: "1", title: "Test Item 1", subtitle: "Test Description 1")]
+        let items = [TestPatterns.TestItem(id: "1", title: "Test Item 1")]
         let hints = PresentationHints()
 
         // When: Creating view using Layer 1 function
@@ -80,7 +80,7 @@ open class AutomaticHIGComplianceTests: BaseTestClass {
 
         // When: Creating view using Layer 1 function
         _ = platformPresentItemCollection_L1(
-            items: [TestItem(id: "1", title: "Test Item 1", subtitle: "Test Description 1")],
+            items: [TestPatterns.TestItem(id: "1", title: "Test Item 1")],
             hints: PresentationHints()
         )
 
@@ -103,8 +103,8 @@ open class AutomaticHIGComplianceTests: BaseTestClass {
             initializeTestConfig()
         // Setup test data
         let testItems = [
-            TestItem(id: "1", title: "Test Item 1", subtitle: "Test Description 1"),
-            TestItem(id: "2", title: "Test Item 2", subtitle: "Test Description 2")
+            TestPatterns.TestItem(id: "1", title: "Test Item 1"),
+            TestPatterns.TestItem(id: "2", title: "Test Item 2")
         ]
 
         // Test across all platforms
@@ -134,7 +134,7 @@ open class AutomaticHIGComplianceTests: BaseTestClass {
         initializeTestConfig()
         // When: Creating view using Layer 1 function
         _ = platformPresentItemCollection_L1(
-            items: [TestItem(id: "1", title: "Test Item 1", subtitle: "Test Description 1")],
+            items: [TestPatterns.TestItem(id: "1", title: "Test Item 1")],
             hints: PresentationHints()
         )
 
@@ -153,7 +153,7 @@ open class AutomaticHIGComplianceTests: BaseTestClass {
         initializeTestConfig()
         // Test platformPresentItemCollection_L1
         let collectionView = platformPresentItemCollection_L1(
-            items: [TestItem(id: "1", title: "Test Item 1", subtitle: "Test Description 1")],
+            items: [TestPatterns.TestItem(id: "1", title: "Test Item 1")],
             hints: PresentationHints()
         )
         // Test that collection view can be hosted and has proper structure
@@ -189,7 +189,7 @@ open class AutomaticHIGComplianceTests: BaseTestClass {
         RuntimeCapabilityDetection.setTestAssistiveTouch(false)
 
         let viewWithVoiceOver = platformPresentItemCollection_L1(
-            items: [TestItem(id: "1", title: "Test Item 1", subtitle: "Test Description 1")],
+            items: [TestPatterns.TestItem(id: "1", title: "Test Item 1")],
             hints: PresentationHints()
         )
         // Test that VoiceOver-enabled view can be hosted
@@ -202,7 +202,7 @@ open class AutomaticHIGComplianceTests: BaseTestClass {
         RuntimeCapabilityDetection.setTestAssistiveTouch(false)
 
         let viewWithSwitchControl = platformPresentItemCollection_L1(
-            items: [TestItem(id: "1", title: "Test Item 1", subtitle: "Test Description 1")],
+            items: [TestPatterns.TestItem(id: "1", title: "Test Item 1")],
             hints: PresentationHints()
         )
 
@@ -216,7 +216,7 @@ open class AutomaticHIGComplianceTests: BaseTestClass {
         RuntimeCapabilityDetection.setTestAssistiveTouch(true)
 
         let viewWithAssistiveTouch = platformPresentItemCollection_L1(
-            items: [TestItem(id: "1", title: "Test Item 1", subtitle: "Test Description 1")],
+            items: [TestPatterns.TestItem(id: "1", title: "Test Item 1")],
             hints: PresentationHints()
         )
 
@@ -230,7 +230,7 @@ open class AutomaticHIGComplianceTests: BaseTestClass {
         RuntimeCapabilityDetection.setTestAssistiveTouch(true)
 
         let viewWithAllAccessibility = platformPresentItemCollection_L1(
-            items: [TestItem(id: "1", title: "Test Item 1", subtitle: "Test Description 1")],
+            items: [TestPatterns.TestItem(id: "1", title: "Test Item 1")],
             hints: PresentationHints()
         )
 

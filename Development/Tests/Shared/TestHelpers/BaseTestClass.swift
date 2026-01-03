@@ -32,6 +32,7 @@ open class BaseTestClass {
     
     /// Initialize test configuration
     /// Creates an isolated config instance for this test
+    @MainActor
     public func initializeTestConfig() {
         testConfig = AccessibilityIdentifierConfig()
         testConfig?.resetToDefaults()

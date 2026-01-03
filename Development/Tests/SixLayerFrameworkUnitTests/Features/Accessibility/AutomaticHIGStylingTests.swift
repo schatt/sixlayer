@@ -164,7 +164,7 @@ open class AutomaticHIGStylingTests: BaseTestClass {
         
         // Given: Layer 1 function creates a view
         _ = platformPresentItemCollection_L1(
-            items: [TestItem(id: "1", title: "Test", subtitle: "Description")],
+            items: [TestPatterns.TestItem(id: "1", title: "Test")],
             hints: PresentationHints()
         )
         
@@ -181,7 +181,7 @@ open class AutomaticHIGStylingTests: BaseTestClass {
         
         // Test collection view
         _ = platformPresentItemCollection_L1(
-            items: [TestItem(id: "1", title: "Test", subtitle: "Description")],
+            items: [TestPatterns.TestItem(id: "1", title: "Test")],
             hints: PresentationHints()
         )
         #expect(Bool(true), "Collection view should have automatic styling")
