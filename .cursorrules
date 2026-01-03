@@ -61,6 +61,7 @@
    - After completing logical units of work
    - Small, focused commits (one cohesive change per commit)
    - Before switching contexts or pausing work
+   - **"Commits are cheap"** - Make frequent commits to capture incremental progress
 
 ### Examples
 
@@ -110,6 +111,29 @@ changes
 ### Additional Context
 
 See `PROJECT_RULES.md` section "Git Workflow and Commit Practices" for more details on commit frequency and workflow.
+
+## Git Push Practices
+
+**MANDATORY**: All commits must be pushed to the remote repository.
+
+### Push Requirements:
+- **Push after logical completion**: Push commits after completing related work units
+- **Permission requirements**: Git push operations require additional permissions due to sandbox restrictions
+- **Use required permissions**: When pushing, use `required_permissions: ["network", "git_write"]` or `required_permissions: ["all"]`
+- **Network access needed**: Push operations require internet access to GitHub
+
+### Push Command Format:
+```bash
+# For pushing commits, use:
+run_terminal_cmd(command="git push origin <branch>", required_permissions=["network", "git_write"])
+# Or for full permissions:
+run_terminal_cmd(command="git push origin <branch>", required_permissions=["all"])
+```
+
+### Enforcement:
+- **Regular pushes required**: Don't accumulate many unpushed commits
+- **Permission awareness**: Always specify required permissions for push operations
+- **Network dependency**: Push operations may fail without proper network access
 
 ## Additional Development Rules
 
