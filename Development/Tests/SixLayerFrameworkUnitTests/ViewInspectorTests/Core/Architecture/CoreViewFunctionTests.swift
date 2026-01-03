@@ -87,44 +87,20 @@ open class CoreViewFunctionTests: BaseTestClass {
     @MainActor func testIntelligentDetailViewWithSpecificPlatform(
         platform: SixLayerPlatform
     ) async {
-        // GIVEN: Specific capability and accessibility combination
+        // GIVEN: Platform-specific configuration
         let item = createTestItem()
         
-        // Set capability overrides based on capability type
-        switch capabilityType {
-        case .touchOnly:
-            RuntimeCapabilityDetection.setTestTouchSupport(true)
-            RuntimeCapabilityDetection.setTestHapticFeedback(true)
-            RuntimeCapabilityDetection.setTestHover(false)
-        case .hoverOnly:
-            RuntimeCapabilityDetection.setTestTouchSupport(false)
-            RuntimeCapabilityDetection.setTestHapticFeedback(false)
-            RuntimeCapabilityDetection.setTestHover(true)
-        case .allCapabilities:
-            RuntimeCapabilityDetection.setTestTouchSupport(true)
-            RuntimeCapabilityDetection.setTestHapticFeedback(true)
-            RuntimeCapabilityDetection.setTestHover(true)
-        case .noCapabilities:
-            RuntimeCapabilityDetection.setTestTouchSupport(false)
-            RuntimeCapabilityDetection.setTestHapticFeedback(false)
-            RuntimeCapabilityDetection.setTestHover(false)
-        }
+        // Set capabilities for the platform
+        TestSetupUtilities.setCapabilitiesForPlatform(platform)
         
-        let testName = "\(capabilityType.displayName) + \(accessibilityType.displayName)"
-        
-        // WHEN: Generating intelligent detail view using RuntimeCapabilityDetection
+        // WHEN: Generating intelligent detail view
         let view = TestPatterns.createIntelligentDetailView(item: item)
         
-        // THEN: Should generate correct view for this combination
-        verifyViewGeneration(view, testName: testName)
-        
-        let viewInfo = extractViewInfo(from: view)
-        
-        // Verify platform-specific properties
-        TestPatterns.verifyPlatformProperties(viewInfo: viewInfo, testName: testName)
-        
+        // THEN: Should generate correct view for this platform
+        verifyViewGeneration(view, testName: "IntelligentDetail (platform.rawValue)")
+
         // Verify accessibility properties  
-        TestPatterns.verifyAccessibilityProperties(viewInfo: viewInfo, testName: testName)
+        TestPatterns.verifyAccessibilityProperties(viewInfo: viewInfo, testName: "SimpleCard (platform.rawValue)")
         
         // Clean up test platform
         RuntimeCapabilityDetection.clearAllCapabilityOverrides()
@@ -192,7 +168,7 @@ open class CoreViewFunctionTests: BaseTestClass {
         let view = TestPatterns.createSimpleCardComponent(item: item)
         
         // THEN: Should generate correct view for this combination
-        verifyViewGeneration(view, testName: testName)
+        verifyViewGeneration(view, testName: "SimpleCard (platform.rawValue)")
         
         let viewInfo = extractViewInfo(from: view)
         
