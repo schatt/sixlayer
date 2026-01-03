@@ -932,10 +932,15 @@ public extension RuntimeCapabilityDetection {
     /// (iOS/watchOS) regardless of whether touch is currently enabled, as these platforms
     /// are designed for touch interaction.
     ///
-    /// Note: nonisolated - this property only does platform switching, no MainActor APIs accessed
+    /// Note: nonisolated - this property uses compile-time platform detection
     nonisolated static var minTouchTarget: CGFloat {
-        // TEMP: Always return 44.0 to debug the test failure
-        return 44.0
+        // DTRT: Use compile-time platform detection for reliable results
+        // This ensures correct values regardless of runtime platform detection issues
+        #if os(iOS) || os(watchOS)
+        return 44.0  // Apple HIG minimum touch target size for touch-first platforms
+        #else
+        return 0.0   // No touch target requirement on non-touch-first platforms
+        #endif
     }
     
     /// Hover delay for platforms that support hover
