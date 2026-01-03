@@ -85,10 +85,7 @@ open class BaseTestClass {
     }
     
     // MARK: - Convenience Methods
-    
-    /// Set capabilities for a specific platform (delegates to TestSetupUtilities)
-    }
-    
+
     /// Create test hints (delegates to TestSetupUtilities)
     func createTestHints(
         dataType: DataTypeHint = .generic,
@@ -233,3 +230,4 @@ open class BaseTestClass {
             deviceCapabilities: deviceCapabilities
         )
     }
+}
