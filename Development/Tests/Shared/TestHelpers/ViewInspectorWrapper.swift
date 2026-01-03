@@ -9,17 +9,27 @@
 
 import Foundation
 import SwiftUI
+
+#if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
 import ViewInspector
+
+// MARK: - Type Aliases
+
+/// Type alias for ViewInspector's InspectableView
+/// ViewInspector's inspect() returns InspectableView<ViewType.View<Self>>, which we type-erase for convenience
+public typealias InspectedView = InspectableView<ViewType.View<AnyView>>
 
 // MARK: - View Extensions
 
-extension View where Self: Inspectable {
+extension View {
     /// Safe, non-throwing inspection of a view
     /// Returns nil if inspection fails (instead of throwing)
     @MainActor
-    public func tryInspect() -> InspectableView<ViewType.View<Self>>? {
+    public func tryInspect() -> InspectedView? {
         do {
-            return try inspect()
+            // Type-erase to AnyView to work around type constraints
+            let anyView = AnyView(self)
+            return try anyView.inspect()
         } catch {
             return nil
         }
@@ -27,14 +37,16 @@ extension View where Self: Inspectable {
     
     /// Throwing inspection of a view
     @MainActor
-    public func inspectView() throws -> InspectableView<ViewType.View<Self>> {
-        return try inspect()
+    public func inspectView() throws -> InspectedView {
+        // Type-erase to AnyView to work around type constraints
+        let anyView = AnyView(self)
+        return try anyView.inspect()
     }
 }
 
-// MARK: - InspectableView Extensions
+// MARK: - InspectedView Extensions
 
-extension InspectableView {
+extension InspectedView {
     /// Get accessibility identifier from a view using ViewInspector
     /// Returns empty string if not found or if inspection fails
     public func sixLayerAccessibilityIdentifier() throws -> String {
@@ -45,7 +57,7 @@ extension InspectableView {
     
     /// Try to find a view of a specific type
     /// Returns nil if not found (instead of throwing)
-    public func sixLayerTryFind<T>(_ type: T.Type) -> T? where T: InspectableView {
+    public func sixLayerTryFind<T>(_ type: T.Type) -> T? where T: InspectedView {
         do {
             return try find(type)
         } catch {
@@ -55,7 +67,7 @@ extension InspectableView {
     
     /// Find all views of a specific type (non-throwing)
     /// Returns empty array if none found or if inspection fails
-    public func sixLayerFindAll<T>(_ type: T.Type) -> [T] where T: InspectableView {
+    public func sixLayerFindAll<T>(_ type: T.Type) -> [T] where T: InspectedView {
         do {
             return try findAll(type)
         } catch {
@@ -93,9 +105,9 @@ extension InspectableView {
 
 /// Execute code with an inspected view (non-throwing)
 @MainActor
-public func withInspectedView<V: View & Inspectable, T>(
+public func withInspectedView<V: View, T>(
     _ view: V,
-    body: (InspectableView<ViewType.View<V>>) -> T
+    body: (InspectedView) -> T
 ) -> T? {
     guard let inspected = view.tryInspect() else {
         return nil
@@ -107,8 +119,26 @@ public func withInspectedView<V: View & Inspectable, T>(
 @MainActor
 public func withInspectedViewThrowing<V: View, T>(
     _ view: V,
-    body: (InspectableView<ViewType.View<V>>) throws -> T
+    body: (InspectedView) throws -> T
 ) throws -> T {
     let inspected = try view.inspectView()
     return try body(inspected)
 }
+
+#else
+// MARK: - Fallback for platforms without ViewInspector
+
+extension View {
+    /// Fallback implementation when ViewInspector is not available
+    @MainActor
+    public func tryInspect() -> Any? {
+        return nil
+    }
+    
+    @MainActor
+    public func inspectView() throws -> Any {
+        throw NSError(domain: "ViewInspectorWrapper", code: 1, userInfo: [NSLocalizedDescriptionKey: "ViewInspector not available on this platform"])
+    }
+}
+
+#endif
