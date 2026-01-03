@@ -89,23 +89,19 @@ open class CoreArchitectureTests: BaseTestClass {
         #expect(hints.complexity == complexity)
         #expect(hints.context == context)
         
-        // Test across all platforms
-        for platform in SixLayerPlatform.allCases {
-            
-            let platformHints = EnhancedPresentationHints(
-                dataType: dataType,
-                presentationPreference: preference,
-                complexity: complexity,
-                context: context
-            )
-            
-            #expect(platformHints.dataType == dataType, "Data type should be consistent on \(platform)")
-            #expect(platformHints.presentationPreference == preference, "Presentation preference should be consistent on \(platform)")
-            #expect(platformHints.complexity == complexity, "Complexity should be consistent on \(platform)")
-            #expect(platformHints.context == context, "Context should be consistent on \(platform)")
-        }
+        // Test on current platform
+        let currentPlatform = SixLayerPlatform.current
+        let platformHints = EnhancedPresentationHints(
+            dataType: dataType,
+            presentationPreference: preference,
+            complexity: complexity,
+            context: context
+        )
         
-        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        #expect(platformHints.dataType == dataType, "Data type should be consistent on \(currentPlatform)")
+        #expect(platformHints.presentationPreference == preference, "Presentation preference should be consistent on \(currentPlatform)")
+        #expect(platformHints.complexity == complexity, "Complexity should be consistent on \(currentPlatform)")
+        #expect(platformHints.context == context, "Context should be consistent on \(currentPlatform)")
         #expect(hints.extensibleHints.isEmpty)
     }
     
@@ -281,59 +277,56 @@ open class CoreArchitectureTests: BaseTestClass {
             }
         }
         
-        // Test across all platforms
-        for platform in SixLayerPlatform.allCases {
+        // Test on current platform
+        let currentPlatform = SixLayerPlatform.current
+        
+        for context in PresentationContext.allCases {
+            let platformFields = createDynamicFormFields(context: context)
             
-            for context in PresentationContext.allCases {
-                let platformFields = createDynamicFormFields(context: context)
+            // Test context-specific field requirements using switch for compiler enforcement
+            switch context {
+            case .dashboard:
+                #expect(platformFields.count == 2, "Dashboard should have 2 fields on \(currentPlatform)")
+                #expect(platformFields.contains { $0.label == "Dashboard Name" }, "Dashboard should have Dashboard Name field on \(currentPlatform)")
+                #expect(platformFields.contains { $0.label == "Auto Refresh" }, "Dashboard should have Auto Refresh field on \(currentPlatform)")
                 
-                // Test context-specific field requirements using switch for compiler enforcement
-                switch context {
-                case .dashboard:
-                    #expect(platformFields.count == 2, "Dashboard should have 2 fields on \(platform)")
-                    #expect(platformFields.contains { $0.label == "Dashboard Name" }, "Dashboard should have Dashboard Name field on \(platform)")
-                    #expect(platformFields.contains { $0.label == "Auto Refresh" }, "Dashboard should have Auto Refresh field on \(platform)")
-                    
-                case .detail:
-                    #expect(platformFields.count == 5, "Detail should have 5 fields on \(platform)")
-                    #expect(platformFields.contains { $0.label == "Title" }, "Detail should have Title field on \(platform)")
-                    #expect(platformFields.contains { $0.label == "Description" }, "Detail should have Description field on \(platform)")
-                    
-                case .list:
-                    #expect(platformFields.contains { $0.id.contains("list") || $0.id.contains("item") }, 
-                                "List context should have list/item fields on \(platform)")
-                    
-                case .standard:
-                    #expect(platformFields.count > 0, "Standard context should have basic fields on \(platform)")
-                    
-                case .navigation:
-                    #expect(platformFields.contains { $0.id.contains("nav") || $0.id.contains("route") }, 
-                                "Navigation context should have navigation/route fields on \(platform)")
-                case .browse:
-                    #expect(platformFields.count >= 1)
-                case .edit:
-                    #expect(platformFields.count >= 1)
-                case .create:
-                    #expect(platformFields.count >= 1)
-                case .search:
-                    #expect(platformFields.count >= 1)
-                case .settings:
-                    #expect(platformFields.count >= 1)
-                case .profile:
-                    #expect(platformFields.count >= 1)
-                case .summary:
-                    #expect(platformFields.count >= 1)
-                case .form:
-                    #expect(platformFields.count >= 1)
-                case .modal:
+            case .detail:
+                #expect(platformFields.count == 5, "Detail should have 5 fields on \(currentPlatform)")
+                #expect(platformFields.contains { $0.label == "Title" }, "Detail should have Title field on \(currentPlatform)")
+                #expect(platformFields.contains { $0.label == "Description" }, "Detail should have Description field on \(currentPlatform)")
+                
+            case .list:
+                #expect(platformFields.contains { $0.id.contains("list") || $0.id.contains("item") }, 
+                            "List context should have list/item fields on \(currentPlatform)")
+                
+            case .standard:
+                #expect(platformFields.count > 0, "Standard context should have basic fields on \(currentPlatform)")
+                
+            case .navigation:
+                #expect(platformFields.contains { $0.id.contains("nav") || $0.id.contains("route") }, 
+                            "Navigation context should have navigation/route fields on \(currentPlatform)")
+            case .browse:
+                #expect(platformFields.count >= 1)
+            case .edit:
+                #expect(platformFields.count >= 1)
+            case .create:
+                #expect(platformFields.count >= 1)
+            case .search:
+                #expect(platformFields.count >= 1)
+            case .settings:
+                #expect(platformFields.count >= 1)
+            case .profile:
+                #expect(platformFields.count >= 1)
+            case .summary:
+                #expect(platformFields.count >= 1)
+            case .form:
+                #expect(platformFields.count >= 1)
+            case .modal:
                     #expect(platformFields.count >= 1)
                 case .gallery:
                     #expect(platformFields.count >= 1)
                 }
-            }
         }
-        
-        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
     }
     
     /// BUSINESS PURPOSE: Validate presentation context field generation exhaustiveness functionality for complete context handling
@@ -497,70 +490,25 @@ open class CoreArchitectureTests: BaseTestClass {
         
         let cardHints = PresentationHints(presentationPreference: .card)
         #expect(cardHints.presentationPreference == .card)
-        
-        // Test that preferences have meaningful raw values for serialization
-        #expect(PresentationPreference.automatic.rawValue == "automatic")
-        #expect(PresentationPreference.card.rawValue == "card")
-        #expect(PresentationPreference.grid.rawValue == "grid")
-        #expect(PresentationPreference.detail.rawValue == "detail")
-        
-        // Test that preferences can be created from raw values (round-trip)
-        #expect(PresentationPreference(rawValue: "automatic") == .automatic)
-        #expect(PresentationPreference(rawValue: "card") == .card)
-        #expect(PresentationPreference(rawValue: "grid") == .grid)
-        
-        // Test that invalid raw values return nil
-        #expect(PresentationPreference(rawValue: "invalid") == nil)
-        #expect(PresentationPreference(rawValue: "") == nil)
-        
-        // Test that all preferences are case iterable (for UI generation)
-        let allPreferences = PresentationPreference.allCases
-        #expect(!allPreferences.isEmpty, "PresentationPreference should have cases")
-        #expect(allPreferences.contains(.automatic))
-        #expect(allPreferences.contains(.card))
-        #expect(allPreferences.contains(.grid))
-    }
-    
-    /// BUSINESS PURPOSE: Validate presentation preference completeness functionality for complete preference enumeration
-    /// TESTING SCOPE: PresentationPreference completeness, preference enumeration validation, expected preference verification
-    /// METHODOLOGY: Use RuntimeCapabilityDetection mock framework to test presentation preference completeness
-    @Test func testPresentationPreferenceCompleteness() throws {
-        // Test that we have all expected preferences and no unexpected ones
-        // This will FAIL if someone adds/removes preferences without updating tests
-        
-        let expectedPreferences: Set<PresentationPreference> = [
-            .automatic, .minimal, .moderate, .rich, .custom, .detail,
-            .modal, .navigation, .list, .masonry, .standard, .form,
-            .card, .cards, .compact, .grid, .chart, .coverFlow
-        ]
-        
-        let actualPreferences = Set(PresentationPreference.allCases)
-        
-        // This will fail if preferences are added or removed
-        #expect(actualPreferences == expectedPreferences, 
-                      "PresentationPreference enum has changed. Update test expectations and verify behavior.")
     }
     
     /// BUSINESS PURPOSE: Validate presentation preference semantic meaning functionality for distinct preference identification
     /// TESTING SCOPE: PresentationPreference semantic meaning, preference distinction validation, semantic uniqueness testing
-    /// METHODOLOGY: Use RuntimeCapabilityDetection mock framework to test presentation preference semantic meaning
+    /// METHODOLOGY: Test that different preferences are properly distinguished
     @Test func testPresentationPreferenceSemanticMeaning() throws {
-        // Test that preferences have distinct semantic meanings
-        // This verifies that each preference represents a different presentation style
-        
         // Test that different preferences produce different hints
         let automaticHints = PresentationHints(presentationPreference: .automatic)
         let cardHints = PresentationHints(presentationPreference: .card)
         let gridHints = PresentationHints(presentationPreference: .grid)
-        
+
         #expect(automaticHints.presentationPreference != cardHints.presentationPreference)
         #expect(cardHints.presentationPreference != gridHints.presentationPreference)
         #expect(automaticHints.presentationPreference != gridHints.presentationPreference)
-        
-        // Test that preferences can be used in different scenarios
-        let preferences = Array(PresentationPreference.allCases.prefix(5)) // Use real enum, test first 5
-        let uniquePreferences = Set(preferences)
-        #expect(uniquePreferences.count == preferences.count, "All preferences should be unique")
+
+        // Test that countBased preferences work correctly
+        let countBasedHints = PresentationHints(presentationPreference: .countBased(lowCount: .cards, highCount: .list, threshold: 5))
+        #expect(countBasedHints.presentationPreference != automaticHints.presentationPreference)
+        #expect(countBasedHints.presentationPreference == PresentationHints(presentationPreference: .countBased(lowCount: .cards, highCount: .list, threshold: 5)).presentationPreference)
     }
     
     // MARK: - Layer 2: Layout Decision Engine Tests
@@ -783,19 +731,16 @@ open class CoreArchitectureTests: BaseTestClass {
         #expect(behavior.type == type)
         #expect(behavior.breakpoints == breakpoints)
         
-        // Test across all platforms
-        for platform in SixLayerPlatform.allCases {
-            
-            let platformBehavior = ResponsiveBehavior(
-                type: type,
-                breakpoints: breakpoints
-            )
-            
-            #expect(platformBehavior.type == type, "Responsive behavior type should be consistent on \(platform)")
-            #expect(platformBehavior.breakpoints == breakpoints, "Responsive behavior breakpoints should be consistent on \(platform)")
-        }
+        // Test on current platform
+        let currentPlatform = SixLayerPlatform.current
         
-        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        let platformBehavior = ResponsiveBehavior(
+            type: type,
+            breakpoints: breakpoints
+        )
+        
+        #expect(platformBehavior.type == type, "Responsive behavior type should be consistent on \(currentPlatform)")
+        #expect(platformBehavior.breakpoints == breakpoints, "Responsive behavior breakpoints should be consistent on \(currentPlatform)")
     }
     
     /// BUSINESS PURPOSE: Validate responsive behavior default values functionality for responsive behavior initialization
