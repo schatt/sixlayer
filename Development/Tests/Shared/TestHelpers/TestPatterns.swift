@@ -162,36 +162,39 @@ public enum TestPatterns {
     /// BUSINESS PURPOSE: Verify that a view is created and contains expected content
     /// DEPRECATED: Use BaseTestClass.verifyViewGeneration() instead
     /// This method is kept for backward compatibility but delegates to BaseTestClass
-    @MainActor
     @available(*, deprecated, message: "Use BaseTestClass.verifyViewGeneration() instead")
     public static func verifyViewGeneration(_ view: some View, testName: String) {
         // Create a temporary instance to call the instance method
         // This is a workaround - ideally tests should extend BaseTestClass and call the instance method
-        let temp = BaseTestClass()
-        temp.verifyViewGeneration(view, testName: testName)
+        Task { @MainActor in
+            let temp = BaseTestClass()
+            await temp.verifyViewGeneration(view, testName: testName)
+        }
     }
     
     /// BUSINESS PURPOSE: Verify that a view contains specific text content
     /// DEPRECATED: Use BaseTestClass.verifyViewContainsText() instead
     /// This method is kept for backward compatibility but delegates to BaseTestClass
-    @MainActor
     @available(*, deprecated, message: "Use BaseTestClass.verifyViewContainsText() instead")
     public static func verifyViewContainsText(_ view: some View, expectedText: String, testName: String) {
         // Create a temporary instance to call the instance method
         // This is a workaround - ideally tests should extend BaseTestClass and call the instance method
-        let temp = BaseTestClass()
-        temp.verifyViewContainsText(view, expectedText: expectedText, testName: testName)
+        Task { @MainActor in
+            let temp = BaseTestClass()
+            await temp.verifyViewContainsText(view, expectedText: expectedText, testName: testName)
+        }
     }
     
     /// BUSINESS PURPOSE: Verify that a view contains specific image elements
     /// DEPRECATED: Use BaseTestClass.verifyViewContainsImage() instead
     /// This method is kept for backward compatibility but delegates to BaseTestClass
-    @MainActor
     @available(*, deprecated, message: "Use BaseTestClass.verifyViewContainsImage() instead")
     public static func verifyViewContainsImage(_ view: some View, testName: String) {
         // Create a temporary instance to call the instance method
         // This is a workaround - ideally tests should extend BaseTestClass and call the instance method
-        let temp = BaseTestClass()
-        temp.verifyViewContainsImage(view, testName: testName)
+        Task { @MainActor in
+            let temp = BaseTestClass()
+            await temp.verifyViewContainsImage(view, testName: testName)
+        }
     }
 }
