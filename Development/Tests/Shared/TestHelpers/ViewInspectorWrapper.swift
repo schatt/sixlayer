@@ -28,6 +28,7 @@ public protocol Inspectable {
     func sixLayerTryFind<T>(_ type: T.Type) -> Inspectable?
     func sixLayerAccessibilityIdentifier() throws -> String
     func sixLayerString() throws -> String
+    func sixLayerTap() throws
     var sixLayerCount: Int { get }
 }
 
@@ -80,6 +81,10 @@ extension ViewInspector.InspectableView: Inspectable {
 
     public func sixLayerString() throws -> String {
         return try self.string()
+    }
+
+    public func sixLayerTap() throws {
+        try self.tap()
     }
 
     public var sixLayerCount: Int {
