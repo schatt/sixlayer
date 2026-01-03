@@ -122,6 +122,37 @@ open class BaseTestClass {
         TestSetupUtilities.cleanupTestEnvironment()
     }
     
+    // MARK: - Test Data Type Aliases
+    
+    /// Convenience typealias for commonly used test item type
+    public typealias TestItem = TestPatterns.TestItem
+    
+    /// Convenience typealias for test data item with more properties
+    public typealias TestDataItem = TestPatterns.TestDataItem
+    
+    // MARK: - View Verification Helpers
+    
+    /// Verify that a view is created and contains expected content
+    /// Delegates to TestPatterns for implementation
+    @MainActor
+    public func verifyViewGeneration(_ view: some View, testName: String) {
+        TestPatterns.verifyViewGeneration(view, testName: testName)
+    }
+    
+    /// Verify that a view contains specific text content
+    /// Delegates to TestPatterns for implementation
+    @MainActor
+    public func verifyViewContainsText(_ view: some View, expectedText: String, testName: String) {
+        TestPatterns.verifyViewContainsText(view, expectedText: expectedText, testName: testName)
+    }
+    
+    /// Verify that a view contains specific image elements
+    /// Delegates to TestPatterns for implementation
+    @MainActor
+    public func verifyViewContainsImage(_ view: some View, testName: String) {
+        TestPatterns.verifyViewContainsImage(view, testName: testName)
+    }
+    
     // MARK: - Common Test Data Creation
     
     /// Creates a default layout decision for testing
