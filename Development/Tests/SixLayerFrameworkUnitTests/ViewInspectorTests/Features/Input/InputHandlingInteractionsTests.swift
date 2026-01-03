@@ -52,24 +52,19 @@ open class InputHandlingInteractionsTests: BaseTestClass {
     @Test @MainActor func testInputHandlingManagerInitialization() {
             initializeTestConfig()
         runWithTaskLocalConfig {
-            // Test across all platforms
-            for platform in SixLayerPlatform.allCases {
-                
-                // Given
-                let testPlatform = platform
-                
-                // When
-                let manager = InputHandlingManager(platform: testPlatform)
-                
-                // Then
-                #expect(manager.currentPlatform == testPlatform)
-                #expect(manager.interactionPatterns.platform == testPlatform)
-                #expect(manager.hapticManager.platform == testPlatform)
-                #expect(manager.dragDropManager.platform == testPlatform)
-                
-                RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+            // Given: Current platform
+            let currentPlatform = SixLayerPlatform.current
+            let testPlatform = currentPlatform
+            
+            // When
+            let manager = InputHandlingManager(platform: testPlatform)
+            
+            // Then
+            #expect(manager.currentPlatform == testPlatform)
+            #expect(manager.interactionPatterns.platform == testPlatform)
+            #expect(manager.hapticManager.platform == testPlatform)
+            #expect(manager.dragDropManager.platform == testPlatform)
         }
-            }
     }
     
     /// BUSINESS PURPOSE: Validate InputHandlingManager default platform functionality

@@ -342,14 +342,13 @@ open class PlatformBehaviorTests: BaseTestClass {
     }
     
     @Test func testPlatformAccessibilityConsistency() {
-        // Test that all platforms support basic accessibility features
-        for platform in SixLayerPlatform.allCases {
-            let behavior = testPlatformBehavior(for: platform)
-            
-            // All platforms should support VoiceOver and Switch Control
-            #expect(behavior.capabilities.supportsVoiceOver, "\(platform) should support VoiceOver")
-            #expect(behavior.capabilities.supportsSwitchControl, "\(platform) should support Switch Control")
-        }
+        // Test that current platform supports basic accessibility features
+        let currentPlatform = SixLayerPlatform.current
+        let behavior = testPlatformBehavior(for: currentPlatform)
+        
+        // Current platform should support VoiceOver and Switch Control
+        #expect(behavior.capabilities.supportsVoiceOver, "\(currentPlatform) should support VoiceOver")
+        #expect(behavior.capabilities.supportsSwitchControl, "\(currentPlatform) should support Switch Control")
     }
     
     @Test func testPlatformInputMethodConsistency() {

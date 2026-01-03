@@ -69,19 +69,16 @@ open class EyeTrackingTests: BaseTestClass {
     /// TESTING SCOPE: Tests EyeTrackingConfig default initialization and property values
     /// METHODOLOGY: Create EyeTrackingConfig with default values and verify all properties are set correctly
     @Test func testEyeTrackingConfigInitialization() {
-        // Test across all platforms
-        for platform in SixLayerPlatform.allCases {
-            
-            let config = EyeTrackingConfig()
-            
-            #expect(config.sensitivity == .medium)
-            #expect(config.dwellTime == 1.0)
-            #expect(config.visualFeedback)
-            #expect(config.hapticFeedback)
-            #expect(!config.calibration.isCalibrated)
-            
-            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-        }
+        // Given: Current platform
+        let currentPlatform = SixLayerPlatform.current
+        
+        let config = EyeTrackingConfig()
+        
+        #expect(config.sensitivity == .medium)
+        #expect(config.dwellTime == 1.0)
+        #expect(config.visualFeedback)
+        #expect(config.hapticFeedback)
+        #expect(!config.calibration.isCalibrated)
     }
     
     /// BUSINESS PURPOSE: Validate EyeTrackingConfig custom values functionality

@@ -107,23 +107,21 @@ open class AutomaticHIGComplianceTests: BaseTestClass {
             TestPatterns.TestItem(id: "2", title: "Test Item 2")
         ]
 
-        // Test across all platforms
-        for platform in SixLayerPlatform.allCases {
-            // Given: Platform set
+        // Given: Current platform
+        let currentPlatform = SixLayerPlatform.current
 
-            // When: Creating view using Layer 1 function
-            _ = platformPresentItemCollection_L1(
-                items: testItems,
-                hints: PresentationHints()
-            )
+        // When: Creating view using Layer 1 function
+        _ = platformPresentItemCollection_L1(
+            items: testItems,
+            hints: PresentationHints()
+        )
 
         // Then: View should automatically have platform-specific patterns
-        #expect(Bool(true), "Layer 1 function should create a valid view on \(platform)")
+        #expect(Bool(true), "Layer 1 function should create a valid view on \(currentPlatform)")
 
         // Verify that automatic platform patterns are applied
         // The view should automatically adapt to the current platform
-        #expect(Bool(true), "Automatic platform patterns should be applied on \(platform)")
-        }
+        #expect(Bool(true), "Automatic platform patterns should be applied on \(currentPlatform)")
     }
     
     /// BUSINESS PURPOSE: platformPresentItemCollection_L1 should automatically apply visual consistency

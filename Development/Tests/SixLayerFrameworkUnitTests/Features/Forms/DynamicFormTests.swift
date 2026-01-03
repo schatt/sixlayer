@@ -49,33 +49,30 @@ open class DynamicFormTests: BaseTestClass {
     /// TESTING SCOPE: Tests DynamicFormField initialization with various configuration parameters
     /// METHODOLOGY: Create DynamicFormField with comprehensive parameters and verify all properties are set correctly
     @Test func testDynamicFormFieldCreation() {
-        // Test across all platforms
-        for platform in SixLayerPlatform.allCases {
-            
-            let field = DynamicFormField(
-                id: "testField",
-                contentType: .text,
-                label: "Test Field",
-                placeholder: "Enter text",
-                isRequired: true,
-                validationRules: ["minLength": "2"],
-                options: nil,
-                defaultValue: "",
-                metadata: ["maxWidth": "200"]
-            )
-            
-            #expect(field.id == "testField")
-            #expect(field.contentType == .text)
-            #expect(field.label == "Test Field")
-            #expect(field.placeholder == "Enter text")
-            #expect(field.isRequired)
-            #expect(field.validationRules?["minLength"] == "2")
-            #expect(field.options == nil)
-            #expect(field.defaultValue == "")
-            #expect(field.metadata?["maxWidth"] == "200")
-            
-            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-        }
+        // Given: Current platform
+        let currentPlatform = SixLayerPlatform.current
+        
+        let field = DynamicFormField(
+            id: "testField",
+            contentType: .text,
+            label: "Test Field",
+            placeholder: "Enter text",
+            isRequired: true,
+            validationRules: ["minLength": "2"],
+            options: nil,
+            defaultValue: "",
+            metadata: ["maxWidth": "200"]
+        )
+        
+        #expect(field.id == "testField")
+        #expect(field.contentType == .text)
+        #expect(field.label == "Test Field")
+        #expect(field.placeholder == "Enter text")
+        #expect(field.isRequired)
+        #expect(field.validationRules?["minLength"] == "2")
+        #expect(field.options == nil)
+        #expect(field.defaultValue == "")
+        #expect(field.metadata?["maxWidth"] == "200")
     }
     
     // MARK: - Dynamic Form Section Tests
@@ -353,26 +350,23 @@ open class DynamicFormTests: BaseTestClass {
     /// TESTING SCOPE: Tests DynamicFormState initialization with configuration
     /// METHODOLOGY: Create DynamicFormState with configuration and verify initial state properties
     @Test @MainActor func testDynamicFormStateCreation() {
-        // Test across all platforms
-        for platform in SixLayerPlatform.allCases {
-            
-            let config = DynamicFormConfiguration(
-                id: "testForm",
-                title: "Test Form",
-                sections: []
-            )
-            
-            let state = DynamicFormState(configuration: config)
-            
-            #expect(state.fieldValues.count == 0)
-            #expect(state.fieldErrors.count == 0)
-            #expect(state.sectionStates.count == 0)
-            #expect(!state.isSubmitting)
-            #expect(!state.isDirty)
-            #expect(state.isValid)
-            
-            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-        }
+        // Given: Current platform
+        let currentPlatform = SixLayerPlatform.current
+        
+        let config = DynamicFormConfiguration(
+            id: "testForm",
+            title: "Test Form",
+            sections: []
+        )
+        
+        let state = DynamicFormState(configuration: config)
+        
+        #expect(state.fieldValues.count == 0)
+        #expect(state.fieldErrors.count == 0)
+        #expect(state.sectionStates.count == 0)
+        #expect(!state.isSubmitting)
+        #expect(!state.isDirty)
+        #expect(state.isValid)
     }
     
     /// BUSINESS PURPOSE: Validate DynamicFormState field value management functionality

@@ -47,19 +47,16 @@ open class DataBindingTests: BaseTestClass {
     /// METHODOLOGY: Create DataBinder with TestModel and verify underlying model properties
     @Test @MainActor func testDataBinderInitialization() {
         initializeTestConfig()
-        // Test across all platforms
-        for platform in SixLayerPlatform.allCases {
-            
-            let testModel = TestModel(name: "John", age: 30, isActive: true)
-            let binder = DataBinder(testModel)
-            
-            // Verify initial state using public properties
-            #expect(binder.underlyingModel.name == "John")
-            #expect(binder.underlyingModel.age == 30)
-            #expect(binder.underlyingModel.isActive)
-            
-            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-        }
+        // Given: Current platform
+        let currentPlatform = SixLayerPlatform.current
+        
+        let testModel = TestModel(name: "John", age: 30, isActive: true)
+        let binder = DataBinder(testModel)
+        
+        // Verify initial state using public properties
+        #expect(binder.underlyingModel.name == "John")
+        #expect(binder.underlyingModel.age == 30)
+        #expect(binder.underlyingModel.isActive)
     }
     
     /// BUSINESS PURPOSE: Validate field binding establishment functionality
@@ -83,26 +80,23 @@ open class DataBindingTests: BaseTestClass {
     /// METHODOLOGY: Update bound field value and verify binder state, model updates, and dirty tracking
     @Test @MainActor func testDataBinderUpdateField() {
         initializeTestConfig()
-        // Test across all platforms
-        for platform in SixLayerPlatform.allCases {
-            
-            let testModel = TestModel(name: "John", age: 30, isActive: true)
-            let binder = DataBinder(testModel)
-            binder.bind("name", to: \TestModel.name)
-            
-            // Update the field
-            binder.updateField("name", value: "Jane")
-            
-            // Verify model is updated through the binder
-            #expect(binder.getBoundValue("name") as? String == "Jane")
-            #expect(binder.underlyingModel.name == "Jane")
-            
-            // Verify change tracking
-            #expect(binder.hasUnsavedChanges)
-            #expect(binder.dirtyFields.contains("name"))
-            
-            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-        }
+        // Given: Current platform
+        let currentPlatform = SixLayerPlatform.current
+        
+        let testModel = TestModel(name: "John", age: 30, isActive: true)
+        let binder = DataBinder(testModel)
+        binder.bind("name", to: \TestModel.name)
+        
+        // Update the field
+        binder.updateField("name", value: "Jane")
+        
+        // Verify model is updated through the binder
+        #expect(binder.getBoundValue("name") as? String == "Jane")
+        #expect(binder.underlyingModel.name == "Jane")
+        
+        // Verify change tracking
+        #expect(binder.hasUnsavedChanges)
+        #expect(binder.dirtyFields.contains("name"))
     }
     
     /// BUSINESS PURPOSE: Validate model synchronization functionality

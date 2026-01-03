@@ -57,28 +57,23 @@ open class ImageProcessingPipelineTests: BaseTestClass {
     /// TESTING SCOPE: Tests ImageProcessingPipeline processing for OCR purposes
     /// METHODOLOGY: Process image for OCR and verify OCR processing functionality
     @Test func testImageProcessingPipeline_ProcessForOCR() async throws {
-        // Test across all platforms
-        for platform in SixLayerPlatform.allCases {
-            
-            // Given
-            let image = PlatformImage.createPlaceholder()
-            let purpose = ImagePurpose.ocr
-            let options = createProcessingOptions()
-            
-            // When
-            let processedImage = try await ImageProcessingPipeline.process(
-                image,
-                for: purpose,
-                with: options
-            )
-            
-            // Then
-            #expect(Bool(true), "processedImage is non-optional")  // processedImage is non-optional
-            // originalImage and metadata are non-optional
-            #expect(processedImage.purpose == purpose)
-            
-            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-        }
+        // Given: Current platform
+        let currentPlatform = SixLayerPlatform.current
+        let image = PlatformImage.createPlaceholder()
+        let purpose = ImagePurpose.ocr
+        let options = createProcessingOptions()
+        
+        // When
+        let processedImage = try await ImageProcessingPipeline.process(
+            image,
+            for: purpose,
+            with: options
+        )
+        
+        // Then
+        #expect(Bool(true), "processedImage is non-optional")  // processedImage is non-optional
+        // originalImage and metadata are non-optional
+        #expect(processedImage.purpose == purpose)
     }
     
     /// BUSINESS PURPOSE: Validate image processing pipeline fuel receipt functionality

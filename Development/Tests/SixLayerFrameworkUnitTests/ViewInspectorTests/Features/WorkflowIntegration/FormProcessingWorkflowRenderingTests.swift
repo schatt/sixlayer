@@ -17,13 +17,13 @@
 //  - Use hostRootPlatformView() to actually render views (Layer 2)
 //  - Verify accessibility identifiers are present in rendered view hierarchy
 //  - Verify views can be hosted and rendered without crashes
-//  - Test across all platforms using SixLayerPlatform.allCases
+//  - Test on current platform (tests run on actual platforms via simulators)
 //  - MUST run with xcodebuild test (not swift test) to catch rendering issues
 //
 //  AUDIT STATUS: ✅ COMPLIANT
 //  - ✅ File Documentation: Complete with business purpose, testing scope, methodology
 //  - ✅ Function Documentation: All functions documented with business purpose
-//  - ✅ Platform Testing: Tests across all platforms using SixLayerPlatform.allCases
+//  - ✅ Platform Testing: Tests current platform capabilities using runtime detection
 //  - ✅ Layer 2 Focus: Tests actual view rendering, not just logic
 //
 
@@ -79,28 +79,24 @@ final class FormProcessingWorkflowRenderingTests: BaseTestClass {
     @Test @MainActor func testFormViewRendering() async {
         initializeTestConfig()
         
-        for platform in SixLayerPlatform.allCases {
-            
-            // Given: Form fields
-            let fields = createStandardTestForm()
-            let hints = EnhancedPresentationHints(
-                dataType: .form,
-                presentationPreference: .form,
-                complexity: .simple
-            )
-            
-            // When: Creating and rendering form view
-            let formView = platformPresentFormData_L1(
-                fields: fields,
-                hints: hints
-            )
-            
-            // Then: View should render successfully (Layer 2 - actual rendering)
-            let hostedView = hostRootPlatformView(formView.enableGlobalAutomaticCompliance())
-            #expect(hostedView != nil, "Form view should render successfully on \(platform)")
-            
-            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-        }
+        // Given: Form fields
+        let fields = createStandardTestForm()
+        let hints = EnhancedPresentationHints(
+            dataType: .form,
+            presentationPreference: .form,
+            complexity: .simple
+        )
+        
+        // When: Creating and rendering form view
+        let formView = platformPresentFormData_L1(
+            fields: fields,
+            hints: hints
+        )
+        
+        // Then: View should render successfully (Layer 2 - actual rendering)
+        let hostedView = hostRootPlatformView(formView.enableGlobalAutomaticCompliance())
+        let currentPlatform = SixLayerPlatform.current
+        #expect(hostedView != nil, "Form view should render successfully on \(currentPlatform)")
     }
     
     /// BUSINESS PURPOSE: Validate that rendered form views have accessibility identifiers
@@ -109,31 +105,27 @@ final class FormProcessingWorkflowRenderingTests: BaseTestClass {
     @Test @MainActor func testFormViewAccessibilityIdentifiers() async {
         initializeTestConfig()
         
-        for platform in SixLayerPlatform.allCases {
-            
-            // Given: Form with accessibility enabled
-            let fields = createStandardTestForm()
-            let hints = EnhancedPresentationHints(
-                dataType: .form,
-                presentationPreference: .form,
-                complexity: .simple
-            )
-            
-            // When: Rendering form view with global auto IDs enabled
-            let formView = platformPresentFormData_L1(
-                fields: fields,
-                hints: hints
-            )
-            let hostedView = hostRootPlatformView(formView.enableGlobalAutomaticCompliance())
-            
-            // Then: Rendered view should have accessibility identifiers (Layer 2 verification)
-            let accessibilityId = firstAccessibilityIdentifier(inHosted: hostedView)
-            // Note: On macOS without ViewInspector, this may be nil, but view should still render
-            // The key is that the view renders without crashing
-            #expect(hostedView != nil, "Form view should render on \(platform)")
-            
-            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-        }
+        // Given: Form with accessibility enabled
+        let fields = createStandardTestForm()
+        let hints = EnhancedPresentationHints(
+            dataType: .form,
+            presentationPreference: .form,
+            complexity: .simple
+        )
+        
+        // When: Rendering form view with global auto IDs enabled
+        let formView = platformPresentFormData_L1(
+            fields: fields,
+            hints: hints
+        )
+        let hostedView = hostRootPlatformView(formView.enableGlobalAutomaticCompliance())
+        
+        // Then: Rendered view should have accessibility identifiers (Layer 2 verification)
+        let accessibilityId = firstAccessibilityIdentifier(inHosted: hostedView)
+        // Note: On macOS without ViewInspector, this may be nil, but view should still render
+        // The key is that the view renders without crashing
+        let currentPlatform = SixLayerPlatform.current
+        #expect(hostedView != nil, "Form view should render on \(currentPlatform)")
     }
     
     /// BUSINESS PURPOSE: Validate that form workflow views render correctly with validation state
@@ -142,66 +134,51 @@ final class FormProcessingWorkflowRenderingTests: BaseTestClass {
     @Test @MainActor func testFormViewRenderingWithValidationState() async {
         initializeTestConfig()
         
-        for platform in SixLayerPlatform.allCases {
-            
-            // Given: Form fields
-            let fields = createStandardTestForm()
-            let hints = EnhancedPresentationHints(
-                dataType: .form,
-                presentationPreference: .form,
-                complexity: .simple
-            )
-            
-            // When: Creating form view (represents valid state)
-            let formView = platformPresentFormData_L1(
-                fields: fields,
-                hints: hints
-            )
-            
-            // Then: View should render in valid state
-            let hostedView = hostRootPlatformView(formView.enableGlobalAutomaticCompliance())
-            #expect(hostedView != nil, "Form view should render in valid state on \(platform)")
-            
-            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-        }
+        // Given: Form fields
+        let fields = createStandardTestForm()
+        let hints = EnhancedPresentationHints(
+            dataType: .form,
+            presentationPreference: .form,
+            complexity: .simple
+        )
+        
+        // When: Creating form view (represents valid state)
+        let formView = platformPresentFormData_L1(
+            fields: fields,
+            hints: hints
+        )
+        
+        // Then: View should render in valid state
+        let hostedView = hostRootPlatformView(formView.enableGlobalAutomaticCompliance())
+        let currentPlatform = SixLayerPlatform.current
+        #expect(hostedView != nil, "Form view should render in valid state on \(currentPlatform)")
     }
     
-    /// BUSINESS PURPOSE: Validate that form workflow views render correctly across platforms
-    /// TESTING SCOPE: Tests that form views render consistently on iOS and macOS
-    /// METHODOLOGY: Render same form on all platforms, verify rendering works
+    /// BUSINESS PURPOSE: Validate that form workflow views render correctly on current platform
+    /// TESTING SCOPE: Tests that form views render correctly on the current platform
+    /// METHODOLOGY: Render form on current platform, verify rendering works
     @Test @MainActor func testFormViewCrossPlatformRendering() async {
         initializeTestConfig()
         
-        var renderingResults: [SixLayerPlatform: Bool] = [:]
+        // Given: Same form configuration
+        let fields = createStandardTestForm()
+        let hints = EnhancedPresentationHints(
+            dataType: .form,
+            presentationPreference: .form,
+            complexity: .simple
+        )
         
-        for platform in SixLayerPlatform.allCases {
-            
-            // Given: Same form configuration
-            let fields = createStandardTestForm()
-            let hints = EnhancedPresentationHints(
-                dataType: .form,
-                presentationPreference: .form,
-                complexity: .simple
-            )
-            
-            // When: Rendering form view
-            let formView = platformPresentFormData_L1(
-                fields: fields,
-                hints: hints
-            )
-            let hostedView = hostRootPlatformView(formView.enableGlobalAutomaticCompliance())
-            
-            // Then: View should render on this platform
-            let rendered = hostedView != nil
-            renderingResults[platform] = rendered
-            #expect(rendered, "Form view should render on \(platform)")
-            
-            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-        }
+        // When: Rendering form view
+        let formView = platformPresentFormData_L1(
+            fields: fields,
+            hints: hints
+        )
+        let hostedView = hostRootPlatformView(formView.enableGlobalAutomaticCompliance())
         
-        // Verify all platforms rendered successfully
-        let allRendered = renderingResults.values.allSatisfy { $0 }
-        #expect(allRendered, "Form view should render on all platforms")
+        // Then: View should render on current platform
+        let currentPlatform = SixLayerPlatform.current
+        let rendered = hostedView != nil
+        #expect(rendered, "Form view should render on \(currentPlatform)")
     }
     
     /// BUSINESS PURPOSE: Validate that form submission workflow views render correctly
@@ -210,28 +187,24 @@ final class FormProcessingWorkflowRenderingTests: BaseTestClass {
     @Test @MainActor func testFormSubmissionWorkflowRendering() async {
         initializeTestConfig()
         
-        for platform in SixLayerPlatform.allCases {
-            
-            // Given: Form ready for submission (all fields valid)
-            let fields = createStandardTestForm()
-            let hints = EnhancedPresentationHints(
-                dataType: .form,
-                presentationPreference: .form,
-                complexity: .simple
-            )
-            
-            // When: Rendering form view (represents submission-ready state)
-            let formView = platformPresentFormData_L1(
-                fields: fields,
-                hints: hints
-            )
-            
-            // Then: View should render in submission-ready state
-            let hostedView = hostRootPlatformView(formView.enableGlobalAutomaticCompliance())
-            #expect(hostedView != nil, "Form view should render in submission state on \(platform)")
-            
-            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-        }
+        // Given: Form ready for submission (all fields valid)
+        let fields = createStandardTestForm()
+        let hints = EnhancedPresentationHints(
+            dataType: .form,
+            presentationPreference: .form,
+            complexity: .simple
+        )
+        
+        // When: Rendering form view (represents submission-ready state)
+        let formView = platformPresentFormData_L1(
+            fields: fields,
+            hints: hints
+        )
+        
+        // Then: View should render in submission-ready state
+        let hostedView = hostRootPlatformView(formView.enableGlobalAutomaticCompliance())
+        let currentPlatform = SixLayerPlatform.current
+        #expect(hostedView != nil, "Form view should render in submission state on \(currentPlatform)")
     }
     
     /// BUSINESS PURPOSE: Validate that form error state views render correctly
@@ -240,27 +213,23 @@ final class FormProcessingWorkflowRenderingTests: BaseTestClass {
     @Test @MainActor func testFormErrorStateRendering() async {
         initializeTestConfig()
         
-        for platform in SixLayerPlatform.allCases {
-            
-            // Given: Form with fields that would have errors
-            let fields = createStandardTestForm()
-            let hints = EnhancedPresentationHints(
-                dataType: .form,
-                presentationPreference: .form,
-                complexity: .simple
-            )
-            
-            // When: Rendering form view (error state would be shown in actual implementation)
-            let formView = platformPresentFormData_L1(
-                fields: fields,
-                hints: hints
-            )
-            
-            // Then: View should render even with error state
-            let hostedView = hostRootPlatformView(formView.enableGlobalAutomaticCompliance())
-            #expect(hostedView != nil, "Form view should render with error state on \(platform)")
-            
-            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-        }
+        // Given: Form with fields that would have errors
+        let fields = createStandardTestForm()
+        let hints = EnhancedPresentationHints(
+            dataType: .form,
+            presentationPreference: .form,
+            complexity: .simple
+        )
+        
+        // When: Rendering form view (error state would be shown in actual implementation)
+        let formView = platformPresentFormData_L1(
+            fields: fields,
+            hints: hints
+        )
+        
+        // Then: View should render even with error state
+        let hostedView = hostRootPlatformView(formView.enableGlobalAutomaticCompliance())
+        let currentPlatform = SixLayerPlatform.current
+        #expect(hostedView != nil, "Form view should render with error state on \(currentPlatform)")
     }
 }

@@ -556,23 +556,18 @@ open class LabeledContentDisplayFieldTests: BaseTestClass {
     /// TESTING SCOPE: Tests that display fields work consistently across platforms
     /// METHODOLOGY: Test field creation on all platforms
     @Test func testCrossPlatformBehavior() {
-        // Test across all platforms
-        for platform in SixLayerPlatform.allCases {
-            
-            // Given: Display field
-            let field = DynamicFormField(
-                id: "display-field",
-                contentType: .display,
-                label: "Display Value"
-            )
-            
-            // Then: Field should be created successfully on all platforms
-            #expect(field.id == "display-field")
-            #expect(field.contentType == .display)
-            #expect(field.label == "Display Value")
-            
-            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-        }
+        // Given: Current platform and display field
+        let currentPlatform = SixLayerPlatform.current
+        let field = DynamicFormField(
+            id: "display-field",
+            contentType: .display,
+            label: "Display Value"
+        )
+        
+        // Then: Field should be created successfully on current platform
+        #expect(field.id == "display-field")
+        #expect(field.contentType == .display)
+        #expect(field.label == "Display Value")
     }
     
     // MARK: - CustomFieldView Integration Tests

@@ -123,17 +123,16 @@ open class AutomaticHIGComplianceDemonstrationTests: BaseTestClass {
         ]
         let testHints = PresentationHints()
 
-        // Test across all platforms
-        for platform in SixLayerPlatform.allCases {
+        // Given: Current platform
+        let currentPlatform = SixLayerPlatform.current
 
-            _ = platformPresentItemCollection_L1(
-                items: testItems,
-                hints: testHints
-            )
+        _ = platformPresentItemCollection_L1(
+            items: testItems,
+            hints: testHints
+        )
 
-            #expect(Bool(true), "View should work on \(platform)")
-            #expect(Bool(true), "Automatic HIG compliance works on \(platform)")
-        }
+        #expect(Bool(true), "View should work on \(currentPlatform)")
+        #expect(Bool(true), "Automatic HIG compliance works on \(currentPlatform)")
     }
     
     /// BUSINESS PURPOSE: Demonstrate that multiple Layer 1 functions all have automatic compliance
