@@ -16,7 +16,7 @@ import Testing
 import SwiftUI
 @testable import SixLayerFramework
 
-#if canImport(ViewInspector) || VIEW_INSPECTOR_MAC_FIXED)
+#if canImport(ViewInspector)
 import ViewInspector
 #endif
 
