@@ -131,7 +131,7 @@ targets:
     sources:
       - path: Development/Tests/Shared/TestHelpers
         excludes:
-          - "**/ViewInspectorWrapper.swift"
+          - "ViewInspectorWrapper.swift"
       - path: Development/Tests/SixLayerFrameworkRealUITests
     settings:
       PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.framework.real-ui-tests
@@ -153,7 +153,7 @@ targets:
     sources:
       - path: Development/Tests/Shared/TestHelpers
         excludes:
-          - "**/ViewInspectorWrapper.swift"
+          - "ViewInspectorWrapper.swift"
       - path: Development/Tests/SixLayerFrameworkRealUITests
     settings:
       PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.framework.real-ui-tests
@@ -174,7 +174,7 @@ targets:
     sources:
       - path: Development/Tests/Shared/TestHelpers
         excludes:
-          - "**/ViewInspectorWrapper.swift"
+          - "ViewInspectorWrapper.swift"
       - path: Development/Tests/SixLayerFrameworkExternalIntegrationTests
         excludes:
           - "**/README.md"
@@ -196,7 +196,7 @@ targets:
     sources:
       - path: Development/Tests/Shared/TestHelpers
         excludes:
-          - "**/ViewInspectorWrapper.swift"
+          - "ViewInspectorWrapper.swift"
       - path: Development/Tests/SixLayerFrameworkExternalIntegrationTests
         excludes:
           - "**/README.md"
