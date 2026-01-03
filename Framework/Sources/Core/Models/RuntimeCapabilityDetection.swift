@@ -925,22 +925,21 @@ public extension RuntimeCapabilityDetection {
     }
     
     /// Minimum touch target size for accessibility compliance
-    /// Platform-native values based on primary interaction method
+    /// Combines platform philosophy with runtime touch capability
     ///
     /// Apple HIG: Touch targets should be at least 44x44 points on touch-first platforms
-    /// (iOS/watchOS). Non-touch-first platforms (macOS/tvOS/visionOS) have no minimum
-    /// touch target requirement, even if touch capability is available.
+    /// (iOS/watchOS). For non-touch-first platforms, if touch capability is detected,
+    /// accessibility standards still apply.
     ///
-    /// Note: nonisolated - this property uses platform detection for consistent behavior
+    /// Note: nonisolated - this property considers both platform and runtime capability
     nonisolated static var minTouchTarget: CGFloat {
-        // DTRT: Base this on platform's primary interaction method, not runtime capability
-        // iOS/watchOS are touch-first platforms, so always require touch-sized targets
-        // macOS/tvOS/visionOS are not touch-first, so no enforced minimum
+        // DTRT: Respect platform's primary interaction method, but ensure accessibility
         switch currentPlatform {
         case .iOS, .watchOS:
             return 44.0  // Touch-first platforms always need touch-sized targets
         case .macOS, .tvOS, .visionOS:
-            return 0.0   // Non-touch-first platforms have no minimum requirement
+            // Non-touch-first platforms: check runtime touch capability for accessibility
+            return supportsTouch ? 44.0 : 0.0
         }
     }
     
