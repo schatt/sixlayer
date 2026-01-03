@@ -533,7 +533,7 @@ enum ComponentStyle {
 enum ComponentBehavior {
     case `default`
     case interactive
-    case static
+    case `static`
 }
 
 enum ComponentAppearance {
