@@ -197,13 +197,10 @@ open class CoreViewFunctionTests: BaseTestClass {
         let viewInfo = extractViewInfo(from: view)
         
         // Verify platform-specific properties
-        TestPatterns.verifyPlatformProperties(viewInfo: viewInfo, testName: testName)
-        
+        TestPatterns.verifyPlatformProperties(viewInfo: viewInfo, testName: "SimpleCard \(platform.rawValue)")
+
         // Verify accessibility properties
-        TestPatterns.verifyAccessibilityProperties(viewInfo: viewInfo, testName: testName)
-        
-        // Clean up test platform
-        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        TestPatterns.verifyAccessibilityProperties(viewInfo: viewInfo, testName: "SimpleCard \(platform.rawValue)")
     }
     
     // MARK: - Helper Methods
