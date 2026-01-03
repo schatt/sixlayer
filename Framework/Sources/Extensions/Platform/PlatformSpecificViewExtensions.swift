@@ -9,6 +9,10 @@ import UIKit
 import AppKit
 #endif
 
+#if os(watchOS)
+import WatchKit
+#endif
+
 /// Semantic intent: Dismiss settings based on presentation model
 /// Layer 1: Express WHAT you want to achieve
 public enum SettingsDismissalType {
@@ -192,7 +196,6 @@ public extension View {
     /// - Returns: Maximum size that fits within available screen space
     private func getOtherPlatformMaxFrameSize() -> CGSize {
         #if os(watchOS)
-        import WatchKit
         // watchOS: Use WKInterfaceDevice for accurate screen size
         let screenSize = WKInterfaceDevice.current().screenBounds.size
         #else
