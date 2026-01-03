@@ -12,6 +12,16 @@ import Foundation
 import ViewInspector
 @testable import SixLayerFramework
 
+// MARK: - View Extension
+
+extension View {
+    /// Try to inspect a view, returning nil if inspection fails
+    @MainActor
+    func tryInspect() -> ViewInspector.InspectableView<ViewType.View<Self>>? {
+        return try? self.inspect()
+    }
+}
+
 // MARK: - Helper Functions for Common Patterns
 
 /// Safely inspect a view and execute a throwing closure
