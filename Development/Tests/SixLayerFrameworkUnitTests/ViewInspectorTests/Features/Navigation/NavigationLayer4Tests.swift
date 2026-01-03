@@ -268,7 +268,7 @@ open class NavigationLayer4Tests: BaseTestClass {
     
     @Test @MainActor func testPlatformNavigationDestination() {
         // Given: Navigation destination with item
-        let item = Binding<TestItem?>(get: { TestItem(title: "test-item") }, set: { _ in })
+        let item = Binding<TestPatterns.TestItem?>(get: { TestPatterns.TestItem(id: "test-item", title: "test-item") }, set: { _ in })
         
         // When: Creating navigation destination
         let destination = Text("Trigger")
@@ -282,7 +282,7 @@ open class NavigationLayer4Tests: BaseTestClass {
     
     @Test @MainActor func testPlatformNavigationDestination_WithNilItem() {
         // Given: Navigation destination with nil item
-        let item = Binding<TestItem?>(get: { nil }, set: { _ in })
+        let item = Binding<TestPatterns.TestItem?>(get: { nil }, set: { _ in })
         
         // When: Creating navigation destination with nil item
         let destination = Text("Trigger")
@@ -296,9 +296,9 @@ open class NavigationLayer4Tests: BaseTestClass {
     
     @Test @MainActor func testPlatformNavigationDestination_WithDifferentItemTypes() {
         // Given: Different item types
-        let item1 = Binding<TestItem?>(get: { TestItem(title: "string") }, set: { _ in })
-        let item2 = Binding<TestItem?>(get: { TestItem(title: "number") }, set: { _ in })
-        let item3 = Binding<TestItem?>(get: { TestItem(title: "uuid") }, set: { _ in })
+        let item1 = Binding<TestPatterns.TestItem?>(get: { TestPatterns.TestItem(id: "string", title: "string") }, set: { _ in })
+        let item2 = Binding<TestPatterns.TestItem?>(get: { TestPatterns.TestItem(id: "number", title: "number") }, set: { _ in })
+        let item3 = Binding<TestPatterns.TestItem?>(get: { TestPatterns.TestItem(id: "uuid", title: "uuid") }, set: { _ in })
         
         // When: Creating destinations with different item types
         let destination1 = Text("String")
@@ -429,7 +429,7 @@ open class NavigationLayer4Tests: BaseTestClass {
         // Given: State management for navigation
         let isActive = Binding<Bool>(get: { false }, set: { _ in })
         let selection = Binding<String?>(get: { nil }, set: { _ in })
-        let item = Binding<TestItem?>(get: { nil }, set: { _ in })
+        let item = Binding<TestPatterns.TestItem?>(get: { nil }, set: { _ in })
         
         // Verify bindings are properly configured
         #expect(selection.wrappedValue == nil, "Selection binding should return nil")

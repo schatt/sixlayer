@@ -96,13 +96,15 @@ open class BaseTestClass {
         dataType: DataTypeHint = .generic,
         presentationPreference: PresentationPreference = .automatic,
         complexity: ContentComplexity = .moderate,
-        context: PresentationContext = .dashboard
+        context: PresentationContext = .dashboard,
+        customPreferences: [String: String] = [:]
     ) -> PresentationHints {
         return TestSetupUtilities.createTestHints(
             dataType: dataType,
             presentationPreference: presentationPreference,
             complexity: complexity,
-            context: context
+            context: context,
+            customPreferences: customPreferences
         )
     }
     

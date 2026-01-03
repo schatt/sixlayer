@@ -104,13 +104,15 @@ public enum TestSetupUtilities {
         dataType: DataTypeHint = .generic,
         presentationPreference: PresentationPreference = .automatic,
         complexity: ContentComplexity = .moderate,
-        context: PresentationContext = .dashboard
+        context: PresentationContext = .dashboard,
+        customPreferences: [String: String] = [:]
     ) -> PresentationHints {
         return PresentationHints(
             dataType: dataType,
             presentationPreference: presentationPreference,
             complexity: complexity,
-            context: context
+            context: context,
+            customPreferences: customPreferences
         )
     }
     

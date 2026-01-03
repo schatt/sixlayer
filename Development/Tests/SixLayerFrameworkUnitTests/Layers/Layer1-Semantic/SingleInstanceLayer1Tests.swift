@@ -207,19 +207,4 @@ open class SingleInstanceLayer1Tests: BaseTestClass {
 
 // MARK: - Test Extensions
 
-extension SingleInstanceLayer1Tests {
-    
-    /// Host a SwiftUI view and return the platform root view for inspection
-    @MainActor
-    private func hostRootPlatformView<V: View>(_ view: V) -> Any? {
-        #if canImport(UIKit)
-        let hostingController = UIHostingController(rootView: view)
-        return hostingController.view
-        #elseif canImport(AppKit)
-        let hostingController = NSHostingController(rootView: view)
-        return hostingController.view
-        #else
-        return nil
-        #endif
-    }
-}
+// Extension removed - use BaseTestClass.hostRootPlatformView() instead
