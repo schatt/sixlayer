@@ -16,9 +16,9 @@ final class Layer2ComponentAccessibilityTests {
     @Test func testDetermineOptimalLayoutL2ReturnsValidDecision() async {
         // Given: Test items and hints
         let testItems = [
-            TestItem(id: "item1", title: "Test Item 1", value: "Test Item 1"),
-            TestItem(id: "item2", title: "Test Item 2", value: "Test Item 2"),
-            TestItem(id: "item3", title: "Test Item 3", value: "Test Item 3")
+            TestPatterns.TestItem(id: "item1", title: "Test Item 1"),
+            TestPatterns.TestItem(id: "item2", title: "Test Item 2"),
+            TestPatterns.TestItem(id: "item3", title: "Test Item 3")
         ]
         let hints = PresentationHints()
         
