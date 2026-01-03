@@ -3500,12 +3500,11 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         )
         
         #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
-        let hasAccessibilityID = testAccessibilityIdentifierGeneration(
+        let hasAccessibilityID = testComponentComplianceSinglePlatform(
             view,
-            componentName: "DynamicFormView",
             expectedPattern: "SixLayer.*ui.*DynamicFormView.*",
             platform: SixLayerPlatform.iOS,
-            testName: "DynamicFormView should generate accessibility identifiers"
+            componentName: "DynamicFormView"
         )
         #expect(hasAccessibilityID, "DynamicFormView should generate accessibility identifiers ")
         #else

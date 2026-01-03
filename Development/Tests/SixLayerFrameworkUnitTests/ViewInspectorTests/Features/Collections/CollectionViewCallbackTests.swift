@@ -15,11 +15,11 @@ open class CollectionViewCallbackTests: BaseTestClass {
     
     // MARK: - Test Data
     
-    private var sampleItems: [TestItem] {
+    private var sampleItems: [TestPatterns.TestItem] {
         [
-            TestItem(id: "1", title: "Item 1", description: "First item"),
-            TestItem(id: "2", title: "Item 2", description: "Second item"),
-            TestItem(id: "3", title: "Item 3", description: "Third item")
+            TestPatterns.TestItem(id: "1", title: "Item 1"),
+            TestPatterns.TestItem(id: "2", title: "Item 2"),
+            TestPatterns.TestItem(id: "3", title: "Item 3")
         ]
     }
     
@@ -45,9 +45,9 @@ open class CollectionViewCallbackTests: BaseTestClass {
     
     // MARK: - Callback Tracking
     
-    private var selectedItems: [TestItem] = []
-    private var deletedItems: [TestItem] = []
-    private var editedItems: [TestItem] = []
+    private var selectedItems: [TestPatterns.TestItem] = []
+    private var deletedItems: [TestPatterns.TestItem] = []
+    private var editedItems: [TestPatterns.TestItem] = []
     private var createdItems: Int = 0
     
     private func resetCallbacks() {
@@ -586,7 +586,7 @@ open class CollectionViewCallbackTests: BaseTestClass {
         // Given: Collection with many items
         resetCallbacks()
         let largeCollection = (1...100).map { i in
-            TestItem(id: "\(i)", title: "Item \(i)", description: "Description \(i)")
+            TestPatterns.TestItem(id: "\(i)", title: "Item \(i)")
         }
         
         // When: Creating view with large collection
