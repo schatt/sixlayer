@@ -11,8 +11,8 @@ open class GreenPhaseTest: BaseTestClass {
         initializeTestConfig()
         // Given: Simple test data
         let testItems = [
-            TestItem(id: "1", title: "Test Item 1"),
-            TestItem(id: "2", title: "Test Item 2")
+            TestPatterns.TestItem(id: "1", title: "Test Item 1"),
+            TestPatterns.TestItem(id: "2", title: "Test Item 2")
         ]
 
         // When: Create a basic view
@@ -34,7 +34,7 @@ open class GreenPhaseTest: BaseTestClass {
 
     @Test func testBasicDataStructures() {
         // Given: Create basic data structures
-        let item = TestItem(id: "test", title: "Test")
+        let item = TestPatterns.TestItem(id: "test", title: "Test")
 
         // When: Access properties
         let id = item.id
