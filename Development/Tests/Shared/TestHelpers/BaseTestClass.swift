@@ -16,7 +16,7 @@ import Testing
 import SwiftUI
 @testable import SixLayerFramework
 
-#if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+#if canImport(ViewInspector) || VIEW_INSPECTOR_MAC_FIXED)
 import ViewInspector
 #endif
 
@@ -25,7 +25,7 @@ import ViewInspector
 /// NOTE: Not marked @MainActor on class to allow parallel execution
 open class BaseTestClass {
     /// Public initializer required for Swift testing framework to instantiate test classes
-    public init() {
+    init() {
         // BaseTestClass doesn't require any initialization
         // Subclasses can override if needed
     }
@@ -37,7 +37,7 @@ open class BaseTestClass {
     /// Initialize test configuration
     /// Creates an isolated config instance for this test
     @MainActor
-    public func initializeTestConfig() {
+    func initializeTestConfig() {
         testConfig = AccessibilityIdentifierConfig()
         testConfig?.resetToDefaults()
         testConfig?.enableAutoIDs = true
@@ -49,7 +49,7 @@ open class BaseTestClass {
     /// Run code with task-local config isolation
     /// Ensures each test runs with its own isolated configuration
     @MainActor
-    public func runWithTaskLocalConfig<T>(_ body: () throws -> T) rethrows -> T {
+    func runWithTaskLocalConfig<T>(_ body: () throws -> T) rethrows -> T {
         guard let config = testConfig else {
             // If testConfig is nil, initialize it
             initializeTestConfig()
@@ -68,7 +68,7 @@ open class BaseTestClass {
     /// Run async code with task-local config isolation
     /// Ensures each test runs with its own isolated configuration
     @MainActor
-    public func runWithTaskLocalConfig<T>(_ body: () async throws -> T) async rethrows -> T {
+    func runWithTaskLocalConfig<T>(_ body: () async throws -> T) async rethrows -> T {
         guard let config = testConfig else {
             // If testConfig is nil, initialize it
             initializeTestConfig()
@@ -87,12 +87,12 @@ open class BaseTestClass {
     // MARK: - Convenience Methods
     
     /// Set capabilities for a specific platform (delegates to TestSetupUtilities)
-    public func setCapabilitiesForPlatform(_ platform: SixLayerPlatform) {
+    func setCapabilitiesForPlatform(_ platform: SixLayerPlatform) {
         TestSetupUtilities.setCapabilitiesForPlatform(platform)
     }
     
     /// Create test hints (delegates to TestSetupUtilities)
-    public func createTestHints(
+    func createTestHints(
         dataType: DataTypeHint = .generic,
         presentationPreference: PresentationPreference = .automatic,
         complexity: ContentComplexity = .moderate,
@@ -110,7 +110,7 @@ open class BaseTestClass {
     
     /// Host a SwiftUI view and return the platform root view (delegates to TestSetupUtilities)
     @MainActor
-    public func hostRootPlatformView<V: View>(_ view: V) -> Any? {
+    func hostRootPlatformView<V: View>(_ view: V) -> Any? {
         return TestSetupUtilities.hostRootPlatformView(view)
     }
     
@@ -119,14 +119,14 @@ open class BaseTestClass {
     /// Setup test environment
     /// Clears any existing test overrides to ensure clean test state
     @MainActor
-    public func setupTestEnvironment() {
+    func setupTestEnvironment() {
         TestSetupUtilities.setupTestEnvironment()
     }
     
     /// Cleanup test environment
     /// Clears all test overrides after test execution
     @MainActor
-    public func cleanupTestEnvironment() {
+    func cleanupTestEnvironment() {
         TestSetupUtilities.cleanupTestEnvironment()
     }
     
@@ -140,12 +140,14 @@ open class BaseTestClass {
         // view is a non-optional View parameter, so it exists if we reach here
         
         // 2. Contains what it needs to contain - The view has proper structure
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
-        if view.tryInspect() == nil {
-            Issue.record("Failed to inspect view structure for \(testName)")
+        #if canImport(ViewInspector)
+        do {
+            _ = try view.inspect()
+        } catch {
+            Issue.record("Failed to inspect view structure for \(testName): \(error)")
         }
         #else
-        // ViewInspector not available on macOS - view creation is verified by non-optional parameter
+        // ViewInspector not available - view creation is verified by non-optional parameter
         // Test passes by verifying compilation and view creation
         #endif
     }
@@ -156,34 +158,28 @@ open class BaseTestClass {
     open func verifyViewContainsText(_ view: some View, expectedText: String, testName: String) {
         // 1. View created - The view can be instantiated successfully
         // view is a non-optional View parameter, so it exists if we reach here
-        
+
         // 2. Contains what it needs to contain - The view should contain expected text
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
-        let inspectionResult = withInspectedView(view) { inspected in
-            let viewText = inspected.sixLayerFindAll(ViewType.Text.self)
+        #if canImport(ViewInspector)
+        do {
+            let inspected = try view.inspect()
+            let viewText = inspected.findAll(ViewType.Text.self)
             #expect(!viewText.isEmpty, "View should contain text elements for \(testName)")
 
             let hasExpectedText = viewText.contains { text in
-                if let textContent = try? text.sixLayerString() {
+                if let textContent = try? text.string() {
                     return textContent.contains(expectedText)
                 }
                 return false
             }
             #expect(hasExpectedText, "View should contain text '\(expectedText)' for \(testName)")
-            return true
+        } catch {
+            Issue.record("View inspection failed for \(testName): \(error)")
         }
         #else
-        let inspectionResult: Bool? = nil
+        // ViewInspector not available - test passes by verifying view creation
+        #expect(Bool(true), "View created for \(testName) (ViewInspector not available)")
         #endif
-
-        if inspectionResult == nil {
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
-            Issue.record("View inspection failed on this platform for \(testName)")
-            #else
-            // ViewInspector not available on macOS - test passes by verifying view creation
-            #expect(Bool(true), "View created for \(testName) (ViewInspector not available on macOS)")
-            #endif
-        }
     }
     
     /// Verify that a view contains specific image elements
@@ -192,26 +188,20 @@ open class BaseTestClass {
     open func verifyViewContainsImage(_ view: some View, testName: String) {
         // 1. View created - The view can be instantiated successfully
         // view is a non-optional View parameter, so it exists if we reach here
-        
+
         // 2. Contains what it needs to contain - The view should contain image elements
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
-        let inspectionResult = withInspectedView(view) { inspected in
-            let viewImages = inspected.sixLayerFindAll(ViewType.Image.self)
+        #if canImport(ViewInspector)
+        do {
+            let inspected = try view.inspect()
+            let viewImages = inspected.findAll(ViewType.Image.self)
             #expect(!viewImages.isEmpty, "View should contain image elements for \(testName)")
-            return true
+        } catch {
+            Issue.record("View inspection failed for \(testName): \(error)")
         }
         #else
-        let inspectionResult: Bool? = nil
+        // ViewInspector not available - test passes by verifying view creation
+        #expect(Bool(true), "View created for \(testName) (ViewInspector not available)")
         #endif
-
-        if inspectionResult == nil {
-            #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
-            Issue.record("View inspection failed on this platform for \(testName)")
-            #else
-            // ViewInspector not available on macOS - test passes by verifying view creation
-            #expect(Bool(true), "View created for \(testName) (ViewInspector not available on macOS)")
-            #endif
-        }
     }
     
     // MARK: - Common Test Data Creation
