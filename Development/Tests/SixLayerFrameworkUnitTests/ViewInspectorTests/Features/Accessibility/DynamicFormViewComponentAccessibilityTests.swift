@@ -116,12 +116,11 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
         
         // Then: Should generate accessibility identifiers
         #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
-        let hasAccessibilityID = testAccessibilityIdentifierGeneration(
+        let hasAccessibilityID = testComponentComplianceSinglePlatform(
             view,
-            componentName: "DynamicFormView",
             expectedPattern: "SixLayer.*ui.*DynamicFormView.*",
             platform: SixLayerPlatform.iOS,
-            testName: "DynamicFormView should generate accessibility identifiers"
+            componentName: "DynamicFormView"
         )
  #expect(hasAccessibilityID, "DynamicFormView should generate accessibility identifiers ")
         #else
@@ -144,12 +143,11 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
         
         // Then: Should generate accessibility identifiers
         #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
-        let hasAccessibilityID = testAccessibilityIdentifierGeneration(
+        let hasAccessibilityID = testComponentComplianceSinglePlatform(
             view,
-            componentName: "DynamicFormHeader",
             expectedPattern: "SixLayer.*ui.*DynamicFormHeader.*",
             platform: SixLayerPlatform.iOS,
-            testName: "DynamicFormHeader should generate accessibility identifiers"
+            componentName: "DynamicFormHeader"
         )
  #expect(hasAccessibilityID, "DynamicFormHeader should generate accessibility identifiers ")
         #else
@@ -172,12 +170,11 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
         
         // Then: Should generate accessibility identifiers
         #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
-        let hasAccessibilityID = testAccessibilityIdentifierGeneration(
+        let hasAccessibilityID = testComponentComplianceSinglePlatform(
             view,
-            componentName: "DynamicFormSectionView",
             expectedPattern: "SixLayer.*ui.*DynamicFormSectionView.*",
             platform: SixLayerPlatform.iOS,
-            testName: "DynamicFormSectionView should generate accessibility identifiers"
+            componentName: "DynamicFormSectionView"
         )
  #expect(hasAccessibilityID, "DynamicFormSectionView should generate accessibility identifiers ")
         #else
@@ -252,12 +249,11 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
         
         // Then: Should generate accessibility identifiers
         #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
-        let hasAccessibilityID = testAccessibilityIdentifierGeneration(
+        let hasAccessibilityID = testComponentComplianceSinglePlatform(
             view,
-            componentName: "DynamicFormActions",
             expectedPattern: "SixLayer.*ui.*DynamicFormActions.*",
             platform: SixLayerPlatform.iOS,
-            testName: "DynamicFormActions should generate accessibility identifiers"
+            componentName: "DynamicFormActions"
         )
  #expect(hasAccessibilityID, "DynamicFormActions should generate accessibility identifiers ")
         #else

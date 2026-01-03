@@ -14,11 +14,11 @@ struct DefensiveTestImplementation {
         TestSetupUtilities.setCapabilitiesForPlatform(platform)
         
         await performTest(
-            testName: "SimpleCard \(capabilityType.rawValue) + \(accessibilityType.rawValue)"
+            testName: "SimpleCard \(platform.rawValue)"
         )
-        
+
         // Clean up test capabilities
-        TestSetupUtilities.cleanupTestEnvironment()
+        await TestSetupUtilities.cleanupTestEnvironment()
     }
     
     /// Common test logic extracted to avoid duplication

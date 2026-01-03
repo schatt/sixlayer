@@ -1,5 +1,5 @@
 import Testing
-
+import CoreData
 
 import SwiftUI
 #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
