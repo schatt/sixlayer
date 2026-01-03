@@ -21,6 +21,7 @@ public protocol Inspectable {
     func sixLayerButton() throws -> Inspectable
     func sixLayerText() throws -> Inspectable
     func sixLayerText(_ index: Int) throws -> Inspectable
+    func sixLayerAnyView() throws -> Inspectable
     func sixLayerFindAll<T>(_ type: T.Type) -> [Inspectable]
     func sixLayerFind<T>(_ type: T.Type) throws -> Inspectable
     func sixLayerTryFind<T>(_ type: T.Type) -> Inspectable?
@@ -44,6 +45,11 @@ extension ViewInspector.InspectableView: Inspectable {
 
     public func sixLayerText(_ index: Int) throws -> Inspectable {
         let result = try self.text(index)
+        return result
+    }
+
+    public func sixLayerAnyView() throws -> Inspectable {
+        let result = try self.anyView()
         return result
     }
 
