@@ -39,6 +39,9 @@ import Foundation
 /// NOTE: Not marked @MainActor to allow parallel execution - these tests don't need UI access
 @Suite("Platform Simulation")
 open class PlatformSimulationTests: BaseTestClass {
+    public override init() {
+        super.init()
+    }
     
     // MARK: - Platform Testing
     

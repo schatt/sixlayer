@@ -80,7 +80,7 @@ final class OCRAccessibilityWorkflowRenderingTests: BaseTestClass {
             }
             
             // Then: View should render successfully (Layer 2 - actual rendering)
-            let hostedView = hostRootPlatformView(ocrView.withGlobalAutoIDsEnabled())
+            let hostedView = hostRootPlatformView(ocrView.enableGlobalAutomaticCompliance())
             #expect(hostedView != nil, "OCR view should render successfully on \(platform)")
             
             RuntimeCapabilityDetection.clearAllCapabilityOverrides()
@@ -104,7 +104,7 @@ final class OCRAccessibilityWorkflowRenderingTests: BaseTestClass {
                 image: PlatformImage(),
                 context: context
             ) { _ in }
-            let hostedView = hostRootPlatformView(ocrView.withGlobalAutoIDsEnabled())
+            let hostedView = hostRootPlatformView(ocrView.enableGlobalAutomaticCompliance())
             
             // Then: Rendered view should have accessibility identifiers (Layer 2 verification)
             // Note: On macOS without ViewInspector, this may be nil, but view should still render
@@ -136,7 +136,7 @@ final class OCRAccessibilityWorkflowRenderingTests: BaseTestClass {
             }
             
             // Then: View should render with results state
-            let hostedView = hostRootPlatformView(ocrView.withGlobalAutoIDsEnabled())
+            let hostedView = hostRootPlatformView(ocrView.enableGlobalAutomaticCompliance())
             #expect(hostedView != nil, "OCR view should render with results on \(platform)")
             
             RuntimeCapabilityDetection.clearAllCapabilityOverrides()
@@ -162,7 +162,7 @@ final class OCRAccessibilityWorkflowRenderingTests: BaseTestClass {
                 image: PlatformImage(),
                 context: context
             ) { _ in }
-            let hostedView = hostRootPlatformView(ocrView.withGlobalAutoIDsEnabled())
+            let hostedView = hostRootPlatformView(ocrView.enableGlobalAutomaticCompliance())
             
             // Then: View should render on this platform
             let rendered = hostedView != nil
@@ -196,7 +196,7 @@ final class OCRAccessibilityWorkflowRenderingTests: BaseTestClass {
             ) { _ in }
             
             // Then: View should render with accessibility compliance
-            let hostedView = hostRootPlatformView(ocrView.withGlobalAutoIDsEnabled())
+            let hostedView = hostRootPlatformView(ocrView.enableGlobalAutomaticCompliance())
             #expect(hostedView != nil, "OCR view with accessibility should render on \(platform)")
             
             RuntimeCapabilityDetection.clearAllCapabilityOverrides()
@@ -222,7 +222,7 @@ final class OCRAccessibilityWorkflowRenderingTests: BaseTestClass {
             ) { _ in }
             
             // Then: View should render even with error state
-            let hostedView = hostRootPlatformView(ocrView.withGlobalAutoIDsEnabled())
+            let hostedView = hostRootPlatformView(ocrView.enableGlobalAutomaticCompliance())
             #expect(hostedView != nil, "OCR view should render with error state on \(platform)")
             
             RuntimeCapabilityDetection.clearAllCapabilityOverrides()

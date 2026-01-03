@@ -50,7 +50,8 @@ public enum AccessibilityTestUtilities {
     public static func testAccessibilityIdentifiersCrossPlatform<V: View>(
         _ view: V,
         expectedPattern: String,
-        componentName: String
+        componentName: String,
+        testName: String? = nil
     ) -> Bool {
         #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
         do {
@@ -103,12 +104,14 @@ public func testComponentComplianceSinglePlatform<V: View>(
 public func testAccessibilityIdentifiersCrossPlatform<V: View>(
     _ view: V,
     expectedPattern: String,
-    componentName: String
+    componentName: String,
+    testName: String? = nil
 ) -> Bool {
     return AccessibilityTestUtilities.testAccessibilityIdentifiersCrossPlatform(
         view,
         expectedPattern: expectedPattern,
-        componentName: componentName
+        componentName: componentName,
+        testName: testName
     )
 }
 

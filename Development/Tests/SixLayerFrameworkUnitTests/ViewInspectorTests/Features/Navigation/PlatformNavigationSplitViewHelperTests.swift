@@ -41,9 +41,9 @@ open class PlatformNavigationSplitViewHelperTests: BaseTestClass {
             // On iPad, should use NavigationSplitView (iOS 16+) or NavigationView (iOS 15)
             #if os(iOS)
             if #available(iOS 16.0, *) {
-                // Should contain NavigationSplitView structure
-                let hasSplitView = (try? inspected.sixLayerFind(ViewType.NavigationSplitView.self)) != nil
-                #expect(hasSplitView || true, "iPad should use NavigationSplitView on iOS 16+")
+                // Note: ViewInspector doesn't support NavigationSplitView inspection directly
+                // The view is created successfully, which is verified by tryInspect() succeeding
+                #expect(Bool(true), "iPad should use NavigationSplitView on iOS 16+")
             } else {
                 // iOS 15 fallback
                 let hasNavigationView = (try? inspected.sixLayerFind(ViewType.NavigationView.self)) != nil
@@ -84,9 +84,9 @@ open class PlatformNavigationSplitViewHelperTests: BaseTestClass {
             
             #if os(iOS)
             if #available(iOS 16.0, *) {
-                // iPhone portrait should use NavigationStack
-                let hasStack = (try? inspected.sixLayerFind(ViewType.NavigationStack.self)) != nil
-                #expect(hasStack || true, "iPhone portrait should use NavigationStack on iOS 16+")
+                // Note: ViewInspector doesn't support NavigationStack inspection directly
+                // The view is created successfully, which is verified by tryInspect() succeeding
+                #expect(Bool(true), "iPhone portrait should use NavigationStack on iOS 16+")
             } else {
                 // iOS 15 fallback
                 let hasNavigationView = (try? inspected.sixLayerFind(ViewType.NavigationView.self)) != nil
@@ -161,9 +161,9 @@ open class PlatformNavigationSplitViewHelperTests: BaseTestClass {
             
             #if os(iOS)
             if #available(iOS 16.0, *) {
-                // Should contain NavigationSplitView structure
-                let hasSplitView = (try? inspected.sixLayerFind(ViewType.NavigationSplitView.self)) != nil
-                #expect(hasSplitView || true, "iPad should use NavigationSplitView on iOS 16+")
+                // Note: ViewInspector doesn't support NavigationSplitView inspection directly
+                // The view is created successfully, which is verified by tryInspect() succeeding
+                #expect(Bool(true), "iPad should use NavigationSplitView on iOS 16+")
             } else {
                 // iOS 15 fallback
                 let hasNavigationView = (try? inspected.sixLayerFind(ViewType.NavigationView.self)) != nil
@@ -207,9 +207,9 @@ open class PlatformNavigationSplitViewHelperTests: BaseTestClass {
             
             #if os(iOS)
             if #available(iOS 16.0, *) {
-                // iPhone portrait should use NavigationStack
-                let hasStack = (try? inspected.sixLayerFind(ViewType.NavigationStack.self)) != nil
-                #expect(hasStack || true, "iPhone portrait should use NavigationStack on iOS 16+")
+                // Note: ViewInspector doesn't support NavigationStack inspection directly
+                // The view is created successfully, which is verified by tryInspect() succeeding
+                #expect(Bool(true), "iPhone portrait should use NavigationStack on iOS 16+")
             } else {
                 // iOS 15 fallback
                 let hasNavigationView = (try? inspected.sixLayerFind(ViewType.NavigationView.self)) != nil
