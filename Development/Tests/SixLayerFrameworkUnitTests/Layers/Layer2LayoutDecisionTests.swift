@@ -256,7 +256,7 @@ open class Layer2LayoutDecisionTests: BaseTestClass {
         // Then apply device limits: mobile<768=2, tablet>=768=4, desktop>=1024=6
         
         // Test mobile device (width < 768) - should be limited to 2 columns max
-        let mobileItems = (1...10).map { i in TestItem(title: "Item \(i)") }
+        let mobileItems = (1...10).map { i in TestPatterns.TestItem(id: "item-\(i)", title: "Item \(i)") }
         let mobileDecision = determineOptimalLayout_L2(
             items: mobileItems,
             hints: PresentationHints(dataType: .text, presentationPreference: .list, complexity: .complex, context: .dashboard),
@@ -266,7 +266,7 @@ open class Layer2LayoutDecisionTests: BaseTestClass {
         #expect(mobileDecision.columns <= 2, "Mobile devices should be limited to 2 columns max")
         
         // Test tablet device (width >= 768) - should allow more columns
-        let tabletItems = (1...10).map { i in TestItem(title: "Item \(i)") }
+        let tabletItems = (1...10).map { i in TestPatterns.TestItem(id: "item-\(i)", title: "Item \(i)") }
         let tabletDecision = determineOptimalLayout_L2(
             items: tabletItems,
             hints: PresentationHints(dataType: .text, presentationPreference: .list, complexity: .complex, context: .dashboard),
@@ -277,7 +277,7 @@ open class Layer2LayoutDecisionTests: BaseTestClass {
         #expect(tabletDecision.columns <= 5, "Complex content should be limited to 5 columns")
         
         // Test desktop device (width >= 1024) - should allow maximum columns
-        let desktopItems = (1...20).map { i in TestItem(title: "Item \(i)") }
+        let desktopItems = (1...20).map { i in TestPatterns.TestItem(id: "item-\(i)", title: "Item \(i)") }
         let desktopDecision = determineOptimalLayout_L2(
             items: desktopItems,
             hints: PresentationHints(dataType: .text, presentationPreference: .list, complexity: .veryComplex, context: .dashboard),

@@ -15465,7 +15465,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     // Then: Should generate accessibility identifiers
     // VERIFIED: Framework function has .automaticCompliance() modifier applied
     #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
-    let hasAccessibilityID = hasAccessibilityIdentifierWithPattern(
+    let hasAccessibilityID = testComponentComplianceSinglePlatform(
         view,
         expectedPattern: "SixLayer.main.ui.*",
         platform: SixLayerPlatform.iOS,

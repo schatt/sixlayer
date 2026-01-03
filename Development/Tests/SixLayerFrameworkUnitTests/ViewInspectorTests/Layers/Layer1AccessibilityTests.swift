@@ -47,8 +47,7 @@ open class Layer1AccessibilityTests: BaseTestClass {
         let hasSpecificAccessibilityID = testComponentComplianceCrossPlatform(
             view, 
             expectedPattern: "*.main.ui.element.*", 
-            componentName: "ItemCollection",
-            testName: "platformPresentItemCollection_L1"
+            componentName: "ItemCollection"
         )
         #expect(hasSpecificAccessibilityID, "platformPresentItemCollection_L1 should generate accessibility identifiers with current pattern ")
         
@@ -220,8 +219,7 @@ open class Layer1AccessibilityTests: BaseTestClass {
         let hasSpecificAccessibilityID = testComponentComplianceCrossPlatform(
             view, 
             expectedPattern: "*.main.ui.element.*", 
-            componentName: "FormField",
-            testName: "platformPresentFormData_L1"
+            componentName: "FormField"
         )
         #expect(hasSpecificAccessibilityID, "platformPresentFormData_L1 should generate accessibility identifiers with new hierarchical naming ")
         
