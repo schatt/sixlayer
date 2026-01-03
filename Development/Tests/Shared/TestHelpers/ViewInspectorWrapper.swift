@@ -12,12 +12,35 @@ import Foundation
 import ViewInspector
 @testable import SixLayerFramework
 
+// MARK: - Type-Erased Inspectable Protocol
+
+/// Protocol that abstracts ViewInspector's InspectableView
+/// This allows the wrapper to return a consistent type regardless of platform
+/// Uses prefixed method names to avoid naming conflicts with ViewInspector and prevent infinite recursion
+public protocol Inspectable {
+    func sixLayerText() throws -> Inspectable
+    func sixLayerString() throws -> String
+}
+
+// MARK: - InspectableView Conformance
+
+extension ViewInspector.InspectableView: Inspectable {
+    public func sixLayerText() throws -> Inspectable {
+        let result = try self.text()
+        return result
+    }
+
+    public func sixLayerString() throws -> String {
+        return try self.string()
+    }
+}
+
 // MARK: - View Extension
 
 extension View {
     /// Try to inspect a view, returning nil if inspection fails
     @MainActor
-    func tryInspect() -> ViewInspector.InspectableView<ViewType.View<Self>>? {
+    func tryInspect() -> (any Inspectable)? {
         return try? self.inspect()
     }
 }
@@ -29,7 +52,7 @@ extension View {
 @MainActor
 public func withInspectedViewThrowing<V: View, R>(
     _ view: V,
-    perform: (ViewInspector.InspectableView<ViewType.View<V>>) throws -> R
+    perform: (Inspectable) throws -> R
 ) throws -> R {
     let inspected = try view.inspect()
     return try perform(inspected)
@@ -40,7 +63,7 @@ public func withInspectedViewThrowing<V: View, R>(
 @MainActor
 public func withInspectedView<V: View, R>(
     _ view: V,
-    perform: (ViewInspector.InspectableView<ViewType.View<V>>) -> R?
+    perform: (Inspectable) -> R?
 ) -> R? {
     guard let inspected = try? view.inspect() else {
         return nil
