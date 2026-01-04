@@ -86,13 +86,6 @@ open class OCRDisambiguationTDDTests: BaseTestClass {
                 return false
             }
         }()
-            if let textElement = try? inspected.sixLayerText(),
-               let text = try? textElement.sixLayerString() {
-                #expect(text == "OCR Disambiguation View (Stub)", "Should be stub text until implemented")
-            } else {
-                Issue.record("OCRDisambiguationView inspection failed - disambiguation interface not implemented")
-            }
-        }
         #else
         let inspectionResult: Bool? = nil
         #endif
@@ -157,13 +150,6 @@ open class OCRDisambiguationTDDTests: BaseTestClass {
                 return false
             }
         }()
-            if let textElement = try? inspected.sixLayerText(),
-               let text = try? textElement.sixLayerString() {
-                #expect(text == "OCR Disambiguation View (Stub)", "Should be stub text until implemented")
-            } else {
-                Issue.record("OCRDisambiguationView confidence display not implemented")
-            }
-        }
         #else
         let inspectionResult: Bool? = nil
         #endif
