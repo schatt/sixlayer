@@ -271,7 +271,7 @@ open class LabeledContentDisplayFieldTests: BaseTestClass {
     /// METHODOLOGY: Create display field with valueView and verify it's accessible
     @Test @MainActor func testCustomValueViewIsUsed() {
         // Given: Display field with custom valueView
-        var viewWasCalled = false
+        _ = false  // viewWasCalled - intentionally unused for test structure
         let field = DynamicFormField(
             id: "display-field",
             contentType: .display,
@@ -557,7 +557,7 @@ open class LabeledContentDisplayFieldTests: BaseTestClass {
     /// METHODOLOGY: Test field creation on all platforms
     @Test func testCrossPlatformBehavior() {
         // Given: Current platform and display field
-        let currentPlatform = SixLayerPlatform.current
+        _ = SixLayerPlatform.current
         let field = DynamicFormField(
             id: "display-field",
             contentType: .display,
@@ -585,7 +585,7 @@ open class LabeledContentDisplayFieldTests: BaseTestClass {
         let state = createFormState()
         
         // When: Creating CustomFieldView with display field
-        let view = CustomFieldView(field: field, formState: state)
+        _ = CustomFieldView(field: field, formState: state)
         
         // Then: View should be created successfully
         #expect(Bool(true), "view is non-optional")

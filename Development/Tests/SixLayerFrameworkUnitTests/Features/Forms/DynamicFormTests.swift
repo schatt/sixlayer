@@ -808,7 +808,7 @@ open class DynamicFormTests: BaseTestClass {
         )
         
         // When: Creating the field view
-        let formState = DynamicFormState(configuration: DynamicFormConfiguration(
+        _ = DynamicFormState(configuration: DynamicFormConfiguration(
             id: "test-form",
             title: "Test Form"
         ))
