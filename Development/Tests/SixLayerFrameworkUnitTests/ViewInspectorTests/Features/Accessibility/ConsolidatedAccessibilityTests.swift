@@ -17968,10 +17968,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     #expect(compliance.issues.count >= 0, "Compliance issues count is valid")
 }
 
-        // NOTE: Due to the massive scale (546 total tests), this consolidated file contains
-    // representative tests from all major categories. Additional tests from remaining files
-    // can be added incrementally as needed. The @Suite(.serialized) attribute ensures
-    // all tests run serially to reduce MainActor contention.
-    
-}
+// NOTE: Due to the massive scale (546 total tests), this consolidated file contains
+// representative tests from all major categories. Additional tests from remaining files
+// can be added incrementally as needed. The @Suite(.serialized) attribute ensures
+// all tests run serially to reduce MainActor contention.
 
