@@ -39,7 +39,7 @@ public func withInspectedView<V: View, R>(
 
 // MARK: - View Extension
 
-extension View {
+extension View where Self: ViewInspector.KnownViewType {
     /// Try to inspect a view, returning nil if inspection fails
     @MainActor
     func tryInspect() -> InspectableView<Self>? {
