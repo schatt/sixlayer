@@ -345,16 +345,18 @@ public struct LayoutParameterCalculator {
             // Use viewport width to determine capacity, not just device type
             let category = ScreenSizeCategory.from(width: context.viewportWidth)
             switch category {
-            case .small, .medium:
-                return 3  // Standard phone limits
+            case .small:
+                return 3  // Standard phone limits for small screens
+            case .medium:
+                return 4  // Medium screens allow more columns
             case .large:
-                return 4  // Larger viewport allows more columns
+                return 6  // Large viewport allows more columns
             case .xlarge:
-                return 6  // 2K display
+                return 10  // 2K display
             case .xxlarge:
-                return 8  // 4K display
+                return 12  // 4K display
             case .xxxlarge:
-                return 10  // 8K display
+                return 16  // 8K display
             }
         case .pad:
             // Pads can also benefit from larger viewports
