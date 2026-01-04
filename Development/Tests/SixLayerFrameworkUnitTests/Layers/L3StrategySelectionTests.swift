@@ -295,7 +295,7 @@ open class L3StrategySelectionTests: BaseTestClass {
         )
         
         // When
-        let strategy = selectFormStrategy_AddFuelView_L3(layout: layout)
+        _ = selectFormStrategy_AddFuelView_L3(layout: layout)
         
         // Then
         #expect(Bool(true), "selectFormStrategy_AddFuelView_L3 should return a strategy")  // strategy is non-optional
@@ -309,7 +309,7 @@ open class L3StrategySelectionTests: BaseTestClass {
         )
         
         // When
-        let strategy = selectModalStrategy_Form_L3(layout: layout)
+        _ = selectModalStrategy_Form_L3(layout: layout)
         
         // Then
         #expect(Bool(true), "selectModalStrategy_Form_L3 should return a strategy")  // strategy is non-optional
@@ -393,39 +393,39 @@ open class L3StrategySelectionTests: BaseTestClass {
         let textTypes = [TextType.general]
         
         // Test iOS
-        let iOSStrategy = platformOCRStrategy_L3(
+        _ = platformOCRStrategy_L3(
             textTypes: textTypes,
             platform: .iOS
         )
-        #expect(Bool(true), "iOS platform should return a strategy")  // iOSStrategy is non-optional
+        #expect(Bool(true), "iOS platform should return a strategy")
         
         // Test macOS
-        let macOSStrategy = platformOCRStrategy_L3(
+        _ = platformOCRStrategy_L3(
             textTypes: textTypes,
             platform: .macOS
         )
-        #expect(Bool(true), "macOS platform should return a strategy")  // macOSStrategy is non-optional
+        #expect(Bool(true), "macOS platform should return a strategy")
         
         // Test watchOS
-        let watchOSStrategy = platformOCRStrategy_L3(
+        _ = platformOCRStrategy_L3(
             textTypes: textTypes,
             platform: .watchOS
         )
-        #expect(Bool(true), "watchOS platform should return a strategy")  // watchOSStrategy is non-optional
+        #expect(Bool(true), "watchOS platform should return a strategy")
         
         // Test tvOS
-        let tvOSStrategy = platformOCRStrategy_L3(
+        _ = platformOCRStrategy_L3(
             textTypes: textTypes,
             platform: .tvOS
         )
-        #expect(Bool(true), "tvOS platform should return a strategy")  // tvOSStrategy is non-optional
+        #expect(Bool(true), "tvOS platform should return a strategy")
         
         // Test visionOS
-        let visionOSStrategy = platformOCRStrategy_L3(
+        _ = platformOCRStrategy_L3(
             textTypes: textTypes,
             platform: .visionOS
         )
-        #expect(Bool(true), "visionOS platform should return a strategy")  // visionOSStrategy is non-optional
+        #expect(Bool(true), "visionOS platform should return a strategy")
     }
     
     @Test @MainActor func testPlatformDocumentOCRStrategy_L3() {
