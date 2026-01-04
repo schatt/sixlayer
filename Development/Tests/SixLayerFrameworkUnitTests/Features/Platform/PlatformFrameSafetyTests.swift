@@ -134,7 +134,7 @@ open class PlatformFrameSafetyTests: BaseTestClass {
             .platformFrame()
         
         // Then: View should have max constraints applied
-        let maxSize = PlatformFrameHelpers.getMaxFrameSize()
+        _ = PlatformFrameHelpers.getMaxFrameSize()
         let hostedView = hostRootPlatformView(view)
         #expect(hostedView != nil, "View should render with max constraints")
         #endif
