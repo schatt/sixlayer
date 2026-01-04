@@ -39,18 +39,11 @@ public func withInspectedView<V: View & ViewInspector.KnownViewType, R>(
 
 // MARK: - View Extension
 
-extension View {
+extension View where Self: ViewInspector.KnownViewType {
     /// Try to inspect a view, returning nil if inspection fails
-    /// Only works for views that conform to KnownViewType
+    /// Only available for views that conform to KnownViewType
     @MainActor
-    func tryInspect() -> Any? {
-        #if canImport(ViewInspector)
-        if let knownView = self as? any ViewInspector.KnownViewType {
-            return try? knownView.inspect()
-        }
-        return nil
-        #else
-        return nil
-        #endif
+    func tryInspect() -> InspectableView<Self>? {
+        return try? self.inspect()
     }
 }

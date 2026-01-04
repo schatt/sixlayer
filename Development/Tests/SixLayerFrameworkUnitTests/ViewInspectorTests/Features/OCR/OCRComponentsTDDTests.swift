@@ -55,7 +55,7 @@ open class OCRComponentsTDDTests: BaseTestClass {
 
         // Should render overlay interface
         #if canImport(ViewInspector)
-        if let inspected = view.tryInspect() {
+        if let inspected = try? view.inspect() {
             // Should have overlay interface
             #if canImport(ViewInspector)
             let anyViews = inspected.sixLayerFindAll(ViewType.AnyView.self)
@@ -109,7 +109,7 @@ open class OCRComponentsTDDTests: BaseTestClass {
 
         // Should process OCR result when provided
         #if canImport(ViewInspector)
-        if let inspected = view.tryInspect() {
+        if let inspected = try? view.inspect() {
             // Should have OCR processing interface
             #if canImport(ViewInspector)
             let anyViews = inspected.sixLayerFindAll(ViewType.AnyView.self)
@@ -177,7 +177,7 @@ open class OCRComponentsTDDTests: BaseTestClass {
 
         // Should render disambiguation options
         #if canImport(ViewInspector)
-        if let inspected = view.tryInspect() {
+        if let inspected = try? view.inspect() {
             // Should display candidate alternatives
             // Note: ViewInspector doesn't have a find(text:) method, so we check for any view structure
             let anyViews = inspected.sixLayerFindAll(ViewType.AnyView.self)
@@ -254,7 +254,7 @@ open class OCRComponentsTDDTests: BaseTestClass {
 
         // Should display all candidates
         #if canImport(ViewInspector)
-        if let inspected = view.tryInspect() {
+        if let inspected = try? view.inspect() {
             // Should find all candidate texts
             // Note: ViewInspector doesn't have a find(text:) method, so we check for any view structure
             let anyViews = inspected.sixLayerFindAll(ViewType.AnyView.self)
@@ -303,7 +303,7 @@ open class OCRComponentsTDDTests: BaseTestClass {
 
         // Should handle non-disambiguation case
         #if canImport(ViewInspector)
-        if let inspected = view.tryInspect() {
+        if let inspected = try? view.inspect() {
             // Should have some UI structure
             #if canImport(ViewInspector)
             let anyViews = inspected.sixLayerFindAll(ViewType.AnyView.self)

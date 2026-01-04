@@ -75,7 +75,17 @@ open class OCRDisambiguationTDDTests: BaseTestClass {
         // Should render disambiguation interface
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
         #if canImport(ViewInspector)
-        let inspectionResult = withInspectedView(view) { inspected in
+        let inspectionResult: Bool? = {
+            guard let inspected = try? view.inspect() else { return nil }
+            if let textElement = try? inspected.sixLayerText(),
+               let text = try? textElement.sixLayerString() {
+                #expect(text == "OCR Disambiguation View (Stub)", "Should be stub text until implemented")
+                return true
+            } else {
+                Issue.record("OCRDisambiguationView inspection failed - disambiguation interface not implemented")
+                return false
+            }
+        }()
             if let textElement = try? inspected.sixLayerText(),
                let text = try? textElement.sixLayerString() {
                 #expect(text == "OCR Disambiguation View (Stub)", "Should be stub text until implemented")
@@ -136,7 +146,17 @@ open class OCRDisambiguationTDDTests: BaseTestClass {
         // Should render confidence-based interface
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
         #if canImport(ViewInspector)
-        let inspectionResult = withInspectedView(view) { inspected in
+        let inspectionResult: Bool? = {
+            guard let inspected = try? view.inspect() else { return nil }
+            if let textElement = try? inspected.sixLayerText(),
+               let text = try? textElement.sixLayerString() {
+                #expect(text == "OCR Disambiguation View (Stub)", "Should be stub text until implemented")
+                return true
+            } else {
+                Issue.record("OCRDisambiguationView confidence display not implemented")
+                return false
+            }
+        }()
             if let textElement = try? inspected.sixLayerText(),
                let text = try? textElement.sixLayerString() {
                 #expect(text == "OCR Disambiguation View (Stub)", "Should be stub text until implemented")
