@@ -164,7 +164,7 @@ open class BaseTestClass {
         #if canImport(ViewInspector)
         do {
             let inspected = try view.inspect()
-            let viewText = (try? inspected.findAll(ViewType.Text.self)) ?? []
+            let viewText = inspected.findAll(ViewType.Text.self)
             #expect(!viewText.isEmpty, "View should contain text elements for \(testName)")
 
             let hasExpectedText = viewText.contains { text in
@@ -194,7 +194,7 @@ open class BaseTestClass {
         #if canImport(ViewInspector)
         do {
             let inspected = try view.inspect()
-            let viewImages = (try? inspected.findAll(ViewType.Image.self)) ?? []
+            let viewImages = inspected.findAll(ViewType.Image.self)
             #expect(!viewImages.isEmpty, "View should contain image elements for \(testName)")
         } catch {
             Issue.record("View inspection failed for \(testName): \(error)")

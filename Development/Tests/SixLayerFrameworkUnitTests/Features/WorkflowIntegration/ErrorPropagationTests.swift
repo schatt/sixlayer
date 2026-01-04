@@ -435,8 +435,10 @@ final class ErrorPropagationTests: BaseTestClass {
         var result: String
         
         // Test fallback path (isFeatureAvailable is false to test graceful degradation)
+        // Note: The if branch is intentionally unreachable to test fallback path
         if isFeatureAvailable {
             // This branch tests the primary path when feature is available
+            // This code path is intentionally unreachable in this test
             result = "Primary feature result"
         } else {
             // Graceful degradation to fallback
