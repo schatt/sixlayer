@@ -45,7 +45,7 @@ open class OCROverlayTests: BaseTestClass {
         )
         
         // When: Creating OCR overlay view
-        let overlayView = OCROverlayView(
+        _ = OCROverlayView(
             image: testImage,
             result: testOCRResult,
             onTextEdit: onTextEdit,
@@ -125,7 +125,7 @@ open class OCROverlayTests: BaseTestClass {
         let boundingBox = CGRect(x: 0.1, y: 0.2, width: 0.5, height: 0.3) // Normalized coordinates
         
         // When: Converting to image coordinates using placeholder image (100x100)
-        let overlayView = OCROverlayView(
+        _ = OCROverlayView(
             image: PlatformImage.createPlaceholder(), // 100x100 image
             result: OCRResult(extractedText: "", confidence: 0.0, boundingBoxes: [])
         )
@@ -161,7 +161,7 @@ open class OCROverlayTests: BaseTestClass {
             language: .english
         )
         
-        let overlayView = OCROverlayView(
+        _ = OCROverlayView(
             image: testImage,
             result: testOCRResult,
             onTextEdit: { _, _ in
@@ -199,7 +199,7 @@ open class OCROverlayTests: BaseTestClass {
             language: .english
         )
         
-        let overlayView = OCROverlayView(
+        _ = OCROverlayView(
             image: testImage,
             result: testOCRResult,
             onTextEdit: { _, _ in },
@@ -237,7 +237,7 @@ open class OCROverlayTests: BaseTestClass {
             language: .english
         )
         
-        let overlayView = OCROverlayView(
+        _ = OCROverlayView(
             image: testImage,
             result: testOCRResult,
             onTextEdit: { _, _ in },
@@ -276,7 +276,7 @@ open class OCROverlayTests: BaseTestClass {
             language: .english
         )
         
-        let overlayView = OCROverlayView(
+        _ = OCROverlayView(
             image: testImage,
             result: testOCRResult,
             onTextEdit: { text, rect in
@@ -318,7 +318,7 @@ open class OCROverlayTests: BaseTestClass {
             language: .english
         )
         
-        let overlayView = OCROverlayView(
+        _ = OCROverlayView(
             image: testImage,
             result: testOCRResult,
             onTextEdit: { _, _ in },
@@ -359,7 +359,7 @@ open class OCROverlayTests: BaseTestClass {
             language: .english
         )
         
-        let overlayView = OCROverlayView(
+        _ = OCROverlayView(
             image: testImage,
             result: testOCRResult,
             onTextEdit: { _, _ in },
@@ -458,7 +458,7 @@ open class OCROverlayTests: BaseTestClass {
             language: .english
         )
         
-        let overlayView = OCROverlayView(
+        _ = OCROverlayView(
             image: testImage,
             result: testOCRResult,
             onTextEdit: { _, _ in },
@@ -494,7 +494,7 @@ open class OCROverlayTests: BaseTestClass {
             language: .english
         )
         
-        let overlayView = OCROverlayView(
+        _ = OCROverlayView(
             image: testImage,
             result: testOCRResult,
             onTextEdit: { _, _ in },
@@ -528,7 +528,7 @@ open class OCROverlayTests: BaseTestClass {
         )
         
         let testImage = PlatformImage()
-        let overlayView = OCROverlayView(
+        _ = OCROverlayView(
             image: testImage,
             result: overlappingResult,
             onTextEdit: { _, _ in },
@@ -630,7 +630,7 @@ open class OCROverlayTests: BaseTestClass {
         )
         
         // When: Creating overlay from disambiguation result
-        let overlayView = OCROverlayView.fromDisambiguationResult(disambiguationSelection)
+        _ = OCROverlayView.fromDisambiguationResult(disambiguationSelection)
         
         // Then: Should create overlay successfully
         // OCROverlayView is non-optional - no need to check for nil
