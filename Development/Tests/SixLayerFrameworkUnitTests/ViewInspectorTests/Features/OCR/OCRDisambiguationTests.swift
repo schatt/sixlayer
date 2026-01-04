@@ -25,6 +25,9 @@
 
 import SwiftUI
 import Testing
+#if canImport(ViewInspector)
+import ViewInspector
+#endif
 @testable import SixLayerFramework
 
 /// Tests for OCR disambiguation functionality
@@ -139,9 +142,10 @@ open class OCRDisambiguationTDDTests: BaseTestClass {
         // Should render confidence-based interface
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
         #if canImport(ViewInspector)
+        #if canImport(ViewInspector)
         let inspectionResult: Bool? = {
             guard let inspected = try? view.inspect() else { return nil }
-            let textElements = inspected.findAll(ViewType.Text.self)
+            let textElements = inspected.findAll(ViewInspector.ViewType.Text.self)
             if let textElement = textElements.first,
                let text = try? textElement.string() {
                 #expect(text == "OCR Disambiguation View (Stub)", "Should be stub text until implemented")
@@ -151,6 +155,9 @@ open class OCRDisambiguationTDDTests: BaseTestClass {
                 return false
             }
         }()
+        #else
+        let inspectionResult: Bool? = nil
+        #endif
         #else
         let inspectionResult: Bool? = nil
         #endif
