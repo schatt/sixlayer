@@ -34,7 +34,7 @@ open class ExplicitCountBasedPresentationTests: BaseTestClass {
         )
 
         // When: Create collection view
-        let view = GenericItemCollectionView(
+        _ = GenericItemCollectionView(
             items: smallItems,
             hints: hints
         )
@@ -58,7 +58,7 @@ open class ExplicitCountBasedPresentationTests: BaseTestClass {
         )
 
         // When: Create collection view
-        let view = GenericItemCollectionView(
+        _ = GenericItemCollectionView(
             items: largeItems,
             hints: hints
         )
@@ -84,7 +84,7 @@ open class ExplicitCountBasedPresentationTests: BaseTestClass {
         )
 
         // When: Create collection view
-        let view = GenericItemCollectionView(
+        _ = GenericItemCollectionView(
             items: exactThresholdItems,
             hints: hints
         )
@@ -108,7 +108,7 @@ open class ExplicitCountBasedPresentationTests: BaseTestClass {
         )
 
         // When: Create collection view
-        let view = GenericItemCollectionView(
+        _ = GenericItemCollectionView(
             items: items,
             hints: hints
         )
@@ -249,7 +249,7 @@ open class ExplicitCountBasedPresentationTests: BaseTestClass {
         )
 
         // When: Create collection view
-        let view = GenericItemCollectionView(
+        _ = GenericItemCollectionView(
             items: emptyItems,
             hints: hints
         )

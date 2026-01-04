@@ -43,7 +43,7 @@ open class CountBasedPresentationTests: BaseTestClass {
         )
         
         // When: Create collection view
-        let view = GenericItemCollectionView(
+        _ = GenericItemCollectionView(
             items: smallItems,
             hints: hints
         )
@@ -67,7 +67,7 @@ open class CountBasedPresentationTests: BaseTestClass {
         )
         
         // When: Create collection view
-        let view = GenericItemCollectionView(
+        _ = GenericItemCollectionView(
             items: largeItems,
             hints: hints
         )
@@ -89,7 +89,7 @@ open class CountBasedPresentationTests: BaseTestClass {
         )
         
         // When: Create collection view
-        let view = GenericItemCollectionView(
+        _ = GenericItemCollectionView(
             items: veryLargeItems,
             hints: hints
         )
@@ -114,7 +114,7 @@ open class CountBasedPresentationTests: BaseTestClass {
         )
         
         // When: Create collection view
-        let view = GenericItemCollectionView(
+        _ = GenericItemCollectionView(
             items: largeMediaItems,
             hints: hints
         )
@@ -137,7 +137,7 @@ open class CountBasedPresentationTests: BaseTestClass {
         )
         
         // When: Create collection view
-        let view = GenericItemCollectionView(
+        _ = GenericItemCollectionView(
             items: largeNavItems,
             hints: hints
         )
@@ -161,7 +161,7 @@ open class CountBasedPresentationTests: BaseTestClass {
         )
         
         // When: Create collection view
-        let view = GenericItemCollectionView(
+        _ = GenericItemCollectionView(
             items: mediumItems,
             hints: hints
         )
@@ -186,7 +186,7 @@ open class CountBasedPresentationTests: BaseTestClass {
         )
         
         // When: Create collection view
-        let view = GenericItemCollectionView(
+        _ = GenericItemCollectionView(
             items: emptyItems,
             hints: hints
         )
@@ -208,7 +208,7 @@ open class CountBasedPresentationTests: BaseTestClass {
         )
         
         // When: Create collection view
-        let view = GenericItemCollectionView(
+        _ = GenericItemCollectionView(
             items: singleItem,
             hints: hints
         )
@@ -232,7 +232,7 @@ open class CountBasedPresentationTests: BaseTestClass {
         )
         
         // When: Create collection view
-        let view = GenericItemCollectionView(
+        _ = GenericItemCollectionView(
             items: items,
             hints: hints
         )
