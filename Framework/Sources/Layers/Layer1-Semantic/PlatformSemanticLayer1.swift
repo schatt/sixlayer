@@ -1,4 +1,5 @@
 import SwiftUI
+import Foundation
 
 // MARK: - Property Label Types
 
@@ -4273,11 +4274,20 @@ public struct CustomGridCollectionView<Item: Identifiable>: View {
     
     public var body: some View {
         GeometryReader { geometry in
-            let columns = determineColumns(for: geometry.size.width)
-            let gridColumns = Array(repeating: GridItem(.flexible(), spacing: 16), count: columns)
+            let context = LayoutContext.from(viewportWidth: geometry.size.width)
+            let columns = LayoutParameterCalculator.calculateColumns(
+                count: items.count,
+                dataType: hints.dataType,
+                context: context
+            )
+            let spacing = LayoutParameterCalculator.calculateSpacing(
+                context: context,
+                dataType: hints.dataType
+            )
+            let gridColumns = Array(repeating: GridItem(.flexible(), spacing: spacing), count: columns)
             
             ScrollView {
-                LazyVGrid(columns: gridColumns, spacing: 16) {
+                LazyVGrid(columns: gridColumns, spacing: spacing) {
                     ForEach(items) { item in
                         customItemView(item)
                             .onTapGesture {
@@ -4288,12 +4298,6 @@ public struct CustomGridCollectionView<Item: Identifiable>: View {
                 .padding(16)
             }
         }
-    }
-    
-    private func determineColumns(for width: CGFloat) -> Int {
-        let minItemWidth: CGFloat = 200
-        let maxColumns = Int(width / minItemWidth)
-        return max(1, min(maxColumns, 4))
     }
 }
 
@@ -4354,11 +4358,20 @@ public struct CustomMediaView: View {
     
     public var body: some View {
         GeometryReader { geometry in
-            let columns = determineColumns(for: geometry.size.width)
-            let gridColumns = Array(repeating: GridItem(.flexible(), spacing: 16), count: columns)
+            let context = LayoutContext.from(viewportWidth: geometry.size.width)
+            let columns = LayoutParameterCalculator.calculateColumns(
+                count: media.count,
+                dataType: .media,
+                context: context
+            )
+            let spacing = LayoutParameterCalculator.calculateSpacing(
+                context: context,
+                dataType: .media
+            )
+            let gridColumns = Array(repeating: GridItem(.flexible(), spacing: spacing), count: columns)
             
             ScrollView {
-                LazyVGrid(columns: gridColumns, spacing: 16) {
+                LazyVGrid(columns: gridColumns, spacing: spacing) {
                     ForEach(media, id: \.id) { mediaItem in
                         customMediaView(mediaItem)
                     }
@@ -4366,12 +4379,6 @@ public struct CustomMediaView: View {
                 .padding(16)
             }
         }
-    }
-    
-    private func determineColumns(for width: CGFloat) -> Int {
-        let minItemWidth: CGFloat = 200
-        let maxColumns = Int(width / minItemWidth)
-        return max(1, min(maxColumns, 4))
     }
 }
 
