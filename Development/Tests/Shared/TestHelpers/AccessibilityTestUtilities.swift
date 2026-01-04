@@ -232,7 +232,7 @@ public enum AccessibilityTestUtilities {
     ) -> Bool {
         #if canImport(ViewInspector)
         do {
-            let inspectedView = try view.inspect()
+            _ = try view.inspect()
             // Search for accessibility identifiers matching the pattern
             // This is a simplified implementation - full implementation would search the view hierarchy
             return true // Placeholder - actual implementation would check for identifiers
@@ -256,7 +256,7 @@ public enum AccessibilityTestUtilities {
     ) -> Bool {
         #if canImport(ViewInspector)
         do {
-            let inspectedView = try view.inspect()
+            _ = try view.inspect()
             // Search for accessibility identifiers matching the pattern
             // This is a simplified implementation - full implementation would search the view hierarchy
             return true // Placeholder - actual implementation would check for identifiers
