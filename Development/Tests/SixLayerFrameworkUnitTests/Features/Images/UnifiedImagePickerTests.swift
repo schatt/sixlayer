@@ -212,7 +212,8 @@ open class UnifiedImagePickerTests: BaseTestClass {
         let platformImage = PlatformImage(uiImage)
 
         // Then: Should create PlatformImage correctly
-        #expect(platformImage.uiImage != nil, "Should convert UIImage to PlatformImage")
+        // uiImage is non-optional, verify by checking size
+        #expect(platformImage.size.width > 0, "Should convert UIImage to PlatformImage")
         #expect(platformImage.size == placeholderImage.size, "Should preserve image size")
 
         #elseif os(macOS)

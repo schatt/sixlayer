@@ -210,7 +210,8 @@ open class PlatformPhotoComponentsLayer4IntegrationTests: BaseTestClass {
         // This is the code that was broken: PlatformImage(image)
         let callbackResult = PlatformImage(uiImage)
         // callbackResult is a non-optional PlatformImage, so it exists if we reach here
-        #expect(callbackResult.uiImage != nil, "Callback pattern should produce valid result")
+        // uiImage is non-optional, verify by checking size
+        #expect(callbackResult.size.width > 0, "Callback pattern should produce valid result")
         #elseif os(macOS)
         let nsImage = placeholderImage.nsImage
 
