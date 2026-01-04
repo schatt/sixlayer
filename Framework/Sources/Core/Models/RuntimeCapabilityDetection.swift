@@ -170,20 +170,33 @@ public struct RuntimeCapabilityDetection {
     
     #if os(iOS)
     /// iOS touch detection - checks for actual touch capability
+    /// Uses compile-time guarantee with optional runtime verification
     private static func detectiOSTouchSupport() -> Bool {
-        // Check if touch events are available by checking if we can detect touch input
-        // All iOS devices support touch, but we verify at runtime
-        // Use Thread.isMainThread check with MainActor.assumeIsolated to satisfy compiler
-        // while preventing crashes during parallel test execution
+        // iOS touch detection strategy:
+        // 1. Compile-time guarantee: We're on iOS, so touch is available
+        // 2. Runtime verification: Check userInterfaceIdiom if on main thread for additional confidence
+        
+        #if canImport(UIKit)
+        // All iOS devices have touch screens - this is a platform guarantee
+        // We can optionally verify with userInterfaceIdiom, but it's not required
+        
         if Thread.isMainThread {
+            // On main thread, verify with userInterfaceIdiom for additional confidence
             return MainActor.assumeIsolated {
-                UIDevice.current.userInterfaceIdiom != .unspecified
+                let idiom = UIDevice.current.userInterfaceIdiom
+                // .phone, .pad, and .mac (Catalyst) all support touch
+                // .unspecified can occur in test environments - still assume touch (we're on iOS)
+                return idiom == .phone || idiom == .pad || idiom == .mac || idiom == .unspecified
             }
         } else {
-            // If not on main thread, assume touch is available (all iOS devices have touch)
-            // This prevents crashes during parallel test execution
+            // Not on main thread - use compile-time guarantee
+            // All iOS devices have touch, so return true
             return true
         }
+        #else
+        // Should never happen on iOS, but provide fallback
+        return false
+        #endif
     }
     #endif
     
