@@ -20,7 +20,7 @@ final class Layer2ComponentAccessibilityTests {
             TestPatterns.TestItem(id: "item2", title: "Test Item 2"),
             TestPatterns.TestItem(id: "item3", title: "Test Item 3")
         ]
-        let hints = PresentationHints()
+        _ = PresentationHints()
         
         // When: Creating layout decision using Layer 2 function
         let layoutDecision = determineOptimalLayout_L2(
@@ -38,10 +38,10 @@ final class Layer2ComponentAccessibilityTests {
     
     @Test func testDetermineOptimalFormLayoutL2ReturnsValidDecision() async {
         // Given: Test hints
-        let hints = PresentationHints()
+        _ = PresentationHints()
         
         // When: Creating form layout decision using Layer 2 function
-        let formLayoutDecision = determineOptimalFormLayout_L2(
+        _ = determineOptimalFormLayout_L2(
             hints: hints
         )
         
@@ -56,7 +56,7 @@ final class Layer2ComponentAccessibilityTests {
             "content": "This is test content",
             "image": "test-image"
         ]
-        let hints = PresentationHints()
+        _ = PresentationHints()
         
         // When: Creating card layout decision using Layer 2 function
         let cardLayoutDecision = determineOptimalCardLayout_L2(
@@ -79,7 +79,7 @@ final class Layer2ComponentAccessibilityTests {
             "content": "This is test content",
             "image": "test-image"
         ]
-        let hints = PresentationHints()
+        _ = PresentationHints()
         
         // When: Creating intelligent card layout decision using Layer 2 function
         let intelligentLayoutDecision = determineIntelligentCardLayout_L2(
@@ -98,7 +98,7 @@ final class Layer2ComponentAccessibilityTests {
     @Test func testDetermineOptimalPhotoLayoutL2ReturnsValidDecision() async {
         // Given: Test photo data
         let testPhotoData = Data("test-image-data".utf8)
-        let hints = PresentationHints()
+        _ = PresentationHints()
         
         // When: Creating photo layout decision using Layer 2 function
         let photoLayoutDecision = determineOptimalPhotoLayout_L2(
