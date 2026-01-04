@@ -474,7 +474,6 @@ public struct NamedAutomaticComplianceModifier: ViewModifier {
         let config = AccessibilityIdentifierConfig.currentTaskLocalConfig ?? injectedConfig ?? AccessibilityIdentifierConfig.shared
         // CRITICAL: Capture @Published property values as local variables BEFORE any logic
         // to avoid creating SwiftUI dependencies that cause infinite recursion
-        let capturedEnableAutoIDs = config.enableAutoIDs
         let capturedScreenContext = config.currentScreenContext
         let capturedViewHierarchy = config.currentViewHierarchy
         let capturedEnableUITestIntegration = config.enableUITestIntegration

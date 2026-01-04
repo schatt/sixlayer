@@ -30,8 +30,7 @@ let package = Package(
             path: "Framework/Sources",
             exclude: [
                 "Core/ExampleHelpers.swift",
-                "Core/ExtensibleHintsExample.swift",
-                "Core/Models/DataHintsLoader_REFACTOR_PROPOSAL.md"
+                "Core/ExtensibleHintsExample.swift"
             ],
             sources: [
                 "Core",
@@ -75,7 +74,14 @@ let package = Package(
             path: "Development/Tests/SixLayerFrameworkUnitTests",
             exclude: [
                 // Documentation and example files
-                "README.md"
+                "BugReports/PlatformTypes_v4.6.4/README.md",
+                "BugReports/README.md",
+                "BugReports/PlatformTypes_v4.6.6/README.md",
+                "BugReports/ButtonStyle_v4.6.3/README.md",
+                "BugReports/PlatformImage_v4.6.2/README.md",
+                "BugReports/PlatformPhotoPicker_v4.6.5/README.md",
+                "ViewInspectorTests/Utilities/TestHelpers/CoreDataTestingGuide.md",
+                "Utilities/TestHelpers/CoreDataTestingGuide.md"
             ],
             swiftSettings: [
                 // Disable strict concurrency checking for tests to work around Swift 6 region-based isolation checker issues
