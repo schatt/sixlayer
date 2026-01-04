@@ -92,7 +92,7 @@ struct LiquidGlassDesignSystemTests {
         let material = liquidGlassSystem.createMaterial(.primary)
         
         // When
-        let reflection = material.generateReflection(for: CGSize(width: 100, height: 100))
+        _ = material.generateReflection(for: CGSize(width: 100, height: 100))
         
         // Then
         #expect(Bool(true), "reflection is non-optional")  // reflection is non-optional
@@ -112,7 +112,7 @@ struct LiquidGlassDesignSystemTests {
         let material = liquidGlassSystem.createMaterial(.primary)
         
         // When
-        let reflection = material.generateReflection(for: CGSize(width: 200, height: 200))
+        _ = material.generateReflection(for: CGSize(width: 200, height: 200))
         
         // Then
         #expect(Bool(true), "reflection is non-optional")  // reflection is non-optional
@@ -130,7 +130,7 @@ struct LiquidGlassDesignSystemTests {
         
         // Given & When
         let liquidGlassSystem = LiquidGlassDesignSystem.shared
-        var control = FloatingControl(
+        let control = FloatingControl(
             type: .navigation,
             position: .top,
             material: liquidGlassSystem.createMaterial(.primary)
@@ -153,7 +153,7 @@ struct LiquidGlassDesignSystemTests {
         
         // Given
         let liquidGlassSystem = LiquidGlassDesignSystem.shared
-        var control = FloatingControl(
+        let control = FloatingControl(
             type: .navigation,
             position: .top,
             material: liquidGlassSystem.createMaterial(.primary)
@@ -175,7 +175,7 @@ struct LiquidGlassDesignSystemTests {
         
         // Given
         let liquidGlassSystem = LiquidGlassDesignSystem.shared
-        var control = FloatingControl(
+        let control = FloatingControl(
             type: .navigation,
             position: .top,
             material: liquidGlassSystem.createMaterial(.primary)
@@ -200,7 +200,7 @@ struct LiquidGlassDesignSystemTests {
         
         // Given & When
         let liquidGlassSystem = LiquidGlassDesignSystem.shared
-        var menu = ContextualMenu(
+        let menu = ContextualMenu(
             items: [
                 ContextualMenuItem(title: "Edit", action: {}),
                 ContextualMenuItem(title: "Delete", action: {})
@@ -224,7 +224,7 @@ struct LiquidGlassDesignSystemTests {
         
         // Given
         let liquidGlassSystem = LiquidGlassDesignSystem.shared
-        var menu = ContextualMenu(
+        let menu = ContextualMenu(
             items: [
                 ContextualMenuItem(title: "Edit", action: {})
             ],
@@ -247,7 +247,7 @@ struct LiquidGlassDesignSystemTests {
         
         // Given
         let liquidGlassSystem = LiquidGlassDesignSystem.shared
-        var menu = ContextualMenu(
+        let menu = ContextualMenu(
             items: [
                 ContextualMenuItem(title: "Edit", action: {})
             ],
@@ -293,7 +293,7 @@ struct LiquidGlassDesignSystemTests {
         
         // Given
         let liquidGlassSystem = LiquidGlassDesignSystem.shared
-        var control = FloatingControl(
+        let control = FloatingControl(
             type: .navigation,
             position: .top,
             material: liquidGlassSystem.createMaterial(.primary)
@@ -322,7 +322,7 @@ struct LiquidGlassDesignSystemTests {
         let material = liquidGlassSystem.createMaterial(.primary)
         
         // When
-        let reflection = material.generateReflection(for: CGSize(width: 1000, height: 1000))
+        _ = material.generateReflection(for: CGSize(width: 1000, height: 1000))
         
         // Then
         #expect(Bool(true), "reflection is non-optional")  // reflection is non-optional
@@ -337,7 +337,7 @@ struct LiquidGlassDesignSystemTests {
         
         // Given
         let liquidGlassSystem = LiquidGlassDesignSystem.shared
-        var control = FloatingControl(
+        let control = FloatingControl(
             type: .navigation,
             position: .top,
             material: liquidGlassSystem.createMaterial(.primary)
@@ -365,7 +365,7 @@ struct LiquidGlassDesignSystemTests {
         let material = liquidGlassSystem.createMaterial(.primary)
         
         // When
-        let reflection = material.generateReflection(for: CGSize(width: 100, height: 100))
+        _ = material.generateReflection(for: CGSize(width: 100, height: 100))
         
         // Then
         #expect(material.isTranslucent) // Should be accessible
@@ -381,7 +381,7 @@ struct LiquidGlassDesignSystemTests {
         
         // Given
         let liquidGlassSystem = LiquidGlassDesignSystem.shared
-        var control = FloatingControl(
+        let control = FloatingControl(
             type: .navigation,
             position: .top,
             material: liquidGlassSystem.createMaterial(.primary)
@@ -405,12 +405,12 @@ struct LiquidGlassDesignSystemTests {
         let liquidGlassSystem = LiquidGlassDesignSystem.shared
         let system = LiquidGlassDesignSystem.shared
         let material = liquidGlassSystem.createMaterial(.primary)
-        var control = FloatingControl(
+        let control = FloatingControl(
             type: .navigation,
             position: .top,
             material: material
         )
-        var menu = ContextualMenu(
+        let menu = ContextualMenu(
             items: [ContextualMenuItem(title: "Test", action: {})],
             material: liquidGlassSystem.createMaterial(.secondary)
         )
@@ -432,7 +432,7 @@ struct LiquidGlassDesignSystemTests {
         // Given & When
         let system = LiquidGlassDesignSystem.shared
         for feature in LiquidGlassFeature.allCases {
-            let fallbackBehavior = system.getFallbackBehavior(for: feature)
+            _ = system.getFallbackBehavior(for: feature)
             
             // Then
             #expect(Bool(true), "Feature \(feature.rawValue) should have a fallback behavior")  // fallbackBehavior is non-optional

@@ -93,7 +93,7 @@ open class Layer5PlatformOptimizationTests: BaseTestClass {
         let expectedMinTouchTarget: CGFloat = (currentPlatform == .iOS || currentPlatform == .watchOS) ? 44.0 : 0.0
         let expectedHoverDelay: TimeInterval = (currentPlatform == .macOS || currentPlatform == .visionOS || currentPlatform == .iOS) ? 0.5 : 0.0
         
-        for platform in platforms {
+        for _ in platforms {
             let config = getCardExpansionPlatformConfig()
             
             // Verify platform-appropriate values for current platform
