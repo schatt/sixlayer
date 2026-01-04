@@ -36,7 +36,7 @@ open class PlatformNavigationSplitViewHelperTests: BaseTestClass {
         // Then: Should create a valid view structure
         #if canImport(ViewInspector)
         do {
-            guard let inspected = view.tryInspect() else { return }
+            guard let inspected = try? AnyView(view).inspect() else { return }
             
             // On iPad, should use NavigationSplitView (iOS 16+) or NavigationView (iOS 15)
             #if os(iOS)
@@ -80,7 +80,7 @@ open class PlatformNavigationSplitViewHelperTests: BaseTestClass {
         // On iPhone portrait, should use NavigationStack (iOS 16+) or NavigationView with StackNavigationViewStyle (iOS 15)
         #if canImport(ViewInspector)
         do {
-            guard let inspected = view.tryInspect() else { return }
+            guard let inspected = try? AnyView(view).inspect() else { return }
             
             #if os(iOS)
             if #available(iOS 16.0, *) {
@@ -116,7 +116,7 @@ open class PlatformNavigationSplitViewHelperTests: BaseTestClass {
         // Then: Should create a valid view structure
         #if canImport(ViewInspector)
         do {
-            guard let inspected = view.tryInspect() else { return }
+            guard let inspected = try? AnyView(view).inspect() else { return }
             
             #if os(macOS)
             if #available(macOS 13.0, *) {
@@ -157,7 +157,7 @@ open class PlatformNavigationSplitViewHelperTests: BaseTestClass {
         // Then: Should create a valid view structure
         #if canImport(ViewInspector)
         do {
-            guard let inspected = view.tryInspect() else { return }
+            guard let inspected = try? AnyView(view).inspect() else { return }
             
             #if os(iOS)
             if #available(iOS 16.0, *) {
@@ -203,7 +203,7 @@ open class PlatformNavigationSplitViewHelperTests: BaseTestClass {
         // On iPhone portrait, should use NavigationStack (iOS 16+) or NavigationView with StackNavigationViewStyle (iOS 15)
         #if canImport(ViewInspector)
         do {
-            guard let inspected = view.tryInspect() else { return }
+            guard let inspected = try? AnyView(view).inspect() else { return }
             
             #if os(iOS)
             if #available(iOS 16.0, *) {
@@ -242,7 +242,7 @@ open class PlatformNavigationSplitViewHelperTests: BaseTestClass {
         // Then: Should create a valid view structure
         #if canImport(ViewInspector)
         do {
-            guard let inspected = view.tryInspect() else { return }
+            guard let inspected = try? AnyView(view).inspect() else { return }
             
             #if os(macOS)
             if #available(macOS 13.0, *) {
