@@ -570,11 +570,13 @@ open class OCROverlayTests: BaseTestClass {
         )
         
         let testImage = PlatformImage()
-        _ = OCROverlayView(
-            image: testImage,
-            result: overlappingResult,
-            onTextEdit: { _, _ in },
-            onTextDelete: { _ in }
+        let testOCRResult = OCRResult(
+            extractedText: "Overlapping Text",
+            confidence: 0.7,
+            boundingBoxes: overlappingBoxes,
+            textTypes: [.general: "Overlapping Text"],
+            processingTime: 1.0,
+            language: .english
         )
         
         let overlayView = OCROverlayView(

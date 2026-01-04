@@ -58,7 +58,7 @@ open class OCRComponentsTDDTests: BaseTestClass {
         if let inspected = try? view.inspect() {
             // Should have overlay interface
             #if canImport(ViewInspector)
-            let anyViews = inspected.sixLayerFindAll(ViewType.AnyView.self)
+            let anyViews = inspected.findAll(ViewType.AnyView.self)
             let hasInterface = anyViews.count > 0
             #else
             let hasInterface = false
@@ -112,7 +112,7 @@ open class OCRComponentsTDDTests: BaseTestClass {
         if let inspected = try? view.inspect() {
             // Should have OCR processing interface
             #if canImport(ViewInspector)
-            let anyViews = inspected.sixLayerFindAll(ViewType.AnyView.self)
+            let anyViews = inspected.findAll(ViewType.AnyView.self)
             let hasInterface = anyViews.count > 0
             #else
             let hasInterface = false
@@ -180,7 +180,7 @@ open class OCRComponentsTDDTests: BaseTestClass {
         if let inspected = try? view.inspect() {
             // Should display candidate alternatives
             // Note: ViewInspector doesn't have a find(text:) method, so we check for any view structure
-            let anyViews = inspected.sixLayerFindAll(ViewType.AnyView.self)
+            let anyViews = inspected.findAll(ViewType.AnyView.self)
             let hasStructure = anyViews.count > 0
             #expect(hasStructure, "Should display candidate alternatives")
         } else {
@@ -257,7 +257,7 @@ open class OCRComponentsTDDTests: BaseTestClass {
         if let inspected = try? view.inspect() {
             // Should find all candidate texts
             // Note: ViewInspector doesn't have a find(text:) method, so we check for any view structure
-            let anyViews = inspected.sixLayerFindAll(ViewType.AnyView.self)
+            let anyViews = inspected.findAll(ViewType.AnyView.self)
             let hasStructure = anyViews.count > 0
             #expect(hasStructure, "Should display candidate alternatives")
         } else {
@@ -306,7 +306,7 @@ open class OCRComponentsTDDTests: BaseTestClass {
         if let inspected = try? view.inspect() {
             // Should have some UI structure
             #if canImport(ViewInspector)
-            let anyViews = inspected.sixLayerFindAll(ViewType.AnyView.self)
+            let anyViews = inspected.findAll(ViewType.AnyView.self)
             let hasInterface = anyViews.count > 0
             #else
             let hasInterface = false

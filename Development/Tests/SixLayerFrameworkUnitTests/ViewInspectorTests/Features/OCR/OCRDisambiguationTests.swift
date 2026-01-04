@@ -141,8 +141,9 @@ open class OCRDisambiguationTDDTests: BaseTestClass {
         #if canImport(ViewInspector)
         let inspectionResult: Bool? = {
             guard let inspected = try? view.inspect() else { return nil }
-            if let textElement = try? inspected.sixLayerText(),
-               let text = try? textElement.sixLayerString() {
+            let textElements = inspected.findAll(ViewType.Text.self)
+            if let textElement = textElements.first,
+               let text = try? textElement.string() {
                 #expect(text == "OCR Disambiguation View (Stub)", "Should be stub text until implemented")
                 return true
             } else {
