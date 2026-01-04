@@ -49,21 +49,24 @@ public func determineNavigationStackStrategy_L2<Item: Identifiable>(
     let analysis = DataIntrospectionEngine.analyzeCollection(items)
     
     // Check hints first for explicit preferences
-    if hints.presentationPreference == .navigation {
+    switch hints.presentationPreference {
+    case .navigation:
         return NavigationStackDecision(
             strategy: .navigationStack,
             reasoning: "Navigation strategy selected based on explicit hints preference"
         )
-    } else if hints.presentationPreference == .detail {
+    case .detail:
         return NavigationStackDecision(
             strategy: .splitView,
             reasoning: "Split view strategy selected based on detail preference in hints"
         )
-    } else if hints.presentationPreference == .modal {
+    case .modal:
         return NavigationStackDecision(
             strategy: .modal,
             reasoning: "Modal strategy selected based on modal preference in hints"
         )
+    default:
+        break // Let other logic handle countBased and other preferences
     }
     
     // Analyze data characteristics to determine optimal strategy

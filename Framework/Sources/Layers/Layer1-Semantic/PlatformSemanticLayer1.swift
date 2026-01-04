@@ -1696,6 +1696,11 @@ public struct GenericItemCollectionView<Item: Identifiable>: View {
             return .masonry
         case .coverFlow:
             return .coverFlow
+        case .countBased(let lowCount, let highCount, let threshold):
+            // Explicit count-based preference
+            return items.count <= threshold
+                ? determineStrategyForPreference(lowCount)
+                : determineStrategyForPreference(highCount)
         case .automatic:
             // Count-aware logic for generic/collection content
             if hints.dataType == .generic || hints.dataType == .collection {
@@ -1777,6 +1782,36 @@ public struct GenericItemCollectionView<Item: Identifiable>: View {
             return 3  // Always prefer list
         default:
             return baseThreshold
+        }
+    }
+
+    /// Convert a PresentationPreference to a PresentationStrategy
+    /// Used for countBased preferences where nested preferences need resolution
+    private func determineStrategyForPreference(_ preference: PresentationPreference) -> PresentationStrategy {
+        switch preference {
+        case .cards, .card:
+            return .expandableCards
+        case .list:
+            return .list
+        case .grid:
+            return .grid
+        case .masonry:
+            return .masonry
+        case .coverFlow:
+            return .coverFlow
+        case .automatic:
+            // Recursive: use count-aware automatic logic from Phase 1
+            return determineCountAwareStrategy(
+                count: items.count,
+                dataType: hints.dataType,
+                platform: SixLayerPlatform.currentPlatform,
+                deviceType: SixLayerPlatform.deviceType
+            )
+        case .countBased:
+            // Shouldn't happen (handled above), but fallback to prevent recursion
+            return .adaptive
+        default:
+            return .adaptive
         }
     }
 }
