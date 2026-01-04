@@ -121,7 +121,7 @@ open class LocationServiceTests: BaseTestClass {
         let service = LocationService()
         
         // When: Checking platform availability
-        let currentPlatform = SixLayerPlatform.current
+        _ = SixLayerPlatform.current
         
         // Then: Service should work on all platforms
         // The service should handle platform differences internally
@@ -182,7 +182,7 @@ open class LocationServiceTests: BaseTestClass {
         let service = LocationService()
         
         // When: Using as CLLocationManagerDelegate
-        let delegate: CLLocationManagerDelegate = service
+        _ = service as CLLocationManagerDelegate
         
         // Then: Should conform without isolation errors
         // Delegate methods are nonisolated and bridge to MainActor internally
@@ -207,7 +207,7 @@ open class LocationServiceTests: BaseTestClass {
         // Protocol is @MainActor, removing the need for @unchecked Sendable
         
         // Verify we can use it as LocationServiceProtocol without Sendable issues
-        let protocolService: LocationServiceProtocol = service
+        _ = service as LocationServiceProtocol
         // ProtocolService is non-optional, so it exists if we reach here
     }
     

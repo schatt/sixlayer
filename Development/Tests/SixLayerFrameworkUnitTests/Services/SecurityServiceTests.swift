@@ -12,7 +12,7 @@ open class SecurityServiceTests: BaseTestClass {
     
     @Test @MainActor func testSecurityServiceInitialization() {
         // Given & When: Creating the service
-        let service = SecurityService()
+        _ = SecurityService()
         
         // Then: Service should be created successfully
         #expect(Bool(true), "service is non-optional")  // service is non-optional
@@ -225,7 +225,7 @@ open class SecurityServiceTests: BaseTestClass {
         let service = SecurityService()
         
         // When: Getting privacy permissions dictionary
-        let permissions = service.privacyPermissions
+        _ = service.privacyPermissions
         
         // Then: Should return a dictionary (may be empty in test environment)
         #expect(Bool(true), "Dictionary should exist")
@@ -346,7 +346,7 @@ open class SecurityServiceTests: BaseTestClass {
         let biometricType = service.biometricType
         let isBiometricAvailable = service.isBiometricAvailable
         let isAuthenticated = service.isAuthenticated
-        let privacyPermissions = service.privacyPermissions
+        _ = service.privacyPermissions
         
         // Then: All properties should be accessible
         #expect(biometricType == .faceID || biometricType == .touchID || biometricType == .touchBar || biometricType == .none)

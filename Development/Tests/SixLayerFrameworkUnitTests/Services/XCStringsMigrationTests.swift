@@ -24,7 +24,7 @@ open class XCStringsMigrationTests: BaseTestClass {
     
     @Test func testInternationalizationService_AllLanguagesWorkWithXCStrings() {
         // Given: Service and all supported languages
-        let service = InternationalizationService()
+        _ = InternationalizationService()
         let languages = ["en", "es", "fr", "de", "de-CH", "ja", "ko", "pl", "zh-Hans"]
         
         // When: Requesting strings for each language
@@ -96,7 +96,7 @@ open class XCStringsMigrationTests: BaseTestClass {
     
     @Test func testMigration_AllLanguagesPreserved() {
         // Given: Service and all language codes from existing .lproj directories
-        let service = InternationalizationService()
+        _ = InternationalizationService()
         let expectedLanguages = ["en", "es", "fr", "de", "de-CH", "ja", "ko", "pl", "zh-Hans"]
         
         // When: Checking that service can handle all languages
