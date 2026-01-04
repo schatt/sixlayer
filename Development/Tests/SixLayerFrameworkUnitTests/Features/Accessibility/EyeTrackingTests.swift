@@ -70,7 +70,7 @@ open class EyeTrackingTests: BaseTestClass {
     /// METHODOLOGY: Create EyeTrackingConfig with default values and verify all properties are set correctly
     @Test func testEyeTrackingConfigInitialization() {
         // Given: Current platform
-        let currentPlatform = SixLayerPlatform.current
+        _ = SixLayerPlatform.current
         
         let config = EyeTrackingConfig()
         

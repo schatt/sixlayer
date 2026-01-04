@@ -58,7 +58,7 @@ open class ImageProcessingPipelineTests: BaseTestClass {
     /// METHODOLOGY: Process image for OCR and verify OCR processing functionality
     @Test func testImageProcessingPipeline_ProcessForOCR() async throws {
         // Given: Current platform
-        let currentPlatform = SixLayerPlatform.current
+        _ = SixLayerPlatform.current
         let image = PlatformImage.createPlaceholder()
         let purpose = ImagePurpose.ocr
         let options = createProcessingOptions()

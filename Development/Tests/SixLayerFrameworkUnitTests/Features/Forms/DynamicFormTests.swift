@@ -50,7 +50,7 @@ open class DynamicFormTests: BaseTestClass {
     /// METHODOLOGY: Create DynamicFormField with comprehensive parameters and verify all properties are set correctly
     @Test func testDynamicFormFieldCreation() {
         // Given: Current platform
-        let currentPlatform = SixLayerPlatform.current
+        _ = SixLayerPlatform.current
         
         let field = DynamicFormField(
             id: "testField",
@@ -351,7 +351,7 @@ open class DynamicFormTests: BaseTestClass {
     /// METHODOLOGY: Create DynamicFormState with configuration and verify initial state properties
     @Test @MainActor func testDynamicFormStateCreation() {
         // Given: Current platform
-        let currentPlatform = SixLayerPlatform.current
+        _ = SixLayerPlatform.current
         
         let config = DynamicFormConfiguration(
             id: "testForm",

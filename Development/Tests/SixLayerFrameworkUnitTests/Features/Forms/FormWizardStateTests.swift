@@ -40,7 +40,7 @@ open class FormWizardStateTests: BaseTestClass {
     /// METHODOLOGY: Initialize FormWizardState and verify initial state properties
     @Test func testFormWizardStateInitialization() {
         // Given: Current platform
-        let currentPlatform = SixLayerPlatform.current
+        _ = SixLayerPlatform.current
         
         // TODO: Implement test
     }

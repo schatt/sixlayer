@@ -125,7 +125,7 @@ open class FormFieldInteractionTests: BaseTestClass {
     /// METHODOLOGY: Create text field with data binding and verify binding functionality
     @Test @MainActor func testTextFieldWithDataBinding() {
         // Given: Current platform and text field with data binding
-        let currentPlatform = SixLayerPlatform.current
+        _ = SixLayerPlatform.current
         resetCallbacks()
         let textField = sampleFormFields[0]
         var textValue = ""

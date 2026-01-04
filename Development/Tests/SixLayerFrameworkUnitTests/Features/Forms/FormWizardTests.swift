@@ -46,7 +46,7 @@ open class FormWizardTests: BaseTestClass {
     /// METHODOLOGY: Create FormWizardStep with comprehensive parameters and verify all properties are set correctly
     @Test func testFormWizardStepCreation() {
         // Given: Current platform
-        let currentPlatform = SixLayerPlatform.current
+        _ = SixLayerPlatform.current
         
         let step = FormWizardStep(
             id: "personal",

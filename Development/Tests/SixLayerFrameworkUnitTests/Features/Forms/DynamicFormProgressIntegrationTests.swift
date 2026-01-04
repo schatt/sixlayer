@@ -45,7 +45,7 @@ open class DynamicFormProgressIntegrationTests: BaseTestClass {
     /// METHODOLOGY: Create form with all field types, fill them, verify progress counts correctly
     @Test @MainActor func testProgressWithAllFieldTypes() {
         // Given: Current platform
-        let currentPlatform = SixLayerPlatform.current
+        _ = SixLayerPlatform.current
         
         let config = DynamicFormConfiguration(
                 id: "allFieldTypes",
