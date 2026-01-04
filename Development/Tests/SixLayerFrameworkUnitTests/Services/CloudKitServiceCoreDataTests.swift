@@ -79,7 +79,8 @@ final class CloudKitServiceCoreDataTests {
         try await service.syncWithCoreData(context: context)
         
         // Verify context is still accessible
-        #expect(context.concurrencyType == .mainQueueConcurrencyType || context.concurrencyType == .confinementConcurrencyType)
+        // Note: confinementConcurrencyType is deprecated, but we check for it for backward compatibility
+        #expect(context.concurrencyType == .mainQueueConcurrencyType)
     }
     
     @Test func testSyncWithCoreDataWithBackgroundContext() async throws {

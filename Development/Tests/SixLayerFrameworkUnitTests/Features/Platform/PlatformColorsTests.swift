@@ -799,15 +799,29 @@ open class PlatformColorsTests: BaseTestClass {
         }
         
         // Resolve colors in high contrast and normal mode
-        let highContrastTraitCollection = UITraitCollection(traitsFrom: [
-            UITraitCollection(userInterfaceStyle: .light),
-            UITraitCollection(accessibilityContrast: .high)
-        ])
+        let highContrastTraitCollection: UITraitCollection
+        let normalTraitCollection: UITraitCollection
         
-        let normalTraitCollection = UITraitCollection(traitsFrom: [
-            UITraitCollection(userInterfaceStyle: .light),
-            UITraitCollection(accessibilityContrast: .normal)
-        ])
+        if #available(iOS 17.0, *) {
+            highContrastTraitCollection = UITraitCollection { mutableTraits in
+                mutableTraits.userInterfaceStyle = .light
+                mutableTraits.accessibilityContrast = .high
+            }
+            normalTraitCollection = UITraitCollection { mutableTraits in
+                mutableTraits.userInterfaceStyle = .light
+                mutableTraits.accessibilityContrast = .normal
+            }
+        } else {
+            // Fallback for iOS < 17
+            highContrastTraitCollection = UITraitCollection(traitsFrom: [
+                UITraitCollection(userInterfaceStyle: .light),
+                UITraitCollection(accessibilityContrast: .high)
+            ])
+            normalTraitCollection = UITraitCollection(traitsFrom: [
+                UITraitCollection(userInterfaceStyle: .light),
+                UITraitCollection(accessibilityContrast: .normal)
+            ])
+        }
         
         let (_, _, _, _, hcLabelBrightness) = resolveAndExtractRGB(labelColor, traitCollection: highContrastTraitCollection)
         let (_, _, _, _, normalLabelBrightness) = resolveAndExtractRGB(labelColor, traitCollection: normalTraitCollection)

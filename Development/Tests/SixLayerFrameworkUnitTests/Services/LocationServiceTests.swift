@@ -44,7 +44,6 @@ open class LocationServiceTests: BaseTestClass {
         #expect(status == .notDetermined || 
                 status == .denied || 
                 status == .restricted || 
-                status == .authorized || 
                 status == .authorizedAlways)
     }
     

@@ -65,7 +65,7 @@ open class NavigationStackLayer6Tests: BaseTestClass {
     @Test @MainActor func testPlatformNavigationStackEnhancements_L6_Accessibility() {
         // Given: A navigation stack view
         let content = Text("Test Content")
-            .platformNavigation {
+            .platformNavigation_L4 {
                 Text("Content")
             }
         
