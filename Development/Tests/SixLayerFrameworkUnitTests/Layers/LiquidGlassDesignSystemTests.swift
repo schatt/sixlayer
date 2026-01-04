@@ -405,12 +405,12 @@ struct LiquidGlassDesignSystemTests {
         let liquidGlassSystem = LiquidGlassDesignSystem.shared
         let system = LiquidGlassDesignSystem.shared
         let material = liquidGlassSystem.createMaterial(.primary)
-        let control = FloatingControl(
+        _ = FloatingControl(
             type: .navigation,
             position: .top,
             material: material
         )
-        let menu = ContextualMenu(
+        _ = ContextualMenu(
             items: [ContextualMenuItem(title: "Test", action: {})],
             material: liquidGlassSystem.createMaterial(.secondary)
         )
