@@ -48,7 +48,7 @@ open class DataBindingTests: BaseTestClass {
     @Test @MainActor func testDataBinderInitialization() {
         initializeTestConfig()
         // Given: Current platform
-        let currentPlatform = SixLayerPlatform.current
+        _ = SixLayerPlatform.current
         
         let testModel = TestModel(name: "John", age: 30, isActive: true)
         let binder = DataBinder(testModel)
@@ -81,7 +81,7 @@ open class DataBindingTests: BaseTestClass {
     @Test @MainActor func testDataBinderUpdateField() {
         initializeTestConfig()
         // Given: Current platform
-        let currentPlatform = SixLayerPlatform.current
+        _ = SixLayerPlatform.current
         
         let testModel = TestModel(name: "John", age: 30, isActive: true)
         let binder = DataBinder(testModel)

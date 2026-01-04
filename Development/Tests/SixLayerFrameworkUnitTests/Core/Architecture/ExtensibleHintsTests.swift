@@ -40,7 +40,7 @@ open class ExtensibleHintsTests: BaseTestClass {
     /// METHODOLOGY: Initialize ExtensibleHints system and verify proper setup
     @Test func testExtensibleHintsInitialization() {
         // Given: Current platform
-        let currentPlatform = SixLayerPlatform.current
+        _ = SixLayerPlatform.current
         
         // TODO: Implement test
     }

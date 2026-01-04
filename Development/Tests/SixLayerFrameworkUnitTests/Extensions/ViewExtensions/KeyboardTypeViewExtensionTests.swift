@@ -69,11 +69,11 @@ open class KeyboardTypeViewExtensionTests: BaseTestClass {
         let testView = Text("Test")
 
         // Test each keyboard type
-        let resultDefault = testView.keyboardType(KeyboardType.default)
-        let resultPhonePad = testView.keyboardType(KeyboardType.phonePad)
-        let resultEmail = testView.keyboardType(KeyboardType.emailAddress)
-        let resultNumberPad = testView.keyboardType(KeyboardType.numberPad)
-        let resultDecimalPad = testView.keyboardType(KeyboardType.decimalPad)
+        _ = testView.keyboardType(KeyboardType.default)
+        _ = testView.keyboardType(KeyboardType.phonePad)
+        _ = testView.keyboardType(KeyboardType.emailAddress)
+        _ = testView.keyboardType(KeyboardType.numberPad)
+        _ = testView.keyboardType(KeyboardType.decimalPad)
 
         // All should return Views (actual keyboard behavior tested via integration)
         #expect(Bool(true), "iOS keyboardType extension should return Views for all types")
