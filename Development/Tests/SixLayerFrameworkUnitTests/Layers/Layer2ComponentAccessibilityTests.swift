@@ -97,7 +97,7 @@ final class Layer2ComponentAccessibilityTests {
     
     @Test func testDetermineOptimalPhotoLayoutL2ReturnsValidDecision() async {
         // Given: Test photo data
-        let testPhotoData = Data("test-image-data".utf8)
+        _ = Data("test-image-data".utf8)
         _ = PresentationHints()
         
         // When: Creating photo layout decision using Layer 2 function
