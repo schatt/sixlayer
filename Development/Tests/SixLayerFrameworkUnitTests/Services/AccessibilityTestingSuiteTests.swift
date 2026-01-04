@@ -13,7 +13,7 @@ open class AccessibilityTestingSuiteTests: BaseTestClass {
     
     @Test @MainActor func testAccessibilityTestingSuiteInitialization() async {
         // Given & When: Creating the testing suite
-        let suite = AccessibilityTestingSuite()
+        _ = AccessibilityTestingSuite()
         
         // Then: Suite should be created successfully (verified by using it below)
     }
