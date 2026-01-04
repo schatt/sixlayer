@@ -36,7 +36,7 @@ open class FrameworkComponentGlobalConfigTests: BaseTestClass {
             // Try to inspect for accessibility identifier
             // Using wrapper - when ViewInspector works on macOS, no changes needed here
             #if canImport(ViewInspector)
-            if let inspectedView = view.tryInspect(),
+            if let inspectedView = try? AnyView(view).inspect(),
                let button = try? inspectedView.sixLayerButton(),
                let accessibilityID = try? button.sixLayerAccessibilityIdentifier() {
                 // Should be empty or not present when global config is disabled
@@ -79,7 +79,7 @@ open class FrameworkComponentGlobalConfigTests: BaseTestClass {
             // Try to inspect for accessibility identifier
             // Using wrapper - when ViewInspector works on macOS, no changes needed here
             #if canImport(ViewInspector)
-            if let inspectedView = view.tryInspect(),
+            if let inspectedView = try? AnyView(view).inspect(),
                let button = try? inspectedView.sixLayerButton(),
                let accessibilityID = try? button.sixLayerAccessibilityIdentifier() {
                 // .named() should always generate an ID (ignoring global settings)

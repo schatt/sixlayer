@@ -167,7 +167,7 @@ open class GlobalDisableLocalEnableTDDTests: BaseTestClass {
     @MainActor
     private func generateIDForView(_ view: some View) -> String {
         // Optimized: Reduced ViewInspector deep searches to improve performance
-        guard let inspectedView = view.tryInspect() else {
+        guard let inspectedView = try? AnyView(view).inspect() else {
             return ""
         }
 
