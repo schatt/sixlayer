@@ -60,7 +60,7 @@ open class FormWizardViewTDDTests: BaseTestClass {
 
         // Should render step content
         #if canImport(ViewInspector)
-        if let inspected = view.tryInspect() {
+        if let inspected = try? AnyView(view).inspect() {
             // Should display current step content
             let allTexts = inspected.sixLayerFindAll(Text.self)
             if !allTexts.isEmpty {
@@ -164,7 +164,7 @@ open class FormWizardViewTDDTests: BaseTestClass {
 
         // Should provide navigation controls
         #if canImport(ViewInspector)
-        if let inspected = view.tryInspect() {
+        if let inspected = try? AnyView(view).inspect() {
             // Should find navigation buttons
             let buttons = inspected.sixLayerFindAll(Button<Text>.self)
             if buttons.count > 0 {
@@ -228,7 +228,7 @@ open class FormWizardViewTDDTests: BaseTestClass {
         )
 
         // Should show step information
-        if let inspected = view.tryInspect() {
+        if let inspected = try? AnyView(view).inspect() {
             // Should display step information
             let hasStepInfo = inspected.sixLayerCount > 0
             #expect(hasStepInfo, "Should display step information")

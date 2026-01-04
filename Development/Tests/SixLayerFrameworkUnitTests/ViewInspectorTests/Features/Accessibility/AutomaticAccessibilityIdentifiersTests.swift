@@ -166,7 +166,7 @@ open class AutomaticAccessibilityIdentifiersTests: BaseTestClass {
             
             #if canImport(ViewInspector)
             // Verify the view can be inspected (which means it was properly installed)
-            if let inspected = rootView.tryInspect() {
+            if let inspected = try? AnyView(rootView).inspect() {
                 // If we can inspect it, the environment was accessed correctly
                 // (ViewInspector requires the view to be properly installed)
                 let identifier = try? inspected.sixLayerAccessibilityIdentifier()

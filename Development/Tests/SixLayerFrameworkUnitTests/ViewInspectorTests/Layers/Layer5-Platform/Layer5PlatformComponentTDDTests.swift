@@ -34,7 +34,7 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
 
             // Should render AI recognition interface
             #if canImport(ViewInspector)
-            if let inspected = view.tryInspect() {
+            if let inspected = try? AnyView(view).inspect() {
                 do {
                     // Should have proper UI structure for recognition features
                     let vStack = try inspected.sixLayerVStack()

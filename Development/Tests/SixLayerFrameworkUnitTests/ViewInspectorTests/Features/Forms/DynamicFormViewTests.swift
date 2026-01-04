@@ -704,7 +704,7 @@ open class DynamicFormViewTests: BaseTestClass {
 
         // Should render proper wizard structure
         #if canImport(ViewInspector)
-        if let inspected = view.tryInspect() {
+        if let inspected = try? AnyView(view).inspect() {
             // Should have a VStack
             if let vStack = try? inspected.sixLayerVStack() {
                 #expect(vStack.sixLayerCount >= 2, "Should have content and navigation")
@@ -1282,7 +1282,7 @@ open class DynamicFormViewTests: BaseTestClass {
         // Test that button exists and can be triggered
         // Note: Actual OCR triggering requires camera access, so we test the button presence
         #if canImport(ViewInspector)
-        if let inspected = view.tryInspect() {
+        if let inspected = try? AnyView(view).inspect() {
             let buttons = inspected.sixLayerFindAll(Button<Text>.self)
             let hasBatchOCRButton = buttons.contains { button in
                 (try? button.sixLayerAccessibilityIdentifier())?.contains("BatchOCRButton") ?? false

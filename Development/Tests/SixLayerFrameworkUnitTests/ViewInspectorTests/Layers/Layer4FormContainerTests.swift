@@ -133,7 +133,7 @@ open class Layer4FormContainerTests: BaseTestClass {
         #if os(iOS)
         // iOS: Should contain VStack structure with iOS-specific background color
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
-        if let vStack = view.tryInspect() {
+        if let vStack = try? AnyView(view).inspect() {
             // VStack found - this is correct for iOS
             // Note: iOS uses Color(.secondarySystemBackground) for standard container backgrounds
         } else {
@@ -142,7 +142,7 @@ open class Layer4FormContainerTests: BaseTestClass {
         #elseif os(macOS)
         // macOS: Should contain VStack structure with macOS-specific background color
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
-        if let vStack = view.tryInspect() {
+        if let vStack = try? AnyView(view).inspect() {
             // VStack found - this is correct for macOS
             // Note: macOS uses Color(.controlBackgroundColor) for standard container backgrounds
         } else {

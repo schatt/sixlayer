@@ -932,7 +932,7 @@ open class AutomaticAccessibilityIdentifierTests: BaseTestClass {
             // When: Inspecting the view's accessibility identifier
             // Using wrapper - when ViewInspector works on macOS, no changes needed here
             #if canImport(ViewInspector)
-            if let inspected = view.tryInspect(),
+            if let inspected = try? AnyView(view).inspect(),
                let identifier = try? inspected.sixLayerAccessibilityIdentifier() {
                 // Then: The identifier should include the component name
                 #expect(identifier.contains("TestComponent"), 

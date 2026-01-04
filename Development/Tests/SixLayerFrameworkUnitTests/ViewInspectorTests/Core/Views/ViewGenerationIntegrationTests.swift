@@ -747,7 +747,7 @@ open class ViewGenerationIntegrationTests: BaseTestClass {
         
         // 2. Does that structure contain what it should?
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
-        if let _ = testView.tryInspect() {
+        if let _ = try? AnyView(testView).inspect() {
             // Test that the configuration produces the expected view behavior
             testViewGenerationBehavior(mockConfig, configName: config.name)
         } else {

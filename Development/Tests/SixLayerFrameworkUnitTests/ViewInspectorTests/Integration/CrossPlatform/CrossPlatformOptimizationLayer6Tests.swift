@@ -75,7 +75,7 @@ open class CrossPlatformOptimizationLayer6Tests: BaseTestClass {
         // Note: optimizedView is a View, so it cannot be nil
         
         // 2. Does that structure contain what it should?
-        if let _ = optimizedView.tryInspect() {
+        if let _ = try? AnyView(optimizedView).inspect() {
             // Successfully inspected optimized view
         } else {
             #if canImport(ViewInspector)
@@ -88,7 +88,7 @@ open class CrossPlatformOptimizationLayer6Tests: BaseTestClass {
         
         // 3. Platform-specific implementation verification (REQUIRED)
         // Optimized view should be inspectable and contain platform-specific optimizations
-        if let _ = optimizedView.tryInspect() {
+        if let _ = try? AnyView(optimizedView).inspect() {
             // Platform-specific optimizations verified
         } else {
             #if canImport(ViewInspector)
@@ -358,7 +358,7 @@ open class CrossPlatformOptimizationLayer6Tests: BaseTestClass {
         // Note: optimizedView is a View, so it cannot be nil
         
         // 2. Does that structure contain what it should?
-        if let _ = optimizedView.tryInspect() {
+        if let _ = try? AnyView(optimizedView).inspect() {
             // Successfully inspected platform-optimized view
         } else {
             #if canImport(ViewInspector)
@@ -371,7 +371,7 @@ open class CrossPlatformOptimizationLayer6Tests: BaseTestClass {
         
         // 3. Platform-specific implementation verification (REQUIRED)
         // Optimized view should be inspectable and contain platform-specific optimizations
-        if let _ = optimizedView.tryInspect() {
+        if let _ = try? AnyView(optimizedView).inspect() {
             // Platform-specific optimizations verified
         } else {
             #if canImport(ViewInspector)
@@ -397,7 +397,7 @@ open class CrossPlatformOptimizationLayer6Tests: BaseTestClass {
         // Note: optimizedView is a View, so it cannot be nil
         
         // 2. Does that structure contain what it should?
-        if let _ = optimizedView.tryInspect() {
+        if let _ = try? AnyView(optimizedView).inspect() {
             // Successfully inspected performance-optimized view
         } else {
             #if canImport(ViewInspector)
@@ -410,7 +410,7 @@ open class CrossPlatformOptimizationLayer6Tests: BaseTestClass {
         
         // 3. Platform-specific implementation verification (REQUIRED)
         // Performance-optimized view should be inspectable
-        if let _ = optimizedView.tryInspect() {
+        if let _ = try? AnyView(optimizedView).inspect() {
             // Performance optimizations verified
         } else {
             #if canImport(ViewInspector)
@@ -436,7 +436,7 @@ open class CrossPlatformOptimizationLayer6Tests: BaseTestClass {
         // Note: optimizedView is a View, so it cannot be nil
         
         // 2. Does that structure contain what it should?
-        if let _ = optimizedView.tryInspect() {
+        if let _ = try? AnyView(optimizedView).inspect() {
             // Successfully inspected UI pattern-optimized view
         } else {
             #if canImport(ViewInspector)
@@ -449,7 +449,7 @@ open class CrossPlatformOptimizationLayer6Tests: BaseTestClass {
         
         // 3. Platform-specific implementation verification (REQUIRED)
         // UI pattern-optimized view should be inspectable
-        if let _ = optimizedView.tryInspect() {
+        if let _ = try? AnyView(optimizedView).inspect() {
             // UI pattern optimizations verified
         } else {
             #if canImport(ViewInspector)
