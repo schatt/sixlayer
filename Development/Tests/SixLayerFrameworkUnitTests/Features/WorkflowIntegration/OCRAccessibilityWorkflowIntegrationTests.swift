@@ -17,14 +17,14 @@
 //  METHODOLOGY:
 //  - Test complete end-to-end OCR workflows with accessibility verification
 //  - Validate that OCR results include proper accessibility attributes
-//  - Test accessibility audit results for OCR views across platforms
+//  - Test accessibility audit results for OCR views on current platform
 //  - Verify error accessibility for OCR failures
-//  - Use mock capabilities for platform testing and accessibility feature simulation
+//  - Test on current platform (tests run on actual platforms via simulators)
 //
 //  AUDIT STATUS: ✅ COMPLIANT
 //  - ✅ File Documentation: Complete with business purpose, testing scope, methodology
 //  - ✅ Function Documentation: All functions documented with business purpose
-//  - ✅ Platform Testing: Tests across all platforms using SixLayerPlatform.allCases
+//  - ✅ Platform Testing: Tests current platform capabilities using runtime detection
 //  - ✅ Integration Focus: Tests complete workflow integration, not individual components
 //
 
@@ -84,34 +84,29 @@ final class OCRAccessibilityWorkflowIntegrationTests: BaseTestClass {
     @Test @MainActor func testOCRWorkflowWithAccessibilityCompliance() async {
         initializeTestConfig()
         
-        // Test across all platforms
-        for platform in SixLayerPlatform.allCases {
-            
-            // Given: OCR context configured for accessibility
-            let context = createTestOCRContext(textTypes: [.price, .date, .general])
-            var _: OCRResult?
-            
-            // When: Creating OCR view with visual correction (applies .automaticCompliance())
-            let ocrView = platformOCRWithVisualCorrection_L1(
-                image: PlatformImage(),
-                context: context
-            ) { _ in
-                // Result received
-            }
-            
-            // Then: View should have accessibility compliance applied
-            // The platformOCRWithVisualCorrection_L1 function applies .automaticCompliance()
-            #expect(Bool(true), "OCR view should be created successfully on \(platform)")
-            
-            // Verify the view can be placed in a hierarchy
-            let _ = platformVStackContainer {
-                ocrView
-            }
-            
-            #expect(Bool(true), "OCR view should work in view hierarchy on \(platform)")
-            
-            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        // Given: Current platform and OCR context configured for accessibility
+        let currentPlatform = SixLayerPlatform.current
+        let context = createTestOCRContext(textTypes: [.price, .date, .general])
+        var _: OCRResult?
+        
+        // When: Creating OCR view with visual correction (applies .automaticCompliance())
+        let ocrView = platformOCRWithVisualCorrection_L1(
+            image: PlatformImage(),
+            context: context
+        ) { _ in
+            // Result received
         }
+        
+        // Then: View should have accessibility compliance applied
+        // The platformOCRWithVisualCorrection_L1 function applies .automaticCompliance()
+        #expect(Bool(true), "OCR view should be created successfully on \(currentPlatform)")
+        
+        // Verify the view can be placed in a hierarchy
+        let _ = platformVStackContainer {
+            ocrView
+        }
+        
+        #expect(Bool(true), "OCR view should work in view hierarchy on \(currentPlatform)")
     }
     
     /// BUSINESS PURPOSE: Validate OCR results are accessible via VoiceOver
@@ -120,22 +115,17 @@ final class OCRAccessibilityWorkflowIntegrationTests: BaseTestClass {
     @Test @MainActor func testOCRResultsVoiceOverAccessibility() async {
         initializeTestConfig()
         
-        // Test across all platforms
-        for platform in SixLayerPlatform.allCases {
-            
-            // Given: OCR result with extracted text
-            let ocrResult = createMockOCRResult(text: "$12.50 - Receipt Total", confidence: 0.95)
-            
-            // When: OCR result is presented
-            // Then: Result should contain text that can be announced by VoiceOver
-            #expect(!ocrResult.extractedText.isEmpty, "OCR result should have text for VoiceOver on \(platform)")
-            #expect(ocrResult.confidence > 0.8, "High confidence results should be announced on \(platform)")
-            
-            // Verify text types are properly categorized for accessibility
-            #expect(ocrResult.textTypes.count > 0, "Text types should be available for accessibility hints on \(platform)")
-            
-            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-        }
+        // Given: Current platform and OCR result with extracted text
+        let currentPlatform = SixLayerPlatform.current
+        let ocrResult = createMockOCRResult(text: "$12.50 - Receipt Total", confidence: 0.95)
+        
+        // When: OCR result is presented
+        // Then: Result should contain text that can be announced by VoiceOver
+        #expect(!ocrResult.extractedText.isEmpty, "OCR result should have text for VoiceOver on \(currentPlatform)")
+        #expect(ocrResult.confidence > 0.8, "High confidence results should be announced on \(currentPlatform)")
+        
+        // Verify text types are properly categorized for accessibility
+        #expect(ocrResult.textTypes.count > 0, "Text types should be available for accessibility hints on \(currentPlatform)")
     }
     
     /// BUSINESS PURPOSE: Validate OCR results support keyboard navigation
@@ -144,55 +134,45 @@ final class OCRAccessibilityWorkflowIntegrationTests: BaseTestClass {
     @Test @MainActor func testOCRResultsKeyboardNavigation() async {
         initializeTestConfig()
         
-        // Test across all platforms
-        for platform in SixLayerPlatform.allCases {
-            
-            // Given: OCR context with editing enabled (keyboard interaction)
-            let context = createTestOCRContext()
-            
-            // When: Creating OCR view with custom configuration
-            let configuration = OCROverlayConfiguration(
-                allowsEditing: true,
-                showConfidenceIndicators: true,
-                highlightColor: .blue
-            )
-            
-            let _ = platformOCRWithVisualCorrection_L1(
-                image: PlatformImage(),
-                context: context,
-                configuration: configuration
-            ) { _ in }
-            
-            // Then: View should be created with keyboard support implied by allowsEditing
-            #expect(configuration.allowsEditing, "Configuration should allow editing for keyboard interaction on \(platform)")
-            #expect(Bool(true), "OCR view with keyboard support should be created on \(platform)")
-            
-            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-        }
+        // Given: Current platform and OCR context with editing enabled (keyboard interaction)
+        let currentPlatform = SixLayerPlatform.current
+        let context = createTestOCRContext()
+        
+        // When: Creating OCR view with custom configuration
+        let configuration = OCROverlayConfiguration(
+            allowsEditing: true,
+            showConfidenceIndicators: true,
+            highlightColor: .blue
+        )
+        
+        let _ = platformOCRWithVisualCorrection_L1(
+            image: PlatformImage(),
+            context: context,
+            configuration: configuration
+        ) { _ in }
+        
+        // Then: View should be created with keyboard support implied by allowsEditing
+        #expect(configuration.allowsEditing, "Configuration should allow editing for keyboard interaction on \(currentPlatform)")
+        #expect(Bool(true), "OCR view with keyboard support should be created on \(currentPlatform)")
     }
     
     /// BUSINESS PURPOSE: Validate OCR errors are accessible to screen readers
     /// TESTING SCOPE: Tests that OCR error states are properly announced
     /// METHODOLOGY: Create error scenarios, verify error messages are accessible
     @Test func testOCRErrorAccessibility() async {
-        // Test across all platforms
-        for platform in SixLayerPlatform.allCases {
-            
-            // Given: Various OCR error types
-            let errorTypes: [OCRError] = [
-                .invalidImage,
-                .noTextFound,
-                .processingFailed,
-                .visionUnavailable
-            ]
-            
-            // When/Then: Each error should have an accessible description
-            for error in errorTypes {
-                #expect(error.errorDescription != nil, "Error \(error) should have description for accessibility on \(platform)")
-                #expect(!error.errorDescription!.isEmpty, "Error description should not be empty on \(platform)")
-            }
-            
-            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        // Given: Current platform and various OCR error types
+        let currentPlatform = SixLayerPlatform.current
+        let errorTypes: [OCRError] = [
+            .invalidImage,
+            .noTextFound,
+            .processingFailed,
+            .visionUnavailable
+        ]
+        
+        // When/Then: Each error should have an accessible description
+        for error in errorTypes {
+            #expect(error.errorDescription != nil, "Error \(error) should have description for accessibility on \(currentPlatform)")
+            #expect(!error.errorDescription!.isEmpty, "Error description should not be empty on \(currentPlatform)")
         }
     }
     
@@ -202,41 +182,38 @@ final class OCRAccessibilityWorkflowIntegrationTests: BaseTestClass {
     @Test @MainActor func testCompleteOCRAccessibilityWorkflow() async {
         initializeTestConfig()
         
-        // Test across all platforms
-        for platform in SixLayerPlatform.allCases {
-            
-            // Step 1: Create OCR context with accessibility considerations
-            let context = OCRContext(
-                textTypes: [.price, .date, .name],
-                language: .english,
-                confidenceThreshold: 0.7,
-                allowsEditing: true
-            )
-            
-            // Step 2: Verify context supports accessibility workflow
-            #expect(context.allowsEditing, "Context should allow editing for accessibility on \(platform)")
-            #expect(context.confidenceThreshold <= 0.7, "Threshold should allow more results on \(platform)")
-            
-            // Step 3: Create OCR view with accessibility compliance
-            let ocrView = platformOCRWithVisualCorrection_L1(
-                image: PlatformImage(),
-                context: context
-            ) { result in
-                // Step 4: Process result with accessibility in mind
-                // Verify result has necessary properties for accessibility
-                #expect(!result.extractedText.isEmpty || result.confidence < context.confidenceThreshold,
-                       "Result should have text or be filtered by threshold")
-            }
-            
-            // Step 5: Verify view is properly configured
-            let _ = platformVStackContainer {
-                ocrView
-            }
-            
-            #expect(Bool(true), "Complete OCR accessibility workflow should succeed on \(platform)")
-            
-            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        // Given: Current platform
+        let currentPlatform = SixLayerPlatform.current
+        
+        // Step 1: Create OCR context with accessibility considerations
+        let context = OCRContext(
+            textTypes: [.price, .date, .name],
+            language: .english,
+            confidenceThreshold: 0.7,
+            allowsEditing: true
+        )
+        
+        // Step 2: Verify context supports accessibility workflow
+        #expect(context.allowsEditing, "Context should allow editing for accessibility on \(currentPlatform)")
+        #expect(context.confidenceThreshold <= 0.7, "Threshold should allow more results on \(currentPlatform)")
+        
+        // Step 3: Create OCR view with accessibility compliance
+        let ocrView = platformOCRWithVisualCorrection_L1(
+            image: PlatformImage(),
+            context: context
+        ) { result in
+            // Step 4: Process result with accessibility in mind
+            // Verify result has necessary properties for accessibility
+            #expect(!result.extractedText.isEmpty || result.confidence < context.confidenceThreshold,
+                   "Result should have text or be filtered by threshold")
         }
+        
+        // Step 5: Verify view is properly configured
+        let _ = platformVStackContainer {
+            ocrView
+        }
+        
+        #expect(Bool(true), "Complete OCR accessibility workflow should succeed on \(currentPlatform)")
     }
     
     /// BUSINESS PURPOSE: Validate OCR result accessibility audit
@@ -245,26 +222,21 @@ final class OCRAccessibilityWorkflowIntegrationTests: BaseTestClass {
     @Test @MainActor func testOCRViewAccessibilityAudit() async {
         initializeTestConfig()
         
-        // Test across all platforms
-        for platform in SixLayerPlatform.allCases {
-            
-            // Given: OCR view with compliance applied
-            let context = createTestOCRContext()
-            let ocrView = platformOCRWithVisualCorrection_L1(
-                image: PlatformImage(),
-                context: context
-            ) { _ in }
-            
-            // When: Running accessibility audit
-            let audit = AccessibilityTesting.auditViewAccessibility(ocrView)
-            
-            // Then: Audit should return valid results
-            #expect(audit.complianceLevel.rawValue >= ComplianceLevel.basic.rawValue,
-                   "OCR view should meet basic compliance on \(platform)")
-            #expect(audit.score >= 0, "Audit score should be non-negative on \(platform)")
-            
-            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-        }
+        // Given: Current platform and OCR view with compliance applied
+        let currentPlatform = SixLayerPlatform.current
+        let context = createTestOCRContext()
+        let ocrView = platformOCRWithVisualCorrection_L1(
+            image: PlatformImage(),
+            context: context
+        ) { _ in }
+        
+        // When: Running accessibility audit
+        let audit = AccessibilityTesting.auditViewAccessibility(ocrView)
+        
+        // Then: Audit should return valid results
+        #expect(audit.complianceLevel.rawValue >= ComplianceLevel.basic.rawValue,
+               "OCR view should meet basic compliance on \(currentPlatform)")
+        #expect(audit.score >= 0, "Audit score should be non-negative on \(currentPlatform)")
     }
     
     /// BUSINESS PURPOSE: Validate structured OCR data extraction accessibility
@@ -273,42 +245,38 @@ final class OCRAccessibilityWorkflowIntegrationTests: BaseTestClass {
     @Test @MainActor func testStructuredOCRDataAccessibility() async {
         initializeTestConfig()
         
-        // Test across all platforms
-        for platform in SixLayerPlatform.allCases {
-            
-            // Given: Context configured for structured data extraction
-            let context = OCRContext(
-                textTypes: [.price, .date, .vendor, .total],
-                language: .english,
-                confidenceThreshold: 0.8,
-                allowsEditing: true
-            )
-            
-            // When: Creating structured data extraction view
-            let extractionView = platformExtractStructuredData_L1(
-                image: PlatformImage(),
-                context: context
-            ) { result in
-                // Verify result has structured data
-                #expect(result.textTypes.count >= 0, "Result should have text type information")
-            }
-            
-            // Then: View should have accessibility compliance
-            let _ = platformVStackContainer {
-                extractionView
-            }
-            
-            #expect(Bool(true), "Structured extraction view should be accessible on \(platform)")
-            
-            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        // Given: Current platform and context configured for structured data extraction
+        let currentPlatform = SixLayerPlatform.current
+        let context = OCRContext(
+            textTypes: [.price, .date, .vendor, .total],
+            language: .english,
+            confidenceThreshold: 0.8,
+            allowsEditing: true
+        )
+        
+        // When: Creating structured data extraction view
+        let extractionView = platformExtractStructuredData_L1(
+            image: PlatformImage(),
+            context: context
+        ) { result in
+            // Verify result has structured data
+            #expect(result.textTypes.count >= 0, "Result should have text type information")
         }
+        
+        // Then: View should have accessibility compliance
+        let _ = platformVStackContainer {
+            extractionView
+        }
+        
+        #expect(Bool(true), "Structured extraction view should be accessible on \(currentPlatform)")
     }
     
     /// BUSINESS PURPOSE: Validate OCR confidence indicators are accessible
     /// TESTING SCOPE: Tests that confidence levels are communicated accessibly
     /// METHODOLOGY: Create OCR results with various confidence levels, verify accessibility
     @Test func testOCRConfidenceIndicatorAccessibility() async {
-        // Test various confidence levels
+        // Given: Current platform and various confidence levels
+        let currentPlatform = SixLayerPlatform.current
         let confidenceLevels: [(Double, String)] = [
             (0.99, "very high"),
             (0.85, "high"),
@@ -316,23 +284,18 @@ final class OCRAccessibilityWorkflowIntegrationTests: BaseTestClass {
             (0.50, "low")
         ]
         
-        for platform in SixLayerPlatform.allCases {
+        for (confidence, description) in confidenceLevels {
+            // Given: OCR result with specific confidence
+            let result = createMockOCRResult(text: "Test", confidence: confidence)
             
-            for (confidence, description) in confidenceLevels {
-                // Given: OCR result with specific confidence
-                let result = createMockOCRResult(text: "Test", confidence: confidence)
-                
-                // Then: Confidence should be available for accessibility announcements
-                #expect(result.confidence == Float(confidence),
-                       "Confidence \(description) (\(confidence)) should be accessible on \(platform)")
-                
-                // Confidence can be used to adjust VoiceOver announcements
-                let shouldAnnounceConfidence = confidence < 0.9
-                #expect(shouldAnnounceConfidence || confidence >= 0.9,
-                       "Confidence level logic should work on \(platform)")
-            }
+            // Then: Confidence should be available for accessibility announcements
+            #expect(result.confidence == Float(confidence),
+                   "Confidence \(description) (\(confidence)) should be accessible on \(currentPlatform)")
             
-            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+            // Confidence can be used to adjust VoiceOver announcements
+            let shouldAnnounceConfidence = confidence < 0.9
+            #expect(shouldAnnounceConfidence || confidence >= 0.9,
+                   "Confidence level logic should work on \(currentPlatform)")
         }
     }
     
@@ -340,35 +303,31 @@ final class OCRAccessibilityWorkflowIntegrationTests: BaseTestClass {
     /// TESTING SCOPE: Tests that OCR bounding boxes can be used for accessibility navigation
     /// METHODOLOGY: Create OCR results with bounding boxes, verify they support navigation
     @Test func testOCRBoundingBoxAccessibilityNavigation() async {
-        for platform in SixLayerPlatform.allCases {
-            
-            // Given: OCR result with multiple bounding boxes
-            let boundingBoxes = [
-                CGRect(x: 10, y: 10, width: 100, height: 20),
-                CGRect(x: 10, y: 40, width: 150, height: 20),
-                CGRect(x: 10, y: 70, width: 80, height: 20)
-            ]
-            
-            let result = OCRResult(
-                extractedText: "Line 1\nLine 2\nLine 3",
-                confidence: 0.95,
-                boundingBoxes: boundingBoxes,
-                textTypes: [.general: "Line 1\nLine 2\nLine 3"],
-                processingTime: 0.5,
-                language: .english
-            )
-            
-            // Then: Bounding boxes should provide navigation structure
-            #expect(result.boundingBoxes.count == 3,
-                   "Should have bounding boxes for accessibility navigation on \(platform)")
-            
-            // Each bounding box represents a focusable region
-            for (index, box) in result.boundingBoxes.enumerated() {
-                #expect(box.width > 0 && box.height > 0,
-                       "Bounding box \(index) should have valid dimensions for focus on \(platform)")
-            }
-            
-            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        // Given: Current platform and OCR result with multiple bounding boxes
+        let currentPlatform = SixLayerPlatform.current
+        let boundingBoxes = [
+            CGRect(x: 10, y: 10, width: 100, height: 20),
+            CGRect(x: 10, y: 40, width: 150, height: 20),
+            CGRect(x: 10, y: 70, width: 80, height: 20)
+        ]
+        
+        let result = OCRResult(
+            extractedText: "Line 1\nLine 2\nLine 3",
+            confidence: 0.95,
+            boundingBoxes: boundingBoxes,
+            textTypes: [.general: "Line 1\nLine 2\nLine 3"],
+            processingTime: 0.5,
+            language: .english
+        )
+        
+        // Then: Bounding boxes should provide navigation structure
+        #expect(result.boundingBoxes.count == 3,
+               "Should have bounding boxes for accessibility navigation on \(currentPlatform)")
+        
+        // Each bounding box represents a focusable region
+        for (index, box) in result.boundingBoxes.enumerated() {
+            #expect(box.width > 0 && box.height > 0,
+                   "Bounding box \(index) should have valid dimensions for focus on \(currentPlatform)")
         }
     }
 }
