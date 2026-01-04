@@ -32,6 +32,9 @@ open class PlatformLogicTests: BaseTestClass {
     // MARK: - Platform Detection Logic Tests
     
     @Test @MainActor func testPlatformDetectionLogic() {
+        // Clear any test overrides to use real platform detection
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        
         // GIVEN: Current platform configuration
         let currentPlatform = SixLayerPlatform.current
 
@@ -83,6 +86,9 @@ open class PlatformLogicTests: BaseTestClass {
     }
     
     @Test @MainActor func testDeviceTypeDetectionLogic() {
+        // Clear any test overrides to use real platform detection
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        
         // GIVEN: Current device type
         let currentDeviceType = DeviceType.current
 
