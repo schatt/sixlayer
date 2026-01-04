@@ -147,8 +147,8 @@ final class CloudKitServiceCoreDataTests {
     // MARK: - Integration with CloudKitService Tests
     
     @Test func testSyncWithCoreDataUsesCloudKitServiceDelegate() async throws {
-        var delegateCalled = false
-        let delegate = MockCloudKitDelegate()
+        _ = false  // delegateCalled - intentionally unused
+        _ = MockCloudKitDelegate()
         
         // Create a custom delegate that tracks calls
         class TrackingDelegate: MockCloudKitDelegate {
@@ -174,7 +174,7 @@ final class CloudKitServiceCoreDataTests {
         let context = createTestManagedObjectContext()
         
         // Save some state before sync
-        let hasChangesBefore = context.hasChanges
+        _ = context.hasChanges
         
         try await service.syncWithCoreData(context: context)
         
