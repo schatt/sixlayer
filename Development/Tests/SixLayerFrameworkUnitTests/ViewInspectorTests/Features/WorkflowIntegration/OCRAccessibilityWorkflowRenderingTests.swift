@@ -17,13 +17,13 @@
 //  - Use hostRootPlatformView() to actually render views (Layer 2)
 //  - Verify accessibility identifiers are present in rendered view hierarchy
 //  - Verify views can be hosted and rendered without crashes
-//  - Test across all platforms using SixLayerPlatform.allCases
+//  - Test on current platform (tests run on actual platforms via simulators)
 //  - MUST run with xcodebuild test (not swift test) to catch rendering issues
 //
 //  AUDIT STATUS: ✅ COMPLIANT
 //  - ✅ File Documentation: Complete with business purpose, testing scope, methodology
 //  - ✅ Function Documentation: All functions documented with business purpose
-//  - ✅ Platform Testing: Tests across all platforms using SixLayerPlatform.allCases
+//  - ✅ Platform Testing: Tests current platform capabilities using runtime detection
 //  - ✅ Layer 2 Focus: Tests actual view rendering, not just logic
 //
 
@@ -65,25 +65,21 @@ final class OCRAccessibilityWorkflowRenderingTests: BaseTestClass {
     @Test @MainActor func testOCRWorkflowViewRendering() async {
         initializeTestConfig()
         
-        for platform in SixLayerPlatform.allCases {
-            
-            // Given: OCR context
-            let context = createTestOCRContext(textTypes: [.price, .date, .general])
-            
-            // When: Creating and rendering OCR view with visual correction
-            let ocrView = platformOCRWithVisualCorrection_L1(
-                image: PlatformImage(),
-                context: context
-            ) { _ in
-                // OCR processing callback
-            }
-            
-            // Then: View should render successfully (Layer 2 - actual rendering)
-            let hostedView = hostRootPlatformView(ocrView.enableGlobalAutomaticCompliance())
-            #expect(hostedView != nil, "OCR view should render successfully on \(platform)")
-            
-            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        // Given: OCR context
+        let context = createTestOCRContext(textTypes: [.price, .date, .general])
+        
+        // When: Creating and rendering OCR view with visual correction
+        let ocrView = platformOCRWithVisualCorrection_L1(
+            image: PlatformImage(),
+            context: context
+        ) { _ in
+            // OCR processing callback
         }
+        
+        // Then: View should render successfully (Layer 2 - actual rendering)
+        let hostedView = hostRootPlatformView(ocrView.enableGlobalAutomaticCompliance())
+        let currentPlatform = SixLayerPlatform.current
+        #expect(hostedView != nil, "OCR view should render successfully on \(currentPlatform)")
     }
     
     /// BUSINESS PURPOSE: Validate that rendered OCR views have accessibility identifiers
@@ -92,25 +88,21 @@ final class OCRAccessibilityWorkflowRenderingTests: BaseTestClass {
     @Test @MainActor func testOCRViewAccessibilityIdentifiers() async {
         initializeTestConfig()
         
-        for platform in SixLayerPlatform.allCases {
-            
-            // Given: OCR context with accessibility considerations
-            let context = createTestOCRContext(textTypes: [.price, .date, .general])
-            
-            // When: Rendering OCR view with global auto IDs enabled
-            let ocrView = platformOCRWithVisualCorrection_L1(
-                image: PlatformImage(),
-                context: context
-            ) { _ in }
-            let hostedView = hostRootPlatformView(ocrView.enableGlobalAutomaticCompliance())
-            
-            // Then: Rendered view should have accessibility identifiers (Layer 2 verification)
-            // Note: On macOS without ViewInspector, this may be nil, but view should still render
-            // The key is that the view renders without crashing
-            #expect(hostedView != nil, "OCR view should render on \(platform)")
-            
-            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-        }
+        // Given: OCR context with accessibility considerations
+        let context = createTestOCRContext(textTypes: [.price, .date, .general])
+        
+        // When: Rendering OCR view with global auto IDs enabled
+        let ocrView = platformOCRWithVisualCorrection_L1(
+            image: PlatformImage(),
+            context: context
+        ) { _ in }
+        let hostedView = hostRootPlatformView(ocrView.enableGlobalAutomaticCompliance())
+        
+        // Then: Rendered view should have accessibility identifiers (Layer 2 verification)
+        // Note: On macOS without ViewInspector, this may be nil, but view should still render
+        // The key is that the view renders without crashing
+        let currentPlatform = SixLayerPlatform.current
+        #expect(hostedView != nil, "OCR view should render on \(currentPlatform)")
     }
     
     /// BUSINESS PURPOSE: Validate that OCR workflow views render correctly with results
@@ -119,58 +111,43 @@ final class OCRAccessibilityWorkflowRenderingTests: BaseTestClass {
     @Test @MainActor func testOCRViewRenderingWithResults() async {
         initializeTestConfig()
         
-        for platform in SixLayerPlatform.allCases {
-            
-            // Given: OCR context
-            let context = createTestOCRContext(textTypes: [.price, .date, .general])
-            
-            // When: Creating OCR view (represents state with results)
-            let ocrView = platformOCRWithVisualCorrection_L1(
-                image: PlatformImage(),
-                context: context
-            ) { result in
-                // OCR result received
-            }
-            
-            // Then: View should render with results state
-            let hostedView = hostRootPlatformView(ocrView.enableGlobalAutomaticCompliance())
-            #expect(hostedView != nil, "OCR view should render with results on \(platform)")
-            
-            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        // Given: OCR context
+        let context = createTestOCRContext(textTypes: [.price, .date, .general])
+        
+        // When: Creating OCR view (represents state with results)
+        let ocrView = platformOCRWithVisualCorrection_L1(
+            image: PlatformImage(),
+            context: context
+        ) { result in
+            // OCR result received
         }
+        
+        // Then: View should render with results state
+        let hostedView = hostRootPlatformView(ocrView.enableGlobalAutomaticCompliance())
+        let currentPlatform = SixLayerPlatform.current
+        #expect(hostedView != nil, "OCR view should render with results on \(currentPlatform)")
     }
     
-    /// BUSINESS PURPOSE: Validate that OCR workflow views render correctly across platforms
-    /// TESTING SCOPE: Tests that OCR views render consistently on iOS and macOS
-    /// METHODOLOGY: Render same OCR view on all platforms, verify rendering works
+    /// BUSINESS PURPOSE: Validate that OCR workflow views render correctly on current platform
+    /// TESTING SCOPE: Tests that OCR views render correctly on the current platform
+    /// METHODOLOGY: Render OCR view on current platform, verify rendering works
     @Test @MainActor func testOCRViewCrossPlatformRendering() async {
         initializeTestConfig()
         
-        var renderingResults: [SixLayerPlatform: Bool] = [:]
+        // Given: Same OCR configuration
+        let context = createTestOCRContext(textTypes: [.price, .date, .general])
         
-        for platform in SixLayerPlatform.allCases {
-            
-            // Given: Same OCR configuration
-            let context = createTestOCRContext(textTypes: [.price, .date, .general])
-            
-            // When: Rendering OCR view
-            let ocrView = platformOCRWithVisualCorrection_L1(
-                image: PlatformImage(),
-                context: context
-            ) { _ in }
-            let hostedView = hostRootPlatformView(ocrView.enableGlobalAutomaticCompliance())
-            
-            // Then: View should render on this platform
-            let rendered = hostedView != nil
-            renderingResults[platform] = rendered
-            #expect(rendered, "OCR view should render on \(platform)")
-            
-            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-        }
+        // When: Rendering OCR view
+        let ocrView = platformOCRWithVisualCorrection_L1(
+            image: PlatformImage(),
+            context: context
+        ) { _ in }
+        let hostedView = hostRootPlatformView(ocrView.enableGlobalAutomaticCompliance())
         
-        // Verify all platforms rendered successfully
-        let allRendered = renderingResults.values.allSatisfy { $0 }
-        #expect(allRendered, "OCR view should render on all platforms")
+        // Then: View should render on current platform
+        let currentPlatform = SixLayerPlatform.current
+        let rendered = hostedView != nil
+        #expect(rendered, "OCR view should render on \(currentPlatform)")
     }
     
     /// BUSINESS PURPOSE: Validate that OCR accessibility workflow views render correctly
@@ -179,23 +156,19 @@ final class OCRAccessibilityWorkflowRenderingTests: BaseTestClass {
     @Test @MainActor func testOCRAccessibilityWorkflowRendering() async {
         initializeTestConfig()
         
-        for platform in SixLayerPlatform.allCases {
-            
-            // Given: OCR context configured for accessibility
-            let context = createTestOCRContext(textTypes: [.price, .date, .general])
-            
-            // When: Creating OCR view with visual correction (applies .automaticCompliance())
-            let ocrView = platformOCRWithVisualCorrection_L1(
-                image: PlatformImage(),
-                context: context
-            ) { _ in }
-            
-            // Then: View should render with accessibility compliance
-            let hostedView = hostRootPlatformView(ocrView.enableGlobalAutomaticCompliance())
-            #expect(hostedView != nil, "OCR view with accessibility should render on \(platform)")
-            
-            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-        }
+        // Given: OCR context configured for accessibility
+        let context = createTestOCRContext(textTypes: [.price, .date, .general])
+        
+        // When: Creating OCR view with visual correction (applies .automaticCompliance())
+        let ocrView = platformOCRWithVisualCorrection_L1(
+            image: PlatformImage(),
+            context: context
+        ) { _ in }
+        
+        // Then: View should render with accessibility compliance
+        let hostedView = hostRootPlatformView(ocrView.enableGlobalAutomaticCompliance())
+        let currentPlatform = SixLayerPlatform.current
+        #expect(hostedView != nil, "OCR view with accessibility should render on \(currentPlatform)")
     }
     
     /// BUSINESS PURPOSE: Validate that OCR error state views render correctly
@@ -204,22 +177,18 @@ final class OCRAccessibilityWorkflowRenderingTests: BaseTestClass {
     @Test @MainActor func testOCRErrorStateRendering() async {
         initializeTestConfig()
         
-        for platform in SixLayerPlatform.allCases {
-            
-            // Given: OCR context
-            let context = createTestOCRContext(textTypes: [.price, .date, .general])
-            
-            // When: Creating OCR view (error state would be shown in actual implementation)
-            let ocrView = platformOCRWithVisualCorrection_L1(
-                image: PlatformImage(),
-                context: context
-            ) { _ in }
-            
-            // Then: View should render even with error state
-            let hostedView = hostRootPlatformView(ocrView.enableGlobalAutomaticCompliance())
-            #expect(hostedView != nil, "OCR view should render with error state on \(platform)")
-            
-            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-        }
+        // Given: OCR context
+        let context = createTestOCRContext(textTypes: [.price, .date, .general])
+        
+        // When: Creating OCR view (error state would be shown in actual implementation)
+        let ocrView = platformOCRWithVisualCorrection_L1(
+            image: PlatformImage(),
+            context: context
+        ) { _ in }
+        
+        // Then: View should render even with error state
+        let hostedView = hostRootPlatformView(ocrView.enableGlobalAutomaticCompliance())
+        let currentPlatform = SixLayerPlatform.current
+        #expect(hostedView != nil, "OCR view should render with error state on \(currentPlatform)")
     }
 }

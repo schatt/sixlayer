@@ -10,9 +10,13 @@
 
 ## 📍 **Current Status**
 
-**Last Release**: v6.6.3 - ScrollView Wrapper Fixes  
-**Current Phase**: Minor Release (Platform Capability Detection Fixes)  
+**Last Release**: v6.6.3 - ScrollView Wrapper Fixes
+**Current Phase**: Minor Release (Platform Capability Detection Fixes)
 **Next Phase**: Continue framework evolution and stability improvements
+
+### ✅ **Recently Completed**
+- **Count-Aware Automatic Presentation** (Phase 1) - Enhanced `.automatic` to consider item count
+- **Explicit Count-Based Preferences** (Phase 2) - Added `.countBased(lowCount:highCount:threshold:)` enum case for explicit control
 
 ---
 

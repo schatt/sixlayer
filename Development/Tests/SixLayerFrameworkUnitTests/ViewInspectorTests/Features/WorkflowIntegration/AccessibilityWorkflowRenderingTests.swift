@@ -18,13 +18,13 @@
 //  - Use hostRootPlatformView() to actually render views (Layer 2)
 //  - Verify accessibility identifiers are present in rendered view hierarchy
 //  - Verify views can be hosted and rendered without crashes
-//  - Test across all platforms using SixLayerPlatform.allCases
+//  - Test on current platform (tests run on actual platforms via simulators)
 //  - MUST run with xcodebuild test (not swift test) to catch rendering issues
 //
 //  AUDIT STATUS: ✅ COMPLIANT
 //  - ✅ File Documentation: Complete with business purpose, testing scope, methodology
 //  - ✅ Function Documentation: All functions documented with business purpose
-//  - ✅ Platform Testing: Tests across all platforms using SixLayerPlatform.allCases
+//  - ✅ Platform Testing: Tests current platform capabilities using runtime detection
 //  - ✅ Layer 2 Focus: Tests actual view rendering, not just logic
 //
 
@@ -76,20 +76,16 @@ final class AccessibilityWorkflowRenderingTests: BaseTestClass {
     @Test @MainActor func testEnhancedViewRendering() async {
         initializeTestConfig()
         
-        for platform in SixLayerPlatform.allCases {
-            
-            // Given: Enhanced view
-            let testView = createTestView()
-            let enhancedView = testView.automaticCompliance()
-            
-            // When: Rendering enhanced view
-            let hostedView = hostRootPlatformView(enhancedView.enableGlobalAutomaticCompliance())
-            
-            // Then: View should render successfully (Layer 2 - actual rendering)
-            #expect(hostedView != nil, "Enhanced view should render successfully on \(platform)")
-            
-            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-        }
+        // Given: Enhanced view
+        let testView = createTestView()
+        let enhancedView = testView.automaticCompliance()
+        
+        // When: Rendering enhanced view
+        let hostedView = hostRootPlatformView(enhancedView.enableGlobalAutomaticCompliance())
+        
+        // Then: View should render successfully (Layer 2 - actual rendering)
+        let currentPlatform = SixLayerPlatform.current
+        #expect(hostedView != nil, "Enhanced view should render successfully on \(currentPlatform)")
     }
     
     /// BUSINESS PURPOSE: Validate that enhanced views have accessibility identifiers
@@ -98,21 +94,17 @@ final class AccessibilityWorkflowRenderingTests: BaseTestClass {
     @Test @MainActor func testEnhancedViewAccessibilityIdentifiers() async {
         initializeTestConfig()
         
-        for platform in SixLayerPlatform.allCases {
-            
-            // Given: Enhanced view
-            let testView = createTestView()
-            let enhancedView = testView.automaticCompliance()
-            
-            // When: Rendering enhanced view with global auto IDs enabled
-            let hostedView = hostRootPlatformView(enhancedView.enableGlobalAutomaticCompliance())
-            
-            // Then: Rendered view should have accessibility identifiers (Layer 2 verification)
-            // Note: On macOS without ViewInspector, this may be nil, but view should still render
-            #expect(hostedView != nil, "Enhanced view should render on \(platform)")
-            
-            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-        }
+        // Given: Enhanced view
+        let testView = createTestView()
+        let enhancedView = testView.automaticCompliance()
+        
+        // When: Rendering enhanced view with global auto IDs enabled
+        let hostedView = hostRootPlatformView(enhancedView.enableGlobalAutomaticCompliance())
+        
+        // Then: Rendered view should have accessibility identifiers (Layer 2 verification)
+        // Note: On macOS without ViewInspector, this may be nil, but view should still render
+        let currentPlatform = SixLayerPlatform.current
+        #expect(hostedView != nil, "Enhanced view should render on \(currentPlatform)")
     }
     
     /// BUSINESS PURPOSE: Validate that enhanced form views render correctly
@@ -121,20 +113,16 @@ final class AccessibilityWorkflowRenderingTests: BaseTestClass {
     @Test @MainActor func testEnhancedFormViewRendering() async {
         initializeTestConfig()
         
-        for platform in SixLayerPlatform.allCases {
-            
-            // Given: Enhanced form view
-            let formView = createTestFormView()
-            let enhancedFormView = formView.automaticCompliance()
-            
-            // When: Rendering enhanced form view
-            let hostedView = hostRootPlatformView(enhancedFormView.enableGlobalAutomaticCompliance())
-            
-            // Then: View should render successfully
-            #expect(hostedView != nil, "Enhanced form view should render on \(platform)")
-            
-            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-        }
+        // Given: Enhanced form view
+        let formView = createTestFormView()
+        let enhancedFormView = formView.automaticCompliance()
+        
+        // When: Rendering enhanced form view
+        let hostedView = hostRootPlatformView(enhancedFormView.enableGlobalAutomaticCompliance())
+        
+        // Then: View should render successfully
+        let currentPlatform = SixLayerPlatform.current
+        #expect(hostedView != nil, "Enhanced form view should render on \(currentPlatform)")
     }
     
     /// BUSINESS PURPOSE: Validate that audited views render correctly
@@ -143,22 +131,18 @@ final class AccessibilityWorkflowRenderingTests: BaseTestClass {
     @Test @MainActor func testAuditedViewRendering() async {
         initializeTestConfig()
         
-        for platform in SixLayerPlatform.allCases {
-            
-            // Given: Enhanced view
-            let testView = createTestView()
-            let enhancedView = testView.automaticCompliance()
-            
-            // When: Rendering and auditing view
-            let hostedView = hostRootPlatformView(enhancedView.enableGlobalAutomaticCompliance())
-            let audit = AccessibilityTesting.auditViewAccessibility(enhancedView)
-            
-            // Then: View should render and audit should work
-            #expect(hostedView != nil, "Audited view should render on \(platform)")
-            #expect(audit.score >= 0, "Audit should return valid score on \(platform)")
-            
-            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-        }
+        // Given: Enhanced view
+        let testView = createTestView()
+        let enhancedView = testView.automaticCompliance()
+        
+        // When: Rendering and auditing view
+        let hostedView = hostRootPlatformView(enhancedView.enableGlobalAutomaticCompliance())
+        let audit = AccessibilityTesting.auditViewAccessibility(enhancedView)
+        
+        // Then: View should render and audit should work
+        let currentPlatform = SixLayerPlatform.current
+        #expect(hostedView != nil, "Audited view should render on \(currentPlatform)")
+        #expect(audit.score >= 0, "Audit should return valid score on \(currentPlatform)")
     }
     
     /// BUSINESS PURPOSE: Validate complete accessibility workflow rendering
@@ -167,59 +151,44 @@ final class AccessibilityWorkflowRenderingTests: BaseTestClass {
     @Test @MainActor func testCompleteAccessibilityWorkflowRendering() async {
         initializeTestConfig()
         
-        for platform in SixLayerPlatform.allCases {
-            
-            // Step 1: Create view
-            let testView = createTestView()
-            
-            // Step 2: Enhance with accessibility
-            let enhancedView = testView.automaticCompliance()
-            
-            // Step 3: Render enhanced view (Layer 2)
-            let hostedView = hostRootPlatformView(enhancedView.enableGlobalAutomaticCompliance())
-            
-            // Step 4: Audit accessibility
-            let audit = AccessibilityTesting.auditViewAccessibility(enhancedView)
-            
-            // Step 5: Verify compliance
-            let complianceLevel = audit.complianceLevel
-            
-            // Then: Complete workflow should render and meet compliance
-            #expect(hostedView != nil, "Complete workflow view should render on \(platform)")
-            #expect(complianceLevel.rawValue >= ComplianceLevel.basic.rawValue,
-                   "Rendered view should meet basic compliance on \(platform)")
-            
-            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-        }
+        // Step 1: Create view
+        let testView = createTestView()
+        
+        // Step 2: Enhance with accessibility
+        let enhancedView = testView.automaticCompliance()
+        
+        // Step 3: Render enhanced view (Layer 2)
+        let hostedView = hostRootPlatformView(enhancedView.enableGlobalAutomaticCompliance())
+        
+        // Step 4: Audit accessibility
+        let audit = AccessibilityTesting.auditViewAccessibility(enhancedView)
+        
+        // Step 5: Verify compliance
+        let complianceLevel = audit.complianceLevel
+        
+        // Then: Complete workflow should render and meet compliance
+        let currentPlatform = SixLayerPlatform.current
+        #expect(hostedView != nil, "Complete workflow view should render on \(currentPlatform)")
+        #expect(complianceLevel.rawValue >= ComplianceLevel.basic.rawValue,
+               "Rendered view should meet basic compliance on \(currentPlatform)")
     }
     
-    /// BUSINESS PURPOSE: Validate that accessibility workflow views render correctly across platforms
-    /// TESTING SCOPE: Tests that accessibility workflow views render consistently on iOS and macOS
-    /// METHODOLOGY: Render same workflow on all platforms, verify rendering works
+    /// BUSINESS PURPOSE: Validate that accessibility workflow views render correctly on current platform
+    /// TESTING SCOPE: Tests that accessibility workflow views render correctly on the current platform
+    /// METHODOLOGY: Render workflow on current platform, verify rendering works
     @Test @MainActor func testAccessibilityWorkflowCrossPlatformRendering() async {
         initializeTestConfig()
         
-        var renderingResults: [SixLayerPlatform: Bool] = [:]
+        // Given: Same view configuration
+        let testView = createTestView()
+        let enhancedView = testView.automaticCompliance()
         
-        for platform in SixLayerPlatform.allCases {
-            
-            // Given: Same view configuration
-            let testView = createTestView()
-            let enhancedView = testView.automaticCompliance()
-            
-            // When: Rendering enhanced view
-            let hostedView = hostRootPlatformView(enhancedView.enableGlobalAutomaticCompliance())
-            
-            // Then: View should render on this platform
-            let rendered = hostedView != nil
-            renderingResults[platform] = rendered
-            #expect(rendered, "Accessibility workflow view should render on \(platform)")
-            
-            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-        }
+        // When: Rendering enhanced view
+        let hostedView = hostRootPlatformView(enhancedView.enableGlobalAutomaticCompliance())
         
-        // Verify all platforms rendered successfully
-        let allRendered = renderingResults.values.allSatisfy { $0 }
-        #expect(allRendered, "Accessibility workflow view should render on all platforms")
+        // Then: View should render on current platform
+        let currentPlatform = SixLayerPlatform.current
+        let rendered = hostedView != nil
+        #expect(rendered, "Accessibility workflow view should render on \(currentPlatform)")
     }
 }
