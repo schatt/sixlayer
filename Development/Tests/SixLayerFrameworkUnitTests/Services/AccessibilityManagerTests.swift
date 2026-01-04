@@ -12,7 +12,7 @@ open class AccessibilityManagerTests: BaseTestClass {
     
     @Test @MainActor func testAccessibilityManagerInitialization() async {
         // Given & When: Creating the manager
-        let manager = AccessibilityManager()
+        _ = AccessibilityManager()
         
         // Then: Manager should be created successfully
         #expect(Bool(true), "manager is non-optional")  // manager is non-optional
