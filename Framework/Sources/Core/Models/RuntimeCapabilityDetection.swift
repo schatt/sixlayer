@@ -170,33 +170,12 @@ public struct RuntimeCapabilityDetection {
     
     #if os(iOS)
     /// iOS touch detection - checks for actual touch capability
-    /// Uses compile-time guarantee with optional runtime verification
+    /// All iOS devices support touch - this is a platform guarantee
     private static func detectiOSTouchSupport() -> Bool {
-        // iOS touch detection strategy:
-        // 1. Compile-time guarantee: We're on iOS, so touch is available
-        // 2. Runtime verification: Check userInterfaceIdiom if on main thread for additional confidence
-        
-        #if canImport(UIKit)
-        // All iOS devices have touch screens - this is a platform guarantee
-        // We can optionally verify with userInterfaceIdiom, but it's not required
-        
-        if Thread.isMainThread {
-            // On main thread, verify with userInterfaceIdiom for additional confidence
-            return MainActor.assumeIsolated {
-                let idiom = UIDevice.current.userInterfaceIdiom
-                // .phone, .pad, and .mac (Catalyst) all support touch
-                // .unspecified can occur in test environments - still assume touch (we're on iOS)
-                return idiom == .phone || idiom == .pad || idiom == .mac || idiom == .unspecified
-            }
-        } else {
-            // Not on main thread - use compile-time guarantee
-            // All iOS devices have touch, so return true
-            return true
-        }
-        #else
-        // Should never happen on iOS, but provide fallback
-        return false
-        #endif
+        // All iOS devices have touch screens - this is a compile-time and runtime guarantee
+        // No need for complex runtime checks that can fail in test environments
+        // Simply return true since we're on iOS
+        return true
     }
     #endif
     
