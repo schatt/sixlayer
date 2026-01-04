@@ -45,7 +45,7 @@ open class OCROverlayTests: BaseTestClass {
         )
         
         // When: Creating OCR overlay view
-        _ = OCROverlayView(
+        let overlayView = OCROverlayView(
             image: testImage,
             result: testOCRResult,
             onTextEdit: onTextEdit,
@@ -125,7 +125,7 @@ open class OCROverlayTests: BaseTestClass {
         let boundingBox = CGRect(x: 0.1, y: 0.2, width: 0.5, height: 0.3) // Normalized coordinates
         
         // When: Converting to image coordinates using placeholder image (100x100)
-        _ = OCROverlayView(
+        let overlayView = OCROverlayView(
             image: PlatformImage.createPlaceholder(), // 100x100 image
             result: OCRResult(extractedText: "", confidence: 0.0, boundingBoxes: [])
         )
@@ -170,6 +170,15 @@ open class OCROverlayTests: BaseTestClass {
             onTextDelete: { _ in }
         )
         
+        let overlayView = OCROverlayView(
+            image: testImage,
+            result: testOCRResult,
+            onTextEdit: { _, _ in
+                // Text edit handler
+            },
+            onTextDelete: { _ in }
+        )
+        
         // When: Simulating tap on first text region
         let tapPoint = CGPoint(x: 60, y: 35) // Within first bounding box
         let detectedRegion = overlayView.detectTappedTextRegion(at: tapPoint)
@@ -199,7 +208,7 @@ open class OCROverlayTests: BaseTestClass {
             language: .english
         )
         
-        _ = OCROverlayView(
+        let overlayView = OCROverlayView(
             image: testImage,
             result: testOCRResult,
             onTextEdit: { _, _ in },
@@ -237,7 +246,7 @@ open class OCROverlayTests: BaseTestClass {
             language: .english
         )
         
-        _ = OCROverlayView(
+        let overlayView = OCROverlayView(
             image: testImage,
             result: testOCRResult,
             onTextEdit: { _, _ in },
@@ -286,6 +295,16 @@ open class OCROverlayTests: BaseTestClass {
             onTextDelete: { _ in }
         )
         
+        let overlayView = OCROverlayView(
+            image: testImage,
+            result: testOCRResult,
+            onTextEdit: { text, rect in
+                editedText = text
+                editedRect = rect
+            },
+            onTextDelete: { _ in }
+        )
+        
         overlayView.startTextEditing(in: testBoundingBoxes[0])
         
         // When: Completing text editing
@@ -318,7 +337,7 @@ open class OCROverlayTests: BaseTestClass {
             language: .english
         )
         
-        _ = OCROverlayView(
+        let overlayView = OCROverlayView(
             image: testImage,
             result: testOCRResult,
             onTextEdit: { _, _ in },
@@ -360,6 +379,15 @@ open class OCROverlayTests: BaseTestClass {
         )
         
         _ = OCROverlayView(
+            image: testImage,
+            result: testOCRResult,
+            onTextEdit: { _, _ in },
+            onTextDelete: { rect in
+                deletedRect = rect
+            }
+        )
+        
+        let overlayView = OCROverlayView(
             image: testImage,
             result: testOCRResult,
             onTextEdit: { _, _ in },
@@ -465,6 +493,13 @@ open class OCROverlayTests: BaseTestClass {
             onTextDelete: { _ in }
         )
         
+        let overlayView = OCROverlayView(
+            image: testImage,
+            result: testOCRResult,
+            onTextEdit: { _, _ in },
+            onTextDelete: { _ in }
+        )
+        
         // When: Checking accessibility
         // Then: Should provide accessibility labels and be hostable
         _ = hostRootPlatformView(overlayView)
@@ -501,6 +536,13 @@ open class OCROverlayTests: BaseTestClass {
             onTextDelete: { _ in }
         )
         
+        let overlayView = OCROverlayView(
+            image: testImage,
+            result: testOCRResult,
+            onTextEdit: { _, _ in },
+            onTextDelete: { _ in }
+        )
+        
         // When: Checking VoiceOver support
         // Then: Should provide proper accessibility elements and be hostable
         _ = hostRootPlatformView(overlayView)
@@ -531,6 +573,13 @@ open class OCROverlayTests: BaseTestClass {
         _ = OCROverlayView(
             image: testImage,
             result: overlappingResult,
+            onTextEdit: { _, _ in },
+            onTextDelete: { _ in }
+        )
+        
+        let overlayView = OCROverlayView(
+            image: testImage,
+            result: testOCRResult,
             onTextEdit: { _, _ in },
             onTextDelete: { _ in }
         )
