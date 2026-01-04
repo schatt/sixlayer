@@ -611,34 +611,34 @@ open class L3StrategySelectionTests: BaseTestClass {
         let contentDensity = ContentDensity.balanced
         
         // Test phone
-        let phoneStrategy = selectCardExpansionStrategy_L3(
+        _ = selectCardExpansionStrategy_L3(
             contentCount: contentCount,
             screenWidth: screenWidth,
             deviceType: .phone,
             interactionStyle: interactionStyle,
             contentDensity: contentDensity
         )
-        #expect(Bool(true), "Phone device type should return a strategy")  // phoneStrategy is non-optional
+        #expect(Bool(true), "Phone device type should return a strategy")
         
         // Test pad
-        let padStrategy = selectCardExpansionStrategy_L3(
+        _ = selectCardExpansionStrategy_L3(
             contentCount: contentCount,
             screenWidth: 768,
             deviceType: .pad,
             interactionStyle: interactionStyle,
             contentDensity: contentDensity
         )
-        #expect(Bool(true), "Pad device type should return a strategy")  // padStrategy is non-optional
+        #expect(Bool(true), "Pad device type should return a strategy")
         
         // Test mac
-        let macStrategy = selectCardExpansionStrategy_L3(
+        _ = selectCardExpansionStrategy_L3(
             contentCount: contentCount,
             screenWidth: 1024,
             deviceType: .mac,
             interactionStyle: interactionStyle,
             contentDensity: contentDensity
         )
-        #expect(Bool(true), "Mac device type should return a strategy")  // macStrategy is non-optional
+        #expect(Bool(true), "Mac device type should return a strategy")
     }
     
     @Test @MainActor func testSelectCardExpansionStrategy_L3_WithDifferentContentDensities() {
@@ -648,34 +648,34 @@ open class L3StrategySelectionTests: BaseTestClass {
         let interactionStyle = InteractionStyle.interactive
         
         // Test dense density
-        let denseDensityStrategy = selectCardExpansionStrategy_L3(
+        _ = selectCardExpansionStrategy_L3(
             contentCount: contentCount,
             screenWidth: screenWidth,
             deviceType: deviceType,
             interactionStyle: interactionStyle,
             contentDensity: .dense
         )
-        #expect(Bool(true), "Dense density should return a strategy")  // denseDensityStrategy is non-optional
+        #expect(Bool(true), "Dense density should return a strategy")
         
         // Test balanced density
-        let balancedDensityStrategy = selectCardExpansionStrategy_L3(
+        _ = selectCardExpansionStrategy_L3(
             contentCount: contentCount,
             screenWidth: screenWidth,
             deviceType: deviceType,
             interactionStyle: interactionStyle,
             contentDensity: .balanced
         )
-        #expect(Bool(true), "Balanced density should return a strategy")  // balancedDensityStrategy is non-optional
+        #expect(Bool(true), "Balanced density should return a strategy")
         
         // Test spacious density
-        let spaciousDensityStrategy = selectCardExpansionStrategy_L3(
+        _ = selectCardExpansionStrategy_L3(
             contentCount: contentCount,
             screenWidth: screenWidth,
             deviceType: deviceType,
             interactionStyle: interactionStyle,
             contentDensity: .spacious
         )
-        #expect(Bool(true), "Spacious density should return a strategy")  // spaciousDensityStrategy is non-optional
+        #expect(Bool(true), "Spacious density should return a strategy")
     }
     
     // MARK: - Photo Strategy Tests
