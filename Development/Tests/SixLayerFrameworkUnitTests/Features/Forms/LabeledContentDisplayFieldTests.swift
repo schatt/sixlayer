@@ -271,7 +271,7 @@ open class LabeledContentDisplayFieldTests: BaseTestClass {
     /// METHODOLOGY: Create display field with valueView and verify it's accessible
     @Test @MainActor func testCustomValueViewIsUsed() {
         // Given: Display field with custom valueView
-        _ = false  // viewWasCalled - intentionally unused for test structure
+        var _ = false  // viewWasCalled - intentionally unused for test structure
         let field = DynamicFormField(
             id: "display-field",
             contentType: .display,
@@ -325,17 +325,15 @@ open class LabeledContentDisplayFieldTests: BaseTestClass {
     /// TESTING SCOPE: Tests that valueView closure receives field and formState
     /// METHODOLOGY: Create valueView that captures parameters and verify them
     @Test @MainActor func testValueViewReceivesCorrectParameters() {
-        // Given: Variables to capture parameters
-        var capturedField: DynamicFormField?
-        var capturedFormState: DynamicFormState?
-        
+        // Given: Field with custom valueView
         let field = DynamicFormField(
             id: "display-field",
             contentType: .display,
             label: "Display Value",
             valueView: { field, formState in
-                capturedField = field
-                capturedFormState = formState
+                // Parameters captured but not used in this test
+                _ = field
+                _ = formState
                 return AnyView(Text("Custom"))
             }
         )
