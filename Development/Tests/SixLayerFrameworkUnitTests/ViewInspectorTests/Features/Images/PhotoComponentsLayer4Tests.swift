@@ -108,7 +108,7 @@ open class PhotoComponentsLayer4Tests: BaseTestClass {
             #if os(macOS)
             // macOS should return a MacOSCameraView (AVCaptureSession wrapper)
             #if canImport(ViewInspector)
-            if let _ = try? result.inspect() {
+            if let _ = try? AnyView(result).inspect() {
                 // macOS camera interface should be inspectable (MacOSCameraView)
                 // Note: We can't easily test the underlying AVCaptureSession type
                 // but we can verify the view structure is valid
@@ -122,7 +122,7 @@ open class PhotoComponentsLayer4Tests: BaseTestClass {
             // iOS should return a CameraView (UIImagePickerController wrapper)
             // This will be wrapped in UIHostingView by SwiftUI
             #if canImport(ViewInspector)
-            if let _ = try? result.inspect() {
+            if let _ = try? AnyView(result).inspect() {
                 // iOS camera interface should be inspectable (CameraView)
                 // Note: We can't easily test the underlying UIImagePickerController type
                 // but we can verify the view structure is valid
@@ -168,7 +168,7 @@ open class PhotoComponentsLayer4Tests: BaseTestClass {
             // components that may not be inspectable through ViewInspector. We verify
             // that the view structure is valid and the accessibility identifier is applied.
             #if canImport(ViewInspector)
-            if let _ = try? result.inspect() {
+            if let _ = try? AnyView(result).inspect() {
                 // Verify the view structure is inspectable
             } else {
                 Issue.record("Failed to inspect photo picker structure")
