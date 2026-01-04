@@ -42,7 +42,7 @@ public func withInspectedView<V: View, R>(
 extension View {
     /// Try to inspect a view, returning nil if inspection fails
     @MainActor
-    func tryInspect() -> ViewInspector.InspectableView? {
+    func tryInspect() -> InspectableView<Self>? {
         return try? self.inspect()
     }
 }
