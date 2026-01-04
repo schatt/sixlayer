@@ -36,7 +36,7 @@ open class NavigationStackLayer1Tests: BaseTestClass {
         let content = Text("Test Content")
         
         // When: Creating navigation stack presentation
-        let view = platformPresentNavigationStack_L1(
+        _ = platformPresentNavigationStack_L1(
             content: content,
             hints: testHints
         )
@@ -58,7 +58,7 @@ open class NavigationStackLayer1Tests: BaseTestClass {
         let title = "Test Navigation"
         
         // When: Creating navigation stack with title
-        let view = platformPresentNavigationStack_L1(
+        _ = platformPresentNavigationStack_L1(
             content: content,
             title: title,
             hints: testHints
@@ -77,7 +77,7 @@ open class NavigationStackLayer1Tests: BaseTestClass {
         ]
         
         // When: Creating navigation stack with items
-        let view = platformPresentNavigationStack_L1(
+        _ = platformPresentNavigationStack_L1(
             items: items,
             hints: testHints
         ) { item in
@@ -95,7 +95,7 @@ open class NavigationStackLayer1Tests: BaseTestClass {
         let items: [TestItem] = []
         
         // When: Creating navigation stack with empty items
-        let view = platformPresentNavigationStack_L1(
+        _ = platformPresentNavigationStack_L1(
             items: items,
             hints: testHints
         ) { item in
@@ -127,12 +127,12 @@ open class NavigationStackLayer1Tests: BaseTestClass {
         let content = Text("Test Content")
         
         // When: Creating navigation stacks with different hints
-        let simpleView = platformPresentNavigationStack_L1(
+        _ = platformPresentNavigationStack_L1(
             content: content,
             hints: simpleHints
         )
         
-        let complexView = platformPresentNavigationStack_L1(
+        _ = platformPresentNavigationStack_L1(
             content: content,
             hints: complexHints
         )
@@ -150,7 +150,7 @@ open class NavigationStackLayer1Tests: BaseTestClass {
         let detail = Text("Detail Content")
         
         // When: Creating app navigation presentation
-        let view = platformPresentAppNavigation_L1(
+        _ = platformPresentAppNavigation_L1(
             columnVisibility: nil,
             showingNavigationSheet: nil,
             sidebar: { sidebar },
@@ -175,7 +175,7 @@ open class NavigationStackLayer1Tests: BaseTestClass {
         let showingSheet = Binding<Bool>(get: { false }, set: { _ in })
         
         // When: Creating app navigation with bindings
-        let view = platformPresentAppNavigation_L1(
+        _ = platformPresentAppNavigation_L1(
             columnVisibility: columnVisibility,
             showingNavigationSheet: showingSheet,
             sidebar: { sidebar },
@@ -192,7 +192,7 @@ open class NavigationStackLayer1Tests: BaseTestClass {
         let detail = Text("Detail")
         
         // When: Creating app navigation without bindings
-        let view = platformPresentAppNavigation_L1(
+        _ = platformPresentAppNavigation_L1(
             columnVisibility: nil,
             showingNavigationSheet: nil,
             sidebar: { sidebar },
@@ -209,7 +209,7 @@ open class NavigationStackLayer1Tests: BaseTestClass {
         let detail = EmptyView()
         
         // When: Creating app navigation with empty content
-        let view = platformPresentAppNavigation_L1(
+        _ = platformPresentAppNavigation_L1(
             columnVisibility: nil,
             showingNavigationSheet: nil,
             sidebar: { sidebar },
@@ -234,7 +234,7 @@ open class NavigationStackLayer1Tests: BaseTestClass {
         }
         
         // When: Creating app navigation with complex content
-        let view = platformPresentAppNavigation_L1(
+        _ = platformPresentAppNavigation_L1(
             columnVisibility: nil,
             showingNavigationSheet: nil,
             sidebar: { sidebar },
@@ -252,7 +252,7 @@ open class NavigationStackLayer1Tests: BaseTestClass {
         let detail = Text("Detail")
         
         // When: Creating app navigation (automatic detection)
-        let view = platformPresentAppNavigation_L1(
+        _ = platformPresentAppNavigation_L1(
             columnVisibility: nil,
             showingNavigationSheet: nil,
             sidebar: { sidebar },

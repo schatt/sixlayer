@@ -55,7 +55,7 @@ open class NavigationStackLayer6Tests: BaseTestClass {
             }
         
         // When: Applying platform enhancements
-        let enhancedView = content
+        _ = content
             .platformNavigationStackEnhancements_L6()
         
         // Then: Should apply platform-specific enhancements
@@ -70,7 +70,7 @@ open class NavigationStackLayer6Tests: BaseTestClass {
             }
         
         // When: Applying accessibility enhancements
-        let enhancedView = content
+        _ = content
             .platformNavigationStackEnhancements_L6()
         
         // Then: Should have accessibility enhancements
@@ -92,7 +92,7 @@ open class NavigationStackLayer6Tests: BaseTestClass {
         )
         
         // When: Applying Layer 6 enhancements
-        let enhancedView = view
+        _ = view
             .platformNavigationStackEnhancements_L6()
         
         // Then: Should work with Layer 1

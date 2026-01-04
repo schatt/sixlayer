@@ -64,7 +64,7 @@ open class NavigationStackLayer5Tests: BaseTestClass {
         let content = Text("Test Content")
         
         // When: Applying optimizations
-        let optimizedView = content
+        _ = content
             .platformNavigationStackOptimizations_L5()
         
         // Then: Should apply platform-specific optimizations
@@ -82,7 +82,7 @@ open class NavigationStackLayer5Tests: BaseTestClass {
             }
         
         // When: Applying memory optimizations
-        let optimizedView = content
+        _ = content
             .platformNavigationStackOptimizations_L5()
         
         // Then: Should have memory optimizations applied
@@ -97,7 +97,7 @@ open class NavigationStackLayer5Tests: BaseTestClass {
             }
         
         // When: Applying state preservation optimizations
-        let optimizedView = content
+        _ = content
             .platformNavigationStackOptimizations_L5()
         
         // Then: Should preserve navigation state efficiently
@@ -112,7 +112,7 @@ open class NavigationStackLayer5Tests: BaseTestClass {
             }
         
         // When: Applying optimizations for deep stacks
-        let optimizedView = content
+        _ = content
             .platformNavigationStackOptimizations_L5()
         
         // Then: Should optimize for deep navigation stacks
