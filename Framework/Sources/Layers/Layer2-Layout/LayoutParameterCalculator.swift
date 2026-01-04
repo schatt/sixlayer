@@ -338,12 +338,39 @@ public struct LayoutParameterCalculator {
             return 3
         }
         
-        // Default device limits
+        // Default device limits - consider viewport width for phones/pads on large displays
         switch context.deviceType {
         case .phone:
-            return 3
+            // Phones can have large viewports when connected to external displays
+            // Use viewport width to determine capacity, not just device type
+            let category = ScreenSizeCategory.from(width: context.viewportWidth)
+            switch category {
+            case .small, .medium:
+                return 3  // Standard phone limits
+            case .large:
+                return 4  // Larger viewport allows more columns
+            case .xlarge:
+                return 6  // 2K display
+            case .xxlarge:
+                return 8  // 4K display
+            case .xxxlarge:
+                return 10  // 8K display
+            }
         case .pad:
-            return 6
+            // Pads can also benefit from larger viewports
+            let category = ScreenSizeCategory.from(width: context.viewportWidth)
+            switch category {
+            case .small, .medium:
+                return 6  // Standard pad limits
+            case .large:
+                return 8
+            case .xlarge:
+                return 10
+            case .xxlarge:
+                return 12
+            case .xxxlarge:
+                return 16
+            }
         case .mac:
             let category = ScreenSizeCategory.from(width: context.viewportWidth)
             switch category {
