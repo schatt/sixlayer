@@ -133,7 +133,7 @@ open class ExplicitCountBasedPresentationTests: BaseTestClass {
             complexity: .moderate,
             context: .dashboard
         )
-        let cardsView = GenericItemCollectionView(items: cardsItems, hints: cardsHints)
+        _ = GenericItemCollectionView(items: cardsItems, hints: cardsHints)
         #expect(Bool(true), ".cards should map to expandableCards strategy")
 
         // Test grid → grid
@@ -144,7 +144,7 @@ open class ExplicitCountBasedPresentationTests: BaseTestClass {
             complexity: .moderate,
             context: .dashboard
         )
-        let gridView = GenericItemCollectionView(items: gridItems, hints: gridHints)
+        _ = GenericItemCollectionView(items: gridItems, hints: gridHints)
         #expect(Bool(true), ".grid should map to grid strategy")
 
         // Test masonry → masonry
@@ -155,7 +155,7 @@ open class ExplicitCountBasedPresentationTests: BaseTestClass {
             complexity: .moderate,
             context: .dashboard
         )
-        let masonryView = GenericItemCollectionView(items: masonryItems, hints: masonryHints)
+        _ = GenericItemCollectionView(items: masonryItems, hints: masonryHints)
         #expect(Bool(true), ".masonry should map to masonry strategy")
 
         // Test coverFlow → coverFlow
@@ -166,7 +166,7 @@ open class ExplicitCountBasedPresentationTests: BaseTestClass {
             complexity: .moderate,
             context: .dashboard
         )
-        let coverFlowView = GenericItemCollectionView(items: coverFlowItems, hints: coverFlowHints)
+        _ = GenericItemCollectionView(items: coverFlowItems, hints: coverFlowHints)
         #expect(Bool(true), ".coverFlow should map to coverFlow strategy")
     }
 
@@ -186,7 +186,7 @@ open class ExplicitCountBasedPresentationTests: BaseTestClass {
             complexity: .moderate,
             context: .dashboard
         )
-        let lowAutoView = GenericItemCollectionView(items: lowAutoItems, hints: lowAutoHints)
+        _ = GenericItemCollectionView(items: lowAutoItems, hints: lowAutoHints)
         #expect(Bool(true), "Nested .automatic as lowCount should use count-aware logic")
 
         // Test automatic as highCount
@@ -197,7 +197,7 @@ open class ExplicitCountBasedPresentationTests: BaseTestClass {
             complexity: .moderate,
             context: .dashboard
         )
-        let highAutoView = GenericItemCollectionView(items: highAutoItems, hints: highAutoHints)
+        _ = GenericItemCollectionView(items: highAutoItems, hints: highAutoHints)
         #expect(Bool(true), "Nested .automatic as highCount should use count-aware logic")
     }
 
@@ -217,7 +217,7 @@ open class ExplicitCountBasedPresentationTests: BaseTestClass {
             complexity: .moderate,
             context: .navigation
         )
-        let navView = GenericItemCollectionView(items: navItems, hints: navHints)
+        _ = GenericItemCollectionView(items: navItems, hints: navHints)
         #expect(Bool(true), ".countBased should work with navigation content")
 
         // Test with media content
@@ -228,7 +228,7 @@ open class ExplicitCountBasedPresentationTests: BaseTestClass {
             complexity: .moderate,
             context: .gallery
         )
-        let mediaView = GenericItemCollectionView(items: mediaItems, hints: mediaHints)
+        _ = GenericItemCollectionView(items: mediaItems, hints: mediaHints)
         #expect(Bool(true), ".countBased should work with media content")
     }
 
@@ -274,7 +274,7 @@ open class ExplicitCountBasedPresentationTests: BaseTestClass {
             complexity: .moderate,
             context: .dashboard
         )
-        let listView = GenericItemCollectionView(items: listItems, hints: listHints)
+        _ = GenericItemCollectionView(items: listItems, hints: listHints)
         #expect(Bool(true), "Explicit preferences should still work (backward compatible)")
 
         // Test that .automatic still works
@@ -285,7 +285,7 @@ open class ExplicitCountBasedPresentationTests: BaseTestClass {
             complexity: .moderate,
             context: .dashboard
         )
-        let autoView = GenericItemCollectionView(items: autoItems, hints: autoHints)
+        _ = GenericItemCollectionView(items: autoItems, hints: autoHints)
         #expect(Bool(true), ".automatic should still work (backward compatible)")
     }
 
@@ -309,7 +309,7 @@ open class ExplicitCountBasedPresentationTests: BaseTestClass {
             complexity: .moderate,
             context: .dashboard
         )
-        let nestedView = GenericItemCollectionView(items: nestedItems, hints: nestedHints)
+        _ = GenericItemCollectionView(items: nestedItems, hints: nestedHints)
         #expect(Bool(true), "Nested countBased should fallback gracefully")
 
         // Test very large threshold
@@ -320,7 +320,7 @@ open class ExplicitCountBasedPresentationTests: BaseTestClass {
             complexity: .moderate,
             context: .dashboard
         )
-        let largeThresholdView = GenericItemCollectionView(items: largeThresholdItems, hints: largeThresholdHints)
+        _ = GenericItemCollectionView(items: largeThresholdItems, hints: largeThresholdHints)
         #expect(Bool(true), "Large threshold should always use lowCount")
     }
 
