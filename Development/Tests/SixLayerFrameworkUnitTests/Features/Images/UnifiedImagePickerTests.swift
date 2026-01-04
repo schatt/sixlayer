@@ -102,7 +102,7 @@ open class UnifiedImagePickerTests: BaseTestClass {
         // Given: Unified image picker on iOS
         var selectedImage: PlatformImage?
         
-        let picker = UnifiedImagePicker { image in
+        _ = UnifiedImagePicker { image in
             selectedImage = image
         }
         
@@ -160,7 +160,7 @@ open class UnifiedImagePickerTests: BaseTestClass {
         // Given: Unified image picker on macOS
         var selectedImage: PlatformImage?
         
-        let picker = UnifiedImagePicker { image in
+        _ = UnifiedImagePicker { image in
             selectedImage = image
         }
         
