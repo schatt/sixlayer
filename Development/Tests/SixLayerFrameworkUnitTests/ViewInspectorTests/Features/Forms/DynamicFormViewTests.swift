@@ -910,9 +910,11 @@ open class DynamicFormViewTests: BaseTestClass {
         #if canImport(ViewInspector)
         if let inspected = ocrFieldView.tryInspect() {
             // Look for OCR button by finding the HStack that contains both TextField and Button
-            if let hStack = inspected.sixLayerTryFind(ViewType.HStack.self) {
+            let hStacks = inspected.findAll(ViewInspector.ViewType.HStack.self)
+            if let hStack = hStacks.first {
                 // The HStack should have 2 children: TextField and Button
-                #expect(hStack.sixLayerCount == 2, "OCR field HStack should contain TextField and OCR button")
+                let children = hStack.findAll(ViewInspector.ViewType.AnyView.self)
+                #expect(children.count == 2, "OCR field HStack should contain TextField and OCR button")
             }
         } else {
             Issue.record("OCR button not implemented yet")
@@ -926,7 +928,8 @@ open class DynamicFormViewTests: BaseTestClass {
         #if canImport(ViewInspector)
         if let inspected = regularFieldView.tryInspect() {
             // Regular field should not have HStack (just VStack with label and TextField)
-            let hStack = inspected.sixLayerTryFind(ViewType.HStack.self)
+            let hStacks = inspected.findAll(ViewInspector.ViewType.HStack.self)
+            let hStack = hStacks.first
             #expect(Bool(false), "Regular field should not have HStack (no OCR button)")  // hStack is non-optional
         }
         #else

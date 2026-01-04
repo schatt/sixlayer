@@ -85,8 +85,8 @@ open class LocalEnableOverrideTests: BaseTestClass {
             // Using wrapper - when ViewInspector works on macOS, no changes needed here
             #if canImport(ViewInspector)
             if let inspectedView = try? AnyView(view).inspect(),
-               let button = try? inspectedView.sixLayerButton(),
-               let accessibilityID = try? button.sixLayerAccessibilityIdentifier() {
+               let button = try? inspectedView.button(),
+               let accessibilityID = try? button.accessibilityIdentifier() {
                 // .named() should always work regardless of global settings
                 // This is the correct behavior - explicit naming should not be affected by global config
                 #expect(!accessibilityID.isEmpty, ".named() should always generate identifier regardless of global settings")

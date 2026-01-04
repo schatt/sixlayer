@@ -173,13 +173,11 @@ open class GlobalDisableLocalEnableTDDTests: BaseTestClass {
 
         #if canImport(ViewInspector)
         // Optimized: Check root view first (most common case)
-        if let id = try? inspectedView.sixLayerAccessibilityIdentifier(), !id.isEmpty {
-            return id
-        }
-        
-        // Optimized: Only do one level deep search for button
-        if let button = inspectedView.sixLayerTryFind(Button<Text>.self),
-           let id = try? button.sixLayerAccessibilityIdentifier(), !id.isEmpty {
+        // Note: InspectableView doesn't have direct accessibilityIdentifier() method
+        // We need to find a Button or other view that has it
+        let buttons = inspectedView.findAll(ViewInspector.ViewType.Button.self)
+        if let button = buttons.first,
+           let id = try? button.accessibilityIdentifier(), !id.isEmpty {
             return id
         }
         #endif

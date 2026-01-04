@@ -62,10 +62,10 @@ open class FormWizardViewTDDTests: BaseTestClass {
         #if canImport(ViewInspector)
         if let inspected = try? AnyView(view).inspect() {
             // Should display current step content
-            let allTexts = inspected.sixLayerFindAll(Text.self)
+            let allTexts = inspected.findAll(ViewInspector.ViewType.Text.self)
             if !allTexts.isEmpty {
                 let foundStep1 = allTexts.contains { text in
-                    (try? text.sixLayerString())?.contains("Step 1") ?? false
+                    (try? text.string())?.contains("Step 1") ?? false
                 }
                 #expect(foundStep1, "Should display current step content")
             }

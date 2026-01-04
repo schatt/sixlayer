@@ -37,8 +37,8 @@ open class FrameworkComponentGlobalConfigTests: BaseTestClass {
             // Using wrapper - when ViewInspector works on macOS, no changes needed here
             #if canImport(ViewInspector)
             if let inspectedView = try? AnyView(view).inspect(),
-               let button = try? inspectedView.sixLayerButton(),
-               let accessibilityID = try? button.sixLayerAccessibilityIdentifier() {
+               let button = try? inspectedView.button(),
+               let accessibilityID = try? button.accessibilityIdentifier() {
                 // Should be empty or not present when global config is disabled
                 #expect(accessibilityID.isEmpty, "Framework component should not generate ID when global config is disabled")
             } else {
@@ -80,8 +80,8 @@ open class FrameworkComponentGlobalConfigTests: BaseTestClass {
             // Using wrapper - when ViewInspector works on macOS, no changes needed here
             #if canImport(ViewInspector)
             if let inspectedView = try? AnyView(view).inspect(),
-               let button = try? inspectedView.sixLayerButton(),
-               let accessibilityID = try? button.sixLayerAccessibilityIdentifier() {
+               let button = try? inspectedView.button(),
+               let accessibilityID = try? button.accessibilityIdentifier() {
                 // .named() should always generate an ID (ignoring global settings)
                 #expect(!accessibilityID.isEmpty, "Framework component with .named() should generate ID")
                 #expect(accessibilityID.contains("main"), "ID should contain screen context")
