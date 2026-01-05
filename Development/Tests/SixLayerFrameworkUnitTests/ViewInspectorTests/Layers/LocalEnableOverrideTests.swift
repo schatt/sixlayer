@@ -1,7 +1,7 @@
 import Testing
 
-
 import SwiftUI
+import ViewInspector
 @testable import SixLayerFramework
 /// Test the "global disable, local enable" functionality
 /// NOTE: Not marked @MainActor on class to allow parallel execution

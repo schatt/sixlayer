@@ -36,7 +36,7 @@ open class NavigationStackLayer1Tests: BaseTestClass {
         let content = Text("Test Content")
         
         // When: Creating navigation stack presentation
-        _ = platformPresentNavigationStack_L1(
+        let view = platformPresentNavigationStack_L1(
             content: content,
             hints: testHints
         )
@@ -150,7 +150,7 @@ open class NavigationStackLayer1Tests: BaseTestClass {
         let detail = Text("Detail Content")
         
         // When: Creating app navigation presentation
-        _ = platformPresentAppNavigation_L1(
+        let view = platformPresentAppNavigation_L1(
             columnVisibility: nil,
             showingNavigationSheet: nil,
             sidebar: { sidebar },
