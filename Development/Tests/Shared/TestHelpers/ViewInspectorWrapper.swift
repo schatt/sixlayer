@@ -45,6 +45,8 @@ extension View where Self: ViewInspector.KnownViewType {
     @MainActor
     func tryInspect() -> ViewInspector.InspectableView<Self>? {
         // For KnownViewType, inspect() returns InspectableView<Self>
-        return try? self.inspect()
+        // Use explicit type annotation to resolve ambiguity
+        let result: ViewInspector.InspectableView<Self>? = try? self.inspect()
+        return result
     }
 }
