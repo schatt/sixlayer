@@ -434,12 +434,17 @@ public struct AdaptiveUIPatterns {
         }
         
         private var cornerRadius: CGFloat {
+            // Use PlatformStrategy for platform-specific button corner radius (Issue #140)
+            return convertPlatformStyle(platform).defaultButtonCornerRadius
+        }
+        
+        private func convertPlatformStyle(_ platform: PlatformStyle) -> SixLayerPlatform {
             switch platform {
-            case .ios: return 8
-            case .macOS: return 6
-            case .watchOS: return 12
-            case .tvOS: return 8
-            case .visionOS: return 10
+            case .ios: return .iOS
+            case .macOS: return .macOS
+            case .watchOS: return .watchOS
+            case .tvOS: return .tvOS
+            case .visionOS: return .visionOS
             }
         }
         
@@ -515,13 +520,8 @@ public struct AdaptiveUIPatterns {
         }
         
         private var adaptiveBorderWidth: CGFloat {
-            switch platform {
-            case .ios: return 1
-            case .macOS: return 1
-            case .watchOS: return 0
-            case .tvOS: return 1
-            case .visionOS: return 1
-            }
+            // Use PlatformStrategy for platform-specific adaptive border width (Issue #140)
+            return convertPlatformStyle(platform).defaultAdaptiveBorderWidth
         }
     }
 }

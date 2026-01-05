@@ -314,16 +314,8 @@ public func getCardExpansionAccessibilityConfig() -> CardExpansionAccessibilityC
     let supportsSwitchControl = RuntimeCapabilityDetection.supportsSwitchControl
     let supportsAssistiveTouch = RuntimeCapabilityDetection.supportsAssistiveTouch
     
-    // Platform-specific announcement delays
-    let announcementDelay: TimeInterval
-    switch platform {
-    case .visionOS:
-        announcementDelay = 0.7 // Longer delay for spatial interface
-    case .watchOS, .tvOS:
-        announcementDelay = 0.3 // Shorter delay for constrained interfaces
-    default:
-        announcementDelay = 0.5
-    }
+    // Use PlatformStrategy for platform-specific announcement delays (Issue #140)
+    let announcementDelay = platform.defaultAnnouncementDelay
     
     return CardExpansionAccessibilityConfig(
         supportsVoiceOver: supportsVoiceOver,

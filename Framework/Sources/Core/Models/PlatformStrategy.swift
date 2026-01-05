@@ -196,6 +196,80 @@ public extension SixLayerPlatform {
         }
     }
     
+    // MARK: - UI Styling Properties
+    
+    /// Default corner radius for card/container components (points)
+    /// Used for containers, cards, and larger UI elements
+    var defaultCardCornerRadius: CGFloat {
+        switch self {
+        case .iOS: return 12
+        case .macOS: return 8
+        case .watchOS: return 16
+        case .tvOS: return 12
+        case .visionOS: return 14
+        }
+    }
+    
+    /// Default corner radius for button components (points)
+    /// Used for buttons and smaller interactive elements
+    var defaultButtonCornerRadius: CGFloat {
+        switch self {
+        case .iOS: return 8
+        case .macOS: return 6
+        case .watchOS: return 12
+        case .tvOS: return 8
+        case .visionOS: return 10
+        }
+    }
+    
+    /// Default shadow radius for card/container components (points)
+    /// Used for elevation and depth in card-based layouts
+    var defaultShadowRadius: CGFloat {
+        switch self {
+        case .iOS: return 4
+        case .macOS: return 2
+        case .watchOS: return 0  // No shadows on watch
+        case .tvOS: return 4
+        case .visionOS: return 5
+        }
+    }
+    
+    /// Default shadow offset for card/container components (points)
+    /// Vertical offset for shadow positioning
+    var defaultShadowOffset: CGFloat {
+        switch self {
+        case .iOS: return 2
+        case .macOS: return 1
+        case .watchOS: return 0  // No shadows on watch
+        case .tvOS: return 2
+        case .visionOS: return 3
+        }
+    }
+    
+    /// Default border width for adaptive button styles (points)
+    /// Used when button style is set to adaptive
+    var defaultAdaptiveBorderWidth: CGFloat {
+        switch self {
+        case .iOS, .macOS, .tvOS, .visionOS:
+            return 1
+        case .watchOS:
+            return 0  // No borders on watch
+        }
+    }
+    
+    /// Default announcement delay for accessibility (seconds)
+    /// Used for VoiceOver and Switch Control announcements
+    var defaultAnnouncementDelay: TimeInterval {
+        switch self {
+        case .visionOS:
+            return 0.7  // Longer delay for spatial interface
+        case .watchOS, .tvOS:
+            return 0.3  // Shorter delay for constrained interfaces
+        case .iOS, .macOS:
+            return 0.5  // Standard delay
+        }
+    }
+    
     // MARK: - HIG Compliance Properties
     
     /// Whether this platform supports AssistiveTouch
