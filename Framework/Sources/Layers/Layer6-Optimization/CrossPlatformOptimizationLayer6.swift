@@ -50,29 +50,13 @@ public class CrossPlatformOptimizationManager: ObservableObject {
 
 /// Platform-specific optimization extensions
 @MainActor
+// Platform capability properties moved to PlatformStrategy to reduce code duplication (Issue #140)
+// Use platform.supportsHapticFeedback and platform.supportsKeyboardNavigation from PlatformStrategy
+// supportsTouchGestures remains here as it uses runtime detection
 public extension SixLayerPlatform {
-    /// Check if platform supports specific features
-    var supportsHapticFeedback: Bool {
-        switch self {
-        case .iOS, .watchOS:
-            return true
-        case .macOS, .tvOS, .visionOS:
-            return false
-        }
-    }
-    
     var supportsTouchGestures: Bool {
         // Use runtime detection instead of hardcoded platform assumptions
         return RuntimeCapabilityDetection.supportsTouchWithOverride
-    }
-    
-    var supportsKeyboardNavigation: Bool {
-        switch self {
-        case .macOS, .tvOS:
-            return true
-        case .iOS, .watchOS, .visionOS:
-            return false
-        }
     }
 }
 

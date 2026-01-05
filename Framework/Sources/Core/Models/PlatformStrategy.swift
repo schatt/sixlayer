@@ -189,6 +189,28 @@ public extension SixLayerPlatform {
         }
     }
     
+    /// Whether this platform supports haptic feedback
+    /// Haptic feedback is available on touch-first platforms
+    var supportsHapticFeedback: Bool {
+        switch self {
+        case .iOS, .watchOS:
+            return true
+        case .macOS, .tvOS, .visionOS:
+            return false
+        }
+    }
+    
+    /// Whether this platform supports keyboard navigation as primary input
+    /// Keyboard navigation is primary on desktop and TV platforms
+    var supportsKeyboardNavigation: Bool {
+        switch self {
+        case .macOS, .tvOS:
+            return true
+        case .iOS, .watchOS, .visionOS:
+            return false
+        }
+    }
+    
     /// Default safe area insets for this platform (points)
     var defaultSafeAreaInsets: EdgeInsets {
         switch self {
