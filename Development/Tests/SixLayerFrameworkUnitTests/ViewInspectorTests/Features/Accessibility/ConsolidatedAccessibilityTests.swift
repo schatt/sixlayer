@@ -3082,10 +3082,14 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
                 .named("")
             
             #if canImport(ViewInspector)
-            withInspectedView(view) { inspected in
-                let buttonID = try inspected.accessibilityIdentifier()
-                #expect(!buttonID.isEmpty, "Should generate ID even with empty parameters")
-                #expect(buttonID.contains("SixLayer"), "Should contain namespace")
+            do {
+                try withInspectedViewThrowing(view) { inspected in
+                    let buttonID = try inspected.accessibilityIdentifier()
+                    #expect(!buttonID.isEmpty, "Should generate ID even with empty parameters")
+                    #expect(buttonID.contains("SixLayer"), "Should contain namespace")
+                }
+            } catch {
+                Issue.record("View inspection failed: \(error)")
             }
             #else
             // ViewInspector not available on this platform
@@ -3104,11 +3108,15 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
                 .named("Button@#$%^&*()")
             
             #if canImport(ViewInspector)
-            withInspectedView(view) { inspected in
-                let buttonID = try inspected.accessibilityIdentifier()
-                #expect(!buttonID.isEmpty, "Should generate ID with special characters")
-                #expect(buttonID.contains("SixLayer"), "Should contain namespace")
-                #expect(buttonID.contains("@#$%^&*()"), "Should preserve special characters")
+            do {
+                try withInspectedViewThrowing(view) { inspected in
+                    let buttonID = try inspected.accessibilityIdentifier()
+                    #expect(!buttonID.isEmpty, "Should generate ID with special characters")
+                    #expect(buttonID.contains("SixLayer"), "Should contain namespace")
+                    #expect(buttonID.contains("@#$%^&*()"), "Should preserve special characters")
+                }
+            } catch {
+                Issue.record("View inspection failed: \(error)")
             }
             #else
             // ViewInspector not available on this platform
@@ -3127,9 +3135,13 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
                 .accessibilityIdentifier("manual-override")
             
             #if canImport(ViewInspector)
-            withInspectedView(view) { inspected in
-                let buttonID = try inspected.accessibilityIdentifier()
-                #expect(buttonID == "manual-override", "Manual ID should override automatic ID")
+            do {
+                try withInspectedViewThrowing(view) { inspected in
+                    let buttonID = try inspected.accessibilityIdentifier()
+                    #expect(buttonID == "manual-override", "Manual ID should override automatic ID")
+                }
+            } catch {
+                Issue.record("View inspection failed: \(error)")
             }
             #else
             // ViewInspector not available on this platform
@@ -8292,10 +8304,14 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
             
             #if canImport(ViewInspector)
-            withInspectedView(view) { inspected in
-                let buttonID = try inspected.accessibilityIdentifier()
-                #expect(!buttonID.isEmpty, "Should generate ID with very long names")
-                #expect(buttonID.contains("SixLayer"), "Should contain namespace")
+            do {
+                try withInspectedViewThrowing(view) { inspected in
+                    let buttonID = try inspected.accessibilityIdentifier()
+                    #expect(!buttonID.isEmpty, "Should generate ID with very long names")
+                    #expect(buttonID.contains("SixLayer"), "Should contain namespace")
+                }
+            } catch {
+                Issue.record("View inspection failed: \(error)")
             }
             #else
             // ViewInspector not available on this platform
@@ -11028,15 +11044,23 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         do {
             // Should have a VStack containing label and TextField
             let vStack = try inspected.vStack()
-            let children = vStack.findAll(ViewInspector.ViewType.AnyView.self)
+            let children = vStack.findAll(ViewInspector.ViewType.ClassifiedView.self)
             #expect(children.count >= 2, "Should have label and TextField")
 
                 // First element should be the label Text
-            let labelText = try vStack.sixLayerText(0)
+            let texts = vStack.findAll(ViewInspector.ViewType.Text.self)
+            guard let labelText = texts.first else {
+                Issue.record("Could not find label text")
+                return
+            }
             #expect(try labelText.string() == "Full Name", "Label should show field label")
 
                 // Second element should be a TextField
-            let _ = try vStack.sixLayerTextField(1)
+            let textFields = vStack.findAll(ViewInspector.ViewType.TextField.self)
+            guard textFields.count > 0 else {
+                Issue.record("Could not find TextField")
+                return
+            }
         // Note: ViewInspector doesn't provide direct access to TextField placeholder text
         // We verify the TextField exists and has proper binding instead
 
@@ -11099,15 +11123,23 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         do {
             // Should have a VStack containing label and TextField
             let vStack = try inspected.vStack()
-            let children = vStack.findAll(ViewInspector.ViewType.AnyView.self)
+            let children = vStack.findAll(ViewInspector.ViewType.ClassifiedView.self)
             #expect(children.count >= 2, "Should have label and TextField")
 
                 // First element should be the label Text
-            let labelText = try vStack.sixLayerText(0)
+            let texts = vStack.findAll(ViewInspector.ViewType.Text.self)
+            guard let labelText = texts.first else {
+                Issue.record("Could not find label text")
+                return
+            }
             #expect(try labelText.string() == "Age", "Label should show field label")
 
                 // Second element should be a TextField with numeric keyboard
-            let textField = try vStack.sixLayerTextField(1)
+            let textFields = vStack.findAll(ViewInspector.ViewType.TextField.self)
+            guard let textField = textFields.first else {
+                Issue.record("Could not find TextField")
+                return
+            }
             // Note: ViewInspector doesn't provide direct access to TextField placeholder text
             // We verify the TextField exists and check keyboard type instead
 
@@ -11176,10 +11208,14 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         do {
             // Should have a VStack containing label and TextEditor
             let vStack = try inspected.vStack()
-            #expect(vStack.sixLayerCount >= 2, "Should have label and TextEditor")
+            #expect(vStack.count >= 2, "Should have label and TextEditor")
 
                 // First element should be the label Text
-            let labelText = try vStack.sixLayerText(0)
+            let texts = vStack.findAll(ViewInspector.ViewType.Text.self)
+            guard let labelText = texts.first else {
+                Issue.record("Could not find label text")
+                return
+            }
             #expect(try labelText.string() == "Description", "Label should show field label")
 
                 // Should have accessibility identifier
@@ -11242,10 +11278,14 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         do {
             // Should have a VStack containing label and Picker
             let vStack = try inspected.vStack()
-            #expect(vStack.sixLayerCount >= 2, "Should have label and Picker")
+            #expect(vStack.count >= 2, "Should have label and Picker")
 
                 // First element should be the label Text
-            let labelText = try vStack.sixLayerText(0)
+            let texts = vStack.findAll(ViewInspector.ViewType.Text.self)
+            guard let labelText = texts.first else {
+                Issue.record("Could not find label text")
+                return
+            }
             #expect(try labelText.string() == "Country", "Label should show field label")
 
             // Should have accessibility identifier
@@ -11308,10 +11348,14 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         do {
             // Should have a VStack containing label and selection controls
             let vStack = try inspected.vStack()
-            #expect(vStack.sixLayerCount >= 2, "Should have label and selection controls")
+            #expect(vStack.count >= 2, "Should have label and selection controls")
 
                 // First element should be the label Text
-            let labelText = try vStack.sixLayerText(0)
+            let texts = vStack.findAll(ViewInspector.ViewType.Text.self)
+            guard let labelText = texts.first else {
+                Issue.record("Could not find label text")
+                return
+            }
             #expect(try labelText.string() == "Interests", "Label should show field label")
 
                 // Should have accessibility identifier
@@ -11377,7 +11421,11 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             #expect(vStack.sixLayerCount >= 2, "Should have label and radio controls")
 
                 // First element should be the label Text
-            let labelText = try vStack.sixLayerText(0)
+            let texts = vStack.findAll(ViewInspector.ViewType.Text.self)
+            guard let labelText = texts.first else {
+                Issue.record("Could not find label text")
+                return
+            }
             #expect(try labelText.string() == "Gender", "Label should show field label")
 
                 // Should have accessibility identifier
@@ -11442,7 +11490,11 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             #expect(vStack.sixLayerCount >= 2, "Should have label and Toggle")
 
                 // First element should be the label Text
-            let labelText = try vStack.sixLayerText(0)
+            let texts = vStack.findAll(ViewInspector.ViewType.Text.self)
+            guard let labelText = texts.first else {
+                Issue.record("Could not find label text")
+                return
+            }
             #expect(try labelText.string() == "Subscribe to Newsletter", "Label should show field label")
 
                 // Should have accessibility identifier
@@ -11507,7 +11559,11 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             #expect(vStack.sixLayerCount >= 2, "Should have label and Toggle")
 
                 // First element should be the label Text
-            let labelText = try vStack.sixLayerText(0)
+            let texts = vStack.findAll(ViewInspector.ViewType.Text.self)
+            guard let labelText = texts.first else {
+                Issue.record("Could not find label text")
+                return
+            }
             #expect(try labelText.string() == "Enable Feature", "Label should show field label")
 
                 // Should have accessibility identifier
@@ -12157,7 +12213,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
         #if canImport(ViewInspector)
         if let inspectedView = try? AnyView(view).inspect(),
-           let text = try? inspectedView.sixLayerText(),
+           let texts = inspectedView.findAll(ViewInspector.ViewType.Text.self),
+           let text = texts.first,
            let accessibilityID = try? text.accessibilityIdentifier() {
             #expect(accessibilityID.isEmpty, "Global disable without local enable should result in no accessibility identifier, got: '\(accessibilityID)'")
         } else {
