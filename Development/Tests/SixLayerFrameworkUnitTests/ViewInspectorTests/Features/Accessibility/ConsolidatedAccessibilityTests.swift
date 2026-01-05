@@ -16437,32 +16437,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
 }
 
-    @Test @MainActor func testEyeTrackingWithDifferentSensitivities() async {
-    let sensitivities: [EyeTrackingSensitivity] = Array(EyeTrackingSensitivity.allCases) // Use real enum
-    
-    for i in 0..<sensitivities.count {
-        let localSensitivities = Array(EyeTrackingSensitivity.allCases)
-        let sensitivity = localSensitivities[i]
-        let config = EyeTrackingConfig(sensitivity: sensitivity)
-        _ = EyeTrackingManager(config: config)
-        
-        #expect(Bool(true), "Manager should be created successfully")
-        // Test that manager can be created with different sensitivities
-    }
-}
-
-    @Test @MainActor func testEyeTrackingWithDifferentDwellTimes() async {
-    let dwellTimes: [TimeInterval] = [0.5, 1.0, 1.5, 2.0]
-    
-    for dwellTime in dwellTimes {
-        let config = EyeTrackingConfig(dwellTime: dwellTime)
-        _ = EyeTrackingManager(config: config)
-        
-        #expect(Bool(true), "Manager should be created successfully")
-        // Test that manager can be created with different dwell times
-    }
-}
-
     @Test @MainActor func testPlatformPresentContentL1GeneratesAccessibilityID() {
     initializeTestConfig()
     // TDD Green Phase: This SHOULD PASS - has .automaticAccessibility()
@@ -17818,8 +17792,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     #expect(compliance.issues.count >= 0, "Compliance issues count is valid")
 }
 
-// NOTE: Due to the massive scale (546 total tests), this consolidated file contains
-// representative tests from all major categories. Additional tests from remaining files
-// can be added incrementally as needed. The @Suite(.serialized) attribute ensures
-// all tests run serially to reduce MainActor contention.
+        // NOTE: Due to the massive scale (546 total tests), this consolidated file contains
+    // representative tests from all major categories. Additional tests from remaining files
+    // can be added incrementally as needed. The @Suite(.serialized) attribute ensures
+    // all tests run serially to reduce MainActor contention.
 
