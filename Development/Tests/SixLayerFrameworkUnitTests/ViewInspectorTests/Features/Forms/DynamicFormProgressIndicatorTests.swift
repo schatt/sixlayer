@@ -21,17 +21,22 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
     
     /// Find progress indicator by structure (VStack containing ProgressView and "Progress" text)
     /// ViewInspector may not be able to find custom struct types directly, so we use structure-based finding
-    private func findProgressIndicator(in inspected: Inspectable) -> Inspectable? {
+    #if canImport(ViewInspector)
+    private func findProgressIndicator(in inspected: ViewInspector.InspectableView<ViewInspector.ViewType.ClassifiedView>) -> ViewInspector.InspectableView<ViewInspector.ViewType.ClassifiedView>? {
+    #else
+    private func findProgressIndicator(in inspected: Any) -> Any? {
+    #endif
         // Strategy: Find a VStack that contains both a ProgressView and "Progress" text
         // This matches the structure of FormProgressIndicator
         
         // First, check if the current view is a VStack with the right structure
         if let vStack = try? inspected.vStack() {
             // Check if this VStack contains a ProgressView
-            let hasProgressView = vStack.findAll(ProgressView<EmptyView, EmptyView>.self) != nil
+            let progressViews = vStack.findAll(ViewInspector.ViewType.ProgressView.self)
+            let hasProgressView = !progressViews.isEmpty
             
             // Check if it contains "Progress" text
-            let texts = vStack.findAll(Text.self)
+            let texts = vStack.findAll(ViewInspector.ViewType.Text.self)
             let hasProgressText = texts.contains { text in
                 (try? text.string()) == "Progress"
             }
@@ -42,11 +47,11 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
         }
         
         // Search for ProgressView and verify it's in a VStack with "Progress" text
-        let progressViews = inspected.findAll(ProgressView<EmptyView, EmptyView>.self)
+        let progressViews = inspected.findAll(ViewInspector.ViewType.ProgressView.self)
         for _ in progressViews {
             // If we found a ProgressView, check if there's "Progress" text nearby
             // (indicating this is likely the progress indicator)
-            let texts = inspected.findAll(Text.self)
+            let texts = inspected.findAll(ViewInspector.ViewType.Text.self)
             let hasProgressText = texts.contains { text in
                 (try? text.string()) == "Progress"
             }
@@ -96,20 +101,21 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
         
         // Then: Progress indicator should be visible
         #if canImport(ViewInspector)
-        let inspectionResult = withInspectedView(view) { inspected in
-            // Find the FormProgressIndicator by structure (ViewInspector may not find custom struct types directly)
-            let progressIndicator = findProgressIndicator(in: inspected)
-            #expect(progressIndicator != nil, "Progress indicator should be present when showProgress is true")
-            
-            // Verify it contains the expected elements
-            if let indicator = progressIndicator {
-                let progressView = indicator.findAll(ProgressView<EmptyView, EmptyView>.self)
-                #expect(progressView != nil, "Progress indicator should contain ProgressView")
+        do {
+            try withInspectedViewThrowing(view) { inspected in
+                // Find the FormProgressIndicator by structure (ViewInspector may not find custom struct types directly)
+                let progressIndicator = findProgressIndicator(in: inspected)
+                #expect(progressIndicator != nil, "Progress indicator should be present when showProgress is true")
+                
+                // Verify it contains the expected elements
+                if let indicator = progressIndicator {
+                    let progressViews = indicator.findAll(ViewInspector.ViewType.ProgressView.self)
+                    let progressView = progressViews.first
+                    #expect(progressView != nil, "Progress indicator should contain ProgressView")
+                }
             }
-        }
-        
-        if inspectionResult == nil {
-            Issue.record("View inspection failed - could not verify progress indicator display")
+        } catch {
+            Issue.record("View inspection failed: \(error)")
         }
         #else
         // ViewInspector not available on macOS - verify view is created
@@ -146,13 +152,16 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
         
         // Then: Progress indicator should NOT be visible
         #if canImport(ViewInspector)
-        let inspectionResult = withInspectedView(view) { inspected in
-            // Attempt to find the FormProgressIndicator by structure
-            let progressIndicator = findProgressIndicator(in: inspected)
-            #expect(progressIndicator == nil, "Progress indicator should not be present when showProgress is false")
+        do {
+            try withInspectedViewThrowing(view) { inspected in
+                // Attempt to find the FormProgressIndicator by structure
+                let progressIndicator = findProgressIndicator(in: inspected)
+                #expect(progressIndicator == nil, "Progress indicator should not be present when showProgress is false")
+            }
+        } catch {
+            Issue.record("View inspection failed: \(error)")
         }
-        
-        if inspectionResult == nil {
+        #else
             Issue.record("View inspection failed - could not verify progress indicator is hidden")
         }
         #else
@@ -193,11 +202,13 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
         
         // Then: Progress indicator should show "0 of 3 fields"
         #if canImport(ViewInspector)
-        let inspectionResult = withInspectedView(view) { inspected in
-            let progressIndicator = findProgressIndicator(in: inspected)
+        #if canImport(ViewInspector)
+        do {
+            try withInspectedViewThrowing(view) { inspected in
+                let progressIndicator = findProgressIndicator(in: inspected)
             if let indicator = progressIndicator {
                 // Look for the text showing field count
-                let texts = indicator.findAll(Text.self)
+                let texts = indicator.findAll(ViewInspector.ViewType.Text.self)
                 let fieldCountText = texts.first { text in
                     (try? text.string())?.contains("of") ?? false
                 }
@@ -253,15 +264,18 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
         
         // Then: Progress bar should show 0% initially
         #if canImport(ViewInspector)
-        let inspectionResult = withInspectedView(view) { inspected in
-            let progressIndicator = findProgressIndicator(in: inspected)
+        #if canImport(ViewInspector)
+        do {
+            try withInspectedViewThrowing(view) { inspected in
+                let progressIndicator = findProgressIndicator(in: inspected)
             if let indicator = progressIndicator {
                 // Look for ProgressView
-                let progressView = indicator.findAll(ProgressView<EmptyView, EmptyView>.self)
+                let progressViews = indicator.findAll(ViewInspector.ViewType.ProgressView.self)
+                let progressView = progressViews.first
                 #expect(progressView != nil, "Progress bar should be present")
                 
                 // Verify the structure contains expected elements
-                let texts = indicator.findAll(Text.self)
+                let texts = indicator.findAll(ViewInspector.ViewType.Text.self)
                 #expect(texts.count >= 2, "Progress indicator should have at least Progress title and field count text")
             } else {
                 Issue.record("Could not find progress indicator to verify progress bar")
@@ -310,22 +324,22 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
         
         // Verify initial state: should show "0 of 2 fields"
         #if canImport(ViewInspector)
-        let initialInspection = withInspectedView(view) { inspected in
-            let progressIndicator = findProgressIndicator(in: inspected)
-            if let indicator = progressIndicator {
-                let texts = indicator.findAll(Text.self)
-                let fieldCountText = texts.first { text in
-                    (try? text.string())?.contains("of") ?? false
-                }
-                if let countText = fieldCountText {
-                    let textString = try? countText.string()
-                    #expect(textString?.contains("0 of 2") ?? false, "Initially should show '0 of 2 fields'")
+        do {
+            try withInspectedViewThrowing(view) { inspected in
+                let progressIndicator = findProgressIndicator(in: inspected)
+                if let indicator = progressIndicator {
+                    let texts = indicator.findAll(ViewInspector.ViewType.Text.self)
+                    let fieldCountText = texts.first { text in
+                        (try? text.string())?.contains("of") ?? false
+                    }
+                    if let countText = fieldCountText {
+                        let textString = try? countText.string()
+                        #expect(textString?.contains("0 of 2") ?? false, "Initially should show '0 of 2 fields'")
+                    }
                 }
             }
-        }
-        
-        if initialInspection == nil {
-            Issue.record("Could not verify initial progress state")
+        } catch {
+            Issue.record("View inspection failed: \(error)")
         }
         #else
         // ViewInspector not available - verify view is created
