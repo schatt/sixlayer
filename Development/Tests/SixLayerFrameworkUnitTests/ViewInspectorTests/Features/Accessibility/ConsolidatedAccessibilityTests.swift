@@ -146,7 +146,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testAccessibilityIdentifierConfigGeneratesAccessibilityIdentifiers() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             // Given: AccessibilityIdentifierConfig singleton
             guard let config = testConfig else {
                 Issue.record("testConfig is nil")
@@ -164,7 +164,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testGlobalAutomaticAccessibilityIdentifiersKeyGeneratesAccessibilityIdentifiers() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             // Given: GlobalAutomaticAccessibilityIdentifiersKey
             let key = GlobalAutomaticAccessibilityIdentifiersKey()
             
@@ -178,7 +178,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testComprehensiveAccessibilityModifierGeneratesAccessibilityIdentifiers() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             // Given: A view with ComprehensiveAccessibilityModifier
             let testView = platformVStackContainer {
                 Text("Test Content")
@@ -204,7 +204,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testSystemAccessibilityModifierGeneratesAccessibilityIdentifiers() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             // Given: A view with SystemAccessibilityModifier
             let testView = platformVStackContainer {
                 Text("Test Content")
@@ -233,7 +233,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testAccessibilityIdentifierAssignmentModifierGeneratesAccessibilityIdentifiers() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             // Given: A view with AccessibilityIdentifierAssignmentModifier
             let testView = platformVStackContainer {
                 Text("Test Content")
@@ -262,7 +262,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testNamedModifierGeneratesAccessibilityIdentifiers() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             // Given: A view with .named() modifier
             let testView = platformVStackContainer {
                 Text("Test Content")
@@ -288,7 +288,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testExactNamedModifierGeneratesAccessibilityIdentifiers() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             // Given: A view with .exactNamed() modifier
             let testView = platformVStackContainer {
                 Text("Test Content")
@@ -314,7 +314,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testAutomaticAccessibilityIdentifiersModifierGeneratesAccessibilityIdentifiers() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             // Given: A view with .automaticCompliance() modifier
             let testView = platformVStackContainer {
                 Text("Test Content")
@@ -340,7 +340,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testAutomaticAccessibilityModifierGeneratesAccessibilityIdentifiers() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             // Given: A view with .automaticAccessibility() modifier
             let testView = platformVStackContainer {
                 Text("Test Content")
@@ -366,7 +366,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testScreenContextModifierGeneratesAccessibilityIdentifiers() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             let testView = platformVStackContainer {
                 Text("Test Content")
                 Button("Test Button") { }
@@ -384,7 +384,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testNavigationStateModifierGeneratesAccessibilityIdentifiers() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             let testView = platformVStackContainer {
                 Text("Test Content")
                 Button("Test Button") { }
@@ -402,7 +402,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testDetectAppNamespaceGeneratesCorrectNamespace() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             // Given: detectAppNamespace function
             let namespace = "SixLayerFramework" // Use real namespace
             
@@ -413,7 +413,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testAccessibilitySystemStateGeneratesAccessibilityIdentifiers() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             // Given: AccessibilitySystemState
             let state = AccessibilitySystemState()
             
@@ -424,7 +424,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testPlatformDetectionGeneratesAccessibilityIdentifiers() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             // Given: Platform detection
             let platform = "iOS" // Use real platform
             
@@ -435,7 +435,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testAccessibilityIdentifierPatternsGeneratesAccessibilityIdentifiers() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             // Given: Various accessibility identifier patterns
             let patterns = [
                 "*.main.element.*",
@@ -455,7 +455,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testAccessibilityIdentifierGenerationGeneratesAccessibilityIdentifiers() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             // Given: Accessibility identifier generation
             let testView = platformVStackContainer {
                 Text("Test Content")
@@ -481,7 +481,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testAccessibilityIdentifierValidationGeneratesAccessibilityIdentifiers() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             // Given: Accessibility identifier validation
             let testView = platformVStackContainer {
                 Text("Test Content")
@@ -507,7 +507,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testAccessibilityIdentifierHierarchyGeneratesAccessibilityIdentifiers() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             // Given: Accessibility identifier hierarchy
             let testView = platformVStackContainer {
                 Text("Test Content")
@@ -534,7 +534,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testAccessibilityIdentifierCollisionPreventionGeneratesAccessibilityIdentifiers() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             // Given: Accessibility identifier collision prevention
             let testView = platformVStackContainer {
                 Text("Test Content")
@@ -562,7 +562,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testAccessibilityIdentifierDebugLoggingGeneratesAccessibilityIdentifiers() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             // Given: Accessibility identifier debug logging
             guard let config = testConfig else {
                 Issue.record("testConfig is nil")
@@ -1713,7 +1713,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testGlobalConfigControlsAutomaticIdentifiers() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             // Given: Automatic IDs explicitly enabled for this test
             guard let config = self.testConfig else {
                 Issue.record("testConfig is nil")
@@ -1739,7 +1739,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testGlobalConfigSupportsCustomNamespace() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             // Given: Custom namespace
             let customNamespace = "myapp.users"
             guard let config = self.testConfig else {
@@ -1846,7 +1846,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testAutomaticIDGeneratorCreatesStableIdentifiers() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             // Given: Automatic IDs enabled
             guard let config = self.testConfig else {
                 Issue.record("testConfig is nil")
@@ -1887,7 +1887,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testAutomaticIDGeneratorHandlesDifferentRolesAndContexts() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             // Given: Automatic IDs enabled with namespace
             guard let config = self.testConfig else {
                 Issue.record("testConfig is nil")
@@ -1922,7 +1922,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testManualAccessibilityIdentifiersOverrideAutomatic() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             // Given: Automatic IDs enabled, set namespace for this test
             guard let config = self.testConfig else {
                 Issue.record("testConfig is nil")
@@ -1959,7 +1959,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testAutomaticIdentifiersWorkByDefault() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             // Given: Explicitly set configuration for this test
             guard let config = testConfig else {
                 Issue.record("testConfig is nil")
@@ -3156,7 +3156,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testAccessibilityIdentifierGeneratorExists() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             let generator = AccessibilityIdentifierGenerator()
             #expect(Bool(true), "AccessibilityIdentifierGenerator should be instantiable")
         }
@@ -3164,7 +3164,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testGenerateIDMethodExists() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             let generator = AccessibilityIdentifierGenerator()
             let id = generator.generateID(for: "test", role: "button", context: "ui")
             #expect(!id.isEmpty, "generateID should return a non-empty string")
@@ -3174,7 +3174,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testGenerateIDRespectsDebugLoggingWhenEnabled() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             guard let config = testConfig else {
                 Issue.record("testConfig is nil")
                 return
@@ -3195,7 +3195,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testClearDebugLogMethodExists() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             guard let config = testConfig else {
                 Issue.record("testConfig is nil")
                 return
@@ -3219,7 +3219,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testExpandableCardCollectionViewGeneratesAccessibilityIdentifiers() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             let testItems = [
                 TestPatterns.TestDataItem(title: "Card 1"),
                 TestPatterns.TestDataItem(title: "Card 2")
@@ -3244,7 +3244,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testCoverFlowCollectionViewGeneratesAccessibilityIdentifiers() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             let testItems = [
                 TestPatterns.TestDataItem(title: "CoverFlow Card 1"),
                 TestPatterns.TestDataItem(title: "CoverFlow Card 2")
@@ -3275,7 +3275,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testGridCollectionViewGeneratesAccessibilityIdentifiers() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             let testItems = [
                 TestPatterns.TestDataItem(title: "Grid Card 1"),
                 TestPatterns.TestDataItem(title: "Grid Card 2")
@@ -3562,7 +3562,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testResponsiveGridGeneratesAccessibilityIdentifiers() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             let gridItems = [
                 GridItemData(title: "Grid Item 1", subtitle: "Subtitle 1", icon: "star", color: .blue),
                 GridItemData(title: "Grid Item 2", subtitle: "Subtitle 2", icon: "heart", color: .red)
@@ -3593,7 +3593,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testResponsiveNavigationGeneratesAccessibilityIdentifiers() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             let navigationContent = { (isHorizontal: Bool) in
                 platformVStackContainer {
                     platformPresentContent_L1(
@@ -3621,7 +3621,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testResponsiveStackGeneratesAccessibilityIdentifiers() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             let stackContent = {
                 platformVStackContainer {
                     platformPresentContent_L1(content: "Stack Item 1", hints: PresentationHints())
@@ -3915,7 +3915,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testAutomaticIdentifiersIntegrateWithHIGCompliance() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             guard let config = self.testConfig else {
                 Issue.record("testConfig is nil")
                 return
@@ -5535,7 +5535,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testViewLevelOptOutDisablesAutomaticIDs() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             guard let config = self.testConfig else {
                 Issue.record("testConfig is nil")
                 return
@@ -5564,7 +5564,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testLayer1FunctionsIncludeAutomaticIdentifiers() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             guard let config = self.testConfig else {
                 Issue.record("testConfig is nil")
                 return
@@ -5603,7 +5603,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testCollisionDetectionIdentifiesConflicts() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             guard let config = self.testConfig else {
                 Issue.record("testConfig is nil")
                 return
@@ -5630,7 +5630,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testDebugLoggingCapturesGeneratedIDs() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             guard let config = testConfig else {
                 Issue.record("testConfig is nil")
                 return
@@ -5651,7 +5651,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testDebugLoggingDisabledWhenTurnedOff() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             guard let config = testConfig else {
                 Issue.record("testConfig is nil")
                 return
@@ -5670,7 +5670,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testDebugLogFormatting() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             guard let config = testConfig else {
                 Issue.record("testConfig is nil")
                 return
@@ -5691,7 +5691,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testDebugLogClearing() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             guard let config = testConfig else {
                 Issue.record("testConfig is nil")
                 return
@@ -5714,7 +5714,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testViewHierarchyTracking() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             guard let config = testConfig else {
                 Issue.record("testConfig is nil")
                 return
@@ -6928,7 +6928,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testUITestCodeGeneration() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             guard let config = testConfig else {
                 Issue.record("testConfig is nil")
                 return
@@ -6953,7 +6953,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testUITestCodeFileGeneration() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             guard let config = testConfig else {
                 Issue.record("testConfig is nil")
                 return
@@ -6988,7 +6988,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testUITestCodeClipboardGeneration() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             guard let config = testConfig else {
                 Issue.record("testConfig is nil")
                 return
@@ -7011,7 +7011,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testTrackViewHierarchyAutomaticallyAppliesAccessibilityIdentifiers() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             guard let config = testConfig else {
                 Issue.record("testConfig is nil")
                 return
@@ -7047,7 +7047,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testGlobalAutomaticAccessibilityIdentifiersWork() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             guard let config = testConfig else {
                 Issue.record("testConfig is nil")
                 return
@@ -7069,7 +7069,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testIDGenerationUsesActualViewContext() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             guard let config = testConfig else {
                 Issue.record("testConfig is nil")
                 return
@@ -7095,7 +7095,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testAutomaticAccessibilityIdentifiersWithNamedComponent() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             guard let config = testConfig else {
                 Issue.record("testConfig is nil")
                 return
@@ -7532,7 +7532,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testExpandableCardComponentGeneratesAccessibilityIdentifiers() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             let testItem = TestPatterns.TestDataItem(title: "Test Card")
             
             let view = ExpandableCardComponent(
@@ -7576,7 +7576,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testCoverFlowCardComponentGeneratesAccessibilityIdentifiers() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             let testItem = TestPatterns.TestDataItem(title: "CoverFlow Card")
             
             let view = CoverFlowCardComponent(
@@ -7602,7 +7602,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testListCollectionViewGeneratesAccessibilityIdentifiers() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             let testItems = [
                 TestPatterns.TestDataItem(title: "List Card 1"),
                 TestPatterns.TestDataItem(title: "List Card 2")
@@ -7627,7 +7627,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testMasonryCollectionViewGeneratesAccessibilityIdentifiers() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             let testItems = [
                 TestPatterns.TestDataItem(title: "Masonry Card 1"),
                 TestPatterns.TestDataItem(title: "Masonry Card 2")
@@ -7652,7 +7652,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testAdaptiveCollectionViewGeneratesAccessibilityIdentifiers() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             let testItems = [
                 TestPatterns.TestDataItem(title: "Adaptive Card 1"),
                 TestPatterns.TestDataItem(title: "Adaptive Card 2")
@@ -8296,7 +8296,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testVeryLongNames() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             self.setupTestEnvironment()
             
             let longName = String(repeating: "VeryLongName", count: 50)
@@ -8324,7 +8324,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testDisableEnableMidHierarchy() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             self.setupTestEnvironment()
             
             let view = platformVStackContainer {
@@ -8359,7 +8359,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testMultipleScreenContexts() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             self.setupTestEnvironment()
             
             let view = platformVStackContainer {
@@ -8704,7 +8704,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testGenerateIDDoesNotLogWhenDebugLoggingDisabled() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             guard let config = testConfig else {
                 Issue.record("testConfig is nil")
                 return
@@ -8722,7 +8722,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testGetDebugLogMethodExists() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             guard let config = testConfig else {
                 Issue.record("testConfig is nil")
                 return
@@ -8735,7 +8735,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testDebugLogAccumulatesMultipleEntries() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             guard let config = testConfig else {
                 Issue.record("testConfig is nil")
                 return
@@ -9443,7 +9443,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testViewRespectsSystemColorScheme() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             let view = Text("Test Text")
                 .automaticCompliance()
             
@@ -9462,7 +9462,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testTextUsesSystemColorsForLightDarkMode() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             let view = Text("System Color Text")
                 .automaticCompliance()
             
@@ -9481,7 +9481,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testButtonUsesSystemColorsForLightDarkMode() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             let button = Button("Test Button") { }
                 .automaticCompliance()
             
@@ -9500,7 +9500,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testBackgroundAdaptsToColorScheme() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             let view = Text("Background Text")
                 .padding()
                 .background(Color.platformBackground)
@@ -9521,7 +9521,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testColorContrastMaintainedInLightMode() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             let view = Text("Light Mode Text")
                 .foregroundColor(.primary)
                 .background(Color.platformBackground)
@@ -9542,7 +9542,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testColorContrastMaintainedInDarkMode() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             let view = Text("Dark Mode Text")
                 .foregroundColor(.primary)
                 .background(Color.platformBackground)
@@ -9563,7 +9563,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testSystemPrimaryColorAdaptsToColorScheme() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             let view = Text("Primary Color Text")
                 .foregroundColor(.primary)
                 .automaticCompliance()
@@ -9583,7 +9583,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testSystemSecondaryColorAdaptsToColorScheme() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             let view = Text("Secondary Color Text")
                 .foregroundColor(.secondary)
                 .automaticCompliance()
@@ -9603,7 +9603,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testLightDarkModeOnAllPlatforms() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             let view = platformVStackContainer {
                 Text("Light/Dark Mode Test")
                     .automaticCompliance()
@@ -9973,7 +9973,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testDebugLogIncludesTimestamps() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             guard let config = testConfig else {
                 Issue.record("testConfig is nil")
                 return
@@ -9991,7 +9991,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testDebugLogFormatIsConsistent() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             guard let config = testConfig else {
                 Issue.record("testConfig is nil")
                 return
@@ -10012,7 +10012,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testDebugLoggingRespectsEnableFlag() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             guard let config = testConfig else {
                 Issue.record("testConfig is nil")
                 return
@@ -10038,7 +10038,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testDebugLogPersistsAcrossGeneratorInstances() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             guard let config = testConfig else {
                 Issue.record("testConfig is nil")
                 return
@@ -10060,7 +10060,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testDebugLoggingHandlesEmptyComponentNames() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             guard let config = testConfig else {
                 Issue.record("testConfig is nil")
                 return
@@ -10079,7 +10079,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testDebugLoggingHandlesSpecialCharacters() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             guard let config = testConfig else {
                 Issue.record("testConfig is nil")
                 return
@@ -10099,7 +10099,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testDebugLogHasReasonableSizeLimits() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             guard let config = testConfig else {
                 Issue.record("testConfig is nil")
                 return
@@ -10446,7 +10446,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testTextSupportsDynamicType() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             let view = Text("Test Text")
                 .automaticCompliance()
             
@@ -10465,7 +10465,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testButtonTextSupportsDynamicType() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             let button = Button("Test Button") { }
                 .automaticCompliance()
             
@@ -10484,7 +10484,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testLabelSupportsDynamicType() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             let label = Label("Test Label", systemImage: "star")
                 .automaticCompliance()
             
@@ -10503,7 +10503,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testTextSupportsAccessibilitySizes() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             let view = Text("Accessibility Text")
                 .automaticCompliance()
             
@@ -10522,7 +10522,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testBodyTextMeetsMinimumSizeRequirements() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             let view = Text("Body Text")
                 .font(.body)
                 .automaticCompliance()
@@ -10542,7 +10542,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testCaptionTextMeetsMinimumSizeRequirements() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             let view = Text("Caption Text")
                 .font(.caption)
                 .automaticCompliance()
@@ -10562,7 +10562,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testCustomFontSizeEnforcedMinimum() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             let view = Text("Small Text")
                 .font(.system(size: 10))
                 .automaticCompliance()
@@ -10582,7 +10582,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testPlatformSpecificTypographySizes() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             let view = platformVStackContainer {
                 Text("Large Title")
                     .font(.largeTitle)
@@ -10617,7 +10617,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testDynamicTypeOnBothPlatforms() async {
         self.initializeTestConfig()
-        await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
             let view = Text("Cross-Platform Text")
                 .automaticCompliance()
             
@@ -10674,9 +10674,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         
         // Configure accessibility identifier settings
         let testConfig = AccessibilityIdentifierConfig.currentTaskLocalConfig ?? AccessibilityIdentifierConfig.shared
-        self.testConfig.enableAutoIDs = true
-        self.testConfig.includeComponentNames = true
-        self.testConfig.includeElementTypes = true
+        self.testConfig?.enableAutoIDs = true
+        self.testConfig?.includeComponentNames = true
+        self.testConfig?.includeElementTypes = true
         
         let viewWithEnvironment = enhancedView
             .environment(\.globalAutomaticAccessibilityIdentifiers, testConfig.enableAutoIDs)
@@ -10781,99 +10781,99 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     // MARK: - Additional Tests (final batch)
 
     @Test @MainActor func testSystemColorModifierGeneratesAccessibilityIdentifiers() async {
-    // Given: Test content
-    let testContent = platformVStackContainer {
+        // Given: Test content
+        let testContent = platformVStackContainer {
         Text("System Color Content")
         Button("Test Button") { }
     }
-    
-    // When: Applying SystemColorModifier
-    let platform = SixLayerPlatform.current
-    let colorSystem = HIGColorSystem(for: platform)
-    let view = testContent.modifier(SystemColorModifier(colorSystem: colorSystem))
-    
-    // Then: Should generate accessibility identifiers
+        
+        // When: Applying SystemColorModifier
+        let platform = SixLayerPlatform.current
+        let colorSystem = HIGColorSystem(for: platform)
+        let view = testContent.modifier(SystemColorModifier(colorSystem: colorSystem))
+        
+        // Then: Should generate accessibility identifiers
         // TODO: ViewInspector Detection Issue - VERIFIED: SystemColorModifier DOES have .automaticCompliance() 
         // modifier applied in Framework/Sources/Extensions/Accessibility/AppleHIGComplianceModifiers.swift:280.
         // The test needs to be updated to handle ViewInspector's inability to detect these modifiers reliably.
         // This is a ViewInspector limitation, not a missing modifier issue.
-    #if canImport(ViewInspector)
-    let hasAccessibilityID = testComponentComplianceSinglePlatform(
+        #if canImport(ViewInspector)
+        let hasAccessibilityID = testComponentComplianceSinglePlatform(
         view,
         expectedPattern: "SixLayer.main.ui.*",
         platform: SixLayerPlatform.iOS,
         componentName: "SystemColorModifier"
-    )
+        )
  #expect(hasAccessibilityID, "SystemColorModifier should generate accessibility identifiers ")
-    #else
-    // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-    // The modifier IS present in the code, but ViewInspector can't detect it on macOS
-    #endif
+        #else
+        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // The modifier IS present in the code, but ViewInspector can't detect it on macOS
+        #endif
 }
 
-    @Test @MainActor func testSystemTypographyModifierGeneratesAccessibilityIdentifiers() async {
-    // Given: Test content
-    let testContent = platformVStackContainer {
+        @Test @MainActor func testSystemTypographyModifierGeneratesAccessibilityIdentifiers() async {
+        // Given: Test content
+        let testContent = platformVStackContainer {
         Text("System Typography Content")
         Button("Test Button") { }
     }
-    
-    // When: Applying SystemTypographyModifier
-    let platform = SixLayerPlatform.current
-    let typographySystem = HIGTypographySystem(for: platform)
-    let view = testContent.modifier(SystemTypographyModifier(typographySystem: typographySystem))
-    
-    // Then: Should generate accessibility identifiers
+        
+        // When: Applying SystemTypographyModifier
+        let platform = SixLayerPlatform.current
+        let typographySystem = HIGTypographySystem(for: platform)
+        let view = testContent.modifier(SystemTypographyModifier(typographySystem: typographySystem))
+        
+        // Then: Should generate accessibility identifiers
         // TODO: ViewInspector Detection Issue - VERIFIED: SystemTypographyModifier DOES have .automaticCompliance() 
         // modifier applied in Framework/Sources/Extensions/Accessibility/AppleHIGComplianceModifiers.swift:291.
         // The test needs to be updated to handle ViewInspector's inability to detect these modifiers reliably.
         // This is a ViewInspector limitation, not a missing modifier issue.
-    #if canImport(ViewInspector)
-    let hasAccessibilityID = testComponentComplianceSinglePlatform(
+        #if canImport(ViewInspector)
+        let hasAccessibilityID = testComponentComplianceSinglePlatform(
         view,
         expectedPattern: "SixLayer.main.ui.*",
         platform: SixLayerPlatform.iOS,
         componentName: "SystemTypographyModifier"
-    )
+        )
  #expect(hasAccessibilityID, "SystemTypographyModifier should generate accessibility identifiers ")
-    #else
-    // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-    // The modifier IS present in the code, but ViewInspector can't detect it on macOS
-    #endif
+        #else
+        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // The modifier IS present in the code, but ViewInspector can't detect it on macOS
+        #endif
 }
 
-    @Test @MainActor func testSpacingModifierGeneratesAccessibilityIdentifiers() async {
-    // Given: Test content
-    let testContent = platformVStackContainer {
+        @Test @MainActor func testSpacingModifierGeneratesAccessibilityIdentifiers() async {
+        // Given: Test content
+        let testContent = platformVStackContainer {
         Text("Spacing Content")
         Button("Test Button") { }
     }
-    
-    // When: Applying SpacingModifier
-    let platform = SixLayerPlatform.current
-    let spacingSystem = HIGSpacingSystem(for: platform)
-    let view = testContent.modifier(SpacingModifier(spacingSystem: spacingSystem))
-    
-    // Then: Should generate accessibility identifiers
+        
+        // When: Applying SpacingModifier
+        let platform = SixLayerPlatform.current
+        let spacingSystem = HIGSpacingSystem(for: platform)
+        let view = testContent.modifier(SpacingModifier(spacingSystem: spacingSystem))
+        
+        // Then: Should generate accessibility identifiers
         // TODO: ViewInspector Detection Issue - VERIFIED: SpacingModifier DOES have .automaticCompliance() 
         // modifier applied in Framework/Sources/Extensions/Accessibility/AppleHIGComplianceModifiers.swift:302.
         // The test needs to be updated to handle ViewInspector's inability to detect these modifiers reliably.
         // This is a ViewInspector limitation, not a missing modifier issue.
-    #if canImport(ViewInspector)
-    let hasAccessibilityID = testComponentComplianceSinglePlatform(
+        #if canImport(ViewInspector)
+        let hasAccessibilityID = testComponentComplianceSinglePlatform(
         view,
         expectedPattern: "SixLayer.main.ui.*",
         platform: SixLayerPlatform.iOS,
         componentName: "SpacingModifier"
-    )
+        )
  #expect(hasAccessibilityID, "SpacingModifier should generate accessibility identifiers ")
-    #else
-    // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-    // The modifier IS present in the code, but ViewInspector can't detect it on macOS
-    #endif
+        #else
+        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // The modifier IS present in the code, but ViewInspector can't detect it on macOS
+        #endif
 }
 
-    @Test @MainActor func testTouchTargetModifierGeneratesAccessibilityIdentifiers() async {
+        @Test @MainActor func testTouchTargetModifierGeneratesAccessibilityIdentifiers() async {
         self.initializeTestConfig()
         // Given: Test content
         let testContent = platformVStackContainer {
@@ -10896,14 +10896,14 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             platform: SixLayerPlatform.iOS,
             componentName: "TouchTargetModifier"
         )
-     #expect(hasAccessibilityID, "TouchTargetModifier should generate accessibility identifiers ")
+         #expect(hasAccessibilityID, "TouchTargetModifier should generate accessibility identifiers ")
         #else
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
         // The modifier IS present in the code, but ViewInspector can't detect it on macOS
         #endif
     }
 
-    @Test @MainActor func testPlatformInteractionModifierGeneratesAccessibilityIdentifiers() async {
+        @Test @MainActor func testPlatformInteractionModifierGeneratesAccessibilityIdentifiers() async {
         self.initializeTestConfig()
         // Given: Test content
         let testContent = platformVStackContainer {
@@ -10926,14 +10926,14 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             platform: SixLayerPlatform.iOS,
             componentName: "PlatformInteractionModifier"
         )
-     #expect(hasAccessibilityID, "PlatformInteractionModifier should generate accessibility identifiers ")
+         #expect(hasAccessibilityID, "PlatformInteractionModifier should generate accessibility identifiers ")
         #else
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
         // The modifier IS present in the code, but ViewInspector can't detect it on macOS
         #endif
     }
 
-    @Test @MainActor func testHapticFeedbackModifierGeneratesAccessibilityIdentifiers() async {
+        @Test @MainActor func testHapticFeedbackModifierGeneratesAccessibilityIdentifiers() async {
         self.initializeTestConfig()
         // Given: Test content
         let testContent = platformVStackContainer {
@@ -10956,14 +10956,14 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             platform: SixLayerPlatform.iOS,
             componentName: "HapticFeedbackModifier"
         )
-     #expect(hasAccessibilityID, "HapticFeedbackModifier should generate accessibility identifiers ")
+         #expect(hasAccessibilityID, "HapticFeedbackModifier should generate accessibility identifiers ")
         #else
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
         // The modifier IS present in the code, but ViewInspector can't detect it on macOS
         #endif
     }
 
-    @Test @MainActor func testGestureRecognitionModifierGeneratesAccessibilityIdentifiers() async {
+        @Test @MainActor func testGestureRecognitionModifierGeneratesAccessibilityIdentifiers() async {
         self.initializeTestConfig()
         // Given: Test content
         let testContent = platformVStackContainer {
@@ -10986,46 +10986,46 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             platform: SixLayerPlatform.iOS,
             componentName: "GestureRecognitionModifier"
         )
-     #expect(hasAccessibilityID, "GestureRecognitionModifier should generate accessibility identifiers ")
+         #expect(hasAccessibilityID, "GestureRecognitionModifier should generate accessibility identifiers ")
         #else
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
         // The modifier IS present in the code, but ViewInspector can't detect it on macOS
         #endif
     }
 
-    @Test @MainActor func testAppleHIGComplianceManagerGeneratesAccessibilityIdentifiers() async {
-    // Given: AppleHIGComplianceManager
-    let manager = AppleHIGComplianceManager()
-    
-    // When: Creating a view with AppleHIGComplianceManager and applying compliance
-    let baseView = platformVStackContainer {
+        @Test @MainActor func testAppleHIGComplianceManagerGeneratesAccessibilityIdentifiers() async {
+        // Given: AppleHIGComplianceManager
+        let manager = AppleHIGComplianceManager()
+        
+        // When: Creating a view with AppleHIGComplianceManager and applying compliance
+        let baseView = platformVStackContainer {
         Text("Apple HIG Compliance Manager Content")
     }
-    let view = manager.applyHIGCompliance(to: baseView)
+        let view = manager.applyHIGCompliance(to: baseView)
         .environmentObject(manager)
-    
-    // Then: Should generate accessibility identifiers
-    #if canImport(ViewInspector)
-    let hasAccessibilityID = testComponentComplianceSinglePlatform(
+        
+        // Then: Should generate accessibility identifiers
+        #if canImport(ViewInspector)
+        let hasAccessibilityID = testComponentComplianceSinglePlatform(
         view,
         expectedPattern: "SixLayer.main.ui.*",
         platform: SixLayerPlatform.iOS,
         componentName: "AppleHIGComplianceManager"
-    )
+        )
  #expect(hasAccessibilityID, "AppleHIGComplianceManager should generate accessibility identifiers ")
-    #else
-    // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-    // The modifier IS present in the code, but ViewInspector can't detect it on macOS
-    #endif
+        #else
+        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // The modifier IS present in the code, but ViewInspector can't detect it on macOS
+        #endif
 }
 
-    @Test @MainActor func testDynamicTextFieldRendersTextFieldWithCorrectBindingAndAccessibility() async {
-    self.initializeTestConfig()
-    // TDD: DynamicTextField should render a VStack with:
-    // 1. A Text label showing the field label
-    // 2. A TextField with the correct placeholder and keyboard type
-    // 3. Proper accessibility identifier
-    // 4. Bidirectional binding to form state
+        @Test @MainActor func testDynamicTextFieldRendersTextFieldWithCorrectBindingAndAccessibility() async {
+        self.initializeTestConfig()
+        // TDD: DynamicTextField should render a VStack with:
+        // 1. A Text label showing the field label
+        // 2. A TextField with the correct placeholder and keyboard type
+        // 3. Proper accessibility identifier
+        // 4. Bidirectional binding to form state
 
         let field = DynamicFormField(
         id: "test-text-field",
@@ -11035,15 +11035,15 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         placeholder: "Enter your full name",
         isRequired: true,
         defaultValue: "John Doe"
-    )
-    let formState = DynamicFormState(configuration: testFormConfig)
-    formState.setValue("John Doe", for: "test-text-field")
+        )
+        let formState = DynamicFormState(configuration: testFormConfig)
+        formState.setValue("John Doe", for: "test-text-field")
 
         let view = DynamicTextField(field: field, formState: formState)
 
         // Should render proper UI structure
-    #if canImport(ViewInspector)
-    if let inspected = try? AnyView(view).inspect() {
+        #if canImport(ViewInspector)
+        if let inspected = try? AnyView(view).inspect() {
         do {
             // Should have a VStack containing label and TextField
             let vStack = try inspected.vStack()
@@ -11079,7 +11079,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             componentName: "DynamicTextField"
         )
  #expect(hasAccessibilityID, "Should generate accessibility identifier ")
-    #else
+        #else
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
         // The modifier IS present in the code, but ViewInspector can't detect it on macOS
         #endif
@@ -11093,18 +11093,18 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     } else {
         Issue.record("DynamicTextField inspection failed - component not properly implemented")
     }
-    #else
-    // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-    #endif
+        #else
+        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        #endif
 }
 
-    @Test @MainActor func testDynamicNumberFieldRendersTextFieldWithNumericKeyboard() async {
-    self.initializeTestConfig()
-    // TDD: DynamicNumberField should render a VStack with:
-    // 1. A Text label showing "Age"
-    // 2. A TextField with decimalPad keyboard type (iOS) and "Enter age" placeholder
-    // 3. Proper accessibility identifier
-    // 4. Form state binding with numeric value
+        @Test @MainActor func testDynamicNumberFieldRendersTextFieldWithNumericKeyboard() async {
+        self.initializeTestConfig()
+        // TDD: DynamicNumberField should render a VStack with:
+        // 1. A Text label showing "Age"
+        // 2. A TextField with decimalPad keyboard type (iOS) and "Enter age" placeholder
+        // 3. Proper accessibility identifier
+        // 4. Form state binding with numeric value
 
         let field = DynamicFormField(
         id: "test-number-field",
@@ -11114,15 +11114,15 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         placeholder: "Enter age",
         isRequired: true,
         defaultValue: "25"
-    )
-    let formState = DynamicFormState(configuration: testFormConfig)
-    formState.setValue("25", for: "test-number-field")
+        )
+        let formState = DynamicFormState(configuration: testFormConfig)
+        formState.setValue("25", for: "test-number-field")
 
         let view = DynamicNumberField(field: field, formState: formState)
 
         // Should render proper numeric input UI
-    #if canImport(ViewInspector)
-    if let inspected = try? AnyView(view).inspect() {
+        #if canImport(ViewInspector)
+        if let inspected = try? AnyView(view).inspect() {
         do {
             // Should have a VStack containing label and TextField
             let vStack = try inspected.vStack()
@@ -11164,7 +11164,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
                 componentName: "DynamicNumberField"
             )
  #expect(hasAccessibilityID, "Should generate accessibility identifier ")
-    #else
+        #else
             // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
             // The modifier IS present in the code, but ViewInspector can't detect it on macOS
             #endif
@@ -11178,18 +11178,18 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     } else {
         Issue.record("DynamicNumberField inspection failed - component not properly implemented")
     }
-    #else
-    // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-    #endif
+        #else
+        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        #endif
 }
 
-    @Test @MainActor func testDynamicTextAreaFieldRendersMultilineTextEditor() async {
-    self.initializeTestConfig()
-    // TDD: DynamicTextAreaField should render a VStack with:
-    // 1. A Text label showing "Description"
-    // 2. A TextEditor (multiline text input) with "Enter description" placeholder
-    // 3. Proper accessibility identifier
-    // 4. Form state binding with multiline text
+        @Test @MainActor func testDynamicTextAreaFieldRendersMultilineTextEditor() async {
+        self.initializeTestConfig()
+        // TDD: DynamicTextAreaField should render a VStack with:
+        // 1. A Text label showing "Description"
+        // 2. A TextEditor (multiline text input) with "Enter description" placeholder
+        // 3. Proper accessibility identifier
+        // 4. Form state binding with multiline text
 
         let field = DynamicFormField(
         id: "test-textarea-field",
@@ -11199,15 +11199,15 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         placeholder: "Enter description",
         isRequired: true,
         defaultValue: "This is a\nmultiline description\nwith line breaks"
-    )
-    let formState = DynamicFormState(configuration: testFormConfig)
-    formState.setValue("This is a\nmultiline description\nwith line breaks", for: "test-textarea-field")
+        )
+        let formState = DynamicFormState(configuration: testFormConfig)
+        formState.setValue("This is a\nmultiline description\nwith line breaks", for: "test-textarea-field")
 
         let view = DynamicTextAreaField(field: field, formState: formState)
 
         // Should render proper multiline text input UI
-    #if canImport(ViewInspector)
-    if let inspected = try? AnyView(view).inspect() {
+        #if canImport(ViewInspector)
+        if let inspected = try? AnyView(view).inspect() {
         do {
             // Should have a VStack containing label and TextEditor
             let vStack = try inspected.vStack()
@@ -11233,7 +11233,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
                 componentName: "DynamicTextAreaField"
             )
  #expect(hasAccessibilityID, "Should generate accessibility identifier ")
-    #else
+        #else
             // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
             // The modifier IS present in the code, but ViewInspector can't detect it on macOS
             #endif
@@ -11247,21 +11247,21 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     } else {
         Issue.record("DynamicTextAreaField inspection failed - component not properly implemented")
     }
-    #else
-    // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-    #endif
+        #else
+        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        #endif
 }
 
-    @Test @MainActor func testDynamicSelectFieldRendersPickerWithSelectableOptions() async {
-    self.initializeTestConfig()
-    // TDD: DynamicSelectField should render a VStack with:
-    // 1. A Text label showing "Country"
-    // 2. A Picker with options ["USA", "Canada", "Mexico"]
-    // 3. Proper accessibility identifier
-    // 4. Form state binding that updates when selection changes
+        @Test @MainActor func testDynamicSelectFieldRendersPickerWithSelectableOptions() async {
+        self.initializeTestConfig()
+        // TDD: DynamicSelectField should render a VStack with:
+        // 1. A Text label showing "Country"
+        // 2. A Picker with options ["USA", "Canada", "Mexico"]
+        // 3. Proper accessibility identifier
+        // 4. Form state binding that updates when selection changes
 
         let options = ["USA", "Canada", "Mexico"]
-    let field = DynamicFormField(
+        let field = DynamicFormField(
         id: "test-select-field",
         contentType: .select,
         label: "Country",
@@ -11269,15 +11269,15 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         isRequired: true,
         options: options,
         defaultValue: "USA"
-    )
-    let formState = DynamicFormState(configuration: testFormConfig)
-    formState.setValue("USA", for: "test-select-field")
+        )
+        let formState = DynamicFormState(configuration: testFormConfig)
+        formState.setValue("USA", for: "test-select-field")
 
         let view = DynamicSelectField(field: field, formState: formState)
 
         // Should render proper selection UI
-    #if canImport(ViewInspector)
-    if let inspected = try? AnyView(view).inspect() {
+        #if canImport(ViewInspector)
+        if let inspected = try? AnyView(view).inspect() {
         do {
             // Should have a VStack containing label and Picker
             let vStack = try inspected.vStack()
@@ -11303,7 +11303,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             componentName: "DynamicSelectField"
         )
  #expect(hasAccessibilityID, "Should generate accessibility identifier ")
-    #else
+        #else
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
         // The modifier IS present in the code, but ViewInspector can't detect it on macOS
         #endif
@@ -11317,21 +11317,21 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     } else {
         Issue.record("DynamicSelectField inspection failed - component not properly implemented")
     }
-    #else
-    // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-    #endif
+        #else
+        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        #endif
 }
 
-    @Test @MainActor func testDynamicMultiSelectFieldRendersMultipleSelectionControls() async {
-    self.initializeTestConfig()
-    // TDD: DynamicMultiSelectField should render a VStack with:
-    // 1. A Text label showing "Interests"
-    // 2. Multiple Toggle controls for options ["Reading", "Sports", "Music"]
-    // 3. Proper accessibility identifier
-    // 4. Form state binding with array of selected values
+        @Test @MainActor func testDynamicMultiSelectFieldRendersMultipleSelectionControls() async {
+        self.initializeTestConfig()
+        // TDD: DynamicMultiSelectField should render a VStack with:
+        // 1. A Text label showing "Interests"
+        // 2. Multiple Toggle controls for options ["Reading", "Sports", "Music"]
+        // 3. Proper accessibility identifier
+        // 4. Form state binding with array of selected values
 
         let options = ["Reading", "Sports", "Music"]
-    let field = DynamicFormField(
+        let field = DynamicFormField(
         id: "test-multiselect-field",
         contentType: .multiselect,
         label: "Interests",
@@ -11339,15 +11339,15 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         isRequired: true,
         options: options,
         defaultValue: "Reading,Music" // Multiple selections as comma-separated string
-    )
-    let formState = DynamicFormState(configuration: testFormConfig)
-    formState.setValue(["Reading", "Music"], for: "test-multiselect-field")
+        )
+        let formState = DynamicFormState(configuration: testFormConfig)
+        formState.setValue(["Reading", "Music"], for: "test-multiselect-field")
 
         let view = DynamicMultiSelectField(field: field, formState: formState)
 
         // Should render proper multiple selection UI
-    #if canImport(ViewInspector)
-    if let inspected = try? AnyView(view).inspect() {
+        #if canImport(ViewInspector)
+        if let inspected = try? AnyView(view).inspect() {
         do {
             // Should have a VStack containing label and selection controls
             let vStack = try inspected.vStack()
@@ -11373,7 +11373,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
                 componentName: "DynamicMultiSelectField"
             )
  #expect(hasAccessibilityID, "Should generate accessibility identifier ")
-    #else
+        #else
             // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
             // The modifier IS present in the code, but ViewInspector can't detect it on macOS
             #endif
@@ -11387,21 +11387,21 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     } else {
         Issue.record("DynamicMultiSelectField inspection failed - component not properly implemented")
     }
-    #else
-    // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-    #endif
+        #else
+        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        #endif
 }
 
-    @Test @MainActor func testDynamicRadioFieldRendersRadioButtonGroup() async {
-    self.initializeTestConfig()
-    // TDD: DynamicRadioField should render a VStack with:
-    // 1. A Text label showing "Gender"
-    // 2. Radio button style Picker with options ["Male", "Female", "Other"]
-    // 3. Proper accessibility identifier
-    // 4. Form state binding with single selected value
+        @Test @MainActor func testDynamicRadioFieldRendersRadioButtonGroup() async {
+        self.initializeTestConfig()
+        // TDD: DynamicRadioField should render a VStack with:
+        // 1. A Text label showing "Gender"
+        // 2. Radio button style Picker with options ["Male", "Female", "Other"]
+        // 3. Proper accessibility identifier
+        // 4. Form state binding with single selected value
 
         let options = ["Male", "Female", "Other"]
-    let field = DynamicFormField(
+        let field = DynamicFormField(
         id: "test-radio-field",
         contentType: .radio,
         label: "Gender",
@@ -11409,15 +11409,15 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         isRequired: true,
         options: options,
         defaultValue: "Female"
-    )
-    let formState = DynamicFormState(configuration: testFormConfig)
-    formState.setValue("Female", for: "test-radio-field")
+        )
+        let formState = DynamicFormState(configuration: testFormConfig)
+        formState.setValue("Female", for: "test-radio-field")
 
         let view = DynamicRadioField(field: field, formState: formState)
 
         // Should render proper radio button group UI
-    #if canImport(ViewInspector)
-    if let inspected = try? AnyView(view).inspect() {
+        #if canImport(ViewInspector)
+        if let inspected = try? AnyView(view).inspect() {
         do {
             // Should have a VStack containing label and radio controls
             let vStack = try inspected.vStack()
@@ -11443,7 +11443,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
                 componentName: "DynamicRadioField"
             )
  #expect(hasAccessibilityID, "Should generate accessibility identifier ")
-    #else
+        #else
             // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
             // The modifier IS present in the code, but ViewInspector can't detect it on macOS
             #endif
@@ -11457,18 +11457,18 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     } else {
         Issue.record("DynamicRadioField inspection failed - component not properly implemented")
     }
-    #else
-    // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-    #endif
+        #else
+        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        #endif
 }
 
-    @Test @MainActor func testDynamicCheckboxFieldRendersToggleControl() async {
-    self.initializeTestConfig()
-    // TDD: DynamicCheckboxField should render a VStack with:
-    // 1. A Text label showing "Subscribe to Newsletter"
-    // 2. A Toggle control bound to boolean form state
-    // 3. Proper accessibility identifier
-    // 4. Form state binding with boolean value
+        @Test @MainActor func testDynamicCheckboxFieldRendersToggleControl() async {
+        self.initializeTestConfig()
+        // TDD: DynamicCheckboxField should render a VStack with:
+        // 1. A Text label showing "Subscribe to Newsletter"
+        // 2. A Toggle control bound to boolean form state
+        // 3. Proper accessibility identifier
+        // 4. Form state binding with boolean value
 
         let field = DynamicFormField(
         id: "test-checkbox-field",
@@ -11478,19 +11478,19 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         placeholder: "Check to subscribe",
         isRequired: true,
         defaultValue: "true"
-    )
-    let formState = DynamicFormState(configuration: testFormConfig)
-    formState.setValue(true, for: "test-checkbox-field")
+        )
+        let formState = DynamicFormState(configuration: testFormConfig)
+        formState.setValue(true, for: "test-checkbox-field")
 
         let view = DynamicCheckboxField(field: field, formState: formState)
 
         // Should render proper toggle/checkbox UI
-    #if canImport(ViewInspector)
-    if let inspected = try? AnyView(view).inspect() {
+        #if canImport(ViewInspector)
+        if let inspected = try? AnyView(view).inspect() {
         do {
             // Should have a VStack containing label and Toggle
             let vStack = try inspected.vStack()
-            #expect(vStack.sixLayerCount >= 2, "Should have label and Toggle")
+            #expect(vStack.count >= 2, "Should have label and Toggle")
 
                 // First element should be the label Text
             let texts = vStack.findAll(ViewInspector.ViewType.Text.self, where: { _ in true })
@@ -11512,7 +11512,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
                 componentName: "DynamicCheckboxField"
             )
  #expect(hasAccessibilityID, "Should generate accessibility identifier ")
-    #else
+        #else
             // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
             // The modifier IS present in the code, but ViewInspector can't detect it on macOS
             #endif
@@ -11526,18 +11526,18 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     } else {
         Issue.record("DynamicCheckboxField inspection failed - component not properly implemented")
     }
-    #else
-    // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-    #endif
+        #else
+        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        #endif
 }
 
-    @Test @MainActor func testDynamicToggleFieldRendersToggleControl() async {
-    self.initializeTestConfig()
-    // TDD: DynamicToggleField should render a VStack with:
-    // 1. A Text label showing "Enable Feature"
-    // 2. A Toggle control bound to boolean form state
-    // 3. Proper accessibility identifier
-    // 4. Form state binding with boolean value
+        @Test @MainActor func testDynamicToggleFieldRendersToggleControl() async {
+        self.initializeTestConfig()
+        // TDD: DynamicToggleField should render a VStack with:
+        // 1. A Text label showing "Enable Feature"
+        // 2. A Toggle control bound to boolean form state
+        // 3. Proper accessibility identifier
+        // 4. Form state binding with boolean value
 
         let field = DynamicFormField(
         id: "test-toggle-field",
@@ -11547,19 +11547,19 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         placeholder: "Toggle to enable",
         isRequired: true,
         defaultValue: "false"
-    )
-    let formState = DynamicFormState(configuration: testFormConfig)
-    formState.setValue(false, for: "test-toggle-field")
+        )
+        let formState = DynamicFormState(configuration: testFormConfig)
+        formState.setValue(false, for: "test-toggle-field")
 
         let view = DynamicToggleField(field: field, formState: formState)
 
         // Should render proper toggle UI
-    #if canImport(ViewInspector)
-    if let inspected = try? AnyView(view).inspect() {
+        #if canImport(ViewInspector)
+        if let inspected = try? AnyView(view).inspect() {
         do {
             // Should have a VStack containing label and Toggle
             let vStack = try inspected.vStack()
-            #expect(vStack.sixLayerCount >= 2, "Should have label and Toggle")
+            #expect(vStack.count >= 2, "Should have label and Toggle")
 
                 // First element should be the label Text
             let texts = vStack.findAll(ViewInspector.ViewType.Text.self, where: { _ in true })
@@ -11581,7 +11581,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
                 componentName: "DynamicToggleField"
             )
  #expect(hasAccessibilityID, "Should generate accessibility identifier ")
-    #else
+        #else
             // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
             // The modifier IS present in the code, but ViewInspector can't detect it on macOS
             #endif
@@ -11595,14 +11595,14 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     } else {
         Issue.record("DynamicToggleField inspection failed - component not properly implemented")
     }
-    #else
-    // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-    #endif
+        #else
+        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        #endif
 }
 
-    @Test @MainActor func testSimpleCardComponentGeneratesAccessibilityIdentifiers() async {
+        @Test @MainActor func testSimpleCardComponentGeneratesAccessibilityIdentifiers() async {
         self.initializeTestConfig()
-    await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
         // Given: Test item
         let testItem = TestPatterns.TestDataItem(title: "Simple Card")
         
@@ -11631,16 +11631,16 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             componentName: "SimpleCardComponent"
         )
  #expect(hasAccessibilityID, "SimpleCardComponent should generate accessibility identifiers ")
-    #else
+        #else
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
         // The modifier IS present in the code, but ViewInspector can't detect it on macOS
         #endif
     }
 }
 
-    @Test @MainActor func testListCardComponentGeneratesAccessibilityIdentifiers() async {
+        @Test @MainActor func testListCardComponentGeneratesAccessibilityIdentifiers() async {
         self.initializeTestConfig()
-    await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
         // Given: Test item
         let testItem = TestPatterns.TestDataItem(title: "List Card")
         
@@ -11656,16 +11656,16 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             componentName: "ListCardComponent"
         )
  #expect(hasAccessibilityID, "ListCardComponent should generate accessibility identifiers ")
-    #else
+        #else
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
         // The modifier IS present in the code, but ViewInspector can't detect it on macOS
         #endif
     }
 }
 
-    @Test @MainActor func testMasonryCardComponentGeneratesAccessibilityIdentifiers() async {
+        @Test @MainActor func testMasonryCardComponentGeneratesAccessibilityIdentifiers() async {
         self.initializeTestConfig()
-    await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
         // Given: Test item
         let testItem = TestPatterns.TestDataItem(title: "Masonry Card")
         
@@ -11681,16 +11681,16 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             componentName: "MasonryCardComponent"
         )
  #expect(hasAccessibilityID, "MasonryCardComponent should generate accessibility identifiers ")
-    #else
+        #else
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
         // The modifier IS present in the code, but ViewInspector can't detect it on macOS
         #endif
     }
 }
 
-    @Test @MainActor func testNativeExpandableCardViewGeneratesAccessibilityIdentifiers() async {
+        @Test @MainActor func testNativeExpandableCardViewGeneratesAccessibilityIdentifiers() async {
         self.initializeTestConfig()
-    await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
         // Given: Test item and configurations
         let testItem = TestPatterns.TestDataItem(title: "Native Card")
         let expansionStrategy = ExpansionStrategy.hoverExpand
@@ -11710,16 +11710,16 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             componentName: "NativeExpandableCardView"
         )
  #expect(hasAccessibilityID, "NativeExpandableCardView should generate accessibility identifiers ")
-    #else
+        #else
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
         // The modifier IS present in the code, but ViewInspector can't detect it on macOS
         #endif
     }
 }
 
-    @Test @MainActor func testIOSExpandableCardViewGeneratesAccessibilityIdentifiers() async {
+        @Test @MainActor func testIOSExpandableCardViewGeneratesAccessibilityIdentifiers() async {
         self.initializeTestConfig()
-    await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
         // Given: Test item and configurations
         let testItem = TestPatterns.TestDataItem(title: "iOS Card")
         let expansionStrategy = ExpansionStrategy.hoverExpand
@@ -11739,16 +11739,16 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             componentName: "iOSExpandableCardView"
         )
  #expect(hasAccessibilityID, "iOSExpandableCardView should generate accessibility identifiers ")
-    #else
+        #else
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
         // The modifier IS present in the code, but ViewInspector can't detect it on macOS
         #endif
     }
 }
 
-    @Test @MainActor func testMacOSExpandableCardViewGeneratesAccessibilityIdentifiers() async {
+        @Test @MainActor func testMacOSExpandableCardViewGeneratesAccessibilityIdentifiers() async {
         self.initializeTestConfig()
-    await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
         // Given: Test item and configurations
         let testItem = TestPatterns.TestDataItem(title: "macOS Card")
         let expansionStrategy = ExpansionStrategy.hoverExpand
@@ -11768,16 +11768,16 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             componentName: "macOSExpandableCardView"
         )
  #expect(hasAccessibilityID, "macOSExpandableCardView should generate accessibility identifiers ")
-    #else
+        #else
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
         // The modifier IS present in the code, but ViewInspector can't detect it on macOS
         #endif
     }
 }
 
-    @Test @MainActor func testVisionOSExpandableCardViewGeneratesAccessibilityIdentifiers() async {
+        @Test @MainActor func testVisionOSExpandableCardViewGeneratesAccessibilityIdentifiers() async {
         self.initializeTestConfig()
-    await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
         // Given: Test item and configurations
         let testItem = TestPatterns.TestDataItem(title: "visionOS Card")
         let expansionStrategy = ExpansionStrategy.hoverExpand
@@ -11797,16 +11797,16 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             componentName: "visionOSExpandableCardView"
         )
  #expect(hasAccessibilityID, "visionOSExpandableCardView should generate accessibility identifiers ")
-    #else
+        #else
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
         // The modifier IS present in the code, but ViewInspector can't detect it on macOS
         #endif
     }
 }
 
-    @Test @MainActor func testPlatformAwareExpandableCardViewGeneratesAccessibilityIdentifiers() async {
+        @Test @MainActor func testPlatformAwareExpandableCardViewGeneratesAccessibilityIdentifiers() async {
         self.initializeTestConfig()
-    await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
         // Given: Test item and configurations
         let testItem = TestPatterns.TestDataItem(title: "Platform Aware Card")
         let expansionStrategy = ExpansionStrategy.hoverExpand
@@ -11826,48 +11826,48 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             componentName: "PlatformAwareExpandableCardView"
         )
  #expect(hasAccessibilityID, "PlatformAwareExpandableCardView should generate accessibility identifiers ")
-    #else
+        #else
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
         // The modifier IS present in the code, but ViewInspector can't detect it on macOS
         #endif
     }
 }
 
-    @Test @MainActor func testPlatformPresentHierarchicalDataL1WithEnhancedHintsGeneratesAccessibilityIdentifiers() async {
-    self.initializeTestConfig()
-    let testData = GenericHierarchicalItem(
+        @Test @MainActor func testPlatformPresentHierarchicalDataL1WithEnhancedHintsGeneratesAccessibilityIdentifiers() async {
+        self.initializeTestConfig()
+        let testData = GenericHierarchicalItem(
         title: "Root Item",
         level: 0,
         children: [
             GenericHierarchicalItem(title: "Child 1", level: 1),
             GenericHierarchicalItem(title: "Child 2", level: 1)
         ]
-    )
-    
-    let enhancedHints = EnhancedPresentationHints(
+        )
+        
+        let enhancedHints = EnhancedPresentationHints(
         dataType: .hierarchical,
         presentationPreference: .automatic,
         complexity: .moderate,
         context: .modal,
         customPreferences: [:],
         extensibleHints: []
-    )
-    
-    let view = platformPresentHierarchicalData_L1(
+        )
+        
+        let view = platformPresentHierarchicalData_L1(
         items: [testData],
         hints: enhancedHints
-    )
-    
-    #if canImport(ViewInspector)
+        )
+        
+        #if canImport(ViewInspector)
 
         let hasAccessibilityID =         testComponentComplianceSinglePlatform(
         view, 
         expectedPattern: "SixLayer.*ui", 
         platform: SixLayerPlatform.iOS,
         componentName: "platformPresentHierarchicalData_L1"
-    )
+        )
  #expect(hasAccessibilityID, "platformPresentHierarchicalData_L1 with EnhancedPresentationHints should generate accessibility identifiers ")
-    #else
+        #else
 
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
 
@@ -11877,25 +11877,25 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 
     }
 
-    @Test @MainActor func testPlatformPresentHierarchicalDataL1WithCustomViewGeneratesAccessibilityIdentifiers() async {
+        @Test @MainActor func testPlatformPresentHierarchicalDataL1WithCustomViewGeneratesAccessibilityIdentifiers() async {
             self.initializeTestConfig()
-    let testData = GenericHierarchicalItem(
+        let testData = GenericHierarchicalItem(
         title: "Root Item",
         level: 0,
         children: [
             GenericHierarchicalItem(title: "Child 1", level: 1)
         ]
-    )
-    
-    let hints = PresentationHints(
+        )
+        
+        let hints = PresentationHints(
         dataType: .hierarchical,
         presentationPreference: .automatic,
         complexity: .moderate,
         context: .modal,
         customPreferences: [:]
-    )
-    
-    let view = platformPresentHierarchicalData_L1(
+        )
+        
+        let view = platformPresentHierarchicalData_L1(
         items: [testData],
         hints: hints,
         customItemView: { item in
@@ -11904,18 +11904,18 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
                 Text("Level \(item.level)")
             }
         }
-    )
-    
-    #if canImport(ViewInspector)
+        )
+        
+        #if canImport(ViewInspector)
 
         let hasAccessibilityID =         testComponentComplianceSinglePlatform(
         view, 
         expectedPattern: "SixLayer.*ui", 
         platform: SixLayerPlatform.iOS,
         componentName: "platformPresentHierarchicalData_L1"
-    )
+        )
  #expect(hasAccessibilityID, "platformPresentHierarchicalData_L1 with custom view should generate accessibility identifiers ")
-    #else
+        #else
 
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
 
@@ -11925,26 +11925,26 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 
     }
 
-    @Test @MainActor func testPlatformPresentHierarchicalDataL1WithEnhancedHintsAndCustomViewGeneratesAccessibilityIdentifiers() async {
+        @Test @MainActor func testPlatformPresentHierarchicalDataL1WithEnhancedHintsAndCustomViewGeneratesAccessibilityIdentifiers() async {
             self.initializeTestConfig()
-    let testData = GenericHierarchicalItem(
+        let testData = GenericHierarchicalItem(
         title: "Root Item",
         level: 0,
         children: [
             GenericHierarchicalItem(title: "Child 1", level: 1)
         ]
-    )
-    
-    let enhancedHints = EnhancedPresentationHints(
+        )
+        
+        let enhancedHints = EnhancedPresentationHints(
         dataType: .hierarchical,
         presentationPreference: .automatic,
         complexity: .moderate,
         context: .modal,
         customPreferences: [:],
         extensibleHints: []
-    )
-    
-    let view = platformPresentHierarchicalData_L1(
+        )
+        
+        let view = platformPresentHierarchicalData_L1(
         items: [testData],
         hints: enhancedHints,
         customItemView: { item in
@@ -11953,18 +11953,18 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
                 Text("Level \(item.level)")
             }
         }
-    )
-    
-    #if canImport(ViewInspector)
+        )
+        
+        #if canImport(ViewInspector)
 
         let hasAccessibilityID =         testComponentComplianceSinglePlatform(
         view, 
         expectedPattern: "SixLayer.*ui", 
         platform: SixLayerPlatform.iOS,
         componentName: "platformPresentHierarchicalData_L1"
-    )
+        )
  #expect(hasAccessibilityID, "platformPresentHierarchicalData_L1 with enhanced hints and custom view should generate accessibility identifiers ")
-    #else
+        #else
 
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
 
@@ -11974,39 +11974,39 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 
     }
 
-    @Test @MainActor func testPlatformPresentHierarchicalDataL1SingleItemGeneratesAccessibilityIdentifiers() async {
-    self.initializeTestConfig()
-    let testData = GenericHierarchicalItem(
+        @Test @MainActor func testPlatformPresentHierarchicalDataL1SingleItemGeneratesAccessibilityIdentifiers() async {
+        self.initializeTestConfig()
+        let testData = GenericHierarchicalItem(
         title: "Root Item",
         level: 0,
         children: [
             GenericHierarchicalItem(title: "Child 1", level: 1)
         ]
-    )
-    
-    let hints = PresentationHints(
+        )
+        
+        let hints = PresentationHints(
         dataType: .hierarchical,
         presentationPreference: .automatic,
         complexity: .moderate,
         context: .modal,
         customPreferences: [:]
-    )
-    
-    let view = platformPresentHierarchicalData_L1(
+        )
+        
+        let view = platformPresentHierarchicalData_L1(
         item: testData,
         hints: hints
-    )
-    
-    #if canImport(ViewInspector)
+        )
+        
+        #if canImport(ViewInspector)
 
         let hasAccessibilityID =         testComponentComplianceSinglePlatform(
         view, 
         expectedPattern: "SixLayer.*ui", 
         platform: SixLayerPlatform.iOS,
         componentName: "platformPresentHierarchicalData_L1"
-    )
+        )
  #expect(hasAccessibilityID, "platformPresentHierarchicalData_L1 single-item variant should generate accessibility identifiers ")
-    #else
+        #else
 
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
 
@@ -12016,38 +12016,38 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 
     }
 
-    @Test @MainActor func testPlatformPresentTemporalDataL1WithEnhancedHintsGeneratesAccessibilityIdentifiers() async {
-    self.initializeTestConfig()
-    let testData = GenericTemporalItem(
+        @Test @MainActor func testPlatformPresentTemporalDataL1WithEnhancedHintsGeneratesAccessibilityIdentifiers() async {
+        self.initializeTestConfig()
+        let testData = GenericTemporalItem(
         title: "Event 1",
         date: Date(),
         duration: 3600
-    )
-    
-    let enhancedHints = EnhancedPresentationHints(
+        )
+        
+        let enhancedHints = EnhancedPresentationHints(
         dataType: .temporal,
         presentationPreference: .automatic,
         complexity: .moderate,
         context: .modal,
         customPreferences: [:],
         extensibleHints: []
-    )
-    
-    let view = platformPresentTemporalData_L1(
+        )
+        
+        let view = platformPresentTemporalData_L1(
         items: [testData],
         hints: enhancedHints
-    )
-    
-    #if canImport(ViewInspector)
+        )
+        
+        #if canImport(ViewInspector)
 
         let hasAccessibilityID =         testComponentComplianceSinglePlatform(
         view, 
         expectedPattern: "SixLayer.*ui", 
         platform: SixLayerPlatform.iOS,
         componentName: "platformPresentTemporalData_L1"
-    )
+        )
  #expect(hasAccessibilityID, "platformPresentTemporalData_L1 with EnhancedPresentationHints should generate accessibility identifiers ")
-    #else
+        #else
 
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
 
@@ -12057,23 +12057,23 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 
     }
 
-    @Test @MainActor func testPlatformPresentTemporalDataL1WithCustomViewGeneratesAccessibilityIdentifiers() async {
-    self.initializeTestConfig()
-    let testData = GenericTemporalItem(
+        @Test @MainActor func testPlatformPresentTemporalDataL1WithCustomViewGeneratesAccessibilityIdentifiers() async {
+        self.initializeTestConfig()
+        let testData = GenericTemporalItem(
         title: "Event 1",
         date: Date(),
         duration: 3600
-    )
-    
-    let hints = PresentationHints(
+        )
+        
+        let hints = PresentationHints(
         dataType: .temporal,
         presentationPreference: .automatic,
         complexity: .moderate,
         context: .modal,
         customPreferences: [:]
-    )
-    
-    let view = platformPresentTemporalData_L1(
+        )
+        
+        let view = platformPresentTemporalData_L1(
         items: [testData],
         hints: hints,
         customItemView: { item in
@@ -12082,18 +12082,18 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
                 Text(item.date.description)
             }
         }
-    )
-    
-    #if canImport(ViewInspector)
+        )
+        
+        #if canImport(ViewInspector)
 
         let hasAccessibilityID =         testComponentComplianceSinglePlatform(
         view, 
         expectedPattern: "SixLayer.*ui", 
         platform: SixLayerPlatform.iOS,
         componentName: "platformPresentTemporalData_L1"
-    )
+        )
  #expect(hasAccessibilityID, "platformPresentTemporalData_L1 with custom view should generate accessibility identifiers ")
-    #else
+        #else
 
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
 
@@ -12103,24 +12103,24 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 
     }
 
-    @Test @MainActor func testPlatformPresentTemporalDataL1WithEnhancedHintsAndCustomViewGeneratesAccessibilityIdentifiers() async {
-    self.initializeTestConfig()
-    let testData = GenericTemporalItem(
+        @Test @MainActor func testPlatformPresentTemporalDataL1WithEnhancedHintsAndCustomViewGeneratesAccessibilityIdentifiers() async {
+        self.initializeTestConfig()
+        let testData = GenericTemporalItem(
         title: "Event 1",
         date: Date(),
         duration: 3600
-    )
-    
-    let enhancedHints = EnhancedPresentationHints(
+        )
+        
+        let enhancedHints = EnhancedPresentationHints(
         dataType: .temporal,
         presentationPreference: .automatic,
         complexity: .moderate,
         context: .modal,
         customPreferences: [:],
         extensibleHints: []
-    )
-    
-    let view = platformPresentTemporalData_L1(
+        )
+        
+        let view = platformPresentTemporalData_L1(
         items: [testData],
         hints: enhancedHints,
         customItemView: { item in
@@ -12129,18 +12129,18 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
                 Text(item.date.description)
             }
         }
-    )
-    
-    #if canImport(ViewInspector)
+        )
+        
+        #if canImport(ViewInspector)
 
         let hasAccessibilityID =         testComponentComplianceSinglePlatform(
         view, 
         expectedPattern: "SixLayer.*ui", 
         platform: SixLayerPlatform.iOS,
         componentName: "platformPresentTemporalData_L1"
-    )
+        )
  #expect(hasAccessibilityID, "platformPresentTemporalData_L1 with enhanced hints and custom view should generate accessibility identifiers ")
-    #else
+        #else
 
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
 
@@ -12150,37 +12150,37 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 
     }
 
-    @Test @MainActor func testPlatformPresentTemporalDataL1SingleItemGeneratesAccessibilityIdentifiers() async {
-    self.initializeTestConfig()
-    let testData = GenericTemporalItem(
+        @Test @MainActor func testPlatformPresentTemporalDataL1SingleItemGeneratesAccessibilityIdentifiers() async {
+        self.initializeTestConfig()
+        let testData = GenericTemporalItem(
         title: "Event 1",
         date: Date(),
         duration: 3600
-    )
-    
-    let hints = PresentationHints(
+        )
+        
+        let hints = PresentationHints(
         dataType: .temporal,
         presentationPreference: .automatic,
         complexity: .moderate,
         context: .modal,
         customPreferences: [:]
-    )
-    
-    let view = platformPresentTemporalData_L1(
+        )
+        
+        let view = platformPresentTemporalData_L1(
         item: testData,
         hints: hints
-    )
-    
-    #if canImport(ViewInspector)
+        )
+        
+        #if canImport(ViewInspector)
 
         let hasAccessibilityID =         testComponentComplianceSinglePlatform(
         view, 
         expectedPattern: "SixLayer.*ui", 
         platform: SixLayerPlatform.iOS,
         componentName: "platformPresentTemporalData_L1"
-    )
+        )
  #expect(hasAccessibilityID, "platformPresentTemporalData_L1 single-item variant should generate accessibility identifiers ")
-    #else
+        #else
 
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
 
@@ -12190,11 +12190,11 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 
     }
 
-    @Test @MainActor func testAccessibilityFunctionsRespectGlobalConfigDisabled() async {
-    // Test that automatic accessibility functions don't generate IDs when global config is disabled
-    
-    // Disable global config - use testConfig from BaseTestClass
-    await runWithTaskLocalConfig {
+        @Test @MainActor func testAccessibilityFunctionsRespectGlobalConfigDisabled() async {
+        // Test that automatic accessibility functions don't generate IDs when global config is disabled
+        
+        // Disable global config - use testConfig from BaseTestClass
+            await self.runWithTaskLocalConfig {
         guard let config = testConfig else {
             Issue.record("testConfig is nil")
             return
@@ -12215,10 +12215,10 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         // Expect NO identifier when global config is disabled and no local enable is present
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
         #if canImport(ViewInspector)
-        if let inspectedView = try? AnyView(view).inspect(),
-           let texts = inspectedView.findAll(ViewInspector.ViewType.Text.self, where: { _ in true }),
-           let text = texts.first,
-           let accessibilityID = try? text.accessibilityIdentifier() {
+        if let inspectedView = try? AnyView(view).inspect() {
+           let texts = inspectedView.findAll(ViewInspector.ViewType.Text.self, where: { _ in true })
+           if let text = texts.first,
+              let accessibilityID = try? text.accessibilityIdentifier() {
             #expect(accessibilityID.isEmpty, "Global disable without local enable should result in no accessibility identifier, got: '\(accessibilityID)'")
         } else {
             // If inspection fails, treat as no identifier applied
@@ -12231,9 +12231,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
 }
 
-    @Test @MainActor func testAccessibilityFunctionsRespectGlobalConfigEnabled() {
+        @Test @MainActor func testAccessibilityFunctionsRespectGlobalConfigEnabled() {
         self.initializeTestConfig()
-    self.runWithTaskLocalConfig {
+        self.runWithTaskLocalConfig {
         // Test that automatic accessibility functions DO generate IDs when global config is enabled
         
         // Ensure global config is enabled (default)
@@ -12258,7 +12258,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             componentName: "AccessibilityFunctionsRespectGlobalConfigEnabled"
         )
  #expect(hasAccessibilityID, "Automatic accessibility functions should generate ID when global config is enabled ")
-    #else
+        #else
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
         // The modifier IS present in the code, but ViewInspector can't detect it on macOS
         #endif
@@ -12266,9 +12266,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
 }
 
-    @Test @MainActor func testAccessibilityFunctionsRespectLocalDisableModifier() {
+        @Test @MainActor func testAccessibilityFunctionsRespectLocalDisableModifier() {
         self.initializeTestConfig()
-    self.runWithTaskLocalConfig {
+        self.runWithTaskLocalConfig {
         // Test that accessibility functions respect local disable modifier
         
         // Global config is enabled
@@ -12304,9 +12304,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
 }
 
-    @Test @MainActor func testAccessibilityFunctionsRespectLocalEnableModifier() {
+        @Test @MainActor func testAccessibilityFunctionsRespectLocalEnableModifier() {
         self.initializeTestConfig()
-    self.runWithTaskLocalConfig {
+        self.runWithTaskLocalConfig {
         // Test that accessibility functions respect local enable modifier
         
         // Global config is disabled
@@ -12331,7 +12331,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             componentName: "AccessibilityFunctionsRespectLocalEnableModifier"
         )
  #expect(hasAccessibilityID, "Accessibility functions should generate ID when local enable modifier is applied ")
-    #else
+        #else
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
         // The modifier IS present in the code, but ViewInspector can't detect it on macOS
         #endif
@@ -12339,9 +12339,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
 }
 
-    @Test @MainActor func testLocalDisableOverridesGlobalEnable() {
+        @Test @MainActor func testLocalDisableOverridesGlobalEnable() {
         self.initializeTestConfig()
-    self.runWithTaskLocalConfig {
+        self.runWithTaskLocalConfig {
         // Test that local disable takes precedence over global enable
         
         // Global config is enabled
@@ -12378,9 +12378,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
 }
 
-    @Test @MainActor func testLocalEnableOverridesGlobalDisable() {
+        @Test @MainActor func testLocalEnableOverridesGlobalDisable() {
         self.initializeTestConfig()
-    self.runWithTaskLocalConfig {
+        self.runWithTaskLocalConfig {
         // Test that local enable takes precedence over global disable
         
         // Global config is disabled
@@ -12405,7 +12405,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             componentName: "LocalEnableOverridesGlobalDisable"
         )
  #expect(hasAccessibilityID, "Local enable should override global disable ")
-    #else
+        #else
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
         // The modifier IS present in the code, but ViewInspector can't detect it on macOS
         #endif
@@ -12413,9 +12413,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
 }
 
-    @Test @MainActor func testEnvironmentVariablesAreRespected() {
+        @Test @MainActor func testEnvironmentVariablesAreRespected() {
         self.initializeTestConfig()
-    self.runWithTaskLocalConfig {
+        self.runWithTaskLocalConfig {
         // Test that environment variables are properly respected
         
         // Global config is enabled
@@ -12452,9 +12452,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
 }
 
-    @Test @MainActor func testExactNamedBehavior() {
+        @Test @MainActor func testExactNamedBehavior() {
         self.initializeTestConfig()
-    self.runWithTaskLocalConfig {
+        self.runWithTaskLocalConfig {
         self.setupTestEnvironment()
         
         // Test: Does exactNamed() use exact names without hierarchy?
@@ -12493,9 +12493,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
 }
 
-    @Test @MainActor func testExactNamedVsNamedDifference() {
+        @Test @MainActor func testExactNamedVsNamedDifference() {
         self.initializeTestConfig()
-    self.runWithTaskLocalConfig {
+        self.runWithTaskLocalConfig {
         self.setupTestEnvironment()
         
         // Test: exactNamed() should produce different identifiers than named()
@@ -12532,9 +12532,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
 }
 
-    @Test @MainActor func testExactNamedIgnoresHierarchy() {
+        @Test @MainActor func testExactNamedIgnoresHierarchy() {
         self.initializeTestConfig()
-    self.runWithTaskLocalConfig {
+        self.runWithTaskLocalConfig {
         self.setupTestEnvironment()
         
         // Test: exactNamed() should ignore view hierarchy context
@@ -12573,9 +12573,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
 }
 
-    @Test @MainActor func testExactNamedMinimalIdentifier() {
+        @Test @MainActor func testExactNamedMinimalIdentifier() {
         self.initializeTestConfig()
-    self.runWithTaskLocalConfig {
+        self.runWithTaskLocalConfig {
         self.setupTestEnvironment()
         
         // Test: exactNamed() should produce minimal identifiers
@@ -12603,9 +12603,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
 }
 
-    @Test @MainActor func testConfigurationChangesMidTest() {
+        @Test @MainActor func testConfigurationChangesMidTest() {
         self.initializeTestConfig()
-    self.runWithTaskLocalConfig {
+        self.runWithTaskLocalConfig {
         self.setupTestEnvironment()
         
         // Test: What happens if configuration changes during view creation?
@@ -12645,9 +12645,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
 }
 
-    @Test @MainActor func testNestedNamedCalls() {
+        @Test @MainActor func testNestedNamedCalls() {
         self.initializeTestConfig()
-    self.runWithTaskLocalConfig {
+        self.runWithTaskLocalConfig {
         self.setupTestEnvironment()
         
         // Test: What happens with deeply nested .named() calls?
@@ -12684,9 +12684,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
 }
 
-    @Test @MainActor func testUnicodeCharacters() {
+        @Test @MainActor func testUnicodeCharacters() {
         self.initializeTestConfig()
-    self.runWithTaskLocalConfig {
+        self.runWithTaskLocalConfig {
         self.setupTestEnvironment()
         
         // Test: How are Unicode characters handled?
@@ -12714,58 +12714,58 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
 }
 
-    @Test @MainActor func testIdentifierGenerationLogicEvaluatesConditionsCorrectly() async {
-    let config = AccessibilityIdentifierConfig.shared
+        @Test @MainActor func testIdentifierGenerationLogicEvaluatesConditionsCorrectly() async {
+        let config = AccessibilityIdentifierConfig.shared
 
         // Test Case 1: All conditions met - should generate identifiers
-    config.enableAutoIDs = true
-    config.namespace = "test"
+        config.enableAutoIDs = true
+        config.namespace = "test"
 
         // Simulate the logic from AccessibilityIdentifierAssignmentModifier
-    let disableAutoIDs = false  // Environment variable
-    let globalAutoIDs = true    // Environment variable (now defaults to true)
-    let shouldApplyAutoIDs = !disableAutoIDs && config.enableAutoIDs && globalAutoIDs
+        let disableAutoIDs = false  // Environment variable
+        let globalAutoIDs = true    // Environment variable (now defaults to true)
+        let shouldApplyAutoIDs = !disableAutoIDs && config.enableAutoIDs && globalAutoIDs
 
         #expect(shouldApplyAutoIDs, "When all conditions are met, identifiers should be generated")
 
         // Test Case 2: Global auto IDs disabled - should not generate identifiers
-    let globalAutoIDsDisabled = false
-    let shouldApplyAutoIDsDisabled = !disableAutoIDs && config.enableAutoIDs && globalAutoIDsDisabled
+        let globalAutoIDsDisabled = false
+        let shouldApplyAutoIDsDisabled = !disableAutoIDs && config.enableAutoIDs && globalAutoIDsDisabled
 
         #expect(!shouldApplyAutoIDsDisabled, "When global auto IDs are disabled, identifiers should not be generated")
 
         // Test Case 3: Config disabled - should not generate identifiers
-    config.enableAutoIDs = false
-    let shouldApplyAutoIDsConfigDisabled = !disableAutoIDs && config.enableAutoIDs && globalAutoIDs
+        config.enableAutoIDs = false
+        let shouldApplyAutoIDsConfigDisabled = !disableAutoIDs && config.enableAutoIDs && globalAutoIDs
 
         #expect(!shouldApplyAutoIDsConfigDisabled, "When config is disabled, identifiers should not be generated")
 
         // Test Case 4: View-level opt-out - should not generate identifiers
-    config.enableAutoIDs = true
-    let disableAutoIDsViewLevel = true
-    let shouldApplyAutoIDsViewOptOut = !disableAutoIDsViewLevel && config.enableAutoIDs && globalAutoIDs
+        config.enableAutoIDs = true
+        let disableAutoIDsViewLevel = true
+        let shouldApplyAutoIDsViewOptOut = !disableAutoIDsViewLevel && config.enableAutoIDs && globalAutoIDs
 
         #expect(!shouldApplyAutoIDsViewOptOut, "When view-level opt-out is enabled, identifiers should not be generated")
 }
 
-    @Test @MainActor func testAutomaticAccessibilityIdentifiersWorkCorrectly() async {
-    let config = AccessibilityIdentifierConfig.shared
-    config.enableAutoIDs = true
-    config.namespace = "test"
+        @Test @MainActor func testAutomaticAccessibilityIdentifiersWorkCorrectly() async {
+        let config = AccessibilityIdentifierConfig.shared
+        config.enableAutoIDs = true
+        config.namespace = "test"
 
         // Test that automatic accessibility identifiers work correctly
-    // This is the fix that was applied to resolve the bug
+        // This is the fix that was applied to resolve the bug
 
         // Before the fix, automatic accessibility identifiers did NOT work correctly
-    // After the fix, they DO work correctly
+        // After the fix, they DO work correctly
 
         // We can't easily test the environment variable directly in unit tests,
-    // but we can verify that the modifier chain compiles and the configuration is correct
+        // but we can verify that the modifier chain compiles and the configuration is correct
 
         let testView1 = PlatformInteractionButton(style: .primary, action: {}) {
         platformPresentContent_L1(content: "Test", hints: PresentationHints())
     }
-    .named("TestButton")
+        .named("TestButton")
 
         let testView2 = PlatformInteractionButton(style: .primary, action: {}) {
         platformPresentContent_L1(content: "Test", hints: PresentationHints())
@@ -12776,149 +12776,149 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
 
         // Verify that all modifier chains compile successfully
-    // All views are non-optional, not used further
+        // All views are non-optional, not used further
 
         // Verify configuration is correct
-    #expect(config.enableAutoIDs, "Automatic IDs should be enabled")
-    #expect(config.namespace == "test", "Namespace should be set correctly")
+        #expect(config.enableAutoIDs, "Automatic IDs should be enabled")
+        #expect(config.namespace == "test", "Namespace should be set correctly")
 }
 
-    @Test @MainActor func testAccessibilityIdentifierGeneratorCreatesProperIdentifiers() async {
-    let config = AccessibilityIdentifierConfig.shared
-    config.enableAutoIDs = true
-    config.namespace = "SixLayer"
-    config.mode = .automatic
+        @Test @MainActor func testAccessibilityIdentifierGeneratorCreatesProperIdentifiers() async {
+        let config = AccessibilityIdentifierConfig.shared
+        config.enableAutoIDs = true
+        config.namespace = "SixLayer"
+        config.mode = .automatic
 
         let generator = AccessibilityIdentifierGenerator()
 
         // Test Case 1: Basic identifier generation
-    let basicID = generator.generateID(for: "TestButton", role: "button", context: "ui")
-    #expect(basicID.hasPrefix("SixLayer"), "Generated ID should start with namespace")
-    #expect(basicID.contains("button"), "Generated ID should contain role")
-    // Note: The actual implementation may not include the exact object name in the ID
-    // This test verifies the ID is generated and has the expected structure
-    #expect(!basicID.isEmpty, "Generated ID should not be empty")
+        let basicID = generator.generateID(for: "TestButton", role: "button", context: "ui")
+        #expect(basicID.hasPrefix("SixLayer"), "Generated ID should start with namespace")
+        #expect(basicID.contains("button"), "Generated ID should contain role")
+        // Note: The actual implementation may not include the exact object name in the ID
+        // This test verifies the ID is generated and has the expected structure
+        #expect(!basicID.isEmpty, "Generated ID should not be empty")
 
         // Test Case 2: Identifier with view hierarchy context
-    config.pushViewHierarchy("NavigationView")
-    config.pushViewHierarchy("ProfileSection")
-    let hierarchyID = generator.generateID(for: "EditButton", role: "button", context: "ui")
-    #expect(hierarchyID.hasPrefix("SixLayer"), "Generated ID should start with namespace")
-    #expect(hierarchyID.contains("button"), "Generated ID should contain role")
-    #expect(!hierarchyID.isEmpty, "Generated ID should not be empty")
+        config.pushViewHierarchy("NavigationView")
+        config.pushViewHierarchy("ProfileSection")
+        let hierarchyID = generator.generateID(for: "EditButton", role: "button", context: "ui")
+        #expect(hierarchyID.hasPrefix("SixLayer"), "Generated ID should start with namespace")
+        #expect(hierarchyID.contains("button"), "Generated ID should contain role")
+        #expect(!hierarchyID.isEmpty, "Generated ID should not be empty")
 
         // Test Case 3: Identifier with screen context
-    config.setScreenContext("UserProfile")
-    let screenID = generator.generateID(for: "SaveButton", role: "button", context: "ui")
-    #expect(screenID.hasPrefix("SixLayer"), "Generated ID should start with namespace")
-    #expect(screenID.contains("button"), "Generated ID should contain role")
-    #expect(!screenID.isEmpty, "Generated ID should not be empty")
+        config.setScreenContext("UserProfile")
+        let screenID = generator.generateID(for: "SaveButton", role: "button", context: "ui")
+        #expect(screenID.hasPrefix("SixLayer"), "Generated ID should start with namespace")
+        #expect(screenID.contains("button"), "Generated ID should contain role")
+        #expect(!screenID.isEmpty, "Generated ID should not be empty")
 
         // Test Case 4: Identifier with navigation state
-    config.setNavigationState("ProfileEditMode")
-    let navigationID = generator.generateID(for: "CancelButton", role: "button", context: "ui")
-    #expect(navigationID.hasPrefix("SixLayer"), "Generated ID should start with namespace")
-    #expect(navigationID.contains("button"), "Generated ID should contain role")
-    #expect(!navigationID.isEmpty, "Generated ID should not be empty")
+        config.setNavigationState("ProfileEditMode")
+        let navigationID = generator.generateID(for: "CancelButton", role: "button", context: "ui")
+        #expect(navigationID.hasPrefix("SixLayer"), "Generated ID should start with namespace")
+        #expect(navigationID.contains("button"), "Generated ID should contain role")
+        #expect(!navigationID.isEmpty, "Generated ID should not be empty")
 }
 
-    @Test @MainActor func testBugFixResolvesIdentifierGenerationIssue() async {
-    let config = AccessibilityIdentifierConfig.shared
+        @Test @MainActor func testBugFixResolvesIdentifierGenerationIssue() async {
+        let config = AccessibilityIdentifierConfig.shared
 
         // Given: The exact configuration from the bug report
-    config.enableAutoIDs = true
-    config.namespace = "SixLayer"
-    config.mode = .automatic
-    config.enableViewHierarchyTracking = true
-    config.enableUITestIntegration = true
-    config.enableDebugLogging = true
+        config.enableAutoIDs = true
+        config.namespace = "SixLayer"
+        config.mode = .automatic
+        config.enableViewHierarchyTracking = true
+        config.enableUITestIntegration = true
+        config.enableDebugLogging = true
 
         // When: Using the exact combination from the bug report
-    let testView = Button(action: {}) {
+        let testView = Button(action: {}) {
         Label("Add Fuel", systemImage: "plus")
     }
-    .named("AddFuelButton")
+        .named("AddFuelButton")
 
         // Then: The view should be created successfully
-    #expect(Bool(true), "The exact bug scenario should now work correctly")  // testView is non-optional
+        #expect(Bool(true), "The exact bug scenario should now work correctly")  // testView is non-optional
 
         // Verify that all configuration is correct
-    #expect(config.enableAutoIDs, "Auto IDs should be enabled")
-    #expect(config.namespace == "SixLayer", "Namespace should be set correctly")
-    #expect(config.enableViewHierarchyTracking, "View hierarchy tracking should be enabled")
-    #expect(config.enableUITestIntegration, "UI test integration should be enabled")
-    #expect(config.enableDebugLogging, "Debug logging should be enabled")
+        #expect(config.enableAutoIDs, "Auto IDs should be enabled")
+        #expect(config.namespace == "SixLayer", "Namespace should be set correctly")
+        #expect(config.enableViewHierarchyTracking, "View hierarchy tracking should be enabled")
+        #expect(config.enableUITestIntegration, "UI test integration should be enabled")
+        #expect(config.enableDebugLogging, "Debug logging should be enabled")
 
         // The key fix was that automatic accessibility identifiers now work correctly
-    // This ensures that the AccessibilityIdentifierAssignmentModifier evaluates shouldApplyAutoIDs as true
+        // This ensures that the AccessibilityIdentifierAssignmentModifier evaluates shouldApplyAutoIDs as true
 }
 
-    @Test @MainActor func testDefaultBehaviorChangeWorksCorrectly() async {
-    let config = AccessibilityIdentifierConfig.shared
+        @Test @MainActor func testDefaultBehaviorChangeWorksCorrectly() async {
+        let config = AccessibilityIdentifierConfig.shared
 
         // Given: Explicitly set configuration for this test
-    config.resetToDefaults()
-    config.enableAutoIDs = true
-    config.namespace = "defaultApp"
+        config.resetToDefaults()
+        config.enableAutoIDs = true
+        config.namespace = "defaultApp"
 
         // When: Creating a view with explicitly enabled config
-    let testView = Text("Hello World")
+        let testView = Text("Hello World")
         .automaticCompliance()
 
         // Then: The view should be created successfully
-    #expect(Bool(true), "View should work with explicitly enabled config")  // testView is non-optional
+        #expect(Bool(true), "View should work with explicitly enabled config")  // testView is non-optional
 
         // Verify configuration is correct (explicitly set, not relying on defaults)
-    #expect(config.enableAutoIDs, "Automatic IDs should be enabled (explicitly set)")
-    #expect(config.namespace == "defaultApp", "Namespace should be set correctly (explicitly set)")
+        #expect(config.enableAutoIDs, "Automatic IDs should be enabled (explicitly set)")
+        #expect(config.namespace == "defaultApp", "Namespace should be set correctly (explicitly set)")
 }
 
-    @Test @MainActor func testManualIdentifiersOverrideAutomaticGeneration() async {
-    let config = AccessibilityIdentifierConfig.shared
-    config.enableAutoIDs = true
-    config.namespace = "auto"
+        @Test @MainActor func testManualIdentifiersOverrideAutomaticGeneration() async {
+        let config = AccessibilityIdentifierConfig.shared
+        config.enableAutoIDs = true
+        config.namespace = "auto"
 
         // When: Creating view with manual identifier
-    let manualID = "manual-custom-id"
-    let testView = Text("Test")
+        let manualID = "manual-custom-id"
+        let testView = Text("Test")
         .accessibilityIdentifier(manualID)
         .automaticCompliance()
 
         // Then: Manual identifier should take precedence
-    #expect(Bool(true), "View with manual identifier should be created successfully")  // testView is non-optional
+        #expect(Bool(true), "View with manual identifier should be created successfully")  // testView is non-optional
 
         // Verify configuration is correct
-    #expect(config.enableAutoIDs, "Automatic IDs should be enabled")
-    #expect(config.namespace == "auto", "Namespace should be set correctly")
+        #expect(config.enableAutoIDs, "Automatic IDs should be enabled")
+        #expect(config.namespace == "auto", "Namespace should be set correctly")
 
         // Manual identifiers should always override automatic ones
-    // This is handled by the AccessibilityIdentifierAssignmentModifier logic
+        // This is handled by the AccessibilityIdentifierAssignmentModifier logic
 }
 
-    @Test @MainActor func testOptOutPreventsIdentifierGeneration() async {
-    let config = AccessibilityIdentifierConfig.shared
-    config.enableAutoIDs = true
-    config.namespace = "test"
+        @Test @MainActor func testOptOutPreventsIdentifierGeneration() async {
+        let config = AccessibilityIdentifierConfig.shared
+        config.enableAutoIDs = true
+        config.namespace = "test"
 
         // When: Creating view with opt-out modifier
-    let testView = Text("Test")
+        let testView = Text("Test")
         .disableAutomaticAccessibilityIdentifiers()
         .automaticCompliance()
 
         // Then: View should be created successfully (but no automatic ID generated)
-    #expect(Bool(true), "View with opt-out should be created successfully")  // testView is non-optional
+        #expect(Bool(true), "View with opt-out should be created successfully")  // testView is non-optional
 
         // Verify configuration is correct
-    #expect(config.enableAutoIDs, "Automatic IDs should be enabled globally")
-    #expect(config.namespace == "test", "Namespace should be set correctly")
+        #expect(config.enableAutoIDs, "Automatic IDs should be enabled globally")
+        #expect(config.namespace == "test", "Namespace should be set correctly")
 
         // The opt-out modifier sets disableAutomaticAccessibilityIdentifiers = true
-    // This causes shouldApplyAutoIDs to evaluate as false
+        // This causes shouldApplyAutoIDs to evaluate as false
 }
 
-    @Test @MainActor func testAccessibilityIdentifiersArePersistentAcrossSessions() {
+        @Test @MainActor func testAccessibilityIdentifiersArePersistentAcrossSessions() {
         self.initializeTestConfig()
-    self.runWithTaskLocalConfig {
+        self.runWithTaskLocalConfig {
         // Setup test environment
         self.setupTestEnvironment()
         
@@ -12966,9 +12966,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
 }
 
-    @Test @MainActor func testAccessibilityIdentifiersAreDeterministicForSameView() {
+        @Test @MainActor func testAccessibilityIdentifiersAreDeterministicForSameView() {
         self.initializeTestConfig()
-    self.runWithTaskLocalConfig {
+        self.runWithTaskLocalConfig {
         // Setup test environment
         self.setupTestEnvironment()
         
@@ -13002,9 +13002,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
 }
 
-    @Test @MainActor func testAccessibilityIdentifiersDontContainTimestamps() {
+        @Test @MainActor func testAccessibilityIdentifiersDontContainTimestamps() {
         self.initializeTestConfig()
-    self.runWithTaskLocalConfig {
+        self.runWithTaskLocalConfig {
         // Setup test environment
         self.setupTestEnvironment()
         
@@ -13041,9 +13041,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
 }
 
-    @Test @MainActor func testAccessibilityIdentifiersAreStableForUITesting() {
+        @Test @MainActor func testAccessibilityIdentifiersAreStableForUITesting() {
         self.initializeTestConfig()
-    self.runWithTaskLocalConfig {
+        self.runWithTaskLocalConfig {
         // Setup test environment
         self.setupTestEnvironment()
         
@@ -13105,9 +13105,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
 }
 
-    @Test @MainActor func testAccessibilityIdentifiersAreBasedOnViewStructure() {
+        @Test @MainActor func testAccessibilityIdentifiersAreBasedOnViewStructure() {
         self.initializeTestConfig()
-    self.runWithTaskLocalConfig {
+        self.runWithTaskLocalConfig {
         // Setup test environment
         self.setupTestEnvironment()
         
@@ -13144,9 +13144,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
 }
 
-    @Test @MainActor func testAccessibilityIdentifiersAreTrulyPersistentForIdenticalViews() {
+        @Test @MainActor func testAccessibilityIdentifiersAreTrulyPersistentForIdenticalViews() {
         self.initializeTestConfig()
-    self.runWithTaskLocalConfig {
+        self.runWithTaskLocalConfig {
         // Setup test environment
         self.setupTestEnvironment()
         
@@ -13186,9 +13186,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
 }
 
-    @Test @MainActor func testAccessibilityIdentifiersPersistAcrossConfigResets() {
+        @Test @MainActor func testAccessibilityIdentifiersPersistAcrossConfigResets() {
         self.initializeTestConfig()
-    self.runWithTaskLocalConfig {
+        self.runWithTaskLocalConfig {
         // Setup test environment
         self.setupTestEnvironment()
         
@@ -13229,736 +13229,736 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
 }
 
-    
+        
 
-    // MARK: - Additional Tests (batch 3)
+        // MARK: - Additional Tests (batch 3)
 
-    @Test @MainActor func testAutomaticAccessibilityIntegration() async {
-    self.initializeTestConfig()
-    // Test with accessibility features enabled
-    RuntimeCapabilityDetection.setTestVoiceOver(true)
-    RuntimeCapabilityDetection.setTestSwitchControl(true)
-    RuntimeCapabilityDetection.setTestAssistiveTouch(true)
-    
-    let enabledConfig = getCardExpansionPlatformConfig()
-    
-    // When: Automatic accessibility is applied through platform configuration
-    // Then: Should have proper accessibility support
-    #expect(enabledConfig.supportsVoiceOver, "VoiceOver should be supported when enabled")
-    #expect(enabledConfig.supportsSwitchControl, "Switch Control should be supported when enabled")
-    #expect(enabledConfig.supportsAssistiveTouch, "AssistiveTouch should be supported when enabled")
-    
-    // Test with accessibility features disabled
-    RuntimeCapabilityDetection.setTestVoiceOver(false)
-    RuntimeCapabilityDetection.setTestSwitchControl(false)
-    RuntimeCapabilityDetection.setTestAssistiveTouch(false)
-    
-    let disabledConfig = getCardExpansionPlatformConfig()
-    
-    // Then: Should reflect disabled state
-    #expect(!disabledConfig.supportsVoiceOver, "VoiceOver should be disabled when disabled")
-    #expect(!disabledConfig.supportsSwitchControl, "Switch Control should be disabled when disabled")
-    #expect(!disabledConfig.supportsAssistiveTouch, "AssistiveTouch should be disabled when disabled")
+        @Test @MainActor func testAutomaticAccessibilityIntegration() async {
+        self.initializeTestConfig()
+        // Test with accessibility features enabled
+        RuntimeCapabilityDetection.setTestVoiceOver(true)
+        RuntimeCapabilityDetection.setTestSwitchControl(true)
+        RuntimeCapabilityDetection.setTestAssistiveTouch(true)
+        
+        let enabledConfig = getCardExpansionPlatformConfig()
+        
+        // When: Automatic accessibility is applied through platform configuration
+        // Then: Should have proper accessibility support
+        #expect(enabledConfig.supportsVoiceOver, "VoiceOver should be supported when enabled")
+        #expect(enabledConfig.supportsSwitchControl, "Switch Control should be supported when enabled")
+        #expect(enabledConfig.supportsAssistiveTouch, "AssistiveTouch should be supported when enabled")
+        
+        // Test with accessibility features disabled
+        RuntimeCapabilityDetection.setTestVoiceOver(false)
+        RuntimeCapabilityDetection.setTestSwitchControl(false)
+        RuntimeCapabilityDetection.setTestAssistiveTouch(false)
+        
+        let disabledConfig = getCardExpansionPlatformConfig()
+        
+        // Then: Should reflect disabled state
+        #expect(!disabledConfig.supportsVoiceOver, "VoiceOver should be disabled when disabled")
+        #expect(!disabledConfig.supportsSwitchControl, "Switch Control should be disabled when disabled")
+        #expect(!disabledConfig.supportsAssistiveTouch, "AssistiveTouch should be disabled when disabled")
 }
 
-    @Test @MainActor func testPlatformSpecificComplianceBehavior() async {
-    self.initializeTestConfig()
-    // Test that platform detection works correctly
-    let originalPlatform = RuntimeCapabilityDetection.currentPlatform
-    
-    // Test iOS platform capabilities
-    RuntimeCapabilityDetection.setTestTouchSupport(true)
-    RuntimeCapabilityDetection.setTestHapticFeedback(true)
-    RuntimeCapabilityDetection.setTestHover(false)
-    // Note: Platform detection is compile-time, so we test capabilities instead
-    #expect(RuntimeCapabilityDetection.supportsTouch, "Should support touch (iOS-like)")
-    
-    // Test macOS platform capabilities
-    RuntimeCapabilityDetection.setTestTouchSupport(false)
-    RuntimeCapabilityDetection.setTestHapticFeedback(false)
-    RuntimeCapabilityDetection.setTestHover(true)
-    #expect(RuntimeCapabilityDetection.supportsHover, "Should support hover (macOS-like)")
-    
-    // Test watchOS platform capabilities
-    RuntimeCapabilityDetection.setTestTouchSupport(true)
-    RuntimeCapabilityDetection.setTestHapticFeedback(true)
-    RuntimeCapabilityDetection.setTestHover(false)
-    #expect(RuntimeCapabilityDetection.supportsTouch, "Should support touch (watchOS-like)")
-    
-    // Test tvOS platform capabilities
-    RuntimeCapabilityDetection.setTestTouchSupport(false)
-    RuntimeCapabilityDetection.setTestHapticFeedback(false)
-    RuntimeCapabilityDetection.setTestHover(false)
-    #expect(!RuntimeCapabilityDetection.supportsTouch, "Should not support touch (tvOS-like)")
-    
-    // Test visionOS platform capabilities
-    RuntimeCapabilityDetection.setTestTouchSupport(false)
-    RuntimeCapabilityDetection.setTestHapticFeedback(false)
-    RuntimeCapabilityDetection.setTestHover(true)
-    #expect(RuntimeCapabilityDetection.supportsHover, "Should support hover (visionOS-like)")
-    
-    // Reset to original platform
+        @Test @MainActor func testPlatformSpecificComplianceBehavior() async {
+        self.initializeTestConfig()
+        // Test that platform detection works correctly
+        let originalPlatform = RuntimeCapabilityDetection.currentPlatform
+        
+        // Test iOS platform capabilities
+        RuntimeCapabilityDetection.setTestTouchSupport(true)
+        RuntimeCapabilityDetection.setTestHapticFeedback(true)
+        RuntimeCapabilityDetection.setTestHover(false)
+        // Note: Platform detection is compile-time, so we test capabilities instead
+        #expect(RuntimeCapabilityDetection.supportsTouch, "Should support touch (iOS-like)")
+        
+        // Test macOS platform capabilities
+        RuntimeCapabilityDetection.setTestTouchSupport(false)
+        RuntimeCapabilityDetection.setTestHapticFeedback(false)
+        RuntimeCapabilityDetection.setTestHover(true)
+        #expect(RuntimeCapabilityDetection.supportsHover, "Should support hover (macOS-like)")
+        
+        // Test watchOS platform capabilities
+        RuntimeCapabilityDetection.setTestTouchSupport(true)
+        RuntimeCapabilityDetection.setTestHapticFeedback(true)
+        RuntimeCapabilityDetection.setTestHover(false)
+        #expect(RuntimeCapabilityDetection.supportsTouch, "Should support touch (watchOS-like)")
+        
+        // Test tvOS platform capabilities
+        RuntimeCapabilityDetection.setTestTouchSupport(false)
+        RuntimeCapabilityDetection.setTestHapticFeedback(false)
+        RuntimeCapabilityDetection.setTestHover(false)
+        #expect(!RuntimeCapabilityDetection.supportsTouch, "Should not support touch (tvOS-like)")
+        
+        // Test visionOS platform capabilities
+        RuntimeCapabilityDetection.setTestTouchSupport(false)
+        RuntimeCapabilityDetection.setTestHapticFeedback(false)
+        RuntimeCapabilityDetection.setTestHover(true)
+        #expect(RuntimeCapabilityDetection.supportsHover, "Should support hover (visionOS-like)")
+        
+        // Reset to original platform
 }
 
-    @Test @MainActor func testAppleHIGComplianceBusinessPurpose() {
-    self.initializeTestConfig()
-    // Given: A business requirement for Apple HIG compliance
-    // When: A developer uses the framework
-    // Then: Should automatically get Apple-quality UI without configuration
-    
-    // This test validates the core business value proposition
-    // The view should be compliant without developer configuration
-    // businessView is some View (non-optional)
+        @Test @MainActor func testAppleHIGComplianceBusinessPurpose() {
+        self.initializeTestConfig()
+        // Given: A business requirement for Apple HIG compliance
+        // When: A developer uses the framework
+        // Then: Should automatically get Apple-quality UI without configuration
+        
+        // This test validates the core business value proposition
+        // The view should be compliant without developer configuration
+        // businessView is some View (non-optional)
 }
 
-    @Test @MainActor func testPlatformAdaptationBusinessPurpose() {
-    self.initializeTestConfig()
-    // Given: A business requirement for cross-platform apps
-    // When: The same code runs on different platforms
-    // Then: Should automatically adapt to platform conventions
-    
-    // Should work on all platforms with appropriate adaptations
-    // crossPlatformView is some View (non-optional)
+        @Test @MainActor func testPlatformAdaptationBusinessPurpose() {
+        self.initializeTestConfig()
+        // Given: A business requirement for cross-platform apps
+        // When: The same code runs on different platforms
+        // Then: Should automatically adapt to platform conventions
+        
+        // Should work on all platforms with appropriate adaptations
+        // crossPlatformView is some View (non-optional)
 }
 
-    @Test @MainActor func testAccessibilityInclusionBusinessPurpose() {
-    self.initializeTestConfig()
-    // Given: A business requirement for inclusive design
-    // When: Users with accessibility needs use the app
-    // Then: Should automatically provide appropriate accessibility features
-    
-    // Should automatically include accessibility features
-    // inclusiveView is some View (non-optional)
+        @Test @MainActor func testAccessibilityInclusionBusinessPurpose() {
+        self.initializeTestConfig()
+        // Given: A business requirement for inclusive design
+        // When: Users with accessibility needs use the app
+        // Then: Should automatically provide appropriate accessibility features
+        
+        // Should automatically include accessibility features
+        // inclusiveView is some View (non-optional)
 }
 
-    @Test @MainActor func testEyeTrackingEnabledWithConfig() {
-    self.initializeTestConfig()
-    let testView = platformPresentContent_L1(
+        @Test @MainActor func testEyeTrackingEnabledWithConfig() {
+        self.initializeTestConfig()
+        let testView = platformPresentContent_L1(
         content: "Test",
         hints: PresentationHints()
-    )
-    let config = EyeTrackingConfig(sensitivity: .low)
-    let modifiedView = testView.eyeTrackingEnabled(config: config)
-    
-    // Test that the modifier with config can be applied and the view can be hosted
-    _ = hostRootPlatformView(modifiedView.enableGlobalAutomaticCompliance())
-    #expect(Bool(true), "Eye tracking enabled view with config should be hostable")
-    #expect(Bool(true), "Eye tracking enabled view with config should be created")
+        )
+        let config = EyeTrackingConfig(sensitivity: .low)
+        let modifiedView = testView.eyeTrackingEnabled(config: config)
+        
+        // Test that the modifier with config can be applied and the view can be hosted
+        _ = hostRootPlatformView(modifiedView.enableGlobalAutomaticCompliance())
+        #expect(Bool(true), "Eye tracking enabled view with config should be hostable")
+        #expect(Bool(true), "Eye tracking enabled view with config should be created")
 }
 
-    @Test @MainActor func testEyeTrackingEnabledWithCallbacks() {
-    self.initializeTestConfig()
-    let testView = platformPresentContent_L1(
+        @Test @MainActor func testEyeTrackingEnabledWithCallbacks() {
+        self.initializeTestConfig()
+        let testView = platformPresentContent_L1(
         content: "Test",
         hints: PresentationHints()
-    )
-    let modifiedView = testView.eyeTrackingEnabled(
+        )
+        let modifiedView = testView.eyeTrackingEnabled(
         onGaze: { _ in },
         onDwell: { _ in }
-    )
-    
-    // Test that the modifier with callbacks can be applied and the view can be hosted
-    _ = hostRootPlatformView(modifiedView.enableGlobalAutomaticCompliance())
-    #expect(Bool(true), "Eye tracking enabled view with callbacks should be hostable")
-    #expect(Bool(true), "Eye tracking enabled view with callbacks should be created")
+        )
+        
+        // Test that the modifier with callbacks can be applied and the view can be hosted
+        _ = hostRootPlatformView(modifiedView.enableGlobalAutomaticCompliance())
+        #expect(Bool(true), "Eye tracking enabled view with callbacks should be hostable")
+        #expect(Bool(true), "Eye tracking enabled view with callbacks should be created")
 }
 
-    @Test func testEyeTrackingPerformance() {
+        @Test func testEyeTrackingPerformance() {
     }
 
-    @Test func testGazeEventCreationPerformance() {
-    // Performance test removed - performance monitoring was removed from framework
+        @Test func testGazeEventCreationPerformance() {
+        // Performance test removed - performance monitoring was removed from framework
 }
 
-    @Test @MainActor func testEyeTrackingIntegration() async {
-    // Test the complete eye tracking workflow
-    let config = EyeTrackingConfig(
+        @Test @MainActor func testEyeTrackingIntegration() async {
+        // Test the complete eye tracking workflow
+        let config = EyeTrackingConfig(
         sensitivity: .medium,
         dwellTime: 0.5,
         visualFeedback: true,
         hapticFeedback: true
-    )
-    
-    let manager = EyeTrackingManager(config: config)
-    
-    // Enable tracking (force for testing)
-    #expect(Bool(true), "Manager should be created successfully")
+        )
+        
+        let manager = EyeTrackingManager(config: config)
+        
+        // Enable tracking (force for testing)
+        #expect(Bool(true), "Manager should be created successfully")
 
-    // Process gaze events
-    for _ in 0..<10 {
+        // Process gaze events
+        for _ in 0..<10 {
         // Process gaze event
         #expect(Bool(true), "Gaze event should be processed")
     }
 
-    // Complete calibration
-    #expect(Bool(true), "Calibration should be completed")
+        // Complete calibration
+        #expect(Bool(true), "Calibration should be completed")
 
-    // Disable tracking
-    #expect(Bool(true), "Tracking should be disabled")
+        // Disable tracking
+        #expect(Bool(true), "Tracking should be disabled")
 }
 
-    @Test func testAccessibilityAwareMaterialSelection() {
-    // Given: Different accessibility settings
-    var highContrastSettings = SixLayerFramework.AccessibilitySettings()
-    highContrastSettings.highContrastMode = true
-    var reducedMotionSettings = SixLayerFramework.AccessibilitySettings()
-    reducedMotionSettings.reducedMotion = true
-    var voiceOverSettings = SixLayerFramework.AccessibilitySettings()
-    voiceOverSettings.voiceOverSupport = true
-    
-    // When: Selecting materials based on accessibility settings
-    let highContrastMaterial = MaterialAccessibilityManager.selectMaterial(
+        @Test func testAccessibilityAwareMaterialSelection() {
+        // Given: Different accessibility settings
+        var highContrastSettings = SixLayerFramework.AccessibilitySettings()
+        highContrastSettings.highContrastMode = true
+        var reducedMotionSettings = SixLayerFramework.AccessibilitySettings()
+        reducedMotionSettings.reducedMotion = true
+        var voiceOverSettings = SixLayerFramework.AccessibilitySettings()
+        voiceOverSettings.voiceOverSupport = true
+        
+        // When: Selecting materials based on accessibility settings
+        let highContrastMaterial = MaterialAccessibilityManager.selectMaterial(
         for: .regular,
         accessibilitySettings: highContrastSettings
-    )
-    let reducedMotionMaterial = MaterialAccessibilityManager.selectMaterial(
+        )
+        let reducedMotionMaterial = MaterialAccessibilityManager.selectMaterial(
         for: .regular,
         accessibilitySettings: reducedMotionSettings
-    )
-    let voiceOverMaterial = MaterialAccessibilityManager.selectMaterial(
+        )
+        let voiceOverMaterial = MaterialAccessibilityManager.selectMaterial(
         for: .regular,
         accessibilitySettings: voiceOverSettings
-    )
-    
-    // Then: Materials should be appropriate for accessibility settings
-    // Note: Material types are value types, so we just verify the method calls succeeded
-    // The actual material selection logic is tested elsewhere
+        )
+        
+        // Then: Materials should be appropriate for accessibility settings
+        // Note: Material types are value types, so we just verify the method calls succeeded
+        // The actual material selection logic is tested elsewhere
 }
 
-    @Test @MainActor func testMaterialAccessibilityIssues() {
-    // Given: A material with poor contrast
-    let poorContrastMaterial = MaterialAccessibilityManager.createPoorContrastMaterial()
-    
-    // When: Checking compliance directly on the material using poor contrast testing
-    let contrastResult = MaterialAccessibilityManager.validateContrastForPoorContrastTesting(poorContrastMaterial)
-    
-    // Then: Should identify contrast issues
-    #expect(!contrastResult.isValid)
-    #expect(contrastResult.contrastRatio < 4.5) // WCAG AA standard
-    #expect(contrastResult.wcagLevel == .A) // Should be WCAG A level
+        @Test @MainActor func testMaterialAccessibilityIssues() {
+        // Given: A material with poor contrast
+        let poorContrastMaterial = MaterialAccessibilityManager.createPoorContrastMaterial()
+        
+        // When: Checking compliance directly on the material using poor contrast testing
+        let contrastResult = MaterialAccessibilityManager.validateContrastForPoorContrastTesting(poorContrastMaterial)
+        
+        // Then: Should identify contrast issues
+        #expect(!contrastResult.isValid)
+        #expect(contrastResult.contrastRatio < 4.5) // WCAG AA standard
+        #expect(contrastResult.wcagLevel == .A) // Should be WCAG A level
 }
 
-    @Test @MainActor func testMaterialAccessibilityViewModifier() {
-    self.initializeTestConfig()
-    // Given: A view with material
-    let view = platformVStackContainer {
+        @Test @MainActor func testMaterialAccessibilityViewModifier() {
+        self.initializeTestConfig()
+        // Given: A view with material
+        let view = platformVStackContainer {
         Text("Test")
         Button("Action") { }
     }
-    .background(.regularMaterial)
-    
-    // When: Applying material accessibility enhancement
-    let enhancedView = view.accessibilityMaterialEnhanced()
-    
-    // Then: View should have accessibility enhancements
-    #expect(Bool(true), "enhancedView is non-optional")  // enhancedView is non-optional
+        .background(.regularMaterial)
+        
+        // When: Applying material accessibility enhancement
+        let enhancedView = view.accessibilityMaterialEnhanced()
+        
+        // Then: View should have accessibility enhancements
+        #expect(Bool(true), "enhancedView is non-optional")  // enhancedView is non-optional
 }
 
-    @Test @MainActor func testMaterialAccessibilityPerformance() {
-    // Given: Multiple materials to validate
-    let materials = Array(repeating: Material.regularMaterial, count: 100)
-    
-    // When: Validating materials
-    for material in materials {
+        @Test @MainActor func testMaterialAccessibilityPerformance() {
+        // Given: Multiple materials to validate
+        let materials = Array(repeating: Material.regularMaterial, count: 100)
+        
+        // When: Validating materials
+        for material in materials {
         _ = MaterialAccessibilityManager.validateContrast(material)
     }
-    
-    // Then: Validation completed
+        
+        // Then: Validation completed
 }
 
-    @Test @MainActor func testMaterialAccessibilityWithVoiceOver() {
-    self.initializeTestConfig()
-    // Given: A view with material and VoiceOver enabled
-    let view = Rectangle()
+        @Test @MainActor func testMaterialAccessibilityWithVoiceOver() {
+        self.initializeTestConfig()
+        // Given: A view with material and VoiceOver enabled
+        let view = Rectangle()
         .fill(.regularMaterial)
         .accessibilityMaterialEnhanced()
         .accessibilityLabel("Test material background")
-    
-    // When: Running VoiceOver accessibility check
-    let voiceOverCompliance = MaterialAccessibilityManager.checkVoiceOverCompliance(for: view)
-    
-    // Then: Should be VoiceOver compliant
-    #expect(voiceOverCompliance.isCompliant)
+        
+        // When: Running VoiceOver accessibility check
+        let voiceOverCompliance = MaterialAccessibilityManager.checkVoiceOverCompliance(for: view)
+        
+        // Then: Should be VoiceOver compliant
+        #expect(voiceOverCompliance.isCompliant)
 }
 
-    @Test func testMaterialAccessibilityWithHighContrast() {
-    // Given: High contrast mode enabled
-    var highContrastSettings = SixLayerFramework.AccessibilitySettings()
-    highContrastSettings.highContrastMode = true
-    
-    // When: Selecting material for high contrast
-    let material = MaterialAccessibilityManager.selectMaterial(
+        @Test func testMaterialAccessibilityWithHighContrast() {
+        // Given: High contrast mode enabled
+        var highContrastSettings = SixLayerFramework.AccessibilitySettings()
+        highContrastSettings.highContrastMode = true
+        
+        // When: Selecting material for high contrast
+        let material = MaterialAccessibilityManager.selectMaterial(
         for: .regular,
         accessibilitySettings: highContrastSettings
-    )
-    
-    // Then: Material should be high contrast appropriate
-    let contrast = MaterialAccessibilityManager.validateContrast(material)
-    #expect(contrast.isValid)
-    #expect(contrast.contrastRatio >= 7.0) // WCAG AAA standard
+        )
+        
+        // Then: Material should be high contrast appropriate
+        let contrast = MaterialAccessibilityManager.validateContrast(material)
+        #expect(contrast.isValid)
+        #expect(contrast.contrastRatio >= 7.0) // WCAG AAA standard
 }
 
-    @Test @MainActor func testSwitchControlGestureTypes() {
-    // Given: Different gesture types
-    let singleTap = SwitchControlGesture(type: .singleTap, intensity: .light)
-    let doubleTap = SwitchControlGesture(type: .doubleTap, intensity: .medium)
-    let swipeLeft = SwitchControlGesture(type: .swipeLeft, intensity: .heavy)
-    let swipeRight = SwitchControlGesture(type: .swipeRight, intensity: .light)
-    
-    // Then: Gestures should have correct types
-    #expect(singleTap.type == .singleTap)
-    #expect(doubleTap.type == .doubleTap)
-    #expect(swipeLeft.type == .swipeLeft)
-    #expect(swipeRight.type == .swipeRight)
+        @Test @MainActor func testSwitchControlGestureTypes() {
+        // Given: Different gesture types
+        let singleTap = SwitchControlGesture(type: .singleTap, intensity: .light)
+        let doubleTap = SwitchControlGesture(type: .doubleTap, intensity: .medium)
+        let swipeLeft = SwitchControlGesture(type: .swipeLeft, intensity: .heavy)
+        let swipeRight = SwitchControlGesture(type: .swipeRight, intensity: .light)
+        
+        // Then: Gestures should have correct types
+        #expect(singleTap.type == .singleTap)
+        #expect(doubleTap.type == .doubleTap)
+        #expect(swipeLeft.type == .swipeLeft)
+        #expect(swipeRight.type == .swipeRight)
 }
 
-    @Test @MainActor func testSwitchControlFocusDirection() {
-    // Given: Different focus directions
-    let nextFocus = SwitchControlFocusDirection.next
-    let previousFocus = SwitchControlFocusDirection.previous
-    let firstFocus = SwitchControlFocusDirection.first
-    let lastFocus = SwitchControlFocusDirection.last
-    
-    // Then: Directions should be properly defined
-    #expect(nextFocus == .next)
-    #expect(previousFocus == .previous)
-    #expect(firstFocus == .first)
-    #expect(lastFocus == .last)
+        @Test @MainActor func testSwitchControlFocusDirection() {
+        // Given: Different focus directions
+        let nextFocus = SwitchControlFocusDirection.next
+        let previousFocus = SwitchControlFocusDirection.previous
+        let firstFocus = SwitchControlFocusDirection.first
+        let lastFocus = SwitchControlFocusDirection.last
+        
+        // Then: Directions should be properly defined
+        #expect(nextFocus == .next)
+        #expect(previousFocus == .previous)
+        #expect(firstFocus == .first)
+        #expect(lastFocus == .last)
 }
 
-    @Test @MainActor func testSwitchControlFocusManagementMode() {
-    // Given: Different focus management modes
-    let automatic = SwitchControlFocusManagement.automatic
-    let manual = SwitchControlFocusManagement.manual
-    let hybrid = SwitchControlFocusManagement.hybrid
-    
-    // Then: Modes should be properly defined
-    #expect(automatic == .automatic)
-    #expect(manual == .manual)
-    #expect(hybrid == .hybrid)
+        @Test @MainActor func testSwitchControlFocusManagementMode() {
+        // Given: Different focus management modes
+        let automatic = SwitchControlFocusManagement.automatic
+        let manual = SwitchControlFocusManagement.manual
+        let hybrid = SwitchControlFocusManagement.hybrid
+        
+        // Then: Modes should be properly defined
+        #expect(automatic == .automatic)
+        #expect(manual == .manual)
+        #expect(hybrid == .hybrid)
 }
 
-    @Test @MainActor func testSwitchControlViewModifier() {
-    // Given: A view with Switch Control support
-    let view = platformPresentContent_L1(
+        @Test @MainActor func testSwitchControlViewModifier() {
+        // Given: A view with Switch Control support
+        let view = platformPresentContent_L1(
         content: "Test",
         hints: PresentationHints()
-    )
+        )
         .switchControlEnabled()
-    
-    // Then: View should support Switch Control
-    #expect(Bool(true), "view is non-optional")  // view is non-optional
+        
+        // Then: View should support Switch Control
+        #expect(Bool(true), "view is non-optional")  // view is non-optional
 }
 
-    @Test @MainActor func testSwitchControlViewModifierWithConfiguration() {
-    // Given: A view with Switch Control configuration
-    let config = SwitchControlConfig(enableNavigation: true)
-    let view = platformPresentContent_L1(
+        @Test @MainActor func testSwitchControlViewModifierWithConfiguration() {
+        // Given: A view with Switch Control configuration
+        let config = SwitchControlConfig(enableNavigation: true)
+        let view = platformPresentContent_L1(
         content: "Test",
         hints: PresentationHints()
-    )
+        )
         .switchControlEnabled(config: config)
-    
-    // Then: View should support Switch Control with configuration
-    #expect(Bool(true), "view is non-optional")  // view is non-optional
+        
+        // Then: View should support Switch Control with configuration
+        #expect(Bool(true), "view is non-optional")  // view is non-optional
 }
 
-    @Test func testSwitchControlPerformance() {
-    // Given: Switch Control Manager
-    let config = SwitchControlConfig(enableNavigation: true)
-    let manager = SwitchControlManager(config: config)
-    
-    // When: Measuring performance
-    // Performance test removed - performance monitoring was removed from framework
+        @Test func testSwitchControlPerformance() {
+        // Given: Switch Control Manager
+        let config = SwitchControlConfig(enableNavigation: true)
+        let manager = SwitchControlManager(config: config)
+        
+        // When: Measuring performance
+        // Performance test removed - performance monitoring was removed from framework
 }
 
-    @Test @MainActor func testCardExpansionPerformanceConfig_PerformanceSettings() {
-    // Given: Current platform
-    let platform = SixLayerPlatform.current
-    
-    // When: Get performance configuration
-    let config = getCardExpansionPerformanceConfig()
-    
-    // Then: Test actual business logic
-    // The configuration should have valid performance settings
-    #expect(Bool(true), "Performance configuration should be available")  // config is non-optional
-    
-    // Test that performance settings are reasonable
-    #expect(config.maxAnimationDuration >= 0, "Animation duration should be non-negative")
-    #expect(config.maxAnimationDuration <= 5.0, "Animation duration should not be excessive")
-    
-    // Test platform-specific performance expectations
-    switch platform {
-    case .iOS:
+        @Test @MainActor func testCardExpansionPerformanceConfig_PerformanceSettings() {
+        // Given: Current platform
+        let platform = SixLayerPlatform.current
+        
+        // When: Get performance configuration
+        let config = getCardExpansionPerformanceConfig()
+        
+        // Then: Test actual business logic
+        // The configuration should have valid performance settings
+        #expect(Bool(true), "Performance configuration should be available")  // config is non-optional
+        
+        // Test that performance settings are reasonable
+        #expect(config.maxAnimationDuration >= 0, "Animation duration should be non-negative")
+        #expect(config.maxAnimationDuration <= 5.0, "Animation duration should not be excessive")
+        
+        // Test platform-specific performance expectations
+        switch platform {
+        case .iOS:
         // iOS should have reasonable animation duration
         #expect(config.maxAnimationDuration <= 0.5, "iOS animations should be snappy")
         
-    case .macOS:
+        case .macOS:
         // macOS can have slightly longer animations
         #expect(config.maxAnimationDuration <= 1.0, "macOS animations should be reasonable")
         
-    case .watchOS:
+        case .watchOS:
         // watchOS should have very fast animations
         #expect(config.maxAnimationDuration <= 0.3, "watchOS animations should be very fast")
         
-    case .tvOS:
+        case .tvOS:
         // tvOS can have longer animations for TV viewing
         #expect(config.maxAnimationDuration <= 1.5, "tvOS animations should be TV-appropriate")
         
-    case .visionOS:
+        case .visionOS:
         // visionOS should have spatial-appropriate animations
         #expect(config.maxAnimationDuration <= 1.0, "visionOS animations should be spatial-appropriate")
     }
 }
 
-    @Test @MainActor func testAccessibilityFeatures_UsingRuntimeDetection() {
-    // Test accessibility features using capability overrides
-    
-    // Test tvOS accessibility features (VoiceOver and Switch Control supported, AssistiveTouch not)
-    RuntimeCapabilityDetection.setTestTouchSupport(false)
-    RuntimeCapabilityDetection.setTestHapticFeedback(false)
-    RuntimeCapabilityDetection.setTestHover(false)
-    RuntimeCapabilityDetection.setTestVoiceOver(true)
-    RuntimeCapabilityDetection.setTestSwitchControl(true)
-    RuntimeCapabilityDetection.setTestAssistiveTouch(false)
-    #expect(RuntimeCapabilityDetection.supportsVoiceOver, "tvOS should support VoiceOver")
-    #expect(!RuntimeCapabilityDetection.supportsAssistiveTouch, "tvOS should not support AssistiveTouch")
-    
-    // Test iOS accessibility features (VoiceOver and Switch Control supported, AssistiveTouch supported)
-    RuntimeCapabilityDetection.setTestTouchSupport(true)
-    RuntimeCapabilityDetection.setTestHapticFeedback(true)
-    RuntimeCapabilityDetection.setTestHover(false)
-    RuntimeCapabilityDetection.setTestVoiceOver(true)
-    RuntimeCapabilityDetection.setTestSwitchControl(true)
-    RuntimeCapabilityDetection.setTestAssistiveTouch(true)
-    #expect(RuntimeCapabilityDetection.supportsVoiceOver, "iOS should support VoiceOver")
-    #expect(RuntimeCapabilityDetection.supportsAssistiveTouch, "iOS should support AssistiveTouch")
-    
-    // Clean up
-    RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        @Test @MainActor func testAccessibilityFeatures_UsingRuntimeDetection() {
+        // Test accessibility features using capability overrides
+        
+        // Test tvOS accessibility features (VoiceOver and Switch Control supported, AssistiveTouch not)
+        RuntimeCapabilityDetection.setTestTouchSupport(false)
+        RuntimeCapabilityDetection.setTestHapticFeedback(false)
+        RuntimeCapabilityDetection.setTestHover(false)
+        RuntimeCapabilityDetection.setTestVoiceOver(true)
+        RuntimeCapabilityDetection.setTestSwitchControl(true)
+        RuntimeCapabilityDetection.setTestAssistiveTouch(false)
+        #expect(RuntimeCapabilityDetection.supportsVoiceOver, "tvOS should support VoiceOver")
+        #expect(!RuntimeCapabilityDetection.supportsAssistiveTouch, "tvOS should not support AssistiveTouch")
+        
+        // Test iOS accessibility features (VoiceOver and Switch Control supported, AssistiveTouch supported)
+        RuntimeCapabilityDetection.setTestTouchSupport(true)
+        RuntimeCapabilityDetection.setTestHapticFeedback(true)
+        RuntimeCapabilityDetection.setTestHover(false)
+        RuntimeCapabilityDetection.setTestVoiceOver(true)
+        RuntimeCapabilityDetection.setTestSwitchControl(true)
+        RuntimeCapabilityDetection.setTestAssistiveTouch(true)
+        #expect(RuntimeCapabilityDetection.supportsVoiceOver, "iOS should support VoiceOver")
+        #expect(RuntimeCapabilityDetection.supportsAssistiveTouch, "iOS should support AssistiveTouch")
+        
+        // Clean up
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
 }
 
-    @Test @MainActor func testHandlesMissingAccessibilityPreferences() {
-    // Given: Platform configuration
-    let config = getCardExpansionPlatformConfig()
-    let performanceConfig = getCardExpansionPerformanceConfig()
-    let accessibilityConfig = getCardExpansionAccessibilityConfig()
-    
-    // When: Check that all required properties are present
-    // Then: Test actual business logic
-    // All accessibility-related properties should have valid values
-    #expect(config.supportsVoiceOver != nil, "VoiceOver support should be detectable")
-    #expect(config.supportsSwitchControl != nil, "Switch Control support should be detectable")
-    #expect(config.supportsAssistiveTouch != nil, "AssistiveTouch support should be detectable")
-    #expect(performanceConfig.maxAnimationDuration != nil, "Animation duration should be configurable")
-    #expect(accessibilityConfig.supportsVoiceOver != nil, "Accessibility VoiceOver support should be detectable")
-    
-    // Test that values are within reasonable ranges
-    #expect(config.minTouchTarget >= 0, "Touch target size should be non-negative")
-    #expect(config.hoverDelay >= 0, "Hover delay should be non-negative")
-    #expect(performanceConfig.maxAnimationDuration >= 0, "Animation duration should be non-negative")
+        @Test @MainActor func testHandlesMissingAccessibilityPreferences() {
+        // Given: Platform configuration
+        let config = getCardExpansionPlatformConfig()
+        let performanceConfig = getCardExpansionPerformanceConfig()
+        let accessibilityConfig = getCardExpansionAccessibilityConfig()
+        
+        // When: Check that all required properties are present
+        // Then: Test actual business logic
+        // All accessibility-related properties should have valid values
+        #expect(config.supportsVoiceOver != nil, "VoiceOver support should be detectable")
+        #expect(config.supportsSwitchControl != nil, "Switch Control support should be detectable")
+        #expect(config.supportsAssistiveTouch != nil, "AssistiveTouch support should be detectable")
+        #expect(performanceConfig.maxAnimationDuration != nil, "Animation duration should be configurable")
+        #expect(accessibilityConfig.supportsVoiceOver != nil, "Accessibility VoiceOver support should be detectable")
+        
+        // Test that values are within reasonable ranges
+        #expect(config.minTouchTarget >= 0, "Touch target size should be non-negative")
+        #expect(config.hoverDelay >= 0, "Hover delay should be non-negative")
+        #expect(performanceConfig.maxAnimationDuration >= 0, "Animation duration should be non-negative")
 }
 
-    @Test @MainActor func testAllAccessibilityFeaturesDisabled() {
-    // Given: No accessibility features enabled (simulated using tvOS)
-    RuntimeCapabilityDetection.setTestTouchSupport(false)
-    RuntimeCapabilityDetection.setTestHapticFeedback(false)
-    RuntimeCapabilityDetection.setTestHover(false)
-    RuntimeCapabilityDetection.setTestVoiceOver(true)
-    RuntimeCapabilityDetection.setTestSwitchControl(true)
-    RuntimeCapabilityDetection.setTestAssistiveTouch(false)
-    
-    // When: Check accessibility state
-    let supportsVoiceOver = RuntimeCapabilityDetection.supportsVoiceOver
-    let supportsAssistiveTouch = RuntimeCapabilityDetection.supportsAssistiveTouch
-    let supportsSwitchControl = RuntimeCapabilityDetection.supportsSwitchControl
-    
-    // Then: Test actual business logic
-    // tvOS supports VoiceOver and Switch Control, but not AssistiveTouch
-    #expect(supportsVoiceOver, "VoiceOver should be enabled on tvOS")
-    #expect(!supportsAssistiveTouch, "AssistiveTouch should be disabled on tvOS")
-    #expect(supportsSwitchControl, "Switch Control should be enabled on tvOS")
-    
-    // Clean up
-    RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        @Test @MainActor func testAllAccessibilityFeaturesDisabled() {
+        // Given: No accessibility features enabled (simulated using tvOS)
+        RuntimeCapabilityDetection.setTestTouchSupport(false)
+        RuntimeCapabilityDetection.setTestHapticFeedback(false)
+        RuntimeCapabilityDetection.setTestHover(false)
+        RuntimeCapabilityDetection.setTestVoiceOver(true)
+        RuntimeCapabilityDetection.setTestSwitchControl(true)
+        RuntimeCapabilityDetection.setTestAssistiveTouch(false)
+        
+        // When: Check accessibility state
+        let supportsVoiceOver = RuntimeCapabilityDetection.supportsVoiceOver
+        let supportsAssistiveTouch = RuntimeCapabilityDetection.supportsAssistiveTouch
+        let supportsSwitchControl = RuntimeCapabilityDetection.supportsSwitchControl
+        
+        // Then: Test actual business logic
+        // tvOS supports VoiceOver and Switch Control, but not AssistiveTouch
+        #expect(supportsVoiceOver, "VoiceOver should be enabled on tvOS")
+        #expect(!supportsAssistiveTouch, "AssistiveTouch should be disabled on tvOS")
+        #expect(supportsSwitchControl, "Switch Control should be enabled on tvOS")
+        
+        // Clean up
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
 }
 
-    @Test @MainActor func testAllAccessibilityFeaturesEnabled() {
-    // Given: All accessibility features enabled (simulated using iOS)
-    RuntimeCapabilityDetection.setTestTouchSupport(true)
-    RuntimeCapabilityDetection.setTestHapticFeedback(true)
-    RuntimeCapabilityDetection.setTestHover(false)
-    RuntimeCapabilityDetection.setTestVoiceOver(true)
-    RuntimeCapabilityDetection.setTestSwitchControl(true)
-    RuntimeCapabilityDetection.setTestAssistiveTouch(true)
-    
-    // When: Check accessibility state
-    let supportsVoiceOver = RuntimeCapabilityDetection.supportsVoiceOver
-    let supportsAssistiveTouch = RuntimeCapabilityDetection.supportsAssistiveTouch
-    let supportsSwitchControl = RuntimeCapabilityDetection.supportsSwitchControl
-    
-    // Then: Test actual business logic
-    // iOS supports VoiceOver, Switch Control, and AssistiveTouch
-    #expect(supportsVoiceOver, "VoiceOver should be enabled on iOS")
-    #expect(supportsAssistiveTouch, "AssistiveTouch should be enabled on iOS")
-    #expect(supportsSwitchControl, "Switch Control should be enabled on iOS")
-    
-    // Clean up
-    RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        @Test @MainActor func testAllAccessibilityFeaturesEnabled() {
+        // Given: All accessibility features enabled (simulated using iOS)
+        RuntimeCapabilityDetection.setTestTouchSupport(true)
+        RuntimeCapabilityDetection.setTestHapticFeedback(true)
+        RuntimeCapabilityDetection.setTestHover(false)
+        RuntimeCapabilityDetection.setTestVoiceOver(true)
+        RuntimeCapabilityDetection.setTestSwitchControl(true)
+        RuntimeCapabilityDetection.setTestAssistiveTouch(true)
+        
+        // When: Check accessibility state
+        let supportsVoiceOver = RuntimeCapabilityDetection.supportsVoiceOver
+        let supportsAssistiveTouch = RuntimeCapabilityDetection.supportsAssistiveTouch
+        let supportsSwitchControl = RuntimeCapabilityDetection.supportsSwitchControl
+        
+        // Then: Test actual business logic
+        // iOS supports VoiceOver, Switch Control, and AssistiveTouch
+        #expect(supportsVoiceOver, "VoiceOver should be enabled on iOS")
+        #expect(supportsAssistiveTouch, "AssistiveTouch should be enabled on iOS")
+        #expect(supportsSwitchControl, "Switch Control should be enabled on iOS")
+        
+        // Clean up
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
 }
 
-    @Test @MainActor func testExactAccessibilityIdentifierModifierGeneratesAccessibilityIdentifiers() async {
-    self.initializeTestConfig()
-    // Given: Framework component that should apply .automaticCompliance() itself
-    let testView = platformPresentContent_L1(
+        @Test @MainActor func testExactAccessibilityIdentifierModifierGeneratesAccessibilityIdentifiers() async {
+        self.initializeTestConfig()
+        // Given: Framework component that should apply .automaticCompliance() itself
+        let testView = platformPresentContent_L1(
         content: "Test Value",
         hints: PresentationHints()
-    )
-    
-    // Then: Framework component should generate accessibility identifiers (framework applies modifier)
-    #if canImport(ViewInspector)
-    let hasAccessibilityID = testComponentComplianceSinglePlatform(
+        )
+        
+        // Then: Framework component should generate accessibility identifiers (framework applies modifier)
+        #if canImport(ViewInspector)
+        let hasAccessibilityID = testComponentComplianceSinglePlatform(
         testView,
         expectedPattern: "SixLayer.main.ui.*",  // Pattern matches generated format (SixLayer.main.ui.element.View)
         platform: SixLayerPlatform.iOS,
         componentName: "platformPresentContent_L1"
-    )
+        )
  #expect(hasAccessibilityID, "Framework component (platformPresentContent_L1) should generate accessibility identifiers ")         #else
-    // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-    // The modifier IS present in the code, but ViewInspector can't detect it on macOS
-    #endif
+        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // The modifier IS present in the code, but ViewInspector can't detect it on macOS
+        #endif
 }
 
-    @Test @MainActor func testHierarchicalNamedModifierGeneratesAccessibilityIdentifiers() async {
-    self.initializeTestConfig()
-    // Given: Framework component that should automatically generate accessibility identifiers
-    let testView = platformPresentContent_L1(
+        @Test @MainActor func testHierarchicalNamedModifierGeneratesAccessibilityIdentifiers() async {
+        self.initializeTestConfig()
+        // Given: Framework component that should automatically generate accessibility identifiers
+        let testView = platformPresentContent_L1(
         content: "Test Content",
         hints: PresentationHints()
-    )
-    
-    // Then: Should automatically generate accessibility identifiers (framework applies modifier)
-    #if canImport(ViewInspector)
-    let hasAccessibilityID = testComponentComplianceSinglePlatform(
+        )
+        
+        // Then: Should automatically generate accessibility identifiers (framework applies modifier)
+        #if canImport(ViewInspector)
+        let hasAccessibilityID = testComponentComplianceSinglePlatform(
         testView,
         expectedPattern: "SixLayer.main.ui.*",  // Automatic ID pattern
         platform: SixLayerPlatform.iOS,
         componentName: "platformPresentContent_L1"
-    )
+        )
  #expect(hasAccessibilityID, "Framework component should automatically generate accessibility identifiers ")
-    #else
-    // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-    // The modifier IS present in the code, but ViewInspector can't detect it on macOS
-    #endif
+        #else
+        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // The modifier IS present in the code, but ViewInspector can't detect it on macOS
+        #endif
 }
 
-    @Test @MainActor func testAccessibilityLabelAssignmentModifierGeneratesAccessibilityIdentifiers() async {
-    self.initializeTestConfig()
-    // Given: Framework component that should apply .automaticCompliance() itself
-    let testView = platformPresentBasicValue_L1(
+        @Test @MainActor func testAccessibilityLabelAssignmentModifierGeneratesAccessibilityIdentifiers() async {
+        self.initializeTestConfig()
+        // Given: Framework component that should apply .automaticCompliance() itself
+        let testView = platformPresentBasicValue_L1(
         value: "Custom Label",
         hints: PresentationHints()
-    )
-    
-    // Then: Framework component should generate accessibility identifiers (framework applies modifier)
-    #if canImport(ViewInspector)
-    let hasAccessibilityID = testComponentComplianceSinglePlatform(
+        )
+        
+        // Then: Framework component should generate accessibility identifiers (framework applies modifier)
+        #if canImport(ViewInspector)
+        let hasAccessibilityID = testComponentComplianceSinglePlatform(
         testView,
         expectedPattern: "SixLayer.main.ui.*",  // Pattern matches generated format (SixLayer.main.ui.element.View)
         platform: SixLayerPlatform.iOS,
         componentName: "platformPresentBasicValue_L1"
-    )
+        )
  #expect(hasAccessibilityID, "Framework component (platformPresentBasicValue_L1) should generate accessibility identifiers ")         #else
-    // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-    // The modifier IS present in the code, but ViewInspector can't detect it on macOS
-    #endif
+        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // The modifier IS present in the code, but ViewInspector can't detect it on macOS
+        #endif
 }
 
-    @Test @MainActor func testAccessibilityHintAssignmentModifierGeneratesAccessibilityIdentifiers() async {
-    self.initializeTestConfig()
-    // Given: Framework component that should apply .automaticCompliance() itself
-    let testView = platformPresentBasicArray_L1(
+        @Test @MainActor func testAccessibilityHintAssignmentModifierGeneratesAccessibilityIdentifiers() async {
+        self.initializeTestConfig()
+        // Given: Framework component that should apply .automaticCompliance() itself
+        let testView = platformPresentBasicArray_L1(
         array: ["Custom", "Hint"],
         hints: PresentationHints()
-    )
-    
-    // Then: Framework component should generate accessibility identifiers (framework applies modifier)
-    #if canImport(ViewInspector)
-    let hasAccessibilityID = testComponentComplianceSinglePlatform(
+        )
+        
+        // Then: Framework component should generate accessibility identifiers (framework applies modifier)
+        #if canImport(ViewInspector)
+        let hasAccessibilityID = testComponentComplianceSinglePlatform(
         testView,
         expectedPattern: "SixLayer.main.ui.*",  // Pattern matches generated format (SixLayer.main.ui.element.View)
         platform: SixLayerPlatform.iOS,
         componentName: "platformPresentBasicArray_L1"
-    )
+        )
  #expect(hasAccessibilityID, "Framework component (platformPresentBasicArray_L1) should generate accessibility identifiers ")         #else
-    // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-    // The modifier IS present in the code, but ViewInspector can't detect it on macOS
-    #endif
+        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // The modifier IS present in the code, but ViewInspector can't detect it on macOS
+        #endif
 }
 
-    @Test @MainActor func testAccessibilityTraitsAssignmentModifierGeneratesAccessibilityIdentifiers() async {
-    self.initializeTestConfig()
-    // Given: Framework component that should automatically generate accessibility identifiers
-    let testView = platformPresentItemCollection_L1(
+        @Test @MainActor func testAccessibilityTraitsAssignmentModifierGeneratesAccessibilityIdentifiers() async {
+        self.initializeTestConfig()
+        // Given: Framework component that should automatically generate accessibility identifiers
+        let testView = platformPresentItemCollection_L1(
         items: [TestPatterns.TestItem(id: "1", title: "Test")],
         hints: PresentationHints()
-    )
-    
-    // Then: Should automatically generate accessibility identifiers (framework applies modifier)
-    #if canImport(ViewInspector)
-    let hasAccessibilityID = testComponentComplianceSinglePlatform(
+        )
+        
+        // Then: Should automatically generate accessibility identifiers (framework applies modifier)
+        #if canImport(ViewInspector)
+        let hasAccessibilityID = testComponentComplianceSinglePlatform(
         testView,
         expectedPattern: "SixLayer.main.ui.*",  // Automatic ID pattern
         platform: SixLayerPlatform.iOS,
         componentName: "platformPresentItemCollection_L1"
-    )
+        )
  #expect(hasAccessibilityID, "Framework component should automatically generate accessibility identifiers ")
-    #else
-    // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-    // The modifier IS present in the code, but ViewInspector can't detect it on macOS
-    #endif
+        #else
+        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // The modifier IS present in the code, but ViewInspector can't detect it on macOS
+        #endif
 }
 
-    @Test @MainActor func testAccessibilityValueAssignmentModifierGeneratesAccessibilityIdentifiers() async {
-    // Given: Framework component that should apply .automaticCompliance() itself
-    let testView = platformPresentBasicValue_L1(
+        @Test @MainActor func testAccessibilityValueAssignmentModifierGeneratesAccessibilityIdentifiers() async {
+        // Given: Framework component that should apply .automaticCompliance() itself
+        let testView = platformPresentBasicValue_L1(
         value: "Custom Value",
         hints: PresentationHints()
-    )
-    
-    // Then: Framework component should generate accessibility identifiers (framework applies modifier)
-    #if canImport(ViewInspector)
-    let hasAccessibilityID = testComponentComplianceSinglePlatform(
+        )
+        
+        // Then: Framework component should generate accessibility identifiers (framework applies modifier)
+        #if canImport(ViewInspector)
+        let hasAccessibilityID = testComponentComplianceSinglePlatform(
         testView,
         expectedPattern: "SixLayer.main.ui.*",  // Pattern matches generated format (SixLayer.main.ui.element.View)
         platform: SixLayerPlatform.iOS,
         componentName: "platformPresentBasicValue_L1"
-    )
+        )
  #expect(hasAccessibilityID, "Framework component (platformPresentBasicValue_L1) should generate accessibility identifiers ")         #else
-    // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-    // The modifier IS present in the code, but ViewInspector can't detect it on macOS
-    #endif
+        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // The modifier IS present in the code, but ViewInspector can't detect it on macOS
+        #endif
 }
 
-    @Test @MainActor func testPlatformPresentItemCollection_L1_AutomaticHIGCompliance() async {
-    self.initializeTestConfig()
-    // Given: Test items and hints
-    let items: [TestPatterns.TestItem] = [TestPatterns.TestItem(id: "1", title: "Test Item 1")]
-    let hints = PresentationHints()
+        @Test @MainActor func testPlatformPresentItemCollection_L1_AutomaticHIGCompliance() async {
+        self.initializeTestConfig()
+        // Given: Test items and hints
+        let items: [TestPatterns.TestItem] = [TestPatterns.TestItem(id: "1", title: "Test Item 1")]
+        let hints = PresentationHints()
 
-    // When: Creating view using Layer 1 function
-    let view = platformPresentItemCollection_L1(
+        // When: Creating view using Layer 1 function
+        let view = platformPresentItemCollection_L1(
         items: items,
         hints: hints
-    )
+        )
 
-    // Then: View should automatically have HIG compliance applied
-    // view is non-optional, not used further
+        // Then: View should automatically have HIG compliance applied
+        // view is non-optional, not used further
 
-    // Verify that automatic HIG compliance is applied
-    // The fact that this compiles and runs successfully means the modifiers
-    // .appleHIGCompliant(), .automaticAccessibility(), .platformPatterns(), 
-    // and .visualConsistency() are being applied without errors
-    #expect(Bool(true), "Automatic HIG compliance should be applied without errors")
+        // Verify that automatic HIG compliance is applied
+        // The fact that this compiles and runs successfully means the modifiers
+        // .appleHIGCompliant(), .automaticAccessibility(), .platformPatterns(), 
+        // and .visualConsistency() are being applied without errors
+        #expect(Bool(true), "Automatic HIG compliance should be applied without errors")
 }
 
-    @Test @MainActor func testPlatformPresentItemCollection_L1_AutomaticVoiceOverSupport() async {
-    self.initializeTestConfig()
-    // Given: VoiceOver enabled
-    RuntimeCapabilityDetection.setTestVoiceOver(true)
+        @Test @MainActor func testPlatformPresentItemCollection_L1_AutomaticVoiceOverSupport() async {
+        self.initializeTestConfig()
+        // Given: VoiceOver enabled
+        RuntimeCapabilityDetection.setTestVoiceOver(true)
 
-    // When: Creating view using Layer 1 function
-    let view = platformPresentItemCollection_L1(
+        // When: Creating view using Layer 1 function
+        let view = platformPresentItemCollection_L1(
         items: [TestPatterns.TestItem(id: "1", title: "Test Item 1")],
         hints: PresentationHints()
-    )
+        )
 
-    // Then: View should automatically have VoiceOver support
-    #expect(Bool(true), "Layer 1 function should create a valid view")  // view is non-optional
-    #expect(RuntimeCapabilityDetection.supportsVoiceOver, "VoiceOver should be enabled")
+        // Then: View should automatically have VoiceOver support
+        #expect(Bool(true), "Layer 1 function should create a valid view")  // view is non-optional
+        #expect(RuntimeCapabilityDetection.supportsVoiceOver, "VoiceOver should be enabled")
 
-    // Verify that automatic accessibility features are applied
-    // The view should automatically adapt to VoiceOver being enabled
-    #expect(Bool(true), "Automatic VoiceOver support should be applied")
+        // Verify that automatic accessibility features are applied
+        // The view should automatically adapt to VoiceOver being enabled
+        #expect(Bool(true), "Automatic VoiceOver support should be applied")
 
-    // Reset for next test
-    RuntimeCapabilityDetection.setTestVoiceOver(false)
+        // Reset for next test
+        RuntimeCapabilityDetection.setTestVoiceOver(false)
 }
 
-    @Test @MainActor func testPlatformPresentItemCollection_L1_AutomaticPlatformPatterns() async {
+        @Test @MainActor func testPlatformPresentItemCollection_L1_AutomaticPlatformPatterns() async {
         self.initializeTestConfig()
-    // Setup test data
-    let testItems = [
+        // Setup test data
+        let testItems = [
         TestPatterns.TestItem(id: "1", title: "Test Item 1"),
         TestPatterns.TestItem(id: "2", title: "Test Item 2")
-    ]
+        ]
 
-    // Given: Current platform
-    let currentPlatform = SixLayerPlatform.current
+        // Given: Current platform
+        let currentPlatform = SixLayerPlatform.current
 
-    // When: Creating view using Layer 1 function
-    let view = platformPresentItemCollection_L1(
+        // When: Creating view using Layer 1 function
+        let view = platformPresentItemCollection_L1(
         items: testItems,
         hints: PresentationHints()
-    )
+        )
 
-    // Then: View should automatically have platform-specific patterns
-    #expect(Bool(true), "Layer 1 function should create a valid view on \(currentPlatform)")  // view is non-optional
+        // Then: View should automatically have platform-specific patterns
+        #expect(Bool(true), "Layer 1 function should create a valid view on \(currentPlatform)")  // view is non-optional
 
-    // Verify that automatic platform patterns are applied
-    // The view should automatically adapt to the current platform
-    #expect(Bool(true), "Automatic platform patterns should be applied on \(currentPlatform)")
+        // Verify that automatic platform patterns are applied
+        // The view should automatically adapt to the current platform
+        #expect(Bool(true), "Automatic platform patterns should be applied on \(currentPlatform)")
     }
 }
 
-    @Test @MainActor func testPlatformPresentItemCollection_L1_AutomaticVisualConsistency() async {
-    self.initializeTestConfig()
-    // When: Creating view using Layer 1 function
-    let view = platformPresentItemCollection_L1(
-        items: [TestPatterns.TestItem(id: "1", title: "Test Item 1")],
-        hints: PresentationHints()
-    )
+        @Test @MainActor func testPlatformPresentItemCollection_L1_AutomaticVisualConsistency() async {
+        self.initializeTestConfig()
+        // When: Creating view using Layer 1 function
+        let view = platformPresentItemCollection_L1(
+            items: [TestPatterns.TestItem(id: "1", title: "Test Item 1")],
+            hints: PresentationHints()
+        )
 
-    // Then: View should automatically have visual consistency applied
-    #expect(Bool(true), "Layer 1 function should create a valid view")  // view is non-optional
+        // Then: View should automatically have visual consistency applied
+        #expect(Bool(true), "Layer 1 function should create a valid view")  // view is non-optional
 
-    // Verify that automatic visual consistency is applied
-    // The view should automatically have consistent styling and theming
-    #expect(Bool(true), "Automatic visual consistency should be applied")
-}
+        // Verify that automatic visual consistency is applied
+        // The view should automatically have consistent styling and theming
+        #expect(Bool(true), "Automatic visual consistency should be applied")
+    }
 
-    @Test @MainActor func testAllLayer1Functions_AutomaticHIGCompliance() async {
-    self.initializeTestConfig()
-    // Test platformPresentItemCollection_L1
-    let collectionView = platformPresentItemCollection_L1(
-        items: [TestPatterns.TestItem(id: "1", title: "Test Item 1")],
-        hints: PresentationHints()
-    )
-    // Test that collection view can be hosted and has proper structure
-    let collectionHostingView = hostRootPlatformView(collectionView.enableGlobalAutomaticCompliance())
-    #expect(Bool(true), "Collection view should be hostable")  // collectionHostingView is non-optional
+        @Test @MainActor func testAllLayer1Functions_AutomaticHIGCompliance() async {
+        self.initializeTestConfig()
+        // Test platformPresentItemCollection_L1
+        let collectionView = platformPresentItemCollection_L1(
+            items: [TestPatterns.TestItem(id: "1", title: "Test Item 1")],
+            hints: PresentationHints()
+        )
+        // Test that collection view can be hosted and has proper structure
+        let collectionHostingView = self.hostRootPlatformView(collectionView.enableGlobalAutomaticCompliance())
+        #expect(Bool(true), "Collection view should be hostable")  // collectionHostingView is non-optional
 
-    // Test platformPresentNumericData_L1
-    let numericData = [
-        GenericNumericData(value: 42.0, label: "Test Value", unit: "units")
-    ]
-    let numericView = platformPresentNumericData_L1(
-        data: numericData,
-        hints: PresentationHints()
-    )
+        // Test platformPresentNumericData_L1
+        let numericData = [
+            GenericNumericData(value: 42.0, label: "Test Value", unit: "units")
+        ]
+        let numericView = platformPresentNumericData_L1(
+            data: numericData,
+            hints: PresentationHints()
+        )
 
-    // Test that numeric view can be hosted and has proper structure
-    let numericHostingView = hostRootPlatformView(numericView.enableGlobalAutomaticCompliance())
-    #expect(Bool(true), "Numeric view should be hostable")  // numericHostingView is non-optional
+        // Test that numeric view can be hosted and has proper structure
+        let numericHostingView = self.hostRootPlatformView(numericView.enableGlobalAutomaticCompliance())
+        #expect(Bool(true), "Numeric view should be hostable")  // numericHostingView is non-optional
 
-    // Verify that both views are created successfully and can be hosted
-    // This tests that the HIG compliance modifiers are applied without compilation errors
-    #expect(Bool(true), "Collection view should be created")  // collectionView is non-optional
-    #expect(Bool(true), "Numeric view should be created")  // numericView is non-optional
-}
+        // Verify that both views are created successfully and can be hosted
+        // This tests that the HIG compliance modifiers are applied without compilation errors
+        #expect(Bool(true), "Collection view should be created")  // collectionView is non-optional
+        #expect(Bool(true), "Numeric view should be created")  // numericView is non-optional
+    }
 
-    @Test @MainActor func testCrossPlatformOptimizationManagerGeneratesAccessibilityIdentifiers() async {
-    await runWithTaskLocalConfig {
+        @Test @MainActor func testCrossPlatformOptimizationManagerGeneratesAccessibilityIdentifiers() async {
+        await self.runWithTaskLocalConfig {
         // Given: A view with CrossPlatformOptimizationManager
         let manager = CrossPlatformOptimizationManager()
         
@@ -13978,113 +13978,113 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             componentName: "CrossPlatformOptimizationManager"
         )
  #expect(hasAccessibilityID, "View with CrossPlatformOptimizationManager should generate accessibility identifiers ")
-    #else
+        #else
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
         // The modifier IS present in the code, but ViewInspector can't detect it on macOS
         #endif
     }
 }
 
-    @Test @MainActor func testPlatformOptimizationSettingsGeneratesAccessibilityIdentifiers() async {
-    // Given: PlatformOptimizationSettings
-    let settings = PlatformOptimizationSettings(for: .iOS)
-    
-    // When: Creating a view with PlatformOptimizationSettings
-    let view = platformVStackContainer {
+        @Test @MainActor func testPlatformOptimizationSettingsGeneratesAccessibilityIdentifiers() async {
+        // Given: PlatformOptimizationSettings
+        let settings = PlatformOptimizationSettings(for: .iOS)
+        
+        // When: Creating a view with PlatformOptimizationSettings
+        let view = platformVStackContainer {
         Text("Platform Optimization Settings Content")
     }
-    
-    // Then: Should generate accessibility identifiers
-    #if canImport(ViewInspector)
-    let hasAccessibilityID = testComponentComplianceSinglePlatform(
+        
+        // Then: Should generate accessibility identifiers
+        #if canImport(ViewInspector)
+        let hasAccessibilityID = testComponentComplianceSinglePlatform(
         view,
         expectedPattern: "SixLayer.main.ui.*",
         platform: SixLayerPlatform.iOS,
         componentName: "PlatformOptimizationSettings"
-    )
+        )
  #expect(hasAccessibilityID, "PlatformOptimizationSettings should generate accessibility identifiers ")
-    #else
-    // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-    // The modifier IS present in the code, but ViewInspector can't detect it on macOS
-    #endif
+        #else
+        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // The modifier IS present in the code, but ViewInspector can't detect it on macOS
+        #endif
 }
 
-    @Test @MainActor func testCrossPlatformPerformanceMetricsGeneratesAccessibilityIdentifiers() async {
-    // Given: CrossPlatformPerformanceMetrics
-    let metrics = CrossPlatformPerformanceMetrics()
-    
-    // When: Creating a view with CrossPlatformPerformanceMetrics
-    let view = platformVStackContainer {
+        @Test @MainActor func testCrossPlatformPerformanceMetricsGeneratesAccessibilityIdentifiers() async {
+        // Given: CrossPlatformPerformanceMetrics
+        let metrics = CrossPlatformPerformanceMetrics()
+        
+        // When: Creating a view with CrossPlatformPerformanceMetrics
+        let view = platformVStackContainer {
         Text("Cross Platform Performance Metrics Content")
     }
-    .environmentObject(metrics)
-    
-    // Then: Should generate accessibility identifiers
-    #if canImport(ViewInspector)
-    let hasAccessibilityID = testComponentComplianceSinglePlatform(
+        .environmentObject(metrics)
+        
+        // Then: Should generate accessibility identifiers
+        #if canImport(ViewInspector)
+        let hasAccessibilityID = testComponentComplianceSinglePlatform(
         view,
         expectedPattern: "SixLayer.main.ui.*",
         platform: SixLayerPlatform.iOS,
         componentName: "CrossPlatformPerformanceMetrics"
-    )
+        )
  #expect(hasAccessibilityID, "CrossPlatformPerformanceMetrics should generate accessibility identifiers ")
-    #else
-    // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-    // The modifier IS present in the code, but ViewInspector can't detect it on macOS
-    #endif
+        #else
+        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // The modifier IS present in the code, but ViewInspector can't detect it on macOS
+        #endif
 }
 
-    @Test @MainActor func testPlatformUIPatternsGeneratesAccessibilityIdentifiers() async {
-    // Given: PlatformUIPatterns
-    let patterns = PlatformUIPatterns(for: .iOS)
-    
-    // When: Creating a view with PlatformUIPatterns
-    let view = platformVStackContainer {
+        @Test @MainActor func testPlatformUIPatternsGeneratesAccessibilityIdentifiers() async {
+        // Given: PlatformUIPatterns
+        let patterns = PlatformUIPatterns(for: .iOS)
+        
+        // When: Creating a view with PlatformUIPatterns
+        let view = platformVStackContainer {
         Text("Platform UI Patterns Content")
     }
-    
-    // Then: Should generate accessibility identifiers
-    #if canImport(ViewInspector)
-    let hasAccessibilityID = testComponentComplianceSinglePlatform(
+        
+        // Then: Should generate accessibility identifiers
+        #if canImport(ViewInspector)
+        let hasAccessibilityID = testComponentComplianceSinglePlatform(
         view,
         expectedPattern: "SixLayer.main.ui.*",
         platform: SixLayerPlatform.iOS,
         componentName: "PlatformUIPatterns"
-    )
+        )
  #expect(hasAccessibilityID, "PlatformUIPatterns should generate accessibility identifiers ")
-    #else
-    // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-    // The modifier IS present in the code, but ViewInspector can't detect it on macOS
-    #endif
+        #else
+        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // The modifier IS present in the code, but ViewInspector can't detect it on macOS
+        #endif
 }
 
-    @Test @MainActor func testPlatformRecommendationEngineGeneratesAccessibilityIdentifiers() async {
-    // Given: PlatformRecommendationEngine
-    // PlatformRecommendationEngine does not exist - using placeholder
-    
-    // When: Creating a view with PlatformRecommendationEngine
-    let view = platformVStackContainer {
+        @Test @MainActor func testPlatformRecommendationEngineGeneratesAccessibilityIdentifiers() async {
+        // Given: PlatformRecommendationEngine
+        // PlatformRecommendationEngine does not exist - using placeholder
+        
+        // When: Creating a view with PlatformRecommendationEngine
+        let view = platformVStackContainer {
         Text("Platform Recommendation Engine Content")
     }
-    
-    // Then: Should generate accessibility identifiers
-    #if canImport(ViewInspector)
-    let hasAccessibilityID = testComponentComplianceSinglePlatform(
+        
+        // Then: Should generate accessibility identifiers
+        #if canImport(ViewInspector)
+        let hasAccessibilityID = testComponentComplianceSinglePlatform(
         view,
         expectedPattern: "SixLayer.main.ui.*",
         platform: SixLayerPlatform.iOS,
         componentName: "PlatformRecommendationEngine"
-    )
+        )
  #expect(hasAccessibilityID, "PlatformRecommendationEngine should generate accessibility identifiers ")
-    #else
-    // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-    // The modifier IS present in the code, but ViewInspector can't detect it on macOS
-    #endif
+        #else
+        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // The modifier IS present in the code, but ViewInspector can't detect it on macOS
+        #endif
 }
 
-    @Test @MainActor func testButtonHasFocusIndicator() async {
+        @Test @MainActor func testButtonHasFocusIndicator() async {
         self.initializeTestConfig()
-    await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
         // GIVEN: A focusable button with automatic compliance
         let button = Button("Test Button") { }
             .automaticCompliance()
@@ -14099,16 +14099,16 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             componentName: "ButtonWithFocus"
         )
  #expect(passed, "Button should have visible focus indicator on all platforms")
-    #else
+        #else
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
         // The modifier IS present in the code, but ViewInspector can't detect it on macOS
         #endif
     }
 }
 
-    @Test @MainActor func testLinkHasFocusIndicator() async {
+        @Test @MainActor func testLinkHasFocusIndicator() async {
         self.initializeTestConfig()
-    await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
         // GIVEN: A focusable link with automatic compliance
         let link = Link("Test Link", destination: URL(string: "https://example.com")!)
             .automaticCompliance()
@@ -14123,16 +14123,16 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             componentName: "LinkWithFocus"
         )
  #expect(passed, "Link should have visible focus indicator on all platforms")
-    #else
+        #else
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
         // The modifier IS present in the code, but ViewInspector can't detect it on macOS
         #endif
     }
 }
 
-    @Test @MainActor func testTextFieldHasFocusIndicator() async {
+        @Test @MainActor func testTextFieldHasFocusIndicator() async {
         self.initializeTestConfig()
-    await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
         // GIVEN: A text field with automatic compliance
         let textField = TextField("Placeholder", text: .constant(""))
             .automaticCompliance()
@@ -14147,16 +14147,16 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             componentName: "TextFieldWithFocus"
         )
  #expect(passed, "Text field should have visible focus indicator on all platforms")
-    #else
+        #else
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
         // The modifier IS present in the code, but ViewInspector can't detect it on macOS
         #endif
     }
 }
 
-    @Test @MainActor func testSecureFieldHasFocusIndicator() async {
+        @Test @MainActor func testSecureFieldHasFocusIndicator() async {
         self.initializeTestConfig()
-    await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
         // GIVEN: A secure field with automatic compliance
         let secureField = SecureField("Password", text: .constant(""))
             .automaticCompliance()
@@ -14171,16 +14171,16 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             componentName: "SecureFieldWithFocus"
         )
  #expect(passed, "Secure field should have visible focus indicator on all platforms")
-    #else
+        #else
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
         // The modifier IS present in the code, but ViewInspector can't detect it on macOS
         #endif
     }
 }
 
-    @Test @MainActor func testFocusIndicatorVisibleInHighContrast() async {
+        @Test @MainActor func testFocusIndicatorVisibleInHighContrast() async {
         self.initializeTestConfig()
-    await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
         // GIVEN: A button with automatic compliance
         let button = Button("Test Button") { }
             .automaticCompliance()
@@ -14195,33 +14195,33 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             componentName: "ButtonWithHighContrastFocus"
         )
  #expect(passed, "Focus indicator should be visible in high contrast mode on all platforms")
-    #else
+        #else
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
         // The modifier IS present in the code, but ViewInspector can't detect it on macOS
         #endif
     }
 }
 
-    @Test @MainActor func testAccessibilityIdentifiersDontDuplicateHierarchy() {
+        @Test @MainActor func testAccessibilityIdentifiersDontDuplicateHierarchy() {
         self.initializeTestConfig()
-    // Setup test environment
-    self.setupTestEnvironment()
-    
-    // TDD: Define the behavior I want - no hierarchy duplication
-    let view = platformVStackContainer {
+        // Setup test environment
+        self.setupTestEnvironment()
+        
+        // TDD: Define the behavior I want - no hierarchy duplication
+        let view = platformVStackContainer {
         PlatformInteractionButton(style: .primary, action: {}) {
             platformPresentContent_L1(content: "Test", hints: PresentationHints())
         }
         .named("TestButton")
     }
-    .named("Container")
-    .named("OuterContainer") // Multiple .named() calls
-    .enableGlobalAutomaticCompliance()
-    
-    // Using wrapper - when ViewInspector works on macOS, no changes needed here
-    #if canImport(ViewInspector)
-    if let inspectedView = try? AnyView(view).inspect(),
-       let vStackID = try? inspectedView.accessibilityIdentifier() {
+        .named("Container")
+        .named("OuterContainer") // Multiple .named() calls
+        .enableGlobalAutomaticCompliance()
+        
+        // Using wrapper - when ViewInspector works on macOS, no changes needed here
+        #if canImport(ViewInspector)
+        if let inspectedView = try? AnyView(view).inspect(),
+           let vStackID = try? inspectedView.accessibilityIdentifier() {
         // This test SHOULD FAIL initially - contains duplicates like "container-container"
         #expect(!vStackID.contains("container-container"), "Should not contain duplicated hierarchy")
         #expect(!vStackID.contains("outercontainer-outercontainer"), "Should not contain duplicated hierarchy")
@@ -14230,21 +14230,21 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     } else {
         Issue.record("Failed to inspect view")
     }
-    #else
-    // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-    #endif
-    
-    // Cleanup
-    self.cleanupTestEnvironment()
+        #else
+        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        #endif
+        
+        // Cleanup
+        self.cleanupTestEnvironment()
 }
 
-    @Test @MainActor func testAccessibilityIdentifiersAreSemantic() {
+        @Test @MainActor func testAccessibilityIdentifiersAreSemantic() {
         self.initializeTestConfig()
-    // Setup test environment
-    self.setupTestEnvironment()
-    
-    // TDD: Define the behavior I want - semantic, meaningful IDs
-    let view = platformVStackContainer {
+        // Setup test environment
+        self.setupTestEnvironment()
+        
+        // TDD: Define the behavior I want - semantic, meaningful IDs
+        let view = platformVStackContainer {
         platformPresentContent_L1(content: "User Profile", hints: PresentationHints())
             .named("ProfileTitle")
         PlatformInteractionButton(style: .primary, action: {}) {
@@ -14252,14 +14252,14 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         }
             .named("EditButton")
     }
-    .named("UserProfile")
-    .named("ProfileView")
-    .enableGlobalAutomaticCompliance()
-    
-    // Using wrapper - when ViewInspector works on macOS, no changes needed here
-    #if canImport(ViewInspector)
-    if let inspectedView = try? AnyView(view).inspect(),
-       let vStackID = try? inspectedView.accessibilityIdentifier() {
+        .named("UserProfile")
+        .named("ProfileView")
+        .enableGlobalAutomaticCompliance()
+        
+        // Using wrapper - when ViewInspector works on macOS, no changes needed here
+        #if canImport(ViewInspector)
+        if let inspectedView = try? AnyView(view).inspect(),
+           let vStackID = try? inspectedView.accessibilityIdentifier() {
         // This test SHOULD FAIL initially - IDs are not semantic
         #expect(vStackID.contains("UserProfile"), "Should contain screen context")
         #expect(vStackID.contains("ProfileView") || vStackID.contains("UserProfile"), "Should contain view name")
@@ -14268,20 +14268,20 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     } else {
         Issue.record("Failed to inspect view")
     }
-    #else
-    // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-    #endif
-    
-    // Cleanup
-    self.cleanupTestEnvironment()
+        #else
+        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        #endif
+        
+        // Cleanup
+        self.cleanupTestEnvironment()
 }
 
-    @Test @MainActor func testAccessibilityIdentifiersWorkInComplexHierarchy() {
-    // Setup test environment
-    self.setupTestEnvironment()
-    
-    // TDD: Define the behavior I want - works in complex nested views
-    let view = platformVStackContainer {
+        @Test @MainActor func testAccessibilityIdentifiersWorkInComplexHierarchy() {
+        // Setup test environment
+        self.setupTestEnvironment()
+        
+        // TDD: Define the behavior I want - works in complex nested views
+        let view = platformVStackContainer {
         platformHStackContainer {
             Text("Title")
                 .named("TitleText")
@@ -14298,14 +14298,14 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         }
         .named("ItemList")
     }
-    .named("ComplexView")
-    .named("ComplexContainer")
-    .enableGlobalAutomaticCompliance()
-    
-    // Using wrapper - when ViewInspector works on macOS, no changes needed here
-    #if canImport(ViewInspector)
-    if let inspectedView = try? AnyView(view).inspect(),
-       let vStackID = try? inspectedView.accessibilityIdentifier() {
+        .named("ComplexView")
+        .named("ComplexContainer")
+        .enableGlobalAutomaticCompliance()
+        
+        // Using wrapper - when ViewInspector works on macOS, no changes needed here
+        #if canImport(ViewInspector)
+        if let inspectedView = try? AnyView(view).inspect(),
+           let vStackID = try? inspectedView.accessibilityIdentifier() {
         // This test SHOULD FAIL initially - complex hierarchies create massive IDs
         #expect(vStackID.count < 100, "Should handle complex hierarchies gracefully")
         #expect(vStackID.contains("ComplexView"), "Should contain screen context")
@@ -14315,28 +14315,28 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     } else {
         Issue.record("Failed to inspect view")
     }
-    #else
-    // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-    #endif
-    
-    // Cleanup
-    self.cleanupTestEnvironment()
+        #else
+        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        #endif
+        
+        // Cleanup
+        self.cleanupTestEnvironment()
 }
 
-    @Test @MainActor func testAccessibilityIdentifiersIncludeLabelTextForStringLabels() {
-    // Setup test environment
-    self.setupTestEnvironment()
-    
-    // TDD: Define the behavior I want - labels from String parameters should be in identifiers
-    // This test SHOULD FAIL initially - labels are not included in identifiers
-    let submitButton = AdaptiveUIPatterns.AdaptiveButton("Submit", action: { })
+        @Test @MainActor func testAccessibilityIdentifiersIncludeLabelTextForStringLabels() {
+        // Setup test environment
+        self.setupTestEnvironment()
+        
+        // TDD: Define the behavior I want - labels from String parameters should be in identifiers
+        // This test SHOULD FAIL initially - labels are not included in identifiers
+        let submitButton = AdaptiveUIPatterns.AdaptiveButton("Submit", action: { })
         .enableGlobalAutomaticCompliance()
-    
-    let cancelButton = AdaptiveUIPatterns.AdaptiveButton("Cancel", action: { })
+        
+        let cancelButton = AdaptiveUIPatterns.AdaptiveButton("Cancel", action: { })
         .enableGlobalAutomaticCompliance()
-    
-    #if canImport(ViewInspector)
-    do {
+        
+        #if canImport(ViewInspector)
+        do {
         if let submitInspected = try? AnyView(submitButton).inspect(),
            let cancelInspected = try? AnyView(cancelButton).inspect() {
             let submitID = try? submitInspected.accessibilityIdentifier()
@@ -14351,24 +14351,24 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     } catch {
         Issue.record("Failed to inspect views")
     }
-    #else
-    // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-    #endif
-    
-    // Cleanup
-    self.cleanupTestEnvironment()
+        #else
+        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        #endif
+        
+        // Cleanup
+        self.cleanupTestEnvironment()
 }
 
-    @Test @MainActor func testAccessibilityIdentifiersSanitizeLabelText() {
-    // Setup test environment
-    self.setupTestEnvironment()
-    
-    // TDD: Labels should be sanitized (lowercase, spaces to hyphens, etc.)
-    let button = AdaptiveUIPatterns.AdaptiveButton("Add New Item", action: { })
+        @Test @MainActor func testAccessibilityIdentifiersSanitizeLabelText() {
+        // Setup test environment
+        self.setupTestEnvironment()
+        
+        // TDD: Labels should be sanitized (lowercase, spaces to hyphens, etc.)
+        let button = AdaptiveUIPatterns.AdaptiveButton("Add New Item", action: { })
         .enableGlobalAutomaticCompliance()
-    
-    #if canImport(ViewInspector)
-    do {
+        
+        #if canImport(ViewInspector)
+        do {
         if let inspected = try? AnyView(button).inspect() {
             let buttonID = try? inspected.accessibilityIdentifier()
             
@@ -14383,36 +14383,36 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     } catch {
         Issue.record("Failed to inspect view")
     }
-    #else
-    // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-    #endif
-    
-    // Cleanup
-    self.cleanupTestEnvironment()
+        #else
+        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        #endif
+        
+        // Cleanup
+        self.cleanupTestEnvironment()
 }
 
-    
+        
 
-    // MARK: - Additional Tests (batch 4)
+        // MARK: - Additional Tests (batch 4)
 
-    @Test @MainActor func testPlatformSpecificAccessibilityConfiguration() {
-    // Given: Platform-specific configuration with accessibility overrides
-    let platform = SixLayerPlatform.current
-    
-    // Set accessibility capability overrides based on platform
-    RuntimeCapabilityDetection.setTestVoiceOver(true)
-    RuntimeCapabilityDetection.setTestSwitchControl(true)
-    if platform == .iOS || platform == .macOS {
+        @Test @MainActor func testPlatformSpecificAccessibilityConfiguration() {
+        // Given: Platform-specific configuration with accessibility overrides
+        let platform = SixLayerPlatform.current
+        
+        // Set accessibility capability overrides based on platform
+        RuntimeCapabilityDetection.setTestVoiceOver(true)
+        RuntimeCapabilityDetection.setTestSwitchControl(true)
+        if platform == .iOS || platform == .macOS {
         RuntimeCapabilityDetection.setTestAssistiveTouch(platform == .iOS)
     } else {
         RuntimeCapabilityDetection.setTestAssistiveTouch(false)
     }
-    
-    let config = getCardExpansionAccessibilityConfig()
-    
-    // Then: Test business logic for platform-specific behavior
-    switch platform {
-    case .iOS, .macOS:
+        
+        let config = getCardExpansionAccessibilityConfig()
+        
+        // Then: Test business logic for platform-specific behavior
+        switch platform {
+        case .iOS, .macOS:
         // iOS and macOS should support comprehensive accessibility
         #expect(config.supportsVoiceOver, "iOS/macOS should support VoiceOver")
         #expect(config.supportsSwitchControl, "iOS/macOS should support Switch Control")
@@ -14426,7 +14426,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #expect(config.supportsDynamicType, "iOS/macOS should support dynamic type")
         #expect(config.focusManagement, "iOS/macOS should support focus management")
         
-    case .watchOS:
+        case .watchOS:
         // watchOS should have simplified accessibility support
         #expect(config.supportsVoiceOver, "watchOS should support VoiceOver")
         #expect(config.supportsSwitchControl, "watchOS should support Switch Control")
@@ -14436,7 +14436,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #expect(config.supportsDynamicType, "watchOS should support dynamic type")
         #expect(config.focusManagement, "watchOS should support focus management")
         
-    case .tvOS:
+        case .tvOS:
         // tvOS should support focus-based navigation
         #expect(config.supportsVoiceOver, "tvOS should support VoiceOver")
         #expect(config.supportsSwitchControl, "tvOS should support Switch Control")
@@ -14446,7 +14446,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #expect(config.supportsDynamicType, "tvOS should support dynamic type")
         #expect(config.focusManagement, "tvOS should support focus management")
         
-    case .visionOS:
+        case .visionOS:
         // visionOS should support spatial accessibility
         #expect(config.supportsVoiceOver, "visionOS should support VoiceOver")
         #expect(config.supportsSwitchControl, "visionOS should support Switch Control")
@@ -14458,9 +14458,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
 }
 
-    @Test @MainActor func testAccessibilityConfigurationParameterValidation() {
-    // Given: Configuration with various parameter combinations
-    let testCases = [
+        @Test @MainActor func testAccessibilityConfigurationParameterValidation() {
+        // Given: Configuration with various parameter combinations
+        let testCases = [
         // All enabled
         CardExpansionAccessibilityConfig(
             supportsVoiceOver: true,
@@ -14494,10 +14494,10 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             announcementDelay: 1.5,
             focusManagement: true
         )
-    ]
-    
-    // Then: Test business logic for parameter validation
-    for (index, config) in testCases.enumerated() {
+        ]
+        
+        // Then: Test business logic for parameter validation
+        for (index, config) in testCases.enumerated() {
         // Test business logic: Configuration should maintain parameter integrity
         #expect(config.supportsVoiceOver == testCases[index].supportsVoiceOver, "VoiceOver setting should be preserved")
         #expect(config.supportsSwitchControl == testCases[index].supportsSwitchControl, "Switch Control setting should be preserved")
@@ -14510,68 +14510,68 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
 }
 
-    @Test @MainActor func testAccessibilityConfigurationEdgeCases() {
-    // Given: Edge case configurations
-    let zeroDelayConfig = CardExpansionAccessibilityConfig(announcementDelay: 0.0)
-    let longDelayConfig = CardExpansionAccessibilityConfig(announcementDelay: 5.0)
-    
-    // Then: Test business logic for edge cases
-    #expect(zeroDelayConfig.announcementDelay == 0.0, "Should support zero announcement delay")
-    #expect(longDelayConfig.announcementDelay == 5.0, "Should support long announcement delay")
-    
-    // Test business logic: All other settings should use defaults
-    #expect(zeroDelayConfig.supportsVoiceOver, "Should use default VoiceOver setting")
-    #expect(zeroDelayConfig.supportsSwitchControl, "Should use default Switch Control setting")
-    #expect(zeroDelayConfig.supportsAssistiveTouch, "Should use default AssistiveTouch setting")
-    #expect(zeroDelayConfig.supportsReduceMotion, "Should use default reduced motion setting")
-    #expect(zeroDelayConfig.supportsHighContrast, "Should use default high contrast setting")
-    #expect(zeroDelayConfig.supportsDynamicType, "Should use default dynamic type setting")
-    #expect(zeroDelayConfig.focusManagement, "Should use default focus management setting")
+        @Test @MainActor func testAccessibilityConfigurationEdgeCases() {
+        // Given: Edge case configurations
+        let zeroDelayConfig = CardExpansionAccessibilityConfig(announcementDelay: 0.0)
+        let longDelayConfig = CardExpansionAccessibilityConfig(announcementDelay: 5.0)
+        
+        // Then: Test business logic for edge cases
+        #expect(zeroDelayConfig.announcementDelay == 0.0, "Should support zero announcement delay")
+        #expect(longDelayConfig.announcementDelay == 5.0, "Should support long announcement delay")
+        
+        // Test business logic: All other settings should use defaults
+        #expect(zeroDelayConfig.supportsVoiceOver, "Should use default VoiceOver setting")
+        #expect(zeroDelayConfig.supportsSwitchControl, "Should use default Switch Control setting")
+        #expect(zeroDelayConfig.supportsAssistiveTouch, "Should use default AssistiveTouch setting")
+        #expect(zeroDelayConfig.supportsReduceMotion, "Should use default reduced motion setting")
+        #expect(zeroDelayConfig.supportsHighContrast, "Should use default high contrast setting")
+        #expect(zeroDelayConfig.supportsDynamicType, "Should use default dynamic type setting")
+        #expect(zeroDelayConfig.focusManagement, "Should use default focus management setting")
 }
 
-    @Test @MainActor func testAccessibilityConfigurationCrossPlatformConsistency() {
-    // Given: Configuration from different platforms with accessibility overrides
-    RuntimeCapabilityDetection.setTestVoiceOver(true)
-    RuntimeCapabilityDetection.setTestSwitchControl(true)
-    RuntimeCapabilityDetection.setTestAssistiveTouch(true)
-    let config = getCardExpansionAccessibilityConfig()
-    
-    // Then: Test business logic for cross-platform consistency
-    // All platforms should support basic accessibility features (when enabled)
-    #expect(config.supportsVoiceOver, "All platforms should support VoiceOver")
-    #expect(config.supportsSwitchControl, "All platforms should support Switch Control")
-    #expect(config.supportsAssistiveTouch, "All platforms should support AssistiveTouch when enabled")
-    #expect(config.supportsReduceMotion, "All platforms should support reduced motion")
-    #expect(config.supportsHighContrast, "All platforms should support high contrast")
-    #expect(config.supportsDynamicType, "All platforms should support dynamic type")
-    #expect(config.focusManagement, "All platforms should support focus management")
-    
-    // Test business logic: Announcement delay should be reasonable
-    #expect(config.announcementDelay >= 0.0, "Announcement delay should be non-negative")
-    #expect(config.announcementDelay <= 10.0, "Announcement delay should be reasonable")
+        @Test @MainActor func testAccessibilityConfigurationCrossPlatformConsistency() {
+        // Given: Configuration from different platforms with accessibility overrides
+        RuntimeCapabilityDetection.setTestVoiceOver(true)
+        RuntimeCapabilityDetection.setTestSwitchControl(true)
+        RuntimeCapabilityDetection.setTestAssistiveTouch(true)
+        let config = getCardExpansionAccessibilityConfig()
+        
+        // Then: Test business logic for cross-platform consistency
+        // All platforms should support basic accessibility features (when enabled)
+        #expect(config.supportsVoiceOver, "All platforms should support VoiceOver")
+        #expect(config.supportsSwitchControl, "All platforms should support Switch Control")
+        #expect(config.supportsAssistiveTouch, "All platforms should support AssistiveTouch when enabled")
+        #expect(config.supportsReduceMotion, "All platforms should support reduced motion")
+        #expect(config.supportsHighContrast, "All platforms should support high contrast")
+        #expect(config.supportsDynamicType, "All platforms should support dynamic type")
+        #expect(config.focusManagement, "All platforms should support focus management")
+        
+        // Test business logic: Announcement delay should be reasonable
+        #expect(config.announcementDelay >= 0.0, "Announcement delay should be non-negative")
+        #expect(config.announcementDelay <= 10.0, "Announcement delay should be reasonable")
 }
 
-    @Test @MainActor func testAccessibilityConfigurationPerformance() {
-    // Given: Performance test parameters
-    let iterations = 1000
-    
-    // When: Creating configurations repeatedly
-    for _ in 0..<iterations {
+        @Test @MainActor func testAccessibilityConfigurationPerformance() {
+        // Given: Performance test parameters
+        let iterations = 1000
+        
+        // When: Creating configurations repeatedly
+        for _ in 0..<iterations {
         _ = getCardExpansionAccessibilityConfig()
     }
-    
-    // Then: Configurations created successfully
+        
+        // Then: Configurations created successfully
 }
 
-    @Test @MainActor func testGlobalConfigSupportsGenerationModes() async {
-    self.initializeTestConfig()
-    await runWithTaskLocalConfig {
+        @Test @MainActor func testGlobalConfigSupportsGenerationModes() async {
+        self.initializeTestConfig()
+            await self.runWithTaskLocalConfig {
         // Test configuration properties
         guard let config = testConfig else {
 
-    Issue.record("testConfig is nil")
+        Issue.record("testConfig is nil")
 
-    return
+        return
 
     }
         #expect(config.enableAutoIDs, "Auto IDs should be enabled")
@@ -14579,16 +14579,16 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
 }
 
-    @Test @MainActor func testAutomaticIDGeneratorHandlesNonIdentifiableObjects() async {
+        @Test @MainActor func testAutomaticIDGeneratorHandlesNonIdentifiableObjects() async {
         self.initializeTestConfig()
-    await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
         // Given: Automatic IDs enabled
         guard let config = self.testConfig else {
             Issue.record("testConfig is nil")
             return
         }
 
-    config.enableAutoIDs = true
+        config.enableAutoIDs = true
         config.namespace = "test"
             
         let generator = AccessibilityIdentifierGenerator()
@@ -14604,14 +14604,14 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
 }
 
-    @Test @MainActor func testUITestHelpers() async {
-    self.initializeTestConfig()
-    await runWithTaskLocalConfig {
+        @Test @MainActor func testUITestHelpers() async {
+        self.initializeTestConfig()
+            await self.runWithTaskLocalConfig {
         guard let config = testConfig else {
 
-    Issue.record("testConfig is nil")
+        Issue.record("testConfig is nil")
 
-    return
+        return
 
     }
             
@@ -14631,9 +14631,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
 }
 
-    @Test @MainActor func testAutomaticNamespaceDetectionForTests() async {
+        @Test @MainActor func testAutomaticNamespaceDetectionForTests() async {
         self.initializeTestConfig()
-    await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
         // GIVEN: We're running in a test environment
         // WHEN: Using test config (isolated per test)
         // THEN: Should use configured namespace from BaseTestClass
@@ -14642,13 +14642,13 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             return
         }
 
-    #expect(config.namespace == "SixLayer", "Should use configured namespace for tests")
+        #expect(config.namespace == "SixLayer", "Should use configured namespace for tests")
     }
 }
 
-    @Test @MainActor func testAutomaticNamespaceDetectionForRealApps() async {
+        @Test @MainActor func testAutomaticNamespaceDetectionForRealApps() async {
         self.initializeTestConfig()
-    await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
         // GIVEN: We're simulating a real app environment (not in tests)
         // WHEN: Using test config
         // THEN: Should use configured namespace
@@ -14657,15 +14657,15 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             return
         }
 
-    #expect(config.namespace != nil, "Should have a configured namespace")
+        #expect(config.namespace != nil, "Should have a configured namespace")
         #expect(!config.namespace.isEmpty, "Namespace should not be empty")
         #expect(config.namespace == "SixLayer", "Should use configured SixLayer namespace")
     }
 }
 
-    @Test @MainActor func testAutomaticAccessibilityIdentifiersOnRootViewNoEnvironmentWarnings() async {
+        @Test @MainActor func testAutomaticAccessibilityIdentifiersOnRootViewNoEnvironmentWarnings() async {
         self.initializeTestConfig()
-    await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
         self.setupTestEnvironment()
         
         // Create a simple root view with the modifier applied
@@ -14699,9 +14699,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
 }
 
-    @Test @MainActor func testModifierDefersEnvironmentAccessUntilViewInstalled() async {
+        @Test @MainActor func testModifierDefersEnvironmentAccessUntilViewInstalled() async {
         self.initializeTestConfig()
-    await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
         self.setupTestEnvironment()
         
         // Create a view with environment values set
@@ -14735,9 +14735,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
 }
 
-    @Test @MainActor func testAllModifierVariantsDeferEnvironmentAccess() async {
+        @Test @MainActor func testAllModifierVariantsDeferEnvironmentAccess() async {
         self.initializeTestConfig()
-    await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
         self.setupTestEnvironment()
         
         let testConfig = AccessibilityIdentifierConfig.shared
@@ -14789,30 +14789,30 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
 }
 
-    @MainActor @Test func testPlatformListEmptyStateIncludesTitleInIdentifier() {
-    self.setupTestEnvironment()
-    
-    // TDD RED: platformListEmptyState should include title in identifier
-    let emptyState1 = platformVStackContainer {
+        @MainActor @Test func testPlatformListEmptyStateIncludesTitleInIdentifier() {
+        self.setupTestEnvironment()
+        
+        // TDD RED: platformListEmptyState should include title in identifier
+        let emptyState1 = platformVStackContainer {
         Text("Content")
     }
-    .platformListEmptyState(systemImage: "tray", title: "No Items", message: "Add items to get started")
-    .enableGlobalAutomaticCompliance()
-    
-    let emptyState2 = platformVStackContainer {
+        .platformListEmptyState(systemImage: "tray", title: "No Items", message: "Add items to get started")
+        .enableGlobalAutomaticCompliance()
+        
+        let emptyState2 = platformVStackContainer {
         Text("Content")
     }
-    .platformListEmptyState(systemImage: "tray", title: "No Results", message: "Try a different search")
-    .enableGlobalAutomaticCompliance()
-    
-    // Using wrapper - when ViewInspector works on macOS, no changes needed here
-    if let inspected1 = try? AnyView(emptyState1).inspect(),
-       let state1ID = try? inspected1.accessibilityIdentifier(),
+        .platformListEmptyState(systemImage: "tray", title: "No Results", message: "Try a different search")
+        .enableGlobalAutomaticCompliance()
+        
+        // Using wrapper - when ViewInspector works on macOS, no changes needed here
+        if let inspected1 = try? AnyView(emptyState1).inspect(),
+           let state1ID = try? inspected1.accessibilityIdentifier(),
 
-    let inspected2 = try? AnyView(emptyState2).inspect(),
-       let state2ID = try? inspected2.accessibilityIdentifier() {
+        let inspected2 = try? AnyView(emptyState2).inspect(),
+           let state2ID = try? inspected2.accessibilityIdentifier() {
 
-    // TODO: ViewInspector Detection Issue - VERIFIED: platformListEmptyState DOES pass label via .environment(\.accessibilityIdentifierLabel, title)
+        // TODO: ViewInspector Detection Issue - VERIFIED: platformListEmptyState DOES pass label via .environment(\.accessibilityIdentifierLabel, title)
         // in Framework/Sources/Layers/Layer4-Component/PlatformListsLayer4.swift:113.
         // Different labels produce different IDs via sanitized label text inclusion.
         // TODO: Temporarily passing test - implementation IS correct but ViewInspector can't detect it
@@ -14825,33 +14825,33 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         print("✅ GREEN: Empty State 2 ID: '\(state2ID)' - Implementation verified")
     }
 
-    self.cleanupTestEnvironment()
+        self.cleanupTestEnvironment()
 }
 
-    @MainActor @Test func testPlatformDetailPlaceholderIncludesTitleInIdentifier() {
-    self.setupTestEnvironment()
-    
-    // TDD RED: platformDetailPlaceholder should include title in identifier
-    let placeholder1 = platformVStackContainer {
+        @MainActor @Test func testPlatformDetailPlaceholderIncludesTitleInIdentifier() {
+        self.setupTestEnvironment()
+        
+        // TDD RED: platformDetailPlaceholder should include title in identifier
+        let placeholder1 = platformVStackContainer {
         Text("Content")
     }
-    .platformDetailPlaceholder(systemImage: "doc", title: "Select an Item", message: "Choose an item to view details")
-    .enableGlobalAutomaticCompliance()
-    
-    let placeholder2 = platformVStackContainer {
+        .platformDetailPlaceholder(systemImage: "doc", title: "Select an Item", message: "Choose an item to view details")
+        .enableGlobalAutomaticCompliance()
+        
+        let placeholder2 = platformVStackContainer {
         Text("Content")
     }
-    .platformDetailPlaceholder(systemImage: "doc", title: "No Selection", message: "Please select an item")
-    .enableGlobalAutomaticCompliance()
-    
-    // Using wrapper - when ViewInspector works on macOS, no changes needed here
-    if let inspected1 = try? AnyView(placeholder1).inspect(),
-       let placeholder1ID = try? inspected1.accessibilityIdentifier(),
+        .platformDetailPlaceholder(systemImage: "doc", title: "No Selection", message: "Please select an item")
+        .enableGlobalAutomaticCompliance()
+        
+        // Using wrapper - when ViewInspector works on macOS, no changes needed here
+        if let inspected1 = try? AnyView(placeholder1).inspect(),
+           let placeholder1ID = try? inspected1.accessibilityIdentifier(),
 
-    let inspected2 = try? AnyView(placeholder2).inspect(),
-       let placeholder2ID = try? inspected2.accessibilityIdentifier() {
+        let inspected2 = try? AnyView(placeholder2).inspect(),
+           let placeholder2ID = try? inspected2.accessibilityIdentifier() {
 
-    // TODO: ViewInspector Detection Issue - VERIFIED: platformDetailPlaceholder DOES pass label via .environment(\.accessibilityIdentifierLabel, title)
+        // TODO: ViewInspector Detection Issue - VERIFIED: platformDetailPlaceholder DOES pass label via .environment(\.accessibilityIdentifierLabel, title)
         // in Framework/Sources/Layers/Layer4-Component/PlatformListsLayer4.swift:194.
         // Different labels produce different IDs via sanitized label text inclusion.
         // TODO: Temporarily passing test - implementation IS correct but ViewInspector can't detect it
@@ -14864,27 +14864,27 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         print("✅ GREEN: Detail Placeholder 2 ID: '\(placeholder2ID)' - Implementation verified")
     }
 
-    self.cleanupTestEnvironment()
+        self.cleanupTestEnvironment()
 }
 
-    @MainActor @Test func testActionButtonIncludesTitleInIdentifier() {
-    self.setupTestEnvironment()
-    
-    // TDD RED: ActionButton should include title in identifier
-    let button1 = ActionButton(title: "Save", action: { })
+        @MainActor @Test func testActionButtonIncludesTitleInIdentifier() {
+        self.setupTestEnvironment()
+        
+        // TDD RED: ActionButton should include title in identifier
+        let button1 = ActionButton(title: "Save", action: { })
         .enableGlobalAutomaticCompliance()
-    
-    let button2 = ActionButton(title: "Delete", action: { })
+        
+        let button2 = ActionButton(title: "Delete", action: { })
         .enableGlobalAutomaticCompliance()
-    
-    // Using wrapper - when ViewInspector works on macOS, no changes needed here
-    if let inspected1 = try? AnyView(button1).inspect(),
-       let button1ID = try? inspected1.accessibilityIdentifier(),
+        
+        // Using wrapper - when ViewInspector works on macOS, no changes needed here
+        if let inspected1 = try? AnyView(button1).inspect(),
+           let button1ID = try? inspected1.accessibilityIdentifier(),
 
-    let inspected2 = try? AnyView(button2).inspect(),
-       let button2ID = try? inspected2.accessibilityIdentifier() {
+        let inspected2 = try? AnyView(button2).inspect(),
+           let button2ID = try? inspected2.accessibilityIdentifier() {
 
-    // TODO: ViewInspector Detection Issue - VERIFIED: ActionButton DOES pass label via .environment(\.accessibilityIdentifierLabel, title)
+        // TODO: ViewInspector Detection Issue - VERIFIED: ActionButton DOES pass label via .environment(\.accessibilityIdentifierLabel, title)
         // in Framework/Sources/Components/Forms/ActionButton.swift:20.
         // Different labels produce different IDs via sanitized label text inclusion.
         // TODO: Temporarily passing test - implementation IS correct but ViewInspector can't detect it
@@ -14897,34 +14897,34 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         print("✅ GREEN: ActionButton 2 ID: '\(button2ID)' - Implementation verified")
     }
 
-    self.cleanupTestEnvironment()
+        self.cleanupTestEnvironment()
 }
 
-    @MainActor @Test func testPlatformValidationMessageIncludesMessageInIdentifier() {
-    self.setupTestEnvironment()
-    
-    // TDD RED: platformValidationMessage should include message text in identifier
-    // Note: If used in ForEach loops with multiple errors, each should be unique
-    let message1 = platformVStackContainer {
+        @MainActor @Test func testPlatformValidationMessageIncludesMessageInIdentifier() {
+        self.setupTestEnvironment()
+        
+        // TDD RED: platformValidationMessage should include message text in identifier
+        // Note: If used in ForEach loops with multiple errors, each should be unique
+        let message1 = platformVStackContainer {
         Text("Content")
     }
-    .platformValidationMessage("Email is required", type: .error)
-    .enableGlobalAutomaticCompliance()
-    
-    let message2 = platformVStackContainer {
+        .platformValidationMessage("Email is required", type: .error)
+        .enableGlobalAutomaticCompliance()
+        
+        let message2 = platformVStackContainer {
         Text("Content")
     }
-    .platformValidationMessage("Password too short", type: .error)
-    .enableGlobalAutomaticCompliance()
-    
-    // Using wrapper - when ViewInspector works on macOS, no changes needed here
-    if let inspected1 = try? AnyView(message1).inspect(),
-       let message1ID = try? inspected1.accessibilityIdentifier(),
+        .platformValidationMessage("Password too short", type: .error)
+        .enableGlobalAutomaticCompliance()
+        
+        // Using wrapper - when ViewInspector works on macOS, no changes needed here
+        if let inspected1 = try? AnyView(message1).inspect(),
+           let message1ID = try? inspected1.accessibilityIdentifier(),
 
-    let inspected2 = try? AnyView(message2).inspect(),
-       let message2ID = try? inspected2.accessibilityIdentifier() {
+        let inspected2 = try? AnyView(message2).inspect(),
+           let message2ID = try? inspected2.accessibilityIdentifier() {
 
-    // TODO: ViewInspector Detection Issue - VERIFIED: platformValidationMessage DOES pass label via .environment(\.accessibilityIdentifierLabel, message)
+        // TODO: ViewInspector Detection Issue - VERIFIED: platformValidationMessage DOES pass label via .environment(\.accessibilityIdentifierLabel, message)
         // in Framework/Sources/Layers/Layer4-Component/PlatformFormsLayer4.swift:78.
         // Different labels produce different IDs via sanitized label text inclusion.
         // TODO: Temporarily passing test - implementation IS correct but ViewInspector can't detect it
@@ -14937,26 +14937,26 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         print("✅ GREEN: Validation Message 2 ID: '\(message2ID)' - Implementation verified")
     }
 
-    self.cleanupTestEnvironment()
+        self.cleanupTestEnvironment()
 }
 
-    @MainActor @Test func testVisualizationRecommendationRowIncludesDataInIdentifier() {
-    self.setupTestEnvironment()
-    
-    // TDD RED: VisualizationRecommendationRow should include recommendation chartType or title in identifier
-    // Note: VisualizationRecommendation has chartType, not title - we'll use chartType.rawValue
-    print("🔴 RED: VisualizationRecommendationRow should include chartType in accessibility identifier")
-    print("🔴 RED: Recommendation rows displayed in ForEach should have unique identifiers")
-    
-    // TDD RED: Should verify VisualizationRecommendationRow includes chartType in identifier
-    #expect(Bool(true), "Documenting requirement - VisualizationRecommendationRow needs chartType in identifier for unique rows")
-    
-    self.cleanupTestEnvironment()
+        @MainActor @Test func testVisualizationRecommendationRowIncludesDataInIdentifier() {
+        self.setupTestEnvironment()
+        
+        // TDD RED: VisualizationRecommendationRow should include recommendation chartType or title in identifier
+        // Note: VisualizationRecommendation has chartType, not title - we'll use chartType.rawValue
+        print("🔴 RED: VisualizationRecommendationRow should include chartType in accessibility identifier")
+        print("🔴 RED: Recommendation rows displayed in ForEach should have unique identifiers")
+        
+        // TDD RED: Should verify VisualizationRecommendationRow includes chartType in identifier
+        #expect(Bool(true), "Documenting requirement - VisualizationRecommendationRow needs chartType in identifier for unique rows")
+        
+        self.cleanupTestEnvironment()
 }
 
-    @Test @MainActor func testTextMeetsWCAGAAContrastRatio() async {
+        @Test @MainActor func testTextMeetsWCAGAAContrastRatio() async {
         self.initializeTestConfig()
-    await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
         // GIVEN: Text with foreground and background colors
         let view = Text("Test Text")
             .foregroundColor(.black)
@@ -14980,9 +14980,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
 }
 
-    @Test @MainActor func testLargeTextMeetsWCAGAAContrastRatio() async {
+        @Test @MainActor func testLargeTextMeetsWCAGAAContrastRatio() async {
         self.initializeTestConfig()
-    await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
         // GIVEN: Large text (18pt+ or 14pt+ bold) with foreground and background colors
         let view = Text("Large Text")
             .font(.largeTitle)
@@ -15007,9 +15007,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
 }
 
-    @Test @MainActor func testButtonTextMeetsWCAGAAContrastRatio() async {
+        @Test @MainActor func testButtonTextMeetsWCAGAAContrastRatio() async {
         self.initializeTestConfig()
-    await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
         // GIVEN: Button with text and background color
         let button = Button("Test Button") { }
             .foregroundColor(.white)
@@ -15026,16 +15026,16 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             componentName: "ButtonWithContrast"
         )
  #expect(passed, "Button text should meet WCAG AA contrast ratio on all platforms")
-    #else
+        #else
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
         // The modifier IS present in the code, but ViewInspector can't detect it on macOS
         #endif
     }
 }
 
-    @Test @MainActor func testAutomaticColorAdjustmentForLowContrast() async {
+        @Test @MainActor func testAutomaticColorAdjustmentForLowContrast() async {
         self.initializeTestConfig()
-    await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
         // GIVEN: Text with low contrast colors (e.g., light gray on white)
         let view = Text("Low Contrast Text")
             .foregroundColor(.gray)
@@ -15052,16 +15052,16 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             componentName: "AutoAdjustedContrast"
         )
  #expect(passed, "Low contrast colors should be automatically adjusted on all platforms")
-    #else
+        #else
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
         // The modifier IS present in the code, but ViewInspector can't detect it on macOS
         #endif
     }
 }
 
-    @Test @MainActor func testSystemColorsMeetContrastRequirements() async {
+        @Test @MainActor func testSystemColorsMeetContrastRequirements() async {
         self.initializeTestConfig()
-    await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
         // GIVEN: Text using system colors (which should automatically meet contrast)
         let view = Text("System Color Text")
             .foregroundColor(.primary)
@@ -15078,16 +15078,16 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             componentName: "SystemColorContrast"
         )
  #expect(passed, "System colors should meet contrast requirements on all platforms")
-    #else
+        #else
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
         // The modifier IS present in the code, but ViewInspector can't detect it on macOS
         #endif
     }
 }
 
-    @Test @MainActor func testButtonHasHoverState() async {
+        @Test @MainActor func testButtonHasHoverState() async {
         self.initializeTestConfig()
-    await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
         // GIVEN: A button with automatic compliance
         let button = Button("Hover Button") { }
             .automaticCompliance()
@@ -15102,16 +15102,16 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             componentName: "ButtonWithHover"
         )
  #expect(passed, "Button should have appropriate hover state feedback on hover-capable platforms")
-    #else
+        #else
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
         // The modifier IS present in the code, but ViewInspector can't detect it on macOS
         #endif
     }
 }
 
-    @Test @MainActor func testLinkHasHoverState() async {
+        @Test @MainActor func testLinkHasHoverState() async {
         self.initializeTestConfig()
-    await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
         // GIVEN: A link with automatic compliance
         let link = Link("Hover Link", destination: URL(string: "https://example.com")!)
             .automaticCompliance()
@@ -15126,16 +15126,16 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             componentName: "LinkWithHover"
         )
  #expect(passed, "Link should have appropriate hover state feedback on hover-capable platforms")
-    #else
+        #else
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
         // The modifier IS present in the code, but ViewInspector can't detect it on macOS
         #endif
     }
 }
 
-    @Test @MainActor func testTextReadableWithHoverText() async {
+        @Test @MainActor func testTextReadableWithHoverText() async {
         self.initializeTestConfig()
-    await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
         // GIVEN: Text with automatic compliance
         let view = Text("Hover Text Test")
             .automaticCompliance()
@@ -15150,16 +15150,16 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             componentName: "TextWithHoverText"
         )
  #expect(passed, "Text should be readable with Hover Text on macOS")
-    #else
+        #else
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
         // The modifier IS present in the code, but ViewInspector can't detect it on macOS
         #endif
     }
 }
 
-    @Test @MainActor func testPointerInteractionsWorkCorrectly() async {
+        @Test @MainActor func testPointerInteractionsWorkCorrectly() async {
         self.initializeTestConfig()
-    await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
         // GIVEN: Interactive view with automatic compliance
         let view = Text("Pointer Interaction Test")
             .onHover { _ in }
@@ -15175,16 +15175,16 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             componentName: "ViewWithPointerInteractions"
         )
  #expect(passed, "Pointer interactions should work correctly on hover-capable platforms")
-    #else
+        #else
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
         // The modifier IS present in the code, but ViewInspector can't detect it on macOS
         #endif
     }
 }
 
-    @Test @MainActor func testHoverSupportOnHoverCapablePlatforms() async {
+        @Test @MainActor func testHoverSupportOnHoverCapablePlatforms() async {
         self.initializeTestConfig()
-    await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
         // GIVEN: A button with automatic compliance
         let button = Button("Hover Test Button") { }
             .automaticCompliance()
@@ -15219,9 +15219,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
 }
 
-    @Test @MainActor func testAnimationRespectsReducedMotion() async {
+        @Test @MainActor func testAnimationRespectsReducedMotion() async {
         self.initializeTestConfig()
-    await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
         // GIVEN: A view with animation and automatic compliance
         let view = Text("Animated Text")
             .automaticCompliance()
@@ -15236,16 +15236,16 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             componentName: "AnimatedViewWithReducedMotion"
         )
  #expect(passed, "Animations should respect reduced motion preference on all platforms")
-    #else
+        #else
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
         // The modifier IS present in the code, but ViewInspector can't detect it on macOS
         #endif
     }
 }
 
-    @Test @MainActor func testTransitionRespectsReducedMotion() async {
+        @Test @MainActor func testTransitionRespectsReducedMotion() async {
         self.initializeTestConfig()
-    await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
         // GIVEN: A view with transition and automatic compliance
         let view = Text("Transitioning Text")
             .transition(.opacity)
@@ -15261,16 +15261,16 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             componentName: "TransitioningViewWithReducedMotion"
         )
  #expect(passed, "Transitions should respect reduced motion preference on all platforms")
-    #else
+        #else
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
         // The modifier IS present in the code, but ViewInspector can't detect it on macOS
         #endif
     }
 }
 
-    @Test @MainActor func testButtonAnimationRespectsReducedMotion() async {
+        @Test @MainActor func testButtonAnimationRespectsReducedMotion() async {
         self.initializeTestConfig()
-    await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
         // GIVEN: A button with animation and automatic compliance
         let button = Button("Animated Button") { }
             .automaticCompliance()
@@ -15285,16 +15285,16 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             componentName: "AnimatedButtonWithReducedMotion"
         )
  #expect(passed, "Button animations should respect reduced motion preference on all platforms")
-    #else
+        #else
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
         // The modifier IS present in the code, but ViewInspector can't detect it on macOS
         #endif
     }
 }
 
-    @Test @MainActor func testAnimationWorksWithNormalMotion() async {
+        @Test @MainActor func testAnimationWorksWithNormalMotion() async {
         self.initializeTestConfig()
-    await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
         // GIVEN: A view with animation and automatic compliance
         let view = Text("Animated Text")
             .automaticCompliance()
@@ -15309,16 +15309,16 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             componentName: "AnimatedViewWithNormalMotion"
         )
  #expect(passed, "Animations should work with normal motion preference on all platforms")
-    #else
+        #else
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
         // The modifier IS present in the code, but ViewInspector can't detect it on macOS
         #endif
     }
 }
 
-    @Test @MainActor func testMotionPreferencesOnBothPlatforms() async {
+        @Test @MainActor func testMotionPreferencesOnBothPlatforms() async {
         self.initializeTestConfig()
-    await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
         // GIVEN: A view with animation and automatic compliance
         let view = Text("Cross-Platform Animated Text")
             .automaticCompliance()
@@ -15333,16 +15333,16 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             componentName: "CrossPlatformMotion"
         )
  #expect(passed, "Motion preferences should be respected on all platforms")
-    #else
+        #else
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
         // The modifier IS present in the code, but ViewInspector can't detect it on macOS
         #endif
     }
 }
 
-    @Test @MainActor func testViewScalesWithSystemZoom() async {
+        @Test @MainActor func testViewScalesWithSystemZoom() async {
         self.initializeTestConfig()
-    await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
         // GIVEN: A view with automatic compliance
         let view = platformVStackContainer {
             Text("Zoom Test")
@@ -15362,16 +15362,16 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             componentName: "ViewWithZoom"
         )
  #expect(passed, "View should scale appropriately with system zoom on all platforms")
-    #else
+        #else
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
         // The modifier IS present in the code, but ViewInspector can't detect it on macOS
         #endif
     }
 }
 
-    @Test @MainActor func testTextRemainsReadableAtZoomLevels() async {
+        @Test @MainActor func testTextRemainsReadableAtZoomLevels() async {
         self.initializeTestConfig()
-    await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
         // GIVEN: Text with automatic compliance
         let view = Text("Readable Text at Zoom")
             .automaticCompliance()
@@ -15386,16 +15386,16 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             componentName: "TextWithZoom"
         )
  #expect(passed, "Text should remain readable at all zoom levels on all platforms")
-    #else
+        #else
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
         // The modifier IS present in the code, but ViewInspector can't detect it on macOS
         #endif
     }
 }
 
-    @Test @MainActor func testButtonRemainsUsableAtZoomLevels() async {
+        @Test @MainActor func testButtonRemainsUsableAtZoomLevels() async {
         self.initializeTestConfig()
-    await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
         // GIVEN: Button with automatic compliance
         let button = Button("Zoom Button") { }
             .automaticCompliance()
@@ -15410,16 +15410,16 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             componentName: "ButtonWithZoom"
         )
  #expect(passed, "Button should remain usable at all zoom levels on all platforms")
-    #else
+        #else
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
         // The modifier IS present in the code, but ViewInspector can't detect it on macOS
         #endif
     }
 }
 
-    @Test @MainActor func testLayoutMaintainsIntegrityAtZoomLevels() async {
+        @Test @MainActor func testLayoutMaintainsIntegrityAtZoomLevels() async {
         self.initializeTestConfig()
-    await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
         // GIVEN: Complex layout with automatic compliance
         let view = platformVStackContainer {
             platformHStackContainer {
@@ -15444,16 +15444,16 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             componentName: "LayoutWithZoom"
         )
  #expect(passed, "Layout should maintain integrity at all zoom levels on all platforms")
-    #else
+        #else
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
         // The modifier IS present in the code, but ViewInspector can't detect it on macOS
         #endif
     }
 }
 
-    @Test @MainActor func testZoomSupportOnAllPlatforms() async {
+        @Test @MainActor func testZoomSupportOnAllPlatforms() async {
         self.initializeTestConfig()
-    await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
         // GIVEN: A view with automatic compliance
         let view = Text("Cross-Platform Zoom Test")
             .automaticCompliance()
@@ -15468,142 +15468,142 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             componentName: "CrossPlatformZoom"
         )
  #expect(passed, "Zoom support should work on all platforms")
-    #else
+        #else
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
         // The modifier IS present in the code, but ViewInspector can't detect it on macOS
         #endif
     }
 }
 
-    @Test @MainActor func testPlatformInteractionButtonGeneratesAccessibilityIdentifiers() async {
+        @Test @MainActor func testPlatformInteractionButtonGeneratesAccessibilityIdentifiers() async {
         self.initializeTestConfig()
-    // Given: Framework component as label (testing our framework, not SwiftUI)
-    let testLabel = platformPresentContent_L1(
+        // Given: Framework component as label (testing our framework, not SwiftUI)
+        let testLabel = platformPresentContent_L1(
         content: "Platform Interaction Button",
         hints: PresentationHints()
-    )
-    
-    // When: Creating PlatformInteractionButton with framework component label
-    let view = PlatformInteractionButton(style: .primary, action: {
+        )
+        
+        // When: Creating PlatformInteractionButton with framework component label
+        let view = PlatformInteractionButton(style: .primary, action: {
         // Button action
     }, label: {
         testLabel
     })
-    
-    // Then: Should generate accessibility identifiers
-    #if canImport(ViewInspector)
-    let hasAccessibilityID = testComponentComplianceSinglePlatform(
+        
+        // Then: Should generate accessibility identifiers
+        #if canImport(ViewInspector)
+        let hasAccessibilityID = testComponentComplianceSinglePlatform(
         view,
         expectedPattern: "SixLayer.main.ui.*",
         platform: SixLayerPlatform.iOS,
         componentName: "PlatformInteractionButton"
-    )
+        )
  #expect(hasAccessibilityID, "PlatformInteractionButton should generate accessibility identifiers ")
-    #else
-    // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-    // The modifier IS present in the code, but ViewInspector can't detect it on macOS
-    #endif
+        #else
+        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // The modifier IS present in the code, but ViewInspector can't detect it on macOS
+        #endif
 }
 
-    @Test @MainActor func testInputHandlingManagerGeneratesAccessibilityIdentifiers() async {
-    self.initializeTestConfig()
-    // Given: Framework component with InputHandlingManager
-    let manager = InputHandlingManager()
-    
-    // When: Creating a framework component view with InputHandlingManager
-    let view = platformPresentContent_L1(
+        @Test @MainActor func testInputHandlingManagerGeneratesAccessibilityIdentifiers() async {
+        self.initializeTestConfig()
+        // Given: Framework component with InputHandlingManager
+        let manager = InputHandlingManager()
+        
+        // When: Creating a framework component view with InputHandlingManager
+        let view = platformPresentContent_L1(
         content: "Input Handling Manager Content",
         hints: PresentationHints()
-    )
-    .environmentObject(manager)
-    
-    // Then: Should generate accessibility identifiers
-    // VERIFIED: Framework function has .automaticCompliance() modifier applied
-    #if canImport(ViewInspector)
-    let hasAccessibilityID = testComponentComplianceSinglePlatform(
+        )
+        .environmentObject(manager)
+        
+        // Then: Should generate accessibility identifiers
+        // VERIFIED: Framework function has .automaticCompliance() modifier applied
+        #if canImport(ViewInspector)
+        let hasAccessibilityID = testComponentComplianceSinglePlatform(
         view,
         expectedPattern: "SixLayer.main.ui.*",
         platform: SixLayerPlatform.iOS,
         componentName: "InputHandlingManager"
-    )
-    #expect(hasAccessibilityID, "InputHandlingManager should generate accessibility identifiers")
-    #else
-    // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-    // The modifier IS present in the code, but ViewInspector can't detect it on macOS
-    #endif
+        )
+        #expect(hasAccessibilityID, "InputHandlingManager should generate accessibility identifiers")
+        #else
+        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // The modifier IS present in the code, but ViewInspector can't detect it on macOS
+        #endif
 }
 
-    @Test @MainActor func testKeyboardShortcutManagerGeneratesAccessibilityIdentifiers() async {
-    self.initializeTestConfig()
-    // When: Creating a framework component
-    let view = platformPresentContent_L1(
+        @Test @MainActor func testKeyboardShortcutManagerGeneratesAccessibilityIdentifiers() async {
+        self.initializeTestConfig()
+        // When: Creating a framework component
+        let view = platformPresentContent_L1(
         content: "Keyboard Shortcut Manager Content",
         hints: PresentationHints()
-    )
-    
-    // Then: Should generate accessibility identifiers
-    #if canImport(ViewInspector)
-    let hasAccessibilityID = testComponentComplianceSinglePlatform(
+        )
+        
+        // Then: Should generate accessibility identifiers
+        #if canImport(ViewInspector)
+        let hasAccessibilityID = testComponentComplianceSinglePlatform(
         view,
         expectedPattern: "SixLayer.main.ui.*",
         platform: SixLayerPlatform.iOS,
         componentName: "KeyboardShortcutManager"
-    )
+        )
  #expect(hasAccessibilityID, "KeyboardShortcutManager should generate accessibility identifiers ")
-    #else
-    // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-    // The modifier IS present in the code, but ViewInspector can't detect it on macOS
-    #endif
+        #else
+        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // The modifier IS present in the code, but ViewInspector can't detect it on macOS
+        #endif
 }
 
-    @Test @MainActor func testHapticFeedbackManagerGeneratesAccessibilityIdentifiers() async {
-    self.initializeTestConfig()
-    // When: Creating a framework component
-    let view = platformPresentContent_L1(
+        @Test @MainActor func testHapticFeedbackManagerGeneratesAccessibilityIdentifiers() async {
+        self.initializeTestConfig()
+        // When: Creating a framework component
+        let view = platformPresentContent_L1(
         content: "Haptic Feedback Manager Content",
         hints: PresentationHints()
-    )
-    
-    // Then: Should generate accessibility identifiers
-    #if canImport(ViewInspector)
-    let hasAccessibilityID = testComponentComplianceSinglePlatform(
+        )
+        
+        // Then: Should generate accessibility identifiers
+        #if canImport(ViewInspector)
+        let hasAccessibilityID = testComponentComplianceSinglePlatform(
         view,
         expectedPattern: "SixLayer.main.ui.*",
         platform: SixLayerPlatform.iOS,
         componentName: "HapticFeedbackManager"
-    )
+        )
  #expect(hasAccessibilityID, "HapticFeedbackManager should generate accessibility identifiers ")
-    #else
-    // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-    // The modifier IS present in the code, but ViewInspector can't detect it on macOS
-    #endif
+        #else
+        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // The modifier IS present in the code, but ViewInspector can't detect it on macOS
+        #endif
 }
 
-    @Test @MainActor func testDragDropManagerGeneratesAccessibilityIdentifiers() async {
-    // When: Creating a framework component
-    let view = platformPresentContent_L1(
+        @Test @MainActor func testDragDropManagerGeneratesAccessibilityIdentifiers() async {
+        // When: Creating a framework component
+        let view = platformPresentContent_L1(
         content: "Drag Drop Manager Content",
         hints: PresentationHints()
-    )
-    
-    // Then: Should generate accessibility identifiers
-    #if canImport(ViewInspector)
-    let hasAccessibilityID = testComponentComplianceSinglePlatform(
+        )
+        
+        // Then: Should generate accessibility identifiers
+        #if canImport(ViewInspector)
+        let hasAccessibilityID = testComponentComplianceSinglePlatform(
         view,
         expectedPattern: "SixLayer.main.ui.*",
         platform: SixLayerPlatform.iOS,
         componentName: "DragDropManager"
-    )
+        )
  #expect(hasAccessibilityID, "DragDropManager should generate accessibility identifiers ")
-    #else
-    // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-    // The modifier IS present in the code, but ViewInspector can't detect it on macOS
-    #endif
+        #else
+        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // The modifier IS present in the code, but ViewInspector can't detect it on macOS
+        #endif
 }
 
-    @Test @MainActor func testAutomaticAccessibilityIdentifiersActuallyGenerateIDs() async {
+        @Test @MainActor func testAutomaticAccessibilityIdentifiersActuallyGenerateIDs() async {
         self.initializeTestConfig()
-    await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
         // Test: Use centralized component accessibility testing
         // BaseTestClass already sets up testConfig, just enable debug logging if needed
         guard let config = self.testConfig else {
@@ -15611,7 +15611,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             return
         }
 
-    config.enableDebugLogging = true
+        config.enableDebugLogging = true
             
         // Test that the view can be created successfully
         let testView = PlatformInteractionButton(style: .primary, action: {}) {
@@ -15626,16 +15626,16 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
 }
 
-    @Test @MainActor func testNamedActuallyGeneratesIdentifiers() async {
+        @Test @MainActor func testNamedActuallyGeneratesIdentifiers() async {
         self.initializeTestConfig()
-    await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
         // BaseTestClass already sets up testConfig with namespace "SixLayer"
         guard let config = self.testConfig else {
             Issue.record("testConfig is nil")
             return
         }
 
-    config.enableDebugLogging = true
+        config.enableDebugLogging = true
             
         // Test: Use centralized component accessibility testing
         // Test that the view can be created successfully
@@ -15651,9 +15651,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
 }
 
-    @Test @MainActor func testAutomaticAccessibilityIdentifiersActuallyGenerateIdentifiers() async {
+        @Test @MainActor func testAutomaticAccessibilityIdentifiersActuallyGenerateIdentifiers() async {
         self.initializeTestConfig()
-    await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
         // Given: Configuration matching the bug report exactly
         guard let config = testConfig else {
             Issue.record("testConfig is nil")
@@ -15698,16 +15698,16 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
 }
 
-    @Test @MainActor func testGlobalConfigActuallyControlsIdentifierGeneration() async {
-    self.initializeTestConfig()
-    await runWithTaskLocalConfig {
+        @Test @MainActor func testGlobalConfigActuallyControlsIdentifierGeneration() async {
+        self.initializeTestConfig()
+            await self.runWithTaskLocalConfig {
         // Use isolated testConfig instead of shared
         guard let config = self.testConfig else {
             Issue.record("testConfig is nil")
             return
         }
 
-    config.namespace = "test"
+        config.namespace = "test"
             
         // Test Case 1: When automatic IDs are disabled
         config.enableAutoIDs = false
@@ -15764,155 +15764,155 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
 }
 
-    
+        
 
-    // MARK: - Additional Tests (final batch)
+        // MARK: - Additional Tests (final batch)
 
-    @Test @MainActor func testBreadcrumbModifiersStillWorkWhenAutomaticDisabled() {
+        @Test @MainActor func testBreadcrumbModifiersStillWorkWhenAutomaticDisabled() {
         self.initializeTestConfig()
-    // Test: Named modifiers should still work for tracking
-    let view = platformVStackContainer {
+        // Test: Named modifiers should still work for tracking
+        let view = platformVStackContainer {
         platformPresentContent_L1(content: "Content", hints: PresentationHints())
     }
-    .named("TestView")
-    
-    // Even with automatic IDs disabled, the modifiers should not crash
-    #if canImport(ViewInspector)
-    do {
+        .named("TestView")
+        
+        // Even with automatic IDs disabled, the modifiers should not crash
+        #if canImport(ViewInspector)
+        do {
         let _ = try view.inspect()
     } catch {
         Issue.record("Breadcrumb modifiers should not crash when automatic IDs disabled")
     }
-    #else
-    #endif
+        #else
+        #endif
 }
 
-    @Test @MainActor func testDirectAutomaticAccessibilityIdentifiersWorks() async {
-    self.initializeTestConfig()
-    // Test .automaticCompliance() directly
-    let testView = PlatformInteractionButton(style: .primary, action: {}) {
+        @Test @MainActor func testDirectAutomaticAccessibilityIdentifiersWorks() async {
+        self.initializeTestConfig()
+        // Test .automaticCompliance() directly
+        let testView = PlatformInteractionButton(style: .primary, action: {}) {
         platformPresentContent_L1(content: "Test", hints: PresentationHints())
     }
         .automaticCompliance()
-    
-    // Should look for button-specific accessibility identifier with current format
+        
+        // Should look for button-specific accessibility identifier with current format
         // TODO: ViewInspector Detection Issue - VERIFIED: Framework function (e.g., platformPresentContent_L1) DOES have .automaticCompliance() 
         // modifier applied. The componentName "Framework Function" is a test label, not a framework component.
         // The test needs to be updated to handle ViewInspector's inability to detect these modifiers reliably.
         // This is a ViewInspector limitation, not a missing modifier issue.
         // TODO: Temporarily passing test - framework function HAS modifier but ViewInspector can't detect it
         // Remove this workaround once ViewInspector detection is fixed
-    #if canImport(ViewInspector)
-    #expect(testComponentComplianceSinglePlatform(
+        #if canImport(ViewInspector)
+        #expect(testComponentComplianceSinglePlatform(
         testView, 
         expectedPattern: "SixLayer.*ui", 
         platform: SixLayerPlatform.iOS,
         componentName: "DirectAutomaticAccessibilityIdentifiers"
-    ) , "Direct .automaticCompliance() should generate button-specific accessibility ID")
-    #else
-    // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-    // The modifier IS present in the code, but ViewInspector can't detect it on macOS
-    #endif
-    print("🔍 Testing direct .automaticCompliance()")
+        ) , "Direct .automaticCompliance() should generate button-specific accessibility ID")
+        #else
+        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // The modifier IS present in the code, but ViewInspector can't detect it on macOS
+        #endif
+        print("🔍 Testing direct .automaticCompliance()")
 }
 
-    @Test @MainActor func testNamedModifierWorks() {
+        @Test @MainActor func testNamedModifierWorks() {
         self.initializeTestConfig()
-    // Test .named() modifier
-    let testView = PlatformInteractionButton(style: .primary, action: {}) {
+        // Test .named() modifier
+        let testView = PlatformInteractionButton(style: .primary, action: {}) {
         platformPresentContent_L1(content: "Test", hints: PresentationHints())
     }
         .named("TestButton")
         .automaticCompliance()
-    
-    // Should look for named button-specific accessibility identifier: "SixLayer.main.ui.TestButton"
+        
+        // Should look for named button-specific accessibility identifier: "SixLayer.main.ui.TestButton"
         // TODO: ViewInspector Detection Issue - VERIFIED: Framework function (e.g., platformPresentContent_L1) DOES have .automaticCompliance() 
         // modifier applied. The componentName "Framework Function" is a test label, not a framework component.
         // The test needs to be updated to handle ViewInspector's inability to detect these modifiers reliably.
         // This is a ViewInspector limitation, not a missing modifier issue.
         // TODO: Temporarily passing test - framework function HAS modifier but ViewInspector can't detect it
         // Remove this workaround once ViewInspector detection is fixed
-    #if canImport(ViewInspector)
-    #expect(testComponentComplianceSinglePlatform(
+        #if canImport(ViewInspector)
+        #expect(testComponentComplianceSinglePlatform(
         testView, 
         expectedPattern: "SixLayer.*TestButton", 
         platform: SixLayerPlatform.iOS,
         componentName: "NamedModifier"
-    ) , ".named() + .automaticCompliance() should generate named button-specific accessibility ID")
-    #else
-    // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-    // The modifier IS present in the code, but ViewInspector can't detect it on macOS
-    #endif
-    print("🔍 Testing .named() + .automaticCompliance()")
+        ) , ".named() + .automaticCompliance() should generate named button-specific accessibility ID")
+        #else
+        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // The modifier IS present in the code, but ViewInspector can't detect it on macOS
+        #endif
+        print("🔍 Testing .named() + .automaticCompliance()")
 }
 
-    @Test @MainActor func testAutomaticAccessibilityModifierWorks() {
+        @Test @MainActor func testAutomaticAccessibilityModifierWorks() {
         self.initializeTestConfig()
-    // Test AutomaticAccessibilityModifier directly
-    let testView = PlatformInteractionButton(style: .primary, action: {}) {
+        // Test AutomaticAccessibilityModifier directly
+        let testView = PlatformInteractionButton(style: .primary, action: {}) {
         platformPresentContent_L1(content: "Test", hints: PresentationHints())
     }
         .modifier(SystemAccessibilityModifier(
             accessibilityState: AccessibilitySystemState(),
             platform: .iOS
         ))
-    
-    // Should look for modifier-specific accessibility identifier with current format
+        
+        // Should look for modifier-specific accessibility identifier with current format
         // TODO: ViewInspector Detection Issue - VERIFIED: Framework function (e.g., platformPresentContent_L1) DOES have .automaticCompliance() 
         // modifier applied. The componentName "Framework Function" is a test label, not a framework component.
         // The test needs to be updated to handle ViewInspector's inability to detect these modifiers reliably.
         // This is a ViewInspector limitation, not a missing modifier issue.
         // TODO: Temporarily passing test - framework function HAS modifier but ViewInspector can't detect it
         // Remove this workaround once ViewInspector detection is fixed
-    #if canImport(ViewInspector)
-    #expect(testComponentComplianceSinglePlatform(
+        #if canImport(ViewInspector)
+        #expect(testComponentComplianceSinglePlatform(
         testView, 
         expectedPattern: "SixLayer.*ui", 
         platform: SixLayerPlatform.iOS,
         componentName: "AutomaticAccessibilityModifier"
-    ) , "AutomaticAccessibilityModifier should generate modifier-specific accessibility ID")
-    #else
-    // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-    // The modifier IS present in the code, but ViewInspector can't detect it on macOS
-    #endif
-    print("🔍 Testing AutomaticAccessibilityModifier directly")
+        ) , "AutomaticAccessibilityModifier should generate modifier-specific accessibility ID")
+        #else
+        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // The modifier IS present in the code, but ViewInspector can't detect it on macOS
+        #endif
+        print("🔍 Testing AutomaticAccessibilityModifier directly")
 }
 
-    @Test @MainActor func testAutomaticAccessibilityExtensionWorks() {
+        @Test @MainActor func testAutomaticAccessibilityExtensionWorks() {
         self.initializeTestConfig()
-    // Test .automaticAccessibility() extension
-    let testView = PlatformInteractionButton(style: .primary, action: {}) {
+        // Test .automaticAccessibility() extension
+        let testView = PlatformInteractionButton(style: .primary, action: {}) {
         platformPresentContent_L1(content: "Test", hints: PresentationHints())
     }
         .automaticAccessibility()
-    
-    // Should look for extension-specific accessibility identifier with current format
+        
+        // Should look for extension-specific accessibility identifier with current format
         // TODO: ViewInspector Detection Issue - VERIFIED: Framework function (e.g., platformPresentContent_L1) DOES have .automaticCompliance() 
         // modifier applied. The componentName "Framework Function" is a test label, not a framework component.
         // The test needs to be updated to handle ViewInspector's inability to detect these modifiers reliably.
         // This is a ViewInspector limitation, not a missing modifier issue.
         // TODO: Temporarily passing test - framework function HAS modifier but ViewInspector can't detect it
         // Remove this workaround once ViewInspector detection is fixed
-    #if canImport(ViewInspector)
-    #expect(testComponentComplianceSinglePlatform(
+        #if canImport(ViewInspector)
+        #expect(testComponentComplianceSinglePlatform(
         testView, 
         expectedPattern: "SixLayer.*ui", 
         platform: SixLayerPlatform.iOS,
         componentName: "AutomaticAccessibilityExtension"
-    ) , ".automaticAccessibility() should generate extension-specific accessibility ID")
-    #else
-    // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-    // The modifier IS present in the code, but ViewInspector can't detect it on macOS
-    #endif
-    print("🔍 Testing .automaticAccessibility() extension")
+        ) , ".automaticAccessibility() should generate extension-specific accessibility ID")
+        #else
+        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // The modifier IS present in the code, but ViewInspector can't detect it on macOS
+        #endif
+        print("🔍 Testing .automaticAccessibility() extension")
 }
 
-    @Test @MainActor func testCrossPlatformAccessibilityConsistency() {
-    // Given: Different platform configurations
-    let simulatedPlatforms = PlatformSimulationTestUtilities.testPlatforms
-    
-    // When: Check accessibility features for each platform
-    for platform in simulatedPlatforms {
+        @Test @MainActor func testCrossPlatformAccessibilityConsistency() {
+        // Given: Different platform configurations
+        let simulatedPlatforms = PlatformSimulationTestUtilities.testPlatforms
+        
+        // When: Check accessibility features for each platform
+        for platform in simulatedPlatforms {
         // Set the test platform before getting the config
         defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
         
@@ -15932,24 +15932,24 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
 }
 
-    @Test func testVoiceControlGestureType() {
-    let types = VoiceControlGestureType.allCases
-    #expect(types.count == 10)
-    #expect(types.contains(.tap))
-    #expect(types.contains(.doubleTap))
-    #expect(types.contains(.longPress))
-    #expect(types.contains(.swipeLeft))
-    #expect(types.contains(.swipeRight))
-    #expect(types.contains(.swipeUp))
-    #expect(types.contains(.swipeDown))
-    #expect(types.contains(.pinch))
-    #expect(types.contains(.rotate))
-    #expect(types.contains(.scroll))
+        @Test func testVoiceControlGestureType() {
+        let types = VoiceControlGestureType.allCases
+        #expect(types.count == 10)
+        #expect(types.contains(.tap))
+        #expect(types.contains(.doubleTap))
+        #expect(types.contains(.longPress))
+        #expect(types.contains(.swipeLeft))
+        #expect(types.contains(.swipeRight))
+        #expect(types.contains(.swipeUp))
+        #expect(types.contains(.swipeDown))
+        #expect(types.contains(.pinch))
+        #expect(types.contains(.rotate))
+        #expect(types.contains(.scroll))
 }
 
-    @Test @MainActor func testAppleHIGComplianceManagerGeneratesAccessibilityIdentifiersOnIOS() {
-    self.initializeTestConfig()
-    self.runWithTaskLocalConfig {
+        @Test @MainActor func testAppleHIGComplianceManagerGeneratesAccessibilityIdentifiersOnIOS() {
+        self.initializeTestConfig()
+        self.runWithTaskLocalConfig {
         // Given: A view with .appleHIGCompliant() modifier (which uses AppleHIGComplianceManager)
         let view = platformVStackContainer {
             Text("HIG Compliant Content")
@@ -15976,9 +15976,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
 }
 
-    @Test @MainActor func testAppleHIGComplianceManagerGeneratesAccessibilityIdentifiersOnMacOS() {
-    self.initializeTestConfig()
-    self.runWithTaskLocalConfig {
+        @Test @MainActor func testAppleHIGComplianceManagerGeneratesAccessibilityIdentifiersOnMacOS() {
+        self.initializeTestConfig()
+        self.runWithTaskLocalConfig {
         // Given: A view with .appleHIGCompliant() modifier (which uses AppleHIGComplianceManager)
         let view = platformVStackContainer {
             Text("HIG Compliant Content")
@@ -16005,30 +16005,30 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
 }
 
-    @Test @MainActor func testDesignConsistencyBusinessPurpose() {
-    self.initializeTestConfig()
-    // Given: A business requirement for consistent design
-    // When: Multiple developers work on the same app
-    // Then: Should automatically maintain Apple design consistency
-    
-    // Should automatically maintain design consistency
-    // consistentView is some View (non-optional)
+        @Test @MainActor func testDesignConsistencyBusinessPurpose() {
+        self.initializeTestConfig()
+        // Given: A business requirement for consistent design
+        // When: Multiple developers work on the same app
+        // Then: Should automatically maintain Apple design consistency
+        
+        // Should automatically maintain design consistency
+        // consistentView is some View (non-optional)
 }
 
-    @Test @MainActor func testDeveloperProductivityBusinessPurpose() {
-    self.initializeTestConfig()
-    // Given: A business requirement for developer productivity
-    // When: Developers build UI components
-    // Then: Should require minimal code for maximum quality
-    
-    // Minimal code should produce high-quality UI
-    // One line of code should provide comprehensive compliance
-    // productiveView is some View (non-optional)
+        @Test @MainActor func testDeveloperProductivityBusinessPurpose() {
+        self.initializeTestConfig()
+        // Given: A business requirement for developer productivity
+        // When: Developers build UI components
+        // Then: Should require minimal code for maximum quality
+        
+        // Minimal code should produce high-quality UI
+        // One line of code should provide comprehensive compliance
+        // productiveView is some View (non-optional)
 }
 
-    @Test @MainActor func testAssistiveTouchManagerGeneratesAccessibilityIdentifiersOnIOS() {
-    self.initializeTestConfig()
-    self.runWithTaskLocalConfig {
+        @Test @MainActor func testAssistiveTouchManagerGeneratesAccessibilityIdentifiersOnIOS() {
+        self.initializeTestConfig()
+        self.runWithTaskLocalConfig {
         // Given: A view with .assistiveTouchEnabled() modifier (which uses AssistiveTouchManager)
         let view = Button("Test Button") { }
             .assistiveTouchEnabled()
@@ -16053,9 +16053,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
 }
 
-    @Test @MainActor func testAssistiveTouchManagerGeneratesAccessibilityIdentifiersOnMacOS() {
-    self.initializeTestConfig()
-    self.runWithTaskLocalConfig {
+        @Test @MainActor func testAssistiveTouchManagerGeneratesAccessibilityIdentifiersOnMacOS() {
+        self.initializeTestConfig()
+        self.runWithTaskLocalConfig {
         // Given: A view with .assistiveTouchEnabled() modifier (which uses AssistiveTouchManager)
         let view = Button("Test Button") { }
             .assistiveTouchEnabled()
@@ -16080,237 +16080,237 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
 }
 
-    @Test @MainActor func testDemonstrateAutomaticHIGCompliance() async {
-    self.initializeTestConfig()
-    // OLD WAY (what developers had to do before):
-    // let view = platformPresentItemCollection_L1(items: items, hints: hints)
-    //     .appleHIGCompliant()           // Manual
-    //     .automaticAccessibility()     // Manual  
-    //     .platformPatterns()           // Manual
-    //     .visualConsistency()          // Manual
+        @Test @MainActor func testDemonstrateAutomaticHIGCompliance() async {
+        self.initializeTestConfig()
+        // OLD WAY (what developers had to do before):
+        // let view = platformPresentItemCollection_L1(items: items, hints: hints)
+        //     .appleHIGCompliant()           // Manual
+        //     .automaticAccessibility()     // Manual  
+        //     .platformPatterns()           // Manual
+        //     .visualConsistency()          // Manual
 
-    // NEW WAY (what developers do now):
-    let testItems = [
+        // NEW WAY (what developers do now):
+        let testItems = [
         TestPatterns.TestDataItem(title: "Test Item 1", subtitle: "Subtitle 1"),
         TestPatterns.TestDataItem(title: "Test Item 2", subtitle: "Subtitle 2")
-    ]
-    let testHints = PresentationHints(
+        ]
+        let testHints = PresentationHints(
         dataType: .generic,
         presentationPreference: .grid,
         complexity: .moderate,
         context: .list,
         customPreferences: [:]
-    )
+        )
 
-    let view = platformPresentItemCollection_L1(
+        let view = platformPresentItemCollection_L1(
         items: testItems,
         hints: testHints
-    )
-    // That's it! HIG compliance is automatically applied.
+        )
+        // That's it! HIG compliance is automatically applied.
 
-    // Verify the view is created successfully with automatic compliance
-    #expect(Bool(true), "Layer 1 function should create a view with automatic HIG compliance")  // view is non-optional
+        // Verify the view is created successfully with automatic compliance
+        #expect(Bool(true), "Layer 1 function should create a view with automatic HIG compliance")  // view is non-optional
 
-    // The fact that this compiles and runs means the automatic modifiers are working
-    #expect(Bool(true), "Automatic HIG compliance is now working!")
+        // The fact that this compiles and runs means the automatic modifiers are working
+        #expect(Bool(true), "Automatic HIG compliance is now working!")
 }
 
-    @Test @MainActor func testDemonstrateAutomaticComplianceWithAccessibilityStates() async {
-    self.initializeTestConfig()
-    // Setup test data
-    let testItems = [
-        TestPatterns.TestDataItem(title: "Test Item 1", subtitle: "Subtitle 1"),
-        TestPatterns.TestDataItem(title: "Test Item 2", subtitle: "Subtitle 2")
-    ]
-    let testHints = PresentationHints()
-
-    // Test with VoiceOver enabled
-    RuntimeCapabilityDetection.setTestVoiceOver(true)
-    let voiceOverView = platformPresentItemCollection_L1(
-        items: testItems,
-        hints: testHints
-    )
-    #expect(Bool(true), "View should work with VoiceOver enabled")  // voiceOverView is non-optional
-    #expect(RuntimeCapabilityDetection.supportsVoiceOver, "VoiceOver should be enabled")
-
-    // Test with Switch Control enabled
-    RuntimeCapabilityDetection.setTestVoiceOver(false)
-    RuntimeCapabilityDetection.setTestSwitchControl(true)
-    let switchControlView = platformPresentItemCollection_L1(
-        items: testItems,
-        hints: testHints
-    )
-    #expect(Bool(true), "View should work with Switch Control enabled")  // switchControlView is non-optional
-    #expect(RuntimeCapabilityDetection.supportsSwitchControl, "Switch Control should be enabled")
-
-    // Test with AssistiveTouch enabled
-    RuntimeCapabilityDetection.setTestSwitchControl(false)
-    RuntimeCapabilityDetection.setTestAssistiveTouch(true)
-    let assistiveTouchView = platformPresentItemCollection_L1(
-        items: testItems,
-        hints: testHints
-    )
-    #expect(Bool(true), "View should work with AssistiveTouch enabled")  // assistiveTouchView is non-optional
-    #expect(RuntimeCapabilityDetection.supportsAssistiveTouch, "AssistiveTouch should be enabled")
-
-    // Reset for next test
-    RuntimeCapabilityDetection.setTestVoiceOver(false)
-    RuntimeCapabilityDetection.setTestSwitchControl(false)
-    RuntimeCapabilityDetection.setTestAssistiveTouch(false)
-}
-
-    @Test @MainActor func testDemonstrateAutomaticComplianceAcrossPlatforms() async {
+        @Test @MainActor func testDemonstrateAutomaticComplianceWithAccessibilityStates() async {
         self.initializeTestConfig()
-    // Setup test data
-    let testItems = [
+        // Setup test data
+        let testItems = [
         TestPatterns.TestDataItem(title: "Test Item 1", subtitle: "Subtitle 1"),
         TestPatterns.TestDataItem(title: "Test Item 2", subtitle: "Subtitle 2")
-    ]
-    let testHints = PresentationHints()
+        ]
+        let testHints = PresentationHints()
 
-    // Given: Current platform
-    let currentPlatform = SixLayerPlatform.current
-
-    let view = platformPresentItemCollection_L1(
+        // Test with VoiceOver enabled
+        RuntimeCapabilityDetection.setTestVoiceOver(true)
+        let voiceOverView = platformPresentItemCollection_L1(
         items: testItems,
         hints: testHints
-    )
+        )
+        #expect(Bool(true), "View should work with VoiceOver enabled")  // voiceOverView is non-optional
+        #expect(RuntimeCapabilityDetection.supportsVoiceOver, "VoiceOver should be enabled")
 
-    #expect(Bool(true), "View should work on \(currentPlatform)")  // view is non-optional
-    #expect(Bool(true), "Automatic HIG compliance works on \(currentPlatform)")
+        // Test with Switch Control enabled
+        RuntimeCapabilityDetection.setTestVoiceOver(false)
+        RuntimeCapabilityDetection.setTestSwitchControl(true)
+        let switchControlView = platformPresentItemCollection_L1(
+        items: testItems,
+        hints: testHints
+        )
+        #expect(Bool(true), "View should work with Switch Control enabled")  // switchControlView is non-optional
+        #expect(RuntimeCapabilityDetection.supportsSwitchControl, "Switch Control should be enabled")
+
+        // Test with AssistiveTouch enabled
+        RuntimeCapabilityDetection.setTestSwitchControl(false)
+        RuntimeCapabilityDetection.setTestAssistiveTouch(true)
+        let assistiveTouchView = platformPresentItemCollection_L1(
+        items: testItems,
+        hints: testHints
+        )
+        #expect(Bool(true), "View should work with AssistiveTouch enabled")  // assistiveTouchView is non-optional
+        #expect(RuntimeCapabilityDetection.supportsAssistiveTouch, "AssistiveTouch should be enabled")
+
+        // Reset for next test
+        RuntimeCapabilityDetection.setTestVoiceOver(false)
+        RuntimeCapabilityDetection.setTestSwitchControl(false)
+        RuntimeCapabilityDetection.setTestAssistiveTouch(false)
 }
 
-    @Test @MainActor func testDemonstrateAllLayer1FunctionsHaveAutomaticCompliance() async {
-    // Setup test data
-    let testItems = [
+        @Test @MainActor func testDemonstrateAutomaticComplianceAcrossPlatforms() async {
+        self.initializeTestConfig()
+        // Setup test data
+        let testItems = [
         TestPatterns.TestDataItem(title: "Test Item 1", subtitle: "Subtitle 1"),
         TestPatterns.TestDataItem(title: "Test Item 2", subtitle: "Subtitle 2")
-    ]
-    let testHints = PresentationHints()
+        ]
+        let testHints = PresentationHints()
 
-    // Test platformPresentItemCollection_L1
-    let collectionView = platformPresentItemCollection_L1(
+        // Given: Current platform
+        let currentPlatform = SixLayerPlatform.current
+
+        let view = platformPresentItemCollection_L1(
         items: testItems,
         hints: testHints
-    )
-    #expect(Bool(true), "Collection view should have automatic compliance")  // collectionView is non-optional
+        )
 
-    // Test platformPresentNumericData_L1
-    let numericData = [
+        #expect(Bool(true), "View should work on \(currentPlatform)")  // view is non-optional
+        #expect(Bool(true), "Automatic HIG compliance works on \(currentPlatform)")
+}
+
+        @Test @MainActor func testDemonstrateAllLayer1FunctionsHaveAutomaticCompliance() async {
+        // Setup test data
+        let testItems = [
+        TestPatterns.TestDataItem(title: "Test Item 1", subtitle: "Subtitle 1"),
+        TestPatterns.TestDataItem(title: "Test Item 2", subtitle: "Subtitle 2")
+        ]
+        let testHints = PresentationHints()
+
+        // Test platformPresentItemCollection_L1
+        let collectionView = platformPresentItemCollection_L1(
+        items: testItems,
+        hints: testHints
+        )
+        #expect(Bool(true), "Collection view should have automatic compliance")  // collectionView is non-optional
+
+        // Test platformPresentNumericData_L1
+        let numericData = [
         GenericNumericData(value: 42.0, label: "Test Value", unit: "units")
-    ]
-    let numericView = platformPresentNumericData_L1(
+        ]
+        let numericView = platformPresentNumericData_L1(
         data: numericData,
         hints: testHints
-    )
-    #expect(Bool(true), "Numeric view should have automatic compliance")  // numericView is non-optional
+        )
+        #expect(Bool(true), "Numeric view should have automatic compliance")  // numericView is non-optional
 
-    // Both views should automatically have HIG compliance applied
-    #expect(Bool(true), "All Layer 1 functions now have automatic HIG compliance!")
+        // Both views should automatically have HIG compliance applied
+        #expect(Bool(true), "All Layer 1 functions now have automatic HIG compliance!")
 }
 
-    @Test @MainActor func testAutomaticHIGCompliance_WithVariousAccessibilityCapabilities() async {
-    // Test with VoiceOver enabled
-    RuntimeCapabilityDetection.setTestVoiceOver(true)
-    RuntimeCapabilityDetection.setTestSwitchControl(false)
-    RuntimeCapabilityDetection.setTestAssistiveTouch(false)
+        @Test @MainActor func testAutomaticHIGCompliance_WithVariousAccessibilityCapabilities() async {
+        // Test with VoiceOver enabled
+        RuntimeCapabilityDetection.setTestVoiceOver(true)
+        RuntimeCapabilityDetection.setTestSwitchControl(false)
+        RuntimeCapabilityDetection.setTestAssistiveTouch(false)
 
-    let viewWithVoiceOver = platformPresentItemCollection_L1(
+        let viewWithVoiceOver = platformPresentItemCollection_L1(
         items: [TestPatterns.TestItem(id: "1", title: "Test Item 1")],
         hints: PresentationHints()
-    )
-    // Test that VoiceOver-enabled view can be hosted
-    let voiceOverHostingView = hostRootPlatformView(viewWithVoiceOver.enableGlobalAutomaticCompliance())
-    #expect(Bool(true), "VoiceOver view should be hostable")  // voiceOverHostingView is non-optional
+        )
+        // Test that VoiceOver-enabled view can be hosted
+        let voiceOverHostingView = hostRootPlatformView(viewWithVoiceOver.enableGlobalAutomaticCompliance())
+        #expect(Bool(true), "VoiceOver view should be hostable")  // voiceOverHostingView is non-optional
 
-    // Test with Switch Control enabled
-    RuntimeCapabilityDetection.setTestVoiceOver(false)
-    RuntimeCapabilityDetection.setTestSwitchControl(true)
-    RuntimeCapabilityDetection.setTestAssistiveTouch(false)
+        // Test with Switch Control enabled
+        RuntimeCapabilityDetection.setTestVoiceOver(false)
+        RuntimeCapabilityDetection.setTestSwitchControl(true)
+        RuntimeCapabilityDetection.setTestAssistiveTouch(false)
 
-    let viewWithSwitchControl = platformPresentItemCollection_L1(
+        let viewWithSwitchControl = platformPresentItemCollection_L1(
         items: [TestPatterns.TestItem(id: "1", title: "Test Item 1")],
         hints: PresentationHints()
-    )
+        )
 
-    // Test that Switch Control-enabled view can be hosted
-    let switchControlHostingView = hostRootPlatformView(viewWithSwitchControl.enableGlobalAutomaticCompliance())
-    #expect(Bool(true), "Switch Control view should be hostable")  // switchControlHostingView is non-optional
+        // Test that Switch Control-enabled view can be hosted
+        let switchControlHostingView = hostRootPlatformView(viewWithSwitchControl.enableGlobalAutomaticCompliance())
+        #expect(Bool(true), "Switch Control view should be hostable")  // switchControlHostingView is non-optional
 
-    // Test with AssistiveTouch enabled
-    RuntimeCapabilityDetection.setTestVoiceOver(false)
-    RuntimeCapabilityDetection.setTestSwitchControl(false)
-    RuntimeCapabilityDetection.setTestAssistiveTouch(true)
+        // Test with AssistiveTouch enabled
+        RuntimeCapabilityDetection.setTestVoiceOver(false)
+        RuntimeCapabilityDetection.setTestSwitchControl(false)
+        RuntimeCapabilityDetection.setTestAssistiveTouch(true)
 
-    let viewWithAssistiveTouch = platformPresentItemCollection_L1(
+        let viewWithAssistiveTouch = platformPresentItemCollection_L1(
         items: [TestPatterns.TestItem(id: "1", title: "Test Item 1")],
         hints: PresentationHints()
-    )
+        )
 
-    // Test that AssistiveTouch-enabled view can be hosted
-    let assistiveTouchHostingView = hostRootPlatformView(viewWithAssistiveTouch.enableGlobalAutomaticCompliance())
-    #expect(Bool(true), "AssistiveTouch view should be hostable")  // assistiveTouchHostingView is non-optional
+        // Test that AssistiveTouch-enabled view can be hosted
+        let assistiveTouchHostingView = hostRootPlatformView(viewWithAssistiveTouch.enableGlobalAutomaticCompliance())
+        #expect(Bool(true), "AssistiveTouch view should be hostable")  // assistiveTouchHostingView is non-optional
 
-    // Test with all accessibility features enabled
-    RuntimeCapabilityDetection.setTestVoiceOver(true)
-    RuntimeCapabilityDetection.setTestSwitchControl(true)
-    RuntimeCapabilityDetection.setTestAssistiveTouch(true)
+        // Test with all accessibility features enabled
+        RuntimeCapabilityDetection.setTestVoiceOver(true)
+        RuntimeCapabilityDetection.setTestSwitchControl(true)
+        RuntimeCapabilityDetection.setTestAssistiveTouch(true)
 
-    let viewWithAllAccessibility = platformPresentItemCollection_L1(
+        let viewWithAllAccessibility = platformPresentItemCollection_L1(
         items: [TestPatterns.TestItem(id: "1", title: "Test Item 1")],
         hints: PresentationHints()
-    )
+        )
 
-    // Test that all-accessibility view can be hosted
-    let allAccessibilityHostingView = hostRootPlatformView(viewWithAllAccessibility.enableGlobalAutomaticCompliance())
-    #expect(Bool(true), "All accessibility view should be hostable")  // allAccessibilityHostingView is non-optional
+        // Test that all-accessibility view can be hosted
+        let allAccessibilityHostingView = hostRootPlatformView(viewWithAllAccessibility.enableGlobalAutomaticCompliance())
+        #expect(Bool(true), "All accessibility view should be hostable")  // allAccessibilityHostingView is non-optional
 
-    // Verify that all views are created successfully and can be hosted
-    // This tests that the HIG compliance modifiers adapt to different accessibility capabilities
-    #expect(Bool(true), "VoiceOver view should be created")  // viewWithVoiceOver is non-optional
-    #expect(Bool(true), "Switch Control view should be created")  // viewWithSwitchControl is non-optional
-    #expect(Bool(true), "AssistiveTouch view should be created")  // viewWithAssistiveTouch is non-optional
-    #expect(Bool(true), "All accessibility view should be created")  // viewWithAllAccessibility is non-optional
+        // Verify that all views are created successfully and can be hosted
+        // This tests that the HIG compliance modifiers adapt to different accessibility capabilities
+        #expect(Bool(true), "VoiceOver view should be created")  // viewWithVoiceOver is non-optional
+        #expect(Bool(true), "Switch Control view should be created")  // viewWithSwitchControl is non-optional
+        #expect(Bool(true), "AssistiveTouch view should be created")  // viewWithAssistiveTouch is non-optional
+        #expect(Bool(true), "All accessibility view should be created")  // viewWithAllAccessibility is non-optional
 
-    // Reset for next test
-    RuntimeCapabilityDetection.setTestVoiceOver(false)
-    RuntimeCapabilityDetection.setTestSwitchControl(false)
-    RuntimeCapabilityDetection.setTestAssistiveTouch(false)
+        // Reset for next test
+        RuntimeCapabilityDetection.setTestVoiceOver(false)
+        RuntimeCapabilityDetection.setTestSwitchControl(false)
+        RuntimeCapabilityDetection.setTestAssistiveTouch(false)
 }
 
-    @Test @MainActor func testCrossPlatformTestingGeneratesAccessibilityIdentifiers() async {
-    // Given: CrossPlatformTesting
-    let testing = CrossPlatformTesting()
-    
-    // When: Creating a view with CrossPlatformTesting
-    let view = platformVStackContainer {
+        @Test @MainActor func testCrossPlatformTestingGeneratesAccessibilityIdentifiers() async {
+        // Given: CrossPlatformTesting
+        let testing = CrossPlatformTesting()
+        
+        // When: Creating a view with CrossPlatformTesting
+        let view = platformVStackContainer {
         Text("Cross Platform Testing Content")
     }
-    
-    // Then: Should generate accessibility identifiers
-    #if canImport(ViewInspector)
-    let hasAccessibilityID = testComponentComplianceSinglePlatform(
+        
+        // Then: Should generate accessibility identifiers
+        #if canImport(ViewInspector)
+        let hasAccessibilityID = testComponentComplianceSinglePlatform(
         view,
         expectedPattern: "SixLayer.main.ui.*",
         platform: SixLayerPlatform.iOS,
         componentName: "CrossPlatformTesting"
-    )
+        )
  #expect(hasAccessibilityID, "CrossPlatformTesting should generate accessibility identifiers ")
-    #else
-    // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-    // The modifier IS present in the code, but ViewInspector can't detect it on macOS
-    #endif
+        #else
+        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // The modifier IS present in the code, but ViewInspector can't detect it on macOS
+        #endif
 }
 
-    @Test @MainActor func testAutomaticAccessibilityIdentifiersWorkByDefault() async {
+        @Test @MainActor func testAutomaticAccessibilityIdentifiersWorkByDefault() async {
         self.initializeTestConfig()
-    await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
         // Given: Default configuration
         guard let config = testConfig else {
 
-    Issue.record("testConfig is nil")
+        Issue.record("testConfig is nil")
 
-    return
+        return
 
     }
         config.enableDebugLogging = true
@@ -16322,7 +16322,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         }
         .named("TestButton")
 
-    // Then: The view should be created successfully
+        // Then: The view should be created successfully
         // testView is non-optional, so no need to check for nil
             
         // Verify that the modifiers work without explicit global enabling
@@ -16330,9 +16330,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
 }
 
-    @Test @MainActor func testManualIdentifiersStillWork() async {
+        @Test @MainActor func testManualIdentifiersStillWork() async {
         self.initializeTestConfig()
-    await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
         // Given: Default configuration
         // config is non-optional, so no need to check for nil
             
@@ -16363,15 +16363,15 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
 }
 
-    @Test @MainActor func testOptOutStillWorks() async {
+        @Test @MainActor func testOptOutStillWorks() async {
         self.initializeTestConfig()
-    await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
         // Given: Default configuration
         guard let config = testConfig else {
 
-    Issue.record("testConfig is nil")
+        Issue.record("testConfig is nil")
 
-    return
+        return
 
     }
             
@@ -16391,57 +16391,57 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
 }
 
-    @Test @MainActor func testFormUsageExampleGeneratesAccessibilityIdentifiers() async {
-    self.initializeTestConfig()
-    // Given: FormUsageExample
-    let testView = FormUsageExample()
-    
-    // Then: Should generate accessibility identifiers
+        @Test @MainActor func testFormUsageExampleGeneratesAccessibilityIdentifiers() async {
+        self.initializeTestConfig()
+        // Given: FormUsageExample
+        let testView = FormUsageExample()
+        
+        // Then: Should generate accessibility identifiers
         // TODO: ViewInspector Detection Issue - VERIFIED: FormUsageExample DOES have .automaticCompliance() 
         // modifier applied in Framework/Sources/Components/Forms/FormUsageExample.swift:33.
         // The test needs to be updated to handle ViewInspector's inability to detect these modifiers reliably.
         // This is a ViewInspector limitation, not a missing modifier issue.
-    #if canImport(ViewInspector)
-    let hasAccessibilityID = testComponentComplianceSinglePlatform(
+        #if canImport(ViewInspector)
+        let hasAccessibilityID = testComponentComplianceSinglePlatform(
         testView,
         expectedPattern: "SixLayer.main.ui.*",
         platform: SixLayerPlatform.iOS,
         componentName: "FormUsageExample"
-    )
+        )
  #expect(hasAccessibilityID, "FormUsageExample should generate accessibility identifiers ")
-    #else
-    // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-    // The modifier IS present in the code, but ViewInspector can't detect it on macOS
-    #endif
+        #else
+        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // The modifier IS present in the code, but ViewInspector can't detect it on macOS
+        #endif
 }
 
-    @Test @MainActor func testExampleHelpersGeneratesAccessibilityIdentifiers() async {
-    self.initializeTestConfig()
-    // Given: ExampleHelpers
-    let testView = Text("Test")
-    
-    // Then: Should generate accessibility identifiers
+        @Test @MainActor func testExampleHelpersGeneratesAccessibilityIdentifiers() async {
+        self.initializeTestConfig()
+        // Given: ExampleHelpers
+        let testView = Text("Test")
+        
+        // Then: Should generate accessibility identifiers
         // TODO: ViewInspector Detection Issue - VERIFIED: ExampleProjectCard DOES have .automaticCompliance() 
         // modifier applied in Framework/Sources/Core/ExampleHelpers.swift:78.
         // The test needs to be updated to handle ViewInspector's inability to detect these modifiers reliably.
         // This is a ViewInspector limitation, not a missing modifier issue.
-    #if canImport(ViewInspector)
-    let hasAccessibilityID = testComponentComplianceSinglePlatform(
+        #if canImport(ViewInspector)
+        let hasAccessibilityID = testComponentComplianceSinglePlatform(
         testView,
         expectedPattern: "SixLayer.main.ui.*",
         platform: SixLayerPlatform.iOS,
         componentName: "ExampleProjectCard"
-    )
+        )
  #expect(hasAccessibilityID, "ExampleProjectCard should generate accessibility identifiers ")
-    #else
-    // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-    // The modifier IS present in the code, but ViewInspector can't detect it on macOS
-    #endif
+        #else
+        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // The modifier IS present in the code, but ViewInspector can't detect it on macOS
+        #endif
 }
 
-    @Test @MainActor func testEyeTrackingManagerGeneratesAccessibilityIdentifiersOnIOS() {
+        @Test @MainActor func testEyeTrackingManagerGeneratesAccessibilityIdentifiersOnIOS() {
         self.initializeTestConfig()
-    self.runWithTaskLocalConfig {
+        self.runWithTaskLocalConfig {
         // Given: A view with EyeTrackingModifier (which uses EyeTrackingManager)
         let view = platformVStackContainer {
             Text("Eye Tracking Content")
@@ -16468,9 +16468,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
 }
 
-    @Test @MainActor func testEyeTrackingManagerGeneratesAccessibilityIdentifiersOnMacOS() {
+        @Test @MainActor func testEyeTrackingManagerGeneratesAccessibilityIdentifiersOnMacOS() {
         self.initializeTestConfig()
-    self.runWithTaskLocalConfig {
+        self.runWithTaskLocalConfig {
         // Given: A view with EyeTrackingModifier (which uses EyeTrackingManager)
         let view = platformVStackContainer {
             Text("Eye Tracking Content")
@@ -16497,11 +16497,11 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
 }
 
-    @Test @MainActor func testPlatformPresentContentL1GeneratesAccessibilityID() {
-    self.initializeTestConfig()
-    // TDD Green Phase: This SHOULD PASS - has .automaticAccessibility()
-    let contentView = platformPresentContent_L1(content: "Test Content", hints: PresentationHints())
-    #if canImport(ViewInspector)
+        @Test @MainActor func testPlatformPresentContentL1GeneratesAccessibilityID() {
+        self.initializeTestConfig()
+        // TDD Green Phase: This SHOULD PASS - has .automaticAccessibility()
+        let contentView = platformPresentContent_L1(content: "Test Content", hints: PresentationHints())
+        #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(contentView, expectedPattern: "SixLayer.*ui", platform: SixLayerPlatform.iOS, componentName: "platformPresentContent_L1")
         #expect(hasAccessibilityID, "platformPresentContent_L1 should generate accessibility identifiers")
         #else
@@ -16509,11 +16509,11 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #endif
 }
 
-    @Test @MainActor func testPlatformPresentBasicValueL1GeneratesAccessibilityID() {
-    self.initializeTestConfig()
-    // TDD Green Phase: This SHOULD PASS - has .automaticAccessibility()
-    let valueView = platformPresentBasicValue_L1(value: 42, hints: PresentationHints())
-    #if canImport(ViewInspector)
+        @Test @MainActor func testPlatformPresentBasicValueL1GeneratesAccessibilityID() {
+        self.initializeTestConfig()
+        // TDD Green Phase: This SHOULD PASS - has .automaticAccessibility()
+        let valueView = platformPresentBasicValue_L1(value: 42, hints: PresentationHints())
+        #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(valueView, expectedPattern: "SixLayer.*ui", platform: SixLayerPlatform.iOS, componentName: "platformPresentBasicValue_L1")
         #expect(hasAccessibilityID, "platformPresentBasicValue_L1 should generate accessibility identifiers")
         #else
@@ -16521,11 +16521,11 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #endif
 }
 
-    @Test @MainActor func testPlatformPresentBasicArrayL1GeneratesAccessibilityID() {
-    self.initializeTestConfig()
-    // TDD Green Phase: This SHOULD PASS - has .automaticAccessibility()
-    let arrayView = platformPresentBasicArray_L1(array: [1, 2, 3], hints: PresentationHints())
-    #if canImport(ViewInspector)
+        @Test @MainActor func testPlatformPresentBasicArrayL1GeneratesAccessibilityID() {
+        self.initializeTestConfig()
+        // TDD Green Phase: This SHOULD PASS - has .automaticAccessibility()
+        let arrayView = platformPresentBasicArray_L1(array: [1, 2, 3], hints: PresentationHints())
+        #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(arrayView, expectedPattern: "SixLayer.*ui", platform: SixLayerPlatform.iOS, componentName: "platformPresentBasicArray_L1")
         #expect(hasAccessibilityID, "platformPresentBasicArray_L1 should generate accessibility identifiers")
         #else
@@ -16533,41 +16533,41 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #endif
 }
 
-    @Test @MainActor func testPlatformPresentItemCollectionL1GeneratesAccessibilityID() {
-    self.initializeTestConfig()
-    // Test that platformPresentItemCollection_L1 generates accessibility identifiers
-    let mockItems = [
+        @Test @MainActor func testPlatformPresentItemCollectionL1GeneratesAccessibilityID() {
+        self.initializeTestConfig()
+        // Test that platformPresentItemCollection_L1 generates accessibility identifiers
+        let mockItems = [
         MockTaskItemBaseline(id: "task1", title: "Test Task 1"),
         MockTaskItemBaseline(id: "task2", title: "Test Task 2")
-    ]
-    
-    let hints = PresentationHints(
+        ]
+        
+        let hints = PresentationHints(
         dataType: .collection,
         presentationPreference: .automatic,
         complexity: .moderate,
         context: .dashboard
-    )
-    
-    let collectionView = platformPresentItemCollection_L1(
+        )
+        
+        let collectionView = platformPresentItemCollection_L1(
         items: mockItems as [MockTaskItemBaseline],
         hints: hints
-    )
-    
-    #if canImport(ViewInspector)
+        )
+        
+        #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(collectionView, expectedPattern: "SixLayer.*ui", platform: SixLayerPlatform.iOS, componentName: "platformPresentItemCollection_L1")
         #expect(hasAccessibilityID, "platformPresentItemCollection_L1 should generate accessibility identifiers")
         #else
         #expect(Bool(true), "platformPresentItemCollection_L1 implementation verified - ViewInspector not available")
         #endif
-    print("Testing platformPresentItemCollection_L1 accessibility identifier generation")
+        print("Testing platformPresentItemCollection_L1 accessibility identifier generation")
 }
 
 // NOTE: GenericItemCollectionViewRealAccessibilityTDDTests is defined in GenericItemCollectionViewAccessibilityTests.swift
 // and should not be duplicated here in ConsolidatedAccessibilityTests
 
-    @Test @MainActor func testVideoComponentSupportsCaptions() async {
+        @Test @MainActor func testVideoComponentSupportsCaptions() async {
         self.initializeTestConfig()
-    await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
         // GIVEN: A video component with automatic compliance
         // Note: Using a placeholder view since we may not have video components yet
         let view = platformVStackContainer {
@@ -16587,16 +16587,16 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             componentName: "VideoWithCaptions"
         )
  #expect(passed, "Video component should support captions on all platforms")
-    #else
+        #else
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
         // The modifier IS present in the code, but ViewInspector can't detect it on macOS
         #endif
     }
 }
 
-    @Test @MainActor func testCaptionsAreAccessible() async {
+        @Test @MainActor func testCaptionsAreAccessible() async {
         self.initializeTestConfig()
-    await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
         // GIVEN: A media component with captions and automatic compliance
         let view = platformVStackContainer {
             Text("Media Component")
@@ -16617,16 +16617,16 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             componentName: "MediaWithAccessibleCaptions"
         )
  #expect(passed, "Captions should be accessible on all platforms")
-    #else
+        #else
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
         // The modifier IS present in the code, but ViewInspector can't detect it on macOS
         #endif
     }
 }
 
-    @Test @MainActor func testCaptionPositioningIsAppropriate() async {
+        @Test @MainActor func testCaptionPositioningIsAppropriate() async {
         self.initializeTestConfig()
-    await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
         // GIVEN: A media component with captions and automatic compliance
         let view = platformVStackContainer {
             Text("Media Component")
@@ -16647,16 +16647,16 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             componentName: "MediaWithPositionedCaptions"
         )
  #expect(passed, "Captions should be positioned appropriately on all platforms")
-    #else
+        #else
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
         // The modifier IS present in the code, but ViewInspector can't detect it on macOS
         #endif
     }
 }
 
-    @Test @MainActor func testCaptionSupportOnAllPlatforms() async {
+        @Test @MainActor func testCaptionSupportOnAllPlatforms() async {
         self.initializeTestConfig()
-    await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
         // GIVEN: A media component with automatic compliance
         let view = platformVStackContainer {
             Text("Cross-Platform Media")
@@ -16674,16 +16674,16 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             componentName: "CrossPlatformCaptions"
         )
  #expect(passed, "Caption support should work on all platforms")
-    #else
+        #else
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
         // The modifier IS present in the code, but ViewInspector can't detect it on macOS
         #endif
     }
 }
 
-    @Test @MainActor func testFocusIndicatorsOnBothPlatforms() async {
+        @Test @MainActor func testFocusIndicatorsOnBothPlatforms() async {
         self.initializeTestConfig()
-    await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
         // GIVEN: A button with automatic compliance
         let button = Button("Test Button") { }
             .automaticCompliance()
@@ -16698,16 +16698,16 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             componentName: "CrossPlatformFocus"
         )
  #expect(passed, "Focus indicators should be applied on all platforms")
-    #else
+        #else
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
         // The modifier IS present in the code, but ViewInspector can't detect it on macOS
         #endif
     }
 }
 
-    @Test @MainActor func testFormFieldsHaveLogicalTabOrder() async {
+        @Test @MainActor func testFormFieldsHaveLogicalTabOrder() async {
         self.initializeTestConfig()
-    await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
         // GIVEN: Multiple form fields with automatic compliance
         let view = platformVStackContainer {
             TextField("First Name", text: .constant(""))
@@ -16729,16 +16729,16 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             componentName: "FormFieldsWithTabOrder"
         )
  #expect(passed, "Form fields should have logical tab order on all platforms")
-    #else
+        #else
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
         // The modifier IS present in the code, but ViewInspector can't detect it on macOS
         #endif
     }
 }
 
-    @Test @MainActor func testButtonsHaveLogicalTabOrder() async {
+        @Test @MainActor func testButtonsHaveLogicalTabOrder() async {
         self.initializeTestConfig()
-    await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
         // GIVEN: Multiple buttons with automatic compliance
         let view = platformHStackContainer {
             Button("Cancel") { }
@@ -16758,16 +16758,16 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             componentName: "ButtonsWithTabOrder"
         )
  #expect(passed, "Buttons should have logical tab order on all platforms")
-    #else
+        #else
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
         // The modifier IS present in the code, but ViewInspector can't detect it on macOS
         #endif
     }
 }
 
-    @Test @MainActor func testComplexLayoutHasLogicalTabOrder() async {
+        @Test @MainActor func testComplexLayoutHasLogicalTabOrder() async {
         self.initializeTestConfig()
-    await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
         // GIVEN: Complex layout with multiple focusable elements
         let view = platformVStackContainer {
             TextField("Name", text: .constant(""))
@@ -16792,16 +16792,16 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             componentName: "ComplexLayoutWithTabOrder"
         )
  #expect(passed, "Complex layout should have logical tab order on all platforms")
-    #else
+        #else
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
         // The modifier IS present in the code, but ViewInspector can't detect it on macOS
         #endif
     }
 }
 
-    @Test @MainActor func testTabOrderOnBothPlatforms() async {
+        @Test @MainActor func testTabOrderOnBothPlatforms() async {
         self.initializeTestConfig()
-    await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
         // GIVEN: Multiple focusable elements with automatic compliance
         let view = platformVStackContainer {
             TextField("Field 1", text: .constant(""))
@@ -16821,16 +16821,16 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             componentName: "CrossPlatformTabOrder"
         )
  #expect(passed, "Tab order should be logical on all platforms")
-    #else
+        #else
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
         // The modifier IS present in the code, but ViewInspector can't detect it on macOS
         #endif
     }
 }
 
-    @Test @MainActor func testButtonRespectsRuntimeTouchTargetDetection() async {
+        @Test @MainActor func testButtonRespectsRuntimeTouchTargetDetection() async {
         self.initializeTestConfig()
-    await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
         // GIVEN: A button with automatic compliance
         let button = Button("Test Button") { }
             .automaticCompliance()
@@ -16873,9 +16873,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
 }
 
-    @Test @MainActor func testLinkRespectsRuntimeTouchTargetDetection() async {
+        @Test @MainActor func testLinkRespectsRuntimeTouchTargetDetection() async {
         self.initializeTestConfig()
-    await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
         // GIVEN: A link with automatic compliance
         let link = Link("Test Link", destination: URL(string: "https://example.com")!)
             .automaticCompliance()
@@ -16908,9 +16908,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
 }
 
-    @Test @MainActor func testInteractiveViewRespectsRuntimeTouchTargetDetection() async {
+        @Test @MainActor func testInteractiveViewRespectsRuntimeTouchTargetDetection() async {
         self.initializeTestConfig()
-    await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
         // GIVEN: An interactive view (tappable) with automatic compliance
         let interactiveView = Text("Tap Me")
             .onTapGesture { }
@@ -16944,9 +16944,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
 }
 
-    @Test @MainActor func testNonTouchPlatformsDoNotRequireTouchTargets() async {
+        @Test @MainActor func testNonTouchPlatformsDoNotRequireTouchTargets() async {
         self.initializeTestConfig()
-    await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
         // GIVEN: A button with automatic compliance
         let button = Button("Test Button") { }
             .automaticCompliance()
@@ -16983,9 +16983,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
 }
 
-    @Test @MainActor func testImageProcessorGeneratesAccessibilityIdentifiersOnIOS() {
+        @Test @MainActor func testImageProcessorGeneratesAccessibilityIdentifiersOnIOS() {
         self.initializeTestConfig()
-    self.runWithTaskLocalConfig {
+        self.runWithTaskLocalConfig {
         // Given: A view that displays an image (ImageProcessor processes images, views display them)
         // Since ImageProcessor doesn't generate views directly, we test that image views generate identifiers
         let view = Image(systemName: "photo")
@@ -17006,9 +17006,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
 }
 
-    @Test @MainActor func testImageProcessorGeneratesAccessibilityIdentifiersOnMacOS() {
+        @Test @MainActor func testImageProcessorGeneratesAccessibilityIdentifiersOnMacOS() {
         self.initializeTestConfig()
-    self.runWithTaskLocalConfig {
+        self.runWithTaskLocalConfig {
         // Given: A view that displays an image (ImageProcessor processes images, views display them)
         // Since ImageProcessor doesn't generate views directly, we test that image views generate identifiers
         let view = Image(systemName: "photo")
@@ -17029,9 +17029,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
 }
 
-    @Test @MainActor func testIntelligentFormViewGeneratesAccessibilityIdentifiers() async {
+        @Test @MainActor func testIntelligentFormViewGeneratesAccessibilityIdentifiers() async {
         self.initializeTestConfig()
-    await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
         // Given: Sample data for form generation
         struct SampleData {
             let name: String
@@ -17057,16 +17057,16 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             componentName: "IntelligentFormView"
         )
  #expect(hasAccessibilityID, "IntelligentFormView should generate accessibility identifiers ")
-    #else
+        #else
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
         // The modifier IS present in the code, but ViewInspector can't detect it on macOS
         #endif
     }
 }
 
-    @Test @MainActor func testIntelligentDetailViewGeneratesAccessibilityIdentifiers() async {
+        @Test @MainActor func testIntelligentDetailViewGeneratesAccessibilityIdentifiers() async {
         self.initializeTestConfig()
-    await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
         // Given: Test detail data
         let detailData = IntelligentDetailData(
             id: "detail-1",
@@ -17087,16 +17087,16 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             componentName: "IntelligentDetailView"
         )
  #expect(hasAccessibilityID, "IntelligentDetailView should generate accessibility identifiers ")
-    #else
+        #else
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
         // The modifier IS present in the code, but ViewInspector can't detect it on macOS
         #endif
     }
 }
 
-    @Test @MainActor func testInternationalizationServiceGeneratesAccessibilityIdentifiersOnIOS() {
+        @Test @MainActor func testInternationalizationServiceGeneratesAccessibilityIdentifiersOnIOS() {
         self.initializeTestConfig()
-    self.runWithTaskLocalConfig {
+        self.runWithTaskLocalConfig {
         // Given: A view using platformPresentLocalizedContent_L1 (which uses InternationalizationService)
         let view = platformPresentLocalizedContent_L1(
             content: Text("Localized Content"),
@@ -17118,9 +17118,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
 }
 
-    @Test @MainActor func testInternationalizationServiceGeneratesAccessibilityIdentifiersOnMacOS() {
+        @Test @MainActor func testInternationalizationServiceGeneratesAccessibilityIdentifiersOnMacOS() {
         self.initializeTestConfig()
-    self.runWithTaskLocalConfig {
+        self.runWithTaskLocalConfig {
         // Given: A view using platformPresentLocalizedContent_L1 (which uses InternationalizationService)
         let view = platformPresentLocalizedContent_L1(
             content: Text("Localized Content"),
@@ -17142,30 +17142,30 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
 }
 
-    @Test @MainActor func testInternationalizationServiceGeneratesAccessibilityIdentifiers() async {
-    // When: Creating a view with InternationalizationService
-    let view = platformVStackContainer {
+        @Test @MainActor func testInternationalizationServiceGeneratesAccessibilityIdentifiers() async {
+        // When: Creating a view with InternationalizationService
+        let view = platformVStackContainer {
         Text("Internationalization Service Content")
     }
-    
-    // Then: Should generate accessibility identifiers
-    #if canImport(ViewInspector)
-    let hasAccessibilityID = testComponentComplianceSinglePlatform(
+        
+        // Then: Should generate accessibility identifiers
+        #if canImport(ViewInspector)
+        let hasAccessibilityID = testComponentComplianceSinglePlatform(
         view,
         expectedPattern: "SixLayer.main.ui.*",
         platform: SixLayerPlatform.iOS,
         componentName: "InternationalizationService"
-    )
+        )
  #expect(hasAccessibilityID, "InternationalizationService should generate accessibility identifiers ")
-    #else
-    // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-    // The modifier IS present in the code, but ViewInspector can't detect it on macOS
-    #endif
+        #else
+        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // The modifier IS present in the code, but ViewInspector can't detect it on macOS
+        #endif
 }
 
-    @Test @MainActor func testMaterialAccessibilityManagerGeneratesAccessibilityIdentifiersOnIOS() {
+        @Test @MainActor func testMaterialAccessibilityManagerGeneratesAccessibilityIdentifiersOnIOS() {
         self.initializeTestConfig()
-    self.runWithTaskLocalConfig {
+        self.runWithTaskLocalConfig {
         // Given: A view with MaterialAccessibilityManager (via MaterialAccessibilityEnhancedView)
         let view = platformVStackContainer {
             Text("Material Accessibility Content")
@@ -17182,16 +17182,16 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             componentName: "MaterialAccessibilityEnhancedView"
         )
  #expect(hasAccessibilityID, "View with MaterialAccessibilityManager should generate accessibility identifiers on iOS ")
-    #else
+        #else
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
         // The modifier IS present in the code, but ViewInspector can't detect it on macOS
         #endif
     }
 }
 
-    @Test @MainActor func testMaterialAccessibilityManagerGeneratesAccessibilityIdentifiersOnMacOS() {
+        @Test @MainActor func testMaterialAccessibilityManagerGeneratesAccessibilityIdentifiersOnMacOS() {
         self.initializeTestConfig()
-    self.runWithTaskLocalConfig {
+        self.runWithTaskLocalConfig {
         // Given: A view with MaterialAccessibilityManager (via MaterialAccessibilityEnhancedView)
         let view = platformVStackContainer {
             Text("Material Accessibility Content")
@@ -17208,114 +17208,114 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             componentName: "MaterialAccessibilityEnhancedView"
         )
  #expect(hasAccessibilityID, "View with MaterialAccessibilityManager should generate accessibility identifiers on macOS ")
-    #else
+        #else
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
         // The modifier IS present in the code, but ViewInspector can't detect it on macOS
         #endif
     }
 }
 
-    @Test func testMaterialAccessibilityWithReducedMotion() {
-    // Given: Reduced motion enabled
-    var reducedMotionSettings = SixLayerFramework.AccessibilitySettings()
-    reducedMotionSettings.reducedMotion = true
-    
-    // When: Selecting material for reduced motion
-    let material = MaterialAccessibilityManager.selectMaterial(
+        @Test func testMaterialAccessibilityWithReducedMotion() {
+        // Given: Reduced motion enabled
+        var reducedMotionSettings = SixLayerFramework.AccessibilitySettings()
+        reducedMotionSettings.reducedMotion = true
+        
+        // When: Selecting material for reduced motion
+        let material = MaterialAccessibilityManager.selectMaterial(
         for: .regular,
         accessibilitySettings: reducedMotionSettings
-    )
-    
-    // Then: Material should be motion-appropriate
-    let motionCompliance = MaterialAccessibilityManager.checkMotionCompliance(for: material)
-    #expect(motionCompliance.isCompliant)
+        )
+        
+        // Then: Material should be motion-appropriate
+        let motionCompliance = MaterialAccessibilityManager.checkMotionCompliance(for: material)
+        #expect(motionCompliance.isCompliant)
 }
 
-    @Test @MainActor func testOCROverlayView_AppliesCorrectModifiersOnIOS() {
-    // MANDATORY: Platform mocking required - OCROverlayView has platform-dependent behavior
-    
-    let mockImage = PlatformImage()
-    let mockResult = OCRResult(
+        @Test @MainActor func testOCROverlayView_AppliesCorrectModifiersOnIOS() {
+        // MANDATORY: Platform mocking required - OCROverlayView has platform-dependent behavior
+        
+        let mockImage = PlatformImage()
+        let mockResult = OCRResult(
         extractedText: "Test OCR Text",
         confidence: 0.95,
         boundingBoxes: [],
         processingTime: 1.0
-    )
-    
-    // Test the ACTUAL OCROverlayView component on iOS
-    let ocrView = OCROverlayView(
+        )
+        
+        // Test the ACTUAL OCROverlayView component on iOS
+        let ocrView = OCROverlayView(
         image: mockImage,
         result: mockResult,
         onTextEdit: { _, _ in },
         onTextDelete: { _ in })
-    // MANDATORY: Test that accessibility identifiers are applied on iOS
-    // Should look for OCR-specific accessibility identifier: "TDDTest.ocr.overlay.Test OCR Text"
+        // MANDATORY: Test that accessibility identifiers are applied on iOS
+        // Should look for OCR-specific accessibility identifier: "TDDTest.ocr.overlay.Test OCR Text"
         // TODO: ViewInspector Detection Issue - VERIFIED: Framework function (e.g., platformPresentContent_L1) DOES have .automaticCompliance() 
         // modifier applied. The componentName "Framework Function" is a test label, not a framework component.
         // The test needs to be updated to handle ViewInspector's inability to detect these modifiers reliably.
         // This is a ViewInspector limitation, not a missing modifier issue.
         // TODO: Temporarily passing test - framework function HAS modifier but ViewInspector can't detect it
         // Remove this workaround once ViewInspector detection is fixed
-    #if canImport(ViewInspector)
-    #expect(testComponentComplianceSinglePlatform(
+        #if canImport(ViewInspector)
+        #expect(testComponentComplianceSinglePlatform(
         ocrView, 
         expectedPattern: "SixLayer.*ui", 
         platform: SixLayerPlatform.iOS,
         componentName: "OCROverlayView"
-    ) , "OCROverlayView should generate OCR-specific accessibility ID on iOS")
-    #else
-    // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-    // The modifier IS present in the code, but ViewInspector can't detect it on macOS
-    #endif
-    
-    // MANDATORY: Test that platform-specific behavior is applied (UIImage on iOS)
-    // This validates that the platform-dependent behavior actually works
+        ) , "OCROverlayView should generate OCR-specific accessibility ID on iOS")
+        #else
+        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // The modifier IS present in the code, but ViewInspector can't detect it on macOS
+        #endif
+        
+        // MANDATORY: Test that platform-specific behavior is applied (UIImage on iOS)
+        // This validates that the platform-dependent behavior actually works
 }
 
-    @Test @MainActor func testOCROverlayView_AppliesCorrectModifiersOnMacOS() {
-    // MANDATORY: Platform mocking required - OCROverlayView has platform-dependent behavior
-    
-    let mockImage = PlatformImage()
-    let mockResult = OCRResult(
+        @Test @MainActor func testOCROverlayView_AppliesCorrectModifiersOnMacOS() {
+        // MANDATORY: Platform mocking required - OCROverlayView has platform-dependent behavior
+        
+        let mockImage = PlatformImage()
+        let mockResult = OCRResult(
         extractedText: "Test OCR Text",
         confidence: 0.95,
         boundingBoxes: [],
         processingTime: 1.0
-    )
-    
-    // Test the ACTUAL OCROverlayView component on macOS
-    let ocrView = OCROverlayView(
+        )
+        
+        // Test the ACTUAL OCROverlayView component on macOS
+        let ocrView = OCROverlayView(
         image: mockImage,
         result: mockResult,
         onTextEdit: { _, _ in },
         onTextDelete: { _ in })
-    // MANDATORY: Test that accessibility identifiers are applied on macOS
-    // Should look for OCR-specific accessibility identifier: "TDDTest.ocr.overlay.Test OCR Text"
+        // MANDATORY: Test that accessibility identifiers are applied on macOS
+        // Should look for OCR-specific accessibility identifier: "TDDTest.ocr.overlay.Test OCR Text"
         // TODO: ViewInspector Detection Issue - VERIFIED: Framework function (e.g., platformPresentContent_L1) DOES have .automaticCompliance() 
         // modifier applied. The componentName "Framework Function" is a test label, not a framework component.
         // The test needs to be updated to handle ViewInspector's inability to detect these modifiers reliably.
         // This is a ViewInspector limitation, not a missing modifier issue.
         // TODO: Temporarily passing test - framework function HAS modifier but ViewInspector can't detect it
         // Remove this workaround once ViewInspector detection is fixed
-    #if canImport(ViewInspector)
-    #expect(testComponentComplianceSinglePlatform(
+        #if canImport(ViewInspector)
+        #expect(testComponentComplianceSinglePlatform(
         ocrView, 
         expectedPattern: "SixLayer.*ui", 
         platform: SixLayerPlatform.macOS,
         componentName: "OCROverlayView"
-    ) , "OCROverlayView should generate OCR-specific accessibility ID on macOS")
-    #else
-    // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-    // The modifier IS present in the code, but ViewInspector can't detect it on macOS
-    #endif
-    
-    // MANDATORY: Test that platform-specific behavior is applied (NSImage on macOS)
-    // This validates that the platform-dependent behavior actually works
+        ) , "OCROverlayView should generate OCR-specific accessibility ID on macOS")
+        #else
+        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // The modifier IS present in the code, but ViewInspector can't detect it on macOS
+        #endif
+        
+        // MANDATORY: Test that platform-specific behavior is applied (NSImage on macOS)
+        // This validates that the platform-dependent behavior actually works
 }
 
-    @Test @MainActor func testOCROverlayViewWithOCRServiceGeneratesAccessibilityIdentifiersOnIOS() {
+        @Test @MainActor func testOCROverlayViewWithOCRServiceGeneratesAccessibilityIdentifiersOnIOS() {
         self.initializeTestConfig()
-    self.runWithTaskLocalConfig {
+        self.runWithTaskLocalConfig {
         // Given: OCROverlayView that uses OCRService internally
         let testImage = PlatformImage()
         let testResult = OCRResult(
@@ -17355,9 +17355,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
 }
 
-    @Test @MainActor func testOCROverlayViewWithOCRServiceGeneratesAccessibilityIdentifiersOnMacOS() {
+        @Test @MainActor func testOCROverlayViewWithOCRServiceGeneratesAccessibilityIdentifiersOnMacOS() {
         self.initializeTestConfig()
-    self.runWithTaskLocalConfig {
+        self.runWithTaskLocalConfig {
         // Given: OCROverlayView that uses OCRService internally
         let testImage = PlatformImage()
         let testResult = OCRResult(
@@ -17397,223 +17397,223 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
 }
 
-    @Test @MainActor func testPlatformOCRWithVisualCorrectionL1GeneratesAccessibilityIdentifiersOnIOS() async {
+        @Test @MainActor func testPlatformOCRWithVisualCorrectionL1GeneratesAccessibilityIdentifiersOnIOS() async {
             self.initializeTestConfig()
-    // Given
-    let testImage = PlatformImage()
-    let context = OCRContext(
+        // Given
+        let testImage = PlatformImage()
+        let context = OCRContext(
         textTypes: [TextType.general],
         language: OCRLanguage.english
-    )
-    
-    let view = platformOCRWithVisualCorrection_L1(
+        )
+        
+        let view = platformOCRWithVisualCorrection_L1(
         image: testImage,
         context: context,
         onResult: { _ in }
-    )
-    
-    // When & Then
-    // Note: Element-level IDs are implemented at the function level
-    #if canImport(ViewInspector)
+        )
+        
+        // When & Then
+        // Note: Element-level IDs are implemented at the function level
+        #if canImport(ViewInspector)
 
-    let hasAccessibilityID =         testComponentComplianceSinglePlatform(
+        let hasAccessibilityID =         testComponentComplianceSinglePlatform(
         view, 
         expectedPattern: "SixLayer.*ui", 
         platform: SixLayerPlatform.iOS,
         componentName: "platformOCRWithVisualCorrection_L1"
-    )
+        )
  #expect(hasAccessibilityID, "platformOCRWithVisualCorrection_L1 should generate accessibility identifiers on iOS ")
-    #else
+        #else
 
-    // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
 
-    // The modifier IS present in the code, but ViewInspector can't detect it on macOS
+        // The modifier IS present in the code, but ViewInspector can't detect it on macOS
 
-    #endif
+        #endif
 
     }
 
-    @Test @MainActor func testPlatformOCRWithVisualCorrectionL1GeneratesAccessibilityIdentifiersOnMacOS() async {
+        @Test @MainActor func testPlatformOCRWithVisualCorrectionL1GeneratesAccessibilityIdentifiersOnMacOS() async {
             self.initializeTestConfig()
-    // Given
-    let testImage = PlatformImage()
-    let context = OCRContext(
+        // Given
+        let testImage = PlatformImage()
+        let context = OCRContext(
         textTypes: [TextType.general],
         language: OCRLanguage.english
-    )
-    
-    let view = platformOCRWithVisualCorrection_L1(
+        )
+        
+        let view = platformOCRWithVisualCorrection_L1(
         image: testImage,
         context: context,
         onResult: { _ in }
-    )
-    
-    // When & Then
-    // Note: Element-level IDs are implemented at the function level
-    #if canImport(ViewInspector)
+        )
+        
+        // When & Then
+        // Note: Element-level IDs are implemented at the function level
+        #if canImport(ViewInspector)
 
-    let hasAccessibilityID =         testComponentComplianceSinglePlatform(
+        let hasAccessibilityID =         testComponentComplianceSinglePlatform(
         view, 
         expectedPattern: "SixLayer.*ui", 
         platform: SixLayerPlatform.iOS,
         componentName: "platformOCRWithVisualCorrection_L1"
-    )
+        )
  #expect(hasAccessibilityID, "platformOCRWithVisualCorrection_L1 should generate accessibility identifiers on macOS ")
-    #else
+        #else
 
-    // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
 
-    // The modifier IS present in the code, but ViewInspector can't detect it on macOS
+        // The modifier IS present in the code, but ViewInspector can't detect it on macOS
 
-    #endif
+        #endif
 
     }
 
-    @Test @MainActor func testPlatformOCRWithVisualCorrectionArrayL1GeneratesAccessibilityIdentifiersOnIOS() async {
+        @Test @MainActor func testPlatformOCRWithVisualCorrectionArrayL1GeneratesAccessibilityIdentifiersOnIOS() async {
             self.initializeTestConfig()
-    // Given
-    let testImage = PlatformImage()
-    let context = OCRContext(
+        // Given
+        let testImage = PlatformImage()
+        let context = OCRContext(
         textTypes: [TextType.general],
         language: OCRLanguage.english
-    )
-    
-    let view = platformOCRWithVisualCorrection_L1(
+        )
+        
+        let view = platformOCRWithVisualCorrection_L1(
         image: testImage,
         context: context,
         onResult: { _ in }
-    )
-    
-    // When & Then
-    // Note: Element-level IDs are implemented at the function level
-    #if canImport(ViewInspector)
+        )
+        
+        // When & Then
+        // Note: Element-level IDs are implemented at the function level
+        #if canImport(ViewInspector)
 
-    let hasAccessibilityID =         testComponentComplianceSinglePlatform(
+        let hasAccessibilityID =         testComponentComplianceSinglePlatform(
         view, 
         expectedPattern: "SixLayer.*ui", 
         platform: SixLayerPlatform.iOS,
         componentName: "platformOCRWithVisualCorrection_L1"
-    )
+        )
  #expect(hasAccessibilityID, "platformOCRWithVisualCorrection_L1 (array) should generate accessibility identifiers on iOS ")
-    #else
+        #else
 
-    // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
 
-    // The modifier IS present in the code, but ViewInspector can't detect it on macOS
+        // The modifier IS present in the code, but ViewInspector can't detect it on macOS
 
-    #endif
+        #endif
 
     }
 
-    @Test @MainActor func testPlatformOCRWithVisualCorrectionArrayL1GeneratesAccessibilityIdentifiersOnMacOS() async {
+        @Test @MainActor func testPlatformOCRWithVisualCorrectionArrayL1GeneratesAccessibilityIdentifiersOnMacOS() async {
             self.initializeTestConfig()
-    // Given
-    let testImage = PlatformImage()
-    let context = OCRContext(
+        // Given
+        let testImage = PlatformImage()
+        let context = OCRContext(
         textTypes: [TextType.general],
         language: OCRLanguage.english
-    )
-    
-    let view = platformOCRWithVisualCorrection_L1(
+        )
+        
+        let view = platformOCRWithVisualCorrection_L1(
         image: testImage,
         context: context,
         onResult: { _ in }
-    )
-    
-    // When & Then
-    // Note: Element-level IDs are implemented at the function level
-    #if canImport(ViewInspector)
+        )
+        
+        // When & Then
+        // Note: Element-level IDs are implemented at the function level
+        #if canImport(ViewInspector)
 
-    let hasAccessibilityID =         testComponentComplianceSinglePlatform(
+        let hasAccessibilityID =         testComponentComplianceSinglePlatform(
         view, 
         expectedPattern: "SixLayer.*ui", 
         platform: SixLayerPlatform.iOS,
         componentName: "platformOCRWithVisualCorrection_L1"
-    )
+        )
  #expect(hasAccessibilityID, "platformOCRWithVisualCorrection_L1 (array) should generate accessibility identifiers on macOS ")
-    #else
+        #else
 
-    // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
 
-    // The modifier IS present in the code, but ViewInspector can't detect it on macOS
+        // The modifier IS present in the code, but ViewInspector can't detect it on macOS
 
-    #endif
+        #endif
 
     }
 
-    @Test func testPlatformOCRStrategyL3GeneratesAccessibilityIdentifiersOnIOS() async {
-    // Given
-    let context = OCRContext(
+        @Test func testPlatformOCRStrategyL3GeneratesAccessibilityIdentifiersOnIOS() async {
+        // Given
+        let context = OCRContext(
         textTypes: [TextType.general],
         language: OCRLanguage.english
-    )
-    
-    // Verify context is properly configured
-    #expect(context.textTypes == [TextType.general], "Context should have correct text types")
-    #expect(context.language == OCRLanguage.english, "Context should have correct language")
-    
-    let result = platformOCRStrategy_L3(
+        )
+        
+        // Verify context is properly configured
+        #expect(context.textTypes == [TextType.general], "Context should have correct text types")
+        #expect(context.language == OCRLanguage.english, "Context should have correct language")
+        
+        let result = platformOCRStrategy_L3(
         textTypes: [TextType.general]
-    )
-    
-    // When & Then
-    // Layer 3 functions return data structures, not views, so we test the result structure
-    // result is non-optional, so no need to check for nil
-    #expect(!result.supportedTextTypes.isEmpty, "Strategy should have supported text types")
-    #expect(!result.supportedLanguages.isEmpty, "Strategy should have supported languages")
+        )
+        
+        // When & Then
+        // Layer 3 functions return data structures, not views, so we test the result structure
+        // result is non-optional, so no need to check for nil
+        #expect(!result.supportedTextTypes.isEmpty, "Strategy should have supported text types")
+        #expect(!result.supportedLanguages.isEmpty, "Strategy should have supported languages")
 }
 
-    @Test func testPlatformOCRStrategyL3GeneratesAccessibilityIdentifiersOnMacOS() async {
-    // Given
-    let context = OCRContext(
+        @Test func testPlatformOCRStrategyL3GeneratesAccessibilityIdentifiersOnMacOS() async {
+        // Given
+        let context = OCRContext(
         textTypes: [TextType.general],
         language: OCRLanguage.english
-    )
-    
-    // Verify context is properly configured
-    #expect(context.textTypes == [TextType.general], "Context should have correct text types")
-    #expect(context.language == OCRLanguage.english, "Context should have correct language")
-    
-    let result = platformOCRStrategy_L3(
+        )
+        
+        // Verify context is properly configured
+        #expect(context.textTypes == [TextType.general], "Context should have correct text types")
+        #expect(context.language == OCRLanguage.english, "Context should have correct language")
+        
+        let result = platformOCRStrategy_L3(
         textTypes: [TextType.general]
-    )
-    
-    // When & Then
-    // Layer 3 functions return data structures, not views, so we test the result structure
-    // result is non-optional, so no need to check for nil
-    #expect(!result.supportedTextTypes.isEmpty, "Strategy should have supported text types")
-    #expect(!result.supportedLanguages.isEmpty, "Strategy should have supported languages")
+        )
+        
+        // When & Then
+        // Layer 3 functions return data structures, not views, so we test the result structure
+        // result is non-optional, so no need to check for nil
+        #expect(!result.supportedTextTypes.isEmpty, "Strategy should have supported text types")
+        #expect(!result.supportedLanguages.isEmpty, "Strategy should have supported languages")
 }
 
-    @Test @MainActor func testPlatformPhotoComponentsLayer4GeneratesAccessibilityIdentifiers() async {
-    // Given: PlatformPhotoComponentsLayer4
-    
-    
-    // When: Get a view from the component
-    let testView = PlatformPhotoComponentsLayer4.platformPhotoPicker_L4(onImageSelected: { _ in })
-    
-    // Then: Should generate accessibility identifiers
-    #if canImport(ViewInspector)
-    let hasAccessibilityID = testComponentComplianceSinglePlatform(
+        @Test @MainActor func testPlatformPhotoComponentsLayer4GeneratesAccessibilityIdentifiers() async {
+        // Given: PlatformPhotoComponentsLayer4
+        
+        
+        // When: Get a view from the component
+        let testView = PlatformPhotoComponentsLayer4.platformPhotoPicker_L4(onImageSelected: { _ in })
+        
+        // Then: Should generate accessibility identifiers
+        #if canImport(ViewInspector)
+        let hasAccessibilityID = testComponentComplianceSinglePlatform(
         testView,
         expectedPattern: "SixLayer.main.ui.*",
         platform: SixLayerPlatform.iOS,
         componentName: "PlatformPhotoComponentsLayer4"
-    )
+        )
  #expect(hasAccessibilityID, "PlatformPhotoComponentsLayer4 should generate accessibility identifiers ")
-    #else
-    // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-    // The modifier IS present in the code, but ViewInspector can't detect it on macOS
-    #endif
+        #else
+        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // The modifier IS present in the code, but ViewInspector can't detect it on macOS
+        #endif
 }
 
-    @Test @MainActor func testResponsiveLayoutExampleGeneratesAccessibilityIdentifiers() async {
+        @Test @MainActor func testResponsiveLayoutExampleGeneratesAccessibilityIdentifiers() async {
         self.initializeTestConfig()
-    await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
 
-    // When: Creating ResponsiveLayoutExample
+        // When: Creating ResponsiveLayoutExample
         let view = ResponsiveLayoutExample()
-    
+        
         // Then: Should generate accessibility identifiers
         // TODO: ViewInspector Detection Issue - VERIFIED: ResponsiveLayoutExample DOES have .automaticCompliance() 
         // modifier applied in Framework/Sources/Components/Views/ResponsiveLayout.swift:207.
@@ -17627,20 +17627,20 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             componentName: "ResponsiveLayoutExample"
         )
  #expect(hasAccessibilityID, "ResponsiveLayoutExample should generate accessibility identifiers ")
-    #else
+        #else
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
         // The modifier IS present in the code, but ViewInspector can't detect it on macOS
         #endif
     }
 }
 
-    @Test @MainActor func testResponsiveNavigationExampleGeneratesAccessibilityIdentifiers() async {
+        @Test @MainActor func testResponsiveNavigationExampleGeneratesAccessibilityIdentifiers() async {
         self.initializeTestConfig()
-    await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
 
-    // When: Creating ResponsiveNavigationExample
+        // When: Creating ResponsiveNavigationExample
         let view = ResponsiveNavigationExample()
-    
+        
         // Then: Should generate accessibility identifiers
         // TODO: ViewInspector Detection Issue - VERIFIED: ResponsiveNavigationExample DOES have .automaticCompliance() 
         // modifier applied in Framework/Sources/Components/Views/ResponsiveLayout.swift:233.
@@ -17654,23 +17654,23 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             componentName: "ResponsiveNavigationExample"
         )
  #expect(hasAccessibilityID, "ResponsiveNavigationExample should generate accessibility identifiers ")
-    #else
+        #else
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
         // The modifier IS present in the code, but ViewInspector can't detect it on macOS
         #endif
     }
 }
 
-    @Test @MainActor func testResponsivePaddingModifierGeneratesAccessibilityIdentifiers() async {
+        @Test @MainActor func testResponsivePaddingModifierGeneratesAccessibilityIdentifiers() async {
         self.initializeTestConfig()
-    await runWithTaskLocalConfig {
+            await self.runWithTaskLocalConfig {
 
-    // Given: Test content
+        // Given: Test content
         let testContent = platformPresentContent_L1(
             content: "Test Content",
             hints: PresentationHints()
         )
-    
+        
         // When: Applying ResponsivePadding modifier
         let view = testContent.modifier(ResponsivePadding())
         // Then: Should generate accessibility identifiers
@@ -17686,100 +17686,100 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             componentName: "ResponsivePadding"
         )
  #expect(hasAccessibilityID, "ResponsivePadding modifier should generate accessibility identifiers ")
-    #else
+        #else
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
         // The modifier IS present in the code, but ViewInspector can't detect it on macOS
         #endif
     }
 }
 
-    @Test @MainActor func testVisionSafetyGeneratesAccessibilityIdentifiers() async {
-    self.initializeTestConfig()
-    // Given: VisionSafety
-    let testView = VisionSafety()
-    
-    // Then: Should generate accessibility identifiers
-    // VERIFIED: VisionSafety DOES have .automaticCompliance() modifier applied
-    #if canImport(ViewInspector)
-    let hasAccessibilityID = testComponentComplianceSinglePlatform(
+        @Test @MainActor func testVisionSafetyGeneratesAccessibilityIdentifiers() async {
+        self.initializeTestConfig()
+        // Given: VisionSafety
+        let testView = VisionSafety()
+        
+        // Then: Should generate accessibility identifiers
+        // VERIFIED: VisionSafety DOES have .automaticCompliance() modifier applied
+        #if canImport(ViewInspector)
+        let hasAccessibilityID = testComponentComplianceSinglePlatform(
         testView,
         expectedPattern: "SixLayer.main.ui.*",
         platform: SixLayerPlatform.iOS,
         componentName: "VisionSafety"
-    )
-    #expect(hasAccessibilityID, "VisionSafety should generate accessibility identifiers")
-    #else
-    // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-    // The modifier IS present in the code, but ViewInspector can't detect it on macOS
-    #endif
+        )
+        #expect(hasAccessibilityID, "VisionSafety should generate accessibility identifiers")
+        #else
+        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // The modifier IS present in the code, but ViewInspector can't detect it on macOS
+        #endif
 }
 
-    @Test @MainActor func testPlatformSafetyGeneratesAccessibilityIdentifiers() async {
-    self.initializeTestConfig()
-    // Given: PlatformSafety
-    let testView = PlatformSafety()
-    
-    // Then: Should generate accessibility identifiers
-    // VERIFIED: PlatformSafety DOES have .automaticCompliance() modifier applied
-    #if canImport(ViewInspector)
-    let hasAccessibilityID = testComponentComplianceSinglePlatform(
+        @Test @MainActor func testPlatformSafetyGeneratesAccessibilityIdentifiers() async {
+        self.initializeTestConfig()
+        // Given: PlatformSafety
+        let testView = PlatformSafety()
+        
+        // Then: Should generate accessibility identifiers
+        // VERIFIED: PlatformSafety DOES have .automaticCompliance() modifier applied
+        #if canImport(ViewInspector)
+        let hasAccessibilityID = testComponentComplianceSinglePlatform(
         testView,
         expectedPattern: "SixLayer.main.ui.*",
         platform: SixLayerPlatform.iOS,
         componentName: "PlatformSafety"
-    )
-    #expect(hasAccessibilityID, "PlatformSafety should generate accessibility identifiers")
-    #else
-    // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-    // The modifier IS present in the code, but ViewInspector can't detect it on macOS
-    #endif
+        )
+        #expect(hasAccessibilityID, "PlatformSafety should generate accessibility identifiers")
+        #else
+        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // The modifier IS present in the code, but ViewInspector can't detect it on macOS
+        #endif
 }
 
-    @Test @MainActor func testPlatformSecurityGeneratesAccessibilityIdentifiers() async {
-    self.initializeTestConfig()
-    // Given: PlatformSecurity
-    let testView = PlatformSecurity()
-    
-    // Then: Should generate accessibility identifiers
-    // VERIFIED: PlatformSecurity DOES have .automaticCompliance() modifier applied
-    #if canImport(ViewInspector)
-    let hasAccessibilityID = testComponentComplianceSinglePlatform(
+        @Test @MainActor func testPlatformSecurityGeneratesAccessibilityIdentifiers() async {
+        self.initializeTestConfig()
+        // Given: PlatformSecurity
+        let testView = PlatformSecurity()
+        
+        // Then: Should generate accessibility identifiers
+        // VERIFIED: PlatformSecurity DOES have .automaticCompliance() modifier applied
+        #if canImport(ViewInspector)
+        let hasAccessibilityID = testComponentComplianceSinglePlatform(
         testView,
         expectedPattern: "SixLayer.main.ui.*",
         platform: SixLayerPlatform.iOS,
         componentName: "PlatformSecurity"
-    )
-    #expect(hasAccessibilityID, "PlatformSecurity should generate accessibility identifiers")
-    #else
-    // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-    // The modifier IS present in the code, but ViewInspector can't detect it on macOS
-    #endif
+        )
+        #expect(hasAccessibilityID, "PlatformSecurity should generate accessibility identifiers")
+        #else
+        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // The modifier IS present in the code, but ViewInspector can't detect it on macOS
+        #endif
 }
 
-    @Test @MainActor func testPlatformPrivacyGeneratesAccessibilityIdentifiers() async {
-    self.initializeTestConfig()
-    // Given: PlatformPrivacy
-    let testView = PlatformPrivacy()
-    
-    // Then: Should generate accessibility identifiers
-    // VERIFIED: PlatformPrivacy DOES have .automaticCompliance() modifier applied
-    #if canImport(ViewInspector)
-    let hasAccessibilityID = testComponentComplianceSinglePlatform(
+        @Test @MainActor func testPlatformPrivacyGeneratesAccessibilityIdentifiers() async {
+        self.initializeTestConfig()
+        // Given: PlatformPrivacy
+        let testView = PlatformPrivacy()
+        
+        // Then: Should generate accessibility identifiers
+        // VERIFIED: PlatformPrivacy DOES have .automaticCompliance() modifier applied
+        #if canImport(ViewInspector)
+        let hasAccessibilityID = testComponentComplianceSinglePlatform(
         testView,
         expectedPattern: "SixLayer.main.ui.*",
         platform: SixLayerPlatform.iOS,
         componentName: "PlatformPrivacy"
-    )
-    #expect(hasAccessibilityID, "PlatformPrivacy should generate accessibility identifiers")
-    #else
-    // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-    // The modifier IS present in the code, but ViewInspector can't detect it on macOS
-    #endif
+        )
+        #expect(hasAccessibilityID, "PlatformPrivacy should generate accessibility identifiers")
+        #else
+        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // The modifier IS present in the code, but ViewInspector can't detect it on macOS
+        #endif
 }
 
-    @Test @MainActor func testSwitchControlManagerGeneratesAccessibilityIdentifiersOnIOS() {
-    self.initializeTestConfig()
-    self.runWithTaskLocalConfig {
+        @Test @MainActor func testSwitchControlManagerGeneratesAccessibilityIdentifiersOnIOS() {
+        self.initializeTestConfig()
+        self.runWithTaskLocalConfig {
         // Given: A view with .switchControlEnabled() modifier (which uses SwitchControlManager)
         let view = Button("Test Button") { }
             .switchControlEnabled()
@@ -17804,9 +17804,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
 }
 
-    @Test @MainActor func testSwitchControlManagerGeneratesAccessibilityIdentifiersOnMacOS() {
-    self.initializeTestConfig()
-    self.runWithTaskLocalConfig {
+        @Test @MainActor func testSwitchControlManagerGeneratesAccessibilityIdentifiersOnMacOS() {
+        self.initializeTestConfig()
+        self.runWithTaskLocalConfig {
         // Given: A view with .switchControlEnabled() modifier (which uses SwitchControlManager)
         let view = Button("Test Button") { }
             .switchControlEnabled()
@@ -17831,29 +17831,29 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
 }
 
-    @Test @MainActor func testSwitchControlComplianceWithIssues() {
-    self.initializeTestConfig()
-    // Given: A view without proper Switch Control support
-    // TODO: View introspection limitation - We cannot reliably detect if a view lacks
-    // Switch Control support without ViewInspector. The compliance checker currently
-    // assumes views are compliant by default (matching framework philosophy).
-    // This test needs to be updated to use a different approach for testing non-compliance.
-    let view = platformPresentContent_L1(
+        @Test @MainActor func testSwitchControlComplianceWithIssues() {
+        self.initializeTestConfig()
+        // Given: A view without proper Switch Control support
+        // TODO: View introspection limitation - We cannot reliably detect if a view lacks
+        // Switch Control support without ViewInspector. The compliance checker currently
+        // assumes views are compliant by default (matching framework philosophy).
+        // This test needs to be updated to use a different approach for testing non-compliance.
+        let view = platformPresentContent_L1(
         content: "No Switch Control support",
         hints: PresentationHints()
-    )
-    
-    // When: Checking Switch Control compliance
-    let compliance = SwitchControlManager.checkCompliance(for: view)
-    
-    // Then: View compliance checking works (framework assumes compliance by default)
-    // TODO: Update test to verify actual non-compliance detection when view introspection is available
-    #expect(compliance.isCompliant, "Compliance checking works (framework assumes compliance by default)")
-    #expect(compliance.issues.count >= 0, "Compliance issues count is valid")
+        )
+        
+        // When: Checking Switch Control compliance
+        let compliance = SwitchControlManager.checkCompliance(for: view)
+        
+        // Then: View compliance checking works (framework assumes compliance by default)
+        // TODO: Update test to verify actual non-compliance detection when view introspection is available
+        #expect(compliance.isCompliant, "Compliance checking works (framework assumes compliance by default)")
+        #expect(compliance.issues.count >= 0, "Compliance issues count is valid")
 }
 
         // NOTE: Due to the massive scale (546 total tests), this consolidated file contains
-    // representative tests from all major categories. Additional tests from remaining files
-    // can be added incrementally as needed. The @Suite(.serialized) attribute ensures
-    // all tests run serially to reduce MainActor contention.
+        // representative tests from all major categories. Additional tests from remaining files
+        // can be added incrementally as needed. The @Suite(.serialized) attribute ensures
+        // all tests run serially to reduce MainActor contention.
 
