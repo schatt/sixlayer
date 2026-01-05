@@ -330,7 +330,7 @@ struct ComprehensiveCapabilityTestRunner {
         initializeTestConfig()
         // Set test platform before getting config
         
-        let platformConfig = createPlatformConfig(platform: platform)
+        let platformConfig = createPlatformConfig()
         
         // Test that the platform configuration is consistent and functional
         // platformConfig is a non-optional struct, so it exists if we reach here
@@ -403,7 +403,7 @@ struct ComprehensiveCapabilityTestRunner {
         RuntimeCapabilityDetection.setTestVoiceOver(true)
         RuntimeCapabilityDetection.setTestSwitchControl(true)
         
-        let platformConfig = createPlatformConfig(platform: platform)
+        let platformConfig = createPlatformConfig()
         
         // Test that the platform configuration can be used for view generation
         testViewGenerationIntegration(platformConfig, platform: platform)
@@ -548,19 +548,21 @@ struct ComprehensiveCapabilityTestRunner {
         }
     }
     
-    /// Create a platform configuration for a specific platform using centralized utilities
+    /// Create a platform configuration using real platform detection
+    /// Note: This uses the current platform's real capabilities, not mocked values
+    /// Tests should run on the actual platform they're testing, not mock it
     @MainActor
-    public func createPlatformConfig(platform: SixLayerPlatform) -> CardExpansionPlatformConfig {
-        let snapshot = PlatformTestUtilities.getPlatformConfig(for: platform)
+    public func createPlatformConfig() -> CardExpansionPlatformConfig {
+        // Use real platform detection - no overrides needed since we're not mocking
         return CardExpansionPlatformConfig(
-            supportsHapticFeedback: snapshot.supportsHapticFeedback,
-            supportsHover: snapshot.supportsHover,
-            supportsTouch: snapshot.supportsTouch,
-            supportsVoiceOver: snapshot.supportsVoiceOver,
-            supportsSwitchControl: snapshot.supportsSwitchControl,
-            supportsAssistiveTouch: snapshot.supportsAssistiveTouch,
-            minTouchTarget: snapshot.minTouchTarget,
-            hoverDelay: snapshot.hoverDelay
+            supportsHapticFeedback: RuntimeCapabilityDetection.supportsHapticFeedback,
+            supportsHover: RuntimeCapabilityDetection.supportsHover,
+            supportsTouch: RuntimeCapabilityDetection.supportsTouch,
+            supportsVoiceOver: RuntimeCapabilityDetection.supportsVoiceOver,
+            supportsSwitchControl: RuntimeCapabilityDetection.supportsSwitchControl,
+            supportsAssistiveTouch: RuntimeCapabilityDetection.supportsAssistiveTouch,
+            minTouchTarget: RuntimeCapabilityDetection.minTouchTarget,
+            hoverDelay: RuntimeCapabilityDetection.hoverDelay
         )
     }
     
