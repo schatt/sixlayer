@@ -125,7 +125,8 @@ open class PlatformNavigationSplitViewHelperTests: BaseTestClass {
                 #expect(Bool(true), "macOS should use NavigationSplitView on macOS 13+")
             } else {
                 // macOS 12 fallback: HStack
-                let hasHStack = (try? inspected.sixLayerFind(ViewType.HStack.self)) != nil
+                let hStacks = inspected.findAll(ViewInspector.ViewType.HStack.self)
+                let hasHStack = hStacks.first != nil
                 #expect(hasHStack || true, "macOS should use HStack on macOS 12")
             }
             #endif
@@ -251,7 +252,8 @@ open class PlatformNavigationSplitViewHelperTests: BaseTestClass {
                 #expect(Bool(true), "macOS should use NavigationSplitView on macOS 13+")
             } else {
                 // macOS 12 fallback: HStack
-                let hasHStack = (try? inspected.sixLayerFind(ViewType.HStack.self)) != nil
+                let hStacks = inspected.findAll(ViewInspector.ViewType.HStack.self)
+                let hasHStack = hStacks.first != nil
                 #expect(hasHStack || true, "macOS should use HStack on macOS 12")
             }
             #endif
@@ -282,7 +284,7 @@ open class PlatformNavigationSplitViewHelperTests: BaseTestClass {
         // The structure tests above verify the correct navigation pattern is used
         // This test just verifies the view is created successfully
         #if canImport(ViewInspector)
-        if view.tryInspect() != nil {
+        if try? AnyView(view).inspect() != nil {
             // View is inspectable, which means it was created successfully
             #expect(Bool(true), "Navigation split view should be inspectable")
         } else {
@@ -313,7 +315,7 @@ open class PlatformNavigationSplitViewHelperTests: BaseTestClass {
         // The structure tests above verify the correct navigation pattern is used
         // This test just verifies the view is created successfully
         #if canImport(ViewInspector)
-        if view.tryInspect() != nil {
+        if try? AnyView(view).inspect() != nil {
             // View is inspectable, which means it was created successfully
             #expect(Bool(true), "Navigation split view should be inspectable")
         } else {

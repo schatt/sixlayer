@@ -169,7 +169,7 @@ open class AutomaticAccessibilityIdentifiersTests: BaseTestClass {
             if let inspected = try? AnyView(rootView).inspect() {
                 // If we can inspect it, the environment was accessed correctly
                 // (ViewInspector requires the view to be properly installed)
-                let identifier = try? inspected.sixLayerAccessibilityIdentifier()
+                let identifier = try? inspected.accessibilityIdentifier()
                 // Modifier should work on root view
                 #expect(Bool(true), "Modifier should generate identifier on root view without environment warnings")  // identifier is non-optional
             } else {
@@ -206,7 +206,7 @@ open class AutomaticAccessibilityIdentifiersTests: BaseTestClass {
             // We verify this by checking that the view works correctly when inspected
             #if canImport(ViewInspector)
             if let inspected = view.tryInspect() {
-                let identifier = try? inspected.sixLayerAccessibilityIdentifier()
+                let identifier = try? inspected.accessibilityIdentifier()
                 // TDD RED: Should PASS - environment should be accessed only when view is installed
                 #expect(identifier != nil && !(identifier?.isEmpty ?? true), 
                        "Modifier should access environment only when view is installed, generating identifier: '\(identifier ?? "nil")'")
@@ -251,21 +251,21 @@ open class AutomaticAccessibilityIdentifiersTests: BaseTestClass {
             #if canImport(ViewInspector)
             // Handle each view separately to avoid Any type issues
             if let inspected1 = view1.tryInspect() {
-                let identifier1 = try? inspected1.sixLayerAccessibilityIdentifier()
+                let identifier1 = try? inspected1.accessibilityIdentifier()
                 #expect(Bool(true), "Modifier variant 1 should generate identifier without warnings")  // identifier1 is non-optional
             } else {
                 Issue.record("Could not inspect view variant 1")
             }
             
             if let inspected2 = view2.tryInspect() {
-                let identifier2 = try? inspected2.sixLayerAccessibilityIdentifier()
+                let identifier2 = try? inspected2.accessibilityIdentifier()
                 #expect(Bool(true), "Modifier variant 2 should generate identifier without warnings")  // identifier2 is non-optional
             } else {
                 Issue.record("Could not inspect view variant 2")
             }
             
             if let inspected3 = view3.tryInspect() {
-                let identifier3 = try? inspected3.sixLayerAccessibilityIdentifier()
+                let identifier3 = try? inspected3.accessibilityIdentifier()
                 #expect(Bool(true), "Modifier variant 3 should generate identifier without warnings")  // identifier3 is non-optional
             } else {
                 Issue.record("Could not inspect view variant 3")

@@ -99,9 +99,9 @@ open class IntelligentFormViewTests: BaseTestClass {
             #if canImport(ViewInspector)
             if let inspected = view.tryInspect() {
                 // Find the Update button
-                let buttons = inspected.sixLayerFindAll(ViewType.Button.self)
+                let buttons = inspected.findAll(ViewType.Button.self)
                 let updateButton = buttons.first { button in
-                    let text = try? button.sixLayerText().sixLayerString()
+                    let text = try? button.sixLayerText().string()
                     return text?.lowercased().contains("update") ?? false
                 }
 
@@ -149,9 +149,9 @@ open class IntelligentFormViewTests: BaseTestClass {
             // Find and tap the Update button
             #if canImport(ViewInspector)
             if let inspected = view.tryInspect() {
-                let buttons = inspected.sixLayerFindAll(ViewType.Button.self)
+                let buttons = inspected.findAll(ViewType.Button.self)
                 let updateButton = buttons.first { button in
-                    let text = try? button.sixLayerText().sixLayerString()
+                    let text = try? button.sixLayerText().string()
                     return text?.lowercased().contains("update") ?? false
                 }
 
@@ -198,9 +198,9 @@ open class IntelligentFormViewTests: BaseTestClass {
             // After fix, we should verify that feedback (success message, form dismissal, etc.) occurs
             #if canImport(ViewInspector)
             if let inspected = view.tryInspect() {
-                let buttons = inspected.sixLayerFindAll(ViewType.Button.self)
+                let buttons = inspected.findAll(ViewType.Button.self)
                 let updateButton = buttons.first { button in
-                    let text = try? button.sixLayerText().sixLayerString()
+                    let text = try? button.sixLayerText().string()
                     return text?.lowercased().contains("update") ?? false
                 }
 

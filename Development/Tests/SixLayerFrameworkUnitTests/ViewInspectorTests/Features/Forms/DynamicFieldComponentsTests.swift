@@ -50,25 +50,25 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         #if canImport(ViewInspector)
         withInspectedView(view) { inspected in
             // Find all text elements and check if they contain the options
-            let allTexts = inspected.sixLayerFindAll(Text.self)
+            let allTexts = inspected.findAll(Text.self)
             if !allTexts.isEmpty {
                 let foundOption1 = allTexts.contains { text in
-                    (try? text.sixLayerString())?.contains("Option 1") ?? false
+                    (try? text.string())?.contains("Option 1") ?? false
                 }
                 let foundOption2 = allTexts.contains { text in
-                    (try? text.sixLayerString())?.contains("Option 2") ?? false
+                    (try? text.string())?.contains("Option 2") ?? false
                 }
                 let foundOption3 = allTexts.contains { text in
-                    (try? text.sixLayerString())?.contains("Option 3") ?? false
+                    (try? text.string())?.contains("Option 3") ?? false
                 }
                 #expect(foundOption1 || foundOption2 || foundOption3, "Should display options from field")
             }
             
             // Additional check: should NOT show stub text (supplementary verification)
-            let allTextsForStubCheck = inspected.sixLayerFindAll(Text.self)
+            let allTextsForStubCheck = inspected.findAll(Text.self)
             if !allTextsForStubCheck.isEmpty {
                 let hasStubText = allTextsForStubCheck.contains { text in
-                    (try? text.sixLayerString())?.contains("Multi-select - TDD Red Phase Stub") ?? false
+                    (try? text.string())?.contains("Multi-select - TDD Red Phase Stub") ?? false
                 }
                 if hasStubText {
                     Issue.record("DynamicMultiSelectField still shows stub text - needs implementation")
@@ -130,16 +130,16 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         // Should render all radio options
         #if canImport(ViewInspector)
         withInspectedView(view) { inspected in
-            let allTexts = inspected.sixLayerFindAll(Text.self)
+            let allTexts = inspected.findAll(Text.self)
             if !allTexts.isEmpty {
                 let foundChoiceA = allTexts.contains { text in
-                    (try? text.sixLayerString())?.contains("Choice A") ?? false
+                    (try? text.string())?.contains("Choice A") ?? false
                 }
                 let foundChoiceB = allTexts.contains { text in
-                    (try? text.sixLayerString())?.contains("Choice B") ?? false
+                    (try? text.string())?.contains("Choice B") ?? false
                 }
                 let foundChoiceC = allTexts.contains { text in
-                    (try? text.sixLayerString())?.contains("Choice C") ?? false
+                    (try? text.string())?.contains("Choice C") ?? false
                 }
                 #expect(foundChoiceA || foundChoiceB || foundChoiceC, "Should display radio options")
             }
@@ -198,16 +198,16 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         // Should render checkbox options
         #if canImport(ViewInspector)
         withInspectedView(view) { inspected in
-            let allTexts = inspected.sixLayerFindAll(Text.self)
+            let allTexts = inspected.findAll(Text.self)
             if !allTexts.isEmpty {
                 let foundCheck1 = allTexts.contains { text in
-                    (try? text.sixLayerString())?.contains("Check 1") ?? false
+                    (try? text.string())?.contains("Check 1") ?? false
                 }
                 let foundCheck2 = allTexts.contains { text in
-                    (try? text.sixLayerString())?.contains("Check 2") ?? false
+                    (try? text.string())?.contains("Check 2") ?? false
                 }
                 let foundCheck3 = allTexts.contains { text in
-                    (try? text.sixLayerString())?.contains("Check 3") ?? false
+                    (try? text.string())?.contains("Check 3") ?? false
                 }
                 #expect(foundCheck1 || foundCheck2 || foundCheck3, "Should display checkbox options")
             }
@@ -261,7 +261,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         #if canImport(ViewInspector)
         if let inspected = view.tryInspect() {
             // Should have text input capability - check if we can find text fields
-            let textFields = inspected.sixLayerFindAll(TextField<Text>.self)
+            let textFields = inspected.findAll(TextField<Text>.self)
             if !textFields.isEmpty {
                 #expect(!textFields.isEmpty, "Should provide text input interface")
             }
@@ -605,16 +605,16 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         // Should render enum options
         #if canImport(ViewInspector)
         withInspectedView(view) { inspected in
-            let allTexts = inspected.sixLayerFindAll(Text.self)
+            let allTexts = inspected.findAll(Text.self)
             if !allTexts.isEmpty {
                 let foundValue1 = allTexts.contains { text in
-                    (try? text.sixLayerString())?.contains("Value1") ?? false
+                    (try? text.string())?.contains("Value1") ?? false
                 }
                 let foundValue2 = allTexts.contains { text in
-                    (try? text.sixLayerString())?.contains("Value2") ?? false
+                    (try? text.string())?.contains("Value2") ?? false
                 }
                 let foundValue3 = allTexts.contains { text in
-                    (try? text.sixLayerString())?.contains("Value3") ?? false
+                    (try? text.string())?.contains("Value3") ?? false
                 }
                 #expect(foundValue1 || foundValue2 || foundValue3, "Should display enum options")
             }
@@ -834,10 +834,10 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         // Should show character counter
         #if canImport(ViewInspector)
         withInspectedView(view) { inspected in
-            let allTexts = inspected.sixLayerFindAll(Text.self)
+            let allTexts = inspected.findAll(Text.self)
             if !allTexts.isEmpty {
                 let hasCounter = allTexts.contains { text in
-                    let textContent = (try? text.sixLayerString()) ?? ""
+                    let textContent = (try? text.string()) ?? ""
                     return textContent.contains("/") && textContent.contains("100")
                 }
                 #expect(hasCounter, "Should display character counter with max length")
@@ -904,10 +904,10 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         // Counter should be visible and show warning color
         #if canImport(ViewInspector)
         withInspectedView(view) { inspected in
-            let allTexts = inspected.sixLayerFindAll(Text.self)
+            let allTexts = inspected.findAll(Text.self)
             if !allTexts.isEmpty {
                 let hasCounter = allTexts.contains { text in
-                    let textContent = (try? text.sixLayerString()) ?? ""
+                    let textContent = (try? text.string()) ?? ""
                     return textContent.contains("85") && textContent.contains("100")
                 }
                 #expect(hasCounter, "Should show updated counter when approaching limit")
@@ -940,10 +940,10 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         // Should NOT show character counter
         #if canImport(ViewInspector)
         withInspectedView(view) { inspected in
-            let allTexts = inspected.sixLayerFindAll(Text.self)
+            let allTexts = inspected.findAll(Text.self)
             if !allTexts.isEmpty {
                 let hasCounter = allTexts.contains { text in
-                    let textContent = (try? text.sixLayerString()) ?? ""
+                    let textContent = (try? text.string()) ?? ""
                     return textContent.contains("/") && textContent.contains("characters")
                 }
                 #expect(!hasCounter, "Should NOT display character counter when maxLength not set")
@@ -977,10 +977,10 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         // Should show character counter
         #if canImport(ViewInspector)
         withInspectedView(view) { inspected in
-            let allTexts = inspected.sixLayerFindAll(Text.self)
+            let allTexts = inspected.findAll(Text.self)
             if !allTexts.isEmpty {
                 let hasCounter = allTexts.contains { text in
-                    let textContent = (try? text.sixLayerString()) ?? ""
+                    let textContent = (try? text.string()) ?? ""
                     return textContent.contains("/") && textContent.contains("500")
                 }
                 #expect(hasCounter, "Should display character counter in text area")
@@ -1075,10 +1075,10 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         // Should show character counter
         #if canImport(ViewInspector)
         withInspectedView(view) { inspected in
-            let allTexts = inspected.sixLayerFindAll(Text.self)
+            let allTexts = inspected.findAll(Text.self)
             if !allTexts.isEmpty {
                 let hasCounter = allTexts.contains { text in
-                    let textContent = (try? text.sixLayerString()) ?? ""
+                    let textContent = (try? text.string()) ?? ""
                     return textContent.contains("/") && textContent.contains("500")
                 }
                 #expect(hasCounter, "Should display character counter in rich text field")
@@ -1113,10 +1113,10 @@ open class DynamicFieldComponentsTests: BaseTestClass {
 
         #if canImport(ViewInspector)
         withInspectedView(view) { inspected in
-            let allTexts = inspected.sixLayerFindAll(Text.self)
+            let allTexts = inspected.findAll(Text.self)
             if !allTexts.isEmpty {
                 let hasCounter = allTexts.contains { text in
-                    let textContent = (try? text.sixLayerString()) ?? ""
+                    let textContent = (try? text.string()) ?? ""
                     return textContent.contains("/") && textContent.contains("255")
                 }
                 #expect(hasCounter, "Should display character counter in email field")
@@ -1149,10 +1149,10 @@ open class DynamicFieldComponentsTests: BaseTestClass {
 
         #if canImport(ViewInspector)
         withInspectedView(view) { inspected in
-            let allTexts = inspected.sixLayerFindAll(Text.self)
+            let allTexts = inspected.findAll(Text.self)
             if !allTexts.isEmpty {
                 let hasCounter = allTexts.contains { text in
-                    let textContent = (try? text.sixLayerString()) ?? ""
+                    let textContent = (try? text.string()) ?? ""
                     return textContent.contains("/") && textContent.contains("20")
                 }
                 #expect(hasCounter, "Should display character counter in phone field")
@@ -1185,10 +1185,10 @@ open class DynamicFieldComponentsTests: BaseTestClass {
 
         #if canImport(ViewInspector)
         withInspectedView(view) { inspected in
-            let allTexts = inspected.sixLayerFindAll(Text.self)
+            let allTexts = inspected.findAll(Text.self)
             if !allTexts.isEmpty {
                 let hasCounter = allTexts.contains { text in
-                    let textContent = (try? text.sixLayerString()) ?? ""
+                    let textContent = (try? text.string()) ?? ""
                     return textContent.contains("/") && textContent.contains("2048")
                 }
                 #expect(hasCounter, "Should display character counter in URL field")
@@ -1228,7 +1228,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             // Should contain Link component, not TextField
             // Use specialized method to directly verify Link component is used
             let links = inspected.sixLayerFindAllLinks()
-            let textFields = inspected.sixLayerFindAll(TextField<Text>.self)
+            let textFields = inspected.findAll(TextField<Text>.self)
             
             // Verify Link component is present for read-only valid URL
             #expect(!links.isEmpty, "Read-only URL field with valid URL should use Link component")
@@ -1236,7 +1236,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             
             // Verify Link contains the URL text
             if let firstLink = links.first {
-                let linkText = try? firstLink.sixLayerString()
+                let linkText = try? firstLink.string()
                 #expect(linkText?.contains("https://example.com") == true || linkText?.contains("example.com") == true,
                        "Link should display the URL text")
             }
@@ -1274,14 +1274,14 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             // Should contain Text component for invalid URL, not Link
             // Use specialized method to directly verify Link component is NOT used
             let links = inspected.sixLayerFindAllLinks()
-            let allTexts = inspected.sixLayerFindAll(Text.self)
+            let allTexts = inspected.findAll(Text.self)
             
             // Invalid URL should not use Link component
             #expect(links.isEmpty, "Invalid URL should not use Link component")
             #expect(!allTexts.isEmpty, "Invalid URL should use Text component")
             
             // Verify Text displays the invalid URL
-            let allTextStrings = allTexts.compactMap { try? $0.sixLayerString() }
+            let allTextStrings = allTexts.compactMap { try? $0.string() }
             let hasInvalidURL = allTextStrings.contains { $0.contains("not a valid url") }
             #expect(hasInvalidURL, "Text should display the invalid URL value")
         }
@@ -1316,12 +1316,12 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         #if canImport(ViewInspector)
         withInspectedView(view) { inspected in
             // Should contain TextField, not Link
-            let textFields = inspected.sixLayerFindAll(TextField<Text>.self)
-            let allTexts = inspected.sixLayerFindAll(Text.self)
+            let textFields = inspected.findAll(TextField<Text>.self)
+            let allTexts = inspected.findAll(Text.self)
             
             // Editable field should have TextField, not clickable link text
             let hasURLLikeText = allTexts.contains { text in
-                if let textContent = try? text.sixLayerString() {
+                if let textContent = try? text.string() {
                     return textContent.contains("https://") || textContent.contains("http://")
                 }
                 return false
@@ -1362,7 +1362,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             // Should use Link for display-only field with valid URL
             // Use specialized method to directly verify Link component is used
             let links = inspected.sixLayerFindAllLinks()
-            let textFields = inspected.sixLayerFindAll(TextField<Text>.self)
+            let textFields = inspected.findAll(TextField<Text>.self)
             
             // Verify Link component is present for display-only valid URL
             #expect(!links.isEmpty, "Display-only URL field should use Link component")
@@ -1370,7 +1370,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             
             // Verify Link contains the URL text
             if let firstLink = links.first {
-                let linkText = try? firstLink.sixLayerString()
+                let linkText = try? firstLink.string()
                 #expect(linkText?.contains("https://apple.com") == true || linkText?.contains("apple.com") == true,
                        "Link should display the URL text")
             }
@@ -1405,8 +1405,8 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         #if canImport(ViewInspector)
         withInspectedView(view) { inspected in
             // Should show placeholder text (—) for empty read-only URL
-            let texts = inspected.sixLayerFindAll(Text.self)
-            let allTexts = texts.compactMap { try? $0.sixLayerString() }
+            let texts = inspected.findAll(Text.self)
+            let allTexts = texts.compactMap { try? $0.string() }
             let hasPlaceholder = allTexts.contains { $0 == "—" || $0.trimmingCharacters(in: .whitespaces) == "—" }
             #expect(hasPlaceholder, "Empty read-only URL should show placeholder (—)")
         }
@@ -1439,10 +1439,10 @@ open class DynamicFieldComponentsTests: BaseTestClass {
 
         #if canImport(ViewInspector)
         withInspectedView(view) { inspected in
-            let allTexts = inspected.sixLayerFindAll(Text.self)
+            let allTexts = inspected.findAll(Text.self)
             if !allTexts.isEmpty {
                 let hasCounter = allTexts.contains { text in
-                    let textContent = (try? text.sixLayerString()) ?? ""
+                    let textContent = (try? text.string()) ?? ""
                     return textContent.contains("/") && textContent.contains("128")
                 }
                 #expect(hasCounter, "Should display character counter in password field")
@@ -1475,10 +1475,10 @@ open class DynamicFieldComponentsTests: BaseTestClass {
 
         #if canImport(ViewInspector)
         withInspectedView(view) { inspected in
-            let allTexts = inspected.sixLayerFindAll(Text.self)
+            let allTexts = inspected.findAll(Text.self)
             if !allTexts.isEmpty {
                 let hasCounter = allTexts.contains { text in
-                    let textContent = (try? text.sixLayerString()) ?? ""
+                    let textContent = (try? text.string()) ?? ""
                     return textContent.contains("/") && textContent.contains("100")
                 }
                 #expect(hasCounter, "Should display character counter in autocomplete field")
@@ -1830,10 +1830,10 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         // Should display current value
         #if canImport(ViewInspector)
         withInspectedView(view) { inspected in
-            let allTexts = inspected.sixLayerFindAll(Text.self)
+            let allTexts = inspected.findAll(Text.self)
             if !allTexts.isEmpty {
                 let showsValue = allTexts.contains { text in
-                    let textContent = (try? text.sixLayerString()) ?? ""
+                    let textContent = (try? text.string()) ?? ""
                     return textContent.contains("7")
                 }
                 #expect(showsValue, "Should display current value")
@@ -1996,7 +1996,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
                 // Should have TextField with axis parameter (multi-line)
                 // Note: ViewInspector may not directly detect axis, but we can verify
                 // the TextField exists and is configured for multi-line
-                let textFields = inspected.sixLayerFindAll(TextField<Text>.self)
+                let textFields = inspected.findAll(TextField<Text>.self)
                 #expect(!textFields.isEmpty, "Should use TextField for multi-line on iOS 16+")
             }
             #else
@@ -2008,7 +2008,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             #if canImport(ViewInspector)
             withInspectedView(view) { inspected in
                 // Should use TextEditor as fallback
-                let textEditors = inspected.sixLayerFindAll(TextEditor.self)
+                let textEditors = inspected.findAll(TextEditor.self)
                 #expect(!textEditors.isEmpty, "Should use TextEditor as fallback on iOS < 16")
             }
             #endif
@@ -2050,7 +2050,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             // iOS < 16: Should use TextEditor
             #if canImport(ViewInspector)
             withInspectedView(view) { inspected in
-                let textEditors = inspected.sixLayerFindAll(TextEditor.self)
+                let textEditors = inspected.findAll(TextEditor.self)
                 #expect(!textEditors.isEmpty, "Should use TextEditor as fallback on iOS < 16")
             }
             #else
@@ -2154,10 +2154,10 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         // Should show character counter
         #if canImport(ViewInspector)
         withInspectedView(view) { inspected in
-            let allTexts = inspected.sixLayerFindAll(Text.self)
+            let allTexts = inspected.findAll(Text.self)
             if !allTexts.isEmpty {
                 let hasCounter = allTexts.contains { text in
-                    let textContent = (try? text.sixLayerString()) ?? ""
+                    let textContent = (try? text.string()) ?? ""
                     return textContent.contains("/") && textContent.contains("200")
                 }
                 #expect(hasCounter, "Should display character counter for multi-line TextField")

@@ -43,7 +43,7 @@ open class FormCallbackFunctionalTests: BaseTestClass {
         #if canImport(ViewInspector)
         _ = withInspectedView(formView) { inspector in
             // Find all buttons in the view
-            let buttons = inspector.sixLayerFindAll(ViewType.Button.self)
+            let buttons = inspector.findAll(ViewType.Button.self)
             
             // Verify button exists
             #expect(buttons.count > 0, "Form should have buttons")
@@ -52,7 +52,7 @@ open class FormCallbackFunctionalTests: BaseTestClass {
             for button in buttons {
                 do {
                     let labelView = try button.sixLayerLabelView()
-                    let labelText = try labelView.sixLayerText().sixLayerString()
+                    let labelText = try labelView.sixLayerText().string()
                     
                     if labelText == "Cancel" {
                         // Tap the button to invoke its action
@@ -107,7 +107,7 @@ open class FormCallbackFunctionalTests: BaseTestClass {
         #if canImport(ViewInspector)
         _ = withInspectedView(formView) { inspector in
             // Find all buttons in the view
-            let buttons = inspector.sixLayerFindAll(ViewType.Button.self)
+            let buttons = inspector.findAll(ViewType.Button.self)
             
             // Verify button exists
             #expect(buttons.count > 0, "Form should have buttons")
@@ -116,7 +116,7 @@ open class FormCallbackFunctionalTests: BaseTestClass {
             for button in buttons {
                 do {
                     let labelView = try button.sixLayerLabelView()
-                    let labelText = try labelView.sixLayerText().sixLayerString()
+                    let labelText = try labelView.sixLayerText().string()
                     
                     // Button text could be "Update" or "Create" depending on whether initialData exists
                     if labelText == "Update" || labelText == "Create" {
@@ -172,7 +172,7 @@ open class FormCallbackFunctionalTests: BaseTestClass {
         #if canImport(ViewInspector)
         _ = withInspectedView(formView) { inspector in
             // Find all buttons in the view
-            let buttons = inspector.sixLayerFindAll(ViewType.Button.self)
+            let buttons = inspector.findAll(ViewType.Button.self)
             
             // Verify button exists
             #expect(buttons.count > 0, "Form should have buttons")
@@ -181,7 +181,7 @@ open class FormCallbackFunctionalTests: BaseTestClass {
             for button in buttons {
                 do {
                     let labelView = try button.sixLayerLabelView()
-                    let labelText = try labelView.sixLayerText().sixLayerString()
+                    let labelText = try labelView.sixLayerText().string()
                     
                     if labelText == "Submit" {
                         // Tap the button to invoke its action

@@ -32,7 +32,7 @@ open class AccessibilityIdentifierDisabledTests: BaseTestClass {
             // Using wrapper - when ViewInspector works on macOS, no changes needed here
             #if canImport(ViewInspector)
             if let inspectedView = view.tryInspect(),
-               let _ = try? inspectedView.sixLayerButton() {
+               let _ = try? inspectedView.button() {
                 // When automatic IDs are disabled, the view should not have an accessibility identifier modifier
                 // This means we can't inspect for accessibility identifiers
                 // Just verify the view is inspectable
@@ -62,7 +62,7 @@ open class AccessibilityIdentifierDisabledTests: BaseTestClass {
             // Using wrapper - when ViewInspector works on macOS, no changes needed here
             #if canImport(ViewInspector)
             if let inspectedView = view.tryInspect(),
-               let buttonID = try? inspectedView.sixLayerAccessibilityIdentifier() {
+               let buttonID = try? inspectedView.accessibilityIdentifier() {
                 // Manual ID should work regardless of automatic setting
                 #expect(buttonID == "manual-test-button", "Manual accessibility identifier should work when automatic is disabled")
                 

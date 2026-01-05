@@ -78,11 +78,11 @@ open class CollectionViewCallbackTests: BaseTestClass {
         #if canImport(ViewInspector)
         let inspectionResult = withInspectedView(view) { inspected in
             // The view should contain the collection items
-            let viewText = inspected.sixLayerFindAll(ViewType.Text.self)
+            let viewText = inspected.findAll(ViewType.Text.self)
             #expect(!viewText.isEmpty, "Collection view should contain text elements for items")
 
             // Should contain text from our sample items
-            let textContents = viewText.compactMap { try? $0.sixLayerString() }
+            let textContents = viewText.compactMap { try? $0.string() }
             #expect(textContents.contains(where: { $0.contains("Item 1") }),
                    "Should contain text from first sample item")
             #expect(textContents.contains(where: { $0.contains("Item 2") }),
@@ -118,11 +118,11 @@ open class CollectionViewCallbackTests: BaseTestClass {
         #if canImport(ViewInspector)
         let inspectionResult = withInspectedView(view) { inspected in
             // The view should contain the collection items
-            let viewText = inspected.sixLayerFindAll(ViewType.Text.self)
+            let viewText = inspected.findAll(ViewType.Text.self)
             #expect(!viewText.isEmpty, "Collection view should contain text elements for items")
 
             // Should contain text from our sample items
-            let textContents = viewText.compactMap { try? $0.sixLayerString() }
+            let textContents = viewText.compactMap { try? $0.string() }
             #expect(textContents.contains(where: { $0.contains("Item 1") }),
                    "Should contain text from first sample item")
             #expect(textContents.contains(where: { $0.contains("Item 2") }),
@@ -246,14 +246,14 @@ open class CollectionViewCallbackTests: BaseTestClass {
         #if canImport(ViewInspector)
         let inspectionResult = withInspectedView(view) { inspector in
             // Find the ListCardComponent instances
-            let listCardComponents = inspector.sixLayerFindAll(ListCardComponent<TestPatterns.TestItem>.self)
+            let listCardComponents = inspector.findAll(ListCardComponent<TestPatterns.TestItem>.self)
 
             // Then: Verify the view structure
             #expect(listCardComponents.count == sampleItems.count, "Should have cards for each item")
 
             // Get the first card - it's now a VStack, find the HStack child (where onTapGesture is applied)
             if let firstCard = listCardComponents.first {
-                let vStack = try firstCard.sixLayerVStack()
+                let vStack = try firstCard.vStack()
                 // VStack contains: HStack at index 0 (the card content), Optional HStack at index 1 (action buttons)
                 // Find the first HStack which has the onTapGesture
                 let hStack = try vStack.sixLayerHStack(0)

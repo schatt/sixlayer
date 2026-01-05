@@ -24,7 +24,7 @@ open class AccessibilityIdentifierGenerationTests: BaseTestClass {
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
         #if canImport(ViewInspector)
         if let inspectedView = view.tryInspect(),
-           let buttonID = try? inspectedView.sixLayerAccessibilityIdentifier() {
+           let buttonID = try? inspectedView.accessibilityIdentifier() {
             // This test SHOULD FAIL initially - IDs are currently 400+ chars
             #expect(buttonID.count < 80, "Accessibility ID should be reasonable length")
             #expect(buttonID.contains("SixLayer"), "Should contain namespace")
@@ -60,7 +60,7 @@ open class AccessibilityIdentifierGenerationTests: BaseTestClass {
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
         #if canImport(ViewInspector)
         if let inspectedView = view.tryInspect(),
-           let vStackID = try? inspectedView.sixLayerAccessibilityIdentifier() {
+           let vStackID = try? inspectedView.accessibilityIdentifier() {
             // This test SHOULD FAIL initially - contains duplicates like "container-container"
             #expect(!vStackID.contains("container-container"), "Should not contain duplicated hierarchy")
             #expect(!vStackID.contains("outercontainer-outercontainer"), "Should not contain duplicated hierarchy")
@@ -98,7 +98,7 @@ open class AccessibilityIdentifierGenerationTests: BaseTestClass {
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
         #if canImport(ViewInspector)
         if let inspectedView = view.tryInspect(),
-           let vStackID = try? inspectedView.sixLayerAccessibilityIdentifier() {
+           let vStackID = try? inspectedView.accessibilityIdentifier() {
             // This test SHOULD FAIL initially - IDs are not semantic
             #expect(vStackID.contains("UserProfile"), "Should contain screen context")
             #expect(vStackID.contains("ProfileView") || vStackID.contains("UserProfile"), "Should contain view name")
@@ -144,7 +144,7 @@ open class AccessibilityIdentifierGenerationTests: BaseTestClass {
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
         #if canImport(ViewInspector)
         if let inspectedView = view.tryInspect(),
-           let vStackID = try? inspectedView.sixLayerAccessibilityIdentifier() {
+           let vStackID = try? inspectedView.accessibilityIdentifier() {
             // This test SHOULD FAIL initially - complex hierarchies create massive IDs
             #expect(vStackID.count < 100, "Should handle complex hierarchies gracefully")
             #expect(vStackID.contains("ComplexView"), "Should contain screen context")
@@ -179,8 +179,8 @@ open class AccessibilityIdentifierGenerationTests: BaseTestClass {
         #if canImport(ViewInspector)
         if let submitInspected = submitButton.tryInspect(),
            let cancelInspected = cancelButton.tryInspect() {
-            let submitID = try? submitInspected.sixLayerAccessibilityIdentifier()
-            let cancelID = try? cancelInspected.sixLayerAccessibilityIdentifier()
+            let submitID = try? submitInspected.accessibilityIdentifier()
+            let cancelID = try? cancelInspected.accessibilityIdentifier()
             
             // TDD RED: These should FAIL - labels not currently included
             #expect((submitID?.contains("Submit") ?? false), "Submit button identifier should include 'Submit' label")
@@ -205,7 +205,7 @@ open class AccessibilityIdentifierGenerationTests: BaseTestClass {
         
         #if canImport(ViewInspector)
         if let inspected = button.tryInspect() {
-            let buttonID = try? inspected.sixLayerAccessibilityIdentifier()
+            let buttonID = try? inspected.accessibilityIdentifier()
             
             // TDD RED: Should FAIL - labels not sanitized
             // Should contain sanitized version: "add-new-item" or similar

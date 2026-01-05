@@ -29,7 +29,7 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
             // Using wrapper - when ViewInspector works on macOS, no changes needed here
             #if canImport(ViewInspector)
             withInspectedView(view) { inspected in
-                let buttonID = try inspected.sixLayerAccessibilityIdentifier()
+                let buttonID = try inspected.accessibilityIdentifier()
                 // Should handle empty strings gracefully
                 #expect(!buttonID.isEmpty, "Should generate ID even with empty parameters")
                 #expect(buttonID.contains("SixLayer"), "Should contain namespace")
@@ -57,7 +57,7 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
             // Using wrapper - when ViewInspector works on macOS, no changes needed here
             #if canImport(ViewInspector)
             withInspectedView(view) { inspected in
-                let buttonID = try inspected.sixLayerAccessibilityIdentifier()
+                let buttonID = try inspected.accessibilityIdentifier()
                 // Should preserve special characters (no sanitization)
                 #expect(!buttonID.isEmpty, "Should generate ID with special characters")
                 #expect(buttonID.contains("SixLayer"), "Should contain namespace")
@@ -88,7 +88,7 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
             // Using wrapper - when ViewInspector works on macOS, no changes needed here
             #if canImport(ViewInspector)
             withInspectedView(view) { inspected in
-                let buttonID = try inspected.sixLayerAccessibilityIdentifier()
+                let buttonID = try inspected.accessibilityIdentifier()
                 // Should handle long names gracefully
                 #expect(!buttonID.isEmpty, "Should generate ID with very long names")
                 #expect(buttonID.contains("SixLayer"), "Should contain namespace")
@@ -125,7 +125,7 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
             // Using wrapper - when ViewInspector works on macOS, no changes needed here
             #if canImport(ViewInspector)
             withInspectedView(view) { inspected in
-                let buttonID = try inspected.sixLayerAccessibilityIdentifier()
+                let buttonID = try inspected.accessibilityIdentifier()
                 // Manual ID should override automatic ID
                 #expect(buttonID == "manual-override", "Manual ID should override automatic ID")
                 
@@ -157,12 +157,12 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
             #if canImport(ViewInspector)
             do {
                 try withInspectedViewThrowing(view) { inspectedView in
-                    let buttons = inspectedView.sixLayerFindAll(ViewType.Button.self)
+                    let buttons = inspectedView.findAll(ViewType.Button.self)
                     
                     #expect(buttons.count == 2, "Should find both buttons")
                     
                     // First button should have automatic ID
-                    let autoButtonID = try buttons[0].sixLayerAccessibilityIdentifier()
+                    let autoButtonID = try buttons[0].accessibilityIdentifier()
                     #expect(autoButtonID.contains("SixLayer"), "Auto button should have automatic ID")
                     
                     // Second button should not have accessibility identifier modifier
@@ -195,7 +195,7 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
             #if canImport(ViewInspector)
             do {
                 try withInspectedViewThrowing(view) { inspectedView in
-                    let vStackID = try inspectedView.sixLayerAccessibilityIdentifier()
+                    let vStackID = try inspectedView.accessibilityIdentifier()
                     
                     // Should handle multiple contexts (last one wins or combines)
                     #expect(!vStackID.isEmpty, "Should generate ID with multiple contexts")
@@ -234,10 +234,10 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
             #if canImport(ViewInspector)
             do {
                 let button1ID = try withInspectedViewThrowing(view1) { inspectedView1 in
-                    try inspectedView1.sixLayerAccessibilityIdentifier()
+                    try inspectedView1.accessibilityIdentifier()
                 }
                 let button2ID = try withInspectedViewThrowing(view2) { inspectedView2 in
-                    try inspectedView2.sixLayerAccessibilityIdentifier()
+                    try inspectedView2.accessibilityIdentifier()
                 }
                 
                 // exactNamed() should respect the exact name (no hierarchy, no collision detection)
@@ -271,10 +271,10 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
             #if canImport(ViewInspector)
             do {
                 let exactID = try withInspectedViewThrowing(exactView) { exactInspected in
-                    try exactInspected.sixLayerAccessibilityIdentifier()
+                    try exactInspected.accessibilityIdentifier()
                 }
                 let namedID = try withInspectedViewThrowing(namedView) { namedInspected in
-                    try namedInspected.sixLayerAccessibilityIdentifier()
+                    try namedInspected.accessibilityIdentifier()
                 }
                 
                 // exactNamed() should produce different identifiers than named()
@@ -314,7 +314,7 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
             #if canImport(ViewInspector)
             do {
                 try withInspectedViewThrowing(exactView) { exactInspected in
-                    let exactID = try exactInspected.sixLayerAccessibilityIdentifier()
+                    let exactID = try exactInspected.accessibilityIdentifier()
                 
                     // exactNamed() should NOT include hierarchy components
                     // This test will FAIL until exactNamed() is properly implemented
@@ -347,7 +347,7 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
             #if canImport(ViewInspector)
             do {
                 try withInspectedViewThrowing(exactView) { exactInspected in
-                    let exactID = try exactInspected.sixLayerAccessibilityIdentifier()
+                    let exactID = try exactInspected.accessibilityIdentifier()
                 
                     // exactNamed() should produce minimal identifiers (just the exact name)
                     // This test will FAIL until exactNamed() is properly implemented
@@ -393,7 +393,7 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
             #if canImport(ViewInspector)
             do {
                 try withInspectedViewThrowing(view) { inspectedView in
-                    let buttonID = try inspectedView.sixLayerAccessibilityIdentifier()
+                    let buttonID = try inspectedView.accessibilityIdentifier()
                 
                     // Should use configuration at time of ID generation
                     #expect(!buttonID.isEmpty, "Should generate ID with changed config")
@@ -431,7 +431,7 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
             do {
                 try withInspectedViewThrowing(view) { inspectedView in
                     let button = try inspectedView.sixLayerFind(ViewType.Button.self)
-                    let buttonID = try button.sixLayerAccessibilityIdentifier()
+                    let buttonID = try button.accessibilityIdentifier()
                     
                     // Should handle nested calls without duplication
                     #expect(!buttonID.isEmpty, "Should generate ID with nested .named() calls")
@@ -464,7 +464,7 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
             #if canImport(ViewInspector)
             do {
                 try withInspectedViewThrowing(view) { inspectedView in
-                    let buttonID = try inspectedView.sixLayerAccessibilityIdentifier()
+                    let buttonID = try inspectedView.accessibilityIdentifier()
                 
                     // Should handle Unicode gracefully
                     #expect(!buttonID.isEmpty, "Should generate ID with Unicode characters")

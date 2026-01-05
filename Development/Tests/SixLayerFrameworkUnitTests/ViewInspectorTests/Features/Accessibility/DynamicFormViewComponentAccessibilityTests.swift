@@ -219,11 +219,12 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
             do {
                 // Should have a VStack
                 // Look for VStack anywhere in the view hierarchy
-                let vStacks = inspected.sixLayerFindAll(ViewType.VStack.self)
+                let vStacks = inspected.findAll(ViewType.VStack.self)
                 #expect(!vStacks.isEmpty, "Should contain at least one VStack")
 
                 if let vStack = vStacks.first {
-                    #expect(vStack.sixLayerCount >= 1, "Should have DisclosureGroup for collapsible section")
+                    let children = vStack.findAll(ViewInspector.ViewType.AnyView.self)
+                    #expect(children.count >= 1, "Should have DisclosureGroup for collapsible section")
 
                     // Verify section has accessibility identifier
                     let hasAccessibilityID = testComponentComplianceSinglePlatform(
@@ -303,16 +304,17 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
             do {
                 // Should have a VStack containing label and TextField
                 // Look for VStack anywhere in the view hierarchy
-                let vStacks = inspected.sixLayerFindAll(ViewType.VStack.self)
+                let vStacks = inspected.findAll(ViewType.VStack.self)
                 #expect(!vStacks.isEmpty, "Should contain at least one VStack")
 
                 if let vStack = vStacks.first {
-                    #expect(vStack.sixLayerCount >= 2, "Should have label and TextField")
+                    let children = vStack.findAll(ViewInspector.ViewType.AnyView.self)
+                    #expect(children.count >= 2, "Should have label and TextField")
 
                     // Look for text content anywhere in the VStack
-                    let textElements = vStack.sixLayerFindAll(ViewType.Text.self)
+                    let textElements = vStack.findAll(ViewType.Text.self)
                     let hasExpectedLabel = textElements.contains { text in
-                        if let textContent = try? text.sixLayerString() {
+                        if let textContent = try? text.string() {
                             return textContent == "Full Name"
                         }
                         return false
@@ -320,7 +322,7 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
                     #expect(hasExpectedLabel, "Should contain label text 'Full Name'")
 
                     // Look for TextField anywhere in the VStack
-                    let textFields = vStack.sixLayerFindAll(ViewType.TextField.self)
+                    let textFields = vStack.findAll(ViewType.TextField.self)
                     #expect(!textFields.isEmpty, "Should contain at least one TextField")
                 }
             // Note: ViewInspector doesn't provide direct access to TextField placeholder text
@@ -387,16 +389,17 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
             do {
                 // Should have a VStack containing label and TextField
                 // Look for VStack anywhere in the view hierarchy
-                let vStacks = inspected.sixLayerFindAll(ViewType.VStack.self)
+                let vStacks = inspected.findAll(ViewType.VStack.self)
                 #expect(!vStacks.isEmpty, "Should contain at least one VStack")
 
                 if let vStack = vStacks.first {
-                    #expect(vStack.sixLayerCount >= 2, "Should have label and TextField")
+                    let children = vStack.findAll(ViewInspector.ViewType.AnyView.self)
+                    #expect(children.count >= 2, "Should have label and TextField")
 
                     // Look for text content anywhere in the VStack
-                    let textElements = vStack.sixLayerFindAll(ViewType.Text.self)
+                    let textElements = vStack.findAll(ViewType.Text.self)
                     let hasExpectedLabel = textElements.contains { text in
-                        if let textContent = try? text.sixLayerString() {
+                        if let textContent = try? text.string() {
                             return textContent == "Age"
                         }
                         return false
@@ -404,7 +407,7 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
                     #expect(hasExpectedLabel, "Should contain label text 'Age'")
 
                     // Look for TextField anywhere in the VStack
-                    let textFields = vStack.sixLayerFindAll(ViewType.TextField.self)
+                    let textFields = vStack.findAll(ViewType.TextField.self)
                     #expect(!textFields.isEmpty, "Should contain at least one TextField")
                 }
                 // Note: ViewInspector doesn't provide direct access to TextField placeholder text
@@ -477,16 +480,16 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
             do {
                 // Should have a VStack containing label and TextEditor
                 // Look for VStack anywhere in the view hierarchy
-                let vStacks = inspected.sixLayerFindAll(ViewType.VStack.self)
+                let vStacks = inspected.findAll(ViewType.VStack.self)
                 #expect(!vStacks.isEmpty, "Should contain at least one VStack")
 
                 if let vStack = vStacks.first {
                     #expect(vStack.sixLayerCount >= 2, "Should have label and TextEditor")
 
                     // Look for text content anywhere in the VStack
-                    let textElements = vStack.sixLayerFindAll(ViewType.Text.self)
+                    let textElements = vStack.findAll(ViewType.Text.self)
                     let hasExpectedLabel = textElements.contains { text in
-                        if let textContent = try? text.sixLayerString() {
+                        if let textContent = try? text.string() {
                             return textContent == "Description"
                         }
                         return false
@@ -556,16 +559,16 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
             do {
                 // Should have a VStack containing label and Picker
                 // Look for VStack anywhere in the view hierarchy
-                let vStacks = inspected.sixLayerFindAll(ViewType.VStack.self)
+                let vStacks = inspected.findAll(ViewType.VStack.self)
                 #expect(!vStacks.isEmpty, "Should contain at least one VStack")
 
                 if let vStack = vStacks.first {
                     #expect(vStack.sixLayerCount >= 2, "Should have label and Picker")
 
                     // Look for text content anywhere in the VStack
-                    let textElements = vStack.sixLayerFindAll(ViewType.Text.self)
+                    let textElements = vStack.findAll(ViewType.Text.self)
                     let hasExpectedLabel = textElements.contains { text in
-                        if let textContent = try? text.sixLayerString() {
+                        if let textContent = try? text.string() {
                             return textContent == "Country"
                         }
                         return false
@@ -635,16 +638,17 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
             do {
                 // Should have a VStack containing label and selection controls
                 // Look for VStack anywhere in the view hierarchy
-                let vStacks = inspected.sixLayerFindAll(ViewType.VStack.self)
+                let vStacks = inspected.findAll(ViewType.VStack.self)
                 #expect(!vStacks.isEmpty, "Should contain at least one VStack")
 
                 if let vStack = vStacks.first {
-                #expect(vStack.sixLayerCount >= 2, "Should have label and selection controls")
+                let children = vStack.findAll(ViewInspector.ViewType.AnyView.self)
+                #expect(children.count >= 2, "Should have label and selection controls")
 
                 // Look for text content anywhere in the VStack
-                let textElements = vStack.sixLayerFindAll(ViewType.Text.self)
+                let textElements = vStack.findAll(ViewType.Text.self)
                 let hasExpectedLabel = textElements.contains { text in
-                    if let textContent = try? text.sixLayerString() {
+                    if let textContent = try? text.string() {
                         return textContent == "Interests"
                     }
                     return false
@@ -714,16 +718,17 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
             do {
                 // Should have a VStack containing label and radio controls
                 // Look for VStack anywhere in the view hierarchy
-                let vStacks = inspected.sixLayerFindAll(ViewType.VStack.self)
+                let vStacks = inspected.findAll(ViewType.VStack.self)
                 #expect(!vStacks.isEmpty, "Should contain at least one VStack")
 
                 if let vStack = vStacks.first {
-                #expect(vStack.sixLayerCount >= 2, "Should have label and radio controls")
+                let children = vStack.findAll(ViewInspector.ViewType.AnyView.self)
+                #expect(children.count >= 2, "Should have label and radio controls")
 
                 // Look for text content anywhere in the VStack
-                let textElements = vStack.sixLayerFindAll(ViewType.Text.self)
+                let textElements = vStack.findAll(ViewType.Text.self)
                 let hasExpectedLabel = textElements.contains { text in
-                    if let textContent = try? text.sixLayerString() {
+                    if let textContent = try? text.string() {
                         return textContent == "Gender"
                     }
                     return false
@@ -792,16 +797,17 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
             do {
                 // Should have a VStack containing label and Toggle
                 // Look for VStack anywhere in the view hierarchy
-                let vStacks = inspected.sixLayerFindAll(ViewType.VStack.self)
+                let vStacks = inspected.findAll(ViewType.VStack.self)
                 #expect(!vStacks.isEmpty, "Should contain at least one VStack")
 
                 if let vStack = vStacks.first {
-                #expect(vStack.sixLayerCount >= 2, "Should have label and Toggle")
+                let children = vStack.findAll(ViewInspector.ViewType.AnyView.self)
+                #expect(children.count >= 2, "Should have label and Toggle")
 
                 // Look for text content anywhere in the VStack
-                let textElements = vStack.sixLayerFindAll(ViewType.Text.self)
+                let textElements = vStack.findAll(ViewType.Text.self)
                 let hasExpectedLabel = textElements.contains { text in
-                    if let textContent = try? text.sixLayerString() {
+                    if let textContent = try? text.string() {
                         return textContent == "Subscribe to Newsletter"
                     }
                     return false
@@ -870,16 +876,17 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
             do {
                 // Should have a VStack containing label and Toggle
                 // Look for VStack anywhere in the view hierarchy
-                let vStacks = inspected.sixLayerFindAll(ViewType.VStack.self)
+                let vStacks = inspected.findAll(ViewType.VStack.self)
                 #expect(!vStacks.isEmpty, "Should contain at least one VStack")
 
                 if let vStack = vStacks.first {
-                #expect(vStack.sixLayerCount >= 2, "Should have label and Toggle")
+                let children = vStack.findAll(ViewInspector.ViewType.AnyView.self)
+                #expect(children.count >= 2, "Should have label and Toggle")
 
                 // Look for text content anywhere in the VStack
-                let textElements = vStack.sixLayerFindAll(ViewType.Text.self)
+                let textElements = vStack.findAll(ViewType.Text.self)
                 let hasExpectedLabel = textElements.contains { text in
-                    if let textContent = try? text.sixLayerString() {
+                    if let textContent = try? text.string() {
                         return textContent == "Enable Feature"
                     }
                     return false

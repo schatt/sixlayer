@@ -48,7 +48,7 @@ open class Layer4FormContainerTests: BaseTestClass {
         #if canImport(ViewInspector)
         let inspectionResult = withInspectedView(view) { inspected in
             // The form container should contain the test content
-            let viewText = inspected.sixLayerFindAll(ViewType.Text.self)
+            let viewText = inspected.findAll(ViewType.Text.self)
             #expect(!viewText.isEmpty, "Form container should contain text elements")
 
             // Should contain the test content - use helper function for DRY text verification
@@ -73,7 +73,7 @@ open class Layer4FormContainerTests: BaseTestClass {
         // iOS: Should contain Form structure with iOS-specific background color
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
         withInspectedView(view) { inspected in
-            if let _ = inspected.sixLayerTryFind(ViewType.Form.self) {
+            if let _ = inspected.findAll(ViewType.Form.self) {
                 // Form found - this is correct for iOS
                 // Note: iOS uses Color(.systemGroupedBackground) for form backgrounds
             } else {
@@ -84,7 +84,7 @@ open class Layer4FormContainerTests: BaseTestClass {
         // macOS: Should contain Form structure with macOS-specific background color
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
         withInspectedView(view) { inspected in
-            if let _ = inspected.sixLayerTryFind(ViewType.Form.self) {
+            if let _ = inspected.findAll(ViewType.Form.self) {
                 // Form found - this is correct for macOS
                 // Note: macOS uses Color(.controlBackgroundColor) for form backgrounds
             } else {
@@ -119,7 +119,7 @@ open class Layer4FormContainerTests: BaseTestClass {
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
         #if canImport(ViewInspector)
         withInspectedView(view) { inspected in
-            let viewText = inspected.sixLayerFindAll(ViewType.Text.self)
+            let viewText = inspected.findAll(ViewType.Text.self)
             #expect(!viewText.isEmpty, "Standard container should contain text elements")
 
             // Should contain the test content - use helper function for DRY text verification

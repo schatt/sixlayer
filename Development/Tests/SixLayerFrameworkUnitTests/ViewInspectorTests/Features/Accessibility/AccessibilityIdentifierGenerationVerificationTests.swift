@@ -167,7 +167,7 @@ open class AccessibilityIdentifierGenerationVerificationTests: BaseTestClass {
             #if canImport(ViewInspector)
             if let inspected = testView.tryInspect(),
                let text = try? inspected.sixLayerText(),
-               let accessibilityIdentifier = try? text.sixLayerAccessibilityIdentifier() {
+               let accessibilityIdentifier = try? text.accessibilityIdentifier() {
                 #expect(accessibilityIdentifier == manualID, "Manual identifier should override automatic generation")
             } else {
                 Issue.record("Failed to inspect accessibility identifier")
@@ -207,8 +207,8 @@ open class AccessibilityIdentifierGenerationVerificationTests: BaseTestClass {
             // Using wrapper - when ViewInspector works on macOS, no changes needed here
             #if canImport(ViewInspector)
             if let inspected1 = testView1.tryInspect(),
-               let button1 = try? inspected1.sixLayerButton(),
-               let accessibilityIdentifier1 = try? button1.sixLayerAccessibilityIdentifier() {
+               let button1 = try? inspected1.button(),
+               let accessibilityIdentifier1 = try? button1.accessibilityIdentifier() {
                 #expect(accessibilityIdentifier1.isEmpty || !accessibilityIdentifier1.hasPrefix("test"), 
                              "No automatic identifier should be generated when disabled")
             } else {

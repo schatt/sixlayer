@@ -121,8 +121,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     private func generateIDForView(_ view: some View) -> String {
         #if canImport(ViewInspector)
         if let inspectedView = view.tryInspect(),
-           let button = try? inspectedView.sixLayerButton(),
-           let id = try? button.sixLayerAccessibilityIdentifier() {
+           let button = try? inspectedView.button(),
+           let id = try? button.accessibilityIdentifier() {
             return id
         } else {
             Issue.record("Failed to generate ID for view")
@@ -2004,7 +2004,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
         #if canImport(ViewInspector)
         if let inspectedView = view.tryInspect(),
-           let buttonID = try? inspectedView.sixLayerAccessibilityIdentifier() {
+           let buttonID = try? inspectedView.accessibilityIdentifier() {
             // This test SHOULD FAIL initially - IDs are currently 400+ chars
             #expect(buttonID.count < 80, "Accessibility ID should be reasonable length")
             #expect(buttonID.contains("SixLayer"), "Should contain namespace")
@@ -2052,7 +2052,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             // Using wrapper - when ViewInspector works on macOS, no changes needed here
             #if canImport(ViewInspector)
             if let inspectedView = view.tryInspect(),
-               let _ = try? inspectedView.sixLayerButton() {
+               let _ = try? inspectedView.button() {
                 // When automatic IDs are disabled, the view should not have an accessibility identifier modifier
                 // This means we can't inspect for accessibility identifiers
                 // Just verify the view is inspectable
@@ -2082,7 +2082,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             // Using wrapper - when ViewInspector works on macOS, no changes needed here
             #if canImport(ViewInspector)
             if let inspectedView = view.tryInspect(),
-               let buttonID = try? inspectedView.sixLayerAccessibilityIdentifier() {
+               let buttonID = try? inspectedView.accessibilityIdentifier() {
                 // Manual ID should work regardless of automatic setting
                 #expect(buttonID == "manual-test-button", "Manual accessibility identifier should work when automatic is disabled")
             } else {
@@ -2824,7 +2824,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         
         #if canImport(ViewInspector)
         if let inspected = button.tryInspect() {
-           let buttonID = try? inspected.sixLayerAccessibilityIdentifier()
+           let buttonID = try? inspected.accessibilityIdentifier()
             #expect((buttonID?.contains("submit") ?? false) || (buttonID?.contains("Submit") ?? false),
                    "AdaptiveButton identifier should include label text 'Submit' (implementation verified in code)")
         } else {
@@ -2848,9 +2848,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
         
         if let submitInspected = submitButton.tryInspect(),
-           let submitID = try? submitInspected.sixLayerAccessibilityIdentifier(),
+           let submitID = try? submitInspected.accessibilityIdentifier(),
            let cancelInspected = cancelButton.tryInspect(),
-           let cancelID = try? cancelInspected.sixLayerAccessibilityIdentifier() {
+           let cancelID = try? cancelInspected.accessibilityIdentifier() {
             #expect(submitID != cancelID,
                    "Buttons with different labels should have different identifiers (implementation verified in code)")
         } else {
@@ -2869,7 +2869,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         
         #if canImport(ViewInspector)
         if let inspected = button.tryInspect(),
-           let buttonID = try? inspected.sixLayerAccessibilityIdentifier() {
+           let buttonID = try? inspected.accessibilityIdentifier() {
             #expect((!buttonID.contains("Add New Item")) &&
                    (buttonID.contains("add-new-item") || buttonID.contains("add") && buttonID.contains("new")),
                   "Identifier should contain sanitized label (implementation verified)")
@@ -3083,7 +3083,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             
             #if canImport(ViewInspector)
             withInspectedView(view) { inspected in
-                let buttonID = try inspected.sixLayerAccessibilityIdentifier()
+                let buttonID = try inspected.accessibilityIdentifier()
                 #expect(!buttonID.isEmpty, "Should generate ID even with empty parameters")
                 #expect(buttonID.contains("SixLayer"), "Should contain namespace")
             }
@@ -3105,7 +3105,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             
             #if canImport(ViewInspector)
             withInspectedView(view) { inspected in
-                let buttonID = try inspected.sixLayerAccessibilityIdentifier()
+                let buttonID = try inspected.accessibilityIdentifier()
                 #expect(!buttonID.isEmpty, "Should generate ID with special characters")
                 #expect(buttonID.contains("SixLayer"), "Should contain namespace")
                 #expect(buttonID.contains("@#$%^&*()"), "Should preserve special characters")
@@ -3128,7 +3128,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             
             #if canImport(ViewInspector)
             withInspectedView(view) { inspected in
-                let buttonID = try inspected.sixLayerAccessibilityIdentifier()
+                let buttonID = try inspected.accessibilityIdentifier()
                 #expect(buttonID == "manual-override", "Manual ID should override automatic ID")
             }
             #else
@@ -3473,7 +3473,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         ), "Framework component should automatically generate accessibility identifiers")
         
         if let inspectedView = testView.tryInspect(),
-           let accessibilityID = try? inspectedView.sixLayerAccessibilityIdentifier() {
+           let accessibilityID = try? inspectedView.accessibilityIdentifier() {
             #expect(accessibilityID != "", "Framework component should have accessibility identifier")
         } else {
             Issue.record("Should be able to inspect framework component")
@@ -3805,7 +3805,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         
         #if canImport(ViewInspector)
         if let inspected = view.tryInspect(),
-           let viewID = try? inspected.sixLayerAccessibilityIdentifier() {
+           let viewID = try? inspected.accessibilityIdentifier() {
             #expect(viewID.contains("settings") || viewID.contains("Settings"),
                    "platformNavigationTitle identifier should include title text 'Settings' (implementation verified in code)")
         } else {
@@ -3837,7 +3837,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         
         #if canImport(ViewInspector)
         if let inspected = view.tryInspect(),
-           let viewID = try? inspected.sixLayerAccessibilityIdentifier() {
+           let viewID = try? inspected.accessibilityIdentifier() {
             #expect(viewID.contains("next") || viewID.contains("page") || viewID.contains("Next"),
                    "platformNavigationLink_L4 identifier should include title text 'Next Page' (implementation verified in code)")
         } else {
@@ -3859,7 +3859,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         
         #if canImport(ViewInspector)
         if let inspected = button.tryInspect(),
-           let buttonID = try? inspected.sixLayerAccessibilityIdentifier() {
+           let buttonID = try? inspected.accessibilityIdentifier() {
             #expect((!buttonID.contains("&")) && (!buttonID.contains("!")),
                    "Identifier should not contain special chars (implementation verified)")
         } else {
@@ -3881,7 +3881,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         
         #if canImport(ViewInspector)
         if let inspected = button.tryInspect(),
-           let buttonID = try? inspected.sixLayerAccessibilityIdentifier() {
+           let buttonID = try? inspected.accessibilityIdentifier() {
             #expect((!buttonID.contains("CamelCaseLabel")) &&
                    (buttonID.contains("camelcaselabel") || buttonID.contains("camel")),
                   "Identifier should contain lowercase version (implementation verified)")
@@ -4249,7 +4249,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         
         #if canImport(ViewInspector)
         if let inspected = fieldView.tryInspect(),
-           let fieldID = try? inspected.sixLayerAccessibilityIdentifier() {
+           let fieldID = try? inspected.accessibilityIdentifier() {
             #expect(fieldID.contains("email") || fieldID.contains("address") || fieldID.contains("Email"),
                    "DynamicTextField identifier should include field label 'Email Address' (implementation verified in code)")
         } else {
@@ -4284,7 +4284,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         
         #if canImport(ViewInspector)
         if let inspected = fieldView.tryInspect(),
-           let fieldID = try? inspected.sixLayerAccessibilityIdentifier() {
+           let fieldID = try? inspected.accessibilityIdentifier() {
             #expect(fieldID.contains("user") || fieldID.contains("email") || fieldID.contains("User"),
                    "DynamicEmailField identifier should include field label 'User Email' (implementation verified in code)")
         } else {
@@ -4319,7 +4319,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         
         #if canImport(ViewInspector)
         if let inspected = fieldView.tryInspect(),
-           let fieldID = try? inspected.sixLayerAccessibilityIdentifier() {
+           let fieldID = try? inspected.accessibilityIdentifier() {
             #expect(fieldID.contains("secure") || fieldID.contains("password") || fieldID.contains("Secure"),
                    "DynamicPasswordField identifier should include field label 'Secure Password' (implementation verified in code)")
         } else {
@@ -4739,7 +4739,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         
         #if canImport(ViewInspector)
         if let inspected = button.tryInspect(),
-           let buttonID = try? inspected.sixLayerAccessibilityIdentifier() {
+           let buttonID = try? inspected.accessibilityIdentifier() {
             #expect(buttonID.contains("save") || buttonID.contains("Save"),
                    "platformNavigationButton identifier should include title text 'Save' (implementation verified in code)")
         } else {
@@ -4768,7 +4768,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         
         #if canImport(ViewInspector)
         if let inspected = formView.tryInspect(),
-           let formID = try? inspected.sixLayerAccessibilityIdentifier() {
+           let formID = try? inspected.accessibilityIdentifier() {
             #expect(formID.contains("user") || formID.contains("profile") || formID.contains("User"),
                    "DynamicFormView identifier should include configuration title 'User Profile' (implementation verified in code)")
         } else {
@@ -4802,7 +4802,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         
         #if canImport(ViewInspector)
         if let inspected = sectionView.tryInspect(),
-           let sectionID = try? inspected.sixLayerAccessibilityIdentifier() {
+           let sectionID = try? inspected.accessibilityIdentifier() {
             #expect(sectionID.contains("personal") || sectionID.contains("information") || sectionID.contains("Personal"),
                    "DynamicFormSectionView identifier should include section title 'Personal Information' (implementation verified in code)")
         } else {
@@ -4837,7 +4837,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         
         #if canImport(ViewInspector)
         if let inspected = fieldView.tryInspect(),
-           let fieldID = try? inspected.sixLayerAccessibilityIdentifier() {
+           let fieldID = try? inspected.accessibilityIdentifier() {
             #expect(fieldID.contains("mobile") || fieldID.contains("phone") || fieldID.contains("Mobile"),
                    "DynamicPhoneField identifier should include field label 'Mobile Phone' (implementation verified in code)")
         } else {
@@ -4872,7 +4872,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         
         #if canImport(ViewInspector)
         if let inspected = fieldView.tryInspect(),
-           let fieldID = try? inspected.sixLayerAccessibilityIdentifier() {
+           let fieldID = try? inspected.accessibilityIdentifier() {
             #expect(fieldID.contains("website") || fieldID.contains("url") || fieldID.contains("Website"),
                    "DynamicURLField identifier should include field label 'Website URL' (implementation verified in code)")
         } else {
@@ -4907,7 +4907,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         
         #if canImport(ViewInspector)
         if let inspected = fieldView.tryInspect(),
-           let fieldID = try? inspected.sixLayerAccessibilityIdentifier() {
+           let fieldID = try? inspected.accessibilityIdentifier() {
             #expect(fieldID.contains("total") || fieldID.contains("amount") || fieldID.contains("Total"),
                    "DynamicNumberField identifier should include field label 'Total Amount' (implementation verified in code)")
         } else {
@@ -4942,7 +4942,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         
         #if canImport(ViewInspector)
         if let inspected = fieldView.tryInspect(),
-           let fieldID = try? inspected.sixLayerAccessibilityIdentifier() {
+           let fieldID = try? inspected.accessibilityIdentifier() {
             #expect(fieldID.contains("birth") || fieldID.contains("date") || fieldID.contains("Birth"),
                    "DynamicDateField identifier should include field label 'Birth Date' (implementation verified in code)")
         } else {
@@ -4977,7 +4977,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         
         #if canImport(ViewInspector)
         if let inspected = fieldView.tryInspect(),
-           let fieldID = try? inspected.sixLayerAccessibilityIdentifier() {
+           let fieldID = try? inspected.accessibilityIdentifier() {
             #expect(fieldID.contains("enable") || fieldID.contains("notifications") || fieldID.contains("Enable"),
                    "DynamicToggleField identifier should include field label 'Enable Notifications' (implementation verified in code)")
         } else {
@@ -5013,7 +5013,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         
         #if canImport(ViewInspector)
         if let inspected = fieldView.tryInspect(),
-           let fieldID = try? inspected.sixLayerAccessibilityIdentifier() {
+           let fieldID = try? inspected.accessibilityIdentifier() {
             #expect(fieldID.contains("favorite") || fieldID.contains("colors") || fieldID.contains("Favorite"),
                    "DynamicMultiSelectField identifier should include field label 'Favorite Colors' (implementation verified in code)")
         } else {
@@ -5049,7 +5049,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         
         #if canImport(ViewInspector)
         if let inspected = fieldView.tryInspect(),
-           let fieldID = try? inspected.sixLayerAccessibilityIdentifier() {
+           let fieldID = try? inspected.accessibilityIdentifier() {
             #expect(fieldID.contains("agree") || fieldID.contains("terms") || fieldID.contains("Agree"),
                    "DynamicCheckboxField identifier should include field label 'Agree to Terms' (implementation verified in code)")
         } else {
@@ -5084,7 +5084,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         
         #if canImport(ViewInspector)
         if let inspected = fieldView.tryInspect(),
-           let fieldID = try? inspected.sixLayerAccessibilityIdentifier() {
+           let fieldID = try? inspected.accessibilityIdentifier() {
             #expect(fieldID.contains("upload") || fieldID.contains("document") || fieldID.contains("Upload"),
                    "DynamicFileField identifier should include field label 'Upload Document' (implementation verified in code)")
         } else {
@@ -5120,7 +5120,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         
         #if canImport(ViewInspector)
         if let inspected = fieldView.tryInspect(),
-           let fieldID = try? inspected.sixLayerAccessibilityIdentifier() {
+           let fieldID = try? inspected.accessibilityIdentifier() {
             #expect(fieldID.contains("priority") || fieldID.contains("level") || fieldID.contains("Priority"),
                    "DynamicEnumField identifier should include field label 'Priority Level' (implementation verified in code)")
         } else {
@@ -5155,7 +5155,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         
         #if canImport(ViewInspector)
         if let inspected = fieldView.tryInspect(),
-           let fieldID = try? inspected.sixLayerAccessibilityIdentifier() {
+           let fieldID = try? inspected.accessibilityIdentifier() {
             #expect(fieldID.contains("quantity") || fieldID.contains("Quantity"),
                    "DynamicIntegerField identifier should include field label 'Quantity' (implementation verified in code)")
         } else {
@@ -5190,7 +5190,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         
         #if canImport(ViewInspector)
         if let inspected = fieldView.tryInspect(),
-           let fieldID = try? inspected.sixLayerAccessibilityIdentifier() {
+           let fieldID = try? inspected.accessibilityIdentifier() {
             #expect(fieldID.contains("comments") || fieldID.contains("Comments"),
                    "DynamicTextAreaField identifier should include field label 'Comments' (implementation verified in code)")
         } else {
@@ -5749,9 +5749,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         
         #if canImport(ViewInspector)
         if let inspected1 = card1.tryInspect(),
-           let card1ID = try? inspected1.sixLayerAccessibilityIdentifier(),
+           let card1ID = try? inspected1.accessibilityIdentifier(),
            let inspected2 = card2.tryInspect(),
-           let card2ID = try? inspected2.sixLayerAccessibilityIdentifier() {
+           let card2ID = try? inspected2.accessibilityIdentifier() {
             #expect((card1ID != card2ID) &&
                     (card1ID.contains("first") || card1ID.contains("item") || card1ID.contains("First")) &&
                     (card2ID.contains("second") || card2ID.contains("item") || card2ID.contains("Second")),
@@ -5778,9 +5778,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         
         #if canImport(ViewInspector)
         if let inspected1 = button1.tryInspect(),
-           let button1ID = try? inspected1.sixLayerAccessibilityIdentifier(),
+           let button1ID = try? inspected1.accessibilityIdentifier(),
            let inspected2 = button2.tryInspect(),
-           let button2ID = try? inspected2.sixLayerAccessibilityIdentifier() {
+           let button2ID = try? inspected2.accessibilityIdentifier() {
             #expect(Bool(true), "AdaptiveButton implementation verified - item context needed for unique IDs in ForEach (design consideration)")
         } else {
             #expect(Bool(true), "AdaptiveButton implementation verified - ViewInspector can't detect (known limitation)")
@@ -5853,9 +5853,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         
         #if canImport(ViewInspector)
         if let inspected1 = card1.tryInspect(),
-           let card1ID = try? inspected1.sixLayerAccessibilityIdentifier(),
+           let card1ID = try? inspected1.accessibilityIdentifier(),
            let inspected2 = card2.tryInspect(),
-           let card2ID = try? inspected2.sixLayerAccessibilityIdentifier() {
+           let card2ID = try? inspected2.accessibilityIdentifier() {
             #expect((card1ID != card2ID) &&
                     (card1ID.contains("important") || card1ID.contains("card") || card1ID.contains("Important")),
                    "ExpandableCardComponent items with different titles should have different identifiers (implementation verified in code)")
@@ -5896,7 +5896,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         
         #if canImport(ViewInspector)
         if let inspected = listView.tryInspect() {
-            let viewID = try? inspected.sixLayerAccessibilityIdentifier()
+            let viewID = try? inspected.accessibilityIdentifier()
             #expect(Bool(true), "Documenting requirement - ForEach items need unique identifiers")
         }
         #else
@@ -5926,9 +5926,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         
         #if canImport(ViewInspector)
         if let inspected1 = card1.tryInspect(),
-           let card1ID = try? inspected1.sixLayerAccessibilityIdentifier(),
+           let card1ID = try? inspected1.accessibilityIdentifier(),
            let inspected2 = card2.tryInspect(),
-           let card2ID = try? inspected2.sixLayerAccessibilityIdentifier() {
+           let card2ID = try? inspected2.accessibilityIdentifier() {
             #expect(card1ID != card2ID,
                    "CoverFlowCardComponent items with different titles should have different identifiers (implementation verified in code)")
             #expect(card1ID.contains("cover") || card1ID.contains("flow") || card1ID.contains("item") || card1ID.contains("Cover"),
@@ -5990,9 +5990,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         
         #if canImport(ViewInspector)
         if let inspected1 = card1.tryInspect(),
-           let card1ID = try? inspected1.sixLayerAccessibilityIdentifier(),
+           let card1ID = try? inspected1.accessibilityIdentifier(),
            let inspected2 = card2.tryInspect(),
-           let card2ID = try? inspected2.sixLayerAccessibilityIdentifier() {
+           let card2ID = try? inspected2.accessibilityIdentifier() {
             #expect(card1ID != card2ID,
                    "SimpleCardComponent items with different titles should have different identifiers (implementation verified in code)")
             #expect(card1ID.contains("simple") || card1ID.contains("card") || card1ID.contains("alpha") || card1ID.contains("Simple"),
@@ -6029,9 +6029,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         
         #if canImport(ViewInspector)
         if let inspected1 = card1.tryInspect(),
-           let card1ID = try? inspected1.sixLayerAccessibilityIdentifier(),
+           let card1ID = try? inspected1.accessibilityIdentifier(),
            let inspected2 = card2.tryInspect(),
-           let card2ID = try? inspected2.sixLayerAccessibilityIdentifier() {
+           let card2ID = try? inspected2.accessibilityIdentifier() {
             #expect(card1ID != card2ID,
                    "MasonryCardComponent items with different titles should have different identifiers (implementation verified in code)")
             #expect(card1ID.contains("masonry") || card1ID.contains("item") || card1ID.contains("one") || card1ID.contains("Masonry"),
@@ -6096,9 +6096,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         
         #if canImport(ViewInspector)
         if let inspected1 = card1.tryInspect(),
-           let card1ID = try? inspected1.sixLayerAccessibilityIdentifier(),
+           let card1ID = try? inspected1.accessibilityIdentifier(),
            let inspected2 = card2.tryInspect(),
-           let card2ID = try? inspected2.sixLayerAccessibilityIdentifier() {
+           let card2ID = try? inspected2.accessibilityIdentifier() {
             #expect(card1ID != card2ID,
                    "Grid items should have different identifiers based on their titles (implementation verified in code)")
             #expect(card1ID.contains("1") || card1ID.contains("grid"),
@@ -6138,9 +6138,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         
         #if canImport(ViewInspector)
         if let inspected1 = card1.tryInspect(),
-           let card1ID = try? inspected1.sixLayerAccessibilityIdentifier(),
+           let card1ID = try? inspected1.accessibilityIdentifier(),
            let inspected2 = card2.tryInspect(),
-           let card2ID = try? inspected2.sixLayerAccessibilityIdentifier() {
+           let card2ID = try? inspected2.accessibilityIdentifier() {
             #expect(card1ID != card2ID,
                    "Cover flow items should have different identifiers (implementation verified in code)")
         } else {
@@ -6177,9 +6177,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         
         #if canImport(ViewInspector)
         if let inspected1 = card1.tryInspect(),
-           let card1ID = try? inspected1.sixLayerAccessibilityIdentifier(),
+           let card1ID = try? inspected1.accessibilityIdentifier(),
            let inspected2 = card2.tryInspect(),
-           let card2ID = try? inspected2.sixLayerAccessibilityIdentifier() {
+           let card2ID = try? inspected2.accessibilityIdentifier() {
             #expect(card1ID != card2ID,
                    "Masonry collection items should have different identifiers (implementation verified in code)")
         } else {
@@ -6257,15 +6257,15 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         
         #if canImport(ViewInspector)
         if let expandableInspected = expandableCard.tryInspect(),
-           let expandableID = try? expandableInspected.sixLayerAccessibilityIdentifier(),
+           let expandableID = try? expandableInspected.accessibilityIdentifier(),
            let listInspected = listCard.tryInspect(),
-           let listID = try? listInspected.sixLayerAccessibilityIdentifier(),
+           let listID = try? listInspected.accessibilityIdentifier(),
            let simpleInspected = simpleCard.tryInspect(),
-           let simpleID = try? simpleInspected.sixLayerAccessibilityIdentifier(),
+           let simpleID = try? simpleInspected.accessibilityIdentifier(),
            let coverFlowInspected = coverFlowCard.tryInspect(),
-           let coverFlowID = try? coverFlowInspected.sixLayerAccessibilityIdentifier(),
+           let coverFlowID = try? coverFlowInspected.accessibilityIdentifier(),
            let masonryInspected = masonryCard.tryInspect(),
-           let masonryID = try? masonryInspected.sixLayerAccessibilityIdentifier() {
+           let masonryID = try? masonryInspected.accessibilityIdentifier() {
             #expect(expandableID.contains("test") || expandableID.contains("item") || expandableID.contains("Test"),
                    "ExpandableCardComponent should include item title (implementation verified in code)")
             #expect(listID.contains("test") || listID.contains("item") || listID.contains("Test"),
@@ -6314,9 +6314,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         
         #if canImport(ViewInspector)
         if let inspected1 = cardView1.tryInspect(),
-           let card1ID = try? inspected1.sixLayerAccessibilityIdentifier(),
+           let card1ID = try? inspected1.accessibilityIdentifier(),
            let inspected2 = cardView2.tryInspect(),
-           let card2ID = try? inspected2.sixLayerAccessibilityIdentifier() {
+           let card2ID = try? inspected2.accessibilityIdentifier() {
             #expect(card1ID != card2ID,
                    "ResponsiveCardView items with different titles should have different identifiers (implementation verified in code)")
             #expect(card1ID.contains("dashboard") || card1ID.contains("Dashboard"),
@@ -6369,9 +6369,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         
         #if canImport(ViewInspector)
         if let inspected1 = card1.tryInspect(),
-           let card1ID = try? inspected1.sixLayerAccessibilityIdentifier(),
+           let card1ID = try? inspected1.accessibilityIdentifier(),
            let inspected2 = card2.tryInspect(),
-           let card2ID = try? inspected2.sixLayerAccessibilityIdentifier() {
+           let card2ID = try? inspected2.accessibilityIdentifier() {
             #expect(card1ID != card2ID,
                    "ResponsiveCardView items in collections should have different identifiers (implementation verified in code)")
             #expect(card1ID.contains("expenses") || card1ID.contains("Expenses"),
@@ -6403,7 +6403,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         
         #if canImport(ViewInspector)
         if let inspected = tabStrip.tryInspect() {
-            let stripID = try? inspected.sixLayerAccessibilityIdentifier()
+            let stripID = try? inspected.accessibilityIdentifier()
             #expect(Bool(true), "Documenting requirement - PlatformTabStrip buttons need unique identifiers with item.title")
         }
         #else
@@ -6444,9 +6444,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         
         #if canImport(ViewInspector)
         if let homeInspected = homeButton.tryInspect(),
-           let homeID = try? homeInspected.sixLayerAccessibilityIdentifier(),
+           let homeID = try? homeInspected.accessibilityIdentifier(),
            let settingsInspected = settingsButton.tryInspect(),
-           let settingsID = try? settingsInspected.sixLayerAccessibilityIdentifier() {
+           let settingsID = try? settingsInspected.accessibilityIdentifier() {
             #expect(homeID != settingsID,
                    "PlatformTabStrip buttons with different titles should have different identifiers (implementation verified in code)")
             #expect(homeID.contains("home") || homeID.contains("Home"),
@@ -6496,7 +6496,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         
         #if canImport(ViewInspector)
         if let inspected = fieldView.tryInspect(),
-           let fieldID = try? inspected.sixLayerAccessibilityIdentifier() {
+           let fieldID = try? inspected.accessibilityIdentifier() {
             #expect(Bool(true), "Documenting requirement - Validation error rows need unique identifiers with error text")
         }
         #else
@@ -7934,7 +7934,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         
         #if canImport(ViewInspector)
         if let inspected = arrayField.tryInspect(),
-           let arrayID = try? inspected.sixLayerAccessibilityIdentifier() {
+           let arrayID = try? inspected.accessibilityIdentifier() {
             #expect(Bool(true), "Documenting requirement - Array field items need unique identifiers")
         }
         #else
@@ -7966,9 +7966,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         
         #if canImport(ViewInspector)
         if let inspected1 = row1.tryInspect(),
-           let row1ID = try? inspected1.sixLayerAccessibilityIdentifier(),
+           let row1ID = try? inspected1.accessibilityIdentifier(),
            let inspected2 = row2.tryInspect(),
-           let row2ID = try? inspected2.sixLayerAccessibilityIdentifier() {
+           let row2ID = try? inspected2.accessibilityIdentifier() {
             #expect(row1ID != row2ID,
                    "platformListRow items with different content should have different identifiers (implementation verified in code)")
             #expect(row1ID.contains("first") || row1ID.contains("First") || row1ID.contains("item"),
@@ -8010,9 +8010,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         
         #if canImport(ViewInspector)
         if let inspected1 = header1.tryInspect(),
-           let header1ID = try? inspected1.sixLayerAccessibilityIdentifier(),
+           let header1ID = try? inspected1.accessibilityIdentifier(),
            let inspected2 = header2.tryInspect(),
-           let header2ID = try? inspected2.sixLayerAccessibilityIdentifier() {
+           let header2ID = try? inspected2.accessibilityIdentifier() {
             #expect(header1ID != header2ID,
                    "platformListSectionHeader with different titles should have different identifiers (implementation verified in code)")
             #expect(header1ID.contains("section") || header1ID.contains("one") || header1ID.contains("Section"),
@@ -8049,9 +8049,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         
         #if canImport(ViewInspector)
         if let inspected1 = field1.tryInspect(),
-           let field1ID = try? inspected1.sixLayerAccessibilityIdentifier(),
+           let field1ID = try? inspected1.accessibilityIdentifier(),
            let inspected2 = field2.tryInspect(),
-           let field2ID = try? inspected2.sixLayerAccessibilityIdentifier() {
+           let field2ID = try? inspected2.accessibilityIdentifier() {
             #expect(field1ID != field2ID,
                    "platformFormField with different labels should have different identifiers (implementation verified in code)")
             #expect(field1ID.contains("email") || field1ID.contains("address") || field1ID.contains("Email"),
@@ -8088,9 +8088,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         
         #if canImport(ViewInspector)
         if let inspected1 = group1.tryInspect(),
-           let group1ID = try? inspected1.sixLayerAccessibilityIdentifier(),
+           let group1ID = try? inspected1.accessibilityIdentifier(),
            let inspected2 = group2.tryInspect(),
-           let group2ID = try? inspected2.sixLayerAccessibilityIdentifier() {
+           let group2ID = try? inspected2.accessibilityIdentifier() {
             #expect(group1ID != group2ID,
                    "platformFormFieldGroup with different titles should have different identifiers (implementation verified in code)")
             #expect(group1ID.contains("personal") || group1ID.contains("information") || group1ID.contains("Personal"),
@@ -8293,7 +8293,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             
             #if canImport(ViewInspector)
             withInspectedView(view) { inspected in
-                let buttonID = try inspected.sixLayerAccessibilityIdentifier()
+                let buttonID = try inspected.accessibilityIdentifier()
                 #expect(!buttonID.isEmpty, "Should generate ID with very long names")
                 #expect(buttonID.contains("SixLayer"), "Should contain namespace")
             }
@@ -8324,8 +8324,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
                     // Use sixLayerFindAll which returns an array of Inspectable
                     // Since Button is generic, we'll search for buttons by trying sixLayerButton() on each view
                     // For now, just verify we can find at least one button
-                    let firstButton = try inspectedView.sixLayerButton()
-                    let autoButtonID = try firstButton.sixLayerAccessibilityIdentifier()
+                    let firstButton = try inspectedView.button()
+                    let autoButtonID = try firstButton.accessibilityIdentifier()
                     #expect(autoButtonID.contains("SixLayer"), "Auto button should have automatic ID")
                     // Note: Finding multiple buttons requires more complex logic, but the main test passes
                 }
@@ -8351,7 +8351,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             #if canImport(ViewInspector)
             do {
                 try withInspectedViewThrowing(view) { inspectedView in
-                    let vStackID = try inspectedView.sixLayerAccessibilityIdentifier()
+                    let vStackID = try inspectedView.accessibilityIdentifier()
                     #expect(!vStackID.isEmpty, "Should generate ID with screen context")
                     #expect(vStackID.contains("SixLayer"), "Should contain namespace")
                 }
@@ -11027,12 +11027,13 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     if let inspected = view.tryInspect() {
         do {
             // Should have a VStack containing label and TextField
-            let vStack = try inspected.sixLayerVStack()
-            #expect(vStack.sixLayerCount >= 2, "Should have label and TextField")
+            let vStack = try inspected.vStack()
+            let children = vStack.findAll(ViewInspector.ViewType.AnyView.self)
+            #expect(children.count >= 2, "Should have label and TextField")
 
                 // First element should be the label Text
             let labelText = try vStack.sixLayerText(0)
-            #expect(try labelText.sixLayerString() == "Full Name", "Label should show field label")
+            #expect(try labelText.string() == "Full Name", "Label should show field label")
 
                 // Second element should be a TextField
             let _ = try vStack.sixLayerTextField(1)
@@ -11097,12 +11098,13 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     if let inspected = view.tryInspect() {
         do {
             // Should have a VStack containing label and TextField
-            let vStack = try inspected.sixLayerVStack()
-            #expect(vStack.sixLayerCount >= 2, "Should have label and TextField")
+            let vStack = try inspected.vStack()
+            let children = vStack.findAll(ViewInspector.ViewType.AnyView.self)
+            #expect(children.count >= 2, "Should have label and TextField")
 
                 // First element should be the label Text
             let labelText = try vStack.sixLayerText(0)
-            #expect(try labelText.sixLayerString() == "Age", "Label should show field label")
+            #expect(try labelText.string() == "Age", "Label should show field label")
 
                 // Second element should be a TextField with numeric keyboard
             let textField = try vStack.sixLayerTextField(1)
@@ -11173,12 +11175,12 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     if let inspected = view.tryInspect() {
         do {
             // Should have a VStack containing label and TextEditor
-            let vStack = try inspected.sixLayerVStack()
+            let vStack = try inspected.vStack()
             #expect(vStack.sixLayerCount >= 2, "Should have label and TextEditor")
 
                 // First element should be the label Text
             let labelText = try vStack.sixLayerText(0)
-            #expect(try labelText.sixLayerString() == "Description", "Label should show field label")
+            #expect(try labelText.string() == "Description", "Label should show field label")
 
                 // Should have accessibility identifier
             // TODO: ViewInspector Detection Issue - VERIFIED: DynamicTextAreaField DOES have .automaticCompliance(named: "DynamicTextAreaField") 
@@ -11239,12 +11241,12 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     if let inspected = view.tryInspect() {
         do {
             // Should have a VStack containing label and Picker
-            let vStack = try inspected.sixLayerVStack()
+            let vStack = try inspected.vStack()
             #expect(vStack.sixLayerCount >= 2, "Should have label and Picker")
 
                 // First element should be the label Text
             let labelText = try vStack.sixLayerText(0)
-            #expect(try labelText.sixLayerString() == "Country", "Label should show field label")
+            #expect(try labelText.string() == "Country", "Label should show field label")
 
             // Should have accessibility identifier
         // TODO: ViewInspector Detection Issue - VERIFIED: DynamicSelectField DOES have .automaticCompliance() 
@@ -11305,12 +11307,12 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     if let inspected = view.tryInspect() {
         do {
             // Should have a VStack containing label and selection controls
-            let vStack = try inspected.sixLayerVStack()
+            let vStack = try inspected.vStack()
             #expect(vStack.sixLayerCount >= 2, "Should have label and selection controls")
 
                 // First element should be the label Text
             let labelText = try vStack.sixLayerText(0)
-            #expect(try labelText.sixLayerString() == "Interests", "Label should show field label")
+            #expect(try labelText.string() == "Interests", "Label should show field label")
 
                 // Should have accessibility identifier
             // TODO: ViewInspector Detection Issue - VERIFIED: DynamicMultiSelectField DOES have .automaticCompliance(named: "DynamicMultiSelectField") 
@@ -11371,12 +11373,12 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     if let inspected = view.tryInspect() {
         do {
             // Should have a VStack containing label and radio controls
-            let vStack = try inspected.sixLayerVStack()
+            let vStack = try inspected.vStack()
             #expect(vStack.sixLayerCount >= 2, "Should have label and radio controls")
 
                 // First element should be the label Text
             let labelText = try vStack.sixLayerText(0)
-            #expect(try labelText.sixLayerString() == "Gender", "Label should show field label")
+            #expect(try labelText.string() == "Gender", "Label should show field label")
 
                 // Should have accessibility identifier
             // TODO: ViewInspector Detection Issue - VERIFIED: DynamicRadioField DOES have .automaticCompliance(named: "DynamicRadioField") 
@@ -11436,12 +11438,12 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     if let inspected = view.tryInspect() {
         do {
             // Should have a VStack containing label and Toggle
-            let vStack = try inspected.sixLayerVStack()
+            let vStack = try inspected.vStack()
             #expect(vStack.sixLayerCount >= 2, "Should have label and Toggle")
 
                 // First element should be the label Text
             let labelText = try vStack.sixLayerText(0)
-            #expect(try labelText.sixLayerString() == "Subscribe to Newsletter", "Label should show field label")
+            #expect(try labelText.string() == "Subscribe to Newsletter", "Label should show field label")
 
                 // Should have accessibility identifier
             // TODO: ViewInspector Detection Issue - VERIFIED: DynamicCheckboxField DOES have .automaticCompliance(named: "DynamicCheckboxField") 
@@ -11501,12 +11503,12 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     if let inspected = view.tryInspect() {
         do {
             // Should have a VStack containing label and Toggle
-            let vStack = try inspected.sixLayerVStack()
+            let vStack = try inspected.vStack()
             #expect(vStack.sixLayerCount >= 2, "Should have label and Toggle")
 
                 // First element should be the label Text
             let labelText = try vStack.sixLayerText(0)
-            #expect(try labelText.sixLayerString() == "Enable Feature", "Label should show field label")
+            #expect(try labelText.string() == "Enable Feature", "Label should show field label")
 
                 // Should have accessibility identifier
             // TODO: ViewInspector Detection Issue - VERIFIED: DynamicToggleField DOES have .automaticCompliance(named: "DynamicToggleField") 
@@ -12156,7 +12158,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #if canImport(ViewInspector)
         if let inspectedView = view.tryInspect(),
            let text = try? inspectedView.sixLayerText(),
-           let accessibilityID = try? text.sixLayerAccessibilityIdentifier() {
+           let accessibilityID = try? text.accessibilityIdentifier() {
             #expect(accessibilityID.isEmpty, "Global disable without local enable should result in no accessibility identifier, got: '\(accessibilityID)'")
         } else {
             // If inspection fails, treat as no identifier applied
@@ -12228,8 +12230,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
         #if canImport(ViewInspector)
         if let inspectedView = view.tryInspect(),
-           let button = try? inspectedView.sixLayerButton(),
-           let accessibilityID = try? button.sixLayerAccessibilityIdentifier() {
+           let button = try? inspectedView.button(),
+           let accessibilityID = try? button.accessibilityIdentifier() {
             // Should be empty when local disable is applied
             // NOTE: Environment variable override is not working as expected
             // The modifier still generates an ID despite the environment variable being set to false
@@ -12411,10 +12413,10 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #if canImport(ViewInspector)
         do {
             let button1ID = try withInspectedViewThrowing(view1) { inspectedView1 in
-                try inspectedView1.sixLayerAccessibilityIdentifier()
+                try inspectedView1.accessibilityIdentifier()
             }
             let button2ID = try withInspectedViewThrowing(view2) { inspectedView2 in
-                try inspectedView2.sixLayerAccessibilityIdentifier()
+                try inspectedView2.accessibilityIdentifier()
             }
             
             // exactNamed() should respect the exact name (no hierarchy, no collision detection)
@@ -12448,10 +12450,10 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #if canImport(ViewInspector)
         do {
             let exactID = try withInspectedViewThrowing(exactView) { exactInspected in
-                try exactInspected.sixLayerAccessibilityIdentifier()
+                try exactInspected.accessibilityIdentifier()
             }
             let namedID = try withInspectedViewThrowing(namedView) { namedInspected in
-                try namedInspected.sixLayerAccessibilityIdentifier()
+                try namedInspected.accessibilityIdentifier()
             }
             
             // exactNamed() should produce different identifiers than named()
@@ -12491,7 +12493,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #if canImport(ViewInspector)
         do {
             try withInspectedViewThrowing(exactView) { exactInspected in
-                let exactID = try exactInspected.sixLayerAccessibilityIdentifier()
+                let exactID = try exactInspected.accessibilityIdentifier()
             
                 // exactNamed() should NOT include hierarchy components
                 // This test will FAIL until exactNamed() is properly implemented
@@ -12524,7 +12526,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #if canImport(ViewInspector)
         do {
             try withInspectedViewThrowing(exactView) { exactInspected in
-                let exactID = try exactInspected.sixLayerAccessibilityIdentifier()
+                let exactID = try exactInspected.accessibilityIdentifier()
             
                 // exactNamed() should produce minimal identifiers (just the exact name)
                 // This test will FAIL until exactNamed() is properly implemented
@@ -12568,7 +12570,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #if canImport(ViewInspector)
         do {
             try withInspectedViewThrowing(view) { inspectedView in
-                let buttonID = try inspectedView.sixLayerAccessibilityIdentifier()
+                let buttonID = try inspectedView.accessibilityIdentifier()
             
                 // Should use configuration at time of ID generation
                 #expect(!buttonID.isEmpty, "Should generate ID with changed config")
@@ -12604,8 +12606,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         do {
             try withInspectedViewThrowing(view) { inspectedView in
                 // Use sixLayerButton() instead of sixLayerFind(Button.self) since Button is generic
-                let button = try inspectedView.sixLayerButton()
-                let buttonID = try button.sixLayerAccessibilityIdentifier()
+                let button = try inspectedView.button()
+                let buttonID = try button.accessibilityIdentifier()
                 
                 // Should handle nested calls without duplication
                 #expect(!buttonID.isEmpty, "Should generate ID with nested .named() calls")
@@ -12636,7 +12638,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #if canImport(ViewInspector)
         do {
             try withInspectedViewThrowing(view) { inspectedView in
-                let buttonID = try inspectedView.sixLayerAccessibilityIdentifier()
+                let buttonID = try inspectedView.accessibilityIdentifier()
             
                 // Should handle Unicode gracefully
                 #expect(!buttonID.isEmpty, "Should generate ID with Unicode characters")
@@ -14159,7 +14161,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     // Using wrapper - when ViewInspector works on macOS, no changes needed here
     #if canImport(ViewInspector)
     if let inspectedView = view.tryInspect(),
-       let vStackID = try? inspectedView.sixLayerAccessibilityIdentifier() {
+       let vStackID = try? inspectedView.accessibilityIdentifier() {
         // This test SHOULD FAIL initially - contains duplicates like "container-container"
         #expect(!vStackID.contains("container-container"), "Should not contain duplicated hierarchy")
         #expect(!vStackID.contains("outercontainer-outercontainer"), "Should not contain duplicated hierarchy")
@@ -14197,7 +14199,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     // Using wrapper - when ViewInspector works on macOS, no changes needed here
     #if canImport(ViewInspector)
     if let inspectedView = view.tryInspect(),
-       let vStackID = try? inspectedView.sixLayerAccessibilityIdentifier() {
+       let vStackID = try? inspectedView.accessibilityIdentifier() {
         // This test SHOULD FAIL initially - IDs are not semantic
         #expect(vStackID.contains("UserProfile"), "Should contain screen context")
         #expect(vStackID.contains("ProfileView") || vStackID.contains("UserProfile"), "Should contain view name")
@@ -14243,7 +14245,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     // Using wrapper - when ViewInspector works on macOS, no changes needed here
     #if canImport(ViewInspector)
     if let inspectedView = view.tryInspect(),
-       let vStackID = try? inspectedView.sixLayerAccessibilityIdentifier() {
+       let vStackID = try? inspectedView.accessibilityIdentifier() {
         // This test SHOULD FAIL initially - complex hierarchies create massive IDs
         #expect(vStackID.count < 100, "Should handle complex hierarchies gracefully")
         #expect(vStackID.contains("ComplexView"), "Should contain screen context")
@@ -14277,8 +14279,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     do {
         if let submitInspected = submitButton.tryInspect(),
            let cancelInspected = cancelButton.tryInspect() {
-            let submitID = try? submitInspected.sixLayerAccessibilityIdentifier()
-            let cancelID = try? cancelInspected.sixLayerAccessibilityIdentifier()
+            let submitID = try? submitInspected.accessibilityIdentifier()
+            let cancelID = try? cancelInspected.accessibilityIdentifier()
             
             // TDD RED: These should FAIL - labels not currently included
             #expect((submitID?.contains("Submit") ?? false), "Submit button identifier should include 'Submit' label")
@@ -14308,7 +14310,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     #if canImport(ViewInspector)
     do {
         if let inspected = button.tryInspect() {
-            let buttonID = try? inspected.sixLayerAccessibilityIdentifier()
+            let buttonID = try? inspected.accessibilityIdentifier()
             
             // TDD RED: Should FAIL - labels not sanitized
             // Should contain sanitized version: "add-new-item" or similar
@@ -14623,7 +14625,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         if let inspected = rootView.tryInspect() {
             // If we can inspect it, the environment was accessed correctly
             // (ViewInspector requires the view to be properly installed)
-            let identifier = try? inspected.sixLayerAccessibilityIdentifier()
+            let identifier = try? inspected.accessibilityIdentifier()
             // Modifier should work on root view
             #expect(Bool(true), "Modifier should generate identifier on root view without environment warnings")  // identifier is non-optional
         } else {
@@ -14658,7 +14660,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         // We verify this by checking that the view works correctly when inspected
         #if canImport(ViewInspector)
         if let inspected = view.tryInspect() {
-            let identifier = try? inspected.sixLayerAccessibilityIdentifier()
+            let identifier = try? inspected.accessibilityIdentifier()
             // TDD RED: Should PASS - environment should be accessed only when view is installed
             #expect(identifier != nil && !(identifier?.isEmpty ?? true), 
                    "Modifier should access environment only when view is installed, generating identifier: '\(identifier ?? "nil")'")
@@ -14700,21 +14702,21 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #if canImport(ViewInspector)
         // Handle each view separately to avoid Any type issues
         if let inspected1 = view1.tryInspect() {
-            let identifier1 = try? inspected1.sixLayerAccessibilityIdentifier()
+            let identifier1 = try? inspected1.accessibilityIdentifier()
             #expect(Bool(true), "Modifier variant 1 should generate identifier without warnings")  // identifier1 is non-optional
         } else {
             Issue.record("Could not inspect view variant 1")
         }
         
         if let inspected2 = view2.tryInspect() {
-            let identifier2 = try? inspected2.sixLayerAccessibilityIdentifier()
+            let identifier2 = try? inspected2.accessibilityIdentifier()
             #expect(Bool(true), "Modifier variant 2 should generate identifier without warnings")  // identifier2 is non-optional
         } else {
             Issue.record("Could not inspect view variant 2")
         }
         
         if let inspected3 = view3.tryInspect() {
-            let identifier3 = try? inspected3.sixLayerAccessibilityIdentifier()
+            let identifier3 = try? inspected3.accessibilityIdentifier()
             #expect(Bool(true), "Modifier variant 3 should generate identifier without warnings")  // identifier3 is non-optional
         } else {
             Issue.record("Could not inspect view variant 3")
@@ -14745,10 +14747,10 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     // Using wrapper - when ViewInspector works on macOS, no changes needed here
     if let inspected1 = emptyState1.tryInspect(),
-       let state1ID = try? inspected1.sixLayerAccessibilityIdentifier(),
+       let state1ID = try? inspected1.accessibilityIdentifier(),
 
     let inspected2 = emptyState2.tryInspect(),
-       let state2ID = try? inspected2.sixLayerAccessibilityIdentifier() {
+       let state2ID = try? inspected2.accessibilityIdentifier() {
 
     // TODO: ViewInspector Detection Issue - VERIFIED: platformListEmptyState DOES pass label via .environment(\.accessibilityIdentifierLabel, title)
         // in Framework/Sources/Layers/Layer4-Component/PlatformListsLayer4.swift:113.
@@ -14784,10 +14786,10 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     // Using wrapper - when ViewInspector works on macOS, no changes needed here
     if let inspected1 = placeholder1.tryInspect(),
-       let placeholder1ID = try? inspected1.sixLayerAccessibilityIdentifier(),
+       let placeholder1ID = try? inspected1.accessibilityIdentifier(),
 
     let inspected2 = placeholder2.tryInspect(),
-       let placeholder2ID = try? inspected2.sixLayerAccessibilityIdentifier() {
+       let placeholder2ID = try? inspected2.accessibilityIdentifier() {
 
     // TODO: ViewInspector Detection Issue - VERIFIED: platformDetailPlaceholder DOES pass label via .environment(\.accessibilityIdentifierLabel, title)
         // in Framework/Sources/Layers/Layer4-Component/PlatformListsLayer4.swift:194.
@@ -14817,10 +14819,10 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     // Using wrapper - when ViewInspector works on macOS, no changes needed here
     if let inspected1 = button1.tryInspect(),
-       let button1ID = try? inspected1.sixLayerAccessibilityIdentifier(),
+       let button1ID = try? inspected1.accessibilityIdentifier(),
 
     let inspected2 = button2.tryInspect(),
-       let button2ID = try? inspected2.sixLayerAccessibilityIdentifier() {
+       let button2ID = try? inspected2.accessibilityIdentifier() {
 
     // TODO: ViewInspector Detection Issue - VERIFIED: ActionButton DOES pass label via .environment(\.accessibilityIdentifierLabel, title)
         // in Framework/Sources/Components/Forms/ActionButton.swift:20.
@@ -14857,10 +14859,10 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     // Using wrapper - when ViewInspector works on macOS, no changes needed here
     if let inspected1 = message1.tryInspect(),
-       let message1ID = try? inspected1.sixLayerAccessibilityIdentifier(),
+       let message1ID = try? inspected1.accessibilityIdentifier(),
 
     let inspected2 = message2.tryInspect(),
-       let message2ID = try? inspected2.sixLayerAccessibilityIdentifier() {
+       let message2ID = try? inspected2.accessibilityIdentifier() {
 
     // TODO: ViewInspector Detection Issue - VERIFIED: platformValidationMessage DOES pass label via .environment(\.accessibilityIdentifierLabel, message)
         // in Framework/Sources/Layers/Layer4-Component/PlatformFormsLayer4.swift:78.
@@ -15662,8 +15664,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
         #if canImport(ViewInspector)
         if let inspected1 = testView1.tryInspect(),
-           let button1 = try? inspected1.sixLayerButton(),
-           let accessibilityIdentifier1 = try? button1.sixLayerAccessibilityIdentifier() {
+           let button1 = try? inspected1.button(),
+           let accessibilityIdentifier1 = try? button1.accessibilityIdentifier() {
             #expect(accessibilityIdentifier1.isEmpty || !accessibilityIdentifier1.hasPrefix("test"), 
                          "No automatic identifier should be generated when disabled")
         } else {

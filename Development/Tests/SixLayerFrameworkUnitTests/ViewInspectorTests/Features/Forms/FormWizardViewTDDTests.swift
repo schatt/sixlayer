@@ -166,16 +166,16 @@ open class FormWizardViewTDDTests: BaseTestClass {
         #if canImport(ViewInspector)
         if let inspected = try? AnyView(view).inspect() {
             // Should find navigation buttons
-            let buttons = inspected.sixLayerFindAll(Button<Text>.self)
+            let buttons = inspected.findAll(Button<Text>.self)
             if buttons.count > 0 {
                 let hasNextButton = buttons.contains { button in
-                    (try? button.sixLayerAccessibilityIdentifier())?.contains("Next") ?? false
+                    (try? button.accessibilityIdentifier())?.contains("Next") ?? false
                 }
                 let hasFinishButton = buttons.contains { button in
-                    (try? button.sixLayerAccessibilityIdentifier())?.contains("Finish") ?? false
+                    (try? button.accessibilityIdentifier())?.contains("Finish") ?? false
                 }
                 let hasPreviousButton = buttons.contains { button in
-                    (try? button.sixLayerAccessibilityIdentifier())?.contains("Previous") ?? false
+                    (try? button.accessibilityIdentifier())?.contains("Previous") ?? false
                 }
 
                 // At least one navigation control should exist

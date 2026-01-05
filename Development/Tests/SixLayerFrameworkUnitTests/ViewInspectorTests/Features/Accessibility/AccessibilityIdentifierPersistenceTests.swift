@@ -329,8 +329,8 @@ open class AccessibilityIdentifierPersistenceTests: BaseTestClass {
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
         #if canImport(ViewInspector)
         if let inspectedView = view.tryInspect(),
-           let button = try? inspectedView.sixLayerButton(),
-           let id = try? button.sixLayerAccessibilityIdentifier() {
+           let button = try? inspectedView.button(),
+           let id = try? button.accessibilityIdentifier() {
             return id
         } else {
             Issue.record("Failed to generate ID for view")

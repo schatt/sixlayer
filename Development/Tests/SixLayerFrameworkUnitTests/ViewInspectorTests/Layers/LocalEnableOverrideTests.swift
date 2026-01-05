@@ -35,8 +35,8 @@ open class LocalEnableOverrideTests: BaseTestClass {
             #if canImport(ViewInspector)
             do {
                 let inspectedView = try view.inspectView()
-                let button = try inspectedView.sixLayerButton()
-                let accessibilityID = try button.sixLayerAccessibilityIdentifier()
+                let button = try inspectedView.button()
+                let accessibilityID = try button.accessibilityIdentifier()
                 
                 // Should have an ID - local enable should override global disable
                 #expect(!accessibilityID.isEmpty, "Local enable should override global disable")
@@ -129,8 +129,8 @@ open class LocalEnableOverrideTests: BaseTestClass {
             #if canImport(ViewInspector)
             do {
                 let inspectedView = try view.inspectView()
-                let button = try inspectedView.sixLayerButton()
-                let accessibilityID = try button.sixLayerAccessibilityIdentifier()
+                let button = try inspectedView.button()
+                let accessibilityID = try button.accessibilityIdentifier()
                 
                 // .named() should always work regardless of global settings
                 // This is the correct behavior - explicit naming should not be affected by global config

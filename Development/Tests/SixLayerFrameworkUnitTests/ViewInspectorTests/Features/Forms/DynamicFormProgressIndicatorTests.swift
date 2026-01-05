@@ -26,14 +26,14 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
         // This matches the structure of FormProgressIndicator
         
         // First, check if the current view is a VStack with the right structure
-        if let vStack = try? inspected.sixLayerVStack() {
+        if let vStack = try? inspected.vStack() {
             // Check if this VStack contains a ProgressView
-            let hasProgressView = vStack.sixLayerTryFind(ProgressView<EmptyView, EmptyView>.self) != nil
+            let hasProgressView = vStack.findAll(ProgressView<EmptyView, EmptyView>.self) != nil
             
             // Check if it contains "Progress" text
-            let texts = vStack.sixLayerFindAll(Text.self)
+            let texts = vStack.findAll(Text.self)
             let hasProgressText = texts.contains { text in
-                (try? text.sixLayerString()) == "Progress"
+                (try? text.string()) == "Progress"
             }
             
             if hasProgressView && hasProgressText {
@@ -42,17 +42,17 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
         }
         
         // Search for ProgressView and verify it's in a VStack with "Progress" text
-        let progressViews = inspected.sixLayerFindAll(ProgressView<EmptyView, EmptyView>.self)
+        let progressViews = inspected.findAll(ProgressView<EmptyView, EmptyView>.self)
         for _ in progressViews {
             // If we found a ProgressView, check if there's "Progress" text nearby
             // (indicating this is likely the progress indicator)
-            let texts = inspected.sixLayerFindAll(Text.self)
+            let texts = inspected.findAll(Text.self)
             let hasProgressText = texts.contains { text in
-                (try? text.sixLayerString()) == "Progress"
+                (try? text.string()) == "Progress"
             }
             if hasProgressText {
                 // Try to find the parent VStack
-                if let vStack = try? inspected.sixLayerVStack() {
+                if let vStack = try? inspected.vStack() {
                     return vStack
                 }
                 // If we can't get the VStack, return the inspected view itself
@@ -103,7 +103,7 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
             
             // Verify it contains the expected elements
             if let indicator = progressIndicator {
-                let progressView = indicator.sixLayerTryFind(ProgressView<EmptyView, EmptyView>.self)
+                let progressView = indicator.findAll(ProgressView<EmptyView, EmptyView>.self)
                 #expect(progressView != nil, "Progress indicator should contain ProgressView")
             }
         }
@@ -197,13 +197,13 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
             let progressIndicator = findProgressIndicator(in: inspected)
             if let indicator = progressIndicator {
                 // Look for the text showing field count
-                let texts = indicator.sixLayerFindAll(Text.self)
+                let texts = indicator.findAll(Text.self)
                 let fieldCountText = texts.first { text in
-                    (try? text.sixLayerString())?.contains("of") ?? false
+                    (try? text.string())?.contains("of") ?? false
                 }
                 
                 if let countText = fieldCountText {
-                    let textString = try? countText.sixLayerString()
+                    let textString = try? countText.string()
                     #expect(textString?.contains("0 of 3") ?? false, "Should display '0 of 3 fields' for empty form")
                     #expect(textString?.contains("field") ?? false, "Should contain 'field' text")
                 } else {
@@ -257,11 +257,11 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
             let progressIndicator = findProgressIndicator(in: inspected)
             if let indicator = progressIndicator {
                 // Look for ProgressView
-                let progressView = indicator.sixLayerTryFind(ProgressView<EmptyView, EmptyView>.self)
+                let progressView = indicator.findAll(ProgressView<EmptyView, EmptyView>.self)
                 #expect(progressView != nil, "Progress bar should be present")
                 
                 // Verify the structure contains expected elements
-                let texts = indicator.sixLayerFindAll(Text.self)
+                let texts = indicator.findAll(Text.self)
                 #expect(texts.count >= 2, "Progress indicator should have at least Progress title and field count text")
             } else {
                 Issue.record("Could not find progress indicator to verify progress bar")
@@ -313,12 +313,12 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
         let initialInspection = withInspectedView(view) { inspected in
             let progressIndicator = findProgressIndicator(in: inspected)
             if let indicator = progressIndicator {
-                let texts = indicator.sixLayerFindAll(Text.self)
+                let texts = indicator.findAll(Text.self)
                 let fieldCountText = texts.first { text in
-                    (try? text.sixLayerString())?.contains("of") ?? false
+                    (try? text.string())?.contains("of") ?? false
                 }
                 if let countText = fieldCountText {
-                    let textString = try? countText.sixLayerString()
+                    let textString = try? countText.string()
                     #expect(textString?.contains("0 of 2") ?? false, "Initially should show '0 of 2 fields'")
                 }
             }
@@ -364,12 +364,12 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
             let progressIndicator = FormProgressIndicator(progress: progress)
             
             let inspectionResult = withInspectedView(progressIndicator) { inspected in
-                let texts = inspected.sixLayerFindAll(Text.self)
+                let texts = inspected.findAll(Text.self)
                 let fieldCountText = texts.first { text in
-                    (try? text.sixLayerString())?.contains("of") ?? false
+                    (try? text.string())?.contains("of") ?? false
                 }
                 if let countText = fieldCountText {
-                    let textString = try? countText.sixLayerString()
+                    let textString = try? countText.string()
                     #expect(textString?.contains(testCase.expectedText) ?? false, 
                            "Should display '\(testCase.expectedText) fields' for \(testCase.completed)/\(testCase.total)")
                 } else {
@@ -446,9 +446,9 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
             // Verify the displayed text matches what accessibility should announce
             // Implementation sets: accessibilityLabel with percentage and count
             // Implementation sets: accessibilityValue with "X of Y fields completed"
-            let texts = inspected.sixLayerFindAll(Text.self)
+            let texts = inspected.findAll(Text.self)
             let fieldCountText = texts.first { text in
-                (try? text.sixLayerString())?.contains("3 of 5") ?? false
+                (try? text.string())?.contains("3 of 5") ?? false
             }
             #expect(fieldCountText != nil, "Should display '3 of 5 fields' text that matches accessibility value")
             
@@ -495,7 +495,7 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
                 #expect(hasAccessibilityID, "Progress indicator should have accessibility identifier for screen readers")
                 
                 // Verify structure contains text elements that screen readers can announce
-                let texts = inspected.sixLayerFindAll(Text.self)
+                let texts = inspected.findAll(Text.self)
                 #expect(texts.count >= 2, "Should have text elements for screen reader announcements")
             }
             
@@ -525,16 +525,16 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
         #if canImport(ViewInspector)
         let inspectionResult = withInspectedView(progressIndicator) { inspected in
             // Should have VStack as root
-            let vStack = try? inspected.sixLayerVStack()
+            let vStack = try? inspected.vStack()
             #expect(vStack != nil, "Progress indicator should have VStack as root")
             
             if let vStack = vStack {
                 // Should contain HStack (for title and field count)
-                let hStack = vStack.sixLayerTryFind(ViewType.HStack.self)
+                let hStack = vStack.findAll(ViewType.HStack.self)
                 #expect(hStack != nil, "Should contain HStack for title and count")
                 
                 // Should contain ProgressView
-                let progressView = vStack.sixLayerTryFind(ProgressView<EmptyView, EmptyView>.self)
+                let progressView = vStack.findAll(ProgressView<EmptyView, EmptyView>.self)
                 #expect(progressView != nil, "Should contain ProgressView for visual progress bar")
             }
         }
@@ -564,11 +564,11 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
             // Verify the view structure indicates styling (VStack with proper hierarchy)
             // ViewInspector cannot directly detect padding/background/cornerRadius modifiers,
             // but we can verify the component structure is correct
-            let vStack = try? inspected.sixLayerVStack()
+            let vStack = try? inspected.vStack()
             #expect(vStack != nil, "Progress indicator should have VStack structure for styling")
             
             // Verify text elements are present (styling makes them readable)
-            let texts = inspected.sixLayerFindAll(Text.self)
+            let texts = inspected.findAll(Text.self)
             #expect(texts.count >= 2, "Should have text elements that are styled for readability")
             
             // Note: Actual padding, background, and cornerRadius modifiers are verified
@@ -598,25 +598,25 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
         #if canImport(ViewInspector)
         let inspectionResult = withInspectedView(progressIndicator) { inspected in
             // Find all Text elements
-            let texts = inspected.sixLayerFindAll(Text.self)
+            let texts = inspected.findAll(Text.self)
             
             // Should have at least 2 Text elements: "Progress" and "1 of 3 fields"
             #expect(texts.count >= 2, "Should have Progress label and field count text")
             
             // Verify "Progress" title exists
             let hasProgressTitle = texts.contains { text in
-                (try? text.sixLayerString()) == "Progress"
+                (try? text.string()) == "Progress"
             }
             #expect(hasProgressTitle, "Should display 'Progress' title")
             
             // Verify field count text exists
             let hasFieldCount = texts.contains { text in
-                (try? text.sixLayerString())?.contains("of") ?? false
+                (try? text.string())?.contains("of") ?? false
             }
             #expect(hasFieldCount, "Should display field count text")
             
             // Verify ProgressView exists
-            let progressView = inspected.sixLayerTryFind(ProgressView<EmptyView, EmptyView>.self)
+            let progressView = inspected.findAll(ProgressView<EmptyView, EmptyView>.self)
             #expect(progressView != nil, "Should display progress bar")
         }
         
@@ -646,15 +646,15 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
         #if canImport(ViewInspector)
         let inspectionResult = withInspectedView(progressIndicator) { inspected in
             // Verify structure is present (visibility)
-            let vStack = try? inspected.sixLayerVStack()
+            let vStack = try? inspected.vStack()
             #expect(vStack != nil, "Progress indicator should render in light mode")
             
             // Verify text elements are present (readability)
-            let texts = inspected.sixLayerFindAll(Text.self)
+            let texts = inspected.findAll(Text.self)
             #expect(texts.count >= 2, "Should have text elements visible in light mode")
             
             // Verify ProgressView is present
-            let progressView = inspected.sixLayerTryFind(ProgressView<EmptyView, EmptyView>.self)
+            let progressView = inspected.findAll(ProgressView<EmptyView, EmptyView>.self)
             #expect(progressView != nil, "Progress bar should be visible in light mode")
         }
         
@@ -682,15 +682,15 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
         #if canImport(ViewInspector)
         let inspectionResult = withInspectedView(progressIndicator) { inspected in
             // Verify structure is present (visibility)
-            let vStack = try? inspected.sixLayerVStack()
+            let vStack = try? inspected.vStack()
             #expect(vStack != nil, "Progress indicator should render in dark mode")
             
             // Verify text elements are present (readability)
-            let texts = inspected.sixLayerFindAll(Text.self)
+            let texts = inspected.findAll(Text.self)
             #expect(texts.count >= 2, "Should have text elements visible in dark mode")
             
             // Verify ProgressView is present
-            let progressView = inspected.sixLayerTryFind(ProgressView<EmptyView, EmptyView>.self)
+            let progressView = inspected.findAll(ProgressView<EmptyView, EmptyView>.self)
             #expect(progressView != nil, "Progress bar should be visible in dark mode")
         }
         
@@ -714,7 +714,7 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
         let indicator0 = FormProgressIndicator(progress: progress0)
         #if canImport(ViewInspector)
         let inspection0 = withInspectedView(indicator0) { inspected in
-            let vStack = try? inspected.sixLayerVStack()
+            let vStack = try? inspected.vStack()
             #expect(vStack != nil, "Progress indicator should render even with 0 of 0 fields")
         }
         if inspection0 == nil {
@@ -740,26 +740,26 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
         #if canImport(ViewInspector)
         // Test singular "field" text
         let inspectionResult1 = withInspectedView(indicator1Empty) { inspected in
-            let texts = inspected.sixLayerFindAll(Text.self)
+            let texts = inspected.findAll(Text.self)
             let fieldText = texts.first { text in
-                let str = try? text.sixLayerString()
+                let str = try? text.string()
                 return str?.contains("of") ?? false
             }
             if let text = fieldText {
-                let textString = try? text.sixLayerString()
+                let textString = try? text.string()
                 #expect(textString?.contains("field") ?? false, "Should use singular 'field' for total of 1")
             }
         }
         
         // Test plural "fields" text
         let inspectionResult100 = withInspectedView(indicator100) { inspected in
-            let texts = inspected.sixLayerFindAll(Text.self)
+            let texts = inspected.findAll(Text.self)
             let fieldText = texts.first { text in
-                let str = try? text.sixLayerString()
+                let str = try? text.string()
                 return str?.contains("of") ?? false
             }
             if let text = fieldText {
-                let textString = try? text.sixLayerString()
+                let textString = try? text.string()
                 #expect(textString?.contains("fields") ?? false, "Should use plural 'fields' for total > 1")
             }
         }

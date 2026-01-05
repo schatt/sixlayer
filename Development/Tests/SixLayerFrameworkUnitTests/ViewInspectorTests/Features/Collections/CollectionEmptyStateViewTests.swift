@@ -125,16 +125,16 @@ open class CollectionEmptyStateViewTests: BaseTestClass {
             #if canImport(ViewInspector)
             if let inspected = view.tryInspect() {
                 // Find the message text in the VStack
-                if let vStack = inspected.sixLayerTryFind(ViewType.VStack.self) {
+                if let vStack = inspected.findAll(ViewType.VStack.self) {
                     // The message should be in a Text view within the VStack
-                    let texts = vStack.sixLayerFindAll(ViewType.Text.self)
+                    let texts = vStack.findAll(ViewType.Text.self)
                     let messageText = texts.first { text in
-                        let string = try? text.sixLayerString()
+                        let string = try? text.string()
                         return string?.contains("vehicles") ?? false || string?.contains("vehicle") ?? false
                     }
                     
                     if let messageText = messageText {
-                        let actualMessage = try? messageText.sixLayerString()
+                        let actualMessage = try? messageText.string()
                         // TDD RED: Should FAIL - custom message should be displayed
                         #expect(actualMessage?.contains(customMessage) ?? false,
                                "Empty state should display custom message from customPreferences. Expected: '\(customMessage)', Got: '\(actualMessage ?? "nil")'")
@@ -178,7 +178,7 @@ open class CollectionEmptyStateViewTests: BaseTestClass {
             #if canImport(ViewInspector)
             if let inspected = view.tryInspect() {
                 // Find the button in the view
-                let button = inspected.sixLayerTryFind(ViewType.Button.self)
+                let button = inspected.findAll(ViewType.Button.self)
                 
                 // TDD RED: Should FAIL - button should exist when onCreateItem is provided
                 #expect(Bool(true), "Empty state should display create button when onCreateItem is provided")  // button is non-optional
@@ -236,18 +236,18 @@ open class CollectionEmptyStateViewTests: BaseTestClass {
             #if canImport(ViewInspector)
             if let inspected = view.tryInspect() {
                 // Find the empty state view
-                let emptyState = inspected.sixLayerTryFind(ViewType.VStack.self)
+                let emptyState = inspected.findAll(ViewType.VStack.self)
                 
                 if let emptyState = emptyState {
                     // Check that custom message is displayed
-                    let texts = emptyState.sixLayerFindAll(ViewType.Text.self)
+                    let texts = emptyState.findAll(ViewType.Text.self)
                     let hasCustomMessage = texts.contains { text in
-                        let string = try? text.sixLayerString()
+                        let string = try? text.string()
                         return string?.contains("vehicles") ?? false || string?.contains("vehicle") ?? false
                     }
                     
                     // Check that create button exists (onCreateItem was provided)
-                    let button = emptyState.sixLayerTryFind(ViewType.Button.self)
+                    let button = emptyState.findAll(ViewType.Button.self)
                     
                     // TDD RED: Should FAIL if hints are overridden
                     #expect(hasCustomMessage, "Custom message should be displayed when hints are not overridden")
@@ -294,15 +294,15 @@ open class CollectionEmptyStateViewTests: BaseTestClass {
             // Using wrapper - when ViewInspector works on macOS, no changes needed here
             #if canImport(ViewInspector)
             if let inspected = view.tryInspect() {
-                if let vStack = inspected.sixLayerTryFind(ViewType.VStack.self) {
-                    let texts = vStack.sixLayerFindAll(ViewType.Text.self)
+                if let vStack = inspected.findAll(ViewType.VStack.self) {
+                    let texts = vStack.findAll(ViewType.Text.self)
                     let messageText = texts.first { text in
-                        let string = try? text.sixLayerString()
+                        let string = try? text.string()
                         return string?.count ?? 0 > 10 // Find the longer message text
                     }
                     
                     if let messageText = messageText {
-                        let actualMessage = try? messageText.sixLayerString()
+                        let actualMessage = try? messageText.string()
                         // TDD RED: Should FAIL - custom message should override default
                         #expect(actualMessage?.contains(customMessage) ?? false,
                                "Custom message should override default context message. Expected: '\(customMessage)', Got: '\(actualMessage ?? "nil")'")
