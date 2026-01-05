@@ -63,7 +63,7 @@ open class PlatformHapticFeedbackExtensionsTests: BaseTestClass {
         runWithTaskLocalConfig {
             // Given: All haptic feedback types
             let allTypes = PlatformHapticFeedback.allCases
-            _ = Text("Test")
+            let testView = Text("Test")
             
             // When & Then: Apply each type - should not crash
             for hapticType in allTypes {
@@ -81,7 +81,7 @@ open class PlatformHapticFeedbackExtensionsTests: BaseTestClass {
         initializeTestConfig()
         runWithTaskLocalConfig {
             // Given: A view
-            _ = Text("Test")
+            let testView = Text("Test")
             
             // When: Chain multiple modifiers
             // Then: Should not crash
@@ -104,7 +104,7 @@ open class PlatformHapticFeedbackExtensionsTests: BaseTestClass {
         initializeTestConfig()
         runWithTaskLocalConfig {
             // Given: A view
-            _ = Text("Test")
+            let testView = Text("Test")
             
             // When: Apply modifier with action
             // Then: Should not crash
@@ -127,7 +127,7 @@ open class PlatformHapticFeedbackExtensionsTests: BaseTestClass {
         runWithTaskLocalConfig {
             // Given: A view and action flag
             var actionExecuted = false
-            _ = Text("Test")
+            let testView = Text("Test")
                 .platformHapticFeedback(.light) {
                     actionExecuted = true
                 }
@@ -151,7 +151,7 @@ open class PlatformHapticFeedbackExtensionsTests: BaseTestClass {
         initializeTestConfig()
         runWithTaskLocalConfig {
             // Given: A view on iOS
-            _ = Text("Test")
+            let testView = Text("Test")
             
             // When: Apply haptic feedback modifier
             // Then: Should not crash and should be applicable
@@ -173,7 +173,7 @@ open class PlatformHapticFeedbackExtensionsTests: BaseTestClass {
         initializeTestConfig()
         runWithTaskLocalConfig {
             // Given: A view on macOS
-            _ = Text("Test")
+            let testView = Text("Test")
             
             // When: Apply haptic feedback modifier
             // Then: Should not crash (graceful no-op on macOS)
