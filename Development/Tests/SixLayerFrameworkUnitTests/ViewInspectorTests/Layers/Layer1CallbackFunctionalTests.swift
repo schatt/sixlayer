@@ -1,6 +1,7 @@
 import Testing
-
-
+#if canImport(ViewInspector)
+import ViewInspector
+#endif
 import SwiftUI
 @testable import SixLayerFramework
 /// Layer 1 Function Callback Functional Tests
@@ -97,7 +98,7 @@ open class Layer1CallbackFunctionalTests: BaseTestClass {
         do {
             try withInspectedViewThrowing(view) { inspector in
                 // Find text elements to verify the view structure
-                let texts = inspector.findAll(ViewType.Text.self)
+                let texts = inspector.findAll(ViewInspector.ViewType.Text.self)
                 #expect(!texts.isEmpty, "Should have text elements from items")
 
                 // Try to find and tap elements - ListCardComponent is not directly inspectable

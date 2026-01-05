@@ -38,7 +38,7 @@ final class Layer2ComponentAccessibilityTests {
     
     @Test func testDetermineOptimalFormLayoutL2ReturnsValidDecision() async {
         // Given: Test hints
-        _ = PresentationHints()
+        let hints = PresentationHints()
         
         // When: Creating form layout decision using Layer 2 function
         _ = determineOptimalFormLayout_L2(
