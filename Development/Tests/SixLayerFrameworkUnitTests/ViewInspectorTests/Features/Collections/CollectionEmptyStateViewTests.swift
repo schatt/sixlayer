@@ -179,7 +179,7 @@ open class CollectionEmptyStateViewTests: BaseTestClass {
             #if canImport(ViewInspector)
             if let inspected = try? AnyView(view).inspect() {
                 // Find the button in the view
-                let button = inspected.findAll(ViewType.Button.self)
+                let buttons = inspected.findAll(ViewInspector.ViewType.Button.self)
                 
                 // TDD RED: Should FAIL - button should exist when onCreateItem is provided
                 #expect(Bool(true), "Empty state should display create button when onCreateItem is provided")  // button is non-optional
@@ -248,15 +248,15 @@ open class CollectionEmptyStateViewTests: BaseTestClass {
                     }
                     
                     // Check that create button exists (onCreateItem was provided)
-                    let buttons = emptyState.findAll(ViewType.Button.self)
+                    let buttons = emptyState.findAll(ViewInspector.ViewType.Button.self)
                     
                     // TDD RED: Should FAIL if hints are overridden
                     #expect(hasCustomMessage, "Custom message should be displayed when hints are not overridden")
                     #expect(Bool(true), "Create button should be displayed when onCreateItem is provided and hints are not overridden")  // button is non-optional
                     
                     // Verify button works
-                    if let button = button {
-                        try? button.sixLayerTap()
+                    if let button = buttons.first {
+                        try? button.tap()
                         #expect(onCreateItemCalled, "Create button should call onCreateItem callback")
                     }
                 } else {

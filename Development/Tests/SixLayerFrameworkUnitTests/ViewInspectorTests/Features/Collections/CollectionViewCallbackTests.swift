@@ -259,17 +259,9 @@ open class CollectionViewCallbackTests: BaseTestClass {
             Issue.record("View inspection failed: \(error)")
         }
         #else
-        let inspectionResult: Bool? = nil
+        // ViewInspector not available on macOS - test passes by verifying callback signature
+        #expect(Bool(true), "Collection view callback verified by compilation (ViewInspector not available on macOS)")
         #endif
-
-        if inspectionResult == nil {
-            #if canImport(ViewInspector)
-            Issue.record("View inspection failed on this platform")
-            #else
-            // ViewInspector not available on macOS - test passes by verifying callback signature
-            #expect(Bool(true), "Collection view callback verified by compilation (ViewInspector not available on macOS)")
-            #endif
-        }
     }
     
     @Test @MainActor func testCoverFlowCollectionViewWithCallbacks() {
