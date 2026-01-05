@@ -70,7 +70,7 @@ open class ViewGenerationVerificationTests: BaseTestClass {
         }
 
         // The view should contain text elements with our data
-        let viewText = try inspected.findAll(ViewType.Text.self)
+        let viewText = inspected.findAll(ViewInspector.ViewType.Text.self)
         #expect(!viewText.isEmpty, "Detail view should contain text elements")
 
         // Should contain the title and subtitle from our test data
