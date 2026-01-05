@@ -58,42 +58,40 @@ public enum TestSetupUtilities {
         RuntimeCapabilityDetection.clearAllCapabilityOverrides()
         
         // Set capabilities based on platform
+        // Note: VoiceOver and SwitchControl are NOT overridden here - they always return true
+        // for all Apple platforms. Only override them in tests that specifically need to test
+        // behavior when these features are disabled.
         switch platform {
         case .iOS:
             RuntimeCapabilityDetection.setTestTouchSupport(true)
             RuntimeCapabilityDetection.setTestHover(false) // iOS hover is device-dependent, default to false
             RuntimeCapabilityDetection.setTestHapticFeedback(true)
             RuntimeCapabilityDetection.setTestAssistiveTouch(false) // Can be enabled per test
-            RuntimeCapabilityDetection.setTestVoiceOver(false) // Can be enabled per test
-            RuntimeCapabilityDetection.setTestSwitchControl(false) // Can be enabled per test
+            // VoiceOver and SwitchControl: Use real platform detection (always true for Apple platforms)
         case .macOS:
             RuntimeCapabilityDetection.setTestTouchSupport(false)
             RuntimeCapabilityDetection.setTestHover(true)
             RuntimeCapabilityDetection.setTestHapticFeedback(false)
             RuntimeCapabilityDetection.setTestAssistiveTouch(false)
-            RuntimeCapabilityDetection.setTestVoiceOver(false) // Can be enabled per test
-            RuntimeCapabilityDetection.setTestSwitchControl(false) // Can be enabled per test
+            // VoiceOver and SwitchControl: Use real platform detection (always true for Apple platforms)
         case .watchOS:
             RuntimeCapabilityDetection.setTestTouchSupport(true)
             RuntimeCapabilityDetection.setTestHover(false)
             RuntimeCapabilityDetection.setTestHapticFeedback(true)
             RuntimeCapabilityDetection.setTestAssistiveTouch(false)
-            RuntimeCapabilityDetection.setTestVoiceOver(false) // Can be enabled per test
-            RuntimeCapabilityDetection.setTestSwitchControl(false) // Can be enabled per test
+            // VoiceOver and SwitchControl: Use real platform detection (always true for Apple platforms)
         case .tvOS:
             RuntimeCapabilityDetection.setTestTouchSupport(false)
             RuntimeCapabilityDetection.setTestHover(false)
             RuntimeCapabilityDetection.setTestHapticFeedback(false)
             RuntimeCapabilityDetection.setTestAssistiveTouch(false)
-            RuntimeCapabilityDetection.setTestVoiceOver(false) // Can be enabled per test
-            RuntimeCapabilityDetection.setTestSwitchControl(false) // Can be enabled per test
+            // VoiceOver and SwitchControl: Use real platform detection (always true for Apple platforms)
         case .visionOS:
             RuntimeCapabilityDetection.setTestTouchSupport(false)
             RuntimeCapabilityDetection.setTestHover(true)
             RuntimeCapabilityDetection.setTestHapticFeedback(false)
             RuntimeCapabilityDetection.setTestAssistiveTouch(false)
-            RuntimeCapabilityDetection.setTestVoiceOver(false) // Can be enabled per test
-            RuntimeCapabilityDetection.setTestSwitchControl(false) // Can be enabled per test
+            // VoiceOver and SwitchControl: Use real platform detection (always true for Apple platforms)
         }
     }
     
