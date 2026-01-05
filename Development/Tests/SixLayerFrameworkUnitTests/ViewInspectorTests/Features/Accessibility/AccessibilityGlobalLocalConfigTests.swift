@@ -40,7 +40,7 @@ open class AccessibilityGlobalLocalConfigTests: BaseTestClass {
             // Using wrapper - when ViewInspector works on macOS, no changes needed here
             #if canImport(ViewInspector)
             if let inspectedView = try? AnyView(view).inspect(),
-               let text = inspectedView.findAll(ViewType.Text.self).first,
+               let text = inspectedView.findAll(ViewInspector.ViewType.Text.self).first,
                let accessibilityID = try? text.accessibilityIdentifier() {
                 #expect(accessibilityID.isEmpty, "Global disable without local enable should result in no accessibility identifier, got: '\(accessibilityID)'")
             } else {

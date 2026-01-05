@@ -166,7 +166,7 @@ open class AccessibilityIdentifierGenerationVerificationTests: BaseTestClass {
             // Using wrapper - when ViewInspector works on macOS, no changes needed here
             #if canImport(ViewInspector)
             if let inspected = try? AnyView(testView).inspect(),
-               let text = inspected.findAll(ViewType.Text.self).first,
+               let text = inspected.findAll(ViewInspector.ViewType.Text.self).first,
                let accessibilityIdentifier = try? text.accessibilityIdentifier() {
                 #expect(accessibilityIdentifier == manualID, "Manual identifier should override automatic generation")
             } else {

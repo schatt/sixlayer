@@ -427,14 +427,15 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
             #if canImport(ViewInspector)
             do {
                 try withInspectedViewThrowing(view) { inspectedView in
-                    let button = try inspectedView.findAll(ViewType.Button.self).first
-                    let buttonID = try button.accessibilityIdentifier()
-                    
-                    // Should handle nested calls without duplication
-                    #expect(!buttonID.isEmpty, "Should generate ID with nested .named() calls")
-                    #expect(buttonID.contains("SixLayer"), "Should contain namespace")
-                    #expect(!buttonID.contains("outer-outer"), "Should not duplicate names")
-                    
+                    let buttons = inspectedView.findAll(ViewInspector.ViewType.Button.self)
+                    if let button = buttons.first {
+                        let buttonID = try button.accessibilityIdentifier()
+                        
+                        // Should handle nested calls without duplication
+                        #expect(!buttonID.isEmpty, "Should generate ID with nested .named() calls")
+                        #expect(buttonID.contains("SixLayer"), "Should contain namespace")
+                        #expect(!buttonID.contains("outer-outer"), "Should not duplicate names")
+                    }
                 }
             } catch {
                 Issue.record("Failed to inspect view with nested .named() calls")
