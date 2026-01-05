@@ -462,27 +462,17 @@ public struct PlatformUIIntegration {
         
         private var cornerRadius: CGFloat {
             // Use PlatformStrategy for platform-specific corner radius (Issue #140)
-            return convertPlatformStyle(platform).defaultCardCornerRadius
+            return platform.sixLayerPlatform.defaultCardCornerRadius
         }
         
         private var shadowRadius: CGFloat {
             // Use PlatformStrategy for platform-specific shadow radius (Issue #140)
-            return convertPlatformStyle(platform).defaultShadowRadius
+            return platform.sixLayerPlatform.defaultShadowRadius
         }
         
         private var shadowOffset: CGFloat {
             // Use PlatformStrategy for platform-specific shadow offset (Issue #140)
-            return convertPlatformStyle(platform).defaultShadowOffset
-        }
-        
-        private func convertPlatformStyle(_ platform: PlatformStyle) -> SixLayerPlatform {
-            switch platform {
-            case .ios: return .iOS
-            case .macOS: return .macOS
-            case .watchOS: return .watchOS
-            case .tvOS: return .tvOS
-            case .visionOS: return .visionOS
-            }
+            return platform.sixLayerPlatform.defaultShadowOffset
         }
     }
 }

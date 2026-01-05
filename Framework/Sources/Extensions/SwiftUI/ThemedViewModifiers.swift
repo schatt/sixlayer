@@ -143,13 +143,10 @@ public struct ThemedFormStyle: ViewModifier {
         @Environment(\.platformStyle) private var platform
         
         var body: some View {
-            // Convert PlatformStyle to SixLayerPlatform for PlatformStrategy (Issue #140)
-            let sixLayerPlatform = convertPlatformStyle(platform)
-            
-            // Use PlatformStrategy to determine form style preference
+            // Use PlatformStrategy to determine form style preference (Issue #140)
             // Apply style directly to avoid Swift's type system limitations with `some FormStyle`
             // Use AnyView to wrap different return types
-            switch sixLayerPlatform.defaultFormStylePreference {
+            switch platform.sixLayerPlatform.defaultFormStylePreference {
             case .grouped:
                 return AnyView(content
                     .formStyle(.grouped)
@@ -158,21 +155,6 @@ public struct ThemedFormStyle: ViewModifier {
                 return AnyView(content
                     .formStyle(.automatic)
                     .background(colors.background))
-            }
-        }
-        
-        private func convertPlatformStyle(_ platform: PlatformStyle) -> SixLayerPlatform {
-            switch platform {
-            case .ios:
-                return .iOS
-            case .macOS:
-                return .macOS
-            case .watchOS:
-                return .watchOS
-            case .tvOS:
-                return .tvOS
-            case .visionOS:
-                return .visionOS
             }
         }
     }

@@ -520,19 +520,8 @@ public struct ThemedGenericItemCollectionView: View {
     
     private var gridColumns: [GridItem] {
         // Use PlatformStrategy for platform-specific grid column count (Issue #140)
-        let sixLayerPlatform = convertPlatformStyle(platform)
-        let columnCount = sixLayerPlatform.defaultGridColumnCount
+        let columnCount = platform.sixLayerPlatform.defaultGridColumnCount
         return Array(repeating: GridItem(.flexible()), count: columnCount)
-    }
-    
-    private func convertPlatformStyle(_ platform: PlatformStyle) -> SixLayerPlatform {
-        switch platform {
-        case .ios: return .iOS
-        case .macOS: return .macOS
-        case .watchOS: return .watchOS
-        case .tvOS: return .tvOS
-        case .visionOS: return .visionOS
-        }
     }
 }
 

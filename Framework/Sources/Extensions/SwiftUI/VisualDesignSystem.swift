@@ -934,6 +934,18 @@ public enum PlatformStyle: String, CaseIterable, Sendable {
     case watchOS = "watchOS"
     case tvOS = "tvOS"
     case visionOS = "visionOS"
+    
+    /// Convert PlatformStyle to SixLayerPlatform
+    /// Eliminates duplicate conversion functions across codebase (Issue #140)
+    public var sixLayerPlatform: SixLayerPlatform {
+        switch self {
+        case .ios: return .iOS
+        case .macOS: return .macOS
+        case .watchOS: return .watchOS
+        case .tvOS: return .tvOS
+        case .visionOS: return .visionOS
+        }
+    }
 }
 
 // MARK: - Color System (Legacy Compatibility)
