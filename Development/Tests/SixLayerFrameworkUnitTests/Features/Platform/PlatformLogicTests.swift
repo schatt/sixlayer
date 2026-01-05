@@ -133,6 +133,9 @@ open class PlatformLogicTests: BaseTestClass {
     
 
     @Test func testAccessibilityRequirements() {
+        // Clear any test overrides to use real platform detection
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        
         // GIVEN: Current platform
         let currentPlatform = SixLayerPlatform.current
 

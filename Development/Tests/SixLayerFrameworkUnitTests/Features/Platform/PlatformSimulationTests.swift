@@ -41,6 +41,9 @@ open class PlatformSimulationTests: BaseTestClass {
     }
 
     @Test func testRuntimeCapabilityDetection() {
+        // Clear any test overrides to use real platform detection
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        
         // Test that runtime capability detection works
         let supportsTouch = RuntimeCapabilityDetection.supportsTouch
         let supportsHaptic = RuntimeCapabilityDetection.supportsHapticFeedback

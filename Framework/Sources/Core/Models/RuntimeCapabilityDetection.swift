@@ -547,11 +547,8 @@ public struct RuntimeCapabilityDetection {
         }
 
         // Platform capability detection - all Apple platforms support VoiceOver
-        let platform = currentPlatform
-        switch platform {
-        case .iOS, .macOS, .watchOS, .tvOS, .visionOS:
-            return true  // All Apple platforms support VoiceOver
-        }
+        // All cases of SixLayerPlatform support VoiceOver
+        return true
     }
     
     /// Detects if Switch Control is supported on this platform
@@ -564,11 +561,8 @@ public struct RuntimeCapabilityDetection {
         }
 
         // Platform capability detection - all Apple platforms support Switch Control
-        let platform = currentPlatform
-        switch platform {
-        case .iOS, .macOS, .watchOS, .tvOS, .visionOS:
-            return true  // All Apple platforms support Switch Control
-        }
+        // All cases of SixLayerPlatform support Switch Control
+        return true
     }
     
     /// Detects if AssistiveTouch capability is available on the current platform.
