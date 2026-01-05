@@ -92,7 +92,7 @@ struct LiquidGlassDesignSystemTests {
         let material = liquidGlassSystem.createMaterial(.primary)
         
         // When
-        _ = material.generateReflection(for: CGSize(width: 100, height: 100))
+        let reflection = material.generateReflection(for: CGSize(width: 100, height: 100))
         
         // Then
         #expect(Bool(true), "reflection is non-optional")  // reflection is non-optional
@@ -112,7 +112,7 @@ struct LiquidGlassDesignSystemTests {
         let material = liquidGlassSystem.createMaterial(.primary)
         
         // When
-        _ = material.generateReflection(for: CGSize(width: 200, height: 200))
+        let reflection = material.generateReflection(for: CGSize(width: 200, height: 200))
         
         // Then
         #expect(Bool(true), "reflection is non-optional")  // reflection is non-optional
@@ -153,7 +153,7 @@ struct LiquidGlassDesignSystemTests {
         
         // Given
         let liquidGlassSystem = LiquidGlassDesignSystem.shared
-        let control = FloatingControl(
+        var control = FloatingControl(
             type: .navigation,
             position: .top,
             material: liquidGlassSystem.createMaterial(.primary)
@@ -337,7 +337,7 @@ struct LiquidGlassDesignSystemTests {
         
         // Given
         let liquidGlassSystem = LiquidGlassDesignSystem.shared
-        let control = FloatingControl(
+        var control = FloatingControl(
             type: .navigation,
             position: .top,
             material: liquidGlassSystem.createMaterial(.primary)

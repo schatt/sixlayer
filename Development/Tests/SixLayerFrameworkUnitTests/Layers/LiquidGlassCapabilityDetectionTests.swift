@@ -144,7 +144,7 @@ open class LiquidGlassCapabilityDetectionTests: BaseTestClass {
         let capabilityInfo = LiquidGlassCapabilityInfo()
         
         for feature in LiquidGlassFeature.allCases {
-            _ = capabilityInfo.fallbackBehaviors[feature]
+            let fallbackBehavior = capabilityInfo.fallbackBehaviors[feature]
             #expect(Bool(true), "Feature \(feature.rawValue) should have a fallback behavior")  // fallbackBehavior is non-optional
             
             // Test feature-specific fallback requirements using switch for compiler enforcement

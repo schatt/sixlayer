@@ -38,7 +38,8 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
                 do {
                     // Should have proper UI structure for recognition features
                     let vStack = try inspected.vStack()
-                    #expect(vStack.sixLayerCount >= 1, "Should have recognition interface elements")
+                    let children = vStack.findAll(ViewInspector.ViewType.AnyView.self)
+                    #expect(children.count >= 1, "Should have recognition interface elements")
 
                 // Should have accessibility identifier
                 #if canImport(ViewInspector)
@@ -78,7 +79,7 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
 
         // Should render privacy management interface
         #if canImport(ViewInspector)
-        if let inspected = view.tryInspect() {
+        if let inspected = try? AnyView(view).inspect() {
             do {
                 // Should have proper UI structure for privacy controls
                     let vStack = try inspected.vStack()
@@ -121,7 +122,7 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
 
         // Should render performance monitoring interface
         #if canImport(ViewInspector)
-        if let inspected = view.tryInspect() {
+        if let inspected = try? AnyView(view).inspect() {
             do {
                 // Should have proper UI structure for performance metrics
                 let vStack = try inspected.vStack()
@@ -164,7 +165,7 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
 
         // Should render user profiling interface
         #if canImport(ViewInspector)
-        if let inspected = view.tryInspect() {
+        if let inspected = try? AnyView(view).inspect() {
             do {
                 // Should have proper UI structure for profiling features
                 let vStack = try inspected.vStack()
@@ -207,7 +208,7 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
 
         // Should render safety features interface
         #if canImport(ViewInspector)
-        if let inspected = view.tryInspect() {
+        if let inspected = try? AnyView(view).inspect() {
             do {
                 // Should have proper UI structure for safety features
                 let vStack = try inspected.vStack()
@@ -250,7 +251,7 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
 
         // Should render navigation interface
         #if canImport(ViewInspector)
-        if let inspected = view.tryInspect() {
+        if let inspected = try? AnyView(view).inspect() {
             do {
                 // Should have proper UI structure for routing features
                 let vStack = try inspected.vStack()
@@ -293,7 +294,7 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
 
         // Should render service orchestration interface
         #if canImport(ViewInspector)
-        if let inspected = view.tryInspect() {
+        if let inspected = try? AnyView(view).inspect() {
             do {
                 // Should have proper UI structure for orchestration features
                 let vStack = try inspected.vStack()
@@ -336,7 +337,7 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
 
         // Should render optimization recommendations interface
         #if canImport(ViewInspector)
-        if let inspected = view.tryInspect() {
+        if let inspected = try? AnyView(view).inspect() {
             do {
                 // Should have proper UI structure for optimization features
                 let vStack = try inspected.vStack()
@@ -379,7 +380,7 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
 
         // Should render data organization interface
         #if canImport(ViewInspector)
-        if let inspected = view.tryInspect() {
+        if let inspected = try? AnyView(view).inspect() {
             do {
                 // Should have proper UI structure for organization features
                 let vStack = try inspected.vStack()
@@ -427,7 +428,7 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
 
         // Should render notification management interface
         #if canImport(ViewInspector)
-        if let inspected = view.tryInspect() {
+        if let inspected = try? AnyView(view).inspect() {
             do {
                 // Should have proper UI structure for notification features
                 let vStack = try inspected.vStack()
@@ -475,7 +476,7 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
 
         // Should render context interpretation interface
         #if canImport(ViewInspector)
-        if let inspected = view.tryInspect() {
+        if let inspected = try? AnyView(view).inspect() {
             do {
                 // Should have proper UI structure for interpretation features
                 let vStack = try inspected.vStack()
