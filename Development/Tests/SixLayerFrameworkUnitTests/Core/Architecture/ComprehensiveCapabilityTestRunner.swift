@@ -257,9 +257,15 @@ struct ComprehensiveCapabilityTestRunner {
             #expect(config.supportsTouch == enabled, "Touch UI should be \(enabled ? "generated" : "not generated") based on runtime detection")
             if enabled {
                 // Verify platform-correct minTouchTarget value
+                // When touch is enabled, use 44.0 for accessibility (even on non-touch-first platforms)
+                let platform = RuntimeCapabilityDetection.currentPlatform
+                let expectedMinTouchTarget: CGFloat = 44.0  // Always 44.0 when touch is enabled (for accessibility)
+                #expect(config.minTouchTarget == expectedMinTouchTarget, "Touch targets should be 44.0 when touch is enabled (for accessibility) on \(platform)")
+            } else {
+                // When touch is disabled, verify platform-native value
                 let platform = RuntimeCapabilityDetection.currentPlatform
                 let expectedMinTouchTarget: CGFloat = (platform == .iOS || platform == .watchOS) ? 44.0 : 0.0
-                #expect(config.minTouchTarget == expectedMinTouchTarget, "Touch targets should be platform-correct (\(expectedMinTouchTarget)) for \(platform)")
+                #expect(config.minTouchTarget == expectedMinTouchTarget, "Touch targets should be platform-native (\(expectedMinTouchTarget)) when touch is disabled on \(platform)")
             }
         case .hover:
             // Hover should match the enabled state (runtime detection)
@@ -469,9 +475,15 @@ struct ComprehensiveCapabilityTestRunner {
             #expect(config.supportsTouch == enabled, "Touch behavior should be \(enabled ? "enabled" : "disabled") based on runtime detection")
             if enabled {
                 // Verify platform-correct minTouchTarget value
+                // When touch is enabled, use 44.0 for accessibility (even on non-touch-first platforms)
+                let platform = RuntimeCapabilityDetection.currentPlatform
+                let expectedMinTouchTarget: CGFloat = 44.0  // Always 44.0 when touch is enabled (for accessibility)
+                #expect(config.minTouchTarget == expectedMinTouchTarget, "Touch targets should be 44.0 when touch is enabled (for accessibility) on \(platform)")
+            } else {
+                // When touch is disabled, verify platform-native value
                 let platform = RuntimeCapabilityDetection.currentPlatform
                 let expectedMinTouchTarget: CGFloat = (platform == .iOS || platform == .watchOS) ? 44.0 : 0.0
-                #expect(config.minTouchTarget == expectedMinTouchTarget, "Touch targets should be platform-correct (\(expectedMinTouchTarget)) for \(platform)")
+                #expect(config.minTouchTarget == expectedMinTouchTarget, "Touch targets should be platform-native (\(expectedMinTouchTarget)) when touch is disabled on \(platform)")
             }
         case .hover:
             // Hover should match the enabled state (runtime detection)

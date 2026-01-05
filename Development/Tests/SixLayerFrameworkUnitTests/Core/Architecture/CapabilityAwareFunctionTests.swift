@@ -74,10 +74,11 @@ open class CapabilityAwareFunctionTests: BaseTestClass {
         #expect(config.supportsHapticFeedback, "Haptic feedback should be available when touch is supported on current platform")
         #expect(config.supportsAssistiveTouch, "AssistiveTouch should be available when touch is supported on current platform")
 
-        // Verify minTouchTarget returns platform-appropriate value for current platform
+        // Verify minTouchTarget returns 44.0 when touch is enabled (for accessibility)
+        // When touch is enabled, we use 44.0 regardless of platform for accessibility compliance
         let currentPlatform = SixLayerPlatform.current
-        let expectedMinTouchTarget: CGFloat = (currentPlatform == .iOS || currentPlatform == .watchOS) ? 44.0 : 0.0
-        #expect(config.minTouchTarget == expectedMinTouchTarget, "Touch targets should be platform-appropriate (\(expectedMinTouchTarget)) for current platform \(currentPlatform)")
+        let expectedMinTouchTarget: CGFloat = 44.0  // Always 44.0 when touch is enabled
+        #expect(config.minTouchTarget == expectedMinTouchTarget, "Touch targets should be 44.0 when touch is enabled (for accessibility) on \(currentPlatform)")
 
         // Clean up
         RuntimeCapabilityDetection.clearAllCapabilityOverrides()

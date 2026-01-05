@@ -15135,7 +15135,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 
     @Test @MainActor func testTextReadableWithHoverText() async {
         self.initializeTestConfig()
-            await self.runWithTaskLocalConfig {
+            self.runWithTaskLocalConfig {
         // GIVEN: Text with automatic compliance
         let view = Text("Hover Text Test")
             .automaticCompliance()

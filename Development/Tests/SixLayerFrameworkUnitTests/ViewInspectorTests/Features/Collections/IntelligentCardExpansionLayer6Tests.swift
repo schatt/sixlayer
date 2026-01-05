@@ -284,9 +284,10 @@ open class IntelligentCardExpansionLayer6Tests: BaseTestClass {
         #expect(config.supportsAssistiveTouch != nil, "Should have AssistiveTouch support setting")
         
         // Verify platform-correct minTouchTarget value
+        // When touch is enabled, minTouchTarget is always 44.0 for accessibility
         let platform = RuntimeCapabilityDetection.currentPlatform
-        let expectedMinTouchTarget: CGFloat = (platform == .iOS || platform == .watchOS) ? 44.0 : 0.0
-        #expect(config.minTouchTarget == expectedMinTouchTarget, "Should have platform-correct minTouchTarget (\(expectedMinTouchTarget)) for \(platform)")
+        let expectedMinTouchTarget: CGFloat = 44.0  // Always 44.0 when touch is enabled
+        #expect(config.minTouchTarget == expectedMinTouchTarget, "Should have 44.0 minTouchTarget when touch is enabled (for accessibility) on \(platform)")
         
         #expect(config.hoverDelay >= 0, "Should have non-negative hover delay")
     }
