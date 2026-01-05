@@ -450,16 +450,16 @@ public struct PlatformNavigationModifier: ViewModifier {
         to content: Content,
         platform: SixLayerPlatform
     ) -> AnyView {
-        switch platform {
-        case .iOS:
+        // Use PlatformStrategy to reduce code duplication (Issue #140)
+        if platform == .iOS {
             #if os(iOS)
             return iosPlatformNavigation(to: content).wrappedWithCompliance()
             #else
             return fallbackPlatformNavigation(to: content)
             #endif
-        case .macOS:
+        } else if platform == .macOS {
             return macOSPlatformNavigation(to: content).wrappedWithCompliance()
-        default:
+        } else {
             return fallbackPlatformNavigation(to: content)
         }
     }
@@ -566,15 +566,15 @@ public struct TouchTargetModifier: ViewModifier {
         platform: SixLayerPlatform,
         iOSConfig: HIGiOSCategoryConfig?
     ) -> some View {
-        switch platform {
-        case .iOS, .watchOS:
+        // Use PlatformStrategy to reduce code duplication (Issue #140)
+        if platform.isTouchFirstPlatform {
             #if os(iOS) || os(watchOS)
             let config = getConfigOrDefault(iOSConfig, default: HIGiOSCategoryConfig())
             return iosTouchTarget(to: content, config: config).wrappedWithCompliance()
             #else
             return fallbackTouchTarget(to: content)
             #endif
-        default:
+        } else {
             return fallbackTouchTarget(to: content)
         }
     }
@@ -627,15 +627,15 @@ public struct SafeAreaComplianceModifier: ViewModifier {
         platform: SixLayerPlatform,
         iOSConfig: HIGiOSCategoryConfig?
     ) -> some View {
-        switch platform {
-        case .iOS, .watchOS:
+        // Use PlatformStrategy to reduce code duplication (Issue #140)
+        if platform.isTouchFirstPlatform {
             #if os(iOS) || os(watchOS)
             let config = getConfigOrDefault(iOSConfig, default: HIGiOSCategoryConfig())
             return iosSafeAreaCompliance(to: content, config: config).wrappedWithCompliance()
             #else
             return fallbackSafeAreaCompliance(to: content)
             #endif
-        default:
+        } else {
             return fallbackSafeAreaCompliance(to: content)
         }
     }
@@ -690,21 +690,21 @@ public struct PlatformInteractionModifier: ViewModifier {
         platform: SixLayerPlatform,
         macOSConfig: HIGmacOSCategoryConfig?
     ) -> some View {
-        switch platform {
-        case .iOS:
+        // Use PlatformStrategy to reduce code duplication (Issue #140)
+        if platform == .iOS {
             #if os(iOS)
             return iosPlatformInteraction(to: content)
             #else
             return fallbackPlatformInteraction(to: content)
             #endif
-        case .macOS:
+        } else if platform == .macOS {
             #if os(macOS)
             let config = getConfigOrDefault(macOSConfig, default: HIGmacOSCategoryConfig())
             return macOSPlatformInteraction(to: content, config: config)
             #else
             return fallbackPlatformInteraction(to: content)
             #endif
-        default:
+        } else {
             return fallbackPlatformInteraction(to: content)
         }
     }
@@ -769,21 +769,21 @@ public struct HapticFeedbackModifier: ViewModifier {
         platform: SixLayerPlatform,
         iOSConfig: HIGiOSCategoryConfig?
     ) -> some View {
-        switch platform {
-        case .iOS, .watchOS:
+        // Use PlatformStrategy to reduce code duplication (Issue #140)
+        if platform.isTouchFirstPlatform {
             #if os(iOS) || os(watchOS)
             let config = getConfigOrDefault(iOSConfig, default: HIGiOSCategoryConfig())
             return iosHapticFeedback(to: content, config: config).wrappedWithCompliance()
             #else
             return fallbackHapticFeedback(to: content)
             #endif
-        case .macOS:
+        } else if platform == .macOS {
             #if os(macOS)
             return macOSHapticFeedback(to: content).wrappedWithCompliance()
             #else
             return fallbackHapticFeedback(to: content)
             #endif
-        default:
+        } else {
             return fallbackHapticFeedback(to: content)
         }
     }
@@ -890,21 +890,21 @@ public struct GestureRecognitionModifier: ViewModifier {
         platform: SixLayerPlatform,
         iOSConfig: HIGiOSCategoryConfig?
     ) -> some View {
-        switch platform {
-        case .iOS, .watchOS:
+        // Use PlatformStrategy to reduce code duplication (Issue #140)
+        if platform.isTouchFirstPlatform {
             #if os(iOS) || os(watchOS)
             let config = getConfigOrDefault(iOSConfig, default: HIGiOSCategoryConfig())
             return iosGestureRecognition(to: content, config: config).wrappedWithCompliance()
             #else
             return fallbackGestureRecognition(to: content)
             #endif
-        case .macOS:
+        } else if platform == .macOS {
             #if os(macOS)
             return macOSGestureRecognition(to: content).wrappedWithCompliance()
             #else
             return fallbackGestureRecognition(to: content)
             #endif
-        default:
+        } else {
             return fallbackGestureRecognition(to: content)
         }
     }
@@ -1044,29 +1044,25 @@ public struct PlatformSpecificCategoryModifier: ViewModifier {
         macOSConfig: HIGmacOSCategoryConfig?,
         visionOSConfig: HIGvisionOSCategoryConfig?
     ) -> some View {
-        switch platform {
-        case .iOS, .watchOS:
-            #if os(iOS) || os(watchOS)
-            // iOS categories are already handled by other modifiers
+        // Use PlatformStrategy to reduce code duplication (Issue #140)
+        // Touch-first platforms (iOS/watchOS) - categories handled by other modifiers
+        if platform.isTouchFirstPlatform {
             return content.wrappedWithCompliance()
-            #else
-            return content.wrappedWithCompliance()
-            #endif
-        case .macOS:
+        } else if platform == .macOS {
             #if os(macOS)
             let config = getConfigOrDefault(macOSConfig, default: HIGmacOSCategoryConfig())
             return macOSPlatformSpecificCategories(to: content, config: config)
             #else
             return content.wrappedWithCompliance()
             #endif
-        case .visionOS:
+        } else if platform == .visionOS {
             #if os(visionOS)
             let config = getConfigOrDefault(visionOSConfig, default: HIGvisionOSCategoryConfig())
             return visionOSPlatformSpecificCategories(to: content, config: config)
             #else
             return content.wrappedWithCompliance()
             #endif
-        default:
+        } else {
             return content.wrappedWithCompliance()
         }
     }
