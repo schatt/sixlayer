@@ -124,9 +124,11 @@ open class BarcodeScanningUITests: BaseTestClass {
         #if canImport(ViewInspector)
         if let inspected = try? AnyView(barcodeFieldView).inspect() {
             // Look for barcode button by finding the HStack that contains both TextField and Button
-            if let hStack = inspected.findAll(ViewType.HStack.self) {
+            let hStacks = inspected.findAll(ViewInspector.ViewType.HStack.self)
+            if let hStack = hStacks.first {
                 // The HStack should contain TextField and barcode Button
-                #expect(hStack.sixLayerCount >= 2, "Barcode field HStack should contain TextField and barcode button")
+                let children = hStack.findAll(ViewInspector.ViewType.AnyView.self)
+                #expect(children.count >= 2, "Barcode field HStack should contain TextField and barcode button")
             }
         } else {
             Issue.record("Barcode button not found in barcode-enabled field")
@@ -184,9 +186,11 @@ open class BarcodeScanningUITests: BaseTestClass {
         // Both buttons should be rendered
         #if canImport(ViewInspector)
         if let inspected = try? AnyView(dualFieldView).inspect() {
-            if let hStack = inspected.findAll(ViewType.HStack.self) {
+            let hStacks = inspected.findAll(ViewInspector.ViewType.HStack.self)
+            if let hStack = hStacks.first {
                 // Should have at least 3 items: TextField, OCR button, Barcode button
-                #expect(hStack.sixLayerCount >= 3, "Dual field should have TextField, OCR button, and barcode button")
+                let children = hStack.findAll(ViewInspector.ViewType.AnyView.self)
+                #expect(children.count >= 3, "Dual field should have TextField, OCR button, and barcode button")
             }
         }
         #else
