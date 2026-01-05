@@ -451,15 +451,20 @@ public struct PlatformNavigationModifier: ViewModifier {
         platform: SixLayerPlatform
     ) -> AnyView {
         // Use PlatformStrategy to reduce code duplication (Issue #140)
-        if platform == .iOS {
+        switch platform {
+        case .iOS:
             #if os(iOS)
             return iosPlatformNavigation(to: content).wrappedWithCompliance()
             #else
             return fallbackPlatformNavigation(to: content)
             #endif
-        } else if platform == .macOS {
+        case .macOS:
+            #if os(macOS)
             return macOSPlatformNavigation(to: content).wrappedWithCompliance()
-        } else {
+            #else
+            return fallbackPlatformNavigation(to: content)
+            #endif
+        default:
             return fallbackPlatformNavigation(to: content)
         }
     }
@@ -691,20 +696,21 @@ public struct PlatformInteractionModifier: ViewModifier {
         macOSConfig: HIGmacOSCategoryConfig?
     ) -> some View {
         // Use PlatformStrategy to reduce code duplication (Issue #140)
-        if platform == .iOS {
+        switch platform {
+        case .iOS:
             #if os(iOS)
             return iosPlatformInteraction(to: content)
             #else
             return fallbackPlatformInteraction(to: content)
             #endif
-        } else if platform == .macOS {
+        case .macOS:
             #if os(macOS)
             let config = getConfigOrDefault(macOSConfig, default: HIGmacOSCategoryConfig())
             return macOSPlatformInteraction(to: content, config: config)
             #else
             return fallbackPlatformInteraction(to: content)
             #endif
-        } else {
+        default:
             return fallbackPlatformInteraction(to: content)
         }
     }
