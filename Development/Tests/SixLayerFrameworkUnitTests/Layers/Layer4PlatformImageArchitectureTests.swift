@@ -45,8 +45,8 @@ open class Layer4PlatformImageArchitectureTests: BaseTestClass {
         
         
         // When: Set up callbacks with PlatformImage
-        _ = Optional<PlatformImage>.none as PlatformImage?
-        _ = Optional<PlatformImage>.none as PlatformImage?
+        var capturedImage: PlatformImage?
+        var selectedImage: PlatformImage?
         
         _ = PlatformPhotoComponentsLayer4.platformCameraInterface_L4 { image in
             // image parameter should be PlatformImage, not UIImage/NSImage
@@ -215,7 +215,7 @@ open class Layer4PlatformImageArchitectureTests: BaseTestClass {
         // photoDisplay is non-optional View, used above
         
         // Test that Layer 4 callbacks work with PlatformImage
-        _ = Optional<PlatformImage>.none as PlatformImage?
+        var callbackImage: PlatformImage?
         let _ = PlatformPhotoComponentsLayer4.platformCameraInterface_L4 { image in
             callbackImage = image
         }

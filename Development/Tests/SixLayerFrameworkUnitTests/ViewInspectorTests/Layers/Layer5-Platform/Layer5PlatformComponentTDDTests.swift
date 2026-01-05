@@ -1,5 +1,8 @@
 import Testing
 import SwiftUI
+#if canImport(ViewInspector)
+import ViewInspector
+#endif
 @testable import SixLayerFramework
 
 /**
@@ -83,7 +86,7 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
             do {
                 // Should have proper UI structure for privacy controls
                     let vStack = try inspected.vStack()
-                    #expect(vStack.sixLayerCount >= 1, "Should have privacy interface elements")
+                    #expect(vStack.count >= 1, "Should have privacy interface elements")
 
                 // Should have accessibility identifier
                 #if canImport(ViewInspector)
@@ -126,7 +129,7 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
             do {
                 // Should have proper UI structure for performance metrics
                 let vStack = try inspected.vStack()
-                #expect(vStack.sixLayerCount >= 1, "Should have performance monitoring elements")
+                #expect(vStack.count >= 1, "Should have performance monitoring elements")
 
             // Should have accessibility identifier
             #if canImport(ViewInspector)
@@ -169,7 +172,7 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
             do {
                 // Should have proper UI structure for profiling features
                 let vStack = try inspected.vStack()
-                #expect(vStack.sixLayerCount >= 1, "Should have profiling interface elements")
+                #expect(vStack.count >= 1, "Should have profiling interface elements")
 
                 // Should have accessibility identifier
                 #if canImport(ViewInspector)
@@ -212,7 +215,7 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
             do {
                 // Should have proper UI structure for safety features
                 let vStack = try inspected.vStack()
-                #expect(vStack.sixLayerCount >= 1, "Should have safety interface elements")
+                #expect(vStack.count >= 1, "Should have safety interface elements")
 
                 // Should have accessibility identifier
                 #if canImport(ViewInspector)
@@ -255,7 +258,7 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
             do {
                 // Should have proper UI structure for routing features
                 let vStack = try inspected.vStack()
-                #expect(vStack.sixLayerCount >= 1, "Should have routing interface elements")
+                #expect(vStack.count >= 1, "Should have routing interface elements")
 
                 // Should have accessibility identifier
                 #if canImport(ViewInspector)
@@ -298,7 +301,7 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
             do {
                 // Should have proper UI structure for orchestration features
                 let vStack = try inspected.vStack()
-                #expect(vStack.sixLayerCount >= 1, "Should have orchestration interface elements")
+                #expect(vStack.count >= 1, "Should have orchestration interface elements")
 
                 // Should have accessibility identifier
                 #if canImport(ViewInspector)
@@ -341,7 +344,7 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
             do {
                 // Should have proper UI structure for optimization features
                 let vStack = try inspected.vStack()
-                #expect(vStack.sixLayerCount >= 1, "Should have optimization interface elements")
+                #expect(vStack.count >= 1, "Should have optimization interface elements")
 
                 // Should have accessibility identifier
                 #if canImport(ViewInspector)
@@ -384,7 +387,7 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
             do {
                 // Should have proper UI structure for organization features
                 let vStack = try inspected.vStack()
-                #expect(vStack.sixLayerCount >= 1, "Should have organization interface elements")
+                #expect(vStack.count >= 1, "Should have organization interface elements")
 
                 // Should have accessibility identifier
                 #if canImport(ViewInspector)
@@ -432,7 +435,7 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
             do {
                 // Should have proper UI structure for notification features
                 let vStack = try inspected.vStack()
-                #expect(vStack.sixLayerCount >= 1, "Should have notification interface elements")
+                #expect(vStack.count >= 1, "Should have notification interface elements")
 
                 // Should have accessibility identifier
                 #if canImport(ViewInspector)
@@ -480,7 +483,7 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
             do {
                 // Should have proper UI structure for interpretation features
                 let vStack = try inspected.vStack()
-                #expect(vStack.sixLayerCount >= 1, "Should have interpretation interface elements")
+                #expect(vStack.count >= 1, "Should have interpretation interface elements")
 
                 // Should have accessibility identifier
                 #if canImport(ViewInspector)
