@@ -42,17 +42,9 @@ import SwiftUI
 struct ComprehensiveCapabilityTestRunner {
     // MARK: - Test Setup
     
-    /// Initialize test config on MainActor (similar to BaseTestClass)
-    @MainActor
-    func initializeTestConfig() {
-        // This struct doesn't inherit from BaseTestClass, so we initialize config directly
-        // Tests that need config should be marked @MainActor and call this method
-    }
-    
     /// Setup test environment before each test
     @MainActor
     func setupTestEnvironment() async {
-        initializeTestConfig()
         // Use real platform detection - no override needed
         RuntimeCapabilityDetection.setTestVoiceOver(true)
         RuntimeCapabilityDetection.setTestSwitchControl(true)
@@ -61,7 +53,6 @@ struct ComprehensiveCapabilityTestRunner {
     /// Cleanup test environment after each test
     @MainActor
     func cleanupTestEnvironment() async {
-        initializeTestConfig()
         RuntimeCapabilityDetection.clearAllCapabilityOverrides()
         RuntimeCapabilityDetection.setTestVoiceOver(nil)
         RuntimeCapabilityDetection.setTestSwitchControl(nil)
@@ -209,7 +200,6 @@ struct ComprehensiveCapabilityTestRunner {
     /// Test capability detection
     @MainActor
     func testCapabilityDetection(_ config: CardExpansionPlatformConfig, capability: TestRunnerConfig.CapabilityType, enabled: Bool) {
-        initializeTestConfig()
         switch capability {
         case .touch:
             #expect(config.supportsTouch == enabled, "Touch detection should be \(enabled)")
@@ -261,7 +251,6 @@ struct ComprehensiveCapabilityTestRunner {
     /// Test UI generation
     @MainActor
     func testUIGeneration(_ config: CardExpansionPlatformConfig, capability: TestRunnerConfig.CapabilityType, enabled: Bool) {
-        initializeTestConfig()
         switch capability {
         case .touch:
             // Touch should match the enabled state (runtime detection)
@@ -327,7 +316,6 @@ struct ComprehensiveCapabilityTestRunner {
     /// Test cross-platform consistency
     @MainActor
     func testCrossPlatformConsistency(_ platform: SixLayerPlatform, capability: TestRunnerConfig.CapabilityType) {
-        initializeTestConfig()
         // Set test platform before getting config
         
         let platformConfig = createPlatformConfig()
@@ -412,7 +400,6 @@ struct ComprehensiveCapabilityTestRunner {
     /// Test view generation integration
     @MainActor
     func testViewGenerationIntegration(_ config: CardExpansionPlatformConfig, platform: SixLayerPlatform) {
-        initializeTestConfig()
         // Test that the configuration is valid for view generation and actually works
         #expect(Bool(true), "Configuration should be valid for view generation on \(platform)")  // config is non-optional
         
@@ -475,7 +462,6 @@ struct ComprehensiveCapabilityTestRunner {
     /// Test behavior validation
     @MainActor
     func testBehaviorValidation(_ config: CardExpansionPlatformConfig, capability: TestRunnerConfig.CapabilityType, enabled: Bool) {
-        initializeTestConfig()
         // Test that the behavior is consistent with the platform capabilities
         switch capability {
         case .touch:

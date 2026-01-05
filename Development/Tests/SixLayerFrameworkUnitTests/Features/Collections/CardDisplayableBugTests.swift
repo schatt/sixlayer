@@ -10,13 +10,6 @@ import SwiftUI
 @Suite("Card Displayable Bug")
 struct CardDisplayableBugTests {
     
-    /// Initialize test config (no-op for structs that don't need config)
-    @MainActor
-    func initializeTestConfig() {
-        // This struct doesn't inherit from BaseTestClass, so we don't need to initialize config
-        // Tests that need config should inherit from BaseTestClass instead
-    }
-    
     // MARK: - Test Data Types
     
     /// Core Data-like entity with nil values (simulating the bug report scenario)
@@ -112,7 +105,6 @@ struct CardDisplayableBugTests {
     
     /// Test that empty strings are respected as valid content (not fallback to CardDisplayable)
     @Test @MainActor func testCardDisplayableFallbackWhenHintsExtractEmptyStrings() async {
-        initializeTestConfig()
         // Given: Entity with empty string values and hints
         let task = CoreDataTask(title: "", taskDescription: "", status: "", priority: "")
         let hints = PresentationHints(
@@ -131,7 +123,6 @@ struct CardDisplayableBugTests {
     
     /// Test that CardDisplayable protocol is used when hints extract nil values
     @Test @MainActor func testCardDisplayableFallbackWhenHintsExtractNilValues() async {
-        initializeTestConfig()
         // Given: Entity with nil values and hints
         let project = CoreDataProject(name: nil, description: nil)
         let hints = PresentationHints(
@@ -149,7 +140,6 @@ struct CardDisplayableBugTests {
     
     /// Test that CardDisplayable protocol is used when hints are missing
     @Test @MainActor func testCardDisplayableFallbackWhenHintsAreMissing() async {
-        initializeTestConfig()
         // Given: Entity with nil values and no hints
         let task = CoreDataTask(title: nil, taskDescription: nil, status: nil, priority: nil)
         
@@ -163,7 +153,6 @@ struct CardDisplayableBugTests {
     
     /// Test that CardDisplayable protocol is used when hints have invalid property names
     @Test @MainActor func testCardDisplayableFallbackWhenHintsHaveInvalidPropertyNames() async {
-        initializeTestConfig()
         // Given: Entity with nil values and hints with invalid property names
         let task = CoreDataTask(title: nil, taskDescription: nil, status: nil, priority: nil)
         let hints = PresentationHints(
@@ -183,7 +172,6 @@ struct CardDisplayableBugTests {
     
     /// Test that CardDisplayable protocol is used for all properties (title, subtitle, icon, color)
     @Test @MainActor func testCardDisplayableFallbackForAllProperties() async {
-        initializeTestConfig()
         // Given: Entity with nil values and hints that fail (using non-existent properties)
         let task = CoreDataTask(title: nil, taskDescription: nil, status: "in_progress", priority: "urgent")
         let hints = PresentationHints(
@@ -215,7 +203,6 @@ struct CardDisplayableBugTests {
     
     /// Test that platformPresentItemCollection_L1 uses CardDisplayable fallback
     @Test @MainActor func testPlatformPresentItemCollectionUsesCardDisplayableFallback() async {
-        initializeTestConfig()
         // Given: Core Data entities with nil values and hints that fail
         let tasks = [
             CoreDataTask(title: nil, taskDescription: nil, status: nil, priority: nil),

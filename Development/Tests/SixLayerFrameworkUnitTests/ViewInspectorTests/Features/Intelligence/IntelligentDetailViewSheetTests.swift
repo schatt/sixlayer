@@ -25,13 +25,6 @@ import AppKit
 /// NOTE: Not marked @MainActor on class to allow parallel execution
 struct IntelligentDetailViewSheetTests {
     
-    /// Initialize test config (no-op for structs that don't need config)
-    @MainActor
-    func initializeTestConfig() {
-        // This struct doesn't inherit from BaseTestClass, so we don't need to initialize config
-        // Tests that need config should inherit from BaseTestClass instead
-    }
-    
     // MARK: - Test Data
     
     struct TestTask: Codable, Identifiable {
@@ -52,7 +45,6 @@ struct IntelligentDetailViewSheetTests {
     
     /// Verify that platformDetailView renders content in a sheet (not blank)
     @Test @MainActor func testPlatformDetailViewRendersContentInSheet() async throws {
-            initializeTestConfig()
         let task = TestTask(title: "Test Task", description: "Test description", priority: 5)
         
         // Create a view with sheet presentation (simulating .sheet() context)
@@ -99,7 +91,6 @@ struct IntelligentDetailViewSheetTests {
     
     /// Verify that platformDetailView extracts and displays data model properties
     @Test @MainActor func testPlatformDetailViewDisplaysModelProperties() async throws {
-            initializeTestConfig()
         let task = TestTask(title: "Test Task", description: "Task description", priority: 5)
         
         let detailView = IntelligentDetailView.platformDetailView(
@@ -147,7 +138,6 @@ struct IntelligentDetailViewSheetTests {
     
     /// Verify that platformDetailView accepts and respects frame constraints
     @Test @MainActor func testPlatformDetailViewRespectsFrameConstraints() async throws {
-            initializeTestConfig()
         let task = TestTask(title: "Test Task", description: "Description", priority: 3)
         
         // Apply frame constraints like the sheet context would
@@ -172,7 +162,6 @@ struct IntelligentDetailViewSheetTests {
     
     /// Verify platformDetailView works with NavigationStack in sheet context
     @Test @MainActor func testPlatformDetailViewWithNavigationStackInSheet() async throws {
-            initializeTestConfig()
         let task = TestTask(title: "Test Task", description: "Description")
         
         let sheetContent = NavigationStack {
@@ -201,7 +190,6 @@ struct IntelligentDetailViewSheetTests {
     
     /// Verify that different data types work in sheet presentation
     @Test @MainActor func testPlatformDetailViewWithDifferentDataTypesInSheet() async throws {
-            initializeTestConfig()
         // Test with various data types
         let task = TestTask(title: "Task", description: "Description", priority: 1)
         let numericData: [String: Double] = ["value": 42.0]
