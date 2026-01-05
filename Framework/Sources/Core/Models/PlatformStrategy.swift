@@ -261,6 +261,40 @@ public extension SixLayerPlatform {
         }
     }
     
+    /// Default spring response for animations (seconds)
+    /// Used for spring animations on platforms that support them
+    var defaultSpringResponse: TimeInterval {
+        switch self {
+        case .iOS:
+            return 0.3
+        case .macOS:
+            return 0.4
+        case .watchOS:
+            return 0.2  // Faster for watch
+        case .tvOS:
+            return 0.4
+        case .visionOS:
+            return 0.4
+        }
+    }
+    
+    /// Default damping fraction for spring animations
+    /// Controls the "bounciness" of spring animations
+    var defaultDampingFraction: Double {
+        switch self {
+        case .iOS:
+            return 0.7
+        case .macOS:
+            return 0.8  // Less bouncy on macOS
+        case .watchOS:
+            return 0.6  // More bouncy for watch
+        case .tvOS:
+            return 0.7
+        case .visionOS:
+            return 0.7
+        }
+    }
+    
     // MARK: - OCR Properties
     
     /// Supported OCR languages for this platform

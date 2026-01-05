@@ -623,35 +623,16 @@ public struct HIGTypographySystem {
     public let caption: Font
     
     public init(for platform: SixLayerPlatform) {
-        switch platform {
-        case .iOS:
-            self.largeTitle = .largeTitle
-            self.title = .title
-            self.headline = .headline
-            self.body = .body
-            self.callout = .callout
-            self.subheadline = .subheadline
-            self.footnote = .footnote
-            self.caption = .caption
-        case .macOS:
-            self.largeTitle = .largeTitle
-            self.title = .title
-            self.headline = .headline
-            self.body = .body
-            self.callout = .callout
-            self.subheadline = .subheadline
-            self.footnote = .footnote
-            self.caption = .caption
-        default:
-            self.largeTitle = .largeTitle
-            self.title = .title
-            self.headline = .headline
-            self.body = .body
-            self.callout = .callout
-            self.subheadline = .subheadline
-            self.footnote = .footnote
-            self.caption = .caption
-        }
+        // Font styles are consistent across all Apple platforms
+        // Removed redundant switch statement (Issue #140)
+        self.largeTitle = .largeTitle
+        self.title = .title
+        self.headline = .headline
+        self.body = .body
+        self.callout = .callout
+        self.subheadline = .subheadline
+        self.footnote = .footnote
+        self.caption = .caption
     }
 }
 
@@ -679,14 +660,9 @@ public struct HIGIconSystem {
     }
     
     public func icon(named name: String) -> Image {
-        switch platform {
-        case .iOS:
-            return Image(systemName: name)
-        case .macOS:
-            return Image(systemName: name)
-        default:
-            return Image(systemName: name)
-        }
+        // All platforms use SF Symbols, so no platform-specific logic needed
+        // Removed redundant switch statement (Issue #140)
+        return Image(systemName: name)
     }
 }
 
