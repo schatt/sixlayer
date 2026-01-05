@@ -947,19 +947,11 @@ public extension RuntimeCapabilityDetection {
     /// 
     /// Note: nonisolated - this property only does platform switching, no MainActor APIs accessed
     /// Uses PlatformStrategy to reduce code duplication (Issue #140)
-    /// Returns 0.0 if hover is not supported at runtime, otherwise returns platform-appropriate delay
+    /// PlatformStrategy.hoverDelay already checks runtime support, so we can use it directly
     nonisolated static var hoverDelay: TimeInterval {
-        // First check if hover is actually supported at runtime
-        guard supportsHover else {
-            return 0.0  // No hover support means no delay needed
-        }
-        
-        // Use real platform detection - tests should run on actual platforms/simulators
-        let platform = currentPlatform
-        
-        // Use platform strategy for hover delay
-        // The strategy provides the platform-appropriate delay value
-        return platform.hoverDelay
+        // PlatformStrategy.hoverDelay already checks RuntimeCapabilityDetection.supportsHover
+        // and returns 0.0 if not supported, so we can use it directly
+        return currentPlatform.hoverDelay
     }
 }
 

@@ -60,27 +60,32 @@ public extension SixLayerPlatform {
     // MARK: - Hover Properties
     
     /// Platform-appropriate hover delay (seconds)
-    /// Returns the delay value that would be used if hover is supported
+    /// Returns the delay value only if hover is actually supported at runtime.
+    /// Returns 0.0 if hover is not supported.
     /// 
-    /// Note: This is the "potential" delay for the platform. The actual delay
-    /// should be checked against runtime hover support via RuntimeCapabilityDetection.supportsHover
+    /// This checks runtime hover support because there's no practical use case
+    /// for getting a hover delay value when hover isn't available.
     /// 
-    /// - macOS: 0.5s (mouse/trackpad hover)
-    /// - visionOS: 0.5s (hand tracking hover)
-    /// - iOS: 0.5s (iPad with Apple Pencil hover, 0.0 for iPhone - determined at runtime)
+    /// - macOS: 0.5s (if hover supported via mouse/trackpad)
+    /// - visionOS: 0.5s (if hover supported via hand tracking)
+    /// - iOS: 0.5s (if hover supported on iPad with Apple Pencil), 0.0 for iPhone
     /// - watchOS: 0.0s (no hover support)
     /// - tvOS: 0.0s (no hover support)
     var hoverDelay: TimeInterval {
+        // Check runtime support first - no point returning a delay if hover isn't available
+        guard RuntimeCapabilityDetection.supportsHover else {
+            return 0.0
+        }
+        
+        // Return platform-appropriate delay for platforms that support hover
         switch self {
         case .macOS, .visionOS:
             return 0.5
         case .iOS:
-            // iPad with Apple Pencil hover, 0.0 for iPhone - determined at runtime
-            // For compile-time, return 0.5 as default (iPad case)
-            // Runtime check in RuntimeCapabilityDetection.hoverDelay will verify actual support
+            // iPad with Apple Pencil hover - runtime check already verified support
             return 0.5
         case .watchOS, .tvOS:
-            return 0.0
+            return 0.0  // These platforms don't support hover
         }
     }
     
