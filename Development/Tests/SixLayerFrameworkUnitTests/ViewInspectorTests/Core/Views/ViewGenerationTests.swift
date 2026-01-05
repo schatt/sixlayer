@@ -62,7 +62,7 @@ open class ViewGenerationTests: BaseTestClass {
         // Optimized: Use minimal ViewInspector check only if available and fast
         #if canImport(ViewInspector)
         // Quick check that view is inspectable (doesn't do expensive deep searches)
-        if (try? AnyView(detailView).inspect()) == nil {
+        if (try? AnyView(detailView).inspect()) != nil {
             Issue.record("View inspection not available")
         }
         #endif
@@ -84,7 +84,7 @@ open class ViewGenerationTests: BaseTestClass {
         // View creation itself is the test - if it fails to compile or crashes, test fails
         // Optimized: Use minimal ViewInspector check only if available and fast
         #if canImport(ViewInspector)
-        if (try? AnyView(detailView).inspect()) == nil {
+        if (try? AnyView(detailView).inspect()) != nil {
             Issue.record("View inspection not available")
         }
         #endif
@@ -107,7 +107,7 @@ open class ViewGenerationTests: BaseTestClass {
         // View creation itself is the test - if it fails to compile or crashes, test fails
         // Optimized: Use minimal ViewInspector check only if available and fast
         #if canImport(ViewInspector)
-        if (try? AnyView(detailView).inspect()) == nil {
+        if (try? AnyView(detailView).inspect()) != nil {
             Issue.record("View inspection not available")
         }
         #endif

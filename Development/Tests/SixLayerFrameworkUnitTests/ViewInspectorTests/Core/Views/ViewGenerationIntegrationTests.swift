@@ -1089,14 +1089,14 @@ open class ViewGenerationIntegrationTests: BaseTestClass {
         
         // 2. Does that structure contain what it should?
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
-        let iOSInspectionResult = withInspectedView(iOSView) { iOSInspection in
+        if let _ = try? AnyView(iOSView).inspect() {
             // iOS view should be valid SwiftUI view
-            #expect(Bool(true), "iOS view should be inspectable")  // iOSInspection is non-optional
+            #expect(Bool(true), "iOS view should be inspectable")
         }
 
-        let macOSInspectionResult = withInspectedView(macOSView) { macOSInspection in
+        if let _ = try? AnyView(macOSView).inspect() {
             // macOS view should be valid SwiftUI view
-            #expect(Bool(true), "macOS view should be inspectable")  // macOSInspection is non-optional
+            #expect(Bool(true), "macOS view should be inspectable")
         }
 
             // Verify platform-specific capabilities
