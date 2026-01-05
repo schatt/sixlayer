@@ -64,7 +64,10 @@ open class ViewGenerationVerificationTests: BaseTestClass {
         // 2. Contains what it needs to contain - The view has the expected structure and content
         // Using direct ViewInspector API
         #if canImport(ViewInspector)
-        let inspected = try detailView.inspect()
+        guard let inspected = try? AnyView(detailView).inspect() else {
+            Issue.record("View inspection not available")
+            return
+        }
 
         // The view should contain text elements with our data
         let viewText = try inspected.findAll(ViewType.Text.self)
