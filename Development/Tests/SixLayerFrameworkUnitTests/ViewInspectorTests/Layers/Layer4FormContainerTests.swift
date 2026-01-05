@@ -73,7 +73,8 @@ open class Layer4FormContainerTests: BaseTestClass {
         // iOS: Should contain Form structure with iOS-specific background color
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
         withInspectedView(view) { inspected in
-            if let _ = inspected.findAll(ViewType.Form.self) {
+            let forms = inspected.findAll(ViewType.Form.self)
+            if !forms.isEmpty {
                 // Form found - this is correct for iOS
                 // Note: iOS uses Color(.systemGroupedBackground) for form backgrounds
             } else {
@@ -84,7 +85,8 @@ open class Layer4FormContainerTests: BaseTestClass {
         // macOS: Should contain Form structure with macOS-specific background color
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
         withInspectedView(view) { inspected in
-            if let _ = inspected.findAll(ViewType.Form.self) {
+            let forms = inspected.findAll(ViewType.Form.self)
+            if !forms.isEmpty {
                 // Form found - this is correct for macOS
                 // Note: macOS uses Color(.controlBackgroundColor) for form backgrounds
             } else {
