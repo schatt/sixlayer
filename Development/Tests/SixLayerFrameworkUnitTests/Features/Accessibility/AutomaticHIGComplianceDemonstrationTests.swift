@@ -5,18 +5,7 @@ import SwiftUI
 @testable import SixLayerFramework
 
 // MARK: - Test Data Structures
-
-struct DemonstrationTestItem: Identifiable {
-    let id: String
-    let title: String
-    let subtitle: String
-    
-    init(id: String, title: String, subtitle: String) {
-        self.id = id
-        self.title = title
-        self.subtitle = subtitle
-    }
-}
+// Note: DemonstrationTestItem is defined in TestPatterns.swift (shared location)
 
 /**
  * BUSINESS PURPOSE: Demonstrate that SixLayer framework now automatically applies Apple HIG compliance
@@ -40,7 +29,7 @@ open class AutomaticHIGComplianceDemonstrationTests: BaseTestClass {
     /// BUSINESS PURPOSE: Demonstrate that Layer 1 functions now automatically apply HIG compliance
     /// TESTING SCOPE: Shows the difference between old manual approach and new automatic approach
     /// METHODOLOGY: Creates views using Layer 1 functions and verifies automatic compliance
-    @Test @MainActor func testDemonstrateAutomaticHIGCompliance() async {
+    @Test @MainActor func testDemonstrateAutomaticHIGCompliance() {
         initializeTestConfig()
         // OLD WAY (what developers had to do before):
         // let view = platformPresentItemCollection_L1(items: items, hints: hints)
@@ -51,8 +40,8 @@ open class AutomaticHIGComplianceDemonstrationTests: BaseTestClass {
 
         // NEW WAY (what developers do now):
         let testItems = [
-            DemonstrationTestItem(id: "1", title: "Test Item 1", subtitle: "Subtitle 1"),
-            DemonstrationTestItem(id: "2", title: "Test Item 2", subtitle: "Subtitle 2")
+            TestPatterns.DemonstrationTestItem(id: "1", title: "Test Item 1", subtitle: "Subtitle 1"),
+            TestPatterns.DemonstrationTestItem(id: "2", title: "Test Item 2", subtitle: "Subtitle 2")
         ]
         let testHints = PresentationHints(
             dataType: .generic,
@@ -78,12 +67,12 @@ open class AutomaticHIGComplianceDemonstrationTests: BaseTestClass {
     /// BUSINESS PURPOSE: Demonstrate that automatic compliance works with different accessibility states
     /// TESTING SCOPE: Shows automatic compliance adapts to different accessibility capabilities
     /// METHODOLOGY: Tests automatic compliance with VoiceOver, Switch Control, and AssistiveTouch
-    @Test @MainActor func testDemonstrateAutomaticComplianceWithAccessibilityStates() async {
+    @Test @MainActor func testDemonstrateAutomaticComplianceWithAccessibilityStates() {
         initializeTestConfig()
         // Setup test data
         let testItems = [
-            DemonstrationTestItem(id: "1", title: "Test Item 1", subtitle: "Subtitle 1"),
-            DemonstrationTestItem(id: "2", title: "Test Item 2", subtitle: "Subtitle 2")
+            TestPatterns.DemonstrationTestItem(id: "1", title: "Test Item 1", subtitle: "Subtitle 1"),
+            TestPatterns.DemonstrationTestItem(id: "2", title: "Test Item 2", subtitle: "Subtitle 2")
         ]
         let testHints = PresentationHints()
 
@@ -125,37 +114,35 @@ open class AutomaticHIGComplianceDemonstrationTests: BaseTestClass {
     /// BUSINESS PURPOSE: Demonstrate that automatic compliance works across all platforms
     /// TESTING SCOPE: Shows automatic compliance works on iOS, macOS, watchOS, tvOS, and visionOS
     /// METHODOLOGY: Tests automatic compliance across all supported platforms
-    @Test @MainActor func testDemonstrateAutomaticComplianceAcrossPlatforms() async {
+    @Test @MainActor func testDemonstrateAutomaticComplianceAcrossPlatforms() {
             initializeTestConfig()
         // Setup test data
         let testItems = [
-            DemonstrationTestItem(id: "1", title: "Test Item 1", subtitle: "Subtitle 1"),
-            DemonstrationTestItem(id: "2", title: "Test Item 2", subtitle: "Subtitle 2")
+            TestPatterns.DemonstrationTestItem(id: "1", title: "Test Item 1", subtitle: "Subtitle 1"),
+            TestPatterns.DemonstrationTestItem(id: "2", title: "Test Item 2", subtitle: "Subtitle 2")
         ]
         let testHints = PresentationHints()
 
-        // Test across all platforms
-        for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
+        // Given: Current platform
+        let currentPlatform = SixLayerPlatform.current
 
-            _ = platformPresentItemCollection_L1(
-                items: testItems,
-                hints: testHints
-            )
+        _ = platformPresentItemCollection_L1(
+            items: testItems,
+            hints: testHints
+        )
 
-            #expect(Bool(true), "View should work on \(platform)")
-            #expect(Bool(true), "Automatic HIG compliance works on \(platform)")
-        }
+        #expect(Bool(true), "View should work on \(currentPlatform)")
+        #expect(Bool(true), "Automatic HIG compliance works on \(currentPlatform)")
     }
     
     /// BUSINESS PURPOSE: Demonstrate that multiple Layer 1 functions all have automatic compliance
     /// TESTING SCOPE: Shows that all Layer 1 functions automatically apply compliance
     /// METHODOLOGY: Tests multiple Layer 1 functions to verify they all have automatic compliance
-    @Test @MainActor func testDemonstrateAllLayer1FunctionsHaveAutomaticCompliance() async {
+    @Test @MainActor func testDemonstrateAllLayer1FunctionsHaveAutomaticCompliance() {
         // Setup test data
         let testItems = [
-            DemonstrationTestItem(id: "1", title: "Test Item 1", subtitle: "Subtitle 1"),
-            DemonstrationTestItem(id: "2", title: "Test Item 2", subtitle: "Subtitle 2")
+            TestPatterns.DemonstrationTestItem(id: "1", title: "Test Item 1", subtitle: "Subtitle 1"),
+            TestPatterns.DemonstrationTestItem(id: "2", title: "Test Item 2", subtitle: "Subtitle 2")
         ]
         let testHints = PresentationHints()
 

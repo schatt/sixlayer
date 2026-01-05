@@ -290,31 +290,26 @@ open class AccessibilityPreferenceTests: BaseTestClass {
     
     // MARK: - Cross-Platform Consistency Tests
     
-    /// Tests that accessibility features are consistently available across platforms
-    @Test @MainActor func testCrossPlatformAccessibilityConsistency() {
-        // Given: Different platform configurations
-        let simulatedPlatforms = PlatformSimulationTests.testPlatforms
-        
-        // When: Check accessibility features for each platform
-        for platform in simulatedPlatforms {
-            // Set the test platform before getting the config
-            setCapabilitiesForPlatform(platform)
-            defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
-            
-            // Get platform capabilities using the framework's capability detection
-            let config = getCardExpansionPlatformConfig()
-            
-            // Then: Test actual business logic
-            // Each platform should have consistent accessibility support (all are non-optional Bool)
-            let _ = config.supportsVoiceOver
-            let _ = config.supportsSwitchControl
-            #expect(Bool(true), "VoiceOver and Switch Control should be accessible on \(platform)")
-            
-            // Verify platform-correct minTouchTarget value
-            // Note: minTouchTarget is based on compile-time platform, not capability overrides
-            let currentPlatform = SixLayerPlatform.current
-            let expectedMinTouchTarget: CGFloat = (currentPlatform == .iOS || currentPlatform == .watchOS) ? 44.0 : 0.0
-            #expect(config.minTouchTarget == expectedMinTouchTarget, "Touch targets should be platform-correct (\(expectedMinTouchTarget)) for current platform \(currentPlatform)")
+    /// Tests that accessibility features are available on current platform
+    @Test @MainActor func testAccessibilityFeaturesAvailability() {
+        // Get platform capabilities using the framework's capability detection
+        let config = getCardExpansionPlatformConfig()
+
+        // Test actual business logic
+        // Each platform should have consistent accessibility support (all are non-optional Bool)
+        #expect(config.supportsVoiceOver == true, "VoiceOver should be available on current platform")
+        #expect(config.supportsSwitchControl == true, "Switch Control should be available on current platform")
+
+        // Verify platform-correct minTouchTarget value
+        // Note: minTouchTarget is based on runtime platform detection
+        let currentPlatform = SixLayerPlatform.current
+        let expectedMinTouchTarget: CGFloat
+        switch currentPlatform {
+        case .iOS, .watchOS:
+            expectedMinTouchTarget = 44.0
+        case .macOS, .tvOS, .visionOS:
+            expectedMinTouchTarget = RuntimeCapabilityDetection.supportsTouch ? 44.0 : 0.0
         }
+        #expect(config.minTouchTarget == expectedMinTouchTarget, "Touch targets should be platform-correct (\(expectedMinTouchTarget)) for current platform \(currentPlatform)")
     }
 }

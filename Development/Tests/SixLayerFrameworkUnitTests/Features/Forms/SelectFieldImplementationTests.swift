@@ -92,7 +92,7 @@ open class SelectFieldImplementationTests: BaseTestClass {
         let field = dynamicSelectField
         
         // When: Creating generic select field view
-        let view = platformVStackContainer {
+        _ = platformVStackContainer {
             Text(field.label)
             Picker(field.placeholder ?? "Select option", selection: .constant(field.defaultValue ?? "")) {
                 Text("Select an option").tag("")
@@ -113,7 +113,7 @@ open class SelectFieldImplementationTests: BaseTestClass {
         let field = dynamicSelectField
         
         // When: Creating generic select field view
-        let view = platformVStackContainer {
+        _ = platformVStackContainer {
             Text(field.label)
             Picker(field.placeholder ?? "Select option", selection: .constant(field.defaultValue ?? "")) {
                 Text("Select an option").tag("")
@@ -147,7 +147,7 @@ open class SelectFieldImplementationTests: BaseTestClass {
         
         // When: Creating theming integration select field
         // This should be interactive, not just text display
-        let view = platformVStackContainer {
+        _ = platformVStackContainer {
             Text(field.label)
                 .font(typography.body)
             
@@ -175,7 +175,7 @@ open class SelectFieldImplementationTests: BaseTestClass {
         
         // When: Creating platform semantic layer select field
         // This should be interactive, not just text display
-        let view = VStack(alignment: .leading, spacing: 8) {
+        _ = VStack(alignment: .leading, spacing: 8) {
             Text(field.label)
                 .font(.subheadline)
                 .fontWeight(.medium)
@@ -202,7 +202,7 @@ open class SelectFieldImplementationTests: BaseTestClass {
         nonisolated(unsafe) var selectedOption = ""
         
         // When: Creating radio button group
-        let view = VStack(alignment: .leading) {
+        _ = VStack(alignment: .leading) {
             Text("Choose Option")
                 .font(.subheadline)
                 .fontWeight(.medium)
@@ -306,7 +306,7 @@ open class SelectFieldImplementationTests: BaseTestClass {
         var selectedValue = ""
         
         // When: Creating select field with binding
-        let view = Picker(field.label, selection: Binding(
+        _ = Picker(field.label, selection: Binding(
             get: { selectedValue },
             set: { selectedValue = $0 })) {
             Text("Select an option").tag("")
@@ -328,7 +328,7 @@ open class SelectFieldImplementationTests: BaseTestClass {
         let field = selectField
         
         // When: Creating select field with validation
-        let view = platformVStackContainer {
+        _ = platformVStackContainer {
             DynamicSelectField(field: field, formState: formState)
             
             if field.isRequired && (formState.getValue(for: field.id) as String? ?? "").isEmpty {

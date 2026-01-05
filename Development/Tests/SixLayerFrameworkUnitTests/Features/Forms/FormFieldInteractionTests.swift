@@ -124,32 +124,26 @@ open class FormFieldInteractionTests: BaseTestClass {
     /// TESTING SCOPE: Tests text field data binding and value synchronization
     /// METHODOLOGY: Create text field with data binding and verify binding functionality
     @Test @MainActor func testTextFieldWithDataBinding() {
-        // Test across all platforms
-        for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
-            
-            // Given: Text field with data binding
-            resetCallbacks()
-            let textField = sampleFormFields[0]
-            var textValue = ""
-            
-            // When: Creating text field with binding
-            _ = TextField(
-                textField.placeholder ?? "Enter text",
-                text: Binding(
-                    get: { textValue },
-                    set: { newValue in
-                        textValue = newValue
-                        self.fieldValueChanges[textField.label] = newValue
-                    }
-                )
+        // Given: Current platform and text field with data binding
+        _ = SixLayerPlatform.current
+        resetCallbacks()
+        let textField = sampleFormFields[0]
+        var textValue = ""
+        
+        // When: Creating text field with binding
+        _ = TextField(
+            textField.placeholder ?? "Enter text",
+            text: Binding(
+                get: { textValue },
+                set: { newValue in
+                    textValue = newValue
+                    self.fieldValueChanges[textField.label] = newValue
+                }
             )
-            
-            // Then: View should be created successfully
-            // View creation succeeded (non-optional result)
-            
-            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-        }
+        )
+        
+        // Then: View should be created successfully
+        // View creation succeeded (non-optional result)
     }
     
     /// BUSINESS PURPOSE: Validate email field data binding functionality

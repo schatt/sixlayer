@@ -406,7 +406,7 @@ open class AppleHIGComplianceTests: BaseTestClass {
     @Test @MainActor func testPlatformSpecificComplianceBehavior() async {
         initializeTestConfig()
         // Test that platform detection works correctly
-        let originalPlatform = RuntimeCapabilityDetection.currentPlatform
+        _ = RuntimeCapabilityDetection.currentPlatform
         
         // Test iOS platform capabilities
         RuntimeCapabilityDetection.setTestTouchSupport(true)
@@ -440,7 +440,6 @@ open class AppleHIGComplianceTests: BaseTestClass {
         #expect(RuntimeCapabilityDetection.supportsHover, "Should support hover (visionOS-like)")
         
         // Reset to original platform
-        setCapabilitiesForPlatform(originalPlatform)
     }
     
     // MARK: - Business Purpose Tests

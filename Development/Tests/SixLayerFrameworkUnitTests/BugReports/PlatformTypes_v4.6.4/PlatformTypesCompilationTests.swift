@@ -618,26 +618,34 @@ struct PlatformTypesCompilationTests {
     
     @Test @MainActor func testPresentationPreferenceCompilation() {
         // Verify PresentationPreference enum compiles and is accessible
-        let allPreferences = PresentationPreference.allCases
-        #expect(!allPreferences.isEmpty)
-        #expect(allPreferences.contains(.automatic))
-        #expect(allPreferences.contains(.minimal))
-        #expect(allPreferences.contains(.moderate))
-        #expect(allPreferences.contains(.rich))
-        #expect(allPreferences.contains(.custom))
-        #expect(allPreferences.contains(.detail))
-        #expect(allPreferences.contains(.modal))
-        #expect(allPreferences.contains(.navigation))
-        #expect(allPreferences.contains(.list))
-        #expect(allPreferences.contains(.masonry))
-        #expect(allPreferences.contains(.standard))
-        #expect(allPreferences.contains(.form))
-        #expect(allPreferences.contains(.card))
-        #expect(allPreferences.contains(.cards))
-        #expect(allPreferences.contains(.compact))
-        #expect(allPreferences.contains(.grid))
-        #expect(allPreferences.contains(.chart))
-        #expect(allPreferences.contains(.coverFlow))
+        // Test that basic cases can be created and compared
+        #expect(PresentationPreference.automatic == .automatic)
+        #expect(PresentationPreference.minimal == .minimal)
+        #expect(PresentationPreference.moderate == .moderate)
+        #expect(PresentationPreference.rich == .rich)
+        #expect(PresentationPreference.custom == .custom)
+        #expect(PresentationPreference.detail == .detail)
+        #expect(PresentationPreference.modal == .modal)
+
+        // Test countBased case
+        let countBased = PresentationPreference.countBased(lowCount: .cards, highCount: .list, threshold: 5)
+        let sameCountBased = PresentationPreference.countBased(lowCount: .cards, highCount: .list, threshold: 5)
+        let differentCountBased = PresentationPreference.countBased(lowCount: .grid, highCount: .list, threshold: 5)
+        #expect(countBased == sameCountBased)
+        #expect(countBased != differentCountBased)
+
+        // Test additional basic cases for compilation
+        #expect(PresentationPreference.navigation == .navigation)
+        #expect(PresentationPreference.list == .list)
+        #expect(PresentationPreference.masonry == .masonry)
+        #expect(PresentationPreference.standard == .standard)
+        #expect(PresentationPreference.form == .form)
+        #expect(PresentationPreference.card == .card)
+        #expect(PresentationPreference.cards == .cards)
+        #expect(PresentationPreference.compact == .compact)
+        #expect(PresentationPreference.grid == .grid)
+        #expect(PresentationPreference.chart == .chart)
+        #expect(PresentationPreference.coverFlow == .coverFlow)
     }
     
     @Test @MainActor func testPresentationContextCompilation() {

@@ -9,6 +9,10 @@ import UIKit
 import AppKit
 #endif
 
+#if os(watchOS)
+import WatchKit
+#endif
+
 /// Semantic intent: Dismiss settings based on presentation model
 /// Layer 1: Express WHAT you want to achieve
 public enum SettingsDismissalType {
@@ -70,47 +74,87 @@ public extension View {
     // to consolidate with existing styling logic and avoid naming conflicts
 
     /// Platform-specific frame constraints
-    /// On macOS, applies minimum frame constraints. On iOS, returns the view unchanged.
+    /// On macOS, applies minimum frame constraints clamped to available screen size.
+    /// On iOS, watchOS, tvOS, and visionOS, applies maximum constraints clamped to available
+    /// screen/window size to prevent views from exceeding device bounds.
     func platformFrame() -> some View {
         #if os(iOS)
-        return self
+        // iOS: Apply maximum constraints to prevent overflow
+        // Uses actual window size to handle Split View, Stage Manager, etc.
+        let maxSize = PlatformFrameHelpers.getMaxFrameSize()
+        return self.frame(maxWidth: maxSize.width, maxHeight: maxSize.height)
         #elseif os(macOS)
-        return self.frame(minWidth: 600, minHeight: 800)
+        let clampedWidth = PlatformFrameHelpers.clampFrameSize(600, dimension: .width)
+        let clampedHeight = PlatformFrameHelpers.clampFrameSize(800, dimension: .height)
+        return self.frame(minWidth: clampedWidth, minHeight: clampedHeight)
+        #elseif os(watchOS) || os(tvOS) || os(visionOS)
+        // watchOS, tvOS, visionOS: Apply maximum constraints to prevent overflow
+        let maxSize = PlatformFrameHelpers.getMaxFrameSize()
+        return self.frame(maxWidth: maxSize.width, maxHeight: maxSize.height)
         #else
         return self
         #endif
     }
 
     /// Platform-specific frame constraints with custom sizes
-    /// Provides flexible frame constraints that are only applied on macOS
+    /// Provides flexible frame constraints that are automatically clamped to available
+    /// screen/window space to prevent views that are too large for the device.
     ///
     /// - Parameters:
-    ///   - minWidth: Minimum width constraint (macOS only)
-    ///   - minHeight: Minimum height constraint (macOS only)
-    ///   - maxWidth: Maximum width constraint (macOS only)
-    ///   - maxHeight: Maximum height constraint (macOS only)
+    ///   - minWidth: Minimum width constraint (clamped to screen size on macOS)
+    ///   - minHeight: Minimum height constraint (clamped to screen size on macOS)
+    ///   - maxWidth: Maximum width constraint (clamped to screen/window size on both platforms)
+    ///   - maxHeight: Maximum height constraint (clamped to screen/window size on both platforms)
     /// - Returns: A view with platform-specific frame constraints
     func platformFrame(minWidth: CGFloat? = nil, minHeight: CGFloat? = nil, maxWidth: CGFloat? = nil, maxHeight: CGFloat? = nil) -> some View {
-        #if os(iOS)
-        return AnyView(self)
-        #elseif os(macOS)
-        if let minWidth = minWidth, let minHeight = minHeight {
-            if let maxWidth = maxWidth, let maxHeight = maxHeight {
+        // Use shared helper for DRY implementation
+        let clamped = PlatformFrameHelpers.clampFrameConstraints(
+            minWidth: minWidth,
+            minHeight: minHeight,
+            maxWidth: maxWidth,
+            maxHeight: maxHeight
+        )
+        
+        // Apply constraints if provided
+        if let minWidth = clamped.minWidth, let minHeight = clamped.minHeight {
+            if let maxWidth = clamped.maxWidth, let maxHeight = clamped.maxHeight {
                 return AnyView(self.frame(minWidth: minWidth, maxWidth: maxWidth, minHeight: minHeight, maxHeight: maxHeight))
+            } else if let maxWidth = clamped.maxWidth {
+                return AnyView(self.frame(minWidth: minWidth, maxWidth: maxWidth, minHeight: minHeight))
+            } else if let maxHeight = clamped.maxHeight {
+                return AnyView(self.frame(minWidth: minWidth, minHeight: minHeight, maxHeight: maxHeight))
             } else {
                 return AnyView(self.frame(minWidth: minWidth, minHeight: minHeight))
             }
-        } else if let minWidth = minWidth {
-            return AnyView(self.frame(minWidth: minWidth))
-        } else if let minHeight = minHeight {
-            return AnyView(self.frame(minHeight: minHeight))
+        } else if let minWidth = clamped.minWidth {
+            if let maxWidth = clamped.maxWidth {
+                return AnyView(self.frame(minWidth: minWidth, maxWidth: maxWidth))
+            } else {
+                return AnyView(self.frame(minWidth: minWidth))
+            }
+        } else if let minHeight = clamped.minHeight {
+            if let maxHeight = clamped.maxHeight {
+                return AnyView(self.frame(minHeight: minHeight, maxHeight: maxHeight))
+            } else {
+                return AnyView(self.frame(minHeight: minHeight))
+            }
+        } else if let maxWidth = clamped.maxWidth, let maxHeight = clamped.maxHeight {
+            return AnyView(self.frame(maxWidth: maxWidth, maxHeight: maxHeight))
+        } else if let maxWidth = clamped.maxWidth {
+            return AnyView(self.frame(maxWidth: maxWidth))
+        } else if let maxHeight = clamped.maxHeight {
+            return AnyView(self.frame(maxHeight: maxHeight))
         } else {
-            return AnyView(self)
+            // No constraints provided, apply default max constraints for safety on mobile platforms
+            if let defaultMax = PlatformFrameHelpers.getDefaultMaxFrameSize() {
+                return AnyView(self.frame(maxWidth: defaultMax.width, maxHeight: defaultMax.height))
+            } else {
+                return AnyView(self)
+            }
         }
-        #else
-        return AnyView(self)
-        #endif
     }
+    
+    // Frame size helpers moved to PlatformFrameHelpers.swift for DRY reuse
 
     // Note: platformAdaptiveFrame moved to PlatformStylingLayer4.swift
     // to consolidate with existing styling logic and avoid naming conflicts
@@ -2084,9 +2128,13 @@ public extension View {
     /// iOS: No frame constraints; macOS: Sets minimum width and height
     func platformDetailViewFrame() -> some View {
         #if os(macOS)
-        self.frame(minWidth: 800, minHeight: 600)
+        let clampedWidth = PlatformFrameHelpers.clampFrameSize(800, dimension: .width)
+        let clampedHeight = PlatformFrameHelpers.clampFrameSize(600, dimension: .height)
+        return self.frame(minWidth: clampedWidth, minHeight: clampedHeight)
         #else
-        self
+        // iOS and other platforms: Apply max constraints for safety
+        let maxSize = PlatformFrameHelpers.getMaxFrameSize()
+        return self.frame(maxWidth: maxSize.width, maxHeight: maxSize.height)
         #endif
     }
 
@@ -2168,19 +2216,6 @@ public extension View {
         self
         #endif
     }
-
-    /// Platform-specific system colors
-    /// iOS: Uses UIColor; macOS: Uses NSColor
-    static func platformSystemGray6() -> Color {
-        #if os(iOS)
-        return Color.platformSecondaryBackground
-        #else
-        return Color.platformSecondaryBackground
-        #endif
-    }
-
-
-
 
 
 

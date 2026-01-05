@@ -185,12 +185,17 @@ public extension View {
     // MARK: - Frame Constraints
     
     /// Platform-specific minimum frame constraints
+    /// Minimum sizes are clamped to available screen space for safety
     func platformMinFrame() -> some View {
-        #if os(iOS)
-        return self
+        #if os(iOS) || os(watchOS) || os(tvOS) || os(visionOS)
+        // Mobile platforms: Apply max constraints for safety
+        let maxSize = PlatformFrameHelpers.getMaxFrameSize()
+        return self.frame(maxWidth: maxSize.width, maxHeight: maxSize.height)
             .automaticCompliance(named: "platformMinFrame")
         #elseif os(macOS)
-        return self.frame(minWidth: 600, minHeight: 800)
+        let clampedWidth = PlatformFrameHelpers.clampFrameSize(600, dimension: .width)
+        let clampedHeight = PlatformFrameHelpers.clampFrameSize(800, dimension: .height)
+        return self.frame(minWidth: clampedWidth, minHeight: clampedHeight)
             .automaticCompliance(named: "platformMinFrame")
         #else
         return self
@@ -199,12 +204,17 @@ public extension View {
     }
     
     /// Platform-specific maximum frame constraints
+    /// Maximum sizes are clamped to available screen/window space for safety
     func platformMaxFrame() -> some View {
-        #if os(iOS)
-        return self
+        #if os(iOS) || os(watchOS) || os(tvOS) || os(visionOS)
+        // Mobile platforms: Apply max constraints
+        let maxSize = PlatformFrameHelpers.getMaxFrameSize()
+        return self.frame(maxWidth: maxSize.width, maxHeight: maxSize.height)
             .automaticCompliance(named: "platformMaxFrame")
         #elseif os(macOS)
-        return self.frame(maxWidth: 1200, maxHeight: 1000)
+        let clampedMaxWidth = PlatformFrameHelpers.clampMaxFrameSize(1200, dimension: .width)
+        let clampedMaxHeight = PlatformFrameHelpers.clampMaxFrameSize(1000, dimension: .height)
+        return self.frame(maxWidth: clampedMaxWidth, maxHeight: clampedMaxHeight)
             .automaticCompliance(named: "platformMaxFrame")
         #else
         return self
@@ -213,12 +223,18 @@ public extension View {
     }
     
     /// Platform-specific ideal frame constraints
+    /// Ideal sizes are clamped to available screen space for safety
     func platformIdealFrame() -> some View {
-        #if os(iOS)
-        return self
+        #if os(iOS) || os(watchOS) || os(tvOS) || os(visionOS)
+        // Mobile platforms: Apply max constraints for safety
+        let maxSize = PlatformFrameHelpers.getMaxFrameSize()
+        return self.frame(maxWidth: maxSize.width, maxHeight: maxSize.height)
             .automaticCompliance(named: "platformIdealFrame")
         #elseif os(macOS)
-        return self.frame(idealWidth: 800, idealHeight: 900)
+        // Clamp ideal size to screen bounds (use clampMaxFrameSize since ideal should be within bounds)
+        let clampedIdealWidth = PlatformFrameHelpers.clampMaxFrameSize(800, dimension: .width)
+        let clampedIdealHeight = PlatformFrameHelpers.clampMaxFrameSize(900, dimension: .height)
+        return self.frame(idealWidth: clampedIdealWidth, idealHeight: clampedIdealHeight)
             .automaticCompliance(named: "platformIdealFrame")
         #else
         return self
@@ -227,13 +243,30 @@ public extension View {
     }
     
     /// Platform-specific adaptive frame constraints
+    /// All frame sizes (min/ideal/max) are clamped to available screen space
     func platformAdaptiveFrame() -> some View {
-        #if os(iOS)
-        return self
+        #if os(iOS) || os(watchOS) || os(tvOS) || os(visionOS)
+        // Mobile platforms: Apply max constraints for safety
+        let maxSize = PlatformFrameHelpers.getMaxFrameSize()
+        return self.frame(maxWidth: maxSize.width, maxHeight: maxSize.height)
             .automaticCompliance(named: "platformAdaptiveFrame")
         #elseif os(macOS)
-        return self.frame(minWidth: 600, idealWidth: 800, maxWidth: 1200, minHeight: 800, idealHeight: 900, maxHeight: 1000)
-            .automaticCompliance(named: "platformAdaptiveFrame")
+        // Clamp all values to screen bounds
+        let clampedMinWidth = PlatformFrameHelpers.clampFrameSize(600, dimension: .width)
+        let clampedIdealWidth = PlatformFrameHelpers.clampMaxFrameSize(800, dimension: .width)
+        let clampedMaxWidth = PlatformFrameHelpers.clampMaxFrameSize(1200, dimension: .width)
+        let clampedMinHeight = PlatformFrameHelpers.clampFrameSize(800, dimension: .height)
+        let clampedIdealHeight = PlatformFrameHelpers.clampMaxFrameSize(900, dimension: .height)
+        let clampedMaxHeight = PlatformFrameHelpers.clampMaxFrameSize(1000, dimension: .height)
+        return self.frame(
+            minWidth: clampedMinWidth,
+            idealWidth: clampedIdealWidth,
+            maxWidth: clampedMaxWidth,
+            minHeight: clampedMinHeight,
+            idealHeight: clampedIdealHeight,
+            maxHeight: clampedMaxHeight
+        )
+        .automaticCompliance(named: "platformAdaptiveFrame")
         #else
         return self
             .automaticCompliance(named: "platformAdaptiveFrame")

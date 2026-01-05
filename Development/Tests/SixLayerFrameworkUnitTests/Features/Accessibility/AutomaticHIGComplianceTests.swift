@@ -52,7 +52,7 @@ open class AutomaticHIGComplianceTests: BaseTestClass {
     @Test @MainActor func testPlatformPresentItemCollection_L1_AutomaticHIGCompliance() async {
         initializeTestConfig()
         // Given: Test items and hints
-        let items = [TestItem(id: "1", title: "Test Item 1", subtitle: "Test Description 1")]
+        let items = [TestPatterns.TestItem(id: "1", title: "Test Item 1")]
         let hints = PresentationHints()
 
         // When: Creating view using Layer 1 function
@@ -80,7 +80,7 @@ open class AutomaticHIGComplianceTests: BaseTestClass {
 
         // When: Creating view using Layer 1 function
         _ = platformPresentItemCollection_L1(
-            items: [TestItem(id: "1", title: "Test Item 1", subtitle: "Test Description 1")],
+            items: [TestPatterns.TestItem(id: "1", title: "Test Item 1")],
             hints: PresentationHints()
         )
 
@@ -103,28 +103,25 @@ open class AutomaticHIGComplianceTests: BaseTestClass {
             initializeTestConfig()
         // Setup test data
         let testItems = [
-            TestItem(id: "1", title: "Test Item 1", subtitle: "Test Description 1"),
-            TestItem(id: "2", title: "Test Item 2", subtitle: "Test Description 2")
+            TestPatterns.TestItem(id: "1", title: "Test Item 1"),
+            TestPatterns.TestItem(id: "2", title: "Test Item 2")
         ]
 
-        // Test across all platforms
-        for platform in SixLayerPlatform.allCases {
-            // Given: Platform set
-            setCapabilitiesForPlatform(platform)
+        // Given: Current platform
+        let currentPlatform = SixLayerPlatform.current
 
-            // When: Creating view using Layer 1 function
-            _ = platformPresentItemCollection_L1(
-                items: testItems,
-                hints: PresentationHints()
-            )
+        // When: Creating view using Layer 1 function
+        _ = platformPresentItemCollection_L1(
+            items: testItems,
+            hints: PresentationHints()
+        )
 
         // Then: View should automatically have platform-specific patterns
-        #expect(Bool(true), "Layer 1 function should create a valid view on \(platform)")
+        #expect(Bool(true), "Layer 1 function should create a valid view on \(currentPlatform)")
 
         // Verify that automatic platform patterns are applied
         // The view should automatically adapt to the current platform
-        #expect(Bool(true), "Automatic platform patterns should be applied on \(platform)")
-        }
+        #expect(Bool(true), "Automatic platform patterns should be applied on \(currentPlatform)")
     }
     
     /// BUSINESS PURPOSE: platformPresentItemCollection_L1 should automatically apply visual consistency
@@ -134,7 +131,7 @@ open class AutomaticHIGComplianceTests: BaseTestClass {
         initializeTestConfig()
         // When: Creating view using Layer 1 function
         _ = platformPresentItemCollection_L1(
-            items: [TestItem(id: "1", title: "Test Item 1", subtitle: "Test Description 1")],
+            items: [TestPatterns.TestItem(id: "1", title: "Test Item 1")],
             hints: PresentationHints()
         )
 
@@ -153,11 +150,11 @@ open class AutomaticHIGComplianceTests: BaseTestClass {
         initializeTestConfig()
         // Test platformPresentItemCollection_L1
         let collectionView = platformPresentItemCollection_L1(
-            items: [TestItem(id: "1", title: "Test Item 1", subtitle: "Test Description 1")],
+            items: [TestPatterns.TestItem(id: "1", title: "Test Item 1")],
             hints: PresentationHints()
         )
         // Test that collection view can be hosted and has proper structure
-        _ = hostRootPlatformView(collectionView.withGlobalAutoIDsEnabled())
+        _ = hostRootPlatformView(collectionView.enableGlobalAutomaticCompliance())
         #expect(Bool(true), "Collection view should be hostable")
 
         // Test platformPresentNumericData_L1
@@ -170,7 +167,7 @@ open class AutomaticHIGComplianceTests: BaseTestClass {
         )
 
         // Test that numeric view can be hosted and has proper structure
-        _ = hostRootPlatformView(numericView.withGlobalAutoIDsEnabled())
+        _ = hostRootPlatformView(numericView.enableGlobalAutomaticCompliance())
         #expect(Bool(true), "Numeric view should be hostable")
 
         // Verify that both views are created successfully and can be hosted
@@ -189,11 +186,11 @@ open class AutomaticHIGComplianceTests: BaseTestClass {
         RuntimeCapabilityDetection.setTestAssistiveTouch(false)
 
         let viewWithVoiceOver = platformPresentItemCollection_L1(
-            items: [TestItem(id: "1", title: "Test Item 1", subtitle: "Test Description 1")],
+            items: [TestPatterns.TestItem(id: "1", title: "Test Item 1")],
             hints: PresentationHints()
         )
         // Test that VoiceOver-enabled view can be hosted
-        _ = hostRootPlatformView(viewWithVoiceOver.withGlobalAutoIDsEnabled())
+        _ = hostRootPlatformView(viewWithVoiceOver.enableGlobalAutomaticCompliance())
         #expect(Bool(true), "VoiceOver view should be hostable")
 
         // Test with Switch Control enabled
@@ -202,12 +199,12 @@ open class AutomaticHIGComplianceTests: BaseTestClass {
         RuntimeCapabilityDetection.setTestAssistiveTouch(false)
 
         let viewWithSwitchControl = platformPresentItemCollection_L1(
-            items: [TestItem(id: "1", title: "Test Item 1", subtitle: "Test Description 1")],
+            items: [TestPatterns.TestItem(id: "1", title: "Test Item 1")],
             hints: PresentationHints()
         )
 
         // Test that Switch Control-enabled view can be hosted
-        _ = hostRootPlatformView(viewWithSwitchControl.withGlobalAutoIDsEnabled())
+        _ = hostRootPlatformView(viewWithSwitchControl.enableGlobalAutomaticCompliance())
         #expect(Bool(true), "Switch Control view should be hostable")
 
         // Test with AssistiveTouch enabled
@@ -216,12 +213,12 @@ open class AutomaticHIGComplianceTests: BaseTestClass {
         RuntimeCapabilityDetection.setTestAssistiveTouch(true)
 
         let viewWithAssistiveTouch = platformPresentItemCollection_L1(
-            items: [TestItem(id: "1", title: "Test Item 1", subtitle: "Test Description 1")],
+            items: [TestPatterns.TestItem(id: "1", title: "Test Item 1")],
             hints: PresentationHints()
         )
 
         // Test that AssistiveTouch-enabled view can be hosted
-        _ = hostRootPlatformView(viewWithAssistiveTouch.withGlobalAutoIDsEnabled())
+        _ = hostRootPlatformView(viewWithAssistiveTouch.enableGlobalAutomaticCompliance())
         #expect(Bool(true), "AssistiveTouch view should be hostable")
 
         // Test with all accessibility features enabled
@@ -230,12 +227,12 @@ open class AutomaticHIGComplianceTests: BaseTestClass {
         RuntimeCapabilityDetection.setTestAssistiveTouch(true)
 
         let viewWithAllAccessibility = platformPresentItemCollection_L1(
-            items: [TestItem(id: "1", title: "Test Item 1", subtitle: "Test Description 1")],
+            items: [TestPatterns.TestItem(id: "1", title: "Test Item 1")],
             hints: PresentationHints()
         )
 
         // Test that all-accessibility view can be hosted
-        _ = hostRootPlatformView(viewWithAllAccessibility.withGlobalAutoIDsEnabled())
+        _ = hostRootPlatformView(viewWithAllAccessibility.enableGlobalAutomaticCompliance())
         #expect(Bool(true), "All accessibility view should be hostable")
 
         // Verify that all views are created successfully and can be hosted

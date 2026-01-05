@@ -39,14 +39,10 @@ open class FormWizardStateTests: BaseTestClass {
     /// TESTING SCOPE: Tests FormWizardState initialization and setup
     /// METHODOLOGY: Initialize FormWizardState and verify initial state properties
     @Test func testFormWizardStateInitialization() {
-        // Test across all platforms
-        for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
-            
-            // TODO: Implement test
-            
-            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-        }
+        // Given: Current platform
+        _ = SixLayerPlatform.current
+        
+        // TODO: Implement test
     }
     
     /// BUSINESS PURPOSE: Validate step progression functionality

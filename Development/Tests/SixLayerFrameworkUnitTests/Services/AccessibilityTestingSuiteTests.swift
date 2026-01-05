@@ -13,7 +13,7 @@ open class AccessibilityTestingSuiteTests: BaseTestClass {
     
     @Test @MainActor func testAccessibilityTestingSuiteInitialization() async {
         // Given & When: Creating the testing suite
-        let suite = AccessibilityTestingSuite()
+        _ = AccessibilityTestingSuite()
         
         // Then: Suite should be created successfully (verified by using it below)
     }
@@ -25,7 +25,7 @@ open class AccessibilityTestingSuiteTests: BaseTestClass {
         let suite = AccessibilityTestingSuite()
         
         // When: Running basic accessibility tests
-        let testResults = suite.runBasicAccessibilityTests()
+        _ = suite.runBasicAccessibilityTests()
         
         // Then: Should return test results
         #expect(Bool(true), "testResults is non-optional")  // testResults is non-optional
@@ -36,7 +36,7 @@ open class AccessibilityTestingSuiteTests: BaseTestClass {
         let suite = AccessibilityTestingSuite()
         
         // When: Running comprehensive accessibility tests
-        let testResults = suite.runComprehensiveAccessibilityTests()
+        _ = suite.runComprehensiveAccessibilityTests()
         
         // Then: Should return test results
         #expect(Bool(true), "testResults is non-optional")  // testResults is non-optional
@@ -48,7 +48,7 @@ open class AccessibilityTestingSuiteTests: BaseTestClass {
         let testView = Text("Test Component")
         
         // When: Validating UI component accessibility
-        let validationResult = suite.validateComponent(testView)
+        _ = suite.validateComponent(testView)
         
         // Then: Should return validation result
         #expect(Bool(true), "validationResult is non-optional")  // validationResult is non-optional
@@ -73,7 +73,7 @@ open class AccessibilityTestingSuiteTests: BaseTestClass {
         let suite = AccessibilityTestingSuite()
         
         // When: Getting accessibility violations
-        let violations = suite.getAccessibilityViolations()
+        _ = suite.getAccessibilityViolations()
         
         // Then: Should return violations array
         #expect(Bool(true), "violations is non-optional")  // violations is non-optional
@@ -84,7 +84,7 @@ open class AccessibilityTestingSuiteTests: BaseTestClass {
         let suite = AccessibilityTestingSuite()
         
         // When: Checking compliance status
-        let complianceStatus = suite.getComplianceStatus()
+        _ = suite.getComplianceStatus()
         
         // Then: Should return compliance status
         #expect(Bool(true), "complianceStatus is non-optional")  // complianceStatus is non-optional
@@ -106,7 +106,7 @@ open class AccessibilityTestingSuiteTests: BaseTestClass {
         suite.configureTests(config)
         
         // Then: Configuration should be applied
-        let currentConfig = suite.getTestConfiguration()
+        _ = suite.getTestConfiguration()
         #expect(Bool(true), "currentConfig is non-optional")  // currentConfig is non-optional
     }
     

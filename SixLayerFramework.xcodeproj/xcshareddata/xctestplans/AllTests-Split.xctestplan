@@ -1,0 +1,68 @@
+{
+  "configurations" : [
+    {
+      "id" : "all-tests-split-config",
+      "name" : "All Tests - Split Discovery",
+      "options" : {
+        "targets" : [
+          {
+            "containerPath" : "container:SixLayerFramework.xcodeproj",
+            "identifier" : "SixLayerFrameworkUnitTests_macOS",
+            "name" : "SixLayerFrameworkUnitTests_macOS"
+          },
+          {
+            "containerPath" : "container:SixLayerFramework.xcodeproj",
+            "identifier" : "SixLayerFrameworkUITests_macOS",
+            "name" : "SixLayerFrameworkUITests_macOS"
+          },
+          {
+            "containerPath" : "container:SixLayerFramework.xcodeproj",
+            "identifier" : "SixLayerFrameworkExternalIntegrationTests_macOS",
+            "name" : "SixLayerFrameworkExternalIntegrationTests_macOS"
+          }
+        ],
+        "testTimeoutsEnabled" : true
+      },
+      "testTargets" : [
+        {
+          "target" : {
+            "containerPath" : "container:SixLayerFramework.xcodeproj",
+            "identifier" : "SixLayerFrameworkUnitTests_macOS",
+            "name" : "SixLayerFrameworkUnitTests_macOS"
+          },
+          "includedTests" : [
+            "SixLayerFrameworkUnitTests/Core",
+            "SixLayerFrameworkUnitTests/Layers",
+            "SixLayerFrameworkUnitTests/Services"
+          ],
+          "excludedTests" : [ ]
+        },
+        {
+          "target" : {
+            "containerPath" : "container:SixLayerFramework.xcodeproj",
+            "identifier" : "SixLayerFrameworkUITests_macOS",
+            "name" : "SixLayerFrameworkUITests_macOS"
+          },
+          "includedTests" : [
+            "SixLayerFrameworkUITests/Features/Accessibility"
+          ],
+          "excludedTests" : [ ]
+        }
+      ]
+    }
+  ],
+  "defaultOptions" : {
+    "commandLineArgumentEntries" : [
+
+    ],
+    "environmentVariableEntries" : [
+
+    ],
+    "language" : "en",
+    "region" : "US",
+    "targetLanguage" : null,
+    "targetRegion" : null
+  },
+  "testPlanName" : "All Tests - Split Discovery",
+  "version" : 1
+}

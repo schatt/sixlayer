@@ -915,25 +915,57 @@ public enum DataTypeHint: String, CaseIterable, Sendable {
 }
 
 /// Presentation preference levels
-public enum PresentationPreference: String, CaseIterable, Sendable {
-    case automatic = "automatic"
-    case minimal = "minimal"
-    case moderate = "moderate"
-    case rich = "rich"
-    case custom = "custom"
-    case detail = "detail"
-    case modal = "modal"
-    case navigation = "navigation"
-    case list = "list"
-    case masonry = "masonry"
-    case standard = "standard"
-    case form = "form"
-    case card = "card"
-    case cards = "cards"
-    case compact = "compact"
-    case grid = "grid"
-    case chart = "chart"
-    case coverFlow = "coverFlow"
+public indirect enum PresentationPreference: Sendable, Equatable {
+    case automatic
+    case minimal
+    case moderate
+    case rich
+    case custom
+    case detail
+    case modal
+    case navigation
+    case list
+    case masonry
+    case standard
+    case form
+    case card
+    case cards
+    case compact
+    case grid
+    case chart
+    case coverFlow
+    case countBased(lowCount: PresentationPreference, highCount: PresentationPreference, threshold: Int)
+}
+
+extension PresentationPreference {
+    public static func == (lhs: PresentationPreference, rhs: PresentationPreference) -> Bool {
+        switch (lhs, rhs) {
+        case (.automatic, .automatic),
+             (.minimal, .minimal),
+             (.moderate, .moderate),
+             (.rich, .rich),
+             (.custom, .custom),
+             (.detail, .detail),
+             (.modal, .modal),
+             (.navigation, .navigation),
+             (.list, .list),
+             (.masonry, .masonry),
+             (.standard, .standard),
+             (.form, .form),
+             (.card, .card),
+             (.cards, .cards),
+             (.compact, .compact),
+             (.grid, .grid),
+             (.chart, .chart),
+             (.coverFlow, .coverFlow):
+            return true
+        case (.countBased(let lhsLow, let lhsHigh, let lhsThreshold),
+              .countBased(let rhsLow, let rhsHigh, let rhsThreshold)):
+            return lhsLow == rhsLow && lhsHigh == rhsHigh && lhsThreshold == rhsThreshold
+        default:
+            return false
+        }
+    }
 }
 
 /// Presentation context types

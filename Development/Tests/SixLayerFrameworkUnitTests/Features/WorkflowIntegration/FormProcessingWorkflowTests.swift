@@ -19,12 +19,12 @@
 //  - Validate form state transitions and updates
 //  - Test real-time validation triggers
 //  - Verify error handling and recovery mechanisms
-//  - Use mock capabilities for platform testing
+//  - Test on current platform (tests run on actual platforms via simulators)
 //
 //  AUDIT STATUS: ✅ COMPLIANT
 //  - ✅ File Documentation: Complete with business purpose, testing scope, methodology
 //  - ✅ Function Documentation: All functions documented with business purpose
-//  - ✅ Platform Testing: Tests across all platforms using SixLayerPlatform.allCases
+//  - ✅ Platform Testing: Tests current platform capabilities using runtime detection
 //  - ✅ Integration Focus: Tests complete workflow integration, not individual components
 //
 
@@ -148,203 +148,178 @@ final class FormProcessingWorkflowTests: BaseTestClass {
     /// TESTING SCOPE: Tests that form input triggers proper validation
     /// METHODOLOGY: Create form, set values, validate, verify results
     @Test func testFormInputToValidationWorkflow() async {
-        for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
-            
-            // Given: Form with validation rules
-            let fields = createStandardTestForm()
-            
-            // When: Processing form with invalid email
-            let invalidEmailField = fields.first { $0.id == "email" }!
-            let validationRules = invalidEmailField.validationRules
-            
-            // Then: Validation rules should be defined
-            #expect(validationRules != nil, "Email field should have validation rules on \(platform)")
-            #expect(validationRules?["required"] == "true", "Email should be required on \(platform)")
-            #expect(validationRules?["email"] == "true", "Email should have email format rule on \(platform)")
-            
-            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-        }
+        // Given: Current platform and form with validation rules
+        let currentPlatform = SixLayerPlatform.current
+        let fields = createStandardTestForm()
+        
+        // When: Processing form with invalid email
+        let invalidEmailField = fields.first { $0.id == "email" }!
+        let validationRules = invalidEmailField.validationRules
+        
+        // Then: Validation rules should be defined
+        #expect(validationRules != nil, "Email field should have validation rules on \(currentPlatform)")
+        #expect(validationRules?["required"] == "true", "Email should be required on \(currentPlatform)")
+        #expect(validationRules?["email"] == "true", "Email should have email format rule on \(currentPlatform)")
     }
     
     /// BUSINESS PURPOSE: Validate real-time validation triggers on field changes
     /// TESTING SCOPE: Tests that validation occurs when field values change
     /// METHODOLOGY: Simulate value changes, verify validation triggers
     @Test func testRealTimeValidationOnFieldChange() async {
-        for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
-            
-            // Given: Form field with validation rules
-            let field = DynamicFormField(
-                id: "email",
-                contentType: .email,
-                label: "Email",
-                isRequired: true,
-                validationRules: ["required": "true", "email": "true"],
-                defaultValue: ""
-            )
-            
-            // Test case 1: Empty value (should fail required)
-            let emptyValue = ""
-            let hasRequiredRule = field.validationRules?["required"] == "true"
-            let shouldFailRequired = emptyValue.isEmpty && hasRequiredRule
-            #expect(shouldFailRequired, "Empty email should fail required validation on \(platform)")
-            
-            // Test case 2: Invalid email format
-            let invalidEmail = "not-an-email"
-            let hasEmailRule = field.validationRules?["email"] == "true"
-            let isValidEmailFormat = invalidEmail.contains("@") && invalidEmail.contains(".")
-            let shouldFailFormat = hasEmailRule && !isValidEmailFormat
-            #expect(shouldFailFormat, "Invalid email format should fail validation on \(platform)")
-            
-            // Test case 3: Valid email
-            let validEmail = "test@example.com"
-            let validEmailFormat = validEmail.contains("@") && validEmail.contains(".")
-            let shouldPassValidation = !validEmail.isEmpty && validEmailFormat
-            #expect(shouldPassValidation, "Valid email should pass validation on \(platform)")
-            
-            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-        }
+        // Given: Current platform and form field with validation rules
+        let currentPlatform = SixLayerPlatform.current
+        let field = DynamicFormField(
+            id: "email",
+            contentType: .email,
+            label: "Email",
+            isRequired: true,
+            validationRules: ["required": "true", "email": "true"],
+            defaultValue: ""
+        )
+        
+        // Test case 1: Empty value (should fail required)
+        let emptyValue = ""
+        let hasRequiredRule = field.validationRules?["required"] == "true"
+        let shouldFailRequired = emptyValue.isEmpty && hasRequiredRule
+        #expect(shouldFailRequired, "Empty email should fail required validation on \(currentPlatform)")
+        
+        // Test case 2: Invalid email format
+        let invalidEmail = "not-an-email"
+        let hasEmailRule = field.validationRules?["email"] == "true"
+        let isValidEmailFormat = invalidEmail.contains("@") && invalidEmail.contains(".")
+        let shouldFailFormat = hasEmailRule && !isValidEmailFormat
+        #expect(shouldFailFormat, "Invalid email format should fail validation on \(currentPlatform)")
+        
+        // Test case 3: Valid email
+        let validEmail = "test@example.com"
+        let validEmailFormat = validEmail.contains("@") && validEmail.contains(".")
+        let shouldPassValidation = !validEmail.isEmpty && validEmailFormat
+        #expect(shouldPassValidation, "Valid email should pass validation on \(currentPlatform)")
     }
     
     /// BUSINESS PURPOSE: Validate form state updates through workflow
     /// TESTING SCOPE: Tests that form state changes correctly during workflow
     /// METHODOLOGY: Track state changes through form lifecycle
     @Test func testFormStateManagementWorkflow() async {
-        for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
-            
-            // Given: Form with initial state
-            let fields = createStandardTestForm()
-            
-            // Simulate form state tracking
-            var formValues: [String: String] = [:]
-            var formErrors: [String: String] = [:]
-            var isFormDirty = false
-            
-            // When: Setting initial values
-            for field in fields {
-                formValues[field.id] = field.defaultValue ?? ""
-            }
-            
-            // Then: Initial state should be clean
-            #expect(!isFormDirty, "Initial form state should be clean on \(platform)")
-            #expect(formValues.count == fields.count, "All fields should have values on \(platform)")
-            
-            // When: Updating a field value
-            formValues["email"] = "new@example.com"
-            isFormDirty = true
-            
-            // Then: Form should be marked as dirty
-            #expect(isFormDirty, "Form should be dirty after value change on \(platform)")
-            
-            // When: Validation fails
-            formErrors["password"] = "Password is required"
-            
-            // Then: Error state should be tracked
-            #expect(formErrors.count > 0, "Form should track validation errors on \(platform)")
-            
-            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        // Given: Current platform and form with initial state
+        let currentPlatform = SixLayerPlatform.current
+        let fields = createStandardTestForm()
+        
+        // Simulate form state tracking
+        var formValues: [String: String] = [:]
+        var formErrors: [String: String] = [:]
+        var isFormDirty = false
+        
+        // When: Setting initial values
+        for field in fields {
+            formValues[field.id] = field.defaultValue ?? ""
         }
+        
+        // Then: Initial state should be clean
+        #expect(!isFormDirty, "Initial form state should be clean on \(currentPlatform)")
+        #expect(formValues.count == fields.count, "All fields should have values on \(currentPlatform)")
+        
+        // When: Updating a field value
+        formValues["email"] = "new@example.com"
+        isFormDirty = true
+        
+        // Then: Form should be marked as dirty
+        #expect(isFormDirty, "Form should be dirty after value change on \(currentPlatform)")
+        
+        // When: Validation fails
+        formErrors["password"] = "Password is required"
+        
+        // Then: Error state should be tracked
+        #expect(formErrors.count > 0, "Form should track validation errors on \(currentPlatform)")
     }
     
     /// BUSINESS PURPOSE: Validate form submission workflow with valid data
     /// TESTING SCOPE: Tests successful form submission path
     /// METHODOLOGY: Provide valid data, attempt submission, verify success
     @Test func testFormSubmissionWithValidData() async {
-        for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
+        // Given: Current platform and form with valid data
+        let currentPlatform = SixLayerPlatform.current
+        let fields = createStandardTestForm()
+        let validFormData: [String: String] = [
+            "email": "valid@example.com",
+            "password": "SecurePassword123",
+            "name": "John Doe"
+        ]
+        
+        // When: Validating all fields
+        var allValid = true
+        for field in fields {
+            let value = validFormData[field.id] ?? ""
             
-            // Given: Form with valid data
-            let fields = createStandardTestForm()
-            let validFormData: [String: String] = [
-                "email": "valid@example.com",
-                "password": "SecurePassword123",
-                "name": "John Doe"
-            ]
+            // Check required
+            if field.isRequired && value.isEmpty {
+                allValid = false
+            }
             
-            // When: Validating all fields
-            var allValid = true
-            for field in fields {
-                let value = validFormData[field.id] ?? ""
-                
-                // Check required
-                if field.isRequired && value.isEmpty {
+            // Check email format
+            if field.contentType == .email && field.validationRules?["email"] == "true" {
+                if !value.contains("@") || !value.contains(".") {
                     allValid = false
-                }
-                
-                // Check email format
-                if field.contentType == .email && field.validationRules?["email"] == "true" {
-                    if !value.contains("@") || !value.contains(".") {
-                        allValid = false
-                    }
-                }
-                
-                // Check minLength for password
-                if field.id == "password", let minLengthStr = field.validationRules?["minLength"],
-                   let minLength = Int(minLengthStr) {
-                    if value.count < minLength {
-                        allValid = false
-                    }
                 }
             }
             
-            // Then: Form should be valid for submission
-            #expect(allValid, "Form with valid data should pass validation on \(platform)")
-            
-            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+            // Check minLength for password
+            if field.id == "password", let minLengthStr = field.validationRules?["minLength"],
+               let minLength = Int(minLengthStr) {
+                if value.count < minLength {
+                    allValid = false
+                }
+            }
         }
+        
+        // Then: Form should be valid for submission
+        #expect(allValid, "Form with valid data should pass validation on \(currentPlatform)")
     }
     
     /// BUSINESS PURPOSE: Validate form error handling and display
     /// TESTING SCOPE: Tests that validation errors are properly handled
     /// METHODOLOGY: Trigger validation errors, verify error handling
     @Test func testFormValidationErrorHandling() async {
-        for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
+        // Given: Current platform and form with invalid data
+        let currentPlatform = SixLayerPlatform.current
+        let fields = createStandardTestForm()
+        let invalidFormData: [String: String] = [
+            "email": "invalid-email",  // Missing @ and domain
+            "password": "short",       // Less than 8 characters
+            "name": ""                 // Empty required field
+        ]
+        
+        // When: Collecting validation errors
+        var errors: [String: String] = [:]
+        
+        for field in fields {
+            let value = invalidFormData[field.id] ?? ""
             
-            // Given: Form with invalid data
-            let fields = createStandardTestForm()
-            let invalidFormData: [String: String] = [
-                "email": "invalid-email",  // Missing @ and domain
-                "password": "short",       // Less than 8 characters
-                "name": ""                 // Empty required field
-            ]
+            // Check required
+            if field.isRequired && value.isEmpty {
+                errors[field.id] = "\(field.label) is required"
+            }
             
-            // When: Collecting validation errors
-            var errors: [String: String] = [:]
-            
-            for field in fields {
-                let value = invalidFormData[field.id] ?? ""
-                
-                // Check required
-                if field.isRequired && value.isEmpty {
-                    errors[field.id] = "\(field.label) is required"
-                }
-                
-                // Check email format
-                if field.contentType == .email && !value.isEmpty {
-                    if !value.contains("@") || !value.contains(".") {
-                        errors[field.id] = "Invalid email format"
-                    }
-                }
-                
-                // Check minLength
-                if let minLengthStr = field.validationRules?["minLength"],
-                   let minLength = Int(minLengthStr), !value.isEmpty {
-                    if value.count < minLength {
-                        errors[field.id] = "Minimum length is \(minLength) characters"
-                    }
+            // Check email format
+            if field.contentType == .email && !value.isEmpty {
+                if !value.contains("@") || !value.contains(".") {
+                    errors[field.id] = "Invalid email format"
                 }
             }
             
-            // Then: All expected errors should be captured
-            #expect(errors.count >= 2, "Should have multiple validation errors on \(platform)")
-            #expect(errors["name"] != nil || errors["email"] != nil || errors["password"] != nil,
-                   "Should have field-specific errors on \(platform)")
-            
-            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+            // Check minLength
+            if let minLengthStr = field.validationRules?["minLength"],
+               let minLength = Int(minLengthStr), !value.isEmpty {
+                if value.count < minLength {
+                    errors[field.id] = "Minimum length is \(minLength) characters"
+                }
+            }
         }
+        
+        // Then: All expected errors should be captured
+        #expect(errors.count >= 2, "Should have multiple validation errors on \(currentPlatform)")
+        #expect(errors["name"] != nil || errors["email"] != nil || errors["password"] != nil,
+               "Should have field-specific errors on \(currentPlatform)")
     }
     
     // MARK: - Form Sections Workflow Tests
@@ -353,43 +328,38 @@ final class FormProcessingWorkflowTests: BaseTestClass {
     /// TESTING SCOPE: Tests form workflow with multiple sections
     /// METHODOLOGY: Create sectioned form, validate section-by-section
     @Test func testMultiSectionFormWorkflow() async {
-        for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
-            
-            // Given: Form with multiple sections
-            let personalFields = [
-                DynamicFormField(id: "firstName", contentType: .text, label: "First Name", isRequired: true),
-                DynamicFormField(id: "lastName", contentType: .text, label: "Last Name", isRequired: true)
-            ]
-            
-            let contactFields = [
-                DynamicFormField(id: "email", contentType: .email, label: "Email", isRequired: true),
-                DynamicFormField(id: "phone", contentType: .phone, label: "Phone")
-            ]
-            
-            let sections = [
-                createTestSection(id: "personal", title: "Personal Information", fields: personalFields),
-                createTestSection(id: "contact", title: "Contact Information", fields: contactFields)
-            ]
-            
-            // When: Validating sections
-            var sectionValidation: [String: Bool] = [:]
-            
-            for section in sections {
-                let allRequiredFilled = section.fields.filter { $0.isRequired }.allSatisfy { field in
-                    // Simulate checking if required fields have values
-                    // In real scenario, this would check actual form values
-                    true // Assume filled for test
-                }
-                sectionValidation[section.id] = allRequiredFilled
+        // Given: Current platform and form with multiple sections
+        let currentPlatform = SixLayerPlatform.current
+        let personalFields = [
+            DynamicFormField(id: "firstName", contentType: .text, label: "First Name", isRequired: true),
+            DynamicFormField(id: "lastName", contentType: .text, label: "Last Name", isRequired: true)
+        ]
+        
+        let contactFields = [
+            DynamicFormField(id: "email", contentType: .email, label: "Email", isRequired: true),
+            DynamicFormField(id: "phone", contentType: .phone, label: "Phone")
+        ]
+        
+        let sections = [
+            createTestSection(id: "personal", title: "Personal Information", fields: personalFields),
+            createTestSection(id: "contact", title: "Contact Information", fields: contactFields)
+        ]
+        
+        // When: Validating sections
+        var sectionValidation: [String: Bool] = [:]
+        
+        for section in sections {
+            let allRequiredFilled = section.fields.filter { $0.isRequired }.allSatisfy { field in
+                // Simulate checking if required fields have values
+                // In real scenario, this would check actual form values
+                true // Assume filled for test
             }
-            
-            // Then: Each section should be trackable
-            #expect(sectionValidation.count == 2, "Should track validation for all sections on \(platform)")
-            #expect(sections[0].isCollapsible, "Sections should be collapsible on \(platform)")
-            
-            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+            sectionValidation[section.id] = allRequiredFilled
         }
+        
+        // Then: Each section should be trackable
+        #expect(sectionValidation.count == 2, "Should track validation for all sections on \(currentPlatform)")
+        #expect(sections[0].isCollapsible, "Sections should be collapsible on \(currentPlatform)")
     }
     
     // MARK: - Form Type Validation Workflow Tests
@@ -398,45 +368,40 @@ final class FormProcessingWorkflowTests: BaseTestClass {
     /// TESTING SCOPE: Tests validation works correctly for various content types
     /// METHODOLOGY: Create comprehensive form, test each field type
     @Test func testFieldTypeValidationWorkflow() async {
-        for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
-            
-            // Given: Form with various field types
-            let fields = createComprehensiveTestForm()
-            
-            // When: Testing each field type
-            for field in fields {
-                switch field.contentType {
-                case .email:
-                    #expect(field.validationRules?["email"] == "true",
-                           "Email field should have email validation on \(platform)")
-                    
-                case .phone:
-                    #expect(field.validationRules?["phone"] == "true",
-                           "Phone field should have phone validation on \(platform)")
-                    
-                case .number:
-                    #expect(field.validationRules?["min"] != nil || field.validationRules?["max"] != nil,
-                           "Number field should have range validation on \(platform)")
-                    
-                case .url:
-                    #expect(field.validationRules?["url"] == "true",
-                           "URL field should have URL validation on \(platform)")
-                    
-                case .select:
-                    #expect(field.options != nil && !field.options!.isEmpty,
-                           "Select field should have options on \(platform)")
-                    
-                case .textarea:
-                    #expect(field.validationRules?["maxLength"] != nil,
-                           "Textarea should have maxLength validation on \(platform)")
-                    
-                default:
-                    break
-                }
+        // Given: Current platform and form with various field types
+        let currentPlatform = SixLayerPlatform.current
+        let fields = createComprehensiveTestForm()
+        
+        // When: Testing each field type
+        for field in fields {
+            switch field.contentType {
+            case .email:
+                #expect(field.validationRules?["email"] == "true",
+                       "Email field should have email validation on \(currentPlatform)")
+                
+            case .phone:
+                #expect(field.validationRules?["phone"] == "true",
+                       "Phone field should have phone validation on \(currentPlatform)")
+                
+            case .number:
+                #expect(field.validationRules?["min"] != nil || field.validationRules?["max"] != nil,
+                       "Number field should have range validation on \(currentPlatform)")
+                
+            case .url:
+                #expect(field.validationRules?["url"] == "true",
+                       "URL field should have URL validation on \(currentPlatform)")
+                
+            case .select:
+                #expect(field.options != nil && !field.options!.isEmpty,
+                       "Select field should have options on \(currentPlatform)")
+                
+            case .textarea:
+                #expect(field.validationRules?["maxLength"] != nil,
+                       "Textarea should have maxLength validation on \(currentPlatform)")
+                
+            default:
+                break
             }
-            
-            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
         }
     }
     
@@ -448,33 +413,28 @@ final class FormProcessingWorkflowTests: BaseTestClass {
     @Test @MainActor func testFormPresentationWithHints() async {
         initializeTestConfig()
         
-        for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
-            
-            // Given: Form fields and presentation hints
-            let fields = createStandardTestForm()
-            let hints = EnhancedPresentationHints(
-                dataType: .form,
-                presentationPreference: .form,
-                complexity: .moderate,
-                context: .modal
-            )
-            
-            // When: Creating form view
-            let _ = platformPresentFormData_L1(
-                fields: fields,
-                hints: hints
-            )
-            
-            // Then: Form view should be created successfully
-            #expect(Bool(true), "Form view should be created with hints on \(platform)")
-            
-            // Verify hints configuration
-            #expect(hints.dataType == .form, "Data type should be form on \(platform)")
-            #expect(hints.presentationPreference == .form, "Preference should be form on \(platform)")
-            
-            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-        }
+        // Given: Current platform, form fields and presentation hints
+        let currentPlatform = SixLayerPlatform.current
+        let fields = createStandardTestForm()
+        let hints = EnhancedPresentationHints(
+            dataType: .form,
+            presentationPreference: .form,
+            complexity: .moderate,
+            context: .modal
+        )
+        
+        // When: Creating form view
+        let _ = platformPresentFormData_L1(
+            fields: fields,
+            hints: hints
+        )
+        
+        // Then: Form view should be created successfully
+        #expect(Bool(true), "Form view should be created with hints on \(currentPlatform)")
+        
+        // Verify hints configuration
+        #expect(hints.dataType == .form, "Data type should be form on \(currentPlatform)")
+        #expect(hints.presentationPreference == .form, "Preference should be form on \(currentPlatform)")
     }
     
     /// BUSINESS PURPOSE: Validate form workflow maintains accessibility
@@ -483,35 +443,30 @@ final class FormProcessingWorkflowTests: BaseTestClass {
     @Test @MainActor func testFormWorkflowAccessibility() async {
         initializeTestConfig()
         
-        for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
-            
-            // Given: Accessible form configuration
-            let fields = createStandardTestForm()
-            let hints = EnhancedPresentationHints(
-                dataType: .form,
-                presentationPreference: .form,
-                complexity: .simple
-            )
-            
-            // When: Creating form with accessibility
-            let _ = platformPresentFormData_L1(
-                fields: fields,
-                hints: hints
-            )
-            
-            // Then: Form should support accessibility
-            // Each field should have label for accessibility
-            for field in fields {
-                #expect(!field.label.isEmpty, "Field \(field.id) should have label for accessibility on \(platform)")
-            }
-            
-            // Required fields should be identifiable
-            let requiredFields = fields.filter { $0.isRequired }
-            #expect(requiredFields.count > 0, "Form should have required field indicators on \(platform)")
-            
-            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        // Given: Current platform and accessible form configuration
+        let currentPlatform = SixLayerPlatform.current
+        let fields = createStandardTestForm()
+        let hints = EnhancedPresentationHints(
+            dataType: .form,
+            presentationPreference: .form,
+            complexity: .simple
+        )
+        
+        // When: Creating form with accessibility
+        let _ = platformPresentFormData_L1(
+            fields: fields,
+            hints: hints
+        )
+        
+        // Then: Form should support accessibility
+        // Each field should have label for accessibility
+        for field in fields {
+            #expect(!field.label.isEmpty, "Field \(field.id) should have label for accessibility on \(currentPlatform)")
         }
+        
+        // Required fields should be identifiable
+        let requiredFields = fields.filter { $0.isRequired }
+        #expect(requiredFields.count > 0, "Form should have required field indicators on \(currentPlatform)")
     }
     
     // MARK: - Form Recovery Workflow Tests
@@ -520,106 +475,85 @@ final class FormProcessingWorkflowTests: BaseTestClass {
     /// TESTING SCOPE: Tests that users can recover from validation errors
     /// METHODOLOGY: Create error state, test recovery path
     @Test func testFormErrorRecoveryWorkflow() async {
-        for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
-            
-            // Given: Form with validation error
-            var formState: [String: String] = ["email": "invalid"]
-            var errors: [String: String] = ["email": "Invalid email format"]
-            
-            // Verify error state
-            #expect(errors["email"] != nil, "Should have initial error on \(platform)")
-            
-            // When: User corrects the error
-            formState["email"] = "valid@example.com"
-            
-            // Simulate re-validation
-            let newValue = formState["email"]!
-            if newValue.contains("@") && newValue.contains(".") {
-                errors.removeValue(forKey: "email")
-            }
-            
-            // Then: Error should be cleared
-            #expect(errors["email"] == nil, "Error should be cleared after correction on \(platform)")
-            
-            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        // Given: Current platform and form with validation error
+        let currentPlatform = SixLayerPlatform.current
+        var formState: [String: String] = ["email": "invalid"]
+        var errors: [String: String] = ["email": "Invalid email format"]
+        
+        // Verify error state
+        #expect(errors["email"] != nil, "Should have initial error on \(currentPlatform)")
+        
+        // When: User corrects the error
+        formState["email"] = "valid@example.com"
+        
+        // Simulate re-validation
+        let newValue = formState["email"]!
+        if newValue.contains("@") && newValue.contains(".") {
+            errors.removeValue(forKey: "email")
         }
+        
+        // Then: Error should be cleared
+        #expect(errors["email"] == nil, "Error should be cleared after correction on \(currentPlatform)")
     }
     
     /// BUSINESS PURPOSE: Validate form reset workflow
     /// TESTING SCOPE: Tests that form can be reset to initial state
     /// METHODOLOGY: Modify form, reset, verify initial state restored
     @Test func testFormResetWorkflow() async {
-        for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
-            
-            // Given: Form with initial and modified state
-            let _ = createStandardTestForm()
-            let initialValues: [String: String] = [
-                "email": "",
-                "password": "",
-                "name": ""
-            ]
-            var currentValues: [String: String] = [
-                "email": "modified@example.com",
-                "password": "ModifiedPassword123",
-                "name": "Modified Name"
-            ]
-            var errors: [String: String] = ["email": "Some error"]
-            var isDirty = true
-            
-            // Verify modified state
-            #expect(isDirty, "Form should be dirty before reset on \(platform)")
-            #expect(currentValues != initialValues, "Values should be modified on \(platform)")
-            
-            // When: Resetting form
-            currentValues = initialValues
-            errors.removeAll()
-            isDirty = false
-            
-            // Then: Form should be in initial state
-            #expect(!isDirty, "Form should be clean after reset on \(platform)")
-            #expect(currentValues == initialValues, "Values should match initial state on \(platform)")
-            #expect(errors.isEmpty, "Errors should be cleared on \(platform)")
-            
-            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-        }
+        // Given: Current platform and form with initial and modified state
+        let currentPlatform = SixLayerPlatform.current
+        let _ = createStandardTestForm()
+        let initialValues: [String: String] = [
+            "email": "",
+            "password": "",
+            "name": ""
+        ]
+        var currentValues: [String: String] = [
+            "email": "modified@example.com",
+            "password": "ModifiedPassword123",
+            "name": "Modified Name"
+        ]
+        var errors: [String: String] = ["email": "Some error"]
+        var isDirty = true
+        
+        // Verify modified state
+        #expect(isDirty, "Form should be dirty before reset on \(currentPlatform)")
+        #expect(currentValues != initialValues, "Values should be modified on \(currentPlatform)")
+        
+        // When: Resetting form
+        currentValues = initialValues
+        errors.removeAll()
+        isDirty = false
+        
+        // Then: Form should be in initial state
+        #expect(!isDirty, "Form should be clean after reset on \(currentPlatform)")
+        #expect(currentValues == initialValues, "Values should match initial state on \(currentPlatform)")
+        #expect(errors.isEmpty, "Errors should be cleared on \(currentPlatform)")
     }
     
     // MARK: - Cross-Platform Consistency Tests
     
-    /// BUSINESS PURPOSE: Validate form workflow consistency across platforms
-    /// TESTING SCOPE: Tests that form behavior is consistent across iOS/macOS
-    /// METHODOLOGY: Compare form workflow results across platforms
+    /// BUSINESS PURPOSE: Validate form workflow on current platform
+    /// TESTING SCOPE: Tests that form behavior works correctly on current platform
+    /// METHODOLOGY: Test form workflow on current platform
     @Test func testCrossPlatformFormWorkflowConsistency() async {
-        // Collect results for comparison
-        var platformResults: [SixLayerPlatform: Bool] = [:]
+        // Given: Current platform and same form configuration
+        let currentPlatform = SixLayerPlatform.current
+        let fields = createStandardTestForm()
+        let validData = ["email": "test@example.com", "password": "Password123", "name": "Test"]
         
-        for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
-            
-            // Given: Same form configuration
-            let fields = createStandardTestForm()
-            let validData = ["email": "test@example.com", "password": "Password123", "name": "Test"]
-            
-            // When: Running same validation logic
-            var isValid = true
-            for field in fields {
-                if field.isRequired {
-                    let value = validData[field.id] ?? ""
-                    if value.isEmpty {
-                        isValid = false
-                    }
+        // When: Running validation logic
+        var isValid = true
+        for field in fields {
+            if field.isRequired {
+                let value = validData[field.id] ?? ""
+                if value.isEmpty {
+                    isValid = false
                 }
             }
-            
-            platformResults[platform] = isValid
-            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
         }
         
-        // Then: All platforms should have same result
-        let results = Array(platformResults.values)
-        let allSame = results.allSatisfy { $0 == results.first }
-        #expect(allSame, "Form validation should be consistent across all platforms")
+        // Then: Form validation should work on current platform
+        #expect(isValid, "Form validation should work on \(currentPlatform)")
     }
 }

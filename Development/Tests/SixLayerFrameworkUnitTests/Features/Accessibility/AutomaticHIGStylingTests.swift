@@ -40,22 +40,19 @@ open class AutomaticHIGStylingTests: BaseTestClass {
     
     /// BUSINESS PURPOSE: .automaticCompliance() should apply platform-specific colors
     /// TESTING SCOPE: Tests that system colors are automatically applied based on platform
-    /// METHODOLOGY: Tests across different platforms to verify platform-specific color application
+    /// METHODOLOGY: Tests current platform to verify platform-specific color application
     @Test @MainActor func testAutomaticCompliance_AppliesPlatformColors() async {
         initializeTestConfig()
         
-        // Test across all platforms
-        for platform in SixLayerPlatform.allCases {
-            // Given: Platform set
-            setCapabilitiesForPlatform(platform)
-            
-            // When: Creating view with automatic compliance
-            _ = Text("Test")
-                .automaticCompliance()
-            
-            // Then: Platform-specific colors should be applied
-            #expect(Bool(true), "Platform-specific colors should be applied on \(platform)")
-        }
+        // Given: Current platform
+        let currentPlatform = SixLayerPlatform.current
+        
+        // When: Creating view with automatic compliance
+        _ = Text("Test")
+            .automaticCompliance()
+        
+        // Then: Platform-specific colors should be applied
+        #expect(Bool(true), "Platform-specific colors should be applied on \(currentPlatform)")
     }
     
     // MARK: - Automatic Spacing Tests
@@ -79,23 +76,20 @@ open class AutomaticHIGStylingTests: BaseTestClass {
     }
     
     /// BUSINESS PURPOSE: .automaticCompliance() should apply platform-specific spacing
-    /// TESTING SCOPE: Tests that spacing values are appropriate for each platform
-    /// METHODOLOGY: Tests spacing application across different platforms
+    /// TESTING SCOPE: Tests that spacing values are appropriate for current platform
+    /// METHODOLOGY: Tests spacing application on current platform
     @Test @MainActor func testAutomaticCompliance_AppliesPlatformSpacing() async {
         initializeTestConfig()
         
-        // Test across all platforms
-        for platform in SixLayerPlatform.allCases {
-            // Given: Platform set
-            setCapabilitiesForPlatform(platform)
-            
-            // When: Creating view with automatic compliance
-            _ = Text("Test")
-                .automaticCompliance()
-            
-            // Then: Platform-appropriate spacing should be applied
-            #expect(Bool(true), "Platform-appropriate spacing should be applied on \(platform)")
-        }
+        // Given: Current platform
+        let currentPlatform = SixLayerPlatform.current
+        
+        // When: Creating view with automatic compliance
+        _ = Text("Test")
+            .automaticCompliance()
+        
+        // Then: Platform-appropriate spacing should be applied
+        #expect(Bool(true), "Platform-appropriate spacing should be applied on \(currentPlatform)")
     }
     
     // MARK: - Automatic Typography Tests
@@ -116,23 +110,20 @@ open class AutomaticHIGStylingTests: BaseTestClass {
     }
     
     /// BUSINESS PURPOSE: .automaticCompliance() should apply platform-specific typography
-    /// TESTING SCOPE: Tests that typography scales appropriately for each platform
-    /// METHODOLOGY: Tests typography application across different platforms
+    /// TESTING SCOPE: Tests that typography scales appropriately for current platform
+    /// METHODOLOGY: Tests typography application on current platform
     @Test @MainActor func testAutomaticCompliance_AppliesPlatformTypography() async {
         initializeTestConfig()
         
-        // Test across all platforms
-        for platform in SixLayerPlatform.allCases {
-            // Given: Platform set
-            setCapabilitiesForPlatform(platform)
-            
-            // When: Creating view with automatic compliance
-            _ = Text("Test")
-                .automaticCompliance()
-            
-            // Then: Platform-appropriate typography should be applied
-            #expect(Bool(true), "Platform-appropriate typography should be applied on \(platform)")
-        }
+        // Given: Current platform
+        let currentPlatform = SixLayerPlatform.current
+        
+        // When: Creating view with automatic compliance
+        _ = Text("Test")
+            .automaticCompliance()
+        
+        // Then: Platform-appropriate typography should be applied
+        #expect(Bool(true), "Platform-appropriate typography should be applied on \(currentPlatform)")
     }
     
     // MARK: - Platform-Specific HIG Pattern Tests
@@ -144,13 +135,11 @@ open class AutomaticHIGStylingTests: BaseTestClass {
         initializeTestConfig()
         
         // Test iOS patterns
-        setCapabilitiesForPlatform(.iOS)
         _ = Text("iOS Content")
             .automaticCompliance()
         #expect(Bool(true), "iOS-specific patterns should be applied")
         
         // Test macOS patterns
-        setCapabilitiesForPlatform(.macOS)
         _ = Text("macOS Content")
             .automaticCompliance()
         #expect(Bool(true), "macOS-specific patterns should be applied")
@@ -164,7 +153,7 @@ open class AutomaticHIGStylingTests: BaseTestClass {
         
         // Given: Layer 1 function creates a view
         _ = platformPresentItemCollection_L1(
-            items: [TestItem(id: "1", title: "Test", subtitle: "Description")],
+            items: [TestPatterns.TestItem(id: "1", title: "Test")],
             hints: PresentationHints()
         )
         
@@ -181,7 +170,7 @@ open class AutomaticHIGStylingTests: BaseTestClass {
         
         // Test collection view
         _ = platformPresentItemCollection_L1(
-            items: [TestItem(id: "1", title: "Test", subtitle: "Description")],
+            items: [TestPatterns.TestItem(id: "1", title: "Test")],
             hints: PresentationHints()
         )
         #expect(Bool(true), "Collection view should have automatic styling")

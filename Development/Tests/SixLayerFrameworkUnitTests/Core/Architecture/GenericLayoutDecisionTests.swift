@@ -34,12 +34,11 @@ open class GenericLayoutDecisionTests: BaseTestClass {
     
     // MARK: - Test Data
     
-    public func createTestItems(count: Int) -> [TestItem] {
+    public func createTestItems(count: Int) -> [TestPatterns.TestItem] {
         return (0..<count).map { index in
-            TestItem(
-                title: "Item \(index + 1)",
-                subtitle: nil,
-                description: "Content for item \(index + 1)"
+            TestPatterns.TestItem(
+                id: "\(index + 1)",
+                title: "Item \(index + 1)"
             )
         }
     }
@@ -73,7 +72,7 @@ open class GenericLayoutDecisionTests: BaseTestClass {
     @Test @MainActor func testDetermineOptimalLayout_L2_EmptyItems() {
         initializeTestConfig()
         // Given
-        let items: [TestItem] = []
+        let items: [TestPatterns.TestItem] = []
         let hints = createBasicHints()
         
         // When
@@ -86,7 +85,7 @@ open class GenericLayoutDecisionTests: BaseTestClass {
         
         // Then
         #expect(decision.columns == 1)
-        #expect(decision.approach == .uniform)
+        #expect(decision.approach == LayoutApproach.uniform)
         // Note: Actual implementation returns .uniform for empty items
     }
     
@@ -106,7 +105,7 @@ open class GenericLayoutDecisionTests: BaseTestClass {
         
         // Then
         #expect(decision.columns == 1)
-        #expect(decision.approach == .uniform)
+        #expect(decision.approach == LayoutApproach.uniform)
         // Note: Actual implementation returns .uniform for small item counts
     }
     
@@ -126,7 +125,7 @@ open class GenericLayoutDecisionTests: BaseTestClass {
         
         // Then
         #expect(decision.columns > 1)
-        #expect(decision.approach == .adaptive)
+        #expect(decision.approach == LayoutApproach.adaptive)
         // CardLayoutDecision doesn't have reasoning property
     }
     
@@ -146,7 +145,7 @@ open class GenericLayoutDecisionTests: BaseTestClass {
         
         // Then
         #expect(decision.columns > 2)
-        #expect(decision.approach == .dynamic)
+        #expect(decision.approach == LayoutApproach.dynamic)
         // CardLayoutDecision doesn't have performance or reasoning properties
     }
     
@@ -166,8 +165,8 @@ open class GenericLayoutDecisionTests: BaseTestClass {
         
         // Then
         #expect(decision.columns >= 3) // Actual device type determines columns
-        #expect(decision.approach == .dynamic)
-        #expect(decision.performance == .maximumPerformance)
+        #expect(decision.approach == LayoutApproach.dynamic)
+        #expect(decision.performance == PerformanceStrategy.maximumPerformance)
         #expect(decision.reasoning.contains("very large") || decision.reasoning.contains("dynamic"))
     }
     
@@ -188,7 +187,7 @@ open class GenericLayoutDecisionTests: BaseTestClass {
         // Then
         #expect(decision.columns <= 4) // Respects maxColumns hint
         #expect(decision.spacing >= 16.0) // Respects minSpacing hint
-        #expect(decision.performance == .highPerformance) // Respects performanceMode hint
+        #expect(decision.performance == PerformanceStrategy.highPerformance) // Respects performanceMode hint
     }
     
     @Test @MainActor func testDetermineOptimalLayout_L2_DeviceTypeVariations() {
@@ -275,7 +274,7 @@ open class GenericLayoutDecisionTests: BaseTestClass {
         
         // Then
         #expect(Bool(true), "decision is non-optional")  // decision is non-optional
-        #expect(decision.preferredContainer == .adaptive)
+        #expect(decision.preferredContainer == ContainerPreference.adaptive)
         #expect(decision.fieldLayout == .standard)
         #expect(decision.spacing == .comfortable)
         #expect(decision.validation == .none)
@@ -292,7 +291,7 @@ open class GenericLayoutDecisionTests: BaseTestClass {
         
         // Then
         #expect(Bool(true), "decision is non-optional")  // decision is non-optional
-        #expect(decision.preferredContainer == .adaptive)
+        #expect(decision.preferredContainer == ContainerPreference.adaptive)
         #expect(decision.fieldLayout == .standard)
         #expect(decision.spacing == .comfortable)
         #expect(decision.validation == .none) // hasValidation not set in hints
@@ -346,8 +345,8 @@ open class GenericLayoutDecisionTests: BaseTestClass {
         
         // Then
         #expect(decision.columns == 1)
-        #expect(decision.layout == .uniform)
-        #expect(decision.sizing == .adaptive)
+        #expect(decision.layout == CardLayoutType.uniform)
+        #expect(decision.sizing == CardSizing.adaptive)
         // CardLayoutDecision doesn't have reasoning property
     }
     
@@ -368,8 +367,8 @@ open class GenericLayoutDecisionTests: BaseTestClass {
         
         // Then
         #expect(decision.columns > 1)
-        #expect(decision.layout == .uniform)
-        #expect(decision.sizing == .adaptive)
+        #expect(decision.layout == CardLayoutType.uniform)
+        #expect(decision.sizing == CardSizing.adaptive)
         // CardLayoutDecision doesn't have reasoning property
     }
     
@@ -390,8 +389,8 @@ open class GenericLayoutDecisionTests: BaseTestClass {
         
         // Then
         #expect(decision.columns > 2)
-        #expect(decision.layout == .uniform)
-        #expect(decision.sizing == .adaptive)
+        #expect(decision.layout == CardLayoutType.uniform)
+        #expect(decision.sizing == CardSizing.adaptive)
         // CardLayoutDecision doesn't have performance or reasoning properties
     }
     
@@ -614,8 +613,8 @@ open class GenericLayoutDecisionTests: BaseTestClass {
         #expect(Bool(true), "cardDecision is non-optional")  // cardDecision is non-optional
         
         // All decisions should be consistent
-        #expect(layoutDecision.approach == .responsive) // 20 items = complex = responsive
+        #expect(layoutDecision.approach == LayoutApproach.responsive) // 20 items = complex = responsive
         #expect(formDecision.preferredContainer == .adaptive)
-        #expect(cardDecision.layout == .uniform)
+        #expect(cardDecision.layout == CardLayoutType.uniform)
     }
 }

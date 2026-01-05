@@ -49,6 +49,21 @@ open class CardActionButtonTests: BaseTestClass {
     
     // MARK: - Test Data
     
+    struct TestItem: Identifiable, CardDisplayable {
+        let id = UUID()
+        let title: String
+        let subtitle: String?
+        let description: String?
+        let icon: String?
+        let color: Color?
+        
+        var cardTitle: String { title }
+        var cardSubtitle: String? { subtitle }
+        var cardDescription: String? { description }
+        var cardIcon: String? { icon }
+        var cardColor: Color? { color }
+    }
+    
     nonisolated static let sampleItems: [TestItem] = [
         TestItem(
             title: "Test Item 1", 
@@ -91,7 +106,7 @@ open class CardActionButtonTests: BaseTestClass {
             subtitle: "Test Subtitle",
             description: "Test Description",
             icon: "star",
-            color: .blue
+            color: Color.blue
         )
         nonisolated(unsafe) var editCallbackCalled = false
         nonisolated(unsafe) var editCallbackItem: TestItem?
@@ -611,7 +626,7 @@ open class CardActionButtonTests: BaseTestClass {
             onItemDeleted: { _ in },
             onItemEdited: { _ in }
         )
-        _ = hostRootPlatformView(expandableCard.withGlobalAutoIDsEnabled())
+        _ = BaseTestClass.hostRootPlatformView(expandableCard.enableGlobalAutomaticCompliance())
         #expect(Bool(true), "ExpandableCardComponent should be hostable")
         
         // Test business logic: Accessibility should be properly configured

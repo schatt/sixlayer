@@ -44,11 +44,10 @@ open class DynamicFormProgressIntegrationTests: BaseTestClass {
     /// TESTING SCOPE: Tests progress calculation with text, number, boolean, date, select, and other field types
     /// METHODOLOGY: Create form with all field types, fill them, verify progress counts correctly
     @Test @MainActor func testProgressWithAllFieldTypes() {
-        // Test across all platforms
-        for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
-            
-            let config = DynamicFormConfiguration(
+        // Given: Current platform
+        _ = SixLayerPlatform.current
+        
+        let config = DynamicFormConfiguration(
                 id: "allFieldTypes",
                 title: "All Field Types Form",
                 sections: [
@@ -93,9 +92,6 @@ open class DynamicFormProgressIntegrationTests: BaseTestClass {
             #expect(progress.completed == 9)
             #expect(progress.total == 9)
             #expect(progress.percentage == 1.0)
-            
-            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-        }
     }
     
     /// BUSINESS PURPOSE: Validate form progress works with mixed field types in same form

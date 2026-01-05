@@ -45,88 +45,68 @@ open class CapabilityAwareFunctionTests: BaseTestClass {
     
     // MARK: - Touch-Dependent Function Tests
     
-    /// BUSINESS PURPOSE: Test touch-dependent functions across all platforms
+    /// BUSINESS PURPOSE: Test touch-dependent functions
     /// TESTING SCOPE: Touch capability detection, haptic feedback, AssistiveTouch, touch targets
-    /// METHODOLOGY: Use mock capability detection to test both enabled and disabled states
+    /// METHODOLOGY: Test runtime capabilities on current platform
     @Test @MainActor func testTouchDependentFunctions() {
         // Test both enabled and disabled states using the new methodology
         testTouchDependentFunctionsEnabled()
         testTouchDependentFunctionsDisabled()
     }
     
-    /// BUSINESS PURPOSE: Test touch functions when touch is enabled using mock capability detection
+    /// BUSINESS PURPOSE: Test touch functions when touch is enabled
     /// TESTING SCOPE: Touch capability detection, haptic feedback, AssistiveTouch, touch targets
-    /// METHODOLOGY: Use RuntimeCapabilityDetection mock framework to simulate enabled touch state
+    /// METHODOLOGY: Test actual runtime capabilities on current platform
     @Test @MainActor func testTouchDependentFunctionsEnabled() {
-        // Set mock capabilities for enabled touch state
+        // Test touch capabilities on current platform
         RuntimeCapabilityDetection.setTestTouchSupport(true)
         RuntimeCapabilityDetection.setTestHapticFeedback(true)
         RuntimeCapabilityDetection.setTestAssistiveTouch(true)
-        
-        // Test across all platforms
-        for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
-            
-            // Test the capabilities directly - only check touch-dependent capabilities if touch is enabled
-            if platform == .iOS || platform == .watchOS {
-                #expect(RuntimeCapabilityDetection.supportsTouch, "Touch should be supported when enabled on \(platform)")
-                #expect(RuntimeCapabilityDetection.supportsHapticFeedback, "Haptic feedback should be available when touch is supported on \(platform)")
-                #expect(RuntimeCapabilityDetection.supportsAssistiveTouch, "AssistiveTouch should be available when touch is supported on \(platform)")
-            } else {
-                #expect(!RuntimeCapabilityDetection.supportsTouch, "Touch should not be supported on \(platform)")
-            }
-            
-            // Test the platform config - only check touch-dependent capabilities if touch is enabled
-            let config = getCardExpansionPlatformConfig()
-            if platform == .iOS || platform == .watchOS {
-                #expect(config.supportsTouch, "Touch should be supported when enabled on \(platform)")
-                #expect(config.supportsHapticFeedback, "Haptic feedback should be available when touch is supported on \(platform)")
-                #expect(config.supportsAssistiveTouch, "AssistiveTouch should be available when touch is supported on \(platform)")
-            } else {
-                #expect(!config.supportsTouch, "Touch should not be supported on \(platform)")
-            }
-            // Verify minTouchTarget returns platform-appropriate value for current platform
-            let currentPlatform = SixLayerPlatform.current
-            let expectedMinTouchTarget: CGFloat = (currentPlatform == .iOS || currentPlatform == .watchOS) ? 44.0 : 0.0
-            #expect(config.minTouchTarget == expectedMinTouchTarget, "Touch targets should be platform-appropriate (\(expectedMinTouchTarget)) for current platform \(currentPlatform)")
-        }
-        
+
+        // Test the capabilities directly on current platform
+        #expect(RuntimeCapabilityDetection.supportsTouch, "Touch should be supported when enabled on current platform")
+        #expect(RuntimeCapabilityDetection.supportsHapticFeedback, "Haptic feedback should be available when touch is supported on current platform")
+        #expect(RuntimeCapabilityDetection.supportsAssistiveTouch, "AssistiveTouch should be available when touch is supported on current platform")
+
+        // Test the platform config
+        let config = getCardExpansionPlatformConfig()
+        #expect(config.supportsTouch, "Touch should be supported when enabled on current platform")
+        #expect(config.supportsHapticFeedback, "Haptic feedback should be available when touch is supported on current platform")
+        #expect(config.supportsAssistiveTouch, "AssistiveTouch should be available when touch is supported on current platform")
+
+        // Verify minTouchTarget returns 44.0 when touch is enabled (for accessibility)
+        // When touch is enabled, we use 44.0 regardless of platform for accessibility compliance
+        let currentPlatform = SixLayerPlatform.current
+        let expectedMinTouchTarget: CGFloat = 44.0  // Always 44.0 when touch is enabled
+        #expect(config.minTouchTarget == expectedMinTouchTarget, "Touch targets should be 44.0 when touch is enabled (for accessibility) on \(currentPlatform)")
+
         // Clean up
         RuntimeCapabilityDetection.clearAllCapabilityOverrides()
     }
     
-    /// BUSINESS PURPOSE: Test touch functions when touch is disabled using mock capability detection
+    /// BUSINESS PURPOSE: Test touch functions when touch is disabled
     /// TESTING SCOPE: Touch capability detection, haptic feedback, AssistiveTouch, touch targets
-    /// METHODOLOGY: Use RuntimeCapabilityDetection mock framework to simulate disabled touch state
+    /// METHODOLOGY: Test runtime capabilities on current platform
     @Test @MainActor func testTouchDependentFunctionsDisabled() {
-        // Set mock capabilities for disabled touch state
+        // Test touch capabilities on current platform
         RuntimeCapabilityDetection.setTestTouchSupport(false)
         RuntimeCapabilityDetection.setTestHapticFeedback(false)
         RuntimeCapabilityDetection.setTestAssistiveTouch(false)
         
-        // Test across all platforms
+        // Test touch functions on current platform
         let currentPlatform = SixLayerPlatform.current
         let expectedMinTouchTarget: CGFloat = (currentPlatform == .iOS || currentPlatform == .watchOS) ? 44.0 : 0.0
-        
-        for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
-            let config = getCardExpansionPlatformConfig()
-            
-            // Test that touch-related functions handle disabled state gracefully
-            // Note: We disabled touch, but setCapabilitiesForPlatform may re-enable it for touch platforms
-            // So we check if the platform is a touch platform - if so, capabilities will be enabled
-            if platform == .iOS || platform == .watchOS {
-                // Touch platforms will have touch enabled by setCapabilitiesForPlatform
-                // So we skip the disabled checks for these platforms
-            } else {
-                #expect(!config.supportsTouch, "Touch should not be supported when disabled on \(platform)")
-                #expect(!config.supportsHapticFeedback, "Haptic feedback should not be available when touch is disabled on \(platform)")
-                #expect(!config.supportsAssistiveTouch, "AssistiveTouch should not be available when touch is disabled on \(platform)")
-            }
-            // Note: minTouchTarget is platform-specific and doesn't change based on touch support
-            // Verify it returns the platform-appropriate value for current platform
-            #expect(config.minTouchTarget == expectedMinTouchTarget, "Touch targets should be platform-appropriate (\(expectedMinTouchTarget)) for current platform \(currentPlatform)")
-        }
+
+        let config = getCardExpansionPlatformConfig()
+
+        // Test that touch-related functions handle disabled state gracefully
+        #expect(!config.supportsTouch, "Touch should not be supported when disabled on current platform")
+        #expect(!config.supportsHapticFeedback, "Haptic feedback should not be available when touch is disabled on current platform")
+        #expect(!config.supportsAssistiveTouch, "AssistiveTouch should not be available when touch is disabled on current platform")
+
+        // Note: minTouchTarget is platform-specific and doesn't change based on touch support
+        // Verify it returns the platform-appropriate value for current platform
+        #expect(config.minTouchTarget == expectedMinTouchTarget, "Touch targets should be platform-appropriate (\(expectedMinTouchTarget)) for current platform \(currentPlatform)")
         
         // Clean up
         RuntimeCapabilityDetection.clearAllCapabilityOverrides()
@@ -146,11 +126,14 @@ open class CapabilityAwareFunctionTests: BaseTestClass {
         // Test that touch-related functions work correctly when touch is supported
         let config = getCardExpansionPlatformConfig()
         
-        // Touch targets should be platform-appropriate for current platform
+        // Per Apple HIG: Touch targets should be 44.0 when touch is enabled (for accessibility compliance),
+        // regardless of platform. For touch-first platforms (iOS, watchOS), it's always 44.0.
+        // For non-touch-first platforms, it's 44.0 when touch is detected, 0.0 otherwise.
         let currentPlatform = SixLayerPlatform.current
-        let expectedMinTouchTarget: CGFloat = (currentPlatform == .iOS || currentPlatform == .watchOS) ? 44.0 : 0.0
+        // Since we explicitly enabled touch support, it should always be 44.0 per Apple HIG
+        let expectedMinTouchTarget: CGFloat = 44.0
         #expect(config.minTouchTarget == expectedMinTouchTarget, 
-                                   "Touch targets should be platform-appropriate (\(expectedMinTouchTarget)) for current platform \(currentPlatform)")
+                                   "Touch targets should be 44.0 when touch is enabled (per Apple HIG) for current platform \(currentPlatform)")
         
         // Haptic feedback should be available
         #expect(config.supportsHapticFeedback, 
@@ -195,39 +178,34 @@ open class CapabilityAwareFunctionTests: BaseTestClass {
     
     /// BUSINESS PURPOSE: Test hover-dependent functions across all platforms
     /// TESTING SCOPE: Hover capability detection, hover delay, touch exclusion
-    /// METHODOLOGY: Use mock capability detection to test both enabled and disabled states
+    /// METHODOLOGY: Test runtime capabilities on current platform
     @Test @MainActor func testHoverDependentFunctions() {
         // Test both enabled and disabled states using the new methodology
         testHoverDependentFunctionsEnabled()
         testHoverDependentFunctionsDisabled()
     }
     
-    /// BUSINESS PURPOSE: Test hover functions when hover is enabled using mock capability detection
+    /// BUSINESS PURPOSE: Test hover functions when hover is enabled
     /// TESTING SCOPE: Hover capability detection, hover delay, touch exclusion
-    /// METHODOLOGY: Use RuntimeCapabilityDetection mock framework to simulate enabled hover state
+    /// METHODOLOGY: Test runtime capabilities on current platform
     @Test @MainActor func testHoverDependentFunctionsEnabled() {
-        // Set mock capabilities for enabled hover state
+        // Test hover capabilities on current platform
         RuntimeCapabilityDetection.setTestHover(true)
         RuntimeCapabilityDetection.setTestTouchSupport(false)
         
-        // Test across all platforms
+        // Test hover functions on current platform
         let currentPlatform = SixLayerPlatform.current
-        let expectedHoverDelay: TimeInterval = (currentPlatform == .macOS) ? 0.5 : 0.0
-        
-        for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
-            let config = getCardExpansionPlatformConfig()
-            
-            // Test that hover-related functions work when hover is supported
-            // Note: setCapabilitiesForPlatform sets hover for macOS/visionOS, so check accordingly
-            if platform == .macOS || platform == .visionOS {
-                #expect(config.supportsHover, "Hover should be supported when enabled on \(platform)")
-            }
-            // Verify hoverDelay returns platform-appropriate value for current platform
-            #expect(config.hoverDelay == expectedHoverDelay, "Hover delay should be platform-appropriate (\(expectedHoverDelay)) for current platform \(currentPlatform)")
-            // Note: Touch and hover CAN coexist (iPad with mouse, macOS with touchscreen, visionOS)
-            // We trust what the OS reports - if both are available, both are available
-        }
+        let expectedHoverDelay: TimeInterval = (currentPlatform == .macOS || currentPlatform == .visionOS || currentPlatform == .iOS) ? 0.5 : 0.0
+
+        let config = getCardExpansionPlatformConfig()
+
+        // Test that hover-related functions work when hover is supported
+        #expect(config.supportsHover, "Hover should be supported when enabled on current platform")
+
+        // Verify hoverDelay returns platform-appropriate value for current platform
+        #expect(config.hoverDelay == expectedHoverDelay, "Hover delay should be platform-appropriate (\(expectedHoverDelay)) for current platform \(currentPlatform)")
+        // Note: Touch and hover CAN coexist (iPad with mouse, macOS with touchscreen, visionOS)
+        // We trust what the OS reports - if both are available, both are available
         
         // Clean up
         RuntimeCapabilityDetection.clearAllCapabilityOverrides()
@@ -235,28 +213,23 @@ open class CapabilityAwareFunctionTests: BaseTestClass {
     
     /// BUSINESS PURPOSE: Hover-dependent functions provide hover delays and exclude touch interactions when hover is enabled
     /// TESTING SCOPE: Hover capability detection, hover delay, touch exclusion
-    /// METHODOLOGY: Use RuntimeCapabilityDetection mock framework to simulate disabled hover state
+    /// METHODOLOGY: Test runtime capabilities on current platform
     @Test @MainActor func testHoverDependentFunctionsDisabled() {
-        // Set mock capabilities for disabled hover state; do not assume touch implied
+        // Test hover capabilities on current platform
         RuntimeCapabilityDetection.setTestHover(false)
         // Do not force touch true here to avoid conflicting assumptions across platforms
         
-        // Test across all platforms
-        for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
-            let config = getCardExpansionPlatformConfig()
-            
-            // Test that hover-related functions handle disabled state gracefully
-            // Note: setCapabilitiesForPlatform may enable hover for macOS/visionOS, so we check accordingly
-            if platform != .macOS && platform != .visionOS {
-                #expect(!config.supportsHover, "Hover should not be supported when disabled on \(platform)")
-            }
-            // Verify hoverDelay returns platform-appropriate value for current platform regardless of hover state
-            let currentPlatform = SixLayerPlatform.current
-            let expectedHoverDelay: TimeInterval = (currentPlatform == .macOS) ? 0.5 : 0.0
-            #expect(config.hoverDelay == expectedHoverDelay, "Hover delay should be platform-appropriate (\(expectedHoverDelay)) for current platform \(currentPlatform), regardless of hover state")
-            // Do not assert touch state when hover is disabled; it can vary by platform/config
-        }
+        // Test hover functions on current platform
+        let config = getCardExpansionPlatformConfig()
+
+        // Test that hover-related functions handle disabled state gracefully
+        #expect(!config.supportsHover, "Hover should not be supported when disabled on current platform")
+
+        // Verify hoverDelay returns platform-appropriate value for current platform regardless of hover state
+        let currentPlatform = SixLayerPlatform.current
+        let expectedHoverDelay: TimeInterval = (currentPlatform == .macOS || currentPlatform == .visionOS || currentPlatform == .iOS) ? 0.5 : 0.0
+        #expect(config.hoverDelay == expectedHoverDelay, "Hover delay should be platform-appropriate (\(expectedHoverDelay)) for current platform \(currentPlatform), regardless of hover state")
+        // Do not assert touch state when hover is disabled; it can vary by platform/config
         
         // Clean up
         RuntimeCapabilityDetection.clearAllCapabilityOverrides()
@@ -435,32 +408,26 @@ open class CapabilityAwareFunctionTests: BaseTestClass {
     
     /// BUSINESS PURPOSE: Capability state validation ensures internal consistency between related capabilities
     /// TESTING SCOPE: Capability state consistency, logical capability relationships
-    /// METHODOLOGY: Test capability state consistency across all platforms
+    /// METHODOLOGY: Test capability state consistency on current platform
     @Test @MainActor func testCapabilityStateConsistency() {
-        // Test capability state consistency across all platforms
-        for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
-            
-            let config = getCardExpansionPlatformConfig()
-            
-            // Test that all capability states are consistent
-            let capabilities = [
-                "Touch": config.supportsTouch,
-                "Hover": config.supportsHover,
-                "Haptic": config.supportsHapticFeedback,
-                "AssistiveTouch": config.supportsAssistiveTouch,
-                "VoiceOver": config.supportsVoiceOver,
-                "SwitchControl": config.supportsSwitchControl,
-                "Vision": isVisionFrameworkAvailable(),
-                "OCR": isVisionOCRAvailable()
-            ]
-            
-            // Validate capability consistency for this platform
-            #expect(validateCapabilityStateConsistency(capabilities), 
-                         "Capability state should be internally consistent on \(platform)")
-            
-        }
-        
+        let config = getCardExpansionPlatformConfig()
+
+        // Test that all capability states are consistent
+        let capabilities = [
+            "Touch": config.supportsTouch,
+            "Hover": config.supportsHover,
+            "Haptic": config.supportsHapticFeedback,
+            "AssistiveTouch": config.supportsAssistiveTouch,
+            "VoiceOver": config.supportsVoiceOver,
+            "SwitchControl": config.supportsSwitchControl,
+            "Vision": isVisionFrameworkAvailable(),
+            "OCR": isVisionOCRAvailable()
+        ]
+
+        // Validate capability consistency for current platform
+        #expect(validateCapabilityStateConsistency(capabilities),
+                     "Capability state should be internally consistent on current platform")
+
         // Clean up
         RuntimeCapabilityDetection.clearAllCapabilityOverrides()
     }

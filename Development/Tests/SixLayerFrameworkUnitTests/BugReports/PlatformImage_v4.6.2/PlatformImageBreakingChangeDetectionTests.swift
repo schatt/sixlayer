@@ -343,6 +343,7 @@ open class PlatformImageBreakingChangeDetectionTests: BaseTestClass {
         return nil
     }
     
+    @MainActor
     private func getPhotoPickerCoordinator(from view: some View) -> LegacyPhotoPickerView.LegacyPhotoCoordinator? {
         // This is a simplified version - in reality we'd need to access the coordinator
         // For testing purposes, we'll create a mock coordinator

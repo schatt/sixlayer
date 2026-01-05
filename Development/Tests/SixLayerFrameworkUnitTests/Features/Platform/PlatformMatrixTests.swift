@@ -169,20 +169,16 @@ open class PlatformMatrixTests: BaseTestClass {
     // MARK: - Screen Size and Device Type Matrix
     
     @Test @MainActor func testScreenSizeCapabilityMatrix() {
-        // Test with each platform to verify platform-correct values
-        // Verify platform-appropriate minTouchTarget value for current platform
+        // Test screen size capabilities for current platform
         let currentPlatform = SixLayerPlatform.current
         let expectedMinTouchTarget: CGFloat = (currentPlatform == .iOS || currentPlatform == .watchOS) ? 44.0 : 0.0
-        
-        for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
-            let config = getCardExpansionPlatformConfig()
-            
-            // Verify platform-appropriate minTouchTarget value for current platform
-            #expect(config.minTouchTarget == expectedMinTouchTarget, 
-                   "Current platform \(currentPlatform) should have platform-appropriate minTouchTarget (\(expectedMinTouchTarget))")
-        }
-        
+
+        let config = getCardExpansionPlatformConfig()
+
+        // Verify platform-appropriate minTouchTarget value for current platform
+        #expect(config.minTouchTarget == expectedMinTouchTarget,
+               "Current platform \(currentPlatform) should have platform-appropriate minTouchTarget (\(expectedMinTouchTarget))")
+
         // Clean up
         RuntimeCapabilityDetection.clearAllCapabilityOverrides()
     }
@@ -325,7 +321,13 @@ open class PlatformMatrixTests: BaseTestClass {
         // Test external display context detection
         #if os(iOS)
         // 6LAYER_ALLOW: testing platform-specific screen detection for external display context
-        if UIScreen.screens.count > 1 && !CarPlayCapabilityDetection.isCarPlayActive {
+        let hasMultipleScreens: Bool
+        if #available(iOS 16.0, *) {
+            hasMultipleScreens = UIApplication.shared.openSessions.count > 1
+        } else {
+            hasMultipleScreens = UIScreen.screens.count > 1
+        }
+        if hasMultipleScreens && !CarPlayCapabilityDetection.isCarPlayActive {
             #expect(deviceContext == .externalDisplay, "Device context should be externalDisplay when multiple screens are present")
         }
         #elseif os(macOS)

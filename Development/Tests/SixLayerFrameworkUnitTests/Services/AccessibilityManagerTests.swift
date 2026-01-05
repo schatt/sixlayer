@@ -12,7 +12,7 @@ open class AccessibilityManagerTests: BaseTestClass {
     
     @Test @MainActor func testAccessibilityManagerInitialization() async {
         // Given & When: Creating the manager
-        let manager = AccessibilityManager()
+        _ = AccessibilityManager()
         
         // Then: Manager should be created successfully
         #expect(Bool(true), "manager is non-optional")  // manager is non-optional
@@ -60,7 +60,7 @@ open class AccessibilityManagerTests: BaseTestClass {
         let manager = AccessibilityManager()
         
         // When: Getting accessibility configuration
-        let config = manager.getAccessibilityConfiguration()
+        _ = manager.getAccessibilityConfiguration()
         
         // Then: Should return a valid configuration
         #expect(Bool(true), "config is non-optional")  // config is non-optional
@@ -79,7 +79,7 @@ open class AccessibilityManagerTests: BaseTestClass {
         manager.updateConfiguration(newConfig)
         
         // Then: Configuration should be updated
-        let currentConfig = manager.getAccessibilityConfiguration()
+        _ = manager.getAccessibilityConfiguration()
         #expect(Bool(true), "currentConfig is non-optional")  // currentConfig is non-optional
     }
     
@@ -91,7 +91,7 @@ open class AccessibilityManagerTests: BaseTestClass {
         let testView = Text("Test")
         
         // When: Validating UI element accessibility
-        let validationResult = manager.validateAccessibility(for: testView)
+        _ = manager.validateAccessibility(for: testView)
         
         // Then: Should return validation result
         #expect(Bool(true), "validationResult is non-optional")  // validationResult is non-optional
@@ -102,7 +102,7 @@ open class AccessibilityManagerTests: BaseTestClass {
         let manager = AccessibilityManager()
         
         // When: Getting accessibility issues
-        let issues = manager.getAccessibilityIssues()
+        _ = manager.getAccessibilityIssues()
         
         // Then: Should return an array (even if empty)
         #expect(Bool(true), "issues is non-optional")  // issues is non-optional

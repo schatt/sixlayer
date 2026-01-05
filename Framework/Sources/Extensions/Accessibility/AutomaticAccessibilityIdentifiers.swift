@@ -65,6 +65,12 @@ public struct AccessibilityIdentifierConfigKey: EnvironmentKey {
     public static let defaultValue: AccessibilityIdentifierConfig? = nil
 }
 
+/// Environment key to track if an explicit accessibility identifier was set
+/// When set to true, .automaticCompliance() will not override the identifier
+public struct ExplicitAccessibilityIdentifierSetKey: EnvironmentKey {
+    public static let defaultValue: Bool = false
+}
+
 // MARK: - Environment Extensions
 
 extension EnvironmentValues {
@@ -96,6 +102,11 @@ extension EnvironmentValues {
     public var accessibilityIdentifierConfig: AccessibilityIdentifierConfig? {
         get { self[AccessibilityIdentifierConfigKey.self] }
         set { self[AccessibilityIdentifierConfigKey.self] = newValue }
+    }
+    
+    public var explicitAccessibilityIdentifierSet: Bool {
+        get { self[ExplicitAccessibilityIdentifierSetKey.self] }
+        set { self[ExplicitAccessibilityIdentifierSetKey.self] = newValue }
     }
 }
 
@@ -144,6 +155,7 @@ public struct AutomaticComplianceModifier: ViewModifier {
     @Environment(\.accessibilityIdentifierLabel) private var accessibilityIdentifierLabel
     @Environment(\.globalAutomaticAccessibilityIdentifiers) private var globalAutomaticAccessibilityIdentifiers
     @Environment(\.accessibilityIdentifierConfig) private var injectedConfig
+    @Environment(\.explicitAccessibilityIdentifierSet) private var explicitAccessibilityIdentifierSet
 
         var body: some View {
         // Use task-local config (automatic per-test isolation), then injected config, then shared (production)
@@ -163,10 +175,40 @@ public struct AutomaticComplianceModifier: ViewModifier {
         let capturedGlobalPrefix = config.globalPrefix
         
         // config.enableAutoIDs IS the global setting - it's the single source of truth
-        // The environment variable allows local opt-in when global is off (defaults to false)
-        // Logic: global on → on, global off + local enable (env=true) → on, global off + no enable (env=false) → off
+        // The environment variable allows local opt-in when global is off, or local opt-out when global is on
+        // Logic: 
+        //   - If env is explicitly false → off (local override, regardless of global)
+        //   - If env is true/default AND global is on → on
+        //   - If env is true/default AND global is off → on (local enable)
+        //   - If env is false AND global is off → off
         // CRITICAL: Use captured value instead of accessing @Published property directly
-        let shouldApply = capturedEnableAutoIDs || globalAutomaticAccessibilityIdentifiers
+        // Environment variable can override: if explicitly set to false, disable even if global is on
+        let shouldApply: Bool
+        if !globalAutomaticAccessibilityIdentifiers {
+            // Environment variable is false - respect local override (disable even if global is on)
+            shouldApply = false
+        } else {
+            // Environment variable is true (or default true) - use normal logic
+            // Global on OR (global off AND env enabled, but env is true so this is always true)
+            shouldApply = capturedEnableAutoIDs || globalAutomaticAccessibilityIdentifiers
+        }
+        
+        // CRITICAL: Don't override explicitly set identifiers (from .exactNamed() or .named())
+        // If an explicit identifier was set, skip automatic generation
+        if explicitAccessibilityIdentifierSet {
+            if capturedEnableDebugLogging {
+                let debugMsg = "🔍 MODIFIER DEBUG: Skipping automatic identifier - explicit identifier already set"
+                print(debugMsg)
+                fflush(stdout)
+                config.addDebugLogEntry(debugMsg, enabled: capturedEnableDebugLogging)
+            }
+            // Still apply HIG compliance features even if identifier is skipped
+            let viewWithHIGCompliance = applyHIGComplianceFeatures(
+                to: content,
+                elementType: accessibilityIdentifierElementType
+            )
+            return AnyView(viewWithHIGCompliance)
+        }
         
         // Always check debug logging and print immediately (helps verify modifier is being called)
         if capturedEnableDebugLogging {
@@ -297,7 +339,13 @@ public struct AutomaticComplianceModifier: ViewModifier {
             identifierComponents.append(elementType)
         }
         
-        let identifier = identifierComponents.joined(separator: ".")
+        var identifier = identifierComponents.joined(separator: ".")
+        
+        // CRITICAL: Ensure identifier is never empty
+        // If all components were empty/nil, return at least "main.ui.element"
+        if identifier.isEmpty {
+            identifier = "main.ui.element"
+        }
         
         // Debug logging - both print to console AND add to debug log
         // CRITICAL: Use captured value instead of accessing @Published property directly
@@ -426,7 +474,6 @@ public struct NamedAutomaticComplianceModifier: ViewModifier {
         let config = AccessibilityIdentifierConfig.currentTaskLocalConfig ?? injectedConfig ?? AccessibilityIdentifierConfig.shared
         // CRITICAL: Capture @Published property values as local variables BEFORE any logic
         // to avoid creating SwiftUI dependencies that cause infinite recursion
-        let capturedEnableAutoIDs = config.enableAutoIDs
         let capturedScreenContext = config.currentScreenContext
         let capturedViewHierarchy = config.currentViewHierarchy
         let capturedEnableUITestIntegration = config.enableUITestIntegration
@@ -436,47 +483,42 @@ public struct NamedAutomaticComplianceModifier: ViewModifier {
         let capturedNamespace = config.namespace
         let capturedGlobalPrefix = config.globalPrefix
         
-        // Same logic as AutomaticComplianceModifier: respect both global and local settings
+        // .named() should ALWAYS apply when explicitly called, regardless of global settings
+        // This is an explicit modifier call - user intent is clear
+        // No guard needed - always apply when modifier is explicitly used
         // CRITICAL: Use captured value instead of accessing @Published property directly
-        let shouldApply = capturedEnableAutoIDs || globalAutomaticAccessibilityIdentifiers
         
         // Debug logging to help diagnose identifier generation
         if capturedEnableDebugLogging {
-            let debugMsg = "🔍 NAMED MODIFIER DEBUG: body() called for '\(componentName)' - enableAutoIDs=\(capturedEnableAutoIDs), globalAutomaticAccessibilityIdentifiers=\(globalAutomaticAccessibilityIdentifiers), shouldApply=\(shouldApply)"
+            let debugMsg = "🔍 NAMED MODIFIER DEBUG: body() called for '\(componentName)' - .named() always applies when explicitly called"
             print(debugMsg)
             fflush(stdout)
             config.addDebugLogEntry(debugMsg, enabled: capturedEnableDebugLogging)
         }
         
-        if shouldApply {
-                let identifier = Self.generateIdentifier(
-                    config: config,
-                    componentName: componentName,
-                    capturedScreenContext: capturedScreenContext,
-                    capturedViewHierarchy: capturedViewHierarchy,
-                    capturedEnableUITestIntegration: capturedEnableUITestIntegration,
-                    capturedIncludeComponentNames: capturedIncludeComponentNames,
-                    capturedIncludeElementTypes: capturedIncludeElementTypes,
-                    capturedNamespace: capturedNamespace,
-                    capturedGlobalPrefix: capturedGlobalPrefix
-                )
-            if capturedEnableDebugLogging {
-                let debugMsg = "🔍 NAMED MODIFIER DEBUG: Applying identifier '\(identifier)' to view '\(componentName)'"
-                print(debugMsg)
-                fflush(stdout)
-                config.addDebugLogEntry(debugMsg, enabled: capturedEnableDebugLogging)
-            }
-            // Wrap in AnyView to satisfy type erasure requirement (different branches return different types)
-            return AnyView(content.accessibilityIdentifier(identifier))
-        } else {
-            if capturedEnableDebugLogging {
-                let debugMsg = "🔍 NAMED MODIFIER DEBUG: NOT applying identifier for '\(componentName)' - conditions not met"
-                print(debugMsg)
-                fflush(stdout)
-                config.addDebugLogEntry(debugMsg, enabled: capturedEnableDebugLogging)
-            }
-            return AnyView(content)
+        // Always apply - .named() is an explicit modifier call
+        let identifier = Self.generateIdentifier(
+            config: config,
+            componentName: componentName,
+            capturedScreenContext: capturedScreenContext,
+            capturedViewHierarchy: capturedViewHierarchy,
+            capturedEnableUITestIntegration: capturedEnableUITestIntegration,
+            capturedIncludeComponentNames: capturedIncludeComponentNames,
+            capturedIncludeElementTypes: capturedIncludeElementTypes,
+            capturedNamespace: capturedNamespace,
+            capturedGlobalPrefix: capturedGlobalPrefix
+        )
+        if capturedEnableDebugLogging {
+            let debugMsg = "🔍 NAMED MODIFIER DEBUG: Applying identifier '\(identifier)' to view '\(componentName)'"
+            print(debugMsg)
+            fflush(stdout)
+            config.addDebugLogEntry(debugMsg, enabled: capturedEnableDebugLogging)
         }
+        // Apply identifier directly to content and mark as explicitly set
+        return content
+            .environment(\.accessibilityIdentifierName, componentName)
+            .environment(\.explicitAccessibilityIdentifierSet, true)
+            .accessibilityIdentifier(identifier)
     }
     
     // Note: Not @MainActor - this function only does string manipulation and config access
@@ -525,14 +567,19 @@ public struct NamedAutomaticComplianceModifier: ViewModifier {
         identifierComponents.append(viewHierarchyPath)
         
         if capturedIncludeComponentNames {
-            identifierComponents.append(componentName)
+            // If componentName is empty, use "element" as fallback
+            let nameToAdd = componentName.isEmpty ? "element" : componentName
+            identifierComponents.append(nameToAdd)
         }
         
         if capturedIncludeElementTypes {
             identifierComponents.append("View")
         }
         
-        return identifierComponents.joined(separator: ".")
+        let identifier = identifierComponents.joined(separator: ".")
+        
+        // Ensure identifier is never empty - if all components were empty, return at least "element"
+        return identifier.isEmpty ? "element" : identifier
         }
     }
 }
@@ -582,9 +629,10 @@ public struct NamedModifier: ViewModifier {
                 capturedNamespace: capturedNamespace,
                 capturedGlobalPrefix: capturedGlobalPrefix
             )
-        // Apply identifier directly to content
+        // Apply identifier directly to content and mark as explicitly set
         return content
             .environment(\.accessibilityIdentifierName, name)
+            .environment(\.explicitAccessibilityIdentifierSet, true)
             .accessibilityIdentifier(newId)
     }
         
@@ -635,7 +683,9 @@ public struct NamedModifier: ViewModifier {
         identifierComponents.append(viewHierarchyPath)
         
         // Add the actual name that was passed to the modifier
-        identifierComponents.append(name)
+        // If name is empty, use "element" as fallback to ensure identifier is always generated
+        let componentName = name.isEmpty ? "element" : name
+        identifierComponents.append(componentName)
         
         let identifier = identifierComponents.joined(separator: ".")
         
@@ -685,8 +735,10 @@ public struct ExactNamedModifier: ViewModifier {
                 name: name,
                 capturedEnableDebugLogging: capturedEnableDebugLogging
             )
-        // Apply exact identifier directly to content
-        return content.accessibilityIdentifier(exactId)
+        // Apply exact identifier directly to content and mark as explicitly set
+        return content
+            .environment(\.explicitAccessibilityIdentifierSet, true)
+            .accessibilityIdentifier(exactId)
     }
         
         private static func generateExactNamedAccessibilityIdentifier(

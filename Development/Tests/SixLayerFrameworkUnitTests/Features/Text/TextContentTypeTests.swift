@@ -64,7 +64,7 @@ open class TextContentTypeTests: BaseTestClass {
             )
             
             let formState = DynamicFormState(configuration: SixLayerFramework.DynamicFormConfiguration(id: "test", title: "Test Form", description: "Test form for content type", sections: [], submitButtonText: "Submit", cancelButtonText: "Cancel"))
-            let textField = DynamicFormFieldView(field: field, formState: formState)
+            _ = DynamicFormFieldView(field: field, formState: formState)
             
             // Verify text content type is appropriate for field type
             // textField is a non-optional View, so it exists if we reach here
@@ -423,23 +423,21 @@ open class TextContentTypeTests: BaseTestClass {
     /// METHODOLOGY: Test text content types on all platforms
     @Test @MainActor func testCrossPlatformTextContentTypes() {
         initializeTestConfig()
-        // Test across all platforms
-        for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
-            
-            // Test that text content types are supported on all platforms
-            let field = DynamicFormField(
-                id: "test",
-                textContentType: SixLayerTextContentType.emailAddress,
-                label: "Test",
-                placeholder: "Enter email"
-            )
-            
-            let formState = DynamicFormState(configuration: SixLayerFramework.DynamicFormConfiguration(id: "test", title: "Test Form", description: "Test form for content type", sections: [], submitButtonText: "Submit", cancelButtonText: "Cancel"))
-            let _ = DynamicFormFieldView(field: field, formState: formState)
-            
-            #expect(Bool(true), "Text field should be created on \(platform)")  // textField is non-optional
-        }
+        // Given: Current platform
+        let currentPlatform = SixLayerPlatform.current
+        
+        // Test that text content types are supported on current platform
+        let field = DynamicFormField(
+            id: "test",
+            textContentType: SixLayerTextContentType.emailAddress,
+            label: "Test",
+            placeholder: "Enter email"
+        )
+        
+        let formState = DynamicFormState(configuration: SixLayerFramework.DynamicFormConfiguration(id: "test", title: "Test Form", description: "Test form for content type", sections: [], submitButtonText: "Submit", cancelButtonText: "Cancel"))
+        let _ = DynamicFormFieldView(field: field, formState: formState)
+        
+        #expect(Bool(true), "Text field should be created on \(currentPlatform)")  // textField is non-optional
         
         // Clean up
         RuntimeCapabilityDetection.clearAllCapabilityOverrides()

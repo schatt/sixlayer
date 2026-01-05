@@ -1,0 +1,34 @@
+{
+  "configurations" : [
+    {
+      "id" : "all-unit-tests",
+      "name" : "All Unit Tests",
+      "options" : {
+        "targets" : [
+          {
+            "containerPath" : "container:SixLayerFramework.xcodeproj",
+            "identifier" : "SixLayerFrameworkUnitTests_macOS",
+            "name" : "SixLayerFrameworkUnitTests_macOS"
+          }
+        ]
+      },
+      "testTargets" : [
+        {
+          "target" : {
+            "containerPath" : "container:SixLayerFramework.xcodeproj",
+            "identifier" : "SixLayerFrameworkUnitTests_macOS",
+            "name" : "SixLayerFrameworkUnitTests_macOS"
+          }
+        }
+      ]
+    }
+  ],
+  "defaultOptions" : {
+    "commandLineArgumentEntries" : [],
+    "environmentVariableEntries" : [],
+    "language" : "en",
+    "region" : "US"
+  },
+  "testPlanName" : "All Unit Tests",
+  "version" : 1
+}

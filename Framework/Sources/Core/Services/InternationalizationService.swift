@@ -362,6 +362,57 @@ public class InternationalizationService: ObservableObject {
     
     // MARK: - Localized Strings
     
+    /// Helper method to get localized string from a bundle for a specific locale
+    private func getLocalizedString(from bundle: Bundle, for key: String, locale: Locale) -> String? {
+        // Get the locale identifier (e.g., "en", "es", "zh-Hans", "de-CH")
+        let localeIdentifier = locale.identifier
+        
+        // Extract language code (e.g., "zh" from "zh-Hans")
+        let languageCode = locale.language.languageCode?.identifier ?? "en"
+        
+        // Try locale identifiers in order of specificity:
+        // 1. Full locale identifier (e.g., "zh-Hans", "de-CH")
+        // 2. Language code with script/region (if different from identifier)
+        // 3. Base language code (e.g., "zh" from "zh-Hans")
+        // 4. English fallback
+        
+        var localeCodesToTry: [String] = []
+        
+        // Add full identifier if it's different from language code
+        if localeIdentifier != languageCode {
+            localeCodesToTry.append(localeIdentifier)
+        }
+        
+        // Add language code
+        localeCodesToTry.append(languageCode)
+        
+        // If language code contains a hyphen, try base language
+        if languageCode.contains("-") {
+            let baseLanguage = String(languageCode.prefix(while: { $0 != "-" }))
+            if baseLanguage != languageCode {
+                localeCodesToTry.append(baseLanguage)
+            }
+        }
+        
+        // Add English as final fallback
+        if languageCode != "en" {
+            localeCodesToTry.append("en")
+        }
+        
+        // Try each locale code
+        for localeCode in localeCodesToTry {
+            if let stringsPath = bundle.path(forResource: "Localizable", ofType: "strings", inDirectory: nil, forLocalization: localeCode) {
+                // Load the strings dictionary from the file
+                if let stringsDict = NSDictionary(contentsOfFile: stringsPath) as? [String: String],
+                   let value = stringsDict[key] {
+                    return value
+                }
+            }
+        }
+        
+        return nil
+    }
+    
     /// Get localized string for a key with fallback support
     /// 
     /// Lookup order:
@@ -377,13 +428,11 @@ public class InternationalizationService: ObservableObject {
         var localizedString: String
         
         // Step 1: Try app bundle first (allows app to override framework strings)
-        let appLocalized = NSLocalizedString(key, bundle: appBundle, comment: "")
-        if appLocalized != key {
+        if let appLocalized = getLocalizedString(from: appBundle, for: key, locale: locale) {
             localizedString = appLocalized
         } else {
             // Step 2: Try framework bundle (framework default strings)
-            let frameworkLocalized = NSLocalizedString(key, bundle: Self.frameworkBundle, comment: "")
-            if frameworkLocalized != key {
+            if let frameworkLocalized = getLocalizedString(from: Self.frameworkBundle, for: key, locale: locale) {
                 localizedString = frameworkLocalized
             } else {
                 // Step 3: Not found in either bundle, return the key itself
@@ -405,9 +454,7 @@ public class InternationalizationService: ObservableObject {
     ///   - arguments: Optional arguments for string formatting
     /// - Returns: Localized string from app bundle, or the key itself if not found
     public func appLocalizedString(for key: String, arguments: [String] = []) -> String {
-        let localizedString = NSLocalizedString(key, bundle: appBundle, comment: "")
-        
-        if localizedString == key {
+        guard let localizedString = getLocalizedString(from: appBundle, for: key, locale: locale) else {
             return key
         }
         
@@ -424,9 +471,7 @@ public class InternationalizationService: ObservableObject {
     ///   - arguments: Optional arguments for string formatting
     /// - Returns: Localized string from framework bundle, or the key itself if not found
     public func frameworkLocalizedString(for key: String, arguments: [String] = []) -> String {
-        let localizedString = NSLocalizedString(key, bundle: Self.frameworkBundle, comment: "")
-        
-        if localizedString == key {
+        guard let localizedString = getLocalizedString(from: Self.frameworkBundle, for: key, locale: locale) else {
             return key
         }
         

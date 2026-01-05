@@ -45,28 +45,24 @@ open class FormWizardTests: BaseTestClass {
     /// TESTING SCOPE: Tests FormWizardStep initialization with all parameters
     /// METHODOLOGY: Create FormWizardStep with comprehensive parameters and verify all properties are set correctly
     @Test func testFormWizardStepCreation() {
-        // Test across all platforms
-        for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
-            
-            let step = FormWizardStep(
-                id: "personal",
-                title: "Personal Information",
-                description: "Basic details about you",
-                isRequired: true,
-                validationRules: ["minLength": "2"],
-                stepOrder: 0
-            )
-            
-            #expect(step.id == "personal")
-            #expect(step.title == "Personal Information")
-            #expect(step.description == "Basic details about you")
-            #expect(step.isRequired)
-            #expect(step.validationRules?["minLength"] == "2")
-            #expect(step.stepOrder == 0)
-            
-            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-        }
+        // Given: Current platform
+        _ = SixLayerPlatform.current
+        
+        let step = FormWizardStep(
+            id: "personal",
+            title: "Personal Information",
+            description: "Basic details about you",
+            isRequired: true,
+            validationRules: ["minLength": "2"],
+            stepOrder: 0
+        )
+        
+        #expect(step.id == "personal")
+        #expect(step.title == "Personal Information")
+        #expect(step.description == "Basic details about you")
+        #expect(step.isRequired)
+        #expect(step.validationRules?["minLength"] == "2")
+        #expect(step.stepOrder == 0)
     }
     
     /// BUSINESS PURPOSE: Validate FormWizardStep equality functionality

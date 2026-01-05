@@ -44,7 +44,7 @@ open class SingleInstanceLayer1Tests: BaseTestClass {
         // view is a non-optional View, so it exists if we reach here
         
         // Test that the view can be hosted (functional test)
-        let hostingView = hostRootPlatformView(view.withGlobalAutoIDsEnabled())
+        _ = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
         #expect(Bool(true), "Single numeric data view should be hostable")  // hostingView is non-optional
     }
     
@@ -66,8 +66,8 @@ open class SingleInstanceLayer1Tests: BaseTestClass {
         // singleView and arrayView are non-optional Views, so they exist if we reach here
         
         // Both should be hostable
-        let singleHostingView = hostRootPlatformView(singleView.withGlobalAutoIDsEnabled())
-        let arrayHostingView = hostRootPlatformView(arrayView.withGlobalAutoIDsEnabled())
+        _ = hostRootPlatformView(singleView.enableGlobalAutomaticCompliance())
+        _ = hostRootPlatformView(arrayView.enableGlobalAutomaticCompliance())
         #expect(Bool(true), "Single instance view should be hostable")  // singleHostingView is non-optional
         #expect(Bool(true), "Array version view should be hostable")  // arrayHostingView is non-optional
     }
@@ -91,7 +91,7 @@ open class SingleInstanceLayer1Tests: BaseTestClass {
         // view is non-optional, used below with hostRootPlatformView
         
         // Test that the view can be hosted (functional test)
-        let hostingView = hostRootPlatformView(view.withGlobalAutoIDsEnabled())
+        _ = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
         #expect(Bool(true), "Single media item view should be hostable")  // hostingView is non-optional
     }
     
@@ -113,7 +113,7 @@ open class SingleInstanceLayer1Tests: BaseTestClass {
         // view is non-optional, used below with hostRootPlatformView
         
         // Test that the view can be hosted (functional test)
-        let hostingView = hostRootPlatformView(view.withGlobalAutoIDsEnabled())
+        _ = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
         #expect(Bool(true), "Single hierarchical item view should be hostable")  // hostingView is non-optional
     }
     
@@ -135,7 +135,7 @@ open class SingleInstanceLayer1Tests: BaseTestClass {
         // view is non-optional, used below with hostRootPlatformView
         
         // Test that the view can be hosted (functional test)
-        let hostingView = hostRootPlatformView(view.withGlobalAutoIDsEnabled())
+        _ = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
         #expect(Bool(true), "Single temporal item view should be hostable")  // hostingView is non-optional
     }
     
@@ -160,7 +160,7 @@ open class SingleInstanceLayer1Tests: BaseTestClass {
         // view is non-optional, used below with hostRootPlatformView
         
         // Test that the view can be hosted (functional test)
-        let hostingView = hostRootPlatformView(view.withGlobalAutoIDsEnabled())
+        _ = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
         #expect(Bool(true), "Single form field view should be hostable")  // hostingView is non-optional
     }
     
@@ -198,8 +198,8 @@ open class SingleInstanceLayer1Tests: BaseTestClass {
         // cardView and listView are non-optional Views, so they exist if we reach here
         
         // Both should be hostable
-        let _ = hostRootPlatformView(cardView.withGlobalAutoIDsEnabled())
-        let _ = hostRootPlatformView(listView.withGlobalAutoIDsEnabled())
+        let _ = hostRootPlatformView(cardView.enableGlobalAutomaticCompliance())
+        let _ = hostRootPlatformView(listView.enableGlobalAutomaticCompliance())
         #expect(Bool(true), "Card view should be hostable")  // cardHostingView is non-optional
         #expect(Bool(true), "List view should be hostable")  // listHostingView is non-optional
     }
@@ -207,19 +207,4 @@ open class SingleInstanceLayer1Tests: BaseTestClass {
 
 // MARK: - Test Extensions
 
-extension SingleInstanceLayer1Tests {
-    
-    /// Host a SwiftUI view and return the platform root view for inspection
-    @MainActor
-    private func hostRootPlatformView<V: View>(_ view: V) -> Any? {
-        #if canImport(UIKit)
-        let hostingController = UIHostingController(rootView: view)
-        return hostingController.view
-        #elseif canImport(AppKit)
-        let hostingController = NSHostingController(rootView: view)
-        return hostingController.view
-        #else
-        return nil
-        #endif
-    }
-}
+// Extension removed - use BaseTestClass.hostRootPlatformView() instead

@@ -98,32 +98,32 @@ open class PlatformColorsTests: BaseTestClass {
         case .iOS:
             // Test that iOS colors can actually be used in views
             let iosView = createTestViewWithPlatformColors()
-            _ = hostRootPlatformView(iosView.withGlobalAutoIDsEnabled())
+            _ = hostRootPlatformView(iosView.enableGlobalAutomaticCompliance())
             // Verify colors are valid by checking they're not clear
             #expect(Color.platformPrimaryLabel != Color.clear, "iOS primary label color should be valid")
             
         case .macOS:
             // Test that macOS colors can actually be used in views
             let macosView = createTestViewWithPlatformColors()
-            _ = hostRootPlatformView(macosView.withGlobalAutoIDsEnabled())
+            _ = hostRootPlatformView(macosView.enableGlobalAutomaticCompliance())
             #expect(Color.platformPrimaryLabel != Color.clear, "macOS primary label color should be valid")
             
         case .watchOS:
             // Test that watchOS colors can actually be used in views
             let watchosView = createTestViewWithPlatformColors()
-            _ = hostRootPlatformView(watchosView.withGlobalAutoIDsEnabled())
+            _ = hostRootPlatformView(watchosView.enableGlobalAutomaticCompliance())
             #expect(Color.platformPrimaryLabel != Color.clear, "watchOS primary label color should be valid")
             
         case .tvOS:
             // Test that tvOS colors can actually be used in views
             let tvosView = createTestViewWithPlatformColors()
-            _ = hostRootPlatformView(tvosView.withGlobalAutoIDsEnabled())
+            _ = hostRootPlatformView(tvosView.enableGlobalAutomaticCompliance())
             #expect(Color.platformPrimaryLabel != Color.clear, "tvOS primary label color should be valid")
             
         case .visionOS:
             // Test that visionOS colors can actually be used in views
             let visionosView = createTestViewWithPlatformColors()
-            _ = hostRootPlatformView(visionosView.withGlobalAutoIDsEnabled())
+            _ = hostRootPlatformView(visionosView.enableGlobalAutomaticCompliance())
             #expect(Color.platformPrimaryLabel != Color.clear, "visionOS primary label color should be valid")
         }
     }
@@ -763,7 +763,7 @@ open class PlatformColorsTests: BaseTestClass {
         // Then: View should render successfully
         // In high contrast mode, the system automatically adjusts these semantic colors
         // to provide better contrast ratios
-        _ = hostRootPlatformView(testView.withGlobalAutoIDsEnabled())
+        _ = hostRootPlatformView(testView.enableGlobalAutomaticCompliance())
         
         // Verify colors are valid semantic colors
         #expect(primaryLabel != Color.clear, "Primary label should be valid")
@@ -799,15 +799,29 @@ open class PlatformColorsTests: BaseTestClass {
         }
         
         // Resolve colors in high contrast and normal mode
-        let highContrastTraitCollection = UITraitCollection(traitsFrom: [
-            UITraitCollection(userInterfaceStyle: .light),
-            UITraitCollection(accessibilityContrast: .high)
-        ])
+        let highContrastTraitCollection: UITraitCollection
+        let normalTraitCollection: UITraitCollection
         
-        let normalTraitCollection = UITraitCollection(traitsFrom: [
-            UITraitCollection(userInterfaceStyle: .light),
-            UITraitCollection(accessibilityContrast: .normal)
-        ])
+        if #available(iOS 17.0, *) {
+            highContrastTraitCollection = UITraitCollection { mutableTraits in
+                mutableTraits.userInterfaceStyle = .light
+                mutableTraits.accessibilityContrast = .high
+            }
+            normalTraitCollection = UITraitCollection { mutableTraits in
+                mutableTraits.userInterfaceStyle = .light
+                mutableTraits.accessibilityContrast = .normal
+            }
+        } else {
+            // Fallback for iOS < 17
+            highContrastTraitCollection = UITraitCollection(traitsFrom: [
+                UITraitCollection(userInterfaceStyle: .light),
+                UITraitCollection(accessibilityContrast: .high)
+            ])
+            normalTraitCollection = UITraitCollection(traitsFrom: [
+                UITraitCollection(userInterfaceStyle: .light),
+                UITraitCollection(accessibilityContrast: .normal)
+            ])
+        }
         
         let (_, _, _, _, hcLabelBrightness) = resolveAndExtractRGB(labelColor, traitCollection: highContrastTraitCollection)
         let (_, _, _, _, normalLabelBrightness) = resolveAndExtractRGB(labelColor, traitCollection: normalTraitCollection)

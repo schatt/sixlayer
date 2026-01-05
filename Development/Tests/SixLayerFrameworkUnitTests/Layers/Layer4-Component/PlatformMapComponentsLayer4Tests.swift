@@ -75,7 +75,7 @@ open class PlatformMapComponentsLayer4Tests: BaseTestClass {
             let coordinate = CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194)
             
             // When: Component is created with Annotation
-            let mapView = PlatformMapComponentsLayer4.platformMapView_L4(position: position) {
+            _ = PlatformMapComponentsLayer4.platformMapView_L4(position: position) {
                 Annotation("Test", coordinate: coordinate) {
                     Image(systemName: "mappin.circle.fill")
                 }
@@ -173,7 +173,7 @@ open class PlatformMapComponentsLayer4Tests: BaseTestClass {
             ))
             
             // When: Coordinate is used with map
-            let mapView = PlatformMapComponentsLayer4.platformMapView_L4(position: position) {
+            _ = PlatformMapComponentsLayer4.platformMapView_L4(position: position) {
                 Annotation("Location", coordinate: testCoordinate) {
                     Image(systemName: "mappin.circle.fill")
                 }
@@ -205,7 +205,7 @@ open class PlatformMapComponentsLayer4Tests: BaseTestClass {
             let position = Binding.constant(MapCameraPosition.automatic)
             
             // When: Annotation is used with map
-            let mapView = PlatformMapComponentsLayer4.platformMapView_L4(
+            _ = PlatformMapComponentsLayer4.platformMapView_L4(
                 position: position,
                 annotations: [annotation]
             )
@@ -261,7 +261,7 @@ open class PlatformMapComponentsLayer4Tests: BaseTestClass {
             let locationService = LocationService()
             
             // When: Map view with LocationService is created
-            let mapView = PlatformMapComponentsLayer4.platformMapViewWithCurrentLocation_L4(
+            _ = PlatformMapComponentsLayer4.platformMapViewWithCurrentLocation_L4(
                 locationService: locationService,
                 showCurrentLocation: true
             )
@@ -282,7 +282,7 @@ open class PlatformMapComponentsLayer4Tests: BaseTestClass {
             let locationService = LocationService()
             
             // When: Map view is created (location may not be available)
-            let mapView = PlatformMapComponentsLayer4.platformMapViewWithCurrentLocation_L4(
+            _ = PlatformMapComponentsLayer4.platformMapViewWithCurrentLocation_L4(
                 locationService: locationService,
                 showCurrentLocation: true
             )

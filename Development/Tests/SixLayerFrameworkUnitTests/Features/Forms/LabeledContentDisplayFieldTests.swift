@@ -271,13 +271,13 @@ open class LabeledContentDisplayFieldTests: BaseTestClass {
     /// METHODOLOGY: Create display field with valueView and verify it's accessible
     @Test @MainActor func testCustomValueViewIsUsed() {
         // Given: Display field with custom valueView
-        var viewWasCalled = false
         let field = DynamicFormField(
             id: "display-field",
             contentType: .display,
             label: "Display Value",
             valueView: { field, formState in
-                viewWasCalled = true
+                _ = field
+                _ = formState
                 return AnyView(Text("Custom Value"))
             }
         )
@@ -325,17 +325,15 @@ open class LabeledContentDisplayFieldTests: BaseTestClass {
     /// TESTING SCOPE: Tests that valueView closure receives field and formState
     /// METHODOLOGY: Create valueView that captures parameters and verify them
     @Test @MainActor func testValueViewReceivesCorrectParameters() {
-        // Given: Variables to capture parameters
-        var capturedField: DynamicFormField?
-        var capturedFormState: DynamicFormState?
-        
+        // Given: Field with custom valueView
         let field = DynamicFormField(
             id: "display-field",
             contentType: .display,
             label: "Display Value",
             valueView: { field, formState in
-                capturedField = field
-                capturedFormState = formState
+                // Parameters captured but not used in this test
+                _ = field
+                _ = formState
                 return AnyView(Text("Custom"))
             }
         )
@@ -556,24 +554,18 @@ open class LabeledContentDisplayFieldTests: BaseTestClass {
     /// TESTING SCOPE: Tests that display fields work consistently across platforms
     /// METHODOLOGY: Test field creation on all platforms
     @Test func testCrossPlatformBehavior() {
-        // Test across all platforms
-        for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
-            
-            // Given: Display field
-            let field = DynamicFormField(
-                id: "display-field",
-                contentType: .display,
-                label: "Display Value"
-            )
-            
-            // Then: Field should be created successfully on all platforms
-            #expect(field.id == "display-field")
-            #expect(field.contentType == .display)
-            #expect(field.label == "Display Value")
-            
-            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-        }
+        // Given: Current platform and display field
+        _ = SixLayerPlatform.current
+        let field = DynamicFormField(
+            id: "display-field",
+            contentType: .display,
+            label: "Display Value"
+        )
+        
+        // Then: Field should be created successfully on current platform
+        #expect(field.id == "display-field")
+        #expect(field.contentType == .display)
+        #expect(field.label == "Display Value")
     }
     
     // MARK: - CustomFieldView Integration Tests
@@ -591,7 +583,7 @@ open class LabeledContentDisplayFieldTests: BaseTestClass {
         let state = createFormState()
         
         // When: Creating CustomFieldView with display field
-        let view = CustomFieldView(field: field, formState: state)
+        _ = CustomFieldView(field: field, formState: state)
         
         // Then: View should be created successfully
         #expect(Bool(true), "view is non-optional")

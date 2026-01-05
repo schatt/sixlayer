@@ -89,7 +89,7 @@ open class LiquidGlassCapabilityDetectionTests: BaseTestClass {
         
         // When & Then
         for feature in features {
-            let fallbackBehavior = LiquidGlassCapabilityDetection.getFallbackBehavior(for: feature)
+            _ = LiquidGlassCapabilityDetection.getFallbackBehavior(for: feature)
             // fallbackBehavior is non-optional, so it exists if we reach here
         }
     }
@@ -132,7 +132,7 @@ open class LiquidGlassCapabilityDetectionTests: BaseTestClass {
         let capabilityInfo = LiquidGlassCapabilityInfo()
         
         for feature in LiquidGlassFeature.allCases {
-            let fallbackBehavior = capabilityInfo.fallbackBehaviors[feature]
+            _ = capabilityInfo.fallbackBehaviors[feature]
             #expect(Bool(true), "Feature \(feature.rawValue) should have a fallback behavior")  // fallbackBehavior is non-optional
         }
     }
@@ -182,7 +182,7 @@ open class LiquidGlassCapabilityDetectionTests: BaseTestClass {
         
         for feature in allFeatures {
             // This will fail if LiquidGlassCapabilityInfo doesn't handle the feature
-            let fallbackBehavior = capabilityInfo.fallbackBehaviors[feature]
+            _ = capabilityInfo.fallbackBehaviors[feature]
             #expect(Bool(true), "Feature \(feature.rawValue) should have a fallback behavior")  // fallbackBehavior is non-optional
             handledFeatures.insert(feature)
         }

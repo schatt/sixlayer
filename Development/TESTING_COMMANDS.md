@@ -1,5 +1,20 @@
 # Testing Commands for macOS and iOS
 
+## Test Organization
+
+The test suite is organized into:
+
+1. **Unit Tests** (`SixLayerFrameworkUnitTests`):
+   - **Pure unit tests**: Test business logic, data structures, algorithms without rendering
+   - **ViewInspector tests** (`ViewInspectorTests/` subdirectory): Test view structure and modifiers using ViewInspector (view structure inspection, not actual UI rendering)
+   - Both types are unit tests - they test different aspects of the same functionality
+
+2. **Real UI Tests** (TODO - not yet implemented):
+   - Will test actual rendered UI in windows using XCUITest
+   - Will verify views actually render correctly, layout works, and accessibility features function in real windows
+
+**Key Distinction**: ViewInspector tests are unit tests that verify view structure (like testing a knife's sharpness), while pure unit tests verify logic (like testing a knife's hardness). Both test the same "blade" from different angles.
+
 ## Running Tests on Both Platforms (Recommended)
 
 ### Using dbs-build (Simplified)

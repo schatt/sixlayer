@@ -1,4 +1,5 @@
 import SwiftUI
+import Foundation
 
 // MARK: - Property Label Types
 
@@ -1696,7 +1697,119 @@ public struct GenericItemCollectionView<Item: Identifiable>: View {
             return .masonry
         case .coverFlow:
             return .coverFlow
+        case .countBased(let lowCount, let highCount, let threshold):
+            // Explicit count-based preference
+            return items.count <= threshold
+                ? determineStrategyForPreference(lowCount)
+                : determineStrategyForPreference(highCount)
         case .automatic:
+            // Count-aware logic for generic/collection content
+            if hints.dataType == .generic || hints.dataType == .collection {
+                // Safety override: very large collections → list
+                if items.count > 200 {
+                    return .list
+                }
+                
+                // Count-aware automatic selection
+                return determineCountAwareStrategy(
+                    count: items.count,
+                    dataType: hints.dataType,
+                    platform: platform,
+                    deviceType: deviceType
+                )
+            }
+            // For other content types with .automatic, use adaptive
+            return .adaptive
+        default:
+            return .adaptive
+        }
+    }
+    
+    /// Determine count-aware presentation strategy for generic/collection content
+    private func determineCountAwareStrategy(
+        count: Int,
+        dataType: DataTypeHint,
+        platform: SixLayerPlatform,
+        deviceType: DeviceType
+    ) -> PresentationStrategy {
+        let threshold = getCountThreshold(
+            dataType: dataType,
+            platform: platform,
+            deviceType: deviceType
+        )
+        
+        if count <= threshold {
+            // Small collection: prefer cards/grid
+            switch (platform, deviceType) {
+            case (.macOS, _), (.iOS, .pad):
+                return .grid
+            case (.iOS, .phone):
+                return count <= 4 ? .expandableCards : .grid
+            default:
+                return .grid
+            }
+        } else {
+            // Large collection: prefer list
+            return .list
+        }
+    }
+    
+    /// Get count threshold based on content type, platform, and device
+    private func getCountThreshold(
+        dataType: DataTypeHint,
+        platform: SixLayerPlatform,
+        deviceType: DeviceType
+    ) -> Int {
+        // Base threshold by content type
+        let baseThreshold: Int
+        switch dataType {
+        case .media:
+            baseThreshold = 15  // Media handled separately (shouldn't reach here)
+        case .navigation:
+            baseThreshold = 6  // Navigation handled separately (shouldn't reach here)
+        case .generic, .collection:
+            baseThreshold = 8
+        default:
+            baseThreshold = 8
+        }
+        
+        // Adjust by platform/device
+        switch (platform, deviceType) {
+        case (.macOS, _), (.iOS, .pad):
+            return baseThreshold + 4  // More screen space
+        case (.iOS, .phone):
+            return baseThreshold
+        case (.watchOS, _), (.tvOS, _):
+            return 3  // Always prefer list
+        default:
+            return baseThreshold
+        }
+    }
+
+    /// Convert a PresentationPreference to a PresentationStrategy
+    /// Used for countBased preferences where nested preferences need resolution
+    private func determineStrategyForPreference(_ preference: PresentationPreference) -> PresentationStrategy {
+        switch preference {
+        case .cards, .card:
+            return .expandableCards
+        case .list:
+            return .list
+        case .grid:
+            return .grid
+        case .masonry:
+            return .masonry
+        case .coverFlow:
+            return .coverFlow
+        case .automatic:
+            // Recursive: use count-aware automatic logic from Phase 1
+            return determineCountAwareStrategy(
+                count: items.count,
+                dataType: hints.dataType,
+                platform: SixLayerPlatform.currentPlatform,
+                deviceType: SixLayerPlatform.deviceType
+            )
+        case .countBased:
+            // Shouldn't happen (handled above), but fallback to prevent recursion
             return .adaptive
         default:
             return .adaptive
@@ -4161,11 +4274,20 @@ public struct CustomGridCollectionView<Item: Identifiable>: View {
     
     public var body: some View {
         GeometryReader { geometry in
-            let columns = determineColumns(for: geometry.size.width)
-            let gridColumns = Array(repeating: GridItem(.flexible(), spacing: 16), count: columns)
+            let context = LayoutContext.from(viewportWidth: geometry.size.width)
+            let columns = LayoutParameterCalculator.calculateColumns(
+                count: items.count,
+                dataType: hints.dataType,
+                context: context
+            )
+            let spacing = LayoutParameterCalculator.calculateSpacing(
+                context: context,
+                dataType: hints.dataType
+            )
+            let gridColumns = Array(repeating: GridItem(.flexible(), spacing: spacing), count: columns)
             
             ScrollView {
-                LazyVGrid(columns: gridColumns, spacing: 16) {
+                LazyVGrid(columns: gridColumns, spacing: spacing) {
                     ForEach(items) { item in
                         customItemView(item)
                             .onTapGesture {
@@ -4176,12 +4298,6 @@ public struct CustomGridCollectionView<Item: Identifiable>: View {
                 .padding(16)
             }
         }
-    }
-    
-    private func determineColumns(for width: CGFloat) -> Int {
-        let minItemWidth: CGFloat = 200
-        let maxColumns = Int(width / minItemWidth)
-        return max(1, min(maxColumns, 4))
     }
 }
 
@@ -4242,11 +4358,20 @@ public struct CustomMediaView: View {
     
     public var body: some View {
         GeometryReader { geometry in
-            let columns = determineColumns(for: geometry.size.width)
-            let gridColumns = Array(repeating: GridItem(.flexible(), spacing: 16), count: columns)
+            let context = LayoutContext.from(viewportWidth: geometry.size.width)
+            let columns = LayoutParameterCalculator.calculateColumns(
+                count: media.count,
+                dataType: .media,
+                context: context
+            )
+            let spacing = LayoutParameterCalculator.calculateSpacing(
+                context: context,
+                dataType: .media
+            )
+            let gridColumns = Array(repeating: GridItem(.flexible(), spacing: spacing), count: columns)
             
             ScrollView {
-                LazyVGrid(columns: gridColumns, spacing: 16) {
+                LazyVGrid(columns: gridColumns, spacing: spacing) {
                     ForEach(media, id: \.id) { mediaItem in
                         customMediaView(mediaItem)
                     }
@@ -4254,12 +4379,6 @@ public struct CustomMediaView: View {
                 .padding(16)
             }
         }
-    }
-    
-    private func determineColumns(for width: CGFloat) -> Int {
-        let minItemWidth: CGFloat = 200
-        let maxColumns = Int(width / minItemWidth)
-        return max(1, min(maxColumns, 4))
     }
 }
 

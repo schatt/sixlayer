@@ -39,14 +39,10 @@ open class ExtensibleHintsTests: BaseTestClass {
     /// TESTING SCOPE: Tests ExtensibleHints system initialization and setup
     /// METHODOLOGY: Initialize ExtensibleHints system and verify proper setup
     @Test func testExtensibleHintsInitialization() {
-        // Test across all platforms
-        for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
-            
-            // TODO: Implement test
-            
-            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-        }
+        // Given: Current platform
+        _ = SixLayerPlatform.current
+        
+        // TODO: Implement test
     }
     
     /// BUSINESS PURPOSE: Validate hint processing functionality

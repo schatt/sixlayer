@@ -87,32 +87,32 @@ open class PlatformFontSystemExtensionsTests: BaseTestClass {
         case .iOS:
             // Test that iOS fonts can actually be used in views
             let iosView = createTestViewWithPlatformFonts()
-            _ = hostRootPlatformView(iosView.withGlobalAutoIDsEnabled())
+            _ = hostRootPlatformView(iosView.enableGlobalAutomaticCompliance())
             // Verify fonts are valid by checking they're not system default
             #expect(Font.platformBody != Font.system(size: 0), "iOS body font should be valid")
             
         case .macOS:
             // Test that macOS fonts can actually be used in views
             let macosView = createTestViewWithPlatformFonts()
-            _ = hostRootPlatformView(macosView.withGlobalAutoIDsEnabled())
+            _ = hostRootPlatformView(macosView.enableGlobalAutomaticCompliance())
             #expect(Font.platformBody != Font.system(size: 0), "macOS body font should be valid")
             
         case .watchOS:
             // Test that watchOS fonts can actually be used in views
             let watchosView = createTestViewWithPlatformFonts()
-            _ = hostRootPlatformView(watchosView.withGlobalAutoIDsEnabled())
+            _ = hostRootPlatformView(watchosView.enableGlobalAutomaticCompliance())
             #expect(Font.platformBody != Font.system(size: 0), "watchOS body font should be valid")
             
         case .tvOS:
             // Test that tvOS fonts can actually be used in views
             let tvosView = createTestViewWithPlatformFonts()
-            _ = hostRootPlatformView(tvosView.withGlobalAutoIDsEnabled())
+            _ = hostRootPlatformView(tvosView.enableGlobalAutomaticCompliance())
             #expect(Font.platformBody != Font.system(size: 0), "tvOS body font should be valid")
             
         case .visionOS:
             // Test that visionOS fonts can actually be used in views
             let visionosView = createTestViewWithPlatformFonts()
-            _ = hostRootPlatformView(visionosView.withGlobalAutoIDsEnabled())
+            _ = hostRootPlatformView(visionosView.enableGlobalAutomaticCompliance())
             #expect(Font.platformBody != Font.system(size: 0), "visionOS body font should be valid")
         }
     }

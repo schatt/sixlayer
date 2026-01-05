@@ -1,0 +1,45 @@
+{
+  "configurations" : [
+    {
+      "id" : "unit-tests-accessibility-config",
+      "name" : "Unit Tests - Accessibility",
+      "options" : {
+        "targets" : [
+          {
+            "containerPath" : "container:SixLayerFramework.xcodeproj",
+            "identifier" : "SixLayerFrameworkUnitTests_macOS",
+            "name" : "SixLayerFrameworkUnitTests_macOS"
+          }
+        ],
+        "testTimeoutsEnabled" : true
+      },
+      "testTargets" : [
+        {
+          "target" : {
+            "containerPath" : "container:SixLayerFramework.xcodeproj",
+            "identifier" : "SixLayerFrameworkUnitTests_macOS",
+            "name" : "SixLayerFrameworkUnitTests_macOS"
+          },
+          "includedTests" : [
+            "SixLayerFrameworkUnitTests/Features/Accessibility"
+          ],
+          "excludedTests" : [ ]
+        }
+      ]
+    }
+  ],
+  "defaultOptions" : {
+    "commandLineArgumentEntries" : [
+
+    ],
+    "environmentVariableEntries" : [
+
+    ],
+    "language" : "en",
+    "region" : "US",
+    "targetLanguage" : null,
+    "targetRegion" : null
+  },
+  "testPlanName" : "Unit Tests - Accessibility",
+  "version" : 1
+}

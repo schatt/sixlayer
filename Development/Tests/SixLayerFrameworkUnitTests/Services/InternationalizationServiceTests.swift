@@ -13,7 +13,7 @@ open class InternationalizationServiceTests: BaseTestClass {
     
     @Test func testInternationalizationServiceInitialization() {
         // Given & When: Creating the service
-        let service = InternationalizationService()
+        _ = InternationalizationService()
         
         // Then: Service should be created successfully
         #expect(Bool(true), "service is non-optional")  // service is non-optional
@@ -72,7 +72,7 @@ open class InternationalizationServiceTests: BaseTestClass {
         let service = InternationalizationService()
         
         // When: Setting a different language
-        let originalLanguage = service.currentLanguage()
+        _ = service.currentLanguage()
         service.setLanguage("en")
         let newLanguage = service.currentLanguage()
         

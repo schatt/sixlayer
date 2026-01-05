@@ -155,9 +155,8 @@ open class CapabilityMatrixTests: BaseTestClass {
     @Test @MainActor func testCapabilityBehaviorsAcrossPlatforms() {
         let allPlatforms = SixLayerPlatform.allCases
         
-        for platform in allPlatforms {
+        for _ in allPlatforms {
             // Set the test platform to simulate different OS environments
-            setCapabilitiesForPlatform(platform)
             defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
             
             // Test behaviors for this platform

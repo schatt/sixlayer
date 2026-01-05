@@ -35,18 +35,19 @@ open class ShapeStyleSystemTests: BaseTestClass {
         // When: Accessing platform colors
         // Then: Should have platform-appropriate colors
         #if canImport(UIKit)
-        #expect(ShapeStyleSystem.StandardColors.systemBackground != nil)
-        #expect(ShapeStyleSystem.StandardColors.secondarySystemBackground != nil)
-        #expect(ShapeStyleSystem.StandardColors.tertiarySystemBackground != nil)
-        #expect(ShapeStyleSystem.StandardColors.systemGroupedBackground != nil)
-        #expect(ShapeStyleSystem.StandardColors.secondarySystemGroupedBackground != nil)
-        #expect(ShapeStyleSystem.StandardColors.tertiarySystemGroupedBackground != nil)
-        #expect(ShapeStyleSystem.StandardColors.label != nil)
-        #expect(ShapeStyleSystem.StandardColors.secondaryLabel != nil)
-        #expect(ShapeStyleSystem.StandardColors.tertiaryLabel != nil)
-        #expect(ShapeStyleSystem.StandardColors.quaternaryLabel != nil)
-        #expect(ShapeStyleSystem.StandardColors.separator != nil)
-        #expect(ShapeStyleSystem.StandardColors.opaqueSeparator != nil)
+        // Colors are non-optional, so we just verify they exist by accessing them
+        _ = ShapeStyleSystem.StandardColors.systemBackground
+        _ = ShapeStyleSystem.StandardColors.secondarySystemBackground
+        _ = ShapeStyleSystem.StandardColors.tertiarySystemBackground
+        _ = ShapeStyleSystem.StandardColors.systemGroupedBackground
+        _ = ShapeStyleSystem.StandardColors.secondarySystemGroupedBackground
+        _ = ShapeStyleSystem.StandardColors.tertiarySystemGroupedBackground
+        _ = ShapeStyleSystem.StandardColors.label
+        _ = ShapeStyleSystem.StandardColors.secondaryLabel
+        _ = ShapeStyleSystem.StandardColors.tertiaryLabel
+        _ = ShapeStyleSystem.StandardColors.quaternaryLabel
+        _ = ShapeStyleSystem.StandardColors.separator
+        _ = ShapeStyleSystem.StandardColors.opaqueSeparator
         #endif
     }
     

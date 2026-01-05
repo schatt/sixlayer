@@ -295,7 +295,7 @@ open class L3StrategySelectionTests: BaseTestClass {
         )
         
         // When
-        let strategy = selectFormStrategy_AddFuelView_L3(layout: layout)
+        _ = selectFormStrategy_AddFuelView_L3(layout: layout)
         
         // Then
         #expect(Bool(true), "selectFormStrategy_AddFuelView_L3 should return a strategy")  // strategy is non-optional
@@ -309,7 +309,7 @@ open class L3StrategySelectionTests: BaseTestClass {
         )
         
         // When
-        let strategy = selectModalStrategy_Form_L3(layout: layout)
+        _ = selectModalStrategy_Form_L3(layout: layout)
         
         // Then
         #expect(Bool(true), "selectModalStrategy_Form_L3 should return a strategy")  // strategy is non-optional
@@ -393,39 +393,39 @@ open class L3StrategySelectionTests: BaseTestClass {
         let textTypes = [TextType.general]
         
         // Test iOS
-        let iOSStrategy = platformOCRStrategy_L3(
+        _ = platformOCRStrategy_L3(
             textTypes: textTypes,
             platform: .iOS
         )
-        #expect(Bool(true), "iOS platform should return a strategy")  // iOSStrategy is non-optional
+        #expect(Bool(true), "iOS platform should return a strategy")
         
         // Test macOS
-        let macOSStrategy = platformOCRStrategy_L3(
+        _ = platformOCRStrategy_L3(
             textTypes: textTypes,
             platform: .macOS
         )
-        #expect(Bool(true), "macOS platform should return a strategy")  // macOSStrategy is non-optional
+        #expect(Bool(true), "macOS platform should return a strategy")
         
         // Test watchOS
-        let watchOSStrategy = platformOCRStrategy_L3(
+        _ = platformOCRStrategy_L3(
             textTypes: textTypes,
             platform: .watchOS
         )
-        #expect(Bool(true), "watchOS platform should return a strategy")  // watchOSStrategy is non-optional
+        #expect(Bool(true), "watchOS platform should return a strategy")
         
         // Test tvOS
-        let tvOSStrategy = platformOCRStrategy_L3(
+        _ = platformOCRStrategy_L3(
             textTypes: textTypes,
             platform: .tvOS
         )
-        #expect(Bool(true), "tvOS platform should return a strategy")  // tvOSStrategy is non-optional
+        #expect(Bool(true), "tvOS platform should return a strategy")
         
         // Test visionOS
-        let visionOSStrategy = platformOCRStrategy_L3(
+        _ = platformOCRStrategy_L3(
             textTypes: textTypes,
             platform: .visionOS
         )
-        #expect(Bool(true), "visionOS platform should return a strategy")  // visionOSStrategy is non-optional
+        #expect(Bool(true), "visionOS platform should return a strategy")
     }
     
     @Test @MainActor func testPlatformDocumentOCRStrategy_L3() {
@@ -611,34 +611,34 @@ open class L3StrategySelectionTests: BaseTestClass {
         let contentDensity = ContentDensity.balanced
         
         // Test phone
-        let phoneStrategy = selectCardExpansionStrategy_L3(
+        _ = selectCardExpansionStrategy_L3(
             contentCount: contentCount,
             screenWidth: screenWidth,
             deviceType: .phone,
             interactionStyle: interactionStyle,
             contentDensity: contentDensity
         )
-        #expect(Bool(true), "Phone device type should return a strategy")  // phoneStrategy is non-optional
+        #expect(Bool(true), "Phone device type should return a strategy")
         
         // Test pad
-        let padStrategy = selectCardExpansionStrategy_L3(
+        _ = selectCardExpansionStrategy_L3(
             contentCount: contentCount,
             screenWidth: 768,
             deviceType: .pad,
             interactionStyle: interactionStyle,
             contentDensity: contentDensity
         )
-        #expect(Bool(true), "Pad device type should return a strategy")  // padStrategy is non-optional
+        #expect(Bool(true), "Pad device type should return a strategy")
         
         // Test mac
-        let macStrategy = selectCardExpansionStrategy_L3(
+        _ = selectCardExpansionStrategy_L3(
             contentCount: contentCount,
             screenWidth: 1024,
             deviceType: .mac,
             interactionStyle: interactionStyle,
             contentDensity: contentDensity
         )
-        #expect(Bool(true), "Mac device type should return a strategy")  // macStrategy is non-optional
+        #expect(Bool(true), "Mac device type should return a strategy")
     }
     
     @Test @MainActor func testSelectCardExpansionStrategy_L3_WithDifferentContentDensities() {
@@ -648,34 +648,34 @@ open class L3StrategySelectionTests: BaseTestClass {
         let interactionStyle = InteractionStyle.interactive
         
         // Test dense density
-        let denseDensityStrategy = selectCardExpansionStrategy_L3(
+        _ = selectCardExpansionStrategy_L3(
             contentCount: contentCount,
             screenWidth: screenWidth,
             deviceType: deviceType,
             interactionStyle: interactionStyle,
             contentDensity: .dense
         )
-        #expect(Bool(true), "Dense density should return a strategy")  // denseDensityStrategy is non-optional
+        #expect(Bool(true), "Dense density should return a strategy")
         
         // Test balanced density
-        let balancedDensityStrategy = selectCardExpansionStrategy_L3(
+        _ = selectCardExpansionStrategy_L3(
             contentCount: contentCount,
             screenWidth: screenWidth,
             deviceType: deviceType,
             interactionStyle: interactionStyle,
             contentDensity: .balanced
         )
-        #expect(Bool(true), "Balanced density should return a strategy")  // balancedDensityStrategy is non-optional
+        #expect(Bool(true), "Balanced density should return a strategy")
         
         // Test spacious density
-        let spaciousDensityStrategy = selectCardExpansionStrategy_L3(
+        _ = selectCardExpansionStrategy_L3(
             contentCount: contentCount,
             screenWidth: screenWidth,
             deviceType: deviceType,
             interactionStyle: interactionStyle,
             contentDensity: .spacious
         )
-        #expect(Bool(true), "Spacious density should return a strategy")  // spaciousDensityStrategy is non-optional
+        #expect(Bool(true), "Spacious density should return a strategy")
     }
     
     // MARK: - Photo Strategy Tests

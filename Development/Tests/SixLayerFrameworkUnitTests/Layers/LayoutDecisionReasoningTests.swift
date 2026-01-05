@@ -180,7 +180,11 @@ open class LayoutDecisionReasoningTests: BaseTestClass {
     @Test @MainActor
     func testRealLayoutDecisionReasoningGeneration() {
         // Given
-        let items = [MockItem(id: 1), MockItem(id: 2), MockItem(id: 3)]
+        let items = [
+            TestPatterns.TestItem(id: 1, title: "Item 1"),
+            TestPatterns.TestItem(id: 2, title: "Item 2"),
+            TestPatterns.TestItem(id: 3, title: "Item 3")
+        ]
         let hints = PresentationHints(
             dataType: .collection,
             presentationPreference: .automatic,

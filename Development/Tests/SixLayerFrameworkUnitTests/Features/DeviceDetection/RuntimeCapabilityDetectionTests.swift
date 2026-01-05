@@ -287,4 +287,51 @@ open class RuntimeCapabilityDetectionTDDTests: BaseTestClass {
         // Should use override, not testing default
         #expect(RuntimeCapabilityDetection.supportsTouchWithOverride == !testingDefaults.supportsTouch)
     }
+
+    // MARK: - Touch Target Tests
+
+    @Test func testMinTouchTargetValues() {
+        // Test that minTouchTarget returns correct values for each platform
+        // Clear any overrides to test default platform behavior
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        
+        let platform = SixLayerPlatform.current
+
+        switch platform {
+        case .iOS, .watchOS:
+            // Touch-first platforms always have 44pt minimum per Apple HIG
+            #expect(RuntimeCapabilityDetection.minTouchTarget == 44.0, "iOS and watchOS should always have 44pt minimum touch targets")
+        case .macOS, .tvOS, .visionOS:
+            // For non-touch-first platforms, it should be 44.0 if touch is detected, 0.0 otherwise
+            // Per Apple HIG: 44pt when touch is available for accessibility compliance
+            let supportsTouch = RuntimeCapabilityDetection.supportsTouch
+            let expected: CGFloat = supportsTouch ? 44.0 : 0.0
+            let actual: CGFloat = RuntimeCapabilityDetection.minTouchTarget
+            // Use abs() for floating point comparison to handle any precision issues
+            #expect(abs(actual - expected) < 0.001, "Non-touch-first platforms should have 44pt targets when touch is detected (per Apple HIG), got \(actual) with supportsTouch=\(supportsTouch), expected \(expected)")
+        }
+    }
+
+    @Test func testMinTouchTargetIsNonNegative() {
+        // minTouchTarget should never be negative
+        #expect(RuntimeCapabilityDetection.minTouchTarget >= 0.0, "Minimum touch target should never be negative")
+    }
+
+    @Test func testMinTouchTargetDebug() {
+        // Debug test to see what's happening
+        let runtimePlatform = RuntimeCapabilityDetection.currentPlatform
+        let sixLayerPlatform = SixLayerPlatform.current
+        let supportsTouch = RuntimeCapabilityDetection.supportsTouch
+        let minTouchTarget = RuntimeCapabilityDetection.minTouchTarget
+
+        print("RuntimePlatform: \(runtimePlatform), SixLayerPlatform: \(sixLayerPlatform), supportsTouch: \(supportsTouch), minTouchTarget: \(minTouchTarget)")
+
+        // For iOS, this should definitely be 44.0
+        if runtimePlatform == .iOS {
+            #expect(minTouchTarget == 44.0, "iOS should always have 44.0 minTouchTarget, got \(minTouchTarget)")
+        }
+
+        // Check if both platform detections agree
+        #expect(runtimePlatform == sixLayerPlatform, "RuntimeCapabilityDetection.currentPlatform should match SixLayerPlatform.current")
+    }
 }

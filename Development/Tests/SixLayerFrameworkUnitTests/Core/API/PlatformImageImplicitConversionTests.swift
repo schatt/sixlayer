@@ -55,8 +55,9 @@ open class PlatformImageImplicitConversionTests: BaseTestClass {
         let platformImage = PlatformImage(uiImage)  // Implicit conversion
 
         // Then: Conversion should work correctly
-        #expect(platformImage.uiImage != nil, "Implicit conversion should produce valid UIImage")
-        #expect(platformImage.size.width > 0, "Converted PlatformImage should have valid dimensions")
+        // uiImage is non-optional, so we verify by checking size
+        #expect(platformImage.size.width > 0, "Implicit conversion should produce valid UIImage with dimensions")
+        #expect(platformImage.size.height > 0, "Converted PlatformImage should have valid dimensions")
         #expect(platformImage.size.height > 0, "Converted PlatformImage should have valid dimensions")
 
         // Test that both explicit and implicit conversions produce same result
@@ -150,7 +151,7 @@ open class PlatformImageImplicitConversionTests: BaseTestClass {
         // Given: UIImage with specific properties
         let uiImage = createTestUIImage()
         let originalSize = uiImage.size
-        let originalData = uiImage.jpegData(compressionQuality: 0.8)
+        _ = uiImage.jpegData(compressionQuality: 0.8)
         
         // When: Use implicit conversion
         let platformImage = PlatformImage(uiImage)

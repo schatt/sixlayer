@@ -9,13 +9,6 @@ import SwiftUI
 @Suite("Hints Default Value")
 struct HintsDefaultValueTests {
     
-    /// Initialize test config (no-op for structs that don't need config)
-    @MainActor
-    func initializeTestConfig() {
-        // This struct doesn't inherit from BaseTestClass, so we don't need to initialize config
-        // Tests that need config should inherit from BaseTestClass instead
-    }
-    
     // MARK: - Test Data Types
     
     /// Core Data-like entity with nil values (simulating the bug report scenario)
@@ -160,7 +153,6 @@ struct HintsDefaultValueTests {
     
     /// Test that hints with default values work with non-string properties
     @Test @MainActor func testHintsWithDefaultValuesForNonStringProperties() async {
-            initializeTestConfig()
         // Given: Entity with non-string values and hints with default values
         struct TestItem: Identifiable, CardDisplayable {
             public let id = UUID()
@@ -205,7 +197,6 @@ struct HintsDefaultValueTests {
     
     /// Test that hints with default values work with color properties
     @Test @MainActor func testHintsWithDefaultValuesForColorProperties() async {
-        initializeTestConfig()
         // Given: Entity with nil color values and hints with default color values
         let task = CoreDataTask(title: nil, taskDescription: nil, status: nil, priority: nil)
         let hints = PresentationHints(
@@ -224,7 +215,6 @@ struct HintsDefaultValueTests {
     
     /// Test that hints with default values work with mixed scenarios
     @Test @MainActor func testHintsWithDefaultValuesMixedScenarios() async {
-        initializeTestConfig()
         // Given: Entity with mixed nil and valid values, and hints with default values
         let task = CoreDataTask(title: "Valid Title", taskDescription: nil, status: "completed", priority: nil)
         let hints = PresentationHints(
@@ -255,7 +245,6 @@ struct HintsDefaultValueTests {
     
     /// Test that hints with default values work with platformPresentItemCollection_L1
     @Test @MainActor func testPlatformPresentItemCollectionWithDefaultValues() async {
-        initializeTestConfig()
         // Given: Core Data entities with nil values and hints with default values
         let tasks = [
             CoreDataTask(title: nil, taskDescription: nil, status: nil, priority: nil),

@@ -1,6 +1,6 @@
 # SixLayer Framework
 
-[![Version](https://img.shields.io/badge/version-v6.6.3-blue.svg)](https://github.com/schatt/sixlayer/releases/tag/v6.6.3)
+[![Version](https://img.shields.io/badge/version-v6.7.0-blue.svg)](https://github.com/schatt/sixlayer/releases/tag/v6.7.0)
 [![Platform](https://img.shields.io/badge/platform-iOS%2016%2B%20%7C%20macOS%2013%2B-lightgrey.svg)](https://github.com/schatt/6layer)
 [![Swift](https://img.shields.io/badge/Swift-5.9+-orange.svg)](https://swift.org)
 

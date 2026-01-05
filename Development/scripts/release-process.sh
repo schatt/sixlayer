@@ -556,10 +556,37 @@ else
     log_error "PROJECT_STATUS.md missing v$VERSION!"
 fi
 
-if grep -q "v$VERSION" Development/todo.md; then
-    echo "✅ todo.md updated"
+# Check ROADMAP.md for current release status
+if [ -f "Development/ROADMAP.md" ]; then
+    if grep -q "v$VERSION\|Current Release.*v$VERSION" Development/ROADMAP.md; then
+        echo "✅ ROADMAP.md updated with current release"
+    else
+        echo "⚠️  ROADMAP.md doesn't mention v$VERSION - consider updating current status"
+    fi
+    
+    # Validate roadmap items with GitHub issues are in release notes
+    echo "📋 Validating roadmap items with GitHub issues are in release..."
+    roadmap_issues=$(grep -oE '#[0-9]+' Development/ROADMAP.md | sort -u)
+    if [ -n "$roadmap_issues" ]; then
+        for issue in $roadmap_issues; do
+            issue_num=$(echo "$issue" | tr -d '#')
+            # Check if this issue is mentioned in the release notes
+            if [ -f "Development/RELEASE_v$VERSION.md" ]; then
+                if grep -q "$issue\|Issue #$issue_num\|#$issue_num" "Development/RELEASE_v$VERSION.md"; then
+                    echo "  ✅ Roadmap item $issue found in release notes"
+                else
+                    # Check if it's marked as completed in roadmap
+                    if grep -A 5 "$issue" Development/ROADMAP.md | grep -q "\[x\]\|✅\|COMPLETED"; then
+                        echo "  ℹ️  Roadmap item $issue is marked completed but not in release notes (optional)"
+                    else
+                        echo "  ⚠️  Roadmap item $issue is not mentioned in release notes - verify if it should be included"
+                    fi
+                fi
+            fi
+        done
+    fi
 else
-    log_error "todo.md missing v$VERSION!"
+    log_error "Missing Development/ROADMAP.md! ROADMAP.md is MANDATORY"
 fi
 
 # Step 9: Check main AI_AGENT.md file
@@ -732,7 +759,28 @@ else
         echo "🎉 Release v$VERSION completed successfully!"
         echo "📦 Tag: v$VERSION"
         echo "🌐 Pushed to all remotes (GitHub, Codeberg, GitLab)"
-        echo "💡 You can now delete branch $CURRENT_BRANCH if desired"
+        echo ""
+        
+        # Optionally delete the release branch
+        read -p "🗑️  Delete branch $CURRENT_BRANCH (local and remote)? (y/N): " -n 1 -r
+        echo
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
+            echo "🗑️  Deleting branch $CURRENT_BRANCH..."
+            
+            # Delete remote branches (try all remotes, ignore errors if branch doesn't exist)
+            echo "📤 Deleting remote branch from all remotes..."
+            git push all --delete "$CURRENT_BRANCH" 2>/dev/null || true
+            
+            # Delete local branch (only if we're not on it, which we're not since we switched to main)
+            if git show-ref --verify --quiet refs/heads/"$CURRENT_BRANCH"; then
+                git branch -d "$CURRENT_BRANCH" 2>/dev/null || git branch -D "$CURRENT_BRANCH" 2>/dev/null || true
+                echo "✅ Local branch deleted"
+            fi
+            
+            echo "✅ Branch $CURRENT_BRANCH deleted from all remotes"
+        else
+            echo "💡 Branch $CURRENT_BRANCH kept for reference"
+        fi
     else
         echo "🚀 Ready to merge and create release tag v$VERSION"
         echo ""

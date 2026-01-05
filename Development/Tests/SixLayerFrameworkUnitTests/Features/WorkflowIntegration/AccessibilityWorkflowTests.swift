@@ -19,12 +19,12 @@
 //  - Validate enhancement application
 //  - Test accessibility audit functionality
 //  - Verify compliance level checking
-//  - Use mock capabilities for platform testing
+//  - Test on current platform (tests run on actual platforms via simulators)
 //
 //  AUDIT STATUS: ✅ COMPLIANT
 //  - ✅ File Documentation: Complete with business purpose, testing scope, methodology
 //  - ✅ Function Documentation: All functions documented with business purpose
-//  - ✅ Platform Testing: Tests across all platforms using SixLayerPlatform.allCases
+//  - ✅ Platform Testing: Tests current platform capabilities using runtime detection
 //  - ✅ Integration Focus: Tests complete workflow integration, not individual components
 //
 
@@ -75,20 +75,15 @@ final class AccessibilityWorkflowTests: BaseTestClass {
     @Test @MainActor func testViewEnhancementWorkflow() async {
         initializeTestConfig()
         
-        for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
-            
-            // Given: A test view
-            let testView = createTestView()
-            
-            // When: Enhancing view with accessibility
-            let _ = testView.automaticCompliance()
-            
-            // Then: Enhancement should be applied (view should exist)
-            #expect(Bool(true), "View should be enhanced with accessibility on \(platform)")
-            
-            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-        }
+        // Given: Current platform and a test view
+        let currentPlatform = SixLayerPlatform.current
+        let testView = createTestView()
+        
+        // When: Enhancing view with accessibility
+        let _ = testView.automaticCompliance()
+        
+        // Then: Enhancement should be applied (view should exist)
+        #expect(Bool(true), "View should be enhanced with accessibility on \(currentPlatform)")
     }
     
     /// BUSINESS PURPOSE: Validate that form views are enhanced with accessibility
@@ -97,20 +92,15 @@ final class AccessibilityWorkflowTests: BaseTestClass {
     @Test @MainActor func testFormViewEnhancementWorkflow() async {
         initializeTestConfig()
         
-        for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
-            
-            // Given: A form view
-            let formView = createTestFormView()
-            
-            // When: Enhancing form view with accessibility
-            let _ = formView.automaticCompliance()
-            
-            // Then: Enhancement should be applied
-            #expect(Bool(true), "Form view should be enhanced with accessibility on \(platform)")
-            
-            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-        }
+        // Given: Current platform and a form view
+        let currentPlatform = SixLayerPlatform.current
+        let formView = createTestFormView()
+        
+        // When: Enhancing form view with accessibility
+        let _ = formView.automaticCompliance()
+        
+        // Then: Enhancement should be applied
+        #expect(Bool(true), "Form view should be enhanced with accessibility on \(currentPlatform)")
     }
     
     // MARK: - Enhancement → Audit Workflow Tests
@@ -121,23 +111,18 @@ final class AccessibilityWorkflowTests: BaseTestClass {
     @Test @MainActor func testEnhancementToAuditWorkflow() async {
         initializeTestConfig()
         
-        for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
-            
-            // Given: Enhanced view
-            let testView = createTestView()
-            let enhancedView = testView.automaticCompliance()
-            
-            // When: Auditing view accessibility
-            let audit = AccessibilityTesting.auditViewAccessibility(enhancedView)
-            
-            // Then: Audit should return valid results
-            #expect(audit.score >= 0, "Audit score should be non-negative on \(platform)")
-            #expect(audit.complianceLevel.rawValue >= ComplianceLevel.basic.rawValue,
-                   "Enhanced view should meet basic compliance on \(platform)")
-            
-            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-        }
+        // Given: Current platform and enhanced view
+        let currentPlatform = SixLayerPlatform.current
+        let testView = createTestView()
+        let enhancedView = testView.automaticCompliance()
+        
+        // When: Auditing view accessibility
+        let audit = AccessibilityTesting.auditViewAccessibility(enhancedView)
+        
+        // Then: Audit should return valid results
+        #expect(audit.score >= 0, "Audit score should be non-negative on \(currentPlatform)")
+        #expect(audit.complianceLevel.rawValue >= ComplianceLevel.basic.rawValue,
+               "Enhanced view should meet basic compliance on \(currentPlatform)")
     }
     
     /// BUSINESS PURPOSE: Validate that form views can be audited after enhancement
@@ -146,23 +131,18 @@ final class AccessibilityWorkflowTests: BaseTestClass {
     @Test @MainActor func testFormEnhancementToAuditWorkflow() async {
         initializeTestConfig()
         
-        for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
-            
-            // Given: Enhanced form view
-            let formView = createTestFormView()
-            let enhancedFormView = formView.automaticCompliance()
-            
-            // When: Auditing form view accessibility
-            let audit = AccessibilityTesting.auditViewAccessibility(enhancedFormView)
-            
-            // Then: Audit should return valid results
-            #expect(audit.score >= 0, "Form audit score should be non-negative on \(platform)")
-            #expect(audit.complianceLevel.rawValue >= ComplianceLevel.basic.rawValue,
-                   "Enhanced form view should meet basic compliance on \(platform)")
-            
-            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-        }
+        // Given: Current platform and enhanced form view
+        let currentPlatform = SixLayerPlatform.current
+        let formView = createTestFormView()
+        let enhancedFormView = formView.automaticCompliance()
+        
+        // When: Auditing form view accessibility
+        let audit = AccessibilityTesting.auditViewAccessibility(enhancedFormView)
+        
+        // Then: Audit should return valid results
+        #expect(audit.score >= 0, "Form audit score should be non-negative on \(currentPlatform)")
+        #expect(audit.complianceLevel.rawValue >= ComplianceLevel.basic.rawValue,
+               "Enhanced form view should meet basic compliance on \(currentPlatform)")
     }
     
     // MARK: - Audit → Compliance Workflow Tests
@@ -173,23 +153,18 @@ final class AccessibilityWorkflowTests: BaseTestClass {
     @Test @MainActor func testAuditToComplianceWorkflow() async {
         initializeTestConfig()
         
-        for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
-            
-            // Given: Enhanced view
-            let testView = createTestView()
-            let enhancedView = testView.automaticCompliance()
-            
-            // When: Auditing and checking compliance
-            let audit = AccessibilityTesting.auditViewAccessibility(enhancedView)
-            let complianceLevel = audit.complianceLevel
-            
-            // Then: Compliance level should be valid
-            #expect(complianceLevel.rawValue >= ComplianceLevel.basic.rawValue,
-                   "View should meet basic compliance on \(platform)")
-            
-            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-        }
+        // Given: Current platform and enhanced view
+        let currentPlatform = SixLayerPlatform.current
+        let testView = createTestView()
+        let enhancedView = testView.automaticCompliance()
+        
+        // When: Auditing and checking compliance
+        let audit = AccessibilityTesting.auditViewAccessibility(enhancedView)
+        let complianceLevel = audit.complianceLevel
+        
+        // Then: Compliance level should be valid
+        #expect(complianceLevel.rawValue >= ComplianceLevel.basic.rawValue,
+               "View should meet basic compliance on \(currentPlatform)")
     }
     
     /// BUSINESS PURPOSE: Validate complete accessibility workflow
@@ -198,58 +173,45 @@ final class AccessibilityWorkflowTests: BaseTestClass {
     @Test @MainActor func testCompleteAccessibilityWorkflow() async {
         initializeTestConfig()
         
-        for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
-            
-            // Step 1: Create view
-            let testView = createTestView()
-            
-            // Step 2: Enhance with accessibility
-            let enhancedView = testView.automaticCompliance()
-            
-            // Step 3: Audit accessibility
-            let audit = AccessibilityTesting.auditViewAccessibility(enhancedView)
-            
-            // Step 4: Verify compliance
-            let complianceLevel = audit.complianceLevel
-            
-            // Then: Complete workflow should succeed
-            #expect(complianceLevel.rawValue >= ComplianceLevel.basic.rawValue,
-                   "Complete accessibility workflow should succeed on \(platform)")
-            #expect(audit.score >= 0, "Audit should return valid score on \(platform)")
-            
-            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-        }
+        // Given: Current platform
+        let currentPlatform = SixLayerPlatform.current
+        
+        // Step 1: Create view
+        let testView = createTestView()
+        
+        // Step 2: Enhance with accessibility
+        let enhancedView = testView.automaticCompliance()
+        
+        // Step 3: Audit accessibility
+        let audit = AccessibilityTesting.auditViewAccessibility(enhancedView)
+        
+        // Step 4: Verify compliance
+        let complianceLevel = audit.complianceLevel
+        
+        // Then: Complete workflow should succeed
+        #expect(complianceLevel.rawValue >= ComplianceLevel.basic.rawValue,
+               "Complete accessibility workflow should succeed on \(currentPlatform)")
+        #expect(audit.score >= 0, "Audit should return valid score on \(currentPlatform)")
     }
     
     // MARK: - Cross-Platform Consistency Tests
     
-    /// BUSINESS PURPOSE: Validate accessibility workflow consistency across platforms
-    /// TESTING SCOPE: Tests that accessibility workflow works consistently on iOS/macOS
-    /// METHODOLOGY: Run workflow on all platforms, compare results
+    /// BUSINESS PURPOSE: Validate accessibility workflow on current platform
+    /// TESTING SCOPE: Tests that accessibility workflow works on current platform
+    /// METHODOLOGY: Run workflow on current platform, verify results
     @Test @MainActor func testAccessibilityWorkflowCrossPlatformConsistency() async {
         initializeTestConfig()
         
-        var platformResults: [SixLayerPlatform: ComplianceLevel] = [:]
+        // Given: Current platform and same view configuration
+        let currentPlatform = SixLayerPlatform.current
+        let testView = createTestView()
+        let enhancedView = testView.automaticCompliance()
         
-        for platform in SixLayerPlatform.allCases {
-            setCapabilitiesForPlatform(platform)
-            
-            // Given: Same view configuration
-            let testView = createTestView()
-            let enhancedView = testView.automaticCompliance()
-            
-            // When: Running accessibility workflow
-            let audit = AccessibilityTesting.auditViewAccessibility(enhancedView)
-            platformResults[platform] = audit.complianceLevel
-            
-            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-        }
+        // When: Running accessibility workflow
+        let audit = AccessibilityTesting.auditViewAccessibility(enhancedView)
         
-        // Then: All platforms should achieve at least basic compliance
-        let allCompliant = platformResults.values.allSatisfy { 
-            $0.rawValue >= ComplianceLevel.basic.rawValue 
-        }
-        #expect(allCompliant, "Accessibility workflow should be consistent across platforms")
+        // Then: Current platform should achieve at least basic compliance
+        #expect(audit.complianceLevel.rawValue >= ComplianceLevel.basic.rawValue,
+               "Accessibility workflow should work on \(currentPlatform)")
     }
 }

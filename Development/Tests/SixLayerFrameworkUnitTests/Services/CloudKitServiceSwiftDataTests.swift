@@ -60,8 +60,8 @@ final class CloudKitServiceSwiftDataTests {
         // The wrapper should handle thread bridging internally
         try await service.syncWithSwiftData(context: context)
         
-        // Verify context is still accessible
-        #expect(context.container != nil)
+        // Verify context is still accessible (container is non-optional)
+        _ = context.container
     }
     
     @Test func testSyncWithSwiftDataWithBackgroundContext() async throws {
@@ -120,7 +120,7 @@ final class CloudKitServiceSwiftDataTests {
     // MARK: - Integration with CloudKitService Tests
     
     @Test func testSyncWithSwiftDataUsesCloudKitServiceDelegate() async throws {
-        let delegate = MockCloudKitDelegate()
+        _ = MockCloudKitDelegate()
         
         // Create a custom delegate that tracks calls
         class TrackingDelegate: MockCloudKitDelegate {
@@ -147,13 +147,13 @@ final class CloudKitServiceSwiftDataTests {
         let container = createTestModelContainer()
         let context = container.mainContext
         
-        // Context should be valid before sync
-        #expect(context.container != nil)
+        // Context should be valid before sync (container is non-optional)
+        _ = context.container
         
         try await service.syncWithSwiftData(context: context)
         
-        // Context should still be valid after sync
-        #expect(context.container != nil)
+        // Context should still be valid after sync (container is non-optional)
+        _ = context.container
     }
     
     @Test func testSyncWithSwiftDataMultipleCalls() async throws {
@@ -167,8 +167,8 @@ final class CloudKitServiceSwiftDataTests {
         try await service.syncWithSwiftData(context: context)
         try await service.syncWithSwiftData(context: context)
         
-        // Context should still be valid
-        #expect(context.container != nil)
+        // Context should still be valid (container is non-optional)
+        _ = context.container
     }
     
     // MARK: - API Consistency Tests

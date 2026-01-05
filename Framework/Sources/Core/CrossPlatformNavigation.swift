@@ -100,12 +100,15 @@ public extension CrossPlatformNavigation {
     ) -> NavigationStrategy {
         // Check hints first for explicit preferences
         if let hints = hints {
-            if hints.presentationPreference == .detail {
+            switch hints.presentationPreference {
+            case .detail:
                 return .splitView
-            } else if hints.presentationPreference == .modal {
+            case .modal:
                 return .modal
-            } else if hints.presentationPreference == .navigation {
+            case .navigation:
                 return .navigationStack
+            default:
+                break // Let other logic handle countBased and other preferences
             }
         }
         

@@ -21,8 +21,23 @@ platforms:
     artifact_patterns:
       - build/macos/*.app
     # scheme: Required. The Xcode scheme to build for this platform.
+  - name: macOS_unit_tests
+    build_command: xcodebuild test -project SixLayerFramework.xcodeproj -scheme SixLayerFramework-UnitTestsOnly-macOS -destination "platform=macOS,arch=arm64" -parallel-testing-enabled YES
+    artifact_dir: build/macos
+    artifact_patterns:
+      - build/macos/*.app
+  - name: macOS_ui_tests
+    build_command: xcodebuild test -project SixLayerFramework.xcodeproj -scheme SixLayerFramework-macOS-UITests -destination "platform=macOS,arch=arm64" -parallel-testing-enabled YES
+    artifact_dir: build/macos
+    artifact_patterns:
+      - build/macos/*.app
+  - name: macOS_viewinspector_tests
+    build_command: xcodebuild test -project SixLayerFramework.xcodeproj -scheme SixLayerFramework-macOS-ViewInspectorTests -destination "platform=macOS,arch=arm64" -parallel-testing-enabled YES
+    artifact_dir: build/macos
+    artifact_patterns:
+      - build/macos/*.app
   - name: macOS_tests
-    build_command: swift test
+    build_command: xcodebuild test -project SixLayerFramework.xcodeproj -scheme SixLayerFramework-AllTests-macOS -destination "platform=macOS,arch=arm64" -parallel-testing-enabled YES
     artifact_dir: build/macos
     artifact_patterns:
       - build/macos/*.app
@@ -33,12 +48,57 @@ platforms:
     artifact_patterns:
       - build/ios/*.ipa
     # scheme: Required. The Xcode scheme to build for this platform.
+  - name: iOS_unit_tests
+    build_command: xcodebuild test -project SixLayerFramework.xcodeproj -scheme SixLayerFramework-UnitTestsOnly-iOS -destination "platform=iOS Simulator,name=iPhone 17 Pro Max" -parallel-testing-enabled YES
+    artifact_dir: build/ios
+    artifact_patterns:
+      - build/ios/*.ipa
+  - name: iOS_ui_tests
+    build_command: xcodebuild test -project SixLayerFramework.xcodeproj -scheme SixLayerFramework-iOS-UITests -destination "platform=iOS Simulator,name=iPhone 17 Pro Max" -parallel-testing-enabled YES
+    artifact_dir: build/ios
+    artifact_patterns:
+      - build/ios/*.ipa
+  - name: iOS_viewinspector_tests
+    build_command: xcodebuild test -project SixLayerFramework.xcodeproj -scheme SixLayerFramework-iOS-ViewInspectorTests -destination "platform=iOS Simulator,name=iPhone 17 Pro Max" -parallel-testing-enabled YES
+    artifact_dir: build/ios
+    artifact_patterns:
+      - build/ios/*.ipa
   - name: iOS_tests
-    build_command: xcodebuild test -workspace .swiftpm/xcode/package.xcworkspace -scheme SixLayerFramework -destination "platform=iOS Simulator,name=iPhone 17 Pro Max" -parallel-testing-enabled YES -maximum-concurrent-test-simulator-destinations 2
+    build_command: xcodebuild test -project SixLayerFramework.xcodeproj -scheme SixLayerFramework-AllTests-iOS -destination "platform=iOS Simulator,name=iPhone 17 Pro Max" -parallel-testing-enabled YES -maximum-concurrent-test-simulator-destinations 2
     artifact_dir: build/ios
     artifact_patterns:
       - build/ios/*.ipa
     # scheme: Required. The Xcode scheme to build for this platform.
+  - name: tvOS_build
+    build_command: xcodebuild build -workspace .swiftpm/xcode/package.xcworkspace -scheme SixLayerFramework -destination "platform=tvOS Simulator,name=Apple TV"
+    artifact_dir: build/tvos
+    artifact_patterns:
+      - build/tvos/*.app
+  - name: tvOS_tests
+    build_command: xcodebuild test -project SixLayerFramework.xcodeproj -scheme SixLayerFramework-AllTests-tvOS -destination "platform=tvOS Simulator,name=Apple TV" -parallel-testing-enabled YES
+    artifact_dir: build/tvos
+    artifact_patterns:
+      - build/tvos/*.app
+  - name: watchOS_build
+    build_command: xcodebuild build -workspace .swiftpm/xcode/package.xcworkspace -scheme SixLayerFramework -destination "platform=watchOS Simulator,name=Apple Watch Series 9 (45mm)"
+    artifact_dir: build/watchos
+    artifact_patterns:
+      - build/watchos/*.app
+  - name: watchOS_tests
+    build_command: xcodebuild test -project SixLayerFramework.xcodeproj -scheme SixLayerFramework-AllTests-watchOS -destination "platform=watchOS Simulator,name=Apple Watch Series 9 (45mm)" -parallel-testing-enabled YES
+    artifact_dir: build/watchos
+    artifact_patterns:
+      - build/watchos/*.app
+  - name: visionOS_build
+    build_command: xcodebuild build -workspace .swiftpm/xcode/package.xcworkspace -scheme SixLayerFramework -destination "platform=visionOS Simulator,name=Apple Vision Pro"
+    artifact_dir: build/visionos
+    artifact_patterns:
+      - build/visionos/*.app
+  - name: visionOS_tests
+    build_command: xcodebuild test -project SixLayerFramework.xcodeproj -scheme SixLayerFramework-AllTests-visionOS -destination "platform=visionOS Simulator,name=Apple Vision Pro" -parallel-testing-enabled YES
+    artifact_dir: build/visionos
+    artifact_patterns:
+      - build/visionos/*.app
 tasks:
   - name: generate-file-list
     # Example: passing a secret as an environment variable (uncomment to use)
@@ -74,27 +134,82 @@ build_groups:
     targets:
       - macOS
       - iOS_build
+      - tvOS_build
+      - watchOS_build
+      - visionOS_build
   test:
     continue_on_error: true
     parallel: true
     targets:
-      - macOS_tests
-      - iOS_tests
+      - macOS_unit_tests
+      - macOS_ui_tests
+      - macOS_viewinspector_tests
+      - iOS_unit_tests
+      - iOS_ui_tests
+      - iOS_viewinspector_tests
+      - tvOS_tests
+      - watchOS_tests
+      - visionOS_tests
+  mac_core:
+    targets:
+      - xcodegen
+      - macOS_unit_tests
+      - macOS_viewinspector_tests
   mac:
     targets:
-      - xcodegen
       - macOS
-      - macOS_tests
-  macOS_tests:
+      - mac_core
+  macOS_test:
     targets:
       - xcodegen
       - macOS_tests
+  ios_core:
+    targets:
+      - xcodegen
+      - iOS_unit_tests
+      - iOS_viewinspector_tests
   iOS:
     targets:
-      - xcodegen
       - iOS_build
-      - iOS_tests
+      - ios_core
   iOS_test:
     targets:
       - xcodegen
       - iOS_tests
+  mt:
+    targets:
+      - xcodegen
+      - macOS_unit_tests
+      - macOS_viewinspector_tests
+  it:
+    targets:
+      - xcodegen
+      - iOS_unit_tests
+      - iOS_viewinspector_tests
+  tvos:
+    targets:
+      - xcodegen
+      - tvOS_build
+      - tvOS_tests
+  tvos_test:
+    targets:
+      - xcodegen
+      - tvOS_tests
+  watchos:
+    targets:
+      - xcodegen
+      - watchOS_build
+      - watchOS_tests
+  watchos_test:
+    targets:
+      - xcodegen
+      - watchOS_tests
+  visionos:
+    targets:
+      - xcodegen
+      - visionOS_build
+      - visionOS_tests
+  visionos_test:
+    targets:
+      - xcodegen
+      - visionOS_tests

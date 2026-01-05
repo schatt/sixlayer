@@ -48,12 +48,12 @@ open class Layer4PlatformImageArchitectureTests: BaseTestClass {
         var capturedImage: PlatformImage?
         var selectedImage: PlatformImage?
         
-        let cameraInterface = PlatformPhotoComponentsLayer4.platformCameraInterface_L4 { image in
+        _ = PlatformPhotoComponentsLayer4.platformCameraInterface_L4 { image in
             // image parameter should be PlatformImage, not UIImage/NSImage
             capturedImage = image
         }
         
-        let photoPicker = PlatformPhotoComponentsLayer4.platformPhotoPicker_L4 { image in
+        _ = PlatformPhotoComponentsLayer4.platformPhotoPicker_L4 { image in
             // image parameter should be PlatformImage, not UIImage/NSImage
             selectedImage = image
         }
@@ -130,7 +130,7 @@ open class Layer4PlatformImageArchitectureTests: BaseTestClass {
         
         // Test that Layer 4 can work with the converted PlatformImage
         
-        let photoDisplay = PlatformPhotoComponentsLayer4.platformPhotoDisplay_L4(
+        _ = PlatformPhotoComponentsLayer4.platformPhotoDisplay_L4(
             image: platformImage,
             style: .thumbnail
         )
@@ -149,7 +149,7 @@ open class Layer4PlatformImageArchitectureTests: BaseTestClass {
         
         // Test that Layer 4 can work with the converted PlatformImage
         
-        let photoDisplay = PlatformPhotoComponentsLayer4.platformPhotoDisplay_L4(
+        _ = PlatformPhotoComponentsLayer4.platformPhotoDisplay_L4(
             image: platformImage,
             style: .thumbnail
         )
@@ -167,9 +167,9 @@ open class Layer4PlatformImageArchitectureTests: BaseTestClass {
         let platformImage = PlatformImage.createPlaceholder()
         
         // When: Use Layer 4 APIs
-        let cameraInterface = PlatformPhotoComponentsLayer4.platformCameraInterface_L4 { _ in }
-        let photoPicker = PlatformPhotoComponentsLayer4.platformPhotoPicker_L4 { _ in }
-        let photoDisplay = PlatformPhotoComponentsLayer4.platformPhotoDisplay_L4(
+        _ = PlatformPhotoComponentsLayer4.platformCameraInterface_L4 { _ in }
+        _ = PlatformPhotoComponentsLayer4.platformPhotoPicker_L4 { _ in }
+        _ = PlatformPhotoComponentsLayer4.platformPhotoDisplay_L4(
             image: platformImage,
             style: .thumbnail
         )
@@ -207,7 +207,7 @@ open class Layer4PlatformImageArchitectureTests: BaseTestClass {
         
         
         // Test that Layer 4 accepts PlatformImage directly
-        let photoDisplay = PlatformPhotoComponentsLayer4.platformPhotoDisplay_L4(
+        _ = PlatformPhotoComponentsLayer4.platformPhotoDisplay_L4(
             image: platformImage,
             style: .thumbnail
         )
