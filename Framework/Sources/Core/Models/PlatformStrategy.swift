@@ -270,6 +270,40 @@ public extension SixLayerPlatform {
         }
     }
     
+    /// Default grid column count for collection views
+    /// Used for creating GridItem arrays with platform-appropriate column counts
+    var defaultGridColumnCount: Int {
+        switch self {
+        case .iOS: return 2
+        case .macOS: return 3
+        case .watchOS: return 1
+        case .tvOS: return 4
+        case .visionOS: return 3
+        }
+    }
+    
+    /// Whether this platform supports liquid glass design effects
+    /// Liquid glass effects are visual effects that may not be supported on all platforms
+    var supportsLiquidGlassEffects: Bool {
+        switch self {
+        case .iOS, .macOS, .visionOS:
+            return true
+        case .watchOS, .tvOS:
+            return false
+        }
+    }
+    
+    /// Whether this platform supports liquid glass reflection effects
+    /// Reflection effects require more advanced rendering capabilities
+    var supportsLiquidGlassReflections: Bool {
+        switch self {
+        case .iOS, .macOS, .visionOS:
+            return true
+        case .watchOS, .tvOS:
+            return false
+        }
+    }
+    
     // MARK: - HIG Compliance Properties
     
     /// Whether this platform supports AssistiveTouch

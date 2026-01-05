@@ -519,17 +519,19 @@ public struct ThemedGenericItemCollectionView: View {
     }
     
     private var gridColumns: [GridItem] {
+        // Use PlatformStrategy for platform-specific grid column count (Issue #140)
+        let sixLayerPlatform = convertPlatformStyle(platform)
+        let columnCount = sixLayerPlatform.defaultGridColumnCount
+        return Array(repeating: GridItem(.flexible()), count: columnCount)
+    }
+    
+    private func convertPlatformStyle(_ platform: PlatformStyle) -> SixLayerPlatform {
         switch platform {
-        case .ios:
-            return Array(repeating: GridItem(.flexible()), count: 2)
-        case .macOS:
-            return Array(repeating: GridItem(.flexible()), count: 3)
-        case .watchOS:
-            return Array(repeating: GridItem(.flexible()), count: 1)
-        case .tvOS:
-            return Array(repeating: GridItem(.flexible()), count: 4)
-        case .visionOS:
-            return Array(repeating: GridItem(.flexible()), count: 3)
+        case .ios: return .iOS
+        case .macOS: return .macOS
+        case .watchOS: return .watchOS
+        case .tvOS: return .tvOS
+        case .visionOS: return .visionOS
         }
     }
 }
