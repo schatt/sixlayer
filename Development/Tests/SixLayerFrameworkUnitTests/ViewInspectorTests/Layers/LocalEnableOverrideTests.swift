@@ -34,7 +34,7 @@ open class LocalEnableOverrideTests: BaseTestClass {
             // 3. Try to inspect for accessibility identifier
             #if canImport(ViewInspector)
             do {
-                let inspectedView = try view.inspectView()
+                let inspectedView = try AnyView(view).inspect()
                 let button = try inspectedView.button()
                 let accessibilityID = try button.accessibilityIdentifier()
                 
@@ -85,8 +85,8 @@ open class LocalEnableOverrideTests: BaseTestClass {
             // Using wrapper - when ViewInspector works on macOS, no changes needed here
             #if canImport(ViewInspector)
             if let inspectedView = try? AnyView(view).inspect(),
-               let button = try? inspectedView.button(),
-               let accessibilityID = try? button.accessibilityIdentifier() {
+               let buttons = inspectedView.findAll(ViewInspector.ViewType.Button.self).first,
+               let accessibilityID = try? buttons.accessibilityIdentifier() {
                 // .named() should always work regardless of global settings
                 // This is the correct behavior - explicit naming should not be affected by global config
                 #expect(!accessibilityID.isEmpty, ".named() should always generate identifier regardless of global settings")
@@ -128,7 +128,7 @@ open class LocalEnableOverrideTests: BaseTestClass {
             // 3. Try to inspect for accessibility identifier
             #if canImport(ViewInspector)
             do {
-                let inspectedView = try view.inspectView()
+                let inspectedView = try AnyView(view).inspect()
                 let button = try inspectedView.button()
                 let accessibilityID = try button.accessibilityIdentifier()
                 
