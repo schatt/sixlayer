@@ -126,11 +126,14 @@ open class CapabilityAwareFunctionTests: BaseTestClass {
         // Test that touch-related functions work correctly when touch is supported
         let config = getCardExpansionPlatformConfig()
         
-        // Touch targets should be platform-appropriate for current platform
+        // Per Apple HIG: Touch targets should be 44.0 when touch is enabled (for accessibility compliance),
+        // regardless of platform. For touch-first platforms (iOS, watchOS), it's always 44.0.
+        // For non-touch-first platforms, it's 44.0 when touch is detected, 0.0 otherwise.
         let currentPlatform = SixLayerPlatform.current
-        let expectedMinTouchTarget: CGFloat = (currentPlatform == .iOS || currentPlatform == .watchOS) ? 44.0 : 0.0
+        // Since we explicitly enabled touch support, it should always be 44.0 per Apple HIG
+        let expectedMinTouchTarget: CGFloat = 44.0
         #expect(config.minTouchTarget == expectedMinTouchTarget, 
-                                   "Touch targets should be platform-appropriate (\(expectedMinTouchTarget)) for current platform \(currentPlatform)")
+                                   "Touch targets should be 44.0 when touch is enabled (per Apple HIG) for current platform \(currentPlatform)")
         
         // Haptic feedback should be available
         #expect(config.supportsHapticFeedback, 

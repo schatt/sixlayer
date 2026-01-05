@@ -292,15 +292,23 @@ open class RuntimeCapabilityDetectionTDDTests: BaseTestClass {
 
     @Test func testMinTouchTargetValues() {
         // Test that minTouchTarget returns correct values for each platform
+        // Clear any overrides to test default platform behavior
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        
         let platform = SixLayerPlatform.current
 
         switch platform {
         case .iOS, .watchOS:
+            // Touch-first platforms always have 44pt minimum per Apple HIG
             #expect(RuntimeCapabilityDetection.minTouchTarget == 44.0, "iOS and watchOS should always have 44pt minimum touch targets")
         case .macOS, .tvOS, .visionOS:
             // For non-touch-first platforms, it should be 44.0 if touch is detected, 0.0 otherwise
-            let expected = RuntimeCapabilityDetection.supportsTouch ? 44.0 : 0.0
-            #expect(RuntimeCapabilityDetection.minTouchTarget == expected, "Non-touch-first platforms should have 44pt targets only when touch is detected")
+            // Per Apple HIG: 44pt when touch is available for accessibility compliance
+            let supportsTouch = RuntimeCapabilityDetection.supportsTouch
+            let expected: CGFloat = supportsTouch ? 44.0 : 0.0
+            let actual: CGFloat = RuntimeCapabilityDetection.minTouchTarget
+            // Use abs() for floating point comparison to handle any precision issues
+            #expect(abs(actual - expected) < 0.001, "Non-touch-first platforms should have 44pt targets when touch is detected (per Apple HIG), got \(actual) with supportsTouch=\(supportsTouch), expected \(expected)")
         }
     }
 
