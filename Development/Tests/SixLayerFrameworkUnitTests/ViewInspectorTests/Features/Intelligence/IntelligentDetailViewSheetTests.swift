@@ -240,7 +240,6 @@ struct IntelligentDetailViewSheetTests {
     /// Present platformDetailView inside a real AppKit sheet and verify it is not tiny/blank
     /// This test uses actual NSWindow and NSHostingController to catch real-world sizing/blank-content issues
     @Test @MainActor func testPlatformDetailViewPresentsNonTinyNonBlankSheet() async {
-        initializeTestConfig()
         // Given
         let task = TestTask(title: "Sheet Task", description: "Details", priority: 3)
 
