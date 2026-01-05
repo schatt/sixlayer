@@ -107,7 +107,7 @@ open class IntelligentFormViewTests: BaseTestClass {
                 }
 
                 if let updateButton = updateButton {
-                    try? updateButton.sixLayerTap()
+                    try? updateButton.tap()
                     // TDD RED: Should PASS - onSubmit should be called
                     #expect(onSubmitCalled, "Update button should call onSubmit callback when clicked")
                     #expect(Bool(true), "Update button should pass data to onSubmit callback")  // submittedData is non-optional
@@ -158,7 +158,7 @@ open class IntelligentFormViewTests: BaseTestClass {
                 }
 
                 if let updateButton = updateButton {
-                    try? updateButton.sixLayerTap()
+                    try? updateButton.tap()
                     // TDD RED: This test documents the current buggy behavior
                     // The callback IS called, but it does nothing (empty closure)
                     // Issue #8 says the button should auto-save Core Data or provide feedback
@@ -208,7 +208,7 @@ open class IntelligentFormViewTests: BaseTestClass {
                 }
 
                 // TDD RED: Should PASS - button should exist
-                #expect(Bool(true), "Update button should exist in form")  // updateButton is non-optional
+                #expect(updateButton != nil, "Update button should exist in form")
                 // TODO: After fix, add verification for visual feedback (success message, etc.)
             } else {
                 Issue.record("Could not inspect form view")
