@@ -145,7 +145,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     // - RuntimeCapabilityDetectionComponentAccessibilityTests.swift
     
     @Test @MainActor func testAccessibilityIdentifierConfigGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
             // Given: AccessibilityIdentifierConfig singleton
             guard let config = testConfig else {
@@ -163,7 +163,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testGlobalAutomaticAccessibilityIdentifiersKeyGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
             // Given: GlobalAutomaticAccessibilityIdentifiersKey
             let key = GlobalAutomaticAccessibilityIdentifiersKey()
@@ -177,7 +177,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testComprehensiveAccessibilityModifierGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
             // Given: A view with ComprehensiveAccessibilityModifier
             let testView = platformVStackContainer {
@@ -203,7 +203,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testSystemAccessibilityModifierGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
             // Given: A view with SystemAccessibilityModifier
             let testView = platformVStackContainer {
@@ -232,7 +232,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testAccessibilityIdentifierAssignmentModifierGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
             // Given: A view with AccessibilityIdentifierAssignmentModifier
             let testView = platformVStackContainer {
@@ -261,7 +261,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testNamedModifierGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
             // Given: A view with .named() modifier
             let testView = platformVStackContainer {
@@ -287,7 +287,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testExactNamedModifierGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
             // Given: A view with .exactNamed() modifier
             let testView = platformVStackContainer {
@@ -313,7 +313,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testAutomaticAccessibilityIdentifiersModifierGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
             // Given: A view with .automaticCompliance() modifier
             let testView = platformVStackContainer {
@@ -339,7 +339,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testAutomaticAccessibilityModifierGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
             // Given: A view with .automaticAccessibility() modifier
             let testView = platformVStackContainer {
@@ -365,7 +365,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testScreenContextModifierGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
             let testView = platformVStackContainer {
                 Text("Test Content")
@@ -383,7 +383,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testNavigationStateModifierGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
             let testView = platformVStackContainer {
                 Text("Test Content")
@@ -401,7 +401,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testDetectAppNamespaceGeneratesCorrectNamespace() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
             // Given: detectAppNamespace function
             let namespace = "SixLayerFramework" // Use real namespace
@@ -412,7 +412,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testAccessibilitySystemStateGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
             // Given: AccessibilitySystemState
             let state = AccessibilitySystemState()
@@ -423,7 +423,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testPlatformDetectionGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
             // Given: Platform detection
             let platform = "iOS" // Use real platform
@@ -434,7 +434,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testAccessibilityIdentifierPatternsGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
             // Given: Various accessibility identifier patterns
             let patterns = [
@@ -454,7 +454,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testAccessibilityIdentifierGenerationGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
             // Given: Accessibility identifier generation
             let testView = platformVStackContainer {
@@ -480,7 +480,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testAccessibilityIdentifierValidationGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
             // Given: Accessibility identifier validation
             let testView = platformVStackContainer {
@@ -506,7 +506,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testAccessibilityIdentifierHierarchyGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
             // Given: Accessibility identifier hierarchy
             let testView = platformVStackContainer {
@@ -533,7 +533,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testAccessibilityIdentifierCollisionPreventionGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
             // Given: Accessibility identifier collision prevention
             let testView = platformVStackContainer {
@@ -561,7 +561,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testAccessibilityIdentifierDebugLoggingGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
             // Given: Accessibility identifier debug logging
             guard let config = testConfig else {
@@ -584,7 +584,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testAccessibilityManagerGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         // Given: AccessibilityManager
         let manager = AccessibilityManager()
         
@@ -611,7 +611,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testAccessibilityTestingSuiteGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         // Given: AccessibilityTestingView (the actual View, not the class)
         let testView = AccessibilityTestingView()
         
@@ -631,7 +631,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testRuntimeCapabilityDetectionGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         // Given: RuntimeCapabilityDetection
         let testView = RuntimeCapabilityDetectionView()
         
@@ -668,7 +668,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testPlatformPresentItemCollectionL1GeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         // Given: Automatic IDs enabled
         AccessibilityIdentifierConfig.shared.enableAutoIDs = true
         
@@ -698,7 +698,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testPlatformPresentItemCollectionL1WithEnhancedHintsGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         AccessibilityIdentifierConfig.shared.enableAutoIDs = true
         
         let testItems = createLayer1TestItems()
@@ -735,7 +735,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     // Tests consolidated from all Platform*Layer5ComponentAccessibilityTests.swift files
     
     @Test @MainActor func testPlatformSafetyLayer5GeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         // Given: PlatformSafetyLayer5
         let testView = PlatformSafetyLayer5()
         
@@ -755,7 +755,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testPlatformPrivacyLayer5GeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         // Given: PlatformPrivacyLayer5
         let testView = PlatformPrivacyLayer5()
         
@@ -775,7 +775,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testPlatformRecognitionLayer5GeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         // Given: PlatformRecognitionLayer5
         let testView = PlatformRecognitionLayer5()
         
@@ -795,7 +795,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testPlatformNotificationLayer5GeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         // Given: PlatformNotificationLayer5
         let testView = PlatformNotificationLayer5()
         
@@ -815,7 +815,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testPlatformOrganizationLayer5GeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let testView = PlatformOrganizationLayer5()
         #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
@@ -831,7 +831,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testPlatformRoutingLayer5GeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let testView = PlatformRoutingLayer5()
         #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
@@ -847,7 +847,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testPlatformProfilingLayer5GeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let testView = PlatformProfilingLayer5()
         #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
@@ -863,7 +863,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testPlatformPerformanceLayer6GeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let testView = PlatformPerformanceLayer6()
         #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
@@ -879,7 +879,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testPlatformOrchestrationLayer5GeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let testView = PlatformOrchestrationLayer5()
         #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
@@ -895,7 +895,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testPlatformOptimizationLayer5GeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let testView = PlatformOptimizationLayer5()
         #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
@@ -911,7 +911,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testPlatformInterpretationLayer5GeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let testView = PlatformInterpretationLayer5()
         #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
@@ -927,7 +927,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testPlatformMaintenanceLayer5GeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let testView = PlatformMaintenanceLayer5()
         #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
@@ -943,7 +943,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testPlatformMessagingLayer5GeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         // PlatformMessagingLayer5 is a class, not a View - use its method that returns a View
         let manager = PlatformMessagingLayer5()
         let testView = manager.createAlertButton(title: "Test Alert", action: {})
@@ -961,7 +961,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testPlatformLoggingLayer5GeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let testView = PlatformLoggingLayer5()
         #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
@@ -977,7 +977,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testPlatformKnowledgeLayer5GeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let testView = PlatformKnowledgeLayer5()
         #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
@@ -993,7 +993,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testPlatformWisdomLayer5GeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let testView = PlatformWisdomLayer5()
         #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
@@ -1009,7 +1009,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testPlatformResourceLayer5GeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         // PlatformResourceLayer5 is a class, not a View - use its method that returns a View
         let manager = PlatformResourceLayer5()
         let testView = manager.createResourceButton(title: "Test Resource", action: {})
@@ -1040,7 +1040,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testPlatformPresentModalFormL1GeneratesAccessibilityIdentifiersOnIOS() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         // Given
         let testData = ModalFormTestData(name: "Test Name", email: "test@example.com")
         
@@ -1072,7 +1072,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testPlatformPresentModalFormL1GeneratesAccessibilityIdentifiersOnMacOS() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         // Given
         let testData = ModalFormTestData(name: "Test Name", email: "test@example.com")
         
@@ -1104,7 +1104,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testPlatformPhotoCaptureL1GeneratesAccessibilityIdentifiersOnIOS() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         // Given
         let purpose = PhotoPurpose.vehiclePhoto
         let context = PhotoContext(
@@ -1135,7 +1135,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testPlatformPhotoCaptureL1GeneratesAccessibilityIdentifiersOnMacOS() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         // Given
         let purpose = PhotoPurpose.vehiclePhoto
         let context = PhotoContext(
@@ -1166,7 +1166,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testPlatformPhotoSelectionL1GeneratesAccessibilityIdentifiersOnIOS() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         // Given
         let purpose = PhotoPurpose.vehiclePhoto
         let context = PhotoContext(
@@ -1197,7 +1197,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testPlatformPhotoSelectionL1GeneratesAccessibilityIdentifiersOnMacOS() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         // Given
         let purpose = PhotoPurpose.vehiclePhoto
         let context = PhotoContext(
@@ -1228,7 +1228,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testPlatformPhotoDisplayL1GeneratesAccessibilityIdentifiersOnIOS() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         // Given
         let purpose = PhotoPurpose.vehiclePhoto
         let context = PhotoContext(
@@ -1260,7 +1260,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testPlatformPhotoDisplayL1GeneratesAccessibilityIdentifiersOnMacOS() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         // Given
         let purpose = PhotoPurpose.vehiclePhoto
         let context = PhotoContext(
@@ -1302,7 +1302,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     func testPlatformPhotoPickerL4ReturnsCorrectPlatformImplementation(
         platform: SixLayerPlatform
     ) async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         // When
         let view = PlatformPhotoComponentsLayer4.platformPhotoPicker_L4(
             onImageSelected: { _ in }
@@ -1322,7 +1322,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     func testPlatformPhotoDisplayL4GeneratesAccessibilityIdentifiers(
         platform: SixLayerPlatform
     ) async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         // Given
         let testImage = PlatformImage.createPlaceholder()
         
@@ -1346,7 +1346,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testPlatformPhotoEditorL4GeneratesAccessibilityIdentifiersOnIOS() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         // Given
         let testPhoto = PlatformImage()
         
@@ -1370,7 +1370,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testPlatformPhotoEditorL4GeneratesAccessibilityIdentifiersOnMacOS() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         // Given
         let testPhoto = PlatformImage()
         
@@ -1394,7 +1394,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testPlatformOCRComponentsLayer4GeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         // PlatformOCRComponentsLayer4 doesn't exist as a type - use platformOCRImplementation_L4 function instead
         let testImage = PlatformImage.createPlaceholder()
         let context = OCRContext(textTypes: [.general], language: .english)
@@ -1439,7 +1439,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testGenericNumericDataViewGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         // Given: GenericNumericDataView
         let testData = [1.0, 2.0, 3.0]
         let hints = PresentationHints()
@@ -1461,7 +1461,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testGenericFormViewGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         // Given: GenericFormView
         let testFields = [
             DynamicFormField(
@@ -1508,7 +1508,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testGenericMediaViewGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         // Given: GenericMediaView
         let testMediaItems = [
             GenericMediaItem(title: "Image 1", url: "image1.jpg", thumbnail: "thumb1.jpg"),
@@ -1533,7 +1533,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testGenericSettingsViewGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         // Given: GenericSettingsView
         let testSettings = [
             SettingsSectionData(title: "General", items: [
@@ -1560,7 +1560,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testGenericItemCollectionViewGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         // Given: GenericItemCollectionView
         let testItems = [
             TestPatterns.TestItem(id: "Item 1", title: "Item 1"),
@@ -1586,7 +1586,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testGenericHierarchicalViewGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         // Given: GenericHierarchicalView
         let testItems = [
             GenericHierarchicalItem(title: "Root Item", level: 0, children: [
@@ -1613,7 +1613,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testGenericTemporalViewGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         // Given: GenericTemporalView
         let testItems = [
             GenericTemporalItem(title: "Event 1", date: Date()),
@@ -1638,7 +1638,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testGenericContentViewGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         // Given: GenericContentView
         let testContent = "Sample content"
         let hints = PresentationHints()
@@ -1660,7 +1660,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testAutomaticAccessibilityIdentifiersGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         // Given: Framework component (testing our framework, not SwiftUI)
         let testView = platformPresentContent_L1(
             content: "Test",
@@ -1712,7 +1712,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testGlobalConfigControlsAutomaticIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
             // Given: Automatic IDs explicitly enabled for this test
             guard let config = self.testConfig else {
@@ -1738,7 +1738,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testGlobalConfigSupportsCustomNamespace() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
             // Given: Custom namespace
             let customNamespace = "myapp.users"
@@ -1758,7 +1758,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testAutomaticAccessibilityIdentifiersModifierGeneratesIdentifiersOnIOS() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let view = platformPresentContent_L1(
             content: "Test",
             hints: PresentationHints()
@@ -1780,7 +1780,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testAutomaticAccessibilityIdentifiersModifierGeneratesIdentifiersOnMacOS() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let view = platformPresentContent_L1(
             content: "Test",
             hints: PresentationHints()
@@ -1823,7 +1823,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testNamedModifierGeneratesIdentifiersOnMacOS() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let view = platformPresentContent_L1(
             content: "Test",
             hints: PresentationHints()
@@ -1845,7 +1845,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testAutomaticIDGeneratorCreatesStableIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
             // Given: Automatic IDs enabled
             guard let config = self.testConfig else {
@@ -1886,7 +1886,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testAutomaticIDGeneratorHandlesDifferentRolesAndContexts() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
             // Given: Automatic IDs enabled with namespace
             guard let config = self.testConfig else {
@@ -1921,7 +1921,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testManualAccessibilityIdentifiersOverrideAutomatic() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
             // Given: Automatic IDs enabled, set namespace for this test
             guard let config = self.testConfig else {
@@ -1958,7 +1958,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testAutomaticIdentifiersWorkByDefault() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
             // Given: Explicitly set configuration for this test
             guard let config = testConfig else {
@@ -1993,9 +1993,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testAccessibilityIdentifiersAreReasonableLength() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         // Setup test environment
-        setupTestEnvironment()
+        self.setupTestEnvironment()
         
         // TDD: Define the behavior I want - short, clean IDs
         let view = PlatformInteractionButton(style: .primary, action: {}) {
@@ -2020,7 +2020,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #endif
         
         // Cleanup
-        cleanupTestEnvironment()
+        self.cleanupTestEnvironment()
     }
     
     // MARK: - Identifier Configuration & Behavior Tests
@@ -2034,8 +2034,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     // - AccessibilityGlobalLocalConfigTests.swift
     
     @Test @MainActor func testAutomaticIDsDisabled_NoIdentifiersGenerated() {
-        initializeTestConfig()
-        runWithTaskLocalConfig {
+        self.initializeTestConfig()
+        self.runWithTaskLocalConfig {
             // Test: When automatic IDs are disabled, views should not have accessibility identifier modifiers
             guard let config = testConfig else {
                 Issue.record("testConfig is nil")
@@ -2068,8 +2068,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testManualIDsStillWorkWhenAutomaticDisabled() {
-        initializeTestConfig()
-        runWithTaskLocalConfig {
+        self.initializeTestConfig()
+        self.runWithTaskLocalConfig {
             guard let config = testConfig else {
                 Issue.record("testConfig is nil")
                 return
@@ -2108,7 +2108,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     // - All HIGCompliance*.swift files
     
     @Test @MainActor func testComplianceManagerInitialization() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         // Given: A new AppleHIGComplianceManager
         let complianceManager = AppleHIGComplianceManager()
         
@@ -2118,7 +2118,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testPlatformDetection() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         // Given: AppleHIGComplianceManager
         let complianceManager = AppleHIGComplianceManager()
         
@@ -2136,7 +2136,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testSpacingSystem8ptGrid() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         // Given: Spacing system
         // When: Spacing values are accessed
         // Then: Should follow Apple's 8pt grid system
@@ -2152,7 +2152,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testAppleHIGCompliantModifier() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         // Given: Framework component (testing our framework, not SwiftUI)
         let testView = platformPresentContent_L1(
             content: "Test",
@@ -2166,7 +2166,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testHIGComplianceCheck() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         // Given: A test view
         let complianceManager = AppleHIGComplianceManager()
         let testView = Button("Test") { }
@@ -2202,7 +2202,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testCardExpansionAccessibilityConfig_PlatformSpecificBehavior() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         // Given: Different platform contexts
         let platforms: [SixLayerPlatform] = [SixLayerPlatform.iOS, SixLayerPlatform.macOS, SixLayerPlatform.watchOS, SixLayerPlatform.tvOS, SixLayerPlatform.visionOS]
         
@@ -2271,7 +2271,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testEyeTrackingManagerInitialization() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         // Given
         let eyeTrackingManager = createEyeTrackingManager()
         
@@ -2286,7 +2286,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testEyeTrackingManagerEnable() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         // Initialize test data first
         let testConfig = createEyeTrackingConfig()
         let eyeTrackingManager = EyeTrackingManager(config: testConfig)
@@ -2300,7 +2300,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testEyeTrackingManagerDisable() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let eyeTrackingManager = createEyeTrackingManager()
         eyeTrackingManager.enable()
         eyeTrackingManager.disable()
@@ -2312,7 +2312,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testGazeEventInitialization() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let position = CGPoint(x: 100, y: 200)
         let timestamp = Date()
         let confidence = 0.85
@@ -2338,7 +2338,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     // - CrossPlatformOptimizationLayer6ComponentAccessibilityTests.swift
     
     @Test @MainActor func testCrossPlatformOptimizationGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         // Given: CrossPlatformOptimization
         let testView = CrossPlatformOptimization()
         
@@ -2358,7 +2358,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testCrossPlatformOptimizationLayer6GeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         // CrossPlatformOptimizationLayer6 doesn't exist - use CrossPlatformOptimizationManager's optimizeView method
         let manager = CrossPlatformOptimizationManager()
         let testView = manager.optimizeView(
@@ -2394,7 +2394,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     // - UtilityComponentAccessibilityTests.swift
     
     @Test @MainActor func testMinimalAccessibilityIdentifier() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         // Given: Framework component (testing our framework, not SwiftUI Text)
         let testView = platformPresentContent_L1(
             content: "Hello World",
@@ -2417,7 +2417,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testInternationalizationServiceComponentGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         // InternationalizationServiceView doesn't exist - use platformPresentLocalizedContent_L1 instead
         let testView = platformPresentLocalizedContent_L1(
             content: Text("Test Content"),
@@ -2437,7 +2437,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testVisionSafetyComponentGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         // VisionSafetyComponent doesn't exist - use VisionSafety instead
         let testView = VisionSafety()
         #if canImport(ViewInspector)
@@ -2457,7 +2457,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     // Tests from AccessibilityFeaturesLayer5Tests.swift
     @Test @MainActor func testAddFocusableItemSuccess() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let navigationManager = KeyboardNavigationManager()
         #expect(navigationManager.focusableItems.count == 0)
         navigationManager.addFocusableItem("button1")
@@ -2466,7 +2466,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testAddFocusableItemDuplicate() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let navigationManager = KeyboardNavigationManager()
         navigationManager.addFocusableItem("button1")
         #expect(navigationManager.focusableItems.count == 1)
@@ -2475,7 +2475,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testMoveFocusNextWithWraparound() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let navigationManager = KeyboardNavigationManager()
         navigationManager.addFocusableItem("button1")
         navigationManager.addFocusableItem("button2")
@@ -2488,7 +2488,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     // Tests from AssistiveTouchTests.swift
     @Test @MainActor func testAssistiveTouchManagerInitialization() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let config = AssistiveTouchConfig(
             enableIntegration: true,
             enableCustomActions: true,
@@ -2503,7 +2503,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testAssistiveTouchCustomActions() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let config = AssistiveTouchConfig(enableCustomActions: true)
         let manager = AssistiveTouchManager(config: config)
         let action1 = AssistiveTouchAction(
@@ -2525,7 +2525,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     // Tests from SwitchControlTests.swift
     @Test @MainActor func testSwitchControlManagerInitialization() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let config = SwitchControlConfig(
             enableNavigation: true,
             enableCustomActions: true,
@@ -2540,7 +2540,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testSwitchControlCustomActions() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let config = SwitchControlConfig(enableCustomActions: true)
         let manager = SwitchControlManager(config: config)
         let action1 = SwitchControlAction(
@@ -2562,7 +2562,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     // Tests from UtilityComponentAccessibilityTests.swift
     @Test @MainActor func testAccessibilityTestUtilitiesGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let testView = platformPresentContent_L1(
             content: "Test Content",
             hints: PresentationHints()
@@ -2581,7 +2581,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testAccessibilityIdentifierExactMatchingGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let testView = platformPresentContent_L1(
             content: "Test Content",
             hints: PresentationHints()
@@ -2602,7 +2602,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     // Tests from RemainingComponentsAccessibilityTests.swift
     @Test @MainActor func testExpandableCardComponentGeneratesAccessibilityIdentifiersOnIOS() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let testItem = TestPatterns.TestDataItem(title: "Test Card", subtitle: "Test Subtitle")
         let layoutDecision = IntelligentCardLayoutDecision(
             columns: 2,
@@ -2648,7 +2648,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testCoverFlowCollectionViewGeneratesAccessibilityIdentifiersOnIOS() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let testItems = [
             TestPatterns.TestDataItem(title: "Item 1", subtitle: "Subtitle 1"),
             TestPatterns.TestDataItem(title: "Item 2", subtitle: "Subtitle 2")
@@ -2681,7 +2681,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     // Tests consolidated from AccessibilityTypesTests.swift
     
     @Test @MainActor func testAccessibilityTypesAcrossPlatforms() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         // Given: Platform-specific accessibility type expectations
         let platform = SixLayerPlatform.current
         
@@ -2729,7 +2729,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testAccessibilityTypeConversionAndMapping() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let announcementType = VoiceOverAnnouncementType.element
         let gestureType = VoiceOverGestureType.singleTap
         let actionType = VoiceOverCustomActionType.activate
@@ -2766,7 +2766,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testVoiceOverAnnouncementType() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let types = VoiceOverAnnouncementType.allCases
         #expect(types.count == 6)
         #expect(types.contains(.element))
@@ -2778,7 +2778,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testVoiceOverGestureType() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let gestures = VoiceOverGestureType.allCases
         #expect(gestures.count == 24)
         #expect(gestures.contains(.singleTap))
@@ -2789,7 +2789,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testVoiceOverCustomActionType() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let actions = VoiceOverCustomActionType.allCases
         #expect(actions.count == 17)
         #expect(actions.contains(.activate))
@@ -2801,7 +2801,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testVoiceOverConfiguration() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let config = VoiceOverConfiguration()
         #expect(config.announcementType == .element)
         #expect(config.navigationMode == .automatic)
@@ -2819,8 +2819,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     // Tests consolidated from ComponentLabelTextAccessibilityTests.swift
     
     @Test @MainActor func testAdaptiveButtonIncludesLabelText() {
-        initializeTestConfig()
-        setupTestEnvironment()
+        self.initializeTestConfig()
+        self.setupTestEnvironment()
         
         let button = AdaptiveUIPatterns.AdaptiveButton("Submit", action: { })
             .enableGlobalAutomaticCompliance()
@@ -2837,12 +2837,12 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #expect(Bool(true), "AdaptiveButton implementation verified - ViewInspector not available on this platform")
         #endif
         
-        cleanupTestEnvironment()
+        self.cleanupTestEnvironment()
     }
     
     @Test @MainActor func testAdaptiveButtonDifferentLabelsDifferentIdentifiers() {
-        initializeTestConfig()
-        setupTestEnvironment()
+        self.initializeTestConfig()
+        self.setupTestEnvironment()
         
         let submitButton = AdaptiveUIPatterns.AdaptiveButton("Submit", action: { })
             .enableGlobalAutomaticCompliance()
@@ -2860,12 +2860,12 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             #expect(Bool(true), "AdaptiveButton implementation verified - ViewInspector can't detect (known limitation)")
         }
         
-        cleanupTestEnvironment()
+        self.cleanupTestEnvironment()
     }
     
     @Test @MainActor func testLabelTextSanitizationHandlesSpaces() {
-        initializeTestConfig()
-        setupTestEnvironment()
+        self.initializeTestConfig()
+        self.setupTestEnvironment()
         
         let button = AdaptiveUIPatterns.AdaptiveButton("Add New Item", action: { })
             .enableGlobalAutomaticCompliance()
@@ -2883,20 +2883,20 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #expect(Bool(true), "Label sanitization implementation verified - ViewInspector not available on this platform")
         #endif
         
-        cleanupTestEnvironment()
+        self.cleanupTestEnvironment()
     }
     
     // Additional HIG Compliance Tests from AppleHIGComplianceTests.swift
     
     @Test @MainActor func testAccessibilitySystemStateInitialization() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let state = AccessibilitySystemState()
         // Note: AccessibilitySystemState properties are non-optional and don't need nil checks
         #expect(Bool(true), "Accessibility system state should be initialized")
     }
     
     @Test @MainActor func testHIGRecommendationCreation() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let recommendation = HIGRecommendation(
             category: .accessibility,
             priority: .high,
@@ -2910,7 +2910,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testHIGCategoryEnum() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let categories = HIGCategory.allCases
         #expect(categories.contains(.accessibility))
         #expect(categories.contains(.visual))
@@ -2919,7 +2919,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testHIGPriorityEnum() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let priorities = HIGPriority.allCases
         #expect(priorities.contains(.low))
         #expect(priorities.contains(.medium))
@@ -2928,7 +2928,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testPlatformEnum() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let platforms = SixLayerPlatform.allCases
         #expect(platforms.contains(SixLayerPlatform.iOS))
         #expect(platforms.contains(SixLayerPlatform.macOS))
@@ -2937,7 +2937,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testHIGComplianceLevelEnum() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let levels = HIGComplianceLevel.allCases
         #expect(levels.contains(.automatic))
         #expect(levels.contains(.enhanced))
@@ -2946,7 +2946,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testAccessibilityOptimizationManagerIntegration() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         RuntimeCapabilityDetection.setTestVoiceOver(true)
         RuntimeCapabilityDetection.setTestSwitchControl(true)
         RuntimeCapabilityDetection.setTestAssistiveTouch(true)
@@ -2971,7 +2971,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     // Additional Eye Tracking Tests from EyeTrackingTests.swift
     
     @Test @MainActor func testEyeTrackingConfigInitialization() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let config = EyeTrackingConfig(
             sensitivity: .medium,
             dwellTime: 1.0,
@@ -2985,7 +2985,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testGazeEventDefaultTimestamp() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let gazeEvent = EyeTrackingGazeEvent(
             position: CGPoint(x: 50, y: 75),
             confidence: 0.9
@@ -2995,7 +2995,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testProcessGazeEvent() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let eyeTrackingManager = createEyeTrackingManager()
         eyeTrackingManager.isEnabled = true
         
@@ -3011,7 +3011,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testDwellEventInitialization() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let targetView = AnyView(platformPresentContent_L1(
             content: "Test",
             hints: PresentationHints()
@@ -3033,7 +3033,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testStartCalibration() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let testConfig = EyeTrackingConfig(
             sensitivity: .medium,
             dwellTime: 1.0,
@@ -3050,7 +3050,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testCompleteCalibration() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let testConfig = EyeTrackingConfig(
             sensitivity: .medium,
             dwellTime: 1.0,
@@ -3075,9 +3075,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     // Additional Edge Case Tests from AccessibilityIdentifierEdgeCaseTests.swift
     
     @Test @MainActor func testEmptyStringParameters() {
-        initializeTestConfig()
-        runWithTaskLocalConfig {
-            setupTestEnvironment()
+        self.initializeTestConfig()
+        self.runWithTaskLocalConfig {
+            self.setupTestEnvironment()
             
             let view = PlatformInteractionButton(style: .primary, action: {}) {
                 platformPresentContent_L1(content: "Test", hints: PresentationHints())
@@ -3101,9 +3101,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testSpecialCharactersInNames() {
-        initializeTestConfig()
-        runWithTaskLocalConfig {
-            setupTestEnvironment()
+        self.initializeTestConfig()
+        self.runWithTaskLocalConfig {
+            self.setupTestEnvironment()
             
             let view = PlatformInteractionButton(style: .primary, action: {}) {
                 platformPresentContent_L1(content: "Test", hints: PresentationHints())
@@ -3128,9 +3128,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testManualIDOverride() {
-        initializeTestConfig()
-        runWithTaskLocalConfig {
-            setupTestEnvironment()
+        self.initializeTestConfig()
+        self.runWithTaskLocalConfig {
+            self.setupTestEnvironment()
             
             let view = PlatformInteractionButton(style: .primary, action: {}) {
                 Text("Test")
@@ -3155,7 +3155,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     // Additional Debug Logging Tests from DebugLoggingTests.swift
     
     @Test @MainActor func testAccessibilityIdentifierGeneratorExists() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
             let generator = AccessibilityIdentifierGenerator()
             #expect(Bool(true), "AccessibilityIdentifierGenerator should be instantiable")
@@ -3163,7 +3163,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testGenerateIDMethodExists() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
             let generator = AccessibilityIdentifierGenerator()
             let id = generator.generateID(for: "test", role: "button", context: "ui")
@@ -3173,7 +3173,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testGenerateIDRespectsDebugLoggingWhenEnabled() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
             guard let config = testConfig else {
                 Issue.record("testConfig is nil")
@@ -3194,7 +3194,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testClearDebugLogMethodExists() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
             guard let config = testConfig else {
                 Issue.record("testConfig is nil")
@@ -3218,7 +3218,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     // Additional Intelligent Card Expansion Tests from IntelligentCardExpansionComponentAccessibilityTests.swift
     
     @Test @MainActor func testExpandableCardCollectionViewGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
             let testItems = [
                 TestPatterns.TestDataItem(title: "Card 1"),
@@ -3243,7 +3243,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testCoverFlowCollectionViewGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
             let testItems = [
                 TestPatterns.TestDataItem(title: "CoverFlow Card 1"),
@@ -3274,7 +3274,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testGridCollectionViewGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
             let testItems = [
                 TestPatterns.TestDataItem(title: "Grid Card 1"),
@@ -3301,7 +3301,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     // Additional Material Accessibility Tests from MaterialAccessibilityTests.swift
     
     @Test @MainActor func testMaterialContrastValidation() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let regularMaterial = Material.regularMaterial
         let thickMaterial = Material.thickMaterial
         let thinMaterial = Material.thinMaterial
@@ -3319,7 +3319,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testHighContrastMaterialAlternatives() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let material = Material.regularMaterial
         
         let highContrastMaterial = MaterialAccessibilityManager.highContrastAlternative(for: material)
@@ -3332,7 +3332,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testVoiceOverMaterialDescriptions() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let materials: [Material] = [
             .regularMaterial,
             .thickMaterial,
@@ -3350,7 +3350,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testMaterialAccessibilityCompliance() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let view = Rectangle()
             .fill(.regularMaterial)
             .accessibilityMaterialEnhanced()
@@ -3362,7 +3362,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testMaterialAccessibilityConfiguration() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let config = MaterialAccessibilityConfig(
             enableContrastValidation: true,
             enableHighContrastAlternatives: true,
@@ -3382,7 +3382,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     
     @Test @MainActor func testCardExpansionPlatformConfig_PlatformSpecificCapabilities() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let platform = SixLayerPlatform.current
         let config = getCardExpansionPlatformConfig()
         
@@ -3414,7 +3414,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     // Additional Accessibility State Simulation Tests from AccessibilityStateSimulationTests.swift
     
     @Test @MainActor func testCardExpansionAccessibilityConfigDefaultInitialization() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let config = CardExpansionAccessibilityConfig()
         
         #expect(config.supportsVoiceOver, "Should support VoiceOver by default")
@@ -3428,7 +3428,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testCardExpansionAccessibilityConfigCustomInitialization() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let customConfig = CardExpansionAccessibilityConfig(
             supportsVoiceOver: false,
             supportsSwitchControl: true,
@@ -3453,7 +3453,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     // Additional Simple Accessibility Tests from SimpleAccessibilityTests.swift
     
     @Test @MainActor func testFrameworkComponentWithNamedModifier() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let testView = platformPresentContent_L1(
             content: "Test Content",
             hints: PresentationHints()
@@ -3473,7 +3473,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testAutomaticAccessibilityIdentifierModifierApplied() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let testView = platformPresentBasicValue_L1(
             value: 42,
             hints: PresentationHints()
@@ -3501,7 +3501,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     // Additional Dynamic Form View Tests from DynamicFormViewComponentAccessibilityTests.swift
     
     @Test @MainActor func testDynamicFormViewGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         struct TestData {
             let name: String
             let email: String
@@ -3528,7 +3528,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testDynamicFormHeaderGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         struct TestData {
             let name: String
             let email: String
@@ -3561,7 +3561,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     // Additional Responsive Layout Tests from ResponsiveLayoutComponentAccessibilityTests.swift
     
     @Test @MainActor func testResponsiveGridGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
             let gridItems = [
                 GridItemData(title: "Grid Item 1", subtitle: "Subtitle 1", icon: "star", color: .blue),
@@ -3592,7 +3592,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testResponsiveNavigationGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
             let navigationContent = { (isHorizontal: Bool) in
                 platformVStackContainer {
@@ -3620,7 +3620,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testResponsiveStackGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
             let stackContent = {
                 platformVStackContainer {
@@ -3648,7 +3648,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     // Additional Accessibility Types Tests (continued from AccessibilityTypesTests.swift)
     
     @Test @MainActor func testAccessibilityTypeConsistencyAndValidation() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let announcementTypes = VoiceOverAnnouncementType.allCases
         let gestureTypes = VoiceOverGestureType.allCases
         let actionTypes = VoiceOverCustomActionType.allCases
@@ -3675,7 +3675,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testVoiceOverNavigationMode() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let modes = VoiceOverNavigationMode.allCases
         #expect(modes.count == 3)
         #expect(modes.contains(.automatic))
@@ -3684,7 +3684,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testVoiceOverAnnouncementPriority() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let priorities = VoiceOverAnnouncementPriority.allCases
         #expect(priorities.count == 4)
         #expect(priorities.contains(.low))
@@ -3694,7 +3694,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testVoiceOverAnnouncementTiming() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let timings = VoiceOverAnnouncementTiming.allCases
         #expect(timings.count == 4)
         #expect(timings.contains(.immediate))
@@ -3704,7 +3704,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testVoiceOverElementTraits() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let traits = VoiceOverElementTraits.all
         #expect(traits.rawValue != 0)
         
@@ -3723,7 +3723,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testVoiceOverGestureSensitivity() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let sensitivities = VoiceOverGestureSensitivity.allCases
         #expect(sensitivities.count == 3)
         #expect(sensitivities.contains(.low))
@@ -3732,7 +3732,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testVoiceOverCustomAction() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         var actionExecuted = false
         let action = VoiceOverCustomAction(
             name: "Test Action",
@@ -3748,7 +3748,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testVoiceOverAnnouncement() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let announcement = VoiceOverAnnouncement(
             message: "Test message",
             type: .element,
@@ -3765,7 +3765,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testSwitchControlActionType() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let actions = SwitchControlActionType.allCases
         #expect(actions.count == 11)
         #expect(actions.contains(.select))
@@ -3776,7 +3776,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testSwitchControlNavigationPattern() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let patterns = SwitchControlNavigationPattern.allCases
         #expect(patterns.count == 3)
         #expect(patterns.contains(.linear))
@@ -3785,7 +3785,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testSwitchControlGestureType() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let gestures = SwitchControlGestureType.allCases
         #expect(gestures.count == 7)
         #expect(gestures.contains(.singleTap))
@@ -3798,7 +3798,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testSwitchControlGestureIntensity() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let intensities = SwitchControlGestureIntensity.allCases
         #expect(intensities.count == 3)
         #expect(intensities.contains(.light))
@@ -3809,8 +3809,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     // Additional Component Label Text Tests (continued from ComponentLabelTextAccessibilityTests.swift)
     
     @Test @MainActor func testPlatformNavigationTitleIncludesTitleText() {
-        initializeTestConfig()
-        setupTestEnvironment()
+        self.initializeTestConfig()
+        self.setupTestEnvironment()
         
         let view = platformVStackContainer {
             Text("Content")
@@ -3830,12 +3830,12 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #expect(Bool(true), "platformNavigationTitle implementation verified - ViewInspector not available on this platform")
         #endif
         
-        cleanupTestEnvironment()
+        self.cleanupTestEnvironment()
     }
     
     @Test @MainActor func testPlatformNavigationLinkWithTitleIncludesTitleText() {
-        initializeTestConfig()
-        setupTestEnvironment()
+        self.initializeTestConfig()
+        self.setupTestEnvironment()
         
         let view = platformVStackContainer {
             Text("Navigate")
@@ -3862,12 +3862,12 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #expect(Bool(true), "platformNavigationLink_L4 implementation verified - ViewInspector not available on this platform")
         #endif
         
-        cleanupTestEnvironment()
+        self.cleanupTestEnvironment()
     }
     
     @Test @MainActor func testLabelTextSanitizationHandlesSpecialCharacters() {
-        initializeTestConfig()
-        setupTestEnvironment()
+        self.initializeTestConfig()
+        self.setupTestEnvironment()
         
         let button = AdaptiveUIPatterns.AdaptiveButton("Save & Close!", action: { })
             .enableGlobalAutomaticCompliance()
@@ -3884,12 +3884,12 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #expect(Bool(true), "Label sanitization implementation verified - ViewInspector not available on this platform")
         #endif
         
-        cleanupTestEnvironment()
+        self.cleanupTestEnvironment()
     }
     
     @Test @MainActor func testLabelTextSanitizationHandlesCase() {
-        initializeTestConfig()
-        setupTestEnvironment()
+        self.initializeTestConfig()
+        self.setupTestEnvironment()
         
         let button = AdaptiveUIPatterns.AdaptiveButton("CamelCaseLabel", action: { })
             .enableGlobalAutomaticCompliance()
@@ -3907,14 +3907,14 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #expect(Bool(true), "Label sanitization implementation verified - ViewInspector not available on this platform")
         #endif
         
-        cleanupTestEnvironment()
+        self.cleanupTestEnvironment()
     }
     
     // Additional Automatic Accessibility Identifier Tests (continued)
     
     
     @Test @MainActor func testAutomaticIdentifiersIntegrateWithHIGCompliance() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
             guard let config = self.testConfig else {
                 Issue.record("testConfig is nil")
@@ -3936,27 +3936,27 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     // Additional Apple HIG Compliance Tests (continued)
     
     @Test @MainActor func testAccessibilityStateMonitoring() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let complianceManager = AppleHIGComplianceManager()
         // All AccessibilitySystemState properties are Bool (non-optional) - no need to check for nil
         #expect(Bool(true), "Accessibility state monitoring should work")
     }
     
     @Test @MainActor func testDesignSystemInitialization() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let complianceManager = AppleHIGComplianceManager()
         let designSystem = complianceManager.designSystem
         #expect(designSystem.platform == complianceManager.currentPlatform)
     }
     
     @Test @MainActor func testColorSystemPlatformSpecific() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         // Color types are non-optional in SwiftUI - no need to check for nil
         #expect(Bool(true), "Color system should be platform-specific")
     }
     
     @Test @MainActor func testTypographySystemPlatformSpecific() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         // Font types are non-optional in SwiftUI - no need to check for nil
         #expect(Bool(true), "Typography system should be platform-specific")
     }
@@ -3965,7 +3965,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     // Additional Accessibility Features Layer 5 Tests (continued)
     
     @Test @MainActor func testAddFocusableItemEmptyString() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let navigationManager = KeyboardNavigationManager()
         #expect(navigationManager.focusableItems.count == 0)
         navigationManager.addFocusableItem("")
@@ -3974,7 +3974,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testRemoveFocusableItemSuccess() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let navigationManager = KeyboardNavigationManager()
         navigationManager.addFocusableItem("button1")
         navigationManager.addFocusableItem("button2")
@@ -3985,7 +3985,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testRemoveFocusableItemNotExists() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let navigationManager = KeyboardNavigationManager()
         navigationManager.addFocusableItem("button1")
         #expect(navigationManager.focusableItems.count == 1)
@@ -3995,7 +3995,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testMoveFocusFirst() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let navigationManager = KeyboardNavigationManager()
         navigationManager.addFocusableItem("button1")
         navigationManager.addFocusableItem("button2")
@@ -4007,7 +4007,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testMoveFocusLast() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let navigationManager = KeyboardNavigationManager()
         navigationManager.addFocusableItem("button1")
         navigationManager.addFocusableItem("button2")
@@ -4019,7 +4019,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testFocusItemSuccess() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let navigationManager = KeyboardNavigationManager()
         navigationManager.addFocusableItem("button1")
         navigationManager.addFocusableItem("button2")
@@ -4029,7 +4029,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testFocusItemNotExists() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let navigationManager = KeyboardNavigationManager()
         navigationManager.addFocusableItem("button1")
         navigationManager.addFocusableItem("button2")
@@ -4040,7 +4040,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     // Additional Utility Component Tests (continued from UtilityComponentAccessibilityTests.swift)
     
     @Test @MainActor func testAccessibilityIdentifierPatternMatchingGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let testView = platformPresentContent_L1(
             content: "Test Content",
             hints: PresentationHints()
@@ -4060,7 +4060,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testAccessibilityIdentifierWildcardMatchingGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let testView = platformPresentContent_L1(
             content: "Test Content",
             hints: PresentationHints()
@@ -4080,7 +4080,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testAccessibilityIdentifierComponentNameMatchingGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let testView = platformPresentContent_L1(
             content: "Test Content",
             hints: PresentationHints()
@@ -4102,7 +4102,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     // Additional Remaining Components Tests (continued from RemainingComponentsAccessibilityTests.swift)
     
     @Test @MainActor func testCoverFlowCardComponentGeneratesAccessibilityIdentifiersOnIOS() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let testItem = TestPatterns.TestDataItem(title: "Test Card", subtitle: "Test Subtitle")
         
         let view = CoverFlowCardComponent(
@@ -4126,7 +4126,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testGridCollectionViewGeneratesAccessibilityIdentifiersOnIOS() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let testItems = [
             TestPatterns.TestDataItem(title: "Item 1", subtitle: "Subtitle 1"),
             TestPatterns.TestDataItem(title: "Item 2", subtitle: "Subtitle 2")
@@ -4157,7 +4157,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testListCollectionViewGeneratesAccessibilityIdentifiersOnIOS() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let testItems = [
             TestPatterns.TestDataItem(title: "Item 1", subtitle: "Subtitle 1"),
             TestPatterns.TestDataItem(title: "Item 2", subtitle: "Subtitle 2")
@@ -4190,7 +4190,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     // Additional Eye Tracking Tests (continued from EyeTrackingTests.swift)
     
     @Test @MainActor func testEyeTrackingConfigCustomValues() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let customConfig = EyeTrackingConfig(
             sensitivity: .high,
             dwellTime: 2.0,
@@ -4205,7 +4205,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testEyeTrackingSensitivityThresholds() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         #expect(EyeTrackingSensitivity.low.threshold == 0.8)
         #expect(EyeTrackingSensitivity.medium.threshold == 0.6)
         #expect(EyeTrackingSensitivity.high.threshold == 0.4)
@@ -4213,7 +4213,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testEyeTrackingCalibrationInitialization() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let calibration = EyeTrackingCalibration()
         
         #expect(!calibration.isCalibrated)
@@ -4225,7 +4225,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     
     @Test @MainActor func testEyeTrackingManagerConfigUpdate() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let newConfig = EyeTrackingConfig(
             sensitivity: .high,
             dwellTime: 2.0,
@@ -4243,8 +4243,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     // Additional Component Label Text Tests (continued)
     
     @Test @MainActor func testDynamicTextFieldIncludesFieldLabel() {
-        initializeTestConfig()
-        setupTestEnvironment()
+        self.initializeTestConfig()
+        self.setupTestEnvironment()
         
         let field = DynamicFormField(
             id: "test-field",
@@ -4274,12 +4274,12 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #expect(Bool(true), "DynamicTextField implementation verified - ViewInspector not available on this platform")
         #endif
         
-        cleanupTestEnvironment()
+        self.cleanupTestEnvironment()
     }
     
     @Test @MainActor func testDynamicEmailFieldIncludesFieldLabel() {
-        initializeTestConfig()
-        setupTestEnvironment()
+        self.initializeTestConfig()
+        self.setupTestEnvironment()
         
         let field = DynamicFormField(
             id: "email-field",
@@ -4309,12 +4309,12 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #expect(Bool(true), "DynamicEmailField implementation verified - ViewInspector not available on this platform")
         #endif
         
-        cleanupTestEnvironment()
+        self.cleanupTestEnvironment()
     }
     
     @Test @MainActor func testDynamicPasswordFieldIncludesFieldLabel() {
-        initializeTestConfig()
-        setupTestEnvironment()
+        self.initializeTestConfig()
+        self.setupTestEnvironment()
         
         let field = DynamicFormField(
             id: "password-field",
@@ -4344,13 +4344,13 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #expect(Bool(true), "DynamicPasswordField implementation verified - ViewInspector not available on this platform")
         #endif
         
-        cleanupTestEnvironment()
+        self.cleanupTestEnvironment()
     }
     
     // Additional Accessibility Types Tests (continued)
     
     @Test @MainActor func testSwitchControlGesture() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let gesture = SwitchControlGesture(
             type: .singleTap,
             intensity: .medium
@@ -4362,7 +4362,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testSwitchControlAction() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         var actionExecuted = false
         let action = SwitchControlAction(
             name: "Test Action",
@@ -4378,7 +4378,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testSwitchControlGestureResult() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let successResult = SwitchControlGestureResult(
             success: true,
             action: "Test Action"
@@ -4399,7 +4399,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testAssistiveTouchActionType() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let actions = AssistiveTouchActionType.allCases
         #expect(actions.count == 4)
         #expect(actions.contains(.home))
@@ -4409,7 +4409,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testAssistiveTouchGestureType() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let gestures = AssistiveTouchGestureType.allCases
         #expect(gestures.count == 7)
         #expect(gestures.contains(.singleTap))
@@ -4422,7 +4422,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testAssistiveTouchConfig() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let config = AssistiveTouchConfig()
         #expect(config.enableIntegration)
         #expect(config.enableCustomActions)
@@ -4435,7 +4435,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     // Additional Apple HIG Compliance Component Tests (continued)
     
     @Test @MainActor func testAppleHIGComplianceModifierGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let testContent = platformVStackContainer {
             platformPresentContent_L1(content: "HIG Compliance Content", hints: PresentationHints())
             PlatformInteractionButton(style: .primary, action: {}) {
@@ -4459,7 +4459,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testPlatformPatternModifierGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let testContent = platformVStackContainer {
             Text("Platform Pattern Content")
             Button("Test Button") { }
@@ -4481,7 +4481,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testVisualConsistencyModifierGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let testContent = platformVStackContainer {
             Text("Visual Consistency Content")
             Button("Test Button") { }
@@ -4505,7 +4505,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     // Additional Platform Photo Strategy Selection Tests (from PlatformPhotoStrategySelectionLayer3AccessibilityTests.swift)
     
     @Test @MainActor func testSelectPhotoCaptureStrategy_L3_CameraOnly() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let purpose = PhotoPurpose.vehiclePhoto
         let context = PhotoContext(
             screenSize: PlatformSize(width: 375, height: 812),
@@ -4519,7 +4519,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testSelectPhotoCaptureStrategy_L3_PhotoLibraryOnly() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let purpose = PhotoPurpose.fuelReceipt
         let context = PhotoContext(
             screenSize: PlatformSize(width: 375, height: 812),
@@ -4533,7 +4533,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testSelectPhotoDisplayStrategy_L3_VehiclePhoto() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let purpose = PhotoPurpose.vehiclePhoto
         let context = PhotoContext(
             screenSize: PlatformSize(width: 375, height: 812),
@@ -4547,7 +4547,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testShouldEnablePhotoEditing_VehiclePhoto() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let purpose = PhotoPurpose.vehiclePhoto
         let preferences = PhotoPreferences(allowEditing: true)
         let context = PhotoContext(
@@ -4562,7 +4562,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testOptimalCompressionQuality_VehiclePhoto() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let purpose = PhotoPurpose.vehiclePhoto
         let preferences = PhotoPreferences(compressionQuality: 0.8)
         let context = PhotoContext(
@@ -4580,7 +4580,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     // Additional Accessibility Features Layer 5 Component Tests (from AccessibilityFeaturesLayer5ComponentAccessibilityTests.swift)
     
     @Test @MainActor func testAccessibilityEnhancedViewGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let testContent = platformVStackContainer {
             Text("Enhanced Content")
             Button("Test Button") { }
@@ -4605,7 +4605,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testVoiceOverEnabledViewGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let testContent = platformVStackContainer {
             Text("VoiceOver Content")
             Button("Test Button") { }
@@ -4629,7 +4629,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testKeyboardNavigableViewGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let testContent = platformVStackContainer {
             Text("Keyboard Content")
             Button("Test Button") { }
@@ -4653,7 +4653,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testHighContrastEnabledViewGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let testContent = platformVStackContainer {
             Text("High Contrast Content")
             Button("Test Button") { }
@@ -4679,7 +4679,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     // Additional Platform Photo Layout Decision Tests (from PlatformPhotoLayoutDecisionLayer2AccessibilityTests.swift)
     
     @Test @MainActor func testPlatformPhotoLayoutL2GeneratesAccessibilityIdentifiersOnIOS() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let purpose = PhotoPurpose.vehiclePhoto
         let context = PhotoContext(
             screenSize: PlatformSize(width: 375, height: 812),
@@ -4698,7 +4698,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testDeterminePhotoCaptureStrategy_L2_CameraOnly() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let purpose = PhotoPurpose.vehiclePhoto
         let context = PhotoContext(
             screenSize: PlatformSize(width: 375, height: 812),
@@ -4712,7 +4712,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testCalculateOptimalImageSize() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let purpose = PhotoPurpose.vehiclePhoto
         let availableSpace = CGSize(width: 800, height: 600)
         let maxResolution = CGSize(width: 4096, height: 4096)
@@ -4725,7 +4725,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testShouldCropImage_VehiclePhoto() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let purpose = PhotoPurpose.vehiclePhoto
         let imageSize = CGSize(width: 4000, height: 3000)
         let targetSize = CGSize(width: 2000, height: 1200)
@@ -4737,8 +4737,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     // Additional Component Label Text Tests (continued - large batch)
     
     @Test @MainActor func testPlatformNavigationButtonIncludesTitleText() {
-        initializeTestConfig()
-        setupTestEnvironment()
+        self.initializeTestConfig()
+        self.setupTestEnvironment()
         
         let button = platformVStackContainer {
             EmptyView()
@@ -4764,12 +4764,12 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #expect(Bool(true), "platformNavigationButton implementation verified - ViewInspector not available on this platform")
         #endif
         
-        cleanupTestEnvironment()
+        self.cleanupTestEnvironment()
     }
     
     @Test @MainActor func testDynamicFormViewIncludesConfigurationTitle() {
-        initializeTestConfig()
-        setupTestEnvironment()
+        self.initializeTestConfig()
+        self.setupTestEnvironment()
         
         let config = DynamicFormConfiguration(
             id: "user-profile-form",
@@ -4793,12 +4793,12 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #expect(Bool(true), "DynamicFormView implementation verified - ViewInspector not available on this platform")
         #endif
         
-        cleanupTestEnvironment()
+        self.cleanupTestEnvironment()
     }
     
     @Test @MainActor func testDynamicFormSectionViewIncludesSectionTitle() {
-        initializeTestConfig()
-        setupTestEnvironment()
+        self.initializeTestConfig()
+        self.setupTestEnvironment()
         
         let section = DynamicFormSection(
             id: "personal-info",
@@ -4827,12 +4827,12 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #expect(Bool(true), "DynamicFormSectionView implementation verified - ViewInspector not available on this platform")
         #endif
         
-        cleanupTestEnvironment()
+        self.cleanupTestEnvironment()
     }
     
     @Test @MainActor func testDynamicPhoneFieldIncludesFieldLabel() {
-        initializeTestConfig()
-        setupTestEnvironment()
+        self.initializeTestConfig()
+        self.setupTestEnvironment()
         
         let field = DynamicFormField(
             id: "phone-field",
@@ -4862,12 +4862,12 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #expect(Bool(true), "DynamicPhoneField implementation verified - ViewInspector not available on this platform")
         #endif
         
-        cleanupTestEnvironment()
+        self.cleanupTestEnvironment()
     }
     
     @Test @MainActor func testDynamicURLFieldIncludesFieldLabel() {
-        initializeTestConfig()
-        setupTestEnvironment()
+        self.initializeTestConfig()
+        self.setupTestEnvironment()
         
         let field = DynamicFormField(
             id: "url-field",
@@ -4897,12 +4897,12 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #expect(Bool(true), "DynamicURLField implementation verified - ViewInspector not available on this platform")
         #endif
         
-        cleanupTestEnvironment()
+        self.cleanupTestEnvironment()
     }
     
     @Test @MainActor func testDynamicNumberFieldIncludesFieldLabel() {
-        initializeTestConfig()
-        setupTestEnvironment()
+        self.initializeTestConfig()
+        self.setupTestEnvironment()
         
         let field = DynamicFormField(
             id: "number-field",
@@ -4932,12 +4932,12 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #expect(Bool(true), "DynamicNumberField implementation verified - ViewInspector not available on this platform")
         #endif
         
-        cleanupTestEnvironment()
+        self.cleanupTestEnvironment()
     }
     
     @Test @MainActor func testDynamicDateFieldIncludesFieldLabel() {
-        initializeTestConfig()
-        setupTestEnvironment()
+        self.initializeTestConfig()
+        self.setupTestEnvironment()
         
         let field = DynamicFormField(
             id: "date-field",
@@ -4967,12 +4967,12 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #expect(Bool(true), "DynamicDateField implementation verified - ViewInspector not available on this platform")
         #endif
         
-        cleanupTestEnvironment()
+        self.cleanupTestEnvironment()
     }
     
     @Test @MainActor func testDynamicToggleFieldIncludesFieldLabel() {
-        initializeTestConfig()
-        setupTestEnvironment()
+        self.initializeTestConfig()
+        self.setupTestEnvironment()
         
         let field = DynamicFormField(
             id: "toggle-field",
@@ -5002,12 +5002,12 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #expect(Bool(true), "DynamicToggleField implementation verified - ViewInspector not available on this platform")
         #endif
         
-        cleanupTestEnvironment()
+        self.cleanupTestEnvironment()
     }
     
     @Test @MainActor func testDynamicMultiSelectFieldIncludesFieldLabel() {
-        initializeTestConfig()
-        setupTestEnvironment()
+        self.initializeTestConfig()
+        self.setupTestEnvironment()
         
         let field = DynamicFormField(
             id: "multiselect-field",
@@ -5038,12 +5038,12 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #expect(Bool(true), "DynamicMultiSelectField implementation verified - ViewInspector not available on this platform")
         #endif
         
-        cleanupTestEnvironment()
+        self.cleanupTestEnvironment()
     }
     
     @Test @MainActor func testDynamicCheckboxFieldIncludesFieldLabel() {
-        initializeTestConfig()
-        setupTestEnvironment()
+        self.initializeTestConfig()
+        self.setupTestEnvironment()
         
         let field = DynamicFormField(
             id: "checkbox-field",
@@ -5074,12 +5074,12 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #expect(Bool(true), "DynamicCheckboxField implementation verified - ViewInspector not available on this platform")
         #endif
         
-        cleanupTestEnvironment()
+        self.cleanupTestEnvironment()
     }
     
     @Test @MainActor func testDynamicFileFieldIncludesFieldLabel() {
-        initializeTestConfig()
-        setupTestEnvironment()
+        self.initializeTestConfig()
+        self.setupTestEnvironment()
         
         let field = DynamicFormField(
             id: "file-field",
@@ -5109,12 +5109,12 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #expect(Bool(true), "DynamicFileField implementation verified - ViewInspector not available on this platform")
         #endif
         
-        cleanupTestEnvironment()
+        self.cleanupTestEnvironment()
     }
     
     @Test @MainActor func testDynamicEnumFieldIncludesFieldLabel() {
-        initializeTestConfig()
-        setupTestEnvironment()
+        self.initializeTestConfig()
+        self.setupTestEnvironment()
         
         let field = DynamicFormField(
             id: "enum-field",
@@ -5145,12 +5145,12 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #expect(Bool(true), "DynamicEnumField implementation verified - ViewInspector not available on this platform")
         #endif
         
-        cleanupTestEnvironment()
+        self.cleanupTestEnvironment()
     }
     
     @Test @MainActor func testDynamicIntegerFieldIncludesFieldLabel() {
-        initializeTestConfig()
-        setupTestEnvironment()
+        self.initializeTestConfig()
+        self.setupTestEnvironment()
         
         let field = DynamicFormField(
             id: "integer-field",
@@ -5180,12 +5180,12 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #expect(Bool(true), "DynamicIntegerField implementation verified - ViewInspector not available on this platform")
         #endif
         
-        cleanupTestEnvironment()
+        self.cleanupTestEnvironment()
     }
     
     @Test @MainActor func testDynamicTextAreaFieldIncludesFieldLabel() {
-        initializeTestConfig()
-        setupTestEnvironment()
+        self.initializeTestConfig()
+        self.setupTestEnvironment()
         
         let field = DynamicFormField(
             id: "textarea-field",
@@ -5215,13 +5215,13 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #expect(Bool(true), "DynamicTextAreaField implementation verified - ViewInspector not available on this platform")
         #endif
         
-        cleanupTestEnvironment()
+        self.cleanupTestEnvironment()
     }
     
     // Additional Accessibility Types Tests (continued - large batch)
     
     @Test @MainActor func testSwitchControlFocusResult() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let successResult = SwitchControlFocusResult(
             success: true,
             focusedElement: "Test Element"
@@ -5242,7 +5242,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testSwitchControlCompliance() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let compliant = SwitchControlCompliance(
             isCompliant: true,
             issues: [],
@@ -5265,7 +5265,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testAssistiveTouchGestureSensitivity() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let sensitivities = AssistiveTouchGestureSensitivity.allCases
         #expect(sensitivities.count == 3)
         #expect(sensitivities.contains(.low))
@@ -5274,7 +5274,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testAssistiveTouchMenuStyle() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let styles = AssistiveTouchMenuStyle.allCases
         #expect(styles.count == 3)
         #expect(styles.contains(.floating))
@@ -5283,7 +5283,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testAssistiveTouchMenuAction() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let actions = AssistiveTouchMenuAction.allCases
         #expect(actions.count == 3)
         #expect(actions.contains(.show))
@@ -5292,7 +5292,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testAssistiveTouchMenuResult() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let successResult = AssistiveTouchMenuResult(
             success: true,
             menuElement: "Test Menu"
@@ -5313,7 +5313,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testAssistiveTouchCompliance() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let compliant = AssistiveTouchCompliance(
             isCompliant: true,
             issues: [],
@@ -5336,7 +5336,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testEyeTrackingCalibrationLevel() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let levels = EyeTrackingCalibrationLevel.allCases
         #expect(levels.count == 4)
         #expect(levels.contains(.basic))
@@ -5346,7 +5346,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testEyeTrackingInteractionType() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let types = EyeTrackingInteractionType.allCases
         #expect(types.count == 5)
         #expect(types.contains(.gaze))
@@ -5357,7 +5357,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testEyeTrackingFocusManagement() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let management = EyeTrackingFocusManagement.allCases
         #expect(management.count == 3)
         #expect(management.contains(.automatic))
@@ -5366,7 +5366,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testEyeTrackingConfiguration() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let config = EyeTrackingConfiguration()
         #expect(config.calibrationLevel == .standard)
         #expect(config.interactionType == .dwell)
@@ -5377,7 +5377,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testEyeTrackingSensitivity() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let sensitivities = EyeTrackingSensitivity.allCases
         #expect(sensitivities.count == 4)
         #expect(sensitivities.contains(.low))
@@ -5392,7 +5392,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testEyeTrackingCalibration() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let calibration = EyeTrackingCalibration()
         #expect(!calibration.isCalibrated)
         #expect(calibration.accuracy == 0.0)
@@ -5413,7 +5413,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testEyeTrackingDwellEvent() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let targetView = AnyView(Text("Test"))
         let position = CGPoint(x: 100, y: 200)
         let duration: TimeInterval = 2.5
@@ -5432,7 +5432,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testEyeTrackingConfig() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let config = EyeTrackingConfig()
         #expect(config.sensitivity == .medium)
         #expect(config.dwellTime == 1.0)
@@ -5442,7 +5442,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testVoiceControlCommandType() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let types = VoiceControlCommandType.allCases
         #expect(types.count == 8)
         #expect(types.contains(.tap))
@@ -5456,7 +5456,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testVoiceControlFeedbackType() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let types = VoiceControlFeedbackType.allCases
         #expect(types.count == 4)
         #expect(types.contains(.audio))
@@ -5466,7 +5466,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testVoiceControlCustomCommand() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         var commandExecuted = false
         let command = VoiceControlCustomCommand(
             phrase: "Test command",
@@ -5482,7 +5482,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testVoiceControlConfiguration() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let config = VoiceControlConfiguration()
         #expect(config.enableCustomCommands)
         #expect(config.feedbackType == .combined)
@@ -5493,7 +5493,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testVoiceControlCommandResult() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let successResult = VoiceControlCommandResult(
             success: true,
             action: "Test Action",
@@ -5517,7 +5517,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testVoiceControlNavigationType() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let types = VoiceControlNavigationType.allCases
         #expect(types.count == 9)
         #expect(types.contains(.tap))
@@ -5534,7 +5534,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     // Additional Automatic Accessibility Identifier Tests (continued)
     
     @Test @MainActor func testViewLevelOptOutDisablesAutomaticIDs() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
             guard let config = self.testConfig else {
                 Issue.record("testConfig is nil")
@@ -5563,7 +5563,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testLayer1FunctionsIncludeAutomaticIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
             guard let config = self.testConfig else {
                 Issue.record("testConfig is nil")
@@ -5602,7 +5602,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testCollisionDetectionIdentifiesConflicts() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
             guard let config = self.testConfig else {
                 Issue.record("testConfig is nil")
@@ -5629,7 +5629,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testDebugLoggingCapturesGeneratedIDs() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
             guard let config = testConfig else {
                 Issue.record("testConfig is nil")
@@ -5650,7 +5650,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testDebugLoggingDisabledWhenTurnedOff() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
             guard let config = testConfig else {
                 Issue.record("testConfig is nil")
@@ -5669,7 +5669,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testDebugLogFormatting() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
             guard let config = testConfig else {
                 Issue.record("testConfig is nil")
@@ -5690,7 +5690,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testDebugLogClearing() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
             guard let config = testConfig else {
                 Issue.record("testConfig is nil")
@@ -5713,7 +5713,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testViewHierarchyTracking() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
             guard let config = testConfig else {
                 Issue.record("testConfig is nil")
@@ -5743,8 +5743,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     // Additional Component Label Text Tests (continued - large batch 2)
     
     @Test @MainActor func testListCardComponentIncludesItemTitleInIdentifier() {
-        initializeTestConfig()
-        setupTestEnvironment()
+        self.initializeTestConfig()
+        self.setupTestEnvironment()
         
         struct TestItem: Identifiable {
             let id: String
@@ -5778,12 +5778,12 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #expect(Bool(true), "ListCardComponent implementation verified - ViewInspector not available on this platform")
         #endif
         
-        cleanupTestEnvironment()
+        self.cleanupTestEnvironment()
     }
     
     @Test @MainActor func testButtonsInListItemsGetUniqueIdentifiers() {
-        initializeTestConfig()
-        setupTestEnvironment()
+        self.initializeTestConfig()
+        self.setupTestEnvironment()
         
         let button1 = AdaptiveUIPatterns.AdaptiveButton("Add to Cart", action: { })
             .enableGlobalAutomaticCompliance()
@@ -5804,12 +5804,12 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #expect(Bool(true), "AdaptiveButton implementation verified - ViewInspector not available on this platform")
         #endif
         
-        cleanupTestEnvironment()
+        self.cleanupTestEnvironment()
     }
     
     @Test @MainActor func testExpandableCardComponentIncludesItemTitleInIdentifier() {
-        initializeTestConfig()
-        setupTestEnvironment()
+        self.initializeTestConfig()
+        self.setupTestEnvironment()
         
         struct TestItem: Identifiable {
             let id: String
@@ -5881,12 +5881,12 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #expect(Bool(true), "ExpandableCardComponent implementation verified - ViewInspector not available on this platform")
         #endif
         
-        cleanupTestEnvironment()
+        self.cleanupTestEnvironment()
     }
     
     @Test @MainActor func testForEachListItemsGetUniqueIdentifiers() {
-        initializeTestConfig()
-        setupTestEnvironment()
+        self.initializeTestConfig()
+        self.setupTestEnvironment()
         
         struct TestItem: Identifiable {
             let id: String
@@ -5918,12 +5918,12 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #expect(Bool(true), "ForEach implementation verified - ViewInspector not available on this platform")
         #endif
         
-        cleanupTestEnvironment()
+        self.cleanupTestEnvironment()
     }
     
     @Test @MainActor func testCoverFlowCardComponentIncludesItemTitleInIdentifier() {
-        initializeTestConfig()
-        setupTestEnvironment()
+        self.initializeTestConfig()
+        self.setupTestEnvironment()
         
         struct TestItem: Identifiable {
             let id: String
@@ -5955,12 +5955,12 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #expect(Bool(true), "CoverFlowCardComponent implementation verified - ViewInspector not available on this platform")
         #endif
         
-        cleanupTestEnvironment()
+        self.cleanupTestEnvironment()
     }
     
     @Test @MainActor func testSimpleCardComponentIncludesItemTitleInIdentifier() {
-        initializeTestConfig()
-        setupTestEnvironment()
+        self.initializeTestConfig()
+        self.setupTestEnvironment()
         
         struct TestItem: Identifiable {
             let id: String
@@ -6019,12 +6019,12 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #expect(Bool(true), "SimpleCardComponent implementation verified - ViewInspector not available on this platform")
         #endif
         
-        cleanupTestEnvironment()
+        self.cleanupTestEnvironment()
     }
     
     @Test @MainActor func testMasonryCardComponentIncludesItemTitleInIdentifier() {
-        initializeTestConfig()
-        setupTestEnvironment()
+        self.initializeTestConfig()
+        self.setupTestEnvironment()
         
         struct TestItem: Identifiable {
             let id: String
@@ -6058,12 +6058,12 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #expect(Bool(true), "MasonryCardComponent implementation verified - ViewInspector not available on this platform")
         #endif
         
-        cleanupTestEnvironment()
+        self.cleanupTestEnvironment()
     }
     
     @Test @MainActor func testGridCollectionItemsGetUniqueIdentifiers() {
-        initializeTestConfig()
-        setupTestEnvironment()
+        self.initializeTestConfig()
+        self.setupTestEnvironment()
         
         struct TestItem: Identifiable {
             let id: String
@@ -6127,12 +6127,12 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #expect(Bool(true), "Grid collection items implementation verified - ViewInspector not available on this platform")
         #endif
         
-        cleanupTestEnvironment()
+        self.cleanupTestEnvironment()
     }
     
     @Test @MainActor func testCoverFlowCollectionItemsGetUniqueIdentifiers() {
-        initializeTestConfig()
-        setupTestEnvironment()
+        self.initializeTestConfig()
+        self.setupTestEnvironment()
         
         struct TestItem: Identifiable {
             let id: String
@@ -6165,12 +6165,12 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #expect(Bool(true), "CoverFlow collection items implementation verified - ViewInspector not available on this platform")
         #endif
         
-        cleanupTestEnvironment()
+        self.cleanupTestEnvironment()
     }
     
     @Test @MainActor func testMasonryCollectionItemsGetUniqueIdentifiers() {
-        initializeTestConfig()
-        setupTestEnvironment()
+        self.initializeTestConfig()
+        self.setupTestEnvironment()
         
         struct TestItem: Identifiable {
             let id: String
@@ -6204,12 +6204,12 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #expect(Bool(true), "Masonry collection items implementation verified - ViewInspector not available on this platform")
         #endif
         
-        cleanupTestEnvironment()
+        self.cleanupTestEnvironment()
     }
     
     @Test @MainActor func testAllCardTypesGetUniqueIdentifiersInCollections() {
-        initializeTestConfig()
-        setupTestEnvironment()
+        self.initializeTestConfig()
+        self.setupTestEnvironment()
         
         struct TestItem: Identifiable {
             let id: String
@@ -6298,12 +6298,12 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #expect(Bool(true), "All card types implementation verified - ViewInspector not available on this platform")
         #endif
         
-        cleanupTestEnvironment()
+        self.cleanupTestEnvironment()
     }
     
     @Test @MainActor func testResponsiveCardViewIncludesCardTitleInIdentifier() {
-        initializeTestConfig()
-        setupTestEnvironment()
+        self.initializeTestConfig()
+        self.setupTestEnvironment()
         
         let card1 = ResponsiveCardData(
             title: "Dashboard",
@@ -6345,12 +6345,12 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #expect(Bool(true), "ResponsiveCardView implementation verified - ViewInspector not available on this platform")
         #endif
         
-        cleanupTestEnvironment()
+        self.cleanupTestEnvironment()
     }
     
     @Test @MainActor func testResponsiveCardViewCollectionItemsGetUniqueIdentifiers() {
-        initializeTestConfig()
-        setupTestEnvironment()
+        self.initializeTestConfig()
+        self.setupTestEnvironment()
         
         let cards = [
             ResponsiveCardData(
@@ -6400,12 +6400,12 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #expect(Bool(true), "ResponsiveCardView collection items implementation verified - ViewInspector not available on this platform")
         #endif
         
-        cleanupTestEnvironment()
+        self.cleanupTestEnvironment()
     }
     
     @Test @MainActor func testPlatformTabStripButtonsIncludeItemTitlesInIdentifiers() {
-        initializeTestConfig()
-        setupTestEnvironment()
+        self.initializeTestConfig()
+        self.setupTestEnvironment()
         
         let items = [
             PlatformTabItem(title: "Home", systemImage: "house.fill"),
@@ -6425,12 +6425,12 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #expect(Bool(true), "PlatformTabStrip implementation verified - ViewInspector not available on this platform")
         #endif
         
-        cleanupTestEnvironment()
+        self.cleanupTestEnvironment()
     }
     
     @Test @MainActor func testPlatformTabStripButtonsGetDifferentIdentifiers() {
-        initializeTestConfig()
-        setupTestEnvironment()
+        self.initializeTestConfig()
+        self.setupTestEnvironment()
         
         let homeItem = PlatformTabItem(title: "Home", systemImage: "house.fill")
         let settingsItem = PlatformTabItem(title: "Settings", systemImage: "gear")
@@ -6475,21 +6475,21 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #expect(Bool(true), "PlatformTabStrip buttons implementation verified - ViewInspector not available on this platform")
         #endif
         
-        cleanupTestEnvironment()
+        self.cleanupTestEnvironment()
     }
     
     @Test @MainActor func testFileRowIncludesFileNameInIdentifier() {
-        initializeTestConfig()
-        setupTestEnvironment()
+        self.initializeTestConfig()
+        self.setupTestEnvironment()
         
         #expect(Bool(true), "Documenting requirement - FileRow needs file.name in identifier for unique rows")
         
-        cleanupTestEnvironment()
+        self.cleanupTestEnvironment()
     }
     
     @Test @MainActor func testValidationErrorRowsGetUniqueIdentifiers() {
-        initializeTestConfig()
-        setupTestEnvironment()
+        self.initializeTestConfig()
+        self.setupTestEnvironment()
         
         let field = DynamicFormField(
             id: "test-field",
@@ -6518,7 +6518,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #expect(Bool(true), "Validation error rows implementation verified - ViewInspector not available on this platform")
         #endif
         
-        cleanupTestEnvironment()
+        self.cleanupTestEnvironment()
     }
     
     // Additional Apple HIG Compliance Component Tests (continued)
@@ -6527,7 +6527,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     
     @Test @MainActor func testInteractionPatternModifierGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let testContent = platformVStackContainer {
             Text("Interaction Pattern Content")
             Button("Test Button") { }
@@ -6549,7 +6549,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testVoiceOverEnabledModifierGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let testContent = platformVStackContainer {
             Text("VoiceOver Support Content")
             Button("Test Button") { }
@@ -6571,7 +6571,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testKeyboardNavigableModifierGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let testContent = platformVStackContainer {
             Text("Keyboard Navigation Content")
             Button("Test Button") { }
@@ -6593,7 +6593,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testHighContrastEnabledModifierGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let testContent = platformVStackContainer {
             Text("High Contrast Content")
             Button("Test Button") { }
@@ -6615,7 +6615,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testReducedMotionModifierGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let testContent = platformVStackContainer {
             Text("Reduced Motion Content")
             Button("Test Button") { }
@@ -6637,7 +6637,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testDynamicTypeModifierGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let testContent = platformVStackContainer {
             Text("Dynamic Type Content")
             Button("Test Button") { }
@@ -6661,7 +6661,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     // Additional Apple HIG Compliance Tests (continued)
     
     @Test @MainActor func testAutomaticAccessibilityModifier() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let testView = platformPresentBasicValue_L1(
             value: 42,
             hints: PresentationHints()
@@ -6671,7 +6671,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testPlatformPatternsModifier() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let testView = platformPresentContent_L1(
             content: "Test",
             hints: PresentationHints()
@@ -6682,7 +6682,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testVisualConsistencyModifier() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let testView = platformPresentContent_L1(
             content: "Test",
             hints: PresentationHints()
@@ -6693,7 +6693,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testInteractionPatternsModifier() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let testView = platformPresentBasicValue_L1(
             value: 42,
             hints: PresentationHints()
@@ -6703,7 +6703,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testComplianceReportStructure() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let report = HIGComplianceReport(
             overallScore: 85.0,
             accessibilityScore: 90.0,
@@ -6724,7 +6724,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     // Additional Accessibility Types Tests (continued)
     
     @Test @MainActor func testAssistiveTouchGestureIntensity() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let intensities = AssistiveTouchGestureIntensity.allCases
         #expect(intensities.count == 3)
         #expect(intensities.contains(.light))
@@ -6733,7 +6733,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testAssistiveTouchGesture() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let gesture = AssistiveTouchGesture(
             type: .singleTap,
             intensity: .medium
@@ -6745,7 +6745,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testAssistiveTouchAction() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         var actionExecuted = false
         let action = AssistiveTouchAction(
             name: "Test Action",
@@ -6761,7 +6761,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testAssistiveTouchGestureResult() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let successResult = AssistiveTouchGestureResult(
             success: true,
             action: "Test Action"
@@ -6782,7 +6782,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testEyeTrackingGazeEvent() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let position = CGPoint(x: 100, y: 200)
         let timestamp = Date()
         let event = EyeTrackingGazeEvent(
@@ -6799,7 +6799,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testVoiceControlCommandRecognition() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let recognition = VoiceControlCommandRecognition(
             phrase: "Test phrase",
             confidence: 0.85,
@@ -6813,7 +6813,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testVoiceControlCompliance() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let compliant = VoiceControlCompliance(
             isCompliant: true,
             issues: [],
@@ -6836,7 +6836,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testMaterialContrastLevel() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let levels = MaterialContrastLevel.allCases
         #expect(levels.count == 4)
         #expect(levels.contains(.low))
@@ -6846,7 +6846,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testComplianceLevel() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let levels = ComplianceLevel.allCases
         #expect(levels.count == 4)
         #expect(levels.contains(.basic))
@@ -6861,7 +6861,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testIssueSeverity() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let severities = IssueSeverity.allCases
         #expect(severities.count == 4)
         #expect(severities.contains(.low))
@@ -6871,7 +6871,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testAccessibilitySettings() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let settings = SixLayerFramework.AccessibilitySettings()
         #expect(settings.voiceOverSupport)
         #expect(settings.keyboardNavigation)
@@ -6882,7 +6882,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testAccessibilityComplianceMetrics() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let metrics = AccessibilityComplianceMetrics()
         #expect(metrics.voiceOverCompliance == .basic)
         #expect(metrics.keyboardCompliance == .basic)
@@ -6892,7 +6892,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testAccessibilityAuditResult() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let metrics = AccessibilityComplianceMetrics()
         let result = AccessibilityAuditResult(
             complianceLevel: .basic,
@@ -6910,7 +6910,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testAccessibilityIssue() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let issue = AccessibilityIssue(
             severity: .high,
             description: "Test issue",
@@ -6927,7 +6927,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     // Additional Automatic Accessibility Identifier Tests (continued)
     
     @Test @MainActor func testUITestCodeGeneration() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
             guard let config = testConfig else {
                 Issue.record("testConfig is nil")
@@ -6952,7 +6952,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testUITestCodeFileGeneration() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
             guard let config = testConfig else {
                 Issue.record("testConfig is nil")
@@ -6987,7 +6987,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testUITestCodeClipboardGeneration() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
             guard let config = testConfig else {
                 Issue.record("testConfig is nil")
@@ -7010,7 +7010,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testTrackViewHierarchyAutomaticallyAppliesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
             guard let config = testConfig else {
                 Issue.record("testConfig is nil")
@@ -7046,7 +7046,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testGlobalAutomaticAccessibilityIdentifiersWork() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
             guard let config = testConfig else {
                 Issue.record("testConfig is nil")
@@ -7068,7 +7068,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testIDGenerationUsesActualViewContext() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
             guard let config = testConfig else {
                 Issue.record("testConfig is nil")
@@ -7094,7 +7094,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testAutomaticAccessibilityIdentifiersWithNamedComponent() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
             guard let config = testConfig else {
                 Issue.record("testConfig is nil")
@@ -7128,7 +7128,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     // Additional Utility Component Tests (continued)
     
     @Test @MainActor func testAccessibilityIdentifierNamespaceMatchingGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let testView = platformPresentContent_L1(
             content: "Test Content",
             hints: PresentationHints()
@@ -7148,7 +7148,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testAccessibilityIdentifierScreenMatchingGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let testView = platformPresentContent_L1(
             content: "Test Content",
             hints: PresentationHints()
@@ -7168,7 +7168,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testAccessibilityIdentifierElementMatchingGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let testView = platformPresentContent_L1(
             content: "Test Content",
             hints: PresentationHints()
@@ -7189,7 +7189,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testAccessibilityIdentifierStateMatchingGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let testView = platformPresentContent_L1(
             content: "Test Content",
             hints: PresentationHints()
@@ -7209,7 +7209,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testAccessibilityIdentifierHierarchyMatchingGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let testView = platformPresentContent_L1(
             content: "Test Content",
             hints: PresentationHints()
@@ -7232,7 +7232,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     // Additional Remaining Components Tests (continued)
     
     @Test @MainActor func testExpandableCardComponentGeneratesAccessibilityIdentifiersOnMacOS() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let testItem = TestPatterns.TestDataItem(title: "Test Card", subtitle: "Test Subtitle")
         
         let layoutDecision = IntelligentCardLayoutDecision(
@@ -7282,7 +7282,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testCoverFlowCollectionViewGeneratesAccessibilityIdentifiersOnMacOS() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let testItems = [
             TestPatterns.TestDataItem(title: "Item 1", subtitle: "Subtitle 1"),
             TestPatterns.TestDataItem(title: "Item 2", subtitle: "Subtitle 2")
@@ -7313,7 +7313,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testCoverFlowCardComponentGeneratesAccessibilityIdentifiersOnMacOS() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let testItem = TestPatterns.TestDataItem(title: "Test Card", subtitle: "Test Subtitle")
         
         let view = CoverFlowCardComponent(
@@ -7337,7 +7337,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testGridCollectionViewGeneratesAccessibilityIdentifiersOnMacOS() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let testItems = [
             TestPatterns.TestDataItem(title: "Item 1", subtitle: "Subtitle 1"),
             TestPatterns.TestDataItem(title: "Item 2", subtitle: "Subtitle 2")
@@ -7368,7 +7368,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testListCollectionViewGeneratesAccessibilityIdentifiersOnMacOS() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let testItems = [
             TestPatterns.TestDataItem(title: "Item 1", subtitle: "Subtitle 1"),
             TestPatterns.TestDataItem(title: "Item 2", subtitle: "Subtitle 2")
@@ -7401,7 +7401,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     // Additional Eye Tracking Tests (continued)
     
     @Test @MainActor func testDwellEventDefaultTimestamp() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let dwellEvent = EyeTrackingDwellEvent(
             targetView: AnyView(platformPresentContent_L1(
                 content: "Test",
@@ -7415,7 +7415,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testEyeTrackingModifierInitialization() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let view = platformPresentContent_L1(
             content: "Test",
             hints: PresentationHints()
@@ -7426,7 +7426,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testEyeTrackingModifierWithConfig() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let config = EyeTrackingConfig()
         let view = platformPresentContent_L1(
             content: "Test",
@@ -7438,7 +7438,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testEyeTrackingModifierWithCallbacks() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let view = platformPresentContent_L1(
             content: "Test",
             hints: PresentationHints()
@@ -7452,7 +7452,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testEyeTrackingEnabledViewModifier() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let view = platformPresentContent_L1(
             content: "Test",
             hints: PresentationHints()
@@ -7465,7 +7465,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     // Additional Switch Control Tests (continued)
     
     @Test @MainActor func testSwitchControlNavigationSupport() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let config = SwitchControlConfig(enableNavigation: true)
         let manager = SwitchControlManager(config: config)
         
@@ -7475,7 +7475,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testSwitchControlFocusManagement() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let config = SwitchControlConfig(focusManagement: .automatic)
         let manager = SwitchControlManager(config: config)
         
@@ -7486,7 +7486,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testSwitchControlGestureSupport() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let config = SwitchControlConfig(enableGestureSupport: true)
         let manager = SwitchControlManager(config: config)
         
@@ -7498,7 +7498,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testSwitchControlConfiguration() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let config = SwitchControlConfig(
             enableNavigation: true,
             enableCustomActions: true,
@@ -7531,7 +7531,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     // Additional Intelligent Card Expansion Component Tests (continued)
     
     @Test @MainActor func testExpandableCardComponentGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
             let testItem = TestPatterns.TestDataItem(title: "Test Card")
             
@@ -7575,7 +7575,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testCoverFlowCardComponentGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
             let testItem = TestPatterns.TestDataItem(title: "CoverFlow Card")
             
@@ -7601,7 +7601,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testListCollectionViewGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
             let testItems = [
                 TestPatterns.TestDataItem(title: "List Card 1"),
@@ -7626,7 +7626,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testMasonryCollectionViewGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
             let testItems = [
                 TestPatterns.TestDataItem(title: "Masonry Card 1"),
@@ -7651,7 +7651,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testAdaptiveCollectionViewGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
             let testItems = [
                 TestPatterns.TestDataItem(title: "Adaptive Card 1"),
@@ -7678,7 +7678,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     // Additional Platform Semantic Layer 1 Hierarchical Temporal Tests (continued)
     
     @Test @MainActor func testPlatformPresentHierarchicalDataL1GeneratesAccessibilityIdentifiersOnIOS() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let testData = GenericHierarchicalItem(
             title: "Root Item",
             level: 0,
@@ -7715,7 +7715,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testPlatformPresentHierarchicalDataL1GeneratesAccessibilityIdentifiersOnMacOS() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let testData = GenericHierarchicalItem(
             title: "Root Item",
             level: 0,
@@ -7752,7 +7752,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testPlatformPresentTemporalDataL1GeneratesAccessibilityIdentifiersOnIOS() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let testData = GenericTemporalItem(
             title: "Event 1",
             date: Date(),
@@ -7786,7 +7786,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testPlatformPresentTemporalDataL1GeneratesAccessibilityIdentifiersOnMacOS() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let testData = GenericTemporalItem(
             title: "Event 1",
             date: Date(),
@@ -7841,7 +7841,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testGlobalAutomaticAccessibilityIdentifierModifierGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let testView = platformPresentBasicArray_L1(
             array: [1, 2, 3],
             hints: PresentationHints()
@@ -7861,7 +7861,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testDisableAutomaticAccessibilityIdentifierModifierGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let testView = platformPresentContent_L1(
             content: "Test Content",
             hints: PresentationHints()
@@ -7881,7 +7881,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testViewHierarchyTrackingModifierGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         struct TestItem: Identifiable {
             let id: String
             let title: String
@@ -7927,8 +7927,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     // Additional Component Label Text Tests (continued)
     
     @Test @MainActor func testDynamicArrayFieldItemsGetUniqueIdentifiers() {
-        initializeTestConfig()
-        setupTestEnvironment()
+        self.initializeTestConfig()
+        self.setupTestEnvironment()
         
         let field = DynamicFormField(
             id: "array-field",
@@ -7956,12 +7956,12 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #expect(Bool(true), "DynamicArrayField implementation verified - ViewInspector not available on this platform")
         #endif
         
-        cleanupTestEnvironment()
+        self.cleanupTestEnvironment()
     }
     
     @Test @MainActor func testPlatformListRowIncludesContentInIdentifier() {
-        initializeTestConfig()
-        setupTestEnvironment()
+        self.initializeTestConfig()
+        self.setupTestEnvironment()
         
         struct TestItem: Identifiable {
             let id: String
@@ -7995,21 +7995,21 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #expect(Bool(true), "platformListRow implementation verified - ViewInspector not available on this platform")
         #endif
         
-        cleanupTestEnvironment()
+        self.cleanupTestEnvironment()
     }
     
     @Test @MainActor func testSettingsItemViewsGetUniqueIdentifiers() {
-        initializeTestConfig()
-        setupTestEnvironment()
+        self.initializeTestConfig()
+        self.setupTestEnvironment()
         
         #expect(Bool(true), "Documenting requirement - Settings item views need item.title in identifier")
         
-        cleanupTestEnvironment()
+        self.cleanupTestEnvironment()
     }
     
     @Test @MainActor func testPlatformListSectionHeaderIncludesTitleInIdentifier() {
-        initializeTestConfig()
-        setupTestEnvironment()
+        self.initializeTestConfig()
+        self.setupTestEnvironment()
         
         let header1 = platformVStackContainer {
             Text("Content")
@@ -8039,12 +8039,12 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #expect(Bool(true), "platformListSectionHeader implementation verified - ViewInspector not available on this platform")
         #endif
         
-        cleanupTestEnvironment()
+        self.cleanupTestEnvironment()
     }
     
     @Test @MainActor func testPlatformFormFieldIncludesLabelInIdentifier() {
-        initializeTestConfig()
-        setupTestEnvironment()
+        self.initializeTestConfig()
+        self.setupTestEnvironment()
         
         let field1 = platformVStackContainer {
             TextField("", text: .constant(""))
@@ -8078,12 +8078,12 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #expect(Bool(true), "platformFormField implementation verified - ViewInspector not available on this platform")
         #endif
         
-        cleanupTestEnvironment()
+        self.cleanupTestEnvironment()
     }
     
     @Test @MainActor func testPlatformFormFieldGroupIncludesTitleInIdentifier() {
-        initializeTestConfig()
-        setupTestEnvironment()
+        self.initializeTestConfig()
+        self.setupTestEnvironment()
         
         let group1 = platformVStackContainer {
             Text("Content")
@@ -8117,13 +8117,13 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #expect(Bool(true), "platformFormFieldGroup implementation verified - ViewInspector not available on this platform")
         #endif
         
-        cleanupTestEnvironment()
+        self.cleanupTestEnvironment()
     }
     
     // Additional Apple HIG Compliance Component Tests (continued)
     
     @Test @MainActor func testPlatformNavigationModifierGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         // Given: Test content
         let testContent = platformVStackContainer {
             Text("Navigation Content")
@@ -8153,7 +8153,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testPlatformStylingModifierGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let testContent = platformVStackContainer {
             Text("Styling Content")
             Button("Test Button") { }
@@ -8175,7 +8175,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testPlatformIconModifierGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let testContent = platformVStackContainer {
             Text("Icon Content")
             Button("Test Button") { }
@@ -8199,7 +8199,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     // Additional Dynamic Form View Component Tests (continued)
     
     @Test @MainActor func testFieldComponentFunctionality() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         struct TestData {
             let name: String
             let email: String
@@ -8237,7 +8237,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testDynamicFormSectionViewGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         struct TestData {
             let name: String
             let email: String
@@ -8265,7 +8265,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testDynamicFormActionsGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         struct TestData {
             let name: String
             let email: String
@@ -8295,9 +8295,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     // Additional Accessibility Identifier Edge Case Tests (continued)
     
     @Test @MainActor func testVeryLongNames() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
-            setupTestEnvironment()
+            self.setupTestEnvironment()
             
             let longName = String(repeating: "VeryLongName", count: 50)
             let view = PlatformInteractionButton(style: .primary, action: {}) {
@@ -8323,9 +8323,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testDisableEnableMidHierarchy() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
-            setupTestEnvironment()
+            self.setupTestEnvironment()
             
             let view = platformVStackContainer {
                 Button("Auto") { }
@@ -8358,9 +8358,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testMultipleScreenContexts() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
-            setupTestEnvironment()
+            self.setupTestEnvironment()
             
             let view = platformVStackContainer {
                 Text("Content")
@@ -8386,7 +8386,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     // Additional Apple HIG Compliance Tests (continued)
     
     @Test @MainActor func testAccessibilitySystemStateFromSystemChecker() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let complianceManager = AppleHIGComplianceManager()
         let systemState = complianceManager.accessibilityState
         
@@ -8396,7 +8396,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testPlatformStringValues() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         #if os(iOS)
         #expect(SixLayerPlatform.iOS.rawValue == "iOS")
         #elseif os(macOS)
@@ -8409,7 +8409,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testHIGComplianceLevelStringValues() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         #expect(HIGComplianceLevel.automatic.rawValue == "automatic")
         #expect(HIGComplianceLevel.enhanced.rawValue == "enhanced")
         #expect(HIGComplianceLevel.minimal.rawValue == "minimal")
@@ -8574,7 +8574,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     // MARK: - Utility Component Tests (continued)
     
     @Test @MainActor func testAccessibilityIdentifierCaseInsensitiveMatchingGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let testView = platformPresentContent_L1(
             content: "Test Content",
             hints: PresentationHints()
@@ -8595,7 +8595,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testAccessibilityIdentifierPartialMatchingGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let testView = platformPresentContent_L1(
             content: "Test Content",
             hints: PresentationHints()
@@ -8615,7 +8615,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testAccessibilityIdentifierRegexMatchingGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let testView = platformPresentContent_L1(
             content: "Test Content",
             hints: PresentationHints()
@@ -8637,7 +8637,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     // MARK: - Accessibility Features Layer 5 Component Tests (continued)
     
     @Test @MainActor func testAccessibilityHostingViewGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let testContent = platformVStackContainer {
             Text("Hosting Content")
             Button("Test Button") { }
@@ -8661,7 +8661,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testAccessibilityTestingViewGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let view = AccessibilityTestingView()
         
         #if canImport(ViewInspector)
@@ -8678,7 +8678,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testVoiceOverManagerGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let manager = VoiceOverManager()
         
         let view = platformVStackContainer {
@@ -8703,7 +8703,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     // MARK: - Debug Logging Tests (continued)
     
     @Test @MainActor func testGenerateIDDoesNotLogWhenDebugLoggingDisabled() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
             guard let config = testConfig else {
                 Issue.record("testConfig is nil")
@@ -8721,7 +8721,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testGetDebugLogMethodExists() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
             guard let config = testConfig else {
                 Issue.record("testConfig is nil")
@@ -8734,7 +8734,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testDebugLogAccumulatesMultipleEntries() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
             guard let config = testConfig else {
                 Issue.record("testConfig is nil")
@@ -8997,7 +8997,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     // MARK: - Remaining Components Tests (continued)
     
     @Test @MainActor func testMasonryCollectionViewGeneratesAccessibilityIdentifiersOnIOS() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         struct RemainingComponentsTestItem: Identifiable {
             let id: String
             let title: String
@@ -9034,7 +9034,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testMasonryCollectionViewGeneratesAccessibilityIdentifiersOnMacOS() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         struct RemainingComponentsTestItem: Identifiable {
             let id: String
             let title: String
@@ -9071,7 +9071,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testAdaptiveCollectionViewGeneratesAccessibilityIdentifiersOnIOS() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         struct RemainingComponentsTestItem: Identifiable {
             let id: String
             let title: String
@@ -9442,7 +9442,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     // MARK: - HIG Compliance Light Dark Mode Tests (continued)
     
     @Test @MainActor func testViewRespectsSystemColorScheme() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
             let view = Text("Test Text")
                 .automaticCompliance()
@@ -9461,7 +9461,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testTextUsesSystemColorsForLightDarkMode() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
             let view = Text("System Color Text")
                 .automaticCompliance()
@@ -9480,7 +9480,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testButtonUsesSystemColorsForLightDarkMode() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
             let button = Button("Test Button") { }
                 .automaticCompliance()
@@ -9499,7 +9499,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testBackgroundAdaptsToColorScheme() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
             let view = Text("Background Text")
                 .padding()
@@ -9520,7 +9520,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testColorContrastMaintainedInLightMode() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
             let view = Text("Light Mode Text")
                 .foregroundColor(.primary)
@@ -9541,7 +9541,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testColorContrastMaintainedInDarkMode() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
             let view = Text("Dark Mode Text")
                 .foregroundColor(.primary)
@@ -9562,7 +9562,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testSystemPrimaryColorAdaptsToColorScheme() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
             let view = Text("Primary Color Text")
                 .foregroundColor(.primary)
@@ -9582,7 +9582,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testSystemSecondaryColorAdaptsToColorScheme() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
             let view = Text("Secondary Color Text")
                 .foregroundColor(.secondary)
@@ -9602,7 +9602,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testLightDarkModeOnAllPlatforms() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
             let view = platformVStackContainer {
                 Text("Light/Dark Mode Test")
@@ -9628,7 +9628,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     // MARK: - Utility Component Tests (final batch)
     
     @Test @MainActor func testAccessibilityIdentifierPerformanceMatchingGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let testView = platformPresentContent_L1(
             content: "Test Content",
             hints: PresentationHints()
@@ -9648,7 +9648,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testAccessibilityIdentifierErrorHandlingGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let testView = platformPresentContent_L1(
             content: "Test Content",
             hints: PresentationHints()
@@ -9668,7 +9668,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testAccessibilityIdentifierNullHandlingGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let testView = platformPresentContent_L1(
             content: "Test Content",
             hints: PresentationHints()
@@ -9688,7 +9688,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testAccessibilityIdentifierEmptyHandlingGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let testView = platformPresentContent_L1(
             content: "Test Content",
             hints: PresentationHints()
@@ -9708,7 +9708,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testAccessibilityIdentifierWhitespaceHandlingGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let testView = platformPresentContent_L1(
             content: "Test Content",
             hints: PresentationHints()
@@ -9728,7 +9728,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testAccessibilityIdentifierSpecialCharacterHandlingGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let testView = platformPresentContent_L1(
             content: "Test Content",
             hints: PresentationHints()
@@ -9749,7 +9749,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testAccessibilityIdentifierUnicodeHandlingGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let testView = platformPresentContent_L1(
             content: "Test Content",
             hints: PresentationHints()
@@ -9793,7 +9793,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     // MARK: - Accessibility Features Layer 5 Component Tests (final batch)
     
     @Test @MainActor func testKeyboardNavigationManagerGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let manager = KeyboardNavigationManager()
         
         let view = platformVStackContainer {
@@ -9816,7 +9816,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testHighContrastManagerGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let manager = HighContrastManager()
         
         let view = platformVStackContainer {
@@ -9839,7 +9839,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testAccessibilityTestingManagerGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let manager = AccessibilityTestingManager()
         
         let view = platformVStackContainer {
@@ -9862,7 +9862,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testSwitchControlManagerGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let config = SwitchControlConfig(
             enableNavigation: true,
             enableCustomActions: true,
@@ -9893,7 +9893,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testMaterialAccessibilityManagerGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let manager = MaterialAccessibilityManager()
         
         let view = platformVStackContainer {
@@ -9916,7 +9916,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testEyeTrackingManagerGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let manager = EyeTrackingManager()
         
         let view = platformVStackContainer {
@@ -9939,7 +9939,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testAssistiveTouchManagerGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let config = AssistiveTouchConfig(
             enableIntegration: true,
             enableCustomActions: true,
@@ -9972,7 +9972,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     // MARK: - Debug Logging Tests (final batch)
     
     @Test @MainActor func testDebugLogIncludesTimestamps() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
             guard let config = testConfig else {
                 Issue.record("testConfig is nil")
@@ -9990,7 +9990,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testDebugLogFormatIsConsistent() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
             guard let config = testConfig else {
                 Issue.record("testConfig is nil")
@@ -10011,7 +10011,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testDebugLoggingRespectsEnableFlag() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
             guard let config = testConfig else {
                 Issue.record("testConfig is nil")
@@ -10037,7 +10037,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testDebugLogPersistsAcrossGeneratorInstances() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
             guard let config = testConfig else {
                 Issue.record("testConfig is nil")
@@ -10059,7 +10059,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testDebugLoggingHandlesEmptyComponentNames() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
             guard let config = testConfig else {
                 Issue.record("testConfig is nil")
@@ -10078,7 +10078,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testDebugLoggingHandlesSpecialCharacters() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
             guard let config = testConfig else {
                 Issue.record("testConfig is nil")
@@ -10098,7 +10098,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testDebugLogHasReasonableSizeLimits() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
             guard let config = testConfig else {
                 Issue.record("testConfig is nil")
@@ -10167,7 +10167,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     // MARK: - Remaining Components Tests (final batch)
     
     @Test @MainActor func testSimpleCardComponentGeneratesAccessibilityIdentifiersOnIOS() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         struct RemainingComponentsTestItem: Identifiable {
             let id: String
             let title: String
@@ -10209,7 +10209,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testSimpleCardComponentGeneratesAccessibilityIdentifiersOnMacOS() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         struct RemainingComponentsTestItem: Identifiable {
             let id: String
             let title: String
@@ -10251,7 +10251,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testListCardComponentGeneratesAccessibilityIdentifiersOnIOS() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         struct RemainingComponentsTestItem: Identifiable {
             let id: String
             let title: String
@@ -10282,7 +10282,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testListCardComponentGeneratesAccessibilityIdentifiersOnMacOS() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         struct RemainingComponentsTestItem: Identifiable {
             let id: String
             let title: String
@@ -10313,7 +10313,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testMasonryCardComponentGeneratesAccessibilityIdentifiersOnIOS() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         struct RemainingComponentsTestItem: Identifiable {
             let id: String
             let title: String
@@ -10338,7 +10338,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testMasonryCardComponentGeneratesAccessibilityIdentifiersOnMacOS() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         struct RemainingComponentsTestItem: Identifiable {
             let id: String
             let title: String
@@ -10395,7 +10395,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testAssistiveTouchGestureTypes() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let singleTap = AssistiveTouchGesture(type: .singleTap, intensity: .light)
         let doubleTap = AssistiveTouchGesture(type: .doubleTap, intensity: .medium)
         let swipeLeft = AssistiveTouchGesture(type: .swipeLeft, intensity: .heavy)
@@ -10408,7 +10408,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testAssistiveTouchViewModifier() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let view = platformPresentContent_L1(
             content: "Test",
             hints: PresentationHints()
@@ -10419,7 +10419,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testAssistiveTouchViewModifierWithConfiguration() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let config = AssistiveTouchConfig(enableIntegration: true)
         let view = platformPresentContent_L1(
             content: "Test",
@@ -10445,7 +10445,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     // MARK: - HIG Compliance Typography Tests (batch 2)
     
     @Test @MainActor func testTextSupportsDynamicType() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
             let view = Text("Test Text")
                 .automaticCompliance()
@@ -10464,7 +10464,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testButtonTextSupportsDynamicType() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
             let button = Button("Test Button") { }
                 .automaticCompliance()
@@ -10483,7 +10483,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testLabelSupportsDynamicType() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
             let label = Label("Test Label", systemImage: "star")
                 .automaticCompliance()
@@ -10502,7 +10502,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testTextSupportsAccessibilitySizes() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
             let view = Text("Accessibility Text")
                 .automaticCompliance()
@@ -10521,7 +10521,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testBodyTextMeetsMinimumSizeRequirements() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
             let view = Text("Body Text")
                 .font(.body)
@@ -10541,7 +10541,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testCaptionTextMeetsMinimumSizeRequirements() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
             let view = Text("Caption Text")
                 .font(.caption)
@@ -10561,7 +10561,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testCustomFontSizeEnforcedMinimum() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
             let view = Text("Small Text")
                 .font(.system(size: 10))
@@ -10581,7 +10581,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testPlatformSpecificTypographySizes() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
             let view = platformVStackContainer {
                 Text("Large Title")
@@ -10616,7 +10616,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testDynamicTypeOnBothPlatforms() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         await runWithTaskLocalConfig {
             let view = Text("Cross-Platform Text")
                 .automaticCompliance()
@@ -10637,7 +10637,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     // MARK: - Accessibility Features Layer 5 Tests (batch 2)
     
     @Test @MainActor func testMoveFocusPreviousWithWraparound() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let navigationManager = KeyboardNavigationManager()
         navigationManager.addFocusableItem("button1")
         navigationManager.addFocusableItem("button2")
@@ -10649,7 +10649,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testMoveFocusEmptyList() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let navigationManager = KeyboardNavigationManager()
         #expect(navigationManager.focusableItems.count == 0)
         navigationManager.moveFocus(direction: .next)
@@ -10658,7 +10658,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testAccessibilityEnhancedViewModifier() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let testView = platformPresentContent_L1(
             content: "Test",
             hints: PresentationHints()
@@ -10674,9 +10674,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         
         // Configure accessibility identifier settings
         let testConfig = AccessibilityIdentifierConfig.currentTaskLocalConfig ?? AccessibilityIdentifierConfig.shared
-        testConfig.enableAutoIDs = true
-        testConfig.includeComponentNames = true
-        testConfig.includeElementTypes = true
+        self.testConfig.enableAutoIDs = true
+        self.testConfig.includeComponentNames = true
+        self.testConfig.includeElementTypes = true
         
         let viewWithEnvironment = enhancedView
             .environment(\.globalAutomaticAccessibilityIdentifiers, testConfig.enableAutoIDs)
@@ -10705,7 +10705,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testAccessibilityEnhancedViewModifierDefaultConfig() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let testView = platformPresentContent_L1(
             content: "Test",
             hints: PresentationHints()
@@ -10725,7 +10725,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testVoiceOverEnabledViewModifier() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let testView = platformPresentContent_L1(
             content: "Test",
             hints: PresentationHints()
@@ -10735,7 +10735,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testKeyboardNavigableViewModifier() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let testView = platformPresentContent_L1(
             content: "Test",
             hints: PresentationHints()
@@ -10745,7 +10745,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testHighContrastEnabledViewModifier() {
-        initializeTestConfig()
+        self.initializeTestConfig()
         let testView = platformPresentContent_L1(
             content: "Test",
             hints: PresentationHints()
@@ -10874,7 +10874,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testTouchTargetModifierGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         // Given: Test content
         let testContent = platformVStackContainer {
             Text("Touch Target Content")
@@ -10904,7 +10904,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
 
     @Test @MainActor func testPlatformInteractionModifierGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         // Given: Test content
         let testContent = platformVStackContainer {
             Text("Platform Interaction Content")
@@ -10934,7 +10934,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
 
     @Test @MainActor func testHapticFeedbackModifierGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         // Given: Test content
         let testContent = platformVStackContainer {
             Text("Haptic Feedback Content")
@@ -10964,7 +10964,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
 
     @Test @MainActor func testGestureRecognitionModifierGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
         // Given: Test content
         let testContent = platformVStackContainer {
             Text("Gesture Recognition Content")
@@ -11020,7 +11020,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testDynamicTextFieldRendersTextFieldWithCorrectBindingAndAccessibility() async {
-    initializeTestConfig()
+    self.initializeTestConfig()
     // TDD: DynamicTextField should render a VStack with:
     // 1. A Text label showing the field label
     // 2. A TextField with the correct placeholder and keyboard type
@@ -11099,7 +11099,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testDynamicNumberFieldRendersTextFieldWithNumericKeyboard() async {
-    initializeTestConfig()
+    self.initializeTestConfig()
     // TDD: DynamicNumberField should render a VStack with:
     // 1. A Text label showing "Age"
     // 2. A TextField with decimalPad keyboard type (iOS) and "Enter age" placeholder
@@ -11184,7 +11184,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testDynamicTextAreaFieldRendersMultilineTextEditor() async {
-    initializeTestConfig()
+    self.initializeTestConfig()
     // TDD: DynamicTextAreaField should render a VStack with:
     // 1. A Text label showing "Description"
     // 2. A TextEditor (multiline text input) with "Enter description" placeholder
@@ -11253,7 +11253,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testDynamicSelectFieldRendersPickerWithSelectableOptions() async {
-    initializeTestConfig()
+    self.initializeTestConfig()
     // TDD: DynamicSelectField should render a VStack with:
     // 1. A Text label showing "Country"
     // 2. A Picker with options ["USA", "Canada", "Mexico"]
@@ -11323,7 +11323,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testDynamicMultiSelectFieldRendersMultipleSelectionControls() async {
-    initializeTestConfig()
+    self.initializeTestConfig()
     // TDD: DynamicMultiSelectField should render a VStack with:
     // 1. A Text label showing "Interests"
     // 2. Multiple Toggle controls for options ["Reading", "Sports", "Music"]
@@ -11393,7 +11393,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testDynamicRadioFieldRendersRadioButtonGroup() async {
-    initializeTestConfig()
+    self.initializeTestConfig()
     // TDD: DynamicRadioField should render a VStack with:
     // 1. A Text label showing "Gender"
     // 2. Radio button style Picker with options ["Male", "Female", "Other"]
@@ -11463,7 +11463,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testDynamicCheckboxFieldRendersToggleControl() async {
-    initializeTestConfig()
+    self.initializeTestConfig()
     // TDD: DynamicCheckboxField should render a VStack with:
     // 1. A Text label showing "Subscribe to Newsletter"
     // 2. A Toggle control bound to boolean form state
@@ -11532,7 +11532,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testDynamicToggleFieldRendersToggleControl() async {
-    initializeTestConfig()
+    self.initializeTestConfig()
     // TDD: DynamicToggleField should render a VStack with:
     // 1. A Text label showing "Enable Feature"
     // 2. A Toggle control bound to boolean form state
@@ -11601,7 +11601,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testSimpleCardComponentGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
     await runWithTaskLocalConfig {
         // Given: Test item
         let testItem = TestPatterns.TestDataItem(title: "Simple Card")
@@ -11639,7 +11639,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testListCardComponentGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
     await runWithTaskLocalConfig {
         // Given: Test item
         let testItem = TestPatterns.TestDataItem(title: "List Card")
@@ -11664,7 +11664,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testMasonryCardComponentGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
     await runWithTaskLocalConfig {
         // Given: Test item
         let testItem = TestPatterns.TestDataItem(title: "Masonry Card")
@@ -11689,7 +11689,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testNativeExpandableCardViewGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
     await runWithTaskLocalConfig {
         // Given: Test item and configurations
         let testItem = TestPatterns.TestDataItem(title: "Native Card")
@@ -11718,7 +11718,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testIOSExpandableCardViewGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
     await runWithTaskLocalConfig {
         // Given: Test item and configurations
         let testItem = TestPatterns.TestDataItem(title: "iOS Card")
@@ -11747,7 +11747,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testMacOSExpandableCardViewGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
     await runWithTaskLocalConfig {
         // Given: Test item and configurations
         let testItem = TestPatterns.TestDataItem(title: "macOS Card")
@@ -11776,7 +11776,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testVisionOSExpandableCardViewGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
     await runWithTaskLocalConfig {
         // Given: Test item and configurations
         let testItem = TestPatterns.TestDataItem(title: "visionOS Card")
@@ -11805,7 +11805,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testPlatformAwareExpandableCardViewGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
     await runWithTaskLocalConfig {
         // Given: Test item and configurations
         let testItem = TestPatterns.TestDataItem(title: "Platform Aware Card")
@@ -11834,7 +11834,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testPlatformPresentHierarchicalDataL1WithEnhancedHintsGeneratesAccessibilityIdentifiers() async {
-    initializeTestConfig()
+    self.initializeTestConfig()
     let testData = GenericHierarchicalItem(
         title: "Root Item",
         level: 0,
@@ -11878,7 +11878,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
 
     @Test @MainActor func testPlatformPresentHierarchicalDataL1WithCustomViewGeneratesAccessibilityIdentifiers() async {
-            initializeTestConfig()
+            self.initializeTestConfig()
     let testData = GenericHierarchicalItem(
         title: "Root Item",
         level: 0,
@@ -11926,7 +11926,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
 
     @Test @MainActor func testPlatformPresentHierarchicalDataL1WithEnhancedHintsAndCustomViewGeneratesAccessibilityIdentifiers() async {
-            initializeTestConfig()
+            self.initializeTestConfig()
     let testData = GenericHierarchicalItem(
         title: "Root Item",
         level: 0,
@@ -11975,7 +11975,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
 
     @Test @MainActor func testPlatformPresentHierarchicalDataL1SingleItemGeneratesAccessibilityIdentifiers() async {
-    initializeTestConfig()
+    self.initializeTestConfig()
     let testData = GenericHierarchicalItem(
         title: "Root Item",
         level: 0,
@@ -12017,7 +12017,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
 
     @Test @MainActor func testPlatformPresentTemporalDataL1WithEnhancedHintsGeneratesAccessibilityIdentifiers() async {
-    initializeTestConfig()
+    self.initializeTestConfig()
     let testData = GenericTemporalItem(
         title: "Event 1",
         date: Date(),
@@ -12058,7 +12058,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
 
     @Test @MainActor func testPlatformPresentTemporalDataL1WithCustomViewGeneratesAccessibilityIdentifiers() async {
-    initializeTestConfig()
+    self.initializeTestConfig()
     let testData = GenericTemporalItem(
         title: "Event 1",
         date: Date(),
@@ -12104,7 +12104,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
 
     @Test @MainActor func testPlatformPresentTemporalDataL1WithEnhancedHintsAndCustomViewGeneratesAccessibilityIdentifiers() async {
-    initializeTestConfig()
+    self.initializeTestConfig()
     let testData = GenericTemporalItem(
         title: "Event 1",
         date: Date(),
@@ -12151,7 +12151,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
 
     @Test @MainActor func testPlatformPresentTemporalDataL1SingleItemGeneratesAccessibilityIdentifiers() async {
-    initializeTestConfig()
+    self.initializeTestConfig()
     let testData = GenericTemporalItem(
         title: "Event 1",
         date: Date(),
@@ -12232,8 +12232,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testAccessibilityFunctionsRespectGlobalConfigEnabled() {
-        initializeTestConfig()
-    runWithTaskLocalConfig {
+        self.initializeTestConfig()
+    self.runWithTaskLocalConfig {
         // Test that automatic accessibility functions DO generate IDs when global config is enabled
         
         // Ensure global config is enabled (default)
@@ -12267,8 +12267,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testAccessibilityFunctionsRespectLocalDisableModifier() {
-        initializeTestConfig()
-    runWithTaskLocalConfig {
+        self.initializeTestConfig()
+    self.runWithTaskLocalConfig {
         // Test that accessibility functions respect local disable modifier
         
         // Global config is enabled
@@ -12305,8 +12305,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testAccessibilityFunctionsRespectLocalEnableModifier() {
-        initializeTestConfig()
-    runWithTaskLocalConfig {
+        self.initializeTestConfig()
+    self.runWithTaskLocalConfig {
         // Test that accessibility functions respect local enable modifier
         
         // Global config is disabled
@@ -12340,8 +12340,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testLocalDisableOverridesGlobalEnable() {
-        initializeTestConfig()
-    runWithTaskLocalConfig {
+        self.initializeTestConfig()
+    self.runWithTaskLocalConfig {
         // Test that local disable takes precedence over global enable
         
         // Global config is enabled
@@ -12379,8 +12379,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testLocalEnableOverridesGlobalDisable() {
-        initializeTestConfig()
-    runWithTaskLocalConfig {
+        self.initializeTestConfig()
+    self.runWithTaskLocalConfig {
         // Test that local enable takes precedence over global disable
         
         // Global config is disabled
@@ -12414,8 +12414,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testEnvironmentVariablesAreRespected() {
-        initializeTestConfig()
-    runWithTaskLocalConfig {
+        self.initializeTestConfig()
+    self.runWithTaskLocalConfig {
         // Test that environment variables are properly respected
         
         // Global config is enabled
@@ -12453,9 +12453,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testExactNamedBehavior() {
-        initializeTestConfig()
-    runWithTaskLocalConfig {
-        setupTestEnvironment()
+        self.initializeTestConfig()
+    self.runWithTaskLocalConfig {
+        self.setupTestEnvironment()
         
         // Test: Does exactNamed() use exact names without hierarchy?
         let view1 = PlatformInteractionButton(style: .primary, action: {}) {
@@ -12494,9 +12494,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testExactNamedVsNamedDifference() {
-        initializeTestConfig()
-    runWithTaskLocalConfig {
-        setupTestEnvironment()
+        self.initializeTestConfig()
+    self.runWithTaskLocalConfig {
+        self.setupTestEnvironment()
         
         // Test: exactNamed() should produce different identifiers than named()
         let exactView = Button("Test") { }
@@ -12533,9 +12533,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testExactNamedIgnoresHierarchy() {
-        initializeTestConfig()
-    runWithTaskLocalConfig {
-        setupTestEnvironment()
+        self.initializeTestConfig()
+    self.runWithTaskLocalConfig {
+        self.setupTestEnvironment()
         
         // Test: exactNamed() should ignore view hierarchy context
         guard let config = testConfig else {
@@ -12574,9 +12574,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testExactNamedMinimalIdentifier() {
-        initializeTestConfig()
-    runWithTaskLocalConfig {
-        setupTestEnvironment()
+        self.initializeTestConfig()
+    self.runWithTaskLocalConfig {
+        self.setupTestEnvironment()
         
         // Test: exactNamed() should produce minimal identifiers
         let exactView = Button("Test") { }
@@ -12604,9 +12604,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testConfigurationChangesMidTest() {
-        initializeTestConfig()
-    runWithTaskLocalConfig {
-        setupTestEnvironment()
+        self.initializeTestConfig()
+    self.runWithTaskLocalConfig {
+        self.setupTestEnvironment()
         
         // Test: What happens if configuration changes during view creation?
         guard let config = testConfig else {
@@ -12646,9 +12646,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testNestedNamedCalls() {
-        initializeTestConfig()
-    runWithTaskLocalConfig {
-        setupTestEnvironment()
+        self.initializeTestConfig()
+    self.runWithTaskLocalConfig {
+        self.setupTestEnvironment()
         
         // Test: What happens with deeply nested .named() calls?
         let view = platformVStackContainer {
@@ -12685,9 +12685,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testUnicodeCharacters() {
-        initializeTestConfig()
-    runWithTaskLocalConfig {
-        setupTestEnvironment()
+        self.initializeTestConfig()
+    self.runWithTaskLocalConfig {
+        self.setupTestEnvironment()
         
         // Test: How are Unicode characters handled?
         let view = PlatformInteractionButton(style: .primary, action: {}) {
@@ -12917,10 +12917,10 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testAccessibilityIdentifiersArePersistentAcrossSessions() {
-        initializeTestConfig()
-    runWithTaskLocalConfig {
+        self.initializeTestConfig()
+    self.runWithTaskLocalConfig {
         // Setup test environment
-        setupTestEnvironment()
+        self.setupTestEnvironment()
         
         // TDD: This test SHOULD FAIL initially - IDs are not persistent
         // We want IDs to be the same across app launches
@@ -12962,15 +12962,15 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         print("Testing accessibility identifier persistence: ID1='\(id1)', ID2='\(id2)'")
         
         // Cleanup
-        cleanupTestEnvironment()
+        self.cleanupTestEnvironment()
     }
 }
 
     @Test @MainActor func testAccessibilityIdentifiersAreDeterministicForSameView() {
-        initializeTestConfig()
-    runWithTaskLocalConfig {
+        self.initializeTestConfig()
+    self.runWithTaskLocalConfig {
         // Setup test environment
-        setupTestEnvironment()
+        self.setupTestEnvironment()
         
         // TDD: This test SHOULD FAIL initially - IDs contain timestamps
         // Same view with same hierarchy should generate same ID
@@ -12998,15 +12998,15 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         print("Testing accessibility identifier persistence: ID1='\(id1)', ID2='\(id2)'")
         
         // Cleanup
-        cleanupTestEnvironment()
+        self.cleanupTestEnvironment()
     }
 }
 
     @Test @MainActor func testAccessibilityIdentifiersDontContainTimestamps() {
-        initializeTestConfig()
-    runWithTaskLocalConfig {
+        self.initializeTestConfig()
+    self.runWithTaskLocalConfig {
         // Setup test environment
-        setupTestEnvironment()
+        self.setupTestEnvironment()
         
         // TDD: This test SHOULD FAIL initially - IDs contain timestamps
         // IDs should be based on view structure, not time
@@ -13037,15 +13037,15 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         print("🔴 TDD Red Phase: ID1='\(id)', ID2='\(id2)' - These should be equal but aren't")
         
         // Cleanup
-        cleanupTestEnvironment()
+        self.cleanupTestEnvironment()
     }
 }
 
     @Test @MainActor func testAccessibilityIdentifiersAreStableForUITesting() {
-        initializeTestConfig()
-    runWithTaskLocalConfig {
+        self.initializeTestConfig()
+    self.runWithTaskLocalConfig {
         // Setup test environment
-        setupTestEnvironment()
+        self.setupTestEnvironment()
         
         // TDD: This test SHOULD FAIL initially
         // UI tests need stable IDs that don't change between runs
@@ -13101,15 +13101,15 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         }
         
         // Cleanup
-        cleanupTestEnvironment()
+        self.cleanupTestEnvironment()
     }
 }
 
     @Test @MainActor func testAccessibilityIdentifiersAreBasedOnViewStructure() {
-        initializeTestConfig()
-    runWithTaskLocalConfig {
+        self.initializeTestConfig()
+    self.runWithTaskLocalConfig {
         // Setup test environment
-        setupTestEnvironment()
+        self.setupTestEnvironment()
         
         // TDD: This test SHOULD FAIL initially
         // IDs should be based on view hierarchy and context, not random factors
@@ -13140,15 +13140,15 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         print("Testing accessibility identifier persistence: ID1='\(id1)', ID2='\(id2)'")
         
         // Cleanup
-        cleanupTestEnvironment()
+        self.cleanupTestEnvironment()
     }
 }
 
     @Test @MainActor func testAccessibilityIdentifiersAreTrulyPersistentForIdenticalViews() {
-        initializeTestConfig()
-    runWithTaskLocalConfig {
+        self.initializeTestConfig()
+    self.runWithTaskLocalConfig {
         // Setup test environment
-        setupTestEnvironment()
+        self.setupTestEnvironment()
         
         // TDD: This test focuses ONLY on persistence - truly identical views
         
@@ -13182,15 +13182,15 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         
         
         // Cleanup
-        cleanupTestEnvironment()
+        self.cleanupTestEnvironment()
     }
 }
 
     @Test @MainActor func testAccessibilityIdentifiersPersistAcrossConfigResets() {
-        initializeTestConfig()
-    runWithTaskLocalConfig {
+        self.initializeTestConfig()
+    self.runWithTaskLocalConfig {
         // Setup test environment
-        setupTestEnvironment()
+        self.setupTestEnvironment()
         
         // TDD: Test persistence across config resets (simulating app restarts)
         
@@ -13225,7 +13225,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         
         
         // Cleanup
-        cleanupTestEnvironment()
+        self.cleanupTestEnvironment()
     }
 }
 
@@ -13234,7 +13234,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     // MARK: - Additional Tests (batch 3)
 
     @Test @MainActor func testAutomaticAccessibilityIntegration() async {
-    initializeTestConfig()
+    self.initializeTestConfig()
     // Test with accessibility features enabled
     RuntimeCapabilityDetection.setTestVoiceOver(true)
     RuntimeCapabilityDetection.setTestSwitchControl(true)
@@ -13262,7 +13262,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testPlatformSpecificComplianceBehavior() async {
-    initializeTestConfig()
+    self.initializeTestConfig()
     // Test that platform detection works correctly
     let originalPlatform = RuntimeCapabilityDetection.currentPlatform
     
@@ -13301,7 +13301,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testAppleHIGComplianceBusinessPurpose() {
-    initializeTestConfig()
+    self.initializeTestConfig()
     // Given: A business requirement for Apple HIG compliance
     // When: A developer uses the framework
     // Then: Should automatically get Apple-quality UI without configuration
@@ -13312,7 +13312,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testPlatformAdaptationBusinessPurpose() {
-    initializeTestConfig()
+    self.initializeTestConfig()
     // Given: A business requirement for cross-platform apps
     // When: The same code runs on different platforms
     // Then: Should automatically adapt to platform conventions
@@ -13322,7 +13322,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testAccessibilityInclusionBusinessPurpose() {
-    initializeTestConfig()
+    self.initializeTestConfig()
     // Given: A business requirement for inclusive design
     // When: Users with accessibility needs use the app
     // Then: Should automatically provide appropriate accessibility features
@@ -13332,7 +13332,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testEyeTrackingEnabledWithConfig() {
-    initializeTestConfig()
+    self.initializeTestConfig()
     let testView = platformPresentContent_L1(
         content: "Test",
         hints: PresentationHints()
@@ -13347,7 +13347,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testEyeTrackingEnabledWithCallbacks() {
-    initializeTestConfig()
+    self.initializeTestConfig()
     let testView = platformPresentContent_L1(
         content: "Test",
         hints: PresentationHints()
@@ -13439,7 +13439,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testMaterialAccessibilityViewModifier() {
-    initializeTestConfig()
+    self.initializeTestConfig()
     // Given: A view with material
     let view = platformVStackContainer {
         Text("Test")
@@ -13467,7 +13467,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testMaterialAccessibilityWithVoiceOver() {
-    initializeTestConfig()
+    self.initializeTestConfig()
     // Given: A view with material and VoiceOver enabled
     let view = Rectangle()
         .fill(.regularMaterial)
@@ -13708,7 +13708,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testExactAccessibilityIdentifierModifierGeneratesAccessibilityIdentifiers() async {
-    initializeTestConfig()
+    self.initializeTestConfig()
     // Given: Framework component that should apply .automaticCompliance() itself
     let testView = platformPresentContent_L1(
         content: "Test Value",
@@ -13730,7 +13730,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testHierarchicalNamedModifierGeneratesAccessibilityIdentifiers() async {
-    initializeTestConfig()
+    self.initializeTestConfig()
     // Given: Framework component that should automatically generate accessibility identifiers
     let testView = platformPresentContent_L1(
         content: "Test Content",
@@ -13753,7 +13753,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testAccessibilityLabelAssignmentModifierGeneratesAccessibilityIdentifiers() async {
-    initializeTestConfig()
+    self.initializeTestConfig()
     // Given: Framework component that should apply .automaticCompliance() itself
     let testView = platformPresentBasicValue_L1(
         value: "Custom Label",
@@ -13775,7 +13775,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testAccessibilityHintAssignmentModifierGeneratesAccessibilityIdentifiers() async {
-    initializeTestConfig()
+    self.initializeTestConfig()
     // Given: Framework component that should apply .automaticCompliance() itself
     let testView = platformPresentBasicArray_L1(
         array: ["Custom", "Hint"],
@@ -13797,7 +13797,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testAccessibilityTraitsAssignmentModifierGeneratesAccessibilityIdentifiers() async {
-    initializeTestConfig()
+    self.initializeTestConfig()
     // Given: Framework component that should automatically generate accessibility identifiers
     let testView = platformPresentItemCollection_L1(
         items: [TestPatterns.TestItem(id: "1", title: "Test")],
@@ -13841,7 +13841,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testPlatformPresentItemCollection_L1_AutomaticHIGCompliance() async {
-    initializeTestConfig()
+    self.initializeTestConfig()
     // Given: Test items and hints
     let items: [TestPatterns.TestItem] = [TestPatterns.TestItem(id: "1", title: "Test Item 1")]
     let hints = PresentationHints()
@@ -13863,7 +13863,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testPlatformPresentItemCollection_L1_AutomaticVoiceOverSupport() async {
-    initializeTestConfig()
+    self.initializeTestConfig()
     // Given: VoiceOver enabled
     RuntimeCapabilityDetection.setTestVoiceOver(true)
 
@@ -13886,7 +13886,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testPlatformPresentItemCollection_L1_AutomaticPlatformPatterns() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
     // Setup test data
     let testItems = [
         TestPatterns.TestItem(id: "1", title: "Test Item 1"),
@@ -13912,7 +13912,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testPlatformPresentItemCollection_L1_AutomaticVisualConsistency() async {
-    initializeTestConfig()
+    self.initializeTestConfig()
     // When: Creating view using Layer 1 function
     let view = platformPresentItemCollection_L1(
         items: [TestPatterns.TestItem(id: "1", title: "Test Item 1")],
@@ -13928,7 +13928,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testAllLayer1Functions_AutomaticHIGCompliance() async {
-    initializeTestConfig()
+    self.initializeTestConfig()
     // Test platformPresentItemCollection_L1
     let collectionView = platformPresentItemCollection_L1(
         items: [TestPatterns.TestItem(id: "1", title: "Test Item 1")],
@@ -14083,7 +14083,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testButtonHasFocusIndicator() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
     await runWithTaskLocalConfig {
         // GIVEN: A focusable button with automatic compliance
         let button = Button("Test Button") { }
@@ -14107,7 +14107,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testLinkHasFocusIndicator() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
     await runWithTaskLocalConfig {
         // GIVEN: A focusable link with automatic compliance
         let link = Link("Test Link", destination: URL(string: "https://example.com")!)
@@ -14131,7 +14131,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testTextFieldHasFocusIndicator() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
     await runWithTaskLocalConfig {
         // GIVEN: A text field with automatic compliance
         let textField = TextField("Placeholder", text: .constant(""))
@@ -14155,7 +14155,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testSecureFieldHasFocusIndicator() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
     await runWithTaskLocalConfig {
         // GIVEN: A secure field with automatic compliance
         let secureField = SecureField("Password", text: .constant(""))
@@ -14179,7 +14179,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testFocusIndicatorVisibleInHighContrast() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
     await runWithTaskLocalConfig {
         // GIVEN: A button with automatic compliance
         let button = Button("Test Button") { }
@@ -14203,9 +14203,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testAccessibilityIdentifiersDontDuplicateHierarchy() {
-        initializeTestConfig()
+        self.initializeTestConfig()
     // Setup test environment
-    setupTestEnvironment()
+    self.setupTestEnvironment()
     
     // TDD: Define the behavior I want - no hierarchy duplication
     let view = platformVStackContainer {
@@ -14235,13 +14235,13 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     #endif
     
     // Cleanup
-    cleanupTestEnvironment()
+    self.cleanupTestEnvironment()
 }
 
     @Test @MainActor func testAccessibilityIdentifiersAreSemantic() {
-        initializeTestConfig()
+        self.initializeTestConfig()
     // Setup test environment
-    setupTestEnvironment()
+    self.setupTestEnvironment()
     
     // TDD: Define the behavior I want - semantic, meaningful IDs
     let view = platformVStackContainer {
@@ -14273,12 +14273,12 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     #endif
     
     // Cleanup
-    cleanupTestEnvironment()
+    self.cleanupTestEnvironment()
 }
 
     @Test @MainActor func testAccessibilityIdentifiersWorkInComplexHierarchy() {
     // Setup test environment
-    setupTestEnvironment()
+    self.setupTestEnvironment()
     
     // TDD: Define the behavior I want - works in complex nested views
     let view = platformVStackContainer {
@@ -14320,12 +14320,12 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     #endif
     
     // Cleanup
-    cleanupTestEnvironment()
+    self.cleanupTestEnvironment()
 }
 
     @Test @MainActor func testAccessibilityIdentifiersIncludeLabelTextForStringLabels() {
     // Setup test environment
-    setupTestEnvironment()
+    self.setupTestEnvironment()
     
     // TDD: Define the behavior I want - labels from String parameters should be in identifiers
     // This test SHOULD FAIL initially - labels are not included in identifiers
@@ -14356,12 +14356,12 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     #endif
     
     // Cleanup
-    cleanupTestEnvironment()
+    self.cleanupTestEnvironment()
 }
 
     @Test @MainActor func testAccessibilityIdentifiersSanitizeLabelText() {
     // Setup test environment
-    setupTestEnvironment()
+    self.setupTestEnvironment()
     
     // TDD: Labels should be sanitized (lowercase, spaces to hyphens, etc.)
     let button = AdaptiveUIPatterns.AdaptiveButton("Add New Item", action: { })
@@ -14388,7 +14388,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     #endif
     
     // Cleanup
-    cleanupTestEnvironment()
+    self.cleanupTestEnvironment()
 }
 
     
@@ -14564,7 +14564,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testGlobalConfigSupportsGenerationModes() async {
-    initializeTestConfig()
+    self.initializeTestConfig()
     await runWithTaskLocalConfig {
         // Test configuration properties
         guard let config = testConfig else {
@@ -14580,7 +14580,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testAutomaticIDGeneratorHandlesNonIdentifiableObjects() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
     await runWithTaskLocalConfig {
         // Given: Automatic IDs enabled
         guard let config = self.testConfig else {
@@ -14605,7 +14605,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testUITestHelpers() async {
-    initializeTestConfig()
+    self.initializeTestConfig()
     await runWithTaskLocalConfig {
         guard let config = testConfig else {
 
@@ -14632,7 +14632,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testAutomaticNamespaceDetectionForTests() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
     await runWithTaskLocalConfig {
         // GIVEN: We're running in a test environment
         // WHEN: Using test config (isolated per test)
@@ -14647,7 +14647,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testAutomaticNamespaceDetectionForRealApps() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
     await runWithTaskLocalConfig {
         // GIVEN: We're simulating a real app environment (not in tests)
         // WHEN: Using test config
@@ -14664,9 +14664,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testAutomaticAccessibilityIdentifiersOnRootViewNoEnvironmentWarnings() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
     await runWithTaskLocalConfig {
-        setupTestEnvironment()
+        self.setupTestEnvironment()
         
         // Create a simple root view with the modifier applied
         // This simulates the scenario from Issue #7 where warnings occur
@@ -14695,18 +14695,18 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         // ViewInspector not available on this platform - this is expected, not a failure
         #endif
         
-        cleanupTestEnvironment()
+        self.cleanupTestEnvironment()
     }
 }
 
     @Test @MainActor func testModifierDefersEnvironmentAccessUntilViewInstalled() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
     await runWithTaskLocalConfig {
-        setupTestEnvironment()
+        self.setupTestEnvironment()
         
         // Create a view with environment values set
         let testConfig = AccessibilityIdentifierConfig.shared
-        testConfig.enableAutoIDs = true
+        self.testConfig.enableAutoIDs = true
         
         let view = platformVStackContainer {
             Text("Content")
@@ -14731,17 +14731,17 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         // ViewInspector not available on this platform - this is expected, not a failure
         #endif
         
-        cleanupTestEnvironment()
+        self.cleanupTestEnvironment()
     }
 }
 
     @Test @MainActor func testAllModifierVariantsDeferEnvironmentAccess() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
     await runWithTaskLocalConfig {
-        setupTestEnvironment()
+        self.setupTestEnvironment()
         
         let testConfig = AccessibilityIdentifierConfig.shared
-        testConfig.enableAutoIDs = true
+        self.testConfig.enableAutoIDs = true
         
         // Test automaticAccessibilityIdentifiers()
         let view1 = Text("Test")
@@ -14785,12 +14785,12 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         // ViewInspector not available on this platform - this is expected, not a failure
         #endif
         
-        cleanupTestEnvironment()
+        self.cleanupTestEnvironment()
     }
 }
 
     @MainActor @Test func testPlatformListEmptyStateIncludesTitleInIdentifier() {
-    setupTestEnvironment()
+    self.setupTestEnvironment()
     
     // TDD RED: platformListEmptyState should include title in identifier
     let emptyState1 = platformVStackContainer {
@@ -14825,11 +14825,11 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         print("✅ GREEN: Empty State 2 ID: '\(state2ID)' - Implementation verified")
     }
 
-    cleanupTestEnvironment()
+    self.cleanupTestEnvironment()
 }
 
     @MainActor @Test func testPlatformDetailPlaceholderIncludesTitleInIdentifier() {
-    setupTestEnvironment()
+    self.setupTestEnvironment()
     
     // TDD RED: platformDetailPlaceholder should include title in identifier
     let placeholder1 = platformVStackContainer {
@@ -14864,11 +14864,11 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         print("✅ GREEN: Detail Placeholder 2 ID: '\(placeholder2ID)' - Implementation verified")
     }
 
-    cleanupTestEnvironment()
+    self.cleanupTestEnvironment()
 }
 
     @MainActor @Test func testActionButtonIncludesTitleInIdentifier() {
-    setupTestEnvironment()
+    self.setupTestEnvironment()
     
     // TDD RED: ActionButton should include title in identifier
     let button1 = ActionButton(title: "Save", action: { })
@@ -14897,11 +14897,11 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         print("✅ GREEN: ActionButton 2 ID: '\(button2ID)' - Implementation verified")
     }
 
-    cleanupTestEnvironment()
+    self.cleanupTestEnvironment()
 }
 
     @MainActor @Test func testPlatformValidationMessageIncludesMessageInIdentifier() {
-    setupTestEnvironment()
+    self.setupTestEnvironment()
     
     // TDD RED: platformValidationMessage should include message text in identifier
     // Note: If used in ForEach loops with multiple errors, each should be unique
@@ -14937,11 +14937,11 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         print("✅ GREEN: Validation Message 2 ID: '\(message2ID)' - Implementation verified")
     }
 
-    cleanupTestEnvironment()
+    self.cleanupTestEnvironment()
 }
 
     @MainActor @Test func testVisualizationRecommendationRowIncludesDataInIdentifier() {
-    setupTestEnvironment()
+    self.setupTestEnvironment()
     
     // TDD RED: VisualizationRecommendationRow should include recommendation chartType or title in identifier
     // Note: VisualizationRecommendation has chartType, not title - we'll use chartType.rawValue
@@ -14951,11 +14951,11 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     // TDD RED: Should verify VisualizationRecommendationRow includes chartType in identifier
     #expect(Bool(true), "Documenting requirement - VisualizationRecommendationRow needs chartType in identifier for unique rows")
     
-    cleanupTestEnvironment()
+    self.cleanupTestEnvironment()
 }
 
     @Test @MainActor func testTextMeetsWCAGAAContrastRatio() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
     await runWithTaskLocalConfig {
         // GIVEN: Text with foreground and background colors
         let view = Text("Test Text")
@@ -14981,7 +14981,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testLargeTextMeetsWCAGAAContrastRatio() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
     await runWithTaskLocalConfig {
         // GIVEN: Large text (18pt+ or 14pt+ bold) with foreground and background colors
         let view = Text("Large Text")
@@ -15008,7 +15008,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testButtonTextMeetsWCAGAAContrastRatio() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
     await runWithTaskLocalConfig {
         // GIVEN: Button with text and background color
         let button = Button("Test Button") { }
@@ -15034,7 +15034,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testAutomaticColorAdjustmentForLowContrast() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
     await runWithTaskLocalConfig {
         // GIVEN: Text with low contrast colors (e.g., light gray on white)
         let view = Text("Low Contrast Text")
@@ -15060,7 +15060,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testSystemColorsMeetContrastRequirements() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
     await runWithTaskLocalConfig {
         // GIVEN: Text using system colors (which should automatically meet contrast)
         let view = Text("System Color Text")
@@ -15086,7 +15086,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testButtonHasHoverState() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
     await runWithTaskLocalConfig {
         // GIVEN: A button with automatic compliance
         let button = Button("Hover Button") { }
@@ -15110,7 +15110,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testLinkHasHoverState() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
     await runWithTaskLocalConfig {
         // GIVEN: A link with automatic compliance
         let link = Link("Hover Link", destination: URL(string: "https://example.com")!)
@@ -15134,7 +15134,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testTextReadableWithHoverText() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
     await runWithTaskLocalConfig {
         // GIVEN: Text with automatic compliance
         let view = Text("Hover Text Test")
@@ -15158,7 +15158,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testPointerInteractionsWorkCorrectly() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
     await runWithTaskLocalConfig {
         // GIVEN: Interactive view with automatic compliance
         let view = Text("Pointer Interaction Test")
@@ -15183,7 +15183,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testHoverSupportOnHoverCapablePlatforms() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
     await runWithTaskLocalConfig {
         // GIVEN: A button with automatic compliance
         let button = Button("Hover Test Button") { }
@@ -15220,7 +15220,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testAnimationRespectsReducedMotion() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
     await runWithTaskLocalConfig {
         // GIVEN: A view with animation and automatic compliance
         let view = Text("Animated Text")
@@ -15244,7 +15244,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testTransitionRespectsReducedMotion() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
     await runWithTaskLocalConfig {
         // GIVEN: A view with transition and automatic compliance
         let view = Text("Transitioning Text")
@@ -15269,7 +15269,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testButtonAnimationRespectsReducedMotion() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
     await runWithTaskLocalConfig {
         // GIVEN: A button with animation and automatic compliance
         let button = Button("Animated Button") { }
@@ -15293,7 +15293,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testAnimationWorksWithNormalMotion() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
     await runWithTaskLocalConfig {
         // GIVEN: A view with animation and automatic compliance
         let view = Text("Animated Text")
@@ -15317,7 +15317,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testMotionPreferencesOnBothPlatforms() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
     await runWithTaskLocalConfig {
         // GIVEN: A view with animation and automatic compliance
         let view = Text("Cross-Platform Animated Text")
@@ -15341,7 +15341,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testViewScalesWithSystemZoom() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
     await runWithTaskLocalConfig {
         // GIVEN: A view with automatic compliance
         let view = platformVStackContainer {
@@ -15370,7 +15370,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testTextRemainsReadableAtZoomLevels() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
     await runWithTaskLocalConfig {
         // GIVEN: Text with automatic compliance
         let view = Text("Readable Text at Zoom")
@@ -15394,7 +15394,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testButtonRemainsUsableAtZoomLevels() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
     await runWithTaskLocalConfig {
         // GIVEN: Button with automatic compliance
         let button = Button("Zoom Button") { }
@@ -15418,7 +15418,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testLayoutMaintainsIntegrityAtZoomLevels() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
     await runWithTaskLocalConfig {
         // GIVEN: Complex layout with automatic compliance
         let view = platformVStackContainer {
@@ -15452,7 +15452,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testZoomSupportOnAllPlatforms() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
     await runWithTaskLocalConfig {
         // GIVEN: A view with automatic compliance
         let view = Text("Cross-Platform Zoom Test")
@@ -15476,7 +15476,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testPlatformInteractionButtonGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
     // Given: Framework component as label (testing our framework, not SwiftUI)
     let testLabel = platformPresentContent_L1(
         content: "Platform Interaction Button",
@@ -15506,7 +15506,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testInputHandlingManagerGeneratesAccessibilityIdentifiers() async {
-    initializeTestConfig()
+    self.initializeTestConfig()
     // Given: Framework component with InputHandlingManager
     let manager = InputHandlingManager()
     
@@ -15534,7 +15534,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testKeyboardShortcutManagerGeneratesAccessibilityIdentifiers() async {
-    initializeTestConfig()
+    self.initializeTestConfig()
     // When: Creating a framework component
     let view = platformPresentContent_L1(
         content: "Keyboard Shortcut Manager Content",
@@ -15557,7 +15557,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testHapticFeedbackManagerGeneratesAccessibilityIdentifiers() async {
-    initializeTestConfig()
+    self.initializeTestConfig()
     // When: Creating a framework component
     let view = platformPresentContent_L1(
         content: "Haptic Feedback Manager Content",
@@ -15602,7 +15602,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testAutomaticAccessibilityIdentifiersActuallyGenerateIDs() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
     await runWithTaskLocalConfig {
         // Test: Use centralized component accessibility testing
         // BaseTestClass already sets up testConfig, just enable debug logging if needed
@@ -15622,12 +15622,12 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #expect(Bool(true), "AutomaticAccessibilityIdentifiers view should be created successfully")
 
         // Cleanup: Reset test environment
-        cleanupTestEnvironment()
+        self.cleanupTestEnvironment()
     }
 }
 
     @Test @MainActor func testNamedActuallyGeneratesIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
     await runWithTaskLocalConfig {
         // BaseTestClass already sets up testConfig with namespace "SixLayer"
         guard let config = self.testConfig else {
@@ -15647,12 +15647,12 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #expect(Bool(true), "NamedModifier view should be created successfully")
 
         // Cleanup: Reset test environment
-        cleanupTestEnvironment()
+        self.cleanupTestEnvironment()
     }
 }
 
     @Test @MainActor func testAutomaticAccessibilityIdentifiersActuallyGenerateIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
     await runWithTaskLocalConfig {
         // Given: Configuration matching the bug report exactly
         guard let config = testConfig else {
@@ -15699,7 +15699,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testGlobalConfigActuallyControlsIdentifierGeneration() async {
-    initializeTestConfig()
+    self.initializeTestConfig()
     await runWithTaskLocalConfig {
         // Use isolated testConfig instead of shared
         guard let config = self.testConfig else {
@@ -15769,7 +15769,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     // MARK: - Additional Tests (final batch)
 
     @Test @MainActor func testBreadcrumbModifiersStillWorkWhenAutomaticDisabled() {
-        initializeTestConfig()
+        self.initializeTestConfig()
     // Test: Named modifiers should still work for tracking
     let view = platformVStackContainer {
         platformPresentContent_L1(content: "Content", hints: PresentationHints())
@@ -15788,7 +15788,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testDirectAutomaticAccessibilityIdentifiersWorks() async {
-    initializeTestConfig()
+    self.initializeTestConfig()
     // Test .automaticCompliance() directly
     let testView = PlatformInteractionButton(style: .primary, action: {}) {
         platformPresentContent_L1(content: "Test", hints: PresentationHints())
@@ -15817,7 +15817,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testNamedModifierWorks() {
-        initializeTestConfig()
+        self.initializeTestConfig()
     // Test .named() modifier
     let testView = PlatformInteractionButton(style: .primary, action: {}) {
         platformPresentContent_L1(content: "Test", hints: PresentationHints())
@@ -15847,7 +15847,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testAutomaticAccessibilityModifierWorks() {
-        initializeTestConfig()
+        self.initializeTestConfig()
     // Test AutomaticAccessibilityModifier directly
     let testView = PlatformInteractionButton(style: .primary, action: {}) {
         platformPresentContent_L1(content: "Test", hints: PresentationHints())
@@ -15879,7 +15879,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testAutomaticAccessibilityExtensionWorks() {
-        initializeTestConfig()
+        self.initializeTestConfig()
     // Test .automaticAccessibility() extension
     let testView = PlatformInteractionButton(style: .primary, action: {}) {
         platformPresentContent_L1(content: "Test", hints: PresentationHints())
@@ -15948,8 +15948,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testAppleHIGComplianceManagerGeneratesAccessibilityIdentifiersOnIOS() {
-    initializeTestConfig()
-    runWithTaskLocalConfig {
+    self.initializeTestConfig()
+    self.runWithTaskLocalConfig {
         // Given: A view with .appleHIGCompliant() modifier (which uses AppleHIGComplianceManager)
         let view = platformVStackContainer {
             Text("HIG Compliant Content")
@@ -15977,8 +15977,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testAppleHIGComplianceManagerGeneratesAccessibilityIdentifiersOnMacOS() {
-    initializeTestConfig()
-    runWithTaskLocalConfig {
+    self.initializeTestConfig()
+    self.runWithTaskLocalConfig {
         // Given: A view with .appleHIGCompliant() modifier (which uses AppleHIGComplianceManager)
         let view = platformVStackContainer {
             Text("HIG Compliant Content")
@@ -16006,7 +16006,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testDesignConsistencyBusinessPurpose() {
-    initializeTestConfig()
+    self.initializeTestConfig()
     // Given: A business requirement for consistent design
     // When: Multiple developers work on the same app
     // Then: Should automatically maintain Apple design consistency
@@ -16016,7 +16016,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testDeveloperProductivityBusinessPurpose() {
-    initializeTestConfig()
+    self.initializeTestConfig()
     // Given: A business requirement for developer productivity
     // When: Developers build UI components
     // Then: Should require minimal code for maximum quality
@@ -16027,8 +16027,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testAssistiveTouchManagerGeneratesAccessibilityIdentifiersOnIOS() {
-    initializeTestConfig()
-    runWithTaskLocalConfig {
+    self.initializeTestConfig()
+    self.runWithTaskLocalConfig {
         // Given: A view with .assistiveTouchEnabled() modifier (which uses AssistiveTouchManager)
         let view = Button("Test Button") { }
             .assistiveTouchEnabled()
@@ -16054,8 +16054,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testAssistiveTouchManagerGeneratesAccessibilityIdentifiersOnMacOS() {
-    initializeTestConfig()
-    runWithTaskLocalConfig {
+    self.initializeTestConfig()
+    self.runWithTaskLocalConfig {
         // Given: A view with .assistiveTouchEnabled() modifier (which uses AssistiveTouchManager)
         let view = Button("Test Button") { }
             .assistiveTouchEnabled()
@@ -16081,7 +16081,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testDemonstrateAutomaticHIGCompliance() async {
-    initializeTestConfig()
+    self.initializeTestConfig()
     // OLD WAY (what developers had to do before):
     // let view = platformPresentItemCollection_L1(items: items, hints: hints)
     //     .appleHIGCompliant()           // Manual
@@ -16116,7 +16116,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testDemonstrateAutomaticComplianceWithAccessibilityStates() async {
-    initializeTestConfig()
+    self.initializeTestConfig()
     // Setup test data
     let testItems = [
         TestPatterns.TestDataItem(title: "Test Item 1", subtitle: "Subtitle 1"),
@@ -16160,7 +16160,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testDemonstrateAutomaticComplianceAcrossPlatforms() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
     // Setup test data
     let testItems = [
         TestPatterns.TestDataItem(title: "Test Item 1", subtitle: "Subtitle 1"),
@@ -16303,7 +16303,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testAutomaticAccessibilityIdentifiersWorkByDefault() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
     await runWithTaskLocalConfig {
         // Given: Default configuration
         guard let config = testConfig else {
@@ -16331,7 +16331,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testManualIdentifiersStillWork() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
     await runWithTaskLocalConfig {
         // Given: Default configuration
         // config is non-optional, so no need to check for nil
@@ -16364,7 +16364,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testOptOutStillWorks() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
     await runWithTaskLocalConfig {
         // Given: Default configuration
         guard let config = testConfig else {
@@ -16392,7 +16392,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testFormUsageExampleGeneratesAccessibilityIdentifiers() async {
-    initializeTestConfig()
+    self.initializeTestConfig()
     // Given: FormUsageExample
     let testView = FormUsageExample()
     
@@ -16416,7 +16416,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testExampleHelpersGeneratesAccessibilityIdentifiers() async {
-    initializeTestConfig()
+    self.initializeTestConfig()
     // Given: ExampleHelpers
     let testView = Text("Test")
     
@@ -16440,8 +16440,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testEyeTrackingManagerGeneratesAccessibilityIdentifiersOnIOS() {
-        initializeTestConfig()
-    runWithTaskLocalConfig {
+        self.initializeTestConfig()
+    self.runWithTaskLocalConfig {
         // Given: A view with EyeTrackingModifier (which uses EyeTrackingManager)
         let view = platformVStackContainer {
             Text("Eye Tracking Content")
@@ -16469,8 +16469,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testEyeTrackingManagerGeneratesAccessibilityIdentifiersOnMacOS() {
-        initializeTestConfig()
-    runWithTaskLocalConfig {
+        self.initializeTestConfig()
+    self.runWithTaskLocalConfig {
         // Given: A view with EyeTrackingModifier (which uses EyeTrackingManager)
         let view = platformVStackContainer {
             Text("Eye Tracking Content")
@@ -16498,7 +16498,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testPlatformPresentContentL1GeneratesAccessibilityID() {
-    initializeTestConfig()
+    self.initializeTestConfig()
     // TDD Green Phase: This SHOULD PASS - has .automaticAccessibility()
     let contentView = platformPresentContent_L1(content: "Test Content", hints: PresentationHints())
     #if canImport(ViewInspector)
@@ -16510,7 +16510,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testPlatformPresentBasicValueL1GeneratesAccessibilityID() {
-    initializeTestConfig()
+    self.initializeTestConfig()
     // TDD Green Phase: This SHOULD PASS - has .automaticAccessibility()
     let valueView = platformPresentBasicValue_L1(value: 42, hints: PresentationHints())
     #if canImport(ViewInspector)
@@ -16522,7 +16522,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testPlatformPresentBasicArrayL1GeneratesAccessibilityID() {
-    initializeTestConfig()
+    self.initializeTestConfig()
     // TDD Green Phase: This SHOULD PASS - has .automaticAccessibility()
     let arrayView = platformPresentBasicArray_L1(array: [1, 2, 3], hints: PresentationHints())
     #if canImport(ViewInspector)
@@ -16534,7 +16534,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testPlatformPresentItemCollectionL1GeneratesAccessibilityID() {
-    initializeTestConfig()
+    self.initializeTestConfig()
     // Test that platformPresentItemCollection_L1 generates accessibility identifiers
     let mockItems = [
         MockTaskItemBaseline(id: "task1", title: "Test Task 1"),
@@ -16566,7 +16566,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 // and should not be duplicated here in ConsolidatedAccessibilityTests
 
     @Test @MainActor func testVideoComponentSupportsCaptions() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
     await runWithTaskLocalConfig {
         // GIVEN: A video component with automatic compliance
         // Note: Using a placeholder view since we may not have video components yet
@@ -16595,7 +16595,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testCaptionsAreAccessible() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
     await runWithTaskLocalConfig {
         // GIVEN: A media component with captions and automatic compliance
         let view = platformVStackContainer {
@@ -16625,7 +16625,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testCaptionPositioningIsAppropriate() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
     await runWithTaskLocalConfig {
         // GIVEN: A media component with captions and automatic compliance
         let view = platformVStackContainer {
@@ -16655,7 +16655,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testCaptionSupportOnAllPlatforms() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
     await runWithTaskLocalConfig {
         // GIVEN: A media component with automatic compliance
         let view = platformVStackContainer {
@@ -16682,7 +16682,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testFocusIndicatorsOnBothPlatforms() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
     await runWithTaskLocalConfig {
         // GIVEN: A button with automatic compliance
         let button = Button("Test Button") { }
@@ -16706,7 +16706,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testFormFieldsHaveLogicalTabOrder() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
     await runWithTaskLocalConfig {
         // GIVEN: Multiple form fields with automatic compliance
         let view = platformVStackContainer {
@@ -16737,7 +16737,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testButtonsHaveLogicalTabOrder() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
     await runWithTaskLocalConfig {
         // GIVEN: Multiple buttons with automatic compliance
         let view = platformHStackContainer {
@@ -16766,7 +16766,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testComplexLayoutHasLogicalTabOrder() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
     await runWithTaskLocalConfig {
         // GIVEN: Complex layout with multiple focusable elements
         let view = platformVStackContainer {
@@ -16800,7 +16800,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testTabOrderOnBothPlatforms() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
     await runWithTaskLocalConfig {
         // GIVEN: Multiple focusable elements with automatic compliance
         let view = platformVStackContainer {
@@ -16829,7 +16829,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testButtonRespectsRuntimeTouchTargetDetection() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
     await runWithTaskLocalConfig {
         // GIVEN: A button with automatic compliance
         let button = Button("Test Button") { }
@@ -16874,7 +16874,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testLinkRespectsRuntimeTouchTargetDetection() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
     await runWithTaskLocalConfig {
         // GIVEN: A link with automatic compliance
         let link = Link("Test Link", destination: URL(string: "https://example.com")!)
@@ -16909,7 +16909,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testInteractiveViewRespectsRuntimeTouchTargetDetection() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
     await runWithTaskLocalConfig {
         // GIVEN: An interactive view (tappable) with automatic compliance
         let interactiveView = Text("Tap Me")
@@ -16945,7 +16945,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testNonTouchPlatformsDoNotRequireTouchTargets() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
     await runWithTaskLocalConfig {
         // GIVEN: A button with automatic compliance
         let button = Button("Test Button") { }
@@ -16984,8 +16984,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testImageProcessorGeneratesAccessibilityIdentifiersOnIOS() {
-        initializeTestConfig()
-    runWithTaskLocalConfig {
+        self.initializeTestConfig()
+    self.runWithTaskLocalConfig {
         // Given: A view that displays an image (ImageProcessor processes images, views display them)
         // Since ImageProcessor doesn't generate views directly, we test that image views generate identifiers
         let view = Image(systemName: "photo")
@@ -17007,8 +17007,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testImageProcessorGeneratesAccessibilityIdentifiersOnMacOS() {
-        initializeTestConfig()
-    runWithTaskLocalConfig {
+        self.initializeTestConfig()
+    self.runWithTaskLocalConfig {
         // Given: A view that displays an image (ImageProcessor processes images, views display them)
         // Since ImageProcessor doesn't generate views directly, we test that image views generate identifiers
         let view = Image(systemName: "photo")
@@ -17030,7 +17030,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testIntelligentFormViewGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
     await runWithTaskLocalConfig {
         // Given: Sample data for form generation
         struct SampleData {
@@ -17065,7 +17065,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testIntelligentDetailViewGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
     await runWithTaskLocalConfig {
         // Given: Test detail data
         let detailData = IntelligentDetailData(
@@ -17095,8 +17095,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testInternationalizationServiceGeneratesAccessibilityIdentifiersOnIOS() {
-        initializeTestConfig()
-    runWithTaskLocalConfig {
+        self.initializeTestConfig()
+    self.runWithTaskLocalConfig {
         // Given: A view using platformPresentLocalizedContent_L1 (which uses InternationalizationService)
         let view = platformPresentLocalizedContent_L1(
             content: Text("Localized Content"),
@@ -17119,8 +17119,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testInternationalizationServiceGeneratesAccessibilityIdentifiersOnMacOS() {
-        initializeTestConfig()
-    runWithTaskLocalConfig {
+        self.initializeTestConfig()
+    self.runWithTaskLocalConfig {
         // Given: A view using platformPresentLocalizedContent_L1 (which uses InternationalizationService)
         let view = platformPresentLocalizedContent_L1(
             content: Text("Localized Content"),
@@ -17164,8 +17164,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testMaterialAccessibilityManagerGeneratesAccessibilityIdentifiersOnIOS() {
-        initializeTestConfig()
-    runWithTaskLocalConfig {
+        self.initializeTestConfig()
+    self.runWithTaskLocalConfig {
         // Given: A view with MaterialAccessibilityManager (via MaterialAccessibilityEnhancedView)
         let view = platformVStackContainer {
             Text("Material Accessibility Content")
@@ -17190,8 +17190,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testMaterialAccessibilityManagerGeneratesAccessibilityIdentifiersOnMacOS() {
-        initializeTestConfig()
-    runWithTaskLocalConfig {
+        self.initializeTestConfig()
+    self.runWithTaskLocalConfig {
         // Given: A view with MaterialAccessibilityManager (via MaterialAccessibilityEnhancedView)
         let view = platformVStackContainer {
             Text("Material Accessibility Content")
@@ -17314,8 +17314,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testOCROverlayViewWithOCRServiceGeneratesAccessibilityIdentifiersOnIOS() {
-        initializeTestConfig()
-    runWithTaskLocalConfig {
+        self.initializeTestConfig()
+    self.runWithTaskLocalConfig {
         // Given: OCROverlayView that uses OCRService internally
         let testImage = PlatformImage()
         let testResult = OCRResult(
@@ -17356,8 +17356,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testOCROverlayViewWithOCRServiceGeneratesAccessibilityIdentifiersOnMacOS() {
-        initializeTestConfig()
-    runWithTaskLocalConfig {
+        self.initializeTestConfig()
+    self.runWithTaskLocalConfig {
         // Given: OCROverlayView that uses OCRService internally
         let testImage = PlatformImage()
         let testResult = OCRResult(
@@ -17398,7 +17398,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testPlatformOCRWithVisualCorrectionL1GeneratesAccessibilityIdentifiersOnIOS() async {
-            initializeTestConfig()
+            self.initializeTestConfig()
     // Given
     let testImage = PlatformImage()
     let context = OCRContext(
@@ -17434,7 +17434,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
 
     @Test @MainActor func testPlatformOCRWithVisualCorrectionL1GeneratesAccessibilityIdentifiersOnMacOS() async {
-            initializeTestConfig()
+            self.initializeTestConfig()
     // Given
     let testImage = PlatformImage()
     let context = OCRContext(
@@ -17470,7 +17470,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
 
     @Test @MainActor func testPlatformOCRWithVisualCorrectionArrayL1GeneratesAccessibilityIdentifiersOnIOS() async {
-            initializeTestConfig()
+            self.initializeTestConfig()
     // Given
     let testImage = PlatformImage()
     let context = OCRContext(
@@ -17506,7 +17506,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
 
     @Test @MainActor func testPlatformOCRWithVisualCorrectionArrayL1GeneratesAccessibilityIdentifiersOnMacOS() async {
-            initializeTestConfig()
+            self.initializeTestConfig()
     // Given
     let testImage = PlatformImage()
     let context = OCRContext(
@@ -17608,7 +17608,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testResponsiveLayoutExampleGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
     await runWithTaskLocalConfig {
 
     // When: Creating ResponsiveLayoutExample
@@ -17635,7 +17635,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testResponsiveNavigationExampleGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
     await runWithTaskLocalConfig {
 
     // When: Creating ResponsiveNavigationExample
@@ -17662,7 +17662,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testResponsivePaddingModifierGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
+        self.initializeTestConfig()
     await runWithTaskLocalConfig {
 
     // Given: Test content
@@ -17694,7 +17694,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testVisionSafetyGeneratesAccessibilityIdentifiers() async {
-    initializeTestConfig()
+    self.initializeTestConfig()
     // Given: VisionSafety
     let testView = VisionSafety()
     
@@ -17715,7 +17715,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testPlatformSafetyGeneratesAccessibilityIdentifiers() async {
-    initializeTestConfig()
+    self.initializeTestConfig()
     // Given: PlatformSafety
     let testView = PlatformSafety()
     
@@ -17736,7 +17736,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testPlatformSecurityGeneratesAccessibilityIdentifiers() async {
-    initializeTestConfig()
+    self.initializeTestConfig()
     // Given: PlatformSecurity
     let testView = PlatformSecurity()
     
@@ -17757,7 +17757,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testPlatformPrivacyGeneratesAccessibilityIdentifiers() async {
-    initializeTestConfig()
+    self.initializeTestConfig()
     // Given: PlatformPrivacy
     let testView = PlatformPrivacy()
     
@@ -17778,8 +17778,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testSwitchControlManagerGeneratesAccessibilityIdentifiersOnIOS() {
-    initializeTestConfig()
-    runWithTaskLocalConfig {
+    self.initializeTestConfig()
+    self.runWithTaskLocalConfig {
         // Given: A view with .switchControlEnabled() modifier (which uses SwitchControlManager)
         let view = Button("Test Button") { }
             .switchControlEnabled()
@@ -17805,8 +17805,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testSwitchControlManagerGeneratesAccessibilityIdentifiersOnMacOS() {
-    initializeTestConfig()
-    runWithTaskLocalConfig {
+    self.initializeTestConfig()
+    self.runWithTaskLocalConfig {
         // Given: A view with .switchControlEnabled() modifier (which uses SwitchControlManager)
         let view = Button("Test Button") { }
             .switchControlEnabled()
@@ -17832,7 +17832,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testSwitchControlComplianceWithIssues() {
-    initializeTestConfig()
+    self.initializeTestConfig()
     // Given: A view without proper Switch Control support
     // TODO: View introspection limitation - We cannot reliably detect if a view lacks
     // Switch Control support without ViewInspector. The compliance checker currently
