@@ -80,11 +80,12 @@ struct IntelligentDetailViewSheetTests {
             } else {
                 let hStacks = inspector.findAll(ViewInspector.ViewType.HStack.self)
                 if !hStacks.isEmpty {
-                // Try finding any structural view
-                #expect(Bool(true), "platformDetailView should have view structure (proves it's not blank)")
-            } else {
-                // Any view structure is acceptable
-                #expect(Bool(true), "platformDetailView should render in sheet (not blank)")
+                    // Try finding any structural view
+                    #expect(Bool(true), "platformDetailView should have view structure (proves it's not blank)")
+                } else {
+                    // Any view structure is acceptable
+                    #expect(Bool(true), "platformDetailView should render in sheet (not blank)")
+                }
             }
         } else {
             Issue.record("platformDetailView should be inspectable (indicates it has content)")
