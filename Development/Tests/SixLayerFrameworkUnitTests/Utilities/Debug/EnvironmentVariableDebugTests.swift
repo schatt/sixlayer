@@ -32,8 +32,8 @@ open class EnvironmentVariableDebugTests: BaseTestClass {
             // Using wrapper
             #if canImport(ViewInspector)
             if let inspectedView = try? AnyView(view).inspect(),
-               let button = try? inspectedView.sixLayerButton(),
-               let accessibilityID = try? button.sixLayerAccessibilityIdentifier() {
+               let button = inspectedView.findAll(ViewInspector.ViewType.Button.self).first,
+               let accessibilityID = try? button.accessibilityIdentifier() {
                 print("🔍 Generated ID: '\(accessibilityID)'")
 
                 if accessibilityID.isEmpty {
@@ -74,8 +74,8 @@ open class EnvironmentVariableDebugTests: BaseTestClass {
             // Using wrapper - when ViewInspector works on macOS, no changes needed here
             #if canImport(ViewInspector)
             if let inspectedView = try? AnyView(view).inspect(),
-               let button = try? inspectedView.sixLayerButton(),
-               let accessibilityID = try? button.sixLayerAccessibilityIdentifier() {
+               let button = inspectedView.findAll(ViewInspector.ViewType.Button.self).first,
+               let accessibilityID = try? button.accessibilityIdentifier() {
                 print("🔍 Generated ID: '\(accessibilityID)'")
                 
                 if accessibilityID.isEmpty {
