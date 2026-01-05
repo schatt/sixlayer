@@ -62,6 +62,9 @@ public extension SixLayerPlatform {
     /// Platform-appropriate hover delay (seconds)
     /// Returns the delay value that would be used if hover is supported
     /// 
+    /// Note: This is the "potential" delay for the platform. The actual delay
+    /// should be checked against runtime hover support via RuntimeCapabilityDetection.supportsHover
+    /// 
     /// - macOS: 0.5s (mouse/trackpad hover)
     /// - visionOS: 0.5s (hand tracking hover)
     /// - iOS: 0.5s (iPad with Apple Pencil hover, 0.0 for iPhone - determined at runtime)
@@ -74,6 +77,7 @@ public extension SixLayerPlatform {
         case .iOS:
             // iPad with Apple Pencil hover, 0.0 for iPhone - determined at runtime
             // For compile-time, return 0.5 as default (iPad case)
+            // Runtime check in RuntimeCapabilityDetection.hoverDelay will verify actual support
             return 0.5
         case .watchOS, .tvOS:
             return 0.0

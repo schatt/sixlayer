@@ -933,11 +933,12 @@ public extension RuntimeCapabilityDetection {
     }
     
     /// Hover delay for platforms that support hover
-    /// Returns platform-appropriate hover delay values.
-    /// Note: Actual hover support is determined by `supportsHover` property at runtime.
-    /// This property returns the delay value that would be used if hover is supported.
+    /// Returns platform-appropriate hover delay values, or 0.0 if hover is not supported.
     /// 
-    /// Platform hover delays:
+    /// This property checks `supportsHover` at runtime and returns 0.0 if hover is not available.
+    /// If hover is supported, returns the platform-appropriate delay value.
+    /// 
+    /// Platform hover delays (when hover is supported):
     /// - macOS: 0.5s (mouse/trackpad hover)
     /// - visionOS: 0.5s (hand tracking hover)
     /// - iOS: 0.5s (iPad with Apple Pencil hover, 0.0 for iPhone - determined at runtime)
@@ -946,27 +947,18 @@ public extension RuntimeCapabilityDetection {
     /// 
     /// Note: nonisolated - this property only does platform switching, no MainActor APIs accessed
     /// Uses PlatformStrategy to reduce code duplication (Issue #140)
+    /// Returns 0.0 if hover is not supported at runtime, otherwise returns platform-appropriate delay
     nonisolated static var hoverDelay: TimeInterval {
+        // First check if hover is actually supported at runtime
+        guard supportsHover else {
+            return 0.0  // No hover support means no delay needed
+        }
+        
         // Use real platform detection - tests should run on actual platforms/simulators
         let platform = currentPlatform
         
         // Use platform strategy for hover delay
-        // For iOS, we still need runtime detection for iPad vs iPhone
-        if platform == .iOS {
-            // iPad with Apple Pencil hover, 0.0 for iPhone - determined at runtime
-            // Check if we're on iPad
-            #if os(iOS)
-            if UIDevice.current.userInterfaceIdiom == .pad {
-                return platform.hoverDelay  // 0.5 for iPad
-            } else {
-                return 0.0  // iPhone doesn't have hover
-            }
-            #else
-            return platform.hoverDelay  // Default to strategy value
-            #endif
-        }
-        
-        // For other platforms, use strategy value directly
+        // The strategy provides the platform-appropriate delay value
         return platform.hoverDelay
     }
 }
