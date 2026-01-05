@@ -118,14 +118,20 @@ open class ViewGenerationVerificationTests: BaseTestClass {
         // 2. Contains what it needs to contain - Both views should contain our data
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
         #if canImport(ViewInspector)
-        let compactInspected = try compactView.inspect()
-        let compactText = try compactInspected.findAll(ViewType.Text.self)
+        guard let compactInspected = try? AnyView(compactView).inspect() else {
+            Issue.record("Compact view inspection not available")
+            return
+        }
+        let compactText = compactInspected.findAll(ViewInspector.ViewType.Text.self)
         #expect(!compactText.isEmpty, "Compact view should contain text elements")
         // Use helper function for DRY text verification
         self.verifyViewContainsText(compactView, expectedText: "Item 1", testName: "Compact view title")
 
-        let detailedInspected = try detailedView.inspect()
-        let detailedText = try detailedInspected.findAll(ViewType.Text.self)
+        guard let detailedInspected = try? AnyView(detailedView).inspect() else {
+            Issue.record("Detailed view inspection not available")
+            return
+        }
+        let detailedText = detailedInspected.findAll(ViewInspector.ViewType.Text.self)
         #expect(!detailedText.isEmpty, "Detailed view should contain text elements")
         // Use helper function for DRY text verification
         self.verifyViewContainsText(detailedView, expectedText: "Item 1", testName: "Detailed view title")
@@ -191,7 +197,11 @@ open class ViewGenerationVerificationTests: BaseTestClass {
         #if canImport(ViewInspector)
         do {
             // The view should contain text elements
-            let viewText = try detailView.inspect().findAll(ViewType.Text.self)
+            guard let inspected = try? AnyView(detailView).inspect() else {
+                Issue.record("View inspection not available")
+                return
+            }
+            let viewText = inspected.findAll(ViewInspector.ViewType.Text.self)
             #expect(!viewText.isEmpty, "Detail view should contain text elements")
             
             // Should contain the title and description (which are not nil)
