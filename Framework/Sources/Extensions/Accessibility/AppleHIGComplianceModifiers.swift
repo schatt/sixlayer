@@ -451,6 +451,9 @@ public struct PlatformNavigationModifier: ViewModifier {
         platform: SixLayerPlatform
     ) -> AnyView {
         // Use PlatformStrategy to reduce code duplication (Issue #140)
+        // Note: Since SixLayerPlatform.current uses compile-time detection,
+        // if we're in case .iOS, we're compiling for iOS, so #if os(iOS) is redundant.
+        // However, we keep it to ensure platform-specific functions only compile on their platforms.
         switch platform {
         case .iOS:
             #if os(iOS)
@@ -464,7 +467,7 @@ public struct PlatformNavigationModifier: ViewModifier {
             #else
             return fallbackPlatformNavigation(to: content)
             #endif
-        default:
+        case .watchOS, .tvOS, .visionOS:
             return fallbackPlatformNavigation(to: content)
         }
     }
@@ -696,6 +699,9 @@ public struct PlatformInteractionModifier: ViewModifier {
         macOSConfig: HIGmacOSCategoryConfig?
     ) -> some View {
         // Use PlatformStrategy to reduce code duplication (Issue #140)
+        // Note: Since SixLayerPlatform.current uses compile-time detection,
+        // if we're in case .iOS, we're compiling for iOS, so #if os(iOS) is redundant.
+        // However, we keep it to ensure platform-specific functions only compile on their platforms.
         switch platform {
         case .iOS:
             #if os(iOS)
@@ -710,7 +716,7 @@ public struct PlatformInteractionModifier: ViewModifier {
             #else
             return fallbackPlatformInteraction(to: content)
             #endif
-        default:
+        case .watchOS, .tvOS, .visionOS:
             return fallbackPlatformInteraction(to: content)
         }
     }
