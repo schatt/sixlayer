@@ -1,12 +1,40 @@
 # 🚀 Six-Layer Framework Release History
 
-## 📍 **Current Release: v6.6.3 - ScrollView Wrapper Fixes** 🎯
+## 📍 **Current Release: v6.7.0 - Test Fixes & Count-Based Presentation** 🎯
 
-**Release Date**: January 2, 2026
+**Release Date**: January 5, 2026
 **Status**: ✅ **COMPLETE**
-**Previous Release**: v6.6.2 - Swift 6 Compilation Fixes
-**Note**: Patch release fixing missing ScrollView wrappers in collection views. All collection views (GridCollectionView, ListCollectionView, ExpandableCardCollectionView, MasonryCollectionView) now properly scroll when content exceeds view bounds, maintaining the framework's abstraction layer.
+**Previous Release**: v6.6.3 - ScrollView Wrapper Fixes
+**Note**: Minor release fixing touch target minimum tests per Apple HIG guidelines and implementing count-based automatic presentation behavior. This release ensures tests correctly validate Apple HIG compliance for touch targets and adds intelligent count-aware presentation strategies.
 **Next Release**: TBD
+
+---
+
+## 🎯 **v6.7.0 - Test Fixes & Count-Based Presentation** (January 5, 2026)
+
+### **What's New:**
+
+#### **🆕 Count-Based Automatic Presentation Behavior**
+- **Phase 1: Count-Aware Automatic**: `.automatic` presentation preference now considers item count for generic/collection content, with platform-aware thresholds
+- **Phase 2: Explicit Control**: Added `.countBased(lowCount:highCount:threshold:)` enum case for explicit count-based presentation control
+- **Phase 3: Context-Aware Layout**: Enhanced layout parameter selection based on screen size and edge cases
+- **Safety Override**: Very large collections (>200 items) automatically use list presentation
+- **Platform-Aware Thresholds**: Different count thresholds based on platform and device type
+
+### **What's Fixed:**
+
+#### **🔧 Touch Target Minimum Test Fixes**
+- **Apple HIG Compliance**: Updated tests to correctly expect 44.0 minimum touch target when touch is enabled, per Apple Human Interface Guidelines
+- **Floating Point Comparison**: Fixed tolerance-based comparison in touch target tests to handle precision issues
+- **Error Messages**: Improved error messages to show actual vs expected values for better debugging
+
+#### **🧪 Test Infrastructure Improvements**
+- **Frame Size Safety**: Added safety checks for frame size calculations
+- **Resource Warning Fix**: Fixed unhandled resource warnings in Swift Package Manager builds
+- **Platform Mocking Removal**: Removed platform mocking code from tests in favor of runtime capability detection
+- **Test Warning Cleanup**: Cleaned up test warnings and improved test reliability
+
+**See [RELEASE_v6.7.0.md](RELEASE_v6.7.0.md) for complete release notes.**
 
 ---
 

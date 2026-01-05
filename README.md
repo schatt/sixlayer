@@ -27,7 +27,7 @@ Navigate to the `Framework/` directory and use it as a Swift Package:
 ```swift
 // In your Package.swift
 dependencies: [
-    .package(url: "https://github.com/schatt/sixlayer.git", from: "6.6.3")
+    .package(url: "https://github.com/schatt/sixlayer.git", from: "6.7.0")
 ]
 ```
 
@@ -41,9 +41,16 @@ dependencies: [
 
 The framework is distributed as a Swift Package from the `Framework/` directory. This ensures that only the essential framework code is included when other projects consume it.
 
-## 🆕 Latest Release: v6.6.3
+## 🆕 Latest Release: v6.7.0
 
-### **ScrollView Wrapper Fixes**
+### **Test Fixes & Count-Based Presentation**
+🆕 **Count-Based Automatic Presentation**: Added intelligent count-aware presentation strategy selection. `.automatic` presentation preference now considers item count for generic/collection content, with platform-aware thresholds. Added `.countBased(lowCount:highCount:threshold:)` enum case for explicit control.
+
+🔧 **Touch Target Test Fixes**: Fixed touch target minimum tests to correctly validate Apple HIG compliance. Tests now correctly expect 44.0 minimum touch target when touch is enabled, with tolerance-based floating point comparison.
+
+🧪 **Test Infrastructure Improvements**: Added frame size safety checks, fixed resource warnings in Swift Package Manager builds, removed platform mocking code from tests, and cleaned up test warnings.
+
+### **Previous Release: v6.6.3 - ScrollView Wrapper Fixes**
 🔧 **Collection View Scrolling**: Fixed missing ScrollView wrappers in all collection views. GridCollectionView, ListCollectionView, ExpandableCardCollectionView, and MasonryCollectionView now properly scroll when content exceeds view bounds, maintaining the framework's abstraction layer.
 
 ### **Previous Release: v6.6.2 - Swift 6 Compilation Fixes**
@@ -155,8 +162,8 @@ These guides contain critical information about the Layer 1 Semantic Intent phil
 
 ## 📋 Current Status
 
-**Version**: v6.6.3 (ScrollView Wrapper Fixes)
-**Phase**: Patch Release
+**Version**: v6.7.0 (Test Fixes & Count-Based Presentation)
+**Phase**: Minor Release
 **Next**: Continue framework development and stability improvements
 
 ## 🤝 Contributing

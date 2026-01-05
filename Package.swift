@@ -1,5 +1,5 @@
 // swift-tools-version: 6.0
-// SixLayerFramework v6.6.3 - ScrollView Wrapper Fixes
+// SixLayerFramework v6.7.0 - Test Fixes & Count-Based Presentation
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
