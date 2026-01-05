@@ -23,7 +23,7 @@ open class AccessibilityIdentifierGenerationTests: BaseTestClass {
         
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
         #if canImport(ViewInspector)
-        if let inspectedView = viewtry? AnyView(self).inspect(),
+        if let inspectedView = try? AnyView(view).inspect(),
            let buttonID = try? inspectedView.accessibilityIdentifier() {
             // This test SHOULD FAIL initially - IDs are currently 400+ chars
             #expect(buttonID.count < 80, "Accessibility ID should be reasonable length")
@@ -59,7 +59,7 @@ open class AccessibilityIdentifierGenerationTests: BaseTestClass {
         
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
         #if canImport(ViewInspector)
-        if let inspectedView = viewtry? AnyView(self).inspect(),
+        if let inspectedView = try? AnyView(view).inspect(),
            let vStackID = try? inspectedView.accessibilityIdentifier() {
             // This test SHOULD FAIL initially - contains duplicates like "container-container"
             #expect(!vStackID.contains("container-container"), "Should not contain duplicated hierarchy")
@@ -97,7 +97,7 @@ open class AccessibilityIdentifierGenerationTests: BaseTestClass {
         
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
         #if canImport(ViewInspector)
-        if let inspectedView = viewtry? AnyView(self).inspect(),
+        if let inspectedView = try? AnyView(view).inspect(),
            let vStackID = try? inspectedView.accessibilityIdentifier() {
             // This test SHOULD FAIL initially - IDs are not semantic
             #expect(vStackID.contains("UserProfile"), "Should contain screen context")
@@ -143,7 +143,7 @@ open class AccessibilityIdentifierGenerationTests: BaseTestClass {
         
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
         #if canImport(ViewInspector)
-        if let inspectedView = viewtry? AnyView(self).inspect(),
+        if let inspectedView = try? AnyView(view).inspect(),
            let vStackID = try? inspectedView.accessibilityIdentifier() {
             // This test SHOULD FAIL initially - complex hierarchies create massive IDs
             #expect(vStackID.count < 100, "Should handle complex hierarchies gracefully")
@@ -177,8 +177,8 @@ open class AccessibilityIdentifierGenerationTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
         
         #if canImport(ViewInspector)
-        if let submitInspected = submitButtontry? AnyView(self).inspect(),
-           let cancelInspected = cancelButtontry? AnyView(self).inspect() {
+        if let submitInspected = try? AnyView(submitButton).inspect(),
+           let cancelInspected = try? AnyView(cancelButton).inspect() {
             let submitID = try? submitInspected.accessibilityIdentifier()
             let cancelID = try? cancelInspected.accessibilityIdentifier()
             
@@ -204,7 +204,7 @@ open class AccessibilityIdentifierGenerationTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
         
         #if canImport(ViewInspector)
-        if let inspected = buttontry? AnyView(self).inspect() {
+        if let inspected = try? AnyView(button).inspect() {
             let buttonID = try? inspected.accessibilityIdentifier()
             
             // TDD RED: Should FAIL - labels not sanitized

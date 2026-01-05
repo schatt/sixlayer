@@ -42,7 +42,7 @@ open class IntelligentCardExpansionLayer6Tests: BaseTestClass {
         // cardView is a non-optional View, so it exists if we reach here
         
         // 2. Does that structure contain what it should?
-        if let _ = cardViewtry? AnyView(self).inspect() {
+        if let _ = try? AnyView(cardView).inspect() {
             // The card view should be inspectable
             // If we get here, the view is properly structured
         } else {
@@ -80,7 +80,7 @@ open class IntelligentCardExpansionLayer6Tests: BaseTestClass {
             // Then: Each card should be created successfully
             #expect(Bool(true), "Card with strategy \(strategy) should be created")  // cardView is non-optional
             
-            _ = cardViewtry? AnyView(self).inspect() // Just verify it can be inspected
+            _ = try? AnyView(cardView).inspect() // Just verify it can be inspected
         }
     }
     
@@ -126,7 +126,7 @@ open class IntelligentCardExpansionLayer6Tests: BaseTestClass {
         // TODO: ViewInspector Detection Issue - ViewInspector cannot reliably inspect card expansion views.
         // The view is created successfully (verified by non-optional parameter), but ViewInspector
         // has limitations with complex view hierarchies. This is a ViewInspector limitation, not a view creation issue.
-        if let _ = cardViewtry? AnyView(self).inspect() {
+        if let _ = try? AnyView(cardView).inspect() {
             // ViewInspector successfully inspected the view
         } else {
             // ViewInspector limitation - view is created successfully but cannot be inspected
@@ -136,7 +136,7 @@ open class IntelligentCardExpansionLayer6Tests: BaseTestClass {
         // 3. L6 function should create valid view (no platform mocking needed)
         // View creation is verified by non-optional parameter - if we reach here, the view was created
         // ViewInspector inspection is a nice-to-have, not a requirement for view creation
-        if let _ = cardViewtry? AnyView(self).inspect() {
+        if let _ = try? AnyView(cardView).inspect() {
             // L6 function successfully created inspectable view
         } else {
             // ViewInspector limitation - view is created successfully but cannot be inspected
@@ -160,7 +160,7 @@ open class IntelligentCardExpansionLayer6Tests: BaseTestClass {
         // TODO: ViewInspector Detection Issue - ViewInspector cannot reliably inspect card expansion views.
         // The view is created successfully (verified by non-optional parameter), but ViewInspector
         // has limitations with complex view hierarchies. This is a ViewInspector limitation, not a view creation issue.
-        if let _ = cardViewtry? AnyView(self).inspect() {
+        if let _ = try? AnyView(cardView).inspect() {
             // ViewInspector successfully inspected the view
         } else {
             // ViewInspector limitation - view is created successfully but cannot be inspected
@@ -170,7 +170,7 @@ open class IntelligentCardExpansionLayer6Tests: BaseTestClass {
         // 3. L6 function should create valid view (no platform mocking needed)
         // View creation is verified by non-optional parameter - if we reach here, the view was created
         // ViewInspector inspection is a nice-to-have, not a requirement for view creation
-        if let _ = cardViewtry? AnyView(self).inspect() {
+        if let _ = try? AnyView(cardView).inspect() {
             // L6 function successfully created inspectable view
         } else {
             // ViewInspector limitation - view is created successfully but cannot be inspected
@@ -194,7 +194,7 @@ open class IntelligentCardExpansionLayer6Tests: BaseTestClass {
         // TODO: ViewInspector Detection Issue - ViewInspector cannot reliably inspect card expansion views.
         // The view is created successfully (verified by non-optional parameter), but ViewInspector
         // has limitations with complex view hierarchies. This is a ViewInspector limitation, not a view creation issue.
-        if let _ = cardViewtry? AnyView(self).inspect() {
+        if let _ = try? AnyView(cardView).inspect() {
             // ViewInspector successfully inspected the view
         } else {
             // ViewInspector limitation - view is created successfully but cannot be inspected
@@ -204,7 +204,7 @@ open class IntelligentCardExpansionLayer6Tests: BaseTestClass {
         // 3. L6 function should create valid view (no platform mocking needed)
         // View creation is verified by non-optional parameter - if we reach here, the view was created
         // ViewInspector inspection is a nice-to-have, not a requirement for view creation
-        if let _ = cardViewtry? AnyView(self).inspect() {
+        if let _ = try? AnyView(cardView).inspect() {
             // L6 function successfully created inspectable view
         } else {
             // ViewInspector limitation - view is created successfully but cannot be inspected
@@ -230,7 +230,7 @@ open class IntelligentCardExpansionLayer6Tests: BaseTestClass {
         // TODO: ViewInspector Detection Issue - ViewInspector cannot reliably inspect card expansion views.
         // The view is created successfully (verified by non-optional parameter), but ViewInspector
         // has limitations with complex view hierarchies. This is a ViewInspector limitation, not a view creation issue.
-        if let _ = cardViewtry? AnyView(self).inspect() {
+        if let _ = try? AnyView(cardView).inspect() {
             // ViewInspector successfully inspected the view
         } else {
             // ViewInspector limitation - view is created successfully but cannot be inspected
@@ -240,7 +240,7 @@ open class IntelligentCardExpansionLayer6Tests: BaseTestClass {
         // 3. L6 function should create valid view (no platform mocking needed)
         // View creation is verified by non-optional parameter - if we reach here, the view was created
         // ViewInspector inspection is a nice-to-have, not a requirement for view creation
-        if let _ = cardViewtry? AnyView(self).inspect() {
+        if let _ = try? AnyView(cardView).inspect() {
             // L6 function successfully created inspectable view
         } else {
             // ViewInspector limitation - view is created successfully but cannot be inspected
@@ -260,7 +260,7 @@ open class IntelligentCardExpansionLayer6Tests: BaseTestClass {
         // TODO: ViewInspector Detection Issue - ViewInspector cannot reliably inspect card expansion views.
         // The view is created successfully (verified by non-optional parameter), but ViewInspector
         // has limitations with complex view hierarchies. This is a ViewInspector limitation, not a view creation issue.
-        if let _ = cardViewtry? AnyView(self).inspect() {
+        if let _ = try? AnyView(cardView).inspect() {
             // L6 function successfully created inspectable view
         } else {
             // ViewInspector limitation - view is created successfully but cannot be inspected
@@ -342,8 +342,8 @@ open class IntelligentCardExpansionLayer6Tests: BaseTestClass {
         
         // Test that all card types are inspectable
         #if canImport(ViewInspector)
-        if let _ = nativeCardtry? AnyView(self).inspect(),
-           let _ = platformAwareCardtry? AnyView(self).inspect() {
+        if let _ = try? AnyView(nativeCard).inspect(),
+           let _ = try? AnyView(platformAwareCard).inspect() {
             // All card types are inspectable
         } else {
             Issue.record("All card types should be inspectable")

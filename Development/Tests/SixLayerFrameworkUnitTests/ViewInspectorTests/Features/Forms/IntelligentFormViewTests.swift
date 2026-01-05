@@ -97,7 +97,7 @@ open class IntelligentFormViewTests: BaseTestClass {
 
             // Find and tap the Update button
             #if canImport(ViewInspector)
-            if let inspected = viewtry? AnyView(self).inspect() {
+            if let inspected = try? AnyView(view).inspect() {
                 // Find the Update button
                 let buttons = inspected.findAll(ViewType.Button.self)
                 let updateButton = buttons.first { button in
@@ -148,7 +148,7 @@ open class IntelligentFormViewTests: BaseTestClass {
 
             // Find and tap the Update button
             #if canImport(ViewInspector)
-            if let inspected = viewtry? AnyView(self).inspect() {
+            if let inspected = try? AnyView(view).inspect() {
                 let buttons = inspected.findAll(ViewType.Button.self)
                 let updateButton = buttons.first { button in
                     let text = try? button.sixLayerText().string()
@@ -197,7 +197,7 @@ open class IntelligentFormViewTests: BaseTestClass {
             // For now, we can only verify the button exists and is clickable
             // After fix, we should verify that feedback (success message, form dismissal, etc.) occurs
             #if canImport(ViewInspector)
-            if let inspected = viewtry? AnyView(self).inspect() {
+            if let inspected = try? AnyView(view).inspect() {
                 let buttons = inspected.findAll(ViewType.Button.self)
                 let updateButton = buttons.first { button in
                     let text = try? button.sixLayerText().string()

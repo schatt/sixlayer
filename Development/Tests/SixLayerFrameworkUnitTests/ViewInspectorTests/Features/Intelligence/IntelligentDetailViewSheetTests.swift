@@ -70,7 +70,7 @@ struct IntelligentDetailViewSheetTests {
         
         // Verify the view can be inspected with ViewInspector
         #if canImport(ViewInspector)
-        if let inspector = sheetContenttry? AnyView(self).inspect() {
+        if let inspector = try? AnyView(sheetContent).inspect() {
             // Try to find VStack (standard layout structure)
             // This proves the view has actual content structure, not blank
             if let _ = inspector.findAll(ViewType.VStack.self) {
@@ -112,7 +112,7 @@ struct IntelligentDetailViewSheetTests {
         // Verify the view can be inspected (proves it's not blank)
         #if canImport(ViewInspector)
         do {
-            guard let inspector = detailViewtry? AnyView(self).inspect() else {
+            guard let inspector = try? AnyView(detailView).inspect() else {
                 Issue.record("platformDetailView should be inspectable (indicates it has content)")
                 return
             }
@@ -153,7 +153,7 @@ struct IntelligentDetailViewSheetTests {
         
         // Verify the view compiles and can be inspected with frame constraints
         #if canImport(ViewInspector)
-        if let inspector = detailViewtry? AnyView(self).inspect() {
+        if let inspector = try? AnyView(detailView).inspect() {
             // If we can inspect with frame constraints, the view respects them
             #expect(Bool(true), "platformDetailView should accept frame constraints for sheet sizing")
         } else {
@@ -183,7 +183,7 @@ struct IntelligentDetailViewSheetTests {
         
         // Verify NavigationStack + platformDetailView works
         #if canImport(ViewInspector)
-        if let inspector = sheetContenttry? AnyView(self).inspect() {
+        if let inspector = try? AnyView(sheetContent).inspect() {
             #expect(Bool(true), "platformDetailView should work with NavigationStack in sheets")
         } else {
             Issue.record("platformDetailView should work in NavigationStack")
@@ -206,13 +206,13 @@ struct IntelligentDetailViewSheetTests {
         // All should work in sheet context - verify they can be inspected
         do {
             let taskDetail = IntelligentDetailView.platformDetailView(for: task)
-            let _ = taskDetailtry? AnyView(self).inspect()
+            let _ = try? AnyView(taskDetail).inspect()
 
             let numericDetail = IntelligentDetailView.platformDetailView(for: numericData)
-            let _ = numericDetailtry? AnyView(self).inspect()
+            let _ = try? AnyView(numericDetail).inspect()
 
             let textDetail = IntelligentDetailView.platformDetailView(for: textData)
-            let _ = textDetailtry? AnyView(self).inspect()
+            let _ = try? AnyView(textDetail).inspect()
 
             #expect(Bool(true), "platformDetailView should work with different data types in sheets")
         } catch {

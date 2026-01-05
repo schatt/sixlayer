@@ -123,7 +123,7 @@ open class CollectionEmptyStateViewTests: BaseTestClass {
             
             // Using wrapper - when ViewInspector works on macOS, no changes needed here
             #if canImport(ViewInspector)
-            if let inspected = viewtry? AnyView(self).inspect() {
+            if let inspected = try? AnyView(view).inspect() {
                 // Find the message text in the VStack
                 if let vStack = inspected.findAll(ViewType.VStack.self) {
                     // The message should be in a Text view within the VStack
@@ -176,7 +176,7 @@ open class CollectionEmptyStateViewTests: BaseTestClass {
             
             // Using wrapper - when ViewInspector works on macOS, no changes needed here
             #if canImport(ViewInspector)
-            if let inspected = viewtry? AnyView(self).inspect() {
+            if let inspected = try? AnyView(view).inspect() {
                 // Find the button in the view
                 let button = inspected.findAll(ViewType.Button.self)
                 
@@ -234,7 +234,7 @@ open class CollectionEmptyStateViewTests: BaseTestClass {
             // THEN: The empty state should use the original hints (not overridden)
             // The empty state should show custom message and create button
             #if canImport(ViewInspector)
-            if let inspected = viewtry? AnyView(self).inspect() {
+            if let inspected = try? AnyView(view).inspect() {
                 // Find the empty state view
                 let emptyState = inspected.findAll(ViewType.VStack.self)
                 
@@ -293,7 +293,7 @@ open class CollectionEmptyStateViewTests: BaseTestClass {
             
             // Using wrapper - when ViewInspector works on macOS, no changes needed here
             #if canImport(ViewInspector)
-            if let inspected = viewtry? AnyView(self).inspect() {
+            if let inspected = try? AnyView(view).inspect() {
                 if let vStack = inspected.findAll(ViewType.VStack.self) {
                     let texts = vStack.findAll(ViewType.Text.self)
                     let messageText = texts.first { text in

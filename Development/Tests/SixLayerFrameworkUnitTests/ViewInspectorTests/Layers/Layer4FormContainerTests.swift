@@ -176,7 +176,7 @@ open class Layer4FormContainerTests: BaseTestClass {
         #if os(iOS)
         // iOS: Should contain ScrollView structure with iOS-specific background color
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
-        if let scrollView = viewtry? AnyView(self).inspect() {
+        if let scrollView = try? AnyView(view).inspect() {
             // ScrollView found - this is correct for iOS
             // Note: iOS uses Color(.systemGroupedBackground) for scroll view backgrounds
         } else {
@@ -190,7 +190,7 @@ open class Layer4FormContainerTests: BaseTestClass {
         #elseif os(macOS)
         // macOS: Should contain ScrollView structure with macOS-specific background color
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
-        if let scrollView = viewtry? AnyView(self).inspect() {
+        if let scrollView = try? AnyView(view).inspect() {
             // ScrollView found - this is correct for macOS
             // Note: macOS uses Color(.controlBackgroundColor) for scroll view backgrounds
         } else {

@@ -39,7 +39,7 @@ open class NavigationLayer4Tests: BaseTestClass {
         #if canImport(ViewInspector)
         do {
             // The navigation link should contain text elements
-            guard let inspected = linktry? AnyView(self).inspect() else { return }
+            guard let inspected = try? AnyView(link).inspect() else { return }
             let viewText = inspected.findAll(ViewType.Text.self)
             #expect(!viewText.isEmpty, "Navigation link should contain text elements")
             
@@ -57,7 +57,7 @@ open class NavigationLayer4Tests: BaseTestClass {
         #if os(iOS)
         #if canImport(ViewInspector)
         // iOS: Should contain NavigationLink structure
-        if let inspected = linktry? AnyView(self).inspect(), let _ = try? inspected.sixLayerFind(ViewType.NavigationLink.self) {
+        if let inspected = try? AnyView(link).inspect(), let _ = try? inspected.sixLayerFind(ViewType.NavigationLink.self) {
             // NavigationLink found - this is correct for iOS
         } else {
             Issue.record("iOS navigation link should contain NavigationLink structure")
@@ -68,7 +68,7 @@ open class NavigationLayer4Tests: BaseTestClass {
         #elseif os(macOS)
         #if canImport(ViewInspector)
         // macOS: Should contain the content directly (no NavigationLink wrapper)
-        if let _ = linktry? AnyView(self).inspect() {
+        if let _ = try? AnyView(link).inspect() {
             // Direct content inspection works - this is correct for macOS
         } else {
             Issue.record("macOS navigation link should be inspectable directly")

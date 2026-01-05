@@ -215,7 +215,7 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
         
         // Should have DisclosureGroup with accessibility labels
         #if canImport(ViewInspector)
-        if let inspected = viewtry? AnyView(self).inspect() {
+        if let inspected = try? AnyView(view).inspect() {
             do {
                 // Should have a VStack
                 // Look for VStack anywhere in the view hierarchy
@@ -300,7 +300,7 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
 
         // Should render proper UI structure
         #if canImport(ViewInspector)
-        if let inspected = viewtry? AnyView(self).inspect() {
+        if let inspected = try? AnyView(view).inspect() {
             do {
                 // Should have a VStack containing label and TextField
                 // Look for VStack anywhere in the view hierarchy
@@ -385,7 +385,7 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
 
         // Should render proper numeric input UI
         #if canImport(ViewInspector)
-        if let inspected = viewtry? AnyView(self).inspect() {
+        if let inspected = try? AnyView(view).inspect() {
             do {
                 // Should have a VStack containing label and TextField
                 // Look for VStack anywhere in the view hierarchy
@@ -476,7 +476,7 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
 
         // Should render proper multiline text input UI
         #if canImport(ViewInspector)
-        if let inspected = viewtry? AnyView(self).inspect() {
+        if let inspected = try? AnyView(view).inspect() {
             do {
                 // Should have a VStack containing label and TextEditor
                 // Look for VStack anywhere in the view hierarchy
@@ -555,7 +555,7 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
 
         // Should render proper selection UI
         #if canImport(ViewInspector)
-        if let inspected = viewtry? AnyView(self).inspect() {
+        if let inspected = try? AnyView(view).inspect() {
             do {
                 // Should have a VStack containing label and Picker
                 // Look for VStack anywhere in the view hierarchy
@@ -634,7 +634,7 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
 
         // Should render proper multiple selection UI
         #if canImport(ViewInspector)
-        if let inspected = viewtry? AnyView(self).inspect() {
+        if let inspected = try? AnyView(view).inspect() {
             do {
                 // Should have a VStack containing label and selection controls
                 // Look for VStack anywhere in the view hierarchy
@@ -714,7 +714,7 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
 
         // Should render proper radio button group UI
         #if canImport(ViewInspector)
-        if let inspected = viewtry? AnyView(self).inspect() {
+        if let inspected = try? AnyView(view).inspect() {
             do {
                 // Should have a VStack containing label and radio controls
                 // Look for VStack anywhere in the view hierarchy
@@ -793,7 +793,7 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
 
         // Should render proper toggle/checkbox UI
         #if canImport(ViewInspector)
-        if let inspected = viewtry? AnyView(self).inspect() {
+        if let inspected = try? AnyView(view).inspect() {
             do {
                 // Should have a VStack containing label and Toggle
                 // Look for VStack anywhere in the view hierarchy
@@ -872,7 +872,7 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
 
         // Should render proper toggle UI
         #if canImport(ViewInspector)
-        if let inspected = viewtry? AnyView(self).inspect() {
+        if let inspected = try? AnyView(view).inspect() {
             do {
                 // Should have a VStack containing label and Toggle
                 // Look for VStack anywhere in the view hierarchy

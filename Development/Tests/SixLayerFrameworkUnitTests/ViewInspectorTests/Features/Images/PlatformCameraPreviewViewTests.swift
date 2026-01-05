@@ -142,7 +142,7 @@ open class PlatformCameraPreviewViewTests: BaseTestClass {
             
             // Then: View should be inspectable (wrapped in UIViewControllerRepresentable)
             #if canImport(ViewInspector)
-            if let _ = previewViewtry? AnyView(self).inspect() {
+            if let _ = try? AnyView(previewView).inspect() {
                 // iOS camera preview should be inspectable
                 #expect(Bool(true), "iOS implementation should be inspectable")
             } else {
@@ -173,7 +173,7 @@ open class PlatformCameraPreviewViewTests: BaseTestClass {
             
             // Then: View should be inspectable (wrapped in NSViewRepresentable)
             #if canImport(ViewInspector)
-            if let _ = previewViewtry? AnyView(self).inspect() {
+            if let _ = try? AnyView(previewView).inspect() {
                 // macOS camera preview should be inspectable
                 #expect(Bool(true), "macOS implementation should be inspectable")
             } else {

@@ -66,7 +66,7 @@ open class PlatformPresentContentL1Tests: BaseTestClass {
         #if canImport(ViewInspector)
         do {
             // The view should be wrapped in AnyView
-            guard let inspected = viewtry? AnyView(self).inspect() else { return }
+            guard let inspected = try? AnyView(view).inspect() else { return }
             #if canImport(ViewInspector)
             let anyView = try inspected.anyView()
             // anyView is non-optional InspectableView (throws on failure), so it exists if we reach here
@@ -143,7 +143,7 @@ open class PlatformPresentContentL1Tests: BaseTestClass {
         #if canImport(ViewInspector)
         do {
             // The view should be wrapped in AnyView
-            guard let inspected = viewtry? AnyView(self).inspect() else { return }
+            guard let inspected = try? AnyView(view).inspect() else { return }
             #if canImport(ViewInspector)
             let anyView = try inspected.anyView()
             #expect(Bool(true), "Number content should be wrapped in AnyView")  // anyView is non-optional
