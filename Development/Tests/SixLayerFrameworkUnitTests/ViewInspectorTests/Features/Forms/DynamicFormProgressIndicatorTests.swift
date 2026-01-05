@@ -39,7 +39,7 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
             }
             
             if hasProgressView && hasProgressText {
-                return vStack
+                return inspected
             }
         }
         
@@ -53,12 +53,7 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
                 (try? text.string()) == "Progress"
             }
             if hasProgressText {
-                // Try to find the parent VStack
-                if let vStack = try? inspected.vStack() {
-                    return vStack
-                }
-                // If we can't get the VStack, return the inspected view itself
-                // as it contains the progress indicator structure
+                // Return the inspected view itself as it contains the progress indicator structure
                 return inspected
             }
         }
@@ -369,7 +364,7 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
             let progressIndicator = FormProgressIndicator(progress: progress)
             
             let inspectionResult = withInspectedView(progressIndicator) { inspected in
-                let texts = inspected.findAll(Text.self)
+                let texts = inspected.findAll(ViewInspector.ViewType.Text.self)
                 let fieldCountText = texts.first { text in
                     (try? text.string())?.contains("of") ?? false
                 }
@@ -451,7 +446,7 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
             // Verify the displayed text matches what accessibility should announce
             // Implementation sets: accessibilityLabel with percentage and count
             // Implementation sets: accessibilityValue with "X of Y fields completed"
-            let texts = inspected.findAll(Text.self)
+            let texts = inspected.findAll(ViewInspector.ViewType.Text.self)
             let fieldCountText = texts.first { text in
                 (try? text.string())?.contains("3 of 5") ?? false
             }
@@ -500,7 +495,7 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
                 #expect(hasAccessibilityID, "Progress indicator should have accessibility identifier for screen readers")
                 
                 // Verify structure contains text elements that screen readers can announce
-                let texts = inspected.findAll(Text.self)
+                let texts = inspected.findAll(ViewInspector.ViewType.Text.self)
                 #expect(texts.count >= 2, "Should have text elements for screen reader announcements")
             }
             
@@ -539,7 +534,7 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
                 #expect(hStack != nil, "Should contain HStack for title and count")
                 
                 // Should contain ProgressView
-                let progressView = vStack.findAll(ProgressView<EmptyView, EmptyView>.self)
+                let progressView = vStack.findAll(ViewInspector.ViewType.ProgressView.self)
                 #expect(progressView != nil, "Should contain ProgressView for visual progress bar")
             }
         }
@@ -573,7 +568,7 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
             #expect(vStack != nil, "Progress indicator should have VStack structure for styling")
             
             // Verify text elements are present (styling makes them readable)
-            let texts = inspected.findAll(Text.self)
+            let texts = inspected.findAll(ViewInspector.ViewType.Text.self)
             #expect(texts.count >= 2, "Should have text elements that are styled for readability")
             
             // Note: Actual padding, background, and cornerRadius modifiers are verified
@@ -603,7 +598,7 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
         #if canImport(ViewInspector)
         let inspectionResult = withInspectedView(progressIndicator) { inspected in
             // Find all Text elements
-            let texts = inspected.findAll(Text.self)
+            let texts = inspected.findAll(ViewInspector.ViewType.Text.self)
             
             // Should have at least 2 Text elements: "Progress" and "1 of 3 fields"
             #expect(texts.count >= 2, "Should have Progress label and field count text")
@@ -621,7 +616,7 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
             #expect(hasFieldCount, "Should display field count text")
             
             // Verify ProgressView exists
-            let progressView = inspected.findAll(ProgressView<EmptyView, EmptyView>.self)
+            let progressView = inspected.findAll(ViewInspector.ViewType.ProgressView.self)
             #expect(progressView != nil, "Should display progress bar")
         }
         
@@ -655,11 +650,11 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
             #expect(vStack != nil, "Progress indicator should render in light mode")
             
             // Verify text elements are present (readability)
-            let texts = inspected.findAll(Text.self)
+            let texts = inspected.findAll(ViewInspector.ViewType.Text.self)
             #expect(texts.count >= 2, "Should have text elements visible in light mode")
             
             // Verify ProgressView is present
-            let progressView = inspected.findAll(ProgressView<EmptyView, EmptyView>.self)
+            let progressView = inspected.findAll(ViewInspector.ViewType.ProgressView.self)
             #expect(progressView != nil, "Progress bar should be visible in light mode")
         }
         
@@ -691,11 +686,11 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
             #expect(vStack != nil, "Progress indicator should render in dark mode")
             
             // Verify text elements are present (readability)
-            let texts = inspected.findAll(Text.self)
+            let texts = inspected.findAll(ViewInspector.ViewType.Text.self)
             #expect(texts.count >= 2, "Should have text elements visible in dark mode")
             
             // Verify ProgressView is present
-            let progressView = inspected.findAll(ProgressView<EmptyView, EmptyView>.self)
+            let progressView = inspected.findAll(ViewInspector.ViewType.ProgressView.self)
             #expect(progressView != nil, "Progress bar should be visible in dark mode")
         }
         
@@ -745,7 +740,7 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
         #if canImport(ViewInspector)
         // Test singular "field" text
         let inspectionResult1 = withInspectedView(indicator1Empty) { inspected in
-            let texts = inspected.findAll(Text.self)
+            let texts = inspected.findAll(ViewInspector.ViewType.Text.self)
             let fieldText = texts.first { text in
                 let str = try? text.string()
                 return str?.contains("of") ?? false
@@ -758,7 +753,7 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
         
         // Test plural "fields" text
         let inspectionResult100 = withInspectedView(indicator100) { inspected in
-            let texts = inspected.findAll(Text.self)
+            let texts = inspected.findAll(ViewInspector.ViewType.Text.self)
             let fieldText = texts.first { text in
                 let str = try? text.string()
                 return str?.contains("of") ?? false
