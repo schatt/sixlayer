@@ -14706,7 +14706,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         
         // Create a view with environment values set
         let testConfig = AccessibilityIdentifierConfig.shared
-        self.testConfig.enableAutoIDs = true
+        self.testConfig?.enableAutoIDs = true
         
         let view = platformVStackContainer {
             Text("Content")
@@ -14741,7 +14741,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         self.setupTestEnvironment()
         
         let testConfig = AccessibilityIdentifierConfig.shared
-        self.testConfig.enableAutoIDs = true
+        self.testConfig?.enableAutoIDs = true
         
         // Test automaticAccessibilityIdentifiers()
         let view1 = Text("Test")
