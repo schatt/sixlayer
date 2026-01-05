@@ -1039,14 +1039,14 @@ open class ViewGenerationIntegrationTests: BaseTestClass {
         
         // 2. Does that structure contain what it should?
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
-        let touchInspectionResult = withInspectedView(touchView) { touchInspection in
+        if let _ = try? AnyView(touchView).inspect() {
             // Touch view should be inspectable
-            #expect(Bool(true), "Touch view should be inspectable")  // touchInspection is non-optional
+            #expect(Bool(true), "Touch view should be inspectable")
         }
 
-        let hoverInspectionResult = withInspectedView(hoverView) { hoverInspection in
+        if let _ = try? AnyView(hoverView).inspect() {
             // Hover view should be inspectable
-            #expect(Bool(true), "Hover view should be inspectable")  // hoverInspection is non-optional
+            #expect(Bool(true), "Hover view should be inspectable")
         }
             
             // The views should be different because they represent different platforms

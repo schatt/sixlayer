@@ -18,9 +18,9 @@ import ViewInspector
 @MainActor
 public func withInspectedViewThrowing<V: View, R>(
     _ view: V,
-    perform: (ViewInspector.InspectableView) throws -> R
+    perform: (ViewInspector.InspectableView<ViewInspector.ViewType.ClassifiedView>) throws -> R
 ) throws -> R {
-    let inspected = try view.inspect()
+    let inspected = try AnyView(view).inspect()
     return try perform(inspected)
 }
 
