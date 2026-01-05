@@ -259,7 +259,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
 
         // Should render text input interface
         #if canImport(ViewInspector)
-        if let inspected = view.tryInspect() {
+        if let inspected = viewtry? AnyView(self).inspect() {
             // Should have text input capability - check if we can find text fields
             let textFields = inspected.findAll(TextField<Text>.self)
             if !textFields.isEmpty {
@@ -319,7 +319,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
 
         // Should render file picker interface
         #if canImport(ViewInspector)
-        if let _ = view.tryInspect() {
+        if let _ = viewtry? AnyView(self).inspect() {
             // View is inspectable - file picker interface should be present
             #expect(Bool(true), "Should provide file picker interface")
         } else {
@@ -376,7 +376,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
 
         // Should render image picker interface
         #if canImport(ViewInspector)
-        if let _ = view.tryInspect() {
+        if let _ = viewtry? AnyView(self).inspect() {
             // View is inspectable - image picker interface should be present
             #expect(Bool(true), "Should provide image picker interface")
         } else {
@@ -433,7 +433,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
 
         // Should render array input interface
         #if canImport(ViewInspector)
-        if let _ = view.tryInspect() {
+        if let _ = viewtry? AnyView(self).inspect() {
             // View is inspectable - array input interface should be present
             #expect(Bool(true), "Should provide array input interface")
         } else {
@@ -490,7 +490,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
 
         // Should render data input interface
         #if canImport(ViewInspector)
-        if let _ = view.tryInspect() {
+        if let _ = viewtry? AnyView(self).inspect() {
             // View is inspectable - data input interface should be present
             #expect(Bool(true), "Should provide data input interface")
         } else {
@@ -547,7 +547,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
 
         // Should render autocomplete interface
-        if let inspected = view.tryInspect() {
+        if let inspected = viewtry? AnyView(self).inspect() {
             // Should have text input with suggestions
             let hasAutocomplete = inspected.sixLayerCount > 0
             #expect(hasAutocomplete, "Should provide autocomplete interface")
@@ -665,7 +665,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
 
         // Should render custom component or error
-        if let inspected = view.tryInspect() {
+        if let inspected = viewtry? AnyView(self).inspect() {
             // Should have some UI (either custom component or error message)
             let hasInterface = inspected.sixLayerCount > 0
             #expect(hasInterface, "Should render custom component or error message")
@@ -719,7 +719,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
 
         // Should render color picker interface
-        if let inspected = view.tryInspect() {
+        if let inspected = viewtry? AnyView(self).inspect() {
             // Should have color selection capability
             let hasColorPicker = inspected.sixLayerCount > 0
             #expect(hasColorPicker, "Should provide color picker interface")
@@ -773,7 +773,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
 
         // Should render multi-line text editor
-        if let inspected = view.tryInspect() {
+        if let inspected = viewtry? AnyView(self).inspect() {
             // Should have text input capability
             let hasTextArea = inspected.sixLayerCount > 0
             #expect(hasTextArea, "Should provide multi-line text editor")
@@ -1663,7 +1663,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
 
         // Should render stepper interface
         #if canImport(ViewInspector)
-        if let _ = view.tryInspect() {
+        if let _ = viewtry? AnyView(self).inspect() {
             // View is inspectable - stepper interface should be present
             #expect(Bool(true), "Should provide stepper interface")
         } else {
@@ -2297,7 +2297,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
 
         // Should render gauge component
         #if canImport(ViewInspector)
-        if let _ = view.tryInspect() {
+        if let _ = viewtry? AnyView(self).inspect() {
             // View is inspectable - gauge should be present
             #expect(Bool(true), "Should provide gauge interface")
         } else {

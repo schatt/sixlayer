@@ -39,7 +39,7 @@ open class AccessibilityGlobalLocalConfigTests: BaseTestClass {
             // Expect NO identifier when global config is disabled and no local enable is present
             // Using wrapper - when ViewInspector works on macOS, no changes needed here
             #if canImport(ViewInspector)
-            if let inspectedView = view.tryInspect(),
+            if let inspectedView = viewtry? AnyView(self).inspect(),
                let text = try? inspectedView.sixLayerText(),
                let accessibilityID = try? text.accessibilityIdentifier() {
                 #expect(accessibilityID.isEmpty, "Global disable without local enable should result in no accessibility identifier, got: '\(accessibilityID)'")
@@ -114,7 +114,7 @@ open class AccessibilityGlobalLocalConfigTests: BaseTestClass {
             // Try to inspect for accessibility identifier
             // Using wrapper - when ViewInspector works on macOS, no changes needed here
             #if canImport(ViewInspector)
-            if let inspectedView = view.tryInspect(),
+            if let inspectedView = viewtry? AnyView(self).inspect(),
                let button = try? inspectedView.button(),
                let accessibilityID = try? button.accessibilityIdentifier() {
                 // Should be empty when local disable is applied

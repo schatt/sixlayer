@@ -908,7 +908,7 @@ open class DynamicFormViewTests: BaseTestClass {
 
         // OCR field should show OCR button (will fail until implemented)
         #if canImport(ViewInspector)
-        if let inspected = ocrFieldView.tryInspect() {
+        if let inspected = ocrFieldViewtry? AnyView(self).inspect() {
             // Look for OCR button by finding the HStack that contains both TextField and Button
             let hStacks = inspected.findAll(ViewInspector.ViewType.HStack.self)
             if let hStack = hStacks.first {
@@ -926,7 +926,7 @@ open class DynamicFormViewTests: BaseTestClass {
 
         // Regular field should not show OCR button (no HStack)
         #if canImport(ViewInspector)
-        if let inspected = regularFieldView.tryInspect() {
+        if let inspected = regularFieldViewtry? AnyView(self).inspect() {
             // Regular field should not have HStack (just VStack with label and TextField)
             let hStacks = inspected.findAll(ViewInspector.ViewType.HStack.self)
             let hStack = hStacks.first
@@ -1174,7 +1174,7 @@ open class DynamicFormViewTests: BaseTestClass {
 
         // OCR form should show batch OCR button
         #if canImport(ViewInspector)
-        if let inspected = viewWithOCR.tryInspect() {
+        if let inspected = viewWithOCRtry? AnyView(self).inspect() {
             // Should find the batch OCR button by finding buttons and checking their accessibility identifiers
             let buttons = inspected.findAll(Button<Text>.self)
             let hasOCRButton = buttons.contains { button in
@@ -1186,7 +1186,7 @@ open class DynamicFormViewTests: BaseTestClass {
         }
 
         // Non-OCR form should not show batch OCR button
-        if let inspected = viewWithoutOCR.tryInspect() {
+        if let inspected = viewWithoutOCRtry? AnyView(self).inspect() {
             let buttons = inspected.findAll(Button<Text>.self)
             let hasOCRButton = buttons.contains { button in
                 (try? button.accessibilityIdentifier())?.contains("Scan Document") ?? false

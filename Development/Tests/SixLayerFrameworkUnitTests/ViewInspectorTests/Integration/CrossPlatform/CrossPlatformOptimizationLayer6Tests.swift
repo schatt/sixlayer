@@ -492,7 +492,7 @@ open class CrossPlatformOptimizationLayer6Tests: BaseTestClass {
         // Then: Fully optimized view should be created successfully
         // Note: fullyOptimizedView is a View, so it cannot be nil
         
-        if let _ = fullyOptimizedView.tryInspect() {
+        if let _ = fullyOptimizedViewtry? AnyView(self).inspect() {
             // Successfully inspected fully optimized view
         } else {
             #if canImport(ViewInspector)

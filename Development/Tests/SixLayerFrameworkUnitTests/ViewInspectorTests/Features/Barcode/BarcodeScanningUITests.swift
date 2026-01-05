@@ -122,7 +122,7 @@ open class BarcodeScanningUITests: BaseTestClass {
         
         // Barcode field should show barcode button
         #if canImport(ViewInspector)
-        if let inspected = barcodeFieldView.tryInspect() {
+        if let inspected = barcodeFieldViewtry? AnyView(self).inspect() {
             // Look for barcode button by finding the HStack that contains both TextField and Button
             if let hStack = inspected.findAll(ViewType.HStack.self) {
                 // The HStack should contain TextField and barcode Button
@@ -138,7 +138,7 @@ open class BarcodeScanningUITests: BaseTestClass {
         
         // Regular field should not show barcode button
         #if canImport(ViewInspector)
-        if let inspected = regularFieldView.tryInspect() {
+        if let inspected = regularFieldViewtry? AnyView(self).inspect() {
             // Regular field should not have HStack with barcode button
             let hStack = inspected.findAll(ViewType.HStack.self)
             // Note: This might still have HStack if field supports OCR, so we check for barcode button specifically
@@ -183,7 +183,7 @@ open class BarcodeScanningUITests: BaseTestClass {
         
         // Both buttons should be rendered
         #if canImport(ViewInspector)
-        if let inspected = dualFieldView.tryInspect() {
+        if let inspected = dualFieldViewtry? AnyView(self).inspect() {
             if let hStack = inspected.findAll(ViewType.HStack.self) {
                 // Should have at least 3 items: TextField, OCR button, Barcode button
                 #expect(hStack.sixLayerCount >= 3, "Dual field should have TextField, OCR button, and barcode button")

@@ -36,7 +36,7 @@ open class AdaptiveDetailViewRenderingTests: BaseTestClass {
         // Then: The view should exist and be renderable
         // This proves the framework code (platformAdaptiveDetailView) actually works
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
-        if let _ = view.tryInspect() {
+        if let _ = viewtry? AnyView(self).inspect() {
             #expect(Bool(true), "platformAdaptiveDetailView should be inspectable (proves it rendered)")
         } else {
             #if canImport(ViewInspector)
@@ -79,7 +79,7 @@ open class AdaptiveDetailViewRenderingTests: BaseTestClass {
         
         // Then: View should be renderable (proves it called the right rendering function)
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
-        if let _ = view.tryInspect() {
+        if let _ = viewtry? AnyView(self).inspect() {
             #expect(Bool(true), "platformAdaptiveDetailView on phone should render (proves it called platformStandardDetailView)")
         } else {
             #if canImport(ViewInspector)

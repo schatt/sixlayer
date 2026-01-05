@@ -27,7 +27,7 @@ open class ComponentLabelTextAccessibilityTests: BaseTestClass {
         
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
         #if canImport(ViewInspector)
-        if let inspected = button.tryInspect() {
+        if let inspected = buttontry? AnyView(self).inspect() {
            let buttonID = try? inspected.accessibilityIdentifier()
             // TODO: ViewInspector Detection Issue - VERIFIED: AdaptiveButton DOES pass label via .environment(\.accessibilityIdentifierLabel, title)
             // in Framework/Sources/Extensions/Platform/PlatformUIPatterns.swift:408.
@@ -64,9 +64,9 @@ open class ComponentLabelTextAccessibilityTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
         
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
-        if let submitInspected = submitButton.tryInspect(),
+        if let submitInspected = submitButtontry? AnyView(self).inspect(),
            let submitID = try? submitInspected.accessibilityIdentifier(),
-           let cancelInspected = cancelButton.tryInspect(),
+           let cancelInspected = cancelButtontry? AnyView(self).inspect(),
            let cancelID = try? cancelInspected.accessibilityIdentifier() {
             // TODO: ViewInspector Detection Issue - VERIFIED: AdaptiveButton DOES pass label via .environment(\.accessibilityIdentifierLabel, title)
             // Different labels produce different IDs via sanitized label text inclusion.
@@ -100,7 +100,7 @@ open class ComponentLabelTextAccessibilityTests: BaseTestClass {
         .enableGlobalAutomaticCompliance()
         
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
-        if let inspected = view.tryInspect(),
+        if let inspected = viewtry? AnyView(self).inspect(),
            let viewID = try? inspected.accessibilityIdentifier() {
             // TODO: ViewInspector Detection Issue - VERIFIED: platformNavigationTitle DOES pass label via .environment(\.accessibilityIdentifierLabel, title)
             // in Framework/Sources/Layers/Layer4-Component/PlatformNavigationLayer4.swift:114,118,122.
@@ -141,7 +141,7 @@ open class ComponentLabelTextAccessibilityTests: BaseTestClass {
         .enableGlobalAutomaticCompliance()
         
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
-        if let inspected = view.tryInspect(),
+        if let inspected = viewtry? AnyView(self).inspect(),
            let viewID = try? inspected.accessibilityIdentifier() {
             // TODO: ViewInspector Detection Issue - VERIFIED: platformNavigationLink_L4 DOES pass label via .environment(\.accessibilityIdentifierLabel, title)
             // in Framework/Sources/Layers/Layer4-Component/PlatformNavigationLayer4.swift:205,214,225.
@@ -181,7 +181,7 @@ open class ComponentLabelTextAccessibilityTests: BaseTestClass {
         .enableGlobalAutomaticCompliance()
         
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
-        if let inspected = button.tryInspect(),
+        if let inspected = buttontry? AnyView(self).inspect(),
            let buttonID = try? inspected.accessibilityIdentifier() {
             // TODO: ViewInspector Detection Issue - VERIFIED: platformNavigationButton DOES pass label via .environment(\.accessibilityIdentifierLabel, title)
             // in Framework/Sources/Layers/Layer4-Component/PlatformNavigationLayer4.swift:106.
@@ -211,7 +211,7 @@ open class ComponentLabelTextAccessibilityTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
         
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
-        if let inspected = button.tryInspect(),
+        if let inspected = buttontry? AnyView(self).inspect(),
            let buttonID = try? inspected.accessibilityIdentifier() {
             // TODO: ViewInspector Detection Issue - VERIFIED: Label sanitization IS implemented in
             // Framework/Sources/Extensions/Accessibility/AutomaticAccessibilityIdentifiers.swift:103-110.
@@ -240,7 +240,7 @@ open class ComponentLabelTextAccessibilityTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
         
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
-        if let inspected = button.tryInspect(),
+        if let inspected = buttontry? AnyView(self).inspect(),
            let buttonID = try? inspected.accessibilityIdentifier() {
             // TODO: ViewInspector Detection Issue - VERIFIED: Label sanitization IS implemented in
             // Framework/Sources/Extensions/Accessibility/AutomaticAccessibilityIdentifiers.swift:103-110.
@@ -268,7 +268,7 @@ open class ComponentLabelTextAccessibilityTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
         
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
-        if let inspected = button.tryInspect(),
+        if let inspected = buttontry? AnyView(self).inspect(),
            let buttonID = try? inspected.accessibilityIdentifier() {
             // TODO: ViewInspector Detection Issue - VERIFIED: Label sanitization IS implemented in
             // Framework/Sources/Extensions/Accessibility/AutomaticAccessibilityIdentifiers.swift:103-110.
@@ -313,7 +313,7 @@ open class ComponentLabelTextAccessibilityTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
         
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
-        if let inspected = fieldView.tryInspect(),
+        if let inspected = fieldViewtry? AnyView(self).inspect(),
            let fieldID = try? inspected.accessibilityIdentifier() {
             // TODO: ViewInspector Detection Issue - VERIFIED: DynamicTextField DOES pass label via .environment(\.accessibilityIdentifierLabel, field.label)
             // in Framework/Sources/Components/Forms/DynamicFieldComponents.swift:130.
@@ -352,7 +352,7 @@ open class ComponentLabelTextAccessibilityTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
         
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
-        if let inspected = fieldView.tryInspect(),
+        if let inspected = fieldViewtry? AnyView(self).inspect(),
            let fieldID = try? inspected.accessibilityIdentifier() {
             // TODO: ViewInspector Detection Issue - VERIFIED: DynamicEmailField DOES pass label via .environment(\.accessibilityIdentifierLabel, field.label)
             // in Framework/Sources/Components/Forms/DynamicFieldComponents.swift:163.
@@ -391,7 +391,7 @@ open class ComponentLabelTextAccessibilityTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
         
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
-        if let inspected = fieldView.tryInspect(),
+        if let inspected = fieldViewtry? AnyView(self).inspect(),
            let fieldID = try? inspected.accessibilityIdentifier() {
             // TODO: ViewInspector Detection Issue - VERIFIED: DynamicPasswordField DOES pass label via .environment(\.accessibilityIdentifierLabel, field.label)
             // in Framework/Sources/Components/Forms/DynamicFieldComponents.swift:193.
@@ -427,7 +427,7 @@ open class ComponentLabelTextAccessibilityTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
         
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
-        if let inspected = formView.tryInspect(),
+        if let inspected = formViewtry? AnyView(self).inspect(),
            let formID = try? inspected.accessibilityIdentifier() {
             // TODO: ViewInspector Detection Issue - VERIFIED: DynamicFormView DOES pass label via .environment(\.accessibilityIdentifierLabel, configuration.title)
             // in Framework/Sources/Components/Forms/DynamicFormView.swift:75.
@@ -469,7 +469,7 @@ open class ComponentLabelTextAccessibilityTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
         
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
-        if let inspected = sectionView.tryInspect(),
+        if let inspected = sectionViewtry? AnyView(self).inspect(),
            let sectionID = try? inspected.accessibilityIdentifier() {
             // TODO: ViewInspector Detection Issue - VERIFIED: DynamicFormSectionView DOES pass label via .environment(\.accessibilityIdentifierLabel, section.title)
             // in Framework/Sources/Components/Forms/DynamicFormView.swift:116.
@@ -510,7 +510,7 @@ open class ComponentLabelTextAccessibilityTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
         
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
-        if let inspected = fieldView.tryInspect(),
+        if let inspected = fieldViewtry? AnyView(self).inspect(),
            let fieldID = try? inspected.accessibilityIdentifier() {
             
             // TODO: ViewInspector Detection Issue - VERIFIED: DynamicPhoneField DOES pass label via .environment(\.accessibilityIdentifierLabel, ...)
@@ -546,7 +546,7 @@ open class ComponentLabelTextAccessibilityTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
         
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
-        if let inspected = fieldView.tryInspect(),
+        if let inspected = fieldViewtry? AnyView(self).inspect(),
            let fieldID = try? inspected.accessibilityIdentifier() {
             
             // TODO: ViewInspector Detection Issue - VERIFIED: DynamicURLField DOES pass label via .environment(\.accessibilityIdentifierLabel, ...)
@@ -582,7 +582,7 @@ open class ComponentLabelTextAccessibilityTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
         
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
-        if let inspected = fieldView.tryInspect(),
+        if let inspected = fieldViewtry? AnyView(self).inspect(),
            let fieldID = try? inspected.accessibilityIdentifier() {
             
             // TODO: ViewInspector Detection Issue - VERIFIED: DynamicNumberField DOES pass label via .environment(\.accessibilityIdentifierLabel, ...)
@@ -618,7 +618,7 @@ open class ComponentLabelTextAccessibilityTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
         
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
-        if let inspected = fieldView.tryInspect(),
+        if let inspected = fieldViewtry? AnyView(self).inspect(),
            let fieldID = try? inspected.accessibilityIdentifier() {
             
             // TODO: ViewInspector Detection Issue - VERIFIED: DynamicDateField DOES pass label via .environment(\.accessibilityIdentifierLabel, ...)
@@ -654,7 +654,7 @@ open class ComponentLabelTextAccessibilityTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
         
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
-        if let inspected = fieldView.tryInspect(),
+        if let inspected = fieldViewtry? AnyView(self).inspect(),
            let fieldID = try? inspected.accessibilityIdentifier() {
             
             // TODO: ViewInspector Detection Issue - VERIFIED: DynamicToggleField DOES pass label via .environment(\.accessibilityIdentifierLabel, ...)
@@ -691,7 +691,7 @@ open class ComponentLabelTextAccessibilityTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
         
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
-        if let inspected = fieldView.tryInspect(),
+        if let inspected = fieldViewtry? AnyView(self).inspect(),
            let fieldID = try? inspected.accessibilityIdentifier() {
             
             // TODO: ViewInspector Detection Issue - VERIFIED: DynamicMultiSelectField DOES pass label via .environment(\.accessibilityIdentifierLabel, ...)
@@ -728,7 +728,7 @@ open class ComponentLabelTextAccessibilityTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
         
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
-        if let inspected = fieldView.tryInspect(),
+        if let inspected = fieldViewtry? AnyView(self).inspect(),
            let fieldID = try? inspected.accessibilityIdentifier() {
             
             // TODO: ViewInspector Detection Issue - VERIFIED: DynamicCheckboxField DOES pass label via .environment(\.accessibilityIdentifierLabel, ...)
@@ -764,7 +764,7 @@ open class ComponentLabelTextAccessibilityTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
         
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
-        if let inspected = fieldView.tryInspect(),
+        if let inspected = fieldViewtry? AnyView(self).inspect(),
            let fieldID = try? inspected.accessibilityIdentifier() {
             
             // TODO: ViewInspector Detection Issue - VERIFIED: DynamicFileField DOES pass label via .environment(\.accessibilityIdentifierLabel, ...)
@@ -801,7 +801,7 @@ open class ComponentLabelTextAccessibilityTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
         
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
-        if let inspected = fieldView.tryInspect(),
+        if let inspected = fieldViewtry? AnyView(self).inspect(),
            let fieldID = try? inspected.accessibilityIdentifier() {
             
             // TODO: ViewInspector Detection Issue - VERIFIED: DynamicEnumField DOES pass label via .environment(\.accessibilityIdentifierLabel, ...)
@@ -837,7 +837,7 @@ open class ComponentLabelTextAccessibilityTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
         
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
-        if let inspected = fieldView.tryInspect(),
+        if let inspected = fieldViewtry? AnyView(self).inspect(),
            let fieldID = try? inspected.accessibilityIdentifier() {
             
             // TODO: ViewInspector Detection Issue - VERIFIED: DynamicIntegerField DOES pass label via .environment(\.accessibilityIdentifierLabel, ...)
@@ -873,7 +873,7 @@ open class ComponentLabelTextAccessibilityTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
         
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
-        if let inspected = fieldView.tryInspect(),
+        if let inspected = fieldViewtry? AnyView(self).inspect(),
            let fieldID = try? inspected.accessibilityIdentifier() {
             
             // TODO: ViewInspector Detection Issue - VERIFIED: DynamicTextAreaField DOES pass label via .environment(\.accessibilityIdentifierLabel, ...)
@@ -913,9 +913,9 @@ open class ComponentLabelTextAccessibilityTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
         
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
-        if let inspected1 = card1.tryInspect(),
+        if let inspected1 = card1try? AnyView(self).inspect(),
            let card1ID = try? inspected1.accessibilityIdentifier(),
-           let inspected2 = card2.tryInspect(),
+           let inspected2 = card2try? AnyView(self).inspect(),
            let card2ID = try? inspected2.accessibilityIdentifier() {
             // TODO: ViewInspector Detection Issue - VERIFIED: ListCardComponent DOES pass label via .environment(\.accessibilityIdentifierLabel, cardTitle)
             // in Framework/Sources/Layers/Layer4-Component/IntelligentCardExpansionLayer4.swift:897.
@@ -960,9 +960,9 @@ open class ComponentLabelTextAccessibilityTests: BaseTestClass {
         // This is a simplified test - full test would need ForEach context
         
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
-        if let inspected1 = button1.tryInspect(),
+        if let inspected1 = button1try? AnyView(self).inspect(),
            let button1ID = try? inspected1.accessibilityIdentifier(),
-           let inspected2 = button2.tryInspect(),
+           let inspected2 = button2try? AnyView(self).inspect(),
            let button2ID = try? inspected2.accessibilityIdentifier() {
             // TODO: ViewInspector Detection Issue - VERIFIED: AdaptiveButton DOES pass label via .environment(\.accessibilityIdentifierLabel, title)
             // Buttons with same label in different contexts would need item context passed via environment.
@@ -1045,9 +1045,9 @@ open class ComponentLabelTextAccessibilityTests: BaseTestClass {
         .enableGlobalAutomaticCompliance()
         
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
-        if let inspected1 = card1.tryInspect(),
+        if let inspected1 = card1try? AnyView(self).inspect(),
            let card1ID = try? inspected1.accessibilityIdentifier(),
-           let inspected2 = card2.tryInspect(),
+           let inspected2 = card2try? AnyView(self).inspect(),
            let card2ID = try? inspected2.accessibilityIdentifier() {
             // TODO: ViewInspector Detection Issue - VERIFIED: ExpandableCardComponent DOES pass label via .environment(\.accessibilityIdentifierLabel, cardTitle)
             // in Framework/Sources/Layers/Layer4-Component/IntelligentCardExpansionLayer4.swift:164.
@@ -1099,7 +1099,7 @@ open class ComponentLabelTextAccessibilityTests: BaseTestClass {
         .enableGlobalAutomaticCompliance()
         
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
-        if let inspected = listView.tryInspect() { // ForEach creates multiple views - we need to inspect each one
+        if let inspected = listViewtry? AnyView(self).inspect() { // ForEach creates multiple views - we need to inspect each one
             // This is a simplified test - full test would verify all items are unique
             let viewID = try? inspected.accessibilityIdentifier()
             
@@ -1134,10 +1134,10 @@ open class ComponentLabelTextAccessibilityTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
         
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
-        if let inspected1 = card1.tryInspect(),
+        if let inspected1 = card1try? AnyView(self).inspect(),
            let card1ID = try? inspected1.accessibilityIdentifier(),
             
-           let inspected2 = card2.tryInspect(),
+           let inspected2 = card2try? AnyView(self).inspect(),
            let card2ID = try? inspected2.accessibilityIdentifier() {
             
             #expect(card1ID != card2ID, 
@@ -1202,10 +1202,10 @@ open class ComponentLabelTextAccessibilityTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
         
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
-        if let inspected1 = card1.tryInspect(),
+        if let inspected1 = card1try? AnyView(self).inspect(),
            let card1ID = try? inspected1.accessibilityIdentifier(),
             
-           let inspected2 = card2.tryInspect(),
+           let inspected2 = card2try? AnyView(self).inspect(),
            let card2ID = try? inspected2.accessibilityIdentifier() {
             
             #expect(card1ID != card2ID, 
@@ -1245,10 +1245,10 @@ open class ComponentLabelTextAccessibilityTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
         
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
-        if let inspected1 = card1.tryInspect(),
+        if let inspected1 = card1try? AnyView(self).inspect(),
            let card1ID = try? inspected1.accessibilityIdentifier(),
             
-           let inspected2 = card2.tryInspect(),
+           let inspected2 = card2try? AnyView(self).inspect(),
            let card2ID = try? inspected2.accessibilityIdentifier() {
             
             #expect(card1ID != card2ID, 
@@ -1317,10 +1317,10 @@ open class ComponentLabelTextAccessibilityTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
         
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
-        if let inspected1 = card1.tryInspect(),
+        if let inspected1 = card1try? AnyView(self).inspect(),
            let card1ID = try? inspected1.accessibilityIdentifier(),
             
-           let inspected2 = card2.tryInspect(),
+           let inspected2 = card2try? AnyView(self).inspect(),
            let card2ID = try? inspected2.accessibilityIdentifier() {
             
             #expect(card1ID != card2ID, 
@@ -1363,10 +1363,10 @@ open class ComponentLabelTextAccessibilityTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
         
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
-        if let inspected1 = card1.tryInspect(),
+        if let inspected1 = card1try? AnyView(self).inspect(),
            let card1ID = try? inspected1.accessibilityIdentifier(),
             
-           let inspected2 = card2.tryInspect(),
+           let inspected2 = card2try? AnyView(self).inspect(),
            let card2ID = try? inspected2.accessibilityIdentifier() {
             
             #expect(card1ID != card2ID, 
@@ -1402,10 +1402,10 @@ open class ComponentLabelTextAccessibilityTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
         
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
-        if let inspected1 = card1.tryInspect(),
+        if let inspected1 = card1try? AnyView(self).inspect(),
            let card1ID = try? inspected1.accessibilityIdentifier(),
             
-           let inspected2 = card2.tryInspect(),
+           let inspected2 = card2try? AnyView(self).inspect(),
            let card2ID = try? inspected2.accessibilityIdentifier() {
             
             #expect(card1ID != card2ID, 
@@ -1483,15 +1483,15 @@ open class ComponentLabelTextAccessibilityTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
         
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
-        if let expandableInspected = expandableCard.tryInspect(),
+        if let expandableInspected = expandableCardtry? AnyView(self).inspect(),
            let expandableID = try? expandableInspected.accessibilityIdentifier(),
-           let listInspected = listCard.tryInspect(),
+           let listInspected = listCardtry? AnyView(self).inspect(),
            let listID = try? listInspected.accessibilityIdentifier(),
-           let simpleInspected = simpleCard.tryInspect(),
+           let simpleInspected = simpleCardtry? AnyView(self).inspect(),
            let simpleID = try? simpleInspected.accessibilityIdentifier(),
-           let coverFlowInspected = coverFlowCard.tryInspect(),
+           let coverFlowInspected = coverFlowCardtry? AnyView(self).inspect(),
            let coverFlowID = try? coverFlowInspected.accessibilityIdentifier(),
-           let masonryInspected = masonryCard.tryInspect(),
+           let masonryInspected = masonryCardtry? AnyView(self).inspect(),
            let masonryID = try? masonryInspected.accessibilityIdentifier() {
             
             // TDD RED: All should include "test" or "item" from the title
@@ -1560,10 +1560,10 @@ open class ComponentLabelTextAccessibilityTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
         
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
-        if let inspected1 = cardView1.tryInspect(),
+        if let inspected1 = cardView1try? AnyView(self).inspect(),
            let card1ID = try? inspected1.accessibilityIdentifier(),
 
-           let inspected2 = cardView2.tryInspect(),
+           let inspected2 = cardView2try? AnyView(self).inspect(),
            let card2ID = try? inspected2.accessibilityIdentifier() {
 
             // Cards with different titles should have different IDs
@@ -1620,10 +1620,10 @@ open class ComponentLabelTextAccessibilityTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
         
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
-        if let inspected1 = card1.tryInspect(),
+        if let inspected1 = card1try? AnyView(self).inspect(),
            let card1ID = try? inspected1.accessibilityIdentifier(),
             
-           let inspected2 = card2.tryInspect(),
+           let inspected2 = card2try? AnyView(self).inspect(),
            let card2ID = try? inspected2.accessibilityIdentifier() {
             
             #expect(card1ID != card2ID, 
@@ -1662,7 +1662,7 @@ open class ComponentLabelTextAccessibilityTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
         
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
-        if let inspected = tabStrip.tryInspect() {            // The tab strip contains buttons - we need to verify buttons have unique IDs
+        if let inspected = tabStriptry? AnyView(self).inspect() {            // The tab strip contains buttons - we need to verify buttons have unique IDs
             // This is a simplified test - full test would inspect nested buttons
             let stripID = try? inspected.accessibilityIdentifier()
             
@@ -1709,9 +1709,9 @@ open class ComponentLabelTextAccessibilityTests: BaseTestClass {
         .enableGlobalAutomaticCompliance()
         
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
-        if let homeInspected = homeButton.tryInspect(),
+        if let homeInspected = homeButtontry? AnyView(self).inspect(),
            let homeID = try? homeInspected.accessibilityIdentifier(),
-           let settingsInspected = settingsButton.tryInspect(),
+           let settingsInspected = settingsButtontry? AnyView(self).inspect(),
            let settingsID = try? settingsInspected.accessibilityIdentifier() {
 
             // TODO: ViewInspector Detection Issue - VERIFIED: PlatformTabStrip buttons DO pass label via .environment(\.accessibilityIdentifierLabel, title)
@@ -1786,7 +1786,7 @@ open class ComponentLabelTextAccessibilityTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
         
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
-        if let inspected = fieldView.tryInspect(),
+        if let inspected = fieldViewtry? AnyView(self).inspect(),
            let fieldID = try? inspected.accessibilityIdentifier() {
             
             print("🔴 RED: DynamicFormFieldView ID: '\(fieldID)'")
@@ -1823,7 +1823,7 @@ open class ComponentLabelTextAccessibilityTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
         
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
-        if let inspected = arrayField.tryInspect(),
+        if let inspected = arrayFieldtry? AnyView(self).inspect(),
            let arrayID = try? inspected.accessibilityIdentifier() {
 
             print("🔴 RED: DynamicArrayField ID: '\(arrayID)'")
@@ -1859,10 +1859,10 @@ open class ComponentLabelTextAccessibilityTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
         
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
-        if let inspected1 = row1.tryInspect(),
+        if let inspected1 = row1try? AnyView(self).inspect(),
            let row1ID = try? inspected1.accessibilityIdentifier(),
 
-           let inspected2 = row2.tryInspect(),
+           let inspected2 = row2try? AnyView(self).inspect(),
            let row2ID = try? inspected2.accessibilityIdentifier() {
 
             // TODO: ViewInspector Detection Issue - VERIFIED: platformListRow DOES pass label via .environment(\.accessibilityIdentifierLabel, title)
@@ -1917,10 +1917,10 @@ open class ComponentLabelTextAccessibilityTests: BaseTestClass {
         .enableGlobalAutomaticCompliance()
         
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
-        if let inspected1 = header1.tryInspect(),
+        if let inspected1 = header1try? AnyView(self).inspect(),
            let header1ID = try? inspected1.accessibilityIdentifier(),
 
-           let inspected2 = header2.tryInspect(),
+           let inspected2 = header2try? AnyView(self).inspect(),
            let header2ID = try? inspected2.accessibilityIdentifier() {
 
             // TODO: ViewInspector Detection Issue - VERIFIED: platformListSectionHeader DOES pass label via .environment(\.accessibilityIdentifierLabel, title)
@@ -1964,10 +1964,10 @@ open class ComponentLabelTextAccessibilityTests: BaseTestClass {
         .enableGlobalAutomaticCompliance()
         
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
-        if let inspected1 = field1.tryInspect(),
+        if let inspected1 = field1try? AnyView(self).inspect(),
            let field1ID = try? inspected1.accessibilityIdentifier(),
 
-           let inspected2 = field2.tryInspect(),
+           let inspected2 = field2try? AnyView(self).inspect(),
            let field2ID = try? inspected2.accessibilityIdentifier() {
 
             // TODO: ViewInspector Detection Issue - VERIFIED: platformFormField DOES pass label via .environment(\.accessibilityIdentifierLabel, label)
@@ -2008,10 +2008,10 @@ open class ComponentLabelTextAccessibilityTests: BaseTestClass {
         .enableGlobalAutomaticCompliance()
         
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
-        if let inspected1 = group1.tryInspect(),
+        if let inspected1 = group1try? AnyView(self).inspect(),
            let group1ID = try? inspected1.accessibilityIdentifier(),
 
-           let inspected2 = group2.tryInspect(),
+           let inspected2 = group2try? AnyView(self).inspect(),
            let group2ID = try? inspected2.accessibilityIdentifier() {
 
             // TODO: ViewInspector Detection Issue - VERIFIED: platformFormFieldGroup DOES pass label via .environment(\.accessibilityIdentifierLabel, title)
@@ -2048,10 +2048,10 @@ open class ComponentLabelTextAccessibilityTests: BaseTestClass {
         .enableGlobalAutomaticCompliance()
         
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
-        if let inspected1 = emptyState1.tryInspect(),
+        if let inspected1 = emptyState1try? AnyView(self).inspect(),
            let state1ID = try? inspected1.accessibilityIdentifier(),
 
-           let inspected2 = emptyState2.tryInspect(),
+           let inspected2 = emptyState2try? AnyView(self).inspect(),
            let state2ID = try? inspected2.accessibilityIdentifier() {
 
             // TODO: ViewInspector Detection Issue - VERIFIED: platformListEmptyState DOES pass label via .environment(\.accessibilityIdentifierLabel, title)
@@ -2088,10 +2088,10 @@ open class ComponentLabelTextAccessibilityTests: BaseTestClass {
         .enableGlobalAutomaticCompliance()
         
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
-        if let inspected1 = placeholder1.tryInspect(),
+        if let inspected1 = placeholder1try? AnyView(self).inspect(),
            let placeholder1ID = try? inspected1.accessibilityIdentifier(),
 
-           let inspected2 = placeholder2.tryInspect(),
+           let inspected2 = placeholder2try? AnyView(self).inspect(),
            let placeholder2ID = try? inspected2.accessibilityIdentifier() {
 
             // TODO: ViewInspector Detection Issue - VERIFIED: platformDetailPlaceholder DOES pass label via .environment(\.accessibilityIdentifierLabel, title)
@@ -2122,10 +2122,10 @@ open class ComponentLabelTextAccessibilityTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
         
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
-        if let inspected1 = button1.tryInspect(),
+        if let inspected1 = button1try? AnyView(self).inspect(),
            let button1ID = try? inspected1.accessibilityIdentifier(),
 
-           let inspected2 = button2.tryInspect(),
+           let inspected2 = button2try? AnyView(self).inspect(),
            let button2ID = try? inspected2.accessibilityIdentifier() {
 
             // TODO: ViewInspector Detection Issue - VERIFIED: ActionButton DOES pass label via .environment(\.accessibilityIdentifierLabel, title)
@@ -2163,10 +2163,10 @@ open class ComponentLabelTextAccessibilityTests: BaseTestClass {
         .enableGlobalAutomaticCompliance()
         
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
-        if let inspected1 = message1.tryInspect(),
+        if let inspected1 = message1try? AnyView(self).inspect(),
            let message1ID = try? inspected1.accessibilityIdentifier(),
 
-           let inspected2 = message2.tryInspect(),
+           let inspected2 = message2try? AnyView(self).inspect(),
            let message2ID = try? inspected2.accessibilityIdentifier() {
 
             // TODO: ViewInspector Detection Issue - VERIFIED: platformValidationMessage DOES pass label via .environment(\.accessibilityIdentifierLabel, message)

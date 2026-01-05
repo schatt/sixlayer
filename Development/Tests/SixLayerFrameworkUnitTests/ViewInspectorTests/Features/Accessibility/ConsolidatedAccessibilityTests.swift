@@ -120,7 +120,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     @MainActor
     private func generateIDForView(_ view: some View) -> String {
         #if canImport(ViewInspector)
-        if let inspectedView = view.tryInspect(),
+        if let inspectedView = viewtry? AnyView(self).inspect(),
            let button = try? inspectedView.button(),
            let id = try? button.accessibilityIdentifier() {
             return id
@@ -2003,7 +2003,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
         #if canImport(ViewInspector)
-        if let inspectedView = view.tryInspect(),
+        if let inspectedView = viewtry? AnyView(self).inspect(),
            let buttonID = try? inspectedView.accessibilityIdentifier() {
             // This test SHOULD FAIL initially - IDs are currently 400+ chars
             #expect(buttonID.count < 80, "Accessibility ID should be reasonable length")
@@ -2051,7 +2051,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             
             // Using wrapper - when ViewInspector works on macOS, no changes needed here
             #if canImport(ViewInspector)
-            if let inspectedView = view.tryInspect(),
+            if let inspectedView = viewtry? AnyView(self).inspect(),
                let _ = try? inspectedView.button() {
                 // When automatic IDs are disabled, the view should not have an accessibility identifier modifier
                 // This means we can't inspect for accessibility identifiers
@@ -2081,7 +2081,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             
             // Using wrapper - when ViewInspector works on macOS, no changes needed here
             #if canImport(ViewInspector)
-            if let inspectedView = view.tryInspect(),
+            if let inspectedView = viewtry? AnyView(self).inspect(),
                let buttonID = try? inspectedView.accessibilityIdentifier() {
                 // Manual ID should work regardless of automatic setting
                 #expect(buttonID == "manual-test-button", "Manual accessibility identifier should work when automatic is disabled")
@@ -2823,7 +2823,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
         
         #if canImport(ViewInspector)
-        if let inspected = button.tryInspect() {
+        if let inspected = buttontry? AnyView(self).inspect() {
            let buttonID = try? inspected.accessibilityIdentifier()
             #expect((buttonID?.contains("submit") ?? false) || (buttonID?.contains("Submit") ?? false),
                    "AdaptiveButton identifier should include label text 'Submit' (implementation verified in code)")
@@ -2847,9 +2847,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         let cancelButton = AdaptiveUIPatterns.AdaptiveButton("Cancel", action: { })
             .enableGlobalAutomaticCompliance()
         
-        if let submitInspected = submitButton.tryInspect(),
+        if let submitInspected = submitButtontry? AnyView(self).inspect(),
            let submitID = try? submitInspected.accessibilityIdentifier(),
-           let cancelInspected = cancelButton.tryInspect(),
+           let cancelInspected = cancelButtontry? AnyView(self).inspect(),
            let cancelID = try? cancelInspected.accessibilityIdentifier() {
             #expect(submitID != cancelID,
                    "Buttons with different labels should have different identifiers (implementation verified in code)")
@@ -2868,7 +2868,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
         
         #if canImport(ViewInspector)
-        if let inspected = button.tryInspect(),
+        if let inspected = buttontry? AnyView(self).inspect(),
            let buttonID = try? inspected.accessibilityIdentifier() {
             #expect((!buttonID.contains("Add New Item")) &&
                    (buttonID.contains("add-new-item") || buttonID.contains("add") && buttonID.contains("new")),
@@ -3472,7 +3472,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             componentName: "platformPresentBasicValue_L1"
         ), "Framework component should automatically generate accessibility identifiers")
         
-        if let inspectedView = testView.tryInspect(),
+        if let inspectedView = testViewtry? AnyView(self).inspect(),
            let accessibilityID = try? inspectedView.accessibilityIdentifier() {
             #expect(accessibilityID != "", "Framework component should have accessibility identifier")
         } else {
@@ -3804,7 +3804,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         .enableGlobalAutomaticCompliance()
         
         #if canImport(ViewInspector)
-        if let inspected = view.tryInspect(),
+        if let inspected = viewtry? AnyView(self).inspect(),
            let viewID = try? inspected.accessibilityIdentifier() {
             #expect(viewID.contains("settings") || viewID.contains("Settings"),
                    "platformNavigationTitle identifier should include title text 'Settings' (implementation verified in code)")
@@ -3836,7 +3836,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         .enableGlobalAutomaticCompliance()
         
         #if canImport(ViewInspector)
-        if let inspected = view.tryInspect(),
+        if let inspected = viewtry? AnyView(self).inspect(),
            let viewID = try? inspected.accessibilityIdentifier() {
             #expect(viewID.contains("next") || viewID.contains("page") || viewID.contains("Next"),
                    "platformNavigationLink_L4 identifier should include title text 'Next Page' (implementation verified in code)")
@@ -3858,7 +3858,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
         
         #if canImport(ViewInspector)
-        if let inspected = button.tryInspect(),
+        if let inspected = buttontry? AnyView(self).inspect(),
            let buttonID = try? inspected.accessibilityIdentifier() {
             #expect((!buttonID.contains("&")) && (!buttonID.contains("!")),
                    "Identifier should not contain special chars (implementation verified)")
@@ -3880,7 +3880,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
         
         #if canImport(ViewInspector)
-        if let inspected = button.tryInspect(),
+        if let inspected = buttontry? AnyView(self).inspect(),
            let buttonID = try? inspected.accessibilityIdentifier() {
             #expect((!buttonID.contains("CamelCaseLabel")) &&
                    (buttonID.contains("camelcaselabel") || buttonID.contains("camel")),
@@ -4248,7 +4248,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
         
         #if canImport(ViewInspector)
-        if let inspected = fieldView.tryInspect(),
+        if let inspected = fieldViewtry? AnyView(self).inspect(),
            let fieldID = try? inspected.accessibilityIdentifier() {
             #expect(fieldID.contains("email") || fieldID.contains("address") || fieldID.contains("Email"),
                    "DynamicTextField identifier should include field label 'Email Address' (implementation verified in code)")
@@ -4283,7 +4283,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
         
         #if canImport(ViewInspector)
-        if let inspected = fieldView.tryInspect(),
+        if let inspected = fieldViewtry? AnyView(self).inspect(),
            let fieldID = try? inspected.accessibilityIdentifier() {
             #expect(fieldID.contains("user") || fieldID.contains("email") || fieldID.contains("User"),
                    "DynamicEmailField identifier should include field label 'User Email' (implementation verified in code)")
@@ -4318,7 +4318,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
         
         #if canImport(ViewInspector)
-        if let inspected = fieldView.tryInspect(),
+        if let inspected = fieldViewtry? AnyView(self).inspect(),
            let fieldID = try? inspected.accessibilityIdentifier() {
             #expect(fieldID.contains("secure") || fieldID.contains("password") || fieldID.contains("Secure"),
                    "DynamicPasswordField identifier should include field label 'Secure Password' (implementation verified in code)")
@@ -4738,7 +4738,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         .enableGlobalAutomaticCompliance()
         
         #if canImport(ViewInspector)
-        if let inspected = button.tryInspect(),
+        if let inspected = buttontry? AnyView(self).inspect(),
            let buttonID = try? inspected.accessibilityIdentifier() {
             #expect(buttonID.contains("save") || buttonID.contains("Save"),
                    "platformNavigationButton identifier should include title text 'Save' (implementation verified in code)")
@@ -4767,7 +4767,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
         
         #if canImport(ViewInspector)
-        if let inspected = formView.tryInspect(),
+        if let inspected = formViewtry? AnyView(self).inspect(),
            let formID = try? inspected.accessibilityIdentifier() {
             #expect(formID.contains("user") || formID.contains("profile") || formID.contains("User"),
                    "DynamicFormView identifier should include configuration title 'User Profile' (implementation verified in code)")
@@ -4801,7 +4801,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
         
         #if canImport(ViewInspector)
-        if let inspected = sectionView.tryInspect(),
+        if let inspected = sectionViewtry? AnyView(self).inspect(),
            let sectionID = try? inspected.accessibilityIdentifier() {
             #expect(sectionID.contains("personal") || sectionID.contains("information") || sectionID.contains("Personal"),
                    "DynamicFormSectionView identifier should include section title 'Personal Information' (implementation verified in code)")
@@ -4836,7 +4836,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
         
         #if canImport(ViewInspector)
-        if let inspected = fieldView.tryInspect(),
+        if let inspected = fieldViewtry? AnyView(self).inspect(),
            let fieldID = try? inspected.accessibilityIdentifier() {
             #expect(fieldID.contains("mobile") || fieldID.contains("phone") || fieldID.contains("Mobile"),
                    "DynamicPhoneField identifier should include field label 'Mobile Phone' (implementation verified in code)")
@@ -4871,7 +4871,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
         
         #if canImport(ViewInspector)
-        if let inspected = fieldView.tryInspect(),
+        if let inspected = fieldViewtry? AnyView(self).inspect(),
            let fieldID = try? inspected.accessibilityIdentifier() {
             #expect(fieldID.contains("website") || fieldID.contains("url") || fieldID.contains("Website"),
                    "DynamicURLField identifier should include field label 'Website URL' (implementation verified in code)")
@@ -4906,7 +4906,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
         
         #if canImport(ViewInspector)
-        if let inspected = fieldView.tryInspect(),
+        if let inspected = fieldViewtry? AnyView(self).inspect(),
            let fieldID = try? inspected.accessibilityIdentifier() {
             #expect(fieldID.contains("total") || fieldID.contains("amount") || fieldID.contains("Total"),
                    "DynamicNumberField identifier should include field label 'Total Amount' (implementation verified in code)")
@@ -4941,7 +4941,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
         
         #if canImport(ViewInspector)
-        if let inspected = fieldView.tryInspect(),
+        if let inspected = fieldViewtry? AnyView(self).inspect(),
            let fieldID = try? inspected.accessibilityIdentifier() {
             #expect(fieldID.contains("birth") || fieldID.contains("date") || fieldID.contains("Birth"),
                    "DynamicDateField identifier should include field label 'Birth Date' (implementation verified in code)")
@@ -4976,7 +4976,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
         
         #if canImport(ViewInspector)
-        if let inspected = fieldView.tryInspect(),
+        if let inspected = fieldViewtry? AnyView(self).inspect(),
            let fieldID = try? inspected.accessibilityIdentifier() {
             #expect(fieldID.contains("enable") || fieldID.contains("notifications") || fieldID.contains("Enable"),
                    "DynamicToggleField identifier should include field label 'Enable Notifications' (implementation verified in code)")
@@ -5012,7 +5012,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
         
         #if canImport(ViewInspector)
-        if let inspected = fieldView.tryInspect(),
+        if let inspected = fieldViewtry? AnyView(self).inspect(),
            let fieldID = try? inspected.accessibilityIdentifier() {
             #expect(fieldID.contains("favorite") || fieldID.contains("colors") || fieldID.contains("Favorite"),
                    "DynamicMultiSelectField identifier should include field label 'Favorite Colors' (implementation verified in code)")
@@ -5048,7 +5048,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
         
         #if canImport(ViewInspector)
-        if let inspected = fieldView.tryInspect(),
+        if let inspected = fieldViewtry? AnyView(self).inspect(),
            let fieldID = try? inspected.accessibilityIdentifier() {
             #expect(fieldID.contains("agree") || fieldID.contains("terms") || fieldID.contains("Agree"),
                    "DynamicCheckboxField identifier should include field label 'Agree to Terms' (implementation verified in code)")
@@ -5083,7 +5083,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
         
         #if canImport(ViewInspector)
-        if let inspected = fieldView.tryInspect(),
+        if let inspected = fieldViewtry? AnyView(self).inspect(),
            let fieldID = try? inspected.accessibilityIdentifier() {
             #expect(fieldID.contains("upload") || fieldID.contains("document") || fieldID.contains("Upload"),
                    "DynamicFileField identifier should include field label 'Upload Document' (implementation verified in code)")
@@ -5119,7 +5119,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
         
         #if canImport(ViewInspector)
-        if let inspected = fieldView.tryInspect(),
+        if let inspected = fieldViewtry? AnyView(self).inspect(),
            let fieldID = try? inspected.accessibilityIdentifier() {
             #expect(fieldID.contains("priority") || fieldID.contains("level") || fieldID.contains("Priority"),
                    "DynamicEnumField identifier should include field label 'Priority Level' (implementation verified in code)")
@@ -5154,7 +5154,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
         
         #if canImport(ViewInspector)
-        if let inspected = fieldView.tryInspect(),
+        if let inspected = fieldViewtry? AnyView(self).inspect(),
            let fieldID = try? inspected.accessibilityIdentifier() {
             #expect(fieldID.contains("quantity") || fieldID.contains("Quantity"),
                    "DynamicIntegerField identifier should include field label 'Quantity' (implementation verified in code)")
@@ -5189,7 +5189,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
         
         #if canImport(ViewInspector)
-        if let inspected = fieldView.tryInspect(),
+        if let inspected = fieldViewtry? AnyView(self).inspect(),
            let fieldID = try? inspected.accessibilityIdentifier() {
             #expect(fieldID.contains("comments") || fieldID.contains("Comments"),
                    "DynamicTextAreaField identifier should include field label 'Comments' (implementation verified in code)")
@@ -5748,9 +5748,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
         
         #if canImport(ViewInspector)
-        if let inspected1 = card1.tryInspect(),
+        if let inspected1 = card1try? AnyView(self).inspect(),
            let card1ID = try? inspected1.accessibilityIdentifier(),
-           let inspected2 = card2.tryInspect(),
+           let inspected2 = card2try? AnyView(self).inspect(),
            let card2ID = try? inspected2.accessibilityIdentifier() {
             #expect((card1ID != card2ID) &&
                     (card1ID.contains("first") || card1ID.contains("item") || card1ID.contains("First")) &&
@@ -5777,9 +5777,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
         
         #if canImport(ViewInspector)
-        if let inspected1 = button1.tryInspect(),
+        if let inspected1 = button1try? AnyView(self).inspect(),
            let button1ID = try? inspected1.accessibilityIdentifier(),
-           let inspected2 = button2.tryInspect(),
+           let inspected2 = button2try? AnyView(self).inspect(),
            let button2ID = try? inspected2.accessibilityIdentifier() {
             #expect(Bool(true), "AdaptiveButton implementation verified - item context needed for unique IDs in ForEach (design consideration)")
         } else {
@@ -5852,9 +5852,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         .enableGlobalAutomaticCompliance()
         
         #if canImport(ViewInspector)
-        if let inspected1 = card1.tryInspect(),
+        if let inspected1 = card1try? AnyView(self).inspect(),
            let card1ID = try? inspected1.accessibilityIdentifier(),
-           let inspected2 = card2.tryInspect(),
+           let inspected2 = card2try? AnyView(self).inspect(),
            let card2ID = try? inspected2.accessibilityIdentifier() {
             #expect((card1ID != card2ID) &&
                     (card1ID.contains("important") || card1ID.contains("card") || card1ID.contains("Important")),
@@ -5895,7 +5895,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         .enableGlobalAutomaticCompliance()
         
         #if canImport(ViewInspector)
-        if let inspected = listView.tryInspect() {
+        if let inspected = listViewtry? AnyView(self).inspect() {
             let viewID = try? inspected.accessibilityIdentifier()
             #expect(Bool(true), "Documenting requirement - ForEach items need unique identifiers")
         }
@@ -5925,9 +5925,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
         
         #if canImport(ViewInspector)
-        if let inspected1 = card1.tryInspect(),
+        if let inspected1 = card1try? AnyView(self).inspect(),
            let card1ID = try? inspected1.accessibilityIdentifier(),
-           let inspected2 = card2.tryInspect(),
+           let inspected2 = card2try? AnyView(self).inspect(),
            let card2ID = try? inspected2.accessibilityIdentifier() {
             #expect(card1ID != card2ID,
                    "CoverFlowCardComponent items with different titles should have different identifiers (implementation verified in code)")
@@ -5989,9 +5989,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
         
         #if canImport(ViewInspector)
-        if let inspected1 = card1.tryInspect(),
+        if let inspected1 = card1try? AnyView(self).inspect(),
            let card1ID = try? inspected1.accessibilityIdentifier(),
-           let inspected2 = card2.tryInspect(),
+           let inspected2 = card2try? AnyView(self).inspect(),
            let card2ID = try? inspected2.accessibilityIdentifier() {
             #expect(card1ID != card2ID,
                    "SimpleCardComponent items with different titles should have different identifiers (implementation verified in code)")
@@ -6028,9 +6028,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
         
         #if canImport(ViewInspector)
-        if let inspected1 = card1.tryInspect(),
+        if let inspected1 = card1try? AnyView(self).inspect(),
            let card1ID = try? inspected1.accessibilityIdentifier(),
-           let inspected2 = card2.tryInspect(),
+           let inspected2 = card2try? AnyView(self).inspect(),
            let card2ID = try? inspected2.accessibilityIdentifier() {
             #expect(card1ID != card2ID,
                    "MasonryCardComponent items with different titles should have different identifiers (implementation verified in code)")
@@ -6095,9 +6095,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
         
         #if canImport(ViewInspector)
-        if let inspected1 = card1.tryInspect(),
+        if let inspected1 = card1try? AnyView(self).inspect(),
            let card1ID = try? inspected1.accessibilityIdentifier(),
-           let inspected2 = card2.tryInspect(),
+           let inspected2 = card2try? AnyView(self).inspect(),
            let card2ID = try? inspected2.accessibilityIdentifier() {
             #expect(card1ID != card2ID,
                    "Grid items should have different identifiers based on their titles (implementation verified in code)")
@@ -6137,9 +6137,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
         
         #if canImport(ViewInspector)
-        if let inspected1 = card1.tryInspect(),
+        if let inspected1 = card1try? AnyView(self).inspect(),
            let card1ID = try? inspected1.accessibilityIdentifier(),
-           let inspected2 = card2.tryInspect(),
+           let inspected2 = card2try? AnyView(self).inspect(),
            let card2ID = try? inspected2.accessibilityIdentifier() {
             #expect(card1ID != card2ID,
                    "Cover flow items should have different identifiers (implementation verified in code)")
@@ -6176,9 +6176,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
         
         #if canImport(ViewInspector)
-        if let inspected1 = card1.tryInspect(),
+        if let inspected1 = card1try? AnyView(self).inspect(),
            let card1ID = try? inspected1.accessibilityIdentifier(),
-           let inspected2 = card2.tryInspect(),
+           let inspected2 = card2try? AnyView(self).inspect(),
            let card2ID = try? inspected2.accessibilityIdentifier() {
             #expect(card1ID != card2ID,
                    "Masonry collection items should have different identifiers (implementation verified in code)")
@@ -6256,15 +6256,15 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
         
         #if canImport(ViewInspector)
-        if let expandableInspected = expandableCard.tryInspect(),
+        if let expandableInspected = expandableCardtry? AnyView(self).inspect(),
            let expandableID = try? expandableInspected.accessibilityIdentifier(),
-           let listInspected = listCard.tryInspect(),
+           let listInspected = listCardtry? AnyView(self).inspect(),
            let listID = try? listInspected.accessibilityIdentifier(),
-           let simpleInspected = simpleCard.tryInspect(),
+           let simpleInspected = simpleCardtry? AnyView(self).inspect(),
            let simpleID = try? simpleInspected.accessibilityIdentifier(),
-           let coverFlowInspected = coverFlowCard.tryInspect(),
+           let coverFlowInspected = coverFlowCardtry? AnyView(self).inspect(),
            let coverFlowID = try? coverFlowInspected.accessibilityIdentifier(),
-           let masonryInspected = masonryCard.tryInspect(),
+           let masonryInspected = masonryCardtry? AnyView(self).inspect(),
            let masonryID = try? masonryInspected.accessibilityIdentifier() {
             #expect(expandableID.contains("test") || expandableID.contains("item") || expandableID.contains("Test"),
                    "ExpandableCardComponent should include item title (implementation verified in code)")
@@ -6313,9 +6313,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
         
         #if canImport(ViewInspector)
-        if let inspected1 = cardView1.tryInspect(),
+        if let inspected1 = cardView1try? AnyView(self).inspect(),
            let card1ID = try? inspected1.accessibilityIdentifier(),
-           let inspected2 = cardView2.tryInspect(),
+           let inspected2 = cardView2try? AnyView(self).inspect(),
            let card2ID = try? inspected2.accessibilityIdentifier() {
             #expect(card1ID != card2ID,
                    "ResponsiveCardView items with different titles should have different identifiers (implementation verified in code)")
@@ -6368,9 +6368,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
         
         #if canImport(ViewInspector)
-        if let inspected1 = card1.tryInspect(),
+        if let inspected1 = card1try? AnyView(self).inspect(),
            let card1ID = try? inspected1.accessibilityIdentifier(),
-           let inspected2 = card2.tryInspect(),
+           let inspected2 = card2try? AnyView(self).inspect(),
            let card2ID = try? inspected2.accessibilityIdentifier() {
             #expect(card1ID != card2ID,
                    "ResponsiveCardView items in collections should have different identifiers (implementation verified in code)")
@@ -6402,7 +6402,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
         
         #if canImport(ViewInspector)
-        if let inspected = tabStrip.tryInspect() {
+        if let inspected = tabStriptry? AnyView(self).inspect() {
             let stripID = try? inspected.accessibilityIdentifier()
             #expect(Bool(true), "Documenting requirement - PlatformTabStrip buttons need unique identifiers with item.title")
         }
@@ -6443,9 +6443,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         .enableGlobalAutomaticCompliance()
         
         #if canImport(ViewInspector)
-        if let homeInspected = homeButton.tryInspect(),
+        if let homeInspected = homeButtontry? AnyView(self).inspect(),
            let homeID = try? homeInspected.accessibilityIdentifier(),
-           let settingsInspected = settingsButton.tryInspect(),
+           let settingsInspected = settingsButtontry? AnyView(self).inspect(),
            let settingsID = try? settingsInspected.accessibilityIdentifier() {
             #expect(homeID != settingsID,
                    "PlatformTabStrip buttons with different titles should have different identifiers (implementation verified in code)")
@@ -6495,7 +6495,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
         
         #if canImport(ViewInspector)
-        if let inspected = fieldView.tryInspect(),
+        if let inspected = fieldViewtry? AnyView(self).inspect(),
            let fieldID = try? inspected.accessibilityIdentifier() {
             #expect(Bool(true), "Documenting requirement - Validation error rows need unique identifiers with error text")
         }
@@ -7933,7 +7933,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
         
         #if canImport(ViewInspector)
-        if let inspected = arrayField.tryInspect(),
+        if let inspected = arrayFieldtry? AnyView(self).inspect(),
            let arrayID = try? inspected.accessibilityIdentifier() {
             #expect(Bool(true), "Documenting requirement - Array field items need unique identifiers")
         }
@@ -7965,9 +7965,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
         
         #if canImport(ViewInspector)
-        if let inspected1 = row1.tryInspect(),
+        if let inspected1 = row1try? AnyView(self).inspect(),
            let row1ID = try? inspected1.accessibilityIdentifier(),
-           let inspected2 = row2.tryInspect(),
+           let inspected2 = row2try? AnyView(self).inspect(),
            let row2ID = try? inspected2.accessibilityIdentifier() {
             #expect(row1ID != row2ID,
                    "platformListRow items with different content should have different identifiers (implementation verified in code)")
@@ -8009,9 +8009,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         .enableGlobalAutomaticCompliance()
         
         #if canImport(ViewInspector)
-        if let inspected1 = header1.tryInspect(),
+        if let inspected1 = header1try? AnyView(self).inspect(),
            let header1ID = try? inspected1.accessibilityIdentifier(),
-           let inspected2 = header2.tryInspect(),
+           let inspected2 = header2try? AnyView(self).inspect(),
            let header2ID = try? inspected2.accessibilityIdentifier() {
             #expect(header1ID != header2ID,
                    "platformListSectionHeader with different titles should have different identifiers (implementation verified in code)")
@@ -8048,9 +8048,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         .enableGlobalAutomaticCompliance()
         
         #if canImport(ViewInspector)
-        if let inspected1 = field1.tryInspect(),
+        if let inspected1 = field1try? AnyView(self).inspect(),
            let field1ID = try? inspected1.accessibilityIdentifier(),
-           let inspected2 = field2.tryInspect(),
+           let inspected2 = field2try? AnyView(self).inspect(),
            let field2ID = try? inspected2.accessibilityIdentifier() {
             #expect(field1ID != field2ID,
                    "platformFormField with different labels should have different identifiers (implementation verified in code)")
@@ -8087,9 +8087,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         .enableGlobalAutomaticCompliance()
         
         #if canImport(ViewInspector)
-        if let inspected1 = group1.tryInspect(),
+        if let inspected1 = group1try? AnyView(self).inspect(),
            let group1ID = try? inspected1.accessibilityIdentifier(),
-           let inspected2 = group2.tryInspect(),
+           let inspected2 = group2try? AnyView(self).inspect(),
            let group2ID = try? inspected2.accessibilityIdentifier() {
             #expect(group1ID != group2ID,
                    "platformFormFieldGroup with different titles should have different identifiers (implementation verified in code)")
@@ -11024,7 +11024,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 
         // Should render proper UI structure
     #if canImport(ViewInspector)
-    if let inspected = view.tryInspect() {
+    if let inspected = viewtry? AnyView(self).inspect() {
         do {
             // Should have a VStack containing label and TextField
             let vStack = try inspected.vStack()
@@ -11095,7 +11095,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 
         // Should render proper numeric input UI
     #if canImport(ViewInspector)
-    if let inspected = view.tryInspect() {
+    if let inspected = viewtry? AnyView(self).inspect() {
         do {
             // Should have a VStack containing label and TextField
             let vStack = try inspected.vStack()
@@ -11172,7 +11172,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 
         // Should render proper multiline text input UI
     #if canImport(ViewInspector)
-    if let inspected = view.tryInspect() {
+    if let inspected = viewtry? AnyView(self).inspect() {
         do {
             // Should have a VStack containing label and TextEditor
             let vStack = try inspected.vStack()
@@ -11238,7 +11238,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 
         // Should render proper selection UI
     #if canImport(ViewInspector)
-    if let inspected = view.tryInspect() {
+    if let inspected = viewtry? AnyView(self).inspect() {
         do {
             // Should have a VStack containing label and Picker
             let vStack = try inspected.vStack()
@@ -11304,7 +11304,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 
         // Should render proper multiple selection UI
     #if canImport(ViewInspector)
-    if let inspected = view.tryInspect() {
+    if let inspected = viewtry? AnyView(self).inspect() {
         do {
             // Should have a VStack containing label and selection controls
             let vStack = try inspected.vStack()
@@ -11370,7 +11370,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 
         // Should render proper radio button group UI
     #if canImport(ViewInspector)
-    if let inspected = view.tryInspect() {
+    if let inspected = viewtry? AnyView(self).inspect() {
         do {
             // Should have a VStack containing label and radio controls
             let vStack = try inspected.vStack()
@@ -11435,7 +11435,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 
         // Should render proper toggle/checkbox UI
     #if canImport(ViewInspector)
-    if let inspected = view.tryInspect() {
+    if let inspected = viewtry? AnyView(self).inspect() {
         do {
             // Should have a VStack containing label and Toggle
             let vStack = try inspected.vStack()
@@ -11500,7 +11500,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 
         // Should render proper toggle UI
     #if canImport(ViewInspector)
-    if let inspected = view.tryInspect() {
+    if let inspected = viewtry? AnyView(self).inspect() {
         do {
             // Should have a VStack containing label and Toggle
             let vStack = try inspected.vStack()
@@ -12156,7 +12156,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         // Expect NO identifier when global config is disabled and no local enable is present
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
         #if canImport(ViewInspector)
-        if let inspectedView = view.tryInspect(),
+        if let inspectedView = viewtry? AnyView(self).inspect(),
            let text = try? inspectedView.sixLayerText(),
            let accessibilityID = try? text.accessibilityIdentifier() {
             #expect(accessibilityID.isEmpty, "Global disable without local enable should result in no accessibility identifier, got: '\(accessibilityID)'")
@@ -12229,7 +12229,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         // Try to inspect for accessibility identifier
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
         #if canImport(ViewInspector)
-        if let inspectedView = view.tryInspect(),
+        if let inspectedView = viewtry? AnyView(self).inspect(),
            let button = try? inspectedView.button(),
            let accessibilityID = try? button.accessibilityIdentifier() {
             // Should be empty when local disable is applied
@@ -14160,7 +14160,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     // Using wrapper - when ViewInspector works on macOS, no changes needed here
     #if canImport(ViewInspector)
-    if let inspectedView = view.tryInspect(),
+    if let inspectedView = viewtry? AnyView(self).inspect(),
        let vStackID = try? inspectedView.accessibilityIdentifier() {
         // This test SHOULD FAIL initially - contains duplicates like "container-container"
         #expect(!vStackID.contains("container-container"), "Should not contain duplicated hierarchy")
@@ -14198,7 +14198,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     // Using wrapper - when ViewInspector works on macOS, no changes needed here
     #if canImport(ViewInspector)
-    if let inspectedView = view.tryInspect(),
+    if let inspectedView = viewtry? AnyView(self).inspect(),
        let vStackID = try? inspectedView.accessibilityIdentifier() {
         // This test SHOULD FAIL initially - IDs are not semantic
         #expect(vStackID.contains("UserProfile"), "Should contain screen context")
@@ -14244,7 +14244,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     // Using wrapper - when ViewInspector works on macOS, no changes needed here
     #if canImport(ViewInspector)
-    if let inspectedView = view.tryInspect(),
+    if let inspectedView = viewtry? AnyView(self).inspect(),
        let vStackID = try? inspectedView.accessibilityIdentifier() {
         // This test SHOULD FAIL initially - complex hierarchies create massive IDs
         #expect(vStackID.count < 100, "Should handle complex hierarchies gracefully")
@@ -14277,8 +14277,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     #if canImport(ViewInspector)
     do {
-        if let submitInspected = submitButton.tryInspect(),
-           let cancelInspected = cancelButton.tryInspect() {
+        if let submitInspected = submitButtontry? AnyView(self).inspect(),
+           let cancelInspected = cancelButtontry? AnyView(self).inspect() {
             let submitID = try? submitInspected.accessibilityIdentifier()
             let cancelID = try? cancelInspected.accessibilityIdentifier()
             
@@ -14309,7 +14309,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     #if canImport(ViewInspector)
     do {
-        if let inspected = button.tryInspect() {
+        if let inspected = buttontry? AnyView(self).inspect() {
             let buttonID = try? inspected.accessibilityIdentifier()
             
             // TDD RED: Should FAIL - labels not sanitized
@@ -14622,7 +14622,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         
         #if canImport(ViewInspector)
         // Verify the view can be inspected (which means it was properly installed)
-        if let inspected = rootView.tryInspect() {
+        if let inspected = rootViewtry? AnyView(self).inspect() {
             // If we can inspect it, the environment was accessed correctly
             // (ViewInspector requires the view to be properly installed)
             let identifier = try? inspected.accessibilityIdentifier()
@@ -14659,7 +14659,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         // The modifier should use helper view pattern to defer environment access
         // We verify this by checking that the view works correctly when inspected
         #if canImport(ViewInspector)
-        if let inspected = view.tryInspect() {
+        if let inspected = viewtry? AnyView(self).inspect() {
             let identifier = try? inspected.accessibilityIdentifier()
             // TDD RED: Should PASS - environment should be accessed only when view is installed
             #expect(identifier != nil && !(identifier?.isEmpty ?? true), 
@@ -14701,21 +14701,21 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         // All should work without environment access warnings
         #if canImport(ViewInspector)
         // Handle each view separately to avoid Any type issues
-        if let inspected1 = view1.tryInspect() {
+        if let inspected1 = view1try? AnyView(self).inspect() {
             let identifier1 = try? inspected1.accessibilityIdentifier()
             #expect(Bool(true), "Modifier variant 1 should generate identifier without warnings")  // identifier1 is non-optional
         } else {
             Issue.record("Could not inspect view variant 1")
         }
         
-        if let inspected2 = view2.tryInspect() {
+        if let inspected2 = view2try? AnyView(self).inspect() {
             let identifier2 = try? inspected2.accessibilityIdentifier()
             #expect(Bool(true), "Modifier variant 2 should generate identifier without warnings")  // identifier2 is non-optional
         } else {
             Issue.record("Could not inspect view variant 2")
         }
         
-        if let inspected3 = view3.tryInspect() {
+        if let inspected3 = view3try? AnyView(self).inspect() {
             let identifier3 = try? inspected3.accessibilityIdentifier()
             #expect(Bool(true), "Modifier variant 3 should generate identifier without warnings")  // identifier3 is non-optional
         } else {
@@ -14746,10 +14746,10 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     .enableGlobalAutomaticCompliance()
     
     // Using wrapper - when ViewInspector works on macOS, no changes needed here
-    if let inspected1 = emptyState1.tryInspect(),
+    if let inspected1 = emptyState1try? AnyView(self).inspect(),
        let state1ID = try? inspected1.accessibilityIdentifier(),
 
-    let inspected2 = emptyState2.tryInspect(),
+    let inspected2 = emptyState2try? AnyView(self).inspect(),
        let state2ID = try? inspected2.accessibilityIdentifier() {
 
     // TODO: ViewInspector Detection Issue - VERIFIED: platformListEmptyState DOES pass label via .environment(\.accessibilityIdentifierLabel, title)
@@ -14785,10 +14785,10 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     .enableGlobalAutomaticCompliance()
     
     // Using wrapper - when ViewInspector works on macOS, no changes needed here
-    if let inspected1 = placeholder1.tryInspect(),
+    if let inspected1 = placeholder1try? AnyView(self).inspect(),
        let placeholder1ID = try? inspected1.accessibilityIdentifier(),
 
-    let inspected2 = placeholder2.tryInspect(),
+    let inspected2 = placeholder2try? AnyView(self).inspect(),
        let placeholder2ID = try? inspected2.accessibilityIdentifier() {
 
     // TODO: ViewInspector Detection Issue - VERIFIED: platformDetailPlaceholder DOES pass label via .environment(\.accessibilityIdentifierLabel, title)
@@ -14818,10 +14818,10 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         .enableGlobalAutomaticCompliance()
     
     // Using wrapper - when ViewInspector works on macOS, no changes needed here
-    if let inspected1 = button1.tryInspect(),
+    if let inspected1 = button1try? AnyView(self).inspect(),
        let button1ID = try? inspected1.accessibilityIdentifier(),
 
-    let inspected2 = button2.tryInspect(),
+    let inspected2 = button2try? AnyView(self).inspect(),
        let button2ID = try? inspected2.accessibilityIdentifier() {
 
     // TODO: ViewInspector Detection Issue - VERIFIED: ActionButton DOES pass label via .environment(\.accessibilityIdentifierLabel, title)
@@ -14858,10 +14858,10 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     .enableGlobalAutomaticCompliance()
     
     // Using wrapper - when ViewInspector works on macOS, no changes needed here
-    if let inspected1 = message1.tryInspect(),
+    if let inspected1 = message1try? AnyView(self).inspect(),
        let message1ID = try? inspected1.accessibilityIdentifier(),
 
-    let inspected2 = message2.tryInspect(),
+    let inspected2 = message2try? AnyView(self).inspect(),
        let message2ID = try? inspected2.accessibilityIdentifier() {
 
     // TODO: ViewInspector Detection Issue - VERIFIED: platformValidationMessage DOES pass label via .environment(\.accessibilityIdentifierLabel, message)
@@ -15663,7 +15663,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         // 2. Contains what it needs to contain - The view should NOT have an automatic accessibility identifier
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
         #if canImport(ViewInspector)
-        if let inspected1 = testView1.tryInspect(),
+        if let inspected1 = testView1try? AnyView(self).inspect(),
            let button1 = try? inspected1.button(),
            let accessibilityIdentifier1 = try? button1.accessibilityIdentifier() {
             #expect(accessibilityIdentifier1.isEmpty || !accessibilityIdentifier1.hasPrefix("test"), 

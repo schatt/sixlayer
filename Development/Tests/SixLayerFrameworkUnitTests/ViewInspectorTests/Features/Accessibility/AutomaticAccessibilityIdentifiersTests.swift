@@ -205,7 +205,7 @@ open class AutomaticAccessibilityIdentifiersTests: BaseTestClass {
             // The modifier should use helper view pattern to defer environment access
             // We verify this by checking that the view works correctly when inspected
             #if canImport(ViewInspector)
-            if let inspected = view.tryInspect() {
+            if let inspected = viewtry? AnyView(self).inspect() {
                 let identifier = try? inspected.accessibilityIdentifier()
                 // TDD RED: Should PASS - environment should be accessed only when view is installed
                 #expect(identifier != nil && !(identifier?.isEmpty ?? true), 
@@ -250,21 +250,21 @@ open class AutomaticAccessibilityIdentifiersTests: BaseTestClass {
             // All should work without environment access warnings
             #if canImport(ViewInspector)
             // Handle each view separately to avoid Any type issues
-            if let inspected1 = view1.tryInspect() {
+            if let inspected1 = view1try? AnyView(self).inspect() {
                 let identifier1 = try? inspected1.accessibilityIdentifier()
                 #expect(Bool(true), "Modifier variant 1 should generate identifier without warnings")  // identifier1 is non-optional
             } else {
                 Issue.record("Could not inspect view variant 1")
             }
             
-            if let inspected2 = view2.tryInspect() {
+            if let inspected2 = view2try? AnyView(self).inspect() {
                 let identifier2 = try? inspected2.accessibilityIdentifier()
                 #expect(Bool(true), "Modifier variant 2 should generate identifier without warnings")  // identifier2 is non-optional
             } else {
                 Issue.record("Could not inspect view variant 2")
             }
             
-            if let inspected3 = view3.tryInspect() {
+            if let inspected3 = view3try? AnyView(self).inspect() {
                 let identifier3 = try? inspected3.accessibilityIdentifier()
                 #expect(Bool(true), "Modifier variant 3 should generate identifier without warnings")  // identifier3 is non-optional
             } else {
