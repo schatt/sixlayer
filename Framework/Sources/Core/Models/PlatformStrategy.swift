@@ -176,6 +176,26 @@ public extension SixLayerPlatform {
         }
     }
     
+    // MARK: - Form Styling Properties
+    
+    /// Default form style preference for this platform
+    /// Returns a value indicating which FormStyle should be used
+    /// - iOS: grouped (matches iOS Settings app style)
+    /// - macOS: automatic (adapts to macOS conventions)
+    /// - watchOS/tvOS/visionOS: grouped (consistent grouped appearance)
+    /// 
+    /// Note: Due to Swift's type system limitations with `some FormStyle` and different
+    /// concrete types (GroupedFormStyle vs AutomaticFormStyle), the actual style
+    /// selection is done in the calling code using this preference.
+    var defaultFormStylePreference: FormStylePreference {
+        switch self {
+        case .iOS, .watchOS, .tvOS, .visionOS:
+            return .grouped
+        case .macOS:
+            return .automatic  // macOS default adapts to platform conventions
+        }
+    }
+    
     // MARK: - HIG Compliance Properties
     
     /// Whether this platform supports AssistiveTouch
@@ -357,5 +377,14 @@ public struct PlatformStrategy {
     public static func supportsAssistiveTouch(for platform: SixLayerPlatform) -> Bool {
         return platform.supportsAssistiveTouch
     }
+}
+
+// MARK: - Form Style Preference
+
+/// Form style preference enum for platform-specific form styling
+/// Used to determine which FormStyle to apply based on platform conventions
+public enum FormStylePreference {
+    case grouped
+    case automatic
 }
 
