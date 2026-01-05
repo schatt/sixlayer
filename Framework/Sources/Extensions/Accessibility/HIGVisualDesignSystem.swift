@@ -65,14 +65,8 @@ public struct HIGAnimationSystem {
     }
     
     private var defaultDuration: Double {
-        switch platform {
-        case .iOS:
-            return 0.3
-        case .macOS:
-            return 0.25
-        default:
-            return 0.25
-        }
+        // Use PlatformStrategy to reduce code duplication (Issue #140)
+        return platform.defaultAnimationDuration
     }
     
     private var defaultSpringResponse: Double {
