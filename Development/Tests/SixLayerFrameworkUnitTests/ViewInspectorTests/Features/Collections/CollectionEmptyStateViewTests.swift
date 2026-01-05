@@ -125,7 +125,8 @@ open class CollectionEmptyStateViewTests: BaseTestClass {
             #if canImport(ViewInspector)
             if let inspected = try? AnyView(view).inspect() {
                 // Find the message text in the VStack
-                if let vStack = inspected.findAll(ViewType.VStack.self) {
+                let vStacks = inspected.findAll(ViewType.VStack.self)
+                if let vStack = vStacks.first {
                     // The message should be in a Text view within the VStack
                     let texts = vStack.findAll(ViewType.Text.self)
                     let messageText = texts.first { text in
@@ -184,8 +185,8 @@ open class CollectionEmptyStateViewTests: BaseTestClass {
                 #expect(Bool(true), "Empty state should display create button when onCreateItem is provided")  // button is non-optional
                 
                 // Try to tap the button to verify it calls the callback
-                if let button = button {
-                    try? button.sixLayerTap()
+                if let button = buttons.first {
+                    try? button.tap()
                     #expect(createItemCalled, "Button tap should call onCreateItem callback")
                 }
             } else {
@@ -236,9 +237,9 @@ open class CollectionEmptyStateViewTests: BaseTestClass {
             #if canImport(ViewInspector)
             if let inspected = try? AnyView(view).inspect() {
                 // Find the empty state view
-                let emptyState = inspected.findAll(ViewType.VStack.self)
+                let emptyStates = inspected.findAll(ViewType.VStack.self)
                 
-                if let emptyState = emptyState {
+                if let emptyState = emptyStates.first {
                     // Check that custom message is displayed
                     let texts = emptyState.findAll(ViewType.Text.self)
                     let hasCustomMessage = texts.contains { text in
@@ -247,7 +248,7 @@ open class CollectionEmptyStateViewTests: BaseTestClass {
                     }
                     
                     // Check that create button exists (onCreateItem was provided)
-                    let button = emptyState.findAll(ViewType.Button.self)
+                    let buttons = emptyState.findAll(ViewType.Button.self)
                     
                     // TDD RED: Should FAIL if hints are overridden
                     #expect(hasCustomMessage, "Custom message should be displayed when hints are not overridden")
@@ -294,7 +295,8 @@ open class CollectionEmptyStateViewTests: BaseTestClass {
             // Using wrapper - when ViewInspector works on macOS, no changes needed here
             #if canImport(ViewInspector)
             if let inspected = try? AnyView(view).inspect() {
-                if let vStack = inspected.findAll(ViewType.VStack.self) {
+                let vStacks = inspected.findAll(ViewType.VStack.self)
+                if let vStack = vStacks.first {
                     let texts = vStack.findAll(ViewType.Text.self)
                     let messageText = texts.first { text in
                         let string = try? text.string()
