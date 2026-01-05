@@ -5,7 +5,19 @@ import SwiftUI
 @testable import SixLayerFramework
 
 // MARK: - Test Data Structures
-// Note: DemonstrationTestItem is defined in ConsolidatedAccessibilityTests.swift
+
+/// Test item for demonstration tests
+public struct DemonstrationTestItem: Identifiable {
+    public let id: String
+    public let title: String
+    public let subtitle: String?
+    
+    public init(id: String, title: String, subtitle: String? = nil) {
+        self.id = id
+        self.title = title
+        self.subtitle = subtitle
+    }
+}
 
 /**
  * BUSINESS PURPOSE: Demonstrate that SixLayer framework now automatically applies Apple HIG compliance
