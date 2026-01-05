@@ -572,6 +572,7 @@ public struct RuntimeCapabilityDetection {
     /// 
     /// Note: This checks platform availability, not whether the user has it enabled.
     /// Test overrides can simulate different platforms, but platform detection is authoritative for availability.
+    /// Uses PlatformStrategy to reduce code duplication (Issue #140)
     nonisolated public static var supportsAssistiveTouch: Bool {
         // Check for capability override first (allows testing different scenarios)
         // But availability is fundamentally based on platform
@@ -579,15 +580,8 @@ public struct RuntimeCapabilityDetection {
             return testValue
         }
         
-        // Platform availability: iOS and watchOS support AssistiveTouch
-        // Other platforms do not support it
-        let platform = currentPlatform
-        switch platform {
-        case .iOS, .watchOS:
-            return true  // Platform supports AssistiveTouch
-        case .macOS, .tvOS, .visionOS:
-            return false  // Platform does not support AssistiveTouch
-        }
+        // Platform availability: use PlatformStrategy for platform characteristic
+        return currentPlatform.supportsAssistiveTouch
     }
     
     // MARK: - Vision Framework Detection
