@@ -244,7 +244,6 @@ open class CollectionViewCallbackTests: BaseTestClass {
         // When: Simulating a tap using ViewInspector
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
         #if canImport(ViewInspector)
-        #if canImport(ViewInspector)
         do {
             try withInspectedViewThrowing(view) { inspector in
                 // Find text elements to verify the view structure (ListCardComponent is not inspectable)
