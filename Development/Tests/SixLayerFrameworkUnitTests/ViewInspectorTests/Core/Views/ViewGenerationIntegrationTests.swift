@@ -1039,12 +1039,14 @@ open class ViewGenerationIntegrationTests: BaseTestClass {
         
         // 2. Does that structure contain what it should?
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
-        if let _ = try? AnyView(touchView).inspect() {
+        let touchInspectionResult = try? AnyView(touchView).inspect()
+        if touchInspectionResult != nil {
             // Touch view should be inspectable
             #expect(Bool(true), "Touch view should be inspectable")
         }
 
-        if let _ = try? AnyView(hoverView).inspect() {
+        let hoverInspectionResult = try? AnyView(hoverView).inspect()
+        if hoverInspectionResult != nil {
             // Hover view should be inspectable
             #expect(Bool(true), "Hover view should be inspectable")
         }
@@ -1089,12 +1091,14 @@ open class ViewGenerationIntegrationTests: BaseTestClass {
         
         // 2. Does that structure contain what it should?
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
-        if let _ = try? AnyView(iOSView).inspect() {
+        let iOSInspectionResult = try? AnyView(iOSView).inspect()
+        if iOSInspectionResult != nil {
             // iOS view should be valid SwiftUI view
             #expect(Bool(true), "iOS view should be inspectable")
         }
 
-        if let _ = try? AnyView(macOSView).inspect() {
+        let macOSInspectionResult = try? AnyView(macOSView).inspect()
+        if macOSInspectionResult != nil {
             // macOS view should be valid SwiftUI view
             #expect(Bool(true), "macOS view should be inspectable")
         }
