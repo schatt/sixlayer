@@ -189,7 +189,7 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
             
             let view = platformVStackContainer {
                 Text("Content")
-            } } catch { Issue.record("View inspection failed: \(error)") }
+            }
                 .named("TestView")
             
             #if canImport(ViewInspector)
@@ -204,7 +204,7 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
                 }
             } catch {
                 Issue.record("Failed to inspect view with multiple contexts")
-            } } catch { Issue.record("View inspection failed: \(error)") }
+            }
             #else
             // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
             #endif
