@@ -18,6 +18,9 @@
 
 import Testing
 import SwiftUI
+#if canImport(ViewInspector)
+import ViewInspector
+#endif
 @testable import SixLayerFramework
 
 /// Test data item for Layer 1 accessibility tests
@@ -11044,11 +11047,11 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         do {
             // Should have a VStack containing label and TextField
             let vStack = try inspected.vStack()
-            let children = vStack.findAll(ViewInspector.ViewType.ClassifiedView.self)
+            let children = vStack.findAll(ViewInspector.ViewType.ClassifiedView.self, where: { _ in true })
             #expect(children.count >= 2, "Should have label and TextField")
 
                 // First element should be the label Text
-            let texts = vStack.findAll(ViewInspector.ViewType.Text.self)
+            let texts = vStack.findAll(ViewInspector.ViewType.Text.self, where: { _ in true })
             guard let labelText = texts.first else {
                 Issue.record("Could not find label text")
                 return
@@ -11056,7 +11059,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             #expect(try labelText.string() == "Full Name", "Label should show field label")
 
                 // Second element should be a TextField
-            let textFields = vStack.findAll(ViewInspector.ViewType.TextField.self)
+            let textFields = vStack.findAll(ViewInspector.ViewType.TextField.self, where: { _ in true })
             guard textFields.count > 0 else {
                 Issue.record("Could not find TextField")
                 return
@@ -11123,11 +11126,11 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         do {
             // Should have a VStack containing label and TextField
             let vStack = try inspected.vStack()
-            let children = vStack.findAll(ViewInspector.ViewType.ClassifiedView.self)
+            let children = vStack.findAll(ViewInspector.ViewType.ClassifiedView.self, where: { _ in true })
             #expect(children.count >= 2, "Should have label and TextField")
 
                 // First element should be the label Text
-            let texts = vStack.findAll(ViewInspector.ViewType.Text.self)
+            let texts = vStack.findAll(ViewInspector.ViewType.Text.self, where: { _ in true })
             guard let labelText = texts.first else {
                 Issue.record("Could not find label text")
                 return
@@ -11135,7 +11138,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             #expect(try labelText.string() == "Age", "Label should show field label")
 
                 // Second element should be a TextField with numeric keyboard
-            let textFields = vStack.findAll(ViewInspector.ViewType.TextField.self)
+            let textFields = vStack.findAll(ViewInspector.ViewType.TextField.self, where: { _ in true })
             guard let textField = textFields.first else {
                 Issue.record("Could not find TextField")
                 return
@@ -11211,7 +11214,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             #expect(vStack.count >= 2, "Should have label and TextEditor")
 
                 // First element should be the label Text
-            let texts = vStack.findAll(ViewInspector.ViewType.Text.self)
+            let texts = vStack.findAll(ViewInspector.ViewType.Text.self, where: { _ in true })
             guard let labelText = texts.first else {
                 Issue.record("Could not find label text")
                 return
@@ -11281,7 +11284,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             #expect(vStack.count >= 2, "Should have label and Picker")
 
                 // First element should be the label Text
-            let texts = vStack.findAll(ViewInspector.ViewType.Text.self)
+            let texts = vStack.findAll(ViewInspector.ViewType.Text.self, where: { _ in true })
             guard let labelText = texts.first else {
                 Issue.record("Could not find label text")
                 return
@@ -11351,7 +11354,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             #expect(vStack.count >= 2, "Should have label and selection controls")
 
                 // First element should be the label Text
-            let texts = vStack.findAll(ViewInspector.ViewType.Text.self)
+            let texts = vStack.findAll(ViewInspector.ViewType.Text.self, where: { _ in true })
             guard let labelText = texts.first else {
                 Issue.record("Could not find label text")
                 return
@@ -11418,10 +11421,10 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         do {
             // Should have a VStack containing label and radio controls
             let vStack = try inspected.vStack()
-            #expect(vStack.sixLayerCount >= 2, "Should have label and radio controls")
+            #expect(vStack.count >= 2, "Should have label and radio controls")
 
                 // First element should be the label Text
-            let texts = vStack.findAll(ViewInspector.ViewType.Text.self)
+            let texts = vStack.findAll(ViewInspector.ViewType.Text.self, where: { _ in true })
             guard let labelText = texts.first else {
                 Issue.record("Could not find label text")
                 return
@@ -11490,7 +11493,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             #expect(vStack.sixLayerCount >= 2, "Should have label and Toggle")
 
                 // First element should be the label Text
-            let texts = vStack.findAll(ViewInspector.ViewType.Text.self)
+            let texts = vStack.findAll(ViewInspector.ViewType.Text.self, where: { _ in true })
             guard let labelText = texts.first else {
                 Issue.record("Could not find label text")
                 return
@@ -11559,7 +11562,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             #expect(vStack.sixLayerCount >= 2, "Should have label and Toggle")
 
                 // First element should be the label Text
-            let texts = vStack.findAll(ViewInspector.ViewType.Text.self)
+            let texts = vStack.findAll(ViewInspector.ViewType.Text.self, where: { _ in true })
             guard let labelText = texts.first else {
                 Issue.record("Could not find label text")
                 return
@@ -12213,7 +12216,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
         #if canImport(ViewInspector)
         if let inspectedView = try? AnyView(view).inspect(),
-           let texts = inspectedView.findAll(ViewInspector.ViewType.Text.self),
+           let texts = inspectedView.findAll(ViewInspector.ViewType.Text.self, where: { _ in true }),
            let text = texts.first,
            let accessibilityID = try? text.accessibilityIdentifier() {
             #expect(accessibilityID.isEmpty, "Global disable without local enable should result in no accessibility identifier, got: '\(accessibilityID)'")
