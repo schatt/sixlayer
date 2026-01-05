@@ -257,7 +257,6 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
         
         // Then: Progress bar should show 0% initially
         #if canImport(ViewInspector)
-        #if canImport(ViewInspector)
         do {
             try withInspectedViewThrowing(view) { inspected in
                 let progressIndicator = findProgressIndicator(in: inspected)
