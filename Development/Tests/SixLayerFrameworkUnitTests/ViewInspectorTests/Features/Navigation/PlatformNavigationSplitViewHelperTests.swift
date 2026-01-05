@@ -284,7 +284,7 @@ open class PlatformNavigationSplitViewHelperTests: BaseTestClass {
         // The structure tests above verify the correct navigation pattern is used
         // This test just verifies the view is created successfully
         #if canImport(ViewInspector)
-        if try? AnyView(view).inspect() != nil {
+        if (try? AnyView(view).inspect()) != nil {
             // View is inspectable, which means it was created successfully
             #expect(Bool(true), "Navigation split view should be inspectable")
         } else {
@@ -315,7 +315,7 @@ open class PlatformNavigationSplitViewHelperTests: BaseTestClass {
         // The structure tests above verify the correct navigation pattern is used
         // This test just verifies the view is created successfully
         #if canImport(ViewInspector)
-        if try? AnyView(view).inspect() != nil {
+        if (try? AnyView(view).inspect()) != nil {
             // View is inspectable, which means it was created successfully
             #expect(Bool(true), "Navigation split view should be inspectable")
         } else {
