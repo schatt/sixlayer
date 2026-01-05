@@ -13910,7 +13910,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         // The view should automatically adapt to the current platform
         #expect(Bool(true), "Automatic platform patterns should be applied on \(currentPlatform)")
     }
-}
 
     @Test @MainActor func testPlatformPresentItemCollection_L1_AutomaticVisualConsistency() async {
         self.initializeTestConfig()
