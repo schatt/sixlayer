@@ -197,31 +197,29 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
         
         // Then: Progress indicator should show "0 of 3 fields"
         #if canImport(ViewInspector)
-        #if canImport(ViewInspector)
         do {
             try withInspectedViewThrowing(view) { inspected in
                 let progressIndicator = findProgressIndicator(in: inspected)
-            if let indicator = progressIndicator {
-                // Look for the text showing field count
-                let texts = indicator.findAll(ViewInspector.ViewType.Text.self)
-                let fieldCountText = texts.first { text in
-                    (try? text.string())?.contains("of") ?? false
-                }
-                
-                if let countText = fieldCountText {
-                    let textString = try? countText.string()
-                    #expect(textString?.contains("0 of 3") ?? false, "Should display '0 of 3 fields' for empty form")
-                    #expect(textString?.contains("field") ?? false, "Should contain 'field' text")
+                if let indicator = progressIndicator {
+                    // Look for the text showing field count
+                    let texts = indicator.findAll(ViewInspector.ViewType.Text.self)
+                    let fieldCountText = texts.first { text in
+                        (try? text.string())?.contains("of") ?? false
+                    }
+                    
+                    if let countText = fieldCountText {
+                        let textString = try? countText.string()
+                        #expect(textString?.contains("0 of 3") ?? false, "Should display '0 of 3 fields' for empty form")
+                        #expect(textString?.contains("field") ?? false, "Should contain 'field' text")
+                    } else {
+                        Issue.record("Could not find field count text in progress indicator")
+                    }
                 } else {
-                    Issue.record("Could not find field count text in progress indicator")
+                    Issue.record("Could not find progress indicator to verify field count")
                 }
-            } else {
-                Issue.record("Could not find progress indicator to verify field count")
             }
-        }
-        
-        if inspectionResult == nil {
-            Issue.record("View inspection failed - could not verify field count text")
+        } catch {
+            Issue.record("View inspection failed - could not verify field count text: \(error)")
         }
         #else
         // ViewInspector not available on macOS - verify view is created
@@ -263,22 +261,21 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
         do {
             try withInspectedViewThrowing(view) { inspected in
                 let progressIndicator = findProgressIndicator(in: inspected)
-            if let indicator = progressIndicator {
-                // Look for ProgressView
-                let progressViews = indicator.findAll(ViewInspector.ViewType.ProgressView.self)
-                let progressView = progressViews.first
-                #expect(progressView != nil, "Progress bar should be present")
-                
-                // Verify the structure contains expected elements
-                let texts = indicator.findAll(ViewInspector.ViewType.Text.self)
-                #expect(texts.count >= 2, "Progress indicator should have at least Progress title and field count text")
-            } else {
-                Issue.record("Could not find progress indicator to verify progress bar")
+                if let indicator = progressIndicator {
+                    // Look for ProgressView
+                    let progressViews = indicator.findAll(ViewInspector.ViewType.ProgressView.self)
+                    let progressView = progressViews.first
+                    #expect(progressView != nil, "Progress bar should be present")
+                    
+                    // Verify the structure contains expected elements
+                    let texts = indicator.findAll(ViewInspector.ViewType.Text.self)
+                    #expect(texts.count >= 2, "Progress indicator should have at least Progress title and field count text")
+                } else {
+                    Issue.record("Could not find progress indicator to verify progress bar")
+                }
             }
-        }
-        
-        if inspectionResult == nil {
-            Issue.record("View inspection failed - could not verify progress bar")
+        } catch {
+            Issue.record("View inspection failed - could not verify progress bar: \(error)")
         }
         #else
         // ViewInspector not available on macOS - verify view is created
