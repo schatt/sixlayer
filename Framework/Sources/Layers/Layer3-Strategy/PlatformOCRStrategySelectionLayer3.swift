@@ -142,30 +142,12 @@ private func requiresNeuralEngineForDocumentType(_ documentType: DocumentType) -
 }
 
 /// Determine processing mode for platform
+/// Uses PlatformStrategy to reduce code duplication (Issue #140)
 private func determineProcessingModeForPlatform(
     platform: SixLayerPlatform,
     requiresNeuralEngine: Bool
 ) -> OCRProcessingMode {
-    switch platform {
-    case .iOS:
-        if requiresNeuralEngine {
-            return .neural
-        } else {
-            return .standard
-        }
-    case .macOS:
-        if requiresNeuralEngine {
-            return .accurate // macOS doesn't have neural engine, use accurate mode
-        } else {
-            return .standard
-        }
-    case .watchOS:
-        return .fast // Limited processing power on watchOS
-    case .tvOS:
-        return .standard // Standard processing for tvOS
-    case .visionOS:
-        return .neural // visionOS can handle neural processing for spatial UI
-    }
+    return platform.defaultOCRProcessingMode(requiresNeuralEngine: requiresNeuralEngine)
 }
 
 /// Determine processing mode for document type
@@ -198,19 +180,9 @@ private func determineProcessingModeForDocumentType(
 }
 
 /// Get supported languages for platform
+/// Uses PlatformStrategy to reduce code duplication (Issue #140)
 private func getSupportedLanguagesForPlatform(_ platform: SixLayerPlatform) -> [OCRLanguage] {
-    switch platform {
-    case .iOS:
-        return [.english, .spanish, .french, .german, .italian, .portuguese, .chinese, .japanese, .korean, .arabic, .russian]
-    case .macOS:
-        return [.english, .spanish, .french, .german, .italian, .portuguese, .chinese, .japanese, .korean, .arabic, .russian]
-    case .watchOS:
-        return [.english, .spanish, .french, .german]
-    case .tvOS:
-        return [.english, .spanish, .french, .german]
-    case .visionOS:
-        return [.english, .spanish, .french, .german, .italian, .portuguese, .chinese, .japanese, .korean, .arabic, .russian]
-    }
+    return platform.supportedOCRLanguages
 }
 
 /// Get text types for document type
