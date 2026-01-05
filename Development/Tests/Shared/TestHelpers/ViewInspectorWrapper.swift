@@ -44,6 +44,6 @@ extension View where Self: ViewInspector.KnownViewType {
     /// Only available for views that conform to KnownViewType
     @MainActor
     func tryInspect() -> ViewInspector.InspectableView<Self>? {
-        return try? self.inspect()
+        return try? self.inspect() as ViewInspector.InspectableView<Self>
     }
 }
