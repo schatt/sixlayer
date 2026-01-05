@@ -43,7 +43,7 @@ extension View where Self: ViewInspector.KnownViewType {
     /// Try to inspect a view, returning nil if inspection fails
     /// Only available for views that conform to KnownViewType
     @MainActor
-    func tryInspect() -> InspectableView<Self>? {
+    func tryInspect() -> ViewInspector.InspectableView<Self>? {
         return try? self.inspect()
     }
 }
