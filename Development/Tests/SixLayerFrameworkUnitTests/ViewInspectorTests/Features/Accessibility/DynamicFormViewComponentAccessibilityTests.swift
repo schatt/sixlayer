@@ -484,7 +484,7 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
                 #expect(!vStacks.isEmpty, "Should contain at least one VStack")
 
                 if let vStack = vStacks.first {
-                    #expect(vStack.sixLayerCount >= 2, "Should have label and TextEditor")
+                    #expect(vStack.count >= 2, "Should have label and TextEditor")
 
                     // Look for text content anywhere in the VStack
                     let textElements = vStack.findAll(ViewType.Text.self)
@@ -563,7 +563,7 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
                 #expect(!vStacks.isEmpty, "Should contain at least one VStack")
 
                 if let vStack = vStacks.first {
-                    #expect(vStack.sixLayerCount >= 2, "Should have label and Picker")
+                    #expect(vStack.count >= 2, "Should have label and Picker")
 
                     // Look for text content anywhere in the VStack
                     let textElements = vStack.findAll(ViewType.Text.self)

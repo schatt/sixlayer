@@ -71,7 +71,7 @@ open class DynamicFormViewTests: BaseTestClass {
         let inspectionResult = withInspectedView(view) { inspected in
             // Should have a VStack as root
             let vStack = try inspected.vStack()
-            #expect(vStack.sixLayerCount >= 3, "Should have title, sections, and submit button")
+            #expect(vStack.count >= 3, "Should have title, sections, and submit button")
 
             // Should have accessibility identifier
             #if canImport(ViewInspector)
@@ -128,7 +128,7 @@ open class DynamicFormViewTests: BaseTestClass {
         let inspectionResult = withInspectedView(view) { inspected in
             // Should have a VStack with leading alignment
             let vStack = try inspected.vStack()
-            #expect(vStack.sixLayerCount >= 3, "Should have section title and field views")
+            #expect(vStack.count >= 3, "Should have section title and field views")
 
             // First element should be the section title
             let titleText = try vStack.sixLayerText(0)
@@ -189,7 +189,7 @@ open class DynamicFormViewTests: BaseTestClass {
         #if canImport(ViewInspector)
         let inspectionResult = withInspectedView(view) { inspected in
             let vStack = try inspected.vStack()
-            #expect(vStack.sixLayerCount >= 2, "Should have section title and fields")
+            #expect(vStack.count >= 2, "Should have section title and fields")
             
             // First element should be section title (Text, not DisclosureGroup)
             let titleText = try vStack.sixLayerText(0)
@@ -232,7 +232,7 @@ open class DynamicFormViewTests: BaseTestClass {
         #if canImport(ViewInspector)
         let inspectionResult = withInspectedView(view) { inspected in
             let vStack = try inspected.vStack()
-            #expect(vStack.sixLayerCount >= 2, "Should have field label and field control")
+            #expect(vStack.count >= 2, "Should have field label and field control")
             
             // Verify field has accessibility identifier
             let hasAccessibilityID = testComponentComplianceSinglePlatform(
@@ -281,7 +281,7 @@ open class DynamicFormViewTests: BaseTestClass {
         let inspectionResult = withInspectedView(view) { inspected in
             // Should have a VStack with leading alignment
             let vStack = try inspected.vStack()
-            #expect(vStack.sixLayerCount >= 2, "Should have field label and field control")
+            #expect(vStack.count >= 2, "Should have field label and field control")
 
             // First element should be the field label
             let labelText = try vStack.sixLayerText(0)
@@ -346,7 +346,7 @@ open class DynamicFormViewTests: BaseTestClass {
             let vStack = try inspected.vStack()
             // First element should be HStack containing label and asterisk
             let hStack = try vStack.sixLayerHStack(0)
-            #expect(hStack.sixLayerCount == 2, "HStack should contain label and asterisk")
+            #expect(hStack.count == 2, "HStack should contain label and asterisk")
             
             // First element should be the label
             let labelText = try hStack.sixLayerText(0)
@@ -395,7 +395,7 @@ open class DynamicFormViewTests: BaseTestClass {
             let vStack = try inspected.vStack()
             // First element should be HStack containing only label
             let hStack = try vStack.sixLayerHStack(0)
-            #expect(hStack.sixLayerCount == 1, "Optional field HStack should only have label (no asterisk)")
+            #expect(hStack.count == 1, "Optional field HStack should only have label (no asterisk)")
             
             // First element should be the label
             let labelText = try hStack.sixLayerText(0)
@@ -525,7 +525,7 @@ open class DynamicFormViewTests: BaseTestClass {
             // First element should be HStack containing label and info button
             let hStack = try vStack.sixLayerHStack(0)
             // Should have at least label and info button (may also have asterisk if required)
-            #expect(hStack.sixLayerCount >= 2, "HStack should contain label and info button")
+            #expect(hStack.count >= 2, "HStack should contain label and info button")
             
             // Should have info button (Button with Image)
             // Note: ViewInspector may not be able to directly inspect Button content,
@@ -571,7 +571,7 @@ open class DynamicFormViewTests: BaseTestClass {
             // First element should be HStack containing only label
             let hStack = try vStack.sixLayerHStack(0)
             // Should only have label (no info button, no asterisk since not required)
-            #expect(hStack.sixLayerCount == 1, "HStack should only have label when no description")
+            #expect(hStack.count == 1, "HStack should only have label when no description")
         }
         
         if inspectionResult == nil {
@@ -656,7 +656,7 @@ open class DynamicFormViewTests: BaseTestClass {
             // Should not have description text as a separate Text element
             // Description should only be in popover/tooltip, not as visible text
             // We verify by checking that description text is not in the VStack children
-            let childCount = vStack.sixLayerCount
+            let childCount = vStack.count
             // Should have: label HStack, field input, possibly validation errors
             // Should NOT have description Text element
             #expect(childCount >= 2, "Should have at least label and input")
@@ -707,7 +707,7 @@ open class DynamicFormViewTests: BaseTestClass {
         if let inspected = try? AnyView(view).inspect() {
             // Should have a VStack
             if let vStack = try? inspected.vStack() {
-                #expect(vStack.sixLayerCount >= 2, "Should have content and navigation")
+                #expect(vStack.count >= 2, "Should have content and navigation")
             }
 
             // Should have accessibility identifier
