@@ -1,5 +1,8 @@
 import Testing
 import SwiftUI
+#if canImport(ViewInspector)
+import ViewInspector
+#endif
 @testable import SixLayerFramework
 
 /**
@@ -166,7 +169,7 @@ open class FormWizardViewTDDTests: BaseTestClass {
         #if canImport(ViewInspector)
         if let inspected = try? AnyView(view).inspect() {
             // Should find navigation buttons
-            let buttons = inspected.findAll(Button<Text>.self)
+            let buttons = inspected.findAll(ViewType.Button.self)
             if buttons.count > 0 {
                 let hasNextButton = buttons.contains { button in
                     (try? button.accessibilityIdentifier())?.contains("Next") ?? false
@@ -230,7 +233,8 @@ open class FormWizardViewTDDTests: BaseTestClass {
         // Should show step information
         if let inspected = try? AnyView(view).inspect() {
             // Should display step information
-            let hasStepInfo = inspected.sixLayerCount > 0
+            let texts = inspected.findAll(ViewType.Text.self)
+            let hasStepInfo = !texts.isEmpty
             #expect(hasStepInfo, "Should display step information")
         } else {
             #if canImport(ViewInspector)
