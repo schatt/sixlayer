@@ -27,11 +27,11 @@ public func withInspectedViewThrowing<V: View, R>(
 /// Safely inspect a view and execute a closure, returning nil on failure
 /// This is the non-throwing version that returns nil when inspection fails
 @MainActor
-public func withInspectedView<V: View & ViewInspector.KnownViewType, R>(
+public func withInspectedView<V: View, R>(
     _ view: V,
-    perform: (InspectableView<V>) -> R?
+    perform: (ViewInspector.InspectableView<ViewInspector.ViewType.ClassifiedView>) -> R?
 ) -> R? {
-    guard let inspected = try? view.inspect() else {
+    guard let inspected = try? AnyView(view).inspect() else {
         return nil
     }
     return perform(inspected)
