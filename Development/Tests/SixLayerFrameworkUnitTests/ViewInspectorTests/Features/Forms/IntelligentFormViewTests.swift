@@ -101,7 +101,8 @@ open class IntelligentFormViewTests: BaseTestClass {
                 // Find the Update button
                 let buttons = inspected.findAll(ViewType.Button.self)
                 let updateButton = buttons.first { button in
-                    let text = try? button.sixLayerText().string()
+                    let buttonTexts = button.findAll(ViewInspector.ViewType.Text.self)
+                    let text = buttonTexts.first.flatMap { try? $0.string() }
                     return text?.lowercased().contains("update") ?? false
                 }
 
@@ -151,7 +152,8 @@ open class IntelligentFormViewTests: BaseTestClass {
             if let inspected = try? AnyView(view).inspect() {
                 let buttons = inspected.findAll(ViewType.Button.self)
                 let updateButton = buttons.first { button in
-                    let text = try? button.sixLayerText().string()
+                    let buttonTexts = button.findAll(ViewInspector.ViewType.Text.self)
+                    let text = buttonTexts.first.flatMap { try? $0.string() }
                     return text?.lowercased().contains("update") ?? false
                 }
 
@@ -200,7 +202,8 @@ open class IntelligentFormViewTests: BaseTestClass {
             if let inspected = try? AnyView(view).inspect() {
                 let buttons = inspected.findAll(ViewType.Button.self)
                 let updateButton = buttons.first { button in
-                    let text = try? button.sixLayerText().string()
+                    let buttonTexts = button.findAll(ViewInspector.ViewType.Text.self)
+                    let text = buttonTexts.first.flatMap { try? $0.string() }
                     return text?.lowercased().contains("update") ?? false
                 }
 
