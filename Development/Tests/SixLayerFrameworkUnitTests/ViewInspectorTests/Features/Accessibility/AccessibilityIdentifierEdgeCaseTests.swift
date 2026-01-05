@@ -23,18 +23,18 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
             
             let view = PlatformInteractionButton(style: .primary, action: {}) {
                 platformPresentContent_L1(content: "Test", hints: PresentationHints())
-            }
+            } } catch { Issue.record("View inspection failed: \(error)") }
                 .named("")  // ← Empty string
             
             // Using wrapper - when ViewInspector works on macOS, no changes needed here
             #if canImport(ViewInspector)
-            withInspectedView(view) { inspected in
+            do { try withInspectedViewThrowing(view) { inspected in
                 let buttonID = try inspected.accessibilityIdentifier()
                 // Should handle empty strings gracefully
                 #expect(!buttonID.isEmpty, "Should generate ID even with empty parameters")
                 #expect(buttonID.contains("SixLayer"), "Should contain namespace")
 
-            }
+            } } catch { Issue.record("View inspection failed: \(error)") }
             #else
             // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
             #endif
@@ -51,19 +51,19 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
             // Test: How are special characters handled in names?
             let view = PlatformInteractionButton(style: .primary, action: {}) {
                 platformPresentContent_L1(content: "Test", hints: PresentationHints())
-            }
+            } } catch { Issue.record("View inspection failed: \(error)") }
                 .named("Button@#$%^&*()")  // ← Special characters
             
             // Using wrapper - when ViewInspector works on macOS, no changes needed here
             #if canImport(ViewInspector)
-            withInspectedView(view) { inspected in
+            do { try withInspectedViewThrowing(view) { inspected in
                 let buttonID = try inspected.accessibilityIdentifier()
                 // Should preserve special characters (no sanitization)
                 #expect(!buttonID.isEmpty, "Should generate ID with special characters")
                 #expect(buttonID.contains("SixLayer"), "Should contain namespace")
                 #expect(buttonID.contains("@#$%^&*()"), "Should preserve special characters")
 
-            }
+            } } catch { Issue.record("View inspection failed: \(error)") }
             #else
             // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
             #endif
@@ -81,13 +81,13 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
             let longName = String(repeating: "VeryLongName", count: 50)  // 600+ chars
             let view = PlatformInteractionButton(style: .primary, action: {}) {
                 platformPresentContent_L1(content: "Test", hints: PresentationHints())
-            }
+            } } catch { Issue.record("View inspection failed: \(error)") }
                 .named(longName)
                 .enableGlobalAutomaticCompliance()
             
             // Using wrapper - when ViewInspector works on macOS, no changes needed here
             #if canImport(ViewInspector)
-            withInspectedView(view) { inspected in
+            do { try withInspectedViewThrowing(view) { inspected in
                 let buttonID = try inspected.accessibilityIdentifier()
                 // Should handle long names gracefully
                 #expect(!buttonID.isEmpty, "Should generate ID with very long names")
@@ -100,7 +100,7 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
                     print("   ID: '\(buttonID)'")
                 } else {
                 }
-            }
+            } } catch { Issue.record("View inspection failed: \(error)") }
             #else
             // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
             #endif
@@ -119,17 +119,17 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
                 // Test action
             }) {
                 Text("Test")
-            }
+            } } catch { Issue.record("View inspection failed: \(error)") }
                 .accessibilityIdentifier("manual-override")  // ← Manual override
             
             // Using wrapper - when ViewInspector works on macOS, no changes needed here
             #if canImport(ViewInspector)
-            withInspectedView(view) { inspected in
+            do { try withInspectedViewThrowing(view) { inspected in
                 let buttonID = try inspected.accessibilityIdentifier()
                 // Manual ID should override automatic ID
                 #expect(buttonID == "manual-override", "Manual ID should override automatic ID")
                 
-            }
+            } } catch { Issue.record("View inspection failed: \(error)") }
             #else
             // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
             #endif
@@ -152,7 +152,7 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
                 Button("Manual") { }
                     .named("ManualButton")
                     .disableAutomaticAccessibilityIdentifiers()  // ← Disable mid-hierarchy
-            }
+            } } catch { Issue.record("View inspection failed: \(error)") }
             
             #if canImport(ViewInspector)
             do {
@@ -173,7 +173,7 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
                 }
             } catch {
                 Issue.record("Failed to inspect view with mid-hierarchy disable")
-            }
+            } } catch { Issue.record("View inspection failed: \(error)") }
             #else
             // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
             #endif
@@ -189,7 +189,7 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
             
             let view = platformVStackContainer {
                 Text("Content")
-            }
+            } } catch { Issue.record("View inspection failed: \(error)") }
                 .named("TestView")
             
             #if canImport(ViewInspector)
@@ -204,7 +204,7 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
                 }
             } catch {
                 Issue.record("Failed to inspect view with multiple contexts")
-            }
+            } } catch { Issue.record("View inspection failed: \(error)") }
             #else
             // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
             #endif
@@ -221,13 +221,13 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
             // Test: Does exactNamed() use exact names without hierarchy?
             let view1 = PlatformInteractionButton(style: .primary, action: {}) {
                 platformPresentContent_L1(content: "Test1", hints: PresentationHints())
-            }
+            } } catch { Issue.record("View inspection failed: \(error)") }
                 .exactNamed("SameName")
                 .enableGlobalAutomaticCompliance()
             
             let view2 = PlatformInteractionButton(style: .primary, action: {}) {
                 platformPresentContent_L1(content: "Test2", hints: PresentationHints())
-            }
+            } } catch { Issue.record("View inspection failed: \(error)") }
                 .exactNamed("SameName")  // ← Same exact name
                 .enableGlobalAutomaticCompliance()
             
@@ -247,7 +247,7 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
                 
             } catch {
                 Issue.record("Failed to inspect exactNamed views")
-            }
+            } } catch { Issue.record("View inspection failed: \(error)") }
             #else
             // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
             #endif
@@ -286,7 +286,7 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
                 
             } catch {
                 Issue.record("Failed to inspect exactNamed vs named views")
-            }
+            } } catch { Issue.record("View inspection failed: \(error)") }
             #else
             // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
             #endif
@@ -302,7 +302,7 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
             guard let config = testConfig else {
                 Issue.record("testConfig is nil")
                 return
-            }
+            } } catch { Issue.record("View inspection failed: \(error)") }
             config.pushViewHierarchy("NavigationView")
             config.pushViewHierarchy("ProfileSection")
             config.setScreenContext("UserProfile")
@@ -327,7 +327,7 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
                 }
             } catch {
                 Issue.record("Failed to inspect exactNamed with hierarchy")
-            }
+            } } catch { Issue.record("View inspection failed: \(error)") }
             #else
             // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
             #endif
@@ -357,7 +357,7 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
                 }
             } catch {
                 Issue.record("Failed to inspect exactNamed minimal")
-            }
+            } } catch { Issue.record("View inspection failed: \(error)") }
             #else
             // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
             #endif
@@ -378,11 +378,11 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
                 
                 return
                 
-            }
+            } } catch { Issue.record("View inspection failed: \(error)") }
             
             let view = PlatformInteractionButton(style: .primary, action: {}) {
                 platformPresentContent_L1(content: "Test", hints: PresentationHints())
-            }
+            } } catch { Issue.record("View inspection failed: \(error)") }
                 .named("TestButton")
                 .enableGlobalAutomaticCompliance()
             
@@ -401,7 +401,7 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
                 }
             } catch {
                 Issue.record("Failed to inspect view with config changes")
-            }
+            } } catch { Issue.record("View inspection failed: \(error)") }
             #else
             // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
             #endif
@@ -423,14 +423,14 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
                         .enableGlobalAutomaticCompliance()
                 }
                 .named("Nested")
-            }
+            } } catch { Issue.record("View inspection failed: \(error)") }
                 .named("Outer")
                 .named("VeryOuter")  // ← Multiple .named() calls
             
             #if canImport(ViewInspector)
             do {
                 try withInspectedViewThrowing(view) { inspectedView in
-                    let button = try inspectedView.sixLayerFind(ViewType.Button.self)
+                    let button = try inspectedView.findAll(ViewType.Button.self).first
                     let buttonID = try button.accessibilityIdentifier()
                     
                     // Should handle nested calls without duplication
@@ -441,7 +441,7 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
                 }
             } catch {
                 Issue.record("Failed to inspect view with nested .named() calls")
-            }
+            } } catch { Issue.record("View inspection failed: \(error)") }
             #else
             // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
             #endif
@@ -458,7 +458,7 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
             // Test: How are Unicode characters handled?
             let view = PlatformInteractionButton(style: .primary, action: {}) {
                 platformPresentContent_L1(content: "Test", hints: PresentationHints())
-            }
+            } } catch { Issue.record("View inspection failed: \(error)") }
                 .named("按钮")  // ← Chinese characters
             
             #if canImport(ViewInspector)
@@ -473,7 +473,7 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
                 }
             } catch {
                 Issue.record("Failed to inspect view with Unicode characters")
-            }
+            } } catch { Issue.record("View inspection failed: \(error)") }
             #else
             // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
             #endif
