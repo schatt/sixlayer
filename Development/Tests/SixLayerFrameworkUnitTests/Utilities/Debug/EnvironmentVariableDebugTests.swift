@@ -1,6 +1,7 @@
 import Testing
-
-
+#if canImport(ViewInspector)
+import ViewInspector
+#endif
 import SwiftUI
 @testable import SixLayerFramework
 /// Debug test to understand environment variable propagation
