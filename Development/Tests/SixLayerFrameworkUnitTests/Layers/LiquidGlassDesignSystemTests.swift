@@ -175,7 +175,7 @@ struct LiquidGlassDesignSystemTests {
         
         // Given
         let liquidGlassSystem = LiquidGlassDesignSystem.shared
-        let control = FloatingControl(
+        var control = FloatingControl(
             type: .navigation,
             position: .top,
             material: liquidGlassSystem.createMaterial(.primary)
@@ -224,7 +224,7 @@ struct LiquidGlassDesignSystemTests {
         
         // Given
         let liquidGlassSystem = LiquidGlassDesignSystem.shared
-        let menu = ContextualMenu(
+        var menu = ContextualMenu(
             items: [
                 ContextualMenuItem(title: "Edit", action: {})
             ],
@@ -247,7 +247,7 @@ struct LiquidGlassDesignSystemTests {
         
         // Given
         let liquidGlassSystem = LiquidGlassDesignSystem.shared
-        let menu = ContextualMenu(
+        var menu = ContextualMenu(
             items: [
                 ContextualMenuItem(title: "Edit", action: {})
             ],
