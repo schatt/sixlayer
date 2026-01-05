@@ -23,7 +23,7 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
             
             let view = PlatformInteractionButton(style: .primary, action: {}) {
                 platformPresentContent_L1(content: "Test", hints: PresentationHints())
-            } } catch { Issue.record("View inspection failed: \(error)") }
+            }
                 .named("")  // ← Empty string
             
             // Using wrapper - when ViewInspector works on macOS, no changes needed here
@@ -51,7 +51,7 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
             // Test: How are special characters handled in names?
             let view = PlatformInteractionButton(style: .primary, action: {}) {
                 platformPresentContent_L1(content: "Test", hints: PresentationHints())
-            } } catch { Issue.record("View inspection failed: \(error)") }
+            }
                 .named("Button@#$%^&*()")  // ← Special characters
             
             // Using wrapper - when ViewInspector works on macOS, no changes needed here
@@ -81,7 +81,7 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
             let longName = String(repeating: "VeryLongName", count: 50)  // 600+ chars
             let view = PlatformInteractionButton(style: .primary, action: {}) {
                 platformPresentContent_L1(content: "Test", hints: PresentationHints())
-            } } catch { Issue.record("View inspection failed: \(error)") }
+            }
                 .named(longName)
                 .enableGlobalAutomaticCompliance()
             
@@ -119,7 +119,7 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
                 // Test action
             }) {
                 Text("Test")
-            } } catch { Issue.record("View inspection failed: \(error)") }
+            }
                 .accessibilityIdentifier("manual-override")  // ← Manual override
             
             // Using wrapper - when ViewInspector works on macOS, no changes needed here
@@ -152,7 +152,7 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
                 Button("Manual") { }
                     .named("ManualButton")
                     .disableAutomaticAccessibilityIdentifiers()  // ← Disable mid-hierarchy
-            } } catch { Issue.record("View inspection failed: \(error)") }
+            }
             
             #if canImport(ViewInspector)
             do {
@@ -173,7 +173,7 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
                 }
             } catch {
                 Issue.record("Failed to inspect view with mid-hierarchy disable")
-            } } catch { Issue.record("View inspection failed: \(error)") }
+            }
             #else
             // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
             #endif
