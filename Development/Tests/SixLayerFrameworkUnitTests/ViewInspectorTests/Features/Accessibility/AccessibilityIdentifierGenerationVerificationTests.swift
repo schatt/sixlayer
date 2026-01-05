@@ -1,5 +1,8 @@
 import Testing
 import SwiftUI
+#if canImport(ViewInspector)
+import ViewInspector
+#endif
 @testable import SixLayerFramework
 /**
  * BUSINESS PURPOSE: Verify that accessibility identifier generation actually works end-to-end
