@@ -56,6 +56,19 @@ public enum TestPatterns {
         }
     }
     
+    /// Test item for demonstration tests (used by both unit tests and ViewInspector tests)
+    public struct DemonstrationTestItem: Identifiable {
+        public let id: String
+        public let title: String
+        public let subtitle: String?
+        
+        public init(id: String, title: String, subtitle: String? = nil) {
+            self.id = id
+            self.title = title
+            self.subtitle = subtitle
+        }
+    }
+    
     /// View information for testing
     public struct ViewInfo {
         public let name: String

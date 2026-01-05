@@ -51,17 +51,8 @@ fileprivate struct MockTaskItemBaseline: Identifiable {
 }
 
 /// Test item for demonstrations
-public struct DemonstrationTestItem: Identifiable {
-    public let id: String
-    let title: String
-    let subtitle: String
-
-    public init(id: String, title: String, subtitle: String) {
-        self.id = id
-        self.title = title
-        self.subtitle = subtitle
-    }
-}
+// Note: Now defined in TestPatterns.swift (shared location)
+// Use TestPatterns.DemonstrationTestItem instead
 
 /// Test item for card components
 fileprivate struct CardTestItem: Identifiable {

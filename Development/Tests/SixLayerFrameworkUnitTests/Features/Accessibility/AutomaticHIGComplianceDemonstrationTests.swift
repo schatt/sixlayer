@@ -5,19 +5,7 @@ import SwiftUI
 @testable import SixLayerFramework
 
 // MARK: - Test Data Structures
-
-/// Test item for demonstration tests
-public struct DemonstrationTestItem: Identifiable {
-    public let id: String
-    public let title: String
-    public let subtitle: String?
-    
-    public init(id: String, title: String, subtitle: String? = nil) {
-        self.id = id
-        self.title = title
-        self.subtitle = subtitle
-    }
-}
+// Note: DemonstrationTestItem is defined in TestPatterns.swift (shared location)
 
 /**
  * BUSINESS PURPOSE: Demonstrate that SixLayer framework now automatically applies Apple HIG compliance
@@ -52,8 +40,8 @@ open class AutomaticHIGComplianceDemonstrationTests: BaseTestClass {
 
         // NEW WAY (what developers do now):
         let testItems = [
-            DemonstrationTestItem(id: "1", title: "Test Item 1", subtitle: "Subtitle 1"),
-            DemonstrationTestItem(id: "2", title: "Test Item 2", subtitle: "Subtitle 2")
+            TestPatterns.DemonstrationTestItem(id: "1", title: "Test Item 1", subtitle: "Subtitle 1"),
+            TestPatterns.DemonstrationTestItem(id: "2", title: "Test Item 2", subtitle: "Subtitle 2")
         ]
         let testHints = PresentationHints(
             dataType: .generic,
@@ -83,8 +71,8 @@ open class AutomaticHIGComplianceDemonstrationTests: BaseTestClass {
         initializeTestConfig()
         // Setup test data
         let testItems = [
-            DemonstrationTestItem(id: "1", title: "Test Item 1", subtitle: "Subtitle 1"),
-            DemonstrationTestItem(id: "2", title: "Test Item 2", subtitle: "Subtitle 2")
+            TestPatterns.DemonstrationTestItem(id: "1", title: "Test Item 1", subtitle: "Subtitle 1"),
+            TestPatterns.DemonstrationTestItem(id: "2", title: "Test Item 2", subtitle: "Subtitle 2")
         ]
         let testHints = PresentationHints()
 
@@ -130,8 +118,8 @@ open class AutomaticHIGComplianceDemonstrationTests: BaseTestClass {
             initializeTestConfig()
         // Setup test data
         let testItems = [
-            DemonstrationTestItem(id: "1", title: "Test Item 1", subtitle: "Subtitle 1"),
-            DemonstrationTestItem(id: "2", title: "Test Item 2", subtitle: "Subtitle 2")
+            TestPatterns.DemonstrationTestItem(id: "1", title: "Test Item 1", subtitle: "Subtitle 1"),
+            TestPatterns.DemonstrationTestItem(id: "2", title: "Test Item 2", subtitle: "Subtitle 2")
         ]
         let testHints = PresentationHints()
 
@@ -153,8 +141,8 @@ open class AutomaticHIGComplianceDemonstrationTests: BaseTestClass {
     @Test @MainActor func testDemonstrateAllLayer1FunctionsHaveAutomaticCompliance() {
         // Setup test data
         let testItems = [
-            DemonstrationTestItem(id: "1", title: "Test Item 1", subtitle: "Subtitle 1"),
-            DemonstrationTestItem(id: "2", title: "Test Item 2", subtitle: "Subtitle 2")
+            TestPatterns.DemonstrationTestItem(id: "1", title: "Test Item 1", subtitle: "Subtitle 1"),
+            TestPatterns.DemonstrationTestItem(id: "2", title: "Test Item 2", subtitle: "Subtitle 2")
         ]
         let testHints = PresentationHints()
 
