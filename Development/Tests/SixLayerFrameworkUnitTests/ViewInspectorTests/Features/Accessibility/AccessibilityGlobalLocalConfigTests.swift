@@ -1,6 +1,7 @@
 import Testing
-
-
+#if canImport(ViewInspector)
+import ViewInspector
+#endif
 import SwiftUI
 @testable import SixLayerFramework
 /// Test that accessibility functions respect both global and local configuration options
