@@ -20,7 +20,7 @@ final class Layer2ComponentAccessibilityTests {
             TestPatterns.TestItem(id: "item2", title: "Test Item 2"),
             TestPatterns.TestItem(id: "item3", title: "Test Item 3")
         ]
-        _ = PresentationHints()
+        let hints = PresentationHints()
         
         // When: Creating layout decision using Layer 2 function
         let layoutDecision = determineOptimalLayout_L2(
