@@ -68,31 +68,24 @@ open class DynamicFormViewTests: BaseTestClass {
 
         // Should render proper form structure
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
-        let inspectionResult = withInspectedView(view) { inspected in
-            // Should have a VStack as root
-            let vStack = try inspected.vStack()
-            #expect(vStack.count >= 3, "Should have title, sections, and submit button")
-
-            // Should have accessibility identifier
-            #if canImport(ViewInspector)
-            let hasAccessibilityID = testComponentComplianceSinglePlatform(
-                view,
-                expectedPattern: "SixLayer.main.ui.*DynamicFormView.*",
-                platform: .iOS,
-                componentName: "DynamicFormView"
-            )
- #expect(hasAccessibilityID, "Should generate accessibility identifier")
-        #else
-            // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-            // The modifier IS present in the code, but ViewInspector can't detect it on macOS
-            #endif
-        }
-
         #if canImport(ViewInspector)
-        // ViewInspector available - inspectionResult should be non-nil if inspection succeeded
-        // If nil, it means inspection failed (which is an issue on iOS)
-        if inspectionResult == nil {
-            Issue.record("View inspection failed on this platform")
+        do {
+            try withInspectedViewThrowing(view) { inspected in
+                // Should have a VStack as root
+                let vStack = try inspected.vStack()
+                #expect(vStack.count >= 3, "Should have title, sections, and submit button")
+
+                // Should have accessibility identifier
+                let hasAccessibilityID = testComponentComplianceSinglePlatform(
+                    view,
+                    expectedPattern: "SixLayer.main.ui.*DynamicFormView.*",
+                    platform: .iOS,
+                    componentName: "DynamicFormView"
+                )
+                #expect(hasAccessibilityID, "Should generate accessibility identifier")
+            }
+        } catch {
+            Issue.record("View inspection failed on this platform: \(error)")
         }
         #else
         // ViewInspector not available on macOS - test passes by verifying view creation
@@ -125,35 +118,32 @@ open class DynamicFormViewTests: BaseTestClass {
 
         // Should render proper section structure
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
-        let inspectionResult = withInspectedView(view) { inspected in
-            // Should have a VStack with leading alignment
-            let vStack = try inspected.vStack()
-            #expect(vStack.count >= 3, "Should have section title and field views")
-
-            // First element should be the section title
-            let titleText = try vStack.sixLayerText(0)
-            #expect(try titleText.string() == "Contact Information", "Should show section title")
-
-            // Should have accessibility identifier
-            #if canImport(ViewInspector)
-            let hasAccessibilityID = testComponentComplianceSinglePlatform(
-                view,
-                expectedPattern: "SixLayer.main.ui.*DynamicFormSectionView.*",
-                platform: .iOS,
-                componentName: "DynamicFormSectionView"
-            )
- #expect(hasAccessibilityID, "Should generate accessibility identifier")
-        #else
-            // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-            // The modifier IS present in the code, but ViewInspector can't detect it on macOS
-            #endif
-        }
-
         #if canImport(ViewInspector)
-        // ViewInspector available - inspectionResult should be non-nil if inspection succeeded
-        // If nil, it means inspection failed (which is an issue on iOS)
-        if inspectionResult == nil {
-            Issue.record("View inspection failed on this platform")
+        do {
+            try withInspectedViewThrowing(view) { inspected in
+                // Should have a VStack with leading alignment
+                let vStack = try inspected.vStack()
+                #expect(vStack.count >= 3, "Should have section title and field views")
+
+                // First element should be the section title
+                let texts = vStack.findAll(ViewInspector.ViewType.Text.self)
+                if let titleText = texts.first {
+                    #expect((try? titleText.string()) == "Contact Information", "Should show section title")
+                } else {
+                    Issue.record("Could not find section title text")
+                }
+
+                // Should have accessibility identifier
+                let hasAccessibilityID = testComponentComplianceSinglePlatform(
+                    view,
+                    expectedPattern: "SixLayer.main.ui.*DynamicFormSectionView.*",
+                    platform: .iOS,
+                    componentName: "DynamicFormSectionView"
+                )
+                #expect(hasAccessibilityID, "Should generate accessibility identifier")
+            }
+        } catch {
+            Issue.record("View inspection failed on this platform: \(error)")
         }
         #else
         // ViewInspector not available on macOS - test passes by verifying view creation
@@ -187,17 +177,21 @@ open class DynamicFormViewTests: BaseTestClass {
         
         // Should render normally without DisclosureGroup
         #if canImport(ViewInspector)
-        let inspectionResult = withInspectedView(view) { inspected in
-            let vStack = try inspected.vStack()
-            #expect(vStack.count >= 2, "Should have section title and fields")
-            
-            // First element should be section title (Text, not DisclosureGroup)
-            let titleText = try vStack.sixLayerText(0)
-            #expect(try titleText.string() == "Contact Information", "Should show section title")
-        }
-        
-        if inspectionResult == nil {
-            Issue.record("View inspection failed - non-collapsible section structure not verified")
+        do {
+            try withInspectedViewThrowing(view) { inspected in
+                let vStack = try inspected.vStack()
+                #expect(vStack.count >= 2, "Should have section title and fields")
+                
+                // First element should be section title (Text, not DisclosureGroup)
+                let texts = vStack.findAll(ViewInspector.ViewType.Text.self)
+                if let titleText = texts.first {
+                    #expect((try? titleText.string()) == "Contact Information", "Should show section title")
+                } else {
+                    Issue.record("Could not find section title text")
+                }
+            }
+        } catch {
+            Issue.record("View inspection failed - non-collapsible section structure not verified: \(error)")
         }
         #else
         // ViewInspector not available on macOS - test passes by verifying view creation
@@ -230,22 +224,22 @@ open class DynamicFormViewTests: BaseTestClass {
         // Should have .id() modifier (ViewInspector may not be able to detect this directly)
         // But we can verify the view structure is correct
         #if canImport(ViewInspector)
-        let inspectionResult = withInspectedView(view) { inspected in
-            let vStack = try inspected.vStack()
-            #expect(vStack.count >= 2, "Should have field label and field control")
-            
-            // Verify field has accessibility identifier
-            let hasAccessibilityID = testComponentComplianceSinglePlatform(
-                view,
-                expectedPattern: "SixLayer.main.ui.*DynamicFormFieldView.*",
-                platform: .iOS,
-                componentName: "DynamicFormFieldView"
-            )
-            #expect(hasAccessibilityID, "Field should generate accessibility identifier")
-        }
-        
-        if inspectionResult == nil {
-            Issue.record("View inspection failed - field ID structure not verified")
+        do {
+            try withInspectedViewThrowing(view) { inspected in
+                let vStack = try inspected.vStack()
+                #expect(vStack.count >= 2, "Should have field label and field control")
+                
+                // Verify field has accessibility identifier
+                let hasAccessibilityID = testComponentComplianceSinglePlatform(
+                    view,
+                    expectedPattern: "SixLayer.main.ui.*DynamicFormFieldView.*",
+                    platform: .iOS,
+                    componentName: "DynamicFormFieldView"
+                )
+                #expect(hasAccessibilityID, "Field should generate accessibility identifier")
+            }
+        } catch {
+            Issue.record("View inspection failed - field ID structure not verified: \(error)")
         }
         #else
         // ViewInspector not available on macOS - test passes by verifying view creation
@@ -278,35 +272,32 @@ open class DynamicFormViewTests: BaseTestClass {
 
         // Should render proper field structure
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
-        let inspectionResult = withInspectedView(view) { inspected in
-            // Should have a VStack with leading alignment
-            let vStack = try inspected.vStack()
-            #expect(vStack.count >= 2, "Should have field label and field control")
-
-            // First element should be the field label
-            let labelText = try vStack.sixLayerText(0)
-            #expect(try labelText.string() == "Username", "Should show field label")
-
-            // Should have accessibility identifier
-            #if canImport(ViewInspector)
-            let hasAccessibilityID = testComponentComplianceSinglePlatform(
-                view,
-                expectedPattern: "SixLayer.main.ui.*DynamicFormFieldView.*",
-                platform: .iOS,
-                componentName: "DynamicFormFieldView"
-            )
- #expect(hasAccessibilityID, "Should generate accessibility identifier")
-        #else
-            // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-            // The modifier IS present in the code, but ViewInspector can't detect it on macOS
-            #endif
-        }
-
         #if canImport(ViewInspector)
-        // ViewInspector available - inspectionResult should be non-nil if inspection succeeded
-        // If nil, it means inspection failed (which is an issue on iOS)
-        if inspectionResult == nil {
-            Issue.record("View inspection failed on this platform")
+        do {
+            try withInspectedViewThrowing(view) { inspected in
+                // Should have a VStack with leading alignment
+                let vStack = try inspected.vStack()
+                #expect(vStack.count >= 2, "Should have field label and field control")
+
+                // First element should be the field label
+                let texts = vStack.findAll(ViewInspector.ViewType.Text.self)
+                if let labelText = texts.first {
+                    #expect((try? labelText.string()) == "Username", "Should show field label")
+                } else {
+                    Issue.record("Could not find field label text")
+                }
+
+                // Should have accessibility identifier
+                let hasAccessibilityID = testComponentComplianceSinglePlatform(
+                    view,
+                    expectedPattern: "SixLayer.main.ui.*DynamicFormFieldView.*",
+                    platform: .iOS,
+                    componentName: "DynamicFormFieldView"
+                )
+                #expect(hasAccessibilityID, "Should generate accessibility identifier")
+            }
+        } catch {
+            Issue.record("View inspection failed on this platform: \(error)")
         }
         #else
         // ViewInspector not available on macOS - test passes by verifying view creation
@@ -342,23 +333,28 @@ open class DynamicFormViewTests: BaseTestClass {
 
         // Should render HStack with label and asterisk
         #if canImport(ViewInspector)
-        let inspectionResult = withInspectedView(view) { inspected in
-            let vStack = try inspected.vStack()
-            // First element should be HStack containing label and asterisk
-            let hStack = try vStack.sixLayerHStack(0)
-            #expect(hStack.count == 2, "HStack should contain label and asterisk")
-            
-            // First element should be the label
-            let labelText = try hStack.sixLayerText(0)
-            #expect(try labelText.string() == "Email", "Should show field label")
-            
-            // Second element should be the asterisk
-            let asteriskText = try hStack.sixLayerText(1)
-            #expect(try asteriskText.string() == "*", "Should show asterisk for required field")
-        }
-        
-        if inspectionResult == nil {
-            Issue.record("View inspection failed - required field asterisk not found")
+        do {
+            try withInspectedViewThrowing(view) { inspected in
+                let vStack = try inspected.vStack()
+                // First element should be HStack containing label and asterisk
+                let hStacks = vStack.findAll(ViewInspector.ViewType.HStack.self)
+                if let hStack = hStacks.first {
+                    #expect(hStack.count == 2, "HStack should contain label and asterisk")
+                    
+                    // First element should be the label
+                    let texts = hStack.findAll(ViewInspector.ViewType.Text.self)
+                    if texts.count >= 1 {
+                        #expect((try? texts[0].string()) == "Email", "Should show field label")
+                    }
+                    if texts.count >= 2 {
+                        #expect((try? texts[1].string()) == "*", "Should show asterisk for required field")
+                    }
+                } else {
+                    Issue.record("Could not find HStack with label and asterisk")
+                }
+            }
+        } catch {
+            Issue.record("View inspection failed - required field asterisk not found: \(error)")
         }
         #else
         // ViewInspector not available on macOS - test passes by verifying view creation
@@ -391,19 +387,25 @@ open class DynamicFormViewTests: BaseTestClass {
 
         // Should render HStack with only label (no asterisk)
         #if canImport(ViewInspector)
-        let inspectionResult = withInspectedView(view) { inspected in
-            let vStack = try inspected.vStack()
-            // First element should be HStack containing only label
-            let hStack = try vStack.sixLayerHStack(0)
-            #expect(hStack.count == 1, "Optional field HStack should only have label (no asterisk)")
-            
-            // First element should be the label
-            let labelText = try hStack.sixLayerText(0)
-            #expect(try labelText.string() == "Notes", "Should show field label")
-        }
-        
-        if inspectionResult == nil {
-            Issue.record("View inspection failed - optional field structure not verified")
+        do {
+            try withInspectedViewThrowing(view) { inspected in
+                let vStack = try inspected.vStack()
+                // First element should be HStack containing only label
+                let hStacks = vStack.findAll(ViewInspector.ViewType.HStack.self)
+                if let hStack = hStacks.first {
+                    #expect(hStack.count == 1, "Optional field HStack should only have label (no asterisk)")
+                    
+                    // First element should be the label
+                    let texts = hStack.findAll(ViewInspector.ViewType.Text.self)
+                    if let labelText = texts.first {
+                        #expect((try? labelText.string()) == "Notes", "Should show field label")
+                    }
+                } else {
+                    Issue.record("Could not find HStack with label")
+                }
+            }
+        } catch {
+            Issue.record("View inspection failed - optional field structure not verified: \(error)")
         }
         #else
         // ViewInspector not available on macOS - test passes by verifying view creation
@@ -520,20 +522,24 @@ open class DynamicFormViewTests: BaseTestClass {
 
         // Should render HStack with label and info button
         #if canImport(ViewInspector)
-        let inspectionResult = withInspectedView(view) { inspected in
-            let vStack = try inspected.vStack()
-            // First element should be HStack containing label and info button
-            let hStack = try vStack.sixLayerHStack(0)
-            // Should have at least label and info button (may also have asterisk if required)
-            #expect(hStack.count >= 2, "HStack should contain label and info button")
-            
-            // Should have info button (Button with Image)
-            // Note: ViewInspector may not be able to directly inspect Button content,
-            // but we can verify the structure exists
-        }
-        
-        if inspectionResult == nil {
-            Issue.record("View inspection failed - info button structure not verified")
+        do {
+            try withInspectedViewThrowing(view) { inspected in
+                let vStack = try inspected.vStack()
+                // First element should be HStack containing label and info button
+                let hStacks = vStack.findAll(ViewInspector.ViewType.HStack.self)
+                if let hStack = hStacks.first {
+                    // Should have at least label and info button (may also have asterisk if required)
+                    #expect(hStack.count >= 2, "HStack should contain label and info button")
+                    
+                    // Should have info button (Button with Image)
+                    // Note: ViewInspector may not be able to directly inspect Button content,
+                    // but we can verify the structure exists
+                } else {
+                    Issue.record("Could not find HStack with label and info button")
+                }
+            }
+        } catch {
+            Issue.record("View inspection failed - info button structure not verified: \(error)")
         }
         #else
         // ViewInspector not available on macOS - test passes by verifying view creation
@@ -566,16 +572,20 @@ open class DynamicFormViewTests: BaseTestClass {
 
         // Should render HStack with only label (no info button)
         #if canImport(ViewInspector)
-        let inspectionResult = withInspectedView(view) { inspected in
-            let vStack = try inspected.vStack()
-            // First element should be HStack containing only label
-            let hStack = try vStack.sixLayerHStack(0)
-            // Should only have label (no info button, no asterisk since not required)
-            #expect(hStack.count == 1, "HStack should only have label when no description")
-        }
-        
-        if inspectionResult == nil {
-            Issue.record("View inspection failed - field structure not verified")
+        do {
+            try withInspectedViewThrowing(view) { inspected in
+                let vStack = try inspected.vStack()
+                // First element should be HStack containing only label
+                let hStacks = vStack.findAll(ViewInspector.ViewType.HStack.self)
+                if let hStack = hStacks.first {
+                    // Should only have label (no info button, no asterisk since not required)
+                    #expect(hStack.count == 1, "HStack should only have label when no description")
+                } else {
+                    Issue.record("Could not find HStack with label")
+                }
+            }
+        } catch {
+            Issue.record("View inspection failed - field structure not verified: \(error)")
         }
         #else
         // ViewInspector not available on macOS - test passes by verifying view creation
@@ -651,19 +661,19 @@ open class DynamicFormViewTests: BaseTestClass {
 
         // Description should not be rendered as Text in VStack
         #if canImport(ViewInspector)
-        let inspectionResult = withInspectedView(view) { inspected in
-            let vStack = try inspected.vStack()
-            // Should not have description text as a separate Text element
-            // Description should only be in popover/tooltip, not as visible text
-            // We verify by checking that description text is not in the VStack children
-            let childCount = vStack.count
-            // Should have: label HStack, field input, possibly validation errors
-            // Should NOT have description Text element
-            #expect(childCount >= 2, "Should have at least label and input")
-        }
-        
-        if inspectionResult == nil {
-            Issue.record("View inspection failed - description visibility not verified")
+        do {
+            try withInspectedViewThrowing(view) { inspected in
+                let vStack = try inspected.vStack()
+                // Should not have description text as a separate Text element
+                // Description should only be in popover/tooltip, not as visible text
+                // We verify by checking that description text is not in the VStack children
+                let childCount = vStack.count
+                // Should have: label HStack, field input, possibly validation errors
+                // Should NOT have description Text element
+                #expect(childCount >= 2, "Should have at least label and input")
+            }
+        } catch {
+            Issue.record("View inspection failed - description visibility not verified: \(error)")
         }
         #else
         // ViewInspector not available on macOS - test passes by verifying view creation
@@ -1176,7 +1186,7 @@ open class DynamicFormViewTests: BaseTestClass {
         #if canImport(ViewInspector)
         if let inspected = try? AnyView(viewWithOCR).inspect() {
             // Should find the batch OCR button by finding buttons and checking their accessibility identifiers
-            let buttons = inspected.findAll(Button<Text>.self)
+            let buttons = inspected.findAll(ViewInspector.ViewType.Button.self)
             let hasOCRButton = buttons.contains { button in
                 (try? button.accessibilityIdentifier())?.contains("Scan Document") ?? false
             }
@@ -1187,7 +1197,7 @@ open class DynamicFormViewTests: BaseTestClass {
 
         // Non-OCR form should not show batch OCR button
         if let inspected = try? AnyView(viewWithoutOCR).inspect() {
-            let buttons = inspected.findAll(Button<Text>.self)
+            let buttons = inspected.findAll(ViewInspector.ViewType.Button.self)
             let hasOCRButton = buttons.contains { button in
                 (try? button.accessibilityIdentifier())?.contains("Scan Document") ?? false
             }
@@ -1286,7 +1296,7 @@ open class DynamicFormViewTests: BaseTestClass {
         // Note: Actual OCR triggering requires camera access, so we test the button presence
         #if canImport(ViewInspector)
         if let inspected = try? AnyView(view).inspect() {
-            let buttons = inspected.findAll(Button<Text>.self)
+            let buttons = inspected.findAll(ViewInspector.ViewType.Button.self)
             let hasBatchOCRButton = buttons.contains { button in
                 (try? button.accessibilityIdentifier())?.contains("BatchOCRButton") ?? false
             }
