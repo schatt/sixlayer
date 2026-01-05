@@ -221,13 +221,13 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
             // Test: Does exactNamed() use exact names without hierarchy?
             let view1 = PlatformInteractionButton(style: .primary, action: {}) {
                 platformPresentContent_L1(content: "Test1", hints: PresentationHints())
-            } } catch { Issue.record("View inspection failed: \(error)") }
+            }
                 .exactNamed("SameName")
                 .enableGlobalAutomaticCompliance()
             
             let view2 = PlatformInteractionButton(style: .primary, action: {}) {
                 platformPresentContent_L1(content: "Test2", hints: PresentationHints())
-            } } catch { Issue.record("View inspection failed: \(error)") }
+            }
                 .exactNamed("SameName")  // ← Same exact name
                 .enableGlobalAutomaticCompliance()
             
@@ -247,7 +247,7 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
                 
             } catch {
                 Issue.record("Failed to inspect exactNamed views")
-            } } catch { Issue.record("View inspection failed: \(error)") }
+            }
             #else
             // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
             #endif
@@ -286,7 +286,7 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
                 
             } catch {
                 Issue.record("Failed to inspect exactNamed vs named views")
-            } } catch { Issue.record("View inspection failed: \(error)") }
+            }
             #else
             // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
             #endif
@@ -302,7 +302,7 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
             guard let config = testConfig else {
                 Issue.record("testConfig is nil")
                 return
-            } } catch { Issue.record("View inspection failed: \(error)") }
+            }
             config.pushViewHierarchy("NavigationView")
             config.pushViewHierarchy("ProfileSection")
             config.setScreenContext("UserProfile")
