@@ -63,11 +63,12 @@ open class Layer5PlatformOptimizationTests: BaseTestClass {
         let config = getCardExpansionPlatformConfig()
         
         // Verify platform-appropriate values for current platform
+        // When touch is enabled, minTouchTarget is always 44.0 for accessibility
         let currentPlatform = SixLayerPlatform.current
-        let expectedMinTouchTarget: CGFloat = (currentPlatform == .iOS || currentPlatform == .watchOS) ? 44.0 : 0.0
+        let expectedMinTouchTarget: CGFloat = 44.0  // Always 44.0 when touch is enabled
         let expectedHoverDelay: TimeInterval = (currentPlatform == .macOS || currentPlatform == .visionOS || currentPlatform == .iOS) ? 0.5 : 0.0
         
-        #expect(config.minTouchTarget == expectedMinTouchTarget, "Current platform \(currentPlatform) should have platform-appropriate minTouchTarget (\(expectedMinTouchTarget))")
+        #expect(config.minTouchTarget == expectedMinTouchTarget, "Current platform \(currentPlatform) should have 44.0 minTouchTarget when touch is enabled (for accessibility)")
         #expect(config.hoverDelay == expectedHoverDelay, "Current platform \(currentPlatform) should have platform-appropriate hoverDelay (\(expectedHoverDelay))")
     }
     
