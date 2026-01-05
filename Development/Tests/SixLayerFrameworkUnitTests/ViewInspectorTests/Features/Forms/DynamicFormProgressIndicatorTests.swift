@@ -23,9 +23,6 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
     /// ViewInspector may not be able to find custom struct types directly, so we use structure-based finding
     #if canImport(ViewInspector)
     private func findProgressIndicator(in inspected: ViewInspector.InspectableView<ViewInspector.ViewType.ClassifiedView>) -> ViewInspector.InspectableView<ViewInspector.ViewType.ClassifiedView>? {
-    #else
-    private func findProgressIndicator(in inspected: Any) -> Any? {
-    #endif
         // Strategy: Find a VStack that contains both a ProgressView and "Progress" text
         // This matches the structure of FormProgressIndicator
         
@@ -68,6 +65,7 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
         
         return nil
     }
+    #endif
     
     // MARK: - Progress Indicator Display Tests
     
@@ -160,9 +158,6 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
             }
         } catch {
             Issue.record("View inspection failed: \(error)")
-        }
-        #else
-            Issue.record("View inspection failed - could not verify progress indicator is hidden")
         }
         #else
         // ViewInspector not available on macOS - verify view is created
