@@ -327,7 +327,7 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
                 }
             } catch {
                 Issue.record("Failed to inspect exactNamed with hierarchy")
-            } } catch { Issue.record("View inspection failed: \(error)") }
+            }
             #else
             // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
             #endif
@@ -357,7 +357,7 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
                 }
             } catch {
                 Issue.record("Failed to inspect exactNamed minimal")
-            } } catch { Issue.record("View inspection failed: \(error)") }
+            }
             #else
             // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
             #endif
@@ -373,16 +373,13 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
             
             // Test: What happens if configuration changes during view creation?
             guard let config = testConfig else {
-                
                 Issue.record("testConfig is nil")
-                
                 return
-                
-            } } catch { Issue.record("View inspection failed: \(error)") }
+            }
             
             let view = PlatformInteractionButton(style: .primary, action: {}) {
                 platformPresentContent_L1(content: "Test", hints: PresentationHints())
-            } } catch { Issue.record("View inspection failed: \(error)") }
+            }
                 .named("TestButton")
                 .enableGlobalAutomaticCompliance()
             
@@ -401,7 +398,7 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
                 }
             } catch {
                 Issue.record("Failed to inspect view with config changes")
-            } } catch { Issue.record("View inspection failed: \(error)") }
+            }
             #else
             // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
             #endif
@@ -423,7 +420,7 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
                         .enableGlobalAutomaticCompliance()
                 }
                 .named("Nested")
-            } } catch { Issue.record("View inspection failed: \(error)") }
+            }
                 .named("Outer")
                 .named("VeryOuter")  // ← Multiple .named() calls
             
@@ -441,7 +438,7 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
                 }
             } catch {
                 Issue.record("Failed to inspect view with nested .named() calls")
-            } } catch { Issue.record("View inspection failed: \(error)") }
+            }
             #else
             // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
             #endif
@@ -458,7 +455,7 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
             // Test: How are Unicode characters handled?
             let view = PlatformInteractionButton(style: .primary, action: {}) {
                 platformPresentContent_L1(content: "Test", hints: PresentationHints())
-            } } catch { Issue.record("View inspection failed: \(error)") }
+            }
                 .named("按钮")  // ← Chinese characters
             
             #if canImport(ViewInspector)
@@ -473,7 +470,7 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
                 }
             } catch {
                 Issue.record("Failed to inspect view with Unicode characters")
-            } } catch { Issue.record("View inspection failed: \(error)") }
+            }
             #else
             // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
             #endif
