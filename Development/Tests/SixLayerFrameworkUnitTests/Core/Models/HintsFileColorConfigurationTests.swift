@@ -43,13 +43,15 @@ struct HintsFileColorConfigurationTests {
     
     #if canImport(SwiftUI)
     @Test func testParseDefaultColorFromHintsFile() throws {
-        // Given: Hints file with _defaultColor
+        // Given: Hints file with _defaultColor nested under _cardDefaults
         let json: [String: Any] = [
             "username": [
                 "fieldType": "string",
                 "isOptional": false
             ],
-            "_defaultColor": "blue"
+            "_cardDefaults": [
+                "_defaultColor": "blue"
+            ]
         ]
         
         let (testFile, uniqueModelName) = try writeHintsFile(modelName: "TestModel", json: json)
@@ -68,15 +70,17 @@ struct HintsFileColorConfigurationTests {
     }
     
     @Test func testParseColorMappingFromHintsFile() throws {
-        // Given: Hints file with _colorMapping
+        // Given: Hints file with _colorMapping nested under _cardDefaults
         let json: [String: Any] = [
             "username": [
                 "fieldType": "string",
                 "isOptional": false
             ],
-            "_colorMapping": [
-                "Vehicle": "blue",
-                "Task": "green"
+            "_cardDefaults": [
+                "_colorMapping": [
+                    "Vehicle": "blue",
+                    "Task": "green"
+                ]
             ]
         ]
         
@@ -97,16 +101,18 @@ struct HintsFileColorConfigurationTests {
     }
     
     @Test func testParseBothColorConfigFromHintsFile() throws {
-        // Given: Hints file with both _defaultColor and _colorMapping
+        // Given: Hints file with both _defaultColor and _colorMapping nested under _cardDefaults
         let json: [String: Any] = [
             "username": [
                 "fieldType": "string",
                 "isOptional": false
             ],
-            "_defaultColor": "red",
-            "_colorMapping": [
-                "Vehicle": "blue",
-                "Task": "green"
+            "_cardDefaults": [
+                "_defaultColor": "red",
+                "_colorMapping": [
+                    "Vehicle": "blue",
+                    "Task": "green"
+                ]
             ]
         ]
         
@@ -127,13 +133,15 @@ struct HintsFileColorConfigurationTests {
     }
     
     @Test func testParseHexColorFromHintsFile() throws {
-        // Given: Hints file with hex color
+        // Given: Hints file with hex color nested under _cardDefaults
         let json: [String: Any] = [
             "username": [
                 "fieldType": "string",
                 "isOptional": false
             ],
-            "_defaultColor": "#FF0000"
+            "_cardDefaults": [
+                "_defaultColor": "#FF0000"
+            ]
         ]
         
         let (testFile, uniqueModelName) = try writeHintsFile(modelName: "TestModel", json: json)
@@ -150,7 +158,39 @@ struct HintsFileColorConfigurationTests {
     }
     
     @Test func testParseColorConfigIgnoresColorKeysAsFieldHints() throws {
-        // Given: Hints file with color config (should not be treated as field hints)
+        // Given: Hints file with color config nested under _cardDefaults (should not be treated as field hints)
+        let json: [String: Any] = [
+            "username": [
+                "fieldType": "string",
+                "isOptional": false
+            ],
+            "_cardDefaults": [
+                "_defaultColor": "blue",
+                "_colorMapping": [
+                    "Vehicle": "blue"
+                ]
+            ]
+        ]
+        
+        let (testFile, uniqueModelName) = try writeHintsFile(modelName: "TestModel", json: json)
+        defer {
+            try? FileManager.default.removeItem(at: testFile)
+        }
+        
+        // When: Load hints file
+        let loader = FileBasedDataHintsLoader()
+        let result = loader.loadHintsResult(for: uniqueModelName)
+        
+        // Then: Color config should not appear as field hints
+        #expect(result.fieldHints["_cardDefaults"] == nil, "Should not treat _cardDefaults as field hint")
+        #expect(result.fieldHints["_defaultColor"] == nil, "Should not treat _defaultColor as field hint")
+        #expect(result.fieldHints["_colorMapping"] == nil, "Should not treat _colorMapping as field hint")
+        #expect(result.fieldHints.count == 1, "Should only have username field")
+        #expect(result.fieldHints["username"] != nil, "Should still parse username field")
+    }
+    
+    @Test func testParseColorConfigBackwardCompatibility() throws {
+        // Given: Hints file with top-level color config (old format - backward compatibility)
         let json: [String: Any] = [
             "username": [
                 "fieldType": "string",
@@ -171,23 +211,24 @@ struct HintsFileColorConfigurationTests {
         let loader = FileBasedDataHintsLoader()
         let result = loader.loadHintsResult(for: uniqueModelName)
         
-        // Then: Color config should not appear as field hints
-        #expect(result.fieldHints["_defaultColor"] == nil, "Should not treat _defaultColor as field hint")
-        #expect(result.fieldHints["_colorMapping"] == nil, "Should not treat _colorMapping as field hint")
-        #expect(result.fieldHints.count == 1, "Should only have username field")
-        #expect(result.fieldHints["username"] != nil, "Should still parse username field")
+        // Then: Should parse top-level color config (backward compatibility)
+        #expect(result.defaultColor == "blue", "Should parse top-level _defaultColor for backward compatibility")
+        #expect(result.colorMapping != nil, "Should parse top-level _colorMapping for backward compatibility")
+        #expect(result.colorMapping?["Vehicle"] == "blue", "Should parse Vehicle mapping")
     }
     
     // MARK: - PresentationHints Convenience Initializer Tests
     
     @Test func testPresentationHintsUsesDefaultColorFromHintsFile() async throws {
-        // Given: Hints file with _defaultColor
+        // Given: Hints file with _defaultColor nested under _cardDefaults
         let json: [String: Any] = [
             "username": [
                 "fieldType": "string",
                 "isOptional": false
             ],
-            "_defaultColor": "blue"
+            "_cardDefaults": [
+                "_defaultColor": "blue"
+            ]
         ]
         
         let (testFile, uniqueModelName) = try writeHintsFile(modelName: "TestModel", json: json)
@@ -203,13 +244,15 @@ struct HintsFileColorConfigurationTests {
     }
     
     @Test func testPresentationHintsParameterOverridesHintsFileDefaultColor() async throws {
-        // Given: Hints file with _defaultColor
+        // Given: Hints file with _defaultColor nested under _cardDefaults
         let json: [String: Any] = [
             "username": [
                 "fieldType": "string",
                 "isOptional": false
             ],
-            "_defaultColor": "blue"
+            "_cardDefaults": [
+                "_defaultColor": "blue"
+            ]
         ]
         
         let (testFile, uniqueModelName) = try writeHintsFile(modelName: "TestModel", json: json)
@@ -228,13 +271,15 @@ struct HintsFileColorConfigurationTests {
     }
     
     @Test func testPresentationHintsUsesHexColorFromHintsFile() async throws {
-        // Given: Hints file with hex color
+        // Given: Hints file with hex color nested under _cardDefaults
         let json: [String: Any] = [
             "username": [
                 "fieldType": "string",
                 "isOptional": false
             ],
-            "_defaultColor": "#FF0000"  // Red in hex
+            "_cardDefaults": [
+                "_defaultColor": "#FF0000"  // Red in hex
+            ]
         ]
         
         let (testFile, uniqueModelName) = try writeHintsFile(modelName: "TestModel", json: json)
@@ -279,7 +324,9 @@ struct HintsFileColorConfigurationTests {
                 "isOptional": false,
                 "expectedLength": 20
             ],
-            "_defaultColor": "green"
+            "_cardDefaults": [
+                "_defaultColor": "green"
+            ]
         ]
         
         let (testFile, uniqueModelName) = try writeHintsFile(modelName: "TestModel", json: json)

@@ -147,11 +147,22 @@ public class FileBasedDataHintsLoader: DataHintsLoader {
         // Get language code for OCR hints lookup (e.g., "en", "es", "fr")
         let languageCode = locale.language.languageCode?.identifier ?? "en"
         
-        // Parse top-level color configuration
-        let defaultColor = json["_defaultColor"] as? String
-        let colorMapping = json["_colorMapping"] as? [String: String]
+        // Parse color configuration from _cardDefaults (nested structure)
+        // Supports both nested (_cardDefaults) and top-level (backward compatibility) formats
+        var defaultColor: String?
+        var colorMapping: [String: String]?
         
-        // Parse field hints (all keys except _sections, __example, and color config keys)
+        if let cardDefaults = json["_cardDefaults"] as? [String: Any] {
+            // New format: nested under _cardDefaults
+            defaultColor = cardDefaults["_defaultColor"] as? String
+            colorMapping = cardDefaults["_colorMapping"] as? [String: String]
+        } else {
+            // Backward compatibility: top-level keys
+            defaultColor = json["_defaultColor"] as? String
+            colorMapping = json["_colorMapping"] as? [String: String]
+        }
+        
+        // Parse field hints (all keys except _sections, __example, _cardDefaults, and color config keys)
         for (key, value) in json {
             if key == "_sections" {
                 continue // Handle sections separately
@@ -159,8 +170,11 @@ public class FileBasedDataHintsLoader: DataHintsLoader {
             if key == "__example" {
                 continue // Skip __example - it's documentation only
             }
-            if key == "_defaultColor" || key == "_colorMapping" {
+            if key == "_cardDefaults" {
                 continue // Handle color config separately
+            }
+            if key == "_defaultColor" || key == "_colorMapping" {
+                continue // Backward compatibility: skip top-level color config keys
             }
             
             if let properties = value as? [String: Any] {
