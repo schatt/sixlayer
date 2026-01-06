@@ -33,7 +33,7 @@ open class CardContentDisplayTests: BaseTestClass {
         var cardSubtitle: String? { subtitle }
         var cardDescription: String? { description }
         var cardIcon: String? { icon }
-        var cardColor: Color? { color }
+        // cardColor removed - use PresentationHints instead (Issue #142)
     }
     
     // MARK: - Helper Methods

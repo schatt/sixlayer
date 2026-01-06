@@ -43,13 +43,7 @@ struct HintsDefaultValueTests {
             }
         }
         
-        public var cardColor: Color? {
-            switch priority {
-            case "urgent": return .red
-            case "high": return .orange
-            default: return .gray
-            }
-        }
+        // cardColor removed - use PresentationHints instead (Issue #142)
     }
     
     // MARK: - Default Value Tests
@@ -171,9 +165,7 @@ struct HintsDefaultValueTests {
                 return "protocol.icon"
             }
             
-            public var cardColor: Color? {
-                return .green
-            }
+            // cardColor removed - use PresentationHints instead (Issue #142)
         }
         
         let item = TestItem(title: 42, description: true)
