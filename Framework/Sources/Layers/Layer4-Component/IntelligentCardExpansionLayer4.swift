@@ -99,6 +99,7 @@ public struct ExpandableCardCollectionView<Item: Identifiable>: View {
                         item: item,
                         layoutDecision: layoutDecision,
                         strategy: strategy,
+                        hints: hints,
                         isExpanded: expandedItem == item.id,
                         isHovered: hoveredItem == item.id,
                         onExpand: { expandedItem = item.id },
@@ -122,6 +123,7 @@ public struct ExpandableCardComponent<Item: Identifiable>: View {
     let item: Item
     let layoutDecision: IntelligentCardLayoutDecision
     let strategy: CardExpansionStrategy
+    let hints: PresentationHints
     let isExpanded: Bool
     let isHovered: Bool
     let onExpand: () -> Void
@@ -270,15 +272,15 @@ public struct ExpandableCardComponent<Item: Identifiable>: View {
     // MARK: - Card Displayable Support
     
     private var cardTitle: String {
-        CardDisplayHelper.extractTitle(from: item) ?? "Title"
+        CardDisplayHelper.extractTitle(from: item, hints: hints) ?? "Title"
     }
     
     private var isPlaceholderTitle: Bool {
-        CardDisplayHelper.extractTitle(from: item) == nil
+        CardDisplayHelper.extractTitle(from: item, hints: hints) == nil
     }
     
     private var cardSubtitle: String? {
-        CardDisplayHelper.extractSubtitle(from: item)
+        CardDisplayHelper.extractSubtitle(from: item, hints: hints)
     }
     
     private var cardDescription: String? {
@@ -289,11 +291,11 @@ public struct ExpandableCardComponent<Item: Identifiable>: View {
     }
     
     private var cardIcon: String {
-        CardDisplayHelper.extractIcon(from: item) ?? "star.fill"
+        CardDisplayHelper.extractIcon(from: item, hints: hints) ?? "star.fill"
     }
     
     private var cardColor: Color {
-        CardDisplayHelper.extractColor(from: item) ?? .blue
+        CardDisplayHelper.extractColor(from: item, hints: hints) ?? .blue
     }
 }
 
@@ -350,6 +352,7 @@ public struct CoverFlowCollectionView<Item: Identifiable>: View {
                         ForEach(items) { item in
                             CoverFlowCardComponent(
                                 item: item,
+                                hints: hints,
                                 onItemSelected: onItemSelected,
                                 onItemDeleted: onItemDeleted,
                                 onItemEdited: onItemEdited
@@ -367,6 +370,7 @@ public struct CoverFlowCollectionView<Item: Identifiable>: View {
 /// Cover flow card component
 public struct CoverFlowCardComponent<Item: Identifiable>: View {
     let item: Item
+    let hints: PresentationHints
     let onItemSelected: ((Item) -> Void)?
     let onItemDeleted: ((Item) -> Void)?
     let onItemEdited: ((Item) -> Void)?
@@ -404,15 +408,15 @@ public struct CoverFlowCardComponent<Item: Identifiable>: View {
     // MARK: - Card Displayable Support
     
     private var cardTitle: String {
-        CardDisplayHelper.extractTitle(from: item) ?? "Title"
+        CardDisplayHelper.extractTitle(from: item, hints: hints) ?? "Title"
     }
     
     private var isPlaceholderTitle: Bool {
-        CardDisplayHelper.extractTitle(from: item) == nil
+        CardDisplayHelper.extractTitle(from: item, hints: hints) == nil
     }
     
     private var cardSubtitle: String? {
-        CardDisplayHelper.extractSubtitle(from: item)
+        CardDisplayHelper.extractSubtitle(from: item, hints: hints)
     }
     
     private var cardDescription: String? {
@@ -423,11 +427,11 @@ public struct CoverFlowCardComponent<Item: Identifiable>: View {
     }
     
     private var cardIcon: String {
-        CardDisplayHelper.extractIcon(from: item) ?? "star.fill"
+        CardDisplayHelper.extractIcon(from: item, hints: hints) ?? "star.fill"
     }
     
     private var cardColor: Color {
-        CardDisplayHelper.extractColor(from: item) ?? .blue
+        CardDisplayHelper.extractColor(from: item, hints: hints) ?? .blue
     }
 }
 
