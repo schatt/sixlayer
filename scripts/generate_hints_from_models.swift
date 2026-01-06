@@ -1297,27 +1297,50 @@ func generateHintsFile(for fields: [FieldInfo], outputURL: URL) {
         ] as [String: String]
     }
     
-    // Add/update __example field with all possible properties and defaults
-    // This serves as documentation showing all available options
-    // Always ensure it has all properties, even if it existed before
+    // Add/update __example field with complete hints file structure
+    // This serves as a complete template that developers can copy
+    // To use: copy the contents of __example, remove the "__example": wrapper and outer braces,
+    // and you have a complete, valid hints file structure
+    // The structure inside __example mirrors the top-level structure of a hints file
     finalHints["__example"] = [
-        "fieldType": "string",  // string, number, boolean, date, url, uuid, document, image, custom
-        "isOptional": false,
-        "isArray": false,
-        "defaultValue": NSNull(),  // Can be String, Int, Bool, Double, etc.
-        "isHidden": false,
-        "isEditable": true,  // false for computed/read-only fields
-        "expectedLength": NSNull(),  // Int or null
-        "displayWidth": NSNull(),  // "narrow", "medium", "wide", or numeric value
-        "showCharacterCounter": false,
-        "maxLength": NSNull(),  // Int or null
-        "minLength": NSNull(),  // Int or null
-        "expectedRange": NSNull(),  // {"min": 0.0, "max": 100.0} or null
-        "metadata": [:],  // Dictionary of string key-value pairs
-        "ocrHints": NSNull(),  // ["keyword1", "keyword2"] or null
-        "calculationGroups": NSNull(),  // [{"id": "...", "formula": "...", ...}] or null
-        "inputType": NSNull(),  // "picker", "text", etc. or null
-        "pickerOptions": NSNull()  // [{"value": "...", "label": "..."}] or null
+        // Example field definition (shows all field-level properties)
+        "exampleField": [
+            "fieldType": "string",  // string, number, boolean, date, url, uuid, document, image, custom
+            "isOptional": false,
+            "isArray": false,
+            "defaultValue": NSNull(),  // Can be String, Int, Bool, Double, etc.
+            "isHidden": false,
+            "isEditable": true,  // false for computed/read-only fields
+            "expectedLength": NSNull(),  // Int or null
+            "displayWidth": NSNull(),  // "narrow", "medium", "wide", or numeric value
+            "showCharacterCounter": false,
+            "maxLength": NSNull(),  // Int or null
+            "minLength": NSNull(),  // Int or null
+            "expectedRange": NSNull(),  // {"min": 0.0, "max": 100.0} or null
+            "metadata": [:],  // Dictionary of string key-value pairs
+            "ocrHints": NSNull(),  // ["keyword1", "keyword2"] or null
+            "calculationGroups": NSNull(),  // [{"id": "...", "formula": "...", ...}] or null
+            "inputType": NSNull(),  // "picker", "text", etc. or null
+            "pickerOptions": NSNull()  // [{"value": "...", "label": "..."}] or null
+        ],
+        // Top-level color configuration (copy these to root level to activate)
+        "_defaultColor": "blue",  // Default color for card presentation (named color or hex like "#FF0000")
+        "_colorMapping": [
+            "Vehicle": "blue",  // Type-based color mapping: {"TypeName": "colorString"}
+            "Task": "green"
+        ],
+        // Top-level sections configuration (copy to root level to activate)
+        "_sections": [
+            [
+                "id": "default",
+                "title": "Form Fields",
+                "description": NSNull(),  // Optional section description
+                "fields": ["field1", "field2"],  // Array of field names in this section
+                "layoutStyle": NSNull(),  // Optional layout style
+                "isCollapsible": false,  // Whether section can be collapsed
+                "isCollapsed": false  // Whether section starts collapsed
+            ]
+        ]
     ] as [String: Any]
     
     // Use existing field order if available, otherwise use new order
