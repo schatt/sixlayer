@@ -61,7 +61,7 @@ open class CardActionButtonTests: BaseTestClass {
         var cardSubtitle: String? { subtitle }
         var cardDescription: String? { description }
         var cardIcon: String? { icon }
-        var cardColor: Color? { color }
+        // cardColor removed - use PresentationHints instead (Issue #142)
     }
     
     nonisolated static let sampleItems: [TestItem] = [
@@ -174,6 +174,7 @@ open class CardActionButtonTests: BaseTestClass {
             item: item,
             layoutDecision: CardActionButtonTests.layoutDecision,
             strategy: CardActionButtonTests.strategy,
+            hints: PresentationHints(),
             isExpanded: true, // Expanded to show action buttons
             isHovered: false,
             onExpand: {},
@@ -209,6 +210,7 @@ open class CardActionButtonTests: BaseTestClass {
             item: item,
             layoutDecision: CardActionButtonTests.layoutDecision,
             strategy: CardActionButtonTests.strategy,
+            hints: PresentationHints(),
             isExpanded: true, // Expanded to show action buttons
             isHovered: false,
             onExpand: {},
@@ -233,6 +235,7 @@ open class CardActionButtonTests: BaseTestClass {
             item: item,
             layoutDecision: CardActionButtonTests.layoutDecision,
             strategy: CardActionButtonTests.strategy,
+            hints: PresentationHints(),
             isExpanded: true, // Expanded to show action buttons
             isHovered: false,
             onExpand: {},
@@ -259,6 +262,7 @@ open class CardActionButtonTests: BaseTestClass {
             item: item,
             layoutDecision: CardActionButtonTests.layoutDecision,
             strategy: CardActionButtonTests.strategy,
+            hints: PresentationHints(),
             isExpanded: false, // Not expanded
             isHovered: false,
             onExpand: {},
@@ -336,6 +340,7 @@ open class CardActionButtonTests: BaseTestClass {
         // WHEN: Creating a CoverFlowCardComponent with callbacks
         _ = CoverFlowCardComponent(
             item: item,
+            hints: PresentationHints(),
             onItemSelected: selectedCallback,
             onItemDeleted: deleteCallback,
             onItemEdited: editCallback
@@ -370,6 +375,7 @@ open class CardActionButtonTests: BaseTestClass {
             item: item,
             layoutDecision: CardActionButtonTests.layoutDecision,
             strategy: CardActionButtonTests.strategy,
+            hints: PresentationHints(),
             isExpanded: true,
             isHovered: false,
             onExpand: {},
@@ -409,6 +415,7 @@ open class CardActionButtonTests: BaseTestClass {
             item: emptyItem,
             layoutDecision: CardActionButtonTests.layoutDecision,
             strategy: CardActionButtonTests.strategy,
+            hints: PresentationHints(),
             isExpanded: true,
             isHovered: false,
             onExpand: {},
@@ -439,6 +446,7 @@ open class CardActionButtonTests: BaseTestClass {
             item: item,
             layoutDecision: CardActionButtonTests.layoutDecision,
             strategy: CardActionButtonTests.strategy,
+            hints: PresentationHints(),
             isExpanded: true,
             isHovered: false,
             onExpand: {},
@@ -492,6 +500,7 @@ open class CardActionButtonTests: BaseTestClass {
             item: item,
             layoutDecision: CardActionButtonTests.layoutDecision,
             strategy: CardActionButtonTests.strategy,
+            hints: PresentationHints(),
             isExpanded: true,
             isHovered: false,
             onExpand: {},
@@ -507,6 +516,7 @@ open class CardActionButtonTests: BaseTestClass {
             item: item,
             layoutDecision: CardActionButtonTests.layoutDecision,
             strategy: CardActionButtonTests.strategy,
+            hints: PresentationHints(),
             isExpanded: false,
             isHovered: false,
             onExpand: {},
@@ -541,6 +551,7 @@ open class CardActionButtonTests: BaseTestClass {
             item: item,
             layoutDecision: CardActionButtonTests.layoutDecision,
             strategy: CardActionButtonTests.strategy,
+            hints: PresentationHints(),
             isExpanded: true,
             isHovered: false,
             onExpand: {},
@@ -561,6 +572,7 @@ open class CardActionButtonTests: BaseTestClass {
             item: item,
             layoutDecision: CardActionButtonTests.layoutDecision,
             strategy: CardActionButtonTests.strategy,
+            hints: PresentationHints(),
             isExpanded: true,
             isHovered: false,
             onExpand: {},
@@ -576,6 +588,7 @@ open class CardActionButtonTests: BaseTestClass {
             item: item,
             layoutDecision: CardActionButtonTests.layoutDecision,
             strategy: CardActionButtonTests.strategy,
+            hints: PresentationHints(),
             isExpanded: true,
             isHovered: false,
             onExpand: {},
@@ -617,6 +630,7 @@ open class CardActionButtonTests: BaseTestClass {
             item: item,
             layoutDecision: CardActionButtonTests.layoutDecision,
             strategy: CardActionButtonTests.strategy,
+            hints: PresentationHints(),
             isExpanded: true,
             isHovered: false,
             onExpand: {},

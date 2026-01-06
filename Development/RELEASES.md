@@ -1,12 +1,41 @@
 # 🚀 Six-Layer Framework Release History
 
-## 📍 **Current Release: v6.8.0 - DRY Improvements - Platform Switch Consolidation** 🎯
+## 📍 **Current Release: v7.0.0 - Breaking Changes - Card Color Configuration** 🎯
 
 **Release Date**: January 6, 2026
 **Status**: ✅ **COMPLETE**
-**Previous Release**: v6.7.0 - Test Fixes & Count-Based Presentation
-**Note**: Minor release focused on reducing code duplication by consolidating platform switch statements into a centralized PlatformStrategy module. This release improves maintainability and establishes a single source of truth for platform-specific simple values.
-**Next Release**: v7.0.0 - Breaking Changes (Card Color Configuration)
+**Previous Release**: v6.8.0 - DRY Improvements - Platform Switch Consolidation
+**Note**: Major release moving card color configuration from CardDisplayable protocol to PresentationHints system. This breaking change makes models SwiftUI-free, enabling their use in Intent extensions and other non-UI contexts. Color decisions are now made at the presentation layer, following 6-layer architecture principles.
+**Next Release**: TBD
+
+---
+
+## 🎯 **v7.0.0 - Breaking Changes - Card Color Configuration** (January 6, 2026)
+
+### **⚠️ Breaking Changes:**
+
+#### **CardDisplayable Protocol Changes (Issue #142)**
+- **Removed `cardColor: Color?` property** from `CardDisplayable` protocol
+- Models are now SwiftUI-free and can be used in Intent extensions
+- **Migration required**: All code implementing `CardDisplayable` with `cardColor` must be updated
+
+### **What's New:**
+
+#### **🆕 PresentationHints Color Configuration (Issue #142)**
+- **Type-based color mapping**: `colorMapping: [ObjectIdentifier: Color]?`
+- **Per-item color provider**: `itemColorProvider: (@Sendable (any CardDisplayable) -> Color?)?`
+- **Default color**: `defaultColor: Color?`
+- **Priority order**: colorMapping → itemColorProvider → defaultColor → legacy customPreferences → reflection → nil
+- **Card component updates**: All card components now accept and use `hints` parameter
+
+### **What's Fixed:**
+
+#### **🔧 Card Component Integration**
+- Updated `ExpandableCardComponent` to accept and use hints
+- Updated `CoverFlowCardComponent` to accept and use hints
+- All card components properly pass hints to color extraction
+
+**See [RELEASE_v7.0.0.md](RELEASE_v7.0.0.md) for complete release notes and migration guide.**
 
 ---
 

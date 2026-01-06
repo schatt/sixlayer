@@ -1,5 +1,5 @@
 // swift-tools-version: 6.0
-// SixLayerFramework v6.8.0 - DRY Improvements - Platform Switch Consolidation
+// SixLayerFramework v7.0.0 - Breaking Changes - Card Color Configuration
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription

@@ -344,7 +344,7 @@ extension GenericDataItem: CardDisplayable {
     public var cardSubtitle: String? { subtitle }
     public var cardDescription: String? { nil }
     public var cardIcon: String? { "doc.text" }
-    public var cardColor: Color? { .blue }
+    // cardColor removed - configure via PresentationHints instead (Issue #142)
 }
 
 /// Extension to make GenericVehicle conform to CardDisplayable
@@ -363,17 +363,17 @@ extension GenericVehicle: CardDisplayable {
         case .generic: return "star.fill"
         }
     }
-    public var cardColor: Color? { 
-        switch type {
-        case .car: return .blue
-        case .truck: return .orange
-        case .motorcycle: return .red
-        case .boat: return .cyan
-        case .aircraft: return .purple
-        case .other: return .gray
-        case .generic: return .blue
-        }
-    }
+    // cardColor removed - configure via PresentationHints instead (Issue #142)
+    // Example: PresentationHints(itemColorProvider: { item in
+    //     if let vehicle = item as? GenericVehicle {
+    //         switch vehicle.type {
+    //         case .car: return .blue
+    //         case .truck: return .orange
+    //         // ... etc
+    //         }
+    //     }
+    //     return nil
+    // })
 }
 
 /// Extension to make GenericMediaItem conform to CardDisplayable
@@ -390,15 +390,7 @@ extension GenericMediaItem: CardDisplayable {
         case .other: return "questionmark.circle.fill"
         }
     }
-    public var cardColor: Color? { 
-        switch mediaType {
-        case .image: return .green
-        case .video: return .red
-        case .audio: return .purple
-        case .document: return .blue
-        case .other: return .gray
-        }
-    }
+    // cardColor removed - configure via PresentationHints instead (Issue #142)
 }
 
 /// Extension to make GenericTemporalData conform to CardDisplayable
@@ -411,7 +403,7 @@ extension GenericTemporalData: CardDisplayable {
     }
     public var cardDescription: String? { description }
     public var cardIcon: String? { "calendar" }
-    public var cardColor: Color? { .orange }
+    // cardColor removed - configure via PresentationHints instead (Issue #142)
 }
 
 /// Extension to make GenericHierarchicalData conform to CardDisplayable
@@ -420,5 +412,5 @@ extension GenericHierarchicalData: CardDisplayable {
     public var cardSubtitle: String? { nil }
     public var cardDescription: String? { nil }
     public var cardIcon: String? { "folder.fill" }
-    public var cardColor: Color? { .brown }
+    // cardColor removed - configure via PresentationHints instead (Issue #142)
 }

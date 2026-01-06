@@ -2,6 +2,9 @@ import SwiftUI
 
 /// Protocol for items that can be displayed in card components
 /// This allows card components to extract meaningful data from generic items
+/// 
+/// Note: Color configuration has been moved to PresentationHints (Issue #142)
+/// to allow models to be SwiftUI-free for Intent extensions.
 public protocol CardDisplayable {
     /// The primary title to display in the card
     var cardTitle: String { get }
@@ -15,8 +18,7 @@ public protocol CardDisplayable {
     /// Optional icon name to display in the card
     var cardIcon: String? { get }
     
-    /// Optional color to use for the card icon
-    var cardColor: Color? { get }
+    // cardColor removed - use PresentationHints.colorMapping, itemColorProvider, or defaultColor instead
 }
 
 /// Default implementation for CardDisplayable protocol
@@ -26,7 +28,7 @@ public extension CardDisplayable {
     var cardSubtitle: String? { nil }
     var cardDescription: String? { nil }
     var cardIcon: String? { "star.fill" }
-    var cardColor: Color? { .blue }
+    // cardColor removed - configure via PresentationHints instead
 }
 
 /// Smart fallback helper for items that don't conform to CardDisplayable
@@ -359,11 +361,45 @@ public struct CardDisplayHelper {
     }
     
     /// Extract meaningful color from any item using hints or reflection
+    /// 
+    /// Priority order:
+    /// 1. PresentationHints.colorMapping (by type)
+    /// 2. PresentationHints.itemColorProvider (per-item)
+    /// 3. PresentationHints.defaultColor
+    /// 4. customPreferences["itemColorProperty"] (legacy support)
+    /// 5. customPreferences["itemColorDefault"] (legacy support)
+    /// 6. Reflection (look for color/tint/accent properties)
+    /// 7. nil (no fallback)
     public static func extractColor(from item: Any, hints: PresentationHints? = nil) -> Color? {
-        // Priority 1: Check for configured color property in hints (developer's explicit intent)
+        guard let hints = hints else {
+            // No hints - try reflection only
+            return extractColorViaReflection(from: item)
+        }
+        
+        // Priority 1: Type-based color mapping
+        if let colorMapping = hints.colorMapping {
+            let itemType = ObjectIdentifier(type(of: item))
+            if let color = colorMapping[itemType] {
+                return color
+            }
+        }
+        
+        // Priority 2: Per-item color provider
+        if let itemColorProvider = hints.itemColorProvider,
+           let displayable = item as? CardDisplayable {
+            if let color = itemColorProvider(displayable) {
+                return color
+            }
+        }
+        
+        // Priority 3: Default color
+        if let defaultColor = hints.defaultColor {
+            return defaultColor
+        }
+        
+        // Priority 4: Legacy customPreferences["itemColorProperty"] support
         var shouldFallbackToReflection = false
-        if let hints = hints,
-           let colorProperty = hints.customPreferences["itemColorProperty"],
+        if let colorProperty = hints.customPreferences["itemColorProperty"],
            !colorProperty.isEmpty {
             // Check if property exists first
             let propertyExists = propertyExists(in: item, propertyName: colorProperty)
@@ -393,30 +429,38 @@ public struct CardDisplayHelper {
             }
         }
         
-        // Priority 2: Use reflection if no hints were provided OR if hint property doesn't exist
-        if hints == nil || shouldFallbackToReflection {
-            // Use reflection to find color-related properties
-            let mirror = Mirror(reflecting: item)
-            
-            // Look for color properties
-            let colorProperties = ["color", "tint", "accent"]
-            for child in mirror.children {
-                if let label = child.label,
-                   colorProperties.contains(label.lowercased()),
-                   let value = child.value as? Color {
-                    return value
-                }
+        // Priority 5: Legacy customPreferences["itemColorDefault"] support (when no property specified)
+        if shouldFallbackToReflection,
+           let defaultValue = hints.customPreferences["itemColorDefault"],
+           !defaultValue.isEmpty {
+            return parseColorString(defaultValue)
+        }
+        
+        // Priority 6: Reflection
+        if hints.customPreferences["itemColorProperty"] == nil || shouldFallbackToReflection {
+            if let color = extractColorViaReflection(from: item) {
+                return color
             }
         }
         
-        // Priority 3: Check if item conforms to CardDisplayable and has meaningful content (fallback after reflection)
-        if let displayable = item as? CardDisplayable,
-           let color = displayable.cardColor,
-           color != .blue {
-            return color
+        // Priority 7: No color found
+        return nil
+    }
+    
+    /// Extract color via reflection (helper method)
+    private static func extractColorViaReflection(from item: Any) -> Color? {
+        let mirror = Mirror(reflecting: item)
+        
+        // Look for color properties
+        let colorProperties = ["color", "tint", "accent"]
+        for child in mirror.children {
+            if let label = child.label,
+               colorProperties.contains(label.lowercased()),
+               let value = child.value as? Color {
+                return value
+            }
         }
         
-        // No meaningful content found - return nil instead of hardcoded fallback
         return nil
     }
     
@@ -473,7 +517,7 @@ extension GenericDataItem: CardDisplayable {
     public var cardSubtitle: String? { subtitle }
     public var cardDescription: String? { nil }
     public var cardIcon: String? { "doc.text" }
-    public var cardColor: Color? { .blue }
+    // cardColor removed - configure via PresentationHints instead
 }
 
 // NOTE: Other generic type CardDisplayable extensions have been moved to 

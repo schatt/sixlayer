@@ -1189,13 +1189,28 @@ public struct PresentationHints: Sendable {
     /// Field-level display hints keyed by field ID
     public let fieldHints: [String: FieldDisplayHints]
     
+    /// Color mapping by type (e.g., [ObjectIdentifier(Vehicle.self): .blue])
+    /// Allows configuring colors for all items of a specific type
+    /// Uses ObjectIdentifier to make types Hashable for dictionary keys
+    public let colorMapping: [ObjectIdentifier: Color]?
+    
+    /// Per-item color provider (more flexible than type-based mapping)
+    /// Allows configuring colors based on individual item properties
+    public let itemColorProvider: (@Sendable (any CardDisplayable) -> Color?)?
+    
+    /// Default color when no mapping or provider returns a color
+    public let defaultColor: Color?
+    
     public init(
         dataType: DataTypeHint = .generic,
         presentationPreference: PresentationPreference = .automatic,
         complexity: ContentComplexity = .moderate,
         context: PresentationContext = .dashboard,
         customPreferences: [String: String] = [:],
-        fieldHints: [String: FieldDisplayHints] = [:]
+        fieldHints: [String: FieldDisplayHints] = [:],
+        colorMapping: [ObjectIdentifier: Color]? = nil,
+        itemColorProvider: (@Sendable (any CardDisplayable) -> Color?)? = nil,
+        defaultColor: Color? = nil
     ) {
         self.dataType = dataType
         self.presentationPreference = presentationPreference
@@ -1203,6 +1218,9 @@ public struct PresentationHints: Sendable {
         self.context = context
         self.customPreferences = customPreferences
         self.fieldHints = fieldHints
+        self.colorMapping = colorMapping
+        self.itemColorProvider = itemColorProvider
+        self.defaultColor = defaultColor
     }
     
     /// Get field-level hints for a specific field

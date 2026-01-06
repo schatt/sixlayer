@@ -167,19 +167,22 @@ struct CardDisplayHelperNilFallbackTests {
         #expect(extractedIcon == "Title", "Should return meaningful icon when available")
     }
     
-    /// Test that extractColor returns meaningful content when available
+    /// Test that extractColor returns meaningful content when available via PresentationHints
     @Test func testExtractColorReturnsMeaningfulContent() async {
-        // Given: Entity that conforms to CardDisplayable with custom color
+        // Given: Entity that conforms to CardDisplayable and hints with color configuration
         struct ColoredEntity: CardDisplayable {
             let cardTitle: String = "Test"
-            let cardColor: Color? = .red
+            // cardColor removed - use PresentationHints instead (Issue #142)
         }
         let entity = ColoredEntity()
+        let hints = PresentationHints(
+            itemColorProvider: { _ in .red }
+        )
         
         // When: Extract color using CardDisplayHelper
-        let extractedColor = CardDisplayHelper.extractColor(from: entity, hints: nil)
+        let extractedColor = CardDisplayHelper.extractColor(from: entity, hints: hints)
         
-        // Then: Should return the actual color
-        #expect(extractedColor == .red, "Should return meaningful color when available")
+        // Then: Should return the color from PresentationHints
+        #expect(extractedColor == .red, "Should return meaningful color from PresentationHints")
     }
 }

@@ -33,7 +33,7 @@ open class CardContentDisplayTests: BaseTestClass {
         var cardSubtitle: String? { subtitle }
         var cardDescription: String? { description }
         var cardIcon: String? { icon }
-        var cardColor: Color? { color }
+        // cardColor removed - use PresentationHints instead (Issue #142)
     }
     
     // MARK: - Helper Methods
@@ -152,6 +152,7 @@ open class CardContentDisplayTests: BaseTestClass {
             item: item,
             layoutDecision: layoutDecision,
             strategy: strategy,
+            hints: PresentationHints(),
             isExpanded: false,
             isHovered: false,
             onExpand: {},
@@ -184,6 +185,7 @@ open class CardContentDisplayTests: BaseTestClass {
             item: item,
             layoutDecision: layoutDecision,
             strategy: strategy,
+            hints: PresentationHints(),
             isExpanded: true,
             isHovered: false,
             onExpand: {},

@@ -44,13 +44,7 @@ struct CardDisplayableBugTests {
             }
         }
         
-        public var cardColor: Color? {
-            switch priority {
-            case "urgent": return .red
-            case "high": return .orange
-            default: return .gray
-            }
-        }
+        // cardColor removed - tests should use PresentationHints instead (Issue #142)
     }
     
     /// Project entity with nil values
@@ -76,9 +70,7 @@ struct CardDisplayableBugTests {
             return "folder.fill"
         }
         
-        public var cardColor: Color? {
-            return .blue
-        }
+        // cardColor removed - tests should use PresentationHints instead (Issue #142)
     }
     
     // MARK: - CardDisplayable Fallback Tests
@@ -197,8 +189,8 @@ struct CardDisplayableBugTests {
         #expect(extractedSubtitle == nil, "Should return nil when reflection and CardDisplayable both fail for subtitle")
         // Icon: reflection doesn't find icon properties, so should use CardDisplayable.cardIcon which returns "clock.fill" for "in_progress" status
         #expect(extractedIcon == "clock.fill", "Should fall back to CardDisplayable when reflection fails for icon")
-        // Color: reflection doesn't find color properties, so should use CardDisplayable.cardColor which returns .red for "urgent" priority
-        #expect(extractedColor == .red, "Should fall back to CardDisplayable when reflection fails for color")
+        // Color: cardColor removed from protocol (Issue #142) - should return nil when no hints provided
+        #expect(extractedColor == nil, "Should return nil when no color configuration in hints (cardColor removed from protocol)")
     }
     
     /// Test that platformPresentItemCollection_L1 uses CardDisplayable fallback
@@ -270,9 +262,7 @@ struct CardDisplayableBugTests {
                 return "protocol.icon"
             }
             
-            public var cardColor: Color? {
-                return .green
-            }
+            // cardColor removed - use PresentationHints instead (Issue #142)
         }
         
         let item = TestItem(title: 42, description: true)
