@@ -286,7 +286,10 @@ public extension PresentationHints {
         context: PresentationContext = .dashboard,
         customPreferences: [String: String] = [:],
         formId: String,
-        registry: FieldHintsRegistry
+        registry: FieldHintsRegistry,
+        colorMapping: [ObjectIdentifier: Color]? = nil,
+        itemColorProvider: (@Sendable (any CardDisplayable) -> Color?)? = nil,
+        defaultColor: Color? = nil
     ) async {
         let fieldHints = await registry.loadHints(for: formId)
         
@@ -296,7 +299,10 @@ public extension PresentationHints {
             complexity: complexity,
             context: context,
             customPreferences: customPreferences,
-            fieldHints: fieldHints
+            fieldHints: fieldHints,
+            colorMapping: colorMapping,
+            itemColorProvider: itemColorProvider,
+            defaultColor: defaultColor
         )
     }
 }
