@@ -1286,16 +1286,20 @@ func generateHintsFile(for fields: [FieldInfo], outputURL: URL) {
         }
     }
     
+    // Add example color configuration if none exists (to help developers discover the feature)
+    // Since JSON doesn't support comments, we add it as actual JSON with example values
+    // Developers can modify these values or remove the lines if not needed
+    if !hasColorConfig {
+        finalHints["_defaultColor"] = "blue"  // Example: change to "red", "#FF0000", or remove
+        finalHints["_colorMapping"] = [
+            "Vehicle": "blue",  // Example: map Vehicle type to blue
+            "Task": "green"     // Example: map Task type to green
+        ] as [String: String]
+    }
+    
     // Add/update __example field with all possible properties and defaults
     // This serves as documentation showing all available options
     // Always ensure it has all properties, even if it existed before
-    
-    // Note: Color configuration (_defaultColor and _colorMapping) are top-level hints file properties,
-    // not field-level properties. They are documented here in __example for developer reference,
-    // but should be added at the top level of the hints file (not inside __example) to be active.
-    // Example top-level usage:
-    //   "_defaultColor": "blue"  // or "#FF0000" for hex
-    //   "_colorMapping": {"Vehicle": "blue", "Task": "green"}
     finalHints["__example"] = [
         "fieldType": "string",  // string, number, boolean, date, url, uuid, document, image, custom
         "isOptional": false,
@@ -1315,17 +1319,6 @@ func generateHintsFile(for fields: [FieldInfo], outputURL: URL) {
         "inputType": NSNull(),  // "picker", "text", etc. or null
         "pickerOptions": NSNull()  // [{"value": "...", "label": "..."}] or null
     ] as [String: Any]
-    
-    // Add color configuration example to __example metadata for documentation
-    // Note: Color configuration must be at the TOP LEVEL of the hints file to be active
-    // (not inside __example). This is just documentation showing the format.
-    if var exampleDict = finalHints["__example"] as? [String: Any] {
-        // Add color config documentation as metadata within __example
-        var metadata = exampleDict["metadata"] as? [String: String] ?? [:]
-        metadata["_colorConfigExample"] = "Add at top level: \"_defaultColor\": \"blue\" or \"_colorMapping\": {\"TypeName\": \"color\"}"
-        exampleDict["metadata"] = metadata
-        finalHints["__example"] = exampleDict
-    }
     
     // Use existing field order if available, otherwise use new order
     // Always ensure __example is at the end
