@@ -91,15 +91,9 @@ public enum HIGAnimationCategory: Equatable {
     case custom(TimingFunction)
     
     /// Default animation category for platform
+    /// Uses PlatformStrategy to reduce code duplication (Issue #140)
     public static func `default`(for platform: SixLayerPlatform) -> HIGAnimationCategory {
-        switch platform {
-        case .iOS:
-            return .spring
-        case .macOS:
-            return .easeInOut
-        default:
-            return .easeInOut
-        }
+        return platform.defaultAnimationCategory
     }
 }
 

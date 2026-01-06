@@ -190,16 +190,8 @@ public enum DisplayOptimization: String, CaseIterable {
     case spatial = "spatial"
     
     public init(for platform: SixLayerPlatform) {
-        switch platform {
-        case .iOS, .macOS:
-            self = .retina
-        case .watchOS:
-            self = .highDPI
-        case .tvOS:
-            self = .standard
-        case .visionOS:
-            self = .spatial
-        }
+        // Use PlatformStrategy to reduce code duplication (Issue #140)
+        self = platform.defaultDisplayOptimization
     }
 }
 
@@ -210,18 +202,8 @@ public enum FrameRateOptimization: String, CaseIterable {
     case variable = "variable"
     
     public init(for platform: SixLayerPlatform) {
-        switch platform {
-        case .iOS:
-            self = .adaptive
-        case .macOS:
-            self = .fixed60
-        case .watchOS:
-            self = .adaptive
-        case .tvOS:
-            self = .fixed60
-        case .visionOS:
-            self = .variable
-        }
+        // Use PlatformStrategy to reduce code duplication (Issue #140)
+        self = platform.defaultFrameRateOptimization
     }
 }
 
@@ -820,36 +802,18 @@ public struct CrossPlatformTesting {
     }
     
     private static func calculateCompatibilityScore(for platform: SixLayerPlatform) -> Double {
-        // Mock compatibility scoring
-        switch platform {
-        case .iOS: return 0.95
-        case .macOS: return 0.92
-        case .watchOS: return 0.88
-        case .tvOS: return 0.90
-        case .visionOS: return 0.85
-        }
+        // Use PlatformStrategy to reduce code duplication (Issue #140)
+        return platform.defaultCompatibilityScore
     }
     
     private static func calculatePerformanceScore(for platform: SixLayerPlatform) -> Double {
-        // Mock performance scoring
-        switch platform {
-        case .iOS: return 0.88
-        case .macOS: return 0.91
-        case .watchOS: return 0.85
-        case .tvOS: return 0.89
-        case .visionOS: return 0.87
-        }
+        // Use PlatformStrategy to reduce code duplication (Issue #140)
+        return platform.defaultPerformanceScore
     }
     
     private static func calculateAccessibilityScore(for platform: SixLayerPlatform) -> Double {
-        // Mock accessibility scoring
-        switch platform {
-        case .iOS: return 0.90
-        case .macOS: return 0.87
-        case .watchOS: return 0.86
-        case .tvOS: return 0.88
-        case .visionOS: return 0.89
-        }
+        // Use PlatformStrategy to reduce code duplication (Issue #140)
+        return platform.defaultAccessibilityScore
     }
 }
 

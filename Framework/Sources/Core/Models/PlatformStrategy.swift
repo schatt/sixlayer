@@ -450,6 +450,121 @@ public extension SixLayerPlatform {
             return .neural  // visionOS can handle neural processing for spatial UI
         }
     }
+    
+    // MARK: - Optimization Properties
+    
+    /// Default display optimization for this platform
+    /// Used for rendering and display quality settings
+    var defaultDisplayOptimization: DisplayOptimization {
+        switch self {
+        case .iOS, .macOS:
+            return .retina
+        case .watchOS:
+            return .highDPI
+        case .tvOS:
+            return .standard
+        case .visionOS:
+            return .spatial
+        }
+    }
+    
+    /// Default frame rate optimization for this platform
+    /// Used for animation and rendering performance
+    var defaultFrameRateOptimization: FrameRateOptimization {
+        switch self {
+        case .iOS, .watchOS:
+            return .adaptive
+        case .macOS, .tvOS:
+            return .fixed60
+        case .visionOS:
+            return .variable
+        }
+    }
+    
+    /// Default compatibility score for this platform (0.0 - 1.0)
+    /// Used for cross-platform compatibility assessment
+    var defaultCompatibilityScore: Double {
+        switch self {
+        case .iOS: return 0.95
+        case .macOS: return 0.92
+        case .watchOS: return 0.88
+        case .tvOS: return 0.90
+        case .visionOS: return 0.85
+        }
+    }
+    
+    /// Default performance score for this platform (0.0 - 1.0)
+    /// Used for performance assessment
+    var defaultPerformanceScore: Double {
+        switch self {
+        case .iOS: return 0.88
+        case .macOS: return 0.91
+        case .watchOS: return 0.85
+        case .tvOS: return 0.89
+        case .visionOS: return 0.87
+        }
+    }
+    
+    /// Default accessibility score for this platform (0.0 - 1.0)
+    /// Used for accessibility assessment
+    var defaultAccessibilityScore: Double {
+        switch self {
+        case .iOS: return 0.90
+        case .macOS: return 0.87
+        case .watchOS: return 0.86
+        case .tvOS: return 0.88
+        case .visionOS: return 0.89
+        }
+    }
+    
+    /// Default animation category for this platform
+    /// Used for HIG-compliant animation selection
+    var defaultAnimationCategory: HIGAnimationCategory {
+        switch self {
+        case .iOS:
+            return .spring
+        case .macOS, .watchOS, .tvOS, .visionOS:
+            return .easeInOut
+        }
+    }
+    
+    /// Default keyboard modifiers for this platform
+    /// Returns appropriate modifiers for keyboard shortcuts
+    /// - macOS: Returns provided modifiers (uses Command key)
+    /// - Other platforms: Returns empty modifiers (no keyboard shortcuts)
+    func defaultKeyboardModifiers(_ modifiers: EventModifiers) -> EventModifiers {
+        switch self {
+        case .macOS:
+            return modifiers  // macOS uses Command key for most shortcuts
+        case .iOS, .watchOS, .tvOS, .visionOS:
+            return []  // These platforms don't support traditional keyboard shortcuts
+        }
+    }
+    
+    /// Get platform-appropriate shortcut description
+    /// Returns a string describing how shortcuts work on this platform
+    /// For macOS, formats with modifier string and key character
+    /// For other platforms, returns platform-specific gesture description
+    func defaultShortcutDescription(key: KeyEquivalent, modifiers: EventModifiers = .command) -> String {
+        switch self {
+        case .macOS:
+            // macOS: Format as "⌘key" (modifier string + key)
+            var modifierString = ""
+            if modifiers.contains(.command) { modifierString += "⌘" }
+            if modifiers.contains(.option) { modifierString += "⌥" }
+            if modifiers.contains(.control) { modifierString += "⌃" }
+            if modifiers.contains(.shift) { modifierString += "⇧" }
+            return "\(modifierString)\(key.character)"
+        case .iOS:
+            return "Swipe or tap gesture"
+        case .watchOS:
+            return "Digital Crown or tap"
+        case .tvOS:
+            return "Remote button"
+        case .visionOS:
+            return "Hand gesture or voice"
+        }
+    }
 }
 
 // MARK: - Platform Strategy Helper Functions
