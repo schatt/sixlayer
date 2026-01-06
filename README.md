@@ -27,7 +27,7 @@ Navigate to the `Framework/` directory and use it as a Swift Package:
 ```swift
 // In your Package.swift
 dependencies: [
-    .package(url: "https://github.com/schatt/sixlayer.git", from: "6.8.0")
+    .package(url: "https://github.com/schatt/sixlayer.git", from: "7.0.0")
 ]
 ```
 
@@ -41,9 +41,14 @@ dependencies: [
 
 The framework is distributed as a Swift Package from the `Framework/` directory. This ensures that only the essential framework code is included when other projects consume it.
 
-## 🆕 Latest Release: v6.8.0
+## 🆕 Latest Release: v7.0.0
 
-### **DRY Improvements - Platform Switch Consolidation**
+### **Breaking Changes - Card Color Configuration**
+⚠️ **BREAKING CHANGE**: `CardDisplayable` protocol no longer includes `cardColor` property. Color configuration is now done via `PresentationHints` at the presentation layer. Models are now SwiftUI-free and can be used in Intent extensions.
+
+🆕 **PresentationHints Color Configuration**: Added type-based color mapping, per-item color provider, and default color support. Color decisions are now made at the presentation layer, following 6-layer architecture principles.
+
+### **Previous Release: v6.8.0 - DRY Improvements - Platform Switch Consolidation**
 🔧 **PlatformStrategy Module**: Consolidated 19 platform switch statements into a centralized `PlatformStrategy` module. Eliminated 4 duplicate functions. Total: 23 code duplications eliminated. Single source of truth for platform-specific simple values.
 
 🔄 **Runtime Check Pattern Consistency**: Established consistent pattern for runtime capability checks in `PlatformStrategy`. Ensures platform-specific values are only returned when capabilities are actually available.
@@ -167,9 +172,9 @@ These guides contain critical information about the Layer 1 Semantic Intent phil
 
 ## 📋 Current Status
 
-**Version**: v6.8.0 (DRY Improvements - Platform Switch Consolidation)
-**Phase**: Minor Release
-**Next**: v7.0.0 - Breaking Changes (Card Color Configuration)
+**Version**: v7.0.0 (Breaking Changes - Card Color Configuration)
+**Phase**: Major Release
+**Next**: TBD
 
 ## 🤝 Contributing
 
