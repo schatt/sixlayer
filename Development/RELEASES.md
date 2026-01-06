@@ -1,12 +1,39 @@
 # 🚀 Six-Layer Framework Release History
 
-## 📍 **Current Release: v7.0.0 - Breaking Changes - Card Color Configuration** 🎯
+## 📍 **Current Release: v7.0.1 - Hints File Color Configuration Support** 🎯
 
 **Release Date**: January 6, 2026
 **Status**: ✅ **COMPLETE**
-**Previous Release**: v6.8.0 - DRY Improvements - Platform Switch Consolidation
-**Note**: Major release moving card color configuration from CardDisplayable protocol to PresentationHints system. This breaking change makes models SwiftUI-free, enabling their use in Intent extensions and other non-UI contexts. Color decisions are now made at the presentation layer, following 6-layer architecture principles.
+**Previous Release**: v7.0.0 - Breaking Changes - Card Color Configuration
+**Note**: Patch release adding color configuration support to hints files. Developers can now store color configuration in `.hints` files and have it automatically loaded when creating `PresentationHints` from model names.
 **Next Release**: TBD
+
+---
+
+## 🎯 **v7.0.1 - Hints File Color Configuration Support** (January 6, 2026)
+
+### **What's New:**
+
+#### **🆕 Hints File Color Configuration (Issue #142)**
+- **`_defaultColor` support**: Store default color in hints files (named colors or hex)
+- **`_colorMapping` support**: Store type-based color mapping in hints files
+- **Automatic loading**: Color configuration automatically loaded when using `PresentationHints(modelName:)`
+- **Hints script updates**: Generation script preserves color configuration when updating hints files
+- **Format**: `"_defaultColor": "blue"` or `"_defaultColor": "#FF0000"` for hex
+- **Type mapping**: `"_colorMapping": {"Vehicle": "blue", "Task": "green"}`
+
+### **What's Fixed:**
+
+#### **🔧 DataHintsLoader Updates**
+- Updated `DataHintsResult` to include `defaultColor` and `colorMapping` properties
+- Updated `parseHintsResult` to parse color configuration from hints files
+- Updated `PresentationHints` convenience initializer to use color configuration from hints files
+
+#### **🔧 Hints Generation Script**
+- Script now preserves `_defaultColor` and `_colorMapping` when generating/updating hints files
+- Color configuration written in correct order (before `__example`)
+
+**See [RELEASE_v7.0.1.md](RELEASE_v7.0.1.md) for complete release notes.**
 
 ---
 

@@ -833,9 +833,15 @@ public extension PresentationHints {
             context: context,
             customPreferences: customPreferences,
             fieldHints: fieldHints,
+<<<<<<< HEAD
             colorMapping: finalColorMapping,
             itemColorProvider: itemColorProvider,
             defaultColor: finalDefaultColor
+=======
+            colorMapping: colorMapping,
+            itemColorProvider: itemColorProvider,
+            defaultColor: defaultColor
+>>>>>>> main
         )
     }
     

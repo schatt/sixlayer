@@ -27,7 +27,7 @@ Navigate to the `Framework/` directory and use it as a Swift Package:
 ```swift
 // In your Package.swift
 dependencies: [
-    .package(url: "https://github.com/schatt/sixlayer.git", from: "7.0.0")
+    .package(url: "https://github.com/schatt/sixlayer.git", from: "7.0.1")
 ]
 ```
 
@@ -41,9 +41,12 @@ dependencies: [
 
 The framework is distributed as a Swift Package from the `Framework/` directory. This ensures that only the essential framework code is included when other projects consume it.
 
-## 🆕 Latest Release: v7.0.0
+## 🆕 Latest Release: v7.0.1
 
-### **Breaking Changes - Card Color Configuration**
+### **Hints File Color Configuration Support**
+🆕 **Color Configuration in Hints Files**: Added support for `_defaultColor` and `_colorMapping` in `.hints` files. Color configuration can now be stored in hints files and automatically loaded when creating `PresentationHints` from model names.
+
+### **Previous Release: v7.0.0 - Breaking Changes**
 ⚠️ **BREAKING CHANGE**: `CardDisplayable` protocol no longer includes `cardColor` property. Color configuration is now done via `PresentationHints` at the presentation layer. Models are now SwiftUI-free and can be used in Intent extensions.
 
 🆕 **PresentationHints Color Configuration**: Added type-based color mapping, per-item color provider, and default color support. Color decisions are now made at the presentation layer, following 6-layer architecture principles.

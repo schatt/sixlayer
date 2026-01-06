@@ -1,5 +1,5 @@
 // swift-tools-version: 6.0
-// SixLayerFramework v7.0.0 - Breaking Changes - Card Color Configuration
+// SixLayerFramework v7.0.1 - Hints File Color Configuration Support
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
