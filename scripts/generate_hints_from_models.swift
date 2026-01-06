@@ -1247,12 +1247,22 @@ func generateHintsFile(for fields: [FieldInfo], outputURL: URL) {
                 let fieldNameRange = match.range(at: 1)
                 if fieldNameRange.location != NSNotFound {
                     let fieldName = nsString.substring(with: fieldNameRange)
-                    // Skip __example and _sections when tracking order
-                    if fieldName != "__example" && fieldName != "_sections" && !existingFieldOrder.contains(fieldName) {
+                    // Skip __example, _sections, and color config keys when tracking order
+                    if fieldName != "__example" && fieldName != "_sections" && 
+                       fieldName != "_defaultColor" && fieldName != "_colorMapping" &&
+                       !existingFieldOrder.contains(fieldName) {
                         existingFieldOrder.append(fieldName)
                     }
                 }
             }
+        }
+        
+        // Preserve color configuration if it exists
+        if let defaultColor = json["_defaultColor"] {
+            existingHints?["_defaultColor"] = defaultColor
+        }
+        if let colorMapping = json["_colorMapping"] {
+            existingHints?["_colorMapping"] = colorMapping
         }
     }
     
@@ -1262,10 +1272,23 @@ func generateHintsFile(for fields: [FieldInfo], outputURL: URL) {
         existingHints: existingHints
     )
     
+    // Restore preserved color configuration (if it was in existing hints)
+    var finalHints = hints
+    if let existing = existingHints {
+        if let defaultColor = existing["_defaultColor"] {
+            finalHints["_defaultColor"] = defaultColor
+        }
+        if let colorMapping = existing["_colorMapping"] {
+            finalHints["_colorMapping"] = colorMapping
+        }
+    }
+    
     // Add/update __example field with all possible properties and defaults
     // This serves as documentation showing all available options
     // Always ensure it has all properties, even if it existed before
-    var finalHints = hints
+    
+    // Add top-level color configuration to __example (these are not field-level properties)
+    // These are PresentationHints-level configuration options
     finalHints["__example"] = [
         "fieldType": "string",  // string, number, boolean, date, url, uuid, document, image, custom
         "isOptional": false,
@@ -1285,6 +1308,14 @@ func generateHintsFile(for fields: [FieldInfo], outputURL: URL) {
         "inputType": NSNull(),  // "picker", "text", etc. or null
         "pickerOptions": NSNull()  // [{"value": "...", "label": "..."}] or null
     ] as [String: Any]
+    
+    // Add top-level color configuration documentation
+    // These are PresentationHints-level options, not field-level
+    // Note: These should be added at the top level of the hints file, not in __example
+    // Example usage in hints file:
+    //   "_defaultColor": "blue"  // or "#FF0000" for hex
+    //   "_colorMapping": {"Vehicle": "blue", "Task": "green"}
+    // The script preserves these if they exist, but doesn't auto-generate them
     
     // Use existing field order if available, otherwise use new order
     // Always ensure __example is at the end

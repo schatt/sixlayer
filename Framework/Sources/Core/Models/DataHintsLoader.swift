@@ -6,6 +6,9 @@
 //
 
 import Foundation
+#if canImport(SwiftUI)
+import SwiftUI
+#endif
 
 // MARK: - Data Hints Result
 
@@ -16,10 +19,22 @@ public struct DataHintsResult: @unchecked Sendable {
     public let fieldHints: [String: FieldDisplayHints]
     /// Layout sections parsed from _sections array in hints file
     public let sections: [DynamicFormSection]
+    /// Default color for card presentation (parsed from _defaultColor in hints file)
+    public let defaultColor: String?
+    /// Color mapping by type name (parsed from _colorMapping in hints file)
+    /// Format: {"TypeName": "colorString"} where colorString can be a named color or hex
+    public let colorMapping: [String: String]?
     
-    public init(fieldHints: [String: FieldDisplayHints] = [:], sections: [DynamicFormSection] = []) {
+    public init(
+        fieldHints: [String: FieldDisplayHints] = [:],
+        sections: [DynamicFormSection] = [],
+        defaultColor: String? = nil,
+        colorMapping: [String: String]? = nil
+    ) {
         self.fieldHints = fieldHints
         self.sections = sections
+        self.defaultColor = defaultColor
+        self.colorMapping = colorMapping
     }
 }
 
@@ -132,13 +147,20 @@ public class FileBasedDataHintsLoader: DataHintsLoader {
         // Get language code for OCR hints lookup (e.g., "en", "es", "fr")
         let languageCode = locale.language.languageCode?.identifier ?? "en"
         
-        // Parse field hints (all keys except _sections and __example)
+        // Parse top-level color configuration
+        let defaultColor = json["_defaultColor"] as? String
+        let colorMapping = json["_colorMapping"] as? [String: String]
+        
+        // Parse field hints (all keys except _sections, __example, and color config keys)
         for (key, value) in json {
             if key == "_sections" {
                 continue // Handle sections separately
             }
             if key == "__example" {
                 continue // Skip __example - it's documentation only
+            }
+            if key == "_defaultColor" || key == "_colorMapping" {
+                continue // Handle color config separately
             }
             
             if let properties = value as? [String: Any] {
@@ -229,7 +251,12 @@ public class FileBasedDataHintsLoader: DataHintsLoader {
             sections = parseSections(from: sectionsArray)
         }
         
-        return DataHintsResult(fieldHints: fieldHints, sections: sections)
+        return DataHintsResult(
+            fieldHints: fieldHints,
+            sections: sections,
+            defaultColor: defaultColor,
+            colorMapping: colorMapping
+        )
     }
     
     /// Parse expected range from properties (supports {"min": 5, "max": 30} format)
@@ -780,7 +807,24 @@ public extension PresentationHints {
         itemColorProvider: (@Sendable (any CardDisplayable) -> Color?)? = nil,
         defaultColor: Color? = nil
     ) async {
-        let fieldHints = await registry.loadHints(for: modelName)
+        let hintsResult = await registry.loadHintsResult(for: modelName)
+        let fieldHints = hintsResult.fieldHints
+        
+        // Parse color configuration from hints file
+        var finalColorMapping = colorMapping
+        var finalDefaultColor = defaultColor
+        
+        // If hints file has color config, use it (but allow override via parameters)
+        if let hintsDefaultColor = hintsResult.defaultColor {
+            finalDefaultColor = finalDefaultColor ?? Self.parseColorFromString(hintsDefaultColor)
+        }
+        
+        // Convert type name -> color string mapping to ObjectIdentifier -> Color mapping
+        // Note: We can't resolve ObjectIdentifier from type name at runtime without
+        // additional type registry. For now, hints file colorMapping is stored but not
+        // automatically converted. Developers should use the colorMapping parameter for
+        // ObjectIdentifier-based mapping.
+        // TODO: Consider adding a type registry to support type name -> ObjectIdentifier mapping
         
         self.init(
             dataType: dataType,
@@ -789,11 +833,48 @@ public extension PresentationHints {
             context: context,
             customPreferences: customPreferences,
             fieldHints: fieldHints,
-            colorMapping: colorMapping,
+            colorMapping: finalColorMapping,
             itemColorProvider: itemColorProvider,
-            defaultColor: defaultColor
+            defaultColor: finalDefaultColor
         )
     }
+    
+    #if canImport(SwiftUI)
+    /// Parse a color string (named color or hex) into a Color
+    private static func parseColorFromString(_ colorString: String) -> Color? {
+        let trimmed = colorString.trimmingCharacters(in: .whitespaces)
+        
+        // Try hex format first (#RRGGBB or #RGB)
+        if trimmed.hasPrefix("#") {
+            return Color(hex: trimmed)
+        }
+        
+        // Try named colors
+        let lowercased = trimmed.lowercased()
+        switch lowercased {
+        case "red": return .red
+        case "blue": return .blue
+        case "green": return .green
+        case "yellow": return .yellow
+        case "orange": return .orange
+        case "purple": return .purple
+        case "pink": return .pink
+        case "gray", "grey": return .gray
+        case "black": return .black
+        case "white": return .white
+        case "cyan": return .cyan
+        case "mint": return .mint
+        case "teal": return .teal
+        case "indigo": return .indigo
+        case "brown": return .brown
+        default: return nil
+        }
+    }
+    #else
+    private static func parseColorFromString(_ colorString: String) -> Color? {
+        return nil // SwiftUI not available
+    }
+    #endif
 }
 
 public extension EnhancedPresentationHints {
