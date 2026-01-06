@@ -1274,12 +1274,15 @@ func generateHintsFile(for fields: [FieldInfo], outputURL: URL) {
     
     // Restore preserved color configuration (if it was in existing hints)
     var finalHints = hints
+    var hasColorConfig = false
     if let existing = existingHints {
         if let defaultColor = existing["_defaultColor"] {
             finalHints["_defaultColor"] = defaultColor
+            hasColorConfig = true
         }
         if let colorMapping = existing["_colorMapping"] {
             finalHints["_colorMapping"] = colorMapping
+            hasColorConfig = true
         }
     }
     
@@ -1287,8 +1290,12 @@ func generateHintsFile(for fields: [FieldInfo], outputURL: URL) {
     // This serves as documentation showing all available options
     // Always ensure it has all properties, even if it existed before
     
-    // Add top-level color configuration to __example (these are not field-level properties)
-    // These are PresentationHints-level configuration options
+    // Note: Color configuration (_defaultColor and _colorMapping) are top-level hints file properties,
+    // not field-level properties. They are documented here in __example for developer reference,
+    // but should be added at the top level of the hints file (not inside __example) to be active.
+    // Example top-level usage:
+    //   "_defaultColor": "blue"  // or "#FF0000" for hex
+    //   "_colorMapping": {"Vehicle": "blue", "Task": "green"}
     finalHints["__example"] = [
         "fieldType": "string",  // string, number, boolean, date, url, uuid, document, image, custom
         "isOptional": false,
@@ -1309,13 +1316,16 @@ func generateHintsFile(for fields: [FieldInfo], outputURL: URL) {
         "pickerOptions": NSNull()  // [{"value": "...", "label": "..."}] or null
     ] as [String: Any]
     
-    // Add top-level color configuration documentation
-    // These are PresentationHints-level options, not field-level
-    // Note: These should be added at the top level of the hints file, not in __example
-    // Example usage in hints file:
-    //   "_defaultColor": "blue"  // or "#FF0000" for hex
-    //   "_colorMapping": {"Vehicle": "blue", "Task": "green"}
-    // The script preserves these if they exist, but doesn't auto-generate them
+    // Add color configuration example to __example metadata for documentation
+    // Note: Color configuration must be at the TOP LEVEL of the hints file to be active
+    // (not inside __example). This is just documentation showing the format.
+    if var exampleDict = finalHints["__example"] as? [String: Any] {
+        // Add color config documentation as metadata within __example
+        var metadata = exampleDict["metadata"] as? [String: String] ?? [:]
+        metadata["_colorConfigExample"] = "Add at top level: \"_defaultColor\": \"blue\" or \"_colorMapping\": {\"TypeName\": \"color\"}"
+        exampleDict["metadata"] = metadata
+        finalHints["__example"] = exampleDict
+    }
     
     // Use existing field order if available, otherwise use new order
     // Always ensure __example is at the end
