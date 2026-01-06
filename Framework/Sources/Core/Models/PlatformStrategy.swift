@@ -1,0 +1,613 @@
+//
+//  PlatformStrategy.swift
+//  SixLayerFramework
+//
+//  Centralized platform-specific strategy values and computed properties
+//  Consolidates platform switch statements to reduce code duplication (DRY)
+//
+//  Created as part of Issue #140: Consolidate Platform Switch Statements
+//
+
+import Foundation
+import SwiftUI
+
+// MARK: - Platform Strategy Extension
+
+/// Platform-specific strategy values and computed properties
+/// Consolidates common platform switch statements to reduce duplication
+public extension SixLayerPlatform {
+    
+    // MARK: - Touch & Interaction Properties
+    
+    /// Minimum touch target size for accessibility compliance (points)
+    /// Per Apple HIG: 44x44 points on touch-first platforms
+    /// 
+    /// - iOS/watchOS: Always 44.0 (touch-first platforms)
+    /// - macOS/tvOS/visionOS: 44.0 if touch is detected, 0.0 otherwise
+    var minTouchTarget: CGFloat {
+        switch self {
+        case .iOS, .watchOS:
+            return 44.0  // Touch-first platforms always need touch-sized targets
+        case .macOS, .tvOS, .visionOS:
+            // Non-touch-first platforms: check runtime touch capability for accessibility
+            // Note: This requires RuntimeCapabilityDetection, so we'll use a computed property
+            // that checks at runtime. For compile-time only, return 0.0
+            return RuntimeCapabilityDetection.supportsTouch ? 44.0 : 0.0
+        }
+    }
+    
+    /// Whether this platform natively supports touch as primary interaction
+    /// This is a platform characteristic, not runtime capability detection
+    var isTouchFirstPlatform: Bool {
+        switch self {
+        case .iOS, .watchOS:
+            return true
+        case .macOS, .tvOS, .visionOS:
+            return false
+        }
+    }
+    
+    /// Whether this platform natively supports hover as primary interaction
+    var isHoverFirstPlatform: Bool {
+        switch self {
+        case .macOS, .visionOS:
+            return true
+        case .iOS, .watchOS, .tvOS:
+            return false
+        }
+    }
+    
+    // MARK: - Hover Properties
+    
+    /// Platform-appropriate hover delay (seconds)
+    /// Returns the delay value only if hover is actually supported at runtime.
+    /// Returns 0.0 if hover is not supported.
+    /// 
+    /// This checks runtime hover support because there's no practical use case
+    /// for getting a hover delay value when hover isn't available.
+    /// 
+    /// - macOS: 0.5s (if hover supported via mouse/trackpad)
+    /// - visionOS: 0.5s (if hover supported via hand tracking)
+    /// - iOS: 0.5s (if hover supported on iPad with Apple Pencil), 0.0 for iPhone
+    /// - watchOS: 0.0s (no hover support)
+    /// - tvOS: 0.0s (no hover support)
+    var hoverDelay: TimeInterval {
+        // Check runtime support first - no point returning a delay if hover isn't available
+        guard RuntimeCapabilityDetection.supportsHover else {
+            return 0.0
+        }
+        
+        // Return platform-appropriate delay for platforms that support hover
+        switch self {
+        case .macOS, .visionOS:
+            return 0.5
+        case .iOS:
+            // iPad with Apple Pencil hover - runtime check already verified support
+            return 0.5
+        case .watchOS, .tvOS:
+            return 0.0  // These platforms don't support hover
+        }
+    }
+    
+    // MARK: - Presentation Strategy Properties
+    
+    /// Default presentation preference for generic/collection content
+    /// Considers platform capabilities and screen size
+    /// Returns a PresentationPreference that can be used with Layer 1 functions
+    func defaultPresentationPreference(deviceType: DeviceType) -> PresentationPreference {
+        switch self {
+        case .macOS, .visionOS:
+            return .grid
+        case .iOS:
+            return deviceType == .pad ? .grid : .list
+        case .watchOS, .tvOS:
+            return .list
+        }
+    }
+    
+    /// Default presentation preference for media content
+    func defaultMediaPresentationPreference(deviceType: DeviceType) -> PresentationPreference {
+        switch self {
+        case .visionOS:
+            return .coverFlow  // Spatial interface prefers coverflow
+        case .macOS:
+            return .cards  // Desktop prefers hover-expandable cards
+        case .iOS:
+            return deviceType == .pad ? .cards : .automatic
+        case .watchOS, .tvOS:
+            return .list  // Constrained interfaces prefer lists
+        }
+    }
+    
+    /// Default presentation preference for navigation content
+    func defaultNavigationPresentationPreference() -> PresentationPreference {
+        switch self {
+        case .visionOS:
+            return .coverFlow
+        case .macOS, .iOS:
+            return .masonry
+        case .watchOS, .tvOS:
+            return .grid
+        }
+    }
+    
+    // MARK: - Count Threshold Properties
+    
+    /// Count threshold for switching between small and large collection presentation
+    /// Used in count-aware automatic presentation behavior
+    func countThreshold(dataType: DataTypeHint, deviceType: DeviceType) -> Int {
+        // Base threshold by content type
+        let baseThreshold: Int
+        switch dataType {
+        case .media:
+            baseThreshold = 15  // Media handled separately
+        case .navigation:
+            baseThreshold = 6  // Navigation handled separately
+        case .generic, .collection:
+            baseThreshold = 8
+        default:
+            baseThreshold = 8
+        }
+        
+        // Adjust by platform/device
+        switch (self, deviceType) {
+        case (.macOS, _), (.iOS, .pad):
+            return baseThreshold + 4  // More screen space
+        case (.iOS, .phone):
+            return baseThreshold
+        case (.watchOS, _), (.tvOS, _):
+            return 3  // Always prefer list
+        default:
+            return baseThreshold
+        }
+    }
+    
+    // MARK: - Navigation Properties
+    
+    /// Default navigation style for this platform
+    var defaultNavigationStyle: NavigationStyle {
+        switch self {
+        case .macOS, .visionOS:
+            return .splitView
+        case .iOS:
+            return .stack
+        case .watchOS, .tvOS:
+            return .stack
+        }
+    }
+    
+    // MARK: - Form Styling Properties
+    
+    /// Default form style preference for this platform
+    /// Returns a value indicating which FormStyle should be used
+    /// - iOS: grouped (matches iOS Settings app style)
+    /// - macOS: automatic (adapts to macOS conventions)
+    /// - watchOS/tvOS/visionOS: grouped (consistent grouped appearance)
+    /// 
+    /// Note: Due to Swift's type system limitations with `some FormStyle` and different
+    /// concrete types (GroupedFormStyle vs AutomaticFormStyle), the actual style
+    /// selection is done in the calling code using this preference.
+    var defaultFormStylePreference: FormStylePreference {
+        switch self {
+        case .iOS, .watchOS, .tvOS, .visionOS:
+            return .grouped
+        case .macOS:
+            return .automatic  // macOS default adapts to platform conventions
+        }
+    }
+    
+    // MARK: - UI Styling Properties
+    
+    /// Default corner radius for card/container components (points)
+    /// Used for containers, cards, and larger UI elements
+    var defaultCardCornerRadius: CGFloat {
+        switch self {
+        case .iOS: return 12
+        case .macOS: return 8
+        case .watchOS: return 16
+        case .tvOS: return 12
+        case .visionOS: return 14
+        }
+    }
+    
+    /// Default corner radius for button components (points)
+    /// Used for buttons and smaller interactive elements
+    var defaultButtonCornerRadius: CGFloat {
+        switch self {
+        case .iOS: return 8
+        case .macOS: return 6
+        case .watchOS: return 12
+        case .tvOS: return 8
+        case .visionOS: return 10
+        }
+    }
+    
+    /// Default shadow radius for card/container components (points)
+    /// Used for elevation and depth in card-based layouts
+    var defaultShadowRadius: CGFloat {
+        switch self {
+        case .iOS: return 4
+        case .macOS: return 2
+        case .watchOS: return 0  // No shadows on watch
+        case .tvOS: return 4
+        case .visionOS: return 5
+        }
+    }
+    
+    /// Default shadow offset for card/container components (points)
+    /// Vertical offset for shadow positioning
+    var defaultShadowOffset: CGFloat {
+        switch self {
+        case .iOS: return 2
+        case .macOS: return 1
+        case .watchOS: return 0  // No shadows on watch
+        case .tvOS: return 2
+        case .visionOS: return 3
+        }
+    }
+    
+    /// Default border width for adaptive button styles (points)
+    /// Used when button style is set to adaptive
+    var defaultAdaptiveBorderWidth: CGFloat {
+        switch self {
+        case .iOS, .macOS, .tvOS, .visionOS:
+            return 1
+        case .watchOS:
+            return 0  // No borders on watch
+        }
+    }
+    
+    /// Default announcement delay for accessibility (seconds)
+    /// Used for VoiceOver and Switch Control announcements
+    var defaultAnnouncementDelay: TimeInterval {
+        switch self {
+        case .visionOS:
+            return 0.7  // Longer delay for spatial interface
+        case .watchOS, .tvOS:
+            return 0.3  // Shorter delay for constrained interfaces
+        case .iOS, .macOS:
+            return 0.5  // Standard delay
+        }
+    }
+    
+    /// Default grid column count for collection views
+    /// Used for creating GridItem arrays with platform-appropriate column counts
+    var defaultGridColumnCount: Int {
+        switch self {
+        case .iOS: return 2
+        case .macOS: return 3
+        case .watchOS: return 1
+        case .tvOS: return 4
+        case .visionOS: return 3
+        }
+    }
+    
+    /// Whether this platform supports liquid glass design effects
+    /// Liquid glass effects are visual effects that may not be supported on all platforms
+    var supportsLiquidGlassEffects: Bool {
+        switch self {
+        case .iOS, .macOS, .visionOS:
+            return true
+        case .watchOS, .tvOS:
+            return false
+        }
+    }
+    
+    /// Whether this platform supports liquid glass reflection effects
+    /// Reflection effects require more advanced rendering capabilities
+    var supportsLiquidGlassReflections: Bool {
+        switch self {
+        case .iOS, .macOS, .visionOS:
+            return true
+        case .watchOS, .tvOS:
+            return false
+        }
+    }
+    
+    // MARK: - HIG Compliance Properties
+    
+    /// Whether this platform supports AssistiveTouch
+    /// AssistiveTouch is only available on touch-first platforms
+    var supportsAssistiveTouch: Bool {
+        switch self {
+        case .iOS, .watchOS:
+            return true
+        case .macOS, .tvOS, .visionOS:
+            return false
+        }
+    }
+    
+    /// Whether this platform supports haptic feedback
+    /// Haptic feedback is available on touch-first platforms
+    var supportsHapticFeedback: Bool {
+        switch self {
+        case .iOS, .watchOS:
+            return true
+        case .macOS, .tvOS, .visionOS:
+            return false
+        }
+    }
+    
+    /// Whether this platform supports keyboard navigation as primary input
+    /// Keyboard navigation is primary on desktop and TV platforms
+    var supportsKeyboardNavigation: Bool {
+        switch self {
+        case .macOS, .tvOS:
+            return true
+        case .iOS, .watchOS, .visionOS:
+            return false
+        }
+    }
+    
+    /// Default safe area insets for this platform (points)
+    var defaultSafeAreaInsets: EdgeInsets {
+        switch self {
+        case .iOS:
+            return EdgeInsets(top: 44, leading: 0, bottom: 34, trailing: 0)  // Status bar + home indicator
+        case .macOS:
+            return EdgeInsets(top: 22, leading: 0, bottom: 0, trailing: 0)  // Menu bar
+        case .watchOS:
+            return EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)  // Full screen
+        case .tvOS:
+            return EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)  // Full screen
+        case .visionOS:
+            return EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)  // Spatial interface
+        }
+    }
+    
+    // MARK: - Animation Properties
+    
+    /// Default animation duration for this platform (seconds)
+    var defaultAnimationDuration: TimeInterval {
+        switch self {
+        case .iOS:
+            return 0.3
+        case .macOS:
+            return 0.25
+        case .watchOS:
+            return 0.15  // Very fast for watch
+        case .tvOS:
+            return 0.4  // Slower for TV viewing
+        case .visionOS:
+            return 0.4  // Slower for spatial interface
+        }
+    }
+    
+    /// Default animation easing for this platform
+    var defaultAnimationEasing: Animation {
+        switch self {
+        case .iOS:
+            return .easeInOut(duration: defaultAnimationDuration)
+        case .macOS:
+            return .easeInOut(duration: defaultAnimationDuration)
+        case .watchOS:
+            return .easeInOut(duration: defaultAnimationDuration)
+        case .tvOS:
+            return .easeInOut(duration: defaultAnimationDuration)
+        case .visionOS:
+            return .easeInOut(duration: defaultAnimationDuration)
+        }
+    }
+    
+    /// Default spring response for animations (seconds)
+    /// Used for spring animations on platforms that support them
+    var defaultSpringResponse: TimeInterval {
+        switch self {
+        case .iOS:
+            return 0.3
+        case .macOS:
+            return 0.4
+        case .watchOS:
+            return 0.2  // Faster for watch
+        case .tvOS:
+            return 0.4
+        case .visionOS:
+            return 0.4
+        }
+    }
+    
+    /// Default damping fraction for spring animations
+    /// Controls the "bounciness" of spring animations
+    var defaultDampingFraction: Double {
+        switch self {
+        case .iOS:
+            return 0.7
+        case .macOS:
+            return 0.8  // Less bouncy on macOS
+        case .watchOS:
+            return 0.6  // More bouncy for watch
+        case .tvOS:
+            return 0.7
+        case .visionOS:
+            return 0.7
+        }
+    }
+    
+    // MARK: - OCR Properties
+    
+    /// Supported OCR languages for this platform
+    var supportedOCRLanguages: [OCRLanguage] {
+        switch self {
+        case .iOS, .macOS, .visionOS:
+            return [.english, .spanish, .french, .german, .italian, .portuguese, .chinese, .japanese, .korean, .arabic, .russian]
+        case .watchOS, .tvOS:
+            return [.english, .spanish, .french, .german]  // Limited processing power
+        }
+    }
+    
+    /// Default OCR processing mode for this platform
+    func defaultOCRProcessingMode(requiresNeuralEngine: Bool) -> OCRProcessingMode {
+        switch self {
+        case .iOS:
+            return requiresNeuralEngine ? .neural : .standard
+        case .macOS:
+            return requiresNeuralEngine ? .accurate : .standard  // macOS doesn't have neural engine
+        case .watchOS:
+            return .fast  // Limited processing power
+        case .tvOS:
+            return .standard
+        case .visionOS:
+            return .neural  // visionOS can handle neural processing for spatial UI
+        }
+    }
+    
+    // MARK: - Optimization Properties
+    
+    /// Default display optimization for this platform
+    /// Used for rendering and display quality settings
+    var defaultDisplayOptimization: DisplayOptimization {
+        switch self {
+        case .iOS, .macOS:
+            return .retina
+        case .watchOS:
+            return .highDPI
+        case .tvOS:
+            return .standard
+        case .visionOS:
+            return .spatial
+        }
+    }
+    
+    /// Default frame rate optimization for this platform
+    /// Used for animation and rendering performance
+    var defaultFrameRateOptimization: FrameRateOptimization {
+        switch self {
+        case .iOS, .watchOS:
+            return .adaptive
+        case .macOS, .tvOS:
+            return .fixed60
+        case .visionOS:
+            return .variable
+        }
+    }
+    
+    /// Default compatibility score for this platform (0.0 - 1.0)
+    /// Used for cross-platform compatibility assessment
+    var defaultCompatibilityScore: Double {
+        switch self {
+        case .iOS: return 0.95
+        case .macOS: return 0.92
+        case .watchOS: return 0.88
+        case .tvOS: return 0.90
+        case .visionOS: return 0.85
+        }
+    }
+    
+    /// Default performance score for this platform (0.0 - 1.0)
+    /// Used for performance assessment
+    var defaultPerformanceScore: Double {
+        switch self {
+        case .iOS: return 0.88
+        case .macOS: return 0.91
+        case .watchOS: return 0.85
+        case .tvOS: return 0.89
+        case .visionOS: return 0.87
+        }
+    }
+    
+    /// Default accessibility score for this platform (0.0 - 1.0)
+    /// Used for accessibility assessment
+    var defaultAccessibilityScore: Double {
+        switch self {
+        case .iOS: return 0.90
+        case .macOS: return 0.87
+        case .watchOS: return 0.86
+        case .tvOS: return 0.88
+        case .visionOS: return 0.89
+        }
+    }
+    
+    /// Default animation category for this platform
+    /// Used for HIG-compliant animation selection
+    var defaultAnimationCategory: HIGAnimationCategory {
+        switch self {
+        case .iOS:
+            return .spring
+        case .macOS, .watchOS, .tvOS, .visionOS:
+            return .easeInOut
+        }
+    }
+    
+    /// Default keyboard modifiers for this platform
+    /// Returns appropriate modifiers for keyboard shortcuts
+    /// - macOS: Returns provided modifiers (uses Command key)
+    /// - Other platforms: Returns empty modifiers (no keyboard shortcuts)
+    func defaultKeyboardModifiers(_ modifiers: EventModifiers) -> EventModifiers {
+        switch self {
+        case .macOS:
+            return modifiers  // macOS uses Command key for most shortcuts
+        case .iOS, .watchOS, .tvOS, .visionOS:
+            return []  // These platforms don't support traditional keyboard shortcuts
+        }
+    }
+    
+    /// Get platform-appropriate shortcut description
+    /// Returns a string describing how shortcuts work on this platform
+    /// For macOS, formats with modifier string and key character
+    /// For other platforms, returns platform-specific gesture description
+    func defaultShortcutDescription(key: KeyEquivalent, modifiers: EventModifiers = .command) -> String {
+        switch self {
+        case .macOS:
+            // macOS: Format as "⌘key" (modifier string + key)
+            var modifierString = ""
+            if modifiers.contains(.command) { modifierString += "⌘" }
+            if modifiers.contains(.option) { modifierString += "⌥" }
+            if modifiers.contains(.control) { modifierString += "⌃" }
+            if modifiers.contains(.shift) { modifierString += "⇧" }
+            return "\(modifierString)\(key.character)"
+        case .iOS:
+            return "Swipe or tap gesture"
+        case .watchOS:
+            return "Digital Crown or tap"
+        case .tvOS:
+            return "Remote button"
+        case .visionOS:
+            return "Hand gesture or voice"
+        }
+    }
+}
+
+// MARK: - Platform Strategy Helper Functions
+
+/// Get platform-specific value using strategy pattern
+/// Reduces need for switch statements throughout codebase
+public struct PlatformStrategy {
+    
+    /// Get minimum touch target for platform
+    public static func minTouchTarget(for platform: SixLayerPlatform) -> CGFloat {
+        return platform.minTouchTarget
+    }
+    
+    /// Get hover delay for platform
+    public static func hoverDelay(for platform: SixLayerPlatform) -> TimeInterval {
+        return platform.hoverDelay
+    }
+    
+    /// Get default presentation preference for platform and device type
+    public static func defaultPresentationPreference(
+        for platform: SixLayerPlatform,
+        deviceType: DeviceType
+    ) -> PresentationPreference {
+        return platform.defaultPresentationPreference(deviceType: deviceType)
+    }
+    
+    /// Get default navigation style for platform
+    public static func defaultNavigationStyle(for platform: SixLayerPlatform) -> NavigationStyle {
+        return platform.defaultNavigationStyle
+    }
+    
+    /// Check if platform supports AssistiveTouch
+    public static func supportsAssistiveTouch(for platform: SixLayerPlatform) -> Bool {
+        return platform.supportsAssistiveTouch
+    }
+}
+
+// MARK: - Form Style Preference
+
+/// Form style preference enum for platform-specific form styling
+/// Used to determine which FormStyle to apply based on platform conventions
+public enum FormStylePreference {
+    case grouped
+    case automatic
+}
+

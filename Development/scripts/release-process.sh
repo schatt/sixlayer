@@ -649,7 +649,6 @@ if [ $ERRORS_FOUND -gt 0 ]; then
     echo -e "$ERROR_MESSAGES"
     echo ""
     echo "Please fix all errors and run the release script again."
-    echo "💡 Tip: The script now reports ALL errors at once for efficient fixing!"
     exit 1
 fi
 

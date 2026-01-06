@@ -53,48 +53,34 @@ public struct HIGAnimationSystem {
     }
     
     /// Get default animation for platform
+    /// Uses PlatformStrategy to reduce code duplication (Issue #140)
     public var defaultAnimation: Animation {
         switch platform {
         case .iOS:
-            return .spring(response: 0.3, dampingFraction: 0.7) // iOS prefers spring animations
+            // iOS prefers spring animations
+            return .spring(response: platform.defaultSpringResponse, dampingFraction: platform.defaultDampingFraction)
         case .macOS:
-            return .easeInOut(duration: 0.25) // macOS prefers easeInOut
-        default:
-            return .easeInOut(duration: 0.25)
+            // macOS prefers easeInOut
+            return .easeInOut(duration: platform.defaultAnimationDuration)
+        case .watchOS, .tvOS, .visionOS:
+            // Other platforms use easeInOut
+            return .easeInOut(duration: platform.defaultAnimationDuration)
         }
     }
     
     private var defaultDuration: Double {
-        switch platform {
-        case .iOS:
-            return 0.3
-        case .macOS:
-            return 0.25
-        default:
-            return 0.25
-        }
+        // Use PlatformStrategy to reduce code duplication (Issue #140)
+        return platform.defaultAnimationDuration
     }
     
     private var defaultSpringResponse: Double {
-        switch platform {
-        case .iOS:
-            return 0.3
-        case .macOS:
-            return 0.4
-        default:
-            return 0.3
-        }
+        // Use PlatformStrategy to reduce code duplication (Issue #140)
+        return platform.defaultSpringResponse
     }
     
     private var defaultDampingFraction: Double {
-        switch platform {
-        case .iOS:
-            return 0.7
-        case .macOS:
-            return 0.8
-        default:
-            return 0.7
-        }
+        // Use PlatformStrategy to reduce code duplication (Issue #140)
+        return platform.defaultDampingFraction
     }
 }
 
@@ -105,15 +91,9 @@ public enum HIGAnimationCategory: Equatable {
     case custom(TimingFunction)
     
     /// Default animation category for platform
+    /// Uses PlatformStrategy to reduce code duplication (Issue #140)
     public static func `default`(for platform: SixLayerPlatform) -> HIGAnimationCategory {
-        switch platform {
-        case .iOS:
-            return .spring
-        case .macOS:
-            return .easeInOut
-        default:
-            return .easeInOut
-        }
+        return platform.defaultAnimationCategory
     }
 }
 

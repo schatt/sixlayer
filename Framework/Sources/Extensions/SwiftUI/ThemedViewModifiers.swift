@@ -143,18 +143,18 @@ public struct ThemedFormStyle: ViewModifier {
         @Environment(\.platformStyle) private var platform
         
         var body: some View {
-            content
-                .formStyle(formStyle)
-                .background(colors.background)
-        }
-        
-        private var formStyle: some FormStyle {
-            switch platform {
-            case .ios: return .grouped
-            case .macOS: return .grouped
-            case .watchOS: return .grouped
-            case .tvOS: return .grouped
-            case .visionOS: return .grouped
+            // Use PlatformStrategy to determine form style preference (Issue #140)
+            // Apply style directly to avoid Swift's type system limitations with `some FormStyle`
+            // Use AnyView to wrap different return types
+            switch platform.sixLayerPlatform.defaultFormStylePreference {
+            case .grouped:
+                return AnyView(content
+                    .formStyle(.grouped)
+                    .background(colors.background))
+            case .automatic:
+                return AnyView(content
+                    .formStyle(.automatic)
+                    .background(colors.background))
             }
         }
     }

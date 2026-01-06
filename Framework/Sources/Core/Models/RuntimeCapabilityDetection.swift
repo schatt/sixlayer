@@ -572,6 +572,7 @@ public struct RuntimeCapabilityDetection {
     /// 
     /// Note: This checks platform availability, not whether the user has it enabled.
     /// Test overrides can simulate different platforms, but platform detection is authoritative for availability.
+    /// Uses PlatformStrategy to reduce code duplication (Issue #140)
     nonisolated public static var supportsAssistiveTouch: Bool {
         // Check for capability override first (allows testing different scenarios)
         // But availability is fundamentally based on platform
@@ -579,15 +580,8 @@ public struct RuntimeCapabilityDetection {
             return testValue
         }
         
-        // Platform availability: iOS and watchOS support AssistiveTouch
-        // Other platforms do not support it
-        let platform = currentPlatform
-        switch platform {
-        case .iOS, .watchOS:
-            return true  // Platform supports AssistiveTouch
-        case .macOS, .tvOS, .visionOS:
-            return false  // Platform does not support AssistiveTouch
-        }
+        // Platform availability: use PlatformStrategy for platform characteristic
+        return currentPlatform.supportsAssistiveTouch
     }
     
     // MARK: - Vision Framework Detection
@@ -918,23 +912,27 @@ public extension RuntimeCapabilityDetection {
     /// accessibility standards still apply.
     ///
     /// Note: nonisolated - this property considers both platform and runtime capability
+    /// Uses PlatformStrategy to reduce code duplication (Issue #140)
     nonisolated static var minTouchTarget: CGFloat {
         // DTRT: Respect platform's primary interaction method, but ensure accessibility
-        switch currentPlatform {
-        case .iOS, .watchOS:
-            return 44.0  // Touch-first platforms always need touch-sized targets
-        case .macOS, .tvOS, .visionOS:
-            // Non-touch-first platforms: check runtime touch capability for accessibility
-            return supportsTouch ? 44.0 : 0.0
+        let platform = currentPlatform
+        
+        // Use platform strategy for touch-first platforms
+        if platform.isTouchFirstPlatform {
+            return platform.minTouchTarget  // Always 44.0 for touch-first platforms
         }
+        
+        // Non-touch-first platforms: check runtime touch capability for accessibility
+        return supportsTouch ? 44.0 : 0.0
     }
     
     /// Hover delay for platforms that support hover
-    /// Returns platform-appropriate hover delay values.
-    /// Note: Actual hover support is determined by `supportsHover` property at runtime.
-    /// This property returns the delay value that would be used if hover is supported.
+    /// Returns platform-appropriate hover delay values, or 0.0 if hover is not supported.
     /// 
-    /// Platform hover delays:
+    /// This property checks `supportsHover` at runtime and returns 0.0 if hover is not available.
+    /// If hover is supported, returns the platform-appropriate delay value.
+    /// 
+    /// Platform hover delays (when hover is supported):
     /// - macOS: 0.5s (mouse/trackpad hover)
     /// - visionOS: 0.5s (hand tracking hover)
     /// - iOS: 0.5s (iPad with Apple Pencil hover, 0.0 for iPhone - determined at runtime)
@@ -942,25 +940,12 @@ public extension RuntimeCapabilityDetection {
     /// - tvOS: 0.0s (no hover support)
     /// 
     /// Note: nonisolated - this property only does platform switching, no MainActor APIs accessed
+    /// Uses PlatformStrategy to reduce code duplication (Issue #140)
+    /// PlatformStrategy.hoverDelay already checks runtime support, so we can use it directly
     nonisolated static var hoverDelay: TimeInterval {
-        // Use real platform detection - tests should run on actual platforms/simulators
-        let platform = currentPlatform
-        
-        switch platform {
-        case .macOS:
-            return 0.5   // macOS hover delay (mouse/trackpad)
-        case .visionOS:
-            return 0.5   // visionOS hover delay (hand tracking)
-        case .iOS:
-            // iOS hover is device-dependent (iPad supports it, iPhone doesn't)
-            // Return 0.5 as the potential delay; actual support checked via supportsHover
-            // If hover is not supported, the delay value is irrelevant
-            return 0.5   // iPad with Apple Pencil hover delay
-        case .watchOS:
-            return 0.0   // watchOS doesn't support hover
-        case .tvOS:
-            return 0.0   // tvOS doesn't support hover
-        }
+        // PlatformStrategy.hoverDelay already checks RuntimeCapabilityDetection.supportsHover
+        // and returns 0.0 if not supported, so we can use it directly
+        return currentPlatform.hoverDelay
     }
 }
 

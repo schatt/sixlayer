@@ -21,9 +21,10 @@ open class Layer5PlatformOptimizationTests: BaseTestClass {
         // When touch is enabled, minTouchTarget is always 44.0 for accessibility
         let currentPlatform = SixLayerPlatform.current
         let expectedMinTouchTarget: CGFloat = 44.0  // Always 44.0 when touch is enabled
-        let expectedHoverDelay: TimeInterval = (currentPlatform == .macOS || currentPlatform == .visionOS || currentPlatform == .iOS) ? 0.5 : 0.0
+        // When hover is disabled, hoverDelay should be 0.0 (Issue #141)
+        let expectedHoverDelay: TimeInterval = 0.0
         #expect(config.minTouchTarget == expectedMinTouchTarget, "Current platform \(currentPlatform) should have 44.0 minTouchTarget when touch is enabled (for accessibility)")
-        #expect(config.hoverDelay == expectedHoverDelay, "Current platform \(currentPlatform) should have platform-appropriate hoverDelay (\(expectedHoverDelay))")
+        #expect(config.hoverDelay == expectedHoverDelay, "Current platform \(currentPlatform) should have hoverDelay 0.0 when hover is disabled")
     }
     
     @Test @MainActor func testGetCardExpansionPlatformConfig_macOS() async {
@@ -66,10 +67,11 @@ open class Layer5PlatformOptimizationTests: BaseTestClass {
         // When touch is enabled, minTouchTarget is always 44.0 for accessibility
         let currentPlatform = SixLayerPlatform.current
         let expectedMinTouchTarget: CGFloat = 44.0  // Always 44.0 when touch is enabled
-        let expectedHoverDelay: TimeInterval = (currentPlatform == .macOS || currentPlatform == .visionOS || currentPlatform == .iOS) ? 0.5 : 0.0
+        // When hover is disabled, hoverDelay should be 0.0 (Issue #141)
+        let expectedHoverDelay: TimeInterval = 0.0
         
         #expect(config.minTouchTarget == expectedMinTouchTarget, "Current platform \(currentPlatform) should have 44.0 minTouchTarget when touch is enabled (for accessibility)")
-        #expect(config.hoverDelay == expectedHoverDelay, "Current platform \(currentPlatform) should have platform-appropriate hoverDelay (\(expectedHoverDelay))")
+        #expect(config.hoverDelay == expectedHoverDelay, "Current platform \(currentPlatform) should have hoverDelay 0.0 when hover is disabled")
     }
     
     @Test @MainActor func testGetCardExpansionPlatformConfig_tvOS() async {
@@ -81,10 +83,11 @@ open class Layer5PlatformOptimizationTests: BaseTestClass {
         // Verify platform-appropriate values for current platform
         let currentPlatform = SixLayerPlatform.current
         let expectedMinTouchTarget: CGFloat = (currentPlatform == .iOS || currentPlatform == .watchOS) ? 44.0 : 0.0
-        let expectedHoverDelay: TimeInterval = (currentPlatform == .macOS || currentPlatform == .visionOS || currentPlatform == .iOS) ? 0.5 : 0.0
+        // When hover is disabled, hoverDelay should be 0.0 (Issue #141)
+        let expectedHoverDelay: TimeInterval = 0.0
         
         #expect(config.minTouchTarget == expectedMinTouchTarget, "Current platform \(currentPlatform) should have platform-appropriate minTouchTarget (\(expectedMinTouchTarget))")
-        #expect(config.hoverDelay == expectedHoverDelay, "Current platform \(currentPlatform) should have platform-appropriate hoverDelay (\(expectedHoverDelay))")
+        #expect(config.hoverDelay == expectedHoverDelay, "Current platform \(currentPlatform) should have hoverDelay 0.0 when hover is disabled")
     }
     
     @Test @MainActor func testGetCardExpansionPlatformConfig_AllPlatforms() async {
@@ -93,14 +96,16 @@ open class Layer5PlatformOptimizationTests: BaseTestClass {
         // Verify platform-appropriate values for current platform (not simulated platform)
         let currentPlatform = SixLayerPlatform.current
         let expectedMinTouchTarget: CGFloat = (currentPlatform == .iOS || currentPlatform == .watchOS) ? 44.0 : 0.0
-        let expectedHoverDelay: TimeInterval = (currentPlatform == .macOS || currentPlatform == .visionOS || currentPlatform == .iOS) ? 0.5 : 0.0
+        // When hover is not explicitly enabled, hoverDelay should be 0.0 (Issue #141)
+        // Note: This test doesn't set hover support, so it will use default (likely false)
+        let expectedHoverDelay: TimeInterval = 0.0
         
         for _ in platforms {
             let config = getCardExpansionPlatformConfig()
             
             // Verify platform-appropriate values for current platform
             #expect(config.minTouchTarget == expectedMinTouchTarget, "Current platform \(currentPlatform) should have platform-appropriate minTouchTarget (\(expectedMinTouchTarget))")
-            #expect(config.hoverDelay == expectedHoverDelay, "Current platform \(currentPlatform) should have platform-appropriate hoverDelay (\(expectedHoverDelay))")
+            #expect(config.hoverDelay == expectedHoverDelay, "Current platform \(currentPlatform) should have hoverDelay 0.0 when hover is not enabled")
         }
     }
     

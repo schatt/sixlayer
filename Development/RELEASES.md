@@ -1,12 +1,39 @@
 # 🚀 Six-Layer Framework Release History
 
-## 📍 **Current Release: v6.7.0 - Test Fixes & Count-Based Presentation** 🎯
+## 📍 **Current Release: v6.8.0 - DRY Improvements - Platform Switch Consolidation** 🎯
 
-**Release Date**: January 5, 2026
+**Release Date**: January 6, 2026
 **Status**: ✅ **COMPLETE**
-**Previous Release**: v6.6.3 - ScrollView Wrapper Fixes
-**Note**: Minor release fixing touch target minimum tests per Apple HIG guidelines and implementing count-based automatic presentation behavior. This release ensures tests correctly validate Apple HIG compliance for touch targets and adds intelligent count-aware presentation strategies.
-**Next Release**: TBD
+**Previous Release**: v6.7.0 - Test Fixes & Count-Based Presentation
+**Note**: Minor release focused on reducing code duplication by consolidating platform switch statements into a centralized PlatformStrategy module. This release improves maintainability and establishes a single source of truth for platform-specific simple values.
+**Next Release**: v7.0.0 - Breaking Changes (Card Color Configuration)
+
+---
+
+## 🎯 **v6.8.0 - DRY Improvements - Platform Switch Consolidation** (January 6, 2026)
+
+### **What's New:**
+
+#### **🔧 PlatformStrategy Module (Issue #140)**
+- **19 switch statements** consolidated into `PlatformStrategy`
+- **4 duplicate functions** eliminated
+- **Total: 23 code duplications eliminated**
+- **Single source of truth** for platform-specific simple values
+- **Properties added**: Form style preferences, UI styling numeric values, boolean values, array values, optimization properties, animation and interaction properties
+
+#### **🔄 Runtime Check Pattern Consistency (Issue #141)**
+- **Consistent runtime capability checks** in `PlatformStrategy`
+- **Pattern established**: Runtime capability checks (e.g., `supportsHover`, `supportsTouch`) are now consistently handled
+- **Impact**: Ensures platform-specific values are only returned when capabilities are actually available
+
+### **What's Fixed:**
+
+#### **🧹 Code Duplication Reduction**
+- **100% consolidation** of identified simple value switches
+- **Easier maintenance** - change platform behavior in one place
+- **Better testability** - test platform strategies independently
+
+**See [RELEASE_v6.8.0.md](RELEASE_v6.8.0.md) for complete release notes.**
 
 ---
 

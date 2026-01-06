@@ -157,17 +157,9 @@ public struct LiquidGlassMaterial: Equatable {
     }
     
     /// Check platform compatibility
+    /// Uses PlatformStrategy for platform-specific support (Issue #140)
     public func isCompatible(with platform: SixLayerPlatform) -> Bool {
-        switch platform {
-        case .iOS:
-            return true
-        case .macOS:
-            return true
-        case .watchOS, .tvOS:
-            return false
-        case .visionOS:
-            return true
-        }
+        return platform.supportsLiquidGlassEffects
     }
     
     /// Get accessibility information
@@ -301,15 +293,9 @@ public struct FloatingControl: Equatable {
     }
     
     /// Check platform support
+    /// Uses PlatformStrategy for platform-specific support (Issue #140)
     public func isSupported(on platform: SixLayerPlatform) -> Bool {
-        switch platform {
-        case .iOS, .macOS:
-            return true
-        case .watchOS, .tvOS:
-            return false
-        case .visionOS:
-            return true
-        }
+        return platform.supportsLiquidGlassReflections
     }
     
     /// Get accessibility information

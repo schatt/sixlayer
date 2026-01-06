@@ -519,18 +519,9 @@ public struct ThemedGenericItemCollectionView: View {
     }
     
     private var gridColumns: [GridItem] {
-        switch platform {
-        case .ios:
-            return Array(repeating: GridItem(.flexible()), count: 2)
-        case .macOS:
-            return Array(repeating: GridItem(.flexible()), count: 3)
-        case .watchOS:
-            return Array(repeating: GridItem(.flexible()), count: 1)
-        case .tvOS:
-            return Array(repeating: GridItem(.flexible()), count: 4)
-        case .visionOS:
-            return Array(repeating: GridItem(.flexible()), count: 3)
-        }
+        // Use PlatformStrategy for platform-specific grid column count (Issue #140)
+        let columnCount = platform.sixLayerPlatform.defaultGridColumnCount
+        return Array(repeating: GridItem(.flexible()), count: columnCount)
     }
 }
 

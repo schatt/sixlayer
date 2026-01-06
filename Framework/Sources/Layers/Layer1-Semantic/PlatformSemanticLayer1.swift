@@ -1515,13 +1515,30 @@ public struct CustomItemCollectionView<Item: Identifiable>: View {
         let deviceType = SixLayerPlatform.deviceType
         
         // For custom views, prefer grid on larger screens, list on smaller
-        switch platform {
-        case .macOS, .visionOS:
-            return .grid
-        case .iOS:
-            return deviceType == .pad ? .grid : .list
-        case .watchOS, .tvOS:
+        // Use PlatformStrategy to reduce code duplication (Issue #140)
+        let preference = platform.defaultPresentationPreference(deviceType: deviceType)
+        return presentationStrategyFromPreference(preference)
+    }
+    
+    /// Convert PresentationPreference to PresentationStrategy
+    /// Helper function to bridge PlatformStrategy (which uses PresentationPreference) 
+    /// with internal PresentationStrategy enum
+    private func presentationStrategyFromPreference(_ preference: PresentationPreference) -> PresentationStrategy {
+        switch preference {
+        case .cards, .card:
+            return .expandableCards
+        case .list:
             return .list
+        case .grid:
+            return .grid
+        case .masonry:
+            return .masonry
+        case .coverFlow:
+            return .coverFlow
+        case .automatic:
+            return .adaptive
+        default:
+            return .adaptive
         }
     }
 }
@@ -1661,28 +1678,16 @@ public struct GenericItemCollectionView<Item: Identifiable>: View {
         
         // Media content
         if hints.dataType == .media {
-            switch platform {
-            case .visionOS:
-                return .coverFlow
-            case .macOS, .iOS:
-                return .masonry
-            default:
-                return .grid
-            }
+            // Use PlatformStrategy to reduce code duplication (Issue #140)
+            let preference = platform.defaultMediaPresentationPreference(deviceType: deviceType)
+            return presentationStrategyFromPreference(preference)
         }
         
         // Navigation items
         if hints.dataType == .navigation {
-            switch deviceType {
-            case .phone:
-                return .list
-            case .pad:
-                return .grid
-            case .mac:
-                return .list
-            default:
-                return .list
-            }
+            // Use PlatformStrategy to reduce code duplication (Issue #140)
+            let preference = platform.defaultNavigationPresentationPreference()
+            return presentationStrategyFromPreference(preference)
         }
         
         // Default based on presentation preference
@@ -1755,37 +1760,38 @@ public struct GenericItemCollectionView<Item: Identifiable>: View {
     }
     
     /// Get count threshold based on content type, platform, and device
+    /// Uses PlatformStrategy to reduce code duplication (Issue #140)
     private func getCountThreshold(
         dataType: DataTypeHint,
         platform: SixLayerPlatform,
         deviceType: DeviceType
     ) -> Int {
-        // Base threshold by content type
-        let baseThreshold: Int
-        switch dataType {
-        case .media:
-            baseThreshold = 15  // Media handled separately (shouldn't reach here)
-        case .navigation:
-            baseThreshold = 6  // Navigation handled separately (shouldn't reach here)
-        case .generic, .collection:
-            baseThreshold = 8
-        default:
-            baseThreshold = 8
-        }
-        
-        // Adjust by platform/device
-        switch (platform, deviceType) {
-        case (.macOS, _), (.iOS, .pad):
-            return baseThreshold + 4  // More screen space
-        case (.iOS, .phone):
-            return baseThreshold
-        case (.watchOS, _), (.tvOS, _):
-            return 3  // Always prefer list
-        default:
-            return baseThreshold
-        }
+        // Use PlatformStrategy which handles both base threshold and platform/device adjustments
+        return platform.countThreshold(dataType: dataType, deviceType: deviceType)
     }
 
+    /// Convert PresentationPreference to PresentationStrategy
+    /// Helper function to bridge PlatformStrategy (which uses PresentationPreference) 
+    /// with internal PresentationStrategy enum
+    private func presentationStrategyFromPreference(_ preference: PresentationPreference) -> PresentationStrategy {
+        switch preference {
+        case .cards, .card:
+            return .expandableCards
+        case .list:
+            return .list
+        case .grid:
+            return .grid
+        case .masonry:
+            return .masonry
+        case .coverFlow:
+            return .coverFlow
+        case .automatic:
+            return .adaptive
+        default:
+            return .adaptive
+        }
+    }
+    
     /// Convert a PresentationPreference to a PresentationStrategy
     /// Used for countBased preferences where nested preferences need resolution
     private func determineStrategyForPreference(_ preference: PresentationPreference) -> PresentationStrategy {

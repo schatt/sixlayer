@@ -11,6 +11,7 @@ This document provides guidance for AI assistants working with the SixLayer Fram
 ## 📚 Version-Specific Guides
 
 ### Latest Versions (Recommended)
+- **[AI_AGENT_v6.8.0.md](AI_AGENT_v6.8.0.md)** - DRY Improvements - Platform Switch Consolidation
 - **[AI_AGENT_v6.7.0.md](AI_AGENT_v6.7.0.md)** - Test Fixes & Count-Based Presentation
 - **[AI_AGENT_v6.6.3.md](AI_AGENT_v6.6.3.md)** - ScrollView Wrapper Fixes (patch release - use v6.6.0 guide)
 - **[AI_AGENT_v6.6.2.md](AI_AGENT_v6.6.2.md)** - Swift 6 Compilation Fixes (patch release - use v6.6.0 guide)

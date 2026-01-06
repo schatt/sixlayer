@@ -461,33 +461,18 @@ public struct PlatformUIIntegration {
         }
         
         private var cornerRadius: CGFloat {
-            switch platform {
-            case .ios: return 12
-            case .macOS: return 8
-            case .watchOS: return 16
-            case .tvOS: return 12
-            case .visionOS: return 14
-            }
+            // Use PlatformStrategy for platform-specific corner radius (Issue #140)
+            return platform.sixLayerPlatform.defaultCardCornerRadius
         }
         
         private var shadowRadius: CGFloat {
-            switch platform {
-            case .ios: return 4
-            case .macOS: return 2
-            case .watchOS: return 0
-            case .tvOS: return 4
-            case .visionOS: return 5
-            }
+            // Use PlatformStrategy for platform-specific shadow radius (Issue #140)
+            return platform.sixLayerPlatform.defaultShadowRadius
         }
         
         private var shadowOffset: CGFloat {
-            switch platform {
-            case .ios: return 2
-            case .macOS: return 1
-            case .watchOS: return 0
-            case .tvOS: return 2
-            case .visionOS: return 3
-            }
+            // Use PlatformStrategy for platform-specific shadow offset (Issue #140)
+            return platform.sixLayerPlatform.defaultShadowOffset
         }
     }
 }

@@ -112,39 +112,15 @@ public class KeyboardShortcutManager {
     }
     
     /// Adapt modifiers for platform conventions
+    /// Uses PlatformStrategy to reduce code duplication (Issue #140)
     private func adaptModifiersForPlatform(_ modifiers: EventModifiers) -> EventModifiers {
-        switch platform {
-        case .macOS:
-            // macOS uses Command key for most shortcuts
-            return modifiers
-        case .iOS:
-            // iOS doesn't support traditional keyboard shortcuts in the same way
-            // Return empty modifiers for iOS
-            return []
-        case .watchOS, .tvOS:
-            // These platforms don't support keyboard shortcuts
-            return []
-        case .visionOS:
-            // visionOS supports spatial input but limited keyboard shortcuts
-            return []
-        }
+        return platform.defaultKeyboardModifiers(modifiers)
     }
     
     /// Get platform-appropriate shortcut description
+    /// Uses PlatformStrategy to reduce code duplication (Issue #140)
         func getShortcutDescription(key: KeyEquivalent, modifiers: EventModifiers = .command) -> String {
-        switch platform {
-        case .macOS:
-            let modifierString = getModifierString(modifiers)
-            return "\(modifierString)\(key.character)"
-        case .iOS:
-            return "Swipe or tap gesture"
-        case .watchOS:
-            return "Digital Crown or tap"
-        case .tvOS:
-            return "Remote button"
-        case .visionOS:
-            return "Hand gesture or voice"
-        }
+        return platform.defaultShortcutDescription(key: key, modifiers: modifiers)
     }
     
     private func getModifierString(_ modifiers: EventModifiers) -> String {
