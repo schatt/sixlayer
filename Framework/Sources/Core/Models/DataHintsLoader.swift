@@ -22,7 +22,10 @@ public struct DataHintsResult: @unchecked Sendable {
     /// Default color for card presentation (parsed from _defaultColor in hints file)
     public let defaultColor: String?
     /// Color mapping by type name (parsed from _colorMapping in hints file)
-    /// Format: {"TypeName": "colorString"} where colorString can be a named color or hex
+    /// Format: {"TypeName": "colorString"} where TypeName is your Swift type name as a string
+    /// (e.g., "Vehicle", "Task", "User") and colorString can be a named color or hex
+    /// Note: Currently stored but not automatically converted to ObjectIdentifier-based mapping.
+    /// See PresentationHints initializer TODO for type name -> ObjectIdentifier conversion.
     public let colorMapping: [String: String]?
     
     public init(

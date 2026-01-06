@@ -1363,8 +1363,10 @@ func generateHintsFile(for fields: [FieldInfo], outputURL: URL) {
         "_defaults": [
             "_defaultColor": "blue",  // Default color for card presentation (named color or hex like "#FF0000")
             "_colorMapping": [
-                "Vehicle": "blue",  // Type-based color mapping: use your actual type name (e.g., "Vehicle", "Task")
-                "Task": "green"     // The key is the type name as a string, value is the color string
+                "Vehicle": "blue",  // Type-based color mapping: use your Swift type name as a string
+                "Task": "green"     // (e.g., "Vehicle", "Task", "User"). Value is color string (named or hex)
+                // Note: Currently parsed but not automatically converted to ObjectIdentifier mapping.
+                // Use colorMapping parameter in PresentationHints for ObjectIdentifier-based mapping.
             ]
         ]
     ] as [String: Any]
