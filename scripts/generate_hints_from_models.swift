@@ -692,8 +692,8 @@ struct HintsGenerator {
         for key in fieldOrder {
             if key == "__example" {
                 hasExample = true
-            } else if key != "_sections" {
-                // _sections is handled separately, don't add it to fieldsToWrite
+            } else if key != "_sections" && key != "_defaults" {
+                // _sections and _defaults are handled separately, don't add them to fieldsToWrite
                 fieldsToWrite.append(key)
             }
         }
