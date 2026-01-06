@@ -1304,7 +1304,8 @@ func generateHintsFile(for fields: [FieldInfo], outputURL: URL) {
     // The structure inside __example mirrors the top-level structure of a hints file
     finalHints["__example"] = [
         // Example field definition (shows all field-level properties)
-        "exampleField": [
+        // In a real hints file, you'd have actual field names like "username", "email", etc.
+        "__examplefield": [
             "fieldType": "string",  // string, number, boolean, date, url, uuid, document, image, custom
             "isOptional": false,
             "isArray": false,
@@ -1323,22 +1324,26 @@ func generateHintsFile(for fields: [FieldInfo], outputURL: URL) {
             "inputType": NSNull(),  // "picker", "text", etc. or null
             "pickerOptions": NSNull()  // [{"value": "...", "label": "..."}] or null
         ],
-        // Top-level color configuration (copy these to root level to activate)
-        "_defaultColor": "blue",  // Default color for card presentation (named color or hex like "#FF0000")
-        "_colorMapping": [
-            "Vehicle": "blue",  // Type-based color mapping: {"TypeName": "colorString"}
-            "Task": "green"
-        ],
         // Top-level sections configuration (copy to root level to activate)
+        // This shows how to organize fields into sections
         "_sections": [
             [
                 "id": "default",
                 "title": "Form Fields",
                 "description": NSNull(),  // Optional section description
-                "fields": ["field1", "field2"],  // Array of field names in this section
+                "fields": ["__examplefield", "anotherField"],  // Array of field names in this section
                 "layoutStyle": NSNull(),  // Optional layout style
                 "isCollapsible": false,  // Whether section can be collapsed
                 "isCollapsed": false  // Whether section starts collapsed
+            ]
+        ],
+        // Card presentation defaults (copy these to root level to activate)
+        // This groups color configuration together logically
+        "CardDefaults": [
+            "_defaultColor": "blue",  // Default color for card presentation (named color or hex like "#FF0000")
+            "_colorMapping": [
+                "Vehicle": "blue",  // Type-based color mapping: use your actual type name (e.g., "Vehicle", "Task")
+                "Task": "green"     // The key is the type name as a string, value is the color string
             ]
         ]
     ] as [String: Any]
