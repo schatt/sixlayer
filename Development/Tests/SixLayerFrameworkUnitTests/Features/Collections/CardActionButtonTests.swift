@@ -262,6 +262,7 @@ open class CardActionButtonTests: BaseTestClass {
             item: item,
             layoutDecision: CardActionButtonTests.layoutDecision,
             strategy: CardActionButtonTests.strategy,
+            hints: PresentationHints(),
             isExpanded: false, // Not expanded
             isHovered: false,
             onExpand: {},
