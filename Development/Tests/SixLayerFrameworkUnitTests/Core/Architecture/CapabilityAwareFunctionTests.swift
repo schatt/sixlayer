@@ -225,10 +225,9 @@ open class CapabilityAwareFunctionTests: BaseTestClass {
         // Test that hover-related functions handle disabled state gracefully
         #expect(!config.supportsHover, "Hover should not be supported when disabled on current platform")
 
-        // Verify hoverDelay returns platform-appropriate value for current platform regardless of hover state
-        let currentPlatform = SixLayerPlatform.current
-        let expectedHoverDelay: TimeInterval = (currentPlatform == .macOS || currentPlatform == .visionOS || currentPlatform == .iOS) ? 0.5 : 0.0
-        #expect(config.hoverDelay == expectedHoverDelay, "Hover delay should be platform-appropriate (\(expectedHoverDelay)) for current platform \(currentPlatform), regardless of hover state")
+        // Verify hoverDelay returns 0.0 when hover is not supported (Issue #141)
+        // When hover is disabled, there's no point in returning a hover delay value
+        #expect(config.hoverDelay == 0.0, "Hover delay should be 0.0 when hover is not supported on current platform \(SixLayerPlatform.current)")
         // Do not assert touch state when hover is disabled; it can vary by platform/config
         
         // Clean up
