@@ -1,5 +1,5 @@
 // swift-tools-version: 6.0
-// SixLayerFramework v6.7.0 - Test Fixes & Count-Based Presentation
+// SixLayerFramework v6.8.0 - DRY Improvements - Platform Switch Consolidation
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription

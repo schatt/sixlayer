@@ -27,7 +27,7 @@ Navigate to the `Framework/` directory and use it as a Swift Package:
 ```swift
 // In your Package.swift
 dependencies: [
-    .package(url: "https://github.com/schatt/sixlayer.git", from: "6.7.0")
+    .package(url: "https://github.com/schatt/sixlayer.git", from: "6.8.0")
 ]
 ```
 
@@ -41,9 +41,14 @@ dependencies: [
 
 The framework is distributed as a Swift Package from the `Framework/` directory. This ensures that only the essential framework code is included when other projects consume it.
 
-## 🆕 Latest Release: v6.7.0
+## 🆕 Latest Release: v6.8.0
 
-### **Test Fixes & Count-Based Presentation**
+### **DRY Improvements - Platform Switch Consolidation**
+🔧 **PlatformStrategy Module**: Consolidated 19 platform switch statements into a centralized `PlatformStrategy` module. Eliminated 4 duplicate functions. Total: 23 code duplications eliminated. Single source of truth for platform-specific simple values.
+
+🔄 **Runtime Check Pattern Consistency**: Established consistent pattern for runtime capability checks in `PlatformStrategy`. Ensures platform-specific values are only returned when capabilities are actually available.
+
+### **Previous Release: v6.7.0 - Test Fixes & Count-Based Presentation**
 🆕 **Count-Based Automatic Presentation**: Added intelligent count-aware presentation strategy selection. `.automatic` presentation preference now considers item count for generic/collection content, with platform-aware thresholds. Added `.countBased(lowCount:highCount:threshold:)` enum case for explicit control.
 
 🔧 **Touch Target Test Fixes**: Fixed touch target minimum tests to correctly validate Apple HIG compliance. Tests now correctly expect 44.0 minimum touch target when touch is enabled, with tolerance-based floating point comparison.
@@ -162,9 +167,9 @@ These guides contain critical information about the Layer 1 Semantic Intent phil
 
 ## 📋 Current Status
 
-**Version**: v6.7.0 (Test Fixes & Count-Based Presentation)
+**Version**: v6.8.0 (DRY Improvements - Platform Switch Consolidation)
 **Phase**: Minor Release
-**Next**: Continue framework development and stability improvements
+**Next**: v7.0.0 - Breaking Changes (Card Color Configuration)
 
 ## 🤝 Contributing
 
