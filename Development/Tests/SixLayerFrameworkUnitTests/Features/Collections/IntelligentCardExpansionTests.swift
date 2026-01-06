@@ -224,6 +224,7 @@ open class IntelligentCardExpansionTests: BaseTestClass {
                 expansionScale: 1.15,
                 animationDuration: 0.3
             ),
+            hints: PresentationHints(),
             isExpanded: false,
             isHovered: false,
             onExpand: {},
