@@ -1288,18 +1288,6 @@ func generateHintsFile(for fields: [FieldInfo], outputURL: URL) {
         // Preserve color configuration if it exists (nested under _cardDefaults)
         if let cardDefaults = json["_cardDefaults"] as? [String: Any] {
             existingHints?["_cardDefaults"] = cardDefaults
-        } else {
-            // Backward compatibility: preserve top-level color config if it exists
-            var cardDefaults: [String: Any] = [:]
-            if let defaultColor = json["_defaultColor"] {
-                cardDefaults["_defaultColor"] = defaultColor
-            }
-            if let colorMapping = json["_colorMapping"] {
-                cardDefaults["_colorMapping"] = colorMapping
-            }
-            if !cardDefaults.isEmpty {
-                existingHints?["_cardDefaults"] = cardDefaults
-            }
         }
     }
     
@@ -1313,23 +1301,8 @@ func generateHintsFile(for fields: [FieldInfo], outputURL: URL) {
     var finalHints = hints
     var hasColorConfig = false
     if let existing = existingHints, let cardDefaults = existing["_cardDefaults"] as? [String: Any] {
-        // New format: nested under _cardDefaults
         finalHints["_cardDefaults"] = cardDefaults
         hasColorConfig = true
-    } else if let existing = existingHints {
-        // Backward compatibility: migrate top-level color config to _cardDefaults
-        var cardDefaults: [String: Any] = [:]
-        if let defaultColor = existing["_defaultColor"] {
-            cardDefaults["_defaultColor"] = defaultColor
-            hasColorConfig = true
-        }
-        if let colorMapping = existing["_colorMapping"] {
-            cardDefaults["_colorMapping"] = colorMapping
-            hasColorConfig = true
-        }
-        if !cardDefaults.isEmpty {
-            finalHints["_cardDefaults"] = cardDefaults
-        }
     }
     
     // Add example color configuration if none exists (to help developers discover the feature)

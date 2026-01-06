@@ -189,33 +189,6 @@ struct HintsFileColorConfigurationTests {
         #expect(result.fieldHints["username"] != nil, "Should still parse username field")
     }
     
-    @Test func testParseColorConfigBackwardCompatibility() throws {
-        // Given: Hints file with top-level color config (old format - backward compatibility)
-        let json: [String: Any] = [
-            "username": [
-                "fieldType": "string",
-                "isOptional": false
-            ],
-            "_defaultColor": "blue",
-            "_colorMapping": [
-                "Vehicle": "blue"
-            ]
-        ]
-        
-        let (testFile, uniqueModelName) = try writeHintsFile(modelName: "TestModel", json: json)
-        defer {
-            try? FileManager.default.removeItem(at: testFile)
-        }
-        
-        // When: Load hints file
-        let loader = FileBasedDataHintsLoader()
-        let result = loader.loadHintsResult(for: uniqueModelName)
-        
-        // Then: Should parse top-level color config (backward compatibility)
-        #expect(result.defaultColor == "blue", "Should parse top-level _defaultColor for backward compatibility")
-        #expect(result.colorMapping != nil, "Should parse top-level _colorMapping for backward compatibility")
-        #expect(result.colorMapping?["Vehicle"] == "blue", "Should parse Vehicle mapping")
-    }
     
     // MARK: - PresentationHints Convenience Initializer Tests
     

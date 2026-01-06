@@ -148,21 +148,15 @@ public class FileBasedDataHintsLoader: DataHintsLoader {
         let languageCode = locale.language.languageCode?.identifier ?? "en"
         
         // Parse color configuration from _cardDefaults (nested structure)
-        // Supports both nested (_cardDefaults) and top-level (backward compatibility) formats
         var defaultColor: String?
         var colorMapping: [String: String]?
         
         if let cardDefaults = json["_cardDefaults"] as? [String: Any] {
-            // New format: nested under _cardDefaults
             defaultColor = cardDefaults["_defaultColor"] as? String
             colorMapping = cardDefaults["_colorMapping"] as? [String: String]
-        } else {
-            // Backward compatibility: top-level keys
-            defaultColor = json["_defaultColor"] as? String
-            colorMapping = json["_colorMapping"] as? [String: String]
         }
         
-        // Parse field hints (all keys except _sections, __example, _cardDefaults, and color config keys)
+        // Parse field hints (all keys except _sections, __example, and _cardDefaults)
         for (key, value) in json {
             if key == "_sections" {
                 continue // Handle sections separately
@@ -172,9 +166,6 @@ public class FileBasedDataHintsLoader: DataHintsLoader {
             }
             if key == "_cardDefaults" {
                 continue // Handle color config separately
-            }
-            if key == "_defaultColor" || key == "_colorMapping" {
-                continue // Backward compatibility: skip top-level color config keys
             }
             
             if let properties = value as? [String: Any] {
