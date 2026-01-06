@@ -1339,7 +1339,9 @@ func generateHintsFile(for fields: [FieldInfo], outputURL: URL) {
         ],
         // Card presentation defaults (copy these to root level to activate)
         // This groups color configuration together logically
-        "CardDefaults": [
+        // Note: In a real hints file, _defaultColor and _colorMapping go at the top level,
+        // not nested. They're shown here in CardDefaults just for organizational clarity.
+        "_cardDefaults": [
             "_defaultColor": "blue",  // Default color for card presentation (named color or hex like "#FF0000")
             "_colorMapping": [
                 "Vehicle": "blue",  // Type-based color mapping: use your actual type name (e.g., "Vehicle", "Task")
