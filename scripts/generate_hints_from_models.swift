@@ -681,12 +681,12 @@ struct HintsGenerator {
         // Build JSON string manually to preserve order
         var jsonLines: [String] = ["{"]
         
-        // Separate fields, _cardDefaults, _sections, and __example
+        // Separate fields, _defaults, _sections, and __example
         let fieldOrder = preserveOrder ?? Array(hints.keys).sorted()
         var fieldsToWrite: [String] = []
-        // Check if _sections and _cardDefaults exist in hints (not just in fieldOrder, since they're excluded from fieldOrder)
+        // Check if _sections and _defaults exist in hints (not just in fieldOrder, since they're excluded from fieldOrder)
         let hasSections = hints["_sections"] != nil
-        let hasCardDefaults = hints["_cardDefaults"] != nil
+        let hasDefaults = hints["_defaults"] != nil
         var hasExample = false
         
         for key in fieldOrder {
@@ -790,24 +790,24 @@ struct HintsGenerator {
             jsonLines.append("  }")
         }
         
-        // Write _cardDefaults after fields but before _sections
-        if hasCardDefaults, let cardDefaults = hints["_cardDefaults"] as? [String: Any] {
+        // Write _defaults after fields but before _sections
+        if hasDefaults, let defaults = hints["_defaults"] as? [String: Any] {
             if !isFirst {
                 jsonLines[jsonLines.count - 1] += ","
             }
             isFirst = false
             
-            jsonLines.append("  \"_cardDefaults\": {")
+            jsonLines.append("  \"_defaults\": {")
             
-            var cardDefaultsProps: [String] = []
-            if let defaultColor = cardDefaults["_defaultColor"] {
-                cardDefaultsProps.append("\"_defaultColor\": \(formatJSONValue(defaultColor))")
+            var defaultsProps: [String] = []
+            if let defaultColor = defaults["_defaultColor"] {
+                defaultsProps.append("\"_defaultColor\": \(formatJSONValue(defaultColor))")
             }
-            if let colorMapping = cardDefaults["_colorMapping"] {
-                cardDefaultsProps.append("\"_colorMapping\": \(formatJSONValue(colorMapping))")
+            if let colorMapping = defaults["_colorMapping"] {
+                defaultsProps.append("\"_colorMapping\": \(formatJSONValue(colorMapping))")
             }
             
-            for (index, prop) in cardDefaultsProps.enumerated() {
+            for (index, prop) in defaultsProps.enumerated() {
                 if index > 0 {
                     jsonLines[jsonLines.count - 1] += ","
                 }
@@ -817,7 +817,7 @@ struct HintsGenerator {
             jsonLines.append("  }")
         }
         
-        // Write _sections after _cardDefaults but before __example
+        // Write _sections after _defaults but before __example
         if hasSections, let sections = hints["_sections"] {
             if !isFirst {
                 jsonLines[jsonLines.count - 1] += ","
@@ -1275,9 +1275,9 @@ func generateHintsFile(for fields: [FieldInfo], outputURL: URL) {
                 let fieldNameRange = match.range(at: 1)
                 if fieldNameRange.location != NSNotFound {
                     let fieldName = nsString.substring(with: fieldNameRange)
-                    // Skip __example, _sections, and _cardDefaults when tracking order
+                    // Skip __example, _sections, and _defaults when tracking order
                     if fieldName != "__example" && fieldName != "_sections" && 
-                       fieldName != "_cardDefaults" &&
+                       fieldName != "_defaults" &&
                        !existingFieldOrder.contains(fieldName) {
                         existingFieldOrder.append(fieldName)
                     }
@@ -1285,9 +1285,9 @@ func generateHintsFile(for fields: [FieldInfo], outputURL: URL) {
             }
         }
         
-        // Preserve color configuration if it exists (nested under _cardDefaults)
-        if let cardDefaults = json["_cardDefaults"] as? [String: Any] {
-            existingHints?["_cardDefaults"] = cardDefaults
+        // Preserve color configuration if it exists (nested under _defaults)
+        if let defaults = json["_defaults"] as? [String: Any] {
+            existingHints?["_defaults"] = defaults
         }
     }
     
@@ -1300,8 +1300,8 @@ func generateHintsFile(for fields: [FieldInfo], outputURL: URL) {
     // Restore preserved color configuration (if it was in existing hints)
     var finalHints = hints
     var hasColorConfig = false
-    if let existing = existingHints, let cardDefaults = existing["_cardDefaults"] as? [String: Any] {
-        finalHints["_cardDefaults"] = cardDefaults
+    if let existing = existingHints, let defaults = existing["_defaults"] as? [String: Any] {
+        finalHints["_defaults"] = defaults
         hasColorConfig = true
     }
     
@@ -1309,7 +1309,7 @@ func generateHintsFile(for fields: [FieldInfo], outputURL: URL) {
     // Since JSON doesn't support comments, we add it as actual JSON with example values
     // Developers can modify these values or remove the lines if not needed
     if !hasColorConfig {
-        finalHints["_cardDefaults"] = [
+        finalHints["_defaults"] = [
             "_defaultColor": "blue",  // Example: change to "red", "#FF0000", or remove
             "_colorMapping": [
                 "Vehicle": "blue",  // Example: map Vehicle type to blue
@@ -1358,9 +1358,9 @@ func generateHintsFile(for fields: [FieldInfo], outputURL: URL) {
                 "isCollapsed": false  // Whether section starts collapsed
             ]
         ],
-        // Card presentation defaults (this is the actual structure used in hints files)
-        // Color configuration is nested under _cardDefaults for logical grouping
-        "_cardDefaults": [
+        // Presentation defaults (this is the actual structure used in hints files)
+        // Color configuration is nested under _defaults for logical grouping
+        "_defaults": [
             "_defaultColor": "blue",  // Default color for card presentation (named color or hex like "#FF0000")
             "_colorMapping": [
                 "Vehicle": "blue",  // Type-based color mapping: use your actual type name (e.g., "Vehicle", "Task")

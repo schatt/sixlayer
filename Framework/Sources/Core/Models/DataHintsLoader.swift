@@ -147,16 +147,16 @@ public class FileBasedDataHintsLoader: DataHintsLoader {
         // Get language code for OCR hints lookup (e.g., "en", "es", "fr")
         let languageCode = locale.language.languageCode?.identifier ?? "en"
         
-        // Parse color configuration from _cardDefaults (nested structure)
+        // Parse color configuration from _defaults (nested structure)
         var defaultColor: String?
         var colorMapping: [String: String]?
         
-        if let cardDefaults = json["_cardDefaults"] as? [String: Any] {
-            defaultColor = cardDefaults["_defaultColor"] as? String
-            colorMapping = cardDefaults["_colorMapping"] as? [String: String]
+        if let defaults = json["_defaults"] as? [String: Any] {
+            defaultColor = defaults["_defaultColor"] as? String
+            colorMapping = defaults["_colorMapping"] as? [String: String]
         }
         
-        // Parse field hints (all keys except _sections, __example, and _cardDefaults)
+        // Parse field hints (all keys except _sections, __example, and _defaults)
         for (key, value) in json {
             if key == "_sections" {
                 continue // Handle sections separately
@@ -164,7 +164,7 @@ public class FileBasedDataHintsLoader: DataHintsLoader {
             if key == "__example" {
                 continue // Skip __example - it's documentation only
             }
-            if key == "_cardDefaults" {
+            if key == "_defaults" {
                 continue // Handle color config separately
             }
             

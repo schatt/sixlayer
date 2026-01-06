@@ -43,13 +43,13 @@ struct HintsFileColorConfigurationTests {
     
     #if canImport(SwiftUI)
     @Test func testParseDefaultColorFromHintsFile() throws {
-        // Given: Hints file with _defaultColor nested under _cardDefaults
+        // Given: Hints file with _defaultColor nested under _defaults
         let json: [String: Any] = [
             "username": [
                 "fieldType": "string",
                 "isOptional": false
             ],
-            "_cardDefaults": [
+            "_defaults": [
                 "_defaultColor": "blue"
             ]
         ]
@@ -70,13 +70,13 @@ struct HintsFileColorConfigurationTests {
     }
     
     @Test func testParseColorMappingFromHintsFile() throws {
-        // Given: Hints file with _colorMapping nested under _cardDefaults
+        // Given: Hints file with _colorMapping nested under _defaults
         let json: [String: Any] = [
             "username": [
                 "fieldType": "string",
                 "isOptional": false
             ],
-            "_cardDefaults": [
+            "_defaults": [
                 "_colorMapping": [
                     "Vehicle": "blue",
                     "Task": "green"
@@ -101,13 +101,13 @@ struct HintsFileColorConfigurationTests {
     }
     
     @Test func testParseBothColorConfigFromHintsFile() throws {
-        // Given: Hints file with both _defaultColor and _colorMapping nested under _cardDefaults
+        // Given: Hints file with both _defaultColor and _colorMapping nested under _defaults
         let json: [String: Any] = [
             "username": [
                 "fieldType": "string",
                 "isOptional": false
             ],
-            "_cardDefaults": [
+            "_defaults": [
                 "_defaultColor": "red",
                 "_colorMapping": [
                     "Vehicle": "blue",
@@ -133,13 +133,13 @@ struct HintsFileColorConfigurationTests {
     }
     
     @Test func testParseHexColorFromHintsFile() throws {
-        // Given: Hints file with hex color nested under _cardDefaults
+        // Given: Hints file with hex color nested under _defaults
         let json: [String: Any] = [
             "username": [
                 "fieldType": "string",
                 "isOptional": false
             ],
-            "_cardDefaults": [
+            "_defaults": [
                 "_defaultColor": "#FF0000"
             ]
         ]
@@ -158,13 +158,13 @@ struct HintsFileColorConfigurationTests {
     }
     
     @Test func testParseColorConfigIgnoresColorKeysAsFieldHints() throws {
-        // Given: Hints file with color config nested under _cardDefaults (should not be treated as field hints)
+        // Given: Hints file with color config nested under _defaults (should not be treated as field hints)
         let json: [String: Any] = [
             "username": [
                 "fieldType": "string",
                 "isOptional": false
             ],
-            "_cardDefaults": [
+            "_defaults": [
                 "_defaultColor": "blue",
                 "_colorMapping": [
                     "Vehicle": "blue"
@@ -182,7 +182,7 @@ struct HintsFileColorConfigurationTests {
         let result = loader.loadHintsResult(for: uniqueModelName)
         
         // Then: Color config should not appear as field hints
-        #expect(result.fieldHints["_cardDefaults"] == nil, "Should not treat _cardDefaults as field hint")
+        #expect(result.fieldHints["_defaults"] == nil, "Should not treat _defaults as field hint")
         #expect(result.fieldHints["_defaultColor"] == nil, "Should not treat _defaultColor as field hint")
         #expect(result.fieldHints["_colorMapping"] == nil, "Should not treat _colorMapping as field hint")
         #expect(result.fieldHints.count == 1, "Should only have username field")
@@ -193,13 +193,13 @@ struct HintsFileColorConfigurationTests {
     // MARK: - PresentationHints Convenience Initializer Tests
     
     @Test func testPresentationHintsUsesDefaultColorFromHintsFile() async throws {
-        // Given: Hints file with _defaultColor nested under _cardDefaults
+        // Given: Hints file with _defaultColor nested under _defaults
         let json: [String: Any] = [
             "username": [
                 "fieldType": "string",
                 "isOptional": false
             ],
-            "_cardDefaults": [
+            "_defaults": [
                 "_defaultColor": "blue"
             ]
         ]
@@ -217,13 +217,13 @@ struct HintsFileColorConfigurationTests {
     }
     
     @Test func testPresentationHintsParameterOverridesHintsFileDefaultColor() async throws {
-        // Given: Hints file with _defaultColor nested under _cardDefaults
+        // Given: Hints file with _defaultColor nested under _defaults
         let json: [String: Any] = [
             "username": [
                 "fieldType": "string",
                 "isOptional": false
             ],
-            "_cardDefaults": [
+            "_defaults": [
                 "_defaultColor": "blue"
             ]
         ]
@@ -244,13 +244,13 @@ struct HintsFileColorConfigurationTests {
     }
     
     @Test func testPresentationHintsUsesHexColorFromHintsFile() async throws {
-        // Given: Hints file with hex color nested under _cardDefaults
+        // Given: Hints file with hex color nested under _defaults
         let json: [String: Any] = [
             "username": [
                 "fieldType": "string",
                 "isOptional": false
             ],
-            "_cardDefaults": [
+            "_defaults": [
                 "_defaultColor": "#FF0000"  // Red in hex
             ]
         ]
@@ -297,7 +297,7 @@ struct HintsFileColorConfigurationTests {
                 "isOptional": false,
                 "expectedLength": 20
             ],
-            "_cardDefaults": [
+            "_defaults": [
                 "_defaultColor": "green"
             ]
         ]
