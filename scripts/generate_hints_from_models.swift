@@ -806,6 +806,9 @@ struct HintsGenerator {
             if let colorMapping = defaults["_colorMapping"] {
                 defaultsProps.append("\"_colorMapping\": \(formatJSONValue(colorMapping))")
             }
+            if let itemColorProvider = defaults["_itemColorProvider"] {
+                defaultsProps.append("\"_itemColorProvider\": \(formatJSONValue(itemColorProvider))")
+            }
             
             for (index, prop) in defaultsProps.enumerated() {
                 if index > 0 {
@@ -1372,6 +1375,26 @@ func generateHintsFile(for fields: [FieldInfo], outputURL: URL) {
             "_colorMapping": [
                 "Vehicle": "blue",
                 "Task": "green"
+            ],
+            // Per-item color provider: maps property values to colors using reflection
+            // "type" specifies which property to check (e.g., "severity", "status")
+            // "mapping" maps property values to colors (case-insensitive matching)
+            // "statusMapping" is optional secondary mapping for status-based colors
+            "_itemColorProvider": [
+                "type": "severity",
+                "mapping": [
+                    "high": "red",
+                    "critical": "red",
+                    "medium": "orange",
+                    "moderate": "orange",
+                    "low": "yellow",
+                    "minor": "yellow",
+                    "unknown": "gray"
+                ],
+                "statusMapping": [
+                    "active": "red",
+                    "fixed": "green"
+                ]
             ]
         ]
     ] as [String: Any]
