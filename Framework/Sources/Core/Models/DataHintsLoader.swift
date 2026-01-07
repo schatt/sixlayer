@@ -933,22 +933,30 @@ public extension PresentationHints {
         }
         
         // Parse presentation properties from hints file (allow override via parameters)
-        var finalDataType: DataTypeHint? = dataType
-        var finalComplexity: ContentComplexity? = complexity
-        var finalContext: PresentationContext? = context
+        // Use hints file values when code parameters are at their defaults
+        var finalDataType = dataType
+        var finalComplexity = complexity
+        var finalContext = context
         var finalCustomPreferences = customPreferences
         var finalPresentationPreference = presentationPreference
         
-        if let hintsDataType = hintsResult.dataType {
-            finalDataType = finalDataType ?? Self.parseDataTypeFromString(hintsDataType)
+        // Use hints file value if code parameter is at default
+        if let hintsDataType = hintsResult.dataType, dataType == .generic {
+            if let parsed = Self.parseDataTypeFromString(hintsDataType) {
+                finalDataType = parsed
+            }
         }
         
-        if let hintsComplexity = hintsResult.complexity {
-            finalComplexity = finalComplexity ?? Self.parseComplexityFromString(hintsComplexity)
+        if let hintsComplexity = hintsResult.complexity, complexity == .moderate {
+            if let parsed = Self.parseComplexityFromString(hintsComplexity) {
+                finalComplexity = parsed
+            }
         }
         
-        if let hintsContext = hintsResult.context {
-            finalContext = finalContext ?? Self.parseContextFromString(hintsContext)
+        if let hintsContext = hintsResult.context, context == .dashboard {
+            if let parsed = Self.parseContextFromString(hintsContext) {
+                finalContext = parsed
+            }
         }
         
         if let hintsCustomPreferences = hintsResult.customPreferences {
@@ -972,10 +980,10 @@ public extension PresentationHints {
         // TODO: Consider adding a type registry to support type name -> ObjectIdentifier mapping
         
         self.init(
-            dataType: finalDataType ?? .generic,
+            dataType: finalDataType,
             presentationPreference: finalPresentationPreference,
-            complexity: finalComplexity ?? .moderate,
-            context: finalContext ?? .dashboard,
+            complexity: finalComplexity,
+            context: finalContext,
             customPreferences: finalCustomPreferences,
             fieldHints: fieldHints,
             colorMapping: finalColorMapping,
