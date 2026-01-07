@@ -20,8 +20,10 @@ public enum PresentationPreferenceConfig: Sendable {
 
 /// Configuration for item-based color provider parsed from hints files
 public struct ItemColorProviderConfig: Sendable {
-    /// Primary property to check (e.g., "severity", "status")
+    /// Provider type: "severity", "status", "colorName", "fileExtension"
     public let type: String?
+    /// Property to read from (for colorName and fileExtension types)
+    public let property: String?
     /// Mapping from property values to colors (e.g., {"high": "red", "low": "yellow"})
     public let mapping: [String: String]
     /// Secondary property mapping (e.g., status-based colors)
@@ -29,10 +31,12 @@ public struct ItemColorProviderConfig: Sendable {
     
     public init(
         type: String? = nil,
+        property: String? = nil,
         mapping: [String: String] = [:],
         statusMapping: [String: String]? = nil
     ) {
         self.type = type
+        self.property = property
         self.mapping = mapping
         self.statusMapping = statusMapping
     }
@@ -223,11 +227,13 @@ public class FileBasedDataHintsLoader: DataHintsLoader {
             // Parse _itemColorProvider configuration
             if let itemColorProviderDict = defaults["_itemColorProvider"] as? [String: Any] {
                 let type = itemColorProviderDict["type"] as? String
+                let property = itemColorProviderDict["property"] as? String
                 let mapping = itemColorProviderDict["mapping"] as? [String: String] ?? [:]
                 let statusMapping = itemColorProviderDict["statusMapping"] as? [String: String]
                 
                 itemColorProviderConfig = ItemColorProviderConfig(
                     type: type,
+                    property: property,
                     mapping: mapping,
                     statusMapping: statusMapping
                 )
@@ -1063,27 +1069,81 @@ public extension PresentationHints {
                 return nil
             }
             
-            // Check primary property (e.g., "severity")
-            if let typeProperty = config.type {
+            // Helper to extract property value from item
+            func extractPropertyValue(_ propertyName: String) -> String? {
                 for child in mirror.children {
-                    if child.label == typeProperty,
-                       let value = child.value as? String,
-                       let colorString = findColor(in: config.mapping, for: value) {
-                        return Self.parseColorFromString(colorString)
+                    if child.label == propertyName {
+                        if let stringValue = child.value as? String {
+                            return stringValue
+                        }
+                        // Try JSON decoding if property is JSON-encoded
+                        if let jsonString = child.value as? String,
+                           let data = jsonString.data(using: .utf8),
+                           let decoded = try? JSONDecoder().decode(String.self, from: data) {
+                            return decoded
+                        }
                     }
                 }
-            } else {
-                // If no type specified, check all properties against mapping
-                for child in mirror.children {
-                    if let _ = child.label,
-                       let value = child.value as? String,
-                       let colorString = findColor(in: config.mapping, for: value) {
-                        return Self.parseColorFromString(colorString)
+                return nil
+            }
+            
+            // Handle different provider types
+            guard let providerType = config.type?.lowercased() else {
+                // Fallback to old behavior if no type specified
+                if let typeProperty = config.type {
+                    for child in mirror.children {
+                        if child.label == typeProperty,
+                           let value = child.value as? String,
+                           let colorString = findColor(in: config.mapping, for: value) {
+                            return Self.parseColorFromString(colorString)
+                        }
+                    }
+                }
+                return nil
+            }
+            
+            switch providerType {
+            case "colorname":
+                // Read color name directly from property
+                if let propertyName = config.property,
+                   let colorName = extractPropertyValue(propertyName) {
+                    return Self.parseColorFromString(colorName)
+                }
+                
+            case "fileextension":
+                // Map file extension to color
+                if let propertyName = config.property,
+                   let fileExtension = extractPropertyValue(propertyName)?.lowercased(),
+                   let colorString = findColor(in: config.mapping, for: fileExtension) {
+                    return Self.parseColorFromString(colorString)
+                }
+                
+            case "severity", "status":
+                // Existing behavior: map property value to color
+                if let typeProperty = config.type {
+                    for child in mirror.children {
+                        if child.label == typeProperty,
+                           let value = child.value as? String,
+                           let colorString = findColor(in: config.mapping, for: value) {
+                            return Self.parseColorFromString(colorString)
+                        }
+                    }
+                }
+                
+            default:
+                // Unknown type, try generic mapping
+                if let typeProperty = config.type {
+                    for child in mirror.children {
+                        if child.label == typeProperty,
+                           let value = child.value as? String,
+                           let colorString = findColor(in: config.mapping, for: value) {
+                            return Self.parseColorFromString(colorString)
+                        }
                     }
                 }
             }
             
-            // Check status mapping if available
+            // Check status mapping if available (fallback)
             if let statusMapping = config.statusMapping {
                 for child in mirror.children {
                     if child.label == "status",
