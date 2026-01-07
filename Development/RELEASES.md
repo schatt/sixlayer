@@ -1,12 +1,51 @@
 # 🚀 Six-Layer Framework Release History
 
-## 📍 **Current Release: v7.0.2 - Hints File Presentation Properties Support** 🎯
+## 📍 **Current Release: v7.1.0 - Color Resolution System from Hints Files** 🎯
 
-**Release Date**: January 6, 2026
+**Release Date**: January 7, 2026
 **Status**: ✅ **COMPLETE**
-**Previous Release**: v7.0.1 - Hints File Color Configuration Support
-**Note**: Patch release adding support for all PresentationHints properties in hints files. Developers can now configure dataType, complexity, context, customPreferences, and presentationPreference declaratively in `.hints` files.
+**Previous Release**: v7.0.2 - Hints File Presentation Properties Support
+**Note**: Minor release adding comprehensive color resolution system from hints files. New ItemBadge and ItemIcon components automatically resolve colors from hints file configuration. Card components now support optional badge content.
 **Next Release**: TBD
+
+---
+
+## 🎯 **v7.1.0 - Color Resolution System from Hints Files** (January 7, 2026)
+
+### **What's New:**
+
+#### **🆕 Extended Item Color Provider Types (Issue #144)**
+- **`colorName` support**: Read color name directly from property (with JSON decoding)
+- **`fileExtension` support**: Map file extension to color name
+- **Automatic color resolution**: Colors automatically resolved from hints files
+
+#### **🆕 ItemBadge Component**
+- **Four styles**: default, outline, subtle, iconOnly
+- **Automatic color resolution**: Uses hints file configuration
+- **Flexible usage**: Can be used standalone or in cards
+
+#### **🆕 ItemIcon Component**
+- **Automatic color resolution**: Uses hints file configuration
+- **Configurable size**: Default 20pt, customizable
+- **Simple API**: Just provide item, icon name, and hints
+
+#### **🆕 Optional Badge Content in Cards**
+- **All card components**: ExpandableCardComponent, SimpleCardComponent, ListCardComponent
+- **Optional parameter**: Backward compatible (nil by default)
+- **Easy integration**: Use @ViewBuilder for convenience
+
+### **What's Fixed:**
+
+#### **🔧 DataHintsLoader Updates**
+- Extended `ItemColorProviderConfig` with `property` field
+- Updated `createItemColorProvider` to handle colorName and fileExtension types
+- Added JSON decoding support for colorName type
+
+#### **🔧 Hints Generation Script**
+- Updated `__example` section with examples for new provider types
+- Includes comments explaining usage
+
+**See [RELEASE_v7.1.0.md](RELEASE_v7.1.0.md) for complete release notes.**
 
 ---
 
