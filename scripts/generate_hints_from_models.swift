@@ -1361,15 +1361,18 @@ func generateHintsFile(for fields: [FieldInfo], outputURL: URL) {
         // Presentation defaults (this is the actual structure used in hints files)
         // Color configuration is nested under _defaults for logical grouping
         "_defaults": [
-            "_defaultColor": "blue",  // Default color for card presentation (named color or hex like "#FF0000")
-            "_colorMapping": {
-                "Vehicle": "blue",  // Type-based color mapping: use your Swift type name (struct/class/enum)
-                "Task": "green"     // as a string (e.g., "Vehicle", "Task", "User"). This is the Swift type
-                // name, not the Core Data entity name (though they often match).
-                // Value is color string: named color (e.g., "blue") or hex (e.g., "#FF0000")
-                // Note: Currently parsed but not automatically converted to ObjectIdentifier mapping.
-                // Use colorMapping parameter in PresentationHints for ObjectIdentifier-based mapping.
-            }
+            // Default color for card presentation (named color or hex like "#FF0000")
+            "_defaultColor": "blue",
+            // Type-based color mapping: use your Swift type name (struct/class/enum)
+            // as a string (e.g., "Vehicle", "Task", "User"). This is the Swift type
+            // name, not the Core Data entity name (though they often match).
+            // Value is color string: named color (e.g., "blue") or hex (e.g., "#FF0000")
+            // Note: Currently parsed but not automatically converted to ObjectIdentifier mapping.
+            // Use colorMapping parameter in PresentationHints for ObjectIdentifier-based mapping.
+            "_colorMapping": [
+                "Vehicle": "blue",
+                "Task": "green"
+            ]
         ]
     ] as [String: Any]
     
