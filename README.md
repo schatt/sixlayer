@@ -27,7 +27,7 @@ Navigate to the `Framework/` directory and use it as a Swift Package:
 ```swift
 // In your Package.swift
 dependencies: [
-    .package(url: "https://github.com/schatt/sixlayer.git", from: "7.0.1")
+    .package(url: "https://github.com/schatt/sixlayer.git", from: "7.0.2")
 ]
 ```
 
@@ -41,9 +41,12 @@ dependencies: [
 
 The framework is distributed as a Swift Package from the `Framework/` directory. This ensures that only the essential framework code is included when other projects consume it.
 
-## 🆕 Latest Release: v7.0.1
+## 🆕 Latest Release: v7.0.2
 
-### **Hints File Color Configuration Support**
+### **Hints File Presentation Properties Support**
+🆕 **Presentation Properties in Hints Files**: Added support for `_dataType`, `_complexity`, `_context`, `_customPreferences`, and `_presentationPreference` in `.hints` files. All PresentationHints properties can now be configured declaratively in hints files, matching code-based functionality.
+
+### **Previous Release: v7.0.1 - Hints File Color Configuration Support**
 🆕 **Color Configuration in Hints Files**: Added support for `_defaultColor` and `_colorMapping` in `.hints` files. Color configuration can now be stored in hints files and automatically loaded when creating `PresentationHints` from model names.
 
 ### **Previous Release: v7.0.0 - Breaking Changes**
@@ -175,8 +178,8 @@ These guides contain critical information about the Layer 1 Semantic Intent phil
 
 ## 📋 Current Status
 
-**Version**: v7.0.1 (Hints File Color Configuration Support)
-**Phase**: Minor Release
+**Version**: v7.0.2 (Hints File Presentation Properties Support)
+**Phase**: Patch Release
 **Next**: TBD
 
 ## 🤝 Contributing

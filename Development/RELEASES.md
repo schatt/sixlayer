@@ -1,12 +1,42 @@
 # 🚀 Six-Layer Framework Release History
 
-## 📍 **Current Release: v7.0.1 - Hints File Color Configuration Support** 🎯
+## 📍 **Current Release: v7.0.2 - Hints File Presentation Properties Support** 🎯
 
 **Release Date**: January 6, 2026
 **Status**: ✅ **COMPLETE**
-**Previous Release**: v7.0.0 - Breaking Changes - Card Color Configuration
-**Note**: Patch release adding color configuration support to hints files. Developers can now store color configuration in `.hints` files and have it automatically loaded when creating `PresentationHints` from model names.
+**Previous Release**: v7.0.1 - Hints File Color Configuration Support
+**Note**: Patch release adding support for all PresentationHints properties in hints files. Developers can now configure dataType, complexity, context, customPreferences, and presentationPreference declaratively in `.hints` files.
 **Next Release**: TBD
+
+---
+
+## 🎯 **v7.0.2 - Hints File Presentation Properties Support** (January 6, 2026)
+
+### **What's New:**
+
+#### **🆕 Hints File Presentation Properties (Issue #143)**
+- **`_dataType` support**: Configure data type hint in hints files
+- **`_complexity` support**: Configure content complexity in hints files
+- **`_context` support**: Configure presentation context in hints files
+- **`_customPreferences` support**: Configure custom preferences as dictionary
+- **`_presentationPreference` support**: Configure presentation preference (simple or countBased)
+- **Automatic loading**: All properties automatically loaded when using `PresentationHints(modelName:)`
+- **Code parameter overrides**: Code parameters override hints file values when explicitly provided
+- **Hints script updates**: Generation script preserves all presentation properties
+
+### **What's Fixed:**
+
+#### **🔧 DataHintsLoader Updates**
+- Updated `DataHintsResult` to include all presentation properties
+- Updated `parseHintsResult` to parse all properties from hints files
+- Updated `PresentationHints` convenience initializer to use properties from hints files
+- Added `PresentationPreferenceConfig` enum for parsing presentation preference
+
+#### **🔧 Hints Generation Script**
+- Script now preserves all presentation properties when generating/updating hints files
+- Includes examples in `__example` section
+
+**See [RELEASE_v7.0.2.md](RELEASE_v7.0.2.md) for complete release notes.**
 
 ---
 
