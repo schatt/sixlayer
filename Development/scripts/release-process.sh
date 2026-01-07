@@ -2,6 +2,10 @@
 
 # SixLayer Framework Release Process Script
 # This script enforces the mandatory release documentation process
+#
+# Branch and Tag Naming Convention:
+# - Branches: b7.0.0 format (e.g., b7.0.0, b7.0.1) - used for pre-release work
+# - Tags: v7.0.0 format (e.g., v7.0.0, v7.0.1) - used for releases on main
 
 set -e
 
@@ -237,6 +241,8 @@ if [ "$CURRENT_BRANCH" = "main" ]; then
     echo "✅ On main branch (will use direct tag/push workflow)"
 else
     echo "✅ On branch: $CURRENT_BRANCH (will merge to main before tag/push)"
+    # Note: Branch naming convention is b$VERSION (e.g., b7.0.0) for pre-release work
+    # Tags use v$VERSION (e.g., v7.0.0) format
 fi
 
 # Step 3: Check if RELEASES.md needs updating
@@ -702,11 +708,13 @@ if [ "$CURRENT_BRANCH" = "main" ]; then
     fi
 else
     # On a branch: merge to main, then tag/push
+    # Note: Branch naming convention is b$VERSION (e.g., b7.0.0) for pre-release work
+    # Tags use v$VERSION (e.g., v7.0.0) format
     echo "📋 Current branch: $CURRENT_BRANCH"
     echo "📋 This will:"
     echo "   1. Switch to main branch"
     echo "   2. Merge $CURRENT_BRANCH into main"
-    echo "   3. Create and push tag v$VERSION"
+    echo "   3. Create and push tag v$VERSION (tags use v$VERSION format)"
     echo "   4. Push to all remotes"
     echo ""
     read -p "🚀 Proceed with merge and release? (y/N): " -n 1 -r
@@ -786,7 +794,7 @@ else
         echo "Manual steps:"
         echo "1. git checkout main"
         echo "2. git merge $CURRENT_BRANCH --no-ff -m \"Merge $CURRENT_BRANCH for release v$VERSION\""
-        echo "3. git tag -a v$VERSION -m \"Release v$VERSION\""
+        echo "3. git tag -a v$VERSION -m \"Release v$VERSION\"  # Tags use v$VERSION format"
         echo "4. git push all --tags"
         echo "5. git push all main"
     fi
