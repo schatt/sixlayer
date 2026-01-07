@@ -809,6 +809,21 @@ struct HintsGenerator {
             if let itemColorProvider = defaults["_itemColorProvider"] {
                 defaultsProps.append("\"_itemColorProvider\": \(formatJSONValue(itemColorProvider))")
             }
+            if let dataType = defaults["_dataType"] {
+                defaultsProps.append("\"_dataType\": \(formatJSONValue(dataType))")
+            }
+            if let complexity = defaults["_complexity"] {
+                defaultsProps.append("\"_complexity\": \(formatJSONValue(complexity))")
+            }
+            if let context = defaults["_context"] {
+                defaultsProps.append("\"_context\": \(formatJSONValue(context))")
+            }
+            if let customPreferences = defaults["_customPreferences"] {
+                defaultsProps.append("\"_customPreferences\": \(formatJSONValue(customPreferences))")
+            }
+            if let presentationPreference = defaults["_presentationPreference"] {
+                defaultsProps.append("\"_presentationPreference\": \(formatJSONValue(presentationPreference))")
+            }
             
             for (index, prop) in defaultsProps.enumerated() {
                 if index > 0 {
@@ -1395,7 +1410,18 @@ func generateHintsFile(for fields: [FieldInfo], outputURL: URL) {
                     "active": "red",
                     "fixed": "green"
                 ]
-            ]
+            ],
+            // Presentation properties: configure how data is presented
+            "_dataType": "collection",  // Options: generic, text, number, date, image, boolean, collection, numeric, hierarchical, temporal
+            "_complexity": "moderate",  // Options: simple, moderate, complex, veryComplex, advanced
+            "_context": "browse",  // Options: dashboard, browse, detail, edit, create, search, settings, profile, summary, list
+            "_customPreferences": [
+                "businessType": "vehicle",
+                "formStyle": "multiStep"
+            ],
+            // Presentation preference: can be simple string or countBased object
+            "_presentationPreference": "list"  // Options: automatic, minimal, moderate, rich, custom, detail, modal, navigation, list, masonry, standard, form, card, cards, compact, grid, chart, coverFlow
+            // Or use countBased: {"type": "countBased", "lowCount": "list", "highCount": "grid", "threshold": 10}
         ]
     ] as [String: Any]
     
