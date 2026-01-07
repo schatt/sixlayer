@@ -933,9 +933,9 @@ public extension PresentationHints {
         }
         
         // Parse presentation properties from hints file (allow override via parameters)
-        var finalDataType = dataType
-        var finalComplexity = complexity
-        var finalContext = context
+        var finalDataType: DataTypeHint? = dataType
+        var finalComplexity: ContentComplexity? = complexity
+        var finalContext: PresentationContext? = context
         var finalCustomPreferences = customPreferences
         var finalPresentationPreference = presentationPreference
         
@@ -1067,7 +1067,7 @@ public extension PresentationHints {
             } else {
                 // If no type specified, check all properties against mapping
                 for child in mirror.children {
-                    if let label = child.label,
+                    if let _ = child.label,
                        let value = child.value as? String,
                        let colorString = findColor(in: config.mapping, for: value) {
                         return Self.parseColorFromString(colorString)
