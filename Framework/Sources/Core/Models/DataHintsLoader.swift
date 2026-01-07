@@ -10,6 +10,34 @@ import Foundation
 import SwiftUI
 #endif
 
+// MARK: - Item Color Provider Config
+
+/// Configuration for presentation preference parsed from hints files
+public enum PresentationPreferenceConfig: Sendable {
+    case simple(String)  // Simple case like "list", "grid", etc.
+    case countBased(lowCount: String, highCount: String, threshold: Int)
+}
+
+/// Configuration for item-based color provider parsed from hints files
+public struct ItemColorProviderConfig: Sendable {
+    /// Primary property to check (e.g., "severity", "status")
+    public let type: String?
+    /// Mapping from property values to colors (e.g., {"high": "red", "low": "yellow"})
+    public let mapping: [String: String]
+    /// Secondary property mapping (e.g., status-based colors)
+    public let statusMapping: [String: String]?
+    
+    public init(
+        type: String? = nil,
+        mapping: [String: String] = [:],
+        statusMapping: [String: String]? = nil
+    ) {
+        self.type = type
+        self.mapping = mapping
+        self.statusMapping = statusMapping
+    }
+}
+
 // MARK: - Data Hints Result
 
 /// Complete result from loading a hints file, including both field hints and layout sections
@@ -29,17 +57,43 @@ public struct DataHintsResult: @unchecked Sendable {
     /// Note: Currently stored but not automatically converted to ObjectIdentifier-based mapping.
     /// See PresentationHints initializer TODO for type name -> ObjectIdentifier conversion.
     public let colorMapping: [String: String]?
+    /// Item color provider configuration (parsed from _itemColorProvider in hints file)
+    /// Contains property-based color mapping that will be converted to a closure at runtime
+    public let itemColorProviderConfig: ItemColorProviderConfig?
+    /// Data type hint (parsed from _dataType in hints file)
+    public let dataType: String?
+    /// Content complexity (parsed from _complexity in hints file)
+    public let complexity: String?
+    /// Presentation context (parsed from _context in hints file)
+    public let context: String?
+    /// Custom preferences (parsed from _customPreferences in hints file)
+    public let customPreferences: [String: String]?
+    /// Presentation preference configuration (parsed from _presentationPreference in hints file)
+    /// Can be a simple string or a countBased configuration object
+    public let presentationPreference: PresentationPreferenceConfig?
     
     public init(
         fieldHints: [String: FieldDisplayHints] = [:],
         sections: [DynamicFormSection] = [],
         defaultColor: String? = nil,
-        colorMapping: [String: String]? = nil
+        colorMapping: [String: String]? = nil,
+        itemColorProviderConfig: ItemColorProviderConfig? = nil,
+        dataType: String? = nil,
+        complexity: String? = nil,
+        context: String? = nil,
+        customPreferences: [String: String]? = nil,
+        presentationPreference: PresentationPreferenceConfig? = nil
     ) {
         self.fieldHints = fieldHints
         self.sections = sections
         self.defaultColor = defaultColor
         self.colorMapping = colorMapping
+        self.itemColorProviderConfig = itemColorProviderConfig
+        self.dataType = dataType
+        self.complexity = complexity
+        self.context = context
+        self.customPreferences = customPreferences
+        self.presentationPreference = presentationPreference
     }
 }
 
@@ -155,10 +209,47 @@ public class FileBasedDataHintsLoader: DataHintsLoader {
         // Parse color configuration from _defaults (nested structure)
         var defaultColor: String?
         var colorMapping: [String: String]?
+        var itemColorProviderConfig: ItemColorProviderConfig?
+        var dataType: String?
+        var complexity: String?
+        var context: String?
+        var customPreferences: [String: String]?
+        var presentationPreference: PresentationPreferenceConfig?
         
         if let defaults = json["_defaults"] as? [String: Any] {
             defaultColor = defaults["_defaultColor"] as? String
             colorMapping = defaults["_colorMapping"] as? [String: String]
+            
+            // Parse _itemColorProvider configuration
+            if let itemColorProviderDict = defaults["_itemColorProvider"] as? [String: Any] {
+                let type = itemColorProviderDict["type"] as? String
+                let mapping = itemColorProviderDict["mapping"] as? [String: String] ?? [:]
+                let statusMapping = itemColorProviderDict["statusMapping"] as? [String: String]
+                
+                itemColorProviderConfig = ItemColorProviderConfig(
+                    type: type,
+                    mapping: mapping,
+                    statusMapping: statusMapping
+                )
+            }
+            
+            // Parse presentation properties
+            dataType = defaults["_dataType"] as? String
+            complexity = defaults["_complexity"] as? String
+            context = defaults["_context"] as? String
+            customPreferences = defaults["_customPreferences"] as? [String: String]
+            
+            // Parse presentationPreference (can be string or countBased object)
+            if let prefString = defaults["_presentationPreference"] as? String {
+                presentationPreference = .simple(prefString)
+            } else if let prefDict = defaults["_presentationPreference"] as? [String: Any],
+                      let type = prefDict["type"] as? String,
+                      type == "countBased",
+                      let lowCount = prefDict["lowCount"] as? String,
+                      let highCount = prefDict["highCount"] as? String,
+                      let threshold = prefDict["threshold"] as? Int {
+                presentationPreference = .countBased(lowCount: lowCount, highCount: highCount, threshold: threshold)
+            }
         }
         
         // Parse field hints (all keys except _sections, __example, and _defaults)
@@ -265,7 +356,13 @@ public class FileBasedDataHintsLoader: DataHintsLoader {
             fieldHints: fieldHints,
             sections: sections,
             defaultColor: defaultColor,
-            colorMapping: colorMapping
+            colorMapping: colorMapping,
+            itemColorProviderConfig: itemColorProviderConfig,
+            dataType: dataType,
+            complexity: complexity,
+            context: context,
+            customPreferences: customPreferences,
+            presentationPreference: presentationPreference
         )
     }
     
@@ -821,12 +918,58 @@ public extension PresentationHints {
         let fieldHints = hintsResult.fieldHints
         
         // Parse color configuration from hints file
-        var finalColorMapping = colorMapping
+        let finalColorMapping = colorMapping
         var finalDefaultColor = defaultColor
+        var finalItemColorProvider = itemColorProvider
         
         // If hints file has color config, use it (but allow override via parameters)
         if let hintsDefaultColor = hintsResult.defaultColor {
             finalDefaultColor = finalDefaultColor ?? Self.parseColorFromString(hintsDefaultColor)
+        }
+        
+        // Convert itemColorProvider config from hints file to closure
+        if let config = hintsResult.itemColorProviderConfig, finalItemColorProvider == nil {
+            finalItemColorProvider = Self.createItemColorProvider(from: config)
+        }
+        
+        // Parse presentation properties from hints file (allow override via parameters)
+        // Use hints file values when code parameters are at their defaults
+        var finalDataType = dataType
+        var finalComplexity = complexity
+        var finalContext = context
+        var finalCustomPreferences = customPreferences
+        var finalPresentationPreference = presentationPreference
+        
+        // Use hints file value if code parameter is at default
+        if let hintsDataType = hintsResult.dataType, dataType == .generic {
+            if let parsed = Self.parseDataTypeFromString(hintsDataType) {
+                finalDataType = parsed
+            }
+        }
+        
+        if let hintsComplexity = hintsResult.complexity, complexity == .moderate {
+            if let parsed = Self.parseComplexityFromString(hintsComplexity) {
+                finalComplexity = parsed
+            }
+        }
+        
+        if let hintsContext = hintsResult.context, context == .dashboard {
+            if let parsed = Self.parseContextFromString(hintsContext) {
+                finalContext = parsed
+            }
+        }
+        
+        if let hintsCustomPreferences = hintsResult.customPreferences {
+            // Merge: hints file values are defaults, code parameters override
+            var merged = hintsCustomPreferences
+            for (key, value) in customPreferences {
+                merged[key] = value
+            }
+            finalCustomPreferences = merged
+        }
+        
+        if let hintsPresentationPreference = hintsResult.presentationPreference, finalPresentationPreference == .automatic {
+            finalPresentationPreference = Self.parsePresentationPreference(from: hintsPresentationPreference)
         }
         
         // Convert type name -> color string mapping to ObjectIdentifier -> Color mapping
@@ -837,19 +980,124 @@ public extension PresentationHints {
         // TODO: Consider adding a type registry to support type name -> ObjectIdentifier mapping
         
         self.init(
-            dataType: dataType,
-            presentationPreference: presentationPreference,
-            complexity: complexity,
-            context: context,
-            customPreferences: customPreferences,
+            dataType: finalDataType,
+            presentationPreference: finalPresentationPreference,
+            complexity: finalComplexity,
+            context: finalContext,
+            customPreferences: finalCustomPreferences,
             fieldHints: fieldHints,
             colorMapping: finalColorMapping,
-            itemColorProvider: itemColorProvider,
+            itemColorProvider: finalItemColorProvider,
             defaultColor: finalDefaultColor
         )
     }
     
+    /// Parse dataType string to DataTypeHint enum
+    private static func parseDataTypeFromString(_ string: String) -> DataTypeHint? {
+        return DataTypeHint(rawValue: string.lowercased())
+    }
+    
+    /// Parse complexity string to ContentComplexity enum
+    private static func parseComplexityFromString(_ string: String) -> ContentComplexity? {
+        return ContentComplexity(rawValue: string.lowercased())
+    }
+    
+    /// Parse context string to PresentationContext enum
+    private static func parseContextFromString(_ string: String) -> PresentationContext? {
+        return PresentationContext(rawValue: string.lowercased())
+    }
+    
+    /// Parse presentationPreference config to PresentationPreference enum
+    private static func parsePresentationPreference(from config: PresentationPreferenceConfig) -> PresentationPreference {
+        switch config {
+        case .simple(let string):
+            // Map string to enum case
+            switch string.lowercased() {
+            case "automatic": return .automatic
+            case "minimal": return .minimal
+            case "moderate": return .moderate
+            case "rich": return .rich
+            case "custom": return .custom
+            case "detail": return .detail
+            case "modal": return .modal
+            case "navigation": return .navigation
+            case "list": return .list
+            case "masonry": return .masonry
+            case "standard": return .standard
+            case "form": return .form
+            case "card": return .card
+            case "cards": return .cards
+            case "compact": return .compact
+            case "grid": return .grid
+            case "chart": return .chart
+            case "coverflow": return .coverFlow
+            default: return .automatic
+            }
+        case .countBased(let lowCount, let highCount, let threshold):
+            let lowPref = parsePresentationPreference(from: .simple(lowCount))
+            let highPref = parsePresentationPreference(from: .simple(highCount))
+            return .countBased(lowCount: lowPref, highCount: highPref, threshold: threshold)
+        }
+    }
+    
     #if canImport(SwiftUI)
+    /// Create an item color provider closure from hints file configuration
+    private static func createItemColorProvider(from config: ItemColorProviderConfig) -> (@Sendable (any CardDisplayable) -> Color?)? {
+        return { item in
+            // Use Mirror to extract property values
+            let mirror = Mirror(reflecting: item)
+            
+            // Helper to find case-insensitive match in mapping
+            func findColor(in mapping: [String: String], for value: String) -> String? {
+                let lowercasedValue = value.lowercased()
+                // First try exact lowercase match
+                if let color = mapping[lowercasedValue] {
+                    return color
+                }
+                // Then try case-insensitive match against all keys
+                for (key, color) in mapping {
+                    if key.lowercased() == lowercasedValue {
+                        return color
+                    }
+                }
+                return nil
+            }
+            
+            // Check primary property (e.g., "severity")
+            if let typeProperty = config.type {
+                for child in mirror.children {
+                    if child.label == typeProperty,
+                       let value = child.value as? String,
+                       let colorString = findColor(in: config.mapping, for: value) {
+                        return Self.parseColorFromString(colorString)
+                    }
+                }
+            } else {
+                // If no type specified, check all properties against mapping
+                for child in mirror.children {
+                    if let _ = child.label,
+                       let value = child.value as? String,
+                       let colorString = findColor(in: config.mapping, for: value) {
+                        return Self.parseColorFromString(colorString)
+                    }
+                }
+            }
+            
+            // Check status mapping if available
+            if let statusMapping = config.statusMapping {
+                for child in mirror.children {
+                    if child.label == "status",
+                       let value = child.value as? String,
+                       let colorString = findColor(in: statusMapping, for: value) {
+                        return Self.parseColorFromString(colorString)
+                    }
+                }
+            }
+            
+            return nil
+        }
+    }
+    
     /// Parse a color string (named color or hex) into a Color
     private static func parseColorFromString(_ colorString: String) -> Color? {
         let trimmed = colorString.trimmingCharacters(in: .whitespaces)

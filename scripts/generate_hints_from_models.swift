@@ -806,6 +806,24 @@ struct HintsGenerator {
             if let colorMapping = defaults["_colorMapping"] {
                 defaultsProps.append("\"_colorMapping\": \(formatJSONValue(colorMapping))")
             }
+            if let itemColorProvider = defaults["_itemColorProvider"] {
+                defaultsProps.append("\"_itemColorProvider\": \(formatJSONValue(itemColorProvider))")
+            }
+            if let dataType = defaults["_dataType"] {
+                defaultsProps.append("\"_dataType\": \(formatJSONValue(dataType))")
+            }
+            if let complexity = defaults["_complexity"] {
+                defaultsProps.append("\"_complexity\": \(formatJSONValue(complexity))")
+            }
+            if let context = defaults["_context"] {
+                defaultsProps.append("\"_context\": \(formatJSONValue(context))")
+            }
+            if let customPreferences = defaults["_customPreferences"] {
+                defaultsProps.append("\"_customPreferences\": \(formatJSONValue(customPreferences))")
+            }
+            if let presentationPreference = defaults["_presentationPreference"] {
+                defaultsProps.append("\"_presentationPreference\": \(formatJSONValue(presentationPreference))")
+            }
             
             for (index, prop) in defaultsProps.enumerated() {
                 if index > 0 {
@@ -1361,15 +1379,49 @@ func generateHintsFile(for fields: [FieldInfo], outputURL: URL) {
         // Presentation defaults (this is the actual structure used in hints files)
         // Color configuration is nested under _defaults for logical grouping
         "_defaults": [
-            "_defaultColor": "blue",  // Default color for card presentation (named color or hex like "#FF0000")
-            "_colorMapping": {
-                "Vehicle": "blue",  // Type-based color mapping: use your Swift type name (struct/class/enum)
-                "Task": "green"     // as a string (e.g., "Vehicle", "Task", "User"). This is the Swift type
-                // name, not the Core Data entity name (though they often match).
-                // Value is color string: named color (e.g., "blue") or hex (e.g., "#FF0000")
-                // Note: Currently parsed but not automatically converted to ObjectIdentifier mapping.
-                // Use colorMapping parameter in PresentationHints for ObjectIdentifier-based mapping.
-            }
+            // Default color for card presentation (named color or hex like "#FF0000")
+            "_defaultColor": "blue",
+            // Type-based color mapping: use your Swift type name (struct/class/enum)
+            // as a string (e.g., "Vehicle", "Task", "User"). This is the Swift type
+            // name, not the Core Data entity name (though they often match).
+            // Value is color string: named color (e.g., "blue") or hex (e.g., "#FF0000")
+            // Note: Currently parsed but not automatically converted to ObjectIdentifier mapping.
+            // Use colorMapping parameter in PresentationHints for ObjectIdentifier-based mapping.
+            "_colorMapping": [
+                "Vehicle": "blue",
+                "Task": "green"
+            ],
+            // Per-item color provider: maps property values to colors using reflection
+            // "type" specifies which property to check (e.g., "severity", "status")
+            // "mapping" maps property values to colors (case-insensitive matching)
+            // "statusMapping" is optional secondary mapping for status-based colors
+            "_itemColorProvider": [
+                "type": "severity",
+                "mapping": [
+                    "high": "red",
+                    "critical": "red",
+                    "medium": "orange",
+                    "moderate": "orange",
+                    "low": "yellow",
+                    "minor": "yellow",
+                    "unknown": "gray"
+                ],
+                "statusMapping": [
+                    "active": "red",
+                    "fixed": "green"
+                ]
+            ],
+            // Presentation properties: configure how data is presented
+            "_dataType": "collection",  // Options: generic, text, number, date, image, boolean, collection, numeric, hierarchical, temporal
+            "_complexity": "moderate",  // Options: simple, moderate, complex, veryComplex, advanced
+            "_context": "browse",  // Options: dashboard, browse, detail, edit, create, search, settings, profile, summary, list
+            "_customPreferences": [
+                "businessType": "vehicle",
+                "formStyle": "multiStep"
+            ],
+            // Presentation preference: can be simple string or countBased object
+            "_presentationPreference": "list"  // Options: automatic, minimal, moderate, rich, custom, detail, modal, navigation, list, masonry, standard, form, card, cards, compact, grid, chart, coverFlow
+            // Or use countBased: {"type": "countBased", "lowCount": "list", "highCount": "grid", "threshold": 10}
         ]
     ] as [String: Any]
     

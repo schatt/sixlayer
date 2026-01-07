@@ -11,6 +11,7 @@ This document provides guidance for AI assistants working with the SixLayer Fram
 ## 📚 Version-Specific Guides
 
 ### Latest Versions (Recommended)
+- **[AI_AGENT_v7.0.2.md](AI_AGENT_v7.0.2.md)** - Hints File Presentation Properties Support
 - **[AI_AGENT_v7.0.1.md](AI_AGENT_v7.0.1.md)** - Hints File Color Configuration Support
 - **[AI_AGENT_v7.0.0.md](AI_AGENT_v7.0.0.md)** - Breaking Changes - Card Color Configuration
 - **[AI_AGENT_v6.8.0.md](AI_AGENT_v6.8.0.md)** - DRY Improvements - Platform Switch Consolidation
