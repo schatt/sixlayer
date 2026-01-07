@@ -175,8 +175,8 @@ These guides contain critical information about the Layer 1 Semantic Intent phil
 
 ## 📋 Current Status
 
-**Version**: v7.0.0 (Breaking Changes - Card Color Configuration)
-**Phase**: Major Release
+**Version**: v7.0.1 (Hints File Color Configuration Support)
+**Phase**: Minor Release
 **Next**: TBD
 
 ## 🤝 Contributing

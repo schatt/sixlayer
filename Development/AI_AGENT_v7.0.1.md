@@ -202,3 +202,4 @@ If you want to store color configuration in hints files:
 - [Framework/Sources/Core/Models/DataHintsLoader.swift](../../Framework/Sources/Core/Models/DataHintsLoader.swift) - Implementation details
 - [scripts/generate_hints_from_models.swift](../../scripts/generate_hints_from_models.swift) - Hints generation script
 
+

@@ -151,3 +151,4 @@ If you want to store color configuration in hints files:
 - Continue monitoring for any issues with hints file color configuration
 - Consider adding support for `itemColorProvider` in hints files (currently requires code)
 
+
