@@ -27,7 +27,7 @@ Navigate to the `Framework/` directory and use it as a Swift Package:
 ```swift
 // In your Package.swift
 dependencies: [
-    .package(url: "https://github.com/schatt/sixlayer.git", from: "7.1.0")
+    .package(url: "https://github.com/schatt/sixlayer.git", from: "7.2.0")
 ]
 ```
 
@@ -41,9 +41,12 @@ dependencies: [
 
 The framework is distributed as a Swift Package from the `Framework/` directory. This ensures that only the essential framework code is included when other projects consume it.
 
-## 🆕 Latest Release: v7.1.0
+## 🆕 Latest Release: v7.2.0
 
-### **Color Resolution System from Hints Files**
+### **Configurable Photo Sources for OCR Scanner**
+🆕 **FieldActionOCRScanner Enhancement**: Added configurable photo source options. Developers can now choose whether to offer camera, photo library, or both options to end users, with automatic device capability detection and graceful fallbacks.
+
+### **Previous Release: v7.1.0 - Color Resolution System from Hints Files**
 🆕 **ItemBadge and ItemIcon Components**: New components that automatically resolve colors from hints files. Supports colorName and fileExtension provider types. Card components now support optional badge content.
 
 ### **Previous Release: v7.0.2 - Hints File Presentation Properties Support**
@@ -181,7 +184,7 @@ These guides contain critical information about the Layer 1 Semantic Intent phil
 
 ## 📋 Current Status
 
-**Version**: v7.1.0 (Color Resolution System from Hints Files)
+**Version**: v7.2.0 (Configurable Photo Sources for OCR Scanner)
 **Phase**: Minor Release
 **Next**: TBD
 

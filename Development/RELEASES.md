@@ -1,12 +1,33 @@
 # 🚀 Six-Layer Framework Release History
 
-## 📍 **Current Release: v7.1.0 - Color Resolution System from Hints Files** 🎯
+## 📍 **Current Release: v7.2.0 - Configurable Photo Sources for OCR Scanner** 🎯
 
-**Release Date**: January 7, 2026
+**Release Date**: January 8, 2026
 **Status**: ✅ **COMPLETE**
-**Previous Release**: v7.0.2 - Hints File Presentation Properties Support
-**Note**: Minor release adding comprehensive color resolution system from hints files. New ItemBadge and ItemIcon components automatically resolve colors from hints file configuration. Card components now support optional badge content.
+**Previous Release**: v7.1.0 - Color Resolution System from Hints Files
+**Note**: Minor release adding configurable photo source options to FieldActionOCRScanner. Developers can now choose whether to offer camera, photo library, or both options to end users, with automatic device capability detection and graceful fallbacks.
 **Next Release**: TBD
+
+---
+
+## 🎯 **v7.2.0 - Configurable Photo Sources for OCR Scanner** (January 8, 2026)
+
+### **What's New:**
+
+#### **🆕 Configurable Photo Sources for FieldActionOCRScanner (Issue #145)**
+- **`allowedSources` parameter**: Choose camera, photo library, or both options
+- **Device capability detection**: Automatic fallbacks when camera unavailable
+- **Edge case handling**: Graceful handling when device has no camera
+- **Backward compatible**: Defaults to `.both` for existing code
+
+### **What's Fixed:**
+
+#### **🔧 Device Capability Detection**
+- iOS: Uses `UIImagePickerController.isSourceTypeAvailable(.camera)`
+- macOS: Uses `AVCaptureDevice.DiscoverySession` to detect video devices
+- Handles macOS 14.0+ deprecation of `.externalUnknown` → `.external`
+
+**See [RELEASE_v7.2.0.md](RELEASE_v7.2.0.md) for complete release notes.**
 
 ---
 
