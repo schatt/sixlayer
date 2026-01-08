@@ -1,12 +1,72 @@
 # 🚀 Six-Layer Framework Release History
 
-## 📍 **Current Release: v7.0.2 - Hints File Presentation Properties Support** 🎯
+## 📍 **Current Release: v7.2.0 - Configurable Photo Sources for OCR Scanner** 🎯
 
-**Release Date**: January 6, 2026
+**Release Date**: January 8, 2026
 **Status**: ✅ **COMPLETE**
-**Previous Release**: v7.0.1 - Hints File Color Configuration Support
-**Note**: Patch release adding support for all PresentationHints properties in hints files. Developers can now configure dataType, complexity, context, customPreferences, and presentationPreference declaratively in `.hints` files.
+**Previous Release**: v7.1.0 - Color Resolution System from Hints Files
+**Note**: Minor release adding configurable photo source options to FieldActionOCRScanner. Developers can now choose whether to offer camera, photo library, or both options to end users, with automatic device capability detection and graceful fallbacks.
 **Next Release**: TBD
+
+---
+
+## 🎯 **v7.2.0 - Configurable Photo Sources for OCR Scanner** (January 8, 2026)
+
+### **What's New:**
+
+#### **🆕 Configurable Photo Sources for FieldActionOCRScanner (Issue #145)**
+- **`allowedSources` parameter**: Choose camera, photo library, or both options
+- **Device capability detection**: Automatic fallbacks when camera unavailable
+- **Edge case handling**: Graceful handling when device has no camera
+- **Backward compatible**: Defaults to `.both` for existing code
+
+### **What's Fixed:**
+
+#### **🔧 Device Capability Detection**
+- iOS: Uses `UIImagePickerController.isSourceTypeAvailable(.camera)`
+- macOS: Uses `AVCaptureDevice.DiscoverySession` to detect video devices
+- Handles macOS 14.0+ deprecation of `.externalUnknown` → `.external`
+
+**See [RELEASE_v7.2.0.md](RELEASE_v7.2.0.md) for complete release notes.**
+
+---
+
+## 🎯 **v7.1.0 - Color Resolution System from Hints Files** (January 7, 2026)
+
+### **What's New:**
+
+#### **🆕 Extended Item Color Provider Types (Issue #144)**
+- **`colorName` support**: Read color name directly from property (with JSON decoding)
+- **`fileExtension` support**: Map file extension to color name
+- **Automatic color resolution**: Colors automatically resolved from hints files
+
+#### **🆕 ItemBadge Component**
+- **Four styles**: default, outline, subtle, iconOnly
+- **Automatic color resolution**: Uses hints file configuration
+- **Flexible usage**: Can be used standalone or in cards
+
+#### **🆕 ItemIcon Component**
+- **Automatic color resolution**: Uses hints file configuration
+- **Configurable size**: Default 20pt, customizable
+- **Simple API**: Just provide item, icon name, and hints
+
+#### **🆕 Optional Badge Content in Cards**
+- **All card components**: ExpandableCardComponent, SimpleCardComponent, ListCardComponent
+- **Optional parameter**: Backward compatible (nil by default)
+- **Easy integration**: Use @ViewBuilder for convenience
+
+### **What's Fixed:**
+
+#### **🔧 DataHintsLoader Updates**
+- Extended `ItemColorProviderConfig` with `property` field
+- Updated `createItemColorProvider` to handle colorName and fileExtension types
+- Added JSON decoding support for colorName type
+
+#### **🔧 Hints Generation Script**
+- Updated `__example` section with examples for new provider types
+- Includes comments explaining usage
+
+**See [RELEASE_v7.1.0.md](RELEASE_v7.1.0.md) for complete release notes.**
 
 ---
 

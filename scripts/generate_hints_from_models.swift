@@ -1396,7 +1396,11 @@ func generateHintsFile(for fields: [FieldInfo], outputURL: URL) {
             // "mapping" maps property values to colors (case-insensitive matching)
             // "statusMapping" is optional secondary mapping for status-based colors
             "_itemColorProvider": [
+                // Provider type: "severity", "status", "colorName", or "fileExtension"
                 "type": "severity",
+                // Property to read from (for colorName and fileExtension types)
+                // "property": "color",  // Example for colorName type
+                // "property": "fileExtension",  // Example for fileExtension type
                 "mapping": [
                     "high": "red",
                     "critical": "red",
@@ -1406,6 +1410,20 @@ func generateHintsFile(for fields: [FieldInfo], outputURL: URL) {
                     "minor": "yellow",
                     "unknown": "gray"
                 ],
+                // Example for colorName type (reads color directly from property):
+                // "type": "colorName",
+                // "property": "color",
+                // Example for fileExtension type (maps file extension to color):
+                // "type": "fileExtension",
+                // "property": "fileExtension",
+                // "mapping": [
+                //     "pdf": "red",
+                //     "jpg": "blue",
+                //     "png": "blue",
+                //     "doc": "blue",
+                //     "xls": "green",
+                //     "txt": "gray"
+                // ],
                 "statusMapping": [
                     "active": "red",
                     "fixed": "green"

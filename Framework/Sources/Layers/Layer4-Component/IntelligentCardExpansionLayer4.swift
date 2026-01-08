@@ -132,6 +132,67 @@ public struct ExpandableCardComponent<Item: Identifiable>: View {
     let onItemSelected: ((Item) -> Void)?
     let onItemDeleted: ((Item) -> Void)?
     let onItemEdited: ((Item) -> Void)?
+    let badgeContent: ((Item) -> AnyView)?
+    
+    public init(
+        item: Item,
+        layoutDecision: IntelligentCardLayoutDecision,
+        strategy: CardExpansionStrategy,
+        hints: PresentationHints,
+        isExpanded: Bool,
+        isHovered: Bool,
+        onExpand: @escaping () -> Void,
+        onCollapse: @escaping () -> Void,
+        onHover: @escaping (Bool) -> Void,
+        onItemSelected: ((Item) -> Void)? = nil,
+        onItemDeleted: ((Item) -> Void)? = nil,
+        onItemEdited: ((Item) -> Void)? = nil,
+        badgeContent: ((Item) -> AnyView)? = nil
+    ) {
+        self.item = item
+        self.layoutDecision = layoutDecision
+        self.strategy = strategy
+        self.hints = hints
+        self.isExpanded = isExpanded
+        self.isHovered = isHovered
+        self.onExpand = onExpand
+        self.onCollapse = onCollapse
+        self.onHover = onHover
+        self.onItemSelected = onItemSelected
+        self.onItemDeleted = onItemDeleted
+        self.onItemEdited = onItemEdited
+        self.badgeContent = badgeContent
+    }
+    
+    public init(
+        item: Item,
+        layoutDecision: IntelligentCardLayoutDecision,
+        strategy: CardExpansionStrategy,
+        hints: PresentationHints,
+        isExpanded: Bool,
+        isHovered: Bool,
+        onExpand: @escaping () -> Void,
+        onCollapse: @escaping () -> Void,
+        onHover: @escaping (Bool) -> Void,
+        onItemSelected: ((Item) -> Void)? = nil,
+        onItemDeleted: ((Item) -> Void)? = nil,
+        onItemEdited: ((Item) -> Void)? = nil,
+        @ViewBuilder badgeContent: @escaping (Item) -> some View
+    ) {
+        self.item = item
+        self.layoutDecision = layoutDecision
+        self.strategy = strategy
+        self.hints = hints
+        self.isExpanded = isExpanded
+        self.isHovered = isHovered
+        self.onExpand = onExpand
+        self.onCollapse = onCollapse
+        self.onHover = onHover
+        self.onItemSelected = onItemSelected
+        self.onItemDeleted = onItemDeleted
+        self.onItemEdited = onItemEdited
+        self.badgeContent = { AnyView(badgeContent($0)) }
+    }
     
     public var body: some View {
         let scale = calculateScale()
@@ -171,28 +232,35 @@ public struct ExpandableCardComponent<Item: Identifiable>: View {
     
     @ViewBuilder
     private var cardContent: some View {
-        // Icon or image
-        Image(systemName: cardIcon)
-            .font(.title2)
-            .foregroundColor(cardColor)
-        
-        // Title
-        Text(cardTitle)
-            .font(.headline)
-            .lineLimit(2)
-            .foregroundColor(isPlaceholderTitle ? .blue.opacity(0.6) : .primary)
-        
-        // Subtitle or description
-        if let subtitle = cardSubtitle {
-            Text(subtitle)
-                .font(.caption)
-                .foregroundColor(.secondary)
+        VStack(spacing: 8) {
+            // Icon or image
+            Image(systemName: cardIcon)
+                .font(.title2)
+                .foregroundColor(cardColor)
+            
+            // Title
+            Text(cardTitle)
+                .font(.headline)
                 .lineLimit(2)
-        } else if let description = cardDescription {
-            Text(description)
-                .font(.caption)
-                .foregroundColor(.secondary)
-                .lineLimit(3)
+                .foregroundColor(isPlaceholderTitle ? .blue.opacity(0.6) : .primary)
+            
+            // Subtitle or description
+            if let subtitle = cardSubtitle {
+                Text(subtitle)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .lineLimit(2)
+            } else if let description = cardDescription {
+                Text(description)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .lineLimit(3)
+            }
+            
+            // Badge content (if provided)
+            if let badgeContent = badgeContent {
+                badgeContent(item)
+            }
         }
     }
     
@@ -720,6 +788,7 @@ public struct SimpleCardComponent<Item: Identifiable>: View {
     let onItemSelected: ((Item) -> Void)?
     let onItemDeleted: ((Item) -> Void)?
     let onItemEdited: ((Item) -> Void)?
+    let badgeContent: ((Item) -> AnyView)?
     
     public init(
         item: Item,
@@ -728,7 +797,8 @@ public struct SimpleCardComponent<Item: Identifiable>: View {
         platformConfig: CardExpansionPlatformConfig? = nil,
         onItemSelected: ((Item) -> Void)? = nil,
         onItemDeleted: ((Item) -> Void)? = nil,
-        onItemEdited: ((Item) -> Void)? = nil
+        onItemEdited: ((Item) -> Void)? = nil,
+        badgeContent: ((Item) -> AnyView)? = nil
     ) {
         self.item = item
         self.layoutDecision = layoutDecision
@@ -737,12 +807,33 @@ public struct SimpleCardComponent<Item: Identifiable>: View {
         self.onItemSelected = onItemSelected
         self.onItemDeleted = onItemDeleted
         self.onItemEdited = onItemEdited
+        self.badgeContent = badgeContent
+    }
+    
+    public init(
+        item: Item,
+        layoutDecision: IntelligentCardLayoutDecision,
+        hints: PresentationHints,
+        platformConfig: CardExpansionPlatformConfig? = nil,
+        onItemSelected: ((Item) -> Void)? = nil,
+        onItemDeleted: ((Item) -> Void)? = nil,
+        onItemEdited: ((Item) -> Void)? = nil,
+        @ViewBuilder badgeContent: @escaping (Item) -> some View
+    ) {
+        self.item = item
+        self.layoutDecision = layoutDecision
+        self.hints = hints
+        self.platformConfig = platformConfig
+        self.onItemSelected = onItemSelected
+        self.onItemDeleted = onItemDeleted
+        self.onItemEdited = onItemEdited
+        self.badgeContent = { AnyView(badgeContent($0)) }
     }
     
     public var body: some View {
         let config = platformConfig ?? getCardExpansionPlatformConfig()
         
-        let baseView = VStack {
+        let baseView = VStack(spacing: 8) {
             // Display item icon or fallback
             Image(systemName: cardIcon)
                 .font(.title2)
@@ -754,6 +845,11 @@ public struct SimpleCardComponent<Item: Identifiable>: View {
                 .lineLimit(2)
                 .multilineTextAlignment(.center)
                 .foregroundColor(isPlaceholderTitle ? .blue.opacity(0.6) : .primary)
+            
+            // Badge content (if provided)
+            if let badgeContent = badgeContent {
+                badgeContent(item)
+            }
         }
         .frame(width: layoutDecision.cardWidth, height: layoutDecision.cardHeight)
         .background(.regularMaterial)
@@ -838,19 +934,38 @@ public struct ListCardComponent<Item: Identifiable>: View {
     let onItemSelected: ((Item) -> Void)?
     let onItemDeleted: ((Item) -> Void)?
     let onItemEdited: ((Item) -> Void)?
+    let badgeContent: ((Item) -> AnyView)?
     
     public init(
         item: Item,
         hints: PresentationHints,
         onItemSelected: ((Item) -> Void)? = nil,
         onItemDeleted: ((Item) -> Void)? = nil,
-        onItemEdited: ((Item) -> Void)? = nil
+        onItemEdited: ((Item) -> Void)? = nil,
+        badgeContent: ((Item) -> AnyView)? = nil
     ) {
         self.item = item
         self.hints = hints
         self.onItemSelected = onItemSelected
         self.onItemDeleted = onItemDeleted
         self.onItemEdited = onItemEdited
+        self.badgeContent = badgeContent
+    }
+    
+    public init(
+        item: Item,
+        hints: PresentationHints,
+        onItemSelected: ((Item) -> Void)? = nil,
+        onItemDeleted: ((Item) -> Void)? = nil,
+        onItemEdited: ((Item) -> Void)? = nil,
+        @ViewBuilder badgeContent: @escaping (Item) -> some View
+    ) {
+        self.item = item
+        self.hints = hints
+        self.onItemSelected = onItemSelected
+        self.onItemDeleted = onItemDeleted
+        self.onItemEdited = onItemEdited
+        self.badgeContent = { AnyView(badgeContent($0)) }
     }
     
     public var body: some View {
@@ -874,6 +989,11 @@ public struct ListCardComponent<Item: Identifiable>: View {
             }
             
             Spacer()
+            
+            // Badge content (if provided)
+            if let badgeContent = badgeContent {
+                badgeContent(item)
+            }
             
             Image(systemName: "chevron.right")
                 .font(.caption)

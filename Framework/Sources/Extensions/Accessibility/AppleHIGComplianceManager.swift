@@ -625,14 +625,14 @@ public struct HIGTypographySystem {
     public init(for platform: SixLayerPlatform) {
         // Font styles are consistent across all Apple platforms
         // Removed redundant switch statement (Issue #140)
-        self.largeTitle = .largeTitle
-        self.title = .title
-        self.headline = .headline
-        self.body = .body
-        self.callout = .callout
-        self.subheadline = .subheadline
-        self.footnote = .footnote
-        self.caption = .caption
+            self.largeTitle = .largeTitle
+            self.title = .title
+            self.headline = .headline
+            self.body = .body
+            self.callout = .callout
+            self.subheadline = .subheadline
+            self.footnote = .footnote
+            self.caption = .caption
     }
 }
 
@@ -662,7 +662,7 @@ public struct HIGIconSystem {
     public func icon(named name: String) -> Image {
         // All platforms use SF Symbols, so no platform-specific logic needed
         // Removed redundant switch statement (Issue #140)
-        return Image(systemName: name)
+            return Image(systemName: name)
     }
 }
 
