@@ -1,6 +1,14 @@
 import SwiftUI
 import Foundation
 
+#if os(iOS)
+import UIKit
+import AVFoundation
+#elseif os(macOS)
+import AppKit
+import AVFoundation
+#endif
+
 // MARK: - Field Action Scanning Helpers
 
 /// Helper view for barcode scanning workflow in field actions
@@ -78,6 +86,7 @@ public struct FieldActionBarcodeScanner: View {
 
 /// Helper view for OCR scanning workflow in field actions
 /// Presents image picker, processes OCR, and returns result
+/// Supports configurable photo sources: camera, photo library, or both
 @MainActor
 public struct FieldActionOCRScanner: View {
     @Binding var isPresented: Bool
@@ -85,8 +94,11 @@ public struct FieldActionOCRScanner: View {
     let onError: (Error) -> Void
     let hint: String?
     let validationTypes: [TextType]?
+    let allowedSources: PhotoSource
     
     @State private var showImagePicker = false
+    @State private var showCamera = false
+    @State private var showSourceSelection = false
     @State private var isProcessing = false
     
     public init(
@@ -94,13 +106,15 @@ public struct FieldActionOCRScanner: View {
         onResult: @escaping (String?) -> Void,
         onError: @escaping (Error) -> Void,
         hint: String?,
-        validationTypes: [TextType]?
+        validationTypes: [TextType]?,
+        allowedSources: PhotoSource = .both
     ) {
         self._isPresented = isPresented
         self.onResult = onResult
         self.onError = onError
         self.hint = hint
         self.validationTypes = validationTypes
+        self.allowedSources = allowedSources
     }
     
     public var body: some View {
@@ -112,10 +126,122 @@ public struct FieldActionOCRScanner: View {
                     }
                 }
             }
+            .sheet(isPresented: $showCamera) {
+                #if os(iOS)
+                SystemCameraPicker { image in
+                    Task {
+                        await processOCR(image: image)
+                    }
+                }
+                #else
+                // macOS camera interface
+                PlatformPhotoComponentsLayer4.platformCameraInterface_L4 { image in
+                    Task {
+                        await processOCR(image: image)
+                    }
+                }
+                #endif
+            }
+            .confirmationDialog(
+                sourceSelectionTitle,
+                isPresented: $showSourceSelection,
+                titleVisibility: .visible
+            ) {
+                // Only show camera option if camera is available
+                if checkCameraAvailability() {
+                    Button(cameraButtonTitle) {
+                        showCamera = true
+                    }
+                }
+                Button(photoLibraryButtonTitle) {
+                    showImagePicker = true
+                }
+                Button(cancelButtonTitle, role: .cancel) {
+                    isPresented = false
+                }
+            }
             .onAppear {
-                showImagePicker = true
+                // Check device capabilities
+                let hasCamera = checkCameraAvailability()
+                let hasPhotoLibrary = true // Photo library is generally always available
+                
+                // Determine which UI to show based on allowedSources and device capabilities
+                switch allowedSources {
+                case .camera:
+                    if hasCamera {
+                        showCamera = true
+                    } else {
+                        // Fallback to photo library if camera not available
+                        showImagePicker = true
+                    }
+                case .photoLibrary:
+                    showImagePicker = true
+                case .both:
+                    if hasCamera && hasPhotoLibrary {
+                        // Both available - show selection dialog
+                        showSourceSelection = true
+                    } else if hasCamera {
+                        // Only camera available
+                        showCamera = true
+                    } else {
+                        // Only photo library available (or neither, but photo library is fallback)
+                        showImagePicker = true
+                    }
+                }
             }
     }
+    
+    // MARK: - Device Capability Detection
+    
+    /// Check if camera is available on the current device
+    private func checkCameraAvailability() -> Bool {
+        #if os(iOS)
+        return UIImagePickerController.isSourceTypeAvailable(.camera)
+        #elseif os(macOS)
+        // On macOS, check if any video capture device is available
+        if #available(macOS 14.0, *) {
+            let discoverySession = AVCaptureDevice.DiscoverySession(
+                deviceTypes: [.builtInWideAngleCamera, .external],
+                mediaType: .video,
+                position: .unspecified
+            )
+            return !discoverySession.devices.isEmpty
+        } else {
+            let discoverySession = AVCaptureDevice.DiscoverySession(
+                deviceTypes: [.builtInWideAngleCamera, .externalUnknown],
+                mediaType: .video,
+                position: .unspecified
+            )
+            return !discoverySession.devices.isEmpty
+        }
+        #else
+        return false
+        #endif
+    }
+    
+    // MARK: - Computed Properties for Localization
+    
+    private var sourceSelectionTitle: String {
+        let i18n = InternationalizationService()
+        return i18n.localizedString(for: "SixLayerFramework.ocr.selectSource")
+    }
+    
+    private var cameraButtonTitle: String {
+        let i18n = InternationalizationService()
+        return i18n.localizedString(for: "SixLayerFramework.ocr.camera")
+    }
+    
+    private var photoLibraryButtonTitle: String {
+        let i18n = InternationalizationService()
+        return i18n.localizedString(for: "SixLayerFramework.ocr.photoLibrary")
+    }
+    
+    private var cancelButtonTitle: String {
+        let i18n = InternationalizationService()
+        return i18n.localizedString(for: "SixLayerFramework.common.cancel")
+    }
+    
+    // MARK: - OCR Processing
     
     private func processOCR(image: PlatformImage) async {
         isProcessing = true
