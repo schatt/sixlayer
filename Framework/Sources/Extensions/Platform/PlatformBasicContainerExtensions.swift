@@ -365,6 +365,43 @@ func platformZStackContainer<Content: View>(
     EmptyView().platformZStackContainer(alignment: alignment, content: content)
 }
 
+// MARK: - Function Aliases
+
+/// Alias for platformVStackContainer
+/// Provides a shorter name for convenience
+@MainActor
+@ViewBuilder
+func platformVStack<Content: View>(
+    alignment: HorizontalAlignment = .center,
+    spacing: CGFloat? = nil,
+    @ViewBuilder content: () -> Content
+) -> some View {
+    platformVStackContainer(alignment: alignment, spacing: spacing, content: content)
+}
+
+/// Alias for platformHStackContainer
+/// Provides a shorter name for convenience
+@MainActor
+@ViewBuilder
+func platformHStack<Content: View>(
+    alignment: VerticalAlignment = .center,
+    spacing: CGFloat? = nil,
+    @ViewBuilder content: () -> Content
+) -> some View {
+    platformHStackContainer(alignment: alignment, spacing: spacing, content: content)
+}
+
+/// Alias for platformZStackContainer
+/// Provides a shorter name for convenience
+@MainActor
+@ViewBuilder
+func platformZStack<Content: View>(
+    alignment: Alignment = .center,
+    @ViewBuilder content: () -> Content
+) -> some View {
+    platformZStackContainer(alignment: alignment, content: content)
+}
+
 /// Global function wrapper for platformLazyVStackContainer
 /// Provides backward compatibility for code that expects global functions
 @MainActor
