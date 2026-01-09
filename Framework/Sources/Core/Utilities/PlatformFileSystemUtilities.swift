@@ -1949,7 +1949,7 @@ public func sanitizeFilename(
 public func isiCloudDriveAvailable() -> Bool {
     #if os(iOS) || os(macOS)
     // Check if default ubiquity container is available
-    if let _ = FileManager.default.url(forUbiquityContainerIdentifier: nil) {
+    if FileManager.default.url(forUbiquityContainerIdentifier: nil) != nil {
         return true
     }
     return false
@@ -1983,7 +1983,7 @@ public func isiCloudDriveAvailable() -> Bool {
 public func isiCloudDriveAvailable(containerIdentifier: String) -> Bool {
     #if os(iOS) || os(macOS)
     // Check if specific ubiquity container is available
-    if let _ = FileManager.default.url(forUbiquityContainerIdentifier: containerIdentifier) {
+    if FileManager.default.url(forUbiquityContainerIdentifier: containerIdentifier) != nil {
         return true
     }
     return false
