@@ -494,3 +494,70 @@ func platformListContainer<Content: View>(
 ) -> some View {
     EmptyView().platformListContainer(content: content)
 }
+
+// MARK: - Platform Text Field Functions
+
+/// Drop-in replacement for SwiftUI's TextField
+/// Provides platform-specific text field with automatic accessibility compliance
+///
+/// - Parameters:
+///   - title: The placeholder text
+///   - text: Binding to the text value
+/// - Returns: A platform-specific text field with automatic accessibility compliance
+///
+/// ## Usage Example
+/// ```swift
+/// platformTextField("Enter name", text: $name)
+/// ```
+@MainActor
+func platformTextField(
+    _ title: String,
+    text: Binding<String>
+) -> some View {
+    EmptyView().platformTextField(text: text, prompt: title)
+        .automaticCompliance()
+}
+
+/// Drop-in replacement for SwiftUI's TextField with axis support (iOS 16+)
+/// Provides platform-specific text field with automatic accessibility compliance
+///
+/// - Parameters:
+///   - title: The placeholder text
+///   - text: Binding to the text value
+///   - axis: The text field axis (horizontal or vertical)
+/// - Returns: A platform-specific text field with automatic accessibility compliance
+///
+/// ## Usage Example
+/// ```swift
+/// platformTextField("Enter description", text: $description, axis: .vertical)
+/// ```
+@MainActor
+func platformTextField(
+    _ title: String,
+    text: Binding<String>,
+    axis: Axis
+) -> some View {
+    EmptyView().platformTextField(text: text, prompt: title, axis: axis)
+        .automaticCompliance()
+}
+
+/// Drop-in replacement for SwiftUI's SecureField
+/// Provides platform-specific secure text field with automatic accessibility compliance
+///
+/// - Parameters:
+///   - title: The placeholder text
+///   - text: Binding to the text value
+/// - Returns: A platform-specific secure text field with automatic accessibility compliance
+///
+/// ## Usage Example
+/// ```swift
+/// platformSecureField("Enter password", text: $password)
+/// ```
+@MainActor
+func platformSecureField(
+    _ title: String,
+    text: Binding<String>
+) -> some View {
+    EmptyView().platformSecureTextField(text: text, prompt: title)
+        .automaticCompliance()
+}
