@@ -561,3 +561,69 @@ func platformSecureField(
     EmptyView().platformSecureTextField(text: text, prompt: title)
         .automaticCompliance()
 }
+
+/// Drop-in replacement for SwiftUI's Toggle
+/// Provides platform-specific toggle with automatic accessibility compliance
+///
+/// - Parameters:
+///   - title: The toggle label text
+///   - isOn: Binding to the toggle state
+/// - Returns: A platform-specific toggle with automatic accessibility compliance
+///
+/// ## Usage Example
+/// ```swift
+/// platformToggle("Enable notifications", isOn: $notificationsEnabled)
+/// ```
+@MainActor
+func platformToggle(
+    _ title: String,
+    isOn: Binding<Bool>
+) -> some View {
+    EmptyView().platformToggle(isOn: isOn) {
+        Text(title)
+    }
+    .automaticCompliance()
+}
+
+/// Drop-in replacement for SwiftUI's Form
+/// Provides platform-specific form container with automatic accessibility compliance
+///
+/// - Parameter content: The form content
+/// - Returns: A platform-specific form container with automatic accessibility compliance
+///
+/// ## Usage Example
+/// ```swift
+/// platformForm {
+///     platformTextField("Name", text: $name)
+///     platformToggle("Enabled", isOn: $enabled)
+/// }
+/// ```
+@MainActor
+@ViewBuilder
+func platformForm<Content: View>(
+    @ViewBuilder content: () -> Content
+) -> some View {
+    EmptyView().platformFormContainer(content: content)
+        .automaticCompliance()
+}
+
+/// Drop-in replacement for SwiftUI's TextEditor
+/// Provides platform-specific text editor with automatic accessibility compliance
+///
+/// - Parameters:
+///   - prompt: The placeholder text (shown when editor is empty)
+///   - text: Binding to the text value
+/// - Returns: A platform-specific text editor with automatic accessibility compliance
+///
+/// ## Usage Example
+/// ```swift
+/// platformTextEditor("Enter description", text: $description)
+/// ```
+@MainActor
+func platformTextEditor(
+    _ prompt: String,
+    text: Binding<String>
+) -> some View {
+    EmptyView().platformTextEditor(text: text, prompt: prompt)
+        .automaticCompliance()
+}
