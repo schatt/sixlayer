@@ -17,8 +17,9 @@ struct PlatformStandaloneDropInTests {
         // When: Creating text field
         let view = platformTextField(placeholder, text: $text)
         
-        // Then: View should be created successfully
-        #expect(view != nil)
+        // Then: View should be created successfully (compilation success means it works)
+        _ = view // Use view to verify it compiles
+        #expect(true)
     }
     
     @Test @MainActor func testPlatformTextField_WithAxis() {
@@ -30,7 +31,8 @@ struct PlatformStandaloneDropInTests {
         let view = platformTextField(placeholder, text: $text, axis: .vertical)
         
         // Then: View should be created successfully
-        #expect(view != nil)
+        _ = view
+        #expect(true)
     }
     
     @Test @MainActor func testPlatformTextField_TextBinding() {
@@ -42,7 +44,7 @@ struct PlatformStandaloneDropInTests {
         let view = platformTextField(placeholder, text: $text)
         
         // Then: View should be created and binding should work
-        #expect(view != nil)
+        _ = view
         #expect(text == "Initial value")
     }
     
@@ -57,7 +59,8 @@ struct PlatformStandaloneDropInTests {
         let view = platformSecureField(placeholder, text: $password)
         
         // Then: View should be created successfully
-        #expect(view != nil)
+        _ = view
+        #expect(true)
     }
     
     @Test @MainActor func testPlatformSecureField_TextBinding() {
@@ -69,7 +72,7 @@ struct PlatformStandaloneDropInTests {
         let view = platformSecureField(placeholder, text: $password)
         
         // Then: View should be created and binding should work
-        #expect(view != nil)
+        _ = view
         #expect(password == "secret123")
     }
     
@@ -84,7 +87,8 @@ struct PlatformStandaloneDropInTests {
         let view = platformToggle(label, isOn: $isEnabled)
         
         // Then: View should be created successfully
-        #expect(view != nil)
+        _ = view
+        #expect(true)
     }
     
     @Test @MainActor func testPlatformToggle_InitialState() {
@@ -96,7 +100,7 @@ struct PlatformStandaloneDropInTests {
         let view = platformToggle(label, isOn: $isEnabled)
         
         // Then: View should be created and state should be preserved
-        #expect(view != nil)
+        _ = view
         #expect(isEnabled == true)
     }
     
@@ -110,7 +114,7 @@ struct PlatformStandaloneDropInTests {
         isEnabled = true
         
         // Then: State should change
-        #expect(view != nil)
+        _ = view
         #expect(isEnabled == true)
     }
     
@@ -126,7 +130,8 @@ struct PlatformStandaloneDropInTests {
         }
         
         // Then: View should be created successfully
-        #expect(view != nil)
+        _ = view
+        #expect(true)
     }
     
     @Test @MainActor func testPlatformForm_WithMultipleFields() {
@@ -143,7 +148,8 @@ struct PlatformStandaloneDropInTests {
         }
         
         // Then: View should be created successfully
-        #expect(view != nil)
+        _ = view
+        #expect(true)
     }
     
     @Test @MainActor func testPlatformForm_EmptyContent() {
@@ -154,7 +160,8 @@ struct PlatformStandaloneDropInTests {
         }
         
         // Then: View should be created successfully
-        #expect(view != nil)
+        _ = view
+        #expect(true)
     }
     
     // MARK: - platformTextEditor Tests
@@ -168,7 +175,8 @@ struct PlatformStandaloneDropInTests {
         let view = platformTextEditor(prompt, text: $text)
         
         // Then: View should be created successfully
-        #expect(view != nil)
+        _ = view
+        #expect(true)
     }
     
     @Test @MainActor func testPlatformTextEditor_WithInitialText() {
@@ -180,7 +188,7 @@ struct PlatformStandaloneDropInTests {
         let view = platformTextEditor(prompt, text: $text)
         
         // Then: View should be created and text should be preserved
-        #expect(view != nil)
+        _ = view
         #expect(text == "Initial text")
     }
     
@@ -194,7 +202,7 @@ struct PlatformStandaloneDropInTests {
         text = "Updated text"
         
         // Then: Text should update
-        #expect(view != nil)
+        _ = view
         #expect(text == "Updated text")
     }
     
@@ -216,7 +224,8 @@ struct PlatformStandaloneDropInTests {
         }
         
         // Then: All functions should work together
-        #expect(view != nil)
+        _ = view
+        #expect(true)
     }
     
     @Test @MainActor func testStandaloneFunctions_AccessibilityCompliance() {
@@ -233,11 +242,12 @@ struct PlatformStandaloneDropInTests {
         let editor = platformTextEditor("Enter description", text: $text)
         
         // Then: All views should be created (accessibility compliance is automatic)
-        #expect(textField != nil)
-        #expect(secureField != nil)
-        #expect(toggle != nil)
-        #expect(form != nil)
-        #expect(editor != nil)
+        _ = textField
+        _ = secureField
+        _ = toggle
+        _ = form
+        _ = editor
+        #expect(true)
     }
     
     // MARK: - Backward Compatibility Tests
@@ -257,10 +267,11 @@ struct PlatformStandaloneDropInTests {
         let editor = EmptyView().platformTextEditor(text: $text, prompt: "Enter text")
         
         // Then: Extension methods should still work
-        #expect(textField != nil)
-        #expect(secureField != nil)
-        #expect(toggle != nil)
-        #expect(form != nil)
-        #expect(editor != nil)
+        _ = textField
+        _ = secureField
+        _ = toggle
+        _ = form
+        _ = editor
+        #expect(true)
     }
 }
