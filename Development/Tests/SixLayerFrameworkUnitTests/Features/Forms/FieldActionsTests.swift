@@ -651,7 +651,7 @@ open class FieldActionsTests: BaseTestClass {
     /// METHODOLOGY: Create FieldActionOCRScanner without allowedSources parameter, verify it defaults correctly
     @Test @MainActor func testFieldActionOCRScannerBackwardCompatibility() async {
         // TDD RED: FieldActionOCRScanner should default to .both for backward compatibility
-        let scanner = FieldActionOCRScanner(
+        let _ = FieldActionOCRScanner(
             isPresented: .constant(true),
             onResult: { _ in },
             onError: { _ in },
