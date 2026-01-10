@@ -367,7 +367,7 @@ public func platformZStackContainer<Content: View>(
 /// Provides a shorter name for convenience
 /// Note: VStack doesn't require @MainActor, so this function is nonisolated
 @ViewBuilder
-func platformVStack<Content: View>(
+public func platformVStack<Content: View>(
     alignment: HorizontalAlignment = .center,
     spacing: CGFloat? = nil,
     @ViewBuilder content: () -> Content
@@ -379,7 +379,7 @@ func platformVStack<Content: View>(
 /// Provides a shorter name for convenience
 /// Note: HStack doesn't require @MainActor, so this function is nonisolated
 @ViewBuilder
-func platformHStack<Content: View>(
+public func platformHStack<Content: View>(
     alignment: VerticalAlignment = .center,
     spacing: CGFloat? = nil,
     @ViewBuilder content: () -> Content
@@ -391,7 +391,7 @@ func platformHStack<Content: View>(
 /// Provides a shorter name for convenience
 /// Note: ZStack doesn't require @MainActor, so this function is nonisolated
 @ViewBuilder
-func platformZStack<Content: View>(
+public func platformZStack<Content: View>(
     alignment: Alignment = .center,
     @ViewBuilder content: () -> Content
 ) -> some View {
@@ -506,7 +506,7 @@ func platformListContainer<Content: View>(
 /// ```swift
 /// platformTextField("Enter name", text: $name)
 /// ```
-func platformTextField(
+public func platformTextField(
     _ title: String,
     text: Binding<String>
 ) -> some View {
@@ -528,7 +528,7 @@ func platformTextField(
 /// ```swift
 /// platformTextField("Enter description", text: $description, axis: .vertical)
 /// ```
-func platformTextField(
+public func platformTextField(
     _ title: String,
     text: Binding<String>,
     axis: Axis
@@ -550,7 +550,7 @@ func platformTextField(
 /// ```swift
 /// platformSecureField("Enter password", text: $password)
 /// ```
-func platformSecureField(
+public func platformSecureField(
     _ title: String,
     text: Binding<String>
 ) -> some View {
@@ -571,7 +571,7 @@ func platformSecureField(
 /// ```swift
 /// platformToggle("Enable notifications", isOn: $notificationsEnabled)
 /// ```
-func platformToggle(
+public func platformToggle(
     _ title: String,
     isOn: Binding<Bool>
 ) -> some View {
@@ -596,7 +596,7 @@ func platformToggle(
 /// }
 /// ```
 @ViewBuilder
-func platformForm<Content: View>(
+public func platformForm<Content: View>(
     @ViewBuilder content: () -> Content
 ) -> some View {
     EmptyView().platformFormContainer(content: content)
@@ -616,7 +616,7 @@ func platformForm<Content: View>(
 /// ```swift
 /// platformTextEditor("Enter description", text: $description)
 /// ```
-func platformTextEditor(
+public func platformTextEditor(
     _ prompt: String,
     text: Binding<String>
 ) -> some View {
