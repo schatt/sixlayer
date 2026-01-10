@@ -145,6 +145,8 @@ public func platformPhotoCapture_L1<CameraContent: View>(
 ///   - onImageSelected: Callback when image is selected
 ///   - customPickerView: Optional view builder that wraps the picker interface with custom styling
 /// - Returns: A view presenting the photo selection interface with optional custom wrapper
+/// Note: Requires @MainActor because it calls main-actor isolated L4 methods
+@MainActor
 public func platformPhotoSelection_L1<PickerContent: View>(
     purpose: PhotoPurpose,
     context: PhotoContext,
@@ -176,6 +178,8 @@ public func platformPhotoSelection_L1<PickerContent: View>(
 ///   - image: The image to display (optional)
 ///   - customDisplayView: Optional view builder that wraps the display interface with custom styling
 /// - Returns: A view presenting the photo display interface with optional custom wrapper
+/// Note: Requires @MainActor because it calls main-actor isolated L4 methods
+@MainActor
 public func platformPhotoDisplay_L1<DisplayContent: View>(
     purpose: PhotoPurpose,
     context: PhotoContext,
