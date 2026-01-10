@@ -96,6 +96,8 @@ public func platformPhotoDisplay_L1(
 ///   - onImageCaptured: Callback when image is captured
 ///   - customCameraView: Optional view builder that wraps the camera interface with custom styling
 /// - Returns: A view presenting the photo capture interface with optional custom wrapper
+/// Note: Requires @MainActor because it calls main-actor isolated L4 methods
+@MainActor
 public func platformPhotoCapture_L1<CameraContent: View>(
     purpose: PhotoPurpose,
     context: PhotoContext,
