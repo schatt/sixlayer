@@ -258,7 +258,9 @@ private struct UnsupportedPlatformMapView: View {
 #if os(iOS) || os(macOS)
 /// Creates a platform-specific map view (convenience wrapper)
 @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+/// Note: Requires @MainActor because it calls main-actor isolated methods
 @ViewBuilder
+@MainActor
 public func platformMapView_L4(
     position: Binding<MapCameraPosition>,
     @MapContentBuilder content: () -> some MapContent
@@ -267,8 +269,10 @@ public func platformMapView_L4(
 }
 
 /// Creates a platform-specific map view with annotations (convenience wrapper)
+/// Note: Requires @MainActor because it calls main-actor isolated methods
 @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
 @ViewBuilder
+@MainActor
 public func platformMapView_L4(
     position: Binding<MapCameraPosition>,
     annotations: [MapAnnotationData],
@@ -282,8 +286,10 @@ public func platformMapView_L4(
 }
 
 /// Creates a map view that automatically centers on the user's current location (convenience wrapper)
+/// Note: Requires @MainActor because it calls main-actor isolated methods
 @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
 @ViewBuilder
+@MainActor
 public func platformMapViewWithCurrentLocation_L4(
     locationService: LocationService,
     showCurrentLocation: Bool = true,
