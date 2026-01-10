@@ -477,6 +477,8 @@ public func platformPresentHierarchicalData_L1(
 }
 
 /// Generic function for presenting hierarchical data with custom views and enhanced hints
+/// Note: Requires @MainActor because it creates a View struct
+@MainActor
 public func platformPresentHierarchicalData_L1(
     items: [GenericHierarchicalItem],
     hints: EnhancedPresentationHints,
