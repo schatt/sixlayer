@@ -129,6 +129,29 @@ platformZStack(alignment: .center) {
 
 ## 🔧 What's Fixed
 
+### **Concurrency: @MainActor Audit and Cleanup (Issues #148, #149)**
+
+#### **L4 and L1 Functions @MainActor Audit**
+
+Completed comprehensive audit of `@MainActor` annotations across L4 (Component) and L1 (Semantic) layer functions. Removed unnecessary `@MainActor` annotations and added them only where required by Swift's concurrency model.
+
+#### **Key Changes**
+
+- **Removed `@MainActor`** from functions that only create views (not accessing main-thread-only APIs)
+- **Added `@MainActor`** where required for:
+  - View struct initializers (implicitly main-actor isolated)
+  - ObservableObject access (`@Published` properties)
+  - Main-thread-only APIs (UIApplication, UIPasteboard, etc.)
+- **Refactored `AccessibilityIdentifierConfig`** to remove `@Published` properties and make it `Sendable`, allowing `automaticCompliance()` to be `nonisolated`
+- **Made View extension methods `nonisolated`** where appropriate to allow standalone functions to call them without requiring `@MainActor`
+
+#### **Benefits**
+
+- **Correct Concurrency Model**: Functions are properly annotated based on actual requirements
+- **Better Performance**: Reduced unnecessary main-actor isolation
+- **Improved Flexibility**: Standalone functions can be called from nonisolated contexts
+- **Swift 6 Compliance**: Aligns with Swift 6 strict concurrency requirements
+
 ### **Code Quality: FileManager iCloud Checks**
 
 #### **Improved Code Clarity**
@@ -211,4 +234,4 @@ Future enhancements could include:
 
 ---
 
-**Resolves Issues #146 and #147**
+**Resolves Issues #146, #147, #148, and #149**
