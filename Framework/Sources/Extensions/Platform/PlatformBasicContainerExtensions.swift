@@ -369,7 +369,7 @@ func platformZStackContainer<Content: View>(
 
 /// Alias for platformVStackContainer
 /// Provides a shorter name for convenience
-@MainActor
+/// Note: VStack doesn't require @MainActor, so this function is nonisolated
 @ViewBuilder
 func platformVStack<Content: View>(
     alignment: HorizontalAlignment = .center,
@@ -381,7 +381,7 @@ func platformVStack<Content: View>(
 
 /// Alias for platformHStackContainer
 /// Provides a shorter name for convenience
-@MainActor
+/// Note: HStack doesn't require @MainActor, so this function is nonisolated
 @ViewBuilder
 func platformHStack<Content: View>(
     alignment: VerticalAlignment = .center,
@@ -393,7 +393,7 @@ func platformHStack<Content: View>(
 
 /// Alias for platformZStackContainer
 /// Provides a shorter name for convenience
-@MainActor
+/// Note: ZStack doesn't require @MainActor, so this function is nonisolated
 @ViewBuilder
 func platformZStack<Content: View>(
     alignment: Alignment = .center,
@@ -499,6 +499,7 @@ func platformListContainer<Content: View>(
 
 /// Drop-in replacement for SwiftUI's TextField
 /// Provides platform-specific text field with automatic accessibility compliance
+/// Note: TextField doesn't require @MainActor for creation, only for binding access
 ///
 /// - Parameters:
 ///   - title: The placeholder text
@@ -509,7 +510,6 @@ func platformListContainer<Content: View>(
 /// ```swift
 /// platformTextField("Enter name", text: $name)
 /// ```
-@MainActor
 func platformTextField(
     _ title: String,
     text: Binding<String>
@@ -520,6 +520,7 @@ func platformTextField(
 
 /// Drop-in replacement for SwiftUI's TextField with axis support (iOS 16+)
 /// Provides platform-specific text field with automatic accessibility compliance
+/// Note: TextField doesn't require @MainActor for creation, only for binding access
 ///
 /// - Parameters:
 ///   - title: The placeholder text
@@ -531,7 +532,6 @@ func platformTextField(
 /// ```swift
 /// platformTextField("Enter description", text: $description, axis: .vertical)
 /// ```
-@MainActor
 func platformTextField(
     _ title: String,
     text: Binding<String>,
@@ -543,6 +543,7 @@ func platformTextField(
 
 /// Drop-in replacement for SwiftUI's SecureField
 /// Provides platform-specific secure text field with automatic accessibility compliance
+/// Note: SecureField doesn't require @MainActor for creation, only for binding access
 ///
 /// - Parameters:
 ///   - title: The placeholder text
@@ -553,7 +554,6 @@ func platformTextField(
 /// ```swift
 /// platformSecureField("Enter password", text: $password)
 /// ```
-@MainActor
 func platformSecureField(
     _ title: String,
     text: Binding<String>
@@ -564,6 +564,7 @@ func platformSecureField(
 
 /// Drop-in replacement for SwiftUI's Toggle
 /// Provides platform-specific toggle with automatic accessibility compliance
+/// Note: Toggle doesn't require @MainActor for creation, only for binding access
 ///
 /// - Parameters:
 ///   - title: The toggle label text
@@ -574,7 +575,6 @@ func platformSecureField(
 /// ```swift
 /// platformToggle("Enable notifications", isOn: $notificationsEnabled)
 /// ```
-@MainActor
 func platformToggle(
     _ title: String,
     isOn: Binding<Bool>
@@ -587,6 +587,7 @@ func platformToggle(
 
 /// Drop-in replacement for SwiftUI's Form
 /// Provides platform-specific form container with automatic accessibility compliance
+/// Note: Form doesn't require @MainActor for creation
 ///
 /// - Parameter content: The form content
 /// - Returns: A platform-specific form container with automatic accessibility compliance
@@ -598,7 +599,6 @@ func platformToggle(
 ///     platformToggle("Enabled", isOn: $enabled)
 /// }
 /// ```
-@MainActor
 @ViewBuilder
 func platformForm<Content: View>(
     @ViewBuilder content: () -> Content
@@ -609,6 +609,7 @@ func platformForm<Content: View>(
 
 /// Drop-in replacement for SwiftUI's TextEditor
 /// Provides platform-specific text editor with automatic accessibility compliance
+/// Note: TextEditor doesn't require @MainActor for creation, only for binding access
 ///
 /// - Parameters:
 ///   - prompt: The placeholder text (shown when editor is empty)
@@ -619,7 +620,6 @@ func platformForm<Content: View>(
 /// ```swift
 /// platformTextEditor("Enter description", text: $description)
 /// ```
-@MainActor
 func platformTextEditor(
     _ prompt: String,
     text: Binding<String>
