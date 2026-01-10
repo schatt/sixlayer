@@ -49,7 +49,7 @@ struct CardBadgeContentTests {
         )
         
         // When: Creating card with badge content
-        let card = ExpandableCardComponent(
+        let _ = ExpandableCardComponent(
             item: item,
             layoutDecision: layoutDecision,
             strategy: strategy,
@@ -86,7 +86,7 @@ struct CardBadgeContentTests {
         )
         
         // When: Creating card with badge content
-        let card = SimpleCardComponent(
+        let _ = SimpleCardComponent(
             item: item,
             layoutDecision: layoutDecision,
             hints: hints,
@@ -109,7 +109,7 @@ struct CardBadgeContentTests {
         let item = TestItem(title: "Test Item", category: "Shopping")
         
         // When: Creating card with badge content
-        let card = ListCardComponent(
+        let _ = ListCardComponent(
             item: item,
             hints: hints,
             badgeContent: { item in
@@ -147,7 +147,8 @@ struct CardBadgeContentTests {
         )
         
         // Then: Card should be created normally (backward compatible)
-        #expect(card != nil)
+        // Card is non-optional, so it exists if we reach here
+        #expect(true)
     }
     #endif
 }

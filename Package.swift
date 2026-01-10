@@ -1,5 +1,5 @@
 // swift-tools-version: 6.0
-// SixLayerFramework v7.2.0 - Configurable Photo Sources for OCR Scanner
+// SixLayerFramework v7.3.0 - Convenience Aliases and Code Quality Improvements
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription

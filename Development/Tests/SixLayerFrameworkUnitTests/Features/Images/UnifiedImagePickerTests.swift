@@ -131,7 +131,7 @@ open class UnifiedImagePickerTests: BaseTestClass {
         #if os(iOS)
         if #available(iOS 14.0, *) {
             // Given: Unified image picker on iOS 14+
-            let picker = UnifiedImagePicker { _ in }
+            let _ = UnifiedImagePicker { _ in }
             
             // When: Picker is created
             // Then: Should use PHPickerViewController (availability check ensures this)
@@ -146,7 +146,7 @@ open class UnifiedImagePickerTests: BaseTestClass {
             #expect(platformImage.uiImage.size.width > 0, "Should convert UIImage to PlatformImage")
         } else {
             // iOS 13: Should use UIImagePickerController fallback
-            let picker = UnifiedImagePicker { _ in }
+            let _ = UnifiedImagePicker { _ in }
             #expect(Bool(true), "iOS 13 should use UIImagePickerController fallback")
         }
         #endif

@@ -560,7 +560,7 @@ open class OCROverlayTests: BaseTestClass {
             CGRect(x: 30, y: 15, width: 40, height: 25) // Overlaps with first
         ]
         
-        let overlappingResult = OCRResult(
+        let _ = OCRResult(
             extractedText: "Overlapping Text",
             confidence: 0.7,
             boundingBoxes: overlappingBoxes,

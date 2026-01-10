@@ -12,7 +12,6 @@ import SwiftUI
 
 /// Platform-specific basic container extensions
 /// Provides consistent container behavior across iOS and macOS
-@MainActor
 public extension View {
     
     /// Platform-specific VStack container with consistent styling and automatic accessibility
@@ -34,7 +33,7 @@ public extension View {
     /// }
     /// ```
     @ViewBuilder
-    func platformVStackContainer<Content: View>(
+    nonisolated func platformVStackContainer<Content: View>(
         alignment: HorizontalAlignment = .center,
         spacing: CGFloat? = nil,
         @ViewBuilder content: () -> Content
@@ -64,7 +63,7 @@ public extension View {
     /// }
     /// ```
     @ViewBuilder
-    func platformHStackContainer<Content: View>(
+    nonisolated func platformHStackContainer<Content: View>(
         alignment: VerticalAlignment = .center,
         spacing: CGFloat? = nil,
         @ViewBuilder content: () -> Content
@@ -92,7 +91,7 @@ public extension View {
     /// }
     /// ```
     @ViewBuilder
-    func platformZStackContainer<Content: View>(
+    nonisolated func platformZStackContainer<Content: View>(
         alignment: Alignment = .center,
         @ViewBuilder content: () -> Content
     ) -> some View {
@@ -332,7 +331,6 @@ public extension View {
 
 /// Global function wrapper for platformVStackContainer
 /// Provides backward compatibility for code that expects global functions
-@MainActor
 @ViewBuilder
 func platformVStackContainer<Content: View>(
     alignment: HorizontalAlignment = .center,
@@ -344,7 +342,6 @@ func platformVStackContainer<Content: View>(
 
 /// Global function wrapper for platformHStackContainer
 /// Provides backward compatibility for code that expects global functions
-@MainActor
 @ViewBuilder
 func platformHStackContainer<Content: View>(
     alignment: VerticalAlignment = .center,
@@ -356,13 +353,49 @@ func platformHStackContainer<Content: View>(
 
 /// Global function wrapper for platformZStackContainer
 /// Provides backward compatibility for code that expects global functions
-@MainActor
 @ViewBuilder
 func platformZStackContainer<Content: View>(
     alignment: Alignment = .center,
     @ViewBuilder content: () -> Content
 ) -> some View {
     EmptyView().platformZStackContainer(alignment: alignment, content: content)
+}
+
+// MARK: - Function Aliases
+
+/// Alias for platformVStackContainer
+/// Provides a shorter name for convenience
+/// Note: VStack doesn't require @MainActor, so this function is nonisolated
+@ViewBuilder
+func platformVStack<Content: View>(
+    alignment: HorizontalAlignment = .center,
+    spacing: CGFloat? = nil,
+    @ViewBuilder content: () -> Content
+) -> some View {
+    platformVStackContainer(alignment: alignment, spacing: spacing, content: content)
+}
+
+/// Alias for platformHStackContainer
+/// Provides a shorter name for convenience
+/// Note: HStack doesn't require @MainActor, so this function is nonisolated
+@ViewBuilder
+func platformHStack<Content: View>(
+    alignment: VerticalAlignment = .center,
+    spacing: CGFloat? = nil,
+    @ViewBuilder content: () -> Content
+) -> some View {
+    platformHStackContainer(alignment: alignment, spacing: spacing, content: content)
+}
+
+/// Alias for platformZStackContainer
+/// Provides a shorter name for convenience
+/// Note: ZStack doesn't require @MainActor, so this function is nonisolated
+@ViewBuilder
+func platformZStack<Content: View>(
+    alignment: Alignment = .center,
+    @ViewBuilder content: () -> Content
+) -> some View {
+    platformZStackContainer(alignment: alignment, content: content)
 }
 
 /// Global function wrapper for platformLazyVStackContainer
@@ -456,4 +489,137 @@ func platformListContainer<Content: View>(
     @ViewBuilder content: () -> Content
 ) -> some View {
     EmptyView().platformListContainer(content: content)
+}
+
+// MARK: - Platform Text Field Functions
+
+/// Drop-in replacement for SwiftUI's TextField
+/// Provides platform-specific text field with automatic accessibility compliance
+/// Note: TextField doesn't require @MainActor for creation, only for binding access
+///
+/// - Parameters:
+///   - title: The placeholder text
+///   - text: Binding to the text value
+/// - Returns: A platform-specific text field with automatic accessibility compliance
+///
+/// ## Usage Example
+/// ```swift
+/// platformTextField("Enter name", text: $name)
+/// ```
+func platformTextField(
+    _ title: String,
+    text: Binding<String>
+) -> some View {
+    EmptyView().platformTextField(text: text, prompt: title)
+        .automaticCompliance()
+}
+
+/// Drop-in replacement for SwiftUI's TextField with axis support (iOS 16+)
+/// Provides platform-specific text field with automatic accessibility compliance
+/// Note: TextField doesn't require @MainActor for creation, only for binding access
+///
+/// - Parameters:
+///   - title: The placeholder text
+///   - text: Binding to the text value
+///   - axis: The text field axis (horizontal or vertical)
+/// - Returns: A platform-specific text field with automatic accessibility compliance
+///
+/// ## Usage Example
+/// ```swift
+/// platformTextField("Enter description", text: $description, axis: .vertical)
+/// ```
+func platformTextField(
+    _ title: String,
+    text: Binding<String>,
+    axis: Axis
+) -> some View {
+    EmptyView().platformTextField(text: text, prompt: title, axis: axis)
+        .automaticCompliance()
+}
+
+/// Drop-in replacement for SwiftUI's SecureField
+/// Provides platform-specific secure text field with automatic accessibility compliance
+/// Note: SecureField doesn't require @MainActor for creation, only for binding access
+///
+/// - Parameters:
+///   - title: The placeholder text
+///   - text: Binding to the text value
+/// - Returns: A platform-specific secure text field with automatic accessibility compliance
+///
+/// ## Usage Example
+/// ```swift
+/// platformSecureField("Enter password", text: $password)
+/// ```
+func platformSecureField(
+    _ title: String,
+    text: Binding<String>
+) -> some View {
+    EmptyView().platformSecureTextField(text: text, prompt: title)
+        .automaticCompliance()
+}
+
+/// Drop-in replacement for SwiftUI's Toggle
+/// Provides platform-specific toggle with automatic accessibility compliance
+/// Note: Toggle doesn't require @MainActor for creation, only for binding access
+///
+/// - Parameters:
+///   - title: The toggle label text
+///   - isOn: Binding to the toggle state
+/// - Returns: A platform-specific toggle with automatic accessibility compliance
+///
+/// ## Usage Example
+/// ```swift
+/// platformToggle("Enable notifications", isOn: $notificationsEnabled)
+/// ```
+func platformToggle(
+    _ title: String,
+    isOn: Binding<Bool>
+) -> some View {
+    EmptyView().platformToggle(isOn: isOn) {
+        Text(title)
+    }
+    .automaticCompliance()
+}
+
+/// Drop-in replacement for SwiftUI's Form
+/// Provides platform-specific form container with automatic accessibility compliance
+/// Note: Form doesn't require @MainActor for creation
+///
+/// - Parameter content: The form content
+/// - Returns: A platform-specific form container with automatic accessibility compliance
+///
+/// ## Usage Example
+/// ```swift
+/// platformForm {
+///     platformTextField("Name", text: $name)
+///     platformToggle("Enabled", isOn: $enabled)
+/// }
+/// ```
+@ViewBuilder
+func platformForm<Content: View>(
+    @ViewBuilder content: () -> Content
+) -> some View {
+    EmptyView().platformFormContainer(content: content)
+        .automaticCompliance()
+}
+
+/// Drop-in replacement for SwiftUI's TextEditor
+/// Provides platform-specific text editor with automatic accessibility compliance
+/// Note: TextEditor doesn't require @MainActor for creation, only for binding access
+///
+/// - Parameters:
+///   - prompt: The placeholder text (shown when editor is empty)
+///   - text: Binding to the text value
+/// - Returns: A platform-specific text editor with automatic accessibility compliance
+///
+/// ## Usage Example
+/// ```swift
+/// platformTextEditor("Enter description", text: $description)
+/// ```
+func platformTextEditor(
+    _ prompt: String,
+    text: Binding<String>
+) -> some View {
+    EmptyView().platformTextEditor(text: text, prompt: prompt)
+        .automaticCompliance()
 }

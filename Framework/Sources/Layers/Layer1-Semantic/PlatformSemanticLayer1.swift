@@ -105,6 +105,7 @@ public enum ValidationRuleType: String, CaseIterable {
 ///   - onItemEdited: Optional callback when user wants to edit an item (automatically appears in row actions)
 /// - Returns: A view that presents the collection with appropriate layout and actions
 /// - SeeAlso: `README_Layer1_Semantic.md` for detailed callback documentation and examples
+/// Note: Requires @MainActor because it creates a View struct
 @MainActor
 public func platformPresentItemCollection_L1<Item: Identifiable>(
     items: [Item],
@@ -129,6 +130,7 @@ public func platformPresentItemCollection_L1<Item: Identifiable>(
 }
 
 /// Generic function for presenting numeric data
+/// Note: Requires @MainActor because it creates a View struct
 @MainActor
 public func platformPresentNumericData_L1(
     data: [GenericNumericData],
@@ -141,6 +143,7 @@ public func platformPresentNumericData_L1(
 
 /// Present a single numeric data item
 /// Internally wraps the single item in an array and delegates to the array version
+/// Note: Requires @MainActor because it calls a main-actor isolated function
 @MainActor
 public func platformPresentNumericData_L1(
     data: GenericNumericData,
@@ -151,6 +154,7 @@ public func platformPresentNumericData_L1(
 
 /// Generic function for presenting numeric data with custom views
 /// Allows specifying custom views for individual numeric data items
+/// Note: Requires @MainActor because it creates a View struct
 @MainActor
 public func platformPresentNumericData_L1(
     data: [GenericNumericData],
@@ -167,6 +171,7 @@ public func platformPresentNumericData_L1(
 }
 
 /// Generic function for presenting numeric data with custom views and enhanced hints
+/// Note: Requires @MainActor because it creates a View struct
 @MainActor
 public func platformPresentNumericData_L1(
     data: [GenericNumericData],
@@ -197,6 +202,7 @@ public func platformPresentNumericData_L1(
 }
 
 /// Generic function for presenting responsive cards
+/// Note: Requires @MainActor because it creates a View struct
 @MainActor
 public func platformResponsiveCard_L1<Content: View>(
     @ViewBuilder content: () -> Content,
@@ -289,6 +295,7 @@ public func platformPresentModalForm_L1(
 ///   - context: The presentation context
 ///   - customFormContainer: Optional view builder that wraps the form content with custom styling
 /// - Returns: A view presenting the modal form with optional custom container
+/// Note: Requires @MainActor because it creates a View struct
 @MainActor
 public func platformPresentModalForm_L1<ContainerContent: View>(
     formType: DataTypeHint,
@@ -307,6 +314,7 @@ public func platformPresentModalForm_L1<ContainerContent: View>(
     let fields = createFieldsForFormType(formType, context: context)
     
     // Create the base modal form view
+    // Note: ModalFormView initializer is main-actor isolated because it's a View
     let baseFormView = AnyView(ModalFormView(fields: fields, formType: formType, context: context, hints: hints)
         .automaticCompliance())
     
@@ -334,6 +342,7 @@ public func platformPresentMediaData_L1(
 
 /// Present a single media item
 /// Internally wraps the single item in an array and delegates to the array version
+/// Note: Requires @MainActor because it calls a main-actor isolated function
 @MainActor
 public func platformPresentMediaData_L1(
     media: GenericMediaItem,
@@ -344,6 +353,7 @@ public func platformPresentMediaData_L1(
 
 /// Present a single media item with enhanced hints
 /// Internally wraps the single item in an array and delegates to the array version
+/// Note: Requires @MainActor because it calls a main-actor isolated function
 @MainActor
 public func platformPresentMediaData_L1(
     media: GenericMediaItem,
@@ -354,6 +364,7 @@ public func platformPresentMediaData_L1(
 
 /// Present a single media item with custom view
 /// Internally wraps the single item in an array and delegates to the array version
+/// Note: Requires @MainActor because it calls a main-actor isolated function
 @MainActor
 public func platformPresentMediaData_L1(
     media: GenericMediaItem,
@@ -365,6 +376,7 @@ public func platformPresentMediaData_L1(
 
 /// Present a single media item with enhanced hints and custom view
 /// Internally wraps the single item in an array and delegates to the array version
+/// Note: Requires @MainActor because it calls a main-actor isolated function
 @MainActor
 public func platformPresentMediaData_L1(
     media: GenericMediaItem,
@@ -376,6 +388,7 @@ public func platformPresentMediaData_L1(
 
 /// Generic function for presenting media data with custom views
 /// Allows specifying custom views for individual media items
+/// Note: Requires @MainActor because it creates a View struct
 @MainActor
 public func platformPresentMediaData_L1(
     media: [GenericMediaItem],
@@ -392,6 +405,7 @@ public func platformPresentMediaData_L1(
 }
 
 /// Generic function for presenting media data with custom views and enhanced hints
+/// Note: Requires @MainActor because it creates a View struct
 @MainActor
 public func platformPresentMediaData_L1(
     media: [GenericMediaItem],
@@ -422,6 +436,7 @@ public func platformPresentMediaData_L1(
 }
 
 /// Generic function for presenting hierarchical data
+/// Note: Requires @MainActor because it creates a View struct
 @MainActor
 public func platformPresentHierarchicalData_L1(
     items: [GenericHierarchicalItem],
@@ -434,6 +449,7 @@ public func platformPresentHierarchicalData_L1(
 
 /// Present a single hierarchical item
 /// Internally wraps the single item in an array and delegates to the array version
+/// Note: Requires @MainActor because it calls a main-actor isolated function
 @MainActor
 public func platformPresentHierarchicalData_L1(
     item: GenericHierarchicalItem,
@@ -444,6 +460,7 @@ public func platformPresentHierarchicalData_L1(
 
 /// Generic function for presenting hierarchical data with custom views
 /// Allows specifying custom views for individual hierarchical items
+/// Note: Requires @MainActor because it creates a View struct
 @MainActor
 public func platformPresentHierarchicalData_L1(
     items: [GenericHierarchicalItem],
@@ -460,6 +477,7 @@ public func platformPresentHierarchicalData_L1(
 }
 
 /// Generic function for presenting hierarchical data with custom views and enhanced hints
+/// Note: Requires @MainActor because it creates a View struct
 @MainActor
 public func platformPresentHierarchicalData_L1(
     items: [GenericHierarchicalItem],
@@ -490,6 +508,7 @@ public func platformPresentHierarchicalData_L1(
 }
 
 /// Generic function for presenting temporal data
+/// Note: Requires @MainActor because it creates a View struct
 @MainActor
 public func platformPresentTemporalData_L1(
     items: [GenericTemporalItem],
@@ -502,6 +521,7 @@ public func platformPresentTemporalData_L1(
 
 /// Present a single temporal item
 /// Internally wraps the single item in an array and delegates to the array version
+/// Note: Requires @MainActor because it calls a main-actor isolated function
 @MainActor
 public func platformPresentTemporalData_L1(
     item: GenericTemporalItem,
@@ -540,6 +560,7 @@ public func platformPresentTemporalData_L1(
 ///   - title: Optional navigation title
 ///   - hints: Presentation hints that guide navigation decisions
 /// - Returns: A view that presents the content in a navigation stack
+/// Note: Requires @MainActor because it creates a View struct
 @MainActor
 public func platformPresentNavigationStack_L1<Content: View>(
     content: Content,
@@ -564,6 +585,7 @@ public func platformPresentNavigationStack_L1<Content: View>(
 ///   - itemView: View builder for individual items in the list
 ///   - destination: View builder for detail views when an item is selected
 /// - Returns: A view that presents the items in a navigation stack with list-detail navigation
+/// Note: Requires @MainActor because it creates a View struct
 @MainActor
 public func platformPresentNavigationStack_L1<Item: Identifiable & Hashable, ItemView: View, DestinationView: View>(
     items: [Item],

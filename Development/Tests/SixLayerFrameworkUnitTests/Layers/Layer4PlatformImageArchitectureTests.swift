@@ -58,6 +58,11 @@ open class Layer4PlatformImageArchitectureTests: BaseTestClass {
             selectedImage = image
         }
         
+        // Note: Variables are set in closures but not read in this test
+        // They verify the callback signature accepts PlatformImage
+        _ = capturedImage
+        _ = selectedImage
+        
         // Then: Callbacks should work with PlatformImage only
         // Note: Callbacks are not executed in unit tests (only when views are actually used)
         // We verify that the interfaces accept PlatformImage callbacks by checking they were created successfully
@@ -219,6 +224,10 @@ open class Layer4PlatformImageArchitectureTests: BaseTestClass {
         let _ = PlatformPhotoComponentsLayer4.platformCameraInterface_L4 { image in
             callbackImage = image
         }
+        
+        // Note: Variable is set in closure but not read in this test
+        // It verifies the callback signature accepts PlatformImage
+        _ = callbackImage
         
         // Verify callback parameter is PlatformImage
         // Note: Callbacks are not executed in unit tests (only when views are actually used)

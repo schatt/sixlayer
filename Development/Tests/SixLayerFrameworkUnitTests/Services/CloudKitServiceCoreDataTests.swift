@@ -14,7 +14,7 @@ import CloudKit
 // MARK: - Mock Persistent Container
 
 @MainActor
-class MockPersistentContainer: NSPersistentContainer {
+class MockPersistentContainer: NSPersistentContainer, @unchecked Sendable {
     var loadPersistentStoresCalled = false
     var loadPersistentStoresError: Error?
     var loadPersistentStoresResult: NSPersistentStoreDescription?

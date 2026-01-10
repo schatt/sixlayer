@@ -16,6 +16,7 @@ import SwiftUI
 ///   - content: The content to present
 ///   - hints: Security hints
 /// - Returns: SwiftUI view with security service
+/// Note: Requires @MainActor because SecurityService is ObservableObject with @Published properties
 @MainActor
 public func platformPresentSecureContent_L1<Content: View>(
     content: Content,
@@ -39,6 +40,7 @@ public func platformPresentSecureContent_L1<Content: View>(
 ///   - text: Binding to the text value
 ///   - hints: Security hints
 /// - Returns: SwiftUI view with secure text field
+/// Note: Requires @MainActor because SecurityService is ObservableObject with @Published properties
 @MainActor
 public func platformPresentSecureTextField_L1(
     title: String,
@@ -80,6 +82,7 @@ public func platformRequestBiometricAuth_L1(
 ///   - isActive: Whether the resource is currently active
 ///   - hints: Security hints
 /// - Returns: Empty view (indicator is shown via system APIs)
+/// Note: Requires @MainActor because SecurityService is ObservableObject with @Published properties
 @MainActor
 public func platformShowPrivacyIndicator_L1(
     type: PrivacyPermissionType,

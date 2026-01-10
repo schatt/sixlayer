@@ -21,6 +21,7 @@ import TabularData
 ///   - dataFrame: The DataFrame to analyze
 ///   - hints: Optional hints to guide the analysis
 /// - Returns: A view presenting the analysis results
+/// Note: Requires @MainActor because it creates a View struct
 @MainActor
 public func platformAnalyzeDataFrame_L1(
     dataFrame: DataFrame,
@@ -38,6 +39,7 @@ public func platformAnalyzeDataFrame_L1(
 ///   - dataFrames: Array of DataFrames to analyze
 ///   - hints: Optional hints to guide the analysis
 /// - Returns: A view presenting the comparative analysis results
+/// Note: Requires @MainActor because it creates a View struct
 @MainActor
 public func platformCompareDataFrames_L1(
     dataFrames: [DataFrame],
@@ -55,6 +57,7 @@ public func platformCompareDataFrames_L1(
 ///   - dataFrame: The DataFrame to analyze
 ///   - hints: Optional hints to guide the analysis
 /// - Returns: A view presenting data quality insights and recommendations
+/// Note: Requires @MainActor because it creates a View struct
 @MainActor
 public func platformAssessDataQuality_L1(
     dataFrame: DataFrame,
@@ -73,6 +76,7 @@ public func platformAssessDataQuality_L1(
 ///   - hints: Optional hints to guide the analysis
 ///   - customVisualizationView: Optional view builder that wraps the analysis results with custom styling
 /// - Returns: A view presenting the analysis results with optional custom visualization
+/// Note: Requires @MainActor because it creates a View struct
 @MainActor
 public func platformAnalyzeDataFrame_L1<VisualizationContent: View>(
     dataFrame: DataFrame,
@@ -97,6 +101,7 @@ public func platformAnalyzeDataFrame_L1<VisualizationContent: View>(
 ///   - hints: Optional hints to guide the analysis
 ///   - customVisualizationView: Optional view builder that wraps the comparison results with custom styling
 /// - Returns: A view presenting the comparative analysis results with optional custom visualization
+/// Note: Requires @MainActor because it creates a View struct
 @MainActor
 public func platformCompareDataFrames_L1<VisualizationContent: View>(
     dataFrames: [DataFrame],
@@ -121,6 +126,7 @@ public func platformCompareDataFrames_L1<VisualizationContent: View>(
 ///   - hints: Optional hints to guide the analysis
 ///   - customVisualizationView: Optional view builder that wraps the quality assessment results with custom styling
 /// - Returns: A view presenting data quality insights with optional custom visualization
+/// Note: Requires @MainActor because it creates a View struct
 @MainActor
 public func platformAssessDataQuality_L1<VisualizationContent: View>(
     dataFrame: DataFrame,

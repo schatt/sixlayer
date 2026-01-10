@@ -1515,7 +1515,7 @@ public extension View {
     ///
     /// - Parameter content: The form content
     /// - Returns: A platform-specific form container
-    func platformFormContainer<Content: View>(
+    nonisolated func platformFormContainer<Content: View>(
         @ViewBuilder content: () -> Content
     ) -> some View {
         #if os(iOS)
@@ -1666,7 +1666,7 @@ public extension View {
     ///   - isOn: Binding to the toggle state
     ///   - label: The toggle label
     /// - Returns: A platform-specific toggle
-    func platformToggle<Label: View>(
+    nonisolated func platformToggle<Label: View>(
         isOn: Binding<Bool>,
         @ViewBuilder label: () -> Label
     ) -> some View {
@@ -1685,7 +1685,7 @@ public extension View {
     ///   - prompt: The placeholder text
     ///   - axis: The text field axis (iOS 16+)
     /// - Returns: A platform-specific text field
-    func platformTextField(
+    nonisolated func platformTextField(
         text: Binding<String>,
         prompt: String? = nil,
         axis: Axis = .horizontal
@@ -1708,7 +1708,7 @@ public extension View {
     ///   - text: Binding to the text value
     ///   - prompt: The placeholder text
     /// - Returns: A platform-specific secure text field
-    func platformSecureTextField(
+    nonisolated func platformSecureTextField(
         text: Binding<String>,
         prompt: String? = nil
     ) -> some View {
@@ -1726,7 +1726,7 @@ public extension View {
     ///   - text: Binding to the text value
     ///   - prompt: The placeholder text
     /// - Returns: A platform-specific text editor
-    func platformTextEditor(
+    nonisolated func platformTextEditor(
         text: Binding<String>,
         prompt: String? = nil
     ) -> some View {

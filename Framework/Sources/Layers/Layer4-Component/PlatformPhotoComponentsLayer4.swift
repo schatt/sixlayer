@@ -16,13 +16,14 @@ import PhotosUI
 /// - Responsive handling of user gestures for image manipulation.
 /// - Seamless integration with platform photo services.
 /// - Accessibility features for image content and interactions.
-@MainActor
 public enum PlatformPhotoComponentsLayer4 {
     
     // MARK: - Camera Interface Components
     
     /// Creates a platform-specific camera interface
+    /// Note: Requires @MainActor because CameraView uses @State
     @ViewBuilder
+    @MainActor
     public static func platformCameraInterface_L4(onImageCaptured: @escaping (PlatformImage) -> Void) -> some View {
         #if os(iOS)
         CameraView(onImageCaptured: onImageCaptured)
@@ -41,7 +42,9 @@ public enum PlatformPhotoComponentsLayer4 {
     
     /// Creates a unified cross-platform photo picker
     /// Uses the same API on both iOS and macOS, returning PlatformImage consistently
+    /// Note: Requires @MainActor because UnifiedImagePicker is a View
     @ViewBuilder
+    @MainActor
     public static func platformPhotoPicker_L4(onImageSelected: @escaping (PlatformImage) -> Void) -> some View {
         UnifiedImagePicker(onImageSelected: onImageSelected)
             .automaticCompliance()
@@ -50,7 +53,9 @@ public enum PlatformPhotoComponentsLayer4 {
     // MARK: - Photo Display Components
     
     /// Creates a platform-specific photo display
+    /// Note: Requires @MainActor because PhotoDisplayView is a View
     @ViewBuilder
+    @MainActor
     public static func platformPhotoDisplay_L4(image: PlatformImage?, style: PhotoDisplayStyle) -> some View {
         Group {
             if let image = image {
@@ -66,7 +71,9 @@ public enum PlatformPhotoComponentsLayer4 {
     
     /// Creates a cross-platform camera preview view
     /// Abstracts UIViewControllerRepresentable (iOS) and NSViewRepresentable (macOS)
+    /// Note: Requires @MainActor because PlatformCameraPreviewView is a View
     @ViewBuilder
+    @MainActor
     public static func platformCameraPreview_L4(session: AVCaptureSession, videoGravity: AVLayerVideoGravity = .resizeAspectFill) -> some View {
         PlatformCameraPreviewView(session: session, videoGravity: videoGravity)
             .automaticCompliance(named: "platformCameraPreview_L4")
@@ -108,6 +115,7 @@ import UIKit
 
 public struct CameraView: UIViewControllerRepresentable {
     let onImageCaptured: (PlatformImage) -> Void
+    
     
     public func makeUIViewController(context: Context) -> UIImagePickerController {
         let picker = UIImagePickerController()
@@ -429,6 +437,7 @@ struct PhotoDisplayView: View {
     let image: PlatformImage
     let style: PhotoDisplayStyle
     
+    
     var body: some View {
         Image(platformImage: image)
             .resizable()
@@ -458,6 +467,7 @@ struct PhotoDisplayView: View {
 
 struct PlaceholderPhotoView: View {
     let style: PhotoDisplayStyle
+    
     
     var body: some View {
         VStack {
@@ -512,6 +522,7 @@ struct AnyShape: Shape, @unchecked Sendable {
 // MARK: - Convenience Functions (Global)
 
 /// Creates a platform-specific photo picker (convenience wrapper)
+/// Note: Requires @MainActor because it calls main-actor isolated methods
 @ViewBuilder
 @MainActor
 public func platformPhotoPicker_L4(onImageSelected: @escaping (PlatformImage) -> Void) -> some View {
@@ -519,6 +530,7 @@ public func platformPhotoPicker_L4(onImageSelected: @escaping (PlatformImage) ->
 }
 
 /// Creates a platform-specific camera interface (convenience wrapper)
+/// Note: Requires @MainActor because it calls main-actor isolated methods
 @ViewBuilder
 @MainActor
 public func platformCameraInterface_L4(onImageCaptured: @escaping (PlatformImage) -> Void) -> some View {
@@ -526,6 +538,7 @@ public func platformCameraInterface_L4(onImageCaptured: @escaping (PlatformImage
 }
 
 /// Creates a platform-specific photo display (convenience wrapper)
+/// Note: Requires @MainActor because it calls main-actor isolated methods
 @ViewBuilder
 @MainActor
 public func platformPhotoDisplay_L4(image: PlatformImage?, style: PhotoDisplayStyle) -> some View {
@@ -533,6 +546,7 @@ public func platformPhotoDisplay_L4(image: PlatformImage?, style: PhotoDisplaySt
 }
 
 /// Creates a cross-platform camera preview (convenience wrapper)
+/// Note: Requires @MainActor because it calls main-actor isolated methods
 @ViewBuilder
 @MainActor
 public func platformCameraPreview_L4(session: AVCaptureSession, videoGravity: AVLayerVideoGravity = .resizeAspectFill) -> some View {

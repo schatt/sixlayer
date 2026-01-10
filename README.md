@@ -27,7 +27,7 @@ Navigate to the `Framework/` directory and use it as a Swift Package:
 ```swift
 // In your Package.swift
 dependencies: [
-    .package(url: "https://github.com/schatt/sixlayer.git", from: "7.2.0")
+    .package(url: "https://github.com/schatt/sixlayer.git", from: "7.3.0")
 ]
 ```
 
@@ -41,9 +41,12 @@ dependencies: [
 
 The framework is distributed as a Swift Package from the `Framework/` directory. This ensures that only the essential framework code is included when other projects consume it.
 
-## 🆕 Latest Release: v7.2.0
+## 🆕 Latest Release: v7.3.0
 
-### **Configurable Photo Sources for OCR Scanner**
+### **Convenience Aliases and Code Quality Improvements**
+🆕 **Platform Container Stack Aliases**: Added shorter convenience aliases `platformVStack`, `platformHStack`, and `platformZStack` for more intuitive API names. Refactored iCloud availability checks for improved code clarity.
+
+### **Previous Release: v7.2.0 - Configurable Photo Sources for OCR Scanner**
 🆕 **FieldActionOCRScanner Enhancement**: Added configurable photo source options. Developers can now choose whether to offer camera, photo library, or both options to end users, with automatic device capability detection and graceful fallbacks.
 
 ### **Previous Release: v7.1.0 - Color Resolution System from Hints Files**
@@ -184,7 +187,7 @@ These guides contain critical information about the Layer 1 Semantic Intent phil
 
 ## 📋 Current Status
 
-**Version**: v7.2.0 (Configurable Photo Sources for OCR Scanner)
+**Version**: v7.3.0 (Convenience Aliases and Code Quality Improvements)
 **Phase**: Minor Release
 **Next**: TBD
 

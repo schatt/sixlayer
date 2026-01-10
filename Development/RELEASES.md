@@ -1,12 +1,33 @@
 # 🚀 Six-Layer Framework Release History
 
-## 📍 **Current Release: v7.2.0 - Configurable Photo Sources for OCR Scanner** 🎯
+## 📍 **Current Release: v7.3.0 - Convenience Aliases and Code Quality Improvements** 🎯
 
-**Release Date**: January 8, 2026
+**Release Date**: January 9, 2026
 **Status**: ✅ **COMPLETE**
-**Previous Release**: v7.1.0 - Color Resolution System from Hints Files
-**Note**: Minor release adding configurable photo source options to FieldActionOCRScanner. Developers can now choose whether to offer camera, photo library, or both options to end users, with automatic device capability detection and graceful fallbacks.
+**Previous Release**: v7.2.0 - Configurable Photo Sources for OCR Scanner
+**Note**: Minor release adding convenience function aliases for platform container stacks and improving code clarity in iCloud availability checks. Provides shorter, more intuitive API names while maintaining full backward compatibility.
 **Next Release**: TBD
+
+---
+
+## 🎯 **v7.3.0 - Convenience Aliases and Code Quality Improvements** (January 9, 2026)
+
+### **What's New:**
+
+#### **🆕 Convenience Aliases for Platform Container Stacks (Issue #146)**
+- **`platformVStack`, `platformHStack`, `platformZStack`**: Shorter convenience aliases for container functions
+- **Backward compatible**: Original `platform*Container` functions still available
+- **Consistent pattern**: All three stack types have matching alias patterns
+- **Same functionality**: Aliases provide identical behavior to container functions
+
+### **What's Fixed:**
+
+#### **🔧 Code Quality: FileManager iCloud Checks**
+- **Improved clarity**: Changed from `if let _ =` to `!= nil` pattern for existence checks
+- **Clearer intent**: Code explicitly shows we're checking for existence, not using the value
+- **Better readability**: More idiomatic Swift pattern for optional existence checks
+
+**See [RELEASE_v7.3.0.md](RELEASE_v7.3.0.md) for complete release notes.**
 
 ---
 

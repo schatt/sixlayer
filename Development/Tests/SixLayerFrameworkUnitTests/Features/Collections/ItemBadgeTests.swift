@@ -43,7 +43,7 @@ struct ItemBadgeTests {
         let category = TestCategory(name: "Work", icon: "briefcase.fill", color: "blue")
         
         // When: Creating badge with default style
-        let badge = ItemBadge(
+        let _ = ItemBadge(
             item: category,
             icon: category.icon,
             text: category.name,
@@ -59,7 +59,7 @@ struct ItemBadgeTests {
         // Given: Item with color
         let hints = PresentationHints(
             itemColorProvider: { item in
-                if let category = item as? TestCategory {
+                if item is TestCategory {
                     return .green
                 }
                 return nil
@@ -69,7 +69,7 @@ struct ItemBadgeTests {
         let category = TestCategory(name: "Personal", icon: "person.fill", color: "green")
         
         // When: Creating badge with outline style
-        let badge = ItemBadge(
+        let _ = ItemBadge(
             item: category,
             icon: category.icon,
             text: category.name,
@@ -85,7 +85,7 @@ struct ItemBadgeTests {
         // Given: Item with color
         let hints = PresentationHints(
             itemColorProvider: { item in
-                if let category = item as? TestCategory {
+                if item is TestCategory {
                     return .orange
                 }
                 return nil
@@ -95,7 +95,7 @@ struct ItemBadgeTests {
         let category = TestCategory(name: "Shopping", icon: "cart.fill", color: "orange")
         
         // When: Creating badge with subtle style
-        let badge = ItemBadge(
+        let _ = ItemBadge(
             item: category,
             icon: category.icon,
             text: category.name,
@@ -111,7 +111,7 @@ struct ItemBadgeTests {
         // Given: Item with color
         let hints = PresentationHints(
             itemColorProvider: { item in
-                if let category = item as? TestCategory {
+                if item is TestCategory {
                     return .purple
                 }
                 return nil
@@ -121,7 +121,7 @@ struct ItemBadgeTests {
         let category = TestCategory(name: "Travel", icon: "airplane", color: "purple")
         
         // When: Creating badge with icon only style
-        let badge = ItemBadge(
+        let _ = ItemBadge(
             item: category,
             icon: category.icon,
             style: .iconOnly,
@@ -156,7 +156,7 @@ struct ItemBadgeTests {
         // Then: Badge should use color from hints
         // Note: Visual verification would require ViewInspector
         // For now, we verify the component uses hints
-        #expect(badge != nil)
+        #expect(true)
     }
     
     @Test @MainActor func testItemBadgeFallsBackToDefaultColor() async throws {
@@ -176,7 +176,7 @@ struct ItemBadgeTests {
         )
         
         // Then: Badge should use default color
-        #expect(badge != nil)
+        #expect(true)
     }
     #endif
 }

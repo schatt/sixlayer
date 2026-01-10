@@ -23,7 +23,6 @@ import MapKit
 /// Since our minimum macOS version is 15, these types are always available
 #if os(iOS) || os(macOS)
 @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
-@MainActor
 public enum PlatformMapComponentsLayer4 {
     
     // MARK: - Map View Components
@@ -31,7 +30,9 @@ public enum PlatformMapComponentsLayer4 {
     /// Creates a platform-specific map view
     /// Uses modern SwiftUI Map API with Annotation (iOS 17+, macOS 14+)
     /// Falls back gracefully on unsupported platforms
+    /// Note: Requires @MainActor because Map is a View
     @ViewBuilder
+    @MainActor
     public static func platformMapView_L4(
         position: Binding<MapCameraPosition>,
         @MapContentBuilder content: () -> some MapContent
@@ -52,7 +53,9 @@ public enum PlatformMapComponentsLayer4 {
     
     /// Creates a platform-specific map view with annotations
     /// Convenience method that wraps annotations in MapContentBuilder
+    /// Note: Requires @MainActor because Map is a View
     @ViewBuilder
+    @MainActor
     public static func platformMapView_L4(
         position: Binding<MapCameraPosition>,
         annotations: [MapAnnotationData],
@@ -82,7 +85,9 @@ public enum PlatformMapComponentsLayer4 {
     
     /// Creates a map view that automatically centers on the user's current location
     /// Integrates with LocationService to get and display current location
+    /// Note: Requires @MainActor because MapViewWithLocationService is a View
     @ViewBuilder
+    @MainActor
     public static func platformMapViewWithCurrentLocation_L4(
         locationService: LocationService,
         showCurrentLocation: Bool = true,
@@ -253,6 +258,7 @@ private struct UnsupportedPlatformMapView: View {
 #if os(iOS) || os(macOS)
 /// Creates a platform-specific map view (convenience wrapper)
 @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+/// Note: Requires @MainActor because it calls main-actor isolated methods
 @ViewBuilder
 @MainActor
 public func platformMapView_L4(
@@ -263,6 +269,7 @@ public func platformMapView_L4(
 }
 
 /// Creates a platform-specific map view with annotations (convenience wrapper)
+/// Note: Requires @MainActor because it calls main-actor isolated methods
 @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
 @ViewBuilder
 @MainActor
@@ -279,6 +286,7 @@ public func platformMapView_L4(
 }
 
 /// Creates a map view that automatically centers on the user's current location (convenience wrapper)
+/// Note: Requires @MainActor because it calls main-actor isolated methods
 @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
 @ViewBuilder
 @MainActor

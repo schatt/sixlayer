@@ -127,7 +127,7 @@ open class PlatformHapticFeedbackExtensionsTests: BaseTestClass {
         runWithTaskLocalConfig {
             // Given: A view and action flag
             var actionExecuted = false
-            let testView = Text("Test")
+            let _ = Text("Test")
                 .platformHapticFeedback(.light) {
                     actionExecuted = true
                 }
