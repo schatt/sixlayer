@@ -30,7 +30,9 @@ public enum PlatformMapComponentsLayer4 {
     /// Creates a platform-specific map view
     /// Uses modern SwiftUI Map API with Annotation (iOS 17+, macOS 14+)
     /// Falls back gracefully on unsupported platforms
+    /// Note: Requires @MainActor because Map is a View
     @ViewBuilder
+    @MainActor
     public static func platformMapView_L4(
         position: Binding<MapCameraPosition>,
         @MapContentBuilder content: () -> some MapContent
@@ -51,7 +53,9 @@ public enum PlatformMapComponentsLayer4 {
     
     /// Creates a platform-specific map view with annotations
     /// Convenience method that wraps annotations in MapContentBuilder
+    /// Note: Requires @MainActor because Map is a View
     @ViewBuilder
+    @MainActor
     public static func platformMapView_L4(
         position: Binding<MapCameraPosition>,
         annotations: [MapAnnotationData],
@@ -81,7 +85,9 @@ public enum PlatformMapComponentsLayer4 {
     
     /// Creates a map view that automatically centers on the user's current location
     /// Integrates with LocationService to get and display current location
+    /// Note: Requires @MainActor because MapViewWithLocationService is a View
     @ViewBuilder
+    @MainActor
     public static func platformMapViewWithCurrentLocation_L4(
         locationService: LocationService,
         showCurrentLocation: Bool = true,

@@ -171,6 +171,8 @@ public func platformPresentNumericData_L1(
 }
 
 /// Generic function for presenting numeric data with custom views and enhanced hints
+/// Note: Requires @MainActor because it creates a View struct
+@MainActor
 public func platformPresentNumericData_L1(
     data: [GenericNumericData],
     hints: EnhancedPresentationHints,
@@ -403,6 +405,8 @@ public func platformPresentMediaData_L1(
 }
 
 /// Generic function for presenting media data with custom views and enhanced hints
+/// Note: Requires @MainActor because it creates a View struct
+@MainActor
 public func platformPresentMediaData_L1(
     media: [GenericMediaItem],
     hints: EnhancedPresentationHints,
