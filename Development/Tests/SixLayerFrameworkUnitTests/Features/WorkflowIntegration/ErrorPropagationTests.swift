@@ -439,7 +439,8 @@ final class ErrorPropagationTests: BaseTestClass {
         if isFeatureAvailable {
             // This branch tests the primary path when feature is available
             // This code path is intentionally unreachable in this test
-            result = "Primary feature result"
+            // Intentionally unreachable - testing fallback path only
+            _ = "Primary feature result"
         } else {
             // Graceful degradation to fallback
             usedFallback = true

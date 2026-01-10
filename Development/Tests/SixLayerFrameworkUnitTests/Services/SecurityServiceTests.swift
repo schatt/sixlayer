@@ -30,7 +30,7 @@ open class SecurityServiceTests: BaseTestClass {
         )
         
         // When: Creating the service with hints
-        let service = SecurityService(
+        let _ = SecurityService(
             biometricPolicy: hints.biometricPolicy,
             encryptionKey: hints.encryptionKey,
             enablePrivacyIndicators: hints.enablePrivacyIndicators

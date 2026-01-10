@@ -225,7 +225,7 @@ open class LocationServiceTests: BaseTestClass {
         // 4. No @unchecked Sendable conflict
         
         // Verify delegate conformance doesn't cause isolation issues
-        let delegate: CLLocationManagerDelegate = service
+        let _: CLLocationManagerDelegate = service
         // Delegate is non-optional, so it exists if we reach here
     }
 }

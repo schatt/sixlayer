@@ -596,17 +596,10 @@ open class FieldActionsTests: BaseTestClass {
     /// METHODOLOGY: Create FieldActionOCRScanner with different allowedSources values, verify it accepts them
     @Test @MainActor func testFieldActionOCRScannerWithBothSources() async {
         // TDD RED: FieldActionOCRScanner should accept allowedSources parameter
-        var resultReceived: String? = nil
-        var errorReceived: Error? = nil
-        
-        let scanner = FieldActionOCRScanner(
+        let _ = FieldActionOCRScanner(
             isPresented: .constant(true),
-            onResult: { result in
-                resultReceived = result
-            },
-            onError: { error in
-                errorReceived = error
-            },
+            onResult: { _ in },
+            onError: { _ in },
             hint: "Scan document",
             validationTypes: [.general],
             allowedSources: .both
@@ -622,7 +615,7 @@ open class FieldActionsTests: BaseTestClass {
     /// METHODOLOGY: Create FieldActionOCRScanner with .camera source, verify it accepts it
     @Test @MainActor func testFieldActionOCRScannerWithCameraOnly() async {
         // TDD RED: FieldActionOCRScanner should accept .camera source
-        let scanner = FieldActionOCRScanner(
+        let _ = FieldActionOCRScanner(
             isPresented: .constant(true),
             onResult: { _ in },
             onError: { _ in },
@@ -640,7 +633,7 @@ open class FieldActionsTests: BaseTestClass {
     /// METHODOLOGY: Create FieldActionOCRScanner with .photoLibrary source, verify it accepts it
     @Test @MainActor func testFieldActionOCRScannerWithPhotoLibraryOnly() async {
         // TDD RED: FieldActionOCRScanner should accept .photoLibrary source
-        let scanner = FieldActionOCRScanner(
+        let _ = FieldActionOCRScanner(
             isPresented: .constant(true),
             onResult: { _ in },
             onError: { _ in },
@@ -691,7 +684,7 @@ open class FieldActionsTests: BaseTestClass {
             ocrValidationTypes: [.general]
         )
         
-        let renderer = FieldActionRenderer(field: field, formState: formState)
+        let _ = FieldActionRenderer(field: field, formState: formState)
         
         // Verify renderer can be created and will use default .both for allowedSources
         // The actual UI presentation would be tested in UI tests
@@ -711,7 +704,7 @@ open class FieldActionsTests: BaseTestClass {
         // - If .both selected but no camera: shows photo library directly
         // - If .both selected and camera available: shows selection dialog with both options
         
-        let scanner = FieldActionOCRScanner(
+        let _ = FieldActionOCRScanner(
             isPresented: .constant(true),
             onResult: { _ in },
             onError: { _ in },
@@ -734,7 +727,7 @@ open class FieldActionsTests: BaseTestClass {
         // The implementation checks device capabilities and:
         // - If .camera selected but no camera: falls back to photo library automatically
         
-        let scanner = FieldActionOCRScanner(
+        let _ = FieldActionOCRScanner(
             isPresented: .constant(true),
             onResult: { _ in },
             onError: { _ in },

@@ -48,7 +48,7 @@ struct ItemIconTests {
         let pdfDoc = TestDocument(name: "Report.pdf", iconName: "doc.fill", fileExtension: "pdf")
         
         // When: Creating icon
-        let icon = ItemIcon(
+        let _ = ItemIcon(
             item: pdfDoc,
             iconName: pdfDoc.iconName,
             hints: hints
@@ -71,7 +71,7 @@ struct ItemIconTests {
         )
         
         // Then: Icon should use default size
-        #expect(icon != nil)
+        #expect(true)
     }
     
     @Test @MainActor func testItemIconCustomSize() async throws {
@@ -88,7 +88,7 @@ struct ItemIconTests {
         )
         
         // Then: Icon should use custom size
-        #expect(icon != nil)
+        #expect(true)
     }
     
     @Test @MainActor func testItemIconFallsBackToDefaultColor() async throws {
@@ -104,7 +104,7 @@ struct ItemIconTests {
         )
         
         // Then: Icon should use default color
-        #expect(icon != nil)
+        #expect(true)
     }
     #endif
 }
