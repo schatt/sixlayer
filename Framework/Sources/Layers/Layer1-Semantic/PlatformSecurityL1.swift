@@ -16,7 +16,6 @@ import SwiftUI
 ///   - content: The content to present
 ///   - hints: Security hints
 /// - Returns: SwiftUI view with security service
-@MainActor
 public func platformPresentSecureContent_L1<Content: View>(
     content: Content,
     hints: SecurityHints = SecurityHints()
@@ -39,7 +38,6 @@ public func platformPresentSecureContent_L1<Content: View>(
 ///   - text: Binding to the text value
 ///   - hints: Security hints
 /// - Returns: SwiftUI view with secure text field
-@MainActor
 public func platformPresentSecureTextField_L1(
     title: String,
     text: Binding<String>,
@@ -80,7 +78,6 @@ public func platformRequestBiometricAuth_L1(
 ///   - isActive: Whether the resource is currently active
 ///   - hints: Security hints
 /// - Returns: Empty view (indicator is shown via system APIs)
-@MainActor
 public func platformShowPrivacyIndicator_L1(
     type: PrivacyPermissionType,
     isActive: Bool,

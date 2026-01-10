@@ -23,7 +23,6 @@ import AppKit
 /// Unified cross-platform image picker
 /// Provides a single API that works identically on iOS and macOS
 /// Always returns PlatformImage (never platform-specific types)
-@MainActor
 public struct UnifiedImagePicker: View {
     let onImageSelected: (PlatformImage) -> Void
     

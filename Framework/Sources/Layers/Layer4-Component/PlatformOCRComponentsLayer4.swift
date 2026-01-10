@@ -27,7 +27,6 @@ import AppKit
 /// **DEPRECATED**: Use `OCRService.processImage()` instead
 @available(*, deprecated, message: "Use OCRService.processImage() instead")
 @ViewBuilder
-@MainActor
 public func platformOCRImplementation_L4(
     image: PlatformImage,
     context: OCRContext,
@@ -55,7 +54,6 @@ public func platformOCRImplementation_L4(
 /// **DEPRECATED**: Use `OCRService.processImage()` instead
 @available(*, deprecated, message: "Use OCRService.processImage() instead")
 @ViewBuilder
-@MainActor
 public func platformTextExtraction_L4(
     image: PlatformImage,
     context: OCRContext,
@@ -84,7 +82,6 @@ public func platformTextExtraction_L4(
 /// **DEPRECATED**: Use `OCRService.processImage()` instead
 @available(*, deprecated, message: "Use OCRService.processImage() instead")
 @ViewBuilder
-@MainActor
 public func platformTextRecognition_L4(
     image: PlatformImage,
     options: TextRecognitionOptions,

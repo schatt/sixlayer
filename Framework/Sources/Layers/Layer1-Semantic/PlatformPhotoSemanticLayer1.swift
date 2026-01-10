@@ -10,7 +10,6 @@ import AppKit
 /// Cross-platform semantic photo capture interface
 /// Provides intelligent photo capture based on purpose and context
 @ViewBuilder
-@MainActor
 public func platformPhotoCapture_L1(
     purpose: PhotoPurpose,
     context: PhotoContext,
@@ -43,7 +42,6 @@ public func platformPhotoCapture_L1(
 /// Cross-platform semantic photo selection interface
 /// Provides intelligent photo selection based on purpose and context
 @ViewBuilder
-@MainActor
 public func platformPhotoSelection_L1(
     purpose: PhotoPurpose,
     context: PhotoContext,
@@ -61,7 +59,6 @@ public func platformPhotoSelection_L1(
 /// Cross-platform semantic photo display interface
 /// Provides intelligent photo display based on purpose and context
 @ViewBuilder
-@MainActor
 public func platformPhotoDisplay_L1(
     purpose: PhotoPurpose,
     context: PhotoContext,
@@ -93,7 +90,6 @@ public func platformPhotoDisplay_L1(
 ///   - onImageCaptured: Callback when image is captured
 ///   - customCameraView: Optional view builder that wraps the camera interface with custom styling
 /// - Returns: A view presenting the photo capture interface with optional custom wrapper
-@MainActor
 public func platformPhotoCapture_L1<CameraContent: View>(
     purpose: PhotoPurpose,
     context: PhotoContext,
@@ -141,7 +137,6 @@ public func platformPhotoCapture_L1<CameraContent: View>(
 ///   - onImageSelected: Callback when image is selected
 ///   - customPickerView: Optional view builder that wraps the picker interface with custom styling
 /// - Returns: A view presenting the photo selection interface with optional custom wrapper
-@MainActor
 public func platformPhotoSelection_L1<PickerContent: View>(
     purpose: PhotoPurpose,
     context: PhotoContext,
@@ -173,7 +168,6 @@ public func platformPhotoSelection_L1<PickerContent: View>(
 ///   - image: The image to display (optional)
 ///   - customDisplayView: Optional view builder that wraps the display interface with custom styling
 /// - Returns: A view presenting the photo display interface with optional custom wrapper
-@MainActor
 public func platformPhotoDisplay_L1<DisplayContent: View>(
     purpose: PhotoPurpose,
     context: PhotoContext,

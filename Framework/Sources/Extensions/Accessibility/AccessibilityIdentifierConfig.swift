@@ -29,8 +29,9 @@ public enum AccessibilityMode: String, CaseIterable, Sendable {
 }
 
 /// Configuration manager for accessibility identifier generation
-@MainActor
-public class AccessibilityIdentifierConfig: ObservableObject {
+/// Note: Properties are not @Published since they're only read, not observed by views.
+/// This allows automaticCompliance() to be nonisolated.
+public final class AccessibilityIdentifierConfig: @unchecked Sendable {
     /// Task-local config for per-test isolation
     /// Each test runs in its own task, so @TaskLocal provides isolation even when all tasks run on MainActor
     /// BaseTestClass automatically sets this in setupTestEnvironment() using withValue
@@ -49,40 +50,39 @@ public class AccessibilityIdentifierConfig: ObservableObject {
     /// Each test runs in its own task, so @TaskLocal provides automatic isolation.
     /// Tests that access .shared directly will cause race conditions in parallel execution.
     ///
-    /// CONCURRENCY: Static properties on @MainActor classes are MainActor isolated.
-    /// The initializer is @MainActor isolated, so initialization happens lazily
-    /// on first access (which will be from MainActor context in production).
+    /// CONCURRENCY: Static properties are thread-safe for read access.
+    /// The initializer happens lazily on first access.
     public static let shared: AccessibilityIdentifierConfig = {
         // Lazy initialization - first access will be from MainActor context in production
         return AccessibilityIdentifierConfig(singleton: true)
     }()
     
     /// Whether automatic accessibility identifiers are enabled
-    @Published public var enableAutoIDs: Bool = true
+    public var enableAutoIDs: Bool = true
     
     /// Global prefix for accessibility identifiers (feature/view organizer)
     /// Empty string means skip in ID generation - framework works with developers, not against them
-    @Published public var globalPrefix: String = ""
+    public var globalPrefix: String = ""
     
     /// Namespace for accessibility identifiers (top-level organizer)
     /// Empty string means skip in ID generation - framework works with developers, not against them
-    @Published public var namespace: String = ""
+    public var namespace: String = ""
     
     /// Whether to include component names in identifiers
-    @Published public var includeComponentNames: Bool = true
+    public var includeComponentNames: Bool = true
     
     /// Whether to include element types in identifiers
-    @Published public var includeElementTypes: Bool = true
+    public var includeElementTypes: Bool = true
     
     /// Current view hierarchy for context-aware identifier generation
-    @Published public var currentViewHierarchy: [String] = []
+    public var currentViewHierarchy: [String] = []
     
     /// Current screen context for identifier generation
-    @Published public var currentScreenContext: String? = nil
+    public var currentScreenContext: String? = nil
     
     /// Debug logging mode
     /// Automatically enabled if SIXLAYER_DEBUG_A11Y environment variable is set to "1" or "true"
-    @Published public var enableDebugLogging: Bool = false {
+    public var enableDebugLogging: Bool = false {
         didSet {
             if enableDebugLogging && !oldValue {
                 print("🔍 SixLayer Accessibility ID debugging enabled")
@@ -93,7 +93,7 @@ public class AccessibilityIdentifierConfig: ObservableObject {
     }
     
     /// UI test integration mode
-    @Published public var enableUITestIntegration: Bool = false
+    public var enableUITestIntegration: Bool = false
     
     /// Debug log entries
     /// CRITICAL: NOT @Published - accessing @Published properties from view body causes infinite recursion
@@ -104,10 +104,10 @@ public class AccessibilityIdentifierConfig: ObservableObject {
     private let maxDebugLogEntries = 1000
     
     /// Configuration mode
-    @Published public var mode: AccessibilityMode = .automatic
+    public var mode: AccessibilityMode = .automatic
     
     /// Whether to enable view hierarchy tracking (for testing)
-    @Published public var enableViewHierarchyTracking: Bool = false
+    public var enableViewHierarchyTracking: Bool = false
     
     /// Push view hierarchy (for testing)
     public func pushViewHierarchy(_ viewName: String) {

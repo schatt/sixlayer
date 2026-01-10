@@ -1016,14 +1016,18 @@ extension View {
     /// Applies:
     /// - Automatic accessibility identifiers
     /// - HIG compliance features (touch targets, color contrast, typography, focus indicators, etc.)
-    public func automaticCompliance() -> some View {
+    /// 
+    /// Note: Nonisolated since AccessibilityIdentifierConfig properties are no longer @Published
+    nonisolated public func automaticCompliance() -> some View {
         self.modifier(AutomaticComplianceModifier())
     }
     
     /// Apply automatic compliance with a specific component name
     /// Framework components should use this to set their own name for better identifier generation
     /// - Parameter componentName: The name of the component (e.g., "CoverFlowCardComponent")
-    public func automaticCompliance(named componentName: String) -> some View {
+    /// 
+    /// Note: Nonisolated since AccessibilityIdentifierConfig properties are no longer @Published
+    nonisolated public func automaticCompliance(named componentName: String) -> some View {
         // Create a modifier that accepts the name directly
         self.modifier(NamedAutomaticComplianceModifier(componentName: componentName))
     }
@@ -1033,7 +1037,8 @@ extension View {
     /// Apply automatic accessibility identifiers to a view
     /// This is kept for backward compatibility - it now also applies HIG compliance
     @available(*, deprecated, renamed: "automaticCompliance()", message: "Use automaticCompliance() which includes both accessibility identifiers and HIG compliance")
-    public func automaticAccessibilityIdentifiers() -> some View {
+    /// Note: Nonisolated since it just calls automaticCompliance() which is now nonisolated
+    nonisolated public func automaticAccessibilityIdentifiers() -> some View {
         self.automaticCompliance()
     }
     

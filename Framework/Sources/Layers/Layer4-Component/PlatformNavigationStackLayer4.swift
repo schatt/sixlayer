@@ -46,6 +46,7 @@ private func createNavigationView<Content: View>(
 
 /// Implement NavigationStack based on Layer 3 strategy
 /// Layer 4: Component Implementation
+/// Note: Requires @MainActor because it calls main-actor isolated view methods
 @MainActor
 public func platformImplementNavigationStack_L4<Content: View>(
     content: Content,
@@ -86,6 +87,7 @@ public func platformImplementNavigationStack_L4<Content: View>(
 // MARK: - Private Implementation Helpers
 
 /// Create NavigationStack view (iOS 16+) or fallback to NavigationView
+/// Note: Requires @MainActor because it calls main-actor isolated methods
 @MainActor
 private func createNavigationStackView<Content: View>(content: Content) -> AnyView {
     #if os(iOS)
@@ -107,6 +109,7 @@ private func createNavigationStackView<Content: View>(content: Content) -> AnyVi
 }
 
 /// Create NavigationView with standard modifiers
+/// Note: Requires @MainActor because it calls main-actor isolated methods
 @MainActor
 private func createNavigationViewView<Content: View>(
     content: Content,
@@ -117,6 +120,7 @@ private func createNavigationViewView<Content: View>(
 }
 
 /// Create NavigationSplitView (iOS 16+/macOS 13+) or fallback to NavigationView
+/// Note: Requires @MainActor because it calls main-actor isolated methods
 @MainActor
 private func createNavigationSplitView<Content: View>(content: Content) -> AnyView {
     #if os(iOS)
@@ -154,6 +158,7 @@ private func createNavigationSplitView<Content: View>(content: Content) -> AnyVi
 }
 
 /// Create modal view (just content with modifiers)
+/// Note: Requires @MainActor because it calls main-actor isolated methods
 @MainActor
 private func createModalView<Content: View>(content: Content) -> AnyView {
     // Modal implementation - for simple content, just return the content
@@ -163,6 +168,7 @@ private func createModalView<Content: View>(content: Content) -> AnyView {
 
 /// Implement NavigationStack with items based on Layer 3 strategy
 /// Layer 4: Component Implementation
+/// Note: Requires @MainActor because it calls main-actor isolated methods
 @MainActor
 public func platformImplementNavigationStackItems_L4<Item: Identifiable & Hashable>(
     items: [Item],

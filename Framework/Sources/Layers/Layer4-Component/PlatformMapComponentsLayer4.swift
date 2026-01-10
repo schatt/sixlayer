@@ -23,7 +23,6 @@ import MapKit
 /// Since our minimum macOS version is 15, these types are always available
 #if os(iOS) || os(macOS)
 @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
-@MainActor
 public enum PlatformMapComponentsLayer4 {
     
     // MARK: - Map View Components
@@ -254,7 +253,6 @@ private struct UnsupportedPlatformMapView: View {
 /// Creates a platform-specific map view (convenience wrapper)
 @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
 @ViewBuilder
-@MainActor
 public func platformMapView_L4(
     position: Binding<MapCameraPosition>,
     @MapContentBuilder content: () -> some MapContent
@@ -265,7 +263,6 @@ public func platformMapView_L4(
 /// Creates a platform-specific map view with annotations (convenience wrapper)
 @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
 @ViewBuilder
-@MainActor
 public func platformMapView_L4(
     position: Binding<MapCameraPosition>,
     annotations: [MapAnnotationData],
@@ -281,7 +278,6 @@ public func platformMapView_L4(
 /// Creates a map view that automatically centers on the user's current location (convenience wrapper)
 @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
 @ViewBuilder
-@MainActor
 public func platformMapViewWithCurrentLocation_L4(
     locationService: LocationService,
     showCurrentLocation: Bool = true,

@@ -12,7 +12,6 @@ import SwiftUI
 
 /// Platform-specific basic container extensions
 /// Provides consistent container behavior across iOS and macOS
-@MainActor
 public extension View {
     
     /// Platform-specific VStack container with consistent styling and automatic accessibility
@@ -34,7 +33,7 @@ public extension View {
     /// }
     /// ```
     @ViewBuilder
-    func platformVStackContainer<Content: View>(
+    nonisolated func platformVStackContainer<Content: View>(
         alignment: HorizontalAlignment = .center,
         spacing: CGFloat? = nil,
         @ViewBuilder content: () -> Content
@@ -64,7 +63,7 @@ public extension View {
     /// }
     /// ```
     @ViewBuilder
-    func platformHStackContainer<Content: View>(
+    nonisolated func platformHStackContainer<Content: View>(
         alignment: VerticalAlignment = .center,
         spacing: CGFloat? = nil,
         @ViewBuilder content: () -> Content
@@ -92,7 +91,7 @@ public extension View {
     /// }
     /// ```
     @ViewBuilder
-    func platformZStackContainer<Content: View>(
+    nonisolated func platformZStackContainer<Content: View>(
         alignment: Alignment = .center,
         @ViewBuilder content: () -> Content
     ) -> some View {
@@ -332,7 +331,6 @@ public extension View {
 
 /// Global function wrapper for platformVStackContainer
 /// Provides backward compatibility for code that expects global functions
-@MainActor
 @ViewBuilder
 func platformVStackContainer<Content: View>(
     alignment: HorizontalAlignment = .center,
@@ -344,7 +342,6 @@ func platformVStackContainer<Content: View>(
 
 /// Global function wrapper for platformHStackContainer
 /// Provides backward compatibility for code that expects global functions
-@MainActor
 @ViewBuilder
 func platformHStackContainer<Content: View>(
     alignment: VerticalAlignment = .center,
@@ -356,7 +353,6 @@ func platformHStackContainer<Content: View>(
 
 /// Global function wrapper for platformZStackContainer
 /// Provides backward compatibility for code that expects global functions
-@MainActor
 @ViewBuilder
 func platformZStackContainer<Content: View>(
     alignment: Alignment = .center,

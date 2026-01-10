@@ -16,7 +16,6 @@ import SwiftUI
 ///   - content: The content to present
 ///   - hints: Internationalization hints
 /// - Returns: SwiftUI view with proper localization
-@MainActor
 public func platformPresentLocalizedContent_L1<Content: View>(
     content: Content,
     hints: InternationalizationHints = InternationalizationHints()
@@ -36,7 +35,6 @@ public func platformPresentLocalizedContent_L1<Content: View>(
 ///   - text: The text to present
 ///   - hints: Internationalization hints
 /// - Returns: SwiftUI view with proper text formatting
-@MainActor
 public func platformPresentLocalizedText_L1(
     text: String,
     hints: InternationalizationHints = InternationalizationHints()
@@ -58,7 +56,6 @@ public func platformPresentLocalizedText_L1(
 ///   - number: The number to present
 ///   - hints: Internationalization hints
 /// - Returns: SwiftUI view with formatted number
-@MainActor
 public func platformPresentLocalizedNumber_L1(
     number: Double,
     hints: InternationalizationHints = InternationalizationHints()
@@ -76,7 +73,6 @@ public func platformPresentLocalizedNumber_L1(
 ///   - amount: The amount to present
 ///   - hints: Internationalization hints
 /// - Returns: SwiftUI view with formatted currency
-@MainActor
 public func platformPresentLocalizedCurrency_L1(
     amount: Double,
     hints: InternationalizationHints = InternationalizationHints()
@@ -94,7 +90,6 @@ public func platformPresentLocalizedCurrency_L1(
 ///   - date: The date to present
 ///   - hints: Internationalization hints
 /// - Returns: SwiftUI view with formatted date
-@MainActor
 public func platformPresentLocalizedDate_L1(
     date: Date,
     hints: InternationalizationHints = InternationalizationHints()
@@ -112,7 +107,6 @@ public func platformPresentLocalizedDate_L1(
 ///   - date: The date containing the time to present
 ///   - hints: Internationalization hints
 /// - Returns: SwiftUI view with formatted time
-@MainActor
 public func platformPresentLocalizedTime_L1(
     date: Date,
     hints: InternationalizationHints = InternationalizationHints()
@@ -130,7 +124,6 @@ public func platformPresentLocalizedTime_L1(
 ///   - value: The percentage value (0.0 to 1.0)
 ///   - hints: Internationalization hints
 /// - Returns: SwiftUI view with formatted percentage
-@MainActor
 public func platformPresentLocalizedPercentage_L1(
     value: Double,
     hints: InternationalizationHints = InternationalizationHints()
@@ -149,7 +142,6 @@ public func platformPresentLocalizedPercentage_L1(
 ///   - count: The count
 ///   - hints: Internationalization hints
 /// - Returns: SwiftUI view with pluralized text
-@MainActor
 public func platformPresentLocalizedPlural_L1(
     word: String,
     count: Int,
@@ -169,7 +161,6 @@ public func platformPresentLocalizedPlural_L1(
 ///   - arguments: Arguments for string formatting
 ///   - hints: Internationalization hints
 /// - Returns: SwiftUI view with localized string
-@MainActor
 public func platformPresentLocalizedString_L1(
     key: String,
     arguments: [String] = [],
@@ -221,7 +212,6 @@ public struct InternationalizationHints {
 ///   - content: The content to wrap
 ///   - hints: Internationalization hints
 /// - Returns: SwiftUI view with RTL support
-@MainActor
 public func platformRTLContainer_L1<Content: View>(
     content: Content,
     hints: InternationalizationHints = InternationalizationHints()
@@ -242,7 +232,6 @@ public func platformRTLContainer_L1<Content: View>(
 ///   - content: The content to arrange horizontally
 ///   - hints: Internationalization hints
 /// - Returns: SwiftUI view with RTL-aware horizontal arrangement
-@MainActor
 public func platformRTLHStack_L1<Content: View>(
     alignment: VerticalAlignment = .center,
     spacing: CGFloat? = nil,
@@ -265,7 +254,6 @@ public func platformRTLHStack_L1<Content: View>(
 ///   - content: The content to arrange vertically
 ///   - hints: Internationalization hints
 /// - Returns: SwiftUI view with RTL-aware vertical arrangement
-@MainActor
 public func platformRTLVStack_L1<Content: View>(
     alignment: HorizontalAlignment = .center,
     spacing: CGFloat? = nil,
@@ -287,7 +275,6 @@ public func platformRTLVStack_L1<Content: View>(
 ///   - content: The content to stack
 ///   - hints: Internationalization hints
 /// - Returns: SwiftUI view with RTL-aware stacking
-@MainActor
 public func platformRTLZStack_L1<Content: View>(
     alignment: Alignment = .center,
     @ViewBuilder content: () -> Content,
@@ -310,7 +297,6 @@ public func platformRTLZStack_L1<Content: View>(
 ///   - text: Binding to the text value
 ///   - hints: Internationalization hints
 /// - Returns: SwiftUI view with localized text field
-@MainActor
 public func platformLocalizedTextField_L1(
     title: String,
     text: Binding<String>,
@@ -331,7 +317,6 @@ public func platformLocalizedTextField_L1(
 ///   - text: Binding to the text value
 ///   - hints: Internationalization hints
 /// - Returns: SwiftUI view with localized secure field
-@MainActor
 public func platformLocalizedSecureField_L1(
     title: String,
     text: Binding<String>,
@@ -352,7 +337,6 @@ public func platformLocalizedSecureField_L1(
 ///   - text: Binding to the text value
 ///   - hints: Internationalization hints
 /// - Returns: SwiftUI view with localized text editor
-@MainActor
 public func platformLocalizedTextEditor_L1(
     title: String,
     text: Binding<String>,

@@ -91,6 +91,7 @@ public func platformUpdateBadge_L1(
 ///   - hints: Notification configuration hints
 ///   - locale: Locale for RTL detection (optional)
 /// - Returns: View with notification service and RTL environment
+/// Note: Requires @MainActor because NotificationService is ObservableObject with @Published properties
 @MainActor
 public func platformPresentAlert_L1(
     title: String,
