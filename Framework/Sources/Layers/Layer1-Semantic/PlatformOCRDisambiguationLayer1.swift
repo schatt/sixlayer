@@ -12,6 +12,8 @@ import SwiftUI
 
 /// Layer 1 semantic function for OCR with disambiguation capabilities
 /// Determines when disambiguation is needed and provides appropriate UI
+/// Note: Requires @MainActor because OCRDisambiguationWrapper uses @State
+@MainActor
 public func platformOCRWithDisambiguation_L1(
     image: PlatformImage,
     context: OCRContext,
@@ -27,6 +29,8 @@ public func platformOCRWithDisambiguation_L1(
 }
 
 /// Layer 1 semantic function for OCR with disambiguation and custom configuration
+/// Note: Requires @MainActor because OCRDisambiguationWrapper uses @State
+@MainActor
 public func platformOCRWithDisambiguation_L1(
     image: PlatformImage,
     context: OCRContext,

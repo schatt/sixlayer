@@ -26,7 +26,7 @@ import AppKit
 public struct UnifiedImagePicker: View {
     let onImageSelected: (PlatformImage) -> Void
     
-    public init(onImageSelected: @escaping (PlatformImage) -> Void) {
+    nonisolated public init(onImageSelected: @escaping (PlatformImage) -> Void) {
         self.onImageSelected = onImageSelected
     }
     

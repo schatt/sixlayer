@@ -9,7 +9,9 @@ import AppKit
 
 /// Cross-platform semantic photo capture interface
 /// Provides intelligent photo capture based on purpose and context
+/// Note: Requires @MainActor because it calls main-actor isolated L4 methods
 @ViewBuilder
+@MainActor
 public func platformPhotoCapture_L1(
     purpose: PhotoPurpose,
     context: PhotoContext,
@@ -41,7 +43,9 @@ public func platformPhotoCapture_L1(
 
 /// Cross-platform semantic photo selection interface
 /// Provides intelligent photo selection based on purpose and context
+/// Note: Requires @MainActor because it calls main-actor isolated L4 methods
 @ViewBuilder
+@MainActor
 public func platformPhotoSelection_L1(
     purpose: PhotoPurpose,
     context: PhotoContext,
@@ -58,7 +62,9 @@ public func platformPhotoSelection_L1(
 
 /// Cross-platform semantic photo display interface
 /// Provides intelligent photo display based on purpose and context
+/// Note: Requires @MainActor because it calls main-actor isolated L4 methods
 @ViewBuilder
+@MainActor
 public func platformPhotoDisplay_L1(
     purpose: PhotoPurpose,
     context: PhotoContext,
