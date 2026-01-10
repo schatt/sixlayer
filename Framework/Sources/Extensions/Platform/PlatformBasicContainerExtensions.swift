@@ -332,7 +332,7 @@ public extension View {
 /// Global function wrapper for platformVStackContainer
 /// Provides backward compatibility for code that expects global functions
 @ViewBuilder
-func platformVStackContainer<Content: View>(
+public func platformVStackContainer<Content: View>(
     alignment: HorizontalAlignment = .center,
     spacing: CGFloat? = nil,
     @ViewBuilder content: () -> Content
@@ -343,7 +343,7 @@ func platformVStackContainer<Content: View>(
 /// Global function wrapper for platformHStackContainer
 /// Provides backward compatibility for code that expects global functions
 @ViewBuilder
-func platformHStackContainer<Content: View>(
+public func platformHStackContainer<Content: View>(
     alignment: VerticalAlignment = .center,
     spacing: CGFloat? = nil,
     @ViewBuilder content: () -> Content
@@ -354,7 +354,7 @@ func platformHStackContainer<Content: View>(
 /// Global function wrapper for platformZStackContainer
 /// Provides backward compatibility for code that expects global functions
 @ViewBuilder
-func platformZStackContainer<Content: View>(
+public func platformZStackContainer<Content: View>(
     alignment: Alignment = .center,
     @ViewBuilder content: () -> Content
 ) -> some View {
