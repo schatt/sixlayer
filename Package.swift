@@ -27,21 +27,16 @@ let package = Package(
         .target(
             name: "SixLayerFramework",
             dependencies: [],
-            path: "Framework/Sources",
+            path: "Framework",
             exclude: [
-                "Core/ExampleHelpers.swift",
-                "Core/ExtensibleHintsExample.swift"
+                "Sources/Core/ExampleHelpers.swift",
+                "Sources/Core/ExtensibleHintsExample.swift"
             ],
             sources: [
-                "Core",
-                "Layers",
-                "Components",
-                "Platform",
-                "Extensions",
-                "Services"
+                "Sources"
             ],
             resources: [
-                .process("../Resources")
+                .copy("Resources/Localizable.xcstrings")
             ],
             swiftSettings: [
                 // Enable previews only when building in Xcode (where PreviewsMacros plugin is available)
