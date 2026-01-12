@@ -133,9 +133,24 @@ open class PlatformFrameSafetyTests: BaseTestClass {
         // When: Getting max frame size (as platformFrame() does internally)
         let maxSize = PlatformFrameHelpers.getMaxFrameSize()
         
-        // Then: Max size should be valid and within screen bounds
-        #expect(maxSize.width > 0, "Max width should be positive")
-        #expect(maxSize.height > 0, "Max height should be positive")
+        // Then: Max size should match expected screen/window size
+        let expectedSize: CGSize
+        #if os(iOS)
+        // iOS: Should use window size (handles Split View, Stage Manager, etc.)
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+           let window = windowScene.windows.first {
+            expectedSize = window.bounds.size
+        } else {
+            expectedSize = UIScreen.main.bounds.size
+        }
+        #elseif os(watchOS)
+        expectedSize = WKInterfaceDevice.current().screenBounds.size
+        #else
+        expectedSize = UIScreen.main.bounds.size
+        #endif
+        
+        #expect(maxSize.width == expectedSize.width, "Max width should match screen/window width")
+        #expect(maxSize.height == expectedSize.height, "Max height should match screen/window height")
         
         // Verify the view modifier renders successfully
         let view = Text("Test")
