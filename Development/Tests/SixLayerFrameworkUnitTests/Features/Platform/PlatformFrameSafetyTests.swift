@@ -129,12 +129,17 @@ open class PlatformFrameSafetyTests: BaseTestClass {
     
     #if os(iOS) || os(watchOS) || os(tvOS) || os(visionOS)
     @Test @MainActor func testPlatformFrameAppliesMaxConstraintsOnMobile() {
-        // Given: A view on iOS/watchOS/tvOS/visionOS
+        // Given: platformFrame() applies max constraints on mobile
+        // When: Getting max frame size (as platformFrame() does internally)
+        let maxSize = PlatformFrameHelpers.getMaxFrameSize()
+        
+        // Then: Max size should be valid and within screen bounds
+        #expect(maxSize.width > 0, "Max width should be positive")
+        #expect(maxSize.height > 0, "Max height should be positive")
+        
+        // Verify the view modifier renders successfully
         let view = Text("Test")
             .platformFrame()
-        
-        // Then: View should have max constraints applied
-        _ = PlatformFrameHelpers.getMaxFrameSize()
         let hostedView = hostRootPlatformView(view)
         #expect(hostedView != nil, "View should render with max constraints")
     }
@@ -169,34 +174,48 @@ open class PlatformFrameSafetyTests: BaseTestClass {
     // MARK: - platformFrame(minWidth:minHeight:maxWidth:maxHeight:) Tests
     
     @Test @MainActor func testPlatformFrameClampsOversizedMaxWidth() {
-        // Given: A view with oversized maxWidth
+        // Given: An oversized maxWidth
         let oversizedMaxWidth: CGFloat = 10000
-        let view = Text("Test")
-            .platformFrame(maxWidth: oversizedMaxWidth)
         
-        // Then: Max width should be clamped to screen/window bounds
+        // When: Clamping the max width (as platformFrame() does internally)
         #if os(iOS) || os(watchOS) || os(tvOS) || os(visionOS)
         let maxSize = PlatformFrameHelpers.getMaxFrameSize()
+        let clampedMaxWidth = min(oversizedMaxWidth, maxSize.width)
         #expect(oversizedMaxWidth > maxSize.width, "Test value should be larger than screen")
+        #expect(clampedMaxWidth <= maxSize.width, "Clamped max width should not exceed screen")
+        #elseif os(macOS)
+        let clampedMaxWidth = PlatformFrameHelpers.clampMaxFrameSize(oversizedMaxWidth, dimension: .width)
+        let screenSize = NSScreen.main?.visibleFrame.size ?? CGSize(width: 1920, height: 1080)
+        let maxAllowed = screenSize.width * 0.9
+        #expect(clampedMaxWidth <= maxAllowed, "Clamped max width should not exceed screen bounds")
         #endif
         
         // View should render successfully
+        let view = Text("Test")
+            .platformFrame(maxWidth: oversizedMaxWidth)
         let hostedView = hostRootPlatformView(view)
         #expect(hostedView != nil, "View with clamped maxWidth should render")
     }
     
     #if os(macOS)
     @Test @MainActor func testPlatformFrameClampsOversizedMinWidth() {
-        // Given: A view with oversized minWidth
+        // Given: An oversized minWidth
         let oversizedMinWidth: CGFloat = 5000
-        let view = Text("Test")
-            .platformFrame(minWidth: oversizedMinWidth)
         
-        // Then: Min width should be clamped
+        // When: Clamping the min width (as platformFrame() does internally)
+        let clampedMinWidth = PlatformFrameHelpers.clampFrameSize(oversizedMinWidth, dimension: .width)
+        
+        // Then: Min width should be clamped to screen bounds
         let screenSize = NSScreen.main?.visibleFrame.size ?? CGSize(width: 1920, height: 1080)
         let maxAllowed = screenSize.width * 0.9
+        let absoluteMax: CGFloat = 3840
+        
+        #expect(clampedMinWidth <= min(maxAllowed, absoluteMax), "Clamped min width should not exceed screen bounds")
+        #expect(clampedMinWidth >= 300, "Clamped min width should respect absolute minimum")
         
         // View should render successfully with clamped minWidth
+        let view = Text("Test")
+            .platformFrame(minWidth: oversizedMinWidth)
         let hostedView = hostRootPlatformView(view)
         #expect(hostedView != nil, "View with clamped minWidth should render")
     }
@@ -206,14 +225,25 @@ open class PlatformFrameSafetyTests: BaseTestClass {
     
     #if os(macOS)
     @Test @MainActor func testPlatformMinFrameClampsOversizedMinimums() {
-        // Given: A view using platformMinFrame on macOS
-        let view = Text("Test")
-            .platformMinFrame()
+        // Given: platformMinFrame() uses 600x800 minimums on macOS
+        let defaultMinWidth: CGFloat = 600
+        let defaultMinHeight: CGFloat = 800
         
-        // Then: Default 600x800 should be clamped if screen is smaller
+        // When: Clamping these values (as platformMinFrame() does internally)
+        let clampedWidth = PlatformFrameHelpers.clampFrameSize(defaultMinWidth, dimension: .width)
+        let clampedHeight = PlatformFrameHelpers.clampFrameSize(defaultMinHeight, dimension: .height)
+        
+        // Then: Values should be clamped to screen bounds if screen is smaller
         let screenSize = NSScreen.main?.visibleFrame.size ?? CGSize(width: 1920, height: 1080)
+        let expectedMinWidth = min(defaultMinWidth, screenSize.width * 0.9)
+        let expectedMinHeight = min(defaultMinHeight, screenSize.height * 0.9)
+        
+        #expect(clampedWidth == expectedMinWidth, "Width should be clamped to screen bounds")
+        #expect(clampedHeight == expectedMinHeight, "Height should be clamped to screen bounds")
         
         // View should render successfully
+        let view = Text("Test")
+            .platformMinFrame()
         let hostedView = hostRootPlatformView(view)
         #expect(hostedView != nil, "platformMinFrame should render with clamped constraints")
     }
@@ -222,18 +252,27 @@ open class PlatformFrameSafetyTests: BaseTestClass {
     // MARK: - platformMaxFrame() Tests
     
     @Test @MainActor func testPlatformMaxFrameClampsOversizedMaximums() {
-        // Given: A view using platformMaxFrame
-        let view = Text("Test")
-            .platformMaxFrame()
-        
-        // Then: Max constraints should be applied and clamped
+        // Given: platformMaxFrame() uses 1200x1000 maximums on macOS
         #if os(macOS)
-        // macOS: 1200x1000 should be clamped to screen
+        let defaultMaxWidth: CGFloat = 1200
+        let defaultMaxHeight: CGFloat = 1000
+        
+        // When: Clamping these values (as platformMaxFrame() does internally)
+        let clampedMaxWidth = PlatformFrameHelpers.clampMaxFrameSize(defaultMaxWidth, dimension: .width)
+        let clampedMaxHeight = PlatformFrameHelpers.clampMaxFrameSize(defaultMaxHeight, dimension: .height)
+        
+        // Then: Values should be clamped to screen bounds
         let screenSize = NSScreen.main?.visibleFrame.size ?? CGSize(width: 1920, height: 1080)
-        #expect(1200 <= screenSize.width * 0.9 || screenSize.width < 1200, "Max width should be within screen bounds")
+        let maxAllowedWidth = screenSize.width * 0.9
+        let maxAllowedHeight = screenSize.height * 0.9
+        
+        #expect(clampedMaxWidth <= maxAllowedWidth, "Max width should be clamped to screen bounds")
+        #expect(clampedMaxHeight <= maxAllowedHeight, "Max height should be clamped to screen bounds")
         #endif
         
         // View should render successfully
+        let view = Text("Test")
+            .platformMaxFrame()
         let hostedView = hostRootPlatformView(view)
         #expect(hostedView != nil, "platformMaxFrame should render with clamped constraints")
     }
@@ -242,14 +281,38 @@ open class PlatformFrameSafetyTests: BaseTestClass {
     
     #if os(macOS)
     @Test @MainActor func testPlatformAdaptiveFrameClampsAllConstraints() {
-        // Given: A view using platformAdaptiveFrame on macOS
-        let view = Text("Test")
-            .platformAdaptiveFrame()
+        // Given: platformAdaptiveFrame() uses multiple constraints on macOS
+        // min: 600x800, ideal: 800x900, max: 1200x1000
+        let defaultMinWidth: CGFloat = 600
+        let defaultIdealWidth: CGFloat = 800
+        let defaultMaxWidth: CGFloat = 1200
+        let defaultMinHeight: CGFloat = 800
+        let defaultIdealHeight: CGFloat = 900
+        let defaultMaxHeight: CGFloat = 1000
         
-        // Then: All constraints (min/ideal/max) should be clamped
+        // When: Clamping all values (as platformAdaptiveFrame() does internally)
+        let clampedMinWidth = PlatformFrameHelpers.clampFrameSize(defaultMinWidth, dimension: .width)
+        let clampedIdealWidth = PlatformFrameHelpers.clampMaxFrameSize(defaultIdealWidth, dimension: .width)
+        let clampedMaxWidth = PlatformFrameHelpers.clampMaxFrameSize(defaultMaxWidth, dimension: .width)
+        let clampedMinHeight = PlatformFrameHelpers.clampFrameSize(defaultMinHeight, dimension: .height)
+        let clampedIdealHeight = PlatformFrameHelpers.clampMaxFrameSize(defaultIdealHeight, dimension: .height)
+        let clampedMaxHeight = PlatformFrameHelpers.clampMaxFrameSize(defaultMaxHeight, dimension: .height)
+        
+        // Then: All values should be clamped to screen bounds
         let screenSize = NSScreen.main?.visibleFrame.size ?? CGSize(width: 1920, height: 1080)
+        let maxAllowedWidth = screenSize.width * 0.9
+        let maxAllowedHeight = screenSize.height * 0.9
+        
+        #expect(clampedMinWidth <= maxAllowedWidth, "Min width should be clamped")
+        #expect(clampedIdealWidth <= maxAllowedWidth, "Ideal width should be clamped")
+        #expect(clampedMaxWidth <= maxAllowedWidth, "Max width should be clamped")
+        #expect(clampedMinHeight <= maxAllowedHeight, "Min height should be clamped")
+        #expect(clampedIdealHeight <= maxAllowedHeight, "Ideal height should be clamped")
+        #expect(clampedMaxHeight <= maxAllowedHeight, "Max height should be clamped")
         
         // View should render successfully
+        let view = Text("Test")
+            .platformAdaptiveFrame()
         let hostedView = hostRootPlatformView(view)
         #expect(hostedView != nil, "platformAdaptiveFrame should render with all constraints clamped")
     }
@@ -259,14 +322,25 @@ open class PlatformFrameSafetyTests: BaseTestClass {
     
     #if os(macOS)
     @Test @MainActor func testPlatformDetailViewFrameClampsOversizedMinimums() {
-        // Given: A view using platformDetailViewFrame on macOS
-        let view = Text("Test")
-            .platformDetailViewFrame()
+        // Given: platformDetailViewFrame() uses 800x600 minimums on macOS
+        let defaultMinWidth: CGFloat = 800
+        let defaultMinHeight: CGFloat = 600
         
-        // Then: Default 800x600 should be clamped if screen is smaller
+        // When: Clamping these values (as platformDetailViewFrame() does internally)
+        let clampedWidth = PlatformFrameHelpers.clampFrameSize(defaultMinWidth, dimension: .width)
+        let clampedHeight = PlatformFrameHelpers.clampFrameSize(defaultMinHeight, dimension: .height)
+        
+        // Then: Values should be clamped to screen bounds if screen is smaller
         let screenSize = NSScreen.main?.visibleFrame.size ?? CGSize(width: 1920, height: 1080)
+        let expectedMinWidth = min(defaultMinWidth, screenSize.width * 0.9)
+        let expectedMinHeight = min(defaultMinHeight, screenSize.height * 0.9)
+        
+        #expect(clampedWidth == expectedMinWidth, "Width should be clamped to screen bounds")
+        #expect(clampedHeight == expectedMinHeight, "Height should be clamped to screen bounds")
         
         // View should render successfully
+        let view = Text("Test")
+            .platformDetailViewFrame()
         let hostedView = hostRootPlatformView(view)
         #expect(hostedView != nil, "platformDetailViewFrame should render with clamped constraints")
     }
