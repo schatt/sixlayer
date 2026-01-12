@@ -84,17 +84,12 @@ public func determinePhotoCaptureStrategy_L2(
     case .photoLibrary:
         return .photoLibrary
     case .both:
-        // Determine based on purpose
-        switch purpose {
-        case .vehiclePhoto, .odometer, .maintenance:
-            // These benefit from direct camera capture
+        // Prioritize camera when both options are available
+        if hasCamera {
             return .camera
-        case .fuelReceipt, .pumpDisplay, .expense, .document:
-            // These might be better from existing photos
+        } else {
+            // Fallback to photo library if camera not available
             return .photoLibrary
-        case .profile:
-            // Profile photos can go either way
-            return .both
         }
     }
 }

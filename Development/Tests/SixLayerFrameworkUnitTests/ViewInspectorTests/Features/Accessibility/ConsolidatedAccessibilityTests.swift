@@ -10134,7 +10134,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             deviceCapabilities: PhotoDeviceCapabilities(hasCamera: true, hasPhotoLibrary: true)
         )
         let vehicleStrategy = determinePhotoCaptureStrategy_L2(purpose: .vehiclePhoto, context: vehicleContext)
-        #expect(vehicleStrategy == .camera, "Vehicle photos should prefer camera")
+        #expect(vehicleStrategy == .camera, "When .both is selected, camera should be prioritized")
         
         let receiptContext = PhotoContext(
             screenSize: PlatformSize(width: 375, height: 812),
@@ -10143,7 +10143,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             deviceCapabilities: PhotoDeviceCapabilities(hasCamera: true, hasPhotoLibrary: true)
         )
         let receiptStrategy = determinePhotoCaptureStrategy_L2(purpose: .fuelReceipt, context: receiptContext)
-        #expect(receiptStrategy == .photoLibrary, "Receipts should prefer photoLibrary")
+        #expect(receiptStrategy == .camera, "When .both is selected, camera should be prioritized regardless of purpose")
         
         let profileContext = PhotoContext(
             screenSize: PlatformSize(width: 375, height: 812),
@@ -10152,7 +10152,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             deviceCapabilities: PhotoDeviceCapabilities(hasCamera: true, hasPhotoLibrary: true)
         )
         let profileStrategy = determinePhotoCaptureStrategy_L2(purpose: .profile, context: profileContext)
-        #expect(profileStrategy == .both, "Profile photos should allow both")
+        #expect(profileStrategy == .camera, "When .both is selected, camera should be prioritized")
     }
     
     // MARK: - Remaining Components Tests (final batch)
