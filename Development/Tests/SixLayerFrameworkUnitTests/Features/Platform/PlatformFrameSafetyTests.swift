@@ -142,17 +142,25 @@ open class PlatformFrameSafetyTests: BaseTestClass {
     
     #if os(macOS)
     @Test @MainActor func testPlatformFrameAppliesClampedMinConstraintsOnMacOS() {
-        // Given: A view on macOS
+        // Given: Default platformFrame() uses 600x800 minimums on macOS
+        let defaultMinWidth: CGFloat = 600
+        let defaultMinHeight: CGFloat = 800
+        
+        // When: Clamping these values (as platformFrame() does internally)
+        let clampedWidth = PlatformFrameHelpers.clampFrameSize(defaultMinWidth, dimension: .width)
+        let clampedHeight = PlatformFrameHelpers.clampFrameSize(defaultMinHeight, dimension: .height)
+        
+        // Then: Values should be clamped to screen bounds if screen is smaller
+        let screenSize = NSScreen.main?.visibleFrame.size ?? CGSize(width: 1920, height: 1080)
+        let expectedMinWidth = min(defaultMinWidth, screenSize.width * 0.9)
+        let expectedMinHeight = min(defaultMinHeight, screenSize.height * 0.9)
+        
+        #expect(clampedWidth == expectedMinWidth, "Width should be clamped to screen bounds")
+        #expect(clampedHeight == expectedMinHeight, "Height should be clamped to screen bounds")
+        
+        // Also verify the view modifier renders successfully
         let view = Text("Test")
             .platformFrame()
-        
-        // Then: View should have clamped minimum constraints
-        // Default is 600x800, which should be clamped if screen is smaller
-        let screenSize = NSScreen.main?.visibleFrame.size ?? CGSize(width: 1920, height: 1080)
-        let expectedMinWidth = min(600, screenSize.width * 0.9)
-        let expectedMinHeight = min(800, screenSize.height * 0.9)
-        
-        // Verify view renders (actual constraint verification would require GeometryReader)
         let hostedView = hostRootPlatformView(view)
         #expect(hostedView != nil, "View should render with clamped min constraints")
     }
