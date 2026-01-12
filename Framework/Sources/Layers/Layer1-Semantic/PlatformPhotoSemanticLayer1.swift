@@ -211,19 +211,19 @@ public func platformPhotoDisplay_L1<DisplayContent: View>(
 // MARK: - Helper Functions
 
 /// Determine display style based on photo purpose
+/// Custom purposes default to .general behavior
 private func displayStyleForPurpose(_ purpose: PhotoPurpose) -> PhotoDisplayStyle {
     switch purpose {
-    case .general:
+    case .general, .preview:
         return .aspectFit
     case .document:
         return .fullSize
-    case .reference:
+    case .reference, .thumbnail:
         return .thumbnail
     case .profile:
         return .rounded
-    case .thumbnail:
-        return .thumbnail
-    case .preview:
+    default:
+        // Custom purposes default to general behavior
         return .aspectFit
     }
 }

@@ -167,6 +167,9 @@ public extension PlatformImage {
             return metadata.size.width >= 400 && metadata.size.height >= 300
         case .reference, .profile, .thumbnail:
             return metadata.size.width >= 100 && metadata.size.height >= 100
+        default:
+            // Custom purposes default to general requirements
+            return metadata.size.width >= 200 && metadata.size.height >= 200
         }
     }
     

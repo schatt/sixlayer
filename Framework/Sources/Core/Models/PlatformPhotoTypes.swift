@@ -12,13 +12,64 @@ import SwiftUI
 
 /// Represents different purposes for photos in applications
 /// Generic, domain-agnostic purposes that work for any application
-public enum PhotoPurpose: String, CaseIterable {
-    case general = "general"           // General purpose photos
-    case document = "document"         // Document photos (receipts, forms, etc.)
-    case profile = "profile"           // Profile/avatar photos
-    case reference = "reference"      // Reference photos (maintenance, expense tracking, etc.)
-    case thumbnail = "thumbnail"       // Thumbnail/preview images
-    case preview = "preview"           // UI preview images
+/// 
+/// Projects can extend this by creating custom instances:
+/// ```swift
+/// extension PhotoPurpose {
+///     static let vehiclePhoto = PhotoPurpose.general
+///     static let fuelReceipt = PhotoPurpose.document
+///     static let customPurpose = PhotoPurpose(identifier: "custom")
+/// }
+/// ```
+public struct PhotoPurpose: Hashable, Sendable {
+    /// Unique identifier for the photo purpose
+    public let identifier: String
+    
+    /// Create a custom photo purpose with the given identifier
+    /// - Parameter identifier: Unique string identifier for the purpose
+    public init(identifier: String) {
+        self.identifier = identifier
+    }
+    
+    // MARK: - Built-in Purposes
+    
+    /// General purpose photos
+    public static let general = PhotoPurpose(identifier: "general")
+    
+    /// Document photos (receipts, forms, etc.)
+    public static let document = PhotoPurpose(identifier: "document")
+    
+    /// Profile/avatar photos
+    public static let profile = PhotoPurpose(identifier: "profile")
+    
+    /// Reference photos (maintenance, expense tracking, etc.)
+    public static let reference = PhotoPurpose(identifier: "reference")
+    
+    /// Thumbnail/preview images
+    public static let thumbnail = PhotoPurpose(identifier: "thumbnail")
+    
+    /// UI preview images
+    public static let preview = PhotoPurpose(identifier: "preview")
+    
+    // MARK: - Built-in Purpose Collection
+    
+    /// All built-in photo purposes
+    public static let allBuiltIn: [PhotoPurpose] = [
+        .general,
+        .document,
+        .profile,
+        .reference,
+        .thumbnail,
+        .preview
+    ]
+}
+
+// MARK: - PhotoPurpose CustomStringConvertible
+
+extension PhotoPurpose: CustomStringConvertible {
+    public var description: String {
+        return identifier
+    }
 }
 
 // MARK: - Photo Context

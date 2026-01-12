@@ -17,7 +17,7 @@ public func determineOptimalPhotoLayout_L2(
     
     // Adjust based on photo purpose
     switch purpose {
-    case .general:
+    case .general, .preview:
         // General photos benefit from wider aspect ratio
         return PlatformSize(
             width: baseWidth,
@@ -46,11 +46,11 @@ public func determineOptimalPhotoLayout_L2(
         let size = min(baseWidth, baseHeight) * 0.3
         return PlatformSize(width: size, height: size)
         
-    case .preview:
-        // Previews are typically wider aspect ratio
+    default:
+        // Custom purposes default to general behavior
         return PlatformSize(
-            width: baseWidth * 0.8,
-            height: baseWidth * 0.5
+            width: baseWidth,
+            height: baseWidth * 0.6
         )
     }
 }
@@ -137,6 +137,9 @@ public func shouldCropImage(
         return abs(aspectRatio - targetAspectRatio) > tolerance
     case .reference, .profile, .thumbnail:
         // These are typically square or flexible
+        return false
+    default:
+        // Custom purposes default to general behavior (flexible)
         return false
     }
 }

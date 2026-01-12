@@ -51,7 +51,7 @@ public func selectPhotoDisplayStrategy_L3(
     
     // Determine strategy based on purpose and available space
     switch purpose {
-    case .general:
+    case .general, .preview:
         // General photos benefit from aspect fit
         return spaceUtilization > 0.3 ? .aspectFit : .thumbnail
         
@@ -59,7 +59,7 @@ public func selectPhotoDisplayStrategy_L3(
         // Documents need full size for readability
         return spaceUtilization > 0.2 ? .fullSize : .aspectFit
         
-    case .reference:
+    case .reference, .thumbnail:
         // Reference photos are typically thumbnails
         return .thumbnail
         
@@ -67,13 +67,9 @@ public func selectPhotoDisplayStrategy_L3(
         // Profile photos are typically rounded
         return .rounded
         
-    case .thumbnail:
-        // Thumbnails are always thumbnails
-        return .thumbnail
-        
-    case .preview:
-        // Previews need to be readable
-        return spaceUtilization > 0.25 ? .aspectFit : .thumbnail
+    default:
+        // Custom purposes default to general behavior
+        return spaceUtilization > 0.3 ? .aspectFit : .thumbnail
     }
 }
 
@@ -106,6 +102,9 @@ public func shouldEnablePhotoEditing(
     case .thumbnail, .preview:
         // Thumbnails and previews typically don't need editing
         return false
+    default:
+        // Custom purposes default to allowing editing
+        return true
     }
 }
 
@@ -127,16 +126,16 @@ public func optimalCompressionQuality(
         // High quality for text readability
         return min(baseQuality + 0.15, 1.0)
         
-    case .reference:
-        // Standard quality for reference photos
+    case .reference, .preview:
+        // Standard quality for reference photos and previews
         return baseQuality
         
     case .thumbnail:
         // Lower quality for thumbnails (smaller file size)
         return max(baseQuality - 0.2, 0.5)
         
-    case .preview:
-        // Medium quality for previews
+    default:
+        // Custom purposes default to standard quality
         return baseQuality
     }
 }
@@ -153,6 +152,9 @@ public func shouldAutoOptimize(
         return true
     case .general, .profile, .reference, .thumbnail, .preview:
         // Let user decide for these
+        return false
+    default:
+        // Custom purposes default to no auto-optimization
         return false
     }
 }
