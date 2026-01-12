@@ -127,9 +127,9 @@ open class PlatformFrameSafetyTests: BaseTestClass {
     
     // MARK: - platformFrame() Tests
     
+    #if os(iOS) || os(watchOS) || os(tvOS) || os(visionOS)
     @Test @MainActor func testPlatformFrameAppliesMaxConstraintsOnMobile() {
         // Given: A view on iOS/watchOS/tvOS/visionOS
-        #if os(iOS) || os(watchOS) || os(tvOS) || os(visionOS)
         let view = Text("Test")
             .platformFrame()
         
@@ -137,8 +137,8 @@ open class PlatformFrameSafetyTests: BaseTestClass {
         _ = PlatformFrameHelpers.getMaxFrameSize()
         let hostedView = hostRootPlatformView(view)
         #expect(hostedView != nil, "View should render with max constraints")
-        #endif
     }
+    #endif
     
     #if os(macOS)
     @Test @MainActor func testPlatformFrameAppliesClampedMinConstraintsOnMacOS() {
