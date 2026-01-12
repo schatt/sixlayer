@@ -102,7 +102,7 @@ final class Layer2ComponentAccessibilityTests {
         
         // When: Creating photo layout decision using Layer 2 function
         let photoLayoutDecision = determineOptimalPhotoLayout_L2(
-            purpose: .vehiclePhoto,
+            purpose: .general,
             context: PhotoContext(
                 screenSize: CGSize(width: 400, height: 300),
                 availableSpace: CGSize(width: 400, height: 300),

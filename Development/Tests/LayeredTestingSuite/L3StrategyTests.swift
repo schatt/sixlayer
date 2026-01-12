@@ -354,7 +354,7 @@ class L3StrategyTests: BaseTestClass {
     
     @Test func testSelectPhotoCaptureStrategy_L3_CameraOnly() {
         // Given
-        let purpose = PhotoPurpose.vehiclePhoto
+        let purpose = PhotoPurpose.general
         let context = PhotoContext(
             screenSize: CGSize(width: 375, height: 667),
             availableSpace: CGSize(width: 375, height: 600),
@@ -409,7 +409,7 @@ class L3StrategyTests: BaseTestClass {
     
     @Test func testSelectPhotoDisplayStrategy_L3_VehiclePhoto() {
         // Given
-        let purpose = PhotoPurpose.vehiclePhoto
+        let purpose = PhotoPurpose.general
         let context = PhotoContext(
             screenSize: CGSize(width: 375, height: 667),
             availableSpace: CGSize(width: 300, height: 200), // Good space utilization
@@ -429,7 +429,7 @@ class L3StrategyTests: BaseTestClass {
     
     @Test func testSelectPhotoDisplayStrategy_L3_ReceiptPhoto() {
         // Given
-        let purpose = PhotoPurpose.fuelReceipt
+        let purpose = PhotoPurpose.document
         let context = PhotoContext(
             screenSize: CGSize(width: 375, height: 667),
             availableSpace: CGSize(width: 200, height: 300), // Good space utilization
@@ -464,7 +464,7 @@ class L3StrategyTests: BaseTestClass {
     
     @Test func testSelectPhotoDisplayStrategy_L3_MaintenancePhoto() {
         // Given
-        let purpose = PhotoPurpose.maintenance
+        let purpose = PhotoPurpose.reference
         let context = samplePhotoContext
         
         // When

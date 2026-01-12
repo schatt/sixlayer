@@ -682,7 +682,7 @@ open class L3StrategySelectionTests: BaseTestClass {
     
     @Test @MainActor func testSelectPhotoCaptureStrategy_L3_WithVehiclePhoto() {
         // Given
-        let purpose = PhotoPurpose.vehiclePhoto
+        let purpose = PhotoPurpose.general
         let context = createSamplePhotoContext()
         
         // When
@@ -698,7 +698,7 @@ open class L3StrategySelectionTests: BaseTestClass {
     
     @Test @MainActor func testSelectPhotoCaptureStrategy_L3_WithFuelReceipt() {
         // Given
-        let purpose = PhotoPurpose.fuelReceipt
+        let purpose = PhotoPurpose.document
         let context = createSamplePhotoContext()
         
         // When
@@ -714,7 +714,7 @@ open class L3StrategySelectionTests: BaseTestClass {
     
     @Test @MainActor func testSelectPhotoCaptureStrategy_L3_WithPumpDisplay() {
         // Given
-        let purpose = PhotoPurpose.pumpDisplay
+        let purpose = PhotoPurpose.document
         let context = createSamplePhotoContext()
         
         // When
@@ -730,7 +730,7 @@ open class L3StrategySelectionTests: BaseTestClass {
     
     @Test @MainActor func testSelectPhotoCaptureStrategy_L3_WithOdometer() {
         // Given
-        let purpose = PhotoPurpose.odometer
+        let purpose = PhotoPurpose.document
         let context = createSamplePhotoContext()
         
         // When
@@ -746,7 +746,7 @@ open class L3StrategySelectionTests: BaseTestClass {
     
     @Test @MainActor func testSelectPhotoCaptureStrategy_L3_WithMaintenance() {
         // Given
-        let purpose = PhotoPurpose.maintenance
+        let purpose = PhotoPurpose.reference
         let context = createSamplePhotoContext()
         
         // When
@@ -762,7 +762,7 @@ open class L3StrategySelectionTests: BaseTestClass {
     
     @Test @MainActor func testSelectPhotoCaptureStrategy_L3_WithExpense() {
         // Given
-        let purpose = PhotoPurpose.expense
+        let purpose = PhotoPurpose.reference
         let context = createSamplePhotoContext()
         
         // When
@@ -810,7 +810,7 @@ open class L3StrategySelectionTests: BaseTestClass {
     
     @Test @MainActor func testSelectPhotoDisplayStrategy_L3_WithVehiclePhoto() {
         // Given
-        let purpose = PhotoPurpose.vehiclePhoto
+        let purpose = PhotoPurpose.general
         let context = createSamplePhotoContext()
         
         // When
@@ -826,7 +826,7 @@ open class L3StrategySelectionTests: BaseTestClass {
     
     @Test @MainActor func testSelectPhotoDisplayStrategy_L3_WithFuelReceipt() {
         // Given
-        let purpose = PhotoPurpose.fuelReceipt
+        let purpose = PhotoPurpose.document
         let context = createSamplePhotoContext()
         
         // When
@@ -842,7 +842,7 @@ open class L3StrategySelectionTests: BaseTestClass {
     
     @Test @MainActor func testSelectPhotoDisplayStrategy_L3_WithPumpDisplay() {
         // Given
-        let purpose = PhotoPurpose.pumpDisplay
+        let purpose = PhotoPurpose.document
         let context = createSamplePhotoContext()
         
         // When
@@ -858,7 +858,7 @@ open class L3StrategySelectionTests: BaseTestClass {
     
     @Test @MainActor func testSelectPhotoDisplayStrategy_L3_WithOdometer() {
         // Given
-        let purpose = PhotoPurpose.odometer
+        let purpose = PhotoPurpose.document
         let context = createSamplePhotoContext()
         
         // When
@@ -874,7 +874,7 @@ open class L3StrategySelectionTests: BaseTestClass {
     
     @Test @MainActor func testSelectPhotoDisplayStrategy_L3_WithMaintenance() {
         // Given
-        let purpose = PhotoPurpose.maintenance
+        let purpose = PhotoPurpose.reference
         let context = createSamplePhotoContext()
         
         // When
@@ -890,7 +890,7 @@ open class L3StrategySelectionTests: BaseTestClass {
     
     @Test @MainActor func testSelectPhotoDisplayStrategy_L3_WithExpense() {
         // Given
-        let purpose = PhotoPurpose.expense
+        let purpose = PhotoPurpose.reference
         let context = createSamplePhotoContext()
         
         // When

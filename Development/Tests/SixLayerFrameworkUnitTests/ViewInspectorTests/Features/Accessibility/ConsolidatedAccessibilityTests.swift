@@ -1097,7 +1097,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     @Test @MainActor func testPlatformPhotoCaptureL1GeneratesAccessibilityIdentifiersOnIOS() async {
         self.initializeTestConfig()
         // Given
-        let purpose = PhotoPurpose.vehiclePhoto
+        let purpose = PhotoPurpose.general
         let context = PhotoContext(
             screenSize: CGSize(width: 375, height: 812),
             availableSpace: CGSize(width: 375, height: 400),
@@ -1128,7 +1128,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     @Test @MainActor func testPlatformPhotoCaptureL1GeneratesAccessibilityIdentifiersOnMacOS() async {
         self.initializeTestConfig()
         // Given
-        let purpose = PhotoPurpose.vehiclePhoto
+        let purpose = PhotoPurpose.general
         let context = PhotoContext(
             screenSize: CGSize(width: 1440, height: 900),
             availableSpace: CGSize(width: 1440, height: 600),
@@ -1159,7 +1159,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     @Test @MainActor func testPlatformPhotoSelectionL1GeneratesAccessibilityIdentifiersOnIOS() async {
         self.initializeTestConfig()
         // Given
-        let purpose = PhotoPurpose.vehiclePhoto
+        let purpose = PhotoPurpose.general
         let context = PhotoContext(
             screenSize: CGSize(width: 375, height: 812),
             availableSpace: CGSize(width: 375, height: 400),
@@ -1190,7 +1190,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     @Test @MainActor func testPlatformPhotoSelectionL1GeneratesAccessibilityIdentifiersOnMacOS() async {
         self.initializeTestConfig()
         // Given
-        let purpose = PhotoPurpose.vehiclePhoto
+        let purpose = PhotoPurpose.general
         let context = PhotoContext(
             screenSize: CGSize(width: 1440, height: 900),
             availableSpace: CGSize(width: 1440, height: 600),
@@ -1221,7 +1221,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     @Test @MainActor func testPlatformPhotoDisplayL1GeneratesAccessibilityIdentifiersOnIOS() async {
         self.initializeTestConfig()
         // Given
-        let purpose = PhotoPurpose.vehiclePhoto
+        let purpose = PhotoPurpose.general
         let context = PhotoContext(
             screenSize: CGSize(width: 375, height: 812),
             availableSpace: CGSize(width: 375, height: 400),
@@ -1253,7 +1253,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     @Test @MainActor func testPlatformPhotoDisplayL1GeneratesAccessibilityIdentifiersOnMacOS() async {
         self.initializeTestConfig()
         // Given
-        let purpose = PhotoPurpose.vehiclePhoto
+        let purpose = PhotoPurpose.general
         let context = PhotoContext(
             screenSize: CGSize(width: 1440, height: 900),
             availableSpace: CGSize(width: 1440, height: 600),
@@ -4497,7 +4497,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testSelectPhotoCaptureStrategy_L3_CameraOnly() async {
         self.initializeTestConfig()
-        let purpose = PhotoPurpose.vehiclePhoto
+        let purpose = PhotoPurpose.general
         let context = PhotoContext(
             screenSize: PlatformSize(width: 375, height: 812),
             availableSpace: PlatformSize(width: 375, height: 400),
@@ -4511,7 +4511,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testSelectPhotoCaptureStrategy_L3_PhotoLibraryOnly() async {
         self.initializeTestConfig()
-        let purpose = PhotoPurpose.fuelReceipt
+        let purpose = PhotoPurpose.document
         let context = PhotoContext(
             screenSize: PlatformSize(width: 375, height: 812),
             availableSpace: PlatformSize(width: 375, height: 400),
@@ -4525,7 +4525,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testSelectPhotoDisplayStrategy_L3_VehiclePhoto() async {
         self.initializeTestConfig()
-        let purpose = PhotoPurpose.vehiclePhoto
+        let purpose = PhotoPurpose.general
         let context = PhotoContext(
             screenSize: PlatformSize(width: 375, height: 812),
             availableSpace: PlatformSize(width: 375, height: 400),
@@ -4539,7 +4539,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testShouldEnablePhotoEditing_VehiclePhoto() async {
         self.initializeTestConfig()
-        let purpose = PhotoPurpose.vehiclePhoto
+        let purpose = PhotoPurpose.general
         let preferences = PhotoPreferences(allowEditing: true)
         let context = PhotoContext(
             screenSize: PlatformSize(width: 375, height: 812),
@@ -4554,7 +4554,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testOptimalCompressionQuality_VehiclePhoto() async {
         self.initializeTestConfig()
-        let purpose = PhotoPurpose.vehiclePhoto
+        let purpose = PhotoPurpose.general
         let preferences = PhotoPreferences(compressionQuality: 0.8)
         let context = PhotoContext(
             screenSize: PlatformSize(width: 375, height: 812),
@@ -4671,7 +4671,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testPlatformPhotoLayoutL2GeneratesAccessibilityIdentifiersOnIOS() async {
         self.initializeTestConfig()
-        let purpose = PhotoPurpose.vehiclePhoto
+        let purpose = PhotoPurpose.general
         let context = PhotoContext(
             screenSize: PlatformSize(width: 375, height: 812),
             availableSpace: PlatformSize(width: 375, height: 400),
@@ -4690,7 +4690,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testDeterminePhotoCaptureStrategy_L2_CameraOnly() async {
         self.initializeTestConfig()
-        let purpose = PhotoPurpose.vehiclePhoto
+        let purpose = PhotoPurpose.general
         let context = PhotoContext(
             screenSize: PlatformSize(width: 375, height: 812),
             availableSpace: PlatformSize(width: 375, height: 400),
@@ -4704,7 +4704,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testCalculateOptimalImageSize() async {
         self.initializeTestConfig()
-        let purpose = PhotoPurpose.vehiclePhoto
+        let purpose = PhotoPurpose.general
         let availableSpace = CGSize(width: 800, height: 600)
         let maxResolution = CGSize(width: 4096, height: 4096)
         
@@ -4717,7 +4717,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testShouldCropImage_VehiclePhoto() async {
         self.initializeTestConfig()
-        let purpose = PhotoPurpose.vehiclePhoto
+        let purpose = PhotoPurpose.general
         let imageSize = CGSize(width: 4000, height: 3000)
         let targetSize = CGSize(width: 2000, height: 1200)
         
@@ -8409,7 +8409,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     // MARK: - Platform Photo Strategy Selection Layer 3 Tests
     
     @Test func testSelectPhotoCaptureStrategy_L3_UserPreference() async {
-        let purpose = PhotoPurpose.vehiclePhoto
+        let purpose = PhotoPurpose.general
         let preferences = PhotoPreferences(preferredSource: .camera)
         let context = PhotoContext(
             screenSize: PlatformSize(width: 375, height: 812),
@@ -8423,7 +8423,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test func testSelectPhotoDisplayStrategy_L3_Receipt() async {
-        let purpose = PhotoPurpose.fuelReceipt
+        let purpose = PhotoPurpose.document
         let context = PhotoContext(
             screenSize: PlatformSize(width: 375, height: 812),
             availableSpace: PlatformSize(width: 375, height: 400),
@@ -8449,7 +8449,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test func testSelectPhotoDisplayStrategy_L3_AllPurposes() async {
-        let purposes: [PhotoPurpose] = [.vehiclePhoto, .fuelReceipt, .pumpDisplay, .odometer, .maintenance, .expense, .profile, .document]
+        let purposes: [PhotoPurpose] = [.general, .document, .profile, .reference, .thumbnail, .preview]
         let context = PhotoContext(
             screenSize: PlatformSize(width: 375, height: 812),
             availableSpace: PlatformSize(width: 375, height: 400),
@@ -8465,7 +8465,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test func testShouldEnablePhotoEditing_Receipt() async {
-        let purpose = PhotoPurpose.fuelReceipt
+        let purpose = PhotoPurpose.document
         let preferences = PhotoPreferences(allowEditing: true)
         let context = PhotoContext(
             screenSize: PlatformSize(width: 375, height: 812),
@@ -8479,7 +8479,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test func testShouldEnablePhotoEditing_EditingNotSupported() async {
-        let purpose = PhotoPurpose.vehiclePhoto
+        let purpose = PhotoPurpose.general
         let preferences = PhotoPreferences(allowEditing: true)
         let context = PhotoContext(
             screenSize: PlatformSize(width: 375, height: 812),
@@ -8493,7 +8493,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test func testOptimalCompressionQuality_Receipt() async {
-        let purpose = PhotoPurpose.fuelReceipt
+        let purpose = PhotoPurpose.document
         let preferences = PhotoPreferences(compressionQuality: 0.8)
         let context = PhotoContext(
             screenSize: PlatformSize(width: 375, height: 812),
@@ -8508,7 +8508,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test func testOptimalCompressionQuality_Maintenance() async {
-        let purpose = PhotoPurpose.maintenance
+        let purpose = PhotoPurpose.reference
         let preferences = PhotoPreferences(compressionQuality: 0.8)
         let context = PhotoContext(
             screenSize: PlatformSize(width: 375, height: 812),
@@ -8522,7 +8522,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test func testShouldAutoOptimize_Receipt() async {
-        let purpose = PhotoPurpose.fuelReceipt
+        let purpose = PhotoPurpose.document
         let context = PhotoContext(
             screenSize: PlatformSize(width: 375, height: 812),
             availableSpace: PlatformSize(width: 375, height: 400),
@@ -8535,7 +8535,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test func testShouldAutoOptimize_VehiclePhoto() async {
-        let purpose = PhotoPurpose.vehiclePhoto
+        let purpose = PhotoPurpose.general
         let context = PhotoContext(
             screenSize: PlatformSize(width: 375, height: 812),
             availableSpace: PlatformSize(width: 375, height: 400),
@@ -8548,7 +8548,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test func testShouldAutoOptimize_AllPurposes() async {
-        let purposes: [PhotoPurpose] = [.vehiclePhoto, .fuelReceipt, .pumpDisplay, .odometer, .maintenance, .expense, .profile, .document]
+        let purposes: [PhotoPurpose] = [.general, .document, .profile, .reference, .thumbnail, .preview]
         let context = PhotoContext(
             screenSize: PlatformSize(width: 375, height: 812),
             availableSpace: PlatformSize(width: 375, height: 400),
@@ -8888,7 +8888,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     // MARK: - Platform Photo Layout Decision Layer 2 Tests (continued)
     
     @Test func testPlatformPhotoLayoutL2GeneratesAccessibilityIdentifiersOnMacOS() async {
-        let purpose = PhotoPurpose.vehiclePhoto
+        let purpose = PhotoPurpose.general
         let context = PhotoContext(
             screenSize: PlatformSize(width: 1024, height: 768),
             availableSpace: PlatformSize(width: 1024, height: 400),
@@ -8906,7 +8906,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test func testDeterminePhotoCaptureStrategy_L2_PhotoLibraryOnly() async {
-        let purpose = PhotoPurpose.fuelReceipt
+        let purpose = PhotoPurpose.document
         let context = PhotoContext(
             screenSize: PlatformSize(width: 375, height: 812),
             availableSpace: PlatformSize(width: 375, height: 400),
@@ -8919,7 +8919,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test func testDeterminePhotoCaptureStrategy_L2_UserPreferenceCamera() async {
-        let purpose = PhotoPurpose.vehiclePhoto
+        let purpose = PhotoPurpose.general
         let preferences = PhotoPreferences(preferredSource: .camera)
         let context = PhotoContext(
             screenSize: PlatformSize(width: 375, height: 812),
@@ -8933,7 +8933,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test func testCalculateOptimalImageSize_RespectsMaxResolution() async {
-        let purpose = PhotoPurpose.odometer
+        let purpose = PhotoPurpose.document
         let availableSpace = CGSize(width: 10000, height: 10000)
         let maxResolution = CGSize(width: 2048, height: 2048)
         
@@ -8943,7 +8943,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test func testShouldCropImage_SimilarAspectRatio() async {
-        let purpose = PhotoPurpose.vehiclePhoto
+        let purpose = PhotoPurpose.general
         let imageSize = CGSize(width: 2000, height: 1200)
         let targetSize = CGSize(width: 2000, height: 1200)
         
@@ -8952,7 +8952,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test func testShouldCropImage_Odometer() async {
-        let purpose = PhotoPurpose.odometer
+        let purpose = PhotoPurpose.document
         let imageSize = CGSize(width: 4000, height: 3000)
         let targetSize = CGSize(width: 1000, height: 1000)
         
@@ -8970,7 +8970,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test func testDetermineOptimalPhotoLayout_L2_AllPurposes() async {
-        let purposes: [PhotoPurpose] = [.vehiclePhoto, .fuelReceipt, .pumpDisplay, .odometer, .maintenance, .expense, .profile, .document]
+        let purposes: [PhotoPurpose] = [.general, .document, .profile, .reference, .thumbnail, .preview]
         let context = PhotoContext(
             screenSize: PlatformSize(width: 375, height: 812),
             availableSpace: PlatformSize(width: 375, height: 400),
@@ -10133,7 +10133,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             userPreferences: PhotoPreferences(preferredSource: .both),
             deviceCapabilities: PhotoDeviceCapabilities(hasCamera: true, hasPhotoLibrary: true)
         )
-        let vehicleStrategy = determinePhotoCaptureStrategy_L2(purpose: .vehiclePhoto, context: vehicleContext)
+        let vehicleStrategy = determinePhotoCaptureStrategy_L2(purpose: .general, context: vehicleContext)
         #expect(vehicleStrategy == .camera, "When .both is selected, camera should be prioritized")
         
         let receiptContext = PhotoContext(
@@ -10142,7 +10142,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             userPreferences: PhotoPreferences(preferredSource: .both),
             deviceCapabilities: PhotoDeviceCapabilities(hasCamera: true, hasPhotoLibrary: true)
         )
-        let receiptStrategy = determinePhotoCaptureStrategy_L2(purpose: .fuelReceipt, context: receiptContext)
+        let receiptStrategy = determinePhotoCaptureStrategy_L2(purpose: .document, context: receiptContext)
         #expect(receiptStrategy == .camera, "When .both is selected, camera should be prioritized regardless of purpose")
         
         let profileContext = PhotoContext(

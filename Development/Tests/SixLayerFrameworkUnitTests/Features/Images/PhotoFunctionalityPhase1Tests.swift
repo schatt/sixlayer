@@ -105,7 +105,7 @@ open class PhotoFunctionalityPhase1Tests: BaseTestClass {
     @Test func testPlatformImageCompression() {
         // Given: A PlatformImage and photo purpose
         let originalImage = PlatformImage.createPlaceholder()
-        let purpose = PhotoPurpose.vehiclePhoto
+        let purpose = PhotoPurpose.general
         
         // When: Compressing the image
         let compressedData = originalImage.compressed(for: purpose, quality: 0.8)
@@ -154,7 +154,7 @@ open class PhotoFunctionalityPhase1Tests: BaseTestClass {
     @Test @MainActor func testPlatformImageMeetsRequirements() {
         // Given: A PlatformImage and photo purpose
         let originalImage = PlatformImage.createPlaceholder()
-        let purpose = PhotoPurpose.vehiclePhoto
+        let purpose = PhotoPurpose.general
         
         // When: Checking if image meets requirements
         let meetsRequirements = originalImage.meetsRequirements(for: purpose)
@@ -166,18 +166,20 @@ open class PhotoFunctionalityPhase1Tests: BaseTestClass {
     // MARK: - Photo Purpose Tests
     
     @Test @MainActor func testPhotoPurposeEnum() {
-        // Given: PhotoPurpose enum
-        let purposes = PhotoPurpose.allCases
+        // Given: PhotoPurpose built-in purposes
+        let purposes = PhotoPurpose.allBuiltIn
         
-        // Then: Should contain expected purposes
-        #expect(purposes.contains(.vehiclePhoto), "Should contain vehiclePhoto")
-        #expect(purposes.contains(.fuelReceipt), "Should contain fuelReceipt")
-        #expect(purposes.contains(.pumpDisplay), "Should contain pumpDisplay")
-        #expect(purposes.contains(.odometer), "Should contain odometer")
-        #expect(purposes.contains(.maintenance), "Should contain maintenance")
-        #expect(purposes.contains(.expense), "Should contain expense")
-        #expect(purposes.contains(.profile), "Should contain profile")
+        // Then: Should contain expected built-in purposes
+        #expect(purposes.contains(.general), "Should contain general")
         #expect(purposes.contains(.document), "Should contain document")
+        #expect(purposes.contains(.profile), "Should contain profile")
+        #expect(purposes.contains(.reference), "Should contain reference")
+        #expect(purposes.contains(.thumbnail), "Should contain thumbnail")
+        #expect(purposes.contains(.preview), "Should contain preview")
+        
+        // Test that custom purposes can be created
+        let customPurpose = PhotoPurpose(identifier: "custom")
+        #expect(customPurpose.identifier == "custom", "Should be able to create custom purposes")
     }
     
     // MARK: - Photo Context Tests
