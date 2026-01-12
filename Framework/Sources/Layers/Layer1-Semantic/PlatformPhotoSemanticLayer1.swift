@@ -213,14 +213,18 @@ public func platformPhotoDisplay_L1<DisplayContent: View>(
 /// Determine display style based on photo purpose
 private func displayStyleForPurpose(_ purpose: PhotoPurpose) -> PhotoDisplayStyle {
     switch purpose {
-    case .vehiclePhoto:
+    case .general:
         return .aspectFit
-    case .fuelReceipt, .pumpDisplay, .odometer:
+    case .document:
         return .fullSize
-    case .maintenance, .expense, .document:
+    case .reference:
         return .thumbnail
     case .profile:
         return .rounded
+    case .thumbnail:
+        return .thumbnail
+    case .preview:
+        return .aspectFit
     }
 }
 

@@ -17,27 +17,22 @@ public func determineOptimalPhotoLayout_L2(
     
     // Adjust based on photo purpose
     switch purpose {
-    case .vehiclePhoto:
-        // Vehicle photos benefit from wider aspect ratio
+    case .general:
+        // General photos benefit from wider aspect ratio
         return PlatformSize(
             width: baseWidth,
             height: baseWidth * 0.6 // 5:3 aspect ratio
         )
         
-    case .fuelReceipt, .pumpDisplay:
-        // Receipts and displays are typically portrait
+    case .document:
+        // Documents are typically portrait
         return PlatformSize(
             width: baseWidth * 0.7,
             height: baseHeight
         )
         
-    case .odometer:
-        // Odometer photos are typically square or slightly rectangular
-        let size = min(baseWidth, baseHeight) * 0.8
-        return PlatformSize(width: size, height: size)
-        
-    case .maintenance, .expense:
-        // Maintenance and expense photos are typically square thumbnails
+    case .reference:
+        // Reference photos are typically square thumbnails
         let size = min(baseWidth, baseHeight) * 0.6
         return PlatformSize(width: size, height: size)
         
@@ -46,11 +41,16 @@ public func determineOptimalPhotoLayout_L2(
         let size = min(baseWidth, baseHeight) * 0.5
         return PlatformSize(width: size, height: size)
         
-    case .document:
-        // Documents can vary, but typically portrait
+    case .thumbnail:
+        // Thumbnails are small square images
+        let size = min(baseWidth, baseHeight) * 0.3
+        return PlatformSize(width: size, height: size)
+        
+    case .preview:
+        // Previews are typically wider aspect ratio
         return PlatformSize(
-            width: baseWidth * 0.6,
-            height: baseHeight * 0.8
+            width: baseWidth * 0.8,
+            height: baseWidth * 0.5
         )
     }
 }
@@ -132,10 +132,10 @@ public func shouldCropImage(
     let tolerance: CGFloat = 0.1
     
     switch purpose {
-    case .vehiclePhoto, .fuelReceipt, .pumpDisplay, .document:
+    case .general, .document, .preview:
         // These purposes benefit from specific aspect ratios
         return abs(aspectRatio - targetAspectRatio) > tolerance
-    case .odometer, .maintenance, .expense, .profile:
+    case .reference, .profile, .thumbnail:
         // These are typically square or flexible
         return false
     }

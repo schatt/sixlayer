@@ -11,15 +11,14 @@ import SwiftUI
 // MARK: - Photo Purpose Types
 
 /// Represents different purposes for photos in applications
+/// Generic, domain-agnostic purposes that work for any application
 public enum PhotoPurpose: String, CaseIterable {
-    case vehiclePhoto = "vehicle"
-    case fuelReceipt = "fuel_receipt"
-    case pumpDisplay = "pump_display"
-    case odometer = "odometer"
-    case maintenance = "maintenance"
-    case expense = "expense"
-    case profile = "profile"
-    case document = "document"
+    case general = "general"           // General purpose photos
+    case document = "document"         // Document photos (receipts, forms, etc.)
+    case profile = "profile"           // Profile/avatar photos
+    case reference = "reference"      // Reference photos (maintenance, expense tracking, etc.)
+    case thumbnail = "thumbnail"       // Thumbnail/preview images
+    case preview = "preview"           // UI preview images
 }
 
 // MARK: - Photo Context

@@ -56,12 +56,16 @@ public enum PlatformPhotoComponentsLayer4 {
     /// Note: Requires @MainActor because PhotoDisplayView is a View
     @ViewBuilder
     @MainActor
-    public static func platformPhotoDisplay_L4(image: PlatformImage?, style: PhotoDisplayStyle) -> some View {
+    public static func platformPhotoDisplay_L4(
+        image: PlatformImage?,
+        style: PhotoDisplayStyle,
+        onCaptureRequested: (() -> Void)? = nil
+    ) -> some View {
         Group {
             if let image = image {
-                PhotoDisplayView(image: image, style: style)
+                PhotoDisplayView(image: image, style: style, onCaptureRequested: onCaptureRequested)
             } else {
-                PlaceholderPhotoView(style: style)
+                PlaceholderPhotoView(style: style, onCaptureRequested: onCaptureRequested)
             }
         }
         .automaticCompliance(named: "platformPhotoDisplay_L4")
@@ -436,14 +440,38 @@ private class CameraPreviewNSViewWrapper: NSView {
 struct PhotoDisplayView: View {
     let image: PlatformImage
     let style: PhotoDisplayStyle
-    
+    let onCaptureRequested: (() -> Void)?
     
     var body: some View {
-        Image(platformImage: image)
-            .resizable()
-            .aspectRatio(contentMode: aspectRatioForStyle(style))
-            .clipShape(clipShapeForStyle(style))
-            .automaticCompliance(named: "PhotoDisplayView")
+        VStack(spacing: 0) {
+            // Toggle button at the top if callback is provided
+            if let onCaptureRequested = onCaptureRequested {
+                HStack {
+                    Spacer()
+                    Button(action: onCaptureRequested) {
+                        HStack {
+                            Image(systemName: "camera.fill")
+                            let i18n = InternationalizationService()
+                            Text(i18n.localizedString(for: "SixLayerFramework.photo.captureNew"))
+                        }
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 8)
+                        .background(Color.accentColor)
+                        .foregroundColor(.white)
+                        .cornerRadius(8)
+                    }
+                    .padding(.trailing, 8)
+                    .padding(.top, 8)
+                }
+            }
+            
+            // Image display
+            Image(platformImage: image)
+                .resizable()
+                .aspectRatio(contentMode: aspectRatioForStyle(style))
+                .clipShape(clipShapeForStyle(style))
+        }
+        .automaticCompliance(named: "PhotoDisplayView")
     }
     
     private func aspectRatioForStyle(_ style: PhotoDisplayStyle) -> ContentMode {
@@ -467,20 +495,44 @@ struct PhotoDisplayView: View {
 
 struct PlaceholderPhotoView: View {
     let style: PhotoDisplayStyle
-    
+    let onCaptureRequested: (() -> Void)?
     
     var body: some View {
-        VStack {
-            Image(systemName: "photo")
-                .font(.largeTitle)
-                .foregroundColor(.secondary)
-            let i18n = InternationalizationService()
-            Text(i18n.localizedString(for: "SixLayerFramework.image.noImage"))
-                .foregroundColor(.secondary)
+        VStack(spacing: 0) {
+            // Toggle button at the top if callback is provided
+            if let onCaptureRequested = onCaptureRequested {
+                HStack {
+                    Spacer()
+                    Button(action: onCaptureRequested) {
+                        HStack {
+                            Image(systemName: "camera.fill")
+                            let i18n = InternationalizationService()
+                            Text(i18n.localizedString(for: "SixLayerFramework.photo.captureNew"))
+                        }
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 8)
+                        .background(Color.accentColor)
+                        .foregroundColor(.white)
+                        .cornerRadius(8)
+                    }
+                    .padding(.trailing, 8)
+                    .padding(.top, 8)
+                }
+            }
+            
+            // Placeholder content
+            VStack {
+                Image(systemName: "photo")
+                    .font(.largeTitle)
+                    .foregroundColor(.secondary)
+                let i18n = InternationalizationService()
+                Text(i18n.localizedString(for: "SixLayerFramework.image.noImage"))
+                    .foregroundColor(.secondary)
+            }
+            .frame(width: sizeForStyle(style).width, height: sizeForStyle(style).height)
+            .background(Color.gray.opacity(0.1))
+            .clipShape(clipShapeForStyle(style))
         }
-        .frame(width: sizeForStyle(style).width, height: sizeForStyle(style).height)
-        .background(Color.gray.opacity(0.1))
-        .clipShape(clipShapeForStyle(style))
         .automaticCompliance(named: "PlaceholderPhotoView")
     }
     

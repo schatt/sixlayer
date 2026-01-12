@@ -51,28 +51,28 @@ public func selectPhotoDisplayStrategy_L3(
     
     // Determine strategy based on purpose and available space
     switch purpose {
-    case .vehiclePhoto:
-        // Vehicle photos benefit from aspect fit to show full vehicle
+    case .general:
+        // General photos benefit from aspect fit
         return spaceUtilization > 0.3 ? .aspectFit : .thumbnail
         
-    case .fuelReceipt, .pumpDisplay:
-        // Receipts and displays need full size for readability
+    case .document:
+        // Documents need full size for readability
         return spaceUtilization > 0.2 ? .fullSize : .aspectFit
         
-    case .odometer:
-        // Odometer photos need to be clear and readable
-        return spaceUtilization > 0.15 ? .aspectFit : .thumbnail
-        
-    case .maintenance, .expense:
-        // Maintenance and expense photos are typically reference thumbnails
+    case .reference:
+        // Reference photos are typically thumbnails
         return .thumbnail
         
     case .profile:
         // Profile photos are typically rounded
         return .rounded
         
-    case .document:
-        // Documents need to be readable
+    case .thumbnail:
+        // Thumbnails are always thumbnails
+        return .thumbnail
+        
+    case .preview:
+        // Previews need to be readable
         return spaceUtilization > 0.25 ? .aspectFit : .thumbnail
     }
 }
@@ -94,15 +94,18 @@ public func shouldEnablePhotoEditing(
     
     // Determine based on purpose
     switch purpose {
-    case .vehiclePhoto, .profile:
+    case .general, .profile:
         // These benefit from basic editing (crop, rotate)
         return true
-    case .fuelReceipt, .pumpDisplay, .odometer, .document:
-        // These should remain unedited for authenticity
+    case .document:
+        // Documents should remain unedited for authenticity
         return false
-    case .maintenance, .expense:
-        // These can benefit from basic editing
+    case .reference:
+        // Reference photos can benefit from basic editing
         return true
+    case .thumbnail, .preview:
+        // Thumbnails and previews typically don't need editing
+        return false
     }
 }
 
@@ -116,16 +119,24 @@ public func optimalCompressionQuality(
     
     // Adjust quality based on purpose
     switch purpose {
-    case .vehiclePhoto, .profile:
+    case .general, .profile:
         // High quality for visual appeal
         return min(baseQuality + 0.1, 1.0)
         
-    case .fuelReceipt, .pumpDisplay, .odometer, .document:
+    case .document:
         // High quality for text readability
         return min(baseQuality + 0.15, 1.0)
         
-    case .maintenance, .expense:
+    case .reference:
         // Standard quality for reference photos
+        return baseQuality
+        
+    case .thumbnail:
+        // Lower quality for thumbnails (smaller file size)
+        return max(baseQuality - 0.2, 0.5)
+        
+    case .preview:
+        // Medium quality for previews
         return baseQuality
     }
 }
@@ -137,10 +148,10 @@ public func shouldAutoOptimize(
 ) -> Bool {
     // Auto-optimize based on purpose
     switch purpose {
-    case .fuelReceipt, .pumpDisplay, .odometer:
-        // Auto-optimize for text recognition
+    case .document:
+        // Auto-optimize documents for text recognition
         return true
-    case .vehiclePhoto, .profile, .maintenance, .expense, .document:
+    case .general, .profile, .reference, .thumbnail, .preview:
         // Let user decide for these
         return false
     }

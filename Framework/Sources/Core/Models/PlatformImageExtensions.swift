@@ -161,11 +161,11 @@ public extension PlatformImage {
         
         // Purpose-specific requirements
         switch purpose {
-        case .vehiclePhoto, .pumpDisplay, .odometer:
+        case .general, .preview:
             return metadata.size.width >= 200 && metadata.size.height >= 200
-        case .fuelReceipt, .expense, .document:
+        case .document:
             return metadata.size.width >= 400 && metadata.size.height >= 300
-        case .maintenance, .profile:
+        case .reference, .profile, .thumbnail:
             return metadata.size.width >= 100 && metadata.size.height >= 100
         }
     }
