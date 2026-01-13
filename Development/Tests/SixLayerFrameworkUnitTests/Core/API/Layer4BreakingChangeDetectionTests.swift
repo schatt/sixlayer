@@ -423,10 +423,6 @@ open class Layer4BreakingChangeDetectionTests: BaseTestClass {
     @Test func testOCRServiceParameterLabels_ExactProductionUsage() async throws {
         // This test would fail if parameter labels changed
         
-        let testImage = PlatformImage.createPlaceholder()
-        let context = Layer4APITestHelpers.createTestOCRContext()
-        let strategy = Layer4APITestHelpers.createTestOCRStrategy()
-        
         // Verify OCRService API exists and accepts correct parameters (compile-time check)
         let service = OCRService()
         let _: (PlatformImage, OCRContext, OCRStrategy) async throws -> OCRResult = service.processImage

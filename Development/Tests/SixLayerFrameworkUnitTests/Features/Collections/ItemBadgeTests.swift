@@ -146,7 +146,7 @@ struct ItemBadgeTests {
         let category = TestCategory(name: "Urgent", icon: "exclamationmark.triangle.fill", color: "red")
         
         // When: Creating badge
-        let badge = ItemBadge(
+        _ = ItemBadge(
             item: category,
             icon: category.icon,
             text: category.name,
@@ -168,7 +168,7 @@ struct ItemBadgeTests {
         let category = TestCategory(name: "Unknown", icon: "questionmark", color: nil)
         
         // When: Creating badge
-        let badge = ItemBadge(
+        _ = ItemBadge(
             item: category,
             icon: category.icon,
             text: category.name,

@@ -64,7 +64,7 @@ struct ItemIconTests {
         let doc = TestDocument(name: "Document.pdf", iconName: "doc.fill", fileExtension: "pdf")
         
         // When: Creating icon without specifying size
-        let icon = ItemIcon(
+        _ = ItemIcon(
             item: doc,
             iconName: doc.iconName,
             hints: hints
@@ -80,7 +80,7 @@ struct ItemIconTests {
         let doc = TestDocument(name: "Image.jpg", iconName: "photo.fill", fileExtension: "jpg")
         
         // When: Creating icon with custom size
-        let icon = ItemIcon(
+        _ = ItemIcon(
             item: doc,
             iconName: doc.iconName,
             size: 32,
@@ -97,7 +97,7 @@ struct ItemIconTests {
         let doc = TestDocument(name: "File.unknown", iconName: "doc.fill", fileExtension: "unknown")
         
         // When: Creating icon
-        let icon = ItemIcon(
+        _ = ItemIcon(
             item: doc,
             iconName: doc.iconName,
             hints: hints
