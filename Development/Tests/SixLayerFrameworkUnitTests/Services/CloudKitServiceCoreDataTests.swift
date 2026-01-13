@@ -15,11 +15,11 @@ import CloudKit
 
 @MainActor
 class MockPersistentContainer: NSPersistentContainer, @unchecked Sendable {
-    var loadPersistentStoresCalled = false
-    var loadPersistentStoresError: Error?
-    var loadPersistentStoresResult: NSPersistentStoreDescription?
+    // Test state properties - nonisolated to allow access from nonisolated override
+    nonisolated var loadPersistentStoresCalled = false
+    nonisolated var loadPersistentStoresError: Error?
+    nonisolated var loadPersistentStoresResult: NSPersistentStoreDescription?
     
-    @MainActor
     override func loadPersistentStores(completionHandler block: @escaping (NSPersistentStoreDescription, Error?) -> Void) {
         loadPersistentStoresCalled = true
         if let description = persistentStoreDescriptions.first {
