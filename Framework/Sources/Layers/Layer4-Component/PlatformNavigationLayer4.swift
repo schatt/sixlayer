@@ -38,45 +38,6 @@ public extension View {
             .automaticCompliance(named: "platformNavigation_L4")
     }
     
-    /// Platform-specific navigation wrapper (deprecated - use platformNavigation_L4)
-    /// Layer 4: Component Implementation
-    @available(*, deprecated, renamed: "platformNavigation_L4", message: "Use platformNavigation_L4() for consistency with Layer 4 naming convention")
-    func platformNavigation<Content: View>(
-        @ViewBuilder content: @escaping () -> Content
-    ) -> some View {
-        return platformNavigation_L4(content: content)
-    }
-
-    /// Wraps nested navigation in a platform-appropriate container
-    /// iOS: NavigationStack; macOS: identity
-    /// Layer 4: Component Implementation
-    /// 
-    /// - Warning: This function is deprecated. Use `platformNavigation_L4()` instead.
-    ///   This function has no clear use case and may be removed in a future version.
-    @available(*, deprecated, message: "Use platformNavigation_L4() instead. This function has no clear use case and may be removed in a future version.")
-    @ViewBuilder
-    func platformNavigationContainer_L4<Content: View>(@ViewBuilder content: () -> Content) -> some View {
-        #if os(iOS)
-        if #available(iOS 16.0, *) {
-            NavigationStack { content() }
-                .automaticCompliance(named: "platformNavigationContainer_L4")
-        } else {
-            content()
-                .automaticCompliance(named: "platformNavigationContainer_L4")
-        }
-        #else
-        content()
-            .automaticCompliance(named: "platformNavigationContainer_L4")
-        #endif
-    }
-    
-    /// Wraps nested navigation in a platform-appropriate container (deprecated - use platformNavigation_L4)
-    /// Layer 4: Component Implementation
-    @available(*, deprecated, message: "Use platformNavigation_L4() instead. This function has no clear use case and may be removed in a future version.")
-    @ViewBuilder
-    func platformNavigationContainer<Content: View>(@ViewBuilder content: () -> Content) -> some View {
-        platformNavigationContainer_L4(content: content)
-    }
 
     /// Platform-conditional navigation destination hook
     /// iOS: forwards to .navigationDestination; macOS: no-op passthrough
@@ -99,16 +60,6 @@ public extension View {
         #endif
     }
     
-    /// Platform-conditional navigation destination hook (deprecated - use platformNavigationDestination_L4)
-    /// Layer 4: Component Implementation
-    @available(*, deprecated, renamed: "platformNavigationDestination_L4", message: "Use platformNavigationDestination_L4() for consistency with Layer 4 naming convention")
-    @ViewBuilder
-    func platformNavigationDestination<Item: Identifiable & Hashable, Destination: View>(
-        item: Binding<Item?>,
-        @ViewBuilder destination: @escaping (Item) -> Destination
-    ) -> some View {
-        platformNavigationDestination_L4(item: item, destination: destination)
-    }
 
     /// Platform-specific navigation button with consistent styling and accessibility
     /// Layer 4: Component Implementation
@@ -151,24 +102,6 @@ public extension View {
         .automaticCompliance(named: "platformNavigationButton_L4")
     }
     
-    /// Platform-specific navigation button (deprecated - use platformNavigationButton_L4)
-    /// Layer 4: Component Implementation
-    @available(*, deprecated, renamed: "platformNavigationButton_L4", message: "Use platformNavigationButton_L4() for consistency with Layer 4 naming convention")
-    func platformNavigationButton(
-        title: String,
-        systemImage: String,
-        accessibilityLabel: String,
-        accessibilityHint: String,
-        action: @escaping () -> Void
-    ) -> some View {
-        return platformNavigationButton_L4(
-            title: title,
-            systemImage: systemImage,
-            accessibilityLabel: accessibilityLabel,
-            accessibilityHint: accessibilityHint,
-            action: action
-        )
-    }
 
     /// Platform-specific navigation title configuration
     /// Layer 4: Component Implementation
@@ -188,12 +121,6 @@ public extension View {
         #endif
     }
     
-    /// Platform-specific navigation title configuration (deprecated - use platformNavigationTitle_L4)
-    /// Layer 4: Component Implementation
-    @available(*, deprecated, renamed: "platformNavigationTitle_L4", message: "Use platformNavigationTitle_L4() for consistency with Layer 4 naming convention")
-    func platformNavigationTitle(_ title: String) -> some View {
-        return platformNavigationTitle_L4(title)
-    }
 
     /// Platform-specific navigation title display mode
     ///
@@ -238,12 +165,6 @@ public extension View {
         #endif
     }
     
-    /// Platform-specific navigation title display mode (deprecated - use platformNavigationTitleDisplayMode_L4)
-    /// Layer 4: Component Implementation
-    @available(*, deprecated, renamed: "platformNavigationTitleDisplayMode_L4", message: "Use platformNavigationTitleDisplayMode_L4() for consistency with Layer 4 naming convention")
-    func platformNavigationTitleDisplayMode(_ displayMode: PlatformTitleDisplayMode) -> some View {
-        return platformNavigationTitleDisplayMode_L4(displayMode)
-    }
 
     /// Platform-specific navigation bar title display mode
     /// Layer 4: Component Implementation
@@ -257,12 +178,6 @@ public extension View {
         #endif
     }
     
-    /// Platform-specific navigation bar title display mode (deprecated - use platformNavigationBarTitleDisplayMode_L4)
-    /// Layer 4: Component Implementation
-    @available(*, deprecated, renamed: "platformNavigationBarTitleDisplayMode_L4", message: "Use platformNavigationBarTitleDisplayMode_L4() for consistency with Layer 4 naming convention")
-    func platformNavigationBarTitleDisplayMode(_ displayMode: PlatformTitleDisplayMode) -> some View {
-        return platformNavigationBarTitleDisplayMode_L4(displayMode)
-    }
 
     // Note: platformNavigationBarBackButtonHidden moved to PlatformSpecificViewExtensions.swift
     // to consolidate with existing platform-specific logic and avoid naming conflicts

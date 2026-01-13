@@ -96,7 +96,7 @@ open class ComponentLabelTextAccessibilityTests: BaseTestClass {
         let view = platformVStackContainer {
             Text("Content")
         }
-        .platformNavigationTitle("Settings")
+        .platformNavigationTitle_L4("Settings")
         .enableGlobalAutomaticCompliance()
         
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
@@ -170,7 +170,7 @@ open class ComponentLabelTextAccessibilityTests: BaseTestClass {
         // platformNavigationButton should include title
         let button = platformVStackContainer {
             EmptyView()
-                .platformNavigationButton(
+                .platformNavigationButton_L4(
                     title: "Save",
                     systemImage: "checkmark",
                     accessibilityLabel: "Save changes",

@@ -85,95 +85,6 @@ class L4ComponentTests: BaseTestClass {
     
     // MARK: - OCR Component Implementation Functions
     
-    @Test @MainActor func testPlatformOCRImplementation_L4() {
-        // Given
-        let image = samplePlatformImage
-        let context = sampleOCRContext
-        let strategy = sampleOCRStrategy
-        var result: OCRResult?
-        
-        // When
-        let view = platformOCRImplementation_L4(
-            image: image,
-            context: context,
-            strategy: strategy,
-            onResult: { result = $0 }
-        )
-        
-        // Then
-        LayeredTestUtilities.verifyViewCreation(view, testName: "platformOCRImplementation_L4")
-        // Note: This function is deprecated and returns a fallback result
-        #expect(Bool(true), "OCR implementation should return a result")  // result is non-optional
-        #expect(result?.extractedText.contains("deprecated") == true, "Should return deprecation message")
-    }
-    
-    @Test @MainActor func testPlatformTextExtraction_L4() {
-        // Given
-        let image = samplePlatformImage
-        let context = sampleOCRContext
-        let layout = sampleOCRLayout
-        let strategy = sampleOCRStrategy
-        var result: OCRResult?
-        
-        // When
-        let view = platformTextExtraction_L4(
-            image: image,
-            context: context,
-            layout: layout,
-            strategy: strategy,
-            onResult: { result = $0 }
-        )
-        
-        // Then
-        LayeredTestUtilities.verifyViewCreation(view, testName: "platformTextExtraction_L4")
-        // Note: This function is deprecated and returns a fallback result
-        #expect(Bool(true), "Text extraction should return a result")  // result is non-optional
-        #expect(result?.extractedText.contains("deprecated") == true, "Should return deprecation message")
-    }
-    
-    @Test @MainActor func testPlatformTextRecognition_L4() {
-        // Given
-        let image = samplePlatformImage
-        let options = sampleTextRecognitionOptions
-        var result: OCRResult?
-        
-        // When
-        let view = platformTextRecognition_L4(
-            image: image,
-            options: options,
-            onResult: { result = $0 }
-        )
-        
-        // Then
-        LayeredTestUtilities.verifyViewCreation(view, testName: "platformTextRecognition_L4")
-        // Note: This function is deprecated and returns a fallback result
-        #expect(Bool(true), "Text recognition should return a result")  // result is non-optional
-        #expect(result?.extractedText.contains("deprecated") == true, "Should return deprecation message")
-    }
-    
-    @Test @MainActor func testSafePlatformOCRImplementation_L4() {
-        // Given
-        let image = samplePlatformImage
-        let context = sampleOCRContext
-        let strategy = sampleOCRStrategy
-        var result: OCRResult?
-        var error: Error?
-        
-        // When
-        let view = safePlatformOCRImplementation_L4(
-            image: image,
-            context: context,
-            strategy: strategy,
-            onResult: { result = $0 },
-            onError: { error = $0 }
-        )
-        
-        // Then
-        LayeredTestUtilities.verifyViewCreation(view, testName: "safePlatformOCRImplementation_L4")
-        // Note: This function is deprecated and returns a fallback result
-        #expect(Bool(true), "Safe OCR implementation should return a result")  // result is non-optional
-        #expect(result?.extractedText.contains("deprecated") == true, "Should return deprecation message")
-    }
     
     // MARK: - Photo Component Implementation Functions
     
@@ -254,69 +165,7 @@ class L4ComponentTests: BaseTestClass {
     
     // MARK: - Component Implementation Validation
     
-    @Test @MainActor func testComponentImplementationConsistency() {
-        // Given
-        let image = samplePlatformImage
-        let context = sampleOCRContext
-        let strategy = sampleOCRStrategy
-        
-        // When
-        let view1 = platformOCRImplementation_L4(
-            image: image,
-            context: context,
-            strategy: strategy,
-            onResult: { _ in }
-        )
-        
-        let view2 = platformOCRImplementation_L4(
-            image: image,
-            context: context,
-            strategy: strategy,
-            onResult: { _ in }
-        )
-        
-        // Then
-        LayeredTestUtilities.verifyViewCreation(view1, testName: "Component consistency test 1")
-        LayeredTestUtilities.verifyViewCreation(view2, testName: "Component consistency test 2")
-        // Both views should be created successfully
-    }
-    
-    @Test @MainActor func testComponentImplementationPerformance() {
-        // Given
-        let image = samplePlatformImage
-        let context = sampleOCRContext
-        let strategy = sampleOCRStrategy
-        
-        // When
-        let view = platformOCRImplementation_L4(
-            image: image,
-            context: context,
-            strategy: strategy,
-            onResult: { _ in }
-        )
-        
-        // Then
-        LayeredTestUtilities.verifyViewCreation(view, testName: "Component performance test")
-    }
-    
-    @Test @MainActor func testComponentImplementationEdgeCases() {
-        // Given
-        let image = PlatformImage() // Empty image
-        let context = OCRContext() // Default context
-        let strategy = OCRStrategy() // Default strategy
-        
-        // When
-        let view = platformOCRImplementation_L4(
-            image: image,
-            context: context,
-            strategy: strategy,
-            onResult: { _ in }
-        )
-        
-        // Then
-        LayeredTestUtilities.verifyViewCreation(view, testName: "Component edge case test")
-        // Should handle edge cases gracefully
-    }
+    // Note: OCR component tests removed - use OCRService.processImage() instead
     
     // MARK: - Platform-Specific Component Testing
     
@@ -338,44 +187,10 @@ class L4ComponentTests: BaseTestClass {
         LayeredTestUtilities.verifyViewCreation(photoEditorView, testName: "Photo editor component")
     }
     
-    @Test func testDeprecatedComponentBehavior() {
-        // Given
-        let image = samplePlatformImage
-        let context = sampleOCRContext
-        let strategy = sampleOCRStrategy
-        var result: OCRResult?
-        
-        // When
-        let view = platformOCRImplementation_L4(
-            image: image,
-            context: context,
-            strategy: strategy,
-            onResult: { result = $0 }
-        )
-        
-        // Then
-        LayeredTestUtilities.verifyViewCreation(view, testName: "Deprecated component test")
-        #expect(Bool(true), "Deprecated component should still return a result")  // result is non-optional
-        #expect(result?.extractedText.contains("deprecated") == true, "Should indicate deprecation")
-        #expect(result?.confidence == 0.0, "Deprecated component should have zero confidence")
-    }
+    // Note: Deprecated OCR component tests removed - use OCRService.processImage() instead
     
     @Test func testComponentErrorHandling() {
-        // Given
-        let image = samplePlatformImage
-        let context = sampleOCRContext
-        let strategy = sampleOCRStrategy
-        var result: OCRResult?
-        var error: Error?
-        
-        // When
-        let view = safePlatformOCRImplementation_L4(
-            image: image,
-            context: context,
-            strategy: strategy,
-            onResult: { result = $0 },
-            onError: { error = $0 }
-        )
+        // Note: OCR error handling tests removed - use OCRService.processImage() with try/catch instead
         
         // Then
         LayeredTestUtilities.verifyViewCreation(view, testName: "Component error handling test")

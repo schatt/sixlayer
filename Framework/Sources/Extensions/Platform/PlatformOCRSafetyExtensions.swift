@@ -117,34 +117,6 @@ public func isVisionOCRAvailable() -> Bool {
     return isVisionFrameworkAvailable()
 }
 
-// MARK: - Safe OCR Implementation
-
-/// Safe OCR implementation with availability checks and fallbacks
-/// 
-/// **DEPRECATED**: Use `OCRService.processImage()` instead
-@available(*, deprecated, message: "Use OCRService.processImage() instead")
-@ViewBuilder
-public func safePlatformOCRImplementation_L4(
-    image: PlatformImage,
-    context: OCRContext,
-    strategy: OCRStrategy,
-    onResult: @escaping (OCRResult) -> Void,
-    onError: @escaping (Error) -> Void
-) -> some View {
-    // Return empty view and call result asynchronously
-    EmptyView()
-        .onAppear {
-            let fallbackResult = OCRResult(
-                extractedText: "Safe OCR implementation failed: Use OCRService.processImage() instead",
-                confidence: 0.0,
-                boundingBoxes: [],
-                textTypes: [:],
-                processingTime: 0.0,
-                language: context.language
-            )
-            onResult(fallbackResult)
-        }
-}
 
 // MARK: - Safe Vision OCR View
 

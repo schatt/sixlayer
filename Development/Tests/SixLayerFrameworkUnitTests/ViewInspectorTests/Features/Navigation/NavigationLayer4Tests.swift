@@ -272,7 +272,7 @@ open class NavigationLayer4Tests: BaseTestClass {
         
         // When: Creating navigation destination
         let destination = Text("Trigger")
-            .platformNavigationDestination(item: item) { item in
+            .platformNavigationDestination_L4(item: item) { item in
                 Text("Destination: \(item.title)")
             }
         
@@ -286,7 +286,7 @@ open class NavigationLayer4Tests: BaseTestClass {
         
         // When: Creating navigation destination with nil item
         let destination = Text("Trigger")
-            .platformNavigationDestination(item: item) { item in
+            .platformNavigationDestination_L4(item: item) { item in
                 Text("Destination: \(item.title)")
             }
         
@@ -302,17 +302,17 @@ open class NavigationLayer4Tests: BaseTestClass {
         
         // When: Creating destinations with different item types
         let destination1 = Text("String")
-            .platformNavigationDestination(item: item1) { item in
+            .platformNavigationDestination_L4(item: item1) { item in
                 Text("String: \(item.title)")
             }
         
         let destination2 = Text("Int")
-            .platformNavigationDestination(item: item2) { item in
+            .platformNavigationDestination_L4(item: item2) { item in
                 Text("Number: \(item.title)")
             }
         
         let destination3 = Text("UUID")
-            .platformNavigationDestination(item: item3) { item in
+            .platformNavigationDestination_L4(item: item3) { item in
                 Text("UUID: \(item.title)")
             }
         
@@ -452,7 +452,7 @@ open class NavigationLayer4Tests: BaseTestClass {
                         }
                     
                     Text("Destination")
-                        .platformNavigationDestination(item: item) { item in
+                        .platformNavigationDestination_L4(item: item) { item in
                             Text("Item: \(item.title)")
                         }
                 }
@@ -505,7 +505,7 @@ open class NavigationLayer4Tests: BaseTestClass {
             }
         
         let nilDestination = Text("Nil Destination")
-            .platformNavigationDestination(item: nilItem) { item in
+            .platformNavigationDestination_L4(item: nilItem) { item in
                 Text("Nil: \(item.title)")
             }
         

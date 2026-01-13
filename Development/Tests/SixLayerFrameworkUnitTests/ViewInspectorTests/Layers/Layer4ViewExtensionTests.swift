@@ -183,7 +183,7 @@ open class Layer4ViewExtensionTests: BaseTestClass {
         
         let item = Binding<TestItem?>(get: { nil }, set: { _ in })
         let view = Text("Content")
-            .platformNavigationDestination(item: item) { _ in
+            .platformNavigationDestination_L4(item: item) { _ in
                 Text("Destination")
             }
         
@@ -201,7 +201,7 @@ open class Layer4ViewExtensionTests: BaseTestClass {
     @Test @MainActor func testPlatformNavigationButton() async {
         var buttonPressed = false
         let view = Text("Content")
-            .platformNavigationButton(
+            .platformNavigationButton_L4(
                 title: "Button",
                 systemImage: "star",
                 accessibilityLabel: "Test Button",
@@ -222,7 +222,7 @@ open class Layer4ViewExtensionTests: BaseTestClass {
     
     @Test @MainActor func testPlatformNavigationTitle() async {
         let view = Text("Content")
-            .platformNavigationTitle("Test Title")
+            .platformNavigationTitle_L4("Test Title")
         
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
             view,
@@ -240,7 +240,7 @@ open class Layer4ViewExtensionTests: BaseTestClass {
         
         for mode in modes {
             let view = Text("Content")
-                .platformNavigationTitleDisplayMode(mode)
+                .platformNavigationTitleDisplayMode_L4(mode)
             
             let hasAccessibilityID = testComponentComplianceSinglePlatform(
                 view,
@@ -259,7 +259,7 @@ open class Layer4ViewExtensionTests: BaseTestClass {
         
         for mode in modes {
             let view = Text("Content")
-                .platformNavigationBarTitleDisplayMode(mode)
+                .platformNavigationBarTitleDisplayMode_L4(mode)
             
             let hasAccessibilityID = testComponentComplianceSinglePlatform(
                 view,
@@ -649,113 +649,5 @@ open class Layer4ViewExtensionTests: BaseTestClass {
         #expect(hasAccessibilityID, "platformPhotoDisplay_L4 with nil image should generate accessibility identifiers ")
     }
     
-    // MARK: - platformOCRImplementation_L4 Tests (Deprecated but still needs tests)
-    
-    @Test @MainActor func testPlatformOCRImplementation_L4() async {
-        let testImage = PlatformImage()
-        let context = OCRContext(
-            textTypes: [.general],
-            language: .english
-        )
-        let strategy = OCRStrategy(
-            supportedTextTypes: [.general],
-            supportedLanguages: [.english],
-            processingMode: .standard,
-            requiresNeuralEngine: false,
-            estimatedProcessingTime: 1.0
-        )
-        
-        var resultReceived: OCRResult?
-        let view = platformOCRImplementation_L4(
-            image: testImage,
-            context: context,
-            strategy: strategy
-        ) { result in
-            resultReceived = result
-        }
-        
-        let hasAccessibilityID = testComponentComplianceSinglePlatform(
-            view,
-            expectedPattern: "SixLayer.*ui",
-            platform: SixLayerPlatform.iOS,
-            componentName: "platformOCRImplementation_L4"
-        )
-        #expect(hasAccessibilityID, "platformOCRImplementation_L4 should generate accessibility identifiers ")
-    }
-    
-    // MARK: - platformTextExtraction_L4 Tests (Deprecated but still needs tests)
-    
-    @Test @MainActor func testPlatformTextExtraction_L4() async {
-        let testImage = PlatformImage()
-        let context = OCRContext(
-            textTypes: [.general],
-            language: .english
-        )
-        let layout = OCRLayout(
-            maxImageSize: CGSize(width: 2000, height: 2000),
-            recommendedImageSize: CGSize(width: 1000, height: 1000),
-            processingMode: .standard,
-            uiConfiguration: OCRUIConfiguration(
-                showProgress: true,
-                showConfidence: false,
-                showBoundingBoxes: false,
-                allowEditing: false,
-                theme: .system
-            )
-        )
-        let strategy = OCRStrategy(
-            supportedTextTypes: [.general],
-            supportedLanguages: [.english],
-            processingMode: .standard,
-            requiresNeuralEngine: false,
-            estimatedProcessingTime: 1.0
-        )
-        
-        var resultReceived: OCRResult?
-        let view = platformTextExtraction_L4(
-            image: testImage,
-            context: context,
-            layout: layout,
-            strategy: strategy
-        ) { result in
-            resultReceived = result
-        }
-        
-        let hasAccessibilityID = testComponentComplianceSinglePlatform(
-            view,
-            expectedPattern: "SixLayer.*ui",
-            platform: SixLayerPlatform.iOS,
-            componentName: "platformTextExtraction_L4"
-        )
-        #expect(hasAccessibilityID, "platformTextExtraction_L4 should generate accessibility identifiers ")
-    }
-    
-    // MARK: - platformTextRecognition_L4 Tests (Deprecated but still needs tests)
-    
-    @Test @MainActor func testPlatformTextRecognition_L4() async {
-        let testImage = PlatformImage()
-        let options = TextRecognitionOptions(
-            language: .english,
-            confidenceThreshold: 0.8,
-            enableBoundingBoxes: true,
-            enableTextCorrection: true
-        )
-        
-        var resultReceived: OCRResult?
-        let view = platformTextRecognition_L4(
-            image: testImage,
-            options: options
-        ) { result in
-            resultReceived = result
-        }
-        
-        let hasAccessibilityID = testComponentComplianceSinglePlatform(
-            view,
-            expectedPattern: "SixLayer.*ui",
-            platform: SixLayerPlatform.iOS,
-            componentName: "platformTextRecognition_L4"
-        )
-        #expect(hasAccessibilityID, "platformTextRecognition_L4 should generate accessibility identifiers ")
-    }
 }
 

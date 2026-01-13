@@ -150,7 +150,7 @@ struct AccessibilityIdentifierDebuggingExample: View {
             enableDebugLogging = AccessibilityIdentifierConfig.shared.enableDebugLogging
         }
         // Apply automatic identifiers to the entire view hierarchy
-        .automaticAccessibilityIdentifiers()
+        .automaticCompliance()
     }
 }
 

@@ -960,7 +960,7 @@ public extension View {
     ///
     /// ## Usage Example
     /// ```swift
-    /// .platformNavigationBarTitleDisplayMode(.large)
+    /// .platformNavigationBarTitleDisplayMode_L4(.large)
     /// ```
     // Navigation bar title display mode moved to PlatformNavigationLayer4.swift
 

@@ -26,7 +26,7 @@ import SixLayerFramework
  *     var body: some Scene {
  *         WindowGroup {
  *             ContentView()
- *                 .enableGlobalAutomaticAccessibilityIdentifiers()
+ *                 .enableGlobalAutomaticCompliance()
  *         }
  *     }
  * }
@@ -142,7 +142,7 @@ struct AutomaticAccessibilityIdentifiersExample: View {
             .navigationTitle("Automatic Accessibility Identifiers")
         }
         // This applies automatic identifiers to the entire view hierarchy
-        .automaticAccessibilityIdentifiers()
+        .automaticCompliance()
     }
 }
 

@@ -16,8 +16,8 @@ import SwiftUI
 ///
 /// ```swift
 /// Text("Content")
-///     .platformNavigationTitle("My Title")
-///     .platformNavigationTitleDisplayMode(.inline)
+///     .platformNavigationTitle_L4("My Title")
+///     .platformNavigationTitleDisplayMode_L4(.inline)
 /// ```
 ///
 /// This eliminates the need for:
