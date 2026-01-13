@@ -20114,6 +20114,36 @@
         }
       }
     },
+    "SixLayerFramework.photo.camera" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Camera"
+          }
+        }
+      }
+    },
+    "SixLayerFramework.photo.library" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Library"
+          }
+        }
+      }
+    },
+    "SixLayerFramework.photo.captureNew" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Capture New"
+          }
+        }
+      }
+    },
     "SixLayerFramework.image.optimizationFailed" : {
       "localizations" : {
         "da" : {

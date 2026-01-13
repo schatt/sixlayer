@@ -82,6 +82,24 @@ public enum PlatformPhotoComponentsLayer4 {
         PlatformCameraPreviewView(session: session, videoGravity: videoGravity)
             .automaticCompliance(named: "platformCameraPreview_L4")
     }
+    
+    // MARK: - Tabbed Photo Source Components
+    
+    /// Creates a tabbed interface for switching between camera and photo library
+    /// Provides a tab bar at the top to switch between camera and library options
+    /// Note: Requires @MainActor because it creates Views
+    @ViewBuilder
+    @MainActor
+    public static func platformPhotoSourceTabbed_L4(
+        onImageCaptured: @escaping (PlatformImage) -> Void,
+        onImageSelected: @escaping (PlatformImage) -> Void
+    ) -> some View {
+        PhotoSourceTabbedView(
+            onImageCaptured: onImageCaptured,
+            onImageSelected: onImageSelected
+        )
+        .automaticCompliance(named: "platformPhotoSourceTabbed_L4")
+    }
 }
 
 // MARK: - Camera Preview View
@@ -554,6 +572,67 @@ struct PlaceholderPhotoView: View {
         case .aspectFit, .aspectFill, .fullSize, .thumbnail:
             return AnyShape(Rectangle())
         }
+    }
+}
+
+// MARK: - Tabbed Photo Source View
+
+/// Tabbed interface for switching between camera and photo library
+struct PhotoSourceTabbedView: View {
+    @State private var selectedSource: PhotoSourceTab = .camera
+    let onImageCaptured: (PlatformImage) -> Void
+    let onImageSelected: (PlatformImage) -> Void
+    
+    enum PhotoSourceTab: String, CaseIterable {
+        case camera = "camera"
+        case library = "library"
+    }
+    
+    var body: some View {
+        VStack(spacing: 0) {
+            // Tab bar at the top
+            HStack(spacing: 0) {
+                ForEach(PhotoSourceTab.allCases, id: \.self) { tab in
+                    Button(action: {
+                        selectedSource = tab
+                    }) {
+                        VStack(spacing: 4) {
+                            Image(systemName: tab == .camera ? "camera.fill" : "photo.on.rectangle")
+                                .font(.title3)
+                            let i18n = InternationalizationService()
+                            Text(tab == .camera ? 
+                                 i18n.localizedString(for: "SixLayerFramework.photo.camera") :
+                                 i18n.localizedString(for: "SixLayerFramework.photo.library"))
+                                .font(.caption)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 12)
+                        .background(selectedSource == tab ? Color.accentColor.opacity(0.2) : Color.clear)
+                        .foregroundColor(selectedSource == tab ? .accentColor : .primary)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .background(Color.systemBackground)
+            .overlay(
+                Rectangle()
+                    .frame(height: 1)
+                    .foregroundColor(Color.separator),
+                alignment: .bottom
+            )
+            
+            // Content area - show selected source
+            Group {
+                switch selectedSource {
+                case .camera:
+                    PlatformPhotoComponentsLayer4.platformCameraInterface_L4(onImageCaptured: onImageCaptured)
+                case .library:
+                    PlatformPhotoComponentsLayer4.platformPhotoPicker_L4(onImageSelected: onImageSelected)
+                }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+        .automaticCompliance(named: "PhotoSourceTabbedView")
     }
 }
 

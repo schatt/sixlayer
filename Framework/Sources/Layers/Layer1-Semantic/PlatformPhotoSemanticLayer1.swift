@@ -30,14 +30,11 @@ public func platformPhotoCapture_L1(
         PlatformPhotoComponentsLayer4.platformPhotoPicker_L4(onImageSelected: onImageCaptured)
             .automaticCompliance()
     case .both:
-        // Provide both options
-        VStack {
-            PlatformPhotoComponentsLayer4.platformCameraInterface_L4(onImageCaptured: onImageCaptured)
-                .automaticCompliance()
-            PlatformPhotoComponentsLayer4.platformPhotoPicker_L4(onImageSelected: onImageCaptured)
-                .automaticCompliance()
-        }
-        .automaticCompliance()
+        // Provide tabbed interface to switch between camera and library
+        PlatformPhotoComponentsLayer4.platformPhotoSourceTabbed_L4(
+            onImageCaptured: onImageCaptured,
+            onImageSelected: onImageCaptured
+        )
     }
 }
 
@@ -118,14 +115,11 @@ public func platformPhotoCapture_L1<CameraContent: View>(
         baseView = AnyView(PlatformPhotoComponentsLayer4.platformPhotoPicker_L4(onImageSelected: onImageCaptured)
             .automaticCompliance())
     case .both:
-        // Provide both options
-        baseView = AnyView(VStack {
-            PlatformPhotoComponentsLayer4.platformCameraInterface_L4(onImageCaptured: onImageCaptured)
-                .automaticCompliance()
-            PlatformPhotoComponentsLayer4.platformPhotoPicker_L4(onImageSelected: onImageCaptured)
-                .automaticCompliance()
-        }
-        .automaticCompliance())
+        // Provide tabbed interface to switch between camera and library
+        baseView = AnyView(PlatformPhotoComponentsLayer4.platformPhotoSourceTabbed_L4(
+            onImageCaptured: onImageCaptured,
+            onImageSelected: onImageCaptured
+        ))
     }
     
     // Apply custom wrapper if provided, otherwise return default
