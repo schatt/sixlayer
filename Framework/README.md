@@ -40,6 +40,70 @@ Layer 1: Semantic Intent → Layer 2: Layout Decision → Layer 3: Strategy Sele
 - **Comprehensively Tested**: 800+ tests with platform-aware testing and mandatory TDD implementation
 - **DRY Architecture**: Define hints once in files, use everywhere automatically
 
+## 🆕 What's New in v7.4.0
+
+### PhotoPurpose API (⚠️ Breaking Change)
+
+**⚠️ Breaking Change in v7.4.0**: `PhotoPurpose` was refactored from an enum to a struct to make the framework truly generic and extensible.
+
+#### **Built-in Generic Purposes**
+
+The framework now provides generic, domain-agnostic photo purposes:
+
+```swift
+// Built-in purposes
+PhotoPurpose.general      // General purpose photos
+PhotoPurpose.document     // Document photos (receipts, forms, etc.)
+PhotoPurpose.profile      // Profile/avatar photos
+PhotoPurpose.reference    // Reference photos (maintenance, expense tracking, etc.)
+PhotoPurpose.thumbnail    // Thumbnail/preview images
+PhotoPurpose.preview      // UI preview images
+```
+
+#### **Extensible for Custom Purposes**
+
+Projects can create custom purposes for their specific domain:
+
+```swift
+extension PhotoPurpose {
+    // Custom purpose for product photos
+    static let productPhoto = PhotoPurpose(identifier: "product")
+    
+    // Custom purpose for medical records
+    static let medicalRecord = PhotoPurpose(identifier: "medical_record")
+}
+```
+
+#### **Backward Compatibility Aliases**
+
+Projects can maintain backward compatibility by creating aliases:
+
+```swift
+extension PhotoPurpose {
+    // Map old vehicle-specific purposes to new generic ones
+    static let vehiclePhoto = PhotoPurpose.general
+    static let fuelReceipt = PhotoPurpose.document
+    static let maintenance = PhotoPurpose.reference
+}
+```
+
+#### **Usage Example**
+
+```swift
+platformPhotoCapture_L1(
+    purpose: .general,  // or .document, .profile, etc.
+    context: photoContext,
+    onImageCaptured: { image in
+        // Handle captured image
+    }
+)
+```
+
+See [PhotoPurposeExtensionExample.swift](Examples/PhotoPurposeExtensionExample.swift) for complete examples and migration guide.  
+See [Release Notes v7.4.0](../Development/RELEASE_v7.4.0.md) for complete migration documentation.
+
+---
+
 ## 🆕 What's New in v6.4.2
 
 ### Platform Bottom-Bar Toolbar Placement Helper

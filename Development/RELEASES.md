@@ -4,7 +4,7 @@
 
 **Release Date**: January 19, 2026
 **Status**: ✅ **COMPLETE**
-**Previous Release**: v7.3.0 - Convenience Aliases and Code Quality Improvements
+**Previous Release**: v7.4.0 - PhotoPurpose Refactoring (Breaking Change)
 **Note**: Patch release adding idealWidth and idealHeight parameter support to platformFrame() to match SwiftUI's native .frame() modifier API. Ideal sizes are automatically clamped to screen/window bounds on all platforms.
 **Next Release**: TBD
 
@@ -28,6 +28,38 @@
 - **Better maintainability**: Easier to understand and extend
 
 **See [RELEASE_v7.4.1.md](RELEASE_v7.4.1.md) for complete release notes.**
+
+---
+
+## 🎯 **v7.4.0 - PhotoPurpose Refactoring (Breaking Change)** (January 12, 2026)
+
+### **⚠️ Breaking Changes:**
+
+#### **🔄 PhotoPurpose Enum → Struct Conversion (Issue #151)**
+- **Converted to struct**: PhotoPurpose is now a struct with string identifier instead of enum
+- **Vehicle-specific cases removed**: `vehiclePhoto`, `fuelReceipt`, `pumpDisplay`, `odometer`, `maintenance`, `expense` no longer exist
+- **New generic purposes**: `.general`, `.document`, `.profile`, `.reference`, `.thumbnail`, `.preview`
+- **Extensible**: Projects can create custom purposes and backward compatibility aliases
+
+### **What's New:**
+
+#### **🆕 Extensible PhotoPurpose System**
+- **Custom purposes**: Create domain-specific purposes with `PhotoPurpose(identifier: "custom")`
+- **Backward compatibility aliases**: Create aliases like `static let vehiclePhoto = PhotoPurpose.general`
+- **Example file**: `PhotoPurposeExtensionExample.swift` shows migration patterns
+
+### **Migration:**
+
+Projects can maintain backward compatibility by creating an extension:
+```swift
+extension PhotoPurpose {
+    static let vehiclePhoto = PhotoPurpose.general
+    static let fuelReceipt = PhotoPurpose.document
+    // ... etc
+}
+```
+
+**See [RELEASE_v7.4.0.md](RELEASE_v7.4.0.md) for complete release notes and migration guide.**
 
 ---
 

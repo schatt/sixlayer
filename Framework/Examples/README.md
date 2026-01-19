@@ -8,10 +8,19 @@ This folder contains example types and implementations that demonstrate how to u
 
 ## Available Examples
 
+### **PhotoPurposeExtensionExample.swift** (v7.4.0)
+Comprehensive example showing PhotoPurpose extensibility and migration:
+
+- **Backward compatibility aliases**: Map old vehicle-specific purposes to new generic ones
+- **Custom domain-specific purposes**: Create purposes for your specific domain (e-commerce, medical, insurance, etc.)
+- **Usage examples**: Complete examples showing how to use aliases and custom purposes
+- **Migration guide**: Shows how to migrate from vehicle-specific to generic purposes
+
+**⚠️ Important**: PhotoPurpose was refactored in v7.4.0 from enum to struct. This example shows how to maintain backward compatibility and create custom purposes.
+
 ### **GenericTypes.swift**
 Example types showing how to create custom data structures that work with the framework:
 
-- **PhotoPurposeExtensionExample**: Example showing how to extend PhotoPurpose with custom purposes and aliases
 - **GenericVehicle**: Example vehicle type with CardDisplayable conformance
 - **GenericDataItem**: Generic container for any identifiable data
 - **VehicleType**: Enumeration for vehicle categorization

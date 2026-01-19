@@ -46,6 +46,9 @@ The framework is distributed as a Swift Package from the `Framework/` directory.
 ### **idealWidth and idealHeight Support for platformFrame**
 🆕 **Complete Frame API**: Added `idealWidth` and `idealHeight` parameter support to `platformFrame()` to match SwiftUI's native `.frame()` modifier API. Ideal sizes are automatically clamped to screen/window bounds on all platforms. Implementation simplified for better maintainability.
 
+### **Previous Release: v7.4.0 - PhotoPurpose Refactoring (⚠️ Breaking Change)**
+⚠️ **BREAKING CHANGE**: `PhotoPurpose` converted from enum to struct. Vehicle-specific cases (`vehiclePhoto`, `fuelReceipt`, etc.) removed and replaced with generic purposes (`.general`, `.document`, `.profile`, `.reference`, `.thumbnail`, `.preview`). Projects can maintain backward compatibility using extension aliases. See migration guide in release notes.
+
 ### **Previous Release: v7.3.0 - Convenience Aliases and Code Quality Improvements**
 🆕 **Platform Container Stack Aliases**: Added shorter convenience aliases `platformVStack`, `platformHStack`, and `platformZStack` for more intuitive API names. Refactored iCloud availability checks for improved code clarity.
 
