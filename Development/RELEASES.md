@@ -1,12 +1,33 @@
 # 🚀 Six-Layer Framework Release History
 
-## 📍 **Current Release: v7.3.0 - Convenience Aliases and Code Quality Improvements** 🎯
+## 📍 **Current Release: v7.4.1 - idealWidth and idealHeight Support for platformFrame** 🎯
 
-**Release Date**: January 9, 2026
+**Release Date**: January 19, 2026
 **Status**: ✅ **COMPLETE**
-**Previous Release**: v7.2.0 - Configurable Photo Sources for OCR Scanner
-**Note**: Minor release adding convenience function aliases for platform container stacks and improving code clarity in iCloud availability checks. Provides shorter, more intuitive API names while maintaining full backward compatibility.
+**Previous Release**: v7.3.0 - Convenience Aliases and Code Quality Improvements
+**Note**: Patch release adding idealWidth and idealHeight parameter support to platformFrame() to match SwiftUI's native .frame() modifier API. Ideal sizes are automatically clamped to screen/window bounds on all platforms.
 **Next Release**: TBD
+
+---
+
+## 🎯 **v7.4.1 - idealWidth and idealHeight Support for platformFrame** (January 19, 2026)
+
+### **What's New:**
+
+#### **🆕 idealWidth and idealHeight Support (Issue #152)**
+- **Complete API**: platformFrame() now supports all six frame constraint parameters (min/ideal/max for width and height)
+- **Platform-aware clamping**: Ideal sizes automatically clamped to screen/window bounds
+- **SwiftUI consistency**: Matches SwiftUI's native .frame() modifier API
+- **Backward compatible**: All existing code continues to work unchanged
+
+### **What's Fixed:**
+
+#### **🔧 Implementation Simplification**
+- **Cleaner code**: Refactored to use SwiftUI's .frame() modifier directly
+- **DRY principle**: Eliminated complex conditional logic
+- **Better maintainability**: Easier to understand and extend
+
+**See [RELEASE_v7.4.1.md](RELEASE_v7.4.1.md) for complete release notes.**
 
 ---
 

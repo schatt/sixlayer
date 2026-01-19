@@ -11,6 +11,7 @@ This document provides guidance for AI assistants working with the SixLayer Fram
 ## 📚 Version-Specific Guides
 
 ### Latest Versions (Recommended)
+- **[AI_AGENT_v7.4.1.md](AI_AGENT_v7.4.1.md)** - idealWidth and idealHeight Support for platformFrame
 - **[AI_AGENT_v7.3.0.md](AI_AGENT_v7.3.0.md)** - Convenience Aliases and Code Quality Improvements
 - **[AI_AGENT_v7.2.0.md](AI_AGENT_v7.2.0.md)** - Configurable Photo Sources for OCR Scanner
 - **[AI_AGENT_v7.1.0.md](AI_AGENT_v7.1.0.md)** - Color Resolution System from Hints Files

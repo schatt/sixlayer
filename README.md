@@ -27,7 +27,7 @@ Navigate to the `Framework/` directory and use it as a Swift Package:
 ```swift
 // In your Package.swift
 dependencies: [
-    .package(url: "https://github.com/schatt/sixlayer.git", from: "7.3.0")
+    .package(url: "https://github.com/schatt/sixlayer.git", from: "7.4.1")
 ]
 ```
 
@@ -41,9 +41,12 @@ dependencies: [
 
 The framework is distributed as a Swift Package from the `Framework/` directory. This ensures that only the essential framework code is included when other projects consume it.
 
-## 🆕 Latest Release: v7.3.0
+## 🆕 Latest Release: v7.4.1
 
-### **Convenience Aliases and Code Quality Improvements**
+### **idealWidth and idealHeight Support for platformFrame**
+🆕 **Complete Frame API**: Added `idealWidth` and `idealHeight` parameter support to `platformFrame()` to match SwiftUI's native `.frame()` modifier API. Ideal sizes are automatically clamped to screen/window bounds on all platforms. Implementation simplified for better maintainability.
+
+### **Previous Release: v7.3.0 - Convenience Aliases and Code Quality Improvements**
 🆕 **Platform Container Stack Aliases**: Added shorter convenience aliases `platformVStack`, `platformHStack`, and `platformZStack` for more intuitive API names. Refactored iCloud availability checks for improved code clarity.
 
 ### **Previous Release: v7.2.0 - Configurable Photo Sources for OCR Scanner**
@@ -187,8 +190,8 @@ These guides contain critical information about the Layer 1 Semantic Intent phil
 
 ## 📋 Current Status
 
-**Version**: v7.3.0 (Convenience Aliases and Code Quality Improvements)
-**Phase**: Minor Release
+**Version**: v7.4.1 (idealWidth and idealHeight Support for platformFrame)
+**Phase**: Patch Release
 **Next**: TBD
 
 ## 🤝 Contributing
