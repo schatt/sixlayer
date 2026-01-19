@@ -236,6 +236,121 @@ open class PlatformFrameSafetyTests: BaseTestClass {
     }
     #endif
     
+    // MARK: - platformFrame idealWidth and idealHeight Tests
+    
+    @Test @MainActor func testPlatformFrameAcceptsIdealWidth() {
+        // Given: A view with idealWidth specified
+        let idealWidth: CGFloat = 800
+        
+        // When: Applying platformFrame with idealWidth
+        let view = Text("Test")
+            .platformFrame(idealWidth: idealWidth)
+        
+        // Then: View should render successfully
+        let hostedView = hostRootPlatformView(view)
+        #expect(hostedView != nil, "View with idealWidth should render")
+    }
+    
+    @Test @MainActor func testPlatformFrameAcceptsIdealHeight() {
+        // Given: A view with idealHeight specified
+        let idealHeight: CGFloat = 600
+        
+        // When: Applying platformFrame with idealHeight
+        let view = Text("Test")
+            .platformFrame(idealHeight: idealHeight)
+        
+        // Then: View should render successfully
+        let hostedView = hostRootPlatformView(view)
+        #expect(hostedView != nil, "View with idealHeight should render")
+    }
+    
+    @Test @MainActor func testPlatformFrameAcceptsIdealWidthAndIdealHeight() {
+        // Given: A view with both idealWidth and idealHeight specified
+        let idealWidth: CGFloat = 800
+        let idealHeight: CGFloat = 600
+        
+        // When: Applying platformFrame with both ideal sizes
+        let view = Text("Test")
+            .platformFrame(idealWidth: idealWidth, idealHeight: idealHeight)
+        
+        // Then: View should render successfully
+        let hostedView = hostRootPlatformView(view)
+        #expect(hostedView != nil, "View with idealWidth and idealHeight should render")
+    }
+    
+    @Test @MainActor func testPlatformFrameAcceptsMinIdealMaxCombination() {
+        // Given: A view with min, ideal, and max constraints
+        let minWidth: CGFloat = 400
+        let idealWidth: CGFloat = 800
+        let maxWidth: CGFloat = 1200
+        let minHeight: CGFloat = 300
+        let idealHeight: CGFloat = 600
+        let maxHeight: CGFloat = 900
+        
+        // When: Applying platformFrame with all constraints
+        let view = Text("Test")
+            .platformFrame(
+                minWidth: minWidth,
+                idealWidth: idealWidth,
+                maxWidth: maxWidth,
+                minHeight: minHeight,
+                idealHeight: idealHeight,
+                maxHeight: maxHeight
+            )
+        
+        // Then: View should render successfully
+        let hostedView = hostRootPlatformView(view)
+        #expect(hostedView != nil, "View with min/ideal/max constraints should render")
+    }
+    
+    @Test @MainActor func testPlatformFrameClampsOversizedIdealWidth() {
+        // Given: An oversized idealWidth
+        let oversizedIdealWidth: CGFloat = 10000
+        
+        // When: Clamping the ideal width (as platformFrame() does internally)
+        #if os(iOS) || os(watchOS) || os(tvOS) || os(visionOS)
+        let maxSize = PlatformFrameHelpers.getMaxFrameSize()
+        let clampedIdealWidth = min(oversizedIdealWidth, maxSize.width)
+        #expect(oversizedIdealWidth > maxSize.width, "Test value should be larger than screen")
+        #expect(clampedIdealWidth <= maxSize.width, "Clamped ideal width should not exceed screen")
+        #elseif os(macOS)
+        let clampedIdealWidth = PlatformFrameHelpers.clampMaxFrameSize(oversizedIdealWidth, dimension: .width)
+        let screenSize = NSScreen.main?.visibleFrame.size ?? CGSize(width: 1920, height: 1080)
+        let maxAllowed = screenSize.width * 0.9
+        #expect(clampedIdealWidth <= maxAllowed, "Clamped ideal width should not exceed screen bounds")
+        #endif
+        
+        // View should render successfully
+        let view = Text("Test")
+            .platformFrame(idealWidth: oversizedIdealWidth)
+        let hostedView = hostRootPlatformView(view)
+        #expect(hostedView != nil, "View with clamped idealWidth should render")
+    }
+    
+    @Test @MainActor func testPlatformFrameClampsOversizedIdealHeight() {
+        // Given: An oversized idealHeight
+        let oversizedIdealHeight: CGFloat = 10000
+        
+        // When: Clamping the ideal height (as platformFrame() does internally)
+        #if os(iOS) || os(watchOS) || os(tvOS) || os(visionOS)
+        let maxSize = PlatformFrameHelpers.getMaxFrameSize()
+        let clampedIdealHeight = min(oversizedIdealHeight, maxSize.height)
+        #expect(oversizedIdealHeight > maxSize.height, "Test value should be larger than screen")
+        #expect(clampedIdealHeight <= maxSize.height, "Clamped ideal height should not exceed screen")
+        #elseif os(macOS)
+        let clampedIdealHeight = PlatformFrameHelpers.clampMaxFrameSize(oversizedIdealHeight, dimension: .height)
+        let screenSize = NSScreen.main?.visibleFrame.size ?? CGSize(width: 1920, height: 1080)
+        let maxAllowed = screenSize.height * 0.9
+        #expect(clampedIdealHeight <= maxAllowed, "Clamped ideal height should not exceed screen bounds")
+        #endif
+        
+        // View should render successfully
+        let view = Text("Test")
+            .platformFrame(idealHeight: oversizedIdealHeight)
+        let hostedView = hostRootPlatformView(view)
+        #expect(hostedView != nil, "View with clamped idealHeight should render")
+    }
+    
     // MARK: - platformMinFrame() Tests
     
     #if os(macOS)
