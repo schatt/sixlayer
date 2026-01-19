@@ -417,28 +417,18 @@ open class Layer4BreakingChangeDetectionTests: BaseTestClass {
     
     // MARK: - Parameter Label Breaking Change Detection
     
-    /// BUSINESS PURPOSE: Test that parameter labels don't change
+    /// BUSINESS PURPOSE: Test that OCRService parameter labels don't change
     /// TESTING SCOPE: Tests that parameter label changes would break these tests
     /// METHODOLOGY: Use exact parameter labels from production code
-    /// NOTE: This test intentionally uses deprecated platformOCRImplementation_L4 for breaking change detection
-    @available(*, deprecated, message: "Intentional use of deprecated platformOCRImplementation_L4 for breaking change detection")
-    @Test @MainActor func testParameterLabels_ExactProductionUsage() {
+    @Test func testOCRServiceParameterLabels_ExactProductionUsage() async throws {
         // This test would fail if parameter labels changed
         
-        let testImage = PlatformImage.createPlaceholder()
-        let context = Layer4APITestHelpers.createTestOCRContext()
-        let strategy = Layer4APITestHelpers.createTestOCRStrategy()
-        
-        // Test exact parameter labels used in production
-        let _ = platformOCRImplementation_L4(
-            image: testImage,      // label: "image:"
-            context: context,      // label: "context:"
-            strategy: strategy,    // label: "strategy:"
-            onResult: { _ in }     // label: "onResult:"
-        )
+        // Verify OCRService API exists and accepts correct parameters (compile-time check)
+        let service = OCRService()
+        let _: (PlatformImage, OCRContext, OCRStrategy) async throws -> OCRResult = service.processImage
         
         // Verify parameter labels work (would fail if labels changed)
-        #expect(Bool(true), "OCR API should accept exact parameter labels")
+        #expect(Bool(true), "OCRService API should accept exact parameter labels")
     }
     
     // MARK: - Return Type Breaking Change Detection

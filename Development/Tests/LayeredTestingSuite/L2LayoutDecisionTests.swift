@@ -247,7 +247,7 @@ class L2LayoutDecisionTests: BaseTestClass {
     
     @Test func testDetermineOptimalPhotoLayout_L2_VehiclePhoto() {
         // Given
-        let purpose = PhotoPurpose.vehiclePhoto
+        let purpose = PhotoPurpose.general
         let context = samplePhotoContext
         
         // When
@@ -265,7 +265,7 @@ class L2LayoutDecisionTests: BaseTestClass {
     
     @Test func testDetermineOptimalPhotoLayout_L2_ReceiptPhoto() {
         // Given
-        let purpose = PhotoPurpose.fuelReceipt
+        let purpose = PhotoPurpose.document
         let context = samplePhotoContext
         
         // When
@@ -283,7 +283,7 @@ class L2LayoutDecisionTests: BaseTestClass {
     
     @Test func testDetermineOptimalPhotoLayout_L2_OdometerPhoto() {
         // Given
-        let purpose = PhotoPurpose.odometer
+        let purpose = PhotoPurpose.document
         let context = samplePhotoContext
         
         // When
@@ -318,7 +318,7 @@ class L2LayoutDecisionTests: BaseTestClass {
     
     @Test func testDeterminePhotoCaptureStrategy_L2_CameraOnly() {
         // Given
-        let purpose = PhotoPurpose.vehiclePhoto
+        let purpose = PhotoPurpose.general
         let context = PhotoContext(
             screenSize: CGSize(width: 375, height: 667),
             availableSpace: CGSize(width: 375, height: 600),

@@ -56,12 +56,16 @@ public enum PlatformPhotoComponentsLayer4 {
     /// Note: Requires @MainActor because PhotoDisplayView is a View
     @ViewBuilder
     @MainActor
-    public static func platformPhotoDisplay_L4(image: PlatformImage?, style: PhotoDisplayStyle) -> some View {
+    public static func platformPhotoDisplay_L4(
+        image: PlatformImage?,
+        style: PhotoDisplayStyle,
+        onCaptureRequested: (() -> Void)? = nil
+    ) -> some View {
         Group {
             if let image = image {
-                PhotoDisplayView(image: image, style: style)
+                PhotoDisplayView(image: image, style: style, onCaptureRequested: onCaptureRequested)
             } else {
-                PlaceholderPhotoView(style: style)
+                PlaceholderPhotoView(style: style, onCaptureRequested: onCaptureRequested)
             }
         }
         .automaticCompliance(named: "platformPhotoDisplay_L4")
@@ -77,6 +81,24 @@ public enum PlatformPhotoComponentsLayer4 {
     public static func platformCameraPreview_L4(session: AVCaptureSession, videoGravity: AVLayerVideoGravity = .resizeAspectFill) -> some View {
         PlatformCameraPreviewView(session: session, videoGravity: videoGravity)
             .automaticCompliance(named: "platformCameraPreview_L4")
+    }
+    
+    // MARK: - Tabbed Photo Source Components
+    
+    /// Creates a tabbed interface for switching between camera and photo library
+    /// Provides a tab bar at the top to switch between camera and library options
+    /// Note: Requires @MainActor because it creates Views
+    @ViewBuilder
+    @MainActor
+    public static func platformPhotoSourceTabbed_L4(
+        onImageCaptured: @escaping (PlatformImage) -> Void,
+        onImageSelected: @escaping (PlatformImage) -> Void
+    ) -> some View {
+        PhotoSourceTabbedView(
+            onImageCaptured: onImageCaptured,
+            onImageSelected: onImageSelected
+        )
+        .automaticCompliance(named: "platformPhotoSourceTabbed_L4")
     }
 }
 
@@ -436,14 +458,38 @@ private class CameraPreviewNSViewWrapper: NSView {
 struct PhotoDisplayView: View {
     let image: PlatformImage
     let style: PhotoDisplayStyle
-    
+    let onCaptureRequested: (() -> Void)?
     
     var body: some View {
-        Image(platformImage: image)
-            .resizable()
-            .aspectRatio(contentMode: aspectRatioForStyle(style))
-            .clipShape(clipShapeForStyle(style))
-            .automaticCompliance(named: "PhotoDisplayView")
+        VStack(spacing: 0) {
+            // Toggle button at the top if callback is provided
+            if let onCaptureRequested = onCaptureRequested {
+                HStack {
+                    Spacer()
+                    Button(action: onCaptureRequested) {
+                        HStack {
+                            Image(systemName: "camera.fill")
+                            let i18n = InternationalizationService()
+                            Text(i18n.localizedString(for: "SixLayerFramework.photo.captureNew"))
+                        }
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 8)
+                        .background(Color.accentColor)
+                        .foregroundColor(.white)
+                        .cornerRadius(8)
+                    }
+                    .padding(.trailing, 8)
+                    .padding(.top, 8)
+                }
+            }
+            
+            // Image display
+            Image(platformImage: image)
+                .resizable()
+                .aspectRatio(contentMode: aspectRatioForStyle(style))
+                .clipShape(clipShapeForStyle(style))
+        }
+        .automaticCompliance(named: "PhotoDisplayView")
     }
     
     private func aspectRatioForStyle(_ style: PhotoDisplayStyle) -> ContentMode {
@@ -467,20 +513,44 @@ struct PhotoDisplayView: View {
 
 struct PlaceholderPhotoView: View {
     let style: PhotoDisplayStyle
-    
+    let onCaptureRequested: (() -> Void)?
     
     var body: some View {
-        VStack {
-            Image(systemName: "photo")
-                .font(.largeTitle)
-                .foregroundColor(.secondary)
-            let i18n = InternationalizationService()
-            Text(i18n.localizedString(for: "SixLayerFramework.image.noImage"))
-                .foregroundColor(.secondary)
+        VStack(spacing: 0) {
+            // Toggle button at the top if callback is provided
+            if let onCaptureRequested = onCaptureRequested {
+                HStack {
+                    Spacer()
+                    Button(action: onCaptureRequested) {
+                        HStack {
+                            Image(systemName: "camera.fill")
+                            let i18n = InternationalizationService()
+                            Text(i18n.localizedString(for: "SixLayerFramework.photo.captureNew"))
+                        }
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 8)
+                        .background(Color.accentColor)
+                        .foregroundColor(.white)
+                        .cornerRadius(8)
+                    }
+                    .padding(.trailing, 8)
+                    .padding(.top, 8)
+                }
+            }
+            
+            // Placeholder content
+            VStack {
+                Image(systemName: "photo")
+                    .font(.largeTitle)
+                    .foregroundColor(.secondary)
+                let i18n = InternationalizationService()
+                Text(i18n.localizedString(for: "SixLayerFramework.image.noImage"))
+                    .foregroundColor(.secondary)
+            }
+            .frame(width: sizeForStyle(style).width, height: sizeForStyle(style).height)
+            .background(Color.gray.opacity(0.1))
+            .clipShape(clipShapeForStyle(style))
         }
-        .frame(width: sizeForStyle(style).width, height: sizeForStyle(style).height)
-        .background(Color.gray.opacity(0.1))
-        .clipShape(clipShapeForStyle(style))
         .automaticCompliance(named: "PlaceholderPhotoView")
     }
     
@@ -502,6 +572,67 @@ struct PlaceholderPhotoView: View {
         case .aspectFit, .aspectFill, .fullSize, .thumbnail:
             return AnyShape(Rectangle())
         }
+    }
+}
+
+// MARK: - Tabbed Photo Source View
+
+/// Tabbed interface for switching between camera and photo library
+struct PhotoSourceTabbedView: View {
+    @State private var selectedSource: PhotoSourceTab = .camera
+    let onImageCaptured: (PlatformImage) -> Void
+    let onImageSelected: (PlatformImage) -> Void
+    
+    enum PhotoSourceTab: String, CaseIterable {
+        case camera = "camera"
+        case library = "library"
+    }
+    
+    var body: some View {
+        VStack(spacing: 0) {
+            // Tab bar at the top
+            HStack(spacing: 0) {
+                ForEach(PhotoSourceTab.allCases, id: \.self) { tab in
+                    Button(action: {
+                        selectedSource = tab
+                    }) {
+                        VStack(spacing: 4) {
+                            Image(systemName: tab == .camera ? "camera.fill" : "photo.on.rectangle")
+                                .font(.title3)
+                            let i18n = InternationalizationService()
+                            Text(tab == .camera ? 
+                                 i18n.localizedString(for: "SixLayerFramework.photo.camera") :
+                                 i18n.localizedString(for: "SixLayerFramework.photo.library"))
+                                .font(.caption)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 12)
+                        .background(selectedSource == tab ? Color.accentColor.opacity(0.2) : Color.clear)
+                        .foregroundColor(selectedSource == tab ? .accentColor : .primary)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .background(Color.systemBackground)
+            .overlay(
+                Rectangle()
+                    .frame(height: 1)
+                    .foregroundColor(Color.separator),
+                alignment: .bottom
+            )
+            
+            // Content area - show selected source
+            Group {
+                switch selectedSource {
+                case .camera:
+                    PlatformPhotoComponentsLayer4.platformCameraInterface_L4(onImageCaptured: onImageCaptured)
+                case .library:
+                    PlatformPhotoComponentsLayer4.platformPhotoPicker_L4(onImageSelected: onImageSelected)
+                }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+        .automaticCompliance(named: "PhotoSourceTabbedView")
     }
 }
 

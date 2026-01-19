@@ -11,7 +11,7 @@ open class PhotoSemanticLayerTests: BaseTestClass {
     
     @Test @MainActor func testPlatformPhotoCapture_L1() {
         // Given: Photo purpose and context
-        let purpose = PhotoPurpose.vehiclePhoto
+        let purpose = PhotoPurpose.general
         let context = PhotoContext(
             screenSize: CGSize(width: 1024, height: 768),
             availableSpace: CGSize(width: 800, height: 600),
@@ -28,7 +28,7 @@ open class PhotoSemanticLayerTests: BaseTestClass {
     
     @Test @MainActor func testPlatformPhotoSelection_L1() {
         // Given: Photo purpose and context
-        let purpose = PhotoPurpose.fuelReceipt
+        let purpose = PhotoPurpose.document
         let context = PhotoContext(
             screenSize: CGSize(width: 1024, height: 768),
             availableSpace: CGSize(width: 800, height: 600),
@@ -45,7 +45,7 @@ open class PhotoSemanticLayerTests: BaseTestClass {
     
     @Test @MainActor func testPlatformPhotoDisplay_L1() {
         // Given: Photo purpose, context, and image
-        let purpose = PhotoPurpose.odometer
+        let purpose = PhotoPurpose.document
         let context = PhotoContext(
             screenSize: CGSize(width: 1024, height: 768),
             availableSpace: CGSize(width: 400, height: 300),
@@ -71,7 +71,7 @@ open class PhotoSemanticLayerTests: BaseTestClass {
             userPreferences: PhotoPreferences(),
             deviceCapabilities: PhotoDeviceCapabilities()
         )
-        let purpose = PhotoPurpose.vehiclePhoto
+        let purpose = PhotoPurpose.general
         
         // When: Determining optimal layout
         let layout = determineOptimalPhotoLayout_L2(purpose: purpose, context: context)
@@ -90,7 +90,7 @@ open class PhotoSemanticLayerTests: BaseTestClass {
             userPreferences: PhotoPreferences(),
             deviceCapabilities: PhotoDeviceCapabilities(hasCamera: true, hasPhotoLibrary: true)
         )
-        let purpose = PhotoPurpose.maintenance
+        let purpose = PhotoPurpose.reference
         
         // When: Determining capture strategy
         _ = determinePhotoCaptureStrategy_L2(purpose: purpose, context: context)
@@ -109,7 +109,7 @@ open class PhotoSemanticLayerTests: BaseTestClass {
             userPreferences: PhotoPreferences(preferredSource: .camera),
             deviceCapabilities: PhotoDeviceCapabilities(hasCamera: true, hasPhotoLibrary: true)
         )
-        let purpose = PhotoPurpose.expense
+        let purpose = PhotoPurpose.reference
         
         // When: Selecting capture strategy
         _ = selectPhotoCaptureStrategy_L3(purpose: purpose, context: context)
@@ -139,7 +139,7 @@ open class PhotoSemanticLayerTests: BaseTestClass {
     
     @Test @MainActor func testSemanticPhotoWorkflow() {
         // Given: Complete photo workflow context
-        let purpose = PhotoPurpose.vehiclePhoto
+        let purpose = PhotoPurpose.general
         let context = PhotoContext(
             screenSize: CGSize(width: 1024, height: 768),
             availableSpace: CGSize(width: 800, height: 600),

@@ -30,14 +30,11 @@ public func platformPhotoCapture_L1(
         PlatformPhotoComponentsLayer4.platformPhotoPicker_L4(onImageSelected: onImageCaptured)
             .automaticCompliance()
     case .both:
-        // Provide both options
-        VStack {
-            PlatformPhotoComponentsLayer4.platformCameraInterface_L4(onImageCaptured: onImageCaptured)
-                .automaticCompliance()
-            PlatformPhotoComponentsLayer4.platformPhotoPicker_L4(onImageSelected: onImageCaptured)
-                .automaticCompliance()
-        }
-        .automaticCompliance()
+        // Provide tabbed interface to switch between camera and library
+        PlatformPhotoComponentsLayer4.platformPhotoSourceTabbed_L4(
+            onImageCaptured: onImageCaptured,
+            onImageSelected: onImageCaptured
+        )
     }
 }
 
@@ -118,14 +115,11 @@ public func platformPhotoCapture_L1<CameraContent: View>(
         baseView = AnyView(PlatformPhotoComponentsLayer4.platformPhotoPicker_L4(onImageSelected: onImageCaptured)
             .automaticCompliance())
     case .both:
-        // Provide both options
-        baseView = AnyView(VStack {
-            PlatformPhotoComponentsLayer4.platformCameraInterface_L4(onImageCaptured: onImageCaptured)
-                .automaticCompliance()
-            PlatformPhotoComponentsLayer4.platformPhotoPicker_L4(onImageSelected: onImageCaptured)
-                .automaticCompliance()
-        }
-        .automaticCompliance())
+        // Provide tabbed interface to switch between camera and library
+        baseView = AnyView(PlatformPhotoComponentsLayer4.platformPhotoSourceTabbed_L4(
+            onImageCaptured: onImageCaptured,
+            onImageSelected: onImageCaptured
+        ))
     }
     
     // Apply custom wrapper if provided, otherwise return default
@@ -211,16 +205,20 @@ public func platformPhotoDisplay_L1<DisplayContent: View>(
 // MARK: - Helper Functions
 
 /// Determine display style based on photo purpose
+/// Custom purposes default to .general behavior
 private func displayStyleForPurpose(_ purpose: PhotoPurpose) -> PhotoDisplayStyle {
     switch purpose {
-    case .vehiclePhoto:
+    case .general, .preview:
         return .aspectFit
-    case .fuelReceipt, .pumpDisplay, .odometer:
+    case .document:
         return .fullSize
-    case .maintenance, .expense, .document:
+    case .reference, .thumbnail:
         return .thumbnail
     case .profile:
         return .rounded
+    default:
+        // Custom purposes default to general behavior
+        return .aspectFit
     }
 }
 

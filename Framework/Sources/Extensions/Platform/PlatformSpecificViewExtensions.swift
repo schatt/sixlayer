@@ -102,48 +102,44 @@ public extension View {
     ///
     /// - Parameters:
     ///   - minWidth: Minimum width constraint (clamped to screen size on macOS)
-    ///   - minHeight: Minimum height constraint (clamped to screen size on macOS)
+    ///   - idealWidth: Ideal width constraint (clamped to screen/window size on all platforms)
     ///   - maxWidth: Maximum width constraint (clamped to screen/window size on both platforms)
+    ///   - minHeight: Minimum height constraint (clamped to screen size on macOS)
+    ///   - idealHeight: Ideal height constraint (clamped to screen/window size on all platforms)
     ///   - maxHeight: Maximum height constraint (clamped to screen/window size on both platforms)
     /// - Returns: A view with platform-specific frame constraints
-    func platformFrame(minWidth: CGFloat? = nil, minHeight: CGFloat? = nil, maxWidth: CGFloat? = nil, maxHeight: CGFloat? = nil) -> some View {
+    func platformFrame(
+        minWidth: CGFloat? = nil,
+        idealWidth: CGFloat? = nil,
+        maxWidth: CGFloat? = nil,
+        minHeight: CGFloat? = nil,
+        idealHeight: CGFloat? = nil,
+        maxHeight: CGFloat? = nil
+    ) -> some View {
         // Use shared helper for DRY implementation
         let clamped = PlatformFrameHelpers.clampFrameConstraints(
             minWidth: minWidth,
-            minHeight: minHeight,
+            idealWidth: idealWidth,
             maxWidth: maxWidth,
+            minHeight: minHeight,
+            idealHeight: idealHeight,
             maxHeight: maxHeight
         )
         
-        // Apply constraints if provided
-        if let minWidth = clamped.minWidth, let minHeight = clamped.minHeight {
-            if let maxWidth = clamped.maxWidth, let maxHeight = clamped.maxHeight {
-                return AnyView(self.frame(minWidth: minWidth, maxWidth: maxWidth, minHeight: minHeight, maxHeight: maxHeight))
-            } else if let maxWidth = clamped.maxWidth {
-                return AnyView(self.frame(minWidth: minWidth, maxWidth: maxWidth, minHeight: minHeight))
-            } else if let maxHeight = clamped.maxHeight {
-                return AnyView(self.frame(minWidth: minWidth, minHeight: minHeight, maxHeight: maxHeight))
-            } else {
-                return AnyView(self.frame(minWidth: minWidth, minHeight: minHeight))
-            }
-        } else if let minWidth = clamped.minWidth {
-            if let maxWidth = clamped.maxWidth {
-                return AnyView(self.frame(minWidth: minWidth, maxWidth: maxWidth))
-            } else {
-                return AnyView(self.frame(minWidth: minWidth))
-            }
-        } else if let minHeight = clamped.minHeight {
-            if let maxHeight = clamped.maxHeight {
-                return AnyView(self.frame(minHeight: minHeight, maxHeight: maxHeight))
-            } else {
-                return AnyView(self.frame(minHeight: minHeight))
-            }
-        } else if let maxWidth = clamped.maxWidth, let maxHeight = clamped.maxHeight {
-            return AnyView(self.frame(maxWidth: maxWidth, maxHeight: maxHeight))
-        } else if let maxWidth = clamped.maxWidth {
-            return AnyView(self.frame(maxWidth: maxWidth))
-        } else if let maxHeight = clamped.maxHeight {
-            return AnyView(self.frame(maxHeight: maxHeight))
+        // Check if any constraints are provided
+        let hasAnyConstraint = clamped.minWidth != nil || clamped.idealWidth != nil || clamped.maxWidth != nil ||
+                              clamped.minHeight != nil || clamped.idealHeight != nil || clamped.maxHeight != nil
+        
+        if hasAnyConstraint {
+            // Use SwiftUI's frame modifier which handles all combinations
+            return AnyView(self.frame(
+                minWidth: clamped.minWidth,
+                idealWidth: clamped.idealWidth,
+                maxWidth: clamped.maxWidth,
+                minHeight: clamped.minHeight,
+                idealHeight: clamped.idealHeight,
+                maxHeight: clamped.maxHeight
+            ))
         } else {
             // No constraints provided, apply default max constraints for safety on mobile platforms
             if let defaultMax = PlatformFrameHelpers.getDefaultMaxFrameSize() {
@@ -960,7 +956,7 @@ public extension View {
     ///
     /// ## Usage Example
     /// ```swift
-    /// .platformNavigationBarTitleDisplayMode(.large)
+    /// .platformNavigationBarTitleDisplayMode_L4(.large)
     /// ```
     // Navigation bar title display mode moved to PlatformNavigationLayer4.swift
 

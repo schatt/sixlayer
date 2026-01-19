@@ -1,6 +1,6 @@
 # SixLayer Framework Examples
 
-**Version**: v7.3.0
+**Version**: v7.4.1
 
 ## Overview
 
@@ -11,6 +11,7 @@ This folder contains example types and implementations that demonstrate how to u
 ### **GenericTypes.swift**
 Example types showing how to create custom data structures that work with the framework:
 
+- **PhotoPurposeExtensionExample**: Example showing how to extend PhotoPurpose with custom purposes and aliases
 - **GenericVehicle**: Example vehicle type with CardDisplayable conformance
 - **GenericDataItem**: Generic container for any identifiable data
 - **VehicleType**: Enumeration for vehicle categorization

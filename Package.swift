@@ -1,5 +1,5 @@
 // swift-tools-version: 6.0
-// SixLayerFramework v7.3.0 - Convenience Aliases and Code Quality Improvements
+// SixLayerFramework v7.4.1 - idealWidth and idealHeight Support for platformFrame
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
@@ -27,21 +27,16 @@ let package = Package(
         .target(
             name: "SixLayerFramework",
             dependencies: [],
-            path: "Framework/Sources",
+            path: "Framework",
             exclude: [
-                "Core/ExampleHelpers.swift",
-                "Core/ExtensibleHintsExample.swift"
+                "Sources/Core/ExampleHelpers.swift",
+                "Sources/Core/ExtensibleHintsExample.swift"
             ],
             sources: [
-                "Core",
-                "Layers",
-                "Components",
-                "Platform",
-                "Extensions",
-                "Services"
+                "Sources"
             ],
             resources: [
-                .process("../Resources")
+                .copy("Resources/Localizable.xcstrings")
             ],
             swiftSettings: [
                 // Enable previews only when building in Xcode (where PreviewsMacros plugin is available)

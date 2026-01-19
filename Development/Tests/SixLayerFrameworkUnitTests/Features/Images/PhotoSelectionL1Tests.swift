@@ -32,7 +32,7 @@ open class PhotoSelectionL1Tests: BaseTestClass {
     @Test @MainActor
     func testPlatformPhotoSelection_L1() {
         // Given
-        let purpose = PhotoPurpose.vehiclePhoto
+        let purpose = PhotoPurpose.general
         let context = samplePhotoContext
         
         // When
@@ -53,7 +53,7 @@ open class PhotoSelectionL1Tests: BaseTestClass {
     @Test @MainActor
     func testPlatformPhotoSelection_L1_WithDifferentPurpose() {
         // Given
-        let purpose = PhotoPurpose.fuelReceipt
+        let purpose = PhotoPurpose.document
         let context = samplePhotoContext
         
         // When
@@ -76,7 +76,7 @@ open class PhotoSelectionL1Tests: BaseTestClass {
     @Test @MainActor
     func testPlatformPhotoSelection_L1_FuelReceipt() {
         // Given
-        let purpose = PhotoPurpose.fuelReceipt
+        let purpose = PhotoPurpose.document
         let context = samplePhotoContext
         
         // When
@@ -97,7 +97,7 @@ open class PhotoSelectionL1Tests: BaseTestClass {
     @Test @MainActor
     func testPlatformPhotoSelection_L1_PumpDisplay() {
         // Given
-        let purpose = PhotoPurpose.pumpDisplay
+        let purpose = PhotoPurpose.document
         let context = samplePhotoContext
         
         // When
@@ -118,7 +118,7 @@ open class PhotoSelectionL1Tests: BaseTestClass {
     @Test @MainActor
     func testPlatformPhotoSelection_L1_Odometer() {
         // Given
-        let purpose = PhotoPurpose.odometer
+        let purpose = PhotoPurpose.document
         let context = samplePhotoContext
         
         // When
@@ -139,7 +139,7 @@ open class PhotoSelectionL1Tests: BaseTestClass {
     @Test @MainActor
     func testPlatformPhotoSelection_L1_Maintenance() {
         // Given
-        let purpose = PhotoPurpose.maintenance
+        let purpose = PhotoPurpose.reference
         let context = samplePhotoContext
         
         // When
@@ -160,7 +160,7 @@ open class PhotoSelectionL1Tests: BaseTestClass {
     @Test @MainActor
     func testPlatformPhotoSelection_L1_Expense() {
         // Given
-        let purpose = PhotoPurpose.expense
+        let purpose = PhotoPurpose.reference
         let context = samplePhotoContext
         
         // When
@@ -225,7 +225,7 @@ open class PhotoSelectionL1Tests: BaseTestClass {
     @Test @MainActor
     func testPlatformPhotoSelection_L1_WithEmptyContext() {
         // Given
-        let purpose = PhotoPurpose.vehiclePhoto
+        let purpose = PhotoPurpose.general
         let context = PhotoContext(
             screenSize: CGSize.zero,
             availableSpace: CGSize.zero,
@@ -254,7 +254,7 @@ open class PhotoSelectionL1Tests: BaseTestClass {
     func testPlatformPhotoSelection_L1_WithCustomPickerView() {
         initializeTestConfig()
         // Given
-        let purpose = PhotoPurpose.vehiclePhoto
+        let purpose = PhotoPurpose.general
         let context = samplePhotoContext
         
         // When: Using custom picker view wrapper
@@ -282,7 +282,7 @@ open class PhotoSelectionL1Tests: BaseTestClass {
     func testPlatformPhotoSelection_L1_WithCustomPickerView_Nil() {
         initializeTestConfig()
         // Given
-        let purpose = PhotoPurpose.vehiclePhoto
+        let purpose = PhotoPurpose.general
         let context = samplePhotoContext
         
         // When: Not providing custom picker view (should use default)

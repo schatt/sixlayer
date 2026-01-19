@@ -1032,36 +1032,12 @@ extension View {
         self.modifier(NamedAutomaticComplianceModifier(componentName: componentName))
     }
     
-    // MARK: - Backward Compatibility Aliases
-    
-    /// Apply automatic accessibility identifiers to a view
-    /// This is kept for backward compatibility - it now also applies HIG compliance
-    @available(*, deprecated, renamed: "automaticCompliance()", message: "Use automaticCompliance() which includes both accessibility identifiers and HIG compliance")
-    /// Note: Nonisolated since it just calls automaticCompliance() which is now nonisolated
-    nonisolated public func automaticAccessibilityIdentifiers() -> some View {
-        self.automaticCompliance()
-    }
-    
-    /// Apply automatic accessibility identifiers with a specific component name
-    /// This is kept for backward compatibility - it now also applies HIG compliance
-    @available(*, deprecated, renamed: "automaticCompliance(named:)", message: "Use automaticCompliance(named:) which includes both accessibility identifiers and HIG compliance")
-    public func automaticAccessibilityIdentifiers(named componentName: String) -> some View {
-        self.automaticCompliance(named: componentName)
-    }
-    
     /// Enable automatic compliance locally (for custom views when global is off)
     /// Sets the environment variable to true, then applies the modifier
     public func enableGlobalAutomaticCompliance() -> some View {
         self
             .environment(\.globalAutomaticAccessibilityIdentifiers, true)
             .automaticCompliance()
-    }
-    
-    /// Enable automatic accessibility identifiers locally (for custom views when global is off)
-    /// This is kept for backward compatibility
-    @available(*, deprecated, renamed: "enableGlobalAutomaticCompliance()", message: "Use enableGlobalAutomaticCompliance() which includes both accessibility identifiers and HIG compliance")
-    public func enableGlobalAutomaticAccessibilityIdentifiers() -> some View {
-        self.enableGlobalAutomaticCompliance()
     }
     
     /// Disable automatic accessibility identifiers

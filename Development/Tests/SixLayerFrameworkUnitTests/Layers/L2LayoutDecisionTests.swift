@@ -395,7 +395,7 @@ open class L2LayoutDecisionTests: BaseTestClass {
     
     @Test @MainActor func testDetermineOptimalPhotoLayout_L2_WithVehiclePhoto() {
         // Given
-        let purpose = PhotoPurpose.vehiclePhoto
+        let purpose = PhotoPurpose.general
         let context = createSamplePhotoContext()
         
         // When
@@ -408,7 +408,7 @@ open class L2LayoutDecisionTests: BaseTestClass {
     
     @Test @MainActor func testDetermineOptimalPhotoLayout_L2_WithFuelReceipt() {
         // Given
-        let purpose = PhotoPurpose.fuelReceipt
+        let purpose = PhotoPurpose.document
         let context = createSamplePhotoContext()
         
         // When
@@ -421,7 +421,7 @@ open class L2LayoutDecisionTests: BaseTestClass {
     
     @Test @MainActor func testDetermineOptimalPhotoLayout_L2_WithPumpDisplay() {
         // Given
-        let purpose = PhotoPurpose.pumpDisplay
+        let purpose = PhotoPurpose.document
         let context = createSamplePhotoContext()
         
         // When
@@ -434,7 +434,7 @@ open class L2LayoutDecisionTests: BaseTestClass {
     
     @Test @MainActor func testDetermineOptimalPhotoLayout_L2_WithOdometer() {
         // Given
-        let purpose = PhotoPurpose.odometer
+        let purpose = PhotoPurpose.document
         let context = createSamplePhotoContext()
         
         // When
@@ -447,7 +447,7 @@ open class L2LayoutDecisionTests: BaseTestClass {
     
     @Test @MainActor func testDetermineOptimalPhotoLayout_L2_WithMaintenance() {
         // Given
-        let purpose = PhotoPurpose.maintenance
+        let purpose = PhotoPurpose.reference
         let context = createSamplePhotoContext()
         
         // When
@@ -460,7 +460,7 @@ open class L2LayoutDecisionTests: BaseTestClass {
     
     @Test @MainActor func testDetermineOptimalPhotoLayout_L2_WithExpense() {
         // Given
-        let purpose = PhotoPurpose.expense
+        let purpose = PhotoPurpose.reference
         let context = createSamplePhotoContext()
         
         // When
@@ -499,7 +499,7 @@ open class L2LayoutDecisionTests: BaseTestClass {
     
     @Test @MainActor func testDeterminePhotoCaptureStrategy_L2_WithVehiclePhoto() {
         // Given
-        let purpose = PhotoPurpose.vehiclePhoto
+        let purpose = PhotoPurpose.general
         let context = createSamplePhotoContext()
         
         // When
@@ -511,7 +511,7 @@ open class L2LayoutDecisionTests: BaseTestClass {
     
     @Test @MainActor func testDeterminePhotoCaptureStrategy_L2_WithFuelReceipt() {
         // Given
-        let purpose = PhotoPurpose.fuelReceipt
+        let purpose = PhotoPurpose.document
         let context = createSamplePhotoContext()
         
         // When

@@ -139,7 +139,7 @@ struct CardBadgeContentTests {
         )
         
         // When: Creating card without badge content (nil)
-        let card = SimpleCardComponent(
+        _ = SimpleCardComponent(
             item: item,
             layoutDecision: layoutDecision,
             hints: hints,

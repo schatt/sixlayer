@@ -17,27 +17,22 @@ public func determineOptimalPhotoLayout_L2(
     
     // Adjust based on photo purpose
     switch purpose {
-    case .vehiclePhoto:
-        // Vehicle photos benefit from wider aspect ratio
+    case .general, .preview:
+        // General photos benefit from wider aspect ratio
         return PlatformSize(
             width: baseWidth,
             height: baseWidth * 0.6 // 5:3 aspect ratio
         )
         
-    case .fuelReceipt, .pumpDisplay:
-        // Receipts and displays are typically portrait
+    case .document:
+        // Documents are typically portrait
         return PlatformSize(
             width: baseWidth * 0.7,
             height: baseHeight
         )
         
-    case .odometer:
-        // Odometer photos are typically square or slightly rectangular
-        let size = min(baseWidth, baseHeight) * 0.8
-        return PlatformSize(width: size, height: size)
-        
-    case .maintenance, .expense:
-        // Maintenance and expense photos are typically square thumbnails
+    case .reference:
+        // Reference photos are typically square thumbnails
         let size = min(baseWidth, baseHeight) * 0.6
         return PlatformSize(width: size, height: size)
         
@@ -46,11 +41,16 @@ public func determineOptimalPhotoLayout_L2(
         let size = min(baseWidth, baseHeight) * 0.5
         return PlatformSize(width: size, height: size)
         
-    case .document:
-        // Documents can vary, but typically portrait
+    case .thumbnail:
+        // Thumbnails are small square images
+        let size = min(baseWidth, baseHeight) * 0.3
+        return PlatformSize(width: size, height: size)
+        
+    default:
+        // Custom purposes default to general behavior
         return PlatformSize(
-            width: baseWidth * 0.6,
-            height: baseHeight * 0.8
+            width: baseWidth,
+            height: baseWidth * 0.6
         )
     }
 }
@@ -84,17 +84,12 @@ public func determinePhotoCaptureStrategy_L2(
     case .photoLibrary:
         return .photoLibrary
     case .both:
-        // Determine based on purpose
-        switch purpose {
-        case .vehiclePhoto, .odometer, .maintenance:
-            // These benefit from direct camera capture
+        // Prioritize camera when both options are available
+        if hasCamera {
             return .camera
-        case .fuelReceipt, .pumpDisplay, .expense, .document:
-            // These might be better from existing photos
+        } else {
+            // Fallback to photo library if camera not available
             return .photoLibrary
-        case .profile:
-            // Profile photos can go either way
-            return .both
         }
     }
 }
@@ -137,11 +132,14 @@ public func shouldCropImage(
     let tolerance: CGFloat = 0.1
     
     switch purpose {
-    case .vehiclePhoto, .fuelReceipt, .pumpDisplay, .document:
+    case .general, .document, .preview:
         // These purposes benefit from specific aspect ratios
         return abs(aspectRatio - targetAspectRatio) > tolerance
-    case .odometer, .maintenance, .expense, .profile:
+    case .reference, .profile, .thumbnail:
         // These are typically square or flexible
+        return false
+    default:
+        // Custom purposes default to general behavior (flexible)
         return false
     }
 }
