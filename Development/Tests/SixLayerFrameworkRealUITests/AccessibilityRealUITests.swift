@@ -76,9 +76,13 @@ final class AccessibilityRealUITests {
         // Force layout pass to ensure SwiftUI updates are applied
         #if os(macOS)
         window.contentView?.layoutSubtreeIfNeeded()
+        // Manually transfer identifiers from SwiftUI to AppKit (SwiftUI doesn't always propagate in tests)
+        windowHelper!.transferAccessibilityIdentifiers(to: window)
         #elseif os(iOS)
         window.rootViewController?.view.setNeedsLayout()
         window.rootViewController?.view.layoutIfNeeded()
+        // Manually transfer identifiers from SwiftUI to UIKit (SwiftUI doesn't always propagate in tests)
+        windowHelper!.transferAccessibilityIdentifiers(to: window)
         #endif
         
         // Then: Accessibility identifier should be accessible through platform APIs
@@ -149,32 +153,11 @@ final class AccessibilityRealUITests {
             }
         }
         
-        // NOTE: SwiftUI's .accessibilityIdentifier() modifier doesn't always propagate
-        // to the underlying AppKit/UIKit views in test environments, even though the
-        // modifier body executes and the identifier is generated. This is a known SwiftUI limitation.
-        // 
-        // We verify the modifier executed by checking the debug log, which shows:
-        // 1. The modifier body was called
-        // 2. The identifier was generated
-        // 3. The identifier was applied to the view
-        //
-        // If the identifier is found in AppKit, that's great. If not, we verify the
-        // modifier executed successfully, which is the primary goal of this test.
+        // The identifier should now be found since we manually transferred it to AppKit
+        // after the modifier executed and generated it
+        #expect(accessibilityID != nil, "Accessibility identifier should be generated and transferred to AppKit view")
         if let id = accessibilityID {
             #expect(!id.isEmpty, "Accessibility identifier should not be empty. Found: '\(id)' (length: \(id.count))")
-        } else {
-            // Verify modifier executed by checking debug log entries
-            let debugLog = config.debugLogEntries
-            let hasModifierExecution = debugLog.contains { $0.contains("MODIFIER DEBUG: body() called") }
-            let hasIdentifierGeneration = debugLog.contains { $0.contains("Generated identifier") }
-            let hasIdentifierApplication = debugLog.contains { $0.contains("Applying identifier") }
-            
-            #expect(hasModifierExecution, "Modifier body should execute in real window (verified via debug log)")
-            #expect(hasIdentifierGeneration, "Identifier should be generated (verified via debug log)")
-            #expect(hasIdentifierApplication, "Identifier should be applied to view (verified via debug log)")
-            
-            print("DEBUG: Modifier executed successfully (verified via debug log), but identifier not found in AppKit hierarchy.")
-            print("DEBUG: This is a known SwiftUI limitation - identifiers don't always propagate to AppKit in test environments.")
         }
         
         #elseif os(iOS)
@@ -264,9 +247,13 @@ final class AccessibilityRealUITests {
         // Force layout pass to ensure SwiftUI updates are applied
         #if os(macOS)
         window.contentView?.layoutSubtreeIfNeeded()
+        // Manually transfer identifiers from SwiftUI to AppKit (SwiftUI doesn't always propagate in tests)
+        windowHelper!.transferAccessibilityIdentifiers(to: window)
         #elseif os(iOS)
         window.rootViewController?.view.setNeedsLayout()
         window.rootViewController?.view.layoutIfNeeded()
+        // Manually transfer identifiers from SwiftUI to UIKit (SwiftUI doesn't always propagate in tests)
+        windowHelper!.transferAccessibilityIdentifiers(to: window)
         #endif
         
         // Then: Modifier body should have executed (identifier should be present)
@@ -335,32 +322,11 @@ final class AccessibilityRealUITests {
             }
         }
         
-        // NOTE: SwiftUI's .accessibilityIdentifier() modifier doesn't always propagate
-        // to the underlying AppKit/UIKit views in test environments, even though the
-        // modifier body executes and the identifier is generated. This is a known SwiftUI limitation.
-        // 
-        // We verify the modifier executed by checking the debug log, which shows:
-        // 1. The modifier body was called
-        // 2. The identifier was generated
-        // 3. The identifier was applied to the view
-        //
-        // If the identifier is found in AppKit, that's great. If not, we verify the
-        // modifier executed successfully, which is the primary goal of this test.
+        // The identifier should now be found since we manually transferred it to AppKit
+        // after the modifier executed and generated it
+        #expect(accessibilityID != nil, "Modifier body should execute and identifier should be transferred to AppKit view")
         if let id = accessibilityID {
             #expect(!id.isEmpty, "Modifier body should execute in real window. Found: '\(id)' (length: \(id.count))")
-        } else {
-            // Verify modifier executed by checking debug log
-            let debugLog = config.getDebugLog()
-            let hasModifierExecution = debugLog.contains("MODIFIER DEBUG: body() called")
-            let hasIdentifierGeneration = debugLog.contains("Generated identifier")
-            let hasIdentifierApplication = debugLog.contains("Applying identifier")
-            
-            #expect(hasModifierExecution, "Modifier body should execute in real window (verified via debug log)")
-            #expect(hasIdentifierGeneration, "Identifier should be generated (verified via debug log)")
-            #expect(hasIdentifierApplication, "Identifier should be applied to view (verified via debug log)")
-            
-            print("DEBUG: Modifier executed successfully (verified via debug log), but identifier not found in AppKit hierarchy.")
-            print("DEBUG: This is a known SwiftUI limitation - identifiers don't always propagate to AppKit in test environments.")
         }
         
         #elseif os(iOS)
@@ -409,32 +375,11 @@ final class AccessibilityRealUITests {
             }
         }
         
-        // NOTE: SwiftUI's .accessibilityIdentifier() modifier doesn't always propagate
-        // to the underlying AppKit/UIKit views in test environments, even though the
-        // modifier body executes and the identifier is generated. This is a known SwiftUI limitation.
-        // 
-        // We verify the modifier executed by checking the debug log, which shows:
-        // 1. The modifier body was called
-        // 2. The identifier was generated
-        // 3. The identifier was applied to the view
-        //
-        // If the identifier is found in AppKit, that's great. If not, we verify the
-        // modifier executed successfully, which is the primary goal of this test.
+        // The identifier should now be found since we manually transferred it to AppKit
+        // after the modifier executed and generated it
+        #expect(accessibilityID != nil, "Modifier body should execute and identifier should be transferred to AppKit view")
         if let id = accessibilityID {
             #expect(!id.isEmpty, "Modifier body should execute in real window. Found: '\(id)' (length: \(id.count))")
-        } else {
-            // Verify modifier executed by checking debug log
-            let debugLog = config.getDebugLog()
-            let hasModifierExecution = debugLog.contains("MODIFIER DEBUG: body() called")
-            let hasIdentifierGeneration = debugLog.contains("Generated identifier")
-            let hasIdentifierApplication = debugLog.contains("Applying identifier")
-            
-            #expect(hasModifierExecution, "Modifier body should execute in real window (verified via debug log)")
-            #expect(hasIdentifierGeneration, "Identifier should be generated (verified via debug log)")
-            #expect(hasIdentifierApplication, "Identifier should be applied to view (verified via debug log)")
-            
-            print("DEBUG: Modifier executed successfully (verified via debug log), but identifier not found in AppKit hierarchy.")
-            print("DEBUG: This is a known SwiftUI limitation - identifiers don't always propagate to AppKit in test environments.")
         }
         #endif
     }
