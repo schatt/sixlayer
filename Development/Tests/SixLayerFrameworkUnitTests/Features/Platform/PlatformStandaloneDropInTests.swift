@@ -272,4 +272,103 @@ struct PlatformStandaloneDropInTests {
         _ = editor
         #expect(true)
     }
+    
+    // MARK: - Label Parameter Tests (Issue #155)
+    
+    @Test @MainActor func testPlatformTextField_WithLabelParameter() {
+        // Given: Text binding, placeholder, and explicit label
+        @State var text = ""
+        let placeholder = "Enter name"
+        let label = "Full name"
+        
+        // When: Creating text field with label parameter
+        let view = platformTextField(label: label, prompt: placeholder, text: $text)
+        
+        // Then: View should be created successfully
+        _ = view
+        #expect(true)
+    }
+    
+    @Test @MainActor func testPlatformTextField_WithLabelParameter_BackwardCompatible() {
+        // Given: Text binding and placeholder (old API)
+        @State var text = ""
+        let placeholder = "Enter name"
+        
+        // When: Creating text field without label (backward compatible)
+        let view = platformTextField(placeholder, text: $text)
+        
+        // Then: View should still work
+        _ = view
+        #expect(true)
+    }
+    
+    @Test @MainActor func testPlatformTextField_WithAxisAndLabel() {
+        // Given: Text binding, placeholder, axis, and label
+        @State var text = ""
+        let placeholder = "Enter description"
+        let label = "Description field"
+        
+        // When: Creating text field with axis and label
+        let view = platformTextField(label: label, prompt: placeholder, text: $text, axis: .vertical)
+        
+        // Then: View should be created successfully
+        _ = view
+        #expect(true)
+    }
+    
+    @Test @MainActor func testPlatformSecureField_WithLabelParameter() {
+        // Given: Text binding, placeholder, and explicit label
+        @State var password = ""
+        let placeholder = "Enter password"
+        let label = "Password field"
+        
+        // When: Creating secure field with label parameter
+        let view = platformSecureField(label: label, prompt: placeholder, text: $password)
+        
+        // Then: View should be created successfully
+        _ = view
+        #expect(true)
+    }
+    
+    @Test @MainActor func testPlatformToggle_WithLabelParameter() {
+        // Given: Boolean binding and explicit label
+        @State var isEnabled = false
+        let label = "Enable notifications"
+        
+        // When: Creating toggle with label parameter
+        let view = platformToggle(label: label, isOn: $isEnabled)
+        
+        // Then: View should be created successfully
+        _ = view
+        #expect(true)
+    }
+    
+    @Test @MainActor func testPlatformTextEditor_WithLabelParameter() {
+        // Given: Text binding, prompt, and explicit label
+        @State var text = ""
+        let prompt = "Enter description"
+        let label = "Description editor"
+        
+        // When: Creating text editor with label parameter
+        let view = platformTextEditor(label: label, prompt: prompt, text: $text)
+        
+        // Then: View should be created successfully
+        _ = view
+        #expect(true)
+    }
+    
+    @Test @MainActor func testPlatformButton_WithLabelParameter() {
+        // Given: Action and explicit label
+        var actionCalled = false
+        let label = "Save document"
+        
+        // When: Creating button with label parameter
+        let view = platformButton(label: label) {
+            actionCalled = true
+        }
+        
+        // Then: View should be created successfully
+        _ = view
+        #expect(true)
+    }
 }

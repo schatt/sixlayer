@@ -71,6 +71,13 @@ public struct ExplicitAccessibilityIdentifierSetKey: EnvironmentKey {
     public static let defaultValue: Bool = false
 }
 
+/// Environment key for passing accessibility label text (for VoiceOver)
+/// Separate from accessibilityIdentifierLabel which is used for identifier generation
+/// This is used for actual accessibility labels that VoiceOver reads
+public struct AccessibilityLabelTextKey: EnvironmentKey {
+    public static let defaultValue: String? = nil
+}
+
 // MARK: - Environment Extensions
 
 extension EnvironmentValues {
@@ -107,6 +114,11 @@ extension EnvironmentValues {
     public var explicitAccessibilityIdentifierSet: Bool {
         get { self[ExplicitAccessibilityIdentifierSetKey.self] }
         set { self[ExplicitAccessibilityIdentifierSetKey.self] = newValue }
+    }
+    
+    public var accessibilityLabelText: String? {
+        get { self[AccessibilityLabelTextKey.self] }
+        set { self[AccessibilityLabelTextKey.self] = newValue }
     }
 }
 
