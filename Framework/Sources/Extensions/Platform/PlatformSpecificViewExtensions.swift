@@ -77,6 +77,7 @@ public extension View {
     /// On macOS, applies minimum frame constraints clamped to available screen size.
     /// On iOS, watchOS, tvOS, and visionOS, applies maximum constraints clamped to available
     /// screen/window size to prevent views from exceeding device bounds.
+    @MainActor
     func platformFrame() -> some View {
         #if os(iOS)
         // iOS: Apply maximum constraints to prevent overflow
@@ -108,6 +109,7 @@ public extension View {
     ///   - idealHeight: Ideal height constraint (clamped to screen/window size on all platforms)
     ///   - maxHeight: Maximum height constraint (clamped to screen/window size on both platforms)
     /// - Returns: A view with platform-specific frame constraints
+    @MainActor
     func platformFrame(
         minWidth: CGFloat? = nil,
         idealWidth: CGFloat? = nil,
