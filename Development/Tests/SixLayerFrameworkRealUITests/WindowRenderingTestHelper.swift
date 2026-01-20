@@ -61,6 +61,16 @@ public final class WindowRenderingTestHelper {
         try? await Task.sleep(nanoseconds: UInt64(timeout * 1_000_000_000))
     }
     
+    /// Wait for SwiftUI update cycle to complete by running the run loop
+    /// This ensures modifier bodies execute and accessibility identifiers propagate
+    public func waitForSwiftUIUpdates(timeout: TimeInterval = 0.5) {
+        let deadline = Date().addingTimeInterval(timeout)
+        let runLoop = RunLoop.current
+        while Date() < deadline {
+            runLoop.run(mode: .default, before: Date(timeIntervalSinceNow: 0.01))
+        }
+    }
+    
     /// Clean up all created windows
     public func cleanup() {
         for window in windows {
@@ -104,6 +114,16 @@ public final class WindowRenderingTestHelper {
     /// Wait for layout to complete
     public func waitForLayout(timeout: TimeInterval = 0.1) async {
         try? await Task.sleep(nanoseconds: UInt64(timeout * 1_000_000_000))
+    }
+    
+    /// Wait for SwiftUI update cycle to complete by running the run loop
+    /// This ensures modifier bodies execute and accessibility identifiers propagate
+    public func waitForSwiftUIUpdates(timeout: TimeInterval = 0.5) {
+        let deadline = Date().addingTimeInterval(timeout)
+        let runLoop = RunLoop.current
+        while Date() < deadline {
+            runLoop.run(mode: .default, before: Date(timeIntervalSinceNow: 0.01))
+        }
     }
     
     /// Clean up all created windows

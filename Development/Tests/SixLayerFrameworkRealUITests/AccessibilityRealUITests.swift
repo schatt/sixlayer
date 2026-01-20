@@ -69,6 +69,9 @@ final class AccessibilityRealUITests {
         let window = windowHelper!.createWindow(hosting: testView)
         await windowHelper!.waitForLayout(timeout: 0.5)
         
+        // Wait for SwiftUI update cycle to ensure modifier bodies execute
+        windowHelper!.waitForSwiftUIUpdates(timeout: 0.5)
+        
         // Force layout pass to ensure SwiftUI updates are applied
         #if os(macOS)
         window.contentView?.layoutSubtreeIfNeeded()
@@ -105,7 +108,20 @@ final class AccessibilityRealUITests {
             return nil
         }
         
-        let accessibilityID = findAccessibilityIdentifier(in: rootView)
+        // Poll for identifier to appear (SwiftUI update cycle may take time)
+        var accessibilityID: String? = nil
+        let maxAttempts = 10
+        for attempt in 0..<maxAttempts {
+            accessibilityID = findAccessibilityIdentifier(in: rootView)
+            if let id = accessibilityID, !id.isEmpty {
+                break
+            }
+            // Wait a bit and run run loop to process SwiftUI updates
+            if attempt < maxAttempts - 1 {
+                windowHelper!.waitForSwiftUIUpdates(timeout: 0.1)
+            }
+        }
+        
         #expect(accessibilityID != nil, "Accessibility identifier should be generated in real window")
         #expect(!accessibilityID!.isEmpty, "Accessibility identifier should not be empty")
         
@@ -134,7 +150,20 @@ final class AccessibilityRealUITests {
             return nil
         }
         
-        let accessibilityID = findAccessibilityIdentifier(in: rootView)
+        // Poll for identifier to appear (SwiftUI update cycle may take time)
+        var accessibilityID: String? = nil
+        let maxAttempts = 10
+        for attempt in 0..<maxAttempts {
+            accessibilityID = findAccessibilityIdentifier(in: rootView)
+            if let id = accessibilityID, !id.isEmpty {
+                break
+            }
+            // Wait a bit and run run loop to process SwiftUI updates
+            if attempt < maxAttempts - 1 {
+                windowHelper!.waitForSwiftUIUpdates(timeout: 0.1)
+            }
+        }
+        
         #expect(accessibilityID != nil, "Accessibility identifier should be generated in real window")
         #expect(!accessibilityID!.isEmpty, "Accessibility identifier should not be empty")
         #endif
@@ -161,6 +190,9 @@ final class AccessibilityRealUITests {
         // When: View is rendered in a real window and layout completes
         let window = windowHelper!.createWindow(hosting: testView)
         await windowHelper!.waitForLayout(timeout: 0.5)
+        
+        // Wait for SwiftUI update cycle to ensure modifier bodies execute
+        windowHelper!.waitForSwiftUIUpdates(timeout: 0.5)
         
         // Force layout pass to ensure SwiftUI updates are applied
         #if os(macOS)
@@ -194,7 +226,20 @@ final class AccessibilityRealUITests {
             return nil
         }
         
-        let accessibilityID = findAccessibilityIdentifier(in: rootView)
+        // Poll for identifier to appear (SwiftUI update cycle may take time)
+        var accessibilityID: String? = nil
+        let maxAttempts = 10
+        for attempt in 0..<maxAttempts {
+            accessibilityID = findAccessibilityIdentifier(in: rootView)
+            if let id = accessibilityID, !id.isEmpty {
+                break
+            }
+            // Wait a bit and run run loop to process SwiftUI updates
+            if attempt < maxAttempts - 1 {
+                windowHelper!.waitForSwiftUIUpdates(timeout: 0.1)
+            }
+        }
+        
         #expect(accessibilityID != nil && !accessibilityID!.isEmpty, "Modifier body should execute in real window")
         
         #elseif os(iOS)
@@ -218,7 +263,20 @@ final class AccessibilityRealUITests {
             return nil
         }
         
-        let accessibilityID = findAccessibilityIdentifier(in: rootView)
+        // Poll for identifier to appear (SwiftUI update cycle may take time)
+        var accessibilityID: String? = nil
+        let maxAttempts = 10
+        for attempt in 0..<maxAttempts {
+            accessibilityID = findAccessibilityIdentifier(in: rootView)
+            if let id = accessibilityID, !id.isEmpty {
+                break
+            }
+            // Wait a bit and run run loop to process SwiftUI updates
+            if attempt < maxAttempts - 1 {
+                windowHelper!.waitForSwiftUIUpdates(timeout: 0.1)
+            }
+        }
+        
         #expect(accessibilityID != nil && !accessibilityID!.isEmpty, "Modifier body should execute in real window")
         #endif
     }
