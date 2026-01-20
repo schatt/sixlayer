@@ -178,8 +178,22 @@ final class AccessibilityRealUITests {
             }
         }
         
-        #expect(accessibilityID != nil, "Accessibility identifier should be generated in real window")
-        #expect(!accessibilityID!.isEmpty, "Accessibility identifier should not be empty")
+        // Debug: Print what we found
+        if let id = accessibilityID {
+            print("DEBUG: Found accessibility identifier: '\(id)' (length: \(id.count))")
+        } else {
+            print("DEBUG: No accessibility identifier found after \(maxAttempts) attempts")
+            // Print debug log if available
+            if config.enableDebugLogging {
+                config.printDebugLog()
+            }
+        }
+        
+        if let id = accessibilityID {
+            #expect(!id.isEmpty, "Accessibility identifier should not be empty. Found: '\(id)' (length: \(id.count))")
+        } else {
+            #expect(Bool(false), "Accessibility identifier should be generated in real window. Check debug output above.")
+        }
         #endif
     }
     
@@ -306,7 +320,22 @@ final class AccessibilityRealUITests {
             }
         }
         
-        #expect(accessibilityID != nil && !accessibilityID!.isEmpty, "Modifier body should execute in real window")
+        // Debug: Print what we found
+        if let id = accessibilityID {
+            print("DEBUG: Found accessibility identifier: '\(id)' (length: \(id.count))")
+        } else {
+            print("DEBUG: No accessibility identifier found after \(maxAttempts) attempts")
+            // Print debug log if available
+            if config.enableDebugLogging {
+                config.printDebugLog()
+            }
+        }
+        
+        if let id = accessibilityID {
+            #expect(!id.isEmpty, "Modifier body should execute in real window. Found: '\(id)' (length: \(id.count))")
+        } else {
+            #expect(Bool(false), "Modifier body should execute in real window. No identifier found. Check debug output above.")
+        }
         #endif
     }
 }
