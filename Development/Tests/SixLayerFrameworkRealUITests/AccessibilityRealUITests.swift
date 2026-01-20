@@ -91,8 +91,9 @@ final class AccessibilityRealUITests {
         // SwiftUI may apply the identifier to a nested view, not the root
         func findAccessibilityIdentifier(in view: NSView) -> String? {
             // Check this view
+            // Note: accessibilityIdentifier() returns String (non-optional) on macOS
             let id = view.accessibilityIdentifier()
-            if let id = id, !id.isEmpty {
+            if !id.isEmpty {
                 return id
             }
             // Recursively check subviews
@@ -180,8 +181,9 @@ final class AccessibilityRealUITests {
         
         // Search the view hierarchy for the accessibility identifier
         func findAccessibilityIdentifier(in view: NSView) -> String? {
+            // Note: accessibilityIdentifier() returns String (non-optional) on macOS
             let id = view.accessibilityIdentifier()
-            if let id = id, !id.isEmpty {
+            if !id.isEmpty {
                 return id
             }
             for subview in view.subviews {
