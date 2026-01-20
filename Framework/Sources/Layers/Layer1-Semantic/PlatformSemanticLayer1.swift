@@ -1249,6 +1249,7 @@ private func createSimpleFieldView(for field: DynamicFormField, hints: Presentat
                 TextField(field.placeholder ?? "Enter \(field.label)", text: .constant(field.defaultValue ?? ""))
                     .textFieldStyle(.roundedBorder)
                     .applyFieldHints(fieldHints)
+                    .environment(\.accessibilityLabelText, field.label)
                     #if canImport(UIKit)
                     .textContentType(textContentType.uiTextContentType)
                     #endif
@@ -1260,18 +1261,22 @@ private func createSimpleFieldView(for field: DynamicFormField, hints: Presentat
             case .number, .integer:
                 TextField(field.placeholder ?? "Enter \(field.label)", value: .constant(0), format: .number)
                     .textFieldStyle(.roundedBorder)
+                    .environment(\.accessibilityLabelText, field.label)
             case .stepper:
                 Stepper(field.label, value: .constant(0.0), in: 0...100, step: 1.0)
+                    .environment(\.accessibilityLabelText, field.label)
             case .textarea, .richtext:
                 TextEditor(text: .constant(field.defaultValue ?? ""))
                     .frame(minHeight: 80)
                     .applyFieldHints(fieldHints)
+                    .environment(\.accessibilityLabelText, field.label)
                     .overlay(
                         RoundedRectangle(cornerRadius: 8)
                             .stroke(Color.gray.opacity(0.3), lineWidth: 1)
                     )
             case .toggle, .boolean:
                 Toggle(field.label, isOn: .constant(false))
+                    .environment(\.accessibilityLabelText, field.label)
             case .select:
                 let i18n = InternationalizationService()
                 Picker(field.placeholder ?? i18n.placeholderSelectOption(), selection: .constant("")) {
@@ -1283,27 +1288,33 @@ private func createSimpleFieldView(for field: DynamicFormField, hints: Presentat
                     }
                 }
                 .pickerStyle(.menu)
+                .environment(\.accessibilityLabelText, field.label)
             case .date:
                 let i18n = InternationalizationService()
                 DatePicker("", selection: .constant(Date()))
                     .datePickerStyle(.compact)
                     .selfLabelingControl(label: field.placeholder ?? i18n.placeholderSelectDate())
+                    .environment(\.accessibilityLabelText, field.label)
             case .multiDate, .dateRange:
                 // Use DatePicker as fallback for Layer1 (MultiDatePicker requires iOS 16+)
                 let i18n = InternationalizationService()
                 DatePicker("", selection: .constant(Date()))
                     .datePickerStyle(.compact)
                     .selfLabelingControl(label: field.placeholder ?? i18n.placeholderSelectDates())
+                    .environment(\.accessibilityLabelText, field.label)
             case .time:
                 let i18n = InternationalizationService()
                 DatePicker("", selection: .constant(Date()), displayedComponents: .hourAndMinute)
                     .datePickerStyle(.compact)
                     .selfLabelingControl(label: field.placeholder ?? i18n.placeholderSelectTime())
+                    .environment(\.accessibilityLabelText, field.label)
             case .color:
                 ColorPicker("", selection: .constant(.blue))
                     .selfLabelingControl(label: field.label)
+                    .environment(\.accessibilityLabelText, field.label)
             case .range:
                 Slider(value: .constant(0.5), in: 0...1)
+                    .environment(\.accessibilityLabelText, field.label)
             case .display:
                 // Display fields use LabeledContent or fallback HStack
                 if #available(iOS 16.0, macOS 13.0, *) {
@@ -1367,12 +1378,14 @@ private func createSimpleFieldView(for field: DynamicFormField, hints: Presentat
             case .multiselect, .radio, .checkbox, .file, .image, .datetime, .array, .data, .custom, .text, .email, .password, .phone, .url, .autocomplete, .enum:
                 TextField(field.placeholder ?? "Enter \(field.label)", text: .constant(field.defaultValue ?? ""))
                     .textFieldStyle(.roundedBorder)
+                    .environment(\.accessibilityLabelText, field.label)
             }
         }
         // Fallback for fields with neither textContentType nor contentType
         else {
             TextField(field.placeholder ?? "Enter \(field.label)", text: .constant(field.defaultValue ?? ""))
                 .textFieldStyle(.roundedBorder)
+                .environment(\.accessibilityLabelText, field.label)
         }
     }
 }
@@ -2399,6 +2412,7 @@ public struct ModalFormView: View {
                 // Handle text fields using OS UITextContentType
                 TextField(field.placeholder ?? "Enter text", text: .constant(""))
                     .textFieldStyle(.roundedBorder)
+                    .environment(\.accessibilityLabelText, field.label)
                     #if canImport(UIKit)
                     .textContentType(textContentType.uiTextContentType)
                     #endif
@@ -2408,26 +2422,32 @@ public struct ModalFormView: View {
                 case .text:
                     TextField(field.placeholder ?? "Enter text", text: .constant(""))
                         .textFieldStyle(.roundedBorder)
+                        .environment(\.accessibilityLabelText, field.label)
                 case .email:
                     TextField(field.placeholder ?? "Enter email", text: .constant(""))
                         .textFieldStyle(.roundedBorder)
+                        .environment(\.accessibilityLabelText, field.label)
                 case .password:
                     SecureField(field.placeholder ?? "Enter password", text: .constant(""))
                         .textFieldStyle(.roundedBorder)
+                        .environment(\.accessibilityLabelText, field.label)
                 case .number:
                     TextField(field.placeholder ?? "Enter number", text: .constant(""))
                         .textFieldStyle(.roundedBorder)
+                        .environment(\.accessibilityLabelText, field.label)
                 case .date:
                     let i18n = InternationalizationService()
                     DatePicker("", selection: .constant(Date()))
                         .datePickerStyle(.compact)
                         .selfLabelingControl(label: field.placeholder ?? i18n.placeholderSelectDate())
+                        .environment(\.accessibilityLabelText, field.label)
                 case .multiDate, .dateRange:
                     // Use DatePicker as fallback for Layer1 (MultiDatePicker requires iOS 16+)
                     let i18n = InternationalizationService()
                     DatePicker("", selection: .constant(Date()))
                         .datePickerStyle(.compact)
                         .selfLabelingControl(label: field.placeholder ?? i18n.placeholderSelectDates())
+                        .environment(\.accessibilityLabelText, field.label)
                 case .select:
                     let i18n = InternationalizationService()
                     Picker(field.placeholder ?? i18n.placeholderSelectOption(), selection: .constant("")) {
@@ -2439,15 +2459,18 @@ public struct ModalFormView: View {
                         }
                     }
                     .pickerStyle(.menu)
+                    .environment(\.accessibilityLabelText, field.label)
                 case .textarea:
                     TextEditor(text: .constant(""))
                         .frame(minHeight: 80)
+                        .environment(\.accessibilityLabelText, field.label)
                         .overlay(
                             RoundedRectangle(cornerRadius: 8)
                                 .stroke(Color.gray.opacity(0.3), lineWidth: 1)
                         )
                 case .checkbox:
                     Toggle(field.placeholder ?? "Toggle", isOn: .constant(false))
+                        .environment(\.accessibilityLabelText, field.label)
                 case .radio:
                     platformVStackContainer(alignment: .leading) {
                         Text(field.label)
@@ -2463,39 +2486,49 @@ public struct ModalFormView: View {
                                         Image(systemName: "circle")
                                             .foregroundColor(.gray)
                                     }
+                                    .environment(\.accessibilityLabelText, "\(field.label): \(option)")
                                     Text(option)
                                 }
                             }
                         }
                     }
+                    .environment(\.accessibilityLabelText, field.label)
                 case .phone:
                     TextField(field.placeholder ?? "Enter phone", text: .constant(""))
                         .textFieldStyle(.roundedBorder)
+                        .environment(\.accessibilityLabelText, field.label)
                 case .time:
                     let i18n = InternationalizationService()
                     DatePicker("", selection: .constant(Date()), displayedComponents: .hourAndMinute)
                         .datePickerStyle(.compact)
                         .selfLabelingControl(label: field.placeholder ?? i18n.placeholderSelectTime())
+                        .environment(\.accessibilityLabelText, field.label)
                 case .datetime:
                     let i18n = InternationalizationService()
                     DatePicker("", selection: .constant(Date()), displayedComponents: [.date, .hourAndMinute])
                         .datePickerStyle(.compact)
                         .selfLabelingControl(label: field.placeholder ?? i18n.placeholderSelectDateTime())
+                        .environment(\.accessibilityLabelText, field.label)
                 case .multiselect:
                     Text("Multi-select field: \(field.label)")
                         .foregroundColor(.secondary)
+                        .environment(\.accessibilityLabelText, field.label)
                 case .file:
                     Text("File upload field: \(field.label)")
                         .foregroundColor(.secondary)
+                        .environment(\.accessibilityLabelText, field.label)
                 case .url:
                     TextField(field.placeholder ?? "Enter URL", text: .constant(""))
                         .textFieldStyle(.roundedBorder)
+                        .environment(\.accessibilityLabelText, field.label)
                 case .color:
                     Text("Color picker field: \(field.label)")
                         .foregroundColor(.secondary)
+                        .environment(\.accessibilityLabelText, field.label)
                 case .range:
                     Text("Range field: \(field.label)")
                         .foregroundColor(.secondary)
+                        .environment(\.accessibilityLabelText, field.label)
                 case .toggle, .boolean:
                     Toggle(field.placeholder ?? "Toggle", isOn: .constant(false))
                 case .richtext:
@@ -2504,21 +2537,27 @@ public struct ModalFormView: View {
                 case .autocomplete:
                     Text("Autocomplete field: \(field.label)")
                         .foregroundColor(.secondary)
+                        .environment(\.accessibilityLabelText, field.label)
                 case .integer:
                     TextField(field.placeholder ?? "Enter integer", text: .constant(""))
                         .textFieldStyle(.roundedBorder)
+                        .environment(\.accessibilityLabelText, field.label)
                 case .image:
                     Text("Image field: \(field.label)")
                         .foregroundColor(.secondary)
+                        .environment(\.accessibilityLabelText, field.label)
                 case .array:
                     Text("Array field: \(field.label)")
                         .foregroundColor(.secondary)
+                        .environment(\.accessibilityLabelText, field.label)
                 case .data:
                     Text("Data field: \(field.label)")
                         .foregroundColor(.secondary)
+                        .environment(\.accessibilityLabelText, field.label)
                 case .custom:
                     Text("Custom field: \(field.label)")
                         .foregroundColor(.secondary)
+                        .environment(\.accessibilityLabelText, field.label)
                 case .display:
                     // Display fields use LabeledContent or fallback HStack
                     if #available(iOS 16.0, macOS 13.0, *) {
@@ -2592,11 +2631,13 @@ public struct ModalFormView: View {
                         }
                     }
                     .pickerStyle(.menu)
+                    .environment(\.accessibilityLabelText, field.label)
                 }
             } else {
                 // Fallback for fields with neither textContentType nor contentType
                 TextField(field.placeholder ?? "Enter text", text: .constant(""))
                     .textFieldStyle(.roundedBorder)
+                    .environment(\.accessibilityLabelText, field.label)
             }
         }
         .automaticCompliance()
@@ -2824,12 +2865,14 @@ public struct SimpleFormView: View {
                     // Handle text fields using OS UITextContentType
                     TextField(field.placeholder ?? "Enter text", text: .constant(field.defaultValue ?? ""))
                         .textFieldStyle(.roundedBorder)
+                        .environment(\.accessibilityLabelText, field.label)
                 } else if let contentType = field.contentType {
                     // Handle UI components using our custom DynamicContentType
                     switch contentType {
                 case .text:
                     TextField(field.placeholder ?? "Enter text", text: .constant(field.defaultValue ?? ""))
                         .textFieldStyle(.roundedBorder)
+                        .environment(\.accessibilityLabelText, field.label)
                         .onChange(of: field.defaultValue) { _ in
                             clearFieldError(field)
                         }
@@ -2837,6 +2880,7 @@ public struct SimpleFormView: View {
                 case .email:
                     TextField(field.placeholder ?? "Enter email", text: field.$value)
                         .textFieldStyle(.roundedBorder)
+                        .environment(\.accessibilityLabelText, field.label)
                         #if os(iOS)
                         .keyboardType(.emailAddress)
                         .autocapitalization(.none)
@@ -2848,6 +2892,7 @@ public struct SimpleFormView: View {
                 case .password:
                     SecureField(field.placeholder ?? "Enter password", text: field.$value)
                         .textFieldStyle(.roundedBorder)
+                        .environment(\.accessibilityLabelText, field.label)
                         .onChange(of: field.value) { _ in
                             clearFieldError(field)
                         }
@@ -2855,6 +2900,7 @@ public struct SimpleFormView: View {
                 case .number:
                     TextField(field.placeholder ?? "Enter number", text: field.$value)
                         .textFieldStyle(.roundedBorder)
+                        .environment(\.accessibilityLabelText, field.label)
                         #if os(iOS)
                         .keyboardType(.decimalPad)
                         #endif
@@ -2874,6 +2920,7 @@ public struct SimpleFormView: View {
                     .datePickerStyle(.compact)
                     let i18nDate = InternationalizationService()
                     .selfLabelingControl(label: field.placeholder ?? i18nDate.placeholderSelectDate())
+                    .environment(\.accessibilityLabelText, field.label)
                     
                 case .select:
                     let i18nSelect = InternationalizationService()
@@ -2884,10 +2931,12 @@ public struct SimpleFormView: View {
                         }
                     }
                     .pickerStyle(.menu)
+                    .environment(\.accessibilityLabelText, field.label)
                     
                 case .textarea:
                     TextEditor(text: field.$value)
                         .frame(minHeight: 80)
+                        .environment(\.accessibilityLabelText, field.label)
                         .overlay(
                             RoundedRectangle(cornerRadius: 8)
                                 .stroke(Color.gray.opacity(0.3), lineWidth: 1)
@@ -2901,6 +2950,7 @@ public struct SimpleFormView: View {
                         get: { field.value.lowercased() == "true" },
                         set: { field.value = $0 ? "true" : "false" }
                     ))
+                    .environment(\.accessibilityLabelText, field.label)
                     
                 case .radio:
                     platformVStackContainer(alignment: .leading, spacing: 4) {
@@ -2917,14 +2967,17 @@ public struct SimpleFormView: View {
                                     }
                                 }
                                 .buttonStyle(.plain)
+                                .environment(\.accessibilityLabelText, "\(field.label): \(option)")
                                 Spacer()
                             }
                         }
                     }
+                    .environment(\.accessibilityLabelText, field.label)
                     
                 case .phone:
                     TextField(field.placeholder ?? "Enter phone", text: field.$value)
                         .textFieldStyle(.roundedBorder)
+                        .environment(\.accessibilityLabelText, field.label)
                         #if os(iOS)
                         .keyboardType(.phonePad)
                         #endif
@@ -2944,6 +2997,7 @@ public struct SimpleFormView: View {
                     .datePickerStyle(.compact)
                     let i18nTime = InternationalizationService()
                     .selfLabelingControl(label: field.placeholder ?? i18nTime.placeholderSelectTime())
+                    .environment(\.accessibilityLabelText, field.label)
                     
                 case .datetime:
                     let i18nDateTime = InternationalizationService()
@@ -2957,6 +3011,7 @@ public struct SimpleFormView: View {
                     )
                     .datePickerStyle(.compact)
                     .selfLabelingControl(label: field.placeholder ?? i18nDateTime.placeholderSelectDateTime())
+                    .environment(\.accessibilityLabelText, field.label)
                     
                 case .multiselect:
                     platformVStackContainer(alignment: .leading, spacing: 4) {
@@ -2973,10 +3028,12 @@ public struct SimpleFormView: View {
                                     }
                                 }
                                 .buttonStyle(.plain)
+                                .environment(\.accessibilityLabelText, "\(field.label): \(option)")
                                 Spacer()
                             }
                         }
                     }
+                    .environment(\.accessibilityLabelText, field.label)
                     
                 case .file:
                     Button(action: {
@@ -2994,10 +3051,12 @@ public struct SimpleFormView: View {
                         .cornerRadius(8)
                     }
                     .buttonStyle(.plain)
+                    .environment(\.accessibilityLabelText, field.label)
                     
                 case .url:
                     TextField(field.placeholder ?? "Enter URL", text: field.$value)
                         .textFieldStyle(.roundedBorder)
+                        .environment(\.accessibilityLabelText, field.label)
                         #if os(iOS)
                         .keyboardType(.URL)
                         .autocapitalization(.none)
@@ -3054,18 +3113,22 @@ public struct SimpleFormView: View {
                 case .integer:
                     TextField(field.placeholder ?? "Enter integer", text: field.$value)
                         .textFieldStyle(.roundedBorder)
+                        .environment(\.accessibilityLabelText, field.label)
                         .onChange(of: field.value) { _ in
                             clearFieldError(field)
                         }
                 case .image:
                     Text("Image field: \(field.label)")
                         .foregroundColor(.secondary)
+                        .environment(\.accessibilityLabelText, field.label)
                 case .array:
                     Text("Array field: \(field.label)")
                         .foregroundColor(.secondary)
+                        .environment(\.accessibilityLabelText, field.label)
                 case .data:
                     Text("Data field: \(field.label)")
                         .foregroundColor(.secondary)
+                        .environment(\.accessibilityLabelText, field.label)
                 case .`enum`:
                     let i18n = InternationalizationService()
                     Picker(field.placeholder ?? i18n.localizedString(for: "SixLayerFramework.form.placeholder.selectOption"), selection: field.$value) {
@@ -3075,6 +3138,7 @@ public struct SimpleFormView: View {
                         }
                     }
                     .pickerStyle(.menu)
+                    .environment(\.accessibilityLabelText, field.label)
                 case .custom:
                     TextField(field.placeholder ?? "Custom field", text: field.$value)
                         .textFieldStyle(.roundedBorder)

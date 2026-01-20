@@ -100,7 +100,7 @@ public final class WindowRenderingTestHelper {
         }
         
         // Force accessibility update to ensure SwiftUI identifiers are propagated
-        windowElement.setNeedsDisplay(true)
+        windowElement.needsDisplay = true
         windowElement.needsLayout = true
         windowElement.layoutSubtreeIfNeeded()
         
@@ -112,47 +112,119 @@ public final class WindowRenderingTestHelper {
         // This is the same API that XCUITest uses under the hood
         // SwiftUI views wrapped in NSHostingView expose identifiers through the accessibility system
         var checkedViews: Set<ObjectIdentifier> = []
-        func searchForElement(in view: NSView, identifier: String, depth: Int = 0) -> NSView? {
+        var allIdentifiers: [String] = [] // For debugging
+        
+        // Helper to check if an element (NSView or any object) has the identifier
+        func elementHasIdentifier(_ element: Any, identifier: String) -> Bool {
+            // Check NSView.accessibilityIdentifier()
+            if let view = element as? NSView {
+                let viewId = view.accessibilityIdentifier()
+                if !viewId.isEmpty && viewId == identifier {
+                    return true
+                }
+            }
+            
+            // Check NSAccessibility protocol
+            if let accessibilityElement = element as? NSAccessibilityElement {
+                if let accessibilityId = accessibilityElement.accessibilityIdentifier() as? String,
+                   !accessibilityId.isEmpty,
+                   accessibilityId == identifier {
+                    return true
+                }
+            }
+            
+            // Also try accessing via NSAccessibility attribute directly
+            if let element = element as? NSObject {
+                if let accessibilityId = element.value(forAttribute: .identifier) as? String,
+                   !accessibilityId.isEmpty,
+                   accessibilityId == identifier {
+                    return true
+                }
+            }
+            
+            return false
+        }
+        
+        func searchForElement(in element: Any, identifier: String, depth: Int = 0) -> Any? {
             // Prevent infinite recursion and cycles
             guard depth < 50 else { return nil }
             
-            let viewId = ObjectIdentifier(view)
-            if checkedViews.contains(viewId) {
+            let elementId = ObjectIdentifier(element as AnyObject)
+            if checkedViews.contains(elementId) {
                 return nil
             }
-            checkedViews.insert(viewId)
+            checkedViews.insert(elementId)
             
-            // Check if this view has the identifier
-            // NSView.accessibilityIdentifier() returns String (not optional) - empty string if not set
-            let viewIdentifier = view.accessibilityIdentifier()
-            if !viewIdentifier.isEmpty && viewIdentifier == identifier {
-                return view
+            // Check if this element has the identifier
+            if elementHasIdentifier(element, identifier: identifier) {
+                return element
             }
             
-            // Search through subviews recursively
-            // SwiftUI views are wrapped in NSHostingView, so we need to traverse the view hierarchy
-            for subview in view.subviews {
-                if let found = searchForElement(in: subview, identifier: identifier, depth: depth + 1) {
-                    return found
+            // Collect identifier for debugging
+            if let view = element as? NSView {
+                let viewId = view.accessibilityIdentifier()
+                if !viewId.isEmpty {
+                    allIdentifiers.append("\(type(of: view)): \(viewId)")
+                }
+            }
+            
+            // Search through subviews if it's an NSView
+            if let view = element as? NSView {
+                for subview in view.subviews {
+                    if let found = searchForElement(in: subview, identifier: identifier, depth: depth + 1) {
+                        return found
+                    }
                 }
             }
             
             // Also check accessibility children (for SwiftUI elements exposed through accessibility)
-            // This helps find SwiftUI views that might not be direct subviews
-            if let accessibilityChildren = view.accessibilityChildren() as? [Any] {
-                for child in accessibilityChildren {
-                    if let childView = child as? NSView {
-                        if let found = searchForElement(in: childView, identifier: identifier, depth: depth + 1) {
-                            return found
-                        }
-                    }
+            // This is crucial for finding SwiftUI views that might not be direct subviews
+            var accessibilityChildren: [Any] = []
+            
+            if let view = element as? NSView {
+                if let children = view.accessibilityChildren() as? [Any] {
+                    accessibilityChildren.append(contentsOf: children)
+                }
+            }
+            
+            if let accessibilityElement = element as? NSAccessibilityElement {
+                if let children = accessibilityElement.accessibilityChildren() as? [Any] {
+                    accessibilityChildren.append(contentsOf: children)
+                }
+            }
+            
+            // Search through accessibility children
+            for child in accessibilityChildren {
+                // Check if child itself has the identifier
+                if elementHasIdentifier(child, identifier: identifier) {
+                    return child
+                }
+                
+                // Recursively search child
+                if let found = searchForElement(in: child, identifier: identifier, depth: depth + 1) {
+                    return found
                 }
             }
             
             return nil
         }
         
-        return searchForElement(in: windowElement, identifier: identifier)
+        let result = searchForElement(in: windowElement, identifier: identifier)
+        
+        // Debug: Print all found identifiers if search failed
+        if result == nil {
+            print("DEBUG: Searching for identifier: '\(identifier)'")
+            if !allIdentifiers.isEmpty {
+                print("DEBUG: Found identifiers in view hierarchy:")
+                for id in allIdentifiers {
+                    print("  - \(id)")
+                }
+            } else {
+                print("DEBUG: No identifiers found in view hierarchy")
+            }
+        }
+        
+        return result
     }
     
     /// Clean up all created windows

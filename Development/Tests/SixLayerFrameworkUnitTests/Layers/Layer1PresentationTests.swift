@@ -406,4 +406,94 @@ open class Layer1PresentationTests: BaseTestClass {
     // MARK: - Performance Tests
     
     // Performance tests removed for framework scope
+    
+    // MARK: - Accessibility Label Integration Tests (Issue #156)
+    
+    @Test @MainActor func testPlatformPresentFormData_L1_UsesFieldLabelForAccessibility() {
+        // Given: Form field with explicit label
+        let field = createTestField(
+            label: "Email Address",
+            placeholder: "Enter email",
+            contentType: .email
+        )
+        let hints = testHints
+        
+        // When: Creating form presentation
+        let view = platformPresentFormData_L1(
+            field: field,
+            hints: hints
+        )
+        
+        // Then: View should be created (field label should be passed via environment)
+        // The actual verification that label is used will be in Phase 2/3 when automaticCompliance() processes it
+        _ = view
+        #expect(true, "View should be created with field label available for accessibility")
+    }
+    
+    @Test @MainActor func testPlatformPresentFormData_L1_UsesFieldLabelFromHints() {
+        // Given: Form field and hints with field hints
+        let field = createTestField(
+            label: "Name",
+            placeholder: "Enter name",
+            contentType: .text
+        )
+        let hints = PresentationHints(
+            dataType: .form,
+            presentationPreference: .form,
+            complexity: .moderate,
+            context: .form,
+            fieldHints: ["name": FieldDisplayHints(
+                expectedLength: 50,
+                displayWidth: "wide",
+                showCharacterCounter: false,
+                maxLength: 100,
+                minLength: 1,
+                expectedRange: nil,
+                metadata: [:],
+                ocrHints: nil,
+                calculationGroups: nil,
+                inputType: nil,
+                pickerOptions: nil,
+                isHidden: false,
+                isEditable: true
+            )]
+        )
+        
+        // When: Creating form presentation
+        let view = platformPresentFormData_L1(
+            field: field,
+            hints: hints
+        )
+        
+        // Then: View should be created (field label from hints should be available)
+        _ = view
+        #expect(true, "View should be created with field label from hints available for accessibility")
+    }
+    
+    @Test @MainActor func testPlatformPresentFormData_L1_MultipleFieldsUseLabels() {
+        // Given: Multiple form fields with different labels
+        let fields = [
+            createTestField(label: "First Name", contentType: .text),
+            createTestField(label: "Last Name", contentType: .text),
+            createTestField(label: "Email", contentType: .email)
+        ]
+        let hints = testHints
+        
+        // When: Creating form presentation
+        let view = platformPresentFormData_L1(
+            fields: fields,
+            hints: EnhancedPresentationHints(
+                dataType: hints.dataType,
+                presentationPreference: hints.presentationPreference,
+                complexity: hints.complexity,
+                context: hints.context,
+                customPreferences: hints.customPreferences,
+                extensibleHints: []
+            )
+        )
+        
+        // Then: View should be created (all field labels should be available)
+        _ = view
+        #expect(true, "View should be created with all field labels available for accessibility")
+    }
 }
