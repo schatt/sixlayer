@@ -83,34 +83,68 @@ public final class WindowRenderingTestHelper {
     ///   - identifier: The accessibility identifier to find
     /// - Returns: The accessibility element if found, nil otherwise
     public func findAccessibilityElement(by identifier: String, in window: NSWindow) -> Any? {
-        guard let windowElement = window.contentView else {
+        // Start from the hosting controller's view if available, otherwise use contentView
+        // SwiftUI views are hosted in NSHostingController, so we need to search from there
+        let rootView: NSView?
+        if let hostingController = window.contentViewController,
+           hostingController.view != nil {
+            // Use the hosting controller's view (this is where SwiftUI views are rendered)
+            rootView = hostingController.view
+        } else {
+            // Fall back to contentView if no hosting controller
+            rootView = window.contentView
+        }
+        
+        guard let windowElement = rootView else {
             return nil
         }
         
+        // Force accessibility update to ensure SwiftUI identifiers are propagated
+        windowElement.setNeedsDisplay(true)
+        windowElement.needsLayout = true
+        windowElement.layoutSubtreeIfNeeded()
+        
+        // Give the accessibility system a moment to update
+        // SwiftUI identifiers need time to propagate through the accessibility hierarchy
+        RunLoop.current.run(mode: .default, before: Date(timeIntervalSinceNow: 0.1))
+        
         // Use NSAccessibility API to find element by identifier
         // This is the same API that XCUITest uses under the hood
-        func searchForElement(in element: Any, identifier: String) -> Any? {
-            // Check if this element has the identifier
-            if let view = element as? NSView {
-                if view.accessibilityIdentifier() == identifier {
-                    return element
+        // SwiftUI views wrapped in NSHostingView expose identifiers through the accessibility system
+        var checkedViews: Set<ObjectIdentifier> = []
+        func searchForElement(in view: NSView, identifier: String, depth: Int = 0) -> NSView? {
+            // Prevent infinite recursion and cycles
+            guard depth < 50 else { return nil }
+            
+            let viewId = ObjectIdentifier(view)
+            if checkedViews.contains(viewId) {
+                return nil
+            }
+            checkedViews.insert(viewId)
+            
+            // Check if this view has the identifier
+            // NSView.accessibilityIdentifier() returns String (not optional) - empty string if not set
+            let viewIdentifier = view.accessibilityIdentifier()
+            if !viewIdentifier.isEmpty && viewIdentifier == identifier {
+                return view
+            }
+            
+            // Search through subviews recursively
+            // SwiftUI views are wrapped in NSHostingView, so we need to traverse the view hierarchy
+            for subview in view.subviews {
+                if let found = searchForElement(in: subview, identifier: identifier, depth: depth + 1) {
+                    return found
                 }
             }
             
-            // Get accessibility children and search recursively
-            if let children = (element as? NSView)?.accessibilityChildren() as? [Any] {
-                for child in children {
-                    if let found = searchForElement(in: child, identifier: identifier) {
-                        return found
-                    }
-                }
-            }
-            
-            // Also search subviews
-            if let view = element as? NSView {
-                for subview in view.subviews {
-                    if let found = searchForElement(in: subview, identifier: identifier) {
-                        return found
+            // Also check accessibility children (for SwiftUI elements exposed through accessibility)
+            // This helps find SwiftUI views that might not be direct subviews
+            if let accessibilityChildren = view.accessibilityChildren() as? [Any] {
+                for child in accessibilityChildren {
+                    if let childView = child as? NSView {
+                        if let found = searchForElement(in: childView, identifier: identifier, depth: depth + 1) {
+                            return found
+                        }
                     }
                 }
             }

@@ -371,4 +371,62 @@ struct PlatformStandaloneDropInTests {
         _ = view
         #expect(true)
     }
+    
+    // MARK: - LocalizedStringKey and Text Support Tests
+    
+    @Test @MainActor func testPlatformTextField_WithLocalizedStringKey() {
+        // Given: Text binding and LocalizedStringKey label
+        @State var text = ""
+        let label = LocalizedStringKey("field.name")
+        
+        // When: Creating text field with LocalizedStringKey
+        let view = platformTextField(label: label, prompt: "Enter name", text: $text)
+        
+        // Then: View should be created successfully
+        _ = view
+        #expect(true)
+    }
+    
+    @Test @MainActor func testPlatformTextField_WithTextLabel() {
+        // Given: Text binding and Text label
+        @State var text = ""
+        let label = Text("Full name")
+        
+        // When: Creating text field with Text label
+        let view = platformTextField(label: label, prompt: "Enter name", text: $text)
+        
+        // Then: View should be created successfully
+        _ = view
+        #expect(true)
+    }
+    
+    @Test @MainActor func testPlatformButton_WithLocalizedStringKey() {
+        // Given: Action and LocalizedStringKey label
+        var actionCalled = false
+        let label = LocalizedStringKey("button.save")
+        
+        // When: Creating button with LocalizedStringKey
+        let view = platformButton(label: label) {
+            actionCalled = true
+        }
+        
+        // Then: View should be created successfully
+        _ = view
+        #expect(true)
+    }
+    
+    @Test @MainActor func testPlatformButton_WithTextLabel() {
+        // Given: Action and Text label
+        var actionCalled = false
+        let label = Text("Save document")
+        
+        // When: Creating button with Text label
+        let view = platformButton(label: label) {
+            actionCalled = true
+        }
+        
+        // Then: View should be created successfully
+        _ = view
+        #expect(true)
+    }
 }

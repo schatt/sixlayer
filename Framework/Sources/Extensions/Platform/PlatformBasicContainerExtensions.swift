@@ -537,6 +537,36 @@ public func platformTextField(
         .automaticCompliance()
 }
 
+/// Provides platform-specific text field with automatic accessibility compliance and explicit label (LocalizedStringKey)
+/// - Parameters:
+///   - label: The accessibility label for VoiceOver using LocalizedStringKey
+///   - prompt: The placeholder text
+///   - text: Binding to the text value
+public func platformTextField(
+    label: LocalizedStringKey,
+    prompt: String,
+    text: Binding<String>
+) -> some View {
+    EmptyView().platformTextField(text: text, prompt: prompt)
+        .accessibilityLabel(label)
+        .automaticCompliance()
+}
+
+/// Provides platform-specific text field with automatic accessibility compliance and explicit label (Text)
+/// - Parameters:
+///   - label: The accessibility label for VoiceOver using Text
+///   - prompt: The placeholder text
+///   - text: Binding to the text value
+public func platformTextField(
+    label: Text,
+    prompt: String,
+    text: Binding<String>
+) -> some View {
+    EmptyView().platformTextField(text: text, prompt: prompt)
+        .accessibilityLabel(label)
+        .automaticCompliance()
+}
+
 /// Drop-in replacement for SwiftUI's TextField with axis support (iOS 16+)
 /// Provides platform-specific text field with automatic accessibility compliance
 /// Note: TextField doesn't require @MainActor for creation, only for binding access
@@ -586,6 +616,30 @@ public func platformTextField(
         .automaticCompliance()
 }
 
+/// platformTextField with LocalizedStringKey label and axis
+public func platformTextField(
+    label: LocalizedStringKey,
+    prompt: String,
+    text: Binding<String>,
+    axis: Axis
+) -> some View {
+    EmptyView().platformTextField(text: text, prompt: prompt, axis: axis)
+        .accessibilityLabel(label)
+        .automaticCompliance()
+}
+
+/// platformTextField with Text label and axis
+public func platformTextField(
+    label: Text,
+    prompt: String,
+    text: Binding<String>,
+    axis: Axis
+) -> some View {
+    EmptyView().platformTextField(text: text, prompt: prompt, axis: axis)
+        .accessibilityLabel(label)
+        .automaticCompliance()
+}
+
 /// Drop-in replacement for SwiftUI's SecureField
 /// Provides platform-specific secure text field with automatic accessibility compliance
 /// Note: SecureField doesn't require @MainActor for creation, only for binding access
@@ -628,6 +682,28 @@ public func platformSecureField(
 ) -> some View {
     EmptyView().platformSecureTextField(text: text, prompt: prompt)
         .environment(\.accessibilityLabelText, label)
+        .automaticCompliance()
+}
+
+/// platformSecureField with LocalizedStringKey label
+public func platformSecureField(
+    label: LocalizedStringKey,
+    prompt: String,
+    text: Binding<String>
+) -> some View {
+    EmptyView().platformSecureTextField(text: text, prompt: prompt)
+        .accessibilityLabel(label)
+        .automaticCompliance()
+}
+
+/// platformSecureField with Text label
+public func platformSecureField(
+    label: Text,
+    prompt: String,
+    text: Binding<String>
+) -> some View {
+    EmptyView().platformSecureTextField(text: text, prompt: prompt)
+        .accessibilityLabel(label)
         .automaticCompliance()
 }
 
@@ -676,6 +752,30 @@ public func platformToggle(
         Text(label ?? "Toggle") // Use label as visible text if provided, fallback for Toggle requirement
     }
     .environment(\.accessibilityLabelText, label)
+    .automaticCompliance()
+}
+
+/// platformToggle with LocalizedStringKey label
+public func platformToggle(
+    label: LocalizedStringKey,
+    isOn: Binding<Bool>
+) -> some View {
+    EmptyView().platformToggle(isOn: isOn) {
+        Text(label)
+    }
+    .accessibilityLabel(label)
+    .automaticCompliance()
+}
+
+/// platformToggle with Text label
+public func platformToggle(
+    label: Text,
+    isOn: Binding<Bool>
+) -> some View {
+    EmptyView().platformToggle(isOn: isOn) {
+        label
+    }
+    .accessibilityLabel(label)
     .automaticCompliance()
 }
 
@@ -746,6 +846,28 @@ public func platformTextEditor(
         .automaticCompliance()
 }
 
+/// platformTextEditor with LocalizedStringKey label
+public func platformTextEditor(
+    label: LocalizedStringKey,
+    prompt: String,
+    text: Binding<String>
+) -> some View {
+    EmptyView().platformTextEditor(text: text, prompt: prompt)
+        .accessibilityLabel(label)
+        .automaticCompliance()
+}
+
+/// platformTextEditor with Text label
+public func platformTextEditor(
+    label: Text,
+    prompt: String,
+    text: Binding<String>
+) -> some View {
+    EmptyView().platformTextEditor(text: text, prompt: prompt)
+        .accessibilityLabel(label)
+        .automaticCompliance()
+}
+
 /// Drop-in replacement for SwiftUI's Button with explicit accessibility label
 /// Provides platform-specific button with automatic accessibility compliance
 /// Note: Button doesn't require @MainActor for creation
@@ -769,5 +891,29 @@ public func platformButton(
         Text(label ?? "Button")
     }
     .environment(\.accessibilityLabelText, label)
+    .automaticCompliance()
+}
+
+/// platformButton with LocalizedStringKey label
+public func platformButton(
+    label: LocalizedStringKey,
+    action: @escaping () -> Void
+) -> some View {
+    Button(action: action) {
+        Text(label)
+    }
+    .accessibilityLabel(label)
+    .automaticCompliance()
+}
+
+/// platformButton with Text label
+public func platformButton(
+    label: Text,
+    action: @escaping () -> Void
+) -> some View {
+    Button(action: action) {
+        label
+    }
+    .accessibilityLabel(label)
     .automaticCompliance()
 }
