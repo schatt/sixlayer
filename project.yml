@@ -303,6 +303,43 @@ targets:
     dependencies:
       - target: SixLayerFramework_visionOS
 
+  # Test app for XCUITest - macOS
+  # Minimal app that displays views for XCUITest to test
+  SixLayerFrameworkTestApp_macOS:
+    type: application
+    platform: macOS
+    sources:
+      - path: Development/Tests/SixLayerFrameworkUITests/TestApp
+    settings:
+      PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.framework.test-app
+      SWIFT_VERSION: "6.0"
+      GENERATE_INFOPLIST_FILE: YES
+      CODE_SIGN_STYLE: Automatic
+      DEVELOPMENT_TEAM: Y53G7YPJSZ
+      developmentTeam: Y53G7YPJSZ
+      MACOSX_DEPLOYMENT_TARGET: "15.0"
+    dependencies:
+      - target: SixLayerFramework_macOS
+
+  # Test app for XCUITest - iOS
+  # Minimal app that displays views for XCUITest to test
+  SixLayerFrameworkTestApp_iOS:
+    type: application
+    platform: iOS
+    sources:
+      - path: Development/Tests/SixLayerFrameworkUITests/TestApp
+    settings:
+      PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.framework.test-app
+      SWIFT_VERSION: "6.0"
+      GENERATE_INFOPLIST_FILE: YES
+      CODE_SIGN_STYLE: Automatic
+      DEVELOPMENT_TEAM: Y53G7YPJSZ
+      developmentTeam: Y53G7YPJSZ
+      IPHONEOS_DEPLOYMENT_TARGET: "17.0"
+    dependencies:
+      - target: SixLayerFramework_iOS
+
+
   # External integration tests - iOS
   SixLayerFrameworkExternalIntegrationTests_iOS:
     type: bundle.unit-test
@@ -447,6 +484,20 @@ schemes:
       # Uncomment when ViewInspector is fixed:
       # - SixLayerFrameworkUITests_macOS
 
+  SixLayerFrameworkTestApp-macOS:
+    build:
+      targets:
+        SixLayerFrameworkTestApp_macOS: all
+    test:
+      targets: []
+
+  SixLayerFrameworkTestApp-iOS:
+    build:
+      targets:
+        SixLayerFrameworkTestApp_iOS: all
+    test:
+      targets: []
+
   SixLayerFramework-AllTests-iOS:
     build:
       targets:
@@ -461,11 +512,27 @@ schemes:
     build:
       targets:
         SixLayerFramework_macOS: all
+        SixLayerFrameworkTestApp_macOS: all
     test:
       targets:
         - SixLayerFrameworkUnitTests_macOS
         - SixLayerFrameworkRealUITests_macOS
         - SixLayerFrameworkExternalIntegrationTests_macOS
+      # Note: UI tests need to be added manually in Xcode (xcodegen doesn't support bundle.ui-test)
+      # See Development/Tests/SixLayerFrameworkUITests/README.md for instructions
+
+  SixLayerFramework-AllTests-iOS:
+    build:
+      targets:
+        SixLayerFramework_iOS: all
+        SixLayerFrameworkTestApp_iOS: all
+    test:
+      targets:
+        - SixLayerFrameworkUnitTests_iOS
+        - SixLayerFrameworkRealUITests_iOS
+        - SixLayerFrameworkExternalIntegrationTests_iOS
+      # Note: UI tests need to be added manually in Xcode (xcodegen doesn't support bundle.ui-test)
+      # See Development/Tests/SixLayerFrameworkUITests/README.md for instructions
 
   SixLayerFramework-UnitTestsOnly-iOS:
     build:
