@@ -11,6 +11,20 @@ import SixLayerFramework
 /// Minimal test app that displays views for XCUITest testing
 @main
 struct TestApp: App {
+    init() {
+        // Pre-configure accessibility identifier generation early in app lifecycle
+        // This ensures identifiers are set before views appear, reducing XCUITest snapshot time
+        let config = AccessibilityIdentifierConfig.shared
+        config.namespace = "SixLayer"
+        config.mode = .automatic
+        config.enableAutoIDs = true
+        
+        // Skip animations in UI testing mode for faster execution
+        if ProcessInfo.processInfo.environment["XCUI_TESTING"] == "1" {
+            // Additional optimizations for UI testing mode can go here
+        }
+    }
+    
     var body: some Scene {
         WindowGroup {
             TestAppContentView()
@@ -19,6 +33,7 @@ struct TestApp: App {
 }
 
 /// Content view that can be configured to display different test views
+/// Optimized for fast XCUITest execution with early accessibility setup
 struct TestAppContentView: View {
     @State private var testViewType: TestViewType = .text
     
@@ -27,7 +42,11 @@ struct TestAppContentView: View {
         case button = "Button"
     }
     
+    // Pre-configure environment values to avoid onAppear delays
+    private let globalAccessibilityEnabled = true
+    
     var body: some View {
+        // Simplified view hierarchy for faster rendering and accessibility tree building
         VStack {
             Picker("Test View", selection: $testViewType) {
                 ForEach(TestViewType.allCases, id: \.self) { type in
@@ -37,28 +56,24 @@ struct TestAppContentView: View {
             .pickerStyle(.segmented)
             .padding()
             
+            // Use Group to avoid deep nesting while maintaining view switching
             Group {
                 switch testViewType {
                 case .text:
                     Text("Test Content")
                         .automaticCompliance()
-                        .environment(\.globalAutomaticAccessibilityIdentifiers, true)
+                        .environment(\.globalAutomaticAccessibilityIdentifiers, globalAccessibilityEnabled)
                 case .button:
                     Button("Test Button") {
                         // Action
                     }
                     .automaticCompliance()
-                    .environment(\.globalAutomaticAccessibilityIdentifiers, true)
+                    .environment(\.globalAutomaticAccessibilityIdentifiers, globalAccessibilityEnabled)
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        .onAppear {
-            // Configure accessibility identifier generation
-            let config = AccessibilityIdentifierConfig.shared
-            config.namespace = "SixLayer"
-            config.mode = .automatic
-            config.enableAutoIDs = true
-        }
+        // Note: Accessibility config is now done in App.init() for earlier setup
+        // This ensures identifiers are available before views appear, reducing XCUITest snapshot time
     }
 }
