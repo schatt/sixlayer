@@ -60,6 +60,7 @@ final class AccessibilityRealUITests {
         config.namespace = "SixLayer"
         config.mode = .automatic
         config.enableAutoIDs = true
+        config.enableDebugLogging = true  // Enable debug logging to verify modifier execution
         
         let testView = Text("Test Content")
             .automaticCompliance()
@@ -122,8 +123,21 @@ final class AccessibilityRealUITests {
             }
         }
         
-        #expect(accessibilityID != nil, "Accessibility identifier should be generated in real window")
-        #expect(!accessibilityID!.isEmpty, "Accessibility identifier should not be empty")
+        // Debug: Print what we found
+        if let id = accessibilityID {
+            print("DEBUG: Found accessibility identifier: '\(id)' (length: \(id.count))")
+        } else {
+            print("DEBUG: No accessibility identifier found after \(maxAttempts) attempts")
+            // Print debug log if available
+            if config.enableDebugLogging {
+                config.printDebugLog()
+            }
+        }
+        
+        #expect(accessibilityID != nil, "Accessibility identifier should be generated in real window. Check debug output above.")
+        if let id = accessibilityID {
+            #expect(!id.isEmpty, "Accessibility identifier should not be empty. Found: '\(id)' (length: \(id.count))")
+        }
         
         #elseif os(iOS)
         // Cast to base UIViewController since the view may be wrapped by modifiers
@@ -180,6 +194,7 @@ final class AccessibilityRealUITests {
         config.namespace = "SixLayer"
         config.mode = .automatic
         config.enableAutoIDs = true
+        config.enableDebugLogging = true  // Enable debug logging to verify modifier execution
         
         let testView = Button("Test Button") {
             // Action
@@ -240,7 +255,21 @@ final class AccessibilityRealUITests {
             }
         }
         
-        #expect(accessibilityID != nil && !accessibilityID!.isEmpty, "Modifier body should execute in real window")
+        // Debug: Print what we found
+        if let id = accessibilityID {
+            print("DEBUG: Found accessibility identifier: '\(id)' (length: \(id.count))")
+        } else {
+            print("DEBUG: No accessibility identifier found after \(maxAttempts) attempts")
+            // Print debug log if available
+            if config.enableDebugLogging {
+                config.printDebugLog()
+            }
+        }
+        
+        #expect(accessibilityID != nil, "Modifier body should execute in real window. Check debug output above.")
+        if let id = accessibilityID {
+            #expect(!id.isEmpty, "Modifier body should execute in real window. Found: '\(id)' (length: \(id.count))")
+        }
         
         #elseif os(iOS)
         // Cast to base UIViewController since the view may be wrapped by modifiers
