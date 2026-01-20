@@ -52,6 +52,11 @@ public final class WindowRenderingTestHelper {
         window.center()
         window.makeKeyAndOrderFront(nil)
         
+        // Force the view to be laid out and rendered
+        // This ensures SwiftUI's modifier bodies execute
+        window.contentView?.needsLayout = true
+        window.contentView?.layoutSubtreeIfNeeded()
+        
         windows.append(window)
         return window
     }
@@ -106,6 +111,11 @@ public final class WindowRenderingTestHelper {
         let window = UIWindow(frame: CGRect(origin: .zero, size: size))
         window.rootViewController = hostingController
         window.makeKeyAndVisible()
+        
+        // Force the view to be laid out and rendered
+        // This ensures SwiftUI's modifier bodies execute
+        hostingController.view.setNeedsLayout()
+        hostingController.view.layoutIfNeeded()
         
         windows.append(window)
         return window
