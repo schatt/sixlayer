@@ -71,8 +71,13 @@ final class AccessibilityRealUITests {
         
         // Then: Accessibility identifier should be accessible through platform APIs
         #if os(macOS)
-        let hostingController = window.contentViewController as! NSHostingController<Text>
-        let platformView = hostingController.view
+        // Cast to base NSViewController since the view may be wrapped by modifiers
+        // The hosting controller's generic type is not Text after modifiers are applied
+        guard let viewController = window.contentViewController else {
+            #expect(Bool(false), "Window should have a content view controller")
+            return
+        }
+        let platformView = viewController.view
         
         // Access accessibility identifier through AppKit
         let accessibilityID = platformView.accessibilityIdentifier()
@@ -80,8 +85,13 @@ final class AccessibilityRealUITests {
         #expect(!accessibilityID.isEmpty, "Accessibility identifier should not be empty")
         
         #elseif os(iOS)
-        let hostingController = window.rootViewController as! UIHostingController<Text>
-        let platformView = hostingController.view!
+        // Cast to base UIViewController since the view may be wrapped by modifiers
+        // The hosting controller's generic type is not Text after modifiers are applied
+        guard let viewController = window.rootViewController else {
+            #expect(Bool(false), "Window should have a root view controller")
+            return
+        }
+        let platformView = viewController.view!
         
         // Access accessibility identifier through UIKit
         let accessibilityID = platformView.accessibilityIdentifier
@@ -114,14 +124,22 @@ final class AccessibilityRealUITests {
         
         // Then: Modifier body should have executed (identifier should be present)
         #if os(macOS)
-        let hostingController = window.contentViewController as! NSHostingController<Button<Text>>
-        let platformView = hostingController.view
+        // Cast to base NSViewController since the view may be wrapped by modifiers
+        guard let viewController = window.contentViewController else {
+            #expect(Bool(false), "Window should have a content view controller")
+            return
+        }
+        let platformView = viewController.view
         let accessibilityID = platformView.accessibilityIdentifier()
         #expect(accessibilityID != nil && !accessibilityID.isEmpty, "Modifier body should execute in real window")
         
         #elseif os(iOS)
-        let hostingController = window.rootViewController as! UIHostingController<Button<Text>>
-        let platformView = hostingController.view!
+        // Cast to base UIViewController since the view may be wrapped by modifiers
+        guard let viewController = window.rootViewController else {
+            #expect(Bool(false), "Window should have a root view controller")
+            return
+        }
+        let platformView = viewController.view!
         let accessibilityID = platformView.accessibilityIdentifier
         #expect(accessibilityID != nil && !accessibilityID!.isEmpty, "Modifier body should execute in real window")
         #endif
