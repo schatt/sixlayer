@@ -85,80 +85,24 @@ final class AccessibilityRealUITests {
         windowHelper!.transferAccessibilityIdentifiers(to: window)
         #endif
         
-        // Then: Accessibility identifier should be accessible through platform APIs
+        // Then: Use accessibility APIs (same as XCUITest) to find element by identifier
+        // This tests that identifiers are actually usable by UI testing frameworks
         #if os(macOS)
-        // Cast to base NSViewController since the view may be wrapped by modifiers
-        // The hosting controller's generic type is not Text after modifiers are applied
-        guard let viewController = window.contentViewController else {
-            #expect(Bool(false), "Window should have a content view controller")
-            return
-        }
-        let rootView = viewController.view
+        // Generate expected identifier using same logic as modifier
+        let expectedIdentifier = "SixLayer.main.ui.element.View"
         
-        // Search the view hierarchy for the accessibility identifier
-        // SwiftUI may apply the identifier to a nested view, not the root
-        // Use a more thorough search similar to firstAccessibilityIdentifier helper
-        func findAccessibilityIdentifier(in view: NSView) -> String? {
-            // Use depth-first search with cycle detection
-            var stack: [NSView] = [view]
-            var depth = 0
-            var checkedViews: Set<ObjectIdentifier> = []
-            let maxDepth = 20
-            
-            while let next = stack.popLast(), depth < maxDepth {
-                let nextId = ObjectIdentifier(next)
-                if checkedViews.contains(nextId) {
-                    continue // Avoid infinite loops
-                }
-                checkedViews.insert(nextId)
-                
-                // Check this view's identifier
-                let id = next.accessibilityIdentifier()
-                if !id.isEmpty {
-                    print("DEBUG: Found identifier '\(id)' on view type: \(String(describing: type(of: next)))")
-                    return id
-                }
-                
-                // Add all subviews to the stack for deeper search
-                stack.append(contentsOf: next.subviews)
-                depth += 1
-            }
-            
-            print("DEBUG: Searched \(checkedViews.count) views up to depth \(depth), no identifier found")
-            return nil
-        }
+        // Use NSAccessibility API to find element (same API XCUITest uses)
+        let foundElement = windowHelper!.findAccessibilityElement(by: expectedIdentifier, in: window)
+        #expect(foundElement != nil, "Accessibility identifier '\(expectedIdentifier)' should be findable using accessibility APIs (like XCUITest)")
         
-        // Poll for identifier to appear (SwiftUI update cycle may take time)
-        var accessibilityID: String? = nil
-        let maxAttempts = 10
-        for attempt in 0..<maxAttempts {
-            accessibilityID = findAccessibilityIdentifier(in: rootView)
-            if let id = accessibilityID, !id.isEmpty {
-                break
-            }
-            // Wait a bit and run run loop to process SwiftUI updates
-            if attempt < maxAttempts - 1 {
-                windowHelper!.waitForSwiftUIUpdates(timeout: 0.1)
-            }
-        }
+        #elseif os(iOS)
+        // Generate expected identifier using same logic as modifier
+        let expectedIdentifier = "SixLayer.main.ui.element.View"
         
-        // Debug: Print what we found
-        if let id = accessibilityID {
-            print("DEBUG: Found accessibility identifier: '\(id)' (length: \(id.count))")
-        } else {
-            print("DEBUG: No accessibility identifier found after \(maxAttempts) attempts")
-            // Print debug log if available
-            if config.enableDebugLogging {
-                config.printDebugLog()
-            }
-        }
-        
-        // The identifier should now be found since we manually transferred it to AppKit
-        // after the modifier executed and generated it
-        #expect(accessibilityID != nil, "Accessibility identifier should be generated and transferred to AppKit view")
-        if let id = accessibilityID {
-            #expect(!id.isEmpty, "Accessibility identifier should not be empty. Found: '\(id)' (length: \(id.count))")
-        }
+        // Use UIAccessibility API to find element (same API XCUITest uses)
+        let foundElement = windowHelper!.findAccessibilityElement(by: expectedIdentifier, in: window)
+        #expect(foundElement != nil, "Accessibility identifier '\(expectedIdentifier)' should be findable using accessibility APIs (like XCUITest)")
+        #endif
         
         #elseif os(iOS)
         // Cast to base UIViewController since the view may be wrapped by modifiers
@@ -256,131 +200,25 @@ final class AccessibilityRealUITests {
         windowHelper!.transferAccessibilityIdentifiers(to: window)
         #endif
         
-        // Then: Modifier body should have executed (identifier should be present)
+        // Then: Use accessibility APIs (same as XCUITest) to find element by identifier
+        // This tests that identifiers are actually usable by UI testing frameworks
         #if os(macOS)
-        // Cast to base NSViewController since the view may be wrapped by modifiers
-        guard let viewController = window.contentViewController else {
-            #expect(Bool(false), "Window should have a content view controller")
-            return
-        }
-        let rootView = viewController.view
+        // Generate expected identifier using same logic as modifier
+        // Button with automaticCompliance should generate identifier with "Button" element type
+        let expectedIdentifier = "SixLayer.main.ui.element.Button"
         
-        // Search the view hierarchy for the accessibility identifier
-        // Use a more thorough search similar to firstAccessibilityIdentifier helper
-        func findAccessibilityIdentifier(in view: NSView) -> String? {
-            // Use depth-first search with cycle detection
-            var stack: [NSView] = [view]
-            var depth = 0
-            var checkedViews: Set<ObjectIdentifier> = []
-            let maxDepth = 20
-            
-            while let next = stack.popLast(), depth < maxDepth {
-                let nextId = ObjectIdentifier(next)
-                if checkedViews.contains(nextId) {
-                    continue // Avoid infinite loops
-                }
-                checkedViews.insert(nextId)
-                
-                // Check this view's identifier
-                let id = next.accessibilityIdentifier()
-                if !id.isEmpty {
-                    print("DEBUG: Found identifier '\(id)' on view type: \(String(describing: type(of: next)))")
-                    return id
-                }
-                
-                // Add all subviews to the stack for deeper search
-                stack.append(contentsOf: next.subviews)
-                depth += 1
-            }
-            
-            print("DEBUG: Searched \(checkedViews.count) views up to depth \(depth), no identifier found")
-            return nil
-        }
-        
-        // Poll for identifier to appear (SwiftUI update cycle may take time)
-        var accessibilityID: String? = nil
-        let maxAttempts = 10
-        for attempt in 0..<maxAttempts {
-            accessibilityID = findAccessibilityIdentifier(in: rootView)
-            if let id = accessibilityID, !id.isEmpty {
-                break
-            }
-            // Wait a bit and run run loop to process SwiftUI updates
-            if attempt < maxAttempts - 1 {
-                windowHelper!.waitForSwiftUIUpdates(timeout: 0.1)
-            }
-        }
-        
-        // Debug: Print what we found
-        if let id = accessibilityID {
-            print("DEBUG: Found accessibility identifier: '\(id)' (length: \(id.count))")
-        } else {
-            print("DEBUG: No accessibility identifier found after \(maxAttempts) attempts")
-            // Print debug log if available
-            if config.enableDebugLogging {
-                config.printDebugLog()
-            }
-        }
-        
-        // The identifier should now be found since we manually transferred it to AppKit
-        // after the modifier executed and generated it
-        #expect(accessibilityID != nil, "Modifier body should execute and identifier should be transferred to AppKit view")
-        if let id = accessibilityID {
-            #expect(!id.isEmpty, "Modifier body should execute in real window. Found: '\(id)' (length: \(id.count))")
-        }
+        // Use NSAccessibility API to find element (same API XCUITest uses)
+        let foundElement = windowHelper!.findAccessibilityElement(by: expectedIdentifier, in: window)
+        #expect(foundElement != nil, "Accessibility identifier '\(expectedIdentifier)' should be findable using accessibility APIs (like XCUITest)")
         
         #elseif os(iOS)
-        // Cast to base UIViewController since the view may be wrapped by modifiers
-        guard let viewController = window.rootViewController else {
-            #expect(Bool(false), "Window should have a root view controller")
-            return
-        }
-        let rootView = viewController.view!
+        // Generate expected identifier using same logic as modifier
+        // Button with automaticCompliance should generate identifier with "Button" element type
+        let expectedIdentifier = "SixLayer.main.ui.element.Button"
         
-        // Search the view hierarchy for the accessibility identifier
-        func findAccessibilityIdentifier(in view: UIView) -> String? {
-            if let id = view.accessibilityIdentifier, !id.isEmpty {
-                return id
-            }
-            for subview in view.subviews {
-                if let id = findAccessibilityIdentifier(in: subview) {
-                    return id
-                }
-            }
-            return nil
-        }
-        
-        // Poll for identifier to appear (SwiftUI update cycle may take time)
-        var accessibilityID: String? = nil
-        let maxAttempts = 10
-        for attempt in 0..<maxAttempts {
-            accessibilityID = findAccessibilityIdentifier(in: rootView)
-            if let id = accessibilityID, !id.isEmpty {
-                break
-            }
-            // Wait a bit and run run loop to process SwiftUI updates
-            if attempt < maxAttempts - 1 {
-                windowHelper!.waitForSwiftUIUpdates(timeout: 0.1)
-            }
-        }
-        
-        // Debug: Print what we found
-        if let id = accessibilityID {
-            print("DEBUG: Found accessibility identifier: '\(id)' (length: \(id.count))")
-        } else {
-            print("DEBUG: No accessibility identifier found after \(maxAttempts) attempts")
-            // Print debug log if available
-            if config.enableDebugLogging {
-                config.printDebugLog()
-            }
-        }
-        
-        // The identifier should now be found since we manually transferred it to AppKit
-        // after the modifier executed and generated it
-        #expect(accessibilityID != nil, "Modifier body should execute and identifier should be transferred to AppKit view")
-        if let id = accessibilityID {
-            #expect(!id.isEmpty, "Modifier body should execute in real window. Found: '\(id)' (length: \(id.count))")
-        }
+        // Use UIAccessibility API to find element (same API XCUITest uses)
+        let foundElement = windowHelper!.findAccessibilityElement(by: expectedIdentifier, in: window)
+        #expect(foundElement != nil, "Accessibility identifier '\(expectedIdentifier)' should be findable using accessibility APIs (like XCUITest)")
         #endif
     }
 }

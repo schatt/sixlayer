@@ -76,56 +76,49 @@ public final class WindowRenderingTestHelper {
         }
     }
     
-    /// Manually transfer accessibility identifiers from SwiftUI to AppKit views
-    /// SwiftUI's .accessibilityIdentifier() doesn't always propagate to AppKit in test environments.
-    /// This method manually sets the identifier on the AppKit view hierarchy using the same
-    /// generation logic as the modifier, ensuring identifiers are accessible for UI testing.
-    /// - Parameter window: The window containing the SwiftUI view
-    public func transferAccessibilityIdentifiers(to window: NSWindow) {
-        guard let viewController = window.contentViewController,
-              let rootView = viewController.view else {
-            return
+    /// Find an accessibility element by identifier using NSAccessibility API
+    /// This uses the same APIs that XCUITest uses, providing a realistic test
+    /// - Parameters:
+    ///   - window: The window to search in
+    ///   - identifier: The accessibility identifier to find
+    /// - Returns: The accessibility element if found, nil otherwise
+    public func findAccessibilityElement(by identifier: String, in window: NSWindow) -> Any? {
+        guard let windowElement = window.contentView else {
+            return nil
         }
         
-        // Get the config to generate the same identifier
-        let config = AccessibilityIdentifierConfig.currentTaskLocalConfig ?? AccessibilityIdentifierConfig.shared
-        
-        // Generate identifier using the same logic as the modifier
-        let namespace = config.namespace.isEmpty ? nil : config.namespace
-        let screenContext = config.enableUITestIntegration ? "main" : (config.currentScreenContext ?? "main")
-        let viewHierarchyPath = config.enableUITestIntegration ? "ui" : (config.currentViewHierarchy.isEmpty ? "ui" : config.currentViewHierarchy.joined(separator: "."))
-        let componentName = config.includeComponentNames ? "element" : nil
-        let elementType = config.includeElementTypes ? "View" : nil
-        
-        var identifierComponents: [String] = []
-        if let namespace = namespace {
-            identifierComponents.append(namespace)
-        }
-        identifierComponents.append(screenContext)
-        identifierComponents.append(viewHierarchyPath)
-        if let componentName = componentName {
-            identifierComponents.append(componentName)
-        }
-        if let elementType = elementType {
-            identifierComponents.append(elementType)
-        }
-        
-        let identifier = identifierComponents.joined(separator: ".")
-        
-        // Find and set identifier on NSHostingView instances (SwiftUI's internal view type)
-        func setIdentifierOnHostingViews(in view: NSView, identifier: String) {
-            // Check if this is an NSHostingView (SwiftUI's internal view type)
-            let viewType = String(describing: type(of: view))
-            if viewType.contains("HostingView") || viewType.contains("NSHostingView") {
-                view.setAccessibilityIdentifier(identifier)
+        // Use NSAccessibility API to find element by identifier
+        // This is the same API that XCUITest uses under the hood
+        func searchForElement(in element: Any, identifier: String) -> Any? {
+            // Check if this element has the identifier
+            if let view = element as? NSView {
+                if view.accessibilityIdentifier() == identifier {
+                    return element
+                }
             }
-            // Recursively check subviews
-            for subview in view.subviews {
-                setIdentifierOnHostingViews(in: subview, identifier: identifier)
+            
+            // Get accessibility children and search recursively
+            if let children = (element as? NSView)?.accessibilityChildren() as? [Any] {
+                for child in children {
+                    if let found = searchForElement(in: child, identifier: identifier) {
+                        return found
+                    }
+                }
             }
+            
+            // Also search subviews
+            if let view = element as? NSView {
+                for subview in view.subviews {
+                    if let found = searchForElement(in: subview, identifier: identifier) {
+                        return found
+                    }
+                }
+            }
+            
+            return nil
         }
         
-        setIdentifierOnHostingViews(in: rootView, identifier: identifier)
+        return searchForElement(in: windowElement, identifier: identifier)
     }
     
     /// Clean up all created windows
@@ -188,56 +181,36 @@ public final class WindowRenderingTestHelper {
         }
     }
     
-    /// Manually transfer accessibility identifiers from SwiftUI to UIKit views
-    /// SwiftUI's .accessibilityIdentifier() doesn't always propagate to UIKit in test environments.
-    /// This method manually sets the identifier on the UIKit view hierarchy using the same
-    /// generation logic as the modifier, ensuring identifiers are accessible for UI testing.
-    /// - Parameter window: The window containing the SwiftUI view
-    public func transferAccessibilityIdentifiers(to window: UIWindow) {
-        guard let viewController = window.rootViewController,
-              let rootView = viewController.view else {
-            return
+    /// Find an accessibility element by identifier using UIAccessibility API
+    /// This uses the same APIs that XCUITest uses, providing a realistic test
+    /// - Parameters:
+    ///   - window: The window to search in
+    ///   - identifier: The accessibility identifier to find
+    /// - Returns: The accessibility element if found, nil otherwise
+    public func findAccessibilityElement(by identifier: String, in window: UIWindow) -> Any? {
+        guard let rootView = window.rootViewController?.view else {
+            return nil
         }
         
-        // Get the config to generate the same identifier
-        let config = AccessibilityIdentifierConfig.currentTaskLocalConfig ?? AccessibilityIdentifierConfig.shared
-        
-        // Generate identifier using the same logic as the modifier
-        let namespace = config.namespace.isEmpty ? nil : config.namespace
-        let screenContext = config.enableUITestIntegration ? "main" : (config.currentScreenContext ?? "main")
-        let viewHierarchyPath = config.enableUITestIntegration ? "ui" : (config.currentViewHierarchy.isEmpty ? "ui" : config.currentViewHierarchy.joined(separator: "."))
-        let componentName = config.includeComponentNames ? "element" : nil
-        let elementType = config.includeElementTypes ? "View" : nil
-        
-        var identifierComponents: [String] = []
-        if let namespace = namespace {
-            identifierComponents.append(namespace)
-        }
-        identifierComponents.append(screenContext)
-        identifierComponents.append(viewHierarchyPath)
-        if let componentName = componentName {
-            identifierComponents.append(componentName)
-        }
-        if let elementType = elementType {
-            identifierComponents.append(elementType)
-        }
-        
-        let identifier = identifierComponents.joined(separator: ".")
-        
-        // Find and set identifier on UIHostingView instances (SwiftUI's internal view type)
-        func setIdentifierOnHostingViews(in view: UIView, identifier: String) {
-            // Check if this is a UIHostingView (SwiftUI's internal view type)
-            let viewType = String(describing: type(of: view))
-            if viewType.contains("HostingView") || viewType.contains("UIHostingView") {
-                view.accessibilityIdentifier = identifier
+        // Use UIAccessibility API to find element by identifier
+        // This is the same API that XCUITest uses under the hood
+        func searchForElement(in view: UIView, identifier: String) -> UIView? {
+            // Check if this view has the identifier
+            if view.accessibilityIdentifier == identifier {
+                return view
             }
-            // Recursively check subviews
+            
+            // Search subviews recursively
             for subview in view.subviews {
-                setIdentifierOnHostingViews(in: subview, identifier: identifier)
+                if let found = searchForElement(in: subview, identifier: identifier) {
+                    return found
+                }
             }
+            
+            return nil
         }
         
-        setIdentifierOnHostingViews(in: rootView, identifier: identifier)
+        return searchForElement(in: rootView, identifier: identifier)
     }
     
     /// Clean up all created windows
