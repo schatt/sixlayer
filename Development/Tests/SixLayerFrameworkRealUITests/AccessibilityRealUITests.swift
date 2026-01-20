@@ -93,19 +93,34 @@ final class AccessibilityRealUITests {
         
         // Search the view hierarchy for the accessibility identifier
         // SwiftUI may apply the identifier to a nested view, not the root
+        // Use a more thorough search similar to firstAccessibilityIdentifier helper
         func findAccessibilityIdentifier(in view: NSView) -> String? {
-            // Check this view
-            // Note: accessibilityIdentifier() returns String (non-optional) on macOS
-            let id = view.accessibilityIdentifier()
-            if !id.isEmpty {
-                return id
-            }
-            // Recursively check subviews
-            for subview in view.subviews {
-                if let id = findAccessibilityIdentifier(in: subview) {
+            // Use depth-first search with cycle detection
+            var stack: [NSView] = [view]
+            var depth = 0
+            var checkedViews: Set<ObjectIdentifier> = []
+            let maxDepth = 20
+            
+            while let next = stack.popLast(), depth < maxDepth {
+                let nextId = ObjectIdentifier(next)
+                if checkedViews.contains(nextId) {
+                    continue // Avoid infinite loops
+                }
+                checkedViews.insert(nextId)
+                
+                // Check this view's identifier
+                let id = next.accessibilityIdentifier()
+                if !id.isEmpty {
+                    print("DEBUG: Found identifier '\(id)' on view type: \(String(describing: type(of: next)))")
                     return id
                 }
+                
+                // Add all subviews to the stack for deeper search
+                stack.append(contentsOf: next.subviews)
+                depth += 1
             }
+            
+            print("DEBUG: Searched \(checkedViews.count) views up to depth \(depth), no identifier found")
             return nil
         }
         
@@ -241,17 +256,34 @@ final class AccessibilityRealUITests {
         let rootView = viewController.view
         
         // Search the view hierarchy for the accessibility identifier
+        // Use a more thorough search similar to firstAccessibilityIdentifier helper
         func findAccessibilityIdentifier(in view: NSView) -> String? {
-            // Note: accessibilityIdentifier() returns String (non-optional) on macOS
-            let id = view.accessibilityIdentifier()
-            if !id.isEmpty {
-                return id
-            }
-            for subview in view.subviews {
-                if let id = findAccessibilityIdentifier(in: subview) {
+            // Use depth-first search with cycle detection
+            var stack: [NSView] = [view]
+            var depth = 0
+            var checkedViews: Set<ObjectIdentifier> = []
+            let maxDepth = 20
+            
+            while let next = stack.popLast(), depth < maxDepth {
+                let nextId = ObjectIdentifier(next)
+                if checkedViews.contains(nextId) {
+                    continue // Avoid infinite loops
+                }
+                checkedViews.insert(nextId)
+                
+                // Check this view's identifier
+                let id = next.accessibilityIdentifier()
+                if !id.isEmpty {
+                    print("DEBUG: Found identifier '\(id)' on view type: \(String(describing: type(of: next)))")
                     return id
                 }
+                
+                // Add all subviews to the stack for deeper search
+                stack.append(contentsOf: next.subviews)
+                depth += 1
             }
+            
+            print("DEBUG: Searched \(checkedViews.count) views up to depth \(depth), no identifier found")
             return nil
         }
         
