@@ -67,7 +67,15 @@ final class AccessibilityRealUITests {
         
         // When: View is rendered in a real window
         let window = windowHelper!.createWindow(hosting: testView)
-        await windowHelper!.waitForLayout(timeout: 0.2)
+        await windowHelper!.waitForLayout(timeout: 0.5)
+        
+        // Force layout pass to ensure SwiftUI updates are applied
+        #if os(macOS)
+        window.contentView?.layoutSubtreeIfNeeded()
+        #elseif os(iOS)
+        window.rootViewController?.view.setNeedsLayout()
+        window.rootViewController?.view.layoutIfNeeded()
+        #endif
         
         // Then: Accessibility identifier should be accessible through platform APIs
         #if os(macOS)
@@ -77,12 +85,28 @@ final class AccessibilityRealUITests {
             #expect(Bool(false), "Window should have a content view controller")
             return
         }
-        let platformView = viewController.view
+        let rootView = viewController.view
         
-        // Access accessibility identifier through AppKit
-        let accessibilityID = platformView.accessibilityIdentifier()
+        // Search the view hierarchy for the accessibility identifier
+        // SwiftUI may apply the identifier to a nested view, not the root
+        func findAccessibilityIdentifier(in view: NSView) -> String? {
+            // Check this view
+            let id = view.accessibilityIdentifier()
+            if let id = id, !id.isEmpty {
+                return id
+            }
+            // Recursively check subviews
+            for subview in view.subviews {
+                if let id = findAccessibilityIdentifier(in: subview) {
+                    return id
+                }
+            }
+            return nil
+        }
+        
+        let accessibilityID = findAccessibilityIdentifier(in: rootView)
         #expect(accessibilityID != nil, "Accessibility identifier should be generated in real window")
-        #expect(!accessibilityID.isEmpty, "Accessibility identifier should not be empty")
+        #expect(!accessibilityID!.isEmpty, "Accessibility identifier should not be empty")
         
         #elseif os(iOS)
         // Cast to base UIViewController since the view may be wrapped by modifiers
@@ -91,10 +115,25 @@ final class AccessibilityRealUITests {
             #expect(Bool(false), "Window should have a root view controller")
             return
         }
-        let platformView = viewController.view!
+        let rootView = viewController.view!
         
-        // Access accessibility identifier through UIKit
-        let accessibilityID = platformView.accessibilityIdentifier
+        // Search the view hierarchy for the accessibility identifier
+        // SwiftUI may apply the identifier to a nested view, not the root
+        func findAccessibilityIdentifier(in view: UIView) -> String? {
+            // Check this view
+            if let id = view.accessibilityIdentifier, !id.isEmpty {
+                return id
+            }
+            // Recursively check subviews
+            for subview in view.subviews {
+                if let id = findAccessibilityIdentifier(in: subview) {
+                    return id
+                }
+            }
+            return nil
+        }
+        
+        let accessibilityID = findAccessibilityIdentifier(in: rootView)
         #expect(accessibilityID != nil, "Accessibility identifier should be generated in real window")
         #expect(!accessibilityID!.isEmpty, "Accessibility identifier should not be empty")
         #endif
@@ -120,7 +159,15 @@ final class AccessibilityRealUITests {
         
         // When: View is rendered in a real window and layout completes
         let window = windowHelper!.createWindow(hosting: testView)
-        await windowHelper!.waitForLayout(timeout: 0.2)
+        await windowHelper!.waitForLayout(timeout: 0.5)
+        
+        // Force layout pass to ensure SwiftUI updates are applied
+        #if os(macOS)
+        window.contentView?.layoutSubtreeIfNeeded()
+        #elseif os(iOS)
+        window.rootViewController?.view.setNeedsLayout()
+        window.rootViewController?.view.layoutIfNeeded()
+        #endif
         
         // Then: Modifier body should have executed (identifier should be present)
         #if os(macOS)
@@ -129,9 +176,24 @@ final class AccessibilityRealUITests {
             #expect(Bool(false), "Window should have a content view controller")
             return
         }
-        let platformView = viewController.view
-        let accessibilityID = platformView.accessibilityIdentifier()
-        #expect(accessibilityID != nil && !accessibilityID.isEmpty, "Modifier body should execute in real window")
+        let rootView = viewController.view
+        
+        // Search the view hierarchy for the accessibility identifier
+        func findAccessibilityIdentifier(in view: NSView) -> String? {
+            let id = view.accessibilityIdentifier()
+            if let id = id, !id.isEmpty {
+                return id
+            }
+            for subview in view.subviews {
+                if let id = findAccessibilityIdentifier(in: subview) {
+                    return id
+                }
+            }
+            return nil
+        }
+        
+        let accessibilityID = findAccessibilityIdentifier(in: rootView)
+        #expect(accessibilityID != nil && !accessibilityID!.isEmpty, "Modifier body should execute in real window")
         
         #elseif os(iOS)
         // Cast to base UIViewController since the view may be wrapped by modifiers
@@ -139,8 +201,22 @@ final class AccessibilityRealUITests {
             #expect(Bool(false), "Window should have a root view controller")
             return
         }
-        let platformView = viewController.view!
-        let accessibilityID = platformView.accessibilityIdentifier
+        let rootView = viewController.view!
+        
+        // Search the view hierarchy for the accessibility identifier
+        func findAccessibilityIdentifier(in view: UIView) -> String? {
+            if let id = view.accessibilityIdentifier, !id.isEmpty {
+                return id
+            }
+            for subview in view.subviews {
+                if let id = findAccessibilityIdentifier(in: subview) {
+                    return id
+                }
+            }
+            return nil
+        }
+        
+        let accessibilityID = findAccessibilityIdentifier(in: rootView)
         #expect(accessibilityID != nil && !accessibilityID!.isEmpty, "Modifier body should execute in real window")
         #endif
     }
