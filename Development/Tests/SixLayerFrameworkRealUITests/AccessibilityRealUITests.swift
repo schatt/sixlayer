@@ -76,13 +76,9 @@ final class AccessibilityRealUITests {
         // Force layout pass to ensure SwiftUI updates are applied
         #if os(macOS)
         window.contentView?.layoutSubtreeIfNeeded()
-        // Manually transfer identifiers from SwiftUI to AppKit (SwiftUI doesn't always propagate in tests)
-        windowHelper!.transferAccessibilityIdentifiers(to: window)
         #elseif os(iOS)
         window.rootViewController?.view.setNeedsLayout()
         window.rootViewController?.view.layoutIfNeeded()
-        // Manually transfer identifiers from SwiftUI to UIKit (SwiftUI doesn't always propagate in tests)
-        windowHelper!.transferAccessibilityIdentifiers(to: window)
         #endif
         
         // Then: Use accessibility APIs (same as XCUITest) to find element by identifier
@@ -102,63 +98,6 @@ final class AccessibilityRealUITests {
         // Use UIAccessibility API to find element (same API XCUITest uses)
         let foundElement = windowHelper!.findAccessibilityElement(by: expectedIdentifier, in: window)
         #expect(foundElement != nil, "Accessibility identifier '\(expectedIdentifier)' should be findable using accessibility APIs (like XCUITest)")
-        #endif
-        
-        #elseif os(iOS)
-        // Cast to base UIViewController since the view may be wrapped by modifiers
-        // The hosting controller's generic type is not Text after modifiers are applied
-        guard let viewController = window.rootViewController else {
-            #expect(Bool(false), "Window should have a root view controller")
-            return
-        }
-        let rootView = viewController.view!
-        
-        // Search the view hierarchy for the accessibility identifier
-        // SwiftUI may apply the identifier to a nested view, not the root
-        func findAccessibilityIdentifier(in view: UIView) -> String? {
-            // Check this view
-            if let id = view.accessibilityIdentifier, !id.isEmpty {
-                return id
-            }
-            // Recursively check subviews
-            for subview in view.subviews {
-                if let id = findAccessibilityIdentifier(in: subview) {
-                    return id
-                }
-            }
-            return nil
-        }
-        
-        // Poll for identifier to appear (SwiftUI update cycle may take time)
-        var accessibilityID: String? = nil
-        let maxAttempts = 10
-        for attempt in 0..<maxAttempts {
-            accessibilityID = findAccessibilityIdentifier(in: rootView)
-            if let id = accessibilityID, !id.isEmpty {
-                break
-            }
-            // Wait a bit and run run loop to process SwiftUI updates
-            if attempt < maxAttempts - 1 {
-                windowHelper!.waitForSwiftUIUpdates(timeout: 0.1)
-            }
-        }
-        
-        // Debug: Print what we found
-        if let id = accessibilityID {
-            print("DEBUG: Found accessibility identifier: '\(id)' (length: \(id.count))")
-        } else {
-            print("DEBUG: No accessibility identifier found after \(maxAttempts) attempts")
-            // Print debug log if available
-            if config.enableDebugLogging {
-                config.printDebugLog()
-            }
-        }
-        
-        if let id = accessibilityID {
-            #expect(!id.isEmpty, "Accessibility identifier should not be empty. Found: '\(id)' (length: \(id.count))")
-        } else {
-            #expect(Bool(false), "Accessibility identifier should be generated in real window. Check debug output above.")
-        }
         #endif
     }
     
@@ -191,13 +130,9 @@ final class AccessibilityRealUITests {
         // Force layout pass to ensure SwiftUI updates are applied
         #if os(macOS)
         window.contentView?.layoutSubtreeIfNeeded()
-        // Manually transfer identifiers from SwiftUI to AppKit (SwiftUI doesn't always propagate in tests)
-        windowHelper!.transferAccessibilityIdentifiers(to: window)
         #elseif os(iOS)
         window.rootViewController?.view.setNeedsLayout()
         window.rootViewController?.view.layoutIfNeeded()
-        // Manually transfer identifiers from SwiftUI to UIKit (SwiftUI doesn't always propagate in tests)
-        windowHelper!.transferAccessibilityIdentifiers(to: window)
         #endif
         
         // Then: Use accessibility APIs (same as XCUITest) to find element by identifier
