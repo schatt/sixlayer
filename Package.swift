@@ -1,5 +1,5 @@
 // swift-tools-version: 6.0
-// SixLayerFramework v7.4.1 - idealWidth and idealHeight Support for platformFrame
+// SixLayerFramework v7.4.2 - @MainActor Concurrency Fix for platformFrame
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription

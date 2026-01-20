@@ -1,12 +1,26 @@
 # 🚀 Six-Layer Framework Release History
 
-## 📍 **Current Release: v7.4.1 - idealWidth and idealHeight Support for platformFrame** 🎯
+## 📍 **Current Release: v7.4.2 - @MainActor Concurrency Fix for platformFrame** 🎯
 
-**Release Date**: January 19, 2026
+**Release Date**: January 20, 2026
 **Status**: ✅ **COMPLETE**
-**Previous Release**: v7.4.0 - PhotoPurpose Refactoring (Breaking Change)
-**Note**: Patch release adding idealWidth and idealHeight parameter support to platformFrame() to match SwiftUI's native .frame() modifier API. Ideal sizes are automatically clamped to screen/window bounds on all platforms.
+**Previous Release**: v7.4.1 - idealWidth and idealHeight Support for platformFrame
+**Note**: Patch release adding @MainActor annotation to platformFrame() functions to ensure correct Swift concurrency behavior. Makes concurrency requirements explicit and allows functions to be called from non-isolated contexts with await.
 **Next Release**: TBD
+
+---
+
+## 🎯 **v7.4.2 - @MainActor Concurrency Fix for platformFrame** (January 20, 2026)
+
+### **What's Fixed:**
+
+#### **🔧 Concurrency: @MainActor Annotation**
+- **Concurrency correctness**: Added `@MainActor` annotation to `platformFrame()` functions
+- **Swift 6 compliance**: Aligns with Swift 6 strict concurrency requirements
+- **Explicit requirements**: Makes concurrency requirements clear in the API
+- **Flexibility**: Functions can now be called from non-isolated contexts using `await`
+
+**See [RELEASE_v7.4.2.md](RELEASE_v7.4.2.md) for complete release notes.**
 
 ---
 
