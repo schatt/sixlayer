@@ -221,8 +221,11 @@ public final class WindowRenderingTestHelper {
             
             if let view = element as? NSView {
                 // Try unignored children first (more reliable for SwiftUI)
-                if let unignoredChildren = NSAccessibilityUnignoredChildren(view.accessibilityChildren()) as? [Any] {
-                    accessibilityChildren.append(contentsOf: unignoredChildren)
+                if let children = view.accessibilityChildren() {
+                    let unignoredChildren = NSAccessibility.unignoredChildren(from: children)
+                    if let unignoredArray = unignoredChildren as? [Any] {
+                        accessibilityChildren.append(contentsOf: unignoredArray)
+                    }
                 } else if let children = view.accessibilityChildren() as? [Any] {
                     accessibilityChildren.append(contentsOf: children)
                 }
@@ -234,8 +237,11 @@ public final class WindowRenderingTestHelper {
             
             if let accessibilityElement = element as? NSAccessibilityElement {
                 // Try unignored children first
-                if let unignoredChildren = NSAccessibilityUnignoredChildren(accessibilityElement.accessibilityChildren()) as? [Any] {
-                    accessibilityChildren.append(contentsOf: unignoredChildren)
+                if let children = accessibilityElement.accessibilityChildren() {
+                    let unignoredChildren = NSAccessibility.unignoredChildren(from: children)
+                    if let unignoredArray = unignoredChildren as? [Any] {
+                        accessibilityChildren.append(contentsOf: unignoredArray)
+                    }
                 } else if let children = accessibilityElement.accessibilityChildren() as? [Any] {
                     accessibilityChildren.append(contentsOf: children)
                 }
@@ -274,9 +280,53 @@ public final class WindowRenderingTestHelper {
             } else {
                 print("DEBUG: No identifiers found in view hierarchy")
             }
+            
+            // Additional debug: Try to find ANY accessibility element and print its properties
+            print("DEBUG: Attempting to dump accessibility hierarchy...")
+            if let rootView = windowElement as? NSView {
+                dumpAccessibilityHierarchy(from: rootView, depth: 0, maxDepth: 3)
+            }
         }
         
         return result
+    }
+    
+    /// Dump accessibility hierarchy for debugging
+    private func dumpAccessibilityHierarchy(from view: NSView, depth: Int, maxDepth: Int) {
+        guard depth < maxDepth else { return }
+        
+        let indent = String(repeating: "  ", count: depth)
+        
+        // Get identifier if available
+        let identifier = view.accessibilityIdentifier()
+        let typeName = String(describing: type(of: view))
+        
+        if !identifier.isEmpty {
+            print("\(indent)\(typeName): identifier='\(identifier)'")
+        } else {
+            print("\(indent)\(typeName): (no identifier)")
+        }
+        
+        // Check accessibility children
+        if let children = view.accessibilityChildren() {
+            let unignored = NSAccessibility.unignoredChildren(from: children)
+            if let childrenArray = unignored as? [Any] {
+                for child in childrenArray {
+                    if let childView = child as? NSView {
+                        dumpAccessibilityHierarchy(from: childView, depth: depth + 1, maxDepth: maxDepth)
+                    } else if let childElement = child as? NSAccessibilityElement {
+                        let childId = childElement.accessibilityIdentifier() as? String ?? ""
+                        let childType = String(describing: type(of: childElement))
+                        print("\(indent)  \(childType): identifier='\(childId)'")
+                    }
+                }
+            }
+        }
+        
+        // Also check subviews
+        for subview in view.subviews {
+            dumpAccessibilityHierarchy(from: subview, depth: depth + 1, maxDepth: maxDepth)
+        }
     }
     
     /// Clean up all created windows
