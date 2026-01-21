@@ -30,7 +30,20 @@ extension XCUIApplication {
     func waitForReady(timeout: TimeInterval = 5.0) -> Bool {
         // Wait for a known element that indicates app is ready
         // "Test Content" appears when the initial view is rendered
-        return staticTexts["Test Content"].waitForExistence(timeout: timeout)
+        // Try multiple query strategies since text might be exposed differently
+        if staticTexts["Test Content"].waitForExistence(timeout: timeout) {
+            return true
+        }
+        // Try finding by any element type (text might be exposed as .other or .any)
+        if let element = findElement(byIdentifier: "Test Content",
+                                    primaryType: .staticText,
+                                    secondaryTypes: [.any, .other],
+                                    timeout: timeout) {
+            return element.exists
+        }
+        // Try finding by label in any element
+        let anyElement = descendants(matching: .any)["Test Content"]
+        return anyElement.waitForExistence(timeout: timeout)
     }
     
     /// Launch app with performance optimizations
