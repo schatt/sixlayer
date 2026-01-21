@@ -345,6 +345,53 @@ public final class AccessibilityIdentifierConfig: @unchecked Sendable {
         currentScreenContext = state
     }
     
+    // MARK: - UserDefaults Persistence
+    
+    /// Save configuration to UserDefaults
+    /// Persists all configuration properties so they survive app restarts
+    /// Follows the same pattern as PerformanceConfiguration.saveToUserDefaults()
+    public func saveToUserDefaults() {
+        UserDefaults.standard.set(enableAutoIDs, forKey: "SixLayer.Accessibility.enableAutoIDs")
+        UserDefaults.standard.set(includeComponentNames, forKey: "SixLayer.Accessibility.includeComponentNames")
+        UserDefaults.standard.set(includeElementTypes, forKey: "SixLayer.Accessibility.includeElementTypes")
+        UserDefaults.standard.set(enableUITestIntegration, forKey: "SixLayer.Accessibility.enableUITestIntegration")
+        UserDefaults.standard.set(namespace, forKey: "SixLayer.Accessibility.namespace")
+        UserDefaults.standard.set(globalPrefix, forKey: "SixLayer.Accessibility.globalPrefix")
+        UserDefaults.standard.set(enableDebugLogging, forKey: "SixLayer.Accessibility.enableDebugLogging")
+        UserDefaults.standard.set(mode.rawValue, forKey: "SixLayer.Accessibility.mode")
+    }
+    
+    /// Load configuration from UserDefaults
+    /// Only loads values if they exist in UserDefaults (nil checks) to respect defaults
+    /// Follows the same pattern as PerformanceConfiguration.loadFromUserDefaults()
+    public func loadFromUserDefaults() {
+        if UserDefaults.standard.object(forKey: "SixLayer.Accessibility.enableAutoIDs") != nil {
+            enableAutoIDs = UserDefaults.standard.bool(forKey: "SixLayer.Accessibility.enableAutoIDs")
+        }
+        if UserDefaults.standard.object(forKey: "SixLayer.Accessibility.includeComponentNames") != nil {
+            includeComponentNames = UserDefaults.standard.bool(forKey: "SixLayer.Accessibility.includeComponentNames")
+        }
+        if UserDefaults.standard.object(forKey: "SixLayer.Accessibility.includeElementTypes") != nil {
+            includeElementTypes = UserDefaults.standard.bool(forKey: "SixLayer.Accessibility.includeElementTypes")
+        }
+        if UserDefaults.standard.object(forKey: "SixLayer.Accessibility.enableUITestIntegration") != nil {
+            enableUITestIntegration = UserDefaults.standard.bool(forKey: "SixLayer.Accessibility.enableUITestIntegration")
+        }
+        if let savedNamespace = UserDefaults.standard.string(forKey: "SixLayer.Accessibility.namespace") {
+            namespace = savedNamespace
+        }
+        if let savedGlobalPrefix = UserDefaults.standard.string(forKey: "SixLayer.Accessibility.globalPrefix") {
+            globalPrefix = savedGlobalPrefix
+        }
+        if UserDefaults.standard.object(forKey: "SixLayer.Accessibility.enableDebugLogging") != nil {
+            enableDebugLogging = UserDefaults.standard.bool(forKey: "SixLayer.Accessibility.enableDebugLogging")
+        }
+        if let savedModeString = UserDefaults.standard.string(forKey: "SixLayer.Accessibility.mode"),
+           let savedMode = AccessibilityMode(rawValue: savedModeString) {
+            mode = savedMode
+        }
+    }
+    
 }
 
 // MARK: - DateFormatter Extension

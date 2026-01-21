@@ -106,7 +106,18 @@ public final class WindowRenderingTestHelper {
         
         // Give the accessibility system a moment to update
         // SwiftUI identifiers need time to propagate through the accessibility hierarchy
-        RunLoop.current.run(mode: .default, before: Date(timeIntervalSinceNow: 0.1))
+        // Increase wait time to ensure SwiftUI has fully rendered and updated accessibility
+        RunLoop.current.run(mode: .default, before: Date(timeIntervalSinceNow: 0.2))
+        
+        // Force accessibility update
+        #if os(macOS)
+        if let hostingController = window.contentViewController as? NSHostingController<AnyView> {
+            // Force SwiftUI to update its accessibility representation
+            hostingController.view.needsDisplay = true
+            hostingController.view.needsLayout = true
+            hostingController.view.layoutSubtreeIfNeeded()
+        }
+        #endif
         
         // Use NSAccessibility API to find element by identifier
         // This is the same API that XCUITest uses under the hood
@@ -133,12 +144,20 @@ public final class WindowRenderingTestHelper {
                 }
             }
             
-            // Also try accessing via NSAccessibility attribute directly
+            // Also try accessing via NSAccessibility protocol directly using dynamic method invocation
+            // Note: NSView and NSAccessibilityElement are already checked above,
+            // so this is a fallback for other NSObject types that might have accessibilityIdentifier
             if let element = element as? NSObject {
-                if let accessibilityId = element.value(forAttribute: .identifier) as? String,
-                   !accessibilityId.isEmpty,
-                   accessibilityId == identifier {
-                    return true
+                // Try to get accessibilityIdentifier using dynamic method invocation
+                // This works for objects that have accessibilityIdentifier() method
+                let selector = NSSelectorFromString("accessibilityIdentifier")
+                if element.responds(to: selector) {
+                    if let result = element.perform(selector),
+                       let accessibilityId = result.takeUnretainedValue() as? String,
+                       !accessibilityId.isEmpty,
+                       accessibilityId == identifier {
+                        return true
+                    }
                 }
             }
             
@@ -160,11 +179,29 @@ public final class WindowRenderingTestHelper {
                 return element
             }
             
-            // Collect identifier for debugging
+            // Collect identifier for debugging (check all possible sources)
             if let view = element as? NSView {
                 let viewId = view.accessibilityIdentifier()
                 if !viewId.isEmpty {
-                    allIdentifiers.append("\(type(of: view)): \(viewId)")
+                    allIdentifiers.append("NSView(\(type(of: view))): \(viewId)")
+                }
+            }
+            
+            if let accessibilityElement = element as? NSAccessibilityElement {
+                if let accessibilityId = accessibilityElement.accessibilityIdentifier() as? String,
+                   !accessibilityId.isEmpty {
+                    allIdentifiers.append("NSAccessibilityElement: \(accessibilityId)")
+                }
+            }
+            
+            // Also check via dynamic method invocation
+            if let element = element as? NSObject {
+                let selector = NSSelectorFromString("accessibilityIdentifier")
+                if element.responds(to: selector),
+                   let result = element.perform(selector),
+                   let accessibilityId = result.takeUnretainedValue() as? String,
+                   !accessibilityId.isEmpty {
+                    allIdentifiers.append("NSObject(dynamic): \(accessibilityId)")
                 }
             }
             
@@ -179,17 +216,32 @@ public final class WindowRenderingTestHelper {
             
             // Also check accessibility children (for SwiftUI elements exposed through accessibility)
             // This is crucial for finding SwiftUI views that might not be direct subviews
+            // Use unignored children to skip invisible/helper elements
             var accessibilityChildren: [Any] = []
             
             if let view = element as? NSView {
-                if let children = view.accessibilityChildren() as? [Any] {
+                // Try unignored children first (more reliable for SwiftUI)
+                if let unignoredChildren = NSAccessibilityUnignoredChildren(view.accessibilityChildren()) as? [Any] {
+                    accessibilityChildren.append(contentsOf: unignoredChildren)
+                } else if let children = view.accessibilityChildren() as? [Any] {
                     accessibilityChildren.append(contentsOf: children)
+                }
+                // Also try navigation order children
+                if let navChildren = view.accessibilityChildrenInNavigationOrder() as? [Any] {
+                    accessibilityChildren.append(contentsOf: navChildren)
                 }
             }
             
             if let accessibilityElement = element as? NSAccessibilityElement {
-                if let children = accessibilityElement.accessibilityChildren() as? [Any] {
+                // Try unignored children first
+                if let unignoredChildren = NSAccessibilityUnignoredChildren(accessibilityElement.accessibilityChildren()) as? [Any] {
+                    accessibilityChildren.append(contentsOf: unignoredChildren)
+                } else if let children = accessibilityElement.accessibilityChildren() as? [Any] {
                     accessibilityChildren.append(contentsOf: children)
+                }
+                // Also try navigation order children
+                if let navChildren = accessibilityElement.accessibilityChildrenInNavigationOrder() as? [Any] {
+                    accessibilityChildren.append(contentsOf: navChildren)
                 }
             }
             

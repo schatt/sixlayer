@@ -8,72 +8,6 @@ import SwiftUI
 // MARK: - Navigation Types
 // PlatformTitleDisplayMode is defined in PlatformUITypes.swift
 
-// MARK: - Helper Types for Accessibility Identifier Propagation
-
-/// Helper view that ensures accessibilityIdentifier is applied to the Button,
-/// not the container created by automaticCompliance.
-/// 
-/// This works by wrapping the Button in a view that intercepts any
-/// `.accessibilityIdentifier()` modifier applied to it and propagates
-/// it to the Button itself before wrapping with automaticCompliance.
-private struct NavigationButtonWithIdentifier: View {
-    let title: String
-    let systemImage: String
-    let accessibilityLabel: String
-    let accessibilityHint: String
-    let action: () -> Void
-    
-    var body: some View {
-        Button(action: action) {
-            #if os(macOS)
-            if #available(macOS 11.0, *) {
-                Label(title, systemImage: systemImage)
-                    .foregroundColor(.primary)
-            } else {
-                HStack {
-                    Image(systemName: systemImage)
-                    Text(title)
-                }
-                .foregroundColor(.primary)
-            }
-            #else
-            Label(title, systemImage: systemImage)
-                .foregroundColor(.primary)
-            #endif
-        }
-        .buttonStyle(PlainButtonStyle())
-        .accessibilityLabel(accessibilityLabel)
-        .accessibilityHint(accessibilityHint)
-        .accessibilityAddTraits(.isButton)
-        .environment(\.accessibilityIdentifierLabel, title) // TDD GREEN: Pass label to identifier generation
-        .modifier(ButtonIdentifierPropagator())
-        .automaticCompliance(named: "platformNavigationButton_L4")
-    }
-}
-
-/// Modifier that propagates accessibilityIdentifier to the Button
-/// when it's applied after automaticCompliance wraps the view.
-/// 
-/// This modifier intercepts the identifier and re-applies it to the Button
-/// by using a background view that captures the identifier preference.
-private struct ButtonIdentifierPropagator: ViewModifier {
-    func body(content: Content) -> some View {
-        content
-            .background(
-                // This view will capture any accessibility identifier
-                // set on the parent and propagate it via preference
-                IdentifierPropagatorView()
-            )
-    }
-}
-
-/// Helper view that propagates accessibility identifier to Button
-private struct IdentifierPropagatorView: View {
-    var body: some View {
-        Color.clear
-            .accessibilityIdentifier("") // Placeholder - will be overridden
-    }
-}
 
 public extension View {
     
@@ -144,15 +78,30 @@ public extension View {
         accessibilityHint: String,
         action: @escaping () -> Void
     ) -> some View {
-        // Use a helper view to ensure accessibilityIdentifier is applied to the Button,
-        // not the container created by automaticCompliance
-        NavigationButtonWithIdentifier(
-            title: title,
-            systemImage: systemImage,
-            accessibilityLabel: accessibilityLabel,
-            accessibilityHint: accessibilityHint,
-            action: action
-        )
+        Button(action: action) {
+            #if os(macOS)
+            if #available(macOS 11.0, *) {
+                Label(title, systemImage: systemImage)
+                    .foregroundColor(.primary)
+            } else {
+                HStack {
+                    Image(systemName: systemImage)
+                    Text(title)
+                }
+                .foregroundColor(.primary)
+            }
+            #else
+            Label(title, systemImage: systemImage)
+                .foregroundColor(.primary)
+            #endif
+        }
+        .buttonStyle(PlainButtonStyle())
+        .accessibilityLabel(accessibilityLabel)
+        .accessibilityHint(accessibilityHint)
+        .accessibilityAddTraits(.isButton)
+        .environment(\.accessibilityIdentifierLabel, title) // TDD GREEN: Pass label to identifier generation
+        // Apply automaticCompliance directly to the Button so identifier goes to Button, not container
+        .automaticCompliance(named: "platformNavigationButton_L4")
     }
     
 
