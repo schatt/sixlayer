@@ -58,6 +58,22 @@ public extension View {
             .automaticCompliance()
     }
     
+    /// Platform-specific padding with EdgeInsets
+    /// Provides precise per-edge padding control matching SwiftUI's padding(_ insets: EdgeInsets) modifier
+    ///
+    /// - Parameter insets: EdgeInsets specifying top, leading, bottom, and trailing padding values
+    /// - Returns: A view with platform-specific padding applied
+    ///
+    /// ## Usage Example
+    /// ```swift
+    /// Text("Content")
+    ///     .platformPadding(EdgeInsets(top: 10, leading: 15, bottom: 20, trailing: 25))
+    /// ```
+    func platformPadding(_ insets: EdgeInsets) -> some View {
+        return self.padding(insets)
+            .automaticCompliance(named: "platformPadding")
+    }
+    
     /// Platform-specific reduced padding values
     func platformReducedPadding() -> some View {
         return self.padding(8)

@@ -345,6 +345,48 @@ open class Layer4ViewExtensionTests: BaseTestClass {
         #expect(hasAccessibilityID, "platformPadding value should generate accessibility identifiers ")
     }
     
+    @Test @MainActor func testPlatformPadding_EdgeInsets() async {
+        initializeTestConfig()
+        // Given: EdgeInsets with custom padding values
+        let insets = EdgeInsets(top: 10, leading: 15, bottom: 20, trailing: 25)
+        
+        // When: Applying platformPadding with EdgeInsets
+        let view = Text("Content")
+            .platformPadding(insets)
+        
+        // Then: Should generate accessibility identifiers
+        let hasAccessibilityID = testComponentComplianceSinglePlatform(
+            view,
+            expectedPattern: "SixLayer.*ui",
+            platform: SixLayerPlatform.iOS,
+            componentName: "platformPadding"
+        )
+        #expect(hasAccessibilityID, "platformPadding with EdgeInsets should generate accessibility identifiers")
+        
+        // And: View should render successfully (functional test)
+        let hostedView = hostRootPlatformView(view)
+        #expect(hostedView != nil, "platformPadding with EdgeInsets should render successfully")
+    }
+    
+    @Test @MainActor func testPlatformPadding_EdgeInsets_MatchesSwiftUI() async {
+        initializeTestConfig()
+        // Given: EdgeInsets with specific values
+        let insets = EdgeInsets(top: 5, leading: 10, bottom: 15, trailing: 20)
+        
+        // When: Applying both SwiftUI and platform padding
+        let swiftUIView = Text("SwiftUI")
+            .padding(insets)
+        let platformView = Text("Platform")
+            .platformPadding(insets)
+        
+        // Then: Both should render successfully
+        let swiftUIHosted = hostRootPlatformView(swiftUIView)
+        let platformHosted = hostRootPlatformView(platformView)
+        
+        #expect(swiftUIHosted != nil, "SwiftUI padding with EdgeInsets should render")
+        #expect(platformHosted != nil, "platformPadding with EdgeInsets should render and match SwiftUI behavior")
+    }
+    
     @Test @MainActor func testPlatformReducedPadding() async {
         initializeTestConfig()
         let view = Text("Content")
