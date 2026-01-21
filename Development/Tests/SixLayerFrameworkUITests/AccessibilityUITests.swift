@@ -24,14 +24,20 @@ import XCTest
 final class AccessibilityUITests: XCTestCase {
     var app: XCUIApplication!
     
-    override func setUpWithError() throws {
+    /// Helper to clean up app without capturing self in closure
+    @MainActor
+    private func cleanupApp() {
+        app = nil
+    }
+    
+    nonisolated override func setUpWithError() throws {
         continueAfterFailure = false
         
         // Add UI interruption monitors to dismiss system dialogs quickly
         // This prevents XCUITest from waiting for Bluetooth, CPU, and other system dialogs
         // Note: Closure must be nonisolated because addUIInterruptionMonitor doesn't accept @MainActor closures
         // XCUITest runs on the main thread, so accessing main actor-isolated properties is safe
-        addUIInterruptionMonitor(withDescription: "System alerts and dialogs") { [weak self] (alert) -> Bool in
+        addUIInterruptionMonitor(withDescription: "System alerts and dialogs") { (alert) -> Bool in
             // XCUITest interruption monitors are called on the main thread
             // Use MainActor.assumeIsolated to access main actor-isolated properties
             return MainActor.assumeIsolated {
@@ -58,37 +64,52 @@ final class AccessibilityUITests: XCTestCase {
         
         // Launch the test app with performance optimizations
         // Use performance logging if enabled (SixLayerFrameworkUITests target sets USE_XCUITEST_PERFORMANCE)
+        // Note: setUpWithError() is nonisolated (inherited from XCTestCase), so we need to use MainActor.assumeIsolated
+        // to access main actor-isolated properties like 'app'
         let usePerformanceLogging = ProcessInfo.processInfo.environment["USE_XCUITEST_PERFORMANCE"] == "1"
         
-        if usePerformanceLogging {
-            let (_, launchTime) = XCUITestPerformance.measure {
-                app = XCUIApplication()
-                app.launchWithOptimizations()
+        MainActor.assumeIsolated {
+            // Use local variable to avoid capturing self in closures
+            var localApp: XCUIApplication!
+            
+            if usePerformanceLogging {
+                let (_, launchTime) = XCUITestPerformance.measure {
+                    localApp = XCUIApplication()
+                    localApp.launchWithOptimizations()
+                }
+                app = localApp
+                XCUITestPerformance.log("App launch", time: launchTime)
+            } else {
+                localApp = XCUIApplication()
+                localApp.launchWithOptimizations()
+                app = localApp
             }
-            XCUITestPerformance.log("App launch", time: launchTime)
-        } else {
-            app = XCUIApplication()
-            app.launchWithOptimizations()
-        }
-        
-        // Wait for app to be ready before querying elements
-        // This ensures SwiftUI has finished initial render and accessibility tree is built
-        if usePerformanceLogging {
-            let (_, readyTime) = XCUITestPerformance.measure {
-                XCTAssertTrue(app.waitForReady(timeout: 5.0), "App should be ready for testing")
+            
+            // Wait for app to be ready before querying elements
+            // This ensures SwiftUI has finished initial render and accessibility tree is built
+            if usePerformanceLogging {
+                let (_, readyTime) = XCUITestPerformance.measure {
+                    XCTAssertTrue(localApp.waitForReady(timeout: 5.0), "App should be ready for testing")
+                }
+                XCUITestPerformance.log("App readiness check", time: readyTime)
+            } else {
+                XCTAssertTrue(localApp.waitForReady(timeout: 5.0), "App should be ready for testing")
             }
-            XCUITestPerformance.log("App readiness check", time: readyTime)
-        } else {
-            XCTAssertTrue(app.waitForReady(timeout: 5.0), "App should be ready for testing")
         }
     }
     
-    override func tearDownWithError() throws {
-        app = nil
+    nonisolated override func tearDownWithError() throws {
+        // Note: tearDownWithError() is nonisolated (inherited from XCTestCase), so we need to use MainActor.assumeIsolated
+        // to access main actor-isolated properties like 'app'
+        // Use helper function to avoid capturing self in closure
+        MainActor.assumeIsolated {
+            self.cleanupApp()
+        }
     }
     
     /// CONTROL TEST: Verify that XCUITest can find a standard SwiftUI button with direct .accessibilityIdentifier()
     /// This proves the testing infrastructure works before testing our modifier
+    @MainActor
     func testControlDirectAccessibilityIdentifier() throws {
         // Given: App is launched and ready (from setUp)
         // The control button is always visible (not behind picker)
@@ -118,6 +139,7 @@ final class AccessibilityUITests: XCTestCase {
     }
     
     /// Test that Text view generates accessibility identifier that XCUITest can find
+    @MainActor
     func testTextAccessibilityIdentifierGenerated() throws {
         // App is already ready from setUp, so we can query elements immediately
         // Text is the default, so we can verify it's selected by checking the view exists
@@ -155,6 +177,7 @@ final class AccessibilityUITests: XCTestCase {
     }
     
     /// Test that Button view generates accessibility identifier that XCUITest can find
+    @MainActor
     func testButtonAccessibilityIdentifierGenerated() throws {
         // App is already ready from setUp, so we can query elements immediately
         // Select Button view type using helper (handles iOS/macOS differences)
