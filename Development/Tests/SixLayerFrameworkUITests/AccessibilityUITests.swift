@@ -20,6 +20,7 @@ import XCTest
 /// XCUITest tests for accessibility identifier generation
 /// These tests verify that identifiers are findable using XCUIElement queries,
 /// which is how real UI tests would use them
+@MainActor
 final class AccessibilityUITests: XCTestCase {
     var app: XCUIApplication!
     
@@ -28,7 +29,7 @@ final class AccessibilityUITests: XCTestCase {
         
         // Add UI interruption monitors to dismiss system dialogs quickly
         // This prevents XCUITest from waiting for Bluetooth, CPU, and other system dialogs
-        addUIInterruptionMonitor(withDescription: "System alerts and dialogs") { (alert) -> Bool in
+        addUIInterruptionMonitor(withDescription: "System alerts and dialogs") { @MainActor (alert) -> Bool in
             // Dismiss any system alerts that might appear
             let alertText = alert.staticTexts.firstMatch.label
             if alertText.contains("Bluetooth") || alertText.contains("CPU") || alertText.contains("Activity Monitor") {
@@ -67,7 +68,7 @@ final class AccessibilityUITests: XCTestCase {
         // Wait for app to be ready before querying elements
         // This ensures SwiftUI has finished initial render and accessibility tree is built
         if usePerformanceLogging {
-            let (isReady, readyTime) = XCUITestPerformance.measure {
+            let (_, readyTime) = XCUITestPerformance.measure {
                 XCTAssertTrue(app.waitForReady(timeout: 5.0), "App should be ready for testing")
             }
             XCUITestPerformance.log("App readiness check", time: readyTime)
@@ -99,9 +100,9 @@ final class AccessibilityUITests: XCTestCase {
         let controlIdentifier = "control-test-button"
         
         // Use helper to find element by identifier (tries multiple query types)
-        guard let element = app.findElement(byIdentifier: controlIdentifier, 
-                                           primaryType: .button,
-                                           secondaryTypes: [.other]) else {
+        guard app.findElement(byIdentifier: controlIdentifier, 
+                             primaryType: .button,
+                             secondaryTypes: [.other]) != nil else {
             XCTFail("Control test failed: Standard SwiftUI .accessibilityIdentifier('\(controlIdentifier)') should be findable using XCUITest. This indicates an XCUITest infrastructure problem, not a framework bug.")
             return
         }
@@ -124,7 +125,7 @@ final class AccessibilityUITests: XCTestCase {
         let expectedIdentifier = "SixLayer.main.ui.element.View"
         let usePerformanceLogging = ProcessInfo.processInfo.environment["USE_XCUITEST_PERFORMANCE"] == "1"
         
-        let element: XCUIElement?
+        let elementFound: Bool
         if usePerformanceLogging {
             let (foundElement, queryTime) = XCUITestPerformance.measure {
                 app.findElement(byIdentifier: expectedIdentifier,
@@ -132,14 +133,14 @@ final class AccessibilityUITests: XCTestCase {
                                secondaryTypes: [.staticText, .any])
             }
             XCUITestPerformance.log("Element query for '\(expectedIdentifier)'", time: queryTime)
-            element = foundElement
+            elementFound = foundElement != nil
         } else {
-            element = app.findElement(byIdentifier: expectedIdentifier,
-                                     primaryType: .other,
-                                     secondaryTypes: [.staticText, .any])
+            elementFound = app.findElement(byIdentifier: expectedIdentifier,
+                                          primaryType: .other,
+                                          secondaryTypes: [.staticText, .any]) != nil
         }
         
-        guard let element = element else {
+        guard elementFound else {
             XCTFail("Accessibility identifier '\(expectedIdentifier)' should be findable by XCUITest. Tried otherElements, staticTexts, and any elements.")
             return
         }
@@ -162,7 +163,7 @@ final class AccessibilityUITests: XCTestCase {
         let expectedIdentifier = "SixLayer.main.ui.element.Button"
         let usePerformanceLogging = ProcessInfo.processInfo.environment["USE_XCUITEST_PERFORMANCE"] == "1"
         
-        let element: XCUIElement?
+        let elementFound: Bool
         if usePerformanceLogging {
             let (foundElement, queryTime) = XCUITestPerformance.measure {
                 app.findElement(byIdentifier: expectedIdentifier,
@@ -170,14 +171,14 @@ final class AccessibilityUITests: XCTestCase {
                                secondaryTypes: [.button, .any])
             }
             XCUITestPerformance.log("Element query for '\(expectedIdentifier)'", time: queryTime)
-            element = foundElement
+            elementFound = foundElement != nil
         } else {
-            element = app.findElement(byIdentifier: expectedIdentifier,
-                                     primaryType: .other,
-                                     secondaryTypes: [.button, .any])
+            elementFound = app.findElement(byIdentifier: expectedIdentifier,
+                                          primaryType: .other,
+                                          secondaryTypes: [.button, .any]) != nil
         }
         
-        guard let element = element else {
+        guard elementFound else {
             XCTFail("Accessibility identifier '\(expectedIdentifier)' should be findable by XCUITest. Tried otherElements, buttons, and any elements.")
             return
         }
