@@ -321,11 +321,14 @@ public struct DynamicTextField: View {
             let i18n = InternationalizationService()
             Picker(field.placeholder ?? i18n.placeholderSelect(), selection: field.textBinding(formState: formState)) {
                 ForEach(pickerOptions, id: \.value) { option in
-                    Text(option.label).tag(option.value)
+                    Text(option.label)
+                        .tag(option.value)
+                        .accessibilityIdentifier(option.label) // Apply identifier to segment
+                        .accessibility(label: Text(option.label)) // Apply label to segment (Stack Overflow pattern)
                 }
             }
             .pickerStyle(.menu)
-            .automaticCompliance()
+            .automaticCompliance() // Apply to picker level as well
         } else {
             // Fallback to text field if no options
             textFieldView
@@ -1549,11 +1552,14 @@ public struct DynamicEnumField: View {
                     set: { formState.setValue($0, for: field.id) }
                 )) {
                     ForEach(pickerOptions, id: \.value) { option in
-                        Text(option.label).tag(option.value)
+                        Text(option.label)
+                            .tag(option.value)
+                            .accessibilityIdentifier(option.label) // Apply identifier to segment
+                            .accessibility(label: Text(option.label)) // Apply label to segment (Stack Overflow pattern)
                     }
                 }
                 .pickerStyle(.menu)
-                .automaticCompliance(named: "EnumPicker")
+                .automaticCompliance(named: "EnumPicker") // Apply to picker level as well
             }
         }
         .padding()

@@ -238,6 +238,8 @@ public struct AutomaticComplianceModifier: ViewModifier {
         }
         
         // Apply identifier (if needed), then HIG compliance - all modifiers on the same view
+        // Note: Picker segments should have accessibility applied directly when generating the picker
+        // (see PlatformTabStrip, DynamicEnumField, etc. for examples)
         return applyHIGComplianceFeatures(
             to: applyIdentifierIfNeeded(to: content),
             elementType: identifierElementType
@@ -930,6 +932,7 @@ public struct AutomaticHIGLightDarkModeModifier: ViewModifier {
         content
     }
 }
+
 
 // MARK: - View Extensions
 

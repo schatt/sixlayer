@@ -2282,11 +2282,15 @@ public struct GenericFormView: View {
                                 Picker(field.label, selection: .constant("")) {
                                     if let options = field.options {
                                         ForEach(options, id: \.self) { option in
-                                            Text(option).tag(option)
+                                            Text(option)
+                                                .tag(option)
+                                                .accessibilityIdentifier(option) // Apply identifier to segment
+                                                .accessibility(label: Text(option)) // Apply label to segment (Stack Overflow pattern)
                                         }
                                     }
                                 }
                                 .pickerStyle(.menu)
+                                .automaticCompliance() // Apply to picker level as well
                             default:
                                 TextField(field.placeholder ?? "Enter \(field.label)", text: .constant(""))
                                     .textFieldStyle(.roundedBorder)
@@ -2622,15 +2626,23 @@ public struct ModalFormView: View {
                 case .enum:
                     let i18n = InternationalizationService()
                     Picker(field.placeholder ?? i18n.localizedString(for: "SixLayerFramework.form.placeholder.selectOption"), selection: .constant("")) {
-                        Text(i18n.localizedString(for: "SixLayerFramework.form.placeholder.selectOption")).tag("")
+                        let placeholderText = i18n.localizedString(for: "SixLayerFramework.form.placeholder.selectOption")
+                        Text(placeholderText)
+                            .tag("")
+                            .accessibilityIdentifier(placeholderText) // Apply identifier to segment
+                            .accessibility(label: Text(placeholderText)) // Apply label to segment
                         if let options = field.options {
                             ForEach(options, id: \.self) { option in
-                                Text(option).tag(option)
+                                Text(option)
+                                    .tag(option)
+                                    .accessibilityIdentifier(option) // Apply identifier to segment
+                                    .accessibility(label: Text(option)) // Apply label to segment (Stack Overflow pattern)
                             }
                         }
                     }
                     .pickerStyle(.menu)
                     .environment(\.accessibilityLabelText, field.label)
+                    .automaticCompliance() // Apply to picker level as well
                 }
             } else {
                 // Fallback for fields with neither textContentType nor contentType

@@ -32,10 +32,14 @@ public struct PlatformTabStrip: View {
         #else
         Picker("", selection: $selection) {
             ForEach(Array(items.enumerated()), id: \.offset) { index, item in
-                Text(item.title).tag(index)
+                Text(item.title)
+                    .tag(index)
+                    .accessibilityIdentifier(item.title) // Apply identifier to segment
+                    .accessibility(label: Text(item.title)) // Apply label to segment (Stack Overflow pattern)
             }
         }
         .pickerStyle(.segmented)
+        .automaticCompliance(named: "PlatformTabStrip") // Apply to picker level as well
         #endif
     }
 }
