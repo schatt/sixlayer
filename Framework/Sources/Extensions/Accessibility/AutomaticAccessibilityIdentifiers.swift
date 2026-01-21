@@ -132,6 +132,47 @@ private func sanitizeLabelText(_ label: String) -> String {
         .trimmingCharacters(in: CharacterSet(charactersIn: "-")) // Remove leading/trailing hyphens
 }
 
+// MARK: - Accessibility Label Formatting and Localization (Issue #154)
+
+/// Format accessibility label according to Apple HIG guidelines
+/// - Labels should end with punctuation (period, exclamation, or question mark)
+/// - Labels should be concise and describe purpose, not appearance
+/// - Parameter label: The label text to format
+/// - Returns: Formatted label with proper punctuation
+private func formatAccessibilityLabel(_ label: String) -> String {
+    let trimmed = label.trimmingCharacters(in: .whitespacesAndNewlines)
+    guard !trimmed.isEmpty else { return trimmed }
+    
+    // Check if label already ends with punctuation
+    let lastChar = trimmed.last
+    if lastChar == "." || lastChar == "!" || lastChar == "?" {
+        return trimmed
+    }
+    
+    // Add period if no punctuation
+    return trimmed + "."
+}
+
+/// Localize accessibility label using InternationalizationService
+/// Attempts to localize the label if it looks like a localization key
+/// - Parameter label: The label text (may be a localization key or plain text)
+/// - Returns: Localized label if key found, otherwise original label
+private func localizeAccessibilityLabel(_ label: String) -> String {
+    // If label contains dots or looks like a localization key, try to localize it
+    // Format: "SixLayerFramework.accessibility.button.save" or "MyApp.button.save"
+    if label.contains(".") && !label.hasPrefix("http") {
+        let i18n = InternationalizationService()
+        let localized = i18n.localizedString(for: label)
+        // If localization found something different from the key, use it
+        if localized != label {
+            return formatAccessibilityLabel(localized)
+        }
+    }
+    
+    // Not a localization key or localization not found, return formatted original
+    return formatAccessibilityLabel(label)
+}
+
 // MARK: - Automatic Accessibility Identifier Modifier
 
 /// Modifier that automatically generates accessibility identifiers for views
