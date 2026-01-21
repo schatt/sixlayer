@@ -42,6 +42,42 @@ final class AccessibilityXCUITests: XCTestCase {
         app = nil
     }
     
+    /// CONTROL TEST: Verify that XCUITest can find a standard SwiftUI button with direct .accessibilityIdentifier()
+    /// This proves the testing infrastructure works before testing our modifier
+    func testControlDirectAccessibilityIdentifier() throws {
+        // Given: App is launched and ready (from setUp)
+        // The control button is always visible (not behind picker)
+        // First verify the button exists by label (confirms app is working)
+        let controlButtonByLabel = app.buttons["Control Button"]
+        guard controlButtonByLabel.existsImmediately || controlButtonByLabel.waitForExistenceFast(timeout: 3.0) else {
+            XCTFail("Control button should exist by label - app may not be fully loaded")
+            return
+        }
+        
+        // When: Query for element by accessibility identifier using XCUITest
+        // This is a standard SwiftUI .accessibilityIdentifier() - no framework modifier
+        // CRITICAL: We must find it by identifier, not by label
+        let controlIdentifier = "control-test-button"
+        
+        // Try buttons first (since it's a Button)
+        let buttonElement = app.buttons[controlIdentifier]
+        if buttonElement.existsImmediately || buttonElement.waitForExistenceFast(timeout: 2.0) {
+            // Found it by identifier! Control test passes - XCUITest infrastructure works
+            // This proves XCUITest can find identifiers, so if our modifier fails, it's our bug
+            return
+        }
+        
+        // Try otherElements (sometimes identifiers are on otherElements)
+        let otherElement = app.otherElements[controlIdentifier]
+        if otherElement.existsImmediately || otherElement.waitForExistenceFast(timeout: 0.5) {
+            // Found it by identifier! Control test passes
+            return
+        }
+        
+        // If we get here, even the control test failed - XCUITest setup issue
+        XCTFail("Control test failed: Standard SwiftUI .accessibilityIdentifier('\(controlIdentifier)') should be findable using XCUITest. This indicates an XCUITest infrastructure problem, not a framework bug.")
+    }
+    
     /// Test that Text view generates accessibility identifier that XCUITest can find
     func testTextAccessibilityIdentifierGenerated() throws {
         // App is already ready from setUp, so we can query elements immediately
