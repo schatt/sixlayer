@@ -60,6 +60,71 @@ extension XCUIElement {
     }
 }
 
+// MARK: - Accessibility Identifier Helpers
+
+extension XCUIApplication {
+    /// Find an element by accessibility identifier, trying multiple query types
+    /// - Parameters:
+    ///   - identifier: The accessibility identifier to search for
+    ///   - primaryType: Primary element type to try first (default: .otherElements)
+    ///   - secondaryTypes: Additional element types to try if primary fails
+    ///   - timeout: Maximum time to wait for each query type
+    /// - Returns: The found element, or nil if not found
+    func findElement(byIdentifier identifier: String, 
+                    primaryType: XCUIElement.ElementType = .otherElements,
+                    secondaryTypes: [XCUIElement.ElementType] = [.staticText, .button, .any],
+                    timeout: TimeInterval = 1.0) -> XCUIElement? {
+        // Try primary type first
+        let primaryElement = descendants(matching: primaryType)[identifier]
+        if primaryElement.waitForExistence(timeout: timeout) {
+            return primaryElement
+        }
+        
+        // Try secondary types
+        for elementType in secondaryTypes {
+            let element = descendants(matching: elementType)[identifier]
+            if element.waitForExistence(timeout: 0.5) {
+                return element
+            }
+        }
+        
+        return nil
+    }
+    
+    /// Select a segment in the segmented picker (handles iOS/macOS differences)
+    /// - Parameter segmentName: Name of the segment to select (e.g., "Text", "Button")
+    /// - Returns: true if segment was found and selected, false otherwise
+    func selectPickerSegment(_ segmentName: String) -> Bool {
+        #if os(iOS)
+        // On iOS, segmented picker exposes segments as buttons
+        let segment = buttons[segmentName]
+        if segment.waitForExistence(timeout: 1.0) {
+            segment.tap()
+            return true
+        }
+        #else
+        // On macOS, try picker first, then buttons
+        let picker = pickers.firstMatch
+        if picker.waitForExistence(timeout: 1.0) {
+            picker.tap()
+            let segment = buttons[segmentName]
+            if segment.waitForExistence(timeout: 1.0) {
+                segment.tap()
+                return true
+            }
+        } else {
+            // Try buttons directly (segmented control on macOS)
+            let segment = buttons[segmentName]
+            if segment.waitForExistence(timeout: 1.0) {
+                segment.tap()
+                return true
+            }
+        }
+        #endif
+        return false
+    }
+}
+
 // MARK: - Performance Logging
 
 /// Performance measurement utilities for XCUITest
