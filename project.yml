@@ -208,10 +208,8 @@ targets:
       - target: SixLayerFramework_visionOS
 
   # Real UI tests - iOS (render views in actual windows)
-  # Note: Using bundle.unit-test for now - xcodegen doesn't support bundle.ui-test
-  # These tests render views in windows but don't require an app target
   SixLayerFrameworkRealUITests_iOS:
-    type: bundle.unit-test
+    type: bundle.ui-testing
     platform: iOS
     sources:
       - path: Development/Tests/SixLayerFrameworkRealUITests
@@ -225,12 +223,13 @@ targets:
       developmentTeam: Y53G7YPJSZ
     dependencies:
       - target: SixLayerFramework_iOS
+      - target: SixLayerFrameworkTestApp_iOS
+    settings:
+      TEST_TARGET_NAME: SixLayerFrameworkTestApp_iOS
 
   # Real UI tests - macOS (render views in actual windows)
-  # Note: Using bundle.unit-test for now - xcodegen doesn't support bundle.ui-test
-  # These tests render views in windows but don't require an app target
   SixLayerFrameworkRealUITests_macOS:
-    type: bundle.unit-test
+    type: bundle.ui-testing
     platform: macOS
     sources:
       - path: Development/Tests/SixLayerFrameworkRealUITests
@@ -243,14 +242,14 @@ targets:
       DEVELOPMENT_TEAM: Y53G7YPJSZ
       developmentTeam: Y53G7YPJSZ
       DEAD_CODE_STRIPPING: YES
+      TEST_TARGET_NAME: SixLayerFrameworkTestApp_macOS
     dependencies:
       - target: SixLayerFramework_macOS
+      - target: SixLayerFrameworkTestApp_macOS
 
   # Real UI tests - tvOS (render views in actual windows)
-  # Note: Using bundle.unit-test for now - xcodegen doesn't support bundle.ui-test
-  # These tests render views in windows but don't require an app target
   SixLayerFrameworkRealUITests_tvOS:
-    type: bundle.unit-test
+    type: bundle.ui-testing
     platform: tvOS
     sources:
       - path: Development/Tests/SixLayerFrameworkRealUITests
@@ -266,10 +265,8 @@ targets:
       - target: SixLayerFramework_tvOS
 
   # Real UI tests - watchOS (render views in actual windows)
-  # Note: Using bundle.unit-test for now - xcodegen doesn't support bundle.ui-test
-  # These tests render views in windows but don't require an app target
   SixLayerFrameworkRealUITests_watchOS:
-    type: bundle.unit-test
+    type: bundle.ui-testing
     platform: watchOS
     sources:
       - path: Development/Tests/SixLayerFrameworkRealUITests
@@ -285,10 +282,8 @@ targets:
       - target: SixLayerFramework_watchOS
 
   # Real UI tests - visionOS (render views in actual windows)
-  # Note: Using bundle.unit-test for now - xcodegen doesn't support bundle.ui-test
-  # These tests render views in windows but don't require an app target
   SixLayerFrameworkRealUITests_visionOS:
-    type: bundle.unit-test
+    type: bundle.ui-testing
     platform: visionOS
     sources:
       - path: Development/Tests/SixLayerFrameworkRealUITests
@@ -302,6 +297,52 @@ targets:
       developmentTeam: Y53G7YPJSZ
     dependencies:
       - target: SixLayerFramework_visionOS
+
+  # XCUITest tests - iOS (uses XCUIApplication and XCUIElement)
+  SixLayerFrameworkUITests_iOS:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: Development/Tests/SixLayerFrameworkUITests
+        excludes:
+          - "TestApp/**"
+          - "README.md"
+    settings:
+      PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.framework.ui-tests
+      SWIFT_VERSION: "6.0"
+      GENERATE_INFOPLIST_FILE: YES
+      CODE_SIGN_STYLE: Automatic
+      ENABLE_TESTING_SEARCH_PATHS: YES
+      DEVELOPMENT_TEAM: Y53G7YPJSZ
+      developmentTeam: Y53G7YPJSZ
+    dependencies:
+      - target: SixLayerFramework_iOS
+      - target: SixLayerFrameworkTestApp_iOS
+    settings:
+      TEST_TARGET_NAME: SixLayerFrameworkTestApp_iOS
+
+  # XCUITest tests - macOS (uses XCUIApplication and XCUIElement)
+  SixLayerFrameworkUITests_macOS:
+    type: bundle.ui-testing
+    platform: macOS
+    sources:
+      - path: Development/Tests/SixLayerFrameworkUITests
+        excludes:
+          - "TestApp/**"
+          - "README.md"
+    settings:
+      PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.framework.ui-tests
+      SWIFT_VERSION: "6.0"
+      GENERATE_INFOPLIST_FILE: YES
+      CODE_SIGN_STYLE: Automatic
+      ENABLE_TESTING_SEARCH_PATHS: YES
+      DEVELOPMENT_TEAM: Y53G7YPJSZ
+      developmentTeam: Y53G7YPJSZ
+      DEAD_CODE_STRIPPING: YES
+      TEST_TARGET_NAME: SixLayerFrameworkTestApp_macOS
+    dependencies:
+      - target: SixLayerFramework_macOS
+      - target: SixLayerFrameworkTestApp_macOS
 
   # Test app for XCUITest - macOS
   # Minimal app that displays views for XCUITest to test
@@ -468,9 +509,7 @@ schemes:
       targets:
         - SixLayerFrameworkUnitTests_iOS
         - SixLayerFrameworkExternalIntegrationTests_iOS
-      # UITests excluded by default due to ViewInspector Swift 6 issues
-      # Uncomment when ViewInspector is fixed:
-      # - SixLayerFrameworkUITests_iOS
+        - SixLayerFrameworkUITests_iOS
 
   SixLayerFramework-macOS:
     build:
@@ -480,9 +519,7 @@ schemes:
       targets:
         - SixLayerFrameworkUnitTests_macOS
         - SixLayerFrameworkExternalIntegrationTests_macOS
-      # UITests excluded by default due to ViewInspector Swift 6 issues
-      # Uncomment when ViewInspector is fixed:
-      # - SixLayerFrameworkUITests_macOS
+        - SixLayerFrameworkUITests_macOS
 
   SixLayerFrameworkTestApp-macOS:
     build:
@@ -517,9 +554,8 @@ schemes:
       targets:
         - SixLayerFrameworkUnitTests_macOS
         - SixLayerFrameworkRealUITests_macOS
+        - SixLayerFrameworkUITests_macOS
         - SixLayerFrameworkExternalIntegrationTests_macOS
-      # Note: UI tests need to be added manually in Xcode (xcodegen doesn't support bundle.ui-test)
-      # See Development/Tests/SixLayerFrameworkUITests/README.md for instructions
 
   SixLayerFramework-AllTests-iOS:
     build:
@@ -531,8 +567,6 @@ schemes:
         - SixLayerFrameworkUnitTests_iOS
         - SixLayerFrameworkRealUITests_iOS
         - SixLayerFrameworkExternalIntegrationTests_iOS
-      # Note: UI tests need to be added manually in Xcode (xcodegen doesn't support bundle.ui-test)
-      # See Development/Tests/SixLayerFrameworkUITests/README.md for instructions
 
   SixLayerFramework-UnitTestsOnly-iOS:
     build:
@@ -562,9 +596,11 @@ schemes:
     build:
       targets:
         SixLayerFramework_macOS: all
+        SixLayerFrameworkTestApp_macOS: all
     test:
       targets:
         - SixLayerFrameworkRealUITests_macOS
+        - SixLayerFrameworkUITests_macOS
 
   SixLayerFramework-macOS-ViewInspectorTests:
     build:
@@ -665,19 +701,21 @@ schemes:
       targets:
         - SixLayerFrameworkUnitTests_visionOS
 
-  # SixLayerFramework-UITestsOnly-iOS:
-  #   build:
-  #     targets:
-  #       SixLayerFramework_iOS: all
-  #   test:
-  #     targets:
-  #       - SixLayerFrameworkUITests_iOS  # TODO: Create real UI tests
+  SixLayerFramework-UITestsOnly-iOS:
+    build:
+      targets:
+        SixLayerFramework_iOS: all
+        SixLayerFrameworkTestApp_iOS: all
+    test:
+      targets:
+        - SixLayerFrameworkUITests_iOS
 
-  # SixLayerFramework-UITestsOnly-macOS:
-  #   build:
-  #     targets:
-  #       SixLayerFramework_macOS: all
-  #   test:
-  #     targets:
-  #       - SixLayerFrameworkUITests_macOS  # TODO: Create real UI tests
+  SixLayerFramework-UITestsOnly-macOS:
+    build:
+      targets:
+        SixLayerFramework_macOS: all
+        SixLayerFrameworkTestApp_macOS: all
+    test:
+      targets:
+        - SixLayerFrameworkUITests_macOS
 
