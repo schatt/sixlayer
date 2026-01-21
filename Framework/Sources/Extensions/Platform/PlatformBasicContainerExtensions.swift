@@ -533,8 +533,7 @@ public func platformTextField(
     text: Binding<String>
 ) -> some View {
     EmptyView().platformTextField(text: text, prompt: prompt)
-        .environment(\.accessibilityLabelText, label)
-        .automaticCompliance()
+        .automaticCompliance(accessibilityLabel: label)  // Issue #154: Parameter-based approach
 }
 
 /// Provides platform-specific text field with automatic accessibility compliance and explicit label (LocalizedStringKey)
@@ -612,8 +611,7 @@ public func platformTextField(
     axis: Axis
 ) -> some View {
     EmptyView().platformTextField(text: text, prompt: prompt, axis: axis)
-        .environment(\.accessibilityLabelText, label)
-        .automaticCompliance()
+        .automaticCompliance(accessibilityLabel: label)  // Issue #154: Parameter-based approach
 }
 
 /// platformTextField with LocalizedStringKey label and axis
@@ -681,8 +679,7 @@ public func platformSecureField(
     text: Binding<String>
 ) -> some View {
     EmptyView().platformSecureTextField(text: text, prompt: prompt)
-        .environment(\.accessibilityLabelText, label)
-        .automaticCompliance()
+        .automaticCompliance(accessibilityLabel: label)  // Issue #154: Parameter-based approach
 }
 
 /// platformSecureField with LocalizedStringKey label
@@ -751,8 +748,7 @@ public func platformToggle(
     EmptyView().platformToggle(isOn: isOn) {
         Text(label ?? "Toggle") // Use label as visible text if provided, fallback for Toggle requirement
     }
-    .environment(\.accessibilityLabelText, label)
-    .automaticCompliance()
+    .automaticCompliance(accessibilityLabel: label)  // Issue #154: Parameter-based approach
 }
 
 /// platformToggle with LocalizedStringKey label
@@ -842,8 +838,7 @@ public func platformTextEditor(
     text: Binding<String>
 ) -> some View {
     EmptyView().platformTextEditor(text: text, prompt: prompt)
-        .environment(\.accessibilityLabelText, label)
-        .automaticCompliance()
+        .automaticCompliance(accessibilityLabel: label)  // Issue #154: Parameter-based approach
 }
 
 /// platformTextEditor with LocalizedStringKey label
@@ -890,8 +885,7 @@ public func platformButton(
     Button(action: action) {
         Text(label ?? "Button")
     }
-    .environment(\.accessibilityLabelText, label)
-    .automaticCompliance()
+    .automaticCompliance(accessibilityLabel: label)  // Issue #154: Parameter-based approach
 }
 
 /// platformButton with LocalizedStringKey label
