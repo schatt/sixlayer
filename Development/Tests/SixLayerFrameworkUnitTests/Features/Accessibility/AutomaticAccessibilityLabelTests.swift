@@ -371,7 +371,7 @@ open class AutomaticAccessibilityLabelTests: BaseTestClass {
                 isRequired: false
             )
         ]
-        let hints = PresentationHints(
+        let hints = EnhancedPresentationHints(
             dataType: .form,
             presentationPreference: .form,
             complexity: .simple,
