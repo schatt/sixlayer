@@ -45,18 +45,9 @@ final class AccessibilityXCUITests: XCTestCase {
     /// Test that Text view generates accessibility identifier that XCUITest can find
     func testTextAccessibilityIdentifierGenerated() throws {
         // App is already ready from setUp, so we can query elements immediately
-        // Use firstMatch for elements that should exist immediately (faster than waitForExistence)
-        let picker = app.pickers.firstMatch
-        XCTAssertTrue(picker.existsImmediately || picker.waitForExistenceFast(timeout: 0.5), 
-                     "Picker should exist immediately after app is ready")
-        
-        // Ensure Text is selected (it's the default)
-        if picker.value as? String != "Text" {
-            picker.tap()
-            let textOption = app.buttons["Text"]
-            XCTAssertTrue(textOption.waitForExistenceFast(timeout: 0.5), "Text option should exist")
-            textOption.tap()
-        }
+        // On iOS, segmented picker exposes segments as buttons, not as a picker
+        // Text is the default, so we can verify it's selected by checking the view exists
+        // If we need to select it, we'd tap the "Text" button segment
         
         // Wait for the view to appear (should be immediate since Text is default)
         let textView = app.staticTexts["Test Content"]
@@ -79,15 +70,14 @@ final class AccessibilityXCUITests: XCTestCase {
     /// Test that Button view generates accessibility identifier that XCUITest can find
     func testButtonAccessibilityIdentifierGenerated() throws {
         // App is already ready from setUp, so we can query elements immediately
-        let picker = app.pickers.firstMatch
-        XCTAssertTrue(picker.existsImmediately || picker.waitForExistenceFast(timeout: 0.5), 
-                     "Picker should exist immediately after app is ready")
+        // On iOS, segmented picker exposes segments as buttons directly
+        // Find and tap the "Button" segment
+        let buttonSegment = app.buttons["Button"]
+        XCTAssertTrue(buttonSegment.existsImmediately || buttonSegment.waitForExistenceFast(timeout: 1.0), 
+                     "Button segment should exist in segmented control")
         
-        // Select Button view type in the picker
-        picker.tap()
-        let buttonOption = app.buttons["Button"]
-        XCTAssertTrue(buttonOption.waitForExistenceFast(timeout: 0.5), "Button option should exist")
-        buttonOption.tap()
+        // Select Button view type by tapping the segment
+        buttonSegment.tap()
         
         // Wait for the button to appear (may need slightly longer timeout after interaction)
         let testButton = app.buttons["Test Button"]
