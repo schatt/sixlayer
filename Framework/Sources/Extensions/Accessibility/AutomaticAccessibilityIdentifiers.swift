@@ -147,15 +147,18 @@ public struct AutomaticComplianceModifier: ViewModifier {
     let identifierName: String?
     let identifierElementType: String?
     let identifierLabel: String?
+    let accessibilityLabel: String?  // NEW: Accessibility label for VoiceOver (Issue #154)
     
-    public init(
+    nonisolated public init(
         identifierName: String? = nil,
         identifierElementType: String? = nil,
-        identifierLabel: String? = nil
+        identifierLabel: String? = nil,
+        accessibilityLabel: String? = nil  // NEW: Accessibility label for VoiceOver (Issue #154)
     ) {
         self.identifierName = identifierName
         self.identifierElementType = identifierElementType
         self.identifierLabel = identifierLabel
+        self.accessibilityLabel = accessibilityLabel
     }
 
     public func body(content: Content) -> some View {
@@ -237,11 +240,22 @@ public struct AutomaticComplianceModifier: ViewModifier {
             }
         }
         
-        // Apply identifier (if needed), then HIG compliance - all modifiers on the same view
+        // Helper to conditionally apply accessibility label (Issue #154)
+        // Only apply if explicitly provided via parameter - don't override existing labels
+        @ViewBuilder
+        func applyAccessibilityLabelIfNeeded<V: View>(to view: V) -> some View {
+            if let label = accessibilityLabel, !label.isEmpty {
+                view.accessibilityLabel(label)
+            } else {
+                view
+            }
+        }
+        
+        // Apply identifier (if needed), then accessibility label (if needed), then HIG compliance
         // Note: Picker segments should have accessibility applied directly when generating the picker
         // (see PlatformTabStrip, DynamicEnumField, etc. for examples)
         return applyHIGComplianceFeatures(
-            to: applyIdentifierIfNeeded(to: content),
+            to: applyAccessibilityLabelIfNeeded(to: applyIdentifierIfNeeded(to: content)),
             elementType: identifierElementType
         )
     }
@@ -431,8 +445,14 @@ public struct AutomaticComplianceModifier: ViewModifier {
 /// This eliminates singleton access overhead and improves test isolation
 public struct NamedAutomaticComplianceModifier: ViewModifier {
     let componentName: String
+    let accessibilityLabel: String?  // NEW: Accessibility label for VoiceOver (Issue #154)
     // NO @Environment dependencies - all access is direct to fix Issue #159
     // This allows .accessibilityIdentifier() to apply directly to content without wrapper views
+    
+    nonisolated public init(componentName: String, accessibilityLabel: String? = nil) {
+        self.componentName = componentName
+        self.accessibilityLabel = accessibilityLabel
+    }
     
     public func body(content: Content) -> some View {
         // Use task-local config (automatic per-test isolation), then shared (production)
@@ -481,9 +501,18 @@ public struct NamedAutomaticComplianceModifier: ViewModifier {
             fflush(stdout)
             config.addDebugLogEntry(debugMsg, enabled: capturedEnableDebugLogging)
         }
-        // Apply identifier directly to content (no wrapper view!)
+        // Apply identifier and accessibility label directly to content (no wrapper view!)
         // This fixes Issue #159 - identifier now applies directly to the Button
-        return content.accessibilityIdentifier(identifier)
+        // Issue #154: Also apply accessibility label if provided
+        @ViewBuilder
+        func applyAccessibilityLabelIfNeeded<V: View>(to view: V) -> some View {
+            if let label = accessibilityLabel, !label.isEmpty {
+                view.accessibilityLabel(label)
+            } else {
+                view
+            }
+        }
+        return applyAccessibilityLabelIfNeeded(to: content.accessibilityIdentifier(identifier))
     }
     
     // Note: Not @MainActor - this function only does string manipulation and config access
@@ -946,23 +975,27 @@ public extension View {
     /// 
     /// Applies:
     /// - Automatic accessibility identifiers
+    /// - Automatic accessibility labels for VoiceOver (Issue #154)
     /// - HIG compliance features (touch targets, color contrast, typography, focus indicators, etc.)
     /// 
     /// - Parameters:
     ///   - identifierName: Optional component name for identifier generation (e.g., "platformNavigationButton_L4")
     ///   - identifierElementType: Optional element type hint (e.g., "Button", "Link", "TextField")
     ///   - identifierLabel: Optional label text to include in identifier (e.g., button title)
+    ///   - accessibilityLabel: Optional accessibility label for VoiceOver users (Issue #154)
     /// 
     /// Note: Nonisolated since AccessibilityIdentifierConfig properties are no longer @Published
     nonisolated func automaticCompliance(
         identifierName: String? = nil,
         identifierElementType: String? = nil,
-        identifierLabel: String? = nil
+        identifierLabel: String? = nil,
+        accessibilityLabel: String? = nil  // NEW: Accessibility label for VoiceOver (Issue #154)
     ) -> some View {
         self.modifier(AutomaticComplianceModifier(
             identifierName: identifierName,
             identifierElementType: identifierElementType,
-            identifierLabel: identifierLabel
+            identifierLabel: identifierLabel,
+            accessibilityLabel: accessibilityLabel
         ))
     }
     
@@ -971,24 +1004,33 @@ public extension View {
     /// - Parameters:
     ///   - componentName: The name of the component (e.g., "CoverFlowCardComponent")
     ///   - identifierLabel: Optional label text to include in identifier (e.g., button title)
+    ///   - accessibilityLabel: Optional accessibility label for VoiceOver users (Issue #154)
     /// 
     /// Note: Nonisolated since AccessibilityIdentifierConfig properties are no longer @Published
     nonisolated public func automaticCompliance(
         named componentName: String,
-        identifierLabel: String? = nil
+        identifierLabel: String? = nil,
+        accessibilityLabel: String? = nil  // NEW: Accessibility label for VoiceOver (Issue #154)
     ) -> some View {
         // Create a modifier that accepts the name directly
         // For named components, we use NamedAutomaticComplianceModifier which handles the name
-        // If identifierLabel is provided, we need to use the regular modifier with both parameters
+        // If identifierLabel is provided, we need to use AutomaticComplianceModifier (NamedAutomaticComplianceModifier doesn't support identifierLabel)
+        // If only accessibilityLabel is provided (no identifierLabel), we can use NamedAutomaticComplianceModifier
         // Use @ViewBuilder to ensure type consistency
         Group {
-            if let label = identifierLabel {
+            if identifierLabel != nil {
+                // identifierLabel requires AutomaticComplianceModifier
                 self.modifier(AutomaticComplianceModifier(
                     identifierName: componentName,
-                    identifierLabel: label
+                    identifierLabel: identifierLabel,
+                    accessibilityLabel: accessibilityLabel
                 ))
             } else {
-                self.modifier(NamedAutomaticComplianceModifier(componentName: componentName))
+                // No identifierLabel, can use NamedAutomaticComplianceModifier (supports accessibilityLabel)
+                self.modifier(NamedAutomaticComplianceModifier(
+                    componentName: componentName,
+                    accessibilityLabel: accessibilityLabel
+                ))
             }
         }
     }
