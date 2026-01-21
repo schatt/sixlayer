@@ -28,6 +28,7 @@ struct TestApp: App {
 /// Optimized for fast XCUITest execution with early accessibility setup
 struct TestAppContentView: View {
     @State private var testViewType: TestViewType = .text
+    @State private var platformPickerSelection: String = "Option1"
     @State private var isConfigured = false
     
     enum TestViewType: String, CaseIterable {
@@ -35,6 +36,9 @@ struct TestAppContentView: View {
         case button = "Button"
         case control = "Control"
     }
+    
+    // Options for platformPicker test (Issue #163)
+    private let platformPickerOptions = ["Option1", "Option2", "Option3"]
     
     // Pre-configure environment values to avoid onAppear delays
     private let globalAccessibilityEnabled = true
@@ -82,6 +86,18 @@ struct TestAppContentView: View {
             .pickerStyle(.segmented)
             .accessibilityIdentifier("test-view-picker")
             .accessibility(label: Text("Test View")) // Also add label at picker level (as per Stack Overflow answer)
+            .padding()
+            
+            // TDD Test: platformPicker with automatic accessibility (Issue #163)
+            // This verifies that platformPicker automatically applies accessibility
+            // identifiers to both the picker and its segments
+            platformPicker(
+                label: "Platform Picker Test",
+                selection: $platformPickerSelection,
+                options: platformPickerOptions,
+                pickerName: "PlatformPickerTest",
+                style: SegmentedPickerStyle()
+            )
             .padding()
             
             // Use Group to avoid deep nesting while maintaining view switching
