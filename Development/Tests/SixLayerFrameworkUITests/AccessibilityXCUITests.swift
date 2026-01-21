@@ -57,14 +57,34 @@ final class AccessibilityXCUITests: XCTestCase {
         // Find element by accessibility identifier using XCUIElement query
         // This is the same way real UI tests would find elements
         let expectedIdentifier = "SixLayer.main.ui.element.View"
-        let (element, queryTime) = XCUITestPerformance.measure {
+        
+        // Try multiple query types - identifiers can be on different element types
+        let (otherElement, queryTime) = XCUITestPerformance.measure {
             app.otherElements[expectedIdentifier]
         }
         XCUITestPerformance.log("Element query for '\(expectedIdentifier)'", time: queryTime)
         
-        // Use shorter timeout since app is ready and identifier should be set
-        XCTAssertTrue(element.waitForExistenceFast(timeout: 1.0), 
-                     "Accessibility identifier '\(expectedIdentifier)' should be findable by XCUITest")
+        if otherElement.waitForExistenceFast(timeout: 1.0) {
+            // Found it!
+            return
+        }
+        
+        // Try staticTexts (in case identifier is on the Text view itself)
+        let staticTextElement = app.staticTexts[expectedIdentifier]
+        if staticTextElement.waitForExistenceFast(timeout: 0.5) {
+            // Found it!
+            return
+        }
+        
+        // Try any element
+        let anyElement = app.descendants(matching: .any)[expectedIdentifier]
+        if anyElement.waitForExistenceFast(timeout: 0.5) {
+            // Found it!
+            return
+        }
+        
+        // If we get here, identifier wasn't found
+        XCTFail("Accessibility identifier '\(expectedIdentifier)' should be findable by XCUITest. Tried otherElements, staticTexts, and any elements.")
     }
     
     /// Test that Button view generates accessibility identifier that XCUITest can find
@@ -86,13 +106,33 @@ final class AccessibilityXCUITests: XCTestCase {
         // Find element by accessibility identifier using XCUIElement query
         // This is the same way real UI tests would find elements
         let expectedIdentifier = "SixLayer.main.ui.element.Button"
-        let (element, queryTime) = XCUITestPerformance.measure {
+        
+        // Try multiple query types - identifiers can be on different element types
+        let (otherElement, queryTime) = XCUITestPerformance.measure {
             app.otherElements[expectedIdentifier]
         }
         XCUITestPerformance.log("Element query for '\(expectedIdentifier)'", time: queryTime)
         
-        // Use shorter timeout since app is ready and identifier should be set
-        XCTAssertTrue(element.waitForExistenceFast(timeout: 1.0), 
-                     "Accessibility identifier '\(expectedIdentifier)' should be findable by XCUITest")
+        if otherElement.waitForExistenceFast(timeout: 1.0) {
+            // Found it!
+            return
+        }
+        
+        // Try buttons (in case identifier is on the Button view itself)
+        let buttonElement = app.buttons[expectedIdentifier]
+        if buttonElement.waitForExistenceFast(timeout: 0.5) {
+            // Found it!
+            return
+        }
+        
+        // Try any element
+        let anyElement = app.descendants(matching: .any)[expectedIdentifier]
+        if anyElement.waitForExistenceFast(timeout: 0.5) {
+            // Found it!
+            return
+        }
+        
+        // If we get here, identifier wasn't found
+        XCTFail("Accessibility identifier '\(expectedIdentifier)' should be findable by XCUITest. Tried otherElements, buttons, and any elements.")
     }
 }
