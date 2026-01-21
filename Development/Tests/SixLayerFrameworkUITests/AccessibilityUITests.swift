@@ -101,9 +101,9 @@ final class AccessibilityUITests: XCTestCase {
     nonisolated override func tearDownWithError() throws {
         // Note: tearDownWithError() is nonisolated (inherited from XCTestCase), so we need to use MainActor.assumeIsolated
         // to access main actor-isolated properties like 'app'
-        // Use helper function to avoid capturing self in closure
+        // Call cleanupApp directly without capturing self
         MainActor.assumeIsolated {
-            self.cleanupApp()
+            cleanupApp()
         }
     }
     
