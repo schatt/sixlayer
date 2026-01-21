@@ -657,25 +657,30 @@ if [ -f "$RELEASE_FILE" ]; then
     fi
     
     # Validate release notes have sufficient content (not just issue numbers and titles)
-    echo "🔍 Validating release notes have sufficient detail..."
+    # This is a softer check - we account for that some issues need less detail
+    echo "🔍 Validating release notes have sufficient content..."
     RELEASE_FILE_LINES=$(wc -l < "$RELEASE_FILE" | tr -d ' ')
     RELEASE_FILE_WORDS=$(wc -w < "$RELEASE_FILE" | tr -d ' ')
     
     # Count issue references
     ISSUE_REF_COUNT=$(grep -oE "#[0-9]+|Issue #[0-9]+" "$RELEASE_FILE" | wc -l | tr -d ' ')
     
+    # Calculate expected word count based on issue types
+    # Significant issues (features, breaking changes) need ~100 words
+    # Minor issues (bug fixes, patches) need ~20 words
+    # We'll use a conservative average of ~30 words per issue as minimum
+    MIN_EXPECTED_WORDS=$((ISSUE_REF_COUNT * 30))
+    
     # If there are many issue references but few words, it might be just issue numbers and titles
-    if [ "$ISSUE_REF_COUNT" -gt 0 ] && [ "$RELEASE_FILE_WORDS" -lt $((ISSUE_REF_COUNT * 50)) ]; then
+    # But we're more lenient - this is just a warning, not an error
+    if [ "$ISSUE_REF_COUNT" -gt 0 ] && [ "$RELEASE_FILE_WORDS" -lt "$MIN_EXPECTED_WORDS" ]; then
         echo "⚠️  Warning: Release notes may lack sufficient detail"
         echo "   Found $ISSUE_REF_COUNT issue reference(s) but only $RELEASE_FILE_WORDS words"
-        echo "   Expected at least ~$((ISSUE_REF_COUNT * 50)) words for comprehensive release notes"
-        echo "💡 Each issue should have:"
-        echo "   - Summary of what was changed/improved"
-        echo "   - Technical details about the implementation"
-        echo "   - Context about what the change means for users"
-        echo "   - Migration guide if applicable"
+        echo "   Expected at least ~$MIN_EXPECTED_WORDS words (average ~30 words per issue)"
+        echo "💡 Note: Significant issues (features, breaking changes) need more detail"
+        echo "💡 Minor issues (bug fixes) can be shorter, but should still explain what was fixed"
     else
-        echo "✅ Release notes appear to have sufficient detail"
+        echo "✅ Release notes appear to have sufficient content"
     fi
 fi
 
