@@ -119,10 +119,9 @@ open class Layer4ComponentAccessibilityTests: BaseTestClass {
             Text("Test Sheet Content")
         }
         
-        // When: Applying platform sheet wrapper
+        // When: Applying platform sheet wrapper (without onDismiss - current signature)
         let sheet = testSheetContent.platformSheet(
-            isPresented: .constant(true),
-            onDismiss: nil
+            isPresented: .constant(true)
         ) {
             testSheetContent
         }
@@ -135,6 +134,145 @@ open class Layer4ComponentAccessibilityTests: BaseTestClass {
             componentName: "PlatformSheet"
         )
         #expect(hasAccessibilityID, "Platform sheet should generate accessibility identifiers ")
+    }
+    
+    // MARK: - platformSheet onDismiss Parameter Tests (TDD - RED Phase)
+    
+    @Test @MainActor func testPlatformSheetWithOnDismiss() async {
+        initializeTestConfig()
+        // Given: Sheet with onDismiss callback
+        var dismissCalled = false
+        let onDismiss = {
+            dismissCalled = true
+        }
+        
+        // When: Applying platformSheet with onDismiss parameter
+        // NOTE: This test will fail until onDismiss parameter is added
+        let sheet = Text("Content")
+            .platformSheet(
+                isPresented: .constant(true),
+                onDismiss: onDismiss
+            ) {
+                Text("Sheet Content")
+            }
+        
+        // Then: Sheet should be created successfully
+        let hostedView = hostRootPlatformView(sheet)
+        #expect(hostedView != nil, "platformSheet with onDismiss should render")
+        // Note: Testing dismiss callback would require actual sheet presentation, which is complex in unit tests
+    }
+    
+    @Test @MainActor func testPlatformSheetWithOnDismissNil() async {
+        initializeTestConfig()
+        // Given: Sheet with nil onDismiss (should still work)
+        
+        // When: Applying platformSheet with nil onDismiss
+        let sheet = Text("Content")
+            .platformSheet(
+                isPresented: .constant(true),
+                onDismiss: nil
+            ) {
+                Text("Sheet Content")
+            }
+        
+        // Then: Sheet should be created successfully
+        let hostedView = hostRootPlatformView(sheet)
+        #expect(hostedView != nil, "platformSheet with nil onDismiss should render")
+    }
+    
+    @Test @MainActor func testPlatformSheetWithOnDismissAndDetents() async {
+        initializeTestConfig()
+        // Given: Sheet with both onDismiss and detents
+        var dismissCalled = false
+        let onDismiss = {
+            dismissCalled = true
+        }
+        
+        // When: Applying platformSheet with both parameters
+        let sheet = Text("Content")
+            .platformSheet(
+                isPresented: .constant(true),
+                detents: [.medium, .large],
+                onDismiss: onDismiss
+            ) {
+                Text("Sheet Content")
+            }
+        
+        // Then: Sheet should be created successfully
+        let hostedView = hostRootPlatformView(sheet)
+        #expect(hostedView != nil, "platformSheet with onDismiss and detents should render")
+    }
+    
+    // MARK: - platformSheet Item-Based Overload Tests (TDD - RED Phase)
+    
+    @Test @MainActor func testPlatformSheetWithItemBinding() async {
+        initializeTestConfig()
+        // Given: Item-based sheet presentation
+        struct TestItem: Identifiable {
+            let id: Int
+            let name: String
+        }
+        
+        @State var selectedItem: TestItem? = TestItem(id: 1, name: "Test")
+        
+        // When: Applying platformSheet with item binding
+        // NOTE: This test will fail until item-based overload is added
+        let sheet = Text("Content")
+            .platformSheet(item: $selectedItem) { item in
+                Text("Sheet for: \(item.name)")
+            }
+        
+        // Then: Sheet should be created successfully
+        let hostedView = hostRootPlatformView(sheet)
+        #expect(hostedView != nil, "platformSheet with item binding should render")
+    }
+    
+    @Test @MainActor func testPlatformSheetWithItemBindingAndOnDismiss() async {
+        initializeTestConfig()
+        // Given: Item-based sheet with onDismiss
+        struct TestItem: Identifiable {
+            let id: Int
+            let name: String
+        }
+        
+        @State var selectedItem: TestItem? = TestItem(id: 1, name: "Test")
+        var dismissCalled = false
+        let onDismiss = {
+            dismissCalled = true
+        }
+        
+        // When: Applying platformSheet with item binding and onDismiss
+        let sheet = Text("Content")
+            .platformSheet(
+                item: $selectedItem,
+                onDismiss: onDismiss
+            ) { item in
+                Text("Sheet for: \(item.name)")
+            }
+        
+        // Then: Sheet should be created successfully
+        let hostedView = hostRootPlatformView(sheet)
+        #expect(hostedView != nil, "platformSheet with item binding and onDismiss should render")
+    }
+    
+    @Test @MainActor func testPlatformSheetItemBindingNil() async {
+        initializeTestConfig()
+        // Given: Item binding set to nil (sheet should not be presented)
+        struct TestItem: Identifiable {
+            let id: Int
+        }
+        
+        @State var selectedItem: TestItem? = nil
+        
+        // When: Applying platformSheet with nil item
+        let sheet = Text("Content")
+            .platformSheet(item: $selectedItem) { item in
+                Text("Sheet for: \(item.id)")
+            }
+        
+        // Then: Sheet should still be created (binding controls presentation)
+        let hostedView = hostRootPlatformView(sheet)
+        #expect(hostedView != nil, "platformSheet with nil item binding should still create view")
     }
     
     // NOTE: testPlatformNavigationGeneratesAccessibilityIdentifiers moved to UI tests
