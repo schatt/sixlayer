@@ -97,6 +97,58 @@ public extension View {
         #endif
     }
 
+    /// Platform-specific frame constraints with fixed width and height
+    /// Provides fixed-size frame constraints that are automatically clamped to available
+    /// screen/window space to prevent views that are too large for the device.
+    ///
+    /// - Parameters:
+    ///   - width: Fixed width constraint (clamped to screen/window size on all platforms)
+    ///   - height: Fixed height constraint (clamped to screen/window size on all platforms)
+    ///   - alignment: Alignment of the content within the frame (default: .center)
+    /// - Returns: A view with platform-specific frame constraints
+    @MainActor
+    func platformFrame(
+        width: CGFloat? = nil,
+        height: CGFloat? = nil,
+        alignment: Alignment = .center
+    ) -> some View {
+        // Clamp width and height if provided
+        let clampedWidth: CGFloat?
+        let clampedHeight: CGFloat?
+        
+        #if os(iOS) || os(watchOS) || os(tvOS) || os(visionOS)
+        if let width = width {
+            let maxSize = PlatformFrameHelpers.getMaxFrameSize()
+            clampedWidth = min(width, maxSize.width)
+        } else {
+            clampedWidth = nil
+        }
+        if let height = height {
+            let maxSize = PlatformFrameHelpers.getMaxFrameSize()
+            clampedHeight = min(height, maxSize.height)
+        } else {
+            clampedHeight = nil
+        }
+        #elseif os(macOS)
+        if let width = width {
+            clampedWidth = PlatformFrameHelpers.clampMaxFrameSize(width, dimension: .width)
+        } else {
+            clampedWidth = nil
+        }
+        if let height = height {
+            clampedHeight = PlatformFrameHelpers.clampMaxFrameSize(height, dimension: .height)
+        } else {
+            clampedHeight = nil
+        }
+        #else
+        clampedWidth = width
+        clampedHeight = height
+        #endif
+        
+        // Use SwiftUI's frame modifier with alignment
+        return AnyView(self.frame(width: clampedWidth, height: clampedHeight, alignment: alignment))
+    }
+    
     /// Platform-specific frame constraints with custom sizes
     /// Provides flexible frame constraints that are automatically clamped to available
     /// screen/window space to prevent views that are too large for the device.
@@ -108,6 +160,7 @@ public extension View {
     ///   - minHeight: Minimum height constraint (clamped to screen size on macOS)
     ///   - idealHeight: Ideal height constraint (clamped to screen/window size on all platforms)
     ///   - maxHeight: Maximum height constraint (clamped to screen/window size on both platforms)
+    ///   - alignment: Alignment of the content within the frame (default: .center)
     /// - Returns: A view with platform-specific frame constraints
     @MainActor
     func platformFrame(
@@ -116,7 +169,8 @@ public extension View {
         maxWidth: CGFloat? = nil,
         minHeight: CGFloat? = nil,
         idealHeight: CGFloat? = nil,
-        maxHeight: CGFloat? = nil
+        maxHeight: CGFloat? = nil,
+        alignment: Alignment = .center
     ) -> some View {
         // Use shared helper for DRY implementation
         let clamped = PlatformFrameHelpers.clampFrameConstraints(
@@ -133,19 +187,20 @@ public extension View {
                               clamped.minHeight != nil || clamped.idealHeight != nil || clamped.maxHeight != nil
         
         if hasAnyConstraint {
-            // Use SwiftUI's frame modifier which handles all combinations
+            // Use SwiftUI's frame modifier which handles all combinations, including alignment
             return AnyView(self.frame(
                 minWidth: clamped.minWidth,
                 idealWidth: clamped.idealWidth,
                 maxWidth: clamped.maxWidth,
                 minHeight: clamped.minHeight,
                 idealHeight: clamped.idealHeight,
-                maxHeight: clamped.maxHeight
+                maxHeight: clamped.maxHeight,
+                alignment: alignment
             ))
         } else {
             // No constraints provided, apply default max constraints for safety on mobile platforms
             if let defaultMax = PlatformFrameHelpers.getDefaultMaxFrameSize() {
-                return AnyView(self.frame(maxWidth: defaultMax.width, maxHeight: defaultMax.height))
+                return AnyView(self.frame(maxWidth: defaultMax.width, maxHeight: defaultMax.height, alignment: alignment))
             } else {
                 return AnyView(self)
             }
@@ -593,12 +648,17 @@ public extension View {
     /// - Parameters:
     ///   - isPresented: Binding to control sheet presentation
     ///   - detents: Platform-specific presentation detents (iOS only)
+    ///   - onDismiss: Optional callback when sheet is dismissed
     ///   - content: The sheet content
     /// - Returns: A view with platform-specific sheet presentation
     ///
     /// ## Usage Example
     /// ```swift
-    /// .platformSheet(isPresented: $showingSheet, detents: [.medium, .large]) {
+    /// .platformSheet(
+    ///     isPresented: $showingSheet,
+    ///     detents: [.medium, .large],
+    ///     onDismiss: { print("Sheet dismissed") }
+    /// ) {
     ///     VStack {
     ///         Text("Sheet Content")
     ///         Button("Dismiss") { showingSheet = false }
@@ -609,10 +669,11 @@ public extension View {
     func platformSheet<SheetContent: View>(
         isPresented: Binding<Bool>,
         detents: [PlatformPresentationDetent] = [.large],
+        onDismiss: (() -> Void)? = nil,
         @ViewBuilder content: @escaping () -> SheetContent
     ) -> some View {
         #if os(iOS)
-        return self.sheet(isPresented: isPresented) {
+        return self.sheet(isPresented: isPresented, onDismiss: onDismiss) {
             Group {
                 if #available(iOS 16.0, *) {
                     // Use NavigationStack on iOS 16+
@@ -655,14 +716,103 @@ public extension View {
             minWidth = 820
             minHeight = 640
         }
-        return self.sheet(isPresented: isPresented) {
+        return self.sheet(isPresented: isPresented, onDismiss: onDismiss) {
             content()
                 .frame(minWidth: minWidth, minHeight: minHeight)
         }
         #else
-        return self.sheet(isPresented: isPresented) {
+        return self.sheet(isPresented: isPresented, onDismiss: onDismiss) {
             content()
         }
+        #endif
+    }
+    
+    /// Platform-specific sheet presentation with item-based binding
+    /// Provides consistent sheet presentation using item binding (matches SwiftUI's item-based sheet overload)
+    ///
+    /// - Parameters:
+    ///   - item: Optional item binding for sheet presentation (sheet presents when item is non-nil)
+    ///   - detents: Platform-specific presentation detents (iOS only)
+    ///   - onDismiss: Optional callback when sheet is dismissed
+    ///   - content: The sheet content builder that receives the item
+    /// - Returns: A view with platform-specific sheet presentation
+    ///
+    /// ## Usage Example
+    /// ```swift
+    /// struct Item: Identifiable {
+    ///     let id: Int
+    ///     let name: String
+    /// }
+    ///
+    /// @State var selectedItem: Item?
+    ///
+    /// .platformSheet(
+    ///     item: $selectedItem,
+    ///     onDismiss: { print("Sheet dismissed") }
+    /// ) { item in
+    ///     VStack {
+    ///         Text("Editing: \(item.name)")
+    ///         Button("Done") { selectedItem = nil }
+    ///     }
+    ///     .navigationTitle("Edit Item")
+    /// }
+    /// ```
+    func platformSheet<Item: Identifiable, SheetContent: View>(
+        item: Binding<Item?>,
+        detents: [PlatformPresentationDetent] = [.large],
+        onDismiss: (() -> Void)? = nil,
+        @ViewBuilder content: @escaping (Item) -> SheetContent
+    ) -> some View {
+        #if os(iOS)
+        return self.sheet(item: item, onDismiss: onDismiss) { item in
+            Group {
+                if #available(iOS 16.0, *) {
+                    // Use NavigationStack on iOS 16+
+                    NavigationStack {
+                        content(item)
+                    }
+                } else {
+                    // Fallback to NavigationView for iOS 15 and earlier
+                    NavigationView {
+                        content(item)
+                    }
+                }
+            }
+            .platformPresentationDetents(detents)
+            .deviceAwareFrame() // Layer 4: Device-aware sizing for iPad vs iPhone
+        }
+        #elseif os(macOS)
+        // Compute desired macOS sheet size outside the ViewBuilder closure
+        let hasLarge = detents.contains { detent in
+            if case .large = detent { return true } else { return false }
+        }
+        let hasMedium = detents.contains { detent in
+            if case .medium = detent { return true } else { return false }
+        }
+        let customHeights: [CGFloat] = detents.compactMap { detent in
+            if case .custom(let h) = detent { return h } else { return nil }
+        }
+        let minWidth: CGFloat
+        let minHeight: CGFloat
+        if let maxCustom = customHeights.max() {
+            minWidth = max(800, min(1400, maxCustom * 1.0))
+            minHeight = max(640, min(1100, maxCustom))
+        } else if hasLarge {
+            minWidth = 1024
+            minHeight = 800
+        } else if hasMedium {
+            minWidth = 820
+            minHeight = 640
+        } else {
+            minWidth = 820
+            minHeight = 640
+        }
+        return self.sheet(item: item, onDismiss: onDismiss) { item in
+            content(item)
+                .frame(minWidth: minWidth, minHeight: minHeight)
+        }
+        #else
+        return self.sheet(item: item, onDismiss: onDismiss, content: content)
         #endif
     }
 

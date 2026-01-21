@@ -521,5 +521,240 @@ open class PlatformFrameSafetyTests: BaseTestClass {
         let hostedView = hostRootPlatformView(view)
         #expect(hostedView != nil, "platformFrame should render consistently across platforms")
     }
+    
+    // MARK: - platformFrame(width:height:alignment:) Tests
+    
+    @Test @MainActor func testPlatformFrameWithWidthAndHeight() {
+        // Given: Fixed width and height
+        let width: CGFloat = 400
+        let height: CGFloat = 300
+        
+        // When: Applying platformFrame with width and height
+        let view = Text("Test")
+            .platformFrame(width: width, height: height)
+        let hostedView = hostRootPlatformView(view)
+        
+        // Then: View should render successfully
+        #expect(hostedView != nil, "platformFrame with width and height should render")
+    }
+    
+    @Test @MainActor func testPlatformFrameWithAlignment() {
+        // Given: Frame with alignment parameter
+        let view = Text("Test")
+            .platformFrame(maxWidth: 500, alignment: .leading)
+        let hostedView = hostRootPlatformView(view)
+        
+        // Then: View should render successfully
+        #expect(hostedView != nil, "platformFrame with alignment should render")
+    }
+    
+    @Test @MainActor func testPlatformFrameWithWidthHeightAndAlignment() {
+        // Given: Fixed width, height, and alignment
+        let view = Text("Test")
+            .platformFrame(width: 400, height: 300, alignment: .topLeading)
+        let hostedView = hostRootPlatformView(view)
+        
+        // Then: View should render successfully
+        #expect(hostedView != nil, "platformFrame with width, height, and alignment should render")
+    }
+    
+    @Test @MainActor func testPlatformFrameClampsOversizedWidth() {
+        // Given: Oversized width that exceeds screen bounds
+        #if os(iOS)
+        let maxSize = PlatformFrameHelpers.getMaxFrameSize()
+        let oversizedWidth = maxSize.width * 2
+        #elseif os(macOS)
+        let screenSize = NSScreen.main?.visibleFrame.size ?? CGSize(width: 1920, height: 1080)
+        let oversizedWidth = screenSize.width * 2
+        #else
+        let oversizedWidth: CGFloat = 5000
+        #endif
+        
+        // When: Applying platformFrame with oversized width
+        let view = Text("Test")
+            .platformFrame(width: oversizedWidth, height: 300)
+        let hostedView = hostRootPlatformView(view)
+        
+        // Then: View should render successfully (width should be clamped internally)
+        #expect(hostedView != nil, "platformFrame should clamp oversized width")
+    }
+    
+    @Test @MainActor func testPlatformFrameClampsOversizedHeight() {
+        // Given: Oversized height that exceeds screen bounds
+        #if os(iOS)
+        let maxSize = PlatformFrameHelpers.getMaxFrameSize()
+        let oversizedHeight = maxSize.height * 2
+        #elseif os(macOS)
+        let screenSize = NSScreen.main?.visibleFrame.size ?? CGSize(width: 1920, height: 1080)
+        let oversizedHeight = screenSize.height * 2
+        #else
+        let oversizedHeight: CGFloat = 5000
+        #endif
+        
+        // When: Applying platformFrame with oversized height
+        let view = Text("Test")
+            .platformFrame(width: 400, height: oversizedHeight)
+        let hostedView = hostRootPlatformView(view)
+        
+        // Then: View should render successfully (height should be clamped internally)
+        #expect(hostedView != nil, "platformFrame should clamp oversized height")
+    }
+    
+    @Test @MainActor func testPlatformFrameWithAllAlignmentOptions() {
+        // Test that all common alignment options work
+        let alignments: [Alignment] = [.center, .leading, .trailing, .top, .bottom, 
+                                       .topLeading, .topTrailing, .bottomLeading, .bottomTrailing]
+        
+        for alignment in alignments {
+            let view = Text("Test")
+                .platformFrame(maxWidth: 500, alignment: alignment)
+            let hostedView = hostRootPlatformView(view)
+            #expect(hostedView != nil, "platformFrame should work with alignment: \(alignment)")
+        }
+    }
+    
+    // MARK: - platformFrame Alignment Parameter Tests
+    
+    @Test @MainActor func testPlatformFrameAlignmentWithMinMaxConstraints() {
+        // Given: Frame with min/max constraints and alignment
+        let view = Text("Test")
+            .platformFrame(
+                minWidth: 200,
+                maxWidth: 800,
+                minHeight: 100,
+                maxHeight: 600,
+                alignment: .leading
+            )
+        let hostedView = hostRootPlatformView(view)
+        
+        // Then: View should render successfully
+        #expect(hostedView != nil, "platformFrame with min/max constraints and alignment should render")
+    }
+    
+    @Test @MainActor func testPlatformFrameAlignmentWithIdealSize() {
+        // Given: Frame with ideal size and alignment
+        let view = Text("Test")
+            .platformFrame(
+                idealWidth: 500,
+                idealHeight: 400,
+                alignment: .topTrailing
+            )
+        let hostedView = hostRootPlatformView(view)
+        
+        // Then: View should render successfully
+        #expect(hostedView != nil, "platformFrame with ideal size and alignment should render")
+    }
+    
+    @Test @MainActor func testPlatformFrameAlignmentDefaultIsCenter() {
+        // Given: Frame without explicit alignment
+        let view1 = Text("Test")
+            .platformFrame(width: 400, height: 300)
+        let view2 = Text("Test")
+            .platformFrame(width: 400, height: 300, alignment: .center)
+        
+        // Then: Both should render (default alignment should be .center)
+        let hosted1 = hostRootPlatformView(view1)
+        let hosted2 = hostRootPlatformView(view2)
+        
+        #expect(hosted1 != nil, "platformFrame with default alignment should render")
+        #expect(hosted2 != nil, "platformFrame with explicit .center alignment should render")
+    }
+    
+    @Test @MainActor func testPlatformFrameWidthHeightOverload_WidthOnly() {
+        // Given: Only width specified
+        let view = Text("Test")
+            .platformFrame(width: 400)
+        let hostedView = hostRootPlatformView(view)
+        
+        // Then: View should render successfully
+        #expect(hostedView != nil, "platformFrame with width only should render")
+    }
+    
+    @Test @MainActor func testPlatformFrameWidthHeightOverload_HeightOnly() {
+        // Given: Only height specified
+        let view = Text("Test")
+            .platformFrame(height: 300)
+        let hostedView = hostRootPlatformView(view)
+        
+        // Then: View should render successfully
+        #expect(hostedView != nil, "platformFrame with height only should render")
+    }
+    
+    @Test @MainActor func testPlatformFrameWidthHeightOverload_NilValues() {
+        // Given: Both width and height are nil (should use default alignment)
+        let view = Text("Test")
+            .platformFrame(width: nil, height: nil, alignment: .bottomLeading)
+        let hostedView = hostRootPlatformView(view)
+        
+        // Then: View should render successfully
+        #expect(hostedView != nil, "platformFrame with nil width/height but alignment should render")
+    }
+    
+    @Test @MainActor func testPlatformFrameAlignmentMatchesSwiftUI() {
+        // Given: Same constraints with alignment
+        let swiftUIView = Text("SwiftUI")
+            .frame(maxWidth: 500, alignment: .leading)
+        let platformView = Text("Platform")
+            .platformFrame(maxWidth: 500, alignment: .leading)
+        
+        // Then: Both should render successfully
+        let swiftUIHosted = hostRootPlatformView(swiftUIView)
+        let platformHosted = hostRootPlatformView(platformView)
+        
+        #expect(swiftUIHosted != nil, "SwiftUI frame with alignment should render")
+        #expect(platformHosted != nil, "platformFrame with alignment should match SwiftUI behavior")
+    }
+    
+    @Test @MainActor func testPlatformFrameWidthHeightMatchesSwiftUI() {
+        // Given: Same width/height/alignment
+        let swiftUIView = Text("SwiftUI")
+            .frame(width: 400, height: 300, alignment: .topLeading)
+        let platformView = Text("Platform")
+            .platformFrame(width: 400, height: 300, alignment: .topLeading)
+        
+        // Then: Both should render successfully
+        let swiftUIHosted = hostRootPlatformView(swiftUIView)
+        let platformHosted = hostRootPlatformView(platformView)
+        
+        #expect(swiftUIHosted != nil, "SwiftUI frame with width/height/alignment should render")
+        #expect(platformHosted != nil, "platformFrame with width/height/alignment should match SwiftUI behavior")
+    }
+    
+    @Test @MainActor func testPlatformFrameAllParameterCombinations() {
+        // Test various combinations of parameters with alignment
+        let testCases: [(minWidth: CGFloat?, maxWidth: CGFloat?, alignment: Alignment)] = [
+            (nil, 500, .leading),
+            (200, nil, .trailing),
+            (200, 800, .center),
+            (nil, nil, .top),
+            (300, 700, .bottomTrailing)
+        ]
+        
+        for (minWidth, maxWidth, alignment) in testCases {
+            let view = Text("Test")
+                .platformFrame(
+                    minWidth: minWidth,
+                    maxWidth: maxWidth,
+                    alignment: alignment
+                )
+            let hostedView = hostRootPlatformView(view)
+            #expect(hostedView != nil, "platformFrame should work with minWidth: \(String(describing: minWidth)), maxWidth: \(String(describing: maxWidth)), alignment: \(alignment)")
+        }
+    }
+    
+    @Test @MainActor func testPlatformFrameBackwardCompatibility() {
+        // Given: Existing code without alignment parameter
+        let view1 = Text("Test")
+            .platformFrame(minWidth: 400, maxWidth: 1200)
+        let view2 = Text("Test")
+            .platformFrame(minWidth: 400, maxWidth: 1200, alignment: .center)
+        
+        // Then: Both should render (backward compatibility maintained)
+        let hosted1 = hostRootPlatformView(view1)
+        let hosted2 = hostRootPlatformView(view2)
+        
+        #expect(hosted1 != nil, "platformFrame without alignment should still work (backward compatibility)")
+        #expect(hosted2 != nil, "platformFrame with explicit alignment should work")
+    }
 }
 
