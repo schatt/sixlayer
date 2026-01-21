@@ -98,13 +98,40 @@ extension XCUIApplication {
         return nil
     }
     
-    /// Select a segment in the segmented picker (handles iOS/macOS differences)
+    /// Select a segment in the segmented picker (handles platform differences)
     /// Uses platform-specific strategies based on how segmented pickers are exposed
     /// - Parameter segmentName: Name of the segment to select (e.g., "Text", "Button")
     /// - Returns: true if segment was found and selected, false otherwise
     func selectPickerSegment(_ segmentName: String) -> Bool {
         #if os(iOS)
         // On iOS, segmented picker exposes segments as buttons directly
+        let segmentButton = buttons[segmentName]
+        if segmentButton.waitForExistence(timeout: 1.0) {
+            segmentButton.tap()
+            return true
+        }
+        return false
+        
+        #elseif os(tvOS)
+        // On tvOS, segmented picker exposes segments as buttons (similar to iOS)
+        let segmentButton = buttons[segmentName]
+        if segmentButton.waitForExistence(timeout: 1.0) {
+            segmentButton.tap()
+            return true
+        }
+        return false
+        
+        #elseif os(watchOS)
+        // On watchOS, segmented picker exposes segments as buttons (similar to iOS)
+        let segmentButton = buttons[segmentName]
+        if segmentButton.waitForExistence(timeout: 1.0) {
+            segmentButton.tap()
+            return true
+        }
+        return false
+        
+        #elseif os(visionOS)
+        // On visionOS, segmented picker exposes segments as buttons (similar to iOS)
         let segmentButton = buttons[segmentName]
         if segmentButton.waitForExistence(timeout: 1.0) {
             segmentButton.tap()
