@@ -77,12 +77,13 @@ final class AccessibilityUITests: XCTestCase {
                     localApp = XCUIApplication()
                     localApp.launchWithOptimizations()
                 }
-                app = localApp
+                // Assign to app property - we're already on MainActor via assumeIsolated
+                self.app = localApp
                 XCUITestPerformance.log("App launch", time: launchTime)
             } else {
                 localApp = XCUIApplication()
                 localApp.launchWithOptimizations()
-                app = localApp
+                self.app = localApp
             }
             
             // Wait for app to be ready before querying elements
@@ -101,9 +102,9 @@ final class AccessibilityUITests: XCTestCase {
     nonisolated override func tearDownWithError() throws {
         // Note: tearDownWithError() is nonisolated (inherited from XCTestCase), so we need to use MainActor.assumeIsolated
         // to access main actor-isolated properties like 'app'
-        // Call cleanupApp directly without capturing self
+        // Access app property directly - we're already on MainActor via assumeIsolated
         MainActor.assumeIsolated {
-            cleanupApp()
+            self.app = nil
         }
     }
     
