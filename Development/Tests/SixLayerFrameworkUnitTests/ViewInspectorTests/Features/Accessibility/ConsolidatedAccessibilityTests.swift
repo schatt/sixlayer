@@ -6431,8 +6431,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
                     .font(.subheadline)
             }
         }
-        .environment(\.accessibilityIdentifierLabel, homeItem.title)
-        .automaticCompliance(named: "PlatformTabStripButton")
+        .automaticCompliance(named: "PlatformTabStripButton", identifierLabel: homeItem.title)
         .enableGlobalAutomaticCompliance()
         
         let settingsButton = Button(action: { }) {
@@ -6442,8 +6441,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
                     .font(.subheadline)
             }
         }
-        .environment(\.accessibilityIdentifierLabel, settingsItem.title)
-        .automaticCompliance(named: "PlatformTabStripButton")
+        .automaticCompliance(named: "PlatformTabStripButton", identifierLabel: settingsItem.title)
         .enableGlobalAutomaticCompliance()
         
         #if canImport(ViewInspector)
@@ -10667,9 +10665,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         self.testConfig?.includeComponentNames = true
         self.testConfig?.includeElementTypes = true
         
+        // Set config directly (no environment variable)
+        testConfig.globalAutomaticAccessibilityIdentifiers = testConfig.enableAutoIDs
         let viewWithEnvironment = enhancedView
-            .environment(\.globalAutomaticAccessibilityIdentifiers, testConfig.enableAutoIDs)
-            .environment(\.accessibilityIdentifierConfig, testConfig)
         
         // CRITICAL: On macOS, AccessibilityHostingView uses NSViewControllerRepresentable which
         // creates NSHostingController during view body evaluation when SwiftUI tries to render.
@@ -12269,11 +12267,11 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         config.enableAutoIDs = true
         config.enableDebugLogging = true  // ← Enable debug logging
         
-        // Create a view with local disable modifier (apply disable BEFORE other modifiers)
+        // Create a view with global disable (no environment variable - set config directly)
+        config.globalAutomaticAccessibilityIdentifiers = false  // ← Disable via config
         let view = PlatformInteractionButton(style: .primary, action: {}) {
             platformPresentContent_L1(content: "Test", hints: PresentationHints())
         }
-            .environment(\.globalAutomaticAccessibilityIdentifiers, false)  // ← Apply disable FIRST
             .automaticCompliance()
         
         // Try to inspect for accessibility identifier
@@ -12341,11 +12339,11 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         }
         config.enableAutoIDs = true
         
-        // Create a view with local disable (should override global enable)
+        // Create a view with global disable (no environment variable - set config directly)
+        config.globalAutomaticAccessibilityIdentifiers = false  // ← Disable via config
         let view = PlatformInteractionButton(style: .primary, action: {}) {
             platformPresentContent_L1(content: "Test", hints: PresentationHints())
         }
-            .environment(\.globalAutomaticAccessibilityIdentifiers, false)  // ← Should override global enable
             .automaticCompliance()
         
         // Try to inspect for accessibility identifier
@@ -12419,7 +12417,11 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         let view = PlatformInteractionButton(style: .primary, action: {}) {
             platformPresentContent_L1(content: "Test", hints: PresentationHints())
         }
-            .environment(\.globalAutomaticAccessibilityIdentifiers, false)  // ← Environment override
+        // Create a view with global disable (no environment variable - set config directly)
+        config.globalAutomaticAccessibilityIdentifiers = false  // ← Disable via config
+        let view = PlatformInteractionButton(style: .primary, action: {}) {
+            platformPresentContent_L1(content: "Test", hints: PresentationHints())
+        }
             .automaticCompliance()
         
         // Try to inspect for accessibility identifier
@@ -14659,10 +14661,10 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         
         // Create a simple root view with the modifier applied
         // This simulates the scenario from Issue #7 where warnings occur
+        // Set config directly (no environment variable)
+        testConfig.globalAutomaticAccessibilityIdentifiers = true
         let rootView = Text("Test Content")
             .automaticCompliance()
-            .environment(\.accessibilityIdentifierConfig, testConfig)
-            .environment(\.globalAutomaticAccessibilityIdentifiers, true)
         
         // The modifier should work without accessing environment during initialization
         // We can't directly test for warnings, but we can verify:
@@ -14697,13 +14699,12 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         let testConfig = AccessibilityIdentifierConfig.shared
         self.testConfig?.enableAutoIDs = true
         
+        // Set config directly (no environment variable)
+        testConfig.globalAutomaticAccessibilityIdentifiers = true
         let view = platformVStackContainer {
             Text("Content")
         }
-        .automaticCompliance()
-        .environment(\.accessibilityIdentifierConfig, testConfig)
-        .environment(\.globalAutomaticAccessibilityIdentifiers, true)
-        .environment(\.accessibilityIdentifierName, "TestView")
+        .automaticCompliance(identifierName: "TestView")
         
         // The modifier should use helper view pattern to defer environment access
         // We verify this by checking that the view works correctly when inspected
@@ -16367,11 +16368,15 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         // Verify config is properly configured (config is non-optional after guard let)
         // Config is available if we reach here
             
-        // When: Using framework component with opt-out modifier
+        // When: Using framework component with global disable (no environment variable - set config directly)
+        guard let config = testConfig else {
+            Issue.record("testConfig is nil")
+            return
+        }
+        config.globalAutomaticAccessibilityIdentifiers = false  // ← Disable via config
         let testView = PlatformInteractionButton(style: .primary, action: {}) {
             platformPresentContent_L1(content: "Decorative Button", hints: PresentationHints())
         }
-        .environment(\.globalAutomaticAccessibilityIdentifiers, false)
             
         // Then: The view should be created successfully
         // testView is non-optional, so no need to check for nil

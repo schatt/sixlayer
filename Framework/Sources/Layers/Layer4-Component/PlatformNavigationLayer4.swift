@@ -99,9 +99,12 @@ public extension View {
         .accessibilityLabel(accessibilityLabel)
         .accessibilityHint(accessibilityHint)
         .accessibilityAddTraits(.isButton)
-        .environment(\.accessibilityIdentifierLabel, title) // TDD GREEN: Pass label to identifier generation
         // Apply automaticCompliance directly to the Button so identifier goes to Button, not container
-        .automaticCompliance(named: "platformNavigationButton_L4")
+        // Pass hints as parameters (Option A) - explicit, no environment dependencies
+        .automaticCompliance(
+            named: "platformNavigationButton_L4",
+            identifierLabel: title
+        )
     }
     
 
@@ -110,16 +113,22 @@ public extension View {
     func platformNavigationTitle_L4(_ title: String) -> some View {
         #if os(iOS)
         return self.navigationTitle(title)
-            .environment(\.accessibilityIdentifierLabel, title) // TDD GREEN: Pass label to identifier generation
-            .automaticCompliance(named: "platformNavigationTitle_L4")
+            .automaticCompliance(
+                named: "platformNavigationTitle_L4",
+                identifierLabel: title
+            )
         #elseif os(macOS)
         return self.navigationTitle(title)
-            .environment(\.accessibilityIdentifierLabel, title) // TDD GREEN: Pass label to identifier generation
-            .automaticCompliance(named: "platformNavigationTitle_L4")
+            .automaticCompliance(
+                named: "platformNavigationTitle_L4",
+                identifierLabel: title
+            )
         #else
         return self.navigationTitle(title)
-            .environment(\.accessibilityIdentifierLabel, title) // TDD GREEN: Pass label to identifier generation
-            .automaticCompliance(named: "platformNavigationTitle_L4")
+            .automaticCompliance(
+                named: "platformNavigationTitle_L4",
+                identifierLabel: title
+            )
         #endif
     }
     
@@ -237,7 +246,7 @@ public extension View {
                 Label(title, systemImage: systemImage)
                     .foregroundColor(.primary)
             }
-            .environment(\.accessibilityIdentifierLabel, title) // TDD GREEN: Pass label to identifier generation
+            .automaticCompliance(identifierLabel: title)
             .navigationDestination(isPresented: isActive) {
                 destination()
             }
@@ -246,7 +255,7 @@ public extension View {
                 Label(title, systemImage: systemImage)
                     .foregroundColor(.primary)
             }
-            .environment(\.accessibilityIdentifierLabel, title) // TDD GREEN: Pass label to identifier generation
+            .automaticCompliance(identifierLabel: title)
             .background(
                 NavigationLink(destination: destination(), isActive: isActive) {
                     EmptyView()
@@ -272,7 +281,7 @@ public extension View {
             #endif
         }
         .buttonStyle(PlainButtonStyle())
-        .environment(\.accessibilityIdentifierLabel, title) // TDD GREEN: Pass label to identifier generation
+        .automaticCompliance(identifierLabel: title)
         #endif
     }
 

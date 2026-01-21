@@ -66,10 +66,10 @@ open class EnvironmentVariableDebugTests: BaseTestClass {
             config.enableAutoIDs = false
             print("🔧 Global config disabled: enableAutoIDs = false")
             
-            // 2. Create a view with direct environment variable setting
+            // 2. Create a view with config setting (no environment variable - removed in Issue #160)
+            config.globalAutomaticAccessibilityIdentifiers = true  // ← Enable via config
             let view = Button("Test") { }
-                .environment(\.globalAutomaticAccessibilityIdentifiers, true)  // ← Direct environment setting
-                .modifier(AutomaticAccessibilityIdentifierModifier())
+                .automaticCompliance()
             
             // 3. Try to inspect for accessibility identifier
             // Using wrapper - when ViewInspector works on macOS, no changes needed here

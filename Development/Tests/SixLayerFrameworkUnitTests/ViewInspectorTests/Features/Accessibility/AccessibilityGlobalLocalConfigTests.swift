@@ -105,11 +105,11 @@ open class AccessibilityGlobalLocalConfigTests: BaseTestClass {
             config.enableAutoIDs = true
             config.enableDebugLogging = true  // ← Enable debug logging
             
-            // Create a view with local disable modifier (apply disable BEFORE other modifiers)
+            // Create a view with global disable (no environment variable - set config directly)
+            config.globalAutomaticAccessibilityIdentifiers = false  // ← Disable via config
             let view = PlatformInteractionButton(style: .primary, action: {}) {
                 platformPresentContent_L1(content: "Test", hints: PresentationHints())
             }
-                .environment(\.globalAutomaticAccessibilityIdentifiers, false)  // ← Apply disable FIRST
                 .automaticCompliance()
             
             // Try to inspect for accessibility identifier
@@ -179,11 +179,11 @@ open class AccessibilityGlobalLocalConfigTests: BaseTestClass {
             }
             config.enableAutoIDs = true
             
-            // Create a view with local disable (should override global enable)
+            // Create a view with global disable (no environment variable - set config directly)
+            config.globalAutomaticAccessibilityIdentifiers = false  // ← Disable via config
             let view = PlatformInteractionButton(style: .primary, action: {}) {
                 platformPresentContent_L1(content: "Test", hints: PresentationHints())
             }
-                .environment(\.globalAutomaticAccessibilityIdentifiers, false)  // ← Should override global enable
                 .automaticCompliance()
             
             // Try to inspect for accessibility identifier
@@ -255,11 +255,11 @@ open class AccessibilityGlobalLocalConfigTests: BaseTestClass {
             }
             config.enableAutoIDs = true
             
-            // Create a view with environment variable override
+            // Create a view with global disable (no environment variable - set config directly)
+            config.globalAutomaticAccessibilityIdentifiers = false  // ← Disable via config
             let view = PlatformInteractionButton(style: .primary, action: {}) {
                 platformPresentContent_L1(content: "Test", hints: PresentationHints())
             }
-                .environment(\.globalAutomaticAccessibilityIdentifiers, false)  // ← Environment override
                 .automaticCompliance()
             
             // Try to inspect for accessibility identifier

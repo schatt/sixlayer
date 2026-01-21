@@ -15,6 +15,20 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
+               BlueprintIdentifier = "8BE142B2785E0C64142DC201"
+               BuildableName = "SixLayerFrameworkTestApp_macOS.app"
+               BlueprintName = "SixLayerFrameworkTestApp_macOS"
+               ReferencedContainer = "container:SixLayerFramework.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
                BlueprintIdentifier = "D6C0DC22A61DCC79BE816615"
                BuildableName = "SixLayerFramework.framework"
                BlueprintName = "SixLayerFramework_macOS"
@@ -32,9 +46,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "D6C0DC22A61DCC79BE816615"
-            BuildableName = "SixLayerFramework.framework"
-            BlueprintName = "SixLayerFramework_macOS"
+            BlueprintIdentifier = "8BE142B2785E0C64142DC201"
+            BuildableName = "SixLayerFrameworkTestApp_macOS.app"
+            BlueprintName = "SixLayerFrameworkTestApp_macOS"
             ReferencedContainer = "container:SixLayerFramework.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
@@ -47,6 +61,17 @@
                BlueprintIdentifier = "321259E81B97177258CBCA05"
                BuildableName = "SixLayerFrameworkRealUITests_macOS.xctest"
                BlueprintName = "SixLayerFrameworkRealUITests_macOS"
+               ReferencedContainer = "container:SixLayerFramework.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "BC321487B78EB385BE711076"
+               BuildableName = "SixLayerFrameworkUITests_macOS.xctest"
+               BlueprintName = "SixLayerFrameworkUITests_macOS"
                ReferencedContainer = "container:SixLayerFramework.xcodeproj">
             </BuildableReference>
          </TestableReference>
@@ -64,15 +89,16 @@
       debugDocumentVersioning = "YES"
       debugServiceExtension = "internal"
       allowLocationSimulation = "YES">
-      <MacroExpansion>
+      <BuildableProductRunnable
+         runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "D6C0DC22A61DCC79BE816615"
-            BuildableName = "SixLayerFramework.framework"
-            BlueprintName = "SixLayerFramework_macOS"
+            BlueprintIdentifier = "8BE142B2785E0C64142DC201"
+            BuildableName = "SixLayerFrameworkTestApp_macOS.app"
+            BlueprintName = "SixLayerFrameworkTestApp_macOS"
             ReferencedContainer = "container:SixLayerFramework.xcodeproj">
          </BuildableReference>
-      </MacroExpansion>
+      </BuildableProductRunnable>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"
@@ -80,15 +106,16 @@
       savedToolIdentifier = ""
       useCustomWorkingDirectory = "NO"
       debugDocumentVersioning = "YES">
-      <MacroExpansion>
+      <BuildableProductRunnable
+         runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "D6C0DC22A61DCC79BE816615"
-            BuildableName = "SixLayerFramework.framework"
-            BlueprintName = "SixLayerFramework_macOS"
+            BlueprintIdentifier = "8BE142B2785E0C64142DC201"
+            BuildableName = "SixLayerFrameworkTestApp_macOS.app"
+            BlueprintName = "SixLayerFrameworkTestApp_macOS"
             ReferencedContainer = "container:SixLayerFramework.xcodeproj">
          </BuildableReference>
-      </MacroExpansion>
+      </BuildableProductRunnable>
    </ProfileAction>
    <AnalyzeAction
       buildConfiguration = "Debug">

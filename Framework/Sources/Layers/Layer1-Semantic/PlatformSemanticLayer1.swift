@@ -125,8 +125,7 @@ public func platformPresentItemCollection_L1<Item: Identifiable>(
         onItemDeleted: onItemDeleted,
         onItemEdited: onItemEdited
     )
-    .environment(\.accessibilityIdentifierName, "platformPresentItemCollection_L1")
-    .automaticCompliance()
+    .automaticCompliance(identifierName: "platformPresentItemCollection_L1")
 }
 
 /// Generic function for presenting numeric data

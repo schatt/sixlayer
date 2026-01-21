@@ -274,7 +274,7 @@ AccessibilityIdentifierConfig.shared.enableAutoIDs = wasEnabled
 | `enableDebugLogging` | `Bool` | `false` | DEBUG logging of generated IDs |
 | `enableViewHierarchyTracking` | `Bool` | `false` | Track view hierarchy for breadcrumbs |
 | `enableUITestIntegration` | `Bool` | `false` | Enable UI test code generation |
-| `globalAutomaticAccessibilityIdentifiers` | `Bool` | `true` | ✅ **NEW**: Environment variable now defaults to true |
+| `enableAutoIDs` | `Bool` | `true` | Whether to generate automatic identifiers (global setting) |
 
 ### Generation Modes
 

@@ -58,7 +58,13 @@ public final class AccessibilityIdentifierConfig: @unchecked Sendable {
     }()
     
     /// Whether automatic accessibility identifiers are enabled
+    /// This is the global setting that controls automatic ID generation
     public var enableAutoIDs: Bool = true
+    
+    /// Global automatic accessibility identifiers setting
+    /// This property replaces the environment variable and is UserDefaults-backed
+    /// Defaults to true for backward compatibility
+    public var globalAutomaticAccessibilityIdentifiers: Bool = true
     
     /// Global prefix for accessibility identifiers (feature/view organizer)
     /// Empty string means skip in ID generation - framework works with developers, not against them
@@ -132,6 +138,7 @@ public final class AccessibilityIdentifierConfig: @unchecked Sendable {
     /// CRITICAL: Also clears ALL accumulating state (debug logs, view hierarchy) to prevent test leakage
     public func resetToDefaults() {
         enableAutoIDs = true
+        globalAutomaticAccessibilityIdentifiers = true
         globalPrefix = ""  // Empty = skip in ID generation
         namespace = ""      // Empty = skip in ID generation
         includeComponentNames = true
@@ -352,6 +359,7 @@ public final class AccessibilityIdentifierConfig: @unchecked Sendable {
     /// Follows the same pattern as PerformanceConfiguration.saveToUserDefaults()
     public func saveToUserDefaults() {
         UserDefaults.standard.set(enableAutoIDs, forKey: "SixLayer.Accessibility.enableAutoIDs")
+        UserDefaults.standard.set(globalAutomaticAccessibilityIdentifiers, forKey: "SixLayer.Accessibility.globalAutomaticAccessibilityIdentifiers")
         UserDefaults.standard.set(includeComponentNames, forKey: "SixLayer.Accessibility.includeComponentNames")
         UserDefaults.standard.set(includeElementTypes, forKey: "SixLayer.Accessibility.includeElementTypes")
         UserDefaults.standard.set(enableUITestIntegration, forKey: "SixLayer.Accessibility.enableUITestIntegration")
@@ -367,6 +375,9 @@ public final class AccessibilityIdentifierConfig: @unchecked Sendable {
     public func loadFromUserDefaults() {
         if UserDefaults.standard.object(forKey: "SixLayer.Accessibility.enableAutoIDs") != nil {
             enableAutoIDs = UserDefaults.standard.bool(forKey: "SixLayer.Accessibility.enableAutoIDs")
+        }
+        if UserDefaults.standard.object(forKey: "SixLayer.Accessibility.globalAutomaticAccessibilityIdentifiers") != nil {
+            globalAutomaticAccessibilityIdentifiers = UserDefaults.standard.bool(forKey: "SixLayer.Accessibility.globalAutomaticAccessibilityIdentifiers")
         }
         if UserDefaults.standard.object(forKey: "SixLayer.Accessibility.includeComponentNames") != nil {
             includeComponentNames = UserDefaults.standard.bool(forKey: "SixLayer.Accessibility.includeComponentNames")

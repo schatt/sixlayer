@@ -139,7 +139,8 @@ open class DefaultAccessibilityIdentifierTests: BaseTestClass {    /// BUSINESS 
             let testView = PlatformInteractionButton(style: .primary, action: {}) {
                 platformPresentContent_L1(content: "Decorative Button", hints: PresentationHints())
             }
-            .environment(\.globalAutomaticAccessibilityIdentifiers, false)
+            // Set config directly (no environment variable)
+            config.globalAutomaticAccessibilityIdentifiers = false
                 
             // Then: The view should be created successfully
             // testView is non-optional, so no need to check for nil

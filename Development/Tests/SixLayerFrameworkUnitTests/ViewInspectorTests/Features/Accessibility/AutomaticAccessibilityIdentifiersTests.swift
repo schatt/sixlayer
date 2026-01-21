@@ -154,10 +154,13 @@ open class AutomaticAccessibilityIdentifiersTests: BaseTestClass {
             
             // Create a simple root view with the modifier applied
             // This simulates the scenario from Issue #7 where warnings occur
+            // Updated to use new parameter-based API (no environment dependencies)
+            let testConfig = AccessibilityIdentifierConfig.shared
+            testConfig.enableAutoIDs = true
+            testConfig.globalAutomaticAccessibilityIdentifiers = true
+            
             let rootView = Text("Test Content")
                 .automaticCompliance()
-                .environment(\.accessibilityIdentifierConfig, testConfig)
-                .environment(\.globalAutomaticAccessibilityIdentifiers, true)
             
             // The modifier should work without accessing environment during initialization
             // We can't directly test for warnings, but we can verify:
@@ -190,17 +193,15 @@ open class AutomaticAccessibilityIdentifiersTests: BaseTestClass {
         await runWithTaskLocalConfig {
             setupTestEnvironment()
             
-            // Create a view with environment values set
+            // Create a view with config values set (no environment dependencies)
             let testConfig = AccessibilityIdentifierConfig.shared
             testConfig.enableAutoIDs = true
+            testConfig.globalAutomaticAccessibilityIdentifiers = true
             
             let view = platformVStackContainer {
                 Text("Content")
             }
-            .automaticCompliance()
-            .environment(\.accessibilityIdentifierConfig, testConfig)
-            .environment(\.globalAutomaticAccessibilityIdentifiers, true)
-            .environment(\.accessibilityIdentifierName, "TestView")
+            .automaticCompliance(identifierName: "TestView")
             
             // The modifier should use helper view pattern to defer environment access
             // We verify this by checking that the view works correctly when inspected
@@ -231,21 +232,19 @@ open class AutomaticAccessibilityIdentifiersTests: BaseTestClass {
             
             let testConfig = AccessibilityIdentifierConfig.shared
             testConfig.enableAutoIDs = true
+            testConfig.globalAutomaticAccessibilityIdentifiers = true
             
-            // Test automaticAccessibilityIdentifiers()
+            // Test automaticCompliance() - no environment dependencies
             let view1 = Text("Test")
                 .automaticCompliance()
-                .environment(\.accessibilityIdentifierConfig, testConfig)
             
-            // Test automaticAccessibilityIdentifiers(named:)
+            // Test automaticCompliance(named:) - no environment dependencies
             let view2 = Text("Test")
                 .automaticCompliance(named: "TestComponent")
-                .environment(\.accessibilityIdentifierConfig, testConfig)
             
-            // Test named()
+            // Test named() - no environment dependencies
             let view3 = Text("Test")
                 .named("TestElement")
-                .environment(\.accessibilityIdentifierConfig, testConfig)
             
             // All should work without environment access warnings
             #if canImport(ViewInspector)
