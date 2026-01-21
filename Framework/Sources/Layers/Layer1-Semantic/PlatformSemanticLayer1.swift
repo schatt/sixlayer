@@ -2318,18 +2318,20 @@ public struct GenericFormView: View {
                             case .toggle, .boolean:
                                 Toggle(field.label, isOn: .constant(false))
                             case .select:
-                                Picker(field.label, selection: .constant("")) {
-                                    if let options = field.options {
-                                        ForEach(options, id: \.self) { option in
-                                            Text(option)
-                                                .tag(option)
-                                                .accessibilityIdentifier(option) // Apply identifier to segment
-                                                .accessibility(label: Text(option)) // Apply label to segment (Stack Overflow pattern)
-                                        }
-                                    }
+                                // Use platformPicker helper to automatically apply accessibility (Issue #163)
+                                if let options = field.options, !options.isEmpty {
+                                    platformPicker(
+                                        label: field.label,
+                                        selection: .constant(""),
+                                        options: options,
+                                        pickerName: "GenericFormSelectField",
+                                        style: MenuPickerStyle()
+                                    )
+                                } else {
+                                    // Fallback if no options
+                                    Text("No options available")
+                                        .foregroundColor(.secondary)
                                 }
-                                .pickerStyle(.menu)
-                                .automaticCompliance() // Apply to picker level as well
                             default:
                                 TextField(field.placeholder ?? "Enter \(field.label)", text: .constant(""))
                                     .textFieldStyle(.roundedBorder)
@@ -2742,27 +2744,25 @@ public struct ModalFormView: View {
                     Stepper(field.label, value: .constant(0.0), in: 0...100, step: 1.0)
                 case .enum:
                     let i18n = InternationalizationService()
-                    Picker(field.placeholder ?? i18n.localizedString(for: "SixLayerFramework.form.placeholder.selectOption"), selection: .constant("")) {
-                        let placeholderText = i18n.localizedString(for: "SixLayerFramework.form.placeholder.selectOption")
+                    // Use platformPicker helper to automatically apply accessibility (Issue #163)
+                    if let options = field.options, !options.isEmpty {
+                        platformPicker(
+                            label: field.label,
+                            selection: .constant(""),
+                            options: options,
+                            pickerName: "GenericFormEnumField",
+                            style: MenuPickerStyle()
+                        )
+                        .automaticCompliance(
+                            identifierElementType: "View",
+                            accessibilityLabel: field.label  // Issue #156: Parameter-based approach
+                        )
+                    } else {
+                        // Fallback if no options
+                        let placeholderText = field.placeholder ?? i18n.localizedString(for: "SixLayerFramework.form.placeholder.selectOption")
                         Text(placeholderText)
-                            .tag("")
-                            .accessibilityIdentifier(placeholderText) // Apply identifier to segment
-                            .accessibility(label: Text(placeholderText)) // Apply label to segment
-                        if let options = field.options {
-                            ForEach(options, id: \.self) { option in
-                                Text(option)
-                                    .tag(option)
-                                    .accessibilityIdentifier(option) // Apply identifier to segment
-                                    .accessibility(label: Text(option)) // Apply label to segment (Stack Overflow pattern)
-                            }
-                        }
+                            .foregroundColor(.secondary)
                     }
-                    .pickerStyle(.menu)
-                    .automaticCompliance(
-                        identifierElementType: "View",
-                        accessibilityLabel: field.label  // Issue #156: Parameter-based approach
-                    )
-                    .automaticCompliance() // Apply to picker level as well
                 }
             } else {
                 // Fallback for fields with neither textContentType nor contentType
