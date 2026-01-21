@@ -24,6 +24,38 @@ import XCTest
 final class AccessibilityUITests: XCTestCase {
     var app: XCUIApplication!
     
+    /// Helper to set up app without capturing self in closure
+    @MainActor
+    private func setupApp(usePerformanceLogging: Bool) {
+        // Use local variable to avoid capturing self in closures
+        var localApp: XCUIApplication!
+        
+        if usePerformanceLogging {
+            let (_, launchTime) = XCUITestPerformance.measure {
+                localApp = XCUIApplication()
+                localApp.launchWithOptimizations()
+            }
+            // Assign to app property - we're on MainActor
+            app = localApp
+            XCUITestPerformance.log("App launch", time: launchTime)
+        } else {
+            localApp = XCUIApplication()
+            localApp.launchWithOptimizations()
+            app = localApp
+        }
+        
+        // Wait for app to be ready before querying elements
+        // This ensures SwiftUI has finished initial render and accessibility tree is built
+        if usePerformanceLogging {
+            let (_, readyTime) = XCUITestPerformance.measure {
+                XCTAssertTrue(localApp.waitForReady(timeout: 5.0), "App should be ready for testing")
+            }
+            XCUITestPerformance.log("App readiness check", time: readyTime)
+        } else {
+            XCTAssertTrue(localApp.waitForReady(timeout: 5.0), "App should be ready for testing")
+        }
+    }
+    
     /// Helper to clean up app without capturing self in closure
     @MainActor
     private func cleanupApp() {
@@ -68,43 +100,18 @@ final class AccessibilityUITests: XCTestCase {
         // to access main actor-isolated properties like 'app'
         let usePerformanceLogging = ProcessInfo.processInfo.environment["USE_XCUITEST_PERFORMANCE"] == "1"
         
-        MainActor.assumeIsolated {
-            // Use local variable to avoid capturing self in closures
-            var localApp: XCUIApplication!
-            
-            if usePerformanceLogging {
-                let (_, launchTime) = XCUITestPerformance.measure {
-                    localApp = XCUIApplication()
-                    localApp.launchWithOptimizations()
-                }
-                // Assign to app property - we're already on MainActor via assumeIsolated
-                self.app = localApp
-                XCUITestPerformance.log("App launch", time: launchTime)
-            } else {
-                localApp = XCUIApplication()
-                localApp.launchWithOptimizations()
-                self.app = localApp
-            }
-            
-            // Wait for app to be ready before querying elements
-            // This ensures SwiftUI has finished initial render and accessibility tree is built
-            if usePerformanceLogging {
-                let (_, readyTime) = XCUITestPerformance.measure {
-                    XCTAssertTrue(localApp.waitForReady(timeout: 5.0), "App should be ready for testing")
-                }
-                XCUITestPerformance.log("App readiness check", time: readyTime)
-            } else {
-                XCTAssertTrue(localApp.waitForReady(timeout: 5.0), "App should be ready for testing")
-            }
+        // Use helper function to avoid capturing self in closure
+        try MainActor.assumeIsolated {
+            setupApp(usePerformanceLogging: usePerformanceLogging)
         }
     }
     
     nonisolated override func tearDownWithError() throws {
         // Note: tearDownWithError() is nonisolated (inherited from XCTestCase), so we need to use MainActor.assumeIsolated
         // to access main actor-isolated properties like 'app'
-        // Access app property directly - we're already on MainActor via assumeIsolated
+        // Use helper function to avoid capturing self in closure
         MainActor.assumeIsolated {
-            self.app = nil
+            cleanupApp()
         }
     }
     
