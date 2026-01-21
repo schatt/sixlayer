@@ -155,9 +155,13 @@ private func formatAccessibilityLabel(_ label: String) -> String {
 
 /// Localize accessibility label using InternationalizationService
 /// Attempts to localize the label if it looks like a localization key
-/// - Parameter label: The label text (may be a localization key or plain text)
+/// Logs missing keys in debug mode per Issue #158
+/// - Parameters:
+///   - label: The label text (may be a localization key or plain text)
+///   - context: Optional context about where the label is used (e.g., "button", "textField", "form field")
+///   - elementType: Optional element type hint for better logging
 /// - Returns: Localized label if key found, otherwise original label
-private func localizeAccessibilityLabel(_ label: String) -> String {
+private func localizeAccessibilityLabel(_ label: String, context: String? = nil, elementType: String? = nil) -> String {
     // If label contains dots or looks like a localization key, try to localize it
     // Format: "SixLayerFramework.accessibility.button.save" or "MyApp.button.save"
     if label.contains(".") && !label.hasPrefix("http") {
@@ -166,6 +170,12 @@ private func localizeAccessibilityLabel(_ label: String) -> String {
         // If localization found something different from the key, use it
         if localized != label {
             return formatAccessibilityLabel(localized)
+        } else {
+            // Localization key not found - log in debug mode (Issue #158)
+            #if DEBUG
+            let contextDescription = context ?? elementType ?? "view"
+            print("⚠️ Accessibility Label: Missing localization key \"\(label)\" for \(contextDescription) \"\(label)\"")
+            #endif
         }
     }
     
@@ -284,11 +294,17 @@ public struct AutomaticComplianceModifier: ViewModifier {
         // Helper to conditionally apply accessibility label (Issue #154)
         // Only apply if explicitly provided via parameter - don't override existing labels
         // Labels are localized and formatted according to Apple HIG guidelines
+        // Missing keys are logged in debug mode (Issue #158)
         @ViewBuilder
         func applyAccessibilityLabelIfNeeded<V: View>(to view: V) -> some View {
             if let label = accessibilityLabel, !label.isEmpty {
                 // Localize and format label according to Apple HIG guidelines
-                let localizedLabel = localizeAccessibilityLabel(label)
+                // Pass context for better logging of missing keys
+                let localizedLabel = localizeAccessibilityLabel(
+                    label,
+                    context: identifierElementType?.lowercased(),
+                    elementType: identifierElementType
+                )
                 view.accessibilityLabel(localizedLabel)
             } else {
                 view
@@ -548,11 +564,17 @@ public struct NamedAutomaticComplianceModifier: ViewModifier {
         // Apply identifier and accessibility label directly to content (no wrapper view!)
         // This fixes Issue #159 - identifier now applies directly to the Button
         // Issue #154: Also apply accessibility label if provided (localized and formatted)
+        // Issue #158: Log missing localization keys in debug mode
         @ViewBuilder
         func applyAccessibilityLabelIfNeeded<V: View>(to view: V) -> some View {
             if let label = accessibilityLabel, !label.isEmpty {
                 // Localize and format label according to Apple HIG guidelines
-                let localizedLabel = localizeAccessibilityLabel(label)
+                // Pass component name as context for better logging
+                let localizedLabel = localizeAccessibilityLabel(
+                    label,
+                    context: componentName.lowercased(),
+                    elementType: "View"
+                )
                 view.accessibilityLabel(localizedLabel)
             } else {
                 view
