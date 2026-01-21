@@ -1856,24 +1856,140 @@ public extension View {
         #endif
     }
 
-    /// Platform-specific picker with selection
-    /// Provides consistent picker behavior across platforms
+    /// Platform-specific picker with automatic accessibility compliance
+    /// Fixes #163: Automatically applies accessibility identifiers and labels to both
+    /// the picker and its segments, following the Stack Overflow pattern for segmented pickers.
+    ///
+    /// This helper function ensures that when pickers are created, accessibility is automatically
+    /// applied at both the picker level and the segment level, eliminating the need for manual
+    /// `.accessibilityIdentifier()` and `.accessibility(label:)` calls on each segment.
     ///
     /// - Parameters:
+    ///   - label: The picker label (for accessibility)
     ///   - selection: Binding to the selected value
-    ///   - content: The picker content
-    ///   - label: The picker label
-    /// - Returns: A platform-specific picker
-    func platformPicker<SelectionValue: Hashable, Content: View, Label: View>(
-        selection: Binding<SelectionValue>,
-        @ViewBuilder content: () -> Content,
-        @ViewBuilder label: () -> Label
+    ///   - options: Array of option strings to display (SelectionValue must be String)
+    ///   - pickerName: Optional name for the picker (used in accessibility identifier generation)
+    ///   - style: Picker style (default: .menu)
+    /// - Returns: A picker with automatic accessibility compliance applied to picker and segments
+    ///
+    /// ## Usage Example
+    /// ```swift
+    /// platformPicker(
+    ///     label: "Test View",
+    ///     selection: $testViewType,
+    ///     options: ["Text", "Button", "Control"],
+    ///     pickerName: "TestViewPicker"
+    /// )
+    /// ```
+    func platformPicker<S: SwiftUI.PickerStyle>(
+        label: String,
+        selection: Binding<String>,
+        options: [String],
+        pickerName: String? = nil,
+        style: S = MenuPickerStyle()
     ) -> some View {
-        #if os(iOS)
-        return Picker(selection: selection, content: content, label: label)
-        #else
-        return Picker(selection: selection, content: content, label: label)
-        #endif
+        Picker(label, selection: selection) {
+            ForEach(options, id: \.self) { option in
+                Text(option)
+                    .tag(option)
+                    .automaticCompliance(identifierLabel: option) // Apply to segment (Issue #163)
+            }
+        }
+        .pickerStyle(style)
+        .automaticCompliance(named: pickerName ?? "Picker") // Apply to picker level (Issue #163)
+    }
+    
+    /// Platform-specific picker with automatic accessibility compliance (PickerOption type)
+    /// Fixes #163: Automatically applies accessibility identifiers and labels to both
+    /// the picker and its segments, following the Stack Overflow pattern for segmented pickers.
+    ///
+    /// This is the recommended overload for framework components that use `PickerOption` from
+    /// `FieldDisplayHints.pickerOptions`. It automatically uses `value` for selection binding
+    /// and `label` for display and accessibility.
+    ///
+    /// - Parameters:
+    ///   - label: The picker label (for accessibility)
+    ///   - selection: Binding to the selected value (String)
+    ///   - options: Array of PickerOption (has value and label)
+    ///   - pickerName: Optional name for the picker (used in accessibility identifier generation)
+    ///   - style: Picker style (default: .menu)
+    /// - Returns: A picker with automatic accessibility compliance applied to picker and segments
+    ///
+    /// ## Usage Example
+    /// ```swift
+    /// platformPicker(
+    ///     label: "Select Option",
+    ///     selection: $selectedValue,
+    ///     options: field.displayHints?.pickerOptions ?? [],
+    ///     pickerName: "EnumPicker"
+    /// )
+    /// ```
+    func platformPicker<S: SwiftUI.PickerStyle>(
+        label: String,
+        selection: Binding<String>,
+        options: [PickerOption],
+        pickerName: String? = nil,
+        style: S = MenuPickerStyle()
+    ) -> some View {
+        Picker(label, selection: selection) {
+            ForEach(options, id: \.value) { option in
+                Text(option.label)
+                    .tag(option.value)
+                    .automaticCompliance(identifierLabel: option.label) // Apply to segment (Issue #163)
+            }
+        }
+        .pickerStyle(style)
+        .automaticCompliance(named: pickerName ?? "Picker") // Apply to picker level (Issue #163)
+    }
+    
+    /// Platform-specific picker with automatic accessibility compliance (generic option type)
+    /// Fixes #163: Automatically applies accessibility identifiers and labels to both
+    /// the picker and its segments, following the Stack Overflow pattern for segmented pickers.
+    ///
+    /// This helper function ensures that when pickers are created, accessibility is automatically
+    /// applied at both the picker level and the segment level, eliminating the need for manual
+    /// `.accessibilityIdentifier()` and `.accessibility(label:)` calls on each segment.
+    ///
+    /// - Parameters:
+    ///   - label: The picker label (for accessibility)
+    ///   - selection: Binding to the selected value
+    ///   - options: Array of options (must be Hashable and provide a String representation)
+    ///   - optionTag: Closure to convert option to SelectionValue for tagging
+    ///   - optionLabel: Closure to extract label string from each option
+    ///   - pickerName: Optional name for the picker (used in accessibility identifier generation)
+    ///   - style: Picker style (default: .menu)
+    /// - Returns: A picker with automatic accessibility compliance applied to picker and segments
+    ///
+    /// ## Usage Example
+    /// ```swift
+    /// platformPicker(
+    ///     label: "Test View",
+    ///     selection: $testViewType,
+    ///     options: TestViewType.allCases,
+    ///     optionTag: { $0 },
+    ///     optionLabel: { $0.rawValue },
+    ///     pickerName: "TestViewPicker"
+    /// )
+    /// ```
+    func platformPicker<SelectionValue: Hashable, Option: Hashable, S: SwiftUI.PickerStyle>(
+        label: String,
+        selection: Binding<SelectionValue>,
+        options: [Option],
+        optionTag: @escaping (Option) -> SelectionValue,
+        optionLabel: @escaping (Option) -> String,
+        pickerName: String? = nil,
+        style: S = MenuPickerStyle()
+    ) -> some View {
+        Picker(label, selection: selection) {
+            ForEach(options, id: \.self) { option in
+                let optionText = optionLabel(option)
+                Text(optionText)
+                    .tag(optionTag(option))
+                    .automaticCompliance(identifierLabel: optionText) // Apply to segment (Issue #163)
+            }
+        }
+        .pickerStyle(style)
+        .automaticCompliance(named: pickerName ?? "Picker") // Apply to picker level (Issue #163)
     }
 
     /// Platform-specific date picker

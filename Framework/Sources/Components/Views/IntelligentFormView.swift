@@ -1200,31 +1200,27 @@ private struct DefaultPlatformFieldView: View {
         case .string:
             // Check if this should be a picker based on hints
             if let hints = hints, hints.inputType == "picker", let options = hints.pickerOptions, !options.isEmpty {
-                // Render picker for enum fields
+                // Render picker for enum fields using platformPicker (Issue #163)
                 // Use dynamic binding that reads from value and writes via onValueChange
-                Picker(field.name.capitalized, selection: Binding<String>(
-                    get: {
-                        // Get current value as String, defaulting to first option if not set
-                        let currentValue = (value as? String) ?? options.first?.value ?? ""
-                        // Ensure the value is valid (exists in options), otherwise use first option
-                        return options.contains(where: { $0.value == currentValue }) ? currentValue : (options.first?.value ?? "")
-                    },
-                    set: { newValue in
-                        if isEditable {
-                            onValueChange(newValue)
+                platformPicker(
+                    label: field.name.capitalized,
+                    selection: Binding<String>(
+                        get: {
+                            // Get current value as String, defaulting to first option if not set
+                            let currentValue = (value as? String) ?? options.first?.value ?? ""
+                            // Ensure the value is valid (exists in options), otherwise use first option
+                            return options.contains(where: { $0.value == currentValue }) ? currentValue : (options.first?.value ?? "")
+                        },
+                        set: { newValue in
+                            if isEditable {
+                                onValueChange(newValue)
+                            }
                         }
-                    }
-                )) {
-                    ForEach(options, id: \.value) { option in
-                        Text(option.label).tag(option.value)
-                    }
-                }
+                    ),
+                    options: options,
+                    pickerName: "IntelligentFormPicker"
+                )
                 .disabled(!isEditable)
-                #if os(macOS)
-                .pickerStyle(.menu)
-                #else
-                .pickerStyle(.menu)
-                #endif
             } else {
                 // Default TextField for string fields
                 TextField("Enter \(field.name)", text: Binding(

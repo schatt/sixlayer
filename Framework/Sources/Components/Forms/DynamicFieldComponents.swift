@@ -316,22 +316,34 @@ public struct DynamicTextField: View {
     /// Picker content view
     @ViewBuilder
     private var pickerContent: some View {
-        let pickerOptions = field.pickerOptionsFromHints
-        if !pickerOptions.isEmpty {
-            let i18n = InternationalizationService()
-            Picker(field.placeholder ?? i18n.placeholderSelect(), selection: field.textBinding(formState: formState)) {
-                ForEach(pickerOptions, id: \.value) { option in
-                    Text(option.label)
-                        .tag(option.value)
-                        .accessibilityIdentifier(option.label) // Apply identifier to segment
-                        .accessibility(label: Text(option.label)) // Apply label to segment (Stack Overflow pattern)
-                }
-            }
-            .pickerStyle(.menu)
-            .automaticCompliance() // Apply to picker level as well
+        let i18n = InternationalizationService()
+        
+        // Prefer pickerOptions from displayHints (PickerOption type) for platformPicker
+        if let hints = field.displayHints,
+           let pickerOptions = hints.pickerOptions,
+           !pickerOptions.isEmpty {
+            return AnyView(
+                platformPicker(
+                    label: field.placeholder ?? i18n.placeholderSelect(),
+                    selection: field.textBinding(formState: formState),
+                    options: pickerOptions,
+                    pickerName: "DynamicSelectField"
+                )
+            )
+        } else if let options = field.options, !options.isEmpty {
+            // Fallback to field.options (String array) - convert to PickerOption
+            let pickerOptions = options.map { PickerOption(value: $0, label: $0) }
+            return AnyView(
+                platformPicker(
+                    label: field.placeholder ?? i18n.placeholderSelect(),
+                    selection: field.textBinding(formState: formState),
+                    options: pickerOptions,
+                    pickerName: "DynamicSelectField"
+                )
+            )
         } else {
             // Fallback to text field if no options
-            textFieldView
+            return AnyView(textFieldView)
         }
     }
     
@@ -1547,19 +1559,17 @@ public struct DynamicEnumField: View {
                 .automaticCompliance(named: "FieldLabel")
 
             if !pickerOptions.isEmpty {
-                Picker(field.label, selection: Binding(
-                    get: { formState.fieldValues[field.id] as? String ?? "" },
-                    set: { formState.setValue($0, for: field.id) }
-                )) {
-                    ForEach(pickerOptions, id: \.value) { option in
-                        Text(option.label)
-                            .tag(option.value)
-                            .accessibilityIdentifier(option.label) // Apply identifier to segment
-                            .accessibility(label: Text(option.label)) // Apply label to segment (Stack Overflow pattern)
-                    }
-                }
-                .pickerStyle(.menu)
-                .automaticCompliance(named: "EnumPicker") // Apply to picker level as well
+                // Convert tuple array to PickerOption array for platformPicker
+                let pickerOptionArray = pickerOptions.map { PickerOption(value: $0.value, label: $0.label) }
+                platformPicker(
+                    label: field.label,
+                    selection: Binding(
+                        get: { formState.fieldValues[field.id] as? String ?? "" },
+                        set: { formState.setValue($0, for: field.id) }
+                    ),
+                    options: pickerOptionArray,
+                    pickerName: "EnumPicker"
+                )
             }
         }
         .padding()
