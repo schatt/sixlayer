@@ -11,14 +11,14 @@ All user-facing strings are currently **hardcoded in English** throughout the co
 The framework automatically generates accessibility labels for VoiceOver compliance. See `AccessibilityLabelsGuide.md` for complete documentation.
 
 **Key Naming Convention:**
-- Framework keys: `SixLayerFramework.accessibility.{component}.{action}`
-- App keys: `{AppName}.accessibility.{component}.{action}`
-- Auto-extracted: `SixLayerFramework.accessibility.auto.{sanitizedText}`
+- **App keys (primary)**: `{AppName}.accessibility.{component}.{action}` - Developers use their own app keys
+- Framework keys (internal): `SixLayerFramework.accessibility.{component}.{action}` - Framework-internal only
+- Auto-extracted: `SixLayerFramework.accessibility.auto.{sanitizedText}` - For auto-extraction feature
 
 **Discovery Methods:**
-1. **Runtime logging** (debug mode) - Logs missing keys to console
+1. **Runtime logging** (debug mode) - Logs missing app keys to console
 2. **Build-time script** - `scripts/check_accessibility_labels_completeness.py` (to be created)
-3. **Documentation** - `AccessibilityLabelsGuide.md` lists all framework keys
+3. **Documentation** - `AccessibilityLabelsGuide.md` provides examples and guidance
 
 ## Strings That Should Be Localized
 

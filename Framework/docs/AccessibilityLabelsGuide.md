@@ -4,6 +4,8 @@
 
 SixLayerFramework automatically generates accessibility labels for VoiceOver compliance. This guide explains how labels are generated, how to provide translations, and how to discover what keys need localization.
 
+**Important:** Developers use their own app's localization keys (e.g., `MyApp.accessibility.*`), not framework keys. The framework supports any key format you choose.
+
 ## How Labels Are Generated
 
 The framework uses a **parameter-based approach** (per Issue #160) where labels are passed explicitly to `automaticCompliance()`:
@@ -20,30 +22,33 @@ platformPresentFormData_L1(field: field, hints: hints)
 
 ## Key Naming Convention
 
-### Framework Keys
+### App Keys (Primary)
 
-Framework-provided accessibility label keys follow this pattern:
-
-```
-SixLayerFramework.accessibility.{component}.{action}
-```
-
-**Examples:**
-- `SixLayerFramework.accessibility.button.save`
-- `SixLayerFramework.accessibility.field.email`
-- `SixLayerFramework.accessibility.toggle.notifications`
-
-### App Keys
-
-App-specific keys should follow this pattern:
+**Developers use their own app's keys** following this pattern:
 
 ```
 {AppName}.accessibility.{component}.{action}
 ```
 
 **Examples:**
+- `MyApp.accessibility.button.save`
+- `MyApp.accessibility.field.email`
+- `MyApp.accessibility.toggle.notifications`
 - `MyApp.accessibility.button.customAction`
-- `MyApp.accessibility.field.customField`
+
+**How to determine your app name:**
+- Use your app's bundle identifier (e.g., `com.example.MyApp` → `MyApp`)
+- Or use a consistent prefix for your app's localization keys
+
+### Framework Keys (Internal)
+
+Framework-provided accessibility label keys (used internally by the framework):
+
+```
+SixLayerFramework.accessibility.{component}.{action}
+```
+
+**Note:** These are framework-internal keys. Developers should use their own app keys instead.
 
 ### Auto-Extracted Keys
 
@@ -64,13 +69,13 @@ SixLayerFramework.accessibility.auto.{sanitizedText}
 In **debug builds**, the framework automatically logs missing localization keys to the console:
 
 ```
-⚠️ Accessibility Label: Missing localization key "SixLayerFramework.accessibility.button.save" for button "save"
+⚠️ Accessibility Label: Missing localization key "MyApp.accessibility.button.save" for button "save"
 ```
 
 **What to do:**
 1. Run your app in debug mode
 2. Check the console for missing key warnings
-3. Add the missing keys to your `Localizable.strings` files
+3. Add the missing keys to your app's `Localizable.strings` files using your app's key prefix
 
 ### 2. Build-Time Script
 
@@ -98,55 +103,50 @@ Use one of the discovery methods above to find missing keys.
 
 ### Step 2: Add to Localizable.strings
 
-Add the keys to your app's `Localizable.strings` files:
+Add the keys to your app's `Localizable.strings` files using your app's key prefix:
 
 **English (en.lproj/Localizable.strings):**
 ```strings
 /* Accessibility Labels */
-"SixLayerFramework.accessibility.button.save" = "Save document";
-"SixLayerFramework.accessibility.field.email" = "Email address";
+"MyApp.accessibility.button.save" = "Save document";
+"MyApp.accessibility.field.email" = "Email address";
 ```
 
 **Spanish (es.lproj/Localizable.strings):**
 ```strings
 /* Accessibility Labels */
-"SixLayerFramework.accessibility.button.save" = "Guardar documento";
-"SixLayerFramework.accessibility.field.email" = "Dirección de correo electrónico";
+"MyApp.accessibility.button.save" = "Guardar documento";
+"MyApp.accessibility.field.email" = "Dirección de correo electrónico";
 ```
 
-### Step 3: Override Framework Defaults
+**Important:** Use your app's key prefix (e.g., `MyApp.accessibility.*`), not `SixLayerFramework.accessibility.*`
 
-You can override framework defaults by providing your own translations:
+## Example App Keys
 
-```strings
-/* Override framework default */
-"SixLayerFramework.accessibility.button.save" = "Save your work";
-```
-
-## Framework-Provided Keys
+When creating your app's accessibility labels, use your app's key prefix. Here are examples:
 
 ### Button Labels
 
-- `SixLayerFramework.accessibility.button.save` - "Save document"
-- `SixLayerFramework.accessibility.button.cancel` - "Cancel"
-- `SixLayerFramework.accessibility.button.delete` - "Delete"
-- `SixLayerFramework.accessibility.button.edit` - "Edit"
-- `SixLayerFramework.accessibility.button.done` - "Done"
+- `MyApp.accessibility.button.save` - "Save document"
+- `MyApp.accessibility.button.cancel` - "Cancel"
+- `MyApp.accessibility.button.delete` - "Delete"
+- `MyApp.accessibility.button.edit` - "Edit"
+- `MyApp.accessibility.button.done` - "Done"
 
 ### Field Labels
 
-- `SixLayerFramework.accessibility.field.email` - "Email address"
-- `SixLayerFramework.accessibility.field.password` - "Password field"
-- `SixLayerFramework.accessibility.field.phone` - "Phone number"
-- `SixLayerFramework.accessibility.field.name` - "Name"
-- `SixLayerFramework.accessibility.field.description` - "Description"
+- `MyApp.accessibility.field.email` - "Email address"
+- `MyApp.accessibility.field.password` - "Password field"
+- `MyApp.accessibility.field.phone` - "Phone number"
+- `MyApp.accessibility.field.name` - "Name"
+- `MyApp.accessibility.field.description` - "Description"
 
 ### Toggle Labels
 
-- `SixLayerFramework.accessibility.toggle.notifications` - "Enable notifications"
-- `SixLayerFramework.accessibility.toggle.enabled` - "Enabled"
+- `MyApp.accessibility.toggle.notifications` - "Enable notifications"
+- `MyApp.accessibility.toggle.enabled` - "Enabled"
 
-*Note: This list will be expanded as more framework components are added.*
+**Remember:** Replace `MyApp` with your actual app name or bundle identifier prefix.
 
 ## Fallback Behavior
 
@@ -159,11 +159,11 @@ When a localization key is not found:
 
 **Example:**
 ```swift
-// If "SixLayerFramework.accessibility.button.save" is not found:
+// If "MyApp.accessibility.button.save" is not found:
 // 1. Check app bundle → not found
-// 2. Check framework bundle → not found
-// 3. Return "SixLayerFramework.accessibility.button.save" (the key)
-// 4. Log: ⚠️ Accessibility Label: Missing localization key...
+// 2. Check framework bundle → not found (framework doesn't provide app keys)
+// 3. Return "MyApp.accessibility.button.save" (the key)
+// 4. Log: ⚠️ Accessibility Label: Missing localization key "MyApp.accessibility.button.save"...
 ```
 
 ## Label Formatting
@@ -185,12 +185,12 @@ The framework uses `InternationalizationService` directly (not via environment, 
 
 ```swift
 let i18n = InternationalizationService()
-let localized = i18n.localizedString(for: "SixLayerFramework.accessibility.button.save")
+let localized = i18n.localizedString(for: "MyApp.accessibility.button.save")
 ```
 
 The service checks:
-1. App bundle (allows app to override framework strings)
-2. Framework bundle (framework default strings)
+1. App bundle (your app's `Localizable.strings` files)
+2. Framework bundle (framework default strings - typically not used for app keys)
 3. Returns key itself if not found
 
 ## Parameter-Based Approach
@@ -215,12 +215,12 @@ This approach:
 ### Platform Functions
 
 ```swift
-// Explicit label (localized automatically)
-platformButton(label: "SixLayerFramework.accessibility.button.save") {
+// Explicit label using app key (localized automatically)
+platformButton(label: "MyApp.accessibility.button.save") {
     save()
 }
 
-// Plain text (formatted with punctuation)
+// Plain text (formatted with punctuation, not localized)
 platformButton(label: "Save document") {
     save()
 }
