@@ -29,8 +29,10 @@ final class AccessibilityUITests: XCTestCase {
         
         // Add UI interruption monitors to dismiss system dialogs quickly
         // This prevents XCUITest from waiting for Bluetooth, CPU, and other system dialogs
-        addUIInterruptionMonitor(withDescription: "System alerts and dialogs") { @MainActor (alert) -> Bool in
+        // Note: Closure inherits @MainActor from the class context
+        addUIInterruptionMonitor(withDescription: "System alerts and dialogs") { (alert) -> Bool in
             // Dismiss any system alerts that might appear
+            // Accessing main actor-isolated properties is safe because class is @MainActor
             let alertText = alert.staticTexts.firstMatch.label
             if alertText.contains("Bluetooth") || alertText.contains("CPU") || alertText.contains("Activity Monitor") {
                 // Try to dismiss by clicking "OK", "Cancel", or "Don't Allow" buttons
