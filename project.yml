@@ -590,7 +590,8 @@ schemes:
         SixLayerFramework_macOS: all
     test:
       targets:
-        - SixLayerFrameworkUnitTests_macOS
+        - name: SixLayerFrameworkUnitTests_macOS
+          parallelizable: false
 
   SixLayerFramework-macOS-UnitTests:
     build:
@@ -716,7 +717,8 @@ schemes:
         SixLayerFrameworkTestApp_iOS: all
     test:
       targets:
-        - SixLayerFrameworkUITests_iOS
+        - name: SixLayerFrameworkUITests_iOS
+          parallelizable: false
 
   SixLayerFramework-UITestsOnly-macOS:
     build:
@@ -725,5 +727,6 @@ schemes:
         SixLayerFrameworkTestApp_macOS: all
     test:
       targets:
-        - SixLayerFrameworkUITests_macOS
+        - name: SixLayerFrameworkUITests_macOS
+          parallelizable: false
 
