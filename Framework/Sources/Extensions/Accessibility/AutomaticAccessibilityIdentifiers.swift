@@ -283,10 +283,13 @@ public struct AutomaticComplianceModifier: ViewModifier {
         
         // Helper to conditionally apply accessibility label (Issue #154)
         // Only apply if explicitly provided via parameter - don't override existing labels
+        // Labels are localized and formatted according to Apple HIG guidelines
         @ViewBuilder
         func applyAccessibilityLabelIfNeeded<V: View>(to view: V) -> some View {
             if let label = accessibilityLabel, !label.isEmpty {
-                view.accessibilityLabel(label)
+                // Localize and format label according to Apple HIG guidelines
+                let localizedLabel = localizeAccessibilityLabel(label)
+                view.accessibilityLabel(localizedLabel)
             } else {
                 view
             }
@@ -544,11 +547,13 @@ public struct NamedAutomaticComplianceModifier: ViewModifier {
         }
         // Apply identifier and accessibility label directly to content (no wrapper view!)
         // This fixes Issue #159 - identifier now applies directly to the Button
-        // Issue #154: Also apply accessibility label if provided
+        // Issue #154: Also apply accessibility label if provided (localized and formatted)
         @ViewBuilder
         func applyAccessibilityLabelIfNeeded<V: View>(to view: V) -> some View {
             if let label = accessibilityLabel, !label.isEmpty {
-                view.accessibilityLabel(label)
+                // Localize and format label according to Apple HIG guidelines
+                let localizedLabel = localizeAccessibilityLabel(label)
+                view.accessibilityLabel(localizedLabel)
             } else {
                 view
             }
