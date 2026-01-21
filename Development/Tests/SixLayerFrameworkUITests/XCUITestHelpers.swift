@@ -92,35 +92,39 @@ extension XCUIApplication {
     }
     
     /// Select a segment in the segmented picker (handles iOS/macOS differences)
+    /// Uses runtime detection to try different strategies and adapt to what works
     /// - Parameter segmentName: Name of the segment to select (e.g., "Text", "Button")
     /// - Returns: true if segment was found and selected, false otherwise
     func selectPickerSegment(_ segmentName: String) -> Bool {
-        #if os(iOS)
-        // On iOS, segmented picker exposes segments as buttons
-        let segment = buttons[segmentName]
-        if segment.waitForExistence(timeout: 1.0) {
-            segment.tap()
+        // Strategy 1: Try buttons directly (works on iOS and some macOS segmented controls)
+        let segmentButton = buttons[segmentName]
+        if segmentButton.waitForExistence(timeout: 0.5) {
+            segmentButton.tap()
             return true
         }
-        #else
-        // On macOS, try picker first, then buttons
+        
+        // Strategy 2: Try picker first, then buttons (works on macOS pickers)
         let picker = pickers.firstMatch
-        if picker.waitForExistence(timeout: 1.0) {
+        if picker.waitForExistence(timeout: 0.5) {
             picker.tap()
-            let segment = buttons[segmentName]
-            if segment.waitForExistence(timeout: 1.0) {
-                segment.tap()
-                return true
-            }
-        } else {
-            // Try buttons directly (segmented control on macOS)
-            let segment = buttons[segmentName]
-            if segment.waitForExistence(timeout: 1.0) {
-                segment.tap()
+            // After tapping picker, segment might be exposed as button
+            let segmentAfterPicker = buttons[segmentName]
+            if segmentAfterPicker.waitForExistence(timeout: 0.5) {
+                segmentAfterPicker.tap()
                 return true
             }
         }
-        #endif
+        
+        // Strategy 3: Try segmented controls directly
+        let segmentedControl = segmentedControls.firstMatch
+        if segmentedControl.waitForExistence(timeout: 0.5) {
+            let segmentInControl = segmentedControl.buttons[segmentName]
+            if segmentInControl.waitForExistence(timeout: 0.5) {
+                segmentInControl.tap()
+                return true
+            }
+        }
+        
         return false
     }
 }

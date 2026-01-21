@@ -30,6 +30,7 @@ extension XCUIApplication {
     }
     
     /// Find an element by accessibility identifier, trying multiple query types
+    /// Uses runtime detection to try different strategies and find what works
     /// - Parameters:
     ///   - identifier: The accessibility identifier to search for
     ///   - primaryType: Primary element type to try first (default: .otherElements)
@@ -40,13 +41,13 @@ extension XCUIApplication {
                     primaryType: XCUIElement.ElementType = .otherElements,
                     secondaryTypes: [XCUIElement.ElementType] = [.staticText, .button, .any],
                     timeout: TimeInterval = 1.0) -> XCUIElement? {
-        // Try primary type first
+        // Strategy 1: Try primary type first (most common case)
         let primaryElement = descendants(matching: primaryType)[identifier]
         if primaryElement.waitForExistence(timeout: timeout) {
             return primaryElement
         }
         
-        // Try secondary types
+        // Strategy 2: Try secondary types (adapts to platform differences)
         for elementType in secondaryTypes {
             let element = descendants(matching: elementType)[identifier]
             if element.waitForExistence(timeout: 0.5) {
@@ -54,39 +55,49 @@ extension XCUIApplication {
             }
         }
         
+        // Strategy 3: Try any element as last resort (catches edge cases)
+        let anyElement = descendants(matching: .any)[identifier]
+        if anyElement.waitForExistence(timeout: 0.3) {
+            return anyElement
+        }
+        
         return nil
     }
     
     /// Select a segment in the segmented picker (handles iOS/macOS differences)
+    /// Uses runtime detection to try different strategies and adapt to what works
     /// - Parameter segmentName: Name of the segment to select (e.g., "Text", "Button")
     /// - Returns: true if segment was found and selected, false otherwise
     func selectPickerSegment(_ segmentName: String) -> Bool {
-        #if os(iOS)
-        // On iOS, segmented picker exposes segments as buttons
-        let segment = buttons[segmentName]
-        if segment.waitForExistence(timeout: 1.0) {
-            segment.tap()
+        // Strategy 1: Try buttons directly (works on iOS and some macOS segmented controls)
+        let segmentButton = buttons[segmentName]
+        if segmentButton.waitForExistence(timeout: 0.5) {
+            segmentButton.tap()
             return true
         }
-        #else
-        // On macOS, try picker first, then buttons
+        
+        // Strategy 2: Try picker first, then buttons (works on macOS pickers)
         let picker = pickers.firstMatch
-        if picker.waitForExistence(timeout: 1.0) {
+        if picker.waitForExistence(timeout: 0.5) {
             picker.tap()
-            let segment = buttons[segmentName]
-            if segment.waitForExistence(timeout: 1.0) {
-                segment.tap()
-                return true
-            }
-        } else {
-            // Try buttons directly (segmented control on macOS)
-            let segment = buttons[segmentName]
-            if segment.waitForExistence(timeout: 1.0) {
-                segment.tap()
+            // After tapping picker, segment might be exposed as button
+            let segmentAfterPicker = buttons[segmentName]
+            if segmentAfterPicker.waitForExistence(timeout: 0.5) {
+                segmentAfterPicker.tap()
                 return true
             }
         }
-        #endif
+        
+        // Strategy 3: Try segmented controls directly
+        let segmentedControl = segmentedControls.firstMatch
+        if segmentedControl.waitForExistence(timeout: 0.5) {
+            let segmentInControl = segmentedControl.buttons[segmentName]
+            if segmentInControl.waitForExistence(timeout: 0.5) {
+                segmentInControl.tap()
+                return true
+            }
+        }
+        
         return false
     }
 }
