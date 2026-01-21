@@ -140,26 +140,35 @@ extension XCUIApplication {
         return false
         
         #elseif os(macOS)
-        // On macOS, segmented picker is exposed as both a SegmentedControl and a Picker
-        // Try SegmentedControl first (segments are typically accessible as buttons within it)
+        // On macOS, segmented pickers don't expose individual segments as accessible elements
+        // We need to use coordinate-based clicking on the segmented control
+        // Try SegmentedControl first
         let segmentedControl = segmentedControls.firstMatch
         if segmentedControl.waitForExistence(timeout: 1.0) {
-            // Segments are accessible as buttons within the segmented control
+            // Try to find segments as buttons first (in case they are accessible)
             let segmentButton = segmentedControl.buttons[segmentName]
             if segmentButton.waitForExistence(timeout: 0.5) {
                 segmentButton.tap()
                 return true
             }
             
-            // Try accessing through descendants
-            let segmentDescendant = segmentedControl.descendants(matching: .button)[segmentName]
-            if segmentDescendant.waitForExistence(timeout: 0.5) {
-                segmentDescendant.tap()
+            // Segments aren't accessible individually, use coordinate-based clicking
+            // Map segment names to their approximate positions (0.0 = left, 1.0 = right)
+            // For 3 segments: Text=0.17, Button=0.5, Control=0.83
+            let segmentPositions: [String: Double] = [
+                "Text": 0.17,    // ~1/6 of the way (first of 3 segments)
+                "Button": 0.5,   // Middle (second of 3 segments)
+                "Control": 0.83  // ~5/6 of the way (third of 3 segments)
+            ]
+            
+            if let xOffset = segmentPositions[segmentName] {
+                let coordinate = segmentedControl.coordinate(withNormalizedOffset: CGVector(dx: xOffset, dy: 0.5))
+                coordinate.tap()
                 return true
             }
         }
         
-        // Also try Picker (some macOS implementations expose it as a picker)
+        // Fallback: Try Picker (some macOS implementations expose it as a picker)
         let picker = pickers.firstMatch
         if picker.waitForExistence(timeout: 0.5) {
             // Try buttons within the picker
@@ -173,6 +182,19 @@ extension XCUIApplication {
             let segmentMenuItem = picker.menuItems[segmentName]
             if segmentMenuItem.waitForExistence(timeout: 0.5) {
                 segmentMenuItem.tap()
+                return true
+            }
+            
+            // Coordinate-based clicking on picker as last resort
+            let segmentPositions: [String: Double] = [
+                "Text": 0.17,
+                "Button": 0.5,
+                "Control": 0.83
+            ]
+            
+            if let xOffset = segmentPositions[segmentName] {
+                let coordinate = picker.coordinate(withNormalizedOffset: CGVector(dx: xOffset, dy: 0.5))
+                coordinate.tap()
                 return true
             }
         }
