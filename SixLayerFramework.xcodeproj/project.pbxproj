@@ -4959,6 +4959,8 @@
 						ProvisioningStyle = Automatic;
 					};
 					6F7A756959988745ECBAE269 = {
+						DevelopmentTeam = Y53G7YPJSZ;
+						ProvisioningStyle = Automatic;
 						TestTargetID = 12DE7C62AF83961E28065CD1;
 					};
 					70F3E0477C5FD3EF1FBC7352 = {
@@ -4974,6 +4976,8 @@
 						ProvisioningStyle = Automatic;
 					};
 					9C1F797A0B1D774C13CD0C14 = {
+						DevelopmentTeam = Y53G7YPJSZ;
+						ProvisioningStyle = Automatic;
 						TestTargetID = 12DE7C62AF83961E28065CD1;
 					};
 					AB21586E5B6F5E26D37757AE = {
@@ -7740,15 +7744,21 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = Y53G7YPJSZ;
+				ENABLE_TESTING_SEARCH_PATHS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "com.sixlayer.SixLayerFrameworkUITests-iOS";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.sixlayer.framework.ui-tests";
 				SDKROOT = iphoneos;
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_TARGET_NAME = SixLayerFrameworkTestApp_iOS;
+				developmentTeam = Y53G7YPJSZ;
 			};
 			name = Debug;
 		};
@@ -7855,15 +7865,21 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = Y53G7YPJSZ;
+				ENABLE_TESTING_SEARCH_PATHS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "com.sixlayer.SixLayerFrameworkRealUITests-iOS";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.sixlayer.framework.real-ui-tests";
 				SDKROOT = iphoneos;
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_TARGET_NAME = SixLayerFrameworkTestApp_iOS;
+				developmentTeam = Y53G7YPJSZ;
 			};
 			name = Debug;
 		};
@@ -8116,15 +8132,21 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = Y53G7YPJSZ;
+				ENABLE_TESTING_SEARCH_PATHS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "com.sixlayer.SixLayerFrameworkRealUITests-iOS";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.sixlayer.framework.real-ui-tests";
 				SDKROOT = iphoneos;
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_TARGET_NAME = SixLayerFrameworkTestApp_iOS;
+				developmentTeam = Y53G7YPJSZ;
 			};
 			name = Release;
 		};
@@ -8835,15 +8857,21 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = Y53G7YPJSZ;
+				ENABLE_TESTING_SEARCH_PATHS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "com.sixlayer.SixLayerFrameworkUITests-iOS";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.sixlayer.framework.ui-tests";
 				SDKROOT = iphoneos;
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_TARGET_NAME = SixLayerFrameworkTestApp_iOS;
+				developmentTeam = Y53G7YPJSZ;
 			};
 			name = Release;
 		};

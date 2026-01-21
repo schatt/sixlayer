@@ -221,11 +221,10 @@ targets:
       ENABLE_TESTING_SEARCH_PATHS: YES
       DEVELOPMENT_TEAM: Y53G7YPJSZ
       developmentTeam: Y53G7YPJSZ
+      TEST_TARGET_NAME: SixLayerFrameworkTestApp_iOS
     dependencies:
       - target: SixLayerFramework_iOS
       - target: SixLayerFrameworkTestApp_iOS
-    settings:
-      TEST_TARGET_NAME: SixLayerFrameworkTestApp_iOS
 
   # Real UI tests - macOS (render views in actual windows)
   SixLayerFrameworkRealUITests_macOS:
@@ -315,11 +314,10 @@ targets:
       ENABLE_TESTING_SEARCH_PATHS: YES
       DEVELOPMENT_TEAM: Y53G7YPJSZ
       developmentTeam: Y53G7YPJSZ
+      TEST_TARGET_NAME: SixLayerFrameworkTestApp_iOS
     dependencies:
       - target: SixLayerFramework_iOS
       - target: SixLayerFrameworkTestApp_iOS
-    settings:
-      TEST_TARGET_NAME: SixLayerFrameworkTestApp_iOS
 
   # XCUITest tests - macOS (uses XCUIApplication and XCUIElement)
   SixLayerFrameworkUITests_macOS:
