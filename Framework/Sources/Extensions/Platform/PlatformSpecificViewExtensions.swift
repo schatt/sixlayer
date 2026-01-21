@@ -985,6 +985,95 @@ public extension View {
             Button("OK") { }
         }
     }
+    
+    /// Platform-specific alert presentation with data-presenting
+    /// Provides data-driven alert patterns matching SwiftUI's alert modifier
+    ///
+    /// - Parameters:
+    ///   - title: The alert title
+    ///   - isPresented: Binding to control alert presentation
+    ///   - presenting: The data to present (alert shows when data is non-nil)
+    ///   - actions: The alert actions builder that receives the data
+    ///   - message: The alert message builder that receives the data
+    /// - Returns: A view with platform-specific data-presenting alert
+    ///
+    /// ## Usage Example
+    /// ```swift
+    /// struct Item: Identifiable {
+    ///     let id: Int
+    ///     let name: String
+    /// }
+    ///
+    /// @State var itemToDelete: Item?
+    ///
+    /// .platformAlert(
+    ///     Text("Delete Item"),
+    ///     isPresented: .constant(itemToDelete != nil),
+    ///     presenting: itemToDelete
+    /// ) { item in
+    ///     Button("Delete", role: .destructive) { deleteItem(item) }
+    ///     Button("Cancel", role: .cancel) { itemToDelete = nil }
+    /// } message: { item in
+    ///     Text("Are you sure you want to delete \(item.name)?")
+    /// }
+    /// ```
+    func platformAlert<Data: Identifiable, A: View, M: View>(
+        _ title: Text,
+        isPresented: Binding<Bool>,
+        presenting data: Data?,
+        @ViewBuilder actions: @escaping (Data) -> A,
+        @ViewBuilder message: @escaping (Data) -> M
+    ) -> some View {
+        #if os(iOS)
+        return self.alert(title, isPresented: isPresented, presenting: data, actions: actions, message: message)
+        #elseif os(macOS)
+        return self.alert(title, isPresented: isPresented, presenting: data, actions: actions, message: message)
+        #else
+        return self.alert(title, isPresented: isPresented, presenting: data, actions: actions, message: message)
+        #endif
+    }
+    
+    /// Platform-specific alert presentation with data-presenting (no message)
+    /// Convenience method for data-presenting alerts without a message
+    ///
+    /// - Parameters:
+    ///   - title: The alert title
+    ///   - isPresented: Binding to control alert presentation
+    ///   - presenting: The data to present (alert shows when data is non-nil)
+    ///   - actions: The alert actions builder that receives the data
+    /// - Returns: A view with platform-specific data-presenting alert
+    ///
+    /// ## Usage Example
+    /// ```swift
+    /// struct Item: Identifiable {
+    ///     let id: Int
+    /// }
+    ///
+    /// @State var itemToConfirm: Item?
+    ///
+    /// .platformAlert(
+    ///     Text("Confirm"),
+    ///     isPresented: .constant(itemToConfirm != nil),
+    ///     presenting: itemToConfirm
+    /// ) { item in
+    ///     Button("OK") { confirmItem(item) }
+    ///     Button("Cancel", role: .cancel) { itemToConfirm = nil }
+    /// }
+    /// ```
+    func platformAlert<Data: Identifiable, A: View>(
+        _ title: Text,
+        isPresented: Binding<Bool>,
+        presenting data: Data?,
+        @ViewBuilder actions: @escaping (Data) -> A
+    ) -> some View {
+        #if os(iOS)
+        return self.alert(title, isPresented: isPresented, presenting: data, actions: actions)
+        #elseif os(macOS)
+        return self.alert(title, isPresented: isPresented, presenting: data, actions: actions)
+        #else
+        return self.alert(title, isPresented: isPresented, presenting: data, actions: actions)
+        #endif
+    }
 
 
 
