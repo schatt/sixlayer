@@ -110,7 +110,9 @@ extension XCUIApplication {
             segmentButton.tap()
             return true
         }
-        #else
+        return false
+        
+        #elseif os(macOS)
         // On macOS, segmented picker is exposed as both a SegmentedControl and a Picker
         // Try SegmentedControl first (segments are typically accessible as buttons within it)
         let segmentedControl = segmentedControls.firstMatch
@@ -147,9 +149,13 @@ extension XCUIApplication {
                 return true
             }
         }
-        #endif
-        
         return false
+        
+        #else
+        // Unsupported platform
+        print("ERROR: selectPickerSegment not implemented for this platform")
+        return false
+        #endif
     }
 }
 
