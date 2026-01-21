@@ -62,9 +62,8 @@ extension XCUIElement {
 
 // MARK: - Accessibility Identifier Helpers
 
-extension XCUIApplication {
-    /// Find an element by accessibility identifier, trying multiple query types
-    /// Uses runtime detection to try different strategies and find what works
+extension XCUIElement {
+    /// Find an element by accessibility identifier within this element, trying multiple query types
     /// - Parameters:
     ///   - identifier: The accessibility identifier to search for
     ///   - primaryType: Primary element type to try first (default: .other)
@@ -97,12 +96,23 @@ extension XCUIApplication {
         
         return nil
     }
-    
+}
+
+extension XCUIApplication {
     /// Select a segment in the segmented picker (handles platform differences)
     /// Uses platform-specific strategies based on how segmented pickers are exposed
     /// - Parameter segmentName: Name of the segment to select (e.g., "Text", "Button")
     /// - Returns: true if segment was found and selected, false otherwise
     func selectPickerSegment(_ segmentName: String) -> Bool {
+        // First, try to find by accessibility identifier (works if segments have identifiers)
+        // This is the most reliable method when segments have explicit identifiers
+        if let segmentElement = findElement(byIdentifier: segmentName,
+                                           primaryType: .button,
+                                           secondaryTypes: [.staticText, .any]) {
+            segmentElement.tap()
+            return true
+        }
+        
         #if os(iOS)
         // On iOS, segmented picker exposes segments as buttons directly
         let segmentButton = buttons[segmentName]
@@ -140,50 +150,53 @@ extension XCUIApplication {
         return false
         
         #elseif os(macOS)
-        // On macOS, segmented pickers are NOT accessible via XCUITest
-        // PROOF: 
-        //   - segmentedControls.count = 0 (not exposed as SegmentedControl)
-        //   - pickers.count = 0 (not exposed as Picker)
-        //   - Picker.waitForExistence returns false
-        // Segments are not exposed as individual accessible elements
-        // We must use coordinate-based clicking on the control itself
-        
-        // Try to find the control - even though counts are 0, firstMatch queries might work
-        // Try SegmentedControl first (even if count is 0, firstMatch might still work)
+        // On macOS, try to find within SegmentedControl or Picker
+        // Try SegmentedControl first
         let segmentedControl = segmentedControls.firstMatch
         if segmentedControl.waitForExistence(timeout: 1.0) {
-            // Use coordinate-based clicking on segmented control
-            let segmentPositions: [String: Double] = [
-                "Text": 0.17,    // ~1/6 (first of 3)
-                "Button": 0.5,    // Middle (second of 3)
-                "Control": 0.83   // ~5/6 (third of 3)
-            ]
+            // Try to find segment by identifier within the segmented control
+            if let segmentElement = segmentedControl.findElement(byIdentifier: segmentName,
+                                                                primaryType: .button,
+                                                                secondaryTypes: [.staticText, .any]) {
+                segmentElement.tap()
+                return true
+            }
             
-            if let xOffset = segmentPositions[segmentName] {
-                let coordinate = segmentedControl.coordinate(withNormalizedOffset: CGVector(dx: xOffset, dy: 0.5))
-                coordinate.tap()
+            // Fallback: try by label
+            let segmentButton = segmentedControl.buttons[segmentName]
+            if segmentButton.waitForExistence(timeout: 0.5) {
+                segmentButton.tap()
                 return true
             }
         }
         
-        // Try Picker as fallback
+        // Try Picker
         let picker = pickers.firstMatch
         if picker.waitForExistence(timeout: 1.0) {
-            // Use coordinate-based clicking on picker
-            let segmentPositions: [String: Double] = [
-                "Text": 0.17,
-                "Button": 0.5,
-                "Control": 0.83
-            ]
+            // Try to find segment by identifier within the picker
+            if let segmentElement = picker.findElement(byIdentifier: segmentName,
+                                                      primaryType: .button,
+                                                      secondaryTypes: [.staticText, .any]) {
+                segmentElement.tap()
+                return true
+            }
             
-            if let xOffset = segmentPositions[segmentName] {
-                let coordinate = picker.coordinate(withNormalizedOffset: CGVector(dx: xOffset, dy: 0.5))
-                coordinate.tap()
+            // Fallback: try by label
+            let segmentButton = picker.buttons[segmentName]
+            if segmentButton.waitForExistence(timeout: 0.5) {
+                segmentButton.tap()
                 return true
             }
         }
         
-        // If neither control found, segments are not accessible
+        // Try app-level buttons (segments might be at app level)
+        let appLevelButton = buttons[segmentName]
+        if appLevelButton.waitForExistence(timeout: 0.5) {
+            appLevelButton.tap()
+            return true
+        }
+        
+        // If nothing works, segments are not accessible
         return false
         
         #else

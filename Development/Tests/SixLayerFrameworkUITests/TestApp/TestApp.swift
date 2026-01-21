@@ -61,10 +61,15 @@ struct TestAppContentView: View {
             
             Picker("Test View", selection: $testViewType) {
                 ForEach(TestViewType.allCases, id: \.self) { type in
-                    Text(type.rawValue).tag(type)
+                    Text(type.rawValue)
+                        .tag(type)
+                        .accessibilityIdentifier(type.rawValue)
+                        .accessibility(label: Text(type.rawValue)) // Also add label (needed for VoiceOver and may help XCUITest)
                 }
             }
             .pickerStyle(.segmented)
+            .accessibilityIdentifier("test-view-picker")
+            .accessibility(label: Text("Test View")) // Also add label at picker level (as per Stack Overflow answer)
             .padding()
             
             // Use Group to avoid deep nesting while maintaining view switching
