@@ -64,28 +64,35 @@ extension XCUIElement {
 
 extension XCUIApplication {
     /// Find an element by accessibility identifier, trying multiple query types
+    /// Uses runtime detection to try different strategies and find what works
     /// - Parameters:
     ///   - identifier: The accessibility identifier to search for
-    ///   - primaryType: Primary element type to try first (default: .otherElements)
+    ///   - primaryType: Primary element type to try first (default: .other)
     ///   - secondaryTypes: Additional element types to try if primary fails
     ///   - timeout: Maximum time to wait for each query type
     /// - Returns: The found element, or nil if not found
     func findElement(byIdentifier identifier: String, 
-                    primaryType: XCUIElement.ElementType = .otherElements,
+                    primaryType: XCUIElement.ElementType = .other,
                     secondaryTypes: [XCUIElement.ElementType] = [.staticText, .button, .any],
                     timeout: TimeInterval = 1.0) -> XCUIElement? {
-        // Try primary type first
+        // Strategy 1: Try primary type first (most common case)
         let primaryElement = descendants(matching: primaryType)[identifier]
         if primaryElement.waitForExistence(timeout: timeout) {
             return primaryElement
         }
         
-        // Try secondary types
+        // Strategy 2: Try secondary types (adapts to platform differences)
         for elementType in secondaryTypes {
             let element = descendants(matching: elementType)[identifier]
             if element.waitForExistence(timeout: 0.5) {
                 return element
             }
+        }
+        
+        // Strategy 3: Try any element as last resort (catches edge cases)
+        let anyElement = descendants(matching: .any)[identifier]
+        if anyElement.waitForExistence(timeout: 0.3) {
+            return anyElement
         }
         
         return nil

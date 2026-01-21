@@ -13,122 +13,9 @@
 import XCTest
 @testable import SixLayerFramework
 
-// Extend XCUIApplication with helpers
-// These are defined in XCUITestHelpers.swift for UITests target
-// For RealUITests target, we define them here as extensions (duplicated for DRY)
-extension XCUIApplication {
-    /// Wait for app to be ready before querying elements
-    func waitForReady(timeout: TimeInterval = 5.0) -> Bool {
-        return staticTexts["Test Content"].waitForExistence(timeout: timeout)
-    }
-    
-    /// Launch app with performance optimizations
-    func launchWithOptimizations() {
-        launchArguments = ["-UITesting", "-SkipAnimations"]
-        launchEnvironment = ["XCUI_TESTING": "1"]
-        launch()
-    }
-    
-    /// Find an element by accessibility identifier, trying multiple query types
-    /// Uses runtime detection to try different strategies and find what works
-    /// - Parameters:
-    ///   - identifier: The accessibility identifier to search for
-    ///   - primaryType: Primary element type to try first (default: .otherElements)
-    ///   - secondaryTypes: Additional element types to try if primary fails
-    ///   - timeout: Maximum time to wait for each query type
-    /// - Returns: The found element, or nil if not found
-    func findElement(byIdentifier identifier: String, 
-                    primaryType: XCUIElement.ElementType = .otherElements,
-                    secondaryTypes: [XCUIElement.ElementType] = [.staticText, .button, .any],
-                    timeout: TimeInterval = 1.0) -> XCUIElement? {
-        // Strategy 1: Try primary type first (most common case)
-        let primaryElement = descendants(matching: primaryType)[identifier]
-        if primaryElement.waitForExistence(timeout: timeout) {
-            return primaryElement
-        }
-        
-        // Strategy 2: Try secondary types (adapts to platform differences)
-        for elementType in secondaryTypes {
-            let element = descendants(matching: elementType)[identifier]
-            if element.waitForExistence(timeout: 0.5) {
-                return element
-            }
-        }
-        
-        // Strategy 3: Try any element as last resort (catches edge cases)
-        let anyElement = descendants(matching: .any)[identifier]
-        if anyElement.waitForExistence(timeout: 0.3) {
-            return anyElement
-        }
-        
-        return nil
-    }
-    
-    /// Select a segment in the segmented picker (handles iOS/macOS differences)
-    /// Uses runtime detection to try different strategies and adapt to what works
-    /// - Parameter segmentName: Name of the segment to select (e.g., "Text", "Button")
-    /// - Returns: true if segment was found and selected, false otherwise
-    func selectPickerSegment(_ segmentName: String) -> Bool {
-        // Strategy 1: Try buttons directly (works on iOS and some macOS segmented controls)
-        let segmentButton = buttons[segmentName]
-        if segmentButton.waitForExistence(timeout: 0.5) {
-            segmentButton.tap()
-            return true
-        }
-        
-        // Strategy 2: Try picker first, then buttons (works on macOS pickers)
-        let picker = pickers.firstMatch
-        if picker.waitForExistence(timeout: 0.5) {
-            picker.tap()
-            // After tapping picker, segment might be exposed as button
-            let segmentAfterPicker = buttons[segmentName]
-            if segmentAfterPicker.waitForExistence(timeout: 0.5) {
-                segmentAfterPicker.tap()
-                return true
-            }
-        }
-        
-        // Strategy 3: Try segmented controls directly
-        let segmentedControl = segmentedControls.firstMatch
-        if segmentedControl.waitForExistence(timeout: 0.5) {
-            let segmentInControl = segmentedControl.buttons[segmentName]
-            if segmentInControl.waitForExistence(timeout: 0.5) {
-                segmentInControl.tap()
-                return true
-            }
-        }
-        
-        return false
-    }
-}
-
-extension XCUIElement {
-    /// Fast wait for existence with shorter default timeout
-    func waitForExistenceFast(timeout: TimeInterval = 0.5) -> Bool {
-        return waitForExistence(timeout: timeout)
-    }
-    
-    /// Check if element exists without waiting
-    var existsImmediately: Bool {
-        return exists
-    }
-}
-
-// XCUITestPerformance - defined here for RealUITests, or used from XCUITestHelpers.swift for UITests
-// If both are included, Swift will use the one from XCUITestHelpers.swift (more complete)
-enum XCUITestPerformance {
-    static func measure<T>(_ operation: () throws -> T) rethrows -> (result: T, time: TimeInterval) {
-        let startTime = Date()
-        let result = try operation()
-        let time = Date().timeIntervalSince(startTime)
-        return (result, time)
-    }
-    
-    static func log(_ label: String, time: TimeInterval) {
-        let milliseconds = Int(time * 1000)
-        print("⏱️  [XCUITest Performance] \(label): \(milliseconds)ms")
-    }
-}
+// Note: Helper extensions are defined in XCUITestHelpers.swift
+// This file is shared between UITests and RealUITests targets
+// Both targets include XCUITestHelpers.swift, so no duplicates needed here
 
 /// XCUITest tests for accessibility identifier generation
 /// These tests verify that identifiers are findable using XCUIElement queries,
@@ -191,7 +78,7 @@ final class AccessibilityUITests: XCTestCase {
         // Use helper to find element by identifier (tries multiple query types)
         guard let element = app.findElement(byIdentifier: controlIdentifier, 
                                            primaryType: .button,
-                                           secondaryTypes: [.otherElements]) else {
+                                           secondaryTypes: [.other]) else {
             XCTFail("Control test failed: Standard SwiftUI .accessibilityIdentifier('\(controlIdentifier)') should be findable using XCUITest. This indicates an XCUITest infrastructure problem, not a framework bug.")
             return
         }
@@ -218,14 +105,14 @@ final class AccessibilityUITests: XCTestCase {
         if usePerformanceLogging {
             let (foundElement, queryTime) = XCUITestPerformance.measure {
                 app.findElement(byIdentifier: expectedIdentifier,
-                               primaryType: .otherElements,
+                               primaryType: .other,
                                secondaryTypes: [.staticText, .any])
             }
             XCUITestPerformance.log("Element query for '\(expectedIdentifier)'", time: queryTime)
             element = foundElement
         } else {
             element = app.findElement(byIdentifier: expectedIdentifier,
-                                     primaryType: .otherElements,
+                                     primaryType: .other,
                                      secondaryTypes: [.staticText, .any])
         }
         
@@ -256,14 +143,14 @@ final class AccessibilityUITests: XCTestCase {
         if usePerformanceLogging {
             let (foundElement, queryTime) = XCUITestPerformance.measure {
                 app.findElement(byIdentifier: expectedIdentifier,
-                               primaryType: .otherElements,
+                               primaryType: .other,
                                secondaryTypes: [.button, .any])
             }
             XCUITestPerformance.log("Element query for '\(expectedIdentifier)'", time: queryTime)
             element = foundElement
         } else {
             element = app.findElement(byIdentifier: expectedIdentifier,
-                                     primaryType: .otherElements,
+                                     primaryType: .other,
                                      secondaryTypes: [.button, .any])
         }
         
