@@ -24,9 +24,9 @@ import XCTest
 final class AccessibilityUITests: XCTestCase {
     var app: XCUIApplication!
     
-    /// Helper to set up app without capturing self in closure
+    /// Static helper to set up app without capturing self
     @MainActor
-    private func setupApp(usePerformanceLogging: Bool) {
+    private static func setupApp(for instance: AccessibilityUITests, usePerformanceLogging: Bool) {
         // Use local variable to avoid capturing self in closures
         var localApp: XCUIApplication!
         
@@ -36,12 +36,12 @@ final class AccessibilityUITests: XCTestCase {
                 localApp.launchWithOptimizations()
             }
             // Assign to app property - we're on MainActor
-            app = localApp
+            instance.app = localApp
             XCUITestPerformance.log("App launch", time: launchTime)
         } else {
             localApp = XCUIApplication()
             localApp.launchWithOptimizations()
-            app = localApp
+            instance.app = localApp
         }
         
         // Wait for app to be ready before querying elements
@@ -56,10 +56,10 @@ final class AccessibilityUITests: XCTestCase {
         }
     }
     
-    /// Helper to clean up app without capturing self in closure
+    /// Static helper to clean up app without capturing self
     @MainActor
-    private func cleanupApp() {
-        app = nil
+    private static func cleanupApp(for instance: AccessibilityUITests) {
+        instance.app = nil
     }
     
     nonisolated override func setUpWithError() throws {
@@ -100,18 +100,47 @@ final class AccessibilityUITests: XCTestCase {
         // to access main actor-isolated properties like 'app'
         let usePerformanceLogging = ProcessInfo.processInfo.environment["USE_XCUITEST_PERFORMANCE"] == "1"
         
-        // Use helper function to avoid capturing self in closure
+        // Use nonisolated(unsafe) since we know we're on MainActor (class is @MainActor and assumeIsolated confirms it)
+        nonisolated(unsafe) let instance = self
         try MainActor.assumeIsolated {
-            setupApp(usePerformanceLogging: usePerformanceLogging)
+            // Use local variable to avoid capturing self in closures
+            var localApp: XCUIApplication!
+            
+            if usePerformanceLogging {
+                let (_, launchTime) = XCUITestPerformance.measure {
+                    localApp = XCUIApplication()
+                    localApp.launchWithOptimizations()
+                }
+                // Access app property via unsafe reference - safe because we're on MainActor
+                instance.app = localApp
+                XCUITestPerformance.log("App launch", time: launchTime)
+            } else {
+                localApp = XCUIApplication()
+                localApp.launchWithOptimizations()
+                instance.app = localApp
+            }
+            
+            // Wait for app to be ready before querying elements
+            // This ensures SwiftUI has finished initial render and accessibility tree is built
+            if usePerformanceLogging {
+                let (_, readyTime) = XCUITestPerformance.measure {
+                    XCTAssertTrue(localApp.waitForReady(timeout: 5.0), "App should be ready for testing")
+                }
+                XCUITestPerformance.log("App readiness check", time: readyTime)
+            } else {
+                XCTAssertTrue(localApp.waitForReady(timeout: 5.0), "App should be ready for testing")
+            }
         }
     }
     
     nonisolated override func tearDownWithError() throws {
         // Note: tearDownWithError() is nonisolated (inherited from XCTestCase), so we need to use MainActor.assumeIsolated
         // to access main actor-isolated properties like 'app'
-        // Use helper function to avoid capturing self in closure
+        // Use nonisolated(unsafe) since we know we're on MainActor (class is @MainActor and assumeIsolated confirms it)
+        nonisolated(unsafe) let instance = self
         MainActor.assumeIsolated {
-            cleanupApp()
+            // Access app property via unsafe reference - safe because we're on MainActor
+            instance.app = nil
         }
     }
     
