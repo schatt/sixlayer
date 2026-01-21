@@ -26,6 +26,29 @@ final class AccessibilityUITests: XCTestCase {
     override func setUpWithError() throws {
         continueAfterFailure = false
         
+        // Add UI interruption monitors to dismiss system dialogs quickly
+        // This prevents XCUITest from waiting for Bluetooth, CPU, and other system dialogs
+        addUIInterruptionMonitor(withDescription: "System alerts and dialogs") { (alert) -> Bool in
+            // Dismiss any system alerts that might appear
+            let alertText = alert.staticTexts.firstMatch.label
+            if alertText.contains("Bluetooth") || alertText.contains("CPU") || alertText.contains("Activity Monitor") {
+                // Try to dismiss by clicking "OK", "Cancel", or "Don't Allow" buttons
+                if alert.buttons["OK"].exists {
+                    alert.buttons["OK"].tap()
+                    return true
+                }
+                if alert.buttons["Cancel"].exists {
+                    alert.buttons["Cancel"].tap()
+                    return true
+                }
+                if alert.buttons["Don't Allow"].exists {
+                    alert.buttons["Don't Allow"].tap()
+                    return true
+                }
+            }
+            return false
+        }
+        
         // Launch the test app with performance optimizations
         // Use performance logging if enabled (SixLayerFrameworkUITests target sets USE_XCUITEST_PERFORMANCE)
         let usePerformanceLogging = ProcessInfo.processInfo.environment["USE_XCUITEST_PERFORMANCE"] == "1"

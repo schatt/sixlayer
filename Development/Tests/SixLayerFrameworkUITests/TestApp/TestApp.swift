@@ -12,18 +12,9 @@ import SixLayerFramework
 @main
 struct TestApp: App {
     init() {
-        // Pre-configure accessibility identifier generation early in app lifecycle
-        // This ensures identifiers are set before views appear, reducing XCUITest snapshot time
-        let config = AccessibilityIdentifierConfig.shared
-        config.namespace = "SixLayer"
-        config.mode = .automatic
-        config.enableAutoIDs = true
-        config.globalAutomaticAccessibilityIdentifiers = true  // Enable via config (no environment variable - removed in Issue #160)
-        
-        // Skip animations in UI testing mode for faster execution
-        if ProcessInfo.processInfo.environment["XCUI_TESTING"] == "1" {
-            // Additional optimizations for UI testing mode can go here
-        }
+        // Configuration is now done in TestAppContentView.onAppear to avoid
+        // static initialization order issues that can cause dyld_start crashes.
+        // The framework must be fully loaded before accessing singletons.
     }
     
     var body: some Scene {
@@ -37,6 +28,7 @@ struct TestApp: App {
 /// Optimized for fast XCUITest execution with early accessibility setup
 struct TestAppContentView: View {
     @State private var testViewType: TestViewType = .text
+    @State private var isConfigured = false
     
     enum TestViewType: String, CaseIterable {
         case text = "Text"
@@ -90,7 +82,23 @@ struct TestAppContentView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        // Note: Accessibility config is now done in App.init() for earlier setup
-        // This ensures identifiers are available before views appear, reducing XCUITest snapshot time
+        .onAppear {
+            // Configure accessibility identifier generation after app is fully loaded
+            // This avoids static initialization order issues that can cause dyld_start crashes
+            // The framework must be fully initialized before accessing singletons
+            guard !isConfigured else { return }
+            isConfigured = true
+            
+            let config = AccessibilityIdentifierConfig.shared
+            config.namespace = "SixLayer"
+            config.mode = .automatic
+            config.enableAutoIDs = true
+            config.globalAutomaticAccessibilityIdentifiers = true  // Enable via config (no environment variable - removed in Issue #160)
+            
+            // Skip animations in UI testing mode for faster execution
+            if ProcessInfo.processInfo.environment["XCUI_TESTING"] == "1" {
+                // Additional optimizations for UI testing mode can go here
+            }
+        }
     }
 }
