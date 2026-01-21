@@ -1,5 +1,7 @@
 # TODO
 
+**Current Release**: v6.6.3
+
 ## Current
 
 - [x] Fix `ModalContainerTests.swift` missing closing brace (build error)

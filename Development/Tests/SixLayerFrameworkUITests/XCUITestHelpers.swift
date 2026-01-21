@@ -99,38 +99,55 @@ extension XCUIApplication {
     }
     
     /// Select a segment in the segmented picker (handles iOS/macOS differences)
-    /// Uses runtime detection to try different strategies and adapt to what works
+    /// Uses platform-specific strategies based on how segmented pickers are exposed
     /// - Parameter segmentName: Name of the segment to select (e.g., "Text", "Button")
     /// - Returns: true if segment was found and selected, false otherwise
     func selectPickerSegment(_ segmentName: String) -> Bool {
-        // Strategy 1: Try buttons directly (works on iOS and some macOS segmented controls)
+        #if os(iOS)
+        // On iOS, segmented picker exposes segments as buttons directly
         let segmentButton = buttons[segmentName]
-        if segmentButton.waitForExistence(timeout: 0.5) {
+        if segmentButton.waitForExistence(timeout: 1.0) {
             segmentButton.tap()
             return true
         }
+        #else
+        // On macOS, segmented picker is exposed as both a SegmentedControl and a Picker
+        // Try SegmentedControl first (segments are typically accessible as buttons within it)
+        let segmentedControl = segmentedControls.firstMatch
+        if segmentedControl.waitForExistence(timeout: 1.0) {
+            // Segments are accessible as buttons within the segmented control
+            let segmentButton = segmentedControl.buttons[segmentName]
+            if segmentButton.waitForExistence(timeout: 0.5) {
+                segmentButton.tap()
+                return true
+            }
+            
+            // Try accessing through descendants
+            let segmentDescendant = segmentedControl.descendants(matching: .button)[segmentName]
+            if segmentDescendant.waitForExistence(timeout: 0.5) {
+                segmentDescendant.tap()
+                return true
+            }
+        }
         
-        // Strategy 2: Try picker first, then buttons (works on macOS pickers)
+        // Also try Picker (some macOS implementations expose it as a picker)
         let picker = pickers.firstMatch
         if picker.waitForExistence(timeout: 0.5) {
-            picker.tap()
-            // After tapping picker, segment might be exposed as button
-            let segmentAfterPicker = buttons[segmentName]
-            if segmentAfterPicker.waitForExistence(timeout: 0.5) {
-                segmentAfterPicker.tap()
+            // Try buttons within the picker
+            let segmentButton = picker.buttons[segmentName]
+            if segmentButton.waitForExistence(timeout: 0.5) {
+                segmentButton.tap()
+                return true
+            }
+            
+            // Try menu items (in case it's a dropdown picker)
+            let segmentMenuItem = picker.menuItems[segmentName]
+            if segmentMenuItem.waitForExistence(timeout: 0.5) {
+                segmentMenuItem.tap()
                 return true
             }
         }
-        
-        // Strategy 3: Try segmented controls directly
-        let segmentedControl = segmentedControls.firstMatch
-        if segmentedControl.waitForExistence(timeout: 0.5) {
-            let segmentInControl = segmentedControl.buttons[segmentName]
-            if segmentInControl.waitForExistence(timeout: 0.5) {
-                segmentInControl.tap()
-                return true
-            }
-        }
+        #endif
         
         return false
     }
