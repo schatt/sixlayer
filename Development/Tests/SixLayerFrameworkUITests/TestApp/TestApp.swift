@@ -77,7 +77,7 @@ struct TestAppContentView: View {
                     Button("Test Button") {
                         // Action
                     }
-                    .automaticCompliance()
+                    .automaticCompliance(identifierElementType: "Button")
                 case .control:
                     // Control view (already shown above, but include here for picker consistency)
                     Text("Control view selected")
