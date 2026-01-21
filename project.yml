@@ -213,13 +213,10 @@ targets:
     platform: iOS
     sources:
       - path: Development/Tests/SixLayerFrameworkRealUITests
-        excludes:
-          - "AccessibilityRealUITests.swift"  # Replaced by shared AccessibilityUITests.swift
       - path: Development/Tests/SixLayerFrameworkUITests
         excludes:
           - "TestApp/**"
           - "README.md"
-          - "AccessibilityXCUITests.swift"
     settings:
       PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.framework.real-ui-tests
       SWIFT_VERSION: "6.0"
@@ -239,13 +236,10 @@ targets:
     platform: macOS
     sources:
       - path: Development/Tests/SixLayerFrameworkRealUITests
-        excludes:
-          - "AccessibilityRealUITests.swift"  # Replaced by shared AccessibilityUITests.swift
       - path: Development/Tests/SixLayerFrameworkUITests
         excludes:
           - "TestApp/**"
           - "README.md"
-          - "AccessibilityXCUITests.swift"
     settings:
       PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.framework.real-ui-tests
       SWIFT_VERSION: "6.0"
@@ -320,7 +314,6 @@ targets:
         excludes:
           - "TestApp/**"
           - "README.md"
-          - "AccessibilityXCUITests.swift"  # Replaced by AccessibilityUITests.swift
     settings:
       PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.framework.ui-tests
       SWIFT_VERSION: "6.0"
@@ -344,7 +337,6 @@ targets:
         excludes:
           - "TestApp/**"
           - "README.md"
-          - "AccessibilityXCUITests.swift"  # Replaced by AccessibilityUITests.swift
     settings:
       PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.framework.ui-tests
       SWIFT_VERSION: "6.0"
