@@ -212,6 +212,177 @@ open class BasicAutomaticComplianceTests: BaseTestClass {
         }
     }
     
+    /// BUSINESS PURPOSE: .basicAutomaticCompliance() should respect globalAutomaticAccessibilityIdentifiers
+    /// TESTING SCOPE: Config option globalAutomaticAccessibilityIdentifiers
+    /// METHODOLOGY: Test with globalAutomaticAccessibilityIdentifiers disabled, verify identifier is not applied
+    @Test @MainActor func testBasicAutomaticCompliance_RespectsGlobalAutomaticAccessibilityIdentifiers() async {
+        initializeTestConfig()
+        await runWithTaskLocalConfig {
+            guard let config = self.testConfig else {
+                Issue.record("testConfig is nil")
+                return
+            }
+            
+            // Given: Configuration with global auto IDs disabled
+            config.enableAutoIDs = true
+            config.globalAutomaticAccessibilityIdentifiers = false
+            
+            let view = Text("Test")
+                .basicAutomaticCompliance()
+            
+            // When: View is created with global auto IDs disabled
+            // Then: Identifier should NOT be applied
+            #if canImport(ViewInspector)
+            do {
+                let inspected = try view.inspect()
+                let identifier = try? inspected.accessibilityIdentifier()
+                #expect(identifier == nil || identifier?.isEmpty == true, "Identifier should not be applied when globalAutomaticAccessibilityIdentifiers is false")
+            } catch {
+                Issue.record("Failed to inspect view: \(error)")
+            }
+            #else
+            // ViewInspector not available - test that view compiles
+            #expect(Bool(true), "View should compile even when global auto IDs are disabled")
+            #endif
+        }
+    }
+    
+    /// BUSINESS PURPOSE: Test that label formatting works through ViewInspector
+    /// TESTING SCOPE: Label formatting through SwiftUI views
+    /// METHODOLOGY: Test label formatting by checking results from modifier via ViewInspector
+    @Test @MainActor func testLabelFormatting_ThroughViewInspector() async {
+        initializeTestConfig()
+        await runWithTaskLocalConfig {
+            // Given: Views with different label formats
+            let viewWithPeriod = Text("Test")
+                .basicAutomaticCompliance(accessibilityLabel: "Test label.")
+            
+            let viewWithoutPeriod = Text("Test")
+                .basicAutomaticCompliance(accessibilityLabel: "Test label")
+            
+            let viewWithExclamation = Text("Test")
+                .basicAutomaticCompliance(accessibilityLabel: "Test label!")
+            
+            // When: Labels are applied through modifiers
+            // Then: Labels should be formatted correctly
+            #if canImport(ViewInspector)
+            do {
+                let inspectedPeriod = try viewWithPeriod.inspect()
+                let labelPeriod = try? inspectedPeriod.accessibilityLabel()
+                if let label = labelPeriod, let labelText = try? label.string() {
+                    #expect(labelText == "Test label.", "Label with period should be preserved")
+                }
+                
+                let inspectedNoPeriod = try viewWithoutPeriod.inspect()
+                let labelNoPeriod = try? inspectedNoPeriod.accessibilityLabel()
+                if let label = labelNoPeriod, let labelText = try? label.string() {
+                    #expect(labelText == "Test label.", "Label without period should have period added")
+                }
+                
+                let inspectedExclamation = try viewWithExclamation.inspect()
+                let labelExclamation = try? inspectedExclamation.accessibilityLabel()
+                if let label = labelExclamation, let labelText = try? label.string() {
+                    #expect(labelText == "Test label!", "Label with exclamation should be preserved")
+                }
+            } catch {
+                Issue.record("Failed to inspect views: \(error)")
+            }
+            #else
+            // ViewInspector not available - test that views compile
+            #expect(Bool(true), "Views with labels should compile")
+            #endif
+        }
+    }
+    
+    /// BUSINESS PURPOSE: Test that identifier sanitization works through ViewInspector
+    /// TESTING SCOPE: Label sanitization through SwiftUI views
+    /// METHODOLOGY: Test sanitization by checking identifier components via ViewInspector
+    @Test @MainActor func testIdentifierSanitization_ThroughViewInspector() async {
+        initializeTestConfig()
+        await runWithTaskLocalConfig {
+            guard let config = self.testConfig else {
+                Issue.record("testConfig is nil")
+                return
+            }
+            
+            // Given: Configuration with label text
+            config.namespace = "SixLayer"
+            config.includeComponentNames = true
+            config.enableUITestIntegration = true
+            
+            // When: Generating identifier with label text containing spaces and uppercase
+            let view = Text("Test")
+                .basicAutomaticCompliance(
+                    identifierName: "TestButton",
+                    identifierLabel: "Save File"
+                )
+            
+            // Then: Identifier should contain sanitized label
+            #if canImport(ViewInspector)
+            do {
+                let inspected = try view.inspect()
+                let identifier = try? inspected.accessibilityIdentifier()
+                #expect(identifier != nil, "Identifier should be generated")
+                if let id = identifier {
+                    // Label should be sanitized: "Save File" -> "save-file"
+                    #expect(id.contains("save-file") || id.contains("save"), "Identifier should contain sanitized label")
+                    #expect(!id.contains("Save File"), "Identifier should not contain raw label with spaces")
+                }
+            } catch {
+                Issue.record("Failed to inspect view: \(error)")
+            }
+            #else
+            // ViewInspector not available - test that view compiles
+            #expect(Bool(true), "View with label should compile")
+            #endif
+        }
+    }
+    
+    /// BUSINESS PURPOSE: Test that identifier sanitization removes special characters through ViewInspector
+    /// TESTING SCOPE: Label sanitization removes special characters through SwiftUI views
+    /// METHODOLOGY: Test sanitization with special characters via ViewInspector
+    @Test @MainActor func testIdentifierSanitization_SpecialCharacters_ThroughViewInspector() async {
+        initializeTestConfig()
+        await runWithTaskLocalConfig {
+            guard let config = self.testConfig else {
+                Issue.record("testConfig is nil")
+                return
+            }
+            
+            // Given: Configuration
+            config.namespace = "SixLayer"
+            config.includeComponentNames = true
+            config.enableUITestIntegration = true
+            
+            // Given: A view with identifier label containing special characters
+            let view = Text("Test")
+                .basicAutomaticCompliance(
+                    identifierName: "TestButton",
+                    identifierLabel: "Save & Load!"
+                )
+            
+            // When: Identifier is generated
+            // Then: Special characters should be removed or replaced
+            #if canImport(ViewInspector)
+            do {
+                let inspected = try view.inspect()
+                let identifier = try? inspected.accessibilityIdentifier()
+                #expect(identifier != nil, "Identifier should be generated")
+                if let id = identifier {
+                    // Special characters should be sanitized
+                    #expect(!id.contains("&"), "Identifier should not contain &")
+                    #expect(!id.contains("!"), "Identifier should not contain !")
+                }
+            } catch {
+                Issue.record("Failed to inspect view: \(error)")
+            }
+            #else
+            // ViewInspector not available - test that view compiles
+            #expect(Bool(true), "View with special characters should compile")
+            #endif
+        }
+    }
+    
     // MARK: - Text.basicAutomaticCompliance() Unit Tests
     
     /// BUSINESS PURPOSE: Text.basicAutomaticCompliance() should return Text type
