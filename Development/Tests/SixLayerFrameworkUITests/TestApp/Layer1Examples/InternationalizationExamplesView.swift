@@ -1,6 +1,6 @@
 //
 //  InternationalizationExamplesView.swift
-//  SixLayerFrameworkRealUITests
+//  SixLayerFrameworkUITests
 //
 //  Examples of Layer 1 internationalization functions
 //  Issue #166
@@ -9,11 +9,11 @@
 import SwiftUI
 import SixLayerFramework
 
-struct InternationalizationExamplesView: View {
+struct Layer1InternationalizationExamples: View {
     @State private var textValue = ""
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 24) {
+        platformVStack(alignment: .leading, spacing: 24) {
             ExampleSection(title: "Localized Content") {
                 LocalizedContentExamples()
             }
@@ -44,12 +44,12 @@ struct InternationalizationExamplesView: View {
 
 struct LocalizedContentExamples: View {
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        platformVStack(alignment: .leading, spacing: 12) {
             Text("Localized Content")
                 .font(.headline)
             
             platformPresentLocalizedContent_L1(
-                content: VStack {
+                content: platformVStack {
                     Text("Localized Content")
                         .font(.headline)
                     Text("This content respects locale settings")
@@ -66,7 +66,7 @@ struct LocalizedContentExamples: View {
 
 struct LocalizedTextExamples: View {
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        platformVStack(alignment: .leading, spacing: 12) {
             Text("Localized Text")
                 .font(.headline)
             
@@ -83,11 +83,11 @@ struct LocalizedTextExamples: View {
 
 struct LocalizedNumberExamples: View {
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        platformVStack(alignment: .leading, spacing: 12) {
             Text("Localized Numbers & Currency")
                 .font(.headline)
             
-            VStack(alignment: .leading, spacing: 8) {
+            platformVStack(alignment: .leading, spacing: 8) {
                 platformPresentLocalizedNumber_L1(number: 1234.56)
                 platformPresentLocalizedCurrency_L1(amount: 99.99)
                 platformPresentLocalizedPercentage_L1(value: 0.75)
@@ -104,11 +104,11 @@ struct LocalizedDateExamples: View {
     let now = Date()
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        platformVStack(alignment: .leading, spacing: 12) {
             Text("Localized Dates & Time")
                 .font(.headline)
             
-            VStack(alignment: .leading, spacing: 8) {
+            platformVStack(alignment: .leading, spacing: 8) {
                 platformPresentLocalizedDate_L1(date: now)
                 platformPresentLocalizedTime_L1(date: now)
             }
@@ -121,14 +121,14 @@ struct LocalizedDateExamples: View {
 
 struct RTLContainerExamples: View {
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        platformVStack(alignment: .leading, spacing: 12) {
             Text("RTL Containers")
                 .font(.headline)
             
-            VStack(alignment: .leading, spacing: 8) {
-                platformRTLContainer_L1 {
-                    Text("RTL Container")
-                }
+            platformVStack(alignment: .leading, spacing: 8) {
+                platformRTLContainer_L1(
+                    content: Text("RTL Container")
+                )
                 
                 platformRTLHStack_L1 {
                     Text("Item 1")
@@ -156,11 +156,11 @@ struct LocalizedFormFieldExamples: View {
     @Binding var text: String
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        platformVStack(alignment: .leading, spacing: 12) {
             Text("Localized Form Fields")
                 .font(.headline)
             
-            VStack(alignment: .leading, spacing: 8) {
+            platformVStack(alignment: .leading, spacing: 8) {
                 platformLocalizedTextField_L1(
                     title: "Name",
                     text: $text

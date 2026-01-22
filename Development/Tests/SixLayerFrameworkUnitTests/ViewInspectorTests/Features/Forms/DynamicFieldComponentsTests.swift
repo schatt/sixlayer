@@ -79,7 +79,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             }
         }
         #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // ViewInspector not available on this platform - this is expected, not a failure
         #endif
 
         // Should generate accessibility identifier
@@ -92,8 +92,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         )
  #expect(hasAccessibilityID, "Should generate accessibility identifier ")
         #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-        // The modifier IS present in the code, but ViewInspector can't detect it on macOS
+        // ViewInspector not available on this platform - this is expected, not a failure
         #endif
 
         // Should support multiple selections in formState
@@ -148,7 +147,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             }
         }
         #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // ViewInspector not available on this platform - this is expected, not a failure
         #endif
 
         // Should generate accessibility identifier
@@ -161,8 +160,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         )
  #expect(hasAccessibilityID, "Should generate accessibility identifier ")
         #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-        // The modifier IS present in the code, but ViewInspector can't detect it on macOS
+        // ViewInspector not available on this platform - this is expected, not a failure
         #endif
 
         // Should support single selection
@@ -216,7 +214,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             }
         }
         #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // ViewInspector not available on this platform - this is expected, not a failure
         #endif
 
         // Should generate accessibility identifier
@@ -229,8 +227,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         )
  #expect(hasAccessibilityID, "Should generate accessibility identifier ")
         #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-        // The modifier IS present in the code, but ViewInspector can't detect it on macOS
+        // ViewInspector not available on this platform - this is expected, not a failure
         #endif
     }
 
@@ -272,11 +269,11 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             #if canImport(ViewInspector)
             Issue.record("DynamicRichTextField interface not found")
             #else
-            #expect(Bool(true), "DynamicRichTextField created (ViewInspector not available on macOS)")
+            #expect(Bool(true), "DynamicRichTextField created")
             #endif
         }
         #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // ViewInspector not available on this platform - this is expected, not a failure
         #endif
 
         // Should generate accessibility identifier
@@ -289,8 +286,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         )
  #expect(hasAccessibilityID, "Should generate accessibility identifier ")
         #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-        // The modifier IS present in the code, but ViewInspector can't detect it on macOS
+        // ViewInspector not available on this platform - this is expected, not a failure
         #endif
     }
 
@@ -329,11 +325,11 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             #if canImport(ViewInspector)
             Issue.record("DynamicFileField interface not found")
             #else
-            #expect(Bool(true), "DynamicFileField created (ViewInspector not available on macOS)")
+            #expect(Bool(true), "DynamicFileField created")
             #endif
         }
         #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // ViewInspector not available on this platform - this is expected, not a failure
         #endif
 
         // Should generate accessibility identifier
@@ -346,8 +342,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         )
  #expect(hasAccessibilityID, "Should generate accessibility identifier ")
         #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-        // The modifier IS present in the code, but ViewInspector can't detect it on macOS
+        // ViewInspector not available on this platform - this is expected, not a failure
         #endif
     }
 
@@ -386,11 +381,11 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             #if canImport(ViewInspector)
             Issue.record("DynamicImageField interface not found")
             #else
-            #expect(Bool(true), "DynamicImageField created (ViewInspector not available on macOS)")
+            #expect(Bool(true), "DynamicImageField created")
             #endif
         }
         #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // ViewInspector not available on this platform - this is expected, not a failure
         #endif
 
         // Should generate accessibility identifier
@@ -403,8 +398,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         )
  #expect(hasAccessibilityID, "Should generate accessibility identifier ")
         #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-        // The modifier IS present in the code, but ViewInspector can't detect it on macOS
+        // ViewInspector not available on this platform - this is expected, not a failure
         #endif
     }
 
@@ -443,11 +437,11 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             #if canImport(ViewInspector)
             Issue.record("DynamicArrayField interface not found")
             #else
-            #expect(Bool(true), "DynamicArrayField created (ViewInspector not available on macOS)")
+            #expect(Bool(true), "DynamicArrayField created")
             #endif
         }
         #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // ViewInspector not available on this platform - this is expected, not a failure
         #endif
 
         // Should generate accessibility identifier
@@ -460,8 +454,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         )
  #expect(hasAccessibilityID, "Should generate accessibility identifier ")
         #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-        // The modifier IS present in the code, but ViewInspector can't detect it on macOS
+        // ViewInspector not available on this platform - this is expected, not a failure
         #endif
     }
 
@@ -500,11 +493,11 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             #if canImport(ViewInspector)
             Issue.record("DynamicDataField interface not found")
             #else
-            #expect(Bool(true), "DynamicDataField created (ViewInspector not available on macOS)")
+            #expect(Bool(true), "DynamicDataField created")
             #endif
         }
         #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // ViewInspector not available on this platform - this is expected, not a failure
         #endif
 
         // Should generate accessibility identifier
@@ -517,8 +510,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         )
  #expect(hasAccessibilityID, "Should generate accessibility identifier ")
         #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-        // The modifier IS present in the code, but ViewInspector can't detect it on macOS
+        // ViewInspector not available on this platform - this is expected, not a failure
         #endif
     }
 
@@ -559,8 +551,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             #if canImport(ViewInspector)
             Issue.record("DynamicAutocompleteField interface not found")
             #else
-            // ViewInspector not available on macOS - test passes by verifying view creation
-            #expect(Bool(true), "DynamicAutocompleteField created (ViewInspector not available on macOS)")
+            #expect(Bool(true), "DynamicAutocompleteField created")
             #endif
         }
 
@@ -574,8 +565,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         )
  #expect(hasAccessibilityID, "Should generate accessibility identifier ")
         #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-        // The modifier IS present in the code, but ViewInspector can't detect it on macOS
+        // ViewInspector not available on this platform - this is expected, not a failure
         #endif
     }
 
@@ -624,7 +614,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             }
         }
         #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // ViewInspector not available on this platform - this is expected, not a failure
         #endif
 
         // Should generate accessibility identifier
@@ -637,8 +627,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         )
  #expect(hasAccessibilityID, "Should generate accessibility identifier ")
         #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-        // The modifier IS present in the code, but ViewInspector can't detect it on macOS
+        // ViewInspector not available on this platform - this is expected, not a failure
         #endif
     }
 
@@ -678,7 +667,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             #if canImport(ViewInspector)
             Issue.record("DynamicCustomField interface not found")
             #else
-            #expect(Bool(true), "DynamicCustomField created (ViewInspector not available on macOS)")
+            #expect(Bool(true), "DynamicCustomField created")
             #endif
         }
 
@@ -692,8 +681,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         )
  #expect(hasAccessibilityID, "Should generate accessibility identifier ")
         #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-        // The modifier IS present in the code, but ViewInspector can't detect it on macOS
+        // ViewInspector not available on this platform - this is expected, not a failure
         #endif
     }
 
@@ -733,7 +721,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             #if canImport(ViewInspector)
             Issue.record("DynamicColorField interface not found")
             #else
-            #expect(Bool(true), "DynamicColorField created (ViewInspector not available on macOS)")
+            #expect(Bool(true), "DynamicColorField created")
             #endif
         }
 
@@ -747,8 +735,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         )
  #expect(hasAccessibilityID, "Should generate accessibility identifier ")
         #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-        // The modifier IS present in the code, but ViewInspector can't detect it on macOS
+        // ViewInspector not available on this platform - this is expected, not a failure
         #endif
     }
 
@@ -788,7 +775,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             #if canImport(ViewInspector)
             Issue.record("DynamicTextAreaField interface not found")
             #else
-            #expect(Bool(true), "DynamicTextAreaField created (ViewInspector not available on macOS)")
+            #expect(Bool(true), "DynamicTextAreaField created")
             #endif
         }
 
@@ -802,8 +789,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         )
  #expect(hasAccessibilityID, "Should generate accessibility identifier ")
         #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-        // The modifier IS present in the code, but ViewInspector can't detect it on macOS
+        // ViewInspector not available on this platform - this is expected, not a failure
         #endif
 
         // Should support multi-line text in formState
@@ -851,7 +837,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             }
         }
         #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // ViewInspector not available on this platform - this is expected, not a failure
         #endif
     }
 
@@ -921,7 +907,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             }
         }
         #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // ViewInspector not available on this platform - this is expected, not a failure
         #endif
     }
 
@@ -957,7 +943,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             }
         }
         #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // ViewInspector not available on this platform - this is expected, not a failure
         #endif
     }
 
@@ -994,7 +980,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             }
         }
         #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // ViewInspector not available on this platform - this is expected, not a failure
         #endif
     }
 
@@ -1055,7 +1041,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         )
         #expect(hasAccessibilityID, "Should have accessibility identifier")
         #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // ViewInspector not available on this platform - this is expected, not a failure
         #endif
     }
 
@@ -1092,7 +1078,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             }
         }
         #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // ViewInspector not available on this platform - this is expected, not a failure
         #endif
     }
 
@@ -1130,7 +1116,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             }
         }
         #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // ViewInspector not available on this platform - this is expected, not a failure
         #endif
     }
 
@@ -1166,7 +1152,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             }
         }
         #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // ViewInspector not available on this platform - this is expected, not a failure
         #endif
     }
 
@@ -1202,7 +1188,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             }
         }
         #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // ViewInspector not available on this platform - this is expected, not a failure
         #endif
     }
 
@@ -1459,7 +1445,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             }
         }
         #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // ViewInspector not available on this platform - this is expected, not a failure
         #endif
     }
 
@@ -1495,7 +1481,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             }
         }
         #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // ViewInspector not available on this platform - this is expected, not a failure
         #endif
     }
 
@@ -1680,11 +1666,11 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             #if canImport(ViewInspector)
             Issue.record("DynamicStepperField interface not found")
             #else
-            #expect(Bool(true), "DynamicStepperField created (ViewInspector not available on macOS)")
+            #expect(Bool(true), "DynamicStepperField created")
             #endif
         }
         #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // ViewInspector not available on this platform - this is expected, not a failure
         #endif
 
         // Should generate accessibility identifier
@@ -1697,8 +1683,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         )
         #expect(hasAccessibilityID, "Should generate accessibility identifier")
         #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-        // The modifier IS present in the code, but ViewInspector can't detect it on macOS
+        // ViewInspector not available on this platform - this is expected, not a failure
         #endif
     }
 
@@ -1850,7 +1835,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             }
         }
         #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // ViewInspector not available on this platform - this is expected, not a failure
         #endif
     }
 
@@ -2314,11 +2299,11 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             #if canImport(ViewInspector)
             Issue.record("DynamicGaugeField interface not found")
             #else
-            #expect(Bool(true), "DynamicGaugeField created (ViewInspector not available on macOS)")
+            #expect(Bool(true), "DynamicGaugeField created")
             #endif
         }
         #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // ViewInspector not available on this platform - this is expected, not a failure
         #endif
 
         // Should generate accessibility identifier
@@ -2331,8 +2316,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         )
         #expect(hasAccessibilityID, "Should generate accessibility identifier ")
         #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-        // The modifier IS present in the code, but ViewInspector can't detect it on macOS
+        // ViewInspector not available on this platform - this is expected, not a failure
         #endif
 
         // Should read value from form state

@@ -1,6 +1,6 @@
 //
 //  SecurityExamplesView.swift
-//  SixLayerFrameworkRealUITests
+//  SixLayerFrameworkUITests
 //
 //  Examples of Layer 1 security functions
 //  Issue #166
@@ -9,11 +9,11 @@
 import SwiftUI
 import SixLayerFramework
 
-struct SecurityExamplesView: View {
+struct Layer1SecurityExamples: View {
     @State private var secureText = ""
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 24) {
+        platformVStack(alignment: .leading, spacing: 24) {
             ExampleSection(title: "Secure Content") {
                 SecureContentExamples()
             }
@@ -32,12 +32,12 @@ struct SecurityExamplesView: View {
 
 struct SecureContentExamples: View {
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        platformVStack(alignment: .leading, spacing: 12) {
             Text("Secure Content Presentation")
                 .font(.headline)
             
             platformPresentSecureContent_L1(
-                content: VStack {
+                content: platformVStack {
                     Text("Secure Content")
                         .font(.headline)
                     Text("This content is protected")
@@ -56,7 +56,7 @@ struct SecureTextFieldExamples: View {
     @Binding var text: String
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        platformVStack(alignment: .leading, spacing: 12) {
             Text("Secure Text Field")
                 .font(.headline)
             
@@ -74,7 +74,7 @@ struct SecureTextFieldExamples: View {
 
 struct PrivacyIndicatorExamples: View {
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        platformVStack(alignment: .leading, spacing: 12) {
             Text("Privacy Indicator")
                 .font(.headline)
             

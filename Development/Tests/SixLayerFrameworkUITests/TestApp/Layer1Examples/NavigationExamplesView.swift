@@ -1,6 +1,6 @@
 //
 //  NavigationExamplesView.swift
-//  SixLayerFrameworkRealUITests
+//  SixLayerFrameworkUITests
 //
 //  Examples of Layer 1 navigation functions
 //  Issue #166
@@ -9,9 +9,9 @@
 import SwiftUI
 import SixLayerFramework
 
-struct NavigationExamplesView: View {
+struct Layer1NavigationExamples: View {
     var body: some View {
-        VStack(alignment: .leading, spacing: 24) {
+        platformVStack(alignment: .leading, spacing: 24) {
             ExampleSection(title: "Navigation Stack") {
                 NavigationStackExamples()
             }
@@ -25,19 +25,26 @@ struct NavigationExamplesView: View {
 }
 
 struct NavigationStackExamples: View {
+    let hints = PresentationHints(
+        dataType: .generic,
+        presentationPreference: .navigation,
+        complexity: .simple
+    )
+    
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        platformVStack(alignment: .leading, spacing: 12) {
             Text("Basic Navigation Stack")
                 .font(.headline)
             
-            platformPresentNavigationStack_L1 {
-                VStack {
+            platformPresentNavigationStack_L1(
+                content: platformVStack {
                     Text("Navigation Content")
                         .font(.headline)
                     Text("This is a navigation stack example")
                 }
-                .padding()
-            }
+                .padding(),
+                hints: hints
+            )
             .frame(height: 200)
         }
         .padding()
@@ -48,19 +55,19 @@ struct NavigationStackExamples: View {
 
 struct AppNavigationExamples: View {
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        platformVStack(alignment: .leading, spacing: 12) {
             Text("App Navigation (Sidebar + Detail)")
                 .font(.headline)
             
             platformPresentAppNavigation_L1(
-                sidebarContent: {
+                sidebar: {
                     List {
                         Text("Sidebar Item 1")
                         Text("Sidebar Item 2")
                         Text("Sidebar Item 3")
                     }
                 },
-                detailContent: {
+                detail: {
                     Text("Detail Content")
                         .padding()
                 }

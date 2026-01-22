@@ -1157,3 +1157,68 @@ public extension View {
         self.modifier(AutomaticAccessibilityIdentifierModifier())
     }
 }
+
+// MARK: - Basic Automatic Compliance (Issue #172)
+
+/// Basic automatic compliance modifier - applies only identifier and label, no HIG features
+/// TDD RED PHASE: Stub implementation for testing
+public struct BasicAutomaticComplianceModifier: ViewModifier {
+    let identifierName: String?
+    let identifierElementType: String?
+    let identifierLabel: String?
+    let accessibilityLabel: String?
+    
+    nonisolated public init(
+        identifierName: String? = nil,
+        identifierElementType: String? = nil,
+        identifierLabel: String? = nil,
+        accessibilityLabel: String? = nil
+    ) {
+        self.identifierName = identifierName
+        self.identifierElementType = identifierElementType
+        self.identifierLabel = identifierLabel
+        self.accessibilityLabel = accessibilityLabel
+    }
+    
+    public func body(content: Content) -> some View {
+        // TDD RED PHASE: Stub - just returns content unchanged
+        // Tests will compile but fail assertions
+        content
+    }
+}
+
+public extension View {
+    /// Apply basic automatic compliance (identifier + label only, no HIG features)
+    /// TDD RED PHASE: Stub implementation for testing
+    /// Issue #172: Lightweight Compliance for Basic SwiftUI Types
+    nonisolated func basicAutomaticCompliance(
+        identifierName: String? = nil,
+        identifierElementType: String? = nil,
+        identifierLabel: String? = nil,
+        accessibilityLabel: String? = nil
+    ) -> some View {
+        self.modifier(BasicAutomaticComplianceModifier(
+            identifierName: identifierName,
+            identifierElementType: identifierElementType,
+            identifierLabel: identifierLabel,
+            accessibilityLabel: accessibilityLabel
+        ))
+    }
+}
+
+public extension Text {
+    /// Apply basic automatic compliance to Text (returns Text for chaining)
+    /// TDD RED PHASE: Stub implementation for testing
+    /// Issue #172: Lightweight Compliance for Basic SwiftUI Types
+    nonisolated func basicAutomaticCompliance(
+        identifierName: String? = nil,
+        identifierElementType: String? = nil,
+        identifierLabel: String? = nil,
+        accessibilityLabel: String? = nil
+    ) -> Text {
+        // TDD RED PHASE: Stub - just returns self unchanged
+        // Tests will compile but fail assertions
+        // This preserves Text type for chaining
+        self
+    }
+}

@@ -1,6 +1,6 @@
 //
 //  OCRExamplesView.swift
-//  SixLayerFrameworkRealUITests
+//  SixLayerFrameworkUITests
 //
 //  Examples of Layer 1 OCR functions
 //  Issue #166
@@ -9,11 +9,11 @@
 import SwiftUI
 import SixLayerFramework
 
-struct OCRExamplesView: View {
+struct Layer1OCRExamples: View {
     @State private var ocrResult: OCRDisambiguationResult?
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 24) {
+        platformVStack(alignment: .leading, spacing: 24) {
             ExampleSection(title: "OCR with Disambiguation") {
                 OCRDisambiguationExamples(result: $ocrResult)
             }
@@ -27,7 +27,7 @@ struct OCRDisambiguationExamples: View {
     @State private var testImage: PlatformImage?
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        platformVStack(alignment: .leading, spacing: 12) {
             Text("OCR with Disambiguation")
                 .font(.headline)
             

@@ -67,7 +67,6 @@ open class DynamicFormViewTests: BaseTestClass {
         )
 
         // Should render proper form structure
-        // Using wrapper - when ViewInspector works on macOS, no changes needed here
         #if canImport(ViewInspector)
         do {
             try withInspectedViewThrowing(view) { inspected in
@@ -88,7 +87,6 @@ open class DynamicFormViewTests: BaseTestClass {
             Issue.record("View inspection failed on this platform: \(error)")
         }
         #else
-        // ViewInspector not available on macOS - test passes by verifying view creation
         // View is created successfully (non-optional parameter), so test passes
         #endif
     }
@@ -117,7 +115,6 @@ open class DynamicFormViewTests: BaseTestClass {
         let view = DynamicFormSectionView(section: section, formState: formState)
 
         // Should render proper section structure
-        // Using wrapper - when ViewInspector works on macOS, no changes needed here
         #if canImport(ViewInspector)
         do {
             try withInspectedViewThrowing(view) { inspected in
@@ -271,7 +268,6 @@ open class DynamicFormViewTests: BaseTestClass {
         let view = DynamicFormFieldView(field: field, formState: formState)
 
         // Should render proper field structure
-        // Using wrapper - when ViewInspector works on macOS, no changes needed here
         #if canImport(ViewInspector)
         do {
             try withInspectedViewThrowing(view) { inspected in

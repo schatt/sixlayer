@@ -1,6 +1,6 @@
 //
 //  PhotoExamplesView.swift
-//  SixLayerFrameworkRealUITests
+//  SixLayerFrameworkUITests
 //
 //  Examples of Layer 1 photo functions
 //  Issue #166
@@ -9,12 +9,12 @@
 import SwiftUI
 import SixLayerFramework
 
-struct PhotoExamplesView: View {
+struct Layer1PhotoExamples: View {
     @State private var capturedImage: PlatformImage?
     @State private var selectedImage: PlatformImage?
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 24) {
+        platformVStack(alignment: .leading, spacing: 24) {
             ExampleSection(title: "Photo Capture") {
                 PhotoCaptureExamples(capturedImage: $capturedImage)
             }
@@ -34,14 +34,23 @@ struct PhotoExamplesView: View {
 struct PhotoCaptureExamples: View {
     @Binding var capturedImage: PlatformImage?
     
+    private var photoContext: PhotoContext {
+        PhotoContext(
+            screenSize: CGSize(width: 375, height: 667),
+            availableSpace: CGSize(width: 375, height: 667),
+            userPreferences: PhotoPreferences(),
+            deviceCapabilities: PhotoDeviceCapabilities()
+        )
+    }
+    
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        platformVStack(alignment: .leading, spacing: 12) {
             Text("Photo Capture")
                 .font(.headline)
             
             platformPhotoCapture_L1(
                 purpose: .general,
-                context: PhotoContext(),
+                context: photoContext,
                 onImageCaptured: { image in
                     capturedImage = image
                 }
@@ -57,14 +66,23 @@ struct PhotoCaptureExamples: View {
 struct PhotoSelectionExamples: View {
     @Binding var selectedImage: PlatformImage?
     
+    private var photoContext: PhotoContext {
+        PhotoContext(
+            screenSize: CGSize(width: 375, height: 667),
+            availableSpace: CGSize(width: 375, height: 667),
+            userPreferences: PhotoPreferences(),
+            deviceCapabilities: PhotoDeviceCapabilities()
+        )
+    }
+    
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        platformVStack(alignment: .leading, spacing: 12) {
             Text("Photo Selection")
                 .font(.headline)
             
             platformPhotoSelection_L1(
                 purpose: .general,
-                context: PhotoContext(),
+                context: photoContext,
                 onImageSelected: { image in
                     selectedImage = image
                 }
@@ -80,14 +98,23 @@ struct PhotoSelectionExamples: View {
 struct PhotoDisplayExamples: View {
     let image: PlatformImage?
     
+    private var photoContext: PhotoContext {
+        PhotoContext(
+            screenSize: CGSize(width: 375, height: 667),
+            availableSpace: CGSize(width: 375, height: 667),
+            userPreferences: PhotoPreferences(),
+            deviceCapabilities: PhotoDeviceCapabilities()
+        )
+    }
+    
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        platformVStack(alignment: .leading, spacing: 12) {
             Text("Photo Display")
                 .font(.headline)
             
             platformPhotoDisplay_L1(
                 purpose: .general,
-                context: PhotoContext(),
+                context: photoContext,
                 image: image
             )
             .frame(height: 200)

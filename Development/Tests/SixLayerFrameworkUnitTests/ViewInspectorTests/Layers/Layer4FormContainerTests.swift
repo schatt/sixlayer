@@ -44,7 +44,6 @@ open class Layer4FormContainerTests: BaseTestClass {
         // view is a non-optional View, so it exists if we reach here
         
         // 2. Does that structure contain what it should?
-        // Using wrapper - when ViewInspector works on macOS, no changes needed here
         #if canImport(ViewInspector)
         let inspectionResult = withInspectedView(view) { inspected in
             // The form container should contain the test content
@@ -59,19 +58,17 @@ open class Layer4FormContainerTests: BaseTestClass {
             #if canImport(ViewInspector)
             Issue.record("View inspection failed on this platform")
             #else
-            // ViewInspector not available on macOS - test passes by verifying view creation
-            #expect(Bool(true), "Form container created (ViewInspector not available on macOS)")
+            #expect(Bool(true), "Form container created")
             #endif
         }
         #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // ViewInspector not available on this platform - this is expected, not a failure
         #endif
         
         // 3. Platform-specific implementation verification (REQUIRED)
         #if canImport(ViewInspector)
         #if os(iOS)
         // iOS: Should contain Form structure with iOS-specific background color
-        // Using wrapper - when ViewInspector works on macOS, no changes needed here
         withInspectedView(view) { inspected in
             let forms = inspected.findAll(ViewType.Form.self)
             if !forms.isEmpty {
@@ -83,7 +80,6 @@ open class Layer4FormContainerTests: BaseTestClass {
         }
         #elseif os(macOS)
         // macOS: Should contain Form structure with macOS-specific background color
-        // Using wrapper - when ViewInspector works on macOS, no changes needed here
         withInspectedView(view) { inspected in
             let forms = inspected.findAll(ViewType.Form.self)
             if !forms.isEmpty {
@@ -95,7 +91,7 @@ open class Layer4FormContainerTests: BaseTestClass {
         }
         #endif
         #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // ViewInspector not available on this platform - this is expected, not a failure
         #endif
     }
     
@@ -118,7 +114,6 @@ open class Layer4FormContainerTests: BaseTestClass {
         // view is a non-optional View, so it exists if we reach here
         
         // 2. Does that structure contain what it should?
-        // Using wrapper - when ViewInspector works on macOS, no changes needed here
         #if canImport(ViewInspector)
         withInspectedView(view) { inspected in
             let viewText = inspected.findAll(ViewType.Text.self)
@@ -128,13 +123,12 @@ open class Layer4FormContainerTests: BaseTestClass {
             TestPatterns.verifyViewContainsText(view, expectedText: "Test Form Content", testName: "Standard container content")
         }
         #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // ViewInspector not available on this platform - this is expected, not a failure
         #endif
         
         // 3. Platform-specific implementation verification (REQUIRED)
         #if os(iOS)
         // iOS: Should contain VStack structure with iOS-specific background color
-        // Using wrapper - when ViewInspector works on macOS, no changes needed here
         if let vStack = try? AnyView(view).inspect() {
             // VStack found - this is correct for iOS
             // Note: iOS uses Color(.secondarySystemBackground) for standard container backgrounds
@@ -143,7 +137,6 @@ open class Layer4FormContainerTests: BaseTestClass {
         }
         #elseif os(macOS)
         // macOS: Should contain VStack structure with macOS-specific background color
-        // Using wrapper - when ViewInspector works on macOS, no changes needed here
         if let vStack = try? AnyView(view).inspect() {
             // VStack found - this is correct for macOS
             // Note: macOS uses Color(.controlBackgroundColor) for standard container backgrounds
@@ -151,8 +144,7 @@ open class Layer4FormContainerTests: BaseTestClass {
             #if canImport(ViewInspector)
             Issue.record("macOS standard container should contain VStack structure")
             #else
-            // ViewInspector not available on macOS - test passes by verifying view creation
-            #expect(Bool(true), "Form container created (ViewInspector not available on macOS)")
+            #expect(Bool(true), "Form container created")
             #endif
         }
         #endif
@@ -177,7 +169,6 @@ open class Layer4FormContainerTests: BaseTestClass {
         // 3. Platform-specific implementation verification (REQUIRED)
         #if os(iOS)
         // iOS: Should contain ScrollView structure with iOS-specific background color
-        // Using wrapper - when ViewInspector works on macOS, no changes needed here
         if let scrollView = try? AnyView(view).inspect() {
             // ScrollView found - this is correct for iOS
             // Note: iOS uses Color(.systemGroupedBackground) for scroll view backgrounds
@@ -185,13 +176,11 @@ open class Layer4FormContainerTests: BaseTestClass {
             #if canImport(ViewInspector)
             Issue.record("iOS scroll view container should contain ScrollView structure")
             #else
-            // ViewInspector not available on macOS - test passes by verifying view creation
-            #expect(Bool(true), "Form container created (ViewInspector not available on macOS)")
+            #expect(Bool(true), "Form container created")
             #endif
         }
         #elseif os(macOS)
         // macOS: Should contain ScrollView structure with macOS-specific background color
-        // Using wrapper - when ViewInspector works on macOS, no changes needed here
         if let scrollView = try? AnyView(view).inspect() {
             // ScrollView found - this is correct for macOS
             // Note: macOS uses Color(.controlBackgroundColor) for scroll view backgrounds
@@ -199,8 +188,7 @@ open class Layer4FormContainerTests: BaseTestClass {
             #if canImport(ViewInspector)
             Issue.record("macOS scroll view container should contain ScrollView structure")
             #else
-            // ViewInspector not available on macOS - test passes by verifying view creation
-            #expect(Bool(true), "Form container created (ViewInspector not available on macOS)")
+            #expect(Bool(true), "Form container created")
             #endif
         }
         #endif

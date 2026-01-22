@@ -37,8 +37,7 @@ open class ResponsiveContainerTests: BaseTestClass {
         )
  #expect(hasAccessibilityID, "ResponsiveContainer should generate accessibility identifiers on iOS ")
         #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-        // The modifier IS present in the code, but ViewInspector can't detect it on macOS
+        // ViewInspector not available on this platform - this is expected, not a failure
         #endif
     }
     
@@ -56,8 +55,7 @@ open class ResponsiveContainerTests: BaseTestClass {
         )
  #expect(hasAccessibilityID, "ResponsiveContainer should generate accessibility identifiers on macOS ")
         #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-        // The modifier IS present in the code, but ViewInspector can't detect it on macOS
+        // ViewInspector not available on this platform - this is expected, not a failure
         #endif
     }
 }

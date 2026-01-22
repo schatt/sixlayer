@@ -78,8 +78,7 @@ open class ViewGenerationVerificationTests: BaseTestClass {
         self.verifyViewContainsText(detailView, expectedText: "Item 1", testName: "Detail view title")
         self.verifyViewContainsText(detailView, expectedText: "Subtitle 1", testName: "Detail view subtitle")
         #else
-        // ViewInspector not available on macOS - test passes by verifying compilation
-        #expect(Bool(true), "View inspection not available on this platform (likely macOS) - test passes by verifying compilation")
+        #expect(Bool(true), "View inspection not available on this platform - test passes by verifying compilation")
         #endif
     }
     
@@ -116,7 +115,6 @@ open class ViewGenerationVerificationTests: BaseTestClass {
         // Compact and detailed views creation succeeded (non-optional results)
         
         // 2. Contains what it needs to contain - Both views should contain our data
-        // Using wrapper - when ViewInspector works on macOS, no changes needed here
         #if canImport(ViewInspector)
         guard let compactInspected = try? AnyView(compactView).inspect() else {
             Issue.record("Compact view inspection not available")
@@ -141,8 +139,7 @@ open class ViewGenerationVerificationTests: BaseTestClass {
         #endif
 
         #if !(canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED))
-        // ViewInspector not available on macOS - test passes by verifying compilation
-        #expect(Bool(true), "View inspection not available on this platform (likely macOS) - test passes by verifying compilation")
+        #expect(Bool(true), "View inspection not available on this platform - test passes by verifying compilation")
         #endif
     }
 
@@ -173,8 +170,7 @@ open class ViewGenerationVerificationTests: BaseTestClass {
         TestPatterns.verifyViewContainsText(detailView, expectedText: "Custom:", testName: "Detail view custom field")
         TestPatterns.verifyViewContainsText(detailView, expectedText: "=", testName: "Detail view custom field separator")
         #else
-        // ViewInspector not available on macOS - test passes by verifying compilation
-        #expect(Bool(true), "View inspection not available on this platform (likely macOS) - test passes by verifying compilation")
+        #expect(Bool(true), "View inspection not available on this platform - test passes by verifying compilation")
         #endif
     }
     
@@ -213,8 +209,7 @@ open class ViewGenerationVerificationTests: BaseTestClass {
             Issue.record("Failed to inspect detail view with nil values")
         }
         #else
-        // ViewInspector not available on macOS - test passes by verifying compilation
-        #expect(Bool(true), "View inspection not available on this platform (likely macOS) - test passes by verifying compilation")
+        #expect(Bool(true), "View inspection not available on this platform - test passes by verifying compilation")
         #endif
     }
     

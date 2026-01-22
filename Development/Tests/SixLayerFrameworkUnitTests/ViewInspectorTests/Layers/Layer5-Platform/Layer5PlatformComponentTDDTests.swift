@@ -54,9 +54,8 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
                 )
  #expect(hasAccessibilityID, "Should generate accessibility identifier")
         #else
-                // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-                // The modifier IS present in the code, but ViewInspector can't detect it on macOS
-                #endif
+                // ViewInspector not available on this platform - this is expected, not a failure
+                    #endif
                 } catch {
                     Issue.record("PlatformRecognitionLayer5 inspection error: \(error)")
                 }
@@ -64,7 +63,7 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
                 Issue.record("PlatformRecognitionLayer5 inspection failed - AI recognition features not implemented")
             }
             #else
-            // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+            // ViewInspector not available on this platform - this is expected, not a failure
             #endif
         }
     }
@@ -98,9 +97,8 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
                 )
  #expect(hasAccessibilityID, "Should generate accessibility identifier")
         #else
-                // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-                // The modifier IS present in the code, but ViewInspector can't detect it on macOS
-                #endif
+                // ViewInspector not available on this platform - this is expected, not a failure
+                    #endif
             } catch {
                 Issue.record("PlatformPrivacyLayer5 inspection error: \(error)")
             }
@@ -108,7 +106,7 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
             Issue.record("PlatformPrivacyLayer5 inspection failed - privacy management not implemented")
         }
         #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // ViewInspector not available on this platform - this is expected, not a failure
         #endif
     }
 
@@ -141,8 +139,7 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
             )
  #expect(hasAccessibilityID, "Should generate accessibility identifier")
         #else
-            // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-            // The modifier IS present in the code, but ViewInspector can't detect it on macOS
+            // ViewInspector not available on this platform - this is expected, not a failure
             #endif
             } catch {
                 Issue.record("PlatformPerformanceLayer6 inspection error: \(error)")
@@ -151,7 +148,7 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
             Issue.record("PlatformPerformanceLayer6 inspection failed - performance monitoring not implemented")
         }
         #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // ViewInspector not available on this platform - this is expected, not a failure
         #endif
     }
 
@@ -184,9 +181,8 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
                 )
  #expect(hasAccessibilityID, "Should generate accessibility identifier")
         #else
-                // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-                // The modifier IS present in the code, but ViewInspector can't detect it on macOS
-                #endif
+                // ViewInspector not available on this platform - this is expected, not a failure
+                    #endif
             } catch {
                 Issue.record("PlatformProfilingLayer5 inspection error: \(error)")
             }
@@ -194,7 +190,7 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
             Issue.record("PlatformProfilingLayer5 inspection failed - user profiling not implemented")
         }
         #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // ViewInspector not available on this platform - this is expected, not a failure
         #endif
     }
 
@@ -227,9 +223,8 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
                 )
  #expect(hasAccessibilityID, "Should generate accessibility identifier")
         #else
-                // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-                // The modifier IS present in the code, but ViewInspector can't detect it on macOS
-                #endif
+                // ViewInspector not available on this platform - this is expected, not a failure
+                    #endif
             } catch {
                 Issue.record("PlatformSafetyLayer5 inspection error: \(error)")
             }
@@ -237,7 +232,7 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
             Issue.record("PlatformSafetyLayer5 inspection failed - safety features not implemented")
         }
         #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // ViewInspector not available on this platform - this is expected, not a failure
         #endif
     }
 
@@ -270,9 +265,8 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
                 )
  #expect(hasAccessibilityID, "Should generate accessibility identifier")
         #else
-                // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-                // The modifier IS present in the code, but ViewInspector can't detect it on macOS
-                #endif
+                // ViewInspector not available on this platform - this is expected, not a failure
+                    #endif
             } catch {
                 Issue.record("PlatformRoutingLayer5 inspection error: \(error)")
             }
@@ -280,7 +274,7 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
             Issue.record("PlatformRoutingLayer5 inspection failed - navigation routing not implemented")
         }
         #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // ViewInspector not available on this platform - this is expected, not a failure
         #endif
     }
 
@@ -313,9 +307,8 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
                 )
  #expect(hasAccessibilityID, "Should generate accessibility identifier")
         #else
-                // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-                // The modifier IS present in the code, but ViewInspector can't detect it on macOS
-                #endif
+                // ViewInspector not available on this platform - this is expected, not a failure
+                    #endif
             } catch {
                 Issue.record("PlatformOrchestrationLayer5 inspection error: \(error)")
             }
@@ -323,7 +316,7 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
             Issue.record("PlatformOrchestrationLayer5 inspection failed - service orchestration not implemented")
         }
         #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // ViewInspector not available on this platform - this is expected, not a failure
         #endif
     }
 
@@ -356,9 +349,8 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
                 )
  #expect(hasAccessibilityID, "Should generate accessibility identifier")
         #else
-                // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-                // The modifier IS present in the code, but ViewInspector can't detect it on macOS
-                #endif
+                // ViewInspector not available on this platform - this is expected, not a failure
+                    #endif
             } catch {
                 Issue.record("PlatformOptimizationLayer5 inspection error: \(error)")
             }
@@ -366,7 +358,7 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
             Issue.record("PlatformOptimizationLayer5 inspection failed - optimization features not implemented")
         }
         #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // ViewInspector not available on this platform - this is expected, not a failure
         #endif
     }
 
@@ -401,10 +393,9 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
  #expect(hasAccessibilityID, "Should generate accessibility identifier")
         #else
 
-                // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+                // ViewInspector not available on this platform - this is expected, not a failure
 
-                // The modifier IS present in the code, but ViewInspector can't detect it on macOS
-
+    
                 #endif
 
             } catch {
@@ -414,7 +405,7 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
             Issue.record("PlatformOrganizationLayer5 inspection failed - data organization not implemented")
         }
         #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // ViewInspector not available on this platform - this is expected, not a failure
         #endif
     }
 
@@ -449,10 +440,9 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
  #expect(hasAccessibilityID, "Should generate accessibility identifier")
         #else
 
-                // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+                // ViewInspector not available on this platform - this is expected, not a failure
 
-                // The modifier IS present in the code, but ViewInspector can't detect it on macOS
-
+    
                 #endif
 
             } catch {
@@ -462,7 +452,7 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
             Issue.record("PlatformNotificationLayer5 inspection failed - notification management not implemented")
         }
         #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // ViewInspector not available on this platform - this is expected, not a failure
         #endif
     }
 
@@ -497,10 +487,9 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
  #expect(hasAccessibilityID, "Should generate accessibility identifier")
         #else
 
-                // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+                // ViewInspector not available on this platform - this is expected, not a failure
 
-                // The modifier IS present in the code, but ViewInspector can't detect it on macOS
-
+    
                 #endif
 
             } catch {
@@ -510,7 +499,7 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
             Issue.record("PlatformInterpretationLayer5 inspection failed - context interpretation not implemented")
         }
         #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // ViewInspector not available on this platform - this is expected, not a failure
         #endif
     }
 }

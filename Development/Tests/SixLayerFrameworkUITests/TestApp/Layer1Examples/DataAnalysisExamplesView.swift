@@ -1,6 +1,6 @@
 //
 //  DataAnalysisExamplesView.swift
-//  SixLayerFrameworkRealUITests
+//  SixLayerFrameworkUITests
 //
 //  Examples of Layer 1 data analysis functions
 //  Issue #166
@@ -10,9 +10,9 @@ import SwiftUI
 import SixLayerFramework
 import TabularData
 
-struct DataAnalysisExamplesView: View {
+struct Layer1DataAnalysisExamples: View {
     var body: some View {
-        VStack(alignment: .leading, spacing: 24) {
+        platformVStack(alignment: .leading, spacing: 24) {
             ExampleSection(title: "DataFrame Analysis") {
                 DataFrameAnalysisExamples()
             }
@@ -32,7 +32,7 @@ struct DataFrameAnalysisExamples: View {
     }
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        platformVStack(alignment: .leading, spacing: 12) {
             Text("DataFrame Analysis")
                 .font(.headline)
             

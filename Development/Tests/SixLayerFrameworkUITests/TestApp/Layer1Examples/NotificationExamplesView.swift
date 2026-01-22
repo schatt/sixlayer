@@ -1,6 +1,6 @@
 //
 //  NotificationExamplesView.swift
-//  SixLayerFrameworkRealUITests
+//  SixLayerFrameworkUITests
 //
 //  Examples of Layer 1 notification functions
 //  Issue #166
@@ -9,9 +9,9 @@
 import SwiftUI
 import SixLayerFramework
 
-struct NotificationExamplesView: View {
+struct Layer1NotificationExamples: View {
     var body: some View {
-        VStack(alignment: .leading, spacing: 24) {
+        platformVStack(alignment: .leading, spacing: 24) {
             ExampleSection(title: "Alert Presentation") {
                 AlertExamples()
             }
@@ -28,7 +28,7 @@ struct AlertExamples: View {
     @State private var showAlert = false
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        platformVStack(alignment: .leading, spacing: 12) {
             Text("Alert Presentation")
                 .font(.headline)
             
@@ -56,11 +56,11 @@ struct AlertExamples: View {
 
 struct NotificationFunctionExamples: View {
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        platformVStack(alignment: .leading, spacing: 12) {
             Text("Notification Functions")
                 .font(.headline)
             
-            VStack(alignment: .leading, spacing: 8) {
+            platformVStack(alignment: .leading, spacing: 8) {
                 Text("• platformRequestNotificationPermission_L1")
                     .font(.caption)
                 Text("• platformShowNotification_L1")

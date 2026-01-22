@@ -38,7 +38,6 @@ open class FrameworkComponentGlobalConfigTests: BaseTestClass {
                 .automaticCompliance()
             
             // Try to inspect for accessibility identifier
-            // Using wrapper - when ViewInspector works on macOS, no changes needed here
             #if canImport(ViewInspector)
             if let inspectedView = try? AnyView(view).inspect(),
                let button = try? inspectedView.button(),
@@ -81,7 +80,6 @@ open class FrameworkComponentGlobalConfigTests: BaseTestClass {
                 .named("TestButton")
             
             // Try to inspect for accessibility identifier
-            // Using wrapper - when ViewInspector works on macOS, no changes needed here
             #if canImport(ViewInspector)
             if let inspectedView = try? AnyView(view).inspect(),
                let button = try? inspectedView.button(),
@@ -95,7 +93,7 @@ open class FrameworkComponentGlobalConfigTests: BaseTestClass {
                 Issue.record("Failed to inspect framework component")
             }
             #else
-            // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+            // ViewInspector not available on this platform - this is expected, not a failure
             #endif
             
             cleanupTestEnvironment()

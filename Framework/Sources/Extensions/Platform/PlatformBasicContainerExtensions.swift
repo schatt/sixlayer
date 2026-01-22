@@ -192,6 +192,7 @@ public extension View {
         ScrollView(axes, showsIndicators: showsIndicators) {
             content()
         }
+        .automaticCompliance()
     }
     
     /// Platform-specific GroupBox container with consistent styling
@@ -219,6 +220,7 @@ public extension View {
         GroupBox(title) {
             content()
         }
+        .automaticCompliance()
     }
     
     /// Platform-specific Section container with consistent styling
@@ -249,6 +251,7 @@ public extension View {
         Section(header: header, footer: footer) {
             content()
         }
+        .automaticCompliance()
     }
     
     /// Platform-specific Section container with header only
@@ -274,6 +277,7 @@ public extension View {
         Section(header: header) {
             content()
         }
+        .automaticCompliance()
     }
     
     /// Platform-specific Section container with string header
@@ -299,6 +303,7 @@ public extension View {
         Section(header) {
             content()
         }
+        .automaticCompliance()
     }
     
     /// Platform-specific List container with consistent styling
@@ -324,6 +329,7 @@ public extension View {
         List {
             content()
         }
+        .automaticCompliance()
     }
 }
 
@@ -724,7 +730,7 @@ public func platformToggle(
     EmptyView().platformToggle(isOn: isOn) {
         Text(title)
     }
-    .automaticCompliance()
+    .automaticCompliance(accessibilityLabel: title)  // Issue #157: Auto-extract from title
 }
 
 /// Drop-in replacement for SwiftUI's Toggle with explicit accessibility label
@@ -861,6 +867,89 @@ public func platformTextEditor(
     EmptyView().platformTextEditor(text: text, prompt: prompt)
         .accessibilityLabel(label)
         .automaticCompliance()
+}
+
+// MARK: - Platform Text Functions
+
+/// Drop-in replacement for SwiftUI's Text
+/// Returns Text, allowing chaining of Text-specific modifiers like .bold(), .font(), etc.
+/// Note: Text doesn't require @MainActor for creation
+/// 
+/// **Limitation**: SwiftUI's type system prevents applying `.automaticCompliance()` 
+/// (which returns `some View`) while preserving the `Text` type needed for chaining.
+/// Apply `.automaticCompliance()` after Text modifiers if you need full compliance:
+/// ```swift
+/// platformText("Hello").bold().automaticCompliance()
+/// ```
+///
+/// - Parameter content: The text content
+/// - Returns: A Text view (true drop-in replacement)
+///
+/// ## Usage Example
+/// ```swift
+/// platformText("Hello, World!")
+/// platformText("Hello").bold()
+/// platformText("Hello").bold().automaticCompliance()  // For full compliance
+/// ```
+public func platformText(_ content: String) -> Text {
+    Text(content)
+}
+
+/// Drop-in replacement for SwiftUI's Text with explicit accessibility label
+/// Returns Text, allowing chaining of Text-specific modifiers like .bold(), .font(), etc.
+/// Note: Text doesn't require @MainActor for creation
+/// Note: Apply .automaticCompliance() manually if you need SixLayer accessibility benefits
+///
+/// - Parameters:
+///   - content: The text content to display
+///   - accessibilityLabel: The accessibility label for VoiceOver (applied via .accessibilityLabel())
+/// - Returns: A Text view with accessibility label applied (true drop-in replacement)
+///
+/// ## Usage Example
+/// ```swift
+/// platformText("42", accessibilityLabel: "Answer: forty-two")
+/// platformText("42", accessibilityLabel: "Answer").bold()
+/// ```
+public func platformText(
+    _ content: String,
+    accessibilityLabel: String
+) -> Text {
+    Text(content)
+        .accessibilityLabel(accessibilityLabel)
+}
+
+/// platformText with LocalizedStringKey
+/// Returns Text, allowing chaining of Text-specific modifiers like .bold(), .font(), etc.
+/// Note: Text doesn't require @MainActor for creation
+/// Note: Apply .automaticCompliance() manually if you need SixLayer accessibility benefits
+///
+/// - Parameter content: The localized text content
+/// - Returns: A Text view with accessibility label applied (true drop-in replacement)
+///
+/// ## Usage Example
+/// ```swift
+/// platformText("greeting")
+/// platformText("greeting").bold()
+/// ```
+public func platformText(_ content: LocalizedStringKey) -> Text {
+    Text(content)
+        .accessibilityLabel(content)
+}
+
+/// platformText with Text view
+/// Returns the Text view as-is, allowing further chaining
+/// Note: Text doesn't require @MainActor for creation
+/// Note: Apply .automaticCompliance() manually if you need SixLayer accessibility benefits
+///
+/// - Parameter content: The Text view
+/// - Returns: The Text view unchanged (true drop-in replacement)
+///
+/// ## Usage Example
+/// ```swift
+/// platformText(Text("Hello").bold())
+/// ```
+public func platformText(_ content: Text) -> Text {
+    content
 }
 
 /// Drop-in replacement for SwiftUI's Button with simple label (auto-extracts accessibility label)

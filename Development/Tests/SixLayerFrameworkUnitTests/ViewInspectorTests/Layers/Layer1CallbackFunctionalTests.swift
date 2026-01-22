@@ -93,7 +93,6 @@ open class Layer1CallbackFunctionalTests: BaseTestClass {
         )
         
         // Use ViewInspector to simulate tap
-        // Using wrapper - when ViewInspector works on macOS, no changes needed here
         #if canImport(ViewInspector)
         do {
             try withInspectedViewThrowing(view) { inspector in
@@ -110,7 +109,7 @@ open class Layer1CallbackFunctionalTests: BaseTestClass {
         }
         #else
         // ViewInspector not available on macOS - test passes by verifying callback signature
-        #expect(Bool(true), "Layer 1 callback verified by compilation (ViewInspector not available on macOS)")
+        #expect(Bool(true), "Layer 1 callback verified by compilation")
         #endif
     }
     

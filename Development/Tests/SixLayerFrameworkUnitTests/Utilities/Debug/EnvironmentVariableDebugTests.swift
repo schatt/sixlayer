@@ -72,7 +72,6 @@ open class EnvironmentVariableDebugTests: BaseTestClass {
                 .automaticCompliance()
             
             // 3. Try to inspect for accessibility identifier
-            // Using wrapper - when ViewInspector works on macOS, no changes needed here
             #if canImport(ViewInspector)
             if let inspectedView = try? AnyView(view).inspect(),
                let button = inspectedView.findAll(ViewInspector.ViewType.Button.self).first,
@@ -89,7 +88,7 @@ open class EnvironmentVariableDebugTests: BaseTestClass {
                 Issue.record("Could not inspect view")
             }
             #else
-            // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+            // ViewInspector not available on this platform - this is expected, not a failure
             #endif
         }
     }

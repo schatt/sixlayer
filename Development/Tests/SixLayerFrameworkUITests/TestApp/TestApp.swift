@@ -24,24 +24,36 @@ struct TestApp: App {
     }
 }
 
-/// Content view that can be configured to display different test views
+/// Content view with navigation-based test view selection
 /// Optimized for fast XCUITest execution with early accessibility setup
 struct TestAppContentView: View {
-    @State private var testViewType: TestViewType = .text
-    @State private var platformPickerSelection: String = "Option1"
+    @State private var selectedTest: TestView? = nil
+    @State private var showLayer1Examples = false
+    @State private var selectedCategory: TestCategory? = nil
     @State private var isConfigured = false
     
-    enum TestViewType: String, CaseIterable {
-        case text = "Text"
-        case button = "Button"
-        case control = "Control"
+    enum TestView: String, CaseIterable, Identifiable {
+        case control = "Control Test"
+        case text = "Text Test"
+        case button = "Button Test"
+        case platformPicker = "Platform Picker Test"
+        case basicCompliance = "Basic Compliance Test"
+        
+        var id: String { rawValue }
     }
     
-    // Options for platformPicker test (Issue #163)
-    private let platformPickerOptions = ["Option1", "Option2", "Option3"]
-    
-    // Pre-configure environment values to avoid onAppear delays
-    private let globalAccessibilityEnabled = true
+    enum TestCategory: String, CaseIterable, Identifiable {
+        case dataPresentation = "Data Presentation"
+        case navigation = "Navigation"
+        case photos = "Photos"
+        case security = "Security"
+        case ocr = "OCR"
+        case notifications = "Notifications"
+        case internationalization = "Internationalization"
+        case dataAnalysis = "Data Analysis"
+        
+        var id: String { rawValue }
+    }
     
     // Configure accessibility identifier generation in initializer
     // This ensures namespace is set before view body is evaluated
@@ -64,66 +76,118 @@ struct TestAppContentView: View {
     }
     
     var body: some View {
-        // Simplified view hierarchy for faster rendering and accessibility tree building
-        VStack {
-            // Control test: Standard SwiftUI button with direct accessibilityIdentifier
-            // This verifies XCUITest can find identifiers before testing our modifier
-            // Place it first so it's always visible
-            Button("Control Button") {
-                // Action
+        NavigationStack {
+            if let selected = selectedTest {
+                // Navigate to specific test view
+                testView(for: selected)
+            } else {
+                // Launch page with buttons
+                launchPage
             }
-            .accessibilityIdentifier("control-test-button")
-            .padding()
-            
-            Picker("Test View", selection: $testViewType) {
-                ForEach(TestViewType.allCases, id: \.self) { type in
-                    Text(type.rawValue)
-                        .tag(type)
-                        .accessibilityIdentifier(type.rawValue)
-                        .accessibility(label: Text(type.rawValue)) // Also add label (needed for VoiceOver and may help XCUITest)
-                }
-            }
-            .pickerStyle(.segmented)
-            .accessibilityIdentifier("test-view-picker")
-            .accessibility(label: Text("Test View")) // Also add label at picker level (as per Stack Overflow answer)
-            .padding()
-            
-            // TDD Test: platformPicker with automatic accessibility (Issue #163)
-            // This verifies that platformPicker automatically applies accessibility
-            // identifiers to both the picker and its segments
-            platformPicker(
-                label: "Platform Picker Test",
-                selection: $platformPickerSelection,
-                options: platformPickerOptions,
-                pickerName: "PlatformPickerTest",
-                style: SegmentedPickerStyle()
-            )
-            .padding()
-            
-            // Use Group to avoid deep nesting while maintaining view switching
-            Group {
-                switch testViewType {
-                case .text:
-                    Text("Test Content")
-                        .automaticCompliance()
-                case .button:
-                    Button("Test Button") {
-                        // Action
-                    }
-                    .automaticCompliance(identifierElementType: "Button")
-                case .control:
-                    // Control view (already shown above, but include here for picker consistency)
-                    Text("Control view selected")
-                }
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .onAppear {
             // Mark as configured (config was already set in init())
-            // This is just for tracking - actual config happens in init() to ensure
-            // namespace is set before view body evaluation
             guard !isConfigured else { return }
             isConfigured = true
+        }
+    }
+    
+    // MARK: - Launch Page
+    
+    private var launchPage: some View {
+        List {
+            Section("Accessibility Tests") {
+                ForEach(TestView.allCases) { testView in
+                    Button(testView.rawValue) {
+                        selectedTest = testView
+                    }
+                    .accessibilityIdentifier("test-view-\(testView.id)")
+                }
+            }
+            
+            Section("Layer 1 Examples (Issue #166)") {
+                Button(showLayer1Examples ? "Hide Layer 1 Examples" : "Show Layer 1 Examples") {
+                    showLayer1Examples.toggle()
+                }
+                .accessibilityIdentifier("layer1-examples-toggle")
+                
+                if showLayer1Examples {
+                    layer1ExamplesView
+                }
+            }
+        }
+        .navigationTitle("UI Test Views")
+    }
+    
+    // MARK: - Test Views
+    
+    @ViewBuilder
+    private func testView(for test: TestView) -> some View {
+        switch test {
+        case .control:
+            ControlTestView()
+        case .text:
+            TextTestView()
+        case .button:
+            ButtonTestView()
+        case .platformPicker:
+            PlatformPickerTestView()
+        case .basicCompliance:
+            BasicComplianceTestView()
+        }
+    }
+    
+    // MARK: - Layer 1 Examples View
+    
+    @ViewBuilder
+    private var layer1ExamplesView: some View {
+        platformScrollViewContainer {
+            platformVStack(alignment: .leading, spacing: 24) {
+                Text("Layer 1 Examples (Issue #166)")
+                    .font(.largeTitle)
+                    .automaticCompliance()
+                    .padding(.bottom)
+                
+                // Category picker
+                platformPicker(
+                    label: "Category",
+                    selection: $selectedCategory,
+                    options: [nil] + TestCategory.allCases,
+                    optionTag: { $0 },
+                    optionLabel: { $0?.rawValue ?? "Select Category" },
+                    pickerName: "CategoryPicker",
+                    style: MenuPickerStyle()
+                )
+                .padding(.bottom)
+                
+                // Show selected category examples
+                if let category = selectedCategory {
+                    switch category {
+                    case .dataPresentation:
+                        Layer1DataPresentationExamples()
+                    case .navigation:
+                        Layer1NavigationExamples()
+                    case .photos:
+                        Layer1PhotoExamples()
+                    case .security:
+                        Layer1SecurityExamples()
+                    case .ocr:
+                        Layer1OCRExamples()
+                    case .notifications:
+                        Layer1NotificationExamples()
+                    case .internationalization:
+                        Layer1InternationalizationExamples()
+                    case .dataAnalysis:
+                        Layer1DataAnalysisExamples()
+                    }
+                } else {
+                    Text("Select a Layer 1 category to view examples")
+                        .foregroundColor(.secondary)
+                        .automaticCompliance()
+                        .padding()
+                }
+            }
+            .padding()
         }
     }
 }

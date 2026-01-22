@@ -149,10 +149,14 @@ final class AccessibilityUITests: XCTestCase {
     @MainActor
     func testControlDirectAccessibilityIdentifier() throws {
         // Given: App is launched and ready (from setUp)
-        // The control button is always visible (not behind picker)
-        // First verify the button exists by label (confirms app is working)
+        // Navigate to Control Test view
+        let controlTestButton = app.buttons["test-view-Control Test"]
+        XCTAssertTrue(controlTestButton.waitForExistenceFast(timeout: 3.0), "Control Test button should exist")
+        controlTestButton.tap()
+        
+        // Wait for the control button to appear
         let controlButtonByLabel = app.buttons["Control Button"]
-        let exists = controlButtonByLabel.existsImmediately || controlButtonByLabel.waitForExistenceFast(timeout: 3.0)
+        let exists = controlButtonByLabel.waitForExistenceFast(timeout: 3.0)
         guard exists else {
             XCTFail("Control button should exist by label - app may not be fully loaded")
             return
@@ -178,13 +182,16 @@ final class AccessibilityUITests: XCTestCase {
     /// Test that Text view generates accessibility identifier that XCUITest can find
     @MainActor
     func testTextAccessibilityIdentifierGenerated() throws {
-        // App is already ready from setUp, so we can query elements immediately
-        // Text is the default, so we can verify it's selected by checking the view exists
+        // Given: App is launched and ready (from setUp)
+        // Navigate to Text Test view
+        let textTestButton = app.buttons["test-view-Text Test"]
+        XCTAssertTrue(textTestButton.waitForExistenceFast(timeout: 3.0), "Text Test button should exist")
+        textTestButton.tap()
         
-        // Wait for the view to appear (should be immediate since Text is default)
+        // Wait for the view to appear
         let textView = app.staticTexts["Test Content"]
-        XCTAssertTrue(textView.existsImmediately || textView.waitForExistenceFast(timeout: 0.5), 
-                     "Text view should exist immediately")
+        XCTAssertTrue(textView.waitForExistenceFast(timeout: 3.0), 
+                     "Text view should exist after navigation")
         
         // Find element by accessibility identifier using helper (tries multiple query types)
         let expectedIdentifier = "SixLayer.main.ui.element.View"
@@ -216,14 +223,15 @@ final class AccessibilityUITests: XCTestCase {
     /// Test that Button view generates accessibility identifier that XCUITest can find
     @MainActor
     func testButtonAccessibilityIdentifierGenerated() throws {
-        // App is already ready from setUp, so we can query elements immediately
-        // Select Button view type using helper (handles iOS/macOS differences)
-        XCTAssertTrue(app.selectPickerSegment("Button"), 
-                     "Button segment should exist and be selectable")
+        // Given: App is launched and ready (from setUp)
+        // Navigate to Button Test view
+        let buttonTestButton = app.buttons["test-view-Button Test"]
+        XCTAssertTrue(buttonTestButton.waitForExistenceFast(timeout: 3.0), "Button Test button should exist")
+        buttonTestButton.tap()
         
-        // Wait for the button to appear (may need slightly longer timeout after interaction)
+        // Wait for the button to appear
         let testButton = app.buttons["Test Button"]
-        XCTAssertTrue(testButton.waitForExistenceFast(timeout: 1.0), "Button should exist after selection")
+        XCTAssertTrue(testButton.waitForExistenceFast(timeout: 3.0), "Button should exist after navigation")
         
         // Find element by accessibility identifier using helper (tries multiple query types)
         let expectedIdentifier = "SixLayer.main.ui.element.Button"
@@ -258,7 +266,11 @@ final class AccessibilityUITests: XCTestCase {
     @MainActor
     func testPlatformPickerAccessibilityIdentifiers() throws {
         // Given: App is launched and ready (from setUp)
-        // The platformPicker is always visible in TestApp
+        // Navigate to Platform Picker Test view
+        let pickerTestButton = app.buttons["test-view-Platform Picker Test"]
+        XCTAssertTrue(pickerTestButton.waitForExistenceFast(timeout: 3.0), "Platform Picker Test button should exist")
+        pickerTestButton.tap()
+        
         // Note: On macOS, segmented pickers may not expose a container element,
         // so we test by verifying segments have identifiers instead of the picker container
         

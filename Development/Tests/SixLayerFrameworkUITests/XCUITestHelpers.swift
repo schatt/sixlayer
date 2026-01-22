@@ -28,22 +28,19 @@ extension XCUIApplication {
     /// - Parameter timeout: Maximum time to wait (default: 5.0 seconds)
     /// - Returns: true if app is ready, false if timeout
     func waitForReady(timeout: TimeInterval = 5.0) -> Bool {
-        // Wait for a known element that indicates app is ready
-        // "Test Content" appears when the initial view is rendered
-        // Try multiple query strategies since text might be exposed differently
-        if staticTexts["Test Content"].waitForExistence(timeout: timeout) {
+        // Wait for the launch page navigation title or a test view button
+        // This indicates the app has finished initial render
+        // Try multiple query strategies since elements might be exposed differently
+        if staticTexts["UI Test Views"].waitForExistence(timeout: timeout) {
             return true
         }
-        // Try finding by any element type (text might be exposed as .other or .any)
-        if let element = findElement(byIdentifier: "Test Content",
-                                    primaryType: .staticText,
-                                    secondaryTypes: [.any, .other],
-                                    timeout: timeout) {
-            return element.exists
+        // Try finding a test view button (indicates launch page is ready)
+        if buttons["test-view-Control Test"].waitForExistence(timeout: timeout) {
+            return true
         }
-        // Try finding by label in any element
-        let anyElement = descendants(matching: .any)["Test Content"]
-        return anyElement.waitForExistence(timeout: timeout)
+        // Try finding by navigation title in any element
+        let navTitle = descendants(matching: .any)["UI Test Views"]
+        return navTitle.waitForExistence(timeout: timeout)
     }
     
     /// Launch app with performance optimizations

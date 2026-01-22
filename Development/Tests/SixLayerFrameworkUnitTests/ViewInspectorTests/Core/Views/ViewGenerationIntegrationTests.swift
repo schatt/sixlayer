@@ -746,7 +746,6 @@ open class ViewGenerationIntegrationTests: BaseTestClass {
         #expect(Bool(true), "Should be able to create view with mock config for \(config.name)")  // testView is non-optional
         
         // 2. Does that structure contain what it should?
-        // Using wrapper - when ViewInspector works on macOS, no changes needed here
         if let _ = try? AnyView(testView).inspect() {
             // Test that the configuration produces the expected view behavior
             testViewGenerationBehavior(mockConfig, configName: config.name)
@@ -755,7 +754,7 @@ open class ViewGenerationIntegrationTests: BaseTestClass {
             Issue.record("Failed to inspect view structure for \(config.name)")
             #else
             // ViewInspector not available on macOS - test passes by verifying view creation
-            #expect(Bool(true), "View created for \(config.name) (ViewInspector not available on macOS)")
+            #expect(Bool(true), "View created for \(config.name)")
             #endif
         }
     }
@@ -1038,7 +1037,6 @@ open class ViewGenerationIntegrationTests: BaseTestClass {
         #expect(Bool(true), "Hover platform should generate a valid view")  // hoverView is non-optional
         
         // 2. Does that structure contain what it should?
-        // Using wrapper - when ViewInspector works on macOS, no changes needed here
         let touchInspectionResult = try? AnyView(touchView).inspect()
         if touchInspectionResult != nil {
             // Touch view should be inspectable
@@ -1058,7 +1056,6 @@ open class ViewGenerationIntegrationTests: BaseTestClass {
             #expect(touchConfig.minTouchTarget == 44, "Touch platform should have proper touch target size")
             #expect(hoverConfig.minTouchTarget == 0, "Hover platform should not have touch target size")
             
-        // TODO: ViewInspector Detection Issue - ViewInspector cannot reliably inspect views on macOS.
         // The views are created successfully, but ViewInspector has limitations. This is a ViewInspector limitation.
         if touchInspectionResult == nil || hoverInspectionResult == nil {
             // ViewInspector limitation - views are created successfully but cannot be inspected
@@ -1090,7 +1087,6 @@ open class ViewGenerationIntegrationTests: BaseTestClass {
         #expect(Bool(true), "macOS platform should generate a valid view")  // macOSView is non-optional
         
         // 2. Does that structure contain what it should?
-        // Using wrapper - when ViewInspector works on macOS, no changes needed here
         let iOSInspectionResult = try? AnyView(iOSView).inspect()
         if iOSInspectionResult != nil {
             // iOS view should be valid SwiftUI view
@@ -1117,7 +1113,6 @@ open class ViewGenerationIntegrationTests: BaseTestClass {
             #expect(iOSConfig.supportsHover != macOSConfig.supportsHover, 
                             "Different platforms should have different hover support")
             
-        // TODO: ViewInspector Detection Issue - ViewInspector cannot reliably inspect views on macOS.
         // The views are created successfully, but ViewInspector has limitations. This is a ViewInspector limitation.
         if iOSInspectionResult == nil || macOSInspectionResult == nil {
             // ViewInspector limitation - views are created successfully but cannot be inspected

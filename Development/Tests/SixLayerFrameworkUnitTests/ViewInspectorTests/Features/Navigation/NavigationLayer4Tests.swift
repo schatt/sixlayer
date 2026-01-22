@@ -57,7 +57,7 @@ open class NavigationLayer4Tests: BaseTestClass {
         #if os(iOS)
         #if canImport(ViewInspector)
         // iOS: Should contain NavigationLink structure
-        if let inspected = try? AnyView(link).inspect(), let _ = try? inspected.sixLayerFind(ViewType.NavigationLink.self) {
+        if let inspected = try? AnyView(link).inspect(), let _ = try? inspected.find(ViewType.NavigationLink.self) {
             // NavigationLink found - this is correct for iOS
         } else {
             Issue.record("iOS navigation link should contain NavigationLink structure")

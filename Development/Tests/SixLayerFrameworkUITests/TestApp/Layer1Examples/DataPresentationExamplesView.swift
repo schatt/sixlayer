@@ -1,6 +1,6 @@
 //
 //  DataPresentationExamplesView.swift
-//  SixLayerFrameworkRealUITests
+//  SixLayerFrameworkUITests
 //
 //  Examples of Layer 1 data presentation functions
 //  Issue #166
@@ -9,10 +9,10 @@
 import SwiftUI
 import SixLayerFramework
 
-/// Examples of data presentation functions
-struct DataPresentationExamplesView: View {
+/// Examples of data presentation functions for Layer 1
+struct Layer1DataPresentationExamples: View {
     var body: some View {
-        VStack(alignment: .leading, spacing: 24) {
+        platformVStack(alignment: .leading, spacing: 24) {
             // Item Collection Examples
             ExampleSection(title: "Item Collection") {
                 ItemCollectionExamples()
@@ -84,7 +84,7 @@ struct ItemCollectionExamples: View {
     )
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        platformVStack(alignment: .leading, spacing: 12) {
             Text("Basic Item Collection")
                 .font(.headline)
             
@@ -107,9 +107,9 @@ struct ItemCollectionExamples: View {
 
 struct NumericDataExamples: View {
     let numericData = [
-        GenericNumericData(label: "Sales", value: 1250.50, unit: "USD"),
-        GenericNumericData(label: "Orders", value: 42, unit: "count"),
-        GenericNumericData(label: "Growth", value: 15.5, unit: "%")
+        GenericNumericData(value: 1250.50, label: "Sales", unit: "USD"),
+        GenericNumericData(value: 42, label: "Orders", unit: "count"),
+        GenericNumericData(value: 15.5, label: "Growth", unit: "%")
     ]
     
     let hints = PresentationHints(
@@ -119,7 +119,7 @@ struct NumericDataExamples: View {
     )
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        platformVStack(alignment: .leading, spacing: 12) {
             Text("Numeric Data Presentation")
                 .font(.headline)
             
@@ -147,17 +147,16 @@ struct FormDataExamples: View {
     )
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        platformVStack(alignment: .leading, spacing: 12) {
             Text("Form Data Presentation")
                 .font(.headline)
             
             platformPresentFormData_L1(
                 field: DynamicFormField(
                     id: "test_field",
+                    contentType: .text,
                     label: "Test Field",
-                    fieldType: .text,
-                    value: .string(textValue),
-                    validationRules: []
+                    defaultValue: textValue
                 ),
                 hints: hints
             )
@@ -174,11 +173,9 @@ struct FormDataExamples: View {
 struct MediaDataExamples: View {
     let mediaItems: [GenericMediaItem] = [
         GenericMediaItem(
-            id: UUID(),
             title: "Sample Image",
             url: nil,
-            thumbnailURL: nil,
-            mediaType: .image
+            thumbnail: nil
         )
     ]
     
@@ -189,7 +186,7 @@ struct MediaDataExamples: View {
     )
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        platformVStack(alignment: .leading, spacing: 12) {
             Text("Media Data Presentation")
                 .font(.headline)
             
@@ -210,23 +207,23 @@ struct MediaDataExamples: View {
 struct HierarchicalDataExamples: View {
     let hierarchicalItems: [GenericHierarchicalItem] = [
         GenericHierarchicalItem(
-            id: UUID(),
             title: "Parent Item",
+            level: 0,
             children: [
-                GenericHierarchicalItem(id: UUID(), title: "Child 1", children: []),
-                GenericHierarchicalItem(id: UUID(), title: "Child 2", children: [])
+                GenericHierarchicalItem(title: "Child 1", level: 1, children: []),
+                GenericHierarchicalItem(title: "Child 2", level: 1, children: [])
             ]
         )
     ]
     
     let hints = PresentationHints(
         dataType: .hierarchical,
-        presentationPreference: .tree,
+        presentationPreference: .list,
         complexity: .simple
     )
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        platformVStack(alignment: .leading, spacing: 12) {
             Text("Hierarchical Data Presentation")
                 .font(.headline)
             
@@ -247,27 +244,25 @@ struct HierarchicalDataExamples: View {
 struct TemporalDataExamples: View {
     let temporalItems: [GenericTemporalItem] = [
         GenericTemporalItem(
-            id: UUID(),
             title: "Event 1",
-            timestamp: Date(),
+            date: Date(),
             duration: 3600
         ),
         GenericTemporalItem(
-            id: UUID(),
             title: "Event 2",
-            timestamp: Date().addingTimeInterval(86400),
+            date: Date().addingTimeInterval(86400),
             duration: 1800
         )
     ]
     
     let hints = PresentationHints(
         dataType: .temporal,
-        presentationPreference: .timeline,
+        presentationPreference: .list,
         complexity: .simple
     )
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        platformVStack(alignment: .leading, spacing: 12) {
             Text("Temporal Data Presentation")
                 .font(.headline)
             
@@ -293,7 +288,7 @@ struct ContentExamples: View {
     )
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        platformVStack(alignment: .leading, spacing: 12) {
             Text("Content Presentation")
                 .font(.headline)
             
@@ -335,20 +330,20 @@ struct SettingsExamples: View {
         SettingsSectionData(
             title: "General",
             items: [
-                SettingsItemData(id: "setting1", title: "Setting 1", type: .toggle, value: true),
-                SettingsItemData(id: "setting2", title: "Setting 2", type: .text, value: "Value")
+                SettingsItemData(key: "setting1", title: "Setting 1", type: .toggle, value: true),
+                SettingsItemData(key: "setting2", title: "Setting 2", type: .text, value: "Value")
             ]
         )
     ]
     
     let hints = PresentationHints(
-        dataType: .settings,
+        dataType: .generic,
         presentationPreference: .list,
         complexity: .simple
     )
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        platformVStack(alignment: .leading, spacing: 12) {
             Text("Settings Presentation")
                 .font(.headline)
             
@@ -374,13 +369,13 @@ struct ResponsiveCardExamples: View {
     )
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        platformVStack(alignment: .leading, spacing: 12) {
             Text("Responsive Card")
                 .font(.headline)
             
             platformResponsiveCard_L1(
                 content: {
-                    VStack(alignment: .leading) {
+                    platformVStack(alignment: .leading) {
                         Text("Card Title")
                             .font(.headline)
                         Text("Card content goes here")
@@ -409,7 +404,7 @@ struct ExampleSection<Content: View>: View {
     }
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        platformVStack(alignment: .leading, spacing: 8) {
             Text(title)
                 .font(.title2)
                 .fontWeight(.bold)
