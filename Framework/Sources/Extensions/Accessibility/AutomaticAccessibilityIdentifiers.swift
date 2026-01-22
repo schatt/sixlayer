@@ -1201,7 +1201,8 @@ public struct BasicAutomaticComplianceModifier: ViewModifier {
         let shouldApply = capturedEnableAutoIDs && capturedGlobalAutomaticAccessibilityIdentifiers
         
         // Generate identifier if needed
-        let identifier: String? = shouldApply ? generateIdentifier(
+        // Call internal generateAccessibilityIdentifier directly (same as AutomaticComplianceModifier.generateIdentifier does)
+        let identifier: String? = shouldApply ? generateAccessibilityIdentifier(
             config: config,
             identifierName: identifierName,
             identifierElementType: identifierElementType,
