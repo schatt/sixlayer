@@ -38,9 +38,9 @@ open class BasicAutomaticComplianceTests: BaseTestClass {
     /// BUSINESS PURPOSE: .basicAutomaticCompliance() should apply accessibility identifier
     /// TESTING SCOPE: General View extension method
     /// METHODOLOGY: Create view with .basicAutomaticCompliance(), verify identifier is applied
-    @Test @MainActor func testBasicAutomaticCompliance_AppliesIdentifier() async {
+    @Test @MainActor func testBasicAutomaticCompliance_AppliesIdentifier() {
         initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             // Given: A simple view
             let view = Text("Test Content")
                 .basicAutomaticCompliance(identifierName: "testView")
@@ -82,9 +82,9 @@ open class BasicAutomaticComplianceTests: BaseTestClass {
     /// BUSINESS PURPOSE: .basicAutomaticCompliance() should apply accessibility label
     /// TESTING SCOPE: General View extension method
     /// METHODOLOGY: Create view with .basicAutomaticCompliance(), verify label is applied
-    @Test @MainActor func testBasicAutomaticCompliance_AppliesLabel() async {
+    @Test @MainActor func testBasicAutomaticCompliance_AppliesLabel() {
         initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             // Given: A simple view with accessibility label
             let view = Text("Test Content")
                 .basicAutomaticCompliance(accessibilityLabel: "Test label")
@@ -128,9 +128,9 @@ open class BasicAutomaticComplianceTests: BaseTestClass {
     /// BUSINESS PURPOSE: .basicAutomaticCompliance() should NOT apply HIG features
     /// TESTING SCOPE: General View extension method
     /// METHODOLOGY: Create view with .basicAutomaticCompliance(), verify HIG features are NOT applied
-    @Test @MainActor func testBasicAutomaticCompliance_DoesNotApplyHIGFeatures() async {
+    @Test @MainActor func testBasicAutomaticCompliance_DoesNotApplyHIGFeatures() {
         initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             // Given: A simple view
             let basicView = Text("Test")
                 .basicAutomaticCompliance()
@@ -148,9 +148,9 @@ open class BasicAutomaticComplianceTests: BaseTestClass {
     /// BUSINESS PURPOSE: .basicAutomaticCompliance() identifier generation should match .automaticCompliance()
     /// TESTING SCOPE: Identifier generation logic
     /// METHODOLOGY: Compare identifiers from basic and full compliance with same parameters
-    @Test @MainActor func testBasicAutomaticCompliance_IdentifierMatchesAutomaticCompliance() async {
+    @Test @MainActor func testBasicAutomaticCompliance_IdentifierMatchesAutomaticCompliance() {
         initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             // Given: Same parameters for both compliance types
             let basicView = Text("Test")
                 .basicAutomaticCompliance(identifierName: "testView", identifierElementType: "Text")
@@ -180,9 +180,9 @@ open class BasicAutomaticComplianceTests: BaseTestClass {
     /// BUSINESS PURPOSE: .basicAutomaticCompliance() label localization should match .automaticCompliance()
     /// TESTING SCOPE: Label localization logic
     /// METHODOLOGY: Compare labels from basic and full compliance with same parameters
-    @Test @MainActor func testBasicAutomaticCompliance_LabelMatchesAutomaticCompliance() async {
+    @Test @MainActor func testBasicAutomaticCompliance_LabelMatchesAutomaticCompliance() {
         initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             // Given: Same accessibility label for both compliance types
             let basicView = Text("Test")
                 .basicAutomaticCompliance(accessibilityLabel: "Test label")
@@ -214,9 +214,9 @@ open class BasicAutomaticComplianceTests: BaseTestClass {
     /// BUSINESS PURPOSE: .basicAutomaticCompliance() should respect config settings
     /// TESTING SCOPE: Config respect (enableAutoIDs, globalAutomaticAccessibilityIdentifiers)
     /// METHODOLOGY: Test with config disabled, verify identifier is not applied
-    @Test @MainActor func testBasicAutomaticCompliance_RespectsConfig() async {
+    @Test @MainActor func testBasicAutomaticCompliance_RespectsConfig() {
         initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             // Given: Config with auto IDs disabled
             guard let config = self.testConfig else {
                 Issue.record("testConfig is nil")
@@ -282,9 +282,9 @@ open class BasicAutomaticComplianceTests: BaseTestClass {
     /// BUSINESS PURPOSE: Test that label formatting works through ViewInspector
     /// TESTING SCOPE: Label formatting through SwiftUI views
     /// METHODOLOGY: Test label formatting by checking results from modifier via ViewInspector
-    @Test @MainActor func testLabelFormatting_ThroughViewInspector() async {
+    @Test @MainActor func testLabelFormatting_ThroughViewInspector() {
         initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             // Given: Views with different label formats
             let viewWithPeriod = Text("Test")
                 .basicAutomaticCompliance(accessibilityLabel: "Test label.")
@@ -329,9 +329,9 @@ open class BasicAutomaticComplianceTests: BaseTestClass {
     /// BUSINESS PURPOSE: Test that identifier sanitization works through ViewInspector
     /// TESTING SCOPE: Label sanitization through SwiftUI views
     /// METHODOLOGY: Test sanitization by checking identifier components via ViewInspector
-    @Test @MainActor func testIdentifierSanitization_ThroughViewInspector() async {
+    @Test @MainActor func testIdentifierSanitization_ThroughViewInspector() {
         initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             guard let config = self.testConfig else {
                 Issue.record("testConfig is nil")
                 return
@@ -388,9 +388,9 @@ open class BasicAutomaticComplianceTests: BaseTestClass {
     /// BUSINESS PURPOSE: Test that identifier sanitization removes special characters through ViewInspector
     /// TESTING SCOPE: Label sanitization removes special characters through SwiftUI views
     /// METHODOLOGY: Test sanitization with special characters via ViewInspector
-    @Test @MainActor func testIdentifierSanitization_SpecialCharacters_ThroughViewInspector() async {
+    @Test @MainActor func testIdentifierSanitization_SpecialCharacters_ThroughViewInspector() {
         initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             guard let config = self.testConfig else {
                 Issue.record("testConfig is nil")
                 return
@@ -450,9 +450,9 @@ open class BasicAutomaticComplianceTests: BaseTestClass {
     /// BUSINESS PURPOSE: Text.basicAutomaticCompliance() should return Text type
     /// TESTING SCOPE: Type preservation for Text
     /// METHODOLOGY: Verify return type is Text, not some View
-    @Test @MainActor func testTextBasicAutomaticCompliance_ReturnsTextType() async {
+    @Test @MainActor func testTextBasicAutomaticCompliance_ReturnsTextType() {
         initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             // Given: Text with basic compliance
             let text = Text("Hello")
                 .basicAutomaticCompliance()
@@ -468,9 +468,9 @@ open class BasicAutomaticComplianceTests: BaseTestClass {
     /// BUSINESS PURPOSE: Text.basicAutomaticCompliance() should apply identifier
     /// TESTING SCOPE: Text extension method
     /// METHODOLOGY: Create Text with .basicAutomaticCompliance(), verify identifier is applied
-    @Test @MainActor func testTextBasicAutomaticCompliance_AppliesIdentifier() async {
+    @Test @MainActor func testTextBasicAutomaticCompliance_AppliesIdentifier() {
         initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             // Given: Text with basic compliance
             let text = Text("Hello")
                 .basicAutomaticCompliance(identifierName: "helloText")
@@ -510,9 +510,9 @@ open class BasicAutomaticComplianceTests: BaseTestClass {
     /// BUSINESS PURPOSE: Text.basicAutomaticCompliance() should apply label
     /// TESTING SCOPE: Text extension method
     /// METHODOLOGY: Create Text with .basicAutomaticCompliance(), verify label is applied
-    @Test @MainActor func testTextBasicAutomaticCompliance_AppliesLabel() async {
+    @Test @MainActor func testTextBasicAutomaticCompliance_AppliesLabel() {
         initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             // Given: Text with basic compliance and label
             let text = Text("Hello")
                 .basicAutomaticCompliance(accessibilityLabel: "Hello text")
@@ -555,9 +555,9 @@ open class BasicAutomaticComplianceTests: BaseTestClass {
     /// BUSINESS PURPOSE: Text.basicAutomaticCompliance() should allow chaining with .bold()
     /// TESTING SCOPE: Type preservation for Text
     /// METHODOLOGY: Chain .bold() after .basicAutomaticCompliance(), verify it compiles and works
-    @Test @MainActor func testTextBasicAutomaticCompliance_AllowsBoldChaining() async {
+    @Test @MainActor func testTextBasicAutomaticCompliance_AllowsBoldChaining() {
         initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             // Given: Text with basic compliance
             let text = Text("Hello")
                 .basicAutomaticCompliance()
@@ -572,9 +572,9 @@ open class BasicAutomaticComplianceTests: BaseTestClass {
     /// BUSINESS PURPOSE: Text.basicAutomaticCompliance() should allow chaining with .italic()
     /// TESTING SCOPE: Type preservation for Text
     /// METHODOLOGY: Chain .italic() after .basicAutomaticCompliance(), verify it compiles and works
-    @Test @MainActor func testTextBasicAutomaticCompliance_AllowsItalicChaining() async {
+    @Test @MainActor func testTextBasicAutomaticCompliance_AllowsItalicChaining() {
         initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             // Given: Text with basic compliance
             let text = Text("Hello")
                 .basicAutomaticCompliance()
@@ -589,9 +589,9 @@ open class BasicAutomaticComplianceTests: BaseTestClass {
     /// BUSINESS PURPOSE: Text.basicAutomaticCompliance() should allow chaining with .font()
     /// TESTING SCOPE: Type preservation for Text
     /// METHODOLOGY: Chain .font() after .basicAutomaticCompliance(), verify it compiles and works
-    @Test @MainActor func testTextBasicAutomaticCompliance_AllowsFontChaining() async {
+    @Test @MainActor func testTextBasicAutomaticCompliance_AllowsFontChaining() {
         initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             // Given: Text with basic compliance
             let text = Text("Hello")
                 .basicAutomaticCompliance()
@@ -606,9 +606,9 @@ open class BasicAutomaticComplianceTests: BaseTestClass {
     /// BUSINESS PURPOSE: Text.basicAutomaticCompliance() should allow multiple chained modifiers
     /// TESTING SCOPE: Type preservation for Text
     /// METHODOLOGY: Chain multiple Text modifiers, verify it compiles and works
-    @Test @MainActor func testTextBasicAutomaticCompliance_AllowsMultipleChaining() async {
+    @Test @MainActor func testTextBasicAutomaticCompliance_AllowsMultipleChaining() {
         initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             // Given: Text with basic compliance and multiple chained modifiers
             let text = Text("Hello")
                 .basicAutomaticCompliance()
@@ -627,9 +627,9 @@ open class BasicAutomaticComplianceTests: BaseTestClass {
     /// BUSINESS PURPOSE: platformText().basicAutomaticCompliance() should work
     /// TESTING SCOPE: Integration with platformText
     /// METHODOLOGY: Use platformText with basic compliance, verify it works
-    @Test @MainActor func testPlatformTextBasicAutomaticCompliance_Works() async {
+    @Test @MainActor func testPlatformTextBasicAutomaticCompliance_Works() {
         initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             // Given: platformText with basic compliance
             let view = platformText("Hello")
                 .basicAutomaticCompliance()
@@ -669,9 +669,9 @@ open class BasicAutomaticComplianceTests: BaseTestClass {
     /// BUSINESS PURPOSE: platformText().basicAutomaticCompliance().bold() should work
     /// TESTING SCOPE: Integration with platformText and type preservation
     /// METHODOLOGY: Use platformText with basic compliance and chaining, verify it works
-    @Test @MainActor func testPlatformTextBasicAutomaticCompliance_BoldWorks() async {
+    @Test @MainActor func testPlatformTextBasicAutomaticCompliance_BoldWorks() {
         initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             // Given: platformText with basic compliance and chaining
             let text = platformText("Hello")
                 .basicAutomaticCompliance()
