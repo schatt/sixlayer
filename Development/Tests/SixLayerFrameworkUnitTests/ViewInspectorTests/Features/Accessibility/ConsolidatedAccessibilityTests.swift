@@ -7327,6 +7327,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             item: testItem,
             layoutDecision: layoutDecision,
             strategy: strategy,
+            hints: PresentationHints(),
             isExpanded: false,
             isHovered: false,
             onExpand: {},
@@ -7387,6 +7388,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         
         let view = CoverFlowCardComponent(
             item: testItem,
+            hints: PresentationHints(),
             onItemSelected: nil,
             onItemDeleted: nil,
             onItemEdited: nil
@@ -7619,6 +7621,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
                     expansionScale: 1.15,
                     animationDuration: 0.3
                 ),
+                hints: PresentationHints(),
                 isExpanded: false,
                 isHovered: false,
                 onExpand: { },
@@ -12501,7 +12504,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         }
         // Create a view with global disable (no environment variable - set config directly)
         config.globalAutomaticAccessibilityIdentifiers = false  // ← Disable via config
-        let view = PlatformInteractionButton(style: .primary, action: {}) {
+        let view2 = PlatformInteractionButton(style: .primary, action: {}) {
             platformPresentContent_L1(content: "Test", hints: PresentationHints())
         }
             .automaticCompliance()
@@ -14744,7 +14747,11 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         // Create a simple root view with the modifier applied
         // This simulates the scenario from Issue #7 where warnings occur
         // Set config directly (no environment variable)
-        testConfig.globalAutomaticAccessibilityIdentifiers = true
+        guard let config = testConfig else {
+            Issue.record("testConfig is nil")
+            return
+        }
+        config.globalAutomaticAccessibilityIdentifiers = true
         let rootView = Text("Test Content")
             .automaticCompliance()
         
