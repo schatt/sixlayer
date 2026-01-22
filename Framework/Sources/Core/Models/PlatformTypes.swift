@@ -1013,7 +1013,7 @@ public struct ValueRange: Sendable {
 }
 
 /// Picker option for enum fields with value and label
-public struct PickerOption: Sendable, Equatable {
+public struct PickerOption: Sendable, Equatable, Hashable {
     /// The raw value to store in the model (e.g., "story_points", "hours")
     public let value: String
     

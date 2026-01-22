@@ -1228,6 +1228,30 @@ private struct AsyncFormView: View {
     }
 }
 
+/// Helper view to create a select field picker
+/// Extracted to work around platformPicker visibility issues in switch contexts
+@MainActor
+private struct SelectFieldPickerView: View {
+    let label: String
+    let options: [String]
+    let pickerName: String
+    let accessibilityLabel: String
+    
+    var body: some View {
+        platformPicker(
+            label: label,
+            selection: .constant(""),
+            options: options,
+            pickerName: pickerName,
+            style: MenuPickerStyle()
+        )
+        .automaticCompliance(
+            identifierElementType: "Picker",
+            accessibilityLabel: accessibilityLabel
+        )
+    }
+}
+
 /// Helper function to create a simple field view for DynamicFormField
 @ViewBuilder
 @MainActor
@@ -1292,22 +1316,13 @@ private func createSimpleFieldView(for field: DynamicFormField, hints: Presentat
                         accessibilityLabel: field.label  // Issue #156: Parameter-based approach
                     )
             case .select:
-                // Manual Picker creation with accessibility (Issue #163)
-                // Note: platformPicker has compiler visibility issues in this specific switch context
-                // This manual approach applies the same accessibility pattern
+                // Use platformPicker helper to automatically apply accessibility (Issue #163)
                 if let options = field.options, !options.isEmpty {
-                    Picker(field.label, selection: .constant("")) {
-                        ForEach(options, id: \.self) { option in
-                            Text(option)
-                                .tag(option)
-                                .automaticCompliance(identifierLabel: option) // Apply to segment (Issue #163)
-                        }
-                    }
-                    .pickerStyle(.menu)
-                    .automaticCompliance(named: "Layer1SelectField") // Apply to picker level (Issue #163)
-                    .automaticCompliance(
-                        identifierElementType: "Picker",
-                        accessibilityLabel: field.label  // Issue #156: Parameter-based approach
+                    SelectFieldPickerView(
+                        label: field.label,
+                        options: options,
+                        pickerName: "Layer1SelectField",
+                        accessibilityLabel: field.label
                     )
                 } else {
                     let i18n = InternationalizationService()
