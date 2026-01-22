@@ -101,12 +101,17 @@ Image(systemName: "star")
    ) -> some View
    ```
 
-3. Create type-preserving Text extension:
+3. Create View extensions for Text-specific modifiers:
    ```swift
-   extension Text {
-       func basicAutomaticCompliance(...) -> Text
+   extension View {
+       func bold() -> some View { self.fontWeight(.bold) }
+       func italic() -> some View { self.italic() }
+       func font(_ font: Font) -> some View { self.font(font) }
+       // etc. for other Text-specific modifiers
    }
    ```
+   This allows chaining Text modifiers after `.basicAutomaticCompliance()` which returns `some View`.
+   No separate Text extension needed - Text uses View extension.
 
 ### Phase 2: Refactor Full Compliance to Use Basic (DRY)
 
@@ -234,18 +239,17 @@ Circle()
 **Question**: Do we need type-preserving versions for Text (and potentially Image), or is a general `some View`-returning method sufficient?
 
 **Answer**: Based on comprehensive modifier analysis:
-- ✅ **Text needs type-preserving version** - has multiple type-preserving modifiers (`.bold()`, `.italic()`, `.font()`, `.fontWeight()`)
-- ❌ **Image does NOT need type-preserving version** - all modifiers return `some View` anyway
-- ❌ **Label does NOT need type-preserving version** - all modifiers return `some View` anyway
-- ❌ **Link does NOT need type-preserving version** - all modifiers return `some View` anyway
-- ❌ **Shape types do NOT need type-preserving version** - modifiers return wrapper types anyway
-- ✅ **Recommendation: Option C (Hybrid)** - Type-preserving for **Text only** (it's the only type that benefits), general for everything else
+- ✅ **Create View extensions for Text-specific modifiers** - `.bold()`, `.italic()`, `.font()`, `.fontWeight()` as View extensions
+- ✅ **Text uses View extension** - No separate Text extension needed, Text conforms to View
+- ✅ **Allows chaining** - `Text.basicAutomaticCompliance().bold().italic()` works via View extensions
+- ✅ **Works for all Views** - View extensions for Text modifiers work on any View, not just Text
+- ✅ **Recommendation: View extensions approach** - Create View extensions that replicate Text modifier behavior
 
 **Considerations**:
-- Text benefits significantly from type preservation (allows `.bold()` chaining)
-- Image doesn't benefit from type preservation (modifiers already return `some View`)
-- Type-preserving version only needed for Text
-- General version works fine for Image and other basic types
+- View extensions allow chaining Text modifiers after `.basicAutomaticCompliance()` (which returns `some View`)
+- No type preservation needed - View extensions provide the same functionality
+- Works universally - View extensions work on all Views, not just Text
+- Simpler implementation - No need for Text-specific extension
 
 ## Related
 
@@ -265,12 +269,12 @@ Circle()
 - ✅ **AC1.5**: `.basicAutomaticCompliance()` respects global config settings (enableAutoIDs, globalAutomaticAccessibilityIdentifiers)
 - ✅ **AC1.6**: `.basicAutomaticCompliance()` supports all parameters: `identifierName`, `identifierElementType`, `identifierLabel`, `accessibilityLabel`
 
-#### 2. Text Type-Preserving Compliance
-- ✅ **AC2.1**: `Text.basicAutomaticCompliance()` returns `Text` (not `some View`)
-- ✅ **AC2.2**: `Text.basicAutomaticCompliance()` applies accessibility identifier
-- ✅ **AC2.3**: `Text.basicAutomaticCompliance()` applies accessibility label
-- ✅ **AC2.4**: `Text.basicAutomaticCompliance()` allows chaining of Text-specific modifiers (`.bold()`, `.italic()`, `.font()`, etc.)
-- ✅ **AC2.5**: `Text.basicAutomaticCompliance()` uses same identifier/label logic as general version
+#### 2. Text Modifier Chaining Support
+- ✅ **AC2.1**: View extensions for Text-specific modifiers (`.bold()`, `.italic()`, `.font()`, etc.) allow chaining after `.basicAutomaticCompliance()`
+- ✅ **AC2.2**: `Text.basicAutomaticCompliance()` applies accessibility identifier (uses View extension)
+- ✅ **AC2.3**: `Text.basicAutomaticCompliance()` applies accessibility label (uses View extension)
+- ✅ **AC2.4**: `Text.basicAutomaticCompliance().bold().italic()` works via View extensions
+- ✅ **AC2.5**: View extensions replicate Text modifier behavior for all Views
 
 #### 3. Integration with platformText
 - ✅ **AC3.1**: `platformText()` can optionally use `Text.basicAutomaticCompliance()` internally
@@ -387,14 +391,14 @@ This should be the exception, not the rule - most changes should follow strict R
 - ✅ **T1.12**: Test that Text with `.basicAutomaticCompliance()` identifier is findable
 - ✅ **T1.13**: Test that Image with `.basicAutomaticCompliance()` identifier is findable
 
-**2. Text.basicAutomaticCompliance() Unit Tests**
-- ✅ **T2.1**: Test that `Text.basicAutomaticCompliance()` returns `Text` type (compile-time check)
-- ✅ **T2.2**: Test that `Text.basicAutomaticCompliance()` applies identifier (ViewInspector)
-- ✅ **T2.3**: Test that `Text.basicAutomaticCompliance()` applies label (ViewInspector)
-- ✅ **T2.4**: Test that `Text.basicAutomaticCompliance().bold()` compiles and works
-- ✅ **T2.5**: Test that `Text.basicAutomaticCompliance().italic()` compiles and works
-- ✅ **T2.6**: Test that `Text.basicAutomaticCompliance().font(.title)` compiles and works
-- ✅ **T2.7**: Test chaining: `Text("Hello").basicAutomaticCompliance().bold().italic().font(.title)`
+**2. Text Modifier Chaining Tests**
+- ✅ **T2.1**: Test that `Text.basicAutomaticCompliance()` applies identifier (ViewInspector)
+- ✅ **T2.2**: Test that `Text.basicAutomaticCompliance()` applies label (ViewInspector)
+- ✅ **T2.3**: Test that View extension `.bold()` works after `.basicAutomaticCompliance()`
+- ✅ **T2.4**: Test that View extension `.italic()` works after `.basicAutomaticCompliance()`
+- ✅ **T2.5**: Test that View extension `.font(.title)` works after `.basicAutomaticCompliance()`
+- ✅ **T2.6**: Test chaining: `Text("Hello").basicAutomaticCompliance().bold().italic().font(.title)`
+- ✅ **T2.7**: Test that View extensions for Text modifiers work on any View, not just Text
 
 **2b. Text.basicAutomaticCompliance() UI-Only Tests**
 - ✅ **T2.8**: Test that `Text.basicAutomaticCompliance()` identifier is findable via XCUITest

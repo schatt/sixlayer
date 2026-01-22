@@ -1268,26 +1268,3 @@ public extension View {
         ))
     }
 }
-
-public extension Text {
-    /// Apply basic automatic compliance to Text
-    /// NOTE: Returns some View (not Text) because accessibility modifiers return some View
-    /// This allows chaining of View modifiers but not Text-specific modifiers after this call
-    /// TDD GREEN PHASE: Implementation complete
-    /// Issue #172: Lightweight Compliance for Basic SwiftUI Types
-    nonisolated func basicAutomaticCompliance(
-        identifierName: String? = nil,
-        identifierElementType: String? = nil,
-        identifierLabel: String? = nil,
-        accessibilityLabel: String? = nil
-    ) -> some View {
-        // Use the same modifier as View extension
-        // Accessibility modifiers return some View, so we can't preserve Text type
-        self.modifier(BasicAutomaticComplianceModifier(
-            identifierName: identifierName,
-            identifierElementType: identifierElementType,
-            identifierLabel: identifierLabel,
-            accessibilityLabel: accessibilityLabel
-        ))
-    }
-}
