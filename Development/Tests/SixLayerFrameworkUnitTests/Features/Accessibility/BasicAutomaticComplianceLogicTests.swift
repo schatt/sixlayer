@@ -462,69 +462,7 @@ open class BasicAutomaticComplianceLogicTests: BaseTestClass {
         }
     }
     
-    // MARK: - Stub Logic Verification Tests
-    
-    /// BUSINESS PURPOSE: Verify complete logic flow the stub SHOULD perform
-    /// TESTING SCOPE: Full logic flow (config check, identifier generation, label formatting)
-    /// METHODOLOGY: Test the complete logic using the same parameters the stub receives
-    /// This test PASSES because the logic works, demonstrating what the stub SHOULD do
-    @Test @MainActor func testBasicAutomaticComplianceModifier_CompleteLogicFlow() async {
-        initializeTestConfig()
-        await runWithTaskLocalConfig {
-            guard let config = testConfig else {
-                Issue.record("testConfig is nil")
-                return
-            }
-            
-            // Given: Modifier parameters (what the stub receives)
-            let identifierName = "testView"
-            let identifierElementType = "View"
-            let identifierLabel = "Test View"
-            let accessibilityLabel = "Test label"
-            
-            // Configure as stub should
-            config.enableAutoIDs = true
-            config.globalAutomaticAccessibilityIdentifiers = true
-            config.namespace = "SixLayer"
-            config.enableUITestIntegration = true
-            config.includeComponentNames = true
-            config.includeElementTypes = true
-            
-            // Step 1: Check if should apply (what stub SHOULD do)
-            let shouldApply = config.enableAutoIDs && config.globalAutomaticAccessibilityIdentifiers
-            #expect(shouldApply == true, "Should apply when both flags are true")
-            
-            // Step 2: Generate identifier (what stub SHOULD do)
-            let expectedIdentifier = generateAccessibilityIdentifier(
-                config: config,
-                identifierName: identifierName,
-                identifierElementType: identifierElementType,
-                identifierLabel: identifierLabel,
-                capturedScreenContext: config.currentScreenContext,
-                capturedViewHierarchy: config.currentViewHierarchy,
-                capturedEnableUITestIntegration: config.enableUITestIntegration,
-                capturedIncludeComponentNames: config.includeComponentNames,
-                capturedIncludeElementTypes: config.includeElementTypes,
-                capturedEnableDebugLogging: config.enableDebugLogging,
-                capturedNamespace: config.namespace,
-                capturedGlobalPrefix: config.globalPrefix
-            )
-            #expect(!expectedIdentifier.isEmpty, "Identifier should be generated")
-            #expect(expectedIdentifier.contains(identifierName), "Identifier should include component name")
-            
-            // Step 3: Format/localize label (what stub SHOULD do)
-            let expectedLabel = localizeAccessibilityLabel(
-                accessibilityLabel,
-                context: identifierElementType?.lowercased(),
-                elementType: identifierElementType
-            )
-            #expect(!expectedLabel.isEmpty, "Label should be formatted/localized")
-            
-            // This test PASSES, demonstrating the complete logic works
-            // But the stub doesn't perform this logic - it just returns content unchanged
-            // ViewInspector tests will fail because identifiers/labels aren't applied
-        }
-    }
+    // MARK: - Stub Behavior Verification Tests
     
     /// BUSINESS PURPOSE: Verify stub doesn't apply the logic it should
     /// TESTING SCOPE: Stub behavior verification - this test FAILS in Red phase
@@ -551,6 +489,7 @@ open class BasicAutomaticComplianceLogicTests: BaseTestClass {
         // The stub's body() just returns content, so no identifier/label is applied
         // This assertion FAILS because the stub doesn't apply the logic
         // In the real implementation, these parameters would be used to generate identifiers
+        // Logic functions (generateAccessibilityIdentifier, localizeAccessibilityLabel) are tested elsewhere
         #expect(Bool(false), "STUB: Modifier does not apply identifiers/labels - this test should fail in Red phase")
     }
 }
