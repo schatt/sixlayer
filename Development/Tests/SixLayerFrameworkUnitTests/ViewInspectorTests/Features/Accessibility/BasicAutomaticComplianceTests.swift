@@ -67,10 +67,25 @@ open class BasicAutomaticComplianceTests: BaseTestClass {
                     }
                 }
                 
+                // If ViewInspector still can't find it, use platform view hosting as fallback
+                if identifier == nil {
+                    let hosted = hostRootPlatformView(view)
+                    if let hostedView = hosted {
+                        identifier = firstAccessibilityIdentifier(inHosted: hostedView)
+                    }
+                }
+                
                 #expect(identifier != nil, "Basic compliance should apply accessibility identifier")
                 #expect(identifier?.contains("testView") == true, "Identifier should include component name")
             } catch {
                 Issue.record("Failed to inspect view: \(error)")
+                // Fallback to platform view hosting
+                let hosted = hostRootPlatformView(view)
+                if let hostedView = hosted, let identifier = firstAccessibilityIdentifier(inHosted: hostedView) {
+                    #expect(identifier.contains("testView"), "Identifier should include component name (via platform hosting)")
+                } else {
+                    #expect(Bool(false), "Basic compliance should apply accessibility identifier (checked via ViewInspector and platform hosting)")
+                }
             }
             #else
             // ViewInspector not available on this platform - verify compilation
@@ -369,6 +384,14 @@ open class BasicAutomaticComplianceTests: BaseTestClass {
                     }
                 }
                 
+                // If ViewInspector still can't find it, use platform view hosting as fallback
+                if identifier == nil {
+                    let hosted = hostRootPlatformView(view)
+                    if let hostedView = hosted {
+                        identifier = firstAccessibilityIdentifier(inHosted: hostedView)
+                    }
+                }
+                
                 #expect(identifier != nil, "Identifier should be generated")
                 if let id = identifier {
                     // Label should be sanitized: "Save File" -> "save-file"
@@ -377,6 +400,13 @@ open class BasicAutomaticComplianceTests: BaseTestClass {
                 }
             } catch {
                 Issue.record("Failed to inspect view: \(error)")
+                // Fallback to platform view hosting
+                let hosted = hostRootPlatformView(view)
+                if let hostedView = hosted, let identifier = firstAccessibilityIdentifier(inHosted: hostedView) {
+                    #expect(identifier.contains("save-file") || identifier.contains("save"), "Identifier should contain sanitized label (via platform hosting)")
+                } else {
+                    #expect(Bool(false), "Identifier should be generated (checked via ViewInspector and platform hosting)")
+                }
             }
             #else
             // ViewInspector not available - test that view compiles
@@ -429,6 +459,14 @@ open class BasicAutomaticComplianceTests: BaseTestClass {
                     }
                 }
                 
+                // If ViewInspector still can't find it, use platform view hosting as fallback
+                if identifier == nil {
+                    let hosted = hostRootPlatformView(view)
+                    if let hostedView = hosted {
+                        identifier = firstAccessibilityIdentifier(inHosted: hostedView)
+                    }
+                }
+                
                 #expect(identifier != nil, "Identifier should be generated")
                 if let id = identifier {
                     // Special characters should be sanitized
@@ -437,6 +475,14 @@ open class BasicAutomaticComplianceTests: BaseTestClass {
                 }
             } catch {
                 Issue.record("Failed to inspect view: \(error)")
+                // Fallback to platform view hosting
+                let hosted = hostRootPlatformView(view)
+                if let hostedView = hosted, let identifier = firstAccessibilityIdentifier(inHosted: hostedView) {
+                    #expect(!identifier.contains("&"), "Identifier should not contain & (via platform hosting)")
+                    #expect(!identifier.contains("!"), "Identifier should not contain ! (via platform hosting)")
+                } else {
+                    #expect(Bool(false), "Identifier should be generated (checked via ViewInspector and platform hosting)")
+                }
             }
             #else
             // ViewInspector not available - test that view compiles
@@ -496,9 +542,24 @@ open class BasicAutomaticComplianceTests: BaseTestClass {
                     }
                 }
                 
+                // If ViewInspector still can't find it, use platform view hosting as fallback
+                if identifier == nil {
+                    let hosted = hostRootPlatformView(text)
+                    if let hostedView = hosted {
+                        identifier = firstAccessibilityIdentifier(inHosted: hostedView)
+                    }
+                }
+                
                 #expect(identifier != nil, "Text.basicAutomaticCompliance() should apply identifier")
             } catch {
                 Issue.record("Failed to inspect text: \(error)")
+                // Fallback to platform view hosting
+                let hosted = hostRootPlatformView(text)
+                if let hostedView = hosted, let identifier = firstAccessibilityIdentifier(inHosted: hostedView) {
+                    #expect(!identifier.isEmpty, "Text.basicAutomaticCompliance() should apply identifier (via platform hosting)")
+                } else {
+                    #expect(Bool(false), "Text.basicAutomaticCompliance() should apply identifier (checked via ViewInspector and platform hosting)")
+                }
             }
             #else
             // ViewInspector not available - test that text compiles
@@ -538,12 +599,16 @@ open class BasicAutomaticComplianceTests: BaseTestClass {
                     }
                 }
                 
+                // Note: Labels are harder to detect via platform views, so we primarily rely on ViewInspector
+                
                 #expect(label != nil, "Text.basicAutomaticCompliance() should apply label")
                 if let labelView = label, let labelText = try? labelView.string() {
                     #expect(labelText == "Hello text.", "Label should be formatted with punctuation")
                 }
             } catch {
                 Issue.record("Failed to inspect text: \(error)")
+                // ViewInspector failed - label detection via platform hosting is limited
+                // The modifier is applied (verified by compilation), but detection may be limited
             }
             #else
             // ViewInspector not available - test that text compiles
@@ -655,9 +720,24 @@ open class BasicAutomaticComplianceTests: BaseTestClass {
                     }
                 }
                 
+                // If ViewInspector still can't find it, use platform view hosting as fallback
+                if identifier == nil {
+                    let hosted = hostRootPlatformView(view)
+                    if let hostedView = hosted {
+                        identifier = firstAccessibilityIdentifier(inHosted: hostedView)
+                    }
+                }
+                
                 #expect(identifier != nil, "platformText().basicAutomaticCompliance() should apply identifier")
             } catch {
                 Issue.record("Failed to inspect view: \(error)")
+                // Fallback to platform view hosting
+                let hosted = hostRootPlatformView(view)
+                if let hostedView = hosted, let identifier = firstAccessibilityIdentifier(inHosted: hostedView) {
+                    #expect(!identifier.isEmpty, "platformText().basicAutomaticCompliance() should apply identifier (via platform hosting)")
+                } else {
+                    #expect(Bool(false), "platformText().basicAutomaticCompliance() should apply identifier (checked via ViewInspector and platform hosting)")
+                }
             }
             #else
             // ViewInspector not available - test that view compiles
