@@ -521,9 +521,27 @@ open class BasicAutomaticComplianceTests: BaseTestClass {
             // Then: Label should be applied
             #if canImport(ViewInspector)
             do {
-                let inspected = try text.inspect()
-                let label = try? inspected.accessibilityLabel()
+                // Wrap in AnyView for better ViewInspector compatibility
+                let inspected = try AnyView(text).inspect()
+                
+                // Try direct access first
+                var label = try? inspected.accessibilityLabel()
+                
+                // If direct access fails, search through the view hierarchy
+                if label == nil {
+                    let textViews = inspected.findAll(ViewInspector.ViewType.Text.self)
+                    for textView in textViews {
+                        if let textLabel = try? textView.accessibilityLabel() {
+                            label = textLabel
+                            break
+                        }
+                    }
+                }
+                
                 #expect(label != nil, "Text.basicAutomaticCompliance() should apply label")
+                if let labelView = label, let labelText = try? labelView.string() {
+                    #expect(labelText == "Hello text.", "Label should be formatted with punctuation")
+                }
             } catch {
                 Issue.record("Failed to inspect text: \(error)")
             }
