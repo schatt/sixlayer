@@ -164,8 +164,9 @@ open class BaseTestClass {
         // 2. Contains what it needs to contain - The view should contain expected text
         #if canImport(ViewInspector)
         do {
-            let inspected = try view.inspect()
-            let viewText = inspected.findAll(ViewType.Text.self)
+            // Wrap in AnyView for better ViewInspector compatibility (like other tests do)
+            let inspected = try AnyView(view).inspect()
+            let viewText = inspected.findAll(ViewInspector.ViewType.Text.self)
             #expect(!viewText.isEmpty, "View should contain text elements for \(testName)")
 
             let hasExpectedText = viewText.contains { text in
@@ -194,8 +195,9 @@ open class BaseTestClass {
         // 2. Contains what it needs to contain - The view should contain image elements
         #if canImport(ViewInspector)
         do {
-            let inspected = try view.inspect()
-            let viewImages = inspected.findAll(ViewType.Image.self)
+            // Wrap in AnyView for better ViewInspector compatibility (like other tests do)
+            let inspected = try AnyView(view).inspect()
+            let viewImages = inspected.findAll(ViewInspector.ViewType.Image.self)
             #expect(!viewImages.isEmpty, "View should contain image elements for \(testName)")
         } catch {
             Issue.record("View inspection failed for \(testName): \(error)")
