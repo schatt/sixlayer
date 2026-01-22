@@ -40,15 +40,10 @@ public extension View {
     /// Apply italic style to any View
     /// 
     /// This extension replicates Text's `.italic()` modifier for all Views.
+    /// Uses `.font()` with an italic font to apply italic styling.
     /// On Text views, it applies italic style.
-    /// On container views (VStack, etc.), it has no effect (Text children would need their own .italic()).
+    /// On container views (VStack, etc.), it propagates to children via environment.
     /// On non-text views (Image, Shape), it has no visible effect but doesn't error.
-    ///
-    /// Note: Since SwiftUI's `.italic()` is Text-specific and doesn't exist on View,
-    /// this extension allows chaining to compile. On Text views, italic will be applied
-    /// via Text's own `.italic()` method when the type is resolved. On non-text views,
-    /// this has no effect, which is reasonable and matches SwiftUI's behavior where
-    /// font modifiers don't affect non-text views.
     ///
     /// - Returns: A view with italic style applied (or unchanged if not applicable)
     ///
@@ -56,13 +51,13 @@ public extension View {
     /// ```swift
     /// Text("Hello")
     ///     .basicAutomaticCompliance()
-    ///     .italic()  // ✅ Works via View extension (Text's .italic() is called)
+    ///     .italic()  // ✅ Works via View extension
     /// ```
     func italic() -> some View {
-        // Since .italic() is Text-specific and doesn't exist on View,
-        // we return self unchanged. This allows chaining to compile.
-        // On Text views, Swift will use Text's own .italic() method when available.
-        // On non-text views, this has no effect (reasonable behavior).
-        self
+        // Use .font() with an italic font to apply italic styling
+        // Font.italic() returns an italic version of the font
+        // This works for Text views and propagates via environment to children
+        // For non-text views, this has no visible effect (expected behavior)
+        self.font(.system(.body).italic())
     }
 }
