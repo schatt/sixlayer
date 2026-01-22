@@ -1183,7 +1183,8 @@ public struct BasicAutomaticComplianceModifier: ViewModifier {
     
     public func body(content: Content) -> some View {
         // TDD RED PHASE: Stub - just returns content unchanged
-        // Tests will compile but fail assertions
+        // No modifiers applied - tests will compile but fail assertions
+        // This is clearly a stub, not a valid implementation
         content
     }
 }
