@@ -457,7 +457,7 @@ public struct AutomaticComplianceModifier: ViewModifier {
     
     // Note: Not @MainActor - this function only does string manipulation and config access
     // which are thread-safe. Calling from non-MainActor contexts (like view body) is safe.
-    private func generateIdentifier(
+    internal func generateIdentifier(
         config: AccessibilityIdentifierConfig,
         identifierName: String?,
         identifierElementType: String?,
