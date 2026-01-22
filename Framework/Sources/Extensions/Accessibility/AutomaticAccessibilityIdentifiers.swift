@@ -139,7 +139,7 @@ internal func sanitizeLabelText(_ label: String) -> String {
 /// - Labels should be concise and describe purpose, not appearance
 /// - Parameter label: The label text to format
 /// - Returns: Formatted label with proper punctuation
-private func formatAccessibilityLabel(_ label: String) -> String {
+internal func formatAccessibilityLabel(_ label: String) -> String {
     let trimmed = label.trimmingCharacters(in: .whitespacesAndNewlines)
     guard !trimmed.isEmpty else { return trimmed }
     
