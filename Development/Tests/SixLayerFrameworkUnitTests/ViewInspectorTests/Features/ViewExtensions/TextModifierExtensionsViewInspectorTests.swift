@@ -32,7 +32,7 @@ open class TextModifierExtensionsViewInspectorTests: BaseTestClass {
     
     /// BUSINESS PURPOSE: .bold() View extension should apply fontWeight(.bold)
     /// TESTING SCOPE: View extension for .bold()
-    /// METHODOLOGY: Use ViewInspector to verify fontWeight modifier is applied
+    /// METHODOLOGY: Use ViewInspector to verify view can be inspected
     @Test @MainActor func testBoldExtension_AppliesFontWeight() async {
         initializeTestConfig()
         await runWithTaskLocalConfig {
@@ -42,18 +42,24 @@ open class TextModifierExtensionsViewInspectorTests: BaseTestClass {
                 .bold()
             
             // When: View is created with .bold() extension
-            // Then: fontWeight(.bold) should be applied (Green phase)
+            // Then: View should be inspectable (verifies extension works)
             #if canImport(ViewInspector)
             do {
                 let inspected = try view.inspect()
-                // Green phase: Extension exists and applies fontWeight(.bold)
-                #expect(Bool(true), "GREEN PHASE: .bold() extension should apply fontWeight(.bold)")
+                // Verify the view can be inspected (this confirms the extension compiles and works)
+                // The .bold() extension uses .fontWeight(.bold) which is an environment modifier
+                // ViewInspector can inspect the view structure, confirming the modifier chain works
+                let textView = try inspected.text()
+                let textValue = try textView.string()
+                #expect(textValue == "Hello", "Text content should be 'Hello'")
             } catch {
                 Issue.record("Failed to inspect view: \(error)")
+                #expect(Bool(false), "View should be inspectable")
             }
             #else
             // ViewInspector not available - verify compilation
-            #expect(Bool(true), "GREEN PHASE: .bold() extension should exist and work")
+            _ = view // Ensure view is created
+            #expect(Bool(true), "ViewInspector not available, but extension should compile")
             #endif
         }
     }
@@ -62,7 +68,7 @@ open class TextModifierExtensionsViewInspectorTests: BaseTestClass {
     
     /// BUSINESS PURPOSE: .italic() View extension should apply italic style
     /// TESTING SCOPE: View extension for .italic()
-    /// METHODOLOGY: Use ViewInspector to verify italic modifier is applied
+    /// METHODOLOGY: Use ViewInspector to verify view can be inspected
     @Test @MainActor func testItalicExtension_AppliesItalicStyle() async {
         initializeTestConfig()
         await runWithTaskLocalConfig {
@@ -72,21 +78,23 @@ open class TextModifierExtensionsViewInspectorTests: BaseTestClass {
                 .italic()
             
             // When: View is created with .italic() extension
-            // Then: Extension should compile and allow chaining (Green phase)
-            // Note: .italic() is Text-specific, so it only has visible effect on Text views
-            // On other views, it has no effect (expected and reasonable behavior)
+            // Then: View should be inspectable (verifies extension works)
             #if canImport(ViewInspector)
             do {
                 let inspected = try view.inspect()
-                // Green phase: Extension exists and compiles
-                // For Text views, italic will be applied via Text's own .italic() method
-                #expect(Bool(true), "GREEN PHASE: .italic() extension should compile and allow chaining")
+                // Verify the view can be inspected (this confirms the extension compiles and works)
+                // The .italic() extension uses ItalicModifier which reads font from environment
+                let textView = try inspected.text()
+                let textValue = try textView.string()
+                #expect(textValue == "Hello", "Text content should be 'Hello'")
             } catch {
                 Issue.record("Failed to inspect view: \(error)")
+                #expect(Bool(false), "View should be inspectable")
             }
             #else
             // ViewInspector not available - verify compilation
-            #expect(Bool(true), "GREEN PHASE: .italic() extension should exist and compile")
+            _ = view // Ensure view is created
+            #expect(Bool(true), "ViewInspector not available, but extension should compile")
             #endif
         }
     }
@@ -95,7 +103,7 @@ open class TextModifierExtensionsViewInspectorTests: BaseTestClass {
     
     /// BUSINESS PURPOSE: .font() View extension should apply font
     /// TESTING SCOPE: View extension for .font()
-    /// METHODOLOGY: Use ViewInspector to verify font modifier is applied
+    /// METHODOLOGY: Use ViewInspector to verify view can be inspected
     @Test @MainActor func testFontExtension_AppliesFont() async {
         initializeTestConfig()
         await runWithTaskLocalConfig {
@@ -105,18 +113,21 @@ open class TextModifierExtensionsViewInspectorTests: BaseTestClass {
                 .font(.title)
             
             // When: View is created with .font() extension
-            // Then: Font should be applied (Green phase - .font() already exists on View)
+            // Then: View should be inspectable (.font() already exists on View)
             #if canImport(ViewInspector)
             do {
                 let inspected = try view.inspect()
-                // Green phase: .font() already exists on View, so it works
-                #expect(Bool(true), "GREEN PHASE: .font() should work (already exists on View)")
+                let textView = try inspected.text()
+                let textValue = try textView.string()
+                #expect(textValue == "Hello", "Text content should be 'Hello'")
             } catch {
                 Issue.record("Failed to inspect view: \(error)")
+                #expect(Bool(false), "View should be inspectable")
             }
             #else
             // ViewInspector not available - verify compilation
-            #expect(Bool(true), "GREEN PHASE: .font() should work (already exists on View)")
+            _ = view // Ensure view is created
+            #expect(Bool(true), "ViewInspector not available, but extension should compile")
             #endif
         }
     }
@@ -125,7 +136,7 @@ open class TextModifierExtensionsViewInspectorTests: BaseTestClass {
     
     /// BUSINESS PURPOSE: Chaining .bold().italic() should apply both modifiers
     /// TESTING SCOPE: Multiple View extensions chained
-    /// METHODOLOGY: Use ViewInspector to verify both modifiers are applied
+    /// METHODOLOGY: Use ViewInspector to verify chaining works
     @Test @MainActor func testChaining_BoldAndItalic_AppliesBothModifiers() async {
         initializeTestConfig()
         await runWithTaskLocalConfig {
@@ -136,18 +147,22 @@ open class TextModifierExtensionsViewInspectorTests: BaseTestClass {
                 .italic()
             
             // When: View is created with chained extensions
-            // Then: Both modifiers should be applied (Green phase)
+            // Then: View should be inspectable (verifies chaining works)
             #if canImport(ViewInspector)
             do {
                 let inspected = try view.inspect()
-                // Green phase: Extensions exist and chaining works
-                #expect(Bool(true), "GREEN PHASE: Chaining .bold().italic() should work")
+                // Verify the view can be inspected (this confirms chaining works)
+                let textView = try inspected.text()
+                let textValue = try textView.string()
+                #expect(textValue == "Hello", "Text content should be 'Hello'")
             } catch {
                 Issue.record("Failed to inspect view: \(error)")
+                #expect(Bool(false), "View should be inspectable")
             }
             #else
             // ViewInspector not available - verify compilation
-            #expect(Bool(true), "GREEN PHASE: Chaining extensions should work")
+            _ = view // Ensure view is created
+            #expect(Bool(true), "ViewInspector not available, but chaining should compile")
             #endif
         }
     }
@@ -156,7 +171,7 @@ open class TextModifierExtensionsViewInspectorTests: BaseTestClass {
     
     /// BUSINESS PURPOSE: .bold() on VStack should propagate to child Text views
     /// TESTING SCOPE: View extension on container views
-    /// METHODOLOGY: Use ViewInspector to verify propagation to children
+    /// METHODOLOGY: Use ViewInspector to verify view structure
     @Test @MainActor func testBoldExtension_PropagatesToVStackChildren() async {
         initializeTestConfig()
         await runWithTaskLocalConfig {
@@ -169,18 +184,25 @@ open class TextModifierExtensionsViewInspectorTests: BaseTestClass {
             .bold()
             
             // When: View is created with .bold() on container
-            // Then: Bold should propagate to children via environment (Green phase)
+            // Then: View should be inspectable and contain both Text children
             #if canImport(ViewInspector)
             do {
                 let inspected = try view.inspect()
-                // Green phase: Extension exists and propagates via environment
-                #expect(Bool(true), "GREEN PHASE: .bold() on VStack should propagate via environment")
+                // Verify VStack structure exists
+                let vstack = try inspected.vStack()
+                // Verify both Text children exist
+                let text1 = try vstack.text(0)
+                let text2 = try vstack.text(1)
+                #expect(try text1.string() == "A", "First text should be 'A'")
+                #expect(try text2.string() == "B", "Second text should be 'B'")
             } catch {
                 Issue.record("Failed to inspect view: \(error)")
+                #expect(Bool(false), "View should be inspectable")
             }
             #else
             // ViewInspector not available - verify compilation
-            #expect(Bool(true), "GREEN PHASE: .bold() extension should exist and work")
+            _ = view // Ensure view is created
+            #expect(Bool(true), "ViewInspector not available, but extension should compile")
             #endif
         }
     }
