@@ -7653,6 +7653,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             
             let view = CoverFlowCardComponent(
                 item: testItem,
+                hints: PresentationHints(),
                 onItemSelected: { _ in },
                 onItemDeleted: { _ in },
                 onItemEdited: { _ in }
