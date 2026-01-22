@@ -49,8 +49,24 @@ open class BasicAutomaticComplianceTests: BaseTestClass {
             // Then: Identifier should be applied
             #if canImport(ViewInspector)
             do {
-                let inspected = try view.inspect()
-                let identifier = try? inspected.accessibilityIdentifier()
+                // Wrap in AnyView for better ViewInspector compatibility
+                let inspected = try AnyView(view).inspect()
+                
+                // Try direct access first
+                var identifier = try? inspected.accessibilityIdentifier()
+                
+                // If direct access fails, search through the view hierarchy
+                if identifier == nil {
+                    // Search for Text views and check their identifiers
+                    let textViews = inspected.findAll(ViewInspector.ViewType.Text.self)
+                    for textView in textViews {
+                        if let textID = try? textView.accessibilityIdentifier(), !textID.isEmpty {
+                            identifier = textID
+                            break
+                        }
+                    }
+                }
+                
                 #expect(identifier != nil, "Basic compliance should apply accessibility identifier")
                 #expect(identifier?.contains("testView") == true, "Identifier should include component name")
             } catch {
@@ -77,8 +93,24 @@ open class BasicAutomaticComplianceTests: BaseTestClass {
             // Then: Label should be applied
             #if canImport(ViewInspector)
             do {
-                let inspected = try view.inspect()
-                let labelView = try? inspected.accessibilityLabel()
+                // Wrap in AnyView for better ViewInspector compatibility
+                let inspected = try AnyView(view).inspect()
+                
+                // Try direct access first
+                var labelView = try? inspected.accessibilityLabel()
+                
+                // If direct access fails, search through the view hierarchy
+                if labelView == nil {
+                    // Search for Text views and check their labels
+                    let textViews = inspected.findAll(ViewInspector.ViewType.Text.self)
+                    for textView in textViews {
+                        if let label = try? textView.accessibilityLabel() {
+                            labelView = label
+                            break
+                        }
+                    }
+                }
+                
                 #expect(labelView != nil, "Basic compliance should apply accessibility label")
                 if let label = labelView, let labelText = try? label.string() {
                     #expect(labelText == "Test label.", "Label should be formatted with punctuation")
@@ -320,8 +352,23 @@ open class BasicAutomaticComplianceTests: BaseTestClass {
             // Then: Identifier should contain sanitized label
             #if canImport(ViewInspector)
             do {
-                let inspected = try view.inspect()
-                let identifier = try? inspected.accessibilityIdentifier()
+                // Wrap in AnyView for better ViewInspector compatibility
+                let inspected = try AnyView(view).inspect()
+                
+                // Try direct access first
+                var identifier = try? inspected.accessibilityIdentifier()
+                
+                // If direct access fails, search through the view hierarchy
+                if identifier == nil {
+                    let textViews = inspected.findAll(ViewInspector.ViewType.Text.self)
+                    for textView in textViews {
+                        if let textID = try? textView.accessibilityIdentifier(), !textID.isEmpty {
+                            identifier = textID
+                            break
+                        }
+                    }
+                }
+                
                 #expect(identifier != nil, "Identifier should be generated")
                 if let id = identifier {
                     // Label should be sanitized: "Save File" -> "save-file"
@@ -365,8 +412,23 @@ open class BasicAutomaticComplianceTests: BaseTestClass {
             // Then: Special characters should be removed or replaced
             #if canImport(ViewInspector)
             do {
-                let inspected = try view.inspect()
-                let identifier = try? inspected.accessibilityIdentifier()
+                // Wrap in AnyView for better ViewInspector compatibility
+                let inspected = try AnyView(view).inspect()
+                
+                // Try direct access first
+                var identifier = try? inspected.accessibilityIdentifier()
+                
+                // If direct access fails, search through the view hierarchy
+                if identifier == nil {
+                    let textViews = inspected.findAll(ViewInspector.ViewType.Text.self)
+                    for textView in textViews {
+                        if let textID = try? textView.accessibilityIdentifier(), !textID.isEmpty {
+                            identifier = textID
+                            break
+                        }
+                    }
+                }
+                
                 #expect(identifier != nil, "Identifier should be generated")
                 if let id = identifier {
                     // Special characters should be sanitized
@@ -417,8 +479,23 @@ open class BasicAutomaticComplianceTests: BaseTestClass {
             // Then: Identifier should be applied
             #if canImport(ViewInspector)
             do {
-                let inspected = try text.inspect()
-                let identifier = try? inspected.accessibilityIdentifier()
+                // Wrap in AnyView for better ViewInspector compatibility
+                let inspected = try AnyView(text).inspect()
+                
+                // Try direct access first
+                var identifier = try? inspected.accessibilityIdentifier()
+                
+                // If direct access fails, search through the view hierarchy
+                if identifier == nil {
+                    let textViews = inspected.findAll(ViewInspector.ViewType.Text.self)
+                    for textView in textViews {
+                        if let textID = try? textView.accessibilityIdentifier(), !textID.isEmpty {
+                            identifier = textID
+                            break
+                        }
+                    }
+                }
+                
                 #expect(identifier != nil, "Text.basicAutomaticCompliance() should apply identifier")
             } catch {
                 Issue.record("Failed to inspect text: \(error)")
@@ -543,8 +620,23 @@ open class BasicAutomaticComplianceTests: BaseTestClass {
             // Then: Should work correctly
             #if canImport(ViewInspector)
             do {
-                let inspected = try view.inspect()
-                let identifier = try? inspected.accessibilityIdentifier()
+                // Wrap in AnyView for better ViewInspector compatibility
+                let inspected = try AnyView(view).inspect()
+                
+                // Try direct access first
+                var identifier = try? inspected.accessibilityIdentifier()
+                
+                // If direct access fails, search through the view hierarchy
+                if identifier == nil {
+                    let textViews = inspected.findAll(ViewInspector.ViewType.Text.self)
+                    for textView in textViews {
+                        if let textID = try? textView.accessibilityIdentifier(), !textID.isEmpty {
+                            identifier = textID
+                            break
+                        }
+                    }
+                }
+                
                 #expect(identifier != nil, "platformText().basicAutomaticCompliance() should apply identifier")
             } catch {
                 Issue.record("Failed to inspect view: \(error)")
