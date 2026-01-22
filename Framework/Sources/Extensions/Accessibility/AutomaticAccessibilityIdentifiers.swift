@@ -1162,7 +1162,7 @@ public extension View {
 // MARK: - Basic Automatic Compliance (Issue #172)
 
 /// Basic automatic compliance modifier - applies only identifier and label, no HIG features
-/// TDD RED PHASE: Stub implementation for testing
+/// TDD GREEN PHASE: Implementation complete
 public struct BasicAutomaticComplianceModifier: ViewModifier {
     let identifierName: String?
     let identifierElementType: String?
@@ -1182,16 +1182,76 @@ public struct BasicAutomaticComplianceModifier: ViewModifier {
     }
     
     public func body(content: Content) -> some View {
-        // TDD RED PHASE: Stub - just returns content unchanged
-        // No modifiers applied - tests will compile but fail assertions
-        // ViewInspector tests will verify identifiers/labels aren't applied
-        content
+        // Use task-local config (automatic per-test isolation), then shared (production)
+        let config = AccessibilityIdentifierConfig.currentTaskLocalConfig ?? AccessibilityIdentifierConfig.shared
+        // CRITICAL: Capture property values as local variables BEFORE any logic
+        // to avoid creating SwiftUI dependencies that cause infinite recursion
+        let capturedEnableAutoIDs = config.enableAutoIDs
+        let capturedGlobalAutomaticAccessibilityIdentifiers = config.globalAutomaticAccessibilityIdentifiers
+        let capturedScreenContext = config.currentScreenContext
+        let capturedViewHierarchy = config.currentViewHierarchy
+        let capturedEnableUITestIntegration = config.enableUITestIntegration
+        let capturedIncludeComponentNames = config.includeComponentNames
+        let capturedIncludeElementTypes = config.includeElementTypes
+        let capturedEnableDebugLogging = config.enableDebugLogging
+        let capturedNamespace = config.namespace
+        let capturedGlobalPrefix = config.globalPrefix
+        
+        // Logic: Both enableAutoIDs and globalAutomaticAccessibilityIdentifiers must be true
+        let shouldApply = capturedEnableAutoIDs && capturedGlobalAutomaticAccessibilityIdentifiers
+        
+        // Generate identifier if needed
+        let identifier: String? = shouldApply ? generateIdentifier(
+            config: config,
+            identifierName: identifierName,
+            identifierElementType: identifierElementType,
+            identifierLabel: identifierLabel,
+            capturedScreenContext: capturedScreenContext,
+            capturedViewHierarchy: capturedViewHierarchy,
+            capturedEnableUITestIntegration: capturedEnableUITestIntegration,
+            capturedIncludeComponentNames: capturedIncludeComponentNames,
+            capturedIncludeElementTypes: capturedIncludeElementTypes,
+            capturedEnableDebugLogging: capturedEnableDebugLogging,
+            capturedNamespace: capturedNamespace,
+            capturedGlobalPrefix: capturedGlobalPrefix
+        ) : nil
+        
+        // Helper to conditionally apply identifier
+        @ViewBuilder
+        func applyIdentifierIfNeeded<V: View>(to view: V) -> some View {
+            if let identifier = identifier {
+                view.accessibilityIdentifier(identifier)
+            } else {
+                view
+            }
+        }
+        
+        // Helper to conditionally apply accessibility label
+        // Only apply if explicitly provided via parameter - don't override existing labels
+        @ViewBuilder
+        func applyAccessibilityLabelIfNeeded<V: View>(to view: V) -> some View {
+            if let label = accessibilityLabel, !label.isEmpty {
+                // Localize and format label according to Apple HIG guidelines
+                let localizedLabel = localizeAccessibilityLabel(
+                    label,
+                    context: identifierElementType?.lowercased(),
+                    elementType: identifierElementType
+                )
+                view.accessibilityLabel(localizedLabel)
+            } else {
+                view
+            }
+        }
+        
+        // Apply identifier (if needed), then accessibility label (if needed)
+        // NOTE: This is basic compliance - NO HIG features (unlike AutomaticComplianceModifier)
+        return applyAccessibilityLabelIfNeeded(to: applyIdentifierIfNeeded(to: content))
     }
 }
 
 public extension View {
     /// Apply basic automatic compliance (identifier + label only, no HIG features)
-    /// TDD RED PHASE: Stub implementation for testing
+    /// TDD GREEN PHASE: Implementation complete
     /// Issue #172: Lightweight Compliance for Basic SwiftUI Types
     nonisolated func basicAutomaticCompliance(
         identifierName: String? = nil,
