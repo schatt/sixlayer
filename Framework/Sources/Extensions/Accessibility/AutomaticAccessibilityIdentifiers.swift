@@ -123,7 +123,7 @@ public extension EnvironmentValues {
 /// Converts to lowercase, replaces spaces and special chars with hyphens
 /// - Parameter label: The label text to sanitize
 /// - Returns: Sanitized label suitable for use in identifiers (lowercase, hyphenated, alphanumeric only)
-private func sanitizeLabelText(_ label: String) -> String {
+internal func sanitizeLabelText(_ label: String) -> String {
     return label
         .lowercased()
         .replacingOccurrences(of: " ", with: "-")
@@ -161,7 +161,7 @@ private func formatAccessibilityLabel(_ label: String) -> String {
 ///   - context: Optional context about where the label is used (e.g., "button", "textField", "form field")
 ///   - elementType: Optional element type hint for better logging
 /// - Returns: Localized label if key found, otherwise original label
-private func localizeAccessibilityLabel(_ label: String, context: String? = nil, elementType: String? = nil) -> String {
+internal func localizeAccessibilityLabel(_ label: String, context: String? = nil, elementType: String? = nil) -> String {
     // If label contains dots or looks like a localization key, try to localize it
     // Format: "SixLayerFramework.accessibility.button.save" or "MyApp.button.save"
     if label.contains(".") && !label.hasPrefix("http") {
