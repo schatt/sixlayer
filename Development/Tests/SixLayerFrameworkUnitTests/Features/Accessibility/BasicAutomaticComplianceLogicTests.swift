@@ -12,7 +12,6 @@
 
 import Testing
 import Foundation
-import SwiftUI
 @testable import SixLayerFramework
 
 /// Pure unit tests for basic automatic compliance logic
@@ -461,65 +460,5 @@ open class BasicAutomaticComplianceLogicTests: BaseTestClass {
             // Then: No collision should be detected
             #expect(!hasCollision, "Generator should not detect collision with different identifier")
         }
-    }
-    
-    // MARK: - Modifier Stub Verification Tests
-    
-    /// BUSINESS PURPOSE: Verify BasicAutomaticComplianceModifier stub exists and can be instantiated
-    /// TESTING SCOPE: Modifier stub structure
-    /// METHODOLOGY: Test that modifier can be created (stub should exist for Red phase)
-    @Test func testBasicAutomaticComplianceModifier_CanBeInstantiated() {
-        // Given: Modifier parameters
-        let modifier = BasicAutomaticComplianceModifier(
-            identifierName: "testView",
-            identifierElementType: "View",
-            identifierLabel: "Test",
-            accessibilityLabel: "Test label"
-        )
-        
-        // When: Modifier is created
-        // Then: Should exist (stub allows compilation)
-        // Note: This test verifies the stub exists, but doesn't verify it works
-        // The stub just returns content unchanged, so identifiers/labels won't be applied
-        #expect(modifier.identifierName == "testView", "Modifier should store identifierName")
-        #expect(modifier.accessibilityLabel == "Test label", "Modifier should store accessibilityLabel")
-    }
-    
-    /// BUSINESS PURPOSE: Verify basicAutomaticCompliance() extension method exists
-    /// TESTING SCOPE: View extension method availability
-    /// METHODOLOGY: Test that extension method compiles and can be called
-    @Test @MainActor func testBasicAutomaticCompliance_ExtensionExists() async {
-        initializeTestConfig()
-        await runWithTaskLocalConfig {
-            // Given: A view
-            let view = Text("Test")
-            
-            // When: Calling basicAutomaticCompliance() extension
-            let modifiedView = view.basicAutomaticCompliance(identifierName: "test")
-            
-            // Then: Should compile (stub allows compilation)
-            // Note: Stub just returns content unchanged, so identifier won't be applied
-            // This test verifies the method exists, but the stub doesn't actually work
-            // ViewInspector tests will verify the stub doesn't apply identifiers (Red phase)
-            #expect(Bool(true), "basicAutomaticCompliance() extension should exist and compile")
-        }
-    }
-    
-    /// BUSINESS PURPOSE: Verify Text.basicAutomaticCompliance() extension method exists and preserves type
-    /// TESTING SCOPE: Text extension method availability and type preservation
-    /// METHODOLOGY: Test that Text extension compiles and preserves Text type
-    @Test func testTextBasicAutomaticCompliance_ExtensionExistsAndPreservesType() {
-        // Given: Text view
-        let text = Text("Hello")
-        
-        // When: Calling Text.basicAutomaticCompliance() extension
-        let modifiedText = text.basicAutomaticCompliance(identifierName: "helloText")
-        
-        // Then: Should compile and preserve Text type (stub allows compilation)
-        // Note: Stub just returns self unchanged, so identifier won't be applied
-        // This test verifies the method exists and type is preserved, but stub doesn't work
-        // ViewInspector tests will verify the stub doesn't apply identifiers (Red phase)
-        let chained = modifiedText.bold()
-        #expect(Bool(true), "Text.basicAutomaticCompliance() should exist, compile, and preserve Text type for chaining")
     }
 }
