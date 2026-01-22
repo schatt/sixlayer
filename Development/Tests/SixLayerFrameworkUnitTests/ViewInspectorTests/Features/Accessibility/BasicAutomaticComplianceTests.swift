@@ -78,9 +78,11 @@ open class BasicAutomaticComplianceTests: BaseTestClass {
             #if canImport(ViewInspector)
             do {
                 let inspected = try view.inspect()
-                let label = try? inspected.accessibilityLabel()
-                #expect(label != nil, "Basic compliance should apply accessibility label")
-                #expect(label == "Test label.", "Label should be formatted with punctuation")
+                let labelView = try? inspected.accessibilityLabel()
+                #expect(labelView != nil, "Basic compliance should apply accessibility label")
+                if let label = labelView, let labelText = try? label.string() {
+                    #expect(labelText == "Test label.", "Label should be formatted with punctuation")
+                }
             } catch {
                 Issue.record("Failed to inspect view: \(error)")
             }
@@ -162,9 +164,11 @@ open class BasicAutomaticComplianceTests: BaseTestClass {
             do {
                 let basicInspected = try basicView.inspect()
                 let fullInspected = try fullView.inspect()
-                let basicLabel = try? basicInspected.accessibilityLabel()
-                let fullLabel = try? fullInspected.accessibilityLabel()
-                #expect(basicLabel == fullLabel, "Basic and full compliance should generate same labels")
+                let basicLabelView = try? basicInspected.accessibilityLabel()
+                let fullLabelView = try? fullInspected.accessibilityLabel()
+                let basicLabelText = basicLabelView.flatMap { try? $0.string() }
+                let fullLabelText = fullLabelView.flatMap { try? $0.string() }
+                #expect(basicLabelText == fullLabelText, "Basic and full compliance should generate same labels")
             } catch {
                 Issue.record("Failed to inspect views: \(error)")
             }

@@ -394,10 +394,12 @@ open class CollectionViewCallbackTests: BaseTestClass {
         )
         
         // When: Creating expandable card component
+        let hints = PresentationHints()
         let view = ExpandableCardComponent(
             item: item,
             layoutDecision: layoutDecision,
             strategy: strategy,
+            hints: hints,
             isExpanded: false,
             isHovered: false,
             onExpand: { },
@@ -446,8 +448,10 @@ open class CollectionViewCallbackTests: BaseTestClass {
         let item = sampleItems[0]
         
         // When: Creating cover flow card component
+        let hints = PresentationHints()
         let view = CoverFlowCardComponent(
             item: item,
+            hints: hints,
             onItemSelected: { item in self.selectedItems.append(item) },
             onItemDeleted: { item in self.deletedItems.append(item) },
             onItemEdited: { item in self.editedItems.append(item) }

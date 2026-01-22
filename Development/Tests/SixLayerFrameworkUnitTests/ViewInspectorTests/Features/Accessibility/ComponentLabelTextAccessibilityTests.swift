@@ -1013,11 +1013,13 @@ open class ComponentLabelTextAccessibilityTests: BaseTestClass {
             expansionScale: 1.15,
             animationDuration: 0.3
         )
+        let hints = PresentationHints()
         
         let card1 = ExpandableCardComponent(
             item: item1,
             layoutDecision: layoutDecision,
             strategy: strategy,
+            hints: hints,
             isExpanded: false,
             isHovered: false,
             onExpand: { },
@@ -1033,6 +1035,7 @@ open class ComponentLabelTextAccessibilityTests: BaseTestClass {
             item: item2,
             layoutDecision: layoutDecision,
             strategy: strategy,
+            hints: hints,
             isExpanded: false,
             isHovered: false,
             onExpand: { },
@@ -1126,11 +1129,12 @@ open class ComponentLabelTextAccessibilityTests: BaseTestClass {
         
         let item1 = TestItem(id: "cover-1", title: "Cover Flow Item A")
         let item2 = TestItem(id: "cover-2", title: "Cover Flow Item B")
+        let hints = PresentationHints()
         
-        let card1 = CoverFlowCardComponent(item: item1, onItemSelected: nil, onItemDeleted: nil, onItemEdited: nil)
+        let card1 = CoverFlowCardComponent(item: item1, hints: hints, onItemSelected: nil, onItemDeleted: nil, onItemEdited: nil)
             .enableGlobalAutomaticCompliance()
         
-        let card2 = CoverFlowCardComponent(item: item2, onItemSelected: nil, onItemDeleted: nil, onItemEdited: nil)
+        let card2 = CoverFlowCardComponent(item: item2, hints: hints, onItemSelected: nil, onItemDeleted: nil, onItemEdited: nil)
             .enableGlobalAutomaticCompliance()
         
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
@@ -1355,11 +1359,12 @@ open class ComponentLabelTextAccessibilityTests: BaseTestClass {
             TestItem(id: "cover-2", title: "Cover B"),
             TestItem(id: "cover-3", title: "Cover C")
         ]
+        let hints = PresentationHints()
         
-        let card1 = CoverFlowCardComponent(item: items[0], onItemSelected: nil, onItemDeleted: nil, onItemEdited: nil)
+        let card1 = CoverFlowCardComponent(item: items[0], hints: hints, onItemSelected: nil, onItemDeleted: nil, onItemEdited: nil)
             .enableGlobalAutomaticCompliance()
         
-        let card2 = CoverFlowCardComponent(item: items[1], onItemSelected: nil, onItemDeleted: nil, onItemEdited: nil)
+        let card2 = CoverFlowCardComponent(item: items[1], hints: hints, onItemSelected: nil, onItemDeleted: nil, onItemEdited: nil)
             .enableGlobalAutomaticCompliance()
         
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
@@ -1451,6 +1456,7 @@ open class ComponentLabelTextAccessibilityTests: BaseTestClass {
             item: item,
             layoutDecision: layoutDecision,
             strategy: strategy,
+            hints: hints,
             isExpanded: false,
             isHovered: false,
             onExpand: { },
@@ -1476,7 +1482,7 @@ open class ComponentLabelTextAccessibilityTests: BaseTestClass {
         )
             .enableGlobalAutomaticCompliance()
         
-        let coverFlowCard = CoverFlowCardComponent(item: item, onItemSelected: nil, onItemDeleted: nil, onItemEdited: nil)
+        let coverFlowCard = CoverFlowCardComponent(item: item, hints: hints, onItemSelected: nil, onItemDeleted: nil, onItemEdited: nil)
             .enableGlobalAutomaticCompliance()
         
         let masonryCard = MasonryCardComponent(item: item, hints: hints)
