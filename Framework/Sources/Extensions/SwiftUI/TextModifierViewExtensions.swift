@@ -11,20 +11,6 @@
 
 import SwiftUI
 
-// MARK: - Italic ViewModifier
-
-/// ViewModifier that applies italic styling while preserving the existing font
-private struct ItalicModifier: ViewModifier {
-    @Environment(\.font) private var currentFont
-    
-    func body(content: Content) -> some View {
-        // If there's a font in the environment, apply italic to it
-        // Otherwise, use default body font with italic
-        let italicFont = currentFont?.italic() ?? Font.system(.body).italic()
-        return content.font(italicFont)
-    }
-}
-
 // MARK: - View Extensions for Text Modifiers
 
 /// View extensions that replicate Text-specific modifiers
@@ -76,6 +62,22 @@ public extension View {
     func italic() -> some View {
         // Use a ViewModifier that reads the current font from environment
         // and applies italic to it, preserving the existing font choice
-        self.modifier(ItalicModifier())
+        // This is the standard SwiftUI approach for preserving environment values
+        modifier(ItalicModifier())
+    }
+}
+
+// MARK: - Italic ViewModifier
+
+/// ViewModifier that applies italic styling while preserving the existing font
+/// Uses @Environment to read the current font, which is the standard SwiftUI pattern
+private struct ItalicModifier: ViewModifier {
+    @Environment(\.font) private var currentFont
+    
+    func body(content: Content) -> some View {
+        // If there's a font in the environment, apply italic to it
+        // Otherwise, use default body font with italic
+        let italicFont = currentFont?.italic() ?? Font.system(.body).italic()
+        return content.font(italicFont)
     }
 }
