@@ -12,6 +12,7 @@
 
 import Testing
 import Foundation
+import SwiftUI
 @testable import SixLayerFramework
 
 /// Pure unit tests for basic automatic compliance logic
