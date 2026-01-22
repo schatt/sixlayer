@@ -101,17 +101,11 @@ Image(systemName: "star")
    ) -> some View
    ```
 
-3. Create View extensions for Text-specific modifiers:
-   ```swift
-   extension View {
-       func bold() -> some View { self.fontWeight(.bold) }
-       func italic() -> some View { self.italic() }
-       func font(_ font: Font) -> some View { self.font(font) }
-       // etc. for other Text-specific modifiers
-   }
-   ```
-   This allows chaining Text modifiers after `.basicAutomaticCompliance()` which returns `some View`.
-   No separate Text extension needed - Text uses View extension.
+3. Create View extensions for Text-specific modifiers (see separate issue):
+   - View extensions for `.bold()`, `.italic()`, `.font()`, `.fontWeight()`, etc.
+   - This allows chaining Text modifiers after `.basicAutomaticCompliance()` which returns `some View`.
+   - No separate Text extension needed - Text uses View extension.
+   - **See separate issue for View extensions implementation details.**
 
 ### Phase 2: Refactor Full Compliance to Use Basic (DRY)
 
@@ -239,17 +233,24 @@ Circle()
 **Question**: Do we need type-preserving versions for Text (and potentially Image), or is a general `some View`-returning method sufficient?
 
 **Answer**: Based on comprehensive modifier analysis:
-- ✅ **Create View extensions for Text-specific modifiers** - `.bold()`, `.italic()`, `.font()`, `.fontWeight()` as View extensions
+- ✅ **View extensions approach** - Create View extensions that replicate Text modifier behavior (see separate View Extensions issue)
 - ✅ **Text uses View extension** - No separate Text extension needed, Text conforms to View
-- ✅ **Allows chaining** - `Text.basicAutomaticCompliance().bold().italic()` works via View extensions
-- ✅ **Works for all Views** - View extensions for Text modifiers work on any View, not just Text
-- ✅ **Recommendation: View extensions approach** - Create View extensions that replicate Text modifier behavior
+- ⏳ **Allows chaining** - `Text.basicAutomaticCompliance().bold().italic()` works via View extensions (see separate View Extensions issue)
+- ⏳ **Works for all Views** - View extensions for Text modifiers work on any View, not just Text (see separate View Extensions issue)
 
 **Considerations**:
 - View extensions allow chaining Text modifiers after `.basicAutomaticCompliance()` (which returns `some View`)
 - No type preservation needed - View extensions provide the same functionality
 - Works universally - View extensions work on all Views, not just Text
 - Simpler implementation - No need for Text-specific extension
+- **Separate issue created** for View extensions implementation details
+
+## Related Issues
+
+- **View Extensions for Text Modifiers** (separate issue)
+  - View extensions for `.bold()`, `.italic()`, `.font()`, `.fontWeight()`, etc.
+  - Enables chaining Text modifiers after `.basicAutomaticCompliance()`
+  - Required to complete the Text modifier chaining use case
 
 ## Related
 
@@ -270,11 +271,11 @@ Circle()
 - ✅ **AC1.6**: `.basicAutomaticCompliance()` supports all parameters: `identifierName`, `identifierElementType`, `identifierLabel`, `accessibilityLabel`
 
 #### 2. Text Modifier Chaining Support
-- ✅ **AC2.1**: View extensions for Text-specific modifiers (`.bold()`, `.italic()`, `.font()`, etc.) allow chaining after `.basicAutomaticCompliance()`
-- ✅ **AC2.2**: `Text.basicAutomaticCompliance()` applies accessibility identifier (uses View extension)
-- ✅ **AC2.3**: `Text.basicAutomaticCompliance()` applies accessibility label (uses View extension)
-- ✅ **AC2.4**: `Text.basicAutomaticCompliance().bold().italic()` works via View extensions
-- ✅ **AC2.5**: View extensions replicate Text modifier behavior for all Views
+- ✅ **AC2.1**: `Text.basicAutomaticCompliance()` applies accessibility identifier (uses View extension)
+- ✅ **AC2.2**: `Text.basicAutomaticCompliance()` applies accessibility label (uses View extension)
+- ✅ **AC2.3**: `Text.basicAutomaticCompliance()` returns `some View` (enables chaining via View extensions)
+- ⏳ **AC2.4**: View extensions for Text modifiers enable chaining (see separate View Extensions issue)
+- ⏳ **AC2.5**: `Text.basicAutomaticCompliance().bold().italic()` works via View extensions (see separate View Extensions issue)
 
 #### 3. Integration with platformText
 - ✅ **AC3.1**: `platformText()` can optionally use `Text.basicAutomaticCompliance()` internally
@@ -394,11 +395,11 @@ This should be the exception, not the rule - most changes should follow strict R
 **2. Text Modifier Chaining Tests**
 - ✅ **T2.1**: Test that `Text.basicAutomaticCompliance()` applies identifier (ViewInspector)
 - ✅ **T2.2**: Test that `Text.basicAutomaticCompliance()` applies label (ViewInspector)
-- ✅ **T2.3**: Test that View extension `.bold()` works after `.basicAutomaticCompliance()`
-- ✅ **T2.4**: Test that View extension `.italic()` works after `.basicAutomaticCompliance()`
-- ✅ **T2.5**: Test that View extension `.font(.title)` works after `.basicAutomaticCompliance()`
-- ✅ **T2.6**: Test chaining: `Text("Hello").basicAutomaticCompliance().bold().italic().font(.title)`
-- ✅ **T2.7**: Test that View extensions for Text modifiers work on any View, not just Text
+- ⏳ **T2.3**: Test that View extension `.bold()` works after `.basicAutomaticCompliance()` (see separate View Extensions issue)
+- ⏳ **T2.4**: Test that View extension `.italic()` works after `.basicAutomaticCompliance()` (see separate View Extensions issue)
+- ⏳ **T2.5**: Test that View extension `.font(.title)` works after `.basicAutomaticCompliance()` (see separate View Extensions issue)
+- ⏳ **T2.6**: Test chaining: `Text("Hello").basicAutomaticCompliance().bold().italic().font(.title)` (see separate View Extensions issue)
+- ⏳ **T2.7**: Test that View extensions for Text modifiers work on any View, not just Text (see separate View Extensions issue)
 
 **2b. Text.basicAutomaticCompliance() UI-Only Tests**
 - ✅ **T2.8**: Test that `Text.basicAutomaticCompliance()` identifier is findable via XCUITest
