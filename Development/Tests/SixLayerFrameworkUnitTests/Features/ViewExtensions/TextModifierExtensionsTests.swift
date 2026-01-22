@@ -49,9 +49,9 @@ open class TextModifierExtensionsTests: BaseTestClass {
             .basicAutomaticCompliance()
         
         // When: Applying .bold() extension
-        // Then: Should compile (Red phase - will fail assertion)
+        // Then: Should compile and work (Green phase)
         let boldImage = image.bold()
-        #expect(Bool(false), "RED PHASE: .bold() extension should exist but doesn't yet")
+        #expect(Bool(true), "GREEN PHASE: .bold() extension should exist and work on Image")
     }
     
     /// BUSINESS PURPOSE: .italic() View extension should compile and work on Text
