@@ -2003,7 +2003,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             #if canImport(ViewInspector)
             withInspectedView(view) { inspected in
                 // Should use TextEditor as fallback
-                let textEditors = inspected.findAll(TextEditor.self)
+                let textEditors = inspected.findAll(ViewInspector.ViewType.TextEditor.self)
                 #expect(!textEditors.isEmpty, "Should use TextEditor as fallback on iOS < 16")
             }
             #endif
@@ -2045,7 +2045,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             // iOS < 16: Should use TextEditor
             #if canImport(ViewInspector)
             withInspectedView(view) { inspected in
-                let textEditors = inspected.findAll(TextEditor.self)
+                let textEditors = inspected.findAll(ViewInspector.ViewType.TextEditor.self)
                 #expect(!textEditors.isEmpty, "Should use TextEditor as fallback on iOS < 16")
             }
             #else

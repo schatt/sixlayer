@@ -125,15 +125,15 @@ struct TestAppContentView: View {
     private func testView(for test: TestView) -> some View {
         switch test {
         case .control:
-            ControlTestView()
+            ControlTestView(onBackToMain: { selectedTest = nil })
         case .text:
-            TextTestView()
+            TextTestView(onBackToMain: { selectedTest = nil })
         case .button:
-            ButtonTestView()
+            ButtonTestView(onBackToMain: { selectedTest = nil })
         case .platformPicker:
-            PlatformPickerTestView()
+            PlatformPickerTestView(onBackToMain: { selectedTest = nil })
         case .basicCompliance:
-            BasicComplianceTestView()
+            BasicComplianceTestView(onBackToMain: { selectedTest = nil })
         }
     }
     
@@ -141,23 +141,21 @@ struct TestAppContentView: View {
     
     @ViewBuilder
     private var layer1ExamplesView: some View {
-        platformScrollViewContainer {
-            platformVStack(alignment: .leading, spacing: 24) {
+        // Use plain SwiftUI for launch page - framework types tested in individual test views
+        ScrollView {
+            VStack(alignment: .leading, spacing: 24) {
                 Text("Layer 1 Examples (Issue #166)")
                     .font(.largeTitle)
-                    .automaticCompliance()
                     .padding(.bottom)
                 
-                // Category picker
-                platformPicker(
-                    label: "Category",
-                    selection: $selectedCategory,
-                    options: [nil] + TestCategory.allCases,
-                    optionTag: { $0 },
-                    optionLabel: { $0?.rawValue ?? "Select Category" },
-                    pickerName: "CategoryPicker",
-                    style: MenuPickerStyle()
-                )
+                // Category picker - plain SwiftUI for launch page
+                Picker("Category", selection: $selectedCategory) {
+                    Text("Select Category").tag(nil as TestCategory?)
+                    ForEach(TestCategory.allCases) { category in
+                        Text(category.rawValue).tag(category as TestCategory?)
+                    }
+                }
+                .pickerStyle(.menu)
                 .padding(.bottom)
                 
                 // Show selected category examples
@@ -183,7 +181,6 @@ struct TestAppContentView: View {
                 } else {
                     Text("Select a Layer 1 category to view examples")
                         .foregroundColor(.secondary)
-                        .automaticCompliance()
                         .padding()
                 }
             }

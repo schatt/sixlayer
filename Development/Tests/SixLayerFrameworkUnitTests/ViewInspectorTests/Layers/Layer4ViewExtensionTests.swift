@@ -144,7 +144,7 @@ open class Layer4ViewExtensionTests: BaseTestClass {
     
     @Test @MainActor func testPlatformNavigation() async {
         let view = Text("Content")
-            .platformNavigation {
+            .platformNavigation_L4 {
                 Text("Content")
             }
         
@@ -152,16 +152,16 @@ open class Layer4ViewExtensionTests: BaseTestClass {
             view,
             expectedPattern: "SixLayer.*ui",
             platform: SixLayerPlatform.iOS,
-            componentName: "platformNavigation"
+            componentName: "platformNavigation_L4"
         )
-        #expect(hasAccessibilityID, "platformNavigation should generate accessibility identifiers ")
+        #expect(hasAccessibilityID, "platformNavigation_L4 should generate accessibility identifiers ")
     }
     
     // MARK: - platformNavigationContainer Tests
     
     @Test @MainActor func testPlatformNavigationContainer() async {
         let view = Text("Content")
-            .platformNavigationContainer {
+            .platformNavigation_L4 {
                 Text("Content")
             }
         
@@ -169,9 +169,9 @@ open class Layer4ViewExtensionTests: BaseTestClass {
             view,
             expectedPattern: "SixLayer.*ui",
             platform: SixLayerPlatform.iOS,
-            componentName: "platformNavigationContainer"
+            componentName: "platformNavigation_L4"
         )
-        #expect(hasAccessibilityID, "platformNavigationContainer should generate accessibility identifiers ")
+        #expect(hasAccessibilityID, "platformNavigation_L4 should generate accessibility identifiers ")
     }
     
     // MARK: - platformNavigationDestination Tests

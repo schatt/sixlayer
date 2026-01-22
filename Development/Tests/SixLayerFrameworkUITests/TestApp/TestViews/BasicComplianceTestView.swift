@@ -9,20 +9,30 @@ import SwiftUI
 import SixLayerFramework
 
 struct BasicComplianceTestView: View {
+    let onBackToMain: () -> Void
+    
     var body: some View {
-        ScrollView {
-            VStack(spacing: 24) {
-                Text("Basic Compliance Test View")
+        platformScrollViewContainer {
+            platformVStack(spacing: 24) {
+                platformText("Basic Compliance Test View")
                     .font(.headline)
                     .automaticCompliance()
                 
+                // Back to main page button
+                platformButton("Back to Main") {
+                    onBackToMain()
+                }
+                .accessibilityIdentifier("back-to-main-button")
+                .padding(.bottom)
+                
                 // Test 1: General .basicAutomaticCompliance() with identifier
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("General Basic Compliance (Identifier)")
+                platformVStack(alignment: .leading, spacing: 8) {
+                    platformText("General Basic Compliance (Identifier)")
                         .font(.subheadline)
                         .fontWeight(.semibold)
+                        .automaticCompliance()
                     
-                    Text("Test Content")
+                    platformText("Test Content")
                         .basicAutomaticCompliance(identifierName: "testView")
                 }
                 .padding()
@@ -30,12 +40,13 @@ struct BasicComplianceTestView: View {
                 .cornerRadius(8)
                 
                 // Test 2: General .basicAutomaticCompliance() with label
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("General Basic Compliance (Label)")
+                platformVStack(alignment: .leading, spacing: 8) {
+                    platformText("General Basic Compliance (Label)")
                         .font(.subheadline)
                         .fontWeight(.semibold)
+                        .automaticCompliance()
                     
-                    Text("Test Content")
+                    platformText("Test Content")
                         .basicAutomaticCompliance(accessibilityLabel: "Test label")
                 }
                 .padding()
@@ -43,12 +54,13 @@ struct BasicComplianceTestView: View {
                 .cornerRadius(8)
                 
                 // Test 3: Text.basicAutomaticCompliance() with identifier
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Text Basic Compliance (Identifier)")
+                platformVStack(alignment: .leading, spacing: 8) {
+                    platformText("Text Basic Compliance (Identifier)")
                         .font(.subheadline)
                         .fontWeight(.semibold)
+                        .automaticCompliance()
                     
-                    Text("Hello")
+                    platformText("Hello")
                         .basicAutomaticCompliance(identifierName: "helloText")
                 }
                 .padding()
@@ -56,10 +68,11 @@ struct BasicComplianceTestView: View {
                 .cornerRadius(8)
                 
                 // Test 4: Image.basicAutomaticCompliance() with identifier
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Image Basic Compliance (Identifier)")
+                platformVStack(alignment: .leading, spacing: 8) {
+                    platformText("Image Basic Compliance (Identifier)")
                         .font(.subheadline)
                         .fontWeight(.semibold)
+                        .automaticCompliance()
                     
                     Image(systemName: "star")
                         .basicAutomaticCompliance(identifierName: "starImage")

@@ -9,17 +9,24 @@ import SwiftUI
 import SixLayerFramework
 
 struct ButtonTestView: View {
+    let onBackToMain: () -> Void
+    
     var body: some View {
-        VStack(spacing: 20) {
-            Text("Button Test View")
+        platformVStack(spacing: 20) {
+            platformText("Button Test View")
                 .font(.headline)
                 .automaticCompliance()
             
-            // Button with automatic compliance
-            Button("Test Button") {
+            // Button with automatic compliance - using platformButton
+            platformButton("Test Button") {
                 // Action
             }
-            .automaticCompliance(identifierElementType: "Button")
+            
+            // Back to main page button
+            platformButton("Back to Main") {
+                onBackToMain()
+            }
+            .accessibilityIdentifier("back-to-main-button")
         }
         .padding()
         .navigationTitle("Button Test")

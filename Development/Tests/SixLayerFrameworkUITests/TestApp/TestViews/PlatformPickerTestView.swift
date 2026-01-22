@@ -9,14 +9,16 @@ import SwiftUI
 import SixLayerFramework
 
 struct PlatformPickerTestView: View {
+    let onBackToMain: () -> Void
+    
     @State private var platformPickerSelection: String = "Option1"
     
     // Options for platformPicker test (Issue #163)
     private let platformPickerOptions = ["Option1", "Option2", "Option3"]
     
     var body: some View {
-        VStack(spacing: 20) {
-            Text("Platform Picker Test View")
+        platformVStack(spacing: 20) {
+            platformText("Platform Picker Test View")
                 .font(.headline)
                 .automaticCompliance()
             
@@ -30,6 +32,12 @@ struct PlatformPickerTestView: View {
                 pickerName: "PlatformPickerTest",
                 style: SegmentedPickerStyle()
             )
+            
+            // Back to main page button
+            platformButton("Back to Main") {
+                onBackToMain()
+            }
+            .accessibilityIdentifier("back-to-main-button")
         }
         .padding()
         .navigationTitle("Platform Picker Test")

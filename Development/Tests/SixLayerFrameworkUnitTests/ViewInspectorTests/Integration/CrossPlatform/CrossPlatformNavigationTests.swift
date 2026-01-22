@@ -25,7 +25,7 @@ open class CrossPlatformNavigationTests: BaseTestClass {
     
 @Test @MainActor func testCrossPlatformNavigationGeneratesAccessibilityIdentifiersOnIOS() async {
         let view = Text("Test Navigation")
-            .platformNavigation {
+            .platformNavigation_L4 {
                 Text("Content")
             }
         
@@ -44,7 +44,7 @@ open class CrossPlatformNavigationTests: BaseTestClass {
     
     @Test @MainActor func testCrossPlatformNavigationGeneratesAccessibilityIdentifiersOnMacOS() async {
         let view = Text("Test Navigation")
-            .platformNavigation {
+            .platformNavigation_L4 {
                 Text("Content")
             }
         
