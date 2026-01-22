@@ -346,12 +346,12 @@ open class ShapeStyleSystemTests: BaseTestClass {
         #expect(Bool(true), "modifiedView is non-optional")  // modifiedView is non-optional
     }
     
-    @Test @MainActor func testPlatformTextModifier() {
+    @Test @MainActor func testPlatformShapeTextModifier() {
         // Given: A view
         let testView = Text("Test")
         
-        // When: Applying platform text
-        let _ = testView.platformText(for: .iOS)
+        // When: Applying platform text style
+        let _ = testView.platformShapeText(for: .iOS)
         
         // Then: Should return modified view
         #expect(Bool(true), "modifiedView is non-optional")  // modifiedView is non-optional
@@ -503,7 +503,7 @@ open class ShapeStyleSystemTests: BaseTestClass {
         // When: Applying multiple shape styles
         let _ = testView
             .platformBackground(for: .iOS, variant: .standard)
-            .platformText(for: .iOS, variant: .primary)
+            .platformShapeText(for: .iOS, variant: .primary)
             .platformBorder(for: .iOS, variant: .standard, width: 1)
         
         // Then: Should return modified view
@@ -514,7 +514,7 @@ open class ShapeStyleSystemTests: BaseTestClass {
         // Given: A view that should be Apple HIG compliant
         let _ = Button("Test Button") { }
             .platformBackground(for: .iOS)
-            .platformText(for: .iOS)
+            .platformShapeText(for: .iOS)
         
         // When: View is created
         // Then: Should be Apple HIG compliant
