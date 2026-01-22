@@ -1076,18 +1076,20 @@ public struct DynamicRadioField: View {
                 .bold()
                 .automaticCompliance(named: "FieldLabel")
 
-            if let options = field.options {
+            if let options = field.options, !options.isEmpty {
                 #if os(macOS)
-                Picker(field.label, selection: Binding(
-                    get: { formState.fieldValues[field.id] as? String ?? "" },
-                    set: { formState.setValue($0, for: field.id) }
-                )) {
-                    ForEach(options, id: \.self) { option in
-                        Text(option).tag(option)
-                    }
-                }
-                .pickerStyle(.radioGroup)
-                .automaticCompliance(named: "RadioGroup")
+                // Use platformPicker helper to automatically apply accessibility (Issue #163)
+                // Note: radioGroup style is macOS-specific for radio button groups
+                platformPicker(
+                    label: field.label,
+                    selection: Binding(
+                        get: { formState.fieldValues[field.id] as? String ?? "" },
+                        set: { formState.setValue($0, for: field.id) }
+                    ),
+                    options: options,
+                    pickerName: "RadioGroup",
+                    style: RadioGroupPickerStyle()
+                )
                 #else
                 // iOS: Use custom radio button implementation
                 platformVStackContainer(alignment: .leading, spacing: 8) {

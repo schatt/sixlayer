@@ -1293,7 +1293,8 @@ private func createSimpleFieldView(for field: DynamicFormField, hints: Presentat
                     )
             case .select:
                 // Manual Picker creation with accessibility (Issue #163)
-                // Note: platformPicker has visibility issues in this specific switch context
+                // Note: platformPicker has compiler visibility issues in this specific switch context
+                // This manual approach applies the same accessibility pattern
                 if let options = field.options, !options.isEmpty {
                     Picker(field.label, selection: .constant("")) {
                         ForEach(options, id: \.self) { option in
@@ -2521,20 +2522,25 @@ public struct ModalFormView: View {
                             accessibilityLabel: field.label  // Issue #156: Parameter-based approach
                         )
                 case .select:
-                    let i18n = InternationalizationService()
-                    Picker(field.placeholder ?? i18n.placeholderSelectOption(), selection: .constant("")) {
-                        Text(i18n.placeholderSelectOption()).tag("")
-                        if let options = field.options {
-                            ForEach(options, id: \.self) { option in
-                                Text(option).tag(option)
-                            }
-                        }
+                    // Use platformPicker helper to automatically apply accessibility (Issue #163)
+                    if let options = field.options, !options.isEmpty {
+                        let i18n = InternationalizationService()
+                        platformPicker(
+                            label: field.label,
+                            selection: .constant(""),
+                            options: options,
+                            pickerName: "Layer1SelectField",
+                            style: MenuPickerStyle()
+                        )
+                        .automaticCompliance(
+                            identifierElementType: "Picker",
+                            accessibilityLabel: field.label  // Issue #156: Parameter-based approach
+                        )
+                    } else {
+                        let i18n = InternationalizationService()
+                        Text(field.placeholder ?? i18n.placeholderSelectOption())
+                            .foregroundColor(.secondary)
                     }
-                    .pickerStyle(.menu)
-                    .automaticCompliance(
-                        identifierElementType: "Picker",
-                        accessibilityLabel: field.label  // Issue #156: Parameter-based approach
-                    )
                 case .textarea:
                     TextEditor(text: .constant(""))
                         .frame(minHeight: 80)
@@ -3347,18 +3353,25 @@ public struct SimpleFormView: View {
                         accessibilityLabel: field.label  // Issue #156: Parameter-based approach
                     )
                 case .`enum`:
-                    let i18n = InternationalizationService()
-                    Picker(field.placeholder ?? i18n.localizedString(for: "SixLayerFramework.form.placeholder.selectOption"), selection: field.$value) {
-                        Text(i18n.localizedString(for: "SixLayerFramework.form.placeholder.selectOption")).tag("")
-                        ForEach(field.options, id: \.self) { option in
-                            Text(option).tag(option)
-                        }
+                    // Use platformPicker helper to automatically apply accessibility (Issue #163)
+                    if !field.options.isEmpty {
+                        let i18n = InternationalizationService()
+                        platformPicker(
+                            label: field.label,
+                            selection: field.$value,
+                            options: field.options,
+                            pickerName: "Layer1EnumField",
+                            style: MenuPickerStyle()
+                        )
+                        .automaticCompliance(
+                            identifierElementType: "View",
+                            accessibilityLabel: field.label  // Issue #156: Parameter-based approach
+                        )
+                    } else {
+                        let i18n = InternationalizationService()
+                        Text(field.placeholder ?? i18n.localizedString(for: "SixLayerFramework.form.placeholder.selectOption"))
+                            .foregroundColor(.secondary)
                     }
-                    .pickerStyle(.menu)
-                    .automaticCompliance(
-                        identifierElementType: "View",
-                        accessibilityLabel: field.label  // Issue #156: Parameter-based approach
-                    )
                 case .custom:
                     TextField(field.placeholder ?? "Custom field", text: field.$value)
                         .textFieldStyle(.roundedBorder)
