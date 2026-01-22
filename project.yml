@@ -109,35 +109,6 @@ targets:
     platform: iOS
     sources:
       - path: Development/Tests/Shared/TestHelpers
-        excludes:
-          - "ViewInspectorWrapper.swift"
-      - path: Development/Tests/SixLayerFrameworkUnitTests/ViewInspectorTests
-        excludes:
-          - "**/README.md"
-          - "**/CoreDataTestingGuide.md"
-    settings:
-      PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.framework.viewinspector-tests
-      SWIFT_VERSION: "6.0"
-      SWIFT_ACTIVE_COMPILATION_CONDITIONS: $(inherited) VIEW_INSPECTOR_MAC_FIXED
-      SWIFT_STRICT_CONCURRENCY: disabled
-      GENERATE_INFOPLIST_FILE: YES
-      CODE_SIGN_STYLE: Automatic
-      ENABLE_TESTING_SEARCH_PATHS: YES
-      DEVELOPMENT_TEAM: Y53G7YPJSZ
-      developmentTeam: Y53G7YPJSZ
-    dependencies:
-      - target: SixLayerFramework_iOS
-      - package: ViewInspector
-        product: ViewInspector
-
-  # ViewInspector tests - iOS (includes ViewInspectorTests directory)
-  SixLayerFrameworkViewInspectorTests_iOS:
-    type: bundle.unit-test
-    platform: iOS
-    sources:
-      - path: Development/Tests/Shared/TestHelpers
-        excludes:
-          - "ViewInspectorWrapper.swift"
       - path: Development/Tests/SixLayerFrameworkUnitTests/ViewInspectorTests
         excludes:
           - "**/README.md"
