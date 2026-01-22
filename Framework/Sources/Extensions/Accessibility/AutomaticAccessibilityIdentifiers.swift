@@ -546,7 +546,8 @@ public struct AutomaticComplianceModifier: ViewModifier {
     }
     
     /// Determine if an element type is interactive (needs touch target sizing, focus indicators, etc.)
-    internal func isInteractiveElement(elementType: String?) -> Bool {
+    /// Note: nonisolated because this is pure string logic with no actor isolation requirements
+    nonisolated internal func isInteractiveElement(elementType: String?) -> Bool {
         guard let elementType = elementType?.lowercased() else { return false }
         let interactiveTypes = ["button", "link", "textfield", "toggle", "picker", "stepper", "slider", "segmentedcontrol"]
         return interactiveTypes.contains { elementType.contains($0) }
