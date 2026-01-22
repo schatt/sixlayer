@@ -150,6 +150,40 @@ Based on SwiftUI's Text API, the following modifiers should be replicated:
 - ✅ **AC4.3**: Extensions work on other View types
 - ✅ **AC4.4**: Extensions don't conflict with existing SwiftUI modifiers
 
+## TDD Requirements
+
+### Test-Driven Development Process
+
+**MANDATORY**: Follow Red-Green-Refactor cycle for all implementation:
+
+1. **RED**: Write tests that **COMPILE** (and fail)
+   - Tests must compile successfully
+   - Tests must fail (assertions fail, not compilation errors)
+   - May require stubbing methods/interfaces so tests can compile
+   - **Red phase ends when tests compile and fail**
+   
+2. **GREEN**: Implement minimum code to pass tests
+   - **Green phase begins when tests compile (and fail)**
+   - Implement just enough code to make tests pass
+   - No premature optimization or refactoring
+   
+3. **REFACTOR**: Improve code while keeping tests green
+   - All tests must remain passing
+   - Improve code quality, eliminate duplication
+   - Extract shared logic, improve naming, etc.
+
+**Critical Rule**: Red phase is NOT complete until tests compile. If tests don't compile, create stub implementations (empty methods, return default values, etc.) so tests can compile and fail on assertions, not compilation errors.
+
+### Test Coverage Requirements
+
+**IMPORTANT**: For each test phase, follow this process:
+1. **Write test** (with expected behavior)
+2. **Stub implementation** (if needed for compilation)
+3. **Verify test compiles** (Red phase complete)
+4. **Verify test fails** (assertion fails, not compilation error)
+5. **Implement feature** (Green phase)
+6. **Verify test passes** (Green phase complete)
+
 ## Test Plan
 
 ### Unit Tests (Logic)
@@ -168,6 +202,53 @@ Based on SwiftUI's Text API, the following modifiers should be replicated:
 - Test visual appearance matches Text modifier behavior
 - Test that extensions work correctly with different View types
 - Test that chaining produces expected visual results
+
+### Test File Structure
+
+**Create unit test file:**
+- `Development/Tests/SixLayerFrameworkUnitTests/Features/ViewExtensions/TextModifierExtensionsTests.swift`
+
+**Unit test class structure:**
+```swift
+@Suite("View Extensions for Text Modifiers")
+open class TextModifierExtensionsTests: BaseTestClass {
+    // Tests for each View extension modifier
+}
+```
+
+**Create ViewInspector test file:**
+- `Development/Tests/SixLayerFrameworkViewInspectorTests_iOS/Features/ViewExtensions/TextModifierExtensionsViewInspectorTests.swift`
+
+**ViewInspector test class structure:**
+```swift
+@Suite("View Extensions for Text Modifiers (ViewInspector)")
+open class TextModifierExtensionsViewInspectorTests: BaseTestClass {
+    // ViewInspector tests for modifier application
+}
+```
+
+**Create UI test file:**
+- `Development/Tests/SixLayerFrameworkUITests/TextModifierExtensionsUITests.swift`
+
+**UI test class structure:**
+```swift
+@MainActor
+final class TextModifierExtensionsUITests: XCTestCase {
+    var app: XCUIApplication!
+    
+    // Visual appearance tests
+}
+```
+
+### Test Naming Convention
+
+Follow pattern: `test<Modifier>_<Condition>_<ExpectedResult>()`
+
+Examples:
+- `testBoldExtension_AppliesFontWeight_WhenCalledOnView()`
+- `testItalicExtension_AppliesItalicStyle_WhenCalledOnView()`
+- `testChaining_BoldAndItalic_WorksAfterBasicCompliance()`
+- `testFontExtension_AppliesFont_WhenCalledOnView()`
 
 ## Related Issues
 
