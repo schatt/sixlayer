@@ -10,6 +10,23 @@ import SwiftUI
 import CloudKit
 @testable import SixLayerFramework
 
+// MARK: - Test Delegate (Real Implementation)
+
+@MainActor
+class TestCloudKitDelegate: CloudKitServiceDelegate {
+    let containerID: String
+    
+    init(containerID: String = "iCloud.com.test.app") {
+        self.containerID = containerID
+    }
+    
+    func containerIdentifier() -> String {
+        return containerID
+    }
+    
+    // Uses default implementations from protocol extension
+}
+
 @Suite("CloudKit Layer 4 Components")
 @MainActor
 final class PlatformCloudKitComponentsLayer4Tests {
@@ -78,7 +95,7 @@ final class PlatformCloudKitComponentsLayer4Tests {
     
     @Test func testPlatformCloudKitServiceStatus() async {
         // Given: A service with mock delegate
-        let delegate = MockCloudKitDelegate()
+        let delegate = TestCloudKitDelegate()
         let service = CloudKitService(delegate: delegate)
         
         // When: Creating status view
@@ -92,7 +109,7 @@ final class PlatformCloudKitComponentsLayer4Tests {
     
     @Test func testPlatformCloudKitSyncButton() async {
         // Given: A service with mock delegate
-        let delegate = MockCloudKitDelegate()
+        let delegate = TestCloudKitDelegate()
         let service = CloudKitService(delegate: delegate)
         
         // When: Creating sync button
@@ -104,7 +121,7 @@ final class PlatformCloudKitComponentsLayer4Tests {
     
     @Test func testPlatformCloudKitSyncButtonWithCustomLabel() async {
         // Given: A service with mock delegate
-        let delegate = MockCloudKitDelegate()
+        let delegate = TestCloudKitDelegate()
         let service = CloudKitService(delegate: delegate)
         
         // When: Creating sync button with custom label
@@ -118,7 +135,7 @@ final class PlatformCloudKitComponentsLayer4Tests {
     
     @Test func testPlatformCloudKitStatusBadge() async {
         // Given: A service with mock delegate
-        let delegate = MockCloudKitDelegate()
+        let delegate = TestCloudKitDelegate()
         let service = CloudKitService(delegate: delegate)
         
         // When: Creating status badge

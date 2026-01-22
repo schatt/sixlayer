@@ -41,6 +41,7 @@ open class BaseTestClass {
         testConfig = AccessibilityIdentifierConfig()
         testConfig?.resetToDefaults()
         testConfig?.enableAutoIDs = true
+        testConfig?.globalAutomaticAccessibilityIdentifiers = true  // Explicitly set for basicAutomaticCompliance
         testConfig?.namespace = "SixLayer"
         testConfig?.mode = .automatic
         testConfig?.enableDebugLogging = false

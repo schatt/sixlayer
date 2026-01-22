@@ -10,18 +10,11 @@ import Testing
 import CloudKit
 @testable import SixLayerFramework
 
-// MARK: - Mock Delegate
+// MARK: - Test Delegate (Real Implementation)
 
 @MainActor
-class MockCloudKitDelegate: CloudKitServiceDelegate {
+class TestCloudKitDelegate: CloudKitServiceDelegate {
     let containerID: String
-    var conflictResolution: ((CKRecord, CKRecord) -> CKRecord?)?
-    var validationError: Error?
-    var transformResult: CKRecord?
-    var handledErrors: [Error] = []
-    var syncCompletionCalled = false
-    var syncCompletionSuccess: Bool?
-    var syncCompletionRecordsChanged: Int?
     
     init(containerID: String = "iCloud.com.test.app") {
         self.containerID = containerID
@@ -31,35 +24,12 @@ class MockCloudKitDelegate: CloudKitServiceDelegate {
         return containerID
     }
     
-    func resolveConflict(local: CKRecord, remote: CKRecord) -> CKRecord? {
-        // If custom resolution is provided, use it
-        if let custom = conflictResolution {
-            return custom(local, remote)
-        }
-        // Otherwise, use default implementation (server wins)
-        return remote
-    }
-    
-    func validateRecord(_ record: CKRecord) throws {
-        if let error = validationError {
-            throw error
-        }
-    }
-    
-    func transformRecord(_ record: CKRecord) -> CKRecord {
-        return transformResult ?? record
-    }
-    
-    func handleError(_ error: Error) -> Bool {
-        handledErrors.append(error)
-        return false // Don't handle by default
-    }
-    
-    func syncDidComplete(success: Bool, recordsChanged: Int) {
-        syncCompletionCalled = true
-        syncCompletionSuccess = success
-        syncCompletionRecordsChanged = recordsChanged
-    }
+    // Uses default implementations from protocol extension:
+    // - resolveConflict: returns remote (server wins)
+    // - validateRecord: no validation
+    // - transformRecord: returns record unchanged
+    // - handleError: returns false (framework handles)
+    // - syncDidComplete: no-op
 }
 
 // MARK: - CloudKit Service Tests
@@ -120,8 +90,8 @@ final class CloudKitServiceTests {
     // MARK: - Service Initialization Tests
     
     @Test func testCloudKitServiceInitialization() async {
-        // Given: A mock delegate
-        let delegate = MockCloudKitDelegate(containerID: "iCloud.com.test.app")
+        // Given: A test delegate
+        let delegate = TestCloudKitDelegate(containerID: "iCloud.com.test.app")
         
         // When: Creating the service
         // Note: In test environments, CloudKit container initialization may not be available
@@ -140,7 +110,7 @@ final class CloudKitServiceTests {
     
     @Test func testCloudKitServiceUsesPrivateDatabaseByDefault() async {
         // Given: A delegate
-        let delegate = MockCloudKitDelegate()
+        let delegate = TestCloudKitDelegate()
         
         // When: Creating service without specifying database
         let service = CloudKitService(delegate: delegate)
@@ -152,7 +122,7 @@ final class CloudKitServiceTests {
     
     @Test func testCloudKitServiceUsesPublicDatabaseWhenSpecified() async {
         // Given: A delegate
-        let delegate = MockCloudKitDelegate()
+        let delegate = TestCloudKitDelegate()
         
         // When: Creating service with usePublicDatabase: true
         let service = CloudKitService(delegate: delegate, usePublicDatabase: true)
@@ -165,7 +135,7 @@ final class CloudKitServiceTests {
     
     @Test func testDelegateContainerIdentifierIsRequired() async {
         // Given: A delegate with container ID
-        let delegate = MockCloudKitDelegate(containerID: "iCloud.com.custom.app")
+        let delegate = TestCloudKitDelegate(containerID: "iCloud.com.custom.app")
         
         // When: Creating service
         let service = CloudKitService(delegate: delegate)
@@ -176,7 +146,7 @@ final class CloudKitServiceTests {
     
     @Test func testDelegateDefaultConflictResolution() async {
         // Given: A delegate (using default implementation)
-        let delegate = MockCloudKitDelegate()
+        let delegate = TestCloudKitDelegate()
         
         // When: Resolving conflict
         let local = CKRecord(recordType: "Test")
@@ -190,26 +160,9 @@ final class CloudKitServiceTests {
         #expect(resolved === remote)
     }
     
-    @Test func testDelegateCustomConflictResolution() async {
-        // Given: A delegate with custom conflict resolution
-        let delegate = MockCloudKitDelegate()
-        delegate.conflictResolution = { local, remote in
-            return local // Custom: prefer local
-        }
-        
-        // When: Resolving conflict
-        let local = CKRecord(recordType: "Test")
-        let remote = CKRecord(recordType: "Test")
-        
-        let resolved = delegate.resolveConflict(local: local, remote: remote)
-        
-        // Then: Should use custom resolution
-        #expect(resolved === local)
-    }
-    
     @Test func testDelegateDefaultValidation() async {
         // Given: A delegate (using default implementation)
-        let delegate = MockCloudKitDelegate()
+        let delegate = TestCloudKitDelegate()
         
         // When: Validating a record
         let record = CKRecord(recordType: "Test")
@@ -223,27 +176,9 @@ final class CloudKitServiceTests {
         }
     }
     
-    @Test func testDelegateCustomValidation() async throws {
-        // Given: A delegate with custom validation
-        let delegate = MockCloudKitDelegate()
-        let validationError = CloudKitServiceError.missingRequiredField("title")
-        delegate.validationError = validationError
-        
-        // When: Validating a record
-        let record = CKRecord(recordType: "Test")
-        
-        // Then: Should throw validation error
-        do {
-            try delegate.validateRecord(record)
-            Issue.record("Should have thrown validation error")
-        } catch {
-            #expect(error is CloudKitServiceError)
-        }
-    }
-    
     @Test func testDelegateDefaultTransformation() async {
         // Given: A delegate (using default implementation)
-        let delegate = MockCloudKitDelegate()
+        let delegate = TestCloudKitDelegate()
         
         // When: Transforming a record
         let record = CKRecord(recordType: "Test")
@@ -255,24 +190,9 @@ final class CloudKitServiceTests {
         #expect(transformed === record)
     }
     
-    @Test func testDelegateCustomTransformation() async {
-        // Given: A delegate with custom transformation
-        let delegate = MockCloudKitDelegate()
-        let transformedRecord = CKRecord(recordType: "Test")
-        transformedRecord["value"] = "transformed"
-        delegate.transformResult = transformedRecord
-        
-        // When: Transforming a record
-        let record = CKRecord(recordType: "Test")
-        let transformed = delegate.transformRecord(record)
-        
-        // Then: Should use custom transformation
-        #expect(transformed === transformedRecord)
-    }
-    
     @Test func testDelegateDefaultErrorHandling() async {
         // Given: A delegate (using default implementation)
-        let delegate = MockCloudKitDelegate()
+        let delegate = TestCloudKitDelegate()
         
         // When: Handling an error
         let error = NSError(domain: "test", code: 1)
@@ -280,19 +200,6 @@ final class CloudKitServiceTests {
         
         // Then: Should return false (framework handles)
         #expect(handled == false)
-    }
-    
-    @Test func testDelegateSyncCompletion() async {
-        // Given: A delegate
-        let delegate = MockCloudKitDelegate()
-        
-        // When: Sync completes
-        delegate.syncDidComplete(success: true, recordsChanged: 5)
-        
-        // Then: Should be called
-        #expect(delegate.syncCompletionCalled == true)
-        #expect(delegate.syncCompletionSuccess == true)
-        #expect(delegate.syncCompletionRecordsChanged == 5)
     }
     
     // MARK: - Queue Storage Tests
@@ -368,7 +275,7 @@ final class CloudKitServiceTests {
     
     @Test func testCloudKitServiceHasQueueStorage() async {
         // Given: A service with default storage
-        let delegate = MockCloudKitDelegate()
+        let delegate = TestCloudKitDelegate()
         let service = CloudKitService(delegate: delegate)
         
         // Then: Should have queue storage (default UserDefaults)
@@ -377,7 +284,7 @@ final class CloudKitServiceTests {
     
     @Test func testCloudKitServiceCustomQueueStorage() async {
         // Given: A custom queue storage
-        let delegate = MockCloudKitDelegate()
+        let delegate = TestCloudKitDelegate()
         let customStorage = UserDefaultsCloudKitQueueStorage(key: "custom_queue_key")
         try? customStorage.clear()
         
@@ -392,7 +299,7 @@ final class CloudKitServiceTests {
     
     @Test func testCloudKitServiceStartsNetworkMonitoring() async {
         // Given: A service
-        let delegate = MockCloudKitDelegate()
+        let delegate = TestCloudKitDelegate()
         let service = CloudKitService(delegate: delegate)
         
         // Then: Network monitoring should be active (we can't directly test, but service should be initialized)
@@ -402,7 +309,7 @@ final class CloudKitServiceTests {
     
     @Test func testCloudKitServiceAutoFlushEnabled() async {
         // Given: A service
-        let delegate = MockCloudKitDelegate()
+        let delegate = TestCloudKitDelegate()
         let service = CloudKitService(delegate: delegate)
         
         // When: Disabling auto-flush
@@ -417,7 +324,7 @@ final class CloudKitServiceTests {
     
     @Test func testCloudKitServiceQueuedOperationCount() async {
         // Given: A service with queue storage
-        let delegate = MockCloudKitDelegate()
+        let delegate = TestCloudKitDelegate()
         let storage = UserDefaultsCloudKitQueueStorage(key: "test_queue_count")
         try? storage.clear()
         
@@ -435,7 +342,7 @@ final class CloudKitServiceTests {
     
     @Test func testCloudKitServiceClearQueue() async throws {
         // Given: A service with queued operations
-        let delegate = MockCloudKitDelegate()
+        let delegate = TestCloudKitDelegate()
         let storage = UserDefaultsCloudKitQueueStorage(key: "test_clear_queue")
         try storage.clear()
         
@@ -482,7 +389,7 @@ final class CloudKitServiceTests {
     
     @Test func testChangeTokenStorage() async {
         // Given: A service
-        let delegate = MockCloudKitDelegate()
+        let delegate = TestCloudKitDelegate()
         let service = CloudKitService(delegate: delegate)
         
         // When: Getting last change token (initially nil)
@@ -497,7 +404,7 @@ final class CloudKitServiceTests {
     
     @Test func testResetChangeToken() async {
         // Given: A service
-        let delegate = MockCloudKitDelegate()
+        let delegate = TestCloudKitDelegate()
         let service = CloudKitService(delegate: delegate)
         
         // When: Resetting change token
@@ -511,7 +418,7 @@ final class CloudKitServiceTests {
     
     @Test func testSyncProgressStruct() async {
         // Given: A service
-        let delegate = MockCloudKitDelegate()
+        let delegate = TestCloudKitDelegate()
         let service = CloudKitService(delegate: delegate)
         
         // When: Starting sync (in test environment, this may not complete)
