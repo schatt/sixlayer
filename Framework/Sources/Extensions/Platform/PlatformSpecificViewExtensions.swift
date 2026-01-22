@@ -1856,124 +1856,135 @@ public extension View {
         #endif
     }
 
-    /// Platform-specific picker with automatic accessibility compliance
-    /// Fixes #163: Automatically applies accessibility identifiers and labels to both
-    /// the picker and its segments, following the Stack Overflow pattern for segmented pickers.
-    ///
-    /// Convenience overload for String arrays - delegates to generic implementation.
-    ///
-    /// - Parameters:
-    ///   - label: The picker label (for accessibility)
-    ///   - selection: Binding to the selected value (String)
-    ///   - options: Array of option strings to display
-    ///   - pickerName: Optional name for the picker (used in accessibility identifier generation)
-    ///   - style: Picker style (default: .menu)
-    /// - Returns: A picker with automatic accessibility compliance applied to picker and segments
-    func platformPicker<S: SwiftUI.PickerStyle>(
-        label: String,
-        selection: Binding<String>,
-        options: [String],
-        pickerName: String? = nil,
-        style: S = MenuPickerStyle()
-    ) -> some View {
-        // Delegate to generic implementation
-        platformPicker(
-            label: label,
-            selection: selection,
-            options: options,
-            optionTag: { $0 },
-            optionLabel: { $0 },
-            pickerName: pickerName,
-            style: style
-        )
-    }
-    
-    /// Platform-specific picker with automatic accessibility compliance (PickerOption type)
-    /// Fixes #163: Automatically applies accessibility identifiers and labels to both
-    /// the picker and its segments, following the Stack Overflow pattern for segmented pickers.
-    ///
-    /// Convenience overload for PickerOption arrays - delegates to generic implementation.
-    /// This is the recommended overload for framework components that use `PickerOption` from
-    /// `FieldDisplayHints.pickerOptions`. It automatically uses `value` for selection binding
-    /// and `label` for display and accessibility.
-    ///
-    /// - Parameters:
-    ///   - label: The picker label (for accessibility)
-    ///   - selection: Binding to the selected value (String)
-    ///   - options: Array of PickerOption (has value and label)
-    ///   - pickerName: Optional name for the picker (used in accessibility identifier generation)
-    ///   - style: Picker style (default: .menu)
-    /// - Returns: A picker with automatic accessibility compliance applied to picker and segments
-    func platformPicker<S: SwiftUI.PickerStyle>(
-        label: String,
-        selection: Binding<String>,
-        options: [PickerOption],
-        pickerName: String? = nil,
-        style: S = MenuPickerStyle()
-    ) -> some View {
-        // Delegate to generic implementation
-        platformPicker(
-            label: label,
-            selection: selection,
-            options: options,
-            optionTag: { $0.value },
-            optionLabel: { $0.label },
-            pickerName: pickerName,
-            style: style
-        )
-    }
-    
-    /// Platform-specific picker with automatic accessibility compliance (generic implementation)
-    /// Fixes #163: Automatically applies accessibility identifiers and labels to both
-    /// the picker and its segments, following the Stack Overflow pattern for segmented pickers.
-    ///
-    /// This is the single implementation that all platformPicker overloads delegate to.
-    /// It ensures that when pickers are created, accessibility is automatically applied at
-    /// both the picker level and the segment level, eliminating the need for manual
-    /// `.accessibilityIdentifier()` and `.accessibility(label:)` calls on each segment.
-    ///
-    /// - Parameters:
-    ///   - label: The picker label (for accessibility)
-    ///   - selection: Binding to the selected value
-    ///   - options: Array of options (must be Hashable and provide a String representation)
-    ///   - optionTag: Closure to convert option to SelectionValue for tagging
-    ///   - optionLabel: Closure to extract label string from each option
-    ///   - pickerName: Optional name for the picker (used in accessibility identifier generation)
-    ///   - style: Picker style (default: .menu)
-    /// - Returns: A picker with automatic accessibility compliance applied to picker and segments
-    ///
-    /// ## Usage Example
-    /// ```swift
-    /// platformPicker(
-    ///     label: "Test View",
-    ///     selection: $testViewType,
-    ///     options: TestViewType.allCases,
-    ///     optionTag: { $0 },
-    ///     optionLabel: { $0.rawValue },
-    ///     pickerName: "TestViewPicker"
-    /// )
-    /// ```
-    func platformPicker<SelectionValue: Hashable, Option: Hashable, S: SwiftUI.PickerStyle>(
-        label: String,
-        selection: Binding<SelectionValue>,
-        options: [Option],
-        optionTag: @escaping (Option) -> SelectionValue,
-        optionLabel: @escaping (Option) -> String,
-        pickerName: String? = nil,
-        style: S = MenuPickerStyle()
-    ) -> some View {
-        SwiftUI.Picker(label, selection: selection) {
-            ForEach(options, id: \.self) { option in
-                let optionText = optionLabel(option)
-                Text(optionText)
-                    .tag(optionTag(option))
-                    .automaticCompliance(identifierLabel: optionText) // Apply to segment (Issue #163)
-            }
-        }
-        .pickerStyle(style)
-        .automaticCompliance(named: pickerName ?? "Picker") // Apply to picker level (Issue #163)
-    }
+}
 
+// MARK: - Platform Picker Functions
+
+/// Platform-specific picker with automatic accessibility compliance
+/// Fixes #163: Automatically applies accessibility identifiers and labels to both
+/// the picker and its segments, following the Stack Overflow pattern for segmented pickers.
+///
+/// Standalone function matching SwiftUI.Picker behavior - returns a View directly.
+/// Convenience overload for String arrays - delegates to generic implementation.
+///
+/// - Parameters:
+///   - label: The picker label (for accessibility)
+///   - selection: Binding to the selected value (String)
+///   - options: Array of option strings to display
+///   - pickerName: Optional name for the picker (used in accessibility identifier generation)
+///   - style: Picker style (default: .menu)
+/// - Returns: A picker with automatic accessibility compliance applied to picker and segments
+@ViewBuilder
+public func platformPicker<S: SwiftUI.PickerStyle>(
+    label: String,
+    selection: Binding<String>,
+    options: [String],
+    pickerName: String? = nil,
+    style: S = MenuPickerStyle()
+) -> some View {
+    // Delegate to generic implementation
+    platformPicker(
+        label: label,
+        selection: selection,
+        options: options,
+        optionTag: { $0 },
+        optionLabel: { $0 },
+        pickerName: pickerName,
+        style: style
+    )
+}
+
+/// Platform-specific picker with automatic accessibility compliance (PickerOption type)
+/// Fixes #163: Automatically applies accessibility identifiers and labels to both
+/// the picker and its segments, following the Stack Overflow pattern for segmented pickers.
+///
+/// Standalone function matching SwiftUI.Picker behavior - returns a View directly.
+/// Convenience overload for PickerOption arrays - delegates to generic implementation.
+/// This is the recommended overload for framework components that use `PickerOption` from
+/// `FieldDisplayHints.pickerOptions`. It automatically uses `value` for selection binding
+/// and `label` for display and accessibility.
+///
+/// - Parameters:
+///   - label: The picker label (for accessibility)
+///   - selection: Binding to the selected value (String)
+///   - options: Array of PickerOption (has value and label)
+///   - pickerName: Optional name for the picker (used in accessibility identifier generation)
+///   - style: Picker style (default: .menu)
+/// - Returns: A picker with automatic accessibility compliance applied to picker and segments
+@ViewBuilder
+public func platformPicker<S: SwiftUI.PickerStyle>(
+    label: String,
+    selection: Binding<String>,
+    options: [PickerOption],
+    pickerName: String? = nil,
+    style: S = MenuPickerStyle()
+) -> some View {
+    // Delegate to generic implementation
+    platformPicker(
+        label: label,
+        selection: selection,
+        options: options,
+        optionTag: { $0.value },
+        optionLabel: { $0.label },
+        pickerName: pickerName,
+        style: style
+    )
+}
+
+/// Platform-specific picker with automatic accessibility compliance (generic implementation)
+/// Fixes #163: Automatically applies accessibility identifiers and labels to both
+/// the picker and its segments, following the Stack Overflow pattern for segmented pickers.
+///
+/// Standalone function matching SwiftUI.Picker behavior - returns a View directly.
+/// This is the single implementation that all platformPicker overloads delegate to.
+/// It ensures that when pickers are created, accessibility is automatically applied at
+/// both the picker level and the segment level, eliminating the need for manual
+/// `.accessibilityIdentifier()` and `.accessibility(label:)` calls on each segment.
+///
+/// - Parameters:
+///   - label: The picker label (for accessibility)
+///   - selection: Binding to the selected value
+///   - options: Array of options (must be Hashable and provide a String representation)
+///   - optionTag: Closure to convert option to SelectionValue for tagging
+///   - optionLabel: Closure to extract label string from each option
+///   - pickerName: Optional name for the picker (used in accessibility identifier generation)
+///   - style: Picker style (default: .menu)
+/// - Returns: A picker with automatic accessibility compliance applied to picker and segments
+///
+/// ## Usage Example
+/// ```swift
+/// platformPicker(
+///     label: "Test View",
+///     selection: $testViewType,
+///     options: TestViewType.allCases,
+///     optionTag: { $0 },
+///     optionLabel: { $0.rawValue },
+///     pickerName: "TestViewPicker"
+/// )
+/// ```
+@ViewBuilder
+public func platformPicker<SelectionValue: Hashable, Option: Hashable, S: SwiftUI.PickerStyle>(
+    label: String,
+    selection: Binding<SelectionValue>,
+    options: [Option],
+    optionTag: @escaping (Option) -> SelectionValue,
+    optionLabel: @escaping (Option) -> String,
+    pickerName: String? = nil,
+    style: S = MenuPickerStyle()
+) -> some View {
+    SwiftUI.Picker(label, selection: selection) {
+        ForEach(options, id: \.self) { option in
+            let optionText = optionLabel(option)
+            Text(optionText)
+                .tag(optionTag(option))
+                .automaticCompliance(identifierLabel: optionText) // Apply to segment (Issue #163)
+        }
+    }
+    .pickerStyle(style)
+    .automaticCompliance(named: pickerName ?? "Picker") // Apply to picker level (Issue #163)
+}
+
+public extension View {
     /// Platform-specific date picker
     /// Provides consistent date picker behavior across platforms
     ///
