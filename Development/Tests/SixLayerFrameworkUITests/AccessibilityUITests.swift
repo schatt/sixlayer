@@ -229,9 +229,13 @@ final class AccessibilityUITests: XCTestCase {
         XCTAssertTrue(buttonTestButton.waitForExistenceFast(timeout: 3.0), "Button Test button should exist")
         buttonTestButton.tap()
         
+        // Wait for navigation to complete and view to appear
+        // Give SwiftUI time to render the new view and build accessibility tree
+        sleep(1)
+        
         // Wait for the button to appear
         let testButton = app.buttons["Test Button"]
-        XCTAssertTrue(testButton.waitForExistenceFast(timeout: 3.0), "Button should exist after navigation")
+        XCTAssertTrue(testButton.waitForExistenceFast(timeout: 5.0), "Button should exist after navigation")
         
         // Find element by accessibility identifier using helper (tries multiple query types)
         let expectedIdentifier = "SixLayer.main.ui.element.Button"
@@ -270,6 +274,10 @@ final class AccessibilityUITests: XCTestCase {
         let pickerTestButton = app.buttons["test-view-Platform Picker Test"]
         XCTAssertTrue(pickerTestButton.waitForExistenceFast(timeout: 3.0), "Platform Picker Test button should exist")
         pickerTestButton.tap()
+        
+        // Wait for navigation to complete and view to appear
+        // Give SwiftUI time to render the new view and build accessibility tree
+        sleep(1)
         
         // Note: On macOS, segmented pickers may not expose a container element,
         // so we test by verifying segments have identifiers instead of the picker container
