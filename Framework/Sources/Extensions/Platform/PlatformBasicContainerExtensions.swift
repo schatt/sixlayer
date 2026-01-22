@@ -815,7 +815,7 @@ public func platformTextEditor(
     text: Binding<String>
 ) -> some View {
     EmptyView().platformTextEditor(text: text, prompt: prompt)
-        .automaticCompliance()
+        .automaticCompliance(accessibilityLabel: prompt)  // Issue #157: Auto-extract from prompt
 }
 
 /// Drop-in replacement for SwiftUI's TextEditor with explicit label
