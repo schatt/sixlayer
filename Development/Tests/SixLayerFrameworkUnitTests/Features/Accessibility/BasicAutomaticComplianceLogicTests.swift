@@ -329,6 +329,57 @@ open class BasicAutomaticComplianceLogicTests: BaseTestClass {
         #expect(localized.hasSuffix(".") || localized == label, "Label should be formatted or localized")
     }
     
+    // MARK: - Interactive Element Detection Tests
+    
+    /// BUSINESS PURPOSE: Test that isInteractiveElement correctly identifies interactive elements
+    /// TESTING SCOPE: Interactive element detection logic
+    /// METHODOLOGY: Test isInteractiveElement() function directly
+    @Test func testIsInteractiveElement_IdentifiesInteractiveTypes() {
+        // Given: Various element types
+        let modifier = AutomaticComplianceModifier()
+        
+        // When: Checking if elements are interactive
+        // Then: Interactive elements should be identified
+        #expect(modifier.isInteractiveElement(elementType: "button"), "Button should be interactive")
+        #expect(modifier.isInteractiveElement(elementType: "link"), "Link should be interactive")
+        #expect(modifier.isInteractiveElement(elementType: "textfield"), "TextField should be interactive")
+        #expect(modifier.isInteractiveElement(elementType: "toggle"), "Toggle should be interactive")
+        #expect(modifier.isInteractiveElement(elementType: "picker"), "Picker should be interactive")
+        #expect(modifier.isInteractiveElement(elementType: "stepper"), "Stepper should be interactive")
+        #expect(modifier.isInteractiveElement(elementType: "slider"), "Slider should be interactive")
+        #expect(modifier.isInteractiveElement(elementType: "segmentedcontrol"), "SegmentedControl should be interactive")
+    }
+    
+    /// BUSINESS PURPOSE: Test that isInteractiveElement correctly identifies non-interactive elements
+    /// TESTING SCOPE: Non-interactive element detection logic
+    /// METHODOLOGY: Test isInteractiveElement() with non-interactive types
+    @Test func testIsInteractiveElement_IdentifiesNonInteractiveTypes() {
+        // Given: Non-interactive element types
+        let modifier = AutomaticComplianceModifier()
+        
+        // When: Checking if elements are interactive
+        // Then: Non-interactive elements should not be identified
+        #expect(!modifier.isInteractiveElement(elementType: "text"), "Text should not be interactive")
+        #expect(!modifier.isInteractiveElement(elementType: "image"), "Image should not be interactive")
+        #expect(!modifier.isInteractiveElement(elementType: "label"), "Label should not be interactive")
+        #expect(!modifier.isInteractiveElement(elementType: "view"), "View should not be interactive")
+        #expect(!modifier.isInteractiveElement(elementType: nil), "Nil element type should not be interactive")
+    }
+    
+    /// BUSINESS PURPOSE: Test that isInteractiveElement is case-insensitive
+    /// TESTING SCOPE: Case-insensitive matching
+    /// METHODOLOGY: Test isInteractiveElement() with different cases
+    @Test func testIsInteractiveElement_CaseInsensitive() {
+        // Given: Element types with different cases
+        let modifier = AutomaticComplianceModifier()
+        
+        // When: Checking if elements are interactive
+        // Then: Case should not matter
+        #expect(modifier.isInteractiveElement(elementType: "Button"), "Button (capitalized) should be interactive")
+        #expect(modifier.isInteractiveElement(elementType: "BUTTON"), "BUTTON (uppercase) should be interactive")
+        #expect(modifier.isInteractiveElement(elementType: "TextField"), "TextField (capitalized) should be interactive")
+    }
+    
     // MARK: - Config Logic Tests
     
     /// BUSINESS PURPOSE: Test that config options are respected in identifier generation

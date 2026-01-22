@@ -489,7 +489,7 @@ public struct AutomaticComplianceModifier: ViewModifier {
     }
     
     /// Determine if an element type is interactive (needs touch target sizing, focus indicators, etc.)
-    private func isInteractiveElement(elementType: String?) -> Bool {
+    internal func isInteractiveElement(elementType: String?) -> Bool {
         guard let elementType = elementType?.lowercased() else { return false }
         let interactiveTypes = ["button", "link", "textfield", "toggle", "picker", "stepper", "slider", "segmentedcontrol"]
         return interactiveTypes.contains { elementType.contains($0) }
