@@ -462,13 +462,13 @@ open class BasicAutomaticComplianceLogicTests: BaseTestClass {
         }
     }
     
-    // MARK: - Stub Behavior Verification Tests
+    // MARK: - Stub Logic Verification Tests
     
-    /// BUSINESS PURPOSE: Verify what identifier SHOULD be generated for BasicAutomaticComplianceModifier
-    /// TESTING SCOPE: Logic of what the stub should do but doesn't
-    /// METHODOLOGY: Test that given modifier parameters, we can generate the expected identifier
+    /// BUSINESS PURPOSE: Verify complete logic flow the stub SHOULD perform
+    /// TESTING SCOPE: Full logic flow (config check, identifier generation, label formatting)
+    /// METHODOLOGY: Test the complete logic using the same parameters the stub receives
     /// This test PASSES because the logic works, demonstrating what the stub SHOULD do
-    @Test @MainActor func testBasicAutomaticComplianceModifier_ShouldGenerateIdentifier() async {
+    @Test @MainActor func testBasicAutomaticComplianceModifier_CompleteLogicFlow() async {
         initializeTestConfig()
         await runWithTaskLocalConfig {
             guard let config = testConfig else {
@@ -479,20 +479,50 @@ open class BasicAutomaticComplianceLogicTests: BaseTestClass {
             // Given: Modifier parameters (what the stub receives)
             let identifierName = "testView"
             let identifierElementType = "View"
+            let identifierLabel = "Test View"
+            let accessibilityLabel = "Test label"
             
+            // Configure as stub should
+            config.enableAutoIDs = true
+            config.globalAutomaticAccessibilityIdentifiers = true
             config.namespace = "SixLayer"
             config.enableUITestIntegration = true
-            let generator = AccessibilityIdentifierGenerator()
+            config.includeComponentNames = true
+            config.includeElementTypes = true
             
-            // When: We generate the identifier that SHOULD be applied (using the logic function)
-            let expectedIdentifier = generator.generateID(for: identifierName, role: identifierElementType, context: "ui")
+            // Step 1: Check if should apply (what stub SHOULD do)
+            let shouldApply = config.enableAutoIDs && config.globalAutomaticAccessibilityIdentifiers
+            #expect(shouldApply == true, "Should apply when both flags are true")
             
-            // Then: Identifier should be generated (logic works)
-            // This test PASSES, demonstrating the logic works
-            // But the stub doesn't use this logic - it just returns content unchanged
-            // So ViewInspector tests will fail because no identifier is applied
-            #expect(!expectedIdentifier.isEmpty, "Identifier generation logic should work")
+            // Step 2: Generate identifier (what stub SHOULD do)
+            let expectedIdentifier = generateAccessibilityIdentifier(
+                config: config,
+                identifierName: identifierName,
+                identifierElementType: identifierElementType,
+                identifierLabel: identifierLabel,
+                capturedScreenContext: config.currentScreenContext,
+                capturedViewHierarchy: config.currentViewHierarchy,
+                capturedEnableUITestIntegration: config.enableUITestIntegration,
+                capturedIncludeComponentNames: config.includeComponentNames,
+                capturedIncludeElementTypes: config.includeElementTypes,
+                capturedEnableDebugLogging: config.enableDebugLogging,
+                capturedNamespace: config.namespace,
+                capturedGlobalPrefix: config.globalPrefix
+            )
+            #expect(!expectedIdentifier.isEmpty, "Identifier should be generated")
             #expect(expectedIdentifier.contains(identifierName), "Identifier should include component name")
+            
+            // Step 3: Format/localize label (what stub SHOULD do)
+            let expectedLabel = localizeAccessibilityLabel(
+                accessibilityLabel,
+                context: identifierElementType?.lowercased(),
+                elementType: identifierElementType
+            )
+            #expect(!expectedLabel.isEmpty, "Label should be formatted/localized")
+            
+            // This test PASSES, demonstrating the complete logic works
+            // But the stub doesn't perform this logic - it just returns content unchanged
+            // ViewInspector tests will fail because identifiers/labels aren't applied
         }
     }
     
