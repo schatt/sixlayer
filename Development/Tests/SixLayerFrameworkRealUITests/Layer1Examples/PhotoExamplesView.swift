@@ -1,0 +1,99 @@
+//
+//  PhotoExamplesView.swift
+//  SixLayerFrameworkRealUITests
+//
+//  Examples of Layer 1 photo functions
+//  Issue #166
+//
+
+import SwiftUI
+import SixLayerFramework
+
+struct PhotoExamplesView: View {
+    @State private var capturedImage: PlatformImage?
+    @State private var selectedImage: PlatformImage?
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 24) {
+            ExampleSection(title: "Photo Capture") {
+                PhotoCaptureExamples(capturedImage: $capturedImage)
+            }
+            
+            ExampleSection(title: "Photo Selection") {
+                PhotoSelectionExamples(selectedImage: $selectedImage)
+            }
+            
+            ExampleSection(title: "Photo Display") {
+                PhotoDisplayExamples(image: capturedImage ?? selectedImage)
+            }
+        }
+        .padding()
+    }
+}
+
+struct PhotoCaptureExamples: View {
+    @Binding var capturedImage: PlatformImage?
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Photo Capture")
+                .font(.headline)
+            
+            platformPhotoCapture_L1(
+                purpose: .general,
+                context: PhotoContext(),
+                onImageCaptured: { image in
+                    capturedImage = image
+                }
+            )
+            .frame(height: 200)
+        }
+        .padding()
+        .background(Color.platformSecondaryBackground)
+        .cornerRadius(8)
+    }
+}
+
+struct PhotoSelectionExamples: View {
+    @Binding var selectedImage: PlatformImage?
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Photo Selection")
+                .font(.headline)
+            
+            platformPhotoSelection_L1(
+                purpose: .general,
+                context: PhotoContext(),
+                onImageSelected: { image in
+                    selectedImage = image
+                }
+            )
+            .frame(height: 200)
+        }
+        .padding()
+        .background(Color.platformSecondaryBackground)
+        .cornerRadius(8)
+    }
+}
+
+struct PhotoDisplayExamples: View {
+    let image: PlatformImage?
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Photo Display")
+                .font(.headline)
+            
+            platformPhotoDisplay_L1(
+                purpose: .general,
+                context: PhotoContext(),
+                image: image
+            )
+            .frame(height: 200)
+        }
+        .padding()
+        .background(Color.platformSecondaryBackground)
+        .cornerRadius(8)
+    }
+}

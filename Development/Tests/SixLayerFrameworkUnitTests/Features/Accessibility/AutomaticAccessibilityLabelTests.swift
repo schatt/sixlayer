@@ -389,17 +389,8 @@ open class AutomaticAccessibilityLabelTests: BaseTestClass {
         #expect(Bool(true), "TextField with localized auto-extracted label should be created successfully")
         #endif
     }
-        @State var password = ""
-        let testLabel = "Password field"
-        let prompt = "Enter password"
-        let view = platformSecureField(label: testLabel, prompt: prompt, text: $password)
-        
-        // When: Secure field is created with label
-        // Then: Label should be applied via automaticCompliance
-        #expect(Bool(true), "Platform secure field with label should be created successfully")
-    }
     
-    /// BUSINESS PURPOSE: platformTextEditor should apply accessibility label when provided
+    // MARK: - Localization Tests (Issue #154)
     /// TESTING SCOPE: Tests that platformTextEditor passes label to automaticCompliance
     /// METHODOLOGY: Create text editor with label parameter
     @Test @MainActor func testPlatformTextEditor_AppliesAccessibilityLabel() async {
