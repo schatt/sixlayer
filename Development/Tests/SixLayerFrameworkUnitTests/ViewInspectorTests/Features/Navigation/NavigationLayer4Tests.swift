@@ -234,7 +234,7 @@ open class NavigationLayer4Tests: BaseTestClass {
         let content = Text("Navigation Content")
         
         // When: Wrapping content in navigation container
-        let container = content.platformNavigationContainer {
+        let container = content.platformNavigation_L4 {
             Text("Wrapped Content")
         }
         
@@ -256,7 +256,7 @@ open class NavigationLayer4Tests: BaseTestClass {
         
         // When: Wrapping complex content
         let container = Text("Trigger")
-            .platformNavigationContainer {
+            .platformNavigation_L4 {
                 complexContent
             }
         
@@ -329,7 +329,7 @@ open class NavigationLayer4Tests: BaseTestClass {
         let content = Text("Navigation Content")
         
         // When: Wrapping content in platform navigation
-        let navigation = content.platformNavigation {
+        let navigation = content.platformNavigation_L4 {
             Text("Wrapped Content")
         }
         
@@ -350,7 +350,7 @@ open class NavigationLayer4Tests: BaseTestClass {
         let content = Text("Navigation Content")
         
         // When: Wrapping content in platform navigation
-        let navigation = content.platformNavigation {
+        let navigation = content.platformNavigation_L4 {
             Text("Wrapped Content")
         }
         
@@ -378,7 +378,7 @@ open class NavigationLayer4Tests: BaseTestClass {
         
         // When: Wrapping complex content in platform navigation
         let navigation = Text("Trigger")
-            .platformNavigation {
+            .platformNavigation_L4 {
                 complexContent
             }
         
@@ -395,7 +395,7 @@ open class NavigationLayer4Tests: BaseTestClass {
         
         // When: Combining multiple navigation components
         let integratedView = Text("Content")
-            .platformNavigation {
+            .platformNavigation_L4 {
                 platformVStackContainer {
                     Text("Title")
                     
@@ -438,7 +438,7 @@ open class NavigationLayer4Tests: BaseTestClass {
         
         // When: Creating navigation components with state
         let statefulView = Text("Content")
-            .platformNavigationContainer {
+            .platformNavigation_L4 {
                 platformVStackContainer {
                     Text("Stateful Navigation")
                     
@@ -470,11 +470,11 @@ open class NavigationLayer4Tests: BaseTestClass {
         let emptyContent = EmptyView()
         
         // When: Using empty content with navigation components
-        let emptyNavigation = emptyContent.platformNavigation {
+        let emptyNavigation = emptyContent.platformNavigation_L4 {
             EmptyView()
         }
         
-        let emptyContainer = emptyContent.platformNavigationContainer {
+        let emptyContainer = emptyContent.platformNavigation_L4 {
             EmptyView()
         }
         
