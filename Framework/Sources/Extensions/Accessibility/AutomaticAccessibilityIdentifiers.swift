@@ -183,6 +183,141 @@ internal func localizeAccessibilityLabel(_ label: String, context: String? = nil
     return formatAccessibilityLabel(label)
 }
 
+// MARK: - Unified Identifier Generation
+
+/// Unified identifier generation function used by all compliance modifiers
+/// Consolidates the three previous variants into a single, testable function
+internal func generateAccessibilityIdentifier(
+    config: AccessibilityIdentifierConfig,
+    identifierName: String?,
+    identifierElementType: String?,
+    identifierLabel: String? = nil,
+    capturedScreenContext: String?,
+    capturedViewHierarchy: [String],
+    capturedEnableUITestIntegration: Bool,
+    capturedIncludeComponentNames: Bool? = nil,  // nil = always include if provided
+    capturedIncludeElementTypes: Bool? = nil,    // nil = always include if provided
+    capturedEnableDebugLogging: Bool = false,
+    capturedNamespace: String,
+    capturedGlobalPrefix: String,
+    defaultElementType: String = "View",
+    emptyFallback: String? = "main.ui.element"  // nil = no fallback, can return empty
+) -> String {
+    // Get configured values (empty means skip entirely - no framework forcing)
+    // CRITICAL: Use captured values instead of accessing @Published properties directly
+    // to avoid creating SwiftUI dependencies that cause infinite recursion
+    let namespace = capturedNamespace.isEmpty ? nil : capturedNamespace
+    let prefix = capturedGlobalPrefix.isEmpty ? nil : capturedGlobalPrefix
+    
+    // Use simplified context in UI test integration to stabilize patterns
+    // CRITICAL: Use captured values instead of accessing @Published properties directly
+    // to avoid creating SwiftUI dependencies that cause infinite recursion
+    let screenContext: String
+    let viewHierarchyPath: String
+    if capturedEnableUITestIntegration {
+        screenContext = "main"
+        viewHierarchyPath = "ui"
+    } else {
+        screenContext = capturedScreenContext ?? "main"
+        viewHierarchyPath = capturedViewHierarchy.isEmpty ? "ui" : capturedViewHierarchy.joined(separator: ".")
+    }
+    
+    // Determine component name (from parameter, not environment)
+    let componentName = identifierName ?? "element"
+    
+    // Determine element type (from parameter, not environment)
+    let elementType = identifierElementType ?? defaultElementType
+    
+    // Build identifier components in order: namespace.prefix.main.ui.element...
+    // Skip empty values entirely - framework should work with developers, not against them
+    var identifierComponents: [String] = []
+    
+    // Add namespace first (top-level organizer)
+    if let namespace = namespace {
+        identifierComponents.append(namespace)
+    }
+    
+    // Add prefix second (feature/view organizer within namespace)
+    // Allow duplication: Foo.Foo.main.ui for main view, Foo.Bar.main.ui for other views
+    if let prefix = prefix {
+        identifierComponents.append(prefix)
+    }
+    
+    // Add screen context
+    identifierComponents.append(screenContext)
+    
+    // Add view hierarchy path
+    identifierComponents.append(viewHierarchyPath)
+    
+    // Add component name based on flags or always if flag is nil
+    let shouldIncludeComponentName: Bool
+    if let includeNames = capturedIncludeComponentNames {
+        shouldIncludeComponentName = includeNames
+    } else {
+        // If flag is nil, include if name is provided (BasicAutomaticComplianceModifier behavior)
+        shouldIncludeComponentName = identifierName != nil
+    }
+    
+    if shouldIncludeComponentName {
+        // If componentName is empty, use "element" as fallback
+        let nameToAdd = componentName.isEmpty ? "element" : componentName
+        identifierComponents.append(nameToAdd)
+    }
+    
+    // Include sanitized label text if available (from parameter, not environment)
+    if let label = identifierLabel, !label.isEmpty {
+        identifierComponents.append(sanitizeLabelText(label))
+    }
+    
+    // Add element type based on flags or always if flag is nil
+    let shouldIncludeElementType: Bool
+    if let includeTypes = capturedIncludeElementTypes {
+        shouldIncludeElementType = includeTypes
+    } else {
+        // If flag is nil, include if element type is provided (BasicAutomaticComplianceModifier behavior)
+        shouldIncludeElementType = identifierElementType != nil
+    }
+    
+    if shouldIncludeElementType {
+        identifierComponents.append(elementType)
+    }
+    
+    var identifier = identifierComponents.joined(separator: ".")
+    
+    // CRITICAL: Ensure identifier is never empty (if fallback is provided)
+    if identifier.isEmpty, let fallback = emptyFallback {
+        identifier = fallback
+    }
+    
+    // Debug logging - both print to console AND add to debug log
+    // CRITICAL: Use captured value instead of accessing @Published property directly
+    if capturedEnableDebugLogging {
+        let debugLines = [
+            "🔍 ACCESSIBILITY DEBUG: Generated identifier '\(identifier)'",
+            "   - prefix: '\(String(describing: prefix))'",
+            "   - namespace: '\(String(describing: namespace))' (included: \(namespace != nil && prefix != nil && namespace != prefix))",
+            "   - screenContext: '\(screenContext)'",
+            "   - viewHierarchyPath: '\(viewHierarchyPath)'",
+            "   - componentName: '\(componentName)'",
+            "   - label: '\(identifierLabel ?? "none")'",
+            "   - elementType: '\(elementType)'",
+            "   - includeComponentNames: \(capturedIncludeComponentNames?.description ?? "always-if-provided")",
+            "   - includeElementTypes: \(capturedIncludeElementTypes?.description ?? "always-if-provided")"
+        ]
+        for line in debugLines {
+            print(line)
+            fflush(stdout) // Ensure output appears immediately
+            config.addDebugLogEntry(line, enabled: capturedEnableDebugLogging)
+        }
+        
+        // Also add a concise summary entry
+        let summaryEntry = "Generated identifier '\(identifier)' for component: '\(componentName)' role: '\(elementType)' context: '\(viewHierarchyPath)'"
+        config.addDebugLogEntry(summaryEntry, enabled: capturedEnableDebugLogging)
+    }
+    
+    return identifier
+}
+
 // MARK: - Automatic Accessibility Identifier Modifier
 
 /// Modifier that automatically generates accessibility identifiers for views
@@ -336,100 +471,22 @@ public struct AutomaticComplianceModifier: ViewModifier {
         capturedNamespace: String,
         capturedGlobalPrefix: String
     ) -> String {
-        // Get configured values (empty means skip entirely - no framework forcing)
-        // CRITICAL: Use captured values instead of accessing @Published properties directly
-        // to avoid creating SwiftUI dependencies that cause infinite recursion
-        let namespace = capturedNamespace.isEmpty ? nil : capturedNamespace
-        let prefix = capturedGlobalPrefix.isEmpty ? nil : capturedGlobalPrefix
-        
-        // Use simplified context in UI test integration to stabilize patterns
-        // CRITICAL: Use captured values instead of accessing @Published properties directly
-        // to avoid creating SwiftUI dependencies that cause infinite recursion
-        let screenContext: String
-        let viewHierarchyPath: String
-        if capturedEnableUITestIntegration {
-            screenContext = "main"
-            viewHierarchyPath = "ui"
-        } else {
-            screenContext = capturedScreenContext ?? "main"
-            viewHierarchyPath = capturedViewHierarchy.isEmpty ? "ui" : capturedViewHierarchy.joined(separator: ".")
-        }
-        
-        // Determine component name (from parameter, not environment)
-        let componentName = identifierName ?? "element"
-        
-        // Determine element type (from parameter, not environment)
-        let elementType = identifierElementType ?? "View" // Default to "View" if not specified
-        
-        // Build identifier components in order: namespace.prefix.main.ui.element...
-        // Skip empty values entirely - framework should work with developers, not against them
-        var identifierComponents: [String] = []
-        
-        // Add namespace first (top-level organizer)
-        if let namespace = namespace {
-            identifierComponents.append(namespace)
-        }
-        
-        // Add prefix second (feature/view organizer within namespace)
-        // Allow duplication: Foo.Foo.main.ui for main view, Foo.Bar.main.ui for other views
-        if let prefix = prefix {
-            identifierComponents.append(prefix)
-        }
-        
-        // Add screen context
-        identifierComponents.append(screenContext)
-        
-        // Add view hierarchy path
-        identifierComponents.append(viewHierarchyPath)
-        
-        if capturedIncludeComponentNames {
-            identifierComponents.append(componentName)
-        }
-        
-        // Include sanitized label text if available (from parameter, not environment)
-        if let label = identifierLabel, !label.isEmpty {
-            identifierComponents.append(sanitizeLabelText(label))
-        }
-        
-        if capturedIncludeElementTypes {
-            identifierComponents.append(elementType)
-        }
-        
-        var identifier = identifierComponents.joined(separator: ".")
-        
-        // CRITICAL: Ensure identifier is never empty
-        // If all components were empty/nil, return at least "main.ui.element"
-        if identifier.isEmpty {
-            identifier = "main.ui.element"
-        }
-        
-        // Debug logging - both print to console AND add to debug log
-        // CRITICAL: Use captured value instead of accessing @Published property directly
-        if capturedEnableDebugLogging {
-            let debugLines = [
-                "🔍 ACCESSIBILITY DEBUG: Generated identifier '\(identifier)'",
-                "   - prefix: '\(String(describing: prefix))'",
-                "   - namespace: '\(String(describing: namespace))' (included: \(namespace != nil && prefix != nil && namespace != prefix))",
-                "   - screenContext: '\(screenContext)'",
-                "   - viewHierarchyPath: '\(viewHierarchyPath)'",
-                "   - componentName: '\(componentName)'",
-                "   - label: '\(identifierLabel ?? "none")'",
-                "   - elementType: '\(elementType)'",
-                "   - includeComponentNames: \(capturedIncludeComponentNames)",
-                "   - includeElementTypes: \(capturedIncludeElementTypes)"
-            ]
-            for line in debugLines {
-                print(line)
-                fflush(stdout) // Ensure output appears immediately
-                config.addDebugLogEntry(line, enabled: capturedEnableDebugLogging)
-            }
-            
-            // Also add a concise summary entry
-            let summaryEntry = "Generated identifier '\(identifier)' for component: '\(componentName)' role: '\(elementType)' context: '\(viewHierarchyPath)'"
-            config.addDebugLogEntry(summaryEntry, enabled: capturedEnableDebugLogging)
-        }
-        
-        return identifier
+        return generateAccessibilityIdentifier(
+            config: config,
+            identifierName: identifierName,
+            identifierElementType: identifierElementType,
+            identifierLabel: identifierLabel,
+            capturedScreenContext: capturedScreenContext,
+            capturedViewHierarchy: capturedViewHierarchy,
+            capturedEnableUITestIntegration: capturedEnableUITestIntegration,
+            capturedIncludeComponentNames: capturedIncludeComponentNames,
+            capturedIncludeElementTypes: capturedIncludeElementTypes,
+            capturedEnableDebugLogging: capturedEnableDebugLogging,
+            capturedNamespace: capturedNamespace,
+            capturedGlobalPrefix: capturedGlobalPrefix,
+            defaultElementType: "View",
+            emptyFallback: "main.ui.element"
+        )
     }
     
     // MARK: - HIG Compliance Features (Phase 1)
@@ -596,52 +653,22 @@ public struct NamedAutomaticComplianceModifier: ViewModifier {
         capturedNamespace: String,
         capturedGlobalPrefix: String
     ) -> String {
-        
-        // Get configured values (empty means skip entirely - no framework forcing)
-        // CRITICAL: Use captured values instead of accessing @Published properties directly
-        // to avoid creating SwiftUI dependencies that cause infinite recursion
-        let namespace = capturedNamespace.isEmpty ? nil : capturedNamespace
-        let prefix = capturedGlobalPrefix.isEmpty ? nil : capturedGlobalPrefix
-        
-        // CRITICAL: Use captured values instead of accessing @Published properties directly
-        // to avoid creating SwiftUI dependencies that cause infinite recursion
-        let screenContext: String
-        let viewHierarchyPath: String
-        if capturedEnableUITestIntegration {
-            screenContext = "main"
-            viewHierarchyPath = "ui"
-        } else {
-            screenContext = capturedScreenContext ?? "main"
-            viewHierarchyPath = capturedViewHierarchy.isEmpty ? "ui" : capturedViewHierarchy.joined(separator: ".")
-        }
-        
-        var identifierComponents: [String] = []
-        
-        if let namespace = namespace {
-            identifierComponents.append(namespace)
-        }
-        
-        if let prefix = prefix {
-            identifierComponents.append(prefix)
-        }
-        
-        identifierComponents.append(screenContext)
-        identifierComponents.append(viewHierarchyPath)
-        
-        if capturedIncludeComponentNames {
-            // If componentName is empty, use "element" as fallback
-            let nameToAdd = componentName.isEmpty ? "element" : componentName
-            identifierComponents.append(nameToAdd)
-        }
-        
-        if capturedIncludeElementTypes {
-            identifierComponents.append("View")
-        }
-        
-        let identifier = identifierComponents.joined(separator: ".")
-        
-        // Ensure identifier is never empty - if all components were empty, return at least "element"
-        return identifier.isEmpty ? "element" : identifier
+        return generateAccessibilityIdentifier(
+            config: config,
+            identifierName: componentName,
+            identifierElementType: "View",  // Hardcoded for NamedAutomaticComplianceModifier
+            identifierLabel: nil,
+            capturedScreenContext: capturedScreenContext,
+            capturedViewHierarchy: capturedViewHierarchy,
+            capturedEnableUITestIntegration: capturedEnableUITestIntegration,
+            capturedIncludeComponentNames: capturedIncludeComponentNames,
+            capturedIncludeElementTypes: capturedIncludeElementTypes,
+            capturedEnableDebugLogging: false,
+            capturedNamespace: capturedNamespace,
+            capturedGlobalPrefix: capturedGlobalPrefix,
+            defaultElementType: "View",
+            emptyFallback: "element"
+        )
     }
 }
 
@@ -853,55 +880,28 @@ public struct ForcedAutomaticAccessibilityIdentifiersModifier: ViewModifier {
         config: AccessibilityIdentifierConfig,
         identifierName: String?,
         identifierElementType: String?,
-            capturedScreenContext: String?,
-            capturedViewHierarchy: [String],
-            capturedEnableUITestIntegration: Bool,
-            capturedNamespace: String,
-            capturedGlobalPrefix: String
-        ) -> String {
-        // Use injected config from environment (for testing), fall back to shared (for production)
-        
-        // Get configured values (empty means skip entirely - no framework forcing)
-        // CRITICAL: Use captured values instead of accessing @Published properties directly
-        // to avoid creating SwiftUI dependencies that cause infinite recursion
-        let namespace = capturedNamespace.isEmpty ? nil : capturedNamespace
-        let prefix = capturedGlobalPrefix.isEmpty ? nil : capturedGlobalPrefix
-        // CRITICAL: Use captured values instead of accessing @Published properties directly
-        // to avoid creating SwiftUI dependencies that cause infinite recursion
-        let screenContext: String = capturedEnableUITestIntegration ? "main" : (capturedScreenContext ?? "main")
-        let viewHierarchyPath: String = capturedEnableUITestIntegration ? "ui" : (capturedViewHierarchy.isEmpty ? "ui" : capturedViewHierarchy.joined(separator: "."))
-        
-        // Build identifier components in order: namespace.prefix.main.ui.element...
-        var identifierComponents: [String] = []
-        
-        // Add namespace first (top-level organizer)
-        if let namespace = namespace {
-            identifierComponents.append(namespace)
-        }
-        
-        // Add prefix second (feature/view organizer within namespace)
-        // Allow duplication: Foo.Foo.main.ui for main view, Foo.Bar.main.ui for other views
-        if let prefix = prefix {
-            identifierComponents.append(prefix)
-        }
-        
-        // Add screen context
-        identifierComponents.append(screenContext)
-        
-        // Add view hierarchy path
-        identifierComponents.append(viewHierarchyPath)
-        
-        // Add element type if available (from parameter)
-        if let elementType = identifierElementType {
-            identifierComponents.append(elementType)
-        }
-        
-        // Add name if available (from parameter)
-        if let name = identifierName {
-            identifierComponents.append(name)
-        }
-        
-        return identifierComponents.joined(separator: ".")
+        capturedScreenContext: String?,
+        capturedViewHierarchy: [String],
+        capturedEnableUITestIntegration: Bool,
+        capturedNamespace: String,
+        capturedGlobalPrefix: String
+    ) -> String {
+        return generateAccessibilityIdentifier(
+            config: config,
+            identifierName: identifierName,
+            identifierElementType: identifierElementType,
+            identifierLabel: nil,
+            capturedScreenContext: capturedScreenContext,
+            capturedViewHierarchy: capturedViewHierarchy,
+            capturedEnableUITestIntegration: capturedEnableUITestIntegration,
+            capturedIncludeComponentNames: nil,  // nil = always include if provided
+            capturedIncludeElementTypes: nil,     // nil = always include if provided
+            capturedEnableDebugLogging: false,
+            capturedNamespace: capturedNamespace,
+            capturedGlobalPrefix: capturedGlobalPrefix,
+            defaultElementType: "View",
+            emptyFallback: nil  // BasicAutomaticComplianceModifier allows empty
+        )
     }
 }
 
