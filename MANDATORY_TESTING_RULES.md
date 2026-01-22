@@ -38,18 +38,91 @@
 
 ## Rule 1: Test-Driven Development (TDD)
 
-### 1.1 TDD Process
-- **MANDATORY**: Write tests BEFORE implementing features
-- **MANDATORY**: Red-Green-Refactor cycle must be followed
-- **MANDATORY**: Tests must fail initially (Red phase)
-- **MANDATORY**: Implement minimal code to make tests pass (Green phase)
-- **MANDATORY**: Refactor while keeping tests green (Refactor phase)
+### 1.1 TDD Process - Red-Green-Refactor Cycle
+
+**MANDATORY**: Follow Red-Green-Refactor cycle for all implementation:
+
+1. **RED**: Write tests that **COMPILE** (and fail)
+   - Tests must compile successfully
+   - Tests must fail (assertions fail, not compilation errors)
+   - May require stubbing methods/interfaces so tests can compile
+   - **Red phase ends when tests compile and fail**
+   
+2. **GREEN**: Implement minimum code to pass tests
+   - **Green phase begins when tests compile (and fail)**
+   - Implement just enough code to make tests pass
+   - No premature optimization or refactoring
+   
+3. **REFACTOR**: Improve code while keeping tests green
+   - All tests must remain passing
+   - Improve code quality, eliminate duplication
+   - Extract shared logic, improve naming, etc.
+
+**Critical Rule**: Red phase is NOT complete until tests compile. If tests don't compile, create stub implementations (empty methods, return default values, etc.) so tests can compile and fail on assertions, not compilation errors.
+
+**Example Stub Pattern**:
+```swift
+// Red phase stub - allows test to compile
+extension View {
+    func basicAutomaticCompliance(...) -> some View {
+        self  // Stub: just returns self, no actual implementation
+    }
+}
+
+// Test compiles, but assertion fails (Red phase complete)
+#expect(viewHasIdentifier, "Should have identifier")  // Fails - Red phase
+```
+
+### 1.1.1 Strategy for Breaking API Changes
+
+**Note on Breaking API Changes**: Some flexibility exists when arguments to existing methods are changing (breaking API changes), but those are relatively rare. 
+
+**Strategy for Breaking API Changes**: When replacing an existing function `Foo` with a breaking change:
+- **Red Phase**: Create temporary function `newFoo` with new signature, tests use `newFoo` (compile but fail)
+- **Green Phase**: Make `newFoo` work (tests pass)
+- **Rename Phase**: Rename `newFoo` to `Foo` (replacing old `Foo`)
+- **Green2 Phase**: Fix all broken code that used old `Foo`'s method calls (compiler shows all broken call sites)
+
+This allows tests to compile during Red phase without breaking existing code. The "broken state" after rename is actually helpful - the compiler points out ALL call sites that need fixing, ensuring nothing is missed.
+
+**Example**:
+```swift
+// Red phase: Create newFoo with new signature (stub)
+func newFoo(newParam: String) -> some View {
+    self  // Stub - allows test to compile
+}
+
+// Tests use newFoo
+#expect(newFoo(newParam: "test") != nil)  // Compiles, fails assertion (Red phase)
+
+// Green phase: Make newFoo work
+func newFoo(newParam: String) -> some View {
+    // Actual implementation
+    Text(newParam).automaticCompliance()
+}
+
+// Rename phase: Rename newFoo to Foo (replacing old Foo)
+func Foo(newParam: String) -> some View {
+    // Same implementation (was newFoo)
+    Text(newParam).automaticCompliance()
+}
+// Old Foo removed - compiler now shows ALL broken call sites
+
+// Green2 phase: Fix all call sites (compiler errors guide you)
+// Old: Foo(oldParam: 42)  // Compiler error - must fix
+// New: Foo(newParam: "42")  // Fixed
+```
+
+**Why this is better**: The compiler forces you to find and fix ALL broken call sites. You can't miss any - they're all compilation errors. This is more reliable than manually finding call sites during migration.
+
+**Note**: This should be the exception, not the rule - most changes should follow strict Red-Green-Refactor with stubs.
 
 ### 1.2 TDD Enforcement
 - **MANDATORY**: No feature implementation without tests first
 - **MANDATORY**: No code changes without corresponding test changes
 - **MANDATORY**: Tests must be written for every function before implementation
 - **MANDATORY**: All tests must pass before any release
+- **MANDATORY**: Tests must compile before implementation begins (Red phase requirement)
 
 ## Rule 1.5: Epistemological Rigor in Testing
 
