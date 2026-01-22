@@ -1292,20 +1292,27 @@ private func createSimpleFieldView(for field: DynamicFormField, hints: Presentat
                         accessibilityLabel: field.label  // Issue #156: Parameter-based approach
                     )
             case .select:
-                let i18n = InternationalizationService()
-                Picker(field.placeholder ?? i18n.placeholderSelectOption(), selection: .constant("")) {
-                    Text(i18n.placeholderSelectOption()).tag("")
-                    if let options = field.options {
+                // Manual Picker creation with accessibility (Issue #163)
+                // Note: platformPicker has visibility issues in this specific switch context
+                if let options = field.options, !options.isEmpty {
+                    Picker(field.label, selection: .constant("")) {
                         ForEach(options, id: \.self) { option in
-                            Text(option).tag(option)
+                            Text(option)
+                                .tag(option)
+                                .automaticCompliance(identifierLabel: option) // Apply to segment (Issue #163)
                         }
                     }
+                    .pickerStyle(.menu)
+                    .automaticCompliance(named: "Layer1SelectField") // Apply to picker level (Issue #163)
+                    .automaticCompliance(
+                        identifierElementType: "Picker",
+                        accessibilityLabel: field.label  // Issue #156: Parameter-based approach
+                    )
+                } else {
+                    let i18n = InternationalizationService()
+                    Text(field.placeholder ?? i18n.placeholderSelectOption())
+                        .foregroundColor(.secondary)
                 }
-                .pickerStyle(.menu)
-                .automaticCompliance(
-                    identifierElementType: "Picker",
-                    accessibilityLabel: field.label  // Issue #156: Parameter-based approach
-                )
             case .date:
                 let i18n = InternationalizationService()
                 DatePicker("", selection: .constant(Date()))
@@ -3075,18 +3082,28 @@ public struct SimpleFormView: View {
                     )
                     
                 case .select:
-                    let i18nSelect = InternationalizationService()
-                    Picker(field.placeholder ?? i18nSelect.placeholderSelectOption(), selection: field.$value) {
-                        Text(i18nSelect.placeholderSelectOption()).tag("")
-                        ForEach(field.options, id: \.self) { option in
-                            Text(option).tag(option)
+                    // Use platformPicker helper to automatically apply accessibility (Issue #163)
+                    // Note: This version uses field.$value binding (not constant), so it's interactive
+                    Group {
+                        if !field.options.isEmpty {
+                            let i18nSelect = InternationalizationService()
+                            platformPicker(
+                                label: field.label,
+                                selection: field.$value,
+                                options: field.options,
+                                pickerName: "Layer1SelectField",
+                                style: MenuPickerStyle()
+                            )
+                            .automaticCompliance(
+                                identifierElementType: "Picker",
+                                accessibilityLabel: field.label  // Issue #156: Parameter-based approach
+                            )
+                        } else {
+                            let i18nSelect = InternationalizationService()
+                            Text(field.placeholder ?? i18nSelect.placeholderSelectOption())
+                                .foregroundColor(.secondary)
                         }
                     }
-                    .pickerStyle(.menu)
-                    .automaticCompliance(
-                        identifierElementType: "Picker",
-                        accessibilityLabel: field.label  // Issue #156: Parameter-based approach
-                    )
                     
                 case .textarea:
                     TextEditor(text: field.$value)
@@ -4508,17 +4525,21 @@ struct GenericSettingsItemView: View {
                 .disabled(!item.isEnabled)
                 
             case .select:
-                if let options = item.options {
-                    Picker("", selection: Binding(
-                        get: { value as? String ?? options.first ?? "" },
-                        set: { value = $0 }
-                    )) {
-                        ForEach(options, id: \.self) { option in
-                            Text(option).tag(option)
-                        }
+                // Use platformPicker helper to automatically apply accessibility (Issue #163)
+                Group {
+                    if let options = item.options, !options.isEmpty {
+                        platformPicker(
+                            label: item.title,
+                            selection: Binding(
+                                get: { value as? String ?? options.first ?? "" },
+                                set: { value = $0 }
+                            ),
+                            options: options,
+                            pickerName: "Layer1SelectItem",
+                            style: MenuPickerStyle()
+                        )
+                        .disabled(!item.isEnabled)
                     }
-                    .pickerStyle(.menu)
-                    .disabled(!item.isEnabled)
                 }
                 
             case .slider:

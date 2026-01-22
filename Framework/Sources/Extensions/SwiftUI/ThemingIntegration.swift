@@ -206,18 +206,27 @@ public struct ThemedGenericFormView: View {
                 .datePickerStyle(.compact)
                 
             case .select:
-                let i18n = InternationalizationService()
-                Picker(field.placeholder ?? i18n.localizedString(for: "SixLayerFramework.form.placeholder.selectOption"), selection: Binding(
-                    get: { formData[field.id.uuidString] as? String ?? "" },
-                    set: { formData[field.id.uuidString] = $0 }
-                )) {
-                    Text(i18n.localizedString(for: "SixLayerFramework.form.placeholder.selectOption")).tag("")
-                    ForEach(field.options, id: \.self) { option in
-                        Text(option).tag(option)
+                // Use platformPicker helper to automatically apply accessibility (Issue #163)
+                Group {
+                    if !field.options.isEmpty {
+                        let i18n = InternationalizationService()
+                        platformPicker(
+                            label: field.label,
+                            selection: Binding(
+                                get: { formData[field.id.uuidString] as? String ?? "" },
+                                set: { formData[field.id.uuidString] = $0 }
+                            ),
+                            options: field.options,
+                            pickerName: "ThemedSelectField",
+                            style: MenuPickerStyle()
+                        )
+                        .themedTextField()
+                    } else {
+                        let i18n = InternationalizationService()
+                        Text(field.placeholder ?? i18n.localizedString(for: "SixLayerFramework.form.placeholder.selectOption"))
+                            .foregroundColor(.secondary)
                     }
                 }
-                .pickerStyle(.menu)
-                .themedTextField()
                     
             case .textarea:
                 TextEditor(text: Binding(
@@ -372,18 +381,27 @@ public struct ThemedGenericFormView: View {
                     .background(colors.surface)
                     .clipShape(RoundedRectangle(cornerRadius: 8))
             case .`enum`:
-                let i18n = InternationalizationService()
-                Picker(field.placeholder ?? i18n.localizedString(for: "SixLayerFramework.form.placeholder.selectOption"), selection: Binding(
-                    get: { formData[field.id.uuidString] as? String ?? "" },
-                    set: { formData[field.id.uuidString] = $0 }
-                )) {
-                    Text(i18n.localizedString(for: "SixLayerFramework.form.placeholder.selectOption")).tag("")
-                    ForEach(field.options, id: \.self) { option in
-                        Text(option).tag(option)
+                // Use platformPicker helper to automatically apply accessibility (Issue #163)
+                Group {
+                    if !field.options.isEmpty {
+                        let i18n = InternationalizationService()
+                        platformPicker(
+                            label: field.label,
+                            selection: Binding(
+                                get: { formData[field.id.uuidString] as? String ?? "" },
+                                set: { formData[field.id.uuidString] = $0 }
+                            ),
+                            options: field.options,
+                            pickerName: "ThemedEnumField",
+                            style: MenuPickerStyle()
+                        )
+                        .themedTextField()
+                    } else {
+                        let i18n = InternationalizationService()
+                        Text(field.placeholder ?? i18n.localizedString(for: "SixLayerFramework.form.placeholder.selectOption"))
+                            .foregroundColor(.secondary)
                     }
                 }
-                .pickerStyle(.menu)
-                .themedTextField()
             case .custom:
                 let i18n = InternationalizationService()
                 Text(i18n.localizedString(for: "SixLayerFramework.form.fieldType.custom", arguments: [field.label]))
