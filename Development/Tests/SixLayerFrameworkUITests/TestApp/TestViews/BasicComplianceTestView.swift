@@ -67,7 +67,55 @@ struct BasicComplianceTestView: View {
                 .background(Color.platformSecondaryBackground)
                 .cornerRadius(8)
                 
-                // Test 4: Image.basicAutomaticCompliance() with identifier
+                // Test 4: Text.basicAutomaticCompliance() with label
+                platformVStack(alignment: .leading, spacing: 8) {
+                    platformText("Text Basic Compliance (Label)")
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                        .automaticCompliance()
+                    
+                    platformText("Hello")
+                        .basicAutomaticCompliance(accessibilityLabel: "Hello text")
+                }
+                .padding()
+                .background(Color.platformSecondaryBackground)
+                .cornerRadius(8)
+                
+                // Test 5: Identifier sanitization (spaces and uppercase)
+                platformVStack(alignment: .leading, spacing: 8) {
+                    platformText("Identifier Sanitization (Spaces/Uppercase)")
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                        .automaticCompliance()
+                    
+                    platformText("Test")
+                        .basicAutomaticCompliance(
+                            identifierName: "TestButton",
+                            identifierLabel: "Save File"
+                        )
+                }
+                .padding()
+                .background(Color.platformSecondaryBackground)
+                .cornerRadius(8)
+                
+                // Test 6: Identifier sanitization (special characters)
+                platformVStack(alignment: .leading, spacing: 8) {
+                    platformText("Identifier Sanitization (Special Characters)")
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                        .automaticCompliance()
+                    
+                    platformText("Test")
+                        .basicAutomaticCompliance(
+                            identifierName: "TestButton",
+                            identifierLabel: "Save & Load!"
+                        )
+                }
+                .padding()
+                .background(Color.platformSecondaryBackground)
+                .cornerRadius(8)
+                
+                // Test 7: Image.basicAutomaticCompliance() with identifier
                 platformVStack(alignment: .leading, spacing: 8) {
                     platformText("Image Basic Compliance (Identifier)")
                         .font(.subheadline)

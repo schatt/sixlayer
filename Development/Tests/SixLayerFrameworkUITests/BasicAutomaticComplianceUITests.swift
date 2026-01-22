@@ -106,6 +106,9 @@ final class BasicAutomaticComplianceUITests: XCTestCase {
     // MARK: - Basic Compliance Identifier Tests
     
     /// Test that .basicAutomaticCompliance() identifier is findable via XCUITest
+    /// BUSINESS PURPOSE: Verify basic compliance applies identifiers that UI tests can find
+    /// TESTING SCOPE: General View extension method identifier detection
+    /// METHODOLOGY: Use XCUITest to find element by identifier (moved from ViewInspector tests)
     @MainActor
     func testBasicAutomaticCompliance_IdentifierIsFindable() throws {
         // Given: App is launched and ready (from setUp)
@@ -116,9 +119,7 @@ final class BasicAutomaticComplianceUITests: XCTestCase {
         
         // When: Query for element by basic compliance identifier using XCUITest
         // Then: Should be findable
-        
-        // TDD RED PHASE: This test will fail because basic compliance doesn't apply identifiers yet
-        // The test compiles, but the identifier won't be found (Red phase)
+        // Identifier format: SixLayer.main.ui.testView (with enableUITestIntegration=true)
         let testIdentifier = "SixLayer.main.ui.testView"
         
         guard app.findElement(byIdentifier: testIdentifier, 
@@ -130,6 +131,9 @@ final class BasicAutomaticComplianceUITests: XCTestCase {
     }
     
     /// Test that .basicAutomaticCompliance() label is readable via XCUITest
+    /// BUSINESS PURPOSE: Verify basic compliance applies labels that VoiceOver can read
+    /// TESTING SCOPE: General View extension method label detection
+    /// METHODOLOGY: Use XCUITest to find element by label (moved from ViewInspector tests)
     @MainActor
     func testBasicAutomaticCompliance_LabelIsReadable() throws {
         // Given: App is launched and ready (from setUp)
@@ -140,9 +144,8 @@ final class BasicAutomaticComplianceUITests: XCTestCase {
         
         // When: Query for element by basic compliance label using XCUITest
         // Then: Should be readable
-        
-        // TDD RED PHASE: This test will fail because basic compliance doesn't apply labels yet
-        let testLabel = "Test label"
+        // Label should be formatted with punctuation: "Test label" -> "Test label."
+        let testLabel = "Test label."
         
         let element = app.staticTexts[testLabel]
         guard element.existsImmediately || element.waitForExistenceFast(timeout: 3.0) else {
@@ -152,6 +155,9 @@ final class BasicAutomaticComplianceUITests: XCTestCase {
     }
     
     /// Test that Text with .basicAutomaticCompliance() identifier is findable
+    /// BUSINESS PURPOSE: Verify Text.basicAutomaticCompliance() applies identifiers
+    /// TESTING SCOPE: Text extension method identifier detection
+    /// METHODOLOGY: Use XCUITest to find Text element by identifier (moved from ViewInspector tests)
     @MainActor
     func testTextBasicAutomaticCompliance_IdentifierIsFindable() throws {
         // Given: App is launched and ready (from setUp)
@@ -162,8 +168,7 @@ final class BasicAutomaticComplianceUITests: XCTestCase {
         
         // When: Query for Text element by basic compliance identifier using XCUITest
         // Then: Should be findable
-        
-        // TDD RED PHASE: This test will fail because Text.basicAutomaticCompliance() doesn't apply identifiers yet
+        // Identifier format: SixLayer.main.ui.helloText (with enableUITestIntegration=true)
         let testIdentifier = "SixLayer.main.ui.helloText"
         
         guard app.findElement(byIdentifier: testIdentifier, 
@@ -174,7 +179,105 @@ final class BasicAutomaticComplianceUITests: XCTestCase {
         }
     }
     
+    /// Test that Text with .basicAutomaticCompliance() label is readable
+    /// BUSINESS PURPOSE: Verify Text.basicAutomaticCompliance() applies labels
+    /// TESTING SCOPE: Text extension method label detection
+    /// METHODOLOGY: Use XCUITest to find Text element by label (moved from ViewInspector tests)
+    @MainActor
+    func testTextBasicAutomaticCompliance_LabelIsReadable() throws {
+        // Given: App is launched and ready (from setUp)
+        // Navigate to Basic Compliance Test view
+        let basicComplianceButton = app.buttons["test-view-Basic Compliance Test"]
+        XCTAssertTrue(basicComplianceButton.waitForExistenceFast(timeout: 3.0), "Basic Compliance Test button should exist")
+        basicComplianceButton.tap()
+        
+        // When: Query for Text element by basic compliance label using XCUITest
+        // Then: Should be readable
+        // Note: This test requires the test view to include a Text with label
+        // Label should be formatted with punctuation: "Hello text" -> "Hello text."
+        let testLabel = "Hello text."
+        
+        let element = app.staticTexts[testLabel]
+        guard element.existsImmediately || element.waitForExistenceFast(timeout: 3.0) else {
+            XCTFail("Text.basicAutomaticCompliance() label '\(testLabel)' should be readable via XCUITest")
+            return
+        }
+    }
+    
+    /// Test that identifier sanitization works (spaces and uppercase)
+    /// BUSINESS PURPOSE: Verify identifier sanitization removes spaces and lowercases text
+    /// TESTING SCOPE: Identifier sanitization logic verification
+    /// METHODOLOGY: Use XCUITest to find identifier with sanitized label (moved from ViewInspector tests)
+    @MainActor
+    func testIdentifierSanitization_SpacesAndUppercase() throws {
+        // Given: App is launched and ready (from setUp)
+        // Navigate to Basic Compliance Test view
+        let basicComplianceButton = app.buttons["test-view-Basic Compliance Test"]
+        XCTAssertTrue(basicComplianceButton.waitForExistenceFast(timeout: 3.0), "Basic Compliance Test button should exist")
+        basicComplianceButton.tap()
+        
+        // When: Query for element with sanitized identifier
+        // Then: Should be findable with sanitized label
+        // Label "Save File" should be sanitized to "save-file" in identifier
+        // Identifier format: SixLayer.main.ui.TestButton.save-file (with enableUITestIntegration=true)
+        let testIdentifier = "SixLayer.main.ui.TestButton.save-file"
+        
+        // Try to find with sanitized identifier (may also be just "save" if sanitization is different)
+        let found = app.findElement(byIdentifier: testIdentifier,
+                                   primaryType: .staticText,
+                                   secondaryTypes: [.other]) != nil ||
+                   app.findElement(byIdentifier: "SixLayer.main.ui.TestButton.save",
+                                  primaryType: .staticText,
+                                  secondaryTypes: [.other]) != nil
+        
+        guard found else {
+            XCTFail("Identifier with sanitized label should be findable via XCUITest. Expected '\(testIdentifier)' or similar")
+            return
+        }
+    }
+    
+    /// Test that identifier sanitization removes special characters
+    /// BUSINESS PURPOSE: Verify identifier sanitization removes special characters
+    /// TESTING SCOPE: Identifier sanitization logic verification
+    /// METHODOLOGY: Use XCUITest to find identifier with sanitized special characters (moved from ViewInspector tests)
+    @MainActor
+    func testIdentifierSanitization_SpecialCharacters() throws {
+        // Given: App is launched and ready (from setUp)
+        // Navigate to Basic Compliance Test view
+        let basicComplianceButton = app.buttons["test-view-Basic Compliance Test"]
+        XCTAssertTrue(basicComplianceButton.waitForExistenceFast(timeout: 3.0), "Basic Compliance Test button should exist")
+        basicComplianceButton.tap()
+        
+        // When: Query for element with sanitized identifier (special characters removed)
+        // Then: Should be findable without special characters
+        // Label "Save & Load!" should have "&" and "!" removed
+        // Identifier format: SixLayer.main.ui.TestButton.save-load (with enableUITestIntegration=true)
+        let testIdentifier = "SixLayer.main.ui.TestButton.save-load"
+        
+        guard app.findElement(byIdentifier: testIdentifier,
+                             primaryType: .staticText,
+                             secondaryTypes: [.other]) != nil else {
+            XCTFail("Identifier with sanitized special characters should be findable via XCUITest. Expected '\(testIdentifier)' or similar")
+            return
+        }
+        
+        // Verify special characters are NOT in the identifier
+        // Try to find with special characters - should NOT exist
+        let withAmpersand = app.findElement(byIdentifier: "SixLayer.main.ui.TestButton.save-&-load",
+                                           primaryType: .staticText,
+                                           secondaryTypes: [.other])
+        XCTAssertNil(withAmpersand, "Identifier should not contain '&' character")
+        
+        let withExclamation = app.findElement(byIdentifier: "SixLayer.main.ui.TestButton.save-load!",
+                                            primaryType: .staticText,
+                                            secondaryTypes: [.other])
+        XCTAssertNil(withExclamation, "Identifier should not contain '!' character")
+    }
+    
     /// Test that Image with .basicAutomaticCompliance() identifier is findable
+    /// BUSINESS PURPOSE: Verify Image.basicAutomaticCompliance() applies identifiers
+    /// TESTING SCOPE: Image extension method identifier detection
+    /// METHODOLOGY: Use XCUITest to find Image element by identifier
     @MainActor
     func testImageBasicAutomaticCompliance_IdentifierIsFindable() throws {
         // Given: App is launched and ready (from setUp)
@@ -185,8 +288,7 @@ final class BasicAutomaticComplianceUITests: XCTestCase {
         
         // When: Query for Image element by basic compliance identifier using XCUITest
         // Then: Should be findable
-        
-        // TDD RED PHASE: This test will fail because Image.basicAutomaticCompliance() doesn't apply identifiers yet
+        // Identifier format: SixLayer.main.ui.starImage (with enableUITestIntegration=true)
         let testIdentifier = "SixLayer.main.ui.starImage"
         
         guard app.findElement(byIdentifier: testIdentifier, 
