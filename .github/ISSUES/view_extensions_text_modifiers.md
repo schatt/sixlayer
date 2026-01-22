@@ -166,10 +166,12 @@ Based on SwiftUI's Text API, the following modifiers should be replicated:
 - ✅ **AC3.4**: View extension `.fontWeight(_:)` produces same visual result as Text `.fontWeight(_:)`
 
 ### AC4: Universal Compatibility
-- ✅ **AC4.1**: Extensions work on Text views
-- ✅ **AC4.2**: Extensions work on Image views
-- ✅ **AC4.3**: Extensions work on other View types
-- ✅ **AC4.4**: Extensions don't conflict with existing SwiftUI modifiers
+- ⏳ **AC4.1**: Extensions work on Text views
+- ⏳ **AC4.2**: Extensions work on Image views (no error, no visible effect - expected)
+- ⏳ **AC4.3**: Extensions work on container views (VStack, HStack) and propagate to children
+- ⏳ **AC4.4**: Extensions work on other View types (no error, may have no visible effect)
+- ⏳ **AC4.5**: Extensions don't conflict with existing SwiftUI modifiers
+- ⏳ **AC4.6**: Extensions don't cause compilation errors on non-text views
 
 ## TDD Requirements
 
@@ -223,6 +225,8 @@ Based on SwiftUI's Text API, the following modifiers should be replicated:
 - Test visual appearance matches Text modifier behavior
 - Test that extensions work correctly with different View types
 - Test that chaining produces expected visual results
+- Test that extensions on VStack propagate to child Text views
+- Test that extensions on Image/Shape don't cause errors (even if no visible effect)
 - Test that extensions on VStack propagate to child Text views
 - Test that extensions on Image/Shape don't cause errors (even if no visible effect)
 
