@@ -126,12 +126,16 @@ open class BasicAutomaticComplianceTests: BaseTestClass {
                     }
                 }
                 
+                // Note: Labels are harder to detect via platform views, so we primarily rely on ViewInspector
+                
                 #expect(labelView != nil, "Basic compliance should apply accessibility label")
                 if let label = labelView, let labelText = try? label.string() {
                     #expect(labelText == "Test label.", "Label should be formatted with punctuation")
                 }
             } catch {
                 Issue.record("Failed to inspect view: \(error)")
+                // ViewInspector failed - label detection via platform hosting is limited
+                // The modifier is applied (verified by compilation), but detection may be limited
             }
             #else
             // ViewInspector not available on this platform - verify compilation
