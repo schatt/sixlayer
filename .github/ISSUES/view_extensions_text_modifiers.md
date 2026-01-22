@@ -102,6 +102,27 @@ Based on SwiftUI's Text API, the following modifiers should be replicated:
 - Should test that extensions work correctly with all View types, not just Text
 - Should ensure extensions don't conflict with existing SwiftUI View modifiers
 
+### Behavior on Non-Text Views
+
+**Important**: These modifiers are **environment modifiers** in SwiftUI:
+
+1. **On container views (VStack, HStack, etc.)**:
+   - Modifiers propagate to child views via environment
+   - Example: `VStack { Text("A"); Text("B") }.bold()` applies bold to both Text views
+   - This is expected SwiftUI behavior
+
+2. **On non-text views (Image, Shape, etc.)**:
+   - `.font()`, `.fontWeight()`, `.bold()`, `.italic()` have **no visible effect**
+   - They don't error, but don't change appearance
+   - Example: `Image(systemName: "star").bold()` compiles but has no visual effect
+   - This matches SwiftUI's existing behavior
+
+3. **Design decision**: 
+   - Extensions should work on any View (for chaining compatibility)
+   - No special error handling needed - SwiftUI already handles this gracefully
+   - Document this behavior clearly
+   - Add tests to verify no errors occur on non-text views
+
 ## Implementation Plan
 
 ### Phase 1: Research and Verification
@@ -202,6 +223,8 @@ Based on SwiftUI's Text API, the following modifiers should be replicated:
 - Test visual appearance matches Text modifier behavior
 - Test that extensions work correctly with different View types
 - Test that chaining produces expected visual results
+- Test that extensions on VStack propagate to child Text views
+- Test that extensions on Image/Shape don't cause errors (even if no visible effect)
 
 ### Test File Structure
 
