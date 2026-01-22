@@ -461,4 +461,66 @@ open class BasicAutomaticComplianceLogicTests: BaseTestClass {
             #expect(!hasCollision, "Generator should not detect collision with different identifier")
         }
     }
+    
+    // MARK: - Stub Behavior Verification Tests
+    
+    /// BUSINESS PURPOSE: Verify what identifier SHOULD be generated for BasicAutomaticComplianceModifier
+    /// TESTING SCOPE: Logic of what the stub should do but doesn't
+    /// METHODOLOGY: Test that given modifier parameters, we can generate the expected identifier
+    /// This test PASSES because the logic works, demonstrating what the stub SHOULD do
+    @Test @MainActor func testBasicAutomaticComplianceModifier_ShouldGenerateIdentifier() async {
+        initializeTestConfig()
+        await runWithTaskLocalConfig {
+            guard let config = testConfig else {
+                Issue.record("testConfig is nil")
+                return
+            }
+            
+            // Given: Modifier parameters (what the stub receives)
+            let identifierName = "testView"
+            let identifierElementType = "View"
+            
+            config.namespace = "SixLayer"
+            config.enableUITestIntegration = true
+            let generator = AccessibilityIdentifierGenerator()
+            
+            // When: We generate the identifier that SHOULD be applied (using the logic function)
+            let expectedIdentifier = generator.generateID(for: identifierName, role: identifierElementType, context: "ui")
+            
+            // Then: Identifier should be generated (logic works)
+            // This test PASSES, demonstrating the logic works
+            // But the stub doesn't use this logic - it just returns content unchanged
+            // So ViewInspector tests will fail because no identifier is applied
+            #expect(!expectedIdentifier.isEmpty, "Identifier generation logic should work")
+            #expect(expectedIdentifier.contains(identifierName), "Identifier should include component name")
+        }
+    }
+    
+    /// BUSINESS PURPOSE: Verify stub doesn't apply the logic it should
+    /// TESTING SCOPE: Stub behavior verification - this test FAILS in Red phase
+    /// METHODOLOGY: Test that the stub modifier doesn't use its parameters to generate identifiers
+    /// The stub should use its parameters to generate identifiers, but it doesn't
+    @Test func testBasicAutomaticComplianceModifier_StubDoesNotApplyLogic() {
+        // Given: A modifier with parameters that SHOULD be used to generate identifiers
+        let modifier = BasicAutomaticComplianceModifier(
+            identifierName: "testView",
+            identifierElementType: "View",
+            identifierLabel: "Test",
+            accessibilityLabel: "Test label"
+        )
+        
+        // When: We verify the stub doesn't use these parameters
+        // The stub's body() just returns content unchanged, so it doesn't generate identifiers
+        // This test FAILS because the stub doesn't do what it should
+        
+        // Verify parameters exist (they do - this passes)
+        #expect(modifier.identifierName != nil, "Modifier should have identifierName parameter")
+        #expect(modifier.accessibilityLabel != nil, "Modifier should have accessibilityLabel parameter")
+        
+        // But stub doesn't use them - this is what makes it a stub
+        // The stub's body() just returns content, so no identifier/label is applied
+        // This assertion FAILS because the stub doesn't apply the logic
+        // In the real implementation, these parameters would be used to generate identifiers
+        #expect(Bool(false), "STUB: Modifier does not apply identifiers/labels - this test should fail in Red phase")
+    }
 }
