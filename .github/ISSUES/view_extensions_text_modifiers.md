@@ -1,5 +1,7 @@
 # View Extensions for Text Modifiers
 
+**GitHub Issue**: [#174](https://github.com/schatt/sixlayer/issues/174)
+
 ## Overview
 
 Create `View` extensions that replicate Text-specific modifiers (`.bold()`, `.italic()`, `.font()`, `.fontWeight()`, etc.) to enable chaining after `.basicAutomaticCompliance()` and other modifiers that return `some View`.
@@ -172,6 +174,7 @@ Based on SwiftUI's Text API, the following modifiers should be replicated:
 - **Issue #172**: Lightweight Compliance for Basic SwiftUI Types
   - This issue enables the chaining use case that View extensions solve
   - View extensions are required to make `.basicAutomaticCompliance()` chainable with Text modifiers
+  - Issue #172 references this issue (#174) for View extensions implementation
 
 ## Implementation Notes
 
