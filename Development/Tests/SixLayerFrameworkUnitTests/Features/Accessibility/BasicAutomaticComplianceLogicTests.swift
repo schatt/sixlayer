@@ -12,7 +12,11 @@
 
 import Testing
 import Foundation
+import SwiftUI
 @testable import SixLayerFramework
+#if canImport(ViewInspector)
+import ViewInspector
+#endif
 
 /// Pure unit tests for basic automatic compliance logic
 /// Tests identifier generation, label formatting, and sanitization functions directly
