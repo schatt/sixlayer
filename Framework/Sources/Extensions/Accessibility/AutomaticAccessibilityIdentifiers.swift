@@ -1182,12 +1182,10 @@ public struct BasicAutomaticComplianceModifier: ViewModifier {
     }
     
     public func body(content: Content) -> some View {
-        // TDD RED PHASE: Stub - explicitly returns nil for identifiers/labels
-        // This makes it clear the stub doesn't implement the logic
-        // Tests will compile but fail assertions
+        // TDD RED PHASE: Stub - just returns content unchanged
+        // No modifiers applied - tests will compile but fail assertions
+        // ViewInspector tests will verify identifiers/labels aren't applied
         content
-            .accessibilityIdentifier(nil)
-            .accessibilityLabel(nil)
     }
 }
 
