@@ -630,6 +630,7 @@
 		3F79AFC88243E26FACBCFA4F /* AccessibilityPreferenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A588D8D0B32D7BE7CBBCCE8F /* AccessibilityPreferenceTests.swift */; };
 		3FBCF274000CF42FDF989359 /* PlatformNavigationStackLayer4.swift in Sources */ = {isa = PBXBuildFile; fileRef = E92F41A527B3483BCC539162 /* PlatformNavigationStackLayer4.swift */; };
 		3FC43C505E7F705C8D17D509 /* PlatformNotificationsLayer4.swift in Sources */ = {isa = PBXBuildFile; fileRef = E997166F3AC8C6B97C75C9A2 /* PlatformNotificationsLayer4.swift */; };
+		3FD0B958ED29B4F837BEE6AA /* AutomaticAccessibilityLabelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 173615213474FC16B345D9C5 /* AutomaticAccessibilityLabelTests.swift */; };
 		3FE39267BA748FC2F399057C /* DynamicFormGridLayoutTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 391F24462104C647E4AEF81D /* DynamicFormGridLayoutTests.swift */; };
 		3FEE024F8DB470E6F894DA09 /* PhotoSemanticLayerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58F95D91A2D47A3DB655B5DA /* PhotoSemanticLayerTests.swift */; };
 		400568299988C5822E7292CE /* PlatformShareClipboardLayer4.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96034D11EEA255F8B0FF8427 /* PlatformShareClipboardLayer4.swift */; };
@@ -2875,6 +2876,7 @@
 		16BE181E512673A040D39517 /* SixLayerFrameworkUnitTests_watchOS.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SixLayerFrameworkUnitTests_watchOS.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		1710FFC4EA354E27B46AF9A8 /* CloudKitServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudKitServiceTests.swift; sourceTree = "<group>"; };
 		1714ED78CC3BEE3E81B013DF /* FieldViewTypeDeterminer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FieldViewTypeDeterminer.swift; sourceTree = "<group>"; };
+		173615213474FC16B345D9C5 /* AutomaticAccessibilityLabelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutomaticAccessibilityLabelTests.swift; sourceTree = "<group>"; };
 		174DB17F346AC3053AFE23A8 /* HIGComplianceTypographyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HIGComplianceTypographyTests.swift; sourceTree = "<group>"; };
 		19E72C2E0A98B1949B63F24C /* CrossPlatformWorkflowParityRenderingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrossPlatformWorkflowParityRenderingTests.swift; sourceTree = "<group>"; };
 		19F3D778509CB9722C765410 /* HiddenFieldsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HiddenFieldsTests.swift; sourceTree = "<group>"; };
@@ -4822,6 +4824,7 @@
 				3206291F1C13D37C939FAEB5 /* AutomaticAccessibilityIdentifiersComponentAccessibilityTests.swift */,
 				F61A8F7C37BA805554C38E35 /* AutomaticAccessibilityIdentifiersTests.swift */,
 				4A745594071EAB7FE33AD4F3 /* AutomaticAccessibilityIdentifierTests.swift */,
+				173615213474FC16B345D9C5 /* AutomaticAccessibilityLabelTests.swift */,
 				378C29788EE42F5D125F4A95 /* BasicAutomaticComplianceTests.swift */,
 				A230762A8F72A640CEEA7B89 /* ComponentLabelTextAccessibilityTests.swift */,
 				2C136D0352EC6F64E06F8B38 /* ConsolidatedAccessibilityTests.swift */,
@@ -5165,7 +5168,7 @@
 			path = API;
 			sourceTree = "<group>";
 		};
-		"TEMP_E2A8B0E6-E771-40DA-A105-1D9EB7393425" /* Utilities */ = {
+		"TEMP_3EEFC01B-975C-4636-A5B0-5F6979CB622C" /* Utilities */ = {
 			isa = PBXGroup;
 			children = (
 			);
@@ -6408,6 +6411,7 @@
 				32226392FFCFA2AFAE880FC5 /* AutomaticAccessibilityIdentifierTests.swift in Sources */,
 				112A574C17A783C56072A463 /* AutomaticAccessibilityIdentifiersComponentAccessibilityTests.swift in Sources */,
 				F39EC525C99A393BF6C3C3BF /* AutomaticAccessibilityIdentifiersTests.swift in Sources */,
+				3FD0B958ED29B4F837BEE6AA /* AutomaticAccessibilityLabelTests.swift in Sources */,
 				C3A0B7AB73E87DC25C1CA0D8 /* BarcodeScanningUITests.swift in Sources */,
 				CE59F891D9E5720C072069C5 /* BaseTestClass.swift in Sources */,
 				02197B57DA2CFB8F4DE338FE /* BasicAutomaticComplianceTests.swift in Sources */,
