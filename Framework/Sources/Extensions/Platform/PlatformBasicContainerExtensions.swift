@@ -511,7 +511,7 @@ public func platformTextField(
     text: Binding<String>
 ) -> some View {
     EmptyView().platformTextField(text: text, prompt: title)
-        .automaticCompliance()
+        .automaticCompliance(accessibilityLabel: title)  // Issue #157: Auto-extract from title
 }
 
 /// Provides platform-specific text field with automatic accessibility compliance and explicit label
@@ -533,7 +533,7 @@ public func platformTextField(
     text: Binding<String>
 ) -> some View {
     EmptyView().platformTextField(text: text, prompt: prompt)
-        .automaticCompliance(accessibilityLabel: label)  // Issue #154: Parameter-based approach
+        .automaticCompliance(accessibilityLabel: label ?? prompt)  // Issue #157: Explicit label takes precedence, fallback to prompt
 }
 
 /// Provides platform-specific text field with automatic accessibility compliance and explicit label (LocalizedStringKey)
@@ -586,7 +586,7 @@ public func platformTextField(
     axis: Axis
 ) -> some View {
     EmptyView().platformTextField(text: text, prompt: title, axis: axis)
-        .automaticCompliance()
+        .automaticCompliance(accessibilityLabel: title)  // Issue #157: Auto-extract from title
 }
 
 /// Drop-in replacement for SwiftUI's TextField with axis support and explicit label (iOS 16+)
@@ -611,7 +611,7 @@ public func platformTextField(
     axis: Axis
 ) -> some View {
     EmptyView().platformTextField(text: text, prompt: prompt, axis: axis)
-        .automaticCompliance(accessibilityLabel: label)  // Issue #154: Parameter-based approach
+        .automaticCompliance(accessibilityLabel: label ?? prompt)  // Issue #157: Explicit label takes precedence, fallback to prompt
 }
 
 /// platformTextField with LocalizedStringKey label and axis
@@ -656,7 +656,7 @@ public func platformSecureField(
     text: Binding<String>
 ) -> some View {
     EmptyView().platformSecureTextField(text: text, prompt: title)
-        .automaticCompliance()
+        .automaticCompliance(accessibilityLabel: title)  // Issue #157: Auto-extract from title
 }
 
 /// Drop-in replacement for SwiftUI's SecureField with explicit label
@@ -679,7 +679,7 @@ public func platformSecureField(
     text: Binding<String>
 ) -> some View {
     EmptyView().platformSecureTextField(text: text, prompt: prompt)
-        .automaticCompliance(accessibilityLabel: label)  // Issue #154: Parameter-based approach
+        .automaticCompliance(accessibilityLabel: label ?? prompt)  // Issue #157: Explicit label takes precedence, fallback to prompt
 }
 
 /// platformSecureField with LocalizedStringKey label
@@ -838,7 +838,7 @@ public func platformTextEditor(
     text: Binding<String>
 ) -> some View {
     EmptyView().platformTextEditor(text: text, prompt: prompt)
-        .automaticCompliance(accessibilityLabel: label)  // Issue #154: Parameter-based approach
+        .automaticCompliance(accessibilityLabel: label ?? prompt)  // Issue #157: Explicit label takes precedence, fallback to prompt
 }
 
 /// platformTextEditor with LocalizedStringKey label
@@ -861,6 +861,31 @@ public func platformTextEditor(
     EmptyView().platformTextEditor(text: text, prompt: prompt)
         .accessibilityLabel(label)
         .automaticCompliance()
+}
+
+/// Drop-in replacement for SwiftUI's Button with simple label (auto-extracts accessibility label)
+/// Provides platform-specific button with automatic accessibility compliance
+/// Note: Button doesn't require @MainActor for creation
+///
+/// - Parameters:
+///   - label: The button label text (also used as accessibility label)
+///   - action: The action to perform when button is tapped
+/// - Returns: A platform-specific button with automatic accessibility compliance
+///
+/// ## Usage Example
+/// ```swift
+/// platformButton("Save") {
+///     save()
+/// }
+/// ```
+public func platformButton(
+    _ label: String,
+    action: @escaping () -> Void
+) -> some View {
+    Button(action: action) {
+        Text(label)
+    }
+    .automaticCompliance(accessibilityLabel: label)  // Issue #157: Auto-extract from label parameter
 }
 
 /// Drop-in replacement for SwiftUI's Button with explicit accessibility label

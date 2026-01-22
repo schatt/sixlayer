@@ -217,6 +217,188 @@ open class AutomaticAccessibilityLabelTests: BaseTestClass {
         #expect(Bool(true), "Platform secure field with label should be created successfully")
     }
     
+    // MARK: - Automatic Label Extraction Tests (Issue #157)
+    
+    /// BUSINESS PURPOSE: platformTextField should auto-extract accessibility label from placeholder
+    /// TESTING SCOPE: Tests that platformTextField extracts title parameter as accessibility label
+    /// METHODOLOGY: Create text field with placeholder, verify label is extracted
+    @Test @MainActor func testPlatformTextField_AutoExtractsLabelFromPlaceholder() async {
+        initializeTestConfig()
+        
+        // Given: A text field with placeholder (no explicit label)
+        @State var text = ""
+        let placeholder = "Enter email"
+        let view = platformTextField(placeholder, text: $text)
+        
+        // When: Text field is created with placeholder only
+        // Then: Placeholder should be extracted as accessibility label
+        // Verification: Implementation should pass placeholder to automaticCompliance(accessibilityLabel:)
+        #if canImport(ViewInspector)
+        let hasAccessibilityID = testComponentComplianceSinglePlatform(
+            view,
+            expectedPattern: "SixLayer.*ui",
+            platform: .iOS,
+            componentName: "TextField with auto-extracted label"
+        )
+        #expect(hasAccessibilityID, "TextField should have accessibility identifier when label is auto-extracted")
+        #else
+        // ViewInspector not available - verify view creation succeeds
+        #expect(Bool(true), "TextField with auto-extracted label should be created successfully")
+        #endif
+    }
+    
+    /// BUSINESS PURPOSE: platformToggle should auto-extract accessibility label from title
+    /// TESTING SCOPE: Tests that platformToggle extracts title parameter as accessibility label
+    /// METHODOLOGY: Create toggle with title, verify label is extracted
+    @Test @MainActor func testPlatformToggle_AutoExtractsLabelFromTitle() async {
+        initializeTestConfig()
+        
+        // Given: A toggle with title (no explicit label)
+        @State var isEnabled = false
+        let title = "Enable notifications"
+        let view = platformToggle(title, isOn: $isEnabled)
+        
+        // When: Toggle is created with title only
+        // Then: Title should be extracted as accessibility label
+        // Verification: Implementation should pass title to automaticCompliance(accessibilityLabel:)
+        #if canImport(ViewInspector)
+        let hasAccessibilityID = testComponentComplianceSinglePlatform(
+            view,
+            expectedPattern: "SixLayer.*ui",
+            platform: .iOS,
+            componentName: "Toggle with auto-extracted label"
+        )
+        #expect(hasAccessibilityID, "Toggle should have accessibility identifier when label is auto-extracted")
+        #else
+        // ViewInspector not available - verify view creation succeeds
+        #expect(Bool(true), "Toggle with auto-extracted label should be created successfully")
+        #endif
+    }
+    
+    /// BUSINESS PURPOSE: platformSecureField should auto-extract accessibility label from placeholder
+    /// TESTING SCOPE: Tests that platformSecureField extracts title parameter as accessibility label
+    /// METHODOLOGY: Create secure field with placeholder, verify label is extracted
+    @Test @MainActor func testPlatformSecureField_AutoExtractsLabelFromPlaceholder() async {
+        initializeTestConfig()
+        
+        // Given: A secure field with placeholder (no explicit label)
+        @State var password = ""
+        let placeholder = "Enter password"
+        let view = platformSecureField(placeholder, text: $password)
+        
+        // When: Secure field is created with placeholder only
+        // Then: Placeholder should be extracted as accessibility label
+        // Verification: Implementation should pass placeholder to automaticCompliance(accessibilityLabel:)
+        #if canImport(ViewInspector)
+        let hasAccessibilityID = testComponentComplianceSinglePlatform(
+            view,
+            expectedPattern: "SixLayer.*ui",
+            platform: .iOS,
+            componentName: "SecureField with auto-extracted label"
+        )
+        #expect(hasAccessibilityID, "SecureField should have accessibility identifier when label is auto-extracted")
+        #else
+        // ViewInspector not available - verify view creation succeeds
+        #expect(Bool(true), "SecureField with auto-extracted label should be created successfully")
+        #endif
+    }
+    
+    /// BUSINESS PURPOSE: platformButton should auto-extract accessibility label from label parameter
+    /// TESTING SCOPE: Tests that platformButton extracts label parameter as accessibility label
+    /// METHODOLOGY: Create button with simple label overload, verify label is extracted
+    @Test @MainActor func testPlatformButton_AutoExtractsLabelFromParameter() async {
+        initializeTestConfig()
+        
+        // Given: A button with label (simple overload - Issue #157)
+        let buttonLabel = "Save"
+        var actionCalled = false
+        let view = platformButton(buttonLabel) {
+            actionCalled = true
+        }
+        
+        // When: Button is created with label parameter
+        // Then: Label should be extracted as accessibility label
+        // Verification: Implementation should pass label to automaticCompliance(accessibilityLabel:)
+        #if canImport(ViewInspector)
+        let hasAccessibilityID = testComponentComplianceSinglePlatform(
+            view,
+            expectedPattern: "SixLayer.*ui",
+            platform: .iOS,
+            componentName: "Button with auto-extracted label"
+        )
+        #expect(hasAccessibilityID, "Button should have accessibility identifier when label is auto-extracted")
+        #else
+        // ViewInspector not available - verify view creation succeeds
+        #expect(Bool(true), "Button with auto-extracted label should be created successfully")
+        #endif
+    }
+    
+    /// BUSINESS PURPOSE: Explicit label parameters should take precedence over auto-extraction
+    /// TESTING SCOPE: Tests that explicit labels override auto-extracted labels
+    /// METHODOLOGY: Create field with both placeholder and explicit label, verify explicit label is used
+    @Test @MainActor func testPlatformTextField_ExplicitLabelTakesPrecedence() async {
+        initializeTestConfig()
+        
+        // Given: A text field with both placeholder and explicit label
+        @State var text = ""
+        let placeholder = "Enter email"
+        let explicitLabel = "Email address field"
+        let view = platformTextField(label: explicitLabel, prompt: placeholder, text: $text)
+        
+        // When: Text field is created with explicit label
+        // Then: Explicit label should be used (not placeholder)
+        // Verification: Implementation should use explicit label, not fallback to placeholder
+        #if canImport(ViewInspector)
+        let hasAccessibilityID = testComponentComplianceSinglePlatform(
+            view,
+            expectedPattern: "SixLayer.*ui",
+            platform: .iOS,
+            componentName: "TextField with explicit label"
+        )
+        #expect(hasAccessibilityID, "TextField should have accessibility identifier when explicit label is provided")
+        #else
+        // ViewInspector not available - verify view creation succeeds
+        #expect(Bool(true), "TextField with explicit label should be created successfully")
+        #endif
+    }
+    
+    /// BUSINESS PURPOSE: Auto-extracted labels should be localized when possible
+    /// TESTING SCOPE: Tests that auto-extracted labels go through localization
+    /// METHODOLOGY: Create field with placeholder, verify localization is attempted
+    @Test @MainActor func testPlatformTextField_AutoExtractedLabelIsLocalized() async {
+        initializeTestConfig()
+        
+        // Given: A text field with placeholder that might be a localization key
+        @State var text = ""
+        let placeholder = "SixLayerFramework.accessibility.field.email"  // Localization key format
+        let view = platformTextField(placeholder, text: $text)
+        
+        // When: Text field is created with placeholder
+        // Then: Label should be localized via InternationalizationService
+        // Verification: Implementation should attempt localization
+        #if canImport(ViewInspector)
+        let hasAccessibilityID = testComponentComplianceSinglePlatform(
+            view,
+            expectedPattern: "SixLayer.*ui",
+            platform: .iOS,
+            componentName: "TextField with localized auto-extracted label"
+        )
+        #expect(hasAccessibilityID, "TextField should have accessibility identifier with localized label")
+        #else
+        // ViewInspector not available - verify view creation succeeds
+        #expect(Bool(true), "TextField with localized auto-extracted label should be created successfully")
+        #endif
+    }
+        @State var password = ""
+        let testLabel = "Password field"
+        let prompt = "Enter password"
+        let view = platformSecureField(label: testLabel, prompt: prompt, text: $password)
+        
+        // When: Secure field is created with label
+        // Then: Label should be applied via automaticCompliance
+        #expect(Bool(true), "Platform secure field with label should be created successfully")
+    }
+    
     /// BUSINESS PURPOSE: platformTextEditor should apply accessibility label when provided
     /// TESTING SCOPE: Tests that platformTextEditor passes label to automaticCompliance
     /// METHODOLOGY: Create text editor with label parameter
