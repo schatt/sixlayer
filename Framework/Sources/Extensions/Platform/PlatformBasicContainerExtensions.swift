@@ -523,7 +523,10 @@ public func platformTextField(
     text: Binding<String>
 ) -> some View {
     EmptyView().platformTextField(text: text, prompt: title)
-        .automaticCompliance(accessibilityLabel: title)  // Issue #157: Auto-extract from title
+        .automaticCompliance(
+            identifierName: sanitizeLabelText(title),  // Auto-generate identifierName from title
+            accessibilityLabel: title  // Issue #157: Auto-extract from title
+        )
 }
 
 /// Provides platform-specific text field with automatic accessibility compliance and explicit label
@@ -544,8 +547,12 @@ public func platformTextField(
     prompt: String,
     text: Binding<String>
 ) -> some View {
-    EmptyView().platformTextField(text: text, prompt: prompt)
-        .automaticCompliance(accessibilityLabel: label ?? prompt)  // Issue #157: Explicit label takes precedence, fallback to prompt
+    let identifierSource = label ?? prompt
+    return EmptyView().platformTextField(text: text, prompt: prompt)
+        .automaticCompliance(
+            identifierName: sanitizeLabelText(identifierSource),  // Auto-generate identifierName from label or prompt
+            accessibilityLabel: label ?? prompt  // Issue #157: Explicit label takes precedence, fallback to prompt
+        )
 }
 
 /// Provides platform-specific text field with automatic accessibility compliance and explicit label (LocalizedStringKey)
@@ -598,7 +605,10 @@ public func platformTextField(
     axis: Axis
 ) -> some View {
     EmptyView().platformTextField(text: text, prompt: title, axis: axis)
-        .automaticCompliance(accessibilityLabel: title)  // Issue #157: Auto-extract from title
+        .automaticCompliance(
+            identifierName: sanitizeLabelText(title),  // Auto-generate identifierName from title
+            accessibilityLabel: title  // Issue #157: Auto-extract from title
+        )
 }
 
 /// Drop-in replacement for SwiftUI's TextField with axis support and explicit label (iOS 16+)
@@ -622,8 +632,12 @@ public func platformTextField(
     text: Binding<String>,
     axis: Axis
 ) -> some View {
-    EmptyView().platformTextField(text: text, prompt: prompt, axis: axis)
-        .automaticCompliance(accessibilityLabel: label ?? prompt)  // Issue #157: Explicit label takes precedence, fallback to prompt
+    let identifierSource = label ?? prompt
+    return EmptyView().platformTextField(text: text, prompt: prompt, axis: axis)
+        .automaticCompliance(
+            identifierName: sanitizeLabelText(identifierSource),  // Auto-generate identifierName from label or prompt
+            accessibilityLabel: label ?? prompt  // Issue #157: Explicit label takes precedence, fallback to prompt
+        )
 }
 
 /// platformTextField with LocalizedStringKey label and axis
@@ -667,8 +681,11 @@ public func platformSecureField(
     _ title: String,
     text: Binding<String>
 ) -> some View {
-    EmptyView().platformSecureTextField(text: text, prompt: title)
-        .automaticCompliance(accessibilityLabel: title)  // Issue #157: Auto-extract from title
+    return EmptyView().platformSecureTextField(text: text, prompt: title)
+        .automaticCompliance(
+            identifierName: sanitizeLabelText(title),  // Auto-generate identifierName from title
+            accessibilityLabel: title  // Issue #157: Auto-extract from title
+        )
 }
 
 /// Drop-in replacement for SwiftUI's SecureField with explicit label
@@ -690,8 +707,12 @@ public func platformSecureField(
     prompt: String,
     text: Binding<String>
 ) -> some View {
-    EmptyView().platformSecureTextField(text: text, prompt: prompt)
-        .automaticCompliance(accessibilityLabel: label ?? prompt)  // Issue #157: Explicit label takes precedence, fallback to prompt
+    let identifierSource = label ?? prompt
+    return EmptyView().platformSecureTextField(text: text, prompt: prompt)
+        .automaticCompliance(
+            identifierName: sanitizeLabelText(identifierSource),  // Auto-generate identifierName from label or prompt
+            accessibilityLabel: label ?? prompt  // Issue #157: Explicit label takes precedence, fallback to prompt
+        )
 }
 
 /// platformSecureField with LocalizedStringKey label
@@ -736,7 +757,10 @@ public func platformToggle(
     EmptyView().platformToggle(isOn: isOn) {
         Text(title)
     }
-    .automaticCompliance(accessibilityLabel: title)  // Issue #157: Auto-extract from title
+    .automaticCompliance(
+        identifierName: sanitizeLabelText(title),  // Auto-generate identifierName from title
+        accessibilityLabel: title  // Issue #157: Auto-extract from title
+    )
 }
 
 /// Drop-in replacement for SwiftUI's Toggle with explicit accessibility label
@@ -757,10 +781,14 @@ public func platformToggle(
     label: String? = nil,
     isOn: Binding<Bool>
 ) -> some View {
-    EmptyView().platformToggle(isOn: isOn) {
-        Text(label ?? "Toggle") // Use label as visible text if provided, fallback for Toggle requirement
+    let toggleLabel = label ?? "Toggle"
+    return EmptyView().platformToggle(isOn: isOn) {
+        Text(toggleLabel) // Use label as visible text if provided, fallback for Toggle requirement
     }
-    .automaticCompliance(accessibilityLabel: label)  // Issue #154: Parameter-based approach
+    .automaticCompliance(
+        identifierName: sanitizeLabelText(toggleLabel),  // Auto-generate identifierName from label
+        accessibilityLabel: label  // Issue #154: Parameter-based approach
+    )
 }
 
 /// platformToggle with LocalizedStringKey label
@@ -827,7 +855,10 @@ public func platformTextEditor(
     text: Binding<String>
 ) -> some View {
     EmptyView().platformTextEditor(text: text, prompt: prompt)
-        .automaticCompliance(accessibilityLabel: prompt)  // Issue #157: Auto-extract from prompt
+        .automaticCompliance(
+            identifierName: sanitizeLabelText(prompt),  // Auto-generate identifierName from prompt
+            accessibilityLabel: prompt  // Issue #157: Auto-extract from prompt
+        )
 }
 
 /// Drop-in replacement for SwiftUI's TextEditor with explicit label
@@ -849,8 +880,12 @@ public func platformTextEditor(
     prompt: String,
     text: Binding<String>
 ) -> some View {
-    EmptyView().platformTextEditor(text: text, prompt: prompt)
-        .automaticCompliance(accessibilityLabel: label ?? prompt)  // Issue #157: Explicit label takes precedence, fallback to prompt
+    let identifierSource = label ?? prompt
+    return EmptyView().platformTextEditor(text: text, prompt: prompt)
+        .automaticCompliance(
+            identifierName: sanitizeLabelText(identifierSource),  // Auto-generate identifierName from label or prompt
+            accessibilityLabel: label ?? prompt  // Issue #157: Explicit label takes precedence, fallback to prompt
+        )
 }
 
 /// platformTextEditor with LocalizedStringKey label
@@ -980,7 +1015,10 @@ public func platformButton(
     Button(action: action) {
         Text(label)
     }
-    .automaticCompliance(accessibilityLabel: label)  // Issue #157: Auto-extract from label parameter
+    .automaticCompliance(
+        identifierName: sanitizeLabelText(label),  // Auto-generate identifierName from label
+        accessibilityLabel: label  // Issue #157: Auto-extract from label parameter
+    )
 }
 
 /// Drop-in replacement for SwiftUI's Button with explicit accessibility label
@@ -1002,10 +1040,14 @@ public func platformButton(
     label: String? = nil,
     action: @escaping () -> Void
 ) -> some View {
-    Button(action: action) {
-        Text(label ?? "Button")
+    let buttonLabel = label ?? "Button"
+    return Button(action: action) {
+        Text(buttonLabel)
     }
-    .automaticCompliance(accessibilityLabel: label)  // Issue #154: Parameter-based approach
+    .automaticCompliance(
+        identifierName: sanitizeLabelText(buttonLabel),  // Auto-generate identifierName from label
+        accessibilityLabel: label  // Issue #154: Parameter-based approach
+    )
 }
 
 /// platformButton with LocalizedStringKey label
