@@ -378,6 +378,13 @@ public struct AutomaticComplianceModifier: ViewModifier {
         // Logic: Both enableAutoIDs and globalAutomaticAccessibilityIdentifiers must be true
         let shouldApply = capturedEnableAutoIDs && capturedGlobalAutomaticAccessibilityIdentifiers
         
+        // CRITICAL: Only apply identifier if explicitly requested via identifierName parameter
+        // This ensures child identifiers take precedence over parent identifiers
+        // Parent container views (VStack, ScrollView, etc.) should not get automatic identifiers
+        // unless explicitly requested, to avoid overwriting child view identifiers
+        // HIG compliance features are still applied even when identifierName is nil
+        let shouldApplyIdentifier = shouldApply && identifierName != nil
+        
         // Note: We no longer check for explicit identifiers here because:
         // 1. .named() and .exactNamed() modifiers set identifiers directly (no wrapper views)
         // 2. Manual .accessibilityIdentifier() calls will override automatic ones (SwiftUI behavior)
@@ -386,14 +393,14 @@ public struct AutomaticComplianceModifier: ViewModifier {
         
         // Always check debug logging and print immediately (helps verify modifier is being called)
         if capturedEnableDebugLogging {
-            let debugMsg = "🔍 MODIFIER DEBUG: body() called - enableAutoIDs=\(capturedEnableAutoIDs), globalAutomaticAccessibilityIdentifiers=\(capturedGlobalAutomaticAccessibilityIdentifiers), shouldApply=\(shouldApply)"
+            let debugMsg = "🔍 MODIFIER DEBUG: body() called - enableAutoIDs=\(capturedEnableAutoIDs), globalAutomaticAccessibilityIdentifiers=\(capturedGlobalAutomaticAccessibilityIdentifiers), shouldApply=\(shouldApply), identifierName=\(identifierName ?? "nil"), shouldApplyIdentifier=\(shouldApplyIdentifier)"
             print(debugMsg)
             fflush(stdout) // Ensure output appears immediately
             config.addDebugLogEntry(debugMsg, enabled: capturedEnableDebugLogging)
         }
         
-        // Generate identifier if needed
-        let identifier: String? = shouldApply ? generateIdentifier(
+        // Generate identifier if needed (only when explicitly requested via identifierName)
+        let identifier: String? = shouldApplyIdentifier ? generateIdentifier(
             config: config,
             identifierName: identifierName,
             identifierElementType: identifierElementType,
@@ -435,12 +442,15 @@ public struct AutomaticComplianceModifier: ViewModifier {
         }
         
         // Helper to conditionally apply accessibility label (Issue #154)
-        // Only apply if explicitly provided via parameter - don't override existing labels
+        // Only apply if explicitly provided via parameter AND an identifier is present
+        // This ensures labels are only applied when identifiers are present (consistent behavior)
         // Labels are localized and formatted according to Apple HIG guidelines
         // Missing keys are logged in debug mode (Issue #158)
         @ViewBuilder
         func applyAccessibilityLabelIfNeeded<V: View>(to view: V) -> some View {
-            if let label = accessibilityLabel, !label.isEmpty {
+            // Only apply label if identifier is present - ensures consistent behavior
+            // If no identifier, we're not doing compliance, so skip label too
+            if let label = accessibilityLabel, !label.isEmpty, identifier != nil {
                 // Localize and format label according to Apple HIG guidelines
                 // Pass context for better logging of missing keys
                 let localizedLabel = localizeAccessibilityLabel(
@@ -1301,10 +1311,13 @@ public struct BasicAutomaticComplianceModifier: ViewModifier {
         }
         
         // Helper to conditionally apply accessibility label
-        // Only apply if explicitly provided via parameter - don't override existing labels
+        // Only apply if explicitly provided via parameter AND an identifier is present
+        // This ensures labels are only applied when identifiers are present (consistent behavior)
         @ViewBuilder
         func applyAccessibilityLabelIfNeeded<V: View>(to view: V) -> some View {
-            if let label = accessibilityLabel, !label.isEmpty {
+            // Only apply label if identifier is present - ensures consistent behavior
+            // If no identifier, we're not doing compliance, so skip label too
+            if let label = accessibilityLabel, !label.isEmpty, identifier != nil {
                 // Localize and format label according to Apple HIG guidelines
                 let localizedLabel = localizeAccessibilityLabel(
                     label,
@@ -1319,7 +1332,12 @@ public struct BasicAutomaticComplianceModifier: ViewModifier {
         
         // Apply identifier (if needed), then accessibility label (if needed)
         // NOTE: This is basic compliance - NO HIG features (unlike AutomaticComplianceModifier)
-        return applyAccessibilityLabelIfNeeded(to: applyIdentifierIfNeeded(to: content))
+        // CRITICAL: Apply identifier AFTER accessibility label to ensure it takes precedence
+        // In SwiftUI, when multiple .accessibilityIdentifier() modifiers are applied,
+        // the last one wins. By applying the identifier here (after label), we ensure
+        // child identifiers take precedence over any parent identifiers that might be applied later
+        let contentWithLabel = applyAccessibilityLabelIfNeeded(to: content)
+        return applyIdentifierIfNeeded(to: contentWithLabel)
     }
 }
 

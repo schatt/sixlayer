@@ -42,6 +42,9 @@ public extension View {
             content()
         }
         .automaticCompliance()
+        // CRITICAL: Container views apply .automaticCompliance() without identifierName
+        // This applies HIG compliance features but skips identifier generation,
+        // ensuring child identifiers take precedence over parent identifiers
     }
     
     /// Platform-specific HStack container with consistent styling and automatic accessibility
@@ -193,6 +196,9 @@ public extension View {
             content()
         }
         .automaticCompliance()
+        // CRITICAL: Container views apply .automaticCompliance() without identifierName
+        // This applies HIG compliance features but skips identifier generation,
+        // ensuring child identifiers take precedence over parent identifiers
     }
     
     /// Platform-specific GroupBox container with consistent styling
