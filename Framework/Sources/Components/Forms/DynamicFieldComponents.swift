@@ -82,7 +82,9 @@ public struct CustomFieldView: View {
                 DynamicCustomField(field: field, formState: formState)
             }
         }
-        .automaticCompliance(named: "CustomFieldView")
+        .automaticCompliance(
+            identifierName: sanitizeLabelText(field.label)  // Auto-generate identifierName from field label
+        )
     }
 }
 
@@ -686,7 +688,9 @@ public struct DynamicNumberField: View {
         }
         .padding()
         .environment(\.accessibilityIdentifierLabel, field.label)
-        .automaticCompliance(named: "DynamicNumberField")
+        .automaticCompliance(
+            identifierName: sanitizeLabelText(field.label)  // Auto-generate identifierName from field label
+        )
     }
 }
 
@@ -720,7 +724,9 @@ public struct DynamicIntegerField: View {
         }
         .padding()
         .environment(\.accessibilityIdentifierLabel, field.label) // TDD GREEN: Pass label to identifier generation
-        .automaticCompliance(named: "DynamicIntegerField")
+        .automaticCompliance(
+            identifierName: sanitizeLabelText(field.label)  // Auto-generate identifierName from field label
+        )
     }
 }
 
@@ -865,7 +871,9 @@ public struct DynamicTimeField: View {
         }
         .padding()
         .environment(\.accessibilityIdentifierLabel, field.label) // TDD GREEN: Pass label to identifier generation
-        .automaticCompliance(named: "DynamicTimeField")
+        .automaticCompliance(
+            identifierName: sanitizeLabelText(field.label)  // Auto-generate identifierName from field label
+        )
     }
 }
 
@@ -897,7 +905,9 @@ public struct DynamicDateTimeField: View {
         }
         .padding()
         .environment(\.accessibilityIdentifierLabel, field.label) // TDD GREEN: Pass label to identifier generation
-        .automaticCompliance(named: "DynamicDateTimeField")
+        .automaticCompliance(
+            identifierName: sanitizeLabelText(field.label)  // Auto-generate identifierName from field label
+        )
     }
 }
 
@@ -1009,7 +1019,9 @@ public struct DynamicMultiDateField: View {
         }
         .padding()
         .environment(\.accessibilityIdentifierLabel, field.label)
-        .automaticCompliance(named: "DynamicMultiDateField")
+        .automaticCompliance(
+            identifierName: sanitizeLabelText(field.label)  // Auto-generate identifierName from field label
+        )
     }
 }
 
@@ -1058,7 +1070,9 @@ public struct DynamicMultiSelectField: View {
         }
         .padding()
         .environment(\.accessibilityIdentifierLabel, field.label) // TDD GREEN: Pass label to identifier generation
-        .automaticCompliance(named: "DynamicMultiSelectField")
+        .automaticCompliance(
+            identifierName: sanitizeLabelText(field.label)  // Auto-generate identifierName from field label
+        )
     }
 }
 
@@ -1120,7 +1134,9 @@ public struct DynamicRadioField: View {
             }
         }
         .padding()
-        .automaticCompliance(named: "DynamicRadioField")
+        .automaticCompliance(
+            identifierName: sanitizeLabelText(field.label)  // Auto-generate identifierName from field label
+        )
     }
 }
 
@@ -1168,7 +1184,9 @@ public struct DynamicCheckboxField: View {
         }
         .padding()
         .environment(\.accessibilityIdentifierLabel, field.label) // TDD GREEN: Pass label to identifier generation
-        .automaticCompliance(named: "DynamicCheckboxField")
+        .automaticCompliance(
+            identifierName: sanitizeLabelText(field.label)  // Auto-generate identifierName from field label
+        )
     }
 }
 
@@ -1258,7 +1276,9 @@ public struct DynamicFileField: View {
         }
         .padding()
         .environment(\.accessibilityIdentifierLabel, field.label) // TDD GREEN: Pass label to identifier generation
-        .automaticCompliance(named: "DynamicFileField")
+        .automaticCompliance(
+            identifierName: sanitizeLabelText(field.label)  // Auto-generate identifierName from field label
+        )
     }
 }
 
@@ -1341,7 +1361,9 @@ public struct DynamicRangeField: View {
         }
         .padding()
         .environment(\.accessibilityIdentifierLabel, field.label) // TDD GREEN: Pass label to identifier generation
-        .automaticCompliance(named: "DynamicRangeField")
+        .automaticCompliance(
+            identifierName: sanitizeLabelText(field.label)  // Auto-generate identifierName from field label
+        )
     }
 }
 
@@ -1411,7 +1433,9 @@ public struct DynamicArrayField: View {
         }
         .padding()
         .environment(\.accessibilityIdentifierLabel, field.label) // TDD GREEN: Pass label to identifier generation
-        .automaticCompliance(named: "DynamicArrayField")
+        .automaticCompliance(
+            identifierName: sanitizeLabelText(field.label)  // Auto-generate identifierName from field label
+        )
     }
 }
 
@@ -1459,7 +1483,9 @@ public struct DynamicDataField: View {
             }
         }
         .padding()
-        .automaticCompliance(named: "DynamicDataField")
+        .automaticCompliance(
+            identifierName: sanitizeLabelText(field.label)  // Auto-generate identifierName from field label
+        )
     }
 }
 
@@ -1527,7 +1553,9 @@ public struct DynamicAutocompleteField: View {
             }
         }
         .padding()
-        .automaticCompliance(named: "DynamicAutocompleteField")
+        .automaticCompliance(
+            identifierName: sanitizeLabelText(field.label)  // Auto-generate identifierName from field label
+        )
     }
 }
 
@@ -1581,7 +1609,9 @@ public struct DynamicEnumField: View {
         }
         .padding()
         .environment(\.accessibilityIdentifierLabel, field.label) // TDD GREEN: Pass label to identifier generation
-        .automaticCompliance(named: "DynamicEnumField")
+        .automaticCompliance(
+            identifierName: sanitizeLabelText(field.label)  // Auto-generate identifierName from field label
+        )
     }
 }
 
@@ -1614,7 +1644,9 @@ public struct DynamicCustomField: View {
             }
         }
         .padding()
-        .automaticCompliance(named: "DynamicCustomField")
+        .automaticCompliance(
+            identifierName: sanitizeLabelText(field.label)  // Auto-generate identifierName from field label
+        )
     }
 }
 
@@ -1659,7 +1691,9 @@ public struct DynamicColorField: View {
                 .automaticCompliance(named: "ColorPreview")
         }
         .padding()
-        .automaticCompliance(named: "DynamicColorField")
+        .automaticCompliance(
+            identifierName: sanitizeLabelText(field.label)  // Auto-generate identifierName from field label
+        )
     }
 }
 
@@ -1684,7 +1718,9 @@ public struct DynamicToggleField: View {
         }
         .padding()
         .environment(\.accessibilityIdentifierLabel, field.label) // TDD GREEN: Pass label to identifier generation
-        .automaticCompliance(named: "DynamicToggleField")
+        .automaticCompliance(
+            identifierName: sanitizeLabelText(field.label)  // Auto-generate identifierName from field label
+        )
     }
 }
 
@@ -1764,7 +1800,9 @@ public struct DynamicDisplayField: View {
                         .foregroundColor(.secondary)
                 }
             }
-            .automaticCompliance(named: "DynamicDisplayField")
+            .automaticCompliance(
+                identifierName: sanitizeLabelText(field.label)  // Auto-generate identifierName from field label
+            )
         } else {
             // Fallback for older platforms
             HStack {
@@ -1779,7 +1817,9 @@ public struct DynamicDisplayField: View {
                 }
             }
             .padding()
-            .automaticCompliance(named: "DynamicDisplayField")
+            .automaticCompliance(
+                identifierName: sanitizeLabelText(field.label)  // Auto-generate identifierName from field label
+            )
         }
     }
 }
@@ -1891,6 +1931,8 @@ public struct DynamicGaugeField: View {
             }
         }
         .padding()
-        .automaticCompliance(named: "DynamicGaugeField")
+        .automaticCompliance(
+            identifierName: sanitizeLabelText(field.label)  // Auto-generate identifierName from field label
+        )
     }
 }

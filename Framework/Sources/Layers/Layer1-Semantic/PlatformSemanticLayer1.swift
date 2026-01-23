@@ -571,8 +571,10 @@ public func platformPresentNavigationStack_L1<Content: View>(
         title: title,
         hints: hints
     )
-    .environment(\.accessibilityIdentifierName, "platformPresentNavigationStack_L1")
-    .automaticCompliance()
+    .environment(\.accessibilityIdentifierName, title ?? "platformPresentNavigationStack_L1")
+    .automaticCompliance(
+        identifierName: title != nil ? sanitizeLabelText(title!) : nil  // Auto-generate identifierName from title if provided
+    )
 }
 
 /// Layer 1 semantic function for presenting a collection of items in a navigation stack

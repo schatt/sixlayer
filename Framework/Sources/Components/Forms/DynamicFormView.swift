@@ -168,7 +168,9 @@ public struct DynamicFormView: View {
             }
             .padding()
             .environment(\.accessibilityIdentifierLabel, configuration.title) // TDD GREEN: Pass label to identifier generation
-            .automaticCompliance(named: "DynamicFormView")
+            .automaticCompliance(
+                identifierName: sanitizeLabelText(configuration.title)  // Auto-generate identifierName from form title
+            )
             .onAppear {
                 // Load draft if it exists (Issue #80)
                 if formState.loadDraft() {
@@ -431,7 +433,9 @@ public struct DynamicFormSectionView: View {
         .background(Color.gray.opacity(0.1))
         .cornerRadius(8)
         .environment(\.accessibilityIdentifierLabel, section.title)
-        .automaticCompliance(named: "DynamicFormSectionView")
+        .automaticCompliance(
+            identifierName: sanitizeLabelText(section.title)  // Auto-generate identifierName from section title
+        )
     }
     
     // MARK: - DRY: Field Layout Helper
@@ -591,7 +595,9 @@ public struct DynamicFormFieldView: View {
         }
         .id(field.id) // Add ID for ScrollViewReader scrolling
         .environment(\.accessibilityIdentifierLabel, field.label) // TDD GREEN: Pass label to identifier generation
-        .automaticCompliance(named: "DynamicFormFieldView")
+        .automaticCompliance(
+            identifierName: sanitizeLabelText(field.label)  // Auto-generate identifierName from field label
+        )
     }
 
     @ViewBuilder
