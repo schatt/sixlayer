@@ -1975,10 +1975,13 @@ public func platformPicker<SelectionValue: Hashable, Option: Hashable, S: SwiftU
     SwiftUI.Picker(label, selection: selection) {
         ForEach(options, id: \.self) { option in
             let optionText = optionLabel(option)
+            // Automatically detect identifierName from picker context:
+            // Use pickerName if provided (groups segments under picker), otherwise fall back to "element"
+            let segmentIdentifierName = pickerName ?? "element"
             Text(optionText)
                 .tag(optionTag(option))
                 .automaticCompliance(
-                    identifierName: "element",  // Use "element" as identifierName to generate segment identifiers
+                    identifierName: segmentIdentifierName,  // Auto-detect from picker name
                     identifierLabel: optionText  // Apply to segment (Issue #163)
                 )
         }
