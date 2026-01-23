@@ -225,6 +225,12 @@ internal func generateAccessibilityIdentifier(
     // Determine component name (from parameter, not environment)
     let componentName = identifierName ?? "element"
     
+    // DEBUG: Log to diagnose identifierName usage
+    if capturedEnableDebugLogging {
+        print("🔍 IDENTIFIER GEN DEBUG: identifierName='\(identifierName ?? "nil")', componentName='\(componentName)'")
+        fflush(stdout)
+    }
+    
     // Determine element type (from parameter, not environment)
     let elementType = identifierElementType ?? defaultElementType
     
@@ -1202,6 +1208,11 @@ public struct BasicAutomaticComplianceModifier: ViewModifier {
         
         // Generate identifier if needed
         // Call internal generateAccessibilityIdentifier directly (same as AutomaticComplianceModifier.generateIdentifier does)
+        // DEBUG: Log identifierName to diagnose why it's not being used
+        if capturedEnableDebugLogging {
+            print("🔍 BASIC COMPLIANCE DEBUG: identifierName='\(identifierName ?? "nil")', identifierElementType='\(identifierElementType ?? "nil")'")
+            fflush(stdout)
+        }
         let identifier: String? = shouldApply ? generateAccessibilityIdentifier(
             config: config,
             identifierName: identifierName,
