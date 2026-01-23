@@ -101,8 +101,9 @@ public extension View {
         .accessibilityAddTraits(.isButton)
         // Apply automaticCompliance directly to the Button so identifier goes to Button, not container
         // Pass hints as parameters (Option A) - explicit, no environment dependencies
+        // Auto-generate identifierName from title (the thing being identified)
         .automaticCompliance(
-            named: "platformNavigationButton_L4",
+            identifierName: sanitizeLabelText(title),
             identifierLabel: title
         )
     }
@@ -114,19 +115,19 @@ public extension View {
         #if os(iOS)
         return self.navigationTitle(title)
             .automaticCompliance(
-                named: "platformNavigationTitle_L4",
+                identifierName: sanitizeLabelText(title),  // Auto-generate identifierName from title
                 identifierLabel: title
             )
         #elseif os(macOS)
         return self.navigationTitle(title)
             .automaticCompliance(
-                named: "platformNavigationTitle_L4",
+                identifierName: sanitizeLabelText(title),  // Auto-generate identifierName from title
                 identifierLabel: title
             )
         #else
         return self.navigationTitle(title)
             .automaticCompliance(
-                named: "platformNavigationTitle_L4",
+                identifierName: sanitizeLabelText(title),  // Auto-generate identifierName from title
                 identifierLabel: title
             )
         #endif
@@ -246,7 +247,9 @@ public extension View {
                 Label(title, systemImage: systemImage)
                     .foregroundColor(.primary)
             }
-            .automaticCompliance(identifierLabel: title)
+            .automaticCompliance(
+                identifierName: sanitizeLabelText(title)  // Auto-generate identifierName from title
+            )
             .navigationDestination(isPresented: isActive) {
                 destination()
             }
@@ -255,7 +258,9 @@ public extension View {
                 Label(title, systemImage: systemImage)
                     .foregroundColor(.primary)
             }
-            .automaticCompliance(identifierLabel: title)
+            .automaticCompliance(
+                identifierName: sanitizeLabelText(title)  // Auto-generate identifierName from title
+            )
             .background(
                 NavigationLink(destination: destination(), isActive: isActive) {
                     EmptyView()
@@ -281,7 +286,9 @@ public extension View {
             #endif
         }
         .buttonStyle(PlainButtonStyle())
-        .automaticCompliance(identifierLabel: title)
+        .automaticCompliance(
+            identifierName: sanitizeLabelText(title)  // Auto-generate identifierName from title
+        )
         #endif
     }
 

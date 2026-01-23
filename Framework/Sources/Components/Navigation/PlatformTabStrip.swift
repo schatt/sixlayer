@@ -24,7 +24,9 @@ public struct PlatformTabStrip: View {
                     }
                     .buttonStyle(.plain)
                     .environment(\.accessibilityIdentifierLabel, item.title) // TDD GREEN: Pass label to identifier generation
-                    .automaticCompliance(named: "PlatformTabStripButton")
+                    .automaticCompliance(
+                        identifierName: sanitizeLabelText(item.title)  // Auto-generate identifierName from item title
+                    )
                 }
             }
             .padding(.horizontal, 8)

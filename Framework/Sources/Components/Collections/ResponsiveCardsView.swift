@@ -418,7 +418,9 @@ public struct ResponsiveCardView: View {
         .shadow(radius: 2)
         .frame(height: 120)
         .environment(\.accessibilityIdentifierLabel, data.title) // TDD GREEN: Pass label to identifier generation
-        .automaticCompliance()
+        .automaticCompliance(
+            identifierName: sanitizeLabelText(data.title)  // Auto-generate identifierName from card title
+        )
     }
     
     @ViewBuilder
