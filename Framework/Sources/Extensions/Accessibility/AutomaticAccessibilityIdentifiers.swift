@@ -356,154 +356,22 @@ public struct AutomaticComplianceModifier: ViewModifier {
     }
 
     public func body(content: Content) -> some View {
-        // Use task-local config (automatic per-test isolation), then shared (production)
-        // Each test runs in its own task, so @TaskLocal provides isolation even when all tasks run on MainActor
-        // Production: taskLocalConfig is nil, falls through to shared (trivial nil check)
-        let config = AccessibilityIdentifierConfig.currentTaskLocalConfig ?? AccessibilityIdentifierConfig.shared
-        // CRITICAL: Capture property values as local variables BEFORE any logic
-        // to avoid creating SwiftUI dependencies that cause infinite recursion
-        let capturedEnableAutoIDs = config.enableAutoIDs
-        let capturedGlobalAutomaticAccessibilityIdentifiers = config.globalAutomaticAccessibilityIdentifiers
-        let capturedScreenContext = config.currentScreenContext
-        let capturedViewHierarchy = config.currentViewHierarchy
-        let capturedEnableUITestIntegration = config.enableUITestIntegration
-        let capturedIncludeComponentNames = config.includeComponentNames
-        let capturedIncludeElementTypes = config.includeElementTypes
-        let capturedEnableDebugLogging = config.enableDebugLogging
-        let capturedNamespace = config.namespace
-        let capturedGlobalPrefix = config.globalPrefix
-        
-        // Use config.globalAutomaticAccessibilityIdentifiers (UserDefaults-backed) instead of environment variable
-        // This removes the need for wrapper views and allows .accessibilityIdentifier() to apply directly to content
-        // Logic: Both enableAutoIDs and globalAutomaticAccessibilityIdentifiers must be true
-        let shouldApply = capturedEnableAutoIDs && capturedGlobalAutomaticAccessibilityIdentifiers
-        
-        // CRITICAL: Only apply identifier if explicitly requested via identifierName parameter
-        // This ensures child identifiers take precedence over parent identifiers
-        // Parent container views (VStack, ScrollView, etc.) should not get automatic identifiers
-        // unless explicitly requested, to avoid overwriting child view identifiers
-        // HIG compliance features are still applied even when identifierName is nil
-        let shouldApplyIdentifier = shouldApply && identifierName != nil
-        
-        // Note: We no longer check for explicit identifiers here because:
-        // 1. .named() and .exactNamed() modifiers set identifiers directly (no wrapper views)
-        // 2. Manual .accessibilityIdentifier() calls will override automatic ones (SwiftUI behavior)
-        // 3. This simplifies the code and removes the need for environment tracking
-        // If an explicit identifier is needed, apply it after .automaticCompliance()
-        
-        // Always check debug logging and print immediately (helps verify modifier is being called)
-        if capturedEnableDebugLogging {
-            let debugMsg = "🔍 MODIFIER DEBUG: body() called - enableAutoIDs=\(capturedEnableAutoIDs), globalAutomaticAccessibilityIdentifiers=\(capturedGlobalAutomaticAccessibilityIdentifiers), shouldApply=\(shouldApply), identifierName=\(identifierName ?? "nil"), shouldApplyIdentifier=\(shouldApplyIdentifier)"
-            print(debugMsg)
-            fflush(stdout) // Ensure output appears immediately
-            config.addDebugLogEntry(debugMsg, enabled: capturedEnableDebugLogging)
-        }
-        
-        // Generate identifier if needed (only when explicitly requested via identifierName)
-        let identifier: String? = shouldApplyIdentifier ? generateIdentifier(
-            config: config,
+        // Phase 2 DRY Refactoring (Issue #172): Use BasicAutomaticComplianceModifier internally
+        // This eliminates code duplication and ensures consistent behavior between basic and full compliance
+        // Apply basic compliance first (identifier + label), then HIG features on top
+        let contentWithBasicCompliance = content.modifier(BasicAutomaticComplianceModifier(
             identifierName: identifierName,
             identifierElementType: identifierElementType,
             identifierLabel: identifierLabel,
-            capturedScreenContext: capturedScreenContext,
-            capturedViewHierarchy: capturedViewHierarchy,
-            capturedEnableUITestIntegration: capturedEnableUITestIntegration,
-            capturedIncludeComponentNames: capturedIncludeComponentNames,
-            capturedIncludeElementTypes: capturedIncludeElementTypes,
-            capturedEnableDebugLogging: capturedEnableDebugLogging,
-            capturedNamespace: capturedNamespace,
-            capturedGlobalPrefix: capturedGlobalPrefix
-        ) : nil
+            accessibilityLabel: accessibilityLabel
+        ))
         
-        // CRITICAL: Use captured value instead of accessing @Published property directly
-        if capturedEnableDebugLogging {
-            if let identifier = identifier {
-                let debugMsg = "🔍 MODIFIER DEBUG: Applying identifier '\(identifier)' to view"
-                print(debugMsg)
-                config.addDebugLogEntry(debugMsg, enabled: capturedEnableDebugLogging)
-            } else {
-                let debugMsg = "🔍 MODIFIER DEBUG: NOT applying identifier - conditions not met"
-                print(debugMsg)
-                config.addDebugLogEntry(debugMsg, enabled: capturedEnableDebugLogging)
-            }
-        }
-        
-        // Apply identifier and HIG compliance - order doesn't matter since they're all modifiers on the same view
-        // HIG modifiers don't create wrapper views - they just apply modifiers directly
-        // This fixes Issue #159 - identifier applies directly to content, no wrapper views
-        // Helper to conditionally apply identifier
-        @ViewBuilder
-        func applyIdentifierIfNeeded<V: View>(to view: V) -> some View {
-            if let identifier = identifier {
-                view.accessibilityIdentifier(identifier)
-            } else {
-                view
-            }
-        }
-        
-        // Helper to conditionally apply accessibility label (Issue #154)
-        // Only apply if explicitly provided via parameter AND an identifier is present
-        // This ensures labels are only applied when identifiers are present (consistent behavior)
-        // Labels are localized and formatted according to Apple HIG guidelines
-        // Missing keys are logged in debug mode (Issue #158)
-        @ViewBuilder
-        func applyAccessibilityLabelIfNeeded<V: View>(to view: V) -> some View {
-            // Only apply label if identifier is present - ensures consistent behavior
-            // If no identifier, we're not doing compliance, so skip label too
-            if let label = accessibilityLabel, !label.isEmpty, identifier != nil {
-                // Localize and format label according to Apple HIG guidelines
-                // Pass context for better logging of missing keys
-                let localizedLabel = localizeAccessibilityLabel(
-                    label,
-                    context: identifierElementType?.lowercased(),
-                    elementType: identifierElementType
-                )
-                view.accessibilityLabel(localizedLabel)
-            } else {
-                view
-            }
-        }
-        
-        // Apply identifier (if needed), then accessibility label (if needed), then HIG compliance
-        // Note: Picker segments should have accessibility applied directly when generating the picker
-        // (see PlatformTabStrip, DynamicEnumField, etc. for examples)
+        // Apply HIG compliance features on top of basic compliance
+        // HIG features are always applied (even when identifierName is nil)
+        // This ensures container views get HIG compliance without identifiers
         return applyHIGComplianceFeatures(
-            to: applyAccessibilityLabelIfNeeded(to: applyIdentifierIfNeeded(to: content)),
+            to: contentWithBasicCompliance,
             elementType: identifierElementType
-        )
-    }
-    
-    // Note: Not @MainActor - this function only does string manipulation and config access
-    // which are thread-safe. Calling from non-MainActor contexts (like view body) is safe.
-    internal func generateIdentifier(
-        config: AccessibilityIdentifierConfig,
-        identifierName: String?,
-        identifierElementType: String?,
-        identifierLabel: String?,
-        capturedScreenContext: String?,
-        capturedViewHierarchy: [String],
-        capturedEnableUITestIntegration: Bool,
-        capturedIncludeComponentNames: Bool,
-        capturedIncludeElementTypes: Bool,
-        capturedEnableDebugLogging: Bool,
-        capturedNamespace: String,
-        capturedGlobalPrefix: String
-    ) -> String {
-        return generateAccessibilityIdentifier(
-            config: config,
-            identifierName: identifierName,
-            identifierElementType: identifierElementType,
-            identifierLabel: identifierLabel,
-            capturedScreenContext: capturedScreenContext,
-            capturedViewHierarchy: capturedViewHierarchy,
-            capturedEnableUITestIntegration: capturedEnableUITestIntegration,
-            capturedIncludeComponentNames: capturedIncludeComponentNames,
-            capturedIncludeElementTypes: capturedIncludeElementTypes,
-            capturedEnableDebugLogging: capturedEnableDebugLogging,
-            capturedNamespace: capturedNamespace,
-            capturedGlobalPrefix: capturedGlobalPrefix,
-            defaultElementType: "View",
-            emptyFallback: "main.ui.element"
         )
     }
     
@@ -1236,10 +1104,15 @@ public struct BasicAutomaticComplianceModifier: ViewModifier {
         // Logic: Both enableAutoIDs and globalAutomaticAccessibilityIdentifiers must be true
         let shouldApply = capturedEnableAutoIDs && capturedGlobalAutomaticAccessibilityIdentifiers
         
+        // CRITICAL: Only apply identifier if explicitly requested via identifierName parameter
+        // This ensures child identifiers take precedence over parent identifiers
+        // Matches AutomaticComplianceModifier behavior for consistency
+        let shouldApplyIdentifier = shouldApply && storedIdentifierName != nil
+        
         // Generate identifier if needed
         // Call internal generateAccessibilityIdentifier directly (same as AutomaticComplianceModifier.generateIdentifier does)
         // DEBUG: Always log to verify modifier is being called (unconditional for debugging)
-        let debugMsg = "🔍 BASIC COMPLIANCE DEBUG: identifierName='\(storedIdentifierName ?? "nil")', identifierElementType='\(identifierElementType ?? "nil")', enableDebugLogging=\(capturedEnableDebugLogging)"
+        let debugMsg = "🔍 BASIC COMPLIANCE DEBUG: identifierName='\(storedIdentifierName ?? "nil")', identifierElementType='\(identifierElementType ?? "nil")', enableDebugLogging=\(capturedEnableDebugLogging), shouldApplyIdentifier=\(shouldApplyIdentifier)"
         print(debugMsg)
         NSLog("%@", debugMsg)
         os_log("%{public}@", log: .default, type: .debug, debugMsg)
@@ -1247,13 +1120,13 @@ public struct BasicAutomaticComplianceModifier: ViewModifier {
         
         // Additional debug logging if enabled
         if capturedEnableDebugLogging {
-            let detailedMsg = "🔍 BASIC COMPLIANCE DETAILED: shouldApply=\(shouldApply), enableAutoIDs=\(capturedEnableAutoIDs), globalAutoIDs=\(capturedGlobalAutomaticAccessibilityIdentifiers)"
+            let detailedMsg = "🔍 BASIC COMPLIANCE DETAILED: shouldApply=\(shouldApply), shouldApplyIdentifier=\(shouldApplyIdentifier), enableAutoIDs=\(capturedEnableAutoIDs), globalAutoIDs=\(capturedGlobalAutomaticAccessibilityIdentifiers)"
             print(detailedMsg)
             NSLog("%@", detailedMsg)
             os_log("%{public}@", log: .default, type: .debug, detailedMsg)
             fflush(stdout)
         }
-        let identifier: String? = shouldApply ? generateAccessibilityIdentifier(
+        let identifier: String? = shouldApplyIdentifier ? generateAccessibilityIdentifier(
             config: config,
             identifierName: storedIdentifierName,  // Use stored value to ensure it's preserved
             identifierElementType: self.identifierElementType,  // Also use stored values for consistency
