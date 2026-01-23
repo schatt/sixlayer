@@ -784,6 +784,9 @@ public struct DynamicStepperField: View {
                 in: range,
                 step: step
             )
+            .automaticCompliance(
+                identifierName: sanitizeLabelText(field.label)  // Auto-generate identifierName from field label
+            )
 
             // Show current value - use appropriate format based on step size
             Text(step.truncatingRemainder(dividingBy: 1.0) == 0.0 
@@ -794,7 +797,7 @@ public struct DynamicStepperField: View {
         }
         .padding()
         .environment(\.accessibilityIdentifierLabel, field.label)
-        .automaticCompliance(named: "DynamicStepperField")
+        .automaticCompliance()  // Container view - no identifierName
     }
 }
 
@@ -823,11 +826,13 @@ public struct DynamicDateField: View {
                           set: { _ in } // TODO: Store in formState
                       ),
                       displayedComponents: .date)
-            .automaticCompliance()
+            .automaticCompliance(
+                identifierName: sanitizeLabelText(field.label)  // Auto-generate identifierName from field label
+            )
         }
         .padding()
         .environment(\.accessibilityIdentifierLabel, field.label) // TDD GREEN: Pass label to identifier generation
-        .automaticCompliance(named: "DynamicDateField")
+        .automaticCompliance()  // Container view - no identifierName
     }
 }
 
