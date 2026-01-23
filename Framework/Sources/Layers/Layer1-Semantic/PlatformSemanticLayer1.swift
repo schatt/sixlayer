@@ -4491,6 +4491,9 @@ struct SettingsSectionView: View {
         .padding()
         .background(Color.platformSecondaryBackground)
         .cornerRadius(12)
+        .automaticCompliance(
+            identifierName: sanitizeLabelText(section.title)  // Auto-generate identifierName from section title
+        )
     }
 }
 
@@ -4579,7 +4582,7 @@ struct GenericSettingsItemView: View {
                 }
                 
             case .button:
-                Button(item.title) {
+                platformButton(item.title) {
                     // Button action would be handled by onSettingChanged
                     // TODO: Implement when onSettingChanged is available in scope
                 }
@@ -4592,6 +4595,9 @@ struct GenericSettingsItemView: View {
             }
         }
         .padding(.vertical, 4)
+        .automaticCompliance(
+            identifierName: sanitizeLabelText(item.title)  // Auto-generate identifierName from item title
+        )
     }
 }
 
