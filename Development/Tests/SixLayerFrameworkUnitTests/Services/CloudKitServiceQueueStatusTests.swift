@@ -9,23 +9,6 @@ import Testing
 import CloudKit
 @testable import SixLayerFramework
 
-// MARK: - Test Delegate (Real Implementation)
-
-@MainActor
-class TestCloudKitDelegate: CloudKitServiceDelegate {
-    let containerID: String
-    
-    init(containerID: String = "iCloud.com.test.app") {
-        self.containerID = containerID
-    }
-    
-    func containerIdentifier() -> String {
-        return containerID
-    }
-    
-    // Uses default implementations from protocol extension
-}
-
 // MARK: - Queue Status Tests
 
 @Suite("CloudKit Service Queue Status")

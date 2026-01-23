@@ -11,23 +11,6 @@ import CoreData
 import CloudKit
 @testable import SixLayerFramework
 
-// MARK: - Test Delegate (Real Implementation)
-
-@MainActor
-class TestCloudKitDelegate: CloudKitServiceDelegate {
-    let containerID: String
-    
-    init(containerID: String = "iCloud.com.test.app") {
-        self.containerID = containerID
-    }
-    
-    func containerIdentifier() -> String {
-        return containerID
-    }
-    
-    // Uses default implementations from protocol extension
-}
-
 // MARK: - Core Data Integration Tests
 
 @Suite("CloudKit Service Core Data Integration")

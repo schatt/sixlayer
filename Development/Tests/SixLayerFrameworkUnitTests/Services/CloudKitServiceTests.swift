@@ -10,28 +10,6 @@ import Testing
 import CloudKit
 @testable import SixLayerFramework
 
-// MARK: - Test Delegate (Real Implementation)
-
-@MainActor
-class TestCloudKitDelegate: CloudKitServiceDelegate {
-    let containerID: String
-    
-    init(containerID: String = "iCloud.com.test.app") {
-        self.containerID = containerID
-    }
-    
-    func containerIdentifier() -> String {
-        return containerID
-    }
-    
-    // Uses default implementations from protocol extension:
-    // - resolveConflict: returns remote (server wins)
-    // - validateRecord: no validation
-    // - transformRecord: returns record unchanged
-    // - handleError: returns false (framework handles)
-    // - syncDidComplete: no-op
-}
-
 // MARK: - CloudKit Service Tests
 
 @Suite("CloudKit Service")
