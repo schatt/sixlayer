@@ -123,8 +123,8 @@ final class BasicAutomaticComplianceUITests: XCTestCase {
         let testIdentifier = "SixLayer.main.ui.testView.View"
         
         guard app.findElement(byIdentifier: testIdentifier, 
-                             primaryType: .staticText,
-                             secondaryTypes: [.other]) != nil else {
+                             primaryType: .other,
+                             secondaryTypes: [.staticText, .any]) != nil else {
             XCTFail("Basic compliance identifier '\(testIdentifier)' should be findable via XCUITest")
             return
         }
@@ -172,8 +172,8 @@ final class BasicAutomaticComplianceUITests: XCTestCase {
         let testIdentifier = "SixLayer.main.ui.helloText.View"
         
         guard app.findElement(byIdentifier: testIdentifier, 
-                             primaryType: .staticText,
-                             secondaryTypes: [.other]) != nil else {
+                             primaryType: .other,
+                             secondaryTypes: [.staticText, .any]) != nil else {
             XCTFail("Text.basicAutomaticCompliance() identifier '\(testIdentifier)' should be findable via XCUITest")
             return
         }
@@ -224,11 +224,11 @@ final class BasicAutomaticComplianceUITests: XCTestCase {
         
         // Try to find with sanitized identifier (may also be just "save" if sanitization is different)
         let found = app.findElement(byIdentifier: testIdentifier,
-                                   primaryType: .staticText,
-                                   secondaryTypes: [.other]) != nil ||
+                                   primaryType: .other,
+                                   secondaryTypes: [.staticText, .any]) != nil ||
                    app.findElement(byIdentifier: "SixLayer.main.ui.TestButton.save.View",
-                                  primaryType: .staticText,
-                                  secondaryTypes: [.other]) != nil
+                                  primaryType: .other,
+                                  secondaryTypes: [.staticText, .any]) != nil
         
         guard found else {
             XCTFail("Identifier with sanitized label should be findable via XCUITest. Expected '\(testIdentifier)' or similar")
@@ -255,8 +255,8 @@ final class BasicAutomaticComplianceUITests: XCTestCase {
         let testIdentifier = "SixLayer.main.ui.TestButton.save-load.View"
         
         guard app.findElement(byIdentifier: testIdentifier,
-                             primaryType: .staticText,
-                             secondaryTypes: [.other]) != nil else {
+                             primaryType: .other,
+                             secondaryTypes: [.staticText, .any]) != nil else {
             XCTFail("Identifier with sanitized special characters should be findable via XCUITest. Expected '\(testIdentifier)' or similar")
             return
         }
@@ -264,13 +264,13 @@ final class BasicAutomaticComplianceUITests: XCTestCase {
         // Verify special characters are NOT in the identifier
         // Try to find with special characters - should NOT exist
         let withAmpersand = app.findElement(byIdentifier: "SixLayer.main.ui.TestButton.save-&-load.View",
-                                           primaryType: .staticText,
-                                           secondaryTypes: [.other])
+                                           primaryType: .other,
+                                           secondaryTypes: [.staticText, .any])
         XCTAssertNil(withAmpersand, "Identifier should not contain '&' character")
         
         let withExclamation = app.findElement(byIdentifier: "SixLayer.main.ui.TestButton.save-load!.View",
-                                            primaryType: .staticText,
-                                            secondaryTypes: [.other])
+                                            primaryType: .other,
+                                            secondaryTypes: [.staticText, .any])
         XCTAssertNil(withExclamation, "Identifier should not contain '!' character")
     }
     
@@ -292,8 +292,8 @@ final class BasicAutomaticComplianceUITests: XCTestCase {
         let testIdentifier = "SixLayer.main.ui.starImage.Image"
         
         guard app.findElement(byIdentifier: testIdentifier, 
-                             primaryType: .image,
-                             secondaryTypes: [.other]) != nil else {
+                             primaryType: .other,
+                             secondaryTypes: [.image, .any]) != nil else {
             XCTFail("Image.basicAutomaticCompliance() identifier '\(testIdentifier)' should be findable via XCUITest")
             return
         }
