@@ -68,6 +68,7 @@ struct TestAppContentView: View {
         config.globalAutomaticAccessibilityIdentifiers = true
         config.includeComponentNames = true
         config.includeElementTypes = true
+        config.enableUITestIntegration = true  // CRITICAL: Enables "main.ui" format for stable identifiers
         
         // Enable debug logging in UI testing mode
         if ProcessInfo.processInfo.environment["XCUI_TESTING"] == "1" {
