@@ -124,21 +124,29 @@ final class BasicAutomaticComplianceUITests: XCTestCase {
             return
         }
         
+        // DEBUG: Print what identifier the Text view actually has
+        let actualIdentifier = textView.identifier
+        print("🔍 TEST DEBUG: Text view with content 'Test Content' has identifier: '\(actualIdentifier)'")
+        
         // When: Query for element by basic compliance identifier using XCUITest
         // Then: Should be findable
-        // NOTE: Debug output shows actual identifier is 'SixLayer.main.ui.element.View'
-        // The identifierName parameter should be used, but currently it's not - this is a bug to fix
-        // For now, test with the actual generated identifier format to verify basic compliance works
-        let testIdentifier = "SixLayer.main.ui.element.View"
+        // Identifier format: SixLayer.main.ui.testView.View (with enableUITestIntegration=true and includeElementTypes=true)
+        // The identifierName parameter should be used - if this fails, identifierName isn't being passed correctly
+        let expectedIdentifier = "SixLayer.main.ui.testView.View"
+        print("🔍 TEST DEBUG: Expected identifier: '\(expectedIdentifier)'")
         
-        guard app.findElement(byIdentifier: testIdentifier, 
-                             primaryType: .other,
-                             secondaryTypes: [.staticText, .any]) != nil else {
-            // Debug: Check if the Text view has any identifier
-            let textIdentifier = textView.identifier
-            XCTFail("Basic compliance identifier '\(testIdentifier)' should be findable via XCUITest. Text view identifier: '\(textIdentifier)'")
-            return
-        }
+        // EXPECT: The actual identifier should match the expected identifier
+        XCTAssertEqual(actualIdentifier, expectedIdentifier, 
+                      "Basic compliance should generate identifier with identifierName 'testView'. Actual: '\(actualIdentifier)', Expected: '\(expectedIdentifier)'")
+        
+        // EXPECT: Element should be findable by the expected identifier
+        let foundElement = app.findElement(byIdentifier: expectedIdentifier, 
+                                          primaryType: .other,
+                                          secondaryTypes: [.staticText, .any])
+        print("🔍 TEST DEBUG: Element found by identifier '\(expectedIdentifier)': \(foundElement != nil ? "YES" : "NO")")
+        
+        XCTAssertNotNil(foundElement, 
+                       "Basic compliance identifier '\(expectedIdentifier)' should be findable via XCUITest")
     }
     
     /// Test that .basicAutomaticCompliance() label is readable via XCUITest
@@ -184,21 +192,29 @@ final class BasicAutomaticComplianceUITests: XCTestCase {
             return
         }
         
+        // DEBUG: Print what identifier the Text view actually has
+        let actualIdentifier = textView.identifier
+        print("🔍 TEST DEBUG: Text view with content 'Hello' has identifier: '\(actualIdentifier)'")
+        
         // When: Query for Text element by basic compliance identifier using XCUITest
         // Then: Should be findable
-        // NOTE: Debug output shows actual identifier is 'SixLayer.main.ui.element.View'
-        // The identifierName parameter should be used, but currently it's not - this is a bug to fix
-        // For now, test with the actual generated identifier format to verify basic compliance works
-        let testIdentifier = "SixLayer.main.ui.element.View"
+        // Identifier format: SixLayer.main.ui.helloText.View (with enableUITestIntegration=true and includeElementTypes=true)
+        // The identifierName parameter should be used - if this fails, identifierName isn't being passed correctly
+        let expectedIdentifier = "SixLayer.main.ui.helloText.View"
+        print("🔍 TEST DEBUG: Expected identifier: '\(expectedIdentifier)'")
         
-        guard app.findElement(byIdentifier: testIdentifier, 
-                             primaryType: .other,
-                             secondaryTypes: [.staticText, .any]) != nil else {
-            // Debug: Check if the Text view has any identifier
-            let textIdentifier = textView.identifier
-            XCTFail("Text.basicAutomaticCompliance() identifier '\(testIdentifier)' should be findable via XCUITest. Text view identifier: '\(textIdentifier)'")
-            return
-        }
+        // EXPECT: The actual identifier should match the expected identifier
+        XCTAssertEqual(actualIdentifier, expectedIdentifier, 
+                      "Text.basicAutomaticCompliance() should generate identifier with identifierName 'helloText'. Actual: '\(actualIdentifier)', Expected: '\(expectedIdentifier)'")
+        
+        // EXPECT: Element should be findable by the expected identifier
+        let foundElement = app.findElement(byIdentifier: expectedIdentifier, 
+                                          primaryType: .other,
+                                          secondaryTypes: [.staticText, .any])
+        print("🔍 TEST DEBUG: Element found by identifier '\(expectedIdentifier)': \(foundElement != nil ? "YES" : "NO")")
+        
+        XCTAssertNotNil(foundElement, 
+                       "Text.basicAutomaticCompliance() identifier '\(expectedIdentifier)' should be findable via XCUITest")
     }
     
     /// Test that Text with .basicAutomaticCompliance() label is readable
@@ -240,16 +256,16 @@ final class BasicAutomaticComplianceUITests: XCTestCase {
         
         // When: Query for element with sanitized identifier
         // Then: Should be findable with sanitized label
-        // NOTE: Debug output shows identifierName isn't being used, so identifier will be 'SixLayer.main.ui.element.save-file.View'
-        // The identifierLabel should still be sanitized and included
-        // For now, test with the actual generated identifier format
-        let testIdentifier = "SixLayer.main.ui.element.save-file.View"
+        // Label "Save File" should be sanitized to "save-file" in identifier
+        // Identifier format: SixLayer.main.ui.TestButton.save-file.View (with enableUITestIntegration=true and includeElementTypes=true)
+        // The identifierName and identifierLabel should both be used
+        let testIdentifier = "SixLayer.main.ui.TestButton.save-file.View"
         
         // Try to find with sanitized identifier (may also be just "save" if sanitization is different)
         let found = app.findElement(byIdentifier: testIdentifier,
                                    primaryType: .other,
                                    secondaryTypes: [.staticText, .any]) != nil ||
-                   app.findElement(byIdentifier: "SixLayer.main.ui.element.save.View",
+                   app.findElement(byIdentifier: "SixLayer.main.ui.TestButton.save.View",
                                   primaryType: .other,
                                   secondaryTypes: [.staticText, .any]) != nil
         
@@ -273,10 +289,10 @@ final class BasicAutomaticComplianceUITests: XCTestCase {
         
         // When: Query for element with sanitized identifier (special characters removed)
         // Then: Should be findable without special characters
-        // NOTE: Debug output shows identifierName isn't being used, so identifier will be 'SixLayer.main.ui.element.save-load.View'
-        // The identifierLabel should still be sanitized and included
-        // For now, test with the actual generated identifier format
-        let testIdentifier = "SixLayer.main.ui.element.save-load.View"
+        // Label "Save & Load!" should have "&" and "!" removed
+        // Identifier format: SixLayer.main.ui.TestButton.save-load.View (with enableUITestIntegration=true and includeElementTypes=true)
+        // The identifierName and identifierLabel should both be used
+        let testIdentifier = "SixLayer.main.ui.TestButton.save-load.View"
         
         guard app.findElement(byIdentifier: testIdentifier,
                              primaryType: .other,
@@ -312,9 +328,9 @@ final class BasicAutomaticComplianceUITests: XCTestCase {
         
         // When: Query for Image element by basic compliance identifier using XCUITest
         // Then: Should be findable
-        // NOTE: Debug output shows identifierName isn't being used, so identifier will be 'SixLayer.main.ui.element.Image'
-        // For now, test with the actual generated identifier format
-        let testIdentifier = "SixLayer.main.ui.element.Image"
+        // Identifier format: SixLayer.main.ui.starImage.Image (with enableUITestIntegration=true and includeElementTypes=true)
+        // The identifierName should be used - if this fails, identifierName isn't being passed correctly
+        let testIdentifier = "SixLayer.main.ui.starImage.Image"
         
         guard app.findElement(byIdentifier: testIdentifier, 
                              primaryType: .other,

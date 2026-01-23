@@ -492,4 +492,18 @@ open class BasicAutomaticComplianceLogicTests: BaseTestClass {
         #expect(modifier.accessibilityLabel != nil, "Modifier should have accessibilityLabel parameter")
         #expect(Bool(true), "GREEN PHASE: Modifier applies identifiers/labels - implementation complete")
     }
+    
+    /// BUSINESS PURPOSE: Verify modifier stores identifierName parameter correctly
+    /// TESTING SCOPE: Modifier initialization and property storage
+    /// METHODOLOGY: Create modifier with identifierName, verify it's stored correctly
+    @Test func testBasicAutomaticComplianceModifier_StoresIdentifierName() {
+        // Given: A modifier created with identifierName
+        let identifierName = "testView"
+        let modifier = BasicAutomaticComplianceModifier(identifierName: identifierName)
+        
+        // When: We check the stored property
+        // Then: It should match what we passed in
+        #expect(modifier.identifierName == identifierName, 
+               "Modifier should store identifierName parameter. Expected: '\(identifierName)', Got: '\(modifier.identifierName ?? "nil")'")
+    }
 }

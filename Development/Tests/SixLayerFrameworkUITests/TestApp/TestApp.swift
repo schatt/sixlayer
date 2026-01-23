@@ -70,10 +70,9 @@ struct TestAppContentView: View {
         config.includeElementTypes = true
         config.enableUITestIntegration = true  // CRITICAL: Enables "main.ui" format for stable identifiers
         
-        // Enable debug logging in UI testing mode
-        if ProcessInfo.processInfo.environment["XCUI_TESTING"] == "1" {
-            config.enableDebugLogging = true
-        }
+        // Enable debug logging unconditionally for debugging identifierName issue
+        // TODO: Revert to conditional after fixing identifierName bug
+        config.enableDebugLogging = true
     }
     
     var body: some View {

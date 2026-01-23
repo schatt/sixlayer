@@ -15,6 +15,7 @@
 
 import SwiftUI
 import Foundation
+import os.log
 #if canImport(UIKit)
 import UIKit
 #elseif os(macOS)
@@ -225,11 +226,12 @@ internal func generateAccessibilityIdentifier(
     // Determine component name (from parameter, not environment)
     let componentName = identifierName ?? "element"
     
-    // DEBUG: Log to diagnose identifierName usage
-    if capturedEnableDebugLogging {
-        print("🔍 IDENTIFIER GEN DEBUG: identifierName='\(identifierName ?? "nil")', componentName='\(componentName)'")
-        fflush(stdout)
-    }
+    // DEBUG: Always log to verify function is being called (unconditional for debugging)
+    let debugMsg = "🔍 IDENTIFIER GEN DEBUG: identifierName='\(identifierName ?? "nil")', componentName='\(componentName)', enableDebugLogging=\(capturedEnableDebugLogging)"
+    print(debugMsg)
+    NSLog("%@", debugMsg)
+    os_log("%{public}@", log: .default, type: .debug, debugMsg)
+    fflush(stdout)
     
     // Determine element type (from parameter, not environment)
     let elementType = identifierElementType ?? defaultElementType
@@ -1181,13 +1183,31 @@ public struct BasicAutomaticComplianceModifier: ViewModifier {
         identifierLabel: String? = nil,
         accessibilityLabel: String? = nil
     ) {
+        // DEBUG: Log what we're receiving in init
+        let debugMsg = "🔍 MODIFIER INIT: identifierName='\(identifierName ?? "nil")', identifierElementType='\(identifierElementType ?? "nil")'"
+        print(debugMsg)
+        NSLog("%@", debugMsg)
+        os_log("%{public}@", log: .default, type: .debug, debugMsg)
+        fflush(stdout)
+        
         self.identifierName = identifierName
         self.identifierElementType = identifierElementType
         self.identifierLabel = identifierLabel
         self.accessibilityLabel = accessibilityLabel
+        
+        // DEBUG: Verify it was stored correctly
+        let verifyMsg = "🔍 MODIFIER INIT VERIFY: stored identifierName='\(self.identifierName ?? "nil")'"
+        print(verifyMsg)
+        NSLog("%@", verifyMsg)
+        os_log("%{public}@", log: .default, type: .debug, verifyMsg)
+        fflush(stdout)
     }
     
     public func body(content: Content) -> some View {
+        // CRITICAL DEBUG: Verify identifierName is preserved in the modifier
+        // Store the property value to ensure it's not lost during SwiftUI evaluation
+        let storedIdentifierName = self.identifierName
+        
         // Use task-local config (automatic per-test isolation), then shared (production)
         let config = AccessibilityIdentifierConfig.currentTaskLocalConfig ?? AccessibilityIdentifierConfig.shared
         // CRITICAL: Capture property values as local variables BEFORE any logic
@@ -1208,16 +1228,26 @@ public struct BasicAutomaticComplianceModifier: ViewModifier {
         
         // Generate identifier if needed
         // Call internal generateAccessibilityIdentifier directly (same as AutomaticComplianceModifier.generateIdentifier does)
-        // DEBUG: Log identifierName to diagnose why it's not being used
+        // DEBUG: Always log to verify modifier is being called (unconditional for debugging)
+        let debugMsg = "🔍 BASIC COMPLIANCE DEBUG: identifierName='\(storedIdentifierName ?? "nil")', identifierElementType='\(identifierElementType ?? "nil")', enableDebugLogging=\(capturedEnableDebugLogging)"
+        print(debugMsg)
+        NSLog("%@", debugMsg)
+        os_log("%{public}@", log: .default, type: .debug, debugMsg)
+        fflush(stdout)
+        
+        // Additional debug logging if enabled
         if capturedEnableDebugLogging {
-            print("🔍 BASIC COMPLIANCE DEBUG: identifierName='\(identifierName ?? "nil")', identifierElementType='\(identifierElementType ?? "nil")'")
+            let detailedMsg = "🔍 BASIC COMPLIANCE DETAILED: shouldApply=\(shouldApply), enableAutoIDs=\(capturedEnableAutoIDs), globalAutoIDs=\(capturedGlobalAutomaticAccessibilityIdentifiers)"
+            print(detailedMsg)
+            NSLog("%@", detailedMsg)
+            os_log("%{public}@", log: .default, type: .debug, detailedMsg)
             fflush(stdout)
         }
         let identifier: String? = shouldApply ? generateAccessibilityIdentifier(
             config: config,
-            identifierName: identifierName,
-            identifierElementType: identifierElementType,
-            identifierLabel: identifierLabel,
+            identifierName: storedIdentifierName,  // Use stored value to ensure it's preserved
+            identifierElementType: self.identifierElementType,  // Also use stored values for consistency
+            identifierLabel: self.identifierLabel,
             capturedScreenContext: capturedScreenContext,
             capturedViewHierarchy: capturedViewHierarchy,
             capturedEnableUITestIntegration: capturedEnableUITestIntegration,
@@ -1225,12 +1255,44 @@ public struct BasicAutomaticComplianceModifier: ViewModifier {
             capturedIncludeElementTypes: capturedIncludeElementTypes,
             capturedEnableDebugLogging: capturedEnableDebugLogging,
             capturedNamespace: capturedNamespace,
-            capturedGlobalPrefix: capturedGlobalPrefix
+            capturedGlobalPrefix: capturedGlobalPrefix,
+            defaultElementType: "View",  // Explicitly match automaticCompliance() behavior
+            emptyFallback: "main.ui.element"  // Explicitly match automaticCompliance() behavior
         ) : nil
         
+        // DEBUG: Log what identifier was generated
+        if capturedEnableDebugLogging, let finalIdentifier = identifier {
+            let debugMsg = "🔍 BASIC COMPLIANCE FINAL: Generated identifier='\(finalIdentifier)' for storedIdentifierName='\(storedIdentifierName ?? "nil")'"
+            print(debugMsg)
+            NSLog("%@", debugMsg)
+            os_log("%{public}@", log: .default, type: .debug, debugMsg)
+            fflush(stdout)
+        }
+        
         // Helper to conditionally apply identifier
+        // Do logging outside ViewBuilder context, then use @ViewBuilder for the actual view
         @ViewBuilder
         func applyIdentifierIfNeeded<V: View>(to view: V) -> some View {
+            // DEBUG: Log what identifier we're applying (evaluate before ViewBuilder)
+            let _ = {
+                if capturedEnableDebugLogging {
+                    if let identifier = identifier {
+                        let debugMsg = "🔍 APPLY IDENTIFIER: Applying identifier '\(identifier)' to view (storedIdentifierName='\(storedIdentifierName ?? "nil")')"
+                        print(debugMsg)
+                        NSLog("%@", debugMsg)
+                        os_log("%{public}@", log: .default, type: .debug, debugMsg)
+                        fflush(stdout)
+                    } else {
+                        let debugMsg = "🔍 APPLY IDENTIFIER: NOT applying identifier - identifier is nil (storedIdentifierName='\(storedIdentifierName ?? "nil")')"
+                        print(debugMsg)
+                        NSLog("%@", debugMsg)
+                        os_log("%{public}@", log: .default, type: .debug, debugMsg)
+                        fflush(stdout)
+                    }
+                }
+            }()
+            
+            // ViewBuilder context - only Views allowed here
             if let identifier = identifier {
                 view.accessibilityIdentifier(identifier)
             } else {
