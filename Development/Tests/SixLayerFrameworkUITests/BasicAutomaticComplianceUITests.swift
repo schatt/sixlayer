@@ -117,17 +117,6 @@ final class BasicAutomaticComplianceUITests: XCTestCase {
         XCTAssertTrue(basicComplianceButton.waitForExistenceFast(timeout: 3.0), "Basic Compliance Test button should exist")
         basicComplianceButton.tap()
         
-        // First, verify the Text view exists by its content
-        let textView = app.staticTexts["Test Content"]
-        guard textView.waitForExistenceFast(timeout: 3.0) else {
-            XCTFail("Text view with content 'Test Content' should exist")
-            return
-        }
-        
-        // DEBUG: Print what identifier the Text view actually has
-        let actualIdentifier = textView.identifier
-        print("🔍 TEST DEBUG: Text view with content 'Test Content' has identifier: '\(actualIdentifier)'")
-        
         // When: Query for element by basic compliance identifier using XCUITest
         // Then: Should be findable
         // Identifier format: SixLayer.main.ui.testView.View (with enableUITestIntegration=true and includeElementTypes=true)
@@ -135,18 +124,30 @@ final class BasicAutomaticComplianceUITests: XCTestCase {
         let expectedIdentifier = "SixLayer.main.ui.testView.View"
         print("🔍 TEST DEBUG: Expected identifier: '\(expectedIdentifier)'")
         
-        // EXPECT: The actual identifier should match the expected identifier
-        XCTAssertEqual(actualIdentifier, expectedIdentifier, 
-                      "Basic compliance should generate identifier with identifierName 'testView'. Actual: '\(actualIdentifier)', Expected: '\(expectedIdentifier)'")
-        
-        // EXPECT: Element should be findable by the expected identifier
+        // Query directly by identifier to avoid multiple matching elements issue
         let foundElement = app.findElement(byIdentifier: expectedIdentifier, 
                                           primaryType: .other,
                                           secondaryTypes: [.staticText, .any])
         print("🔍 TEST DEBUG: Element found by identifier '\(expectedIdentifier)': \(foundElement != nil ? "YES" : "NO")")
         
-        XCTAssertNotNil(foundElement, 
-                       "Basic compliance identifier '\(expectedIdentifier)' should be findable via XCUITest")
+        guard let element = foundElement else {
+            XCTFail("Basic compliance identifier '\(expectedIdentifier)' should be findable via XCUITest")
+            return
+        }
+        
+        // Verify the element has the correct identifier
+        let actualIdentifier = element.identifier
+        print("🔍 TEST DEBUG: Element with identifier '\(expectedIdentifier)' has identifier: '\(actualIdentifier)'")
+        
+        // EXPECT: The actual identifier should match the expected identifier
+        XCTAssertEqual(actualIdentifier, expectedIdentifier, 
+                      "Basic compliance should generate identifier with identifierName 'testView'. Actual: '\(actualIdentifier)', Expected: '\(expectedIdentifier)'")
+        
+        // Verify the element has the expected label
+        let elementLabel = element.label
+        print("🔍 TEST DEBUG: Element label: '\(elementLabel)'")
+        XCTAssertEqual(elementLabel, "Test Content", 
+                      "Element should have label 'Test Content'. Actual: '\(elementLabel)'")
     }
     
     /// Test that .basicAutomaticCompliance() label is readable via XCUITest
@@ -161,16 +162,26 @@ final class BasicAutomaticComplianceUITests: XCTestCase {
         XCTAssertTrue(basicComplianceButton.waitForExistenceFast(timeout: 3.0), "Basic Compliance Test button should exist")
         basicComplianceButton.tap()
         
-        // When: Query for element by basic compliance label using XCUITest
+        // When: Query for element by basic compliance identifier first, then verify label
         // Then: Should be readable
         // Label should be formatted with punctuation: "Test label" -> "Test label."
+        // Updated: Query by identifier since we now require identifierName for labels
+        let expectedIdentifier = "SixLayer.main.ui.testViewWithLabel.View"
         let testLabel = "Test label."
         
-        let element = app.staticTexts[testLabel]
-        guard element.existsImmediately || element.waitForExistenceFast(timeout: 3.0) else {
-            XCTFail("Basic compliance label '\(testLabel)' should be readable via XCUITest")
+        // First find by identifier (since identifierName is required)
+        let element = app.findElement(byIdentifier: expectedIdentifier,
+                                     primaryType: .other,
+                                     secondaryTypes: [.staticText, .any])
+        guard let foundElement = element else {
+            XCTFail("Basic compliance identifier '\(expectedIdentifier)' should be findable. Label test requires identifier.")
             return
         }
+        
+        // Then verify the label is readable
+        let actualLabel = foundElement.label
+        XCTAssertEqual(actualLabel, testLabel,
+                      "Basic compliance label should be '\(testLabel)'. Actual: '\(actualLabel)'")
     }
     
     /// Test that Text with .basicAutomaticCompliance() identifier is findable

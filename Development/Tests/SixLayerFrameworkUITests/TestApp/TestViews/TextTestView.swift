@@ -19,7 +19,7 @@ struct TextTestView: View {
             
             // Text view with automatic compliance
             platformText("Test Content")
-                .automaticCompliance()
+                .automaticCompliance(identifierName: "testText")
             
             // Back to main page button
             platformButton("Back to Main") {

@@ -21,6 +21,7 @@ struct ButtonTestView: View {
             platformButton("Test Button") {
                 // Action
             }
+            .automaticCompliance(identifierName: "testButton", identifierElementType: "Button")
             
             // Back to main page button
             platformButton("Back to Main") {

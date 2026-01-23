@@ -194,7 +194,8 @@ final class AccessibilityUITests: XCTestCase {
                      "Text view should exist after navigation")
         
         // Find element by accessibility identifier using helper (tries multiple query types)
-        let expectedIdentifier = "SixLayer.main.ui.element.View"
+        // Updated: TextTestView now provides identifierName "testText"
+        let expectedIdentifier = "SixLayer.main.ui.testText.View"
         let usePerformanceLogging = ProcessInfo.processInfo.environment["USE_XCUITEST_PERFORMANCE"] == "1"
         
         let elementFound: Bool
@@ -238,7 +239,8 @@ final class AccessibilityUITests: XCTestCase {
         XCTAssertTrue(testButton.waitForExistenceFast(timeout: 5.0), "Button should exist after navigation")
         
         // Find element by accessibility identifier using helper (tries multiple query types)
-        let expectedIdentifier = "SixLayer.main.ui.element.Button"
+        // Updated: ButtonTestView now provides identifierName "testButton"
+        let expectedIdentifier = "SixLayer.main.ui.testButton.Button"
         let usePerformanceLogging = ProcessInfo.processInfo.environment["USE_XCUITEST_PERFORMANCE"] == "1"
         
         let elementFound: Bool

@@ -1977,7 +1977,10 @@ public func platformPicker<SelectionValue: Hashable, Option: Hashable, S: SwiftU
             let optionText = optionLabel(option)
             Text(optionText)
                 .tag(optionTag(option))
-                .automaticCompliance(identifierLabel: optionText) // Apply to segment (Issue #163)
+                .automaticCompliance(
+                    identifierName: "element",  // Use "element" as identifierName to generate segment identifiers
+                    identifierLabel: optionText  // Apply to segment (Issue #163)
+                )
         }
     }
     .pickerStyle(style)
