@@ -119,8 +119,8 @@ final class BasicAutomaticComplianceUITests: XCTestCase {
         
         // When: Query for element by basic compliance identifier using XCUITest
         // Then: Should be findable
-        // Identifier format: SixLayer.main.ui.testView (with enableUITestIntegration=true)
-        let testIdentifier = "SixLayer.main.ui.testView"
+        // Identifier format: SixLayer.main.ui.testView.View (with enableUITestIntegration=true and includeElementTypes=true)
+        let testIdentifier = "SixLayer.main.ui.testView.View"
         
         guard app.findElement(byIdentifier: testIdentifier, 
                              primaryType: .staticText,
@@ -168,8 +168,8 @@ final class BasicAutomaticComplianceUITests: XCTestCase {
         
         // When: Query for Text element by basic compliance identifier using XCUITest
         // Then: Should be findable
-        // Identifier format: SixLayer.main.ui.helloText (with enableUITestIntegration=true)
-        let testIdentifier = "SixLayer.main.ui.helloText"
+        // Identifier format: SixLayer.main.ui.helloText.View (with enableUITestIntegration=true and includeElementTypes=true)
+        let testIdentifier = "SixLayer.main.ui.helloText.View"
         
         guard app.findElement(byIdentifier: testIdentifier, 
                              primaryType: .staticText,
@@ -219,14 +219,14 @@ final class BasicAutomaticComplianceUITests: XCTestCase {
         // When: Query for element with sanitized identifier
         // Then: Should be findable with sanitized label
         // Label "Save File" should be sanitized to "save-file" in identifier
-        // Identifier format: SixLayer.main.ui.TestButton.save-file (with enableUITestIntegration=true)
-        let testIdentifier = "SixLayer.main.ui.TestButton.save-file"
+        // Identifier format: SixLayer.main.ui.TestButton.save-file.View (with enableUITestIntegration=true and includeElementTypes=true)
+        let testIdentifier = "SixLayer.main.ui.TestButton.save-file.View"
         
         // Try to find with sanitized identifier (may also be just "save" if sanitization is different)
         let found = app.findElement(byIdentifier: testIdentifier,
                                    primaryType: .staticText,
                                    secondaryTypes: [.other]) != nil ||
-                   app.findElement(byIdentifier: "SixLayer.main.ui.TestButton.save",
+                   app.findElement(byIdentifier: "SixLayer.main.ui.TestButton.save.View",
                                   primaryType: .staticText,
                                   secondaryTypes: [.other]) != nil
         
@@ -251,8 +251,8 @@ final class BasicAutomaticComplianceUITests: XCTestCase {
         // When: Query for element with sanitized identifier (special characters removed)
         // Then: Should be findable without special characters
         // Label "Save & Load!" should have "&" and "!" removed
-        // Identifier format: SixLayer.main.ui.TestButton.save-load (with enableUITestIntegration=true)
-        let testIdentifier = "SixLayer.main.ui.TestButton.save-load"
+        // Identifier format: SixLayer.main.ui.TestButton.save-load.View (with enableUITestIntegration=true and includeElementTypes=true)
+        let testIdentifier = "SixLayer.main.ui.TestButton.save-load.View"
         
         guard app.findElement(byIdentifier: testIdentifier,
                              primaryType: .staticText,
@@ -263,12 +263,12 @@ final class BasicAutomaticComplianceUITests: XCTestCase {
         
         // Verify special characters are NOT in the identifier
         // Try to find with special characters - should NOT exist
-        let withAmpersand = app.findElement(byIdentifier: "SixLayer.main.ui.TestButton.save-&-load",
+        let withAmpersand = app.findElement(byIdentifier: "SixLayer.main.ui.TestButton.save-&-load.View",
                                            primaryType: .staticText,
                                            secondaryTypes: [.other])
         XCTAssertNil(withAmpersand, "Identifier should not contain '&' character")
         
-        let withExclamation = app.findElement(byIdentifier: "SixLayer.main.ui.TestButton.save-load!",
+        let withExclamation = app.findElement(byIdentifier: "SixLayer.main.ui.TestButton.save-load!.View",
                                             primaryType: .staticText,
                                             secondaryTypes: [.other])
         XCTAssertNil(withExclamation, "Identifier should not contain '!' character")
@@ -288,8 +288,8 @@ final class BasicAutomaticComplianceUITests: XCTestCase {
         
         // When: Query for Image element by basic compliance identifier using XCUITest
         // Then: Should be findable
-        // Identifier format: SixLayer.main.ui.starImage (with enableUITestIntegration=true)
-        let testIdentifier = "SixLayer.main.ui.starImage"
+        // Identifier format: SixLayer.main.ui.starImage.Image (with enableUITestIntegration=true and includeElementTypes=true)
+        let testIdentifier = "SixLayer.main.ui.starImage.Image"
         
         guard app.findElement(byIdentifier: testIdentifier, 
                              primaryType: .image,
