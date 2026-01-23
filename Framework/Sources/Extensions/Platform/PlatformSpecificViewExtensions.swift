@@ -1987,7 +1987,8 @@ public func platformPicker<SelectionValue: Hashable, Option: Hashable, S: SwiftU
         }
     }
     .pickerStyle(style)
-    .automaticCompliance(named: pickerName ?? "Picker") // Apply to picker level (Issue #163)
+    // Apply to picker level: identifierName is the picker name (the thing being identified)
+    .automaticCompliance(named: pickerName ?? "Picker") // Issue #163
 }
 
 public extension View {
