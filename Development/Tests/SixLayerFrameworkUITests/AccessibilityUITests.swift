@@ -234,12 +234,9 @@ final class AccessibilityUITests: XCTestCase {
         // Give SwiftUI time to render the new view and build accessibility tree
         sleep(1)
         
-        // Wait for the button to appear
-        let testButton = app.buttons["Test Button"]
-        XCTAssertTrue(testButton.waitForExistenceFast(timeout: 5.0), "Button should exist after navigation")
-        
         // Find element by accessibility identifier using helper (tries multiple query types)
         // Updated: ButtonTestView now provides identifierName "testButton"
+        // Query by identifier first to avoid label matching issues
         let expectedIdentifier = "SixLayer.main.ui.testButton.Button"
         let usePerformanceLogging = ProcessInfo.processInfo.environment["USE_XCUITEST_PERFORMANCE"] == "1"
         

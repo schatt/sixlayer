@@ -75,7 +75,7 @@ struct BasicComplianceTestView: View {
                         .automaticCompliance()
                     
                     platformText("Hello")
-                        .basicAutomaticCompliance(accessibilityLabel: "Hello text")
+                        .basicAutomaticCompliance(identifierName: "helloTextWithLabel", accessibilityLabel: "Hello text")
                 }
                 .padding()
                 .background(Color.platformSecondaryBackground)

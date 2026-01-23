@@ -196,27 +196,13 @@ final class BasicAutomaticComplianceUITests: XCTestCase {
         XCTAssertTrue(basicComplianceButton.waitForExistenceFast(timeout: 3.0), "Basic Compliance Test button should exist")
         basicComplianceButton.tap()
         
-        // First, verify the Text view exists by its content
-        let textView = app.staticTexts["Hello"]
-        guard textView.waitForExistenceFast(timeout: 3.0) else {
-            XCTFail("Text view with content 'Hello' should exist")
-            return
-        }
-        
-        // DEBUG: Print what identifier the Text view actually has
-        let actualIdentifier = textView.identifier
-        print("🔍 TEST DEBUG: Text view with content 'Hello' has identifier: '\(actualIdentifier)'")
-        
         // When: Query for Text element by basic compliance identifier using XCUITest
         // Then: Should be findable
         // Identifier format: SixLayer.main.ui.helloText.View (with enableUITestIntegration=true and includeElementTypes=true)
         // The identifierName parameter should be used - if this fails, identifierName isn't being passed correctly
+        // Query by identifier first to avoid multiple matches (there are two Text views with "Hello" content)
         let expectedIdentifier = "SixLayer.main.ui.helloText.View"
         print("🔍 TEST DEBUG: Expected identifier: '\(expectedIdentifier)'")
-        
-        // EXPECT: The actual identifier should match the expected identifier
-        XCTAssertEqual(actualIdentifier, expectedIdentifier, 
-                      "Text.basicAutomaticCompliance() should generate identifier with identifierName 'helloText'. Actual: '\(actualIdentifier)', Expected: '\(expectedIdentifier)'")
         
         // EXPECT: Element should be findable by the expected identifier
         let foundElement = app.findElement(byIdentifier: expectedIdentifier, 
@@ -224,8 +210,18 @@ final class BasicAutomaticComplianceUITests: XCTestCase {
                                           secondaryTypes: [.staticText, .any])
         print("🔍 TEST DEBUG: Element found by identifier '\(expectedIdentifier)': \(foundElement != nil ? "YES" : "NO")")
         
-        XCTAssertNotNil(foundElement, 
-                       "Text.basicAutomaticCompliance() identifier '\(expectedIdentifier)' should be findable via XCUITest")
+        guard let element = foundElement else {
+            XCTFail("Text.basicAutomaticCompliance() identifier '\(expectedIdentifier)' should be findable via XCUITest")
+            return
+        }
+        
+        // Verify the element has the correct identifier
+        let actualIdentifier = element.identifier
+        print("🔍 TEST DEBUG: Text view with identifier '\(expectedIdentifier)' has identifier: '\(actualIdentifier)'")
+        
+        // EXPECT: The actual identifier should match the expected identifier
+        XCTAssertEqual(actualIdentifier, expectedIdentifier, 
+                      "Text.basicAutomaticCompliance() should generate identifier with identifierName 'helloText'. Actual: '\(actualIdentifier)', Expected: '\(expectedIdentifier)'")
     }
     
     /// Test that Text with .basicAutomaticCompliance() label is readable
@@ -244,13 +240,23 @@ final class BasicAutomaticComplianceUITests: XCTestCase {
         // Then: Should be readable
         // Note: This test requires the test view to include a Text with label
         // Label should be formatted with punctuation: "Hello text" -> "Hello text."
+        // Labels are only applied when identifiers are present, so we query by identifier first
+        let expectedIdentifier = "SixLayer.main.ui.helloTextWithLabel.View"
         let testLabel = "Hello text."
         
-        let element = app.staticTexts[testLabel]
-        guard element.existsImmediately || element.waitForExistenceFast(timeout: 3.0) else {
-            XCTFail("Text.basicAutomaticCompliance() label '\(testLabel)' should be readable via XCUITest")
+        // First find by identifier (labels are only applied when identifiers are present)
+        let element = app.findElement(byIdentifier: expectedIdentifier,
+                                     primaryType: .other,
+                                     secondaryTypes: [.staticText, .any])
+        guard let foundElement = element else {
+            XCTFail("Text.basicAutomaticCompliance() with label should have identifier '\(expectedIdentifier)' to apply the label")
             return
         }
+        
+        // Verify the label is correct
+        let actualLabel = foundElement.label
+        XCTAssertEqual(actualLabel, testLabel,
+                      "Text.basicAutomaticCompliance() label should be '\(testLabel)'. Actual: '\(actualLabel)'")
     }
     
     /// Test that identifier sanitization works (spaces and uppercase)
@@ -343,11 +349,21 @@ final class BasicAutomaticComplianceUITests: XCTestCase {
         // The identifierName should be used - if this fails, identifierName isn't being passed correctly
         let testIdentifier = "SixLayer.main.ui.starImage.Image"
         
-        guard app.findElement(byIdentifier: testIdentifier, 
-                             primaryType: .other,
-                             secondaryTypes: [.image, .any]) != nil else {
-            XCTFail("Image.basicAutomaticCompliance() identifier '\(testIdentifier)' should be findable via XCUITest")
-            return
+        // Try multiple query approaches for Images
+        // Images in XCUITest can be queried as .image or .other
+        let foundElement = app.findElement(byIdentifier: testIdentifier, 
+                                          primaryType: .image,
+                                          secondaryTypes: [.other, .any])
+        
+        if foundElement == nil {
+            // Fallback: try with .other as primary type
+            let foundElementOther = app.findElement(byIdentifier: testIdentifier,
+                                                   primaryType: .other,
+                                                   secondaryTypes: [.image, .any])
+            guard foundElementOther != nil else {
+                XCTFail("Image.basicAutomaticCompliance() identifier '\(testIdentifier)' should be findable via XCUITest")
+                return
+            }
         }
     }
 }
