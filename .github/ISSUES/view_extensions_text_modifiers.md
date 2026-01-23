@@ -166,12 +166,12 @@ Based on SwiftUI's Text API, the following modifiers should be replicated:
 - ✅ **AC3.4**: View extension `.fontWeight(_:)` produces same visual result as Text `.fontWeight(_:)`
 
 ### AC4: Universal Compatibility
-- ⏳ **AC4.1**: Extensions work on Text views
-- ⏳ **AC4.2**: Extensions work on Image views (no error, no visible effect - expected)
-- ⏳ **AC4.3**: Extensions work on container views (VStack, HStack) and propagate to children
-- ⏳ **AC4.4**: Extensions work on other View types (no error, may have no visible effect)
-- ⏳ **AC4.5**: Extensions don't conflict with existing SwiftUI modifiers
-- ⏳ **AC4.6**: Extensions don't cause compilation errors on non-text views
+- ✅ **AC4.1**: Extensions work on Text views (tests exist and pass)
+- ⏳ **AC4.2**: Extensions work on Image views (no error, no visible effect - expected) - tests exist, need verification
+- ⏳ **AC4.3**: Extensions work on container views (VStack, HStack) and propagate to children - tests exist, need verification
+- ⏳ **AC4.4**: Extensions work on other View types (no error, may have no visible effect) - tests exist, need verification
+- ⏳ **AC4.5**: Extensions don't conflict with existing SwiftUI modifiers - need verification
+- ⏳ **AC4.6**: Extensions don't cause compilation errors on non-text views - tests exist, need verification
 
 ## TDD Requirements
 
@@ -310,7 +310,16 @@ For modifiers that already exist on View:
 
 ## Status
 
-- [ ] Phase 1: Research and Verification
-- [ ] Phase 2: Implementation
-- [ ] Phase 3: Testing
-- [ ] Ready for Review
+- [x] Phase 1: Research and Verification ✅
+  - Identified Text-specific modifiers
+  - Verified which modifiers are already available on View
+  - Documented behavior on non-text views
+- [x] Phase 2: Implementation ✅
+  - `.bold()` View extension implemented
+  - `.italic()` View extension implemented (with ItalicModifier)
+  - Extensions return `some View` for universal compatibility
+- [x] Phase 3: Testing ✅ (in progress)
+  - Unit tests created and passing
+  - ViewInspector tests created
+  - AC4 verification tests need to be run and verified
+- [ ] Ready for Review (pending AC4 test verification)
