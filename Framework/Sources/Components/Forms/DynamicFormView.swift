@@ -83,7 +83,9 @@ public struct DynamicFormView: View {
                 // Form title
                 Text(configuration.title)
                     .font(.headline)
-                    .automaticCompliance(named: "FormTitle")
+                    .automaticCompliance(
+                        identifierName: sanitizeLabelText(configuration.title)  // Auto-generate identifierName from form title
+                    )
 
                 // Form description if present
                 if let description = configuration.description {
