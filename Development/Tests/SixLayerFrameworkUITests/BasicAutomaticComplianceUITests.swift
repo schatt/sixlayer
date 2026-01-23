@@ -60,7 +60,7 @@ final class BasicAutomaticComplianceUITests: XCTestCase {
         
         // Use nonisolated(unsafe) since we know we're on MainActor (class is @MainActor and assumeIsolated confirms it)
         nonisolated(unsafe) let instance = self
-        try MainActor.assumeIsolated {
+        MainActor.assumeIsolated {
             // Use local variable to avoid capturing self in closures
             var localApp: XCUIApplication!
             
