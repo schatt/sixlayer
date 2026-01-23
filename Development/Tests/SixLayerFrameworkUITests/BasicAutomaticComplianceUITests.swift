@@ -117,6 +117,13 @@ final class BasicAutomaticComplianceUITests: XCTestCase {
         XCTAssertTrue(basicComplianceButton.waitForExistenceFast(timeout: 3.0), "Basic Compliance Test button should exist")
         basicComplianceButton.tap()
         
+        // First, verify the Text view exists by its content
+        let textView = app.staticTexts["Test Content"]
+        guard textView.waitForExistenceFast(timeout: 3.0) else {
+            XCTFail("Text view with content 'Test Content' should exist")
+            return
+        }
+        
         // When: Query for element by basic compliance identifier using XCUITest
         // Then: Should be findable
         // Identifier format: SixLayer.main.ui.testView.View (with enableUITestIntegration=true and includeElementTypes=true)
@@ -125,7 +132,9 @@ final class BasicAutomaticComplianceUITests: XCTestCase {
         guard app.findElement(byIdentifier: testIdentifier, 
                              primaryType: .other,
                              secondaryTypes: [.staticText, .any]) != nil else {
-            XCTFail("Basic compliance identifier '\(testIdentifier)' should be findable via XCUITest")
+            // Debug: Check if the Text view has any identifier
+            let textIdentifier = textView.identifier
+            XCTFail("Basic compliance identifier '\(testIdentifier)' should be findable via XCUITest. Text view identifier: '\(textIdentifier)'")
             return
         }
     }
@@ -166,6 +175,13 @@ final class BasicAutomaticComplianceUITests: XCTestCase {
         XCTAssertTrue(basicComplianceButton.waitForExistenceFast(timeout: 3.0), "Basic Compliance Test button should exist")
         basicComplianceButton.tap()
         
+        // First, verify the Text view exists by its content
+        let textView = app.staticTexts["Hello"]
+        guard textView.waitForExistenceFast(timeout: 3.0) else {
+            XCTFail("Text view with content 'Hello' should exist")
+            return
+        }
+        
         // When: Query for Text element by basic compliance identifier using XCUITest
         // Then: Should be findable
         // Identifier format: SixLayer.main.ui.helloText.View (with enableUITestIntegration=true and includeElementTypes=true)
@@ -174,7 +190,9 @@ final class BasicAutomaticComplianceUITests: XCTestCase {
         guard app.findElement(byIdentifier: testIdentifier, 
                              primaryType: .other,
                              secondaryTypes: [.staticText, .any]) != nil else {
-            XCTFail("Text.basicAutomaticCompliance() identifier '\(testIdentifier)' should be findable via XCUITest")
+            // Debug: Check if the Text view has any identifier
+            let textIdentifier = textView.identifier
+            XCTFail("Text.basicAutomaticCompliance() identifier '\(testIdentifier)' should be findable via XCUITest. Text view identifier: '\(textIdentifier)'")
             return
         }
     }
