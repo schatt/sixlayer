@@ -116,19 +116,25 @@ public extension View {
         return self.navigationTitle(title)
             .automaticCompliance(
                 identifierName: sanitizeLabelText(title),  // Auto-generate identifierName from title
-                identifierLabel: title
+                identifierElementType: "Header",
+                identifierLabel: title,
+                accessibilityTraits: .isHeader  // Issue #165: Navigation titles are headers
             )
         #elseif os(macOS)
         return self.navigationTitle(title)
             .automaticCompliance(
                 identifierName: sanitizeLabelText(title),  // Auto-generate identifierName from title
-                identifierLabel: title
+                identifierElementType: "Header",
+                identifierLabel: title,
+                accessibilityTraits: .isHeader  // Issue #165: Navigation titles are headers
             )
         #else
         return self.navigationTitle(title)
             .automaticCompliance(
                 identifierName: sanitizeLabelText(title),  // Auto-generate identifierName from title
-                identifierLabel: title
+                identifierElementType: "Header",
+                identifierLabel: title,
+                accessibilityTraits: .isHeader  // Issue #165: Navigation titles are headers
             )
         #endif
     }
@@ -248,7 +254,9 @@ public extension View {
                     .foregroundColor(.primary)
             }
             .automaticCompliance(
-                identifierName: sanitizeLabelText(title)  // Auto-generate identifierName from title
+                identifierName: sanitizeLabelText(title),  // Auto-generate identifierName from title
+                identifierElementType: "Link",
+                accessibilityTraits: .isLink  // Issue #165: Navigation links are links
             )
             .navigationDestination(isPresented: isActive) {
                 destination()
@@ -259,7 +267,9 @@ public extension View {
                     .foregroundColor(.primary)
             }
             .automaticCompliance(
-                identifierName: sanitizeLabelText(title)  // Auto-generate identifierName from title
+                identifierName: sanitizeLabelText(title),  // Auto-generate identifierName from title
+                identifierElementType: "Link",
+                accessibilityTraits: .isLink  // Issue #165: Navigation links are links
             )
             .background(
                 NavigationLink(destination: destination(), isActive: isActive) {
@@ -287,7 +297,9 @@ public extension View {
         }
         .buttonStyle(PlainButtonStyle())
         .automaticCompliance(
-            identifierName: sanitizeLabelText(title)  // Auto-generate identifierName from title
+            identifierName: sanitizeLabelText(title),  // Auto-generate identifierName from title
+            identifierElementType: "Link",
+            accessibilityTraits: .isLink  // Issue #165: Navigation links are links
         )
         #endif
     }
@@ -300,10 +312,13 @@ public extension View {
     ) -> some View {
         #if os(iOS)
         return NavigationLink(destination: destination, label: label)
+            .accessibilityAddTraits(.isLink)  // Issue #165: Navigation links are links
         #elseif os(macOS)
         return NavigationLink(destination: destination, label: label)
+            .accessibilityAddTraits(.isLink)  // Issue #165: Navigation links are links
         #else
         return NavigationLink(destination: destination, label: label)
+            .accessibilityAddTraits(.isLink)  // Issue #165: Navigation links are links
         #endif
     }
 
@@ -319,13 +334,16 @@ public extension View {
             return AnyView(NavigationLink(value: value, label: label)
                 .navigationDestination(for: Value.self) { value in
                     destination(value)
-                })
+                }
+                .accessibilityAddTraits(.isLink))  // Issue #165: Navigation links are links
         } else {
             // iOS 15 fallback: use traditional NavigationLink
             if let value = value {
-                return AnyView(NavigationLink(destination: destination(value), label: label))
+                return AnyView(NavigationLink(destination: destination(value), label: label)
+                    .accessibilityAddTraits(.isLink))  // Issue #165: Navigation links are links
             } else {
-                return AnyView(NavigationLink(destination: EmptyView(), label: label))
+                return AnyView(NavigationLink(destination: EmptyView(), label: label)
+                    .accessibilityAddTraits(.isLink))  // Issue #165: Navigation links are links
             }
         }
         #elseif os(macOS)
@@ -333,17 +351,21 @@ public extension View {
             return AnyView(NavigationLink(value: value, label: label)
                 .navigationDestination(for: Value.self) { value in
                     destination(value)
-                })
+                }
+                .accessibilityAddTraits(.isLink))  // Issue #165: Navigation links are links
         } else {
             // macOS 12 fallback: use traditional NavigationLink
             if let value = value {
-                return AnyView(NavigationLink(destination: destination(value), label: label))
+                return AnyView(NavigationLink(destination: destination(value), label: label)
+                    .accessibilityAddTraits(.isLink))  // Issue #165: Navigation links are links
             } else {
-                return AnyView(NavigationLink(destination: EmptyView(), label: label))
+                return AnyView(NavigationLink(destination: EmptyView(), label: label)
+                    .accessibilityAddTraits(.isLink))  // Issue #165: Navigation links are links
             }
         }
         #else
         return AnyView(NavigationLink(value: value, label: label)
+            .accessibilityAddTraits(.isLink)  // Issue #165: Navigation links are links
             .navigationDestination(for: Value.self) { value in
                 destination(value)
             })
