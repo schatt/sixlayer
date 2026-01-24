@@ -342,28 +342,44 @@ public struct AutomaticComplianceModifier: ViewModifier {
     let identifierElementType: String?
     let identifierLabel: String?
     let accessibilityLabel: String?  // NEW: Accessibility label for VoiceOver (Issue #154)
+    let accessibilityHint: String?  // NEW: Accessibility hint for VoiceOver (Issue #165)
+    let accessibilityTraits: AccessibilityTraits?  // NEW: Accessibility traits (Issue #165)
+    let accessibilityValue: String?  // NEW: Accessibility value for stateful elements (Issue #165)
+    let accessibilitySortPriority: Double?  // NEW: Accessibility sort priority for reading order (Issue #165)
     
     nonisolated public init(
         identifierName: String? = nil,
         identifierElementType: String? = nil,
         identifierLabel: String? = nil,
-        accessibilityLabel: String? = nil  // NEW: Accessibility label for VoiceOver (Issue #154)
+        accessibilityLabel: String? = nil,  // NEW: Accessibility label for VoiceOver (Issue #154)
+        accessibilityHint: String? = nil,  // NEW: Accessibility hint for VoiceOver (Issue #165)
+        accessibilityTraits: AccessibilityTraits? = nil,  // NEW: Accessibility traits (Issue #165)
+        accessibilityValue: String? = nil,  // NEW: Accessibility value for stateful elements (Issue #165)
+        accessibilitySortPriority: Double? = nil  // NEW: Accessibility sort priority for reading order (Issue #165)
     ) {
         self.identifierName = identifierName
         self.identifierElementType = identifierElementType
         self.identifierLabel = identifierLabel
         self.accessibilityLabel = accessibilityLabel
+        self.accessibilityHint = accessibilityHint
+        self.accessibilityTraits = accessibilityTraits
+        self.accessibilityValue = accessibilityValue
+        self.accessibilitySortPriority = accessibilitySortPriority
     }
 
     public func body(content: Content) -> some View {
         // Phase 2 DRY Refactoring (Issue #172): Use BasicAutomaticComplianceModifier internally
         // This eliminates code duplication and ensures consistent behavior between basic and full compliance
-        // Apply basic compliance first (identifier + label), then HIG features on top
+        // Apply basic compliance first (identifier + label + hint + traits + value + sort priority), then HIG features on top
         let contentWithBasicCompliance = content.modifier(BasicAutomaticComplianceModifier(
             identifierName: identifierName,
             identifierElementType: identifierElementType,
             identifierLabel: identifierLabel,
-            accessibilityLabel: accessibilityLabel
+            accessibilityLabel: accessibilityLabel,
+            accessibilityHint: accessibilityHint,
+            accessibilityTraits: accessibilityTraits,
+            accessibilityValue: accessibilityValue,
+            accessibilitySortPriority: accessibilitySortPriority
         ))
         
         // Apply HIG compliance features on top of basic compliance
@@ -931,6 +947,10 @@ public extension View {
     /// Applies:
     /// - Automatic accessibility identifiers
     /// - Automatic accessibility labels for VoiceOver (Issue #154)
+    /// - Accessibility hints (Issue #165)
+    /// - Accessibility traits (Issue #165)
+    /// - Accessibility values for stateful elements (Issue #165)
+    /// - Accessibility sort priority for reading order (Issue #165)
     /// - HIG compliance features (touch targets, color contrast, typography, focus indicators, etc.)
     /// 
     /// - Parameters:
@@ -938,19 +958,31 @@ public extension View {
     ///   - identifierElementType: Optional element type hint (e.g., "Button", "Link", "TextField")
     ///   - identifierLabel: Optional label text to include in identifier (e.g., button title)
     ///   - accessibilityLabel: Optional accessibility label for VoiceOver users (Issue #154)
+    ///   - accessibilityHint: Optional accessibility hint explaining element purpose (Issue #165)
+    ///   - accessibilityTraits: Optional accessibility traits (e.g., .isButton, .isLink) (Issue #165)
+    ///   - accessibilityValue: Optional accessibility value for stateful elements (Issue #165)
+    ///   - accessibilitySortPriority: Optional sort priority for reading order (Issue #165)
     /// 
     /// Note: Nonisolated since AccessibilityIdentifierConfig properties are no longer @Published
     nonisolated func automaticCompliance(
         identifierName: String? = nil,
         identifierElementType: String? = nil,
         identifierLabel: String? = nil,
-        accessibilityLabel: String? = nil  // NEW: Accessibility label for VoiceOver (Issue #154)
+        accessibilityLabel: String? = nil,  // NEW: Accessibility label for VoiceOver (Issue #154)
+        accessibilityHint: String? = nil,  // NEW: Accessibility hint for VoiceOver (Issue #165)
+        accessibilityTraits: AccessibilityTraits? = nil,  // NEW: Accessibility traits (Issue #165)
+        accessibilityValue: String? = nil,  // NEW: Accessibility value for stateful elements (Issue #165)
+        accessibilitySortPriority: Double? = nil  // NEW: Accessibility sort priority for reading order (Issue #165)
     ) -> some View {
         self.modifier(AutomaticComplianceModifier(
             identifierName: identifierName,
             identifierElementType: identifierElementType,
             identifierLabel: identifierLabel,
-            accessibilityLabel: accessibilityLabel
+            accessibilityLabel: accessibilityLabel,
+            accessibilityHint: accessibilityHint,
+            accessibilityTraits: accessibilityTraits,
+            accessibilityValue: accessibilityValue,
+            accessibilitySortPriority: accessibilitySortPriority
         ))
     }
     
@@ -960,28 +992,40 @@ public extension View {
     ///   - componentName: The name of the component (e.g., "CoverFlowCardComponent")
     ///   - identifierLabel: Optional label text to include in identifier (e.g., button title)
     ///   - accessibilityLabel: Optional accessibility label for VoiceOver users (Issue #154)
+    ///   - accessibilityHint: Optional accessibility hint explaining element purpose (Issue #165)
+    ///   - accessibilityTraits: Optional accessibility traits (e.g., .isButton, .isLink) (Issue #165)
+    ///   - accessibilityValue: Optional accessibility value for stateful elements (Issue #165)
+    ///   - accessibilitySortPriority: Optional sort priority for reading order (Issue #165)
     /// 
     /// Note: Nonisolated since AccessibilityIdentifierConfig properties are no longer @Published
     nonisolated public func automaticCompliance(
         named componentName: String,
         identifierLabel: String? = nil,
-        accessibilityLabel: String? = nil  // NEW: Accessibility label for VoiceOver (Issue #154)
+        accessibilityLabel: String? = nil,  // NEW: Accessibility label for VoiceOver (Issue #154)
+        accessibilityHint: String? = nil,  // NEW: Accessibility hint for VoiceOver (Issue #165)
+        accessibilityTraits: AccessibilityTraits? = nil,  // NEW: Accessibility traits (Issue #165)
+        accessibilityValue: String? = nil,  // NEW: Accessibility value for stateful elements (Issue #165)
+        accessibilitySortPriority: Double? = nil  // NEW: Accessibility sort priority for reading order (Issue #165)
     ) -> some View {
         // Create a modifier that accepts the name directly
         // For named components, we use NamedAutomaticComplianceModifier which handles the name
-        // If identifierLabel is provided, we need to use AutomaticComplianceModifier (NamedAutomaticComplianceModifier doesn't support identifierLabel)
-        // If only accessibilityLabel is provided (no identifierLabel), we can use NamedAutomaticComplianceModifier
+        // If identifierLabel or any new accessibility parameters are provided, we need to use AutomaticComplianceModifier
+        // If only accessibilityLabel is provided (no identifierLabel or other new params), we can use NamedAutomaticComplianceModifier
         // Use @ViewBuilder to ensure type consistency
         Group {
-            if identifierLabel != nil {
-                // identifierLabel requires AutomaticComplianceModifier
+            if identifierLabel != nil || accessibilityHint != nil || accessibilityTraits != nil || accessibilityValue != nil || accessibilitySortPriority != nil {
+                // identifierLabel or new accessibility params require AutomaticComplianceModifier
                 self.modifier(AutomaticComplianceModifier(
                     identifierName: componentName,
                     identifierLabel: identifierLabel,
-                    accessibilityLabel: accessibilityLabel
+                    accessibilityLabel: accessibilityLabel,
+                    accessibilityHint: accessibilityHint,
+                    accessibilityTraits: accessibilityTraits,
+                    accessibilityValue: accessibilityValue,
+                    accessibilitySortPriority: accessibilitySortPriority
                 ))
             } else {
-                // No identifierLabel, can use NamedAutomaticComplianceModifier (supports accessibilityLabel)
+                // No identifierLabel or new params, can use NamedAutomaticComplianceModifier (supports accessibilityLabel)
                 self.modifier(NamedAutomaticComplianceModifier(
                     componentName: componentName,
                     accessibilityLabel: accessibilityLabel
@@ -1054,12 +1098,20 @@ public struct BasicAutomaticComplianceModifier: ViewModifier {
     let identifierElementType: String?
     let identifierLabel: String?
     let accessibilityLabel: String?
+    let accessibilityHint: String?  // NEW: Accessibility hint for VoiceOver (Issue #165)
+    let accessibilityTraits: AccessibilityTraits?  // NEW: Accessibility traits (Issue #165)
+    let accessibilityValue: String?  // NEW: Accessibility value for stateful elements (Issue #165)
+    let accessibilitySortPriority: Double?  // NEW: Accessibility sort priority for reading order (Issue #165)
     
     nonisolated public init(
         identifierName: String? = nil,
         identifierElementType: String? = nil,
         identifierLabel: String? = nil,
-        accessibilityLabel: String? = nil
+        accessibilityLabel: String? = nil,
+        accessibilityHint: String? = nil,  // NEW: Accessibility hint for VoiceOver (Issue #165)
+        accessibilityTraits: AccessibilityTraits? = nil,  // NEW: Accessibility traits (Issue #165)
+        accessibilityValue: String? = nil,  // NEW: Accessibility value for stateful elements (Issue #165)
+        accessibilitySortPriority: Double? = nil  // NEW: Accessibility sort priority for reading order (Issue #165)
     ) {
         // DEBUG: Log what we're receiving in init
         let debugMsg = "🔍 MODIFIER INIT: identifierName='\(identifierName ?? "nil")', identifierElementType='\(identifierElementType ?? "nil")'"
@@ -1072,6 +1124,10 @@ public struct BasicAutomaticComplianceModifier: ViewModifier {
         self.identifierElementType = identifierElementType
         self.identifierLabel = identifierLabel
         self.accessibilityLabel = accessibilityLabel
+        self.accessibilityHint = accessibilityHint
+        self.accessibilityTraits = accessibilityTraits
+        self.accessibilityValue = accessibilityValue
+        self.accessibilitySortPriority = accessibilitySortPriority
         
         // DEBUG: Verify it was stored correctly
         let verifyMsg = "🔍 MODIFIER INIT VERIFY: stored identifierName='\(self.identifierName ?? "nil")'"
@@ -1203,32 +1259,89 @@ public struct BasicAutomaticComplianceModifier: ViewModifier {
             }
         }
         
-        // Apply identifier (if needed), then accessibility label (if needed)
+        // Helper to conditionally apply accessibility hint
+        // Only apply if explicitly provided via parameter AND an identifier is present
+        @ViewBuilder
+        func applyAccessibilityHintIfNeeded<V: View>(to view: V) -> some View {
+            if let hint = accessibilityHint, !hint.isEmpty, identifier != nil {
+                view.accessibilityHint(hint)
+            } else {
+                view
+            }
+        }
+        
+        // Helper to conditionally apply accessibility traits
+        // Only apply if explicitly provided via parameter AND an identifier is present
+        @ViewBuilder
+        func applyAccessibilityTraitsIfNeeded<V: View>(to view: V) -> some View {
+            if let traits = accessibilityTraits, !traits.isEmpty, identifier != nil {
+                view.accessibilityAddTraits(traits)
+            } else {
+                view
+            }
+        }
+        
+        // Helper to conditionally apply accessibility value
+        // Only apply if explicitly provided via parameter AND an identifier is present
+        @ViewBuilder
+        func applyAccessibilityValueIfNeeded<V: View>(to view: V) -> some View {
+            if let value = accessibilityValue, !value.isEmpty, identifier != nil {
+                view.accessibilityValue(value)
+            } else {
+                view
+            }
+        }
+        
+        // Helper to conditionally apply accessibility sort priority
+        // Only apply if explicitly provided via parameter AND an identifier is present
+        @ViewBuilder
+        func applyAccessibilitySortPriorityIfNeeded<V: View>(to view: V) -> some View {
+            if let priority = accessibilitySortPriority, identifier != nil {
+                view.accessibilitySortPriority(priority)
+            } else {
+                view
+            }
+        }
+        
+        // Apply accessibility features in order: label, hint, traits, value, sort priority, then identifier
         // NOTE: This is basic compliance - NO HIG features (unlike AutomaticComplianceModifier)
-        // CRITICAL: Apply identifier AFTER accessibility label to ensure it takes precedence
+        // CRITICAL: Apply identifier LAST to ensure it takes precedence
         // In SwiftUI, when multiple .accessibilityIdentifier() modifiers are applied,
-        // the last one wins. By applying the identifier here (after label), we ensure
+        // the last one wins. By applying the identifier here (after all other accessibility features), we ensure
         // child identifiers take precedence over any parent identifiers that might be applied later
         let contentWithLabel = applyAccessibilityLabelIfNeeded(to: content)
-        return applyIdentifierIfNeeded(to: contentWithLabel)
+        let contentWithHint = applyAccessibilityHintIfNeeded(to: contentWithLabel)
+        let contentWithTraits = applyAccessibilityTraitsIfNeeded(to: contentWithHint)
+        let contentWithValue = applyAccessibilityValueIfNeeded(to: contentWithTraits)
+        let contentWithSortPriority = applyAccessibilitySortPriorityIfNeeded(to: contentWithValue)
+        return applyIdentifierIfNeeded(to: contentWithSortPriority)
     }
 }
 
 public extension View {
-    /// Apply basic automatic compliance (identifier + label only, no HIG features)
+    /// Apply basic automatic compliance (identifier + label + hint + traits + value + sort priority, no HIG features)
     /// TDD GREEN PHASE: Implementation complete
     /// Issue #172: Lightweight Compliance for Basic SwiftUI Types
+    /// Issue #165: Extended to support hints, traits, values, and sort priority
     nonisolated func basicAutomaticCompliance(
         identifierName: String? = nil,
         identifierElementType: String? = nil,
         identifierLabel: String? = nil,
-        accessibilityLabel: String? = nil
+        accessibilityLabel: String? = nil,
+        accessibilityHint: String? = nil,  // NEW: Accessibility hint for VoiceOver (Issue #165)
+        accessibilityTraits: AccessibilityTraits? = nil,  // NEW: Accessibility traits (Issue #165)
+        accessibilityValue: String? = nil,  // NEW: Accessibility value for stateful elements (Issue #165)
+        accessibilitySortPriority: Double? = nil  // NEW: Accessibility sort priority for reading order (Issue #165)
     ) -> some View {
         self.modifier(BasicAutomaticComplianceModifier(
             identifierName: identifierName,
             identifierElementType: identifierElementType,
             identifierLabel: identifierLabel,
-            accessibilityLabel: accessibilityLabel
+            accessibilityLabel: accessibilityLabel,
+            accessibilityHint: accessibilityHint,
+            accessibilityTraits: accessibilityTraits,
+            accessibilityValue: accessibilityValue,
+            accessibilitySortPriority: accessibilitySortPriority
         ))
     }
 }
