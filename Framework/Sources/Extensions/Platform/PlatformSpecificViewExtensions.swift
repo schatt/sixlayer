@@ -1988,7 +1988,10 @@ public func platformPicker<SelectionValue: Hashable, Option: Hashable, S: SwiftU
     }
     .pickerStyle(style)
     // Apply to picker level: identifierName is the picker name (the thing being identified)
-    .automaticCompliance(named: pickerName ?? "Picker") // Issue #163
+    .automaticCompliance(
+        named: pickerName ?? "Picker",  // Issue #163
+        accessibilityHint: generateAccessibilityHintForPicker(label: label, pickerName: pickerName)  // Issue #165: Auto-generate hint
+    )
 }
 
 public extension View {
