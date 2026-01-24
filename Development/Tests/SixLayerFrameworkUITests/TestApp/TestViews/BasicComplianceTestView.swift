@@ -123,7 +123,7 @@ struct BasicComplianceTestView: View {
                         .automaticCompliance()
                     
                     Image(systemName: "star")
-                        .basicAutomaticCompliance(identifierName: "starImage")
+                        .basicAutomaticCompliance(identifierName: "starImage", identifierElementType: "Image")
                 }
                 .padding()
                 .background(Color.platformSecondaryBackground)
