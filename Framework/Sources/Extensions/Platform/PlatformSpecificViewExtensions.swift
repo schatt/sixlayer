@@ -1972,7 +1972,15 @@ public func platformPicker<SelectionValue: Hashable, Option: Hashable, S: SwiftU
     pickerName: String? = nil,
     style: S = MenuPickerStyle()
 ) -> some View {
-    SwiftUI.Picker(label, selection: selection) {
+    // Get selected option label for accessibility value
+    let selectedValue: String? = {
+        if let selectedOption = options.first(where: { optionTag($0) == selection.wrappedValue }) {
+            return optionLabel(selectedOption)
+        }
+        return nil
+    }()
+    
+    return SwiftUI.Picker(label, selection: selection) {
         ForEach(options, id: \.self) { option in
             let optionText = optionLabel(option)
             // Automatically detect identifierName from the option itself:
@@ -1990,7 +1998,8 @@ public func platformPicker<SelectionValue: Hashable, Option: Hashable, S: SwiftU
     // Apply to picker level: identifierName is the picker name (the thing being identified)
     .automaticCompliance(
         named: pickerName ?? "Picker",  // Issue #163
-        accessibilityHint: generateAccessibilityHintForPicker(label: label, pickerName: pickerName)  // Issue #165: Auto-generate hint
+        accessibilityHint: generateAccessibilityHintForPicker(label: label, pickerName: pickerName),  // Issue #165: Auto-generate hint
+        accessibilityValue: selectedValue  // Issue #165: Selected option as value
     )
 }
 

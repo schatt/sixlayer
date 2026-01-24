@@ -791,7 +791,11 @@ public struct DynamicStepperField: View {
                 step: step
             )
             .automaticCompliance(
-                identifierName: sanitizeLabelText(field.label)  // Auto-generate identifierName from field label
+                identifierName: sanitizeLabelText(field.label),  // Auto-generate identifierName from field label
+                identifierElementType: "Stepper",
+                accessibilityValue: step.truncatingRemainder(dividingBy: 1.0) == 0.0 
+                    ? "\(Int(value.wrappedValue))" 
+                    : String(format: "%.2f", value.wrappedValue)  // Issue #165: Current value
             )
 
             // Show current value - use appropriate format based on step size
@@ -1353,11 +1357,15 @@ public struct DynamicRangeField: View {
             Text(field.label)
                 .font(.subheadline)
 
-            Slider(value: Binding(
+            let sliderValue = Binding(
                 get: { Double((formState.getValue(for: field.id) as String?) ?? field.defaultValue ?? "0") ?? 0 },
                 set: { formState.setValue(String($0), for: field.id) }
-            ), in: 0...100)
-            .automaticCompliance()
+            )
+            Slider(value: sliderValue, in: 0...100)
+                .automaticCompliance(
+                    identifierElementType: "Slider",
+                    accessibilityValue: "\(Int(sliderValue.wrappedValue)) percent"  // Issue #165: Current value with range context
+                )
         }
         .padding()
         .environment(\.accessibilityIdentifierLabel, field.label) // TDD GREEN: Pass label to identifier generation
@@ -1709,12 +1717,35 @@ public struct DynamicToggleField: View {
         self.formState = formState
     }
     
+    private var isOn: Binding<Bool> {
+        Binding(
+            get: {
+                if let value: Any = formState.getValue(for: field.id) {
+                    if let boolValue = value as? Bool {
+                        return boolValue
+                    } else if let stringValue = value as? String {
+                        return stringValue.lowercased() == "true" || stringValue == "1"
+                    }
+                }
+                return field.defaultValue?.lowercased() == "true" || field.defaultValue == "1" || false
+            },
+            set: { newValue in
+                formState.setValue(String(newValue), for: field.id)
+            }
+        )
+    }
+    
     public var body: some View {
         platformVStackContainer(alignment: .leading) {
             Text(field.label)
                 .font(.subheadline)
             
-            Toggle("Toggle Field - TDD Red Phase Stub", isOn: .constant(false))
+            Toggle(field.label, isOn: isOn)
+                .automaticCompliance(
+                    identifierName: sanitizeLabelText(field.label),  // Auto-generate identifierName from field label
+                    identifierElementType: "Toggle",
+                    accessibilityValue: generateAccessibilityValueForToggle(isOn: isOn.wrappedValue)  // Issue #165: Dynamic value
+                )
         }
         .padding()
         .environment(\.accessibilityIdentifierLabel, field.label) // TDD GREEN: Pass label to identifier generation
