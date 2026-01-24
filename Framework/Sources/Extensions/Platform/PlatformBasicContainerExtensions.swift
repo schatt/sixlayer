@@ -10,6 +10,94 @@ import SwiftUI
 
 // MARK: - Platform Basic Container Extensions
 
+// MARK: - Accessibility Helper Functions (Issue #165)
+
+/// Generate accessibility hint for buttons based on label
+/// - Parameter label: The button label
+/// - Returns: Appropriate hint describing button action
+internal func generateAccessibilityHintForButton(label: String) -> String {
+    let lowercased = label.lowercased()
+    
+    // Generate context-aware hints based on common button labels
+    if lowercased.contains("save") {
+        return "Saves your current work"
+    } else if lowercased.contains("cancel") {
+        return "Cancels the current operation"
+    } else if lowercased.contains("delete") || lowercased.contains("remove") {
+        return "Deletes this item"
+    } else if lowercased.contains("edit") {
+        return "Opens editing mode"
+    } else if lowercased.contains("done") || lowercased.contains("finish") {
+        return "Completes the current task"
+    } else if lowercased.contains("add") || lowercased.contains("create") {
+        return "Creates a new item"
+    } else if lowercased.contains("close") {
+        return "Closes this view"
+    } else if lowercased.contains("back") {
+        return "Returns to the previous screen"
+    } else if lowercased.contains("next") {
+        return "Advances to the next step"
+    } else if lowercased.contains("submit") {
+        return "Submits the form"
+    } else {
+        // Generic hint for buttons
+        return "Double tap to activate"
+    }
+}
+
+/// Generate accessibility hint for text fields based on prompt/label
+/// - Parameters:
+///   - label: Optional accessibility label
+///   - prompt: Optional placeholder text
+/// - Returns: Appropriate hint describing what to enter
+internal func generateAccessibilityHintForTextField(label: String? = nil, prompt: String? = nil) -> String {
+    let source = label ?? prompt ?? "text"
+    let lowercased = source.lowercased()
+    
+    // Generate context-aware hints based on field type
+    if lowercased.contains("email") || lowercased.contains("e-mail") {
+        return "Enter your email address"
+    } else if lowercased.contains("password") || lowercased.contains("passcode") {
+        return "Enter your password"
+    } else if lowercased.contains("phone") || lowercased.contains("telephone") {
+        return "Enter your phone number"
+    } else if lowercased.contains("name") {
+        return "Enter your name"
+    } else if lowercased.contains("address") {
+        return "Enter your address"
+    } else if lowercased.contains("search") {
+        return "Enter search text"
+    } else if lowercased.contains("url") || lowercased.contains("website") {
+        return "Enter a web address"
+    } else {
+        // Generic hint for text fields
+        return "Enter \(source)"
+    }
+}
+
+/// Generate accessibility hint for toggles
+/// - Parameter label: The toggle label
+/// - Returns: Appropriate hint explaining toggle interaction
+internal func generateAccessibilityHintForToggle(label: String) -> String {
+    return "Double tap to toggle \(label.lowercased())"
+}
+
+/// Generate accessibility hint for pickers
+/// - Parameters:
+///   - label: The picker label
+///   - pickerName: Optional picker name
+/// - Returns: Appropriate hint explaining picker interaction
+internal func generateAccessibilityHintForPicker(label: String, pickerName: String? = nil) -> String {
+    return "Double tap to select an option"
+}
+
+/// Generate accessibility value for toggle based on state
+/// - Parameter isOn: Whether toggle is on
+/// - Returns: "On" or "Off"
+internal func generateAccessibilityValueForToggle(isOn: Bool) -> String {
+    return isOn ? "On" : "Off"
+}
+
 /// Platform-specific basic container extensions
 /// Provides consistent container behavior across iOS and macOS
 public extension View {
@@ -525,7 +613,9 @@ public func platformTextField(
     EmptyView().platformTextField(text: text, prompt: title)
         .automaticCompliance(
             identifierName: sanitizeLabelText(title),  // Auto-generate identifierName from title
-            accessibilityLabel: title  // Issue #157: Auto-extract from title
+            identifierElementType: "TextField",
+            accessibilityLabel: title,  // Issue #157: Auto-extract from title
+            accessibilityHint: generateAccessibilityHintForTextField(prompt: title)  // Issue #165: Auto-generate hint
         )
 }
 
@@ -551,7 +641,9 @@ public func platformTextField(
     return EmptyView().platformTextField(text: text, prompt: prompt)
         .automaticCompliance(
             identifierName: sanitizeLabelText(identifierSource),  // Auto-generate identifierName from label or prompt
-            accessibilityLabel: label ?? prompt  // Issue #157: Explicit label takes precedence, fallback to prompt
+            identifierElementType: "TextField",
+            accessibilityLabel: label ?? prompt,  // Issue #157: Explicit label takes precedence, fallback to prompt
+            accessibilityHint: generateAccessibilityHintForTextField(label: label, prompt: prompt)  // Issue #165: Auto-generate hint
         )
 }
 
@@ -607,7 +699,9 @@ public func platformTextField(
     EmptyView().platformTextField(text: text, prompt: title, axis: axis)
         .automaticCompliance(
             identifierName: sanitizeLabelText(title),  // Auto-generate identifierName from title
-            accessibilityLabel: title  // Issue #157: Auto-extract from title
+            identifierElementType: "TextField",
+            accessibilityLabel: title,  // Issue #157: Auto-extract from title
+            accessibilityHint: generateAccessibilityHintForTextField(prompt: title)  // Issue #165: Auto-generate hint
         )
 }
 
@@ -636,7 +730,9 @@ public func platformTextField(
     return EmptyView().platformTextField(text: text, prompt: prompt, axis: axis)
         .automaticCompliance(
             identifierName: sanitizeLabelText(identifierSource),  // Auto-generate identifierName from label or prompt
-            accessibilityLabel: label ?? prompt  // Issue #157: Explicit label takes precedence, fallback to prompt
+            identifierElementType: "TextField",
+            accessibilityLabel: label ?? prompt,  // Issue #157: Explicit label takes precedence, fallback to prompt
+            accessibilityHint: generateAccessibilityHintForTextField(label: label, prompt: prompt)  // Issue #165: Auto-generate hint
         )
 }
 
@@ -684,7 +780,9 @@ public func platformSecureField(
     return EmptyView().platformSecureTextField(text: text, prompt: title)
         .automaticCompliance(
             identifierName: sanitizeLabelText(title),  // Auto-generate identifierName from title
-            accessibilityLabel: title  // Issue #157: Auto-extract from title
+            identifierElementType: "SecureField",
+            accessibilityLabel: title,  // Issue #157: Auto-extract from title
+            accessibilityHint: generateAccessibilityHintForTextField(prompt: title)  // Issue #165: Auto-generate hint
         )
 }
 
@@ -711,7 +809,9 @@ public func platformSecureField(
     return EmptyView().platformSecureTextField(text: text, prompt: prompt)
         .automaticCompliance(
             identifierName: sanitizeLabelText(identifierSource),  // Auto-generate identifierName from label or prompt
-            accessibilityLabel: label ?? prompt  // Issue #157: Explicit label takes precedence, fallback to prompt
+            identifierElementType: "SecureField",
+            accessibilityLabel: label ?? prompt,  // Issue #157: Explicit label takes precedence, fallback to prompt
+            accessibilityHint: generateAccessibilityHintForTextField(label: label, prompt: prompt)  // Issue #165: Auto-generate hint
         )
 }
 
@@ -759,8 +859,11 @@ public func platformToggle(
     }
     .automaticCompliance(
         identifierName: sanitizeLabelText(title),  // Auto-generate identifierName from title
-        accessibilityLabel: title  // Issue #157: Auto-extract from title
+        identifierElementType: "Toggle",
+        accessibilityLabel: title,  // Issue #157: Auto-extract from title
+        accessibilityHint: generateAccessibilityHintForToggle(label: title)  // Issue #165: Auto-generate hint
     )
+    .accessibilityValue(isOn.wrappedValue ? "On" : "Off")  // Issue #165: Dynamic value based on state
 }
 
 /// Drop-in replacement for SwiftUI's Toggle with explicit accessibility label
@@ -787,8 +890,11 @@ public func platformToggle(
     }
     .automaticCompliance(
         identifierName: sanitizeLabelText(toggleLabel),  // Auto-generate identifierName from label
-        accessibilityLabel: label  // Issue #154: Parameter-based approach
+        identifierElementType: "Toggle",
+        accessibilityLabel: label,  // Issue #154: Parameter-based approach
+        accessibilityHint: label != nil ? generateAccessibilityHintForToggle(label: label!) : nil  // Issue #165: Auto-generate hint
     )
+    .accessibilityValue(isOn.wrappedValue ? "On" : "Off")  // Issue #165: Dynamic value based on state
 }
 
 /// platformToggle with LocalizedStringKey label
@@ -857,7 +963,9 @@ public func platformTextEditor(
     EmptyView().platformTextEditor(text: text, prompt: prompt)
         .automaticCompliance(
             identifierName: sanitizeLabelText(prompt),  // Auto-generate identifierName from prompt
-            accessibilityLabel: prompt  // Issue #157: Auto-extract from prompt
+            identifierElementType: "TextEditor",
+            accessibilityLabel: prompt,  // Issue #157: Auto-extract from prompt
+            accessibilityHint: generateAccessibilityHintForTextField(prompt: prompt)  // Issue #165: Auto-generate hint
         )
 }
 
@@ -884,7 +992,9 @@ public func platformTextEditor(
     return EmptyView().platformTextEditor(text: text, prompt: prompt)
         .automaticCompliance(
             identifierName: sanitizeLabelText(identifierSource),  // Auto-generate identifierName from label or prompt
-            accessibilityLabel: label ?? prompt  // Issue #157: Explicit label takes precedence, fallback to prompt
+            identifierElementType: "TextEditor",
+            accessibilityLabel: label ?? prompt,  // Issue #157: Explicit label takes precedence, fallback to prompt
+            accessibilityHint: generateAccessibilityHintForTextField(label: label, prompt: prompt)  // Issue #165: Auto-generate hint
         )
 }
 
@@ -1017,7 +1127,10 @@ public func platformButton(
     }
     .automaticCompliance(
         identifierName: sanitizeLabelText(label),  // Auto-generate identifierName from label
-        accessibilityLabel: label  // Issue #157: Auto-extract from label parameter
+        identifierElementType: "Button",
+        accessibilityLabel: label,  // Issue #157: Auto-extract from label parameter
+        accessibilityHint: generateAccessibilityHintForButton(label: label),  // Issue #165: Auto-generate hint
+        accessibilityTraits: .isButton  // Issue #165: Auto-add button trait
     )
 }
 
@@ -1059,7 +1172,10 @@ public func platformButton(
         Text(label)
     }
     .accessibilityLabel(label)
-    .automaticCompliance()
+    .automaticCompliance(
+        identifierElementType: "Button",
+        accessibilityTraits: .isButton  // Issue #165: Auto-add button trait
+    )
 }
 
 /// platformButton with Text label
@@ -1071,5 +1187,8 @@ public func platformButton(
         label
     }
     .accessibilityLabel(label)
-    .automaticCompliance()
+    .automaticCompliance(
+        identifierElementType: "Button",
+        accessibilityTraits: .isButton  // Issue #165: Auto-add button trait
+    )
 }
