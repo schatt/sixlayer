@@ -15,7 +15,7 @@ import SwiftUI
 /// Generate accessibility hint for buttons based on label
 /// - Parameter label: The button label
 /// - Returns: Appropriate hint describing button action
-internal func generateAccessibilityHintForButton(label: String) -> String {
+public func generateAccessibilityHintForButton(label: String) -> String {
     let lowercased = label.lowercased()
     
     // Generate context-aware hints based on common button labels
@@ -50,7 +50,7 @@ internal func generateAccessibilityHintForButton(label: String) -> String {
 ///   - label: Optional accessibility label
 ///   - prompt: Optional placeholder text
 /// - Returns: Appropriate hint describing what to enter
-internal func generateAccessibilityHintForTextField(label: String? = nil, prompt: String? = nil) -> String {
+public func generateAccessibilityHintForTextField(label: String? = nil, prompt: String? = nil) -> String {
     let source = label ?? prompt ?? "text"
     let lowercased = source.lowercased()
     
@@ -87,14 +87,14 @@ internal func generateAccessibilityHintForToggle(label: String) -> String {
 ///   - label: The picker label
 ///   - pickerName: Optional picker name
 /// - Returns: Appropriate hint explaining picker interaction
-internal func generateAccessibilityHintForPicker(label: String, pickerName: String? = nil) -> String {
+public func generateAccessibilityHintForPicker(label: String, pickerName: String? = nil) -> String {
     return "Double tap to select an option"
 }
 
 /// Generate accessibility value for toggle based on state
 /// - Parameter isOn: Whether toggle is on
 /// - Returns: "On" or "Off"
-internal func generateAccessibilityValueForToggle(isOn: Bool) -> String {
+public func generateAccessibilityValueForToggle(isOn: Bool) -> String {
     return isOn ? "On" : "Off"
 }
 
