@@ -115,6 +115,13 @@ struct TestAppContentView: View {
                     layer1ExamplesView
                 }
             }
+            
+            Section("Layer 2 Examples (Issue #165)") {
+                NavigationLink("Layer 2 Layout Examples") {
+                    Layer2ExamplesView()
+                }
+                .accessibilityIdentifier("layer2-examples-link")
+            }
         }
         .navigationTitle("UI Test Views")
     }
