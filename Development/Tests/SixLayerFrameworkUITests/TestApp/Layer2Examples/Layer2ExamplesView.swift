@@ -96,7 +96,7 @@ struct DocumentOCRLayoutExample: View {
             
             platformButton("Calculate Document Layout") {
                 layout = platformDocumentOCRLayout_L2(
-                    documentType: .document,
+                    documentType: .general,
                     context: context
                 )
             }
@@ -210,7 +210,7 @@ struct ExampleCard<Content: View>: View {
     }
 }
 
-struct ExampleSection<Content: View>: View {
+private struct ExampleSection<Content: View>: View {
     let title: String
     let content: () -> Content
     

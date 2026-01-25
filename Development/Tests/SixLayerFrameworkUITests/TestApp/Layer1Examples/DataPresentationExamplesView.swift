@@ -394,7 +394,7 @@ struct ResponsiveCardExamples: View {
 
 // MARK: - Helper Views
 
-struct ExampleSection<Content: View>: View {
+private struct ExampleSection<Content: View>: View {
     let title: String
     let content: Content
     

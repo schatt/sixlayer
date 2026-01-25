@@ -359,13 +359,58 @@ PLATFORM_TYPE_VIOLATIONS = {
 # ============================================================================
 
 VIEW_VIOLATIONS = {
-    'TextField in form context': {
-        'replacement': 'platformPresentFormData_L1()',
-        'hint': 'Use platformPresentFormData_L1() instead of TextField directly in forms',
+    'TextField without platform replacement': {
+        'replacement': 'platformTextField() or platformPresentFormData_L1()',
+        'hint': 'Use platformTextField() (drop-in replacement) or platformPresentFormData_L1() instead of TextField',
         'priority': 2,
-        'pattern': r'TextField\s*\([^)]+\)',
-        'context_pattern': r'(?:platformFormSection|Form\s*\{|platformPresentFormData_L1)',
-        'requires_context': True
+        'pattern': r'\bTextField\s*\(',
+        'exclude_patterns': [
+            r'platformTextField\s*\(',
+            r'platformPresentFormData_L1\s*\(',
+        ],
+        'exclude_in_framework': True
+    },
+    'SecureField without platform replacement': {
+        'replacement': 'platformSecureField()',
+        'hint': 'Use platformSecureField() (drop-in replacement) instead of SecureField',
+        'priority': 2,
+        'pattern': r'\bSecureField\s*\(',
+        'exclude_patterns': [
+            r'platformSecureField\s*\(',
+        ],
+        'exclude_in_framework': True
+    },
+    'Toggle without platform replacement': {
+        'replacement': 'platformToggle()',
+        'hint': 'Use platformToggle() (drop-in replacement) instead of Toggle',
+        'priority': 2,
+        'pattern': r'\bToggle\s*\(',
+        'exclude_patterns': [
+            r'platformToggle\s*\(',
+        ],
+        'exclude_in_framework': True
+    },
+    'Form without platform replacement': {
+        'replacement': 'platformForm()',
+        'hint': 'Use platformForm() (drop-in replacement) instead of Form',
+        'priority': 2,
+        'pattern': r'\bForm\s*\{',
+        'exclude_patterns': [
+            r'platformForm\s*\{',
+            r'platformFormContainer\s*\(',
+            r'platformPresentFormData_L1\s*\(',
+        ],
+        'exclude_in_framework': True
+    },
+    'TextEditor without platform replacement': {
+        'replacement': 'platformTextEditor()',
+        'hint': 'Use platformTextEditor() (drop-in replacement) instead of TextEditor',
+        'priority': 2,
+        'pattern': r'\bTextEditor\s*\(',
+        'exclude_patterns': [
+            r'platformTextEditor\s*\(',
+        ],
+        'exclude_in_framework': True
     },
     'VStack without semantic intent': {
         'replacement': 'platformVStackContainer() or platformPresentItemCollection_L1()',
@@ -374,6 +419,7 @@ VIEW_VIOLATIONS = {
         'pattern': r'\bVStack\s*\{',
         'exclude_patterns': [
             r'platformVStackContainer',
+            r'platformVStack\s*\(',
             r'platformVerticalStack\s*\(',
             r'platformLazyVStackContainer\s*\(',
             r'platformPresentItemCollection_L1\s*\(',
@@ -388,6 +434,7 @@ VIEW_VIOLATIONS = {
         'pattern': r'\bHStack\s*\{',
         'exclude_patterns': [
             r'platformHStackContainer',
+            r'platformHStack\s*\(',
             r'platformLazyHStackContainer\s*\(',
             r'platformPresentItemCollection_L1\s*\(',
             r'platformResponsiveCard_L1\s*\('

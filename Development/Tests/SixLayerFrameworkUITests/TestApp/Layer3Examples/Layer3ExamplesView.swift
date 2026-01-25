@@ -98,7 +98,7 @@ struct DocumentOCRStrategyExample: View {
         platformVStack(alignment: .leading, spacing: 12) {
             platformButton("Calculate Document Strategy") {
                 strategy = platformDocumentOCRStrategy_L3(
-                    documentType: .document,
+                    documentType: .general,
                     platform: .current
                 )
             }
