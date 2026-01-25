@@ -136,6 +136,20 @@ struct TestAppContentView: View {
                 }
                 .accessibilityIdentifier("layer4-examples-link")
             }
+            
+            Section("Layer 5 Examples (Issue #165)") {
+                NavigationLink("Layer 5 Optimization Examples") {
+                    Layer5ExamplesView()
+                }
+                .accessibilityIdentifier("layer5-examples-link")
+            }
+            
+            Section("Layer 6 Examples (Issue #165)") {
+                NavigationLink("Layer 6 System Examples") {
+                    Layer6ExamplesView()
+                }
+                .accessibilityIdentifier("layer6-examples-link")
+            }
         }
         .navigationTitle("UI Test Views")
     }
