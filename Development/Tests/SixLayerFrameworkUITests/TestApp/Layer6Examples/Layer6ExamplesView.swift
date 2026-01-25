@@ -194,3 +194,42 @@ struct CombinedOptimizationExample: View {
         .cornerRadius(8)
     }
 }
+
+// MARK: - Helper Views
+
+private struct ExampleSection<Content: View>: View {
+    let title: String
+    let content: () -> Content
+    
+    var body: some View {
+        platformVStack(alignment: .leading, spacing: 16) {
+            Text(title)
+                .font(.title2)
+                .bold()
+            
+            content()
+        }
+    }
+}
+
+private struct ExampleCard<Content: View>: View {
+    let title: String
+    let description: String
+    let content: () -> Content
+    
+    var body: some View {
+        platformVStack(alignment: .leading, spacing: 8) {
+            Text(title)
+                .font(.headline)
+            
+            Text(description)
+                .font(.caption)
+                .foregroundColor(.secondary)
+            
+            content()
+        }
+        .padding()
+        .background(Color.platformSecondaryBackground)
+        .cornerRadius(12)
+    }
+}
