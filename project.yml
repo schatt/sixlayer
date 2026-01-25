@@ -104,7 +104,7 @@ targets:
         product: ViewInspector
 
   # ViewInspector tests - iOS (includes ViewInspectorTests directory)
-  SixLayerFrameworkViewInspectorTests_iOS:
+  SLFiOSViewInspectorTests:
     type: bundle.unit-test
     platform: iOS
     sources:
@@ -640,7 +640,7 @@ schemes:
         SixLayerFramework_iOS: all
     test:
       targets:
-        - SixLayerFrameworkViewInspectorTests_iOS
+        - SLFiOSViewInspectorTests
 
   SLF-tvOS-Framework:
     build:
