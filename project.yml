@@ -128,6 +128,32 @@ targets:
       - package: ViewInspector
         product: ViewInspector
 
+  # ViewInspector tests - macOS (includes ViewInspectorTests directory)
+  SLFmacOSViewInspectorTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - path: Development/Tests/Shared/TestHelpers
+      - path: Development/Tests/SixLayerFrameworkUnitTests/ViewInspectorTests
+        excludes:
+          - "**/README.md"
+          - "**/CoreDataTestingGuide.md"
+    settings:
+      PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.framework.viewinspector-tests
+      SWIFT_VERSION: "6.0"
+      SWIFT_ACTIVE_COMPILATION_CONDITIONS: $(inherited) VIEW_INSPECTOR_MAC_FIXED
+      SWIFT_STRICT_CONCURRENCY: disabled
+      GENERATE_INFOPLIST_FILE: YES
+      CODE_SIGN_STYLE: Automatic
+      ENABLE_TESTING_SEARCH_PATHS: YES
+      DEVELOPMENT_TEAM: Y53G7YPJSZ
+      developmentTeam: Y53G7YPJSZ
+      DEAD_CODE_STRIPPING: YES
+    dependencies:
+      - target: SixLayerFramework_macOS
+      - package: ViewInspector
+        product: ViewInspector
+
   # Unit tests - macOS
   SixLayerFrameworkUnitTests_macOS:
     type: bundle.unit-test
@@ -632,7 +658,7 @@ schemes:
         SixLayerFramework_macOS: all
     test:
       targets:
-        - SixLayerFrameworkUnitTests_macOS
+        - SLFmacOSViewInspectorTests
 
   SLF-iOS-ViewInspectorTests:
     build:
