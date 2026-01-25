@@ -166,7 +166,10 @@ public struct DynamicFormView: View {
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.borderedProminent)
-                .automaticCompliance(named: "SubmitButton")
+                .automaticCompliance(
+                    named: "SubmitButton",
+                    accessibilitySortPriority: 1.0  // Issue #165: Primary action has highest priority
+                )
             }
             .padding()
             .environment(\.accessibilityIdentifierLabel, configuration.title) // TDD GREEN: Pass label to identifier generation
@@ -457,9 +460,13 @@ public struct DynamicFormSectionView: View {
         case .vertical, .standard, .compact, .spacious:
             // Vertical stack (default)
             platformVStackContainer(spacing: 16) {
-                ForEach(visibleFields) { field in
-                    DynamicFormFieldView(field: field, formState: formState)
-                        .transition(.opacity)
+                ForEach(Array(visibleFields.enumerated()), id: \.element.id) { index, field in
+                    DynamicFormFieldView(
+                        field: field,
+                        formState: formState,
+                        sortPriority: 10.0 + Double(index)  // Issue #165: Sequential priority starting at 10.0
+                    )
+                    .transition(.opacity)
                 }
             }
             
@@ -469,9 +476,13 @@ public struct DynamicFormSectionView: View {
                 GridItem(.flexible()),
                 GridItem(.flexible())
             ], spacing: 16) {
-                ForEach(visibleFields) { field in
-                    DynamicFormFieldView(field: field, formState: formState)
-                        .transition(.opacity)
+                ForEach(Array(visibleFields.enumerated()), id: \.element.id) { index, field in
+                    DynamicFormFieldView(
+                        field: field,
+                        formState: formState,
+                        sortPriority: 10.0 + Double(index)  // Issue #165: Sequential priority starting at 10.0
+                    )
+                    .transition(.opacity)
                 }
             }
             
@@ -479,9 +490,13 @@ public struct DynamicFormSectionView: View {
             // Grid layout (adaptive columns)
             let columns = min(3, max(1, Int(sqrt(Double(visibleFields.count)))))
             LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: columns), spacing: 16) {
-                ForEach(visibleFields) { field in
-                    DynamicFormFieldView(field: field, formState: formState)
-                        .transition(.opacity)
+                ForEach(Array(visibleFields.enumerated()), id: \.element.id) { index, field in
+                    DynamicFormFieldView(
+                        field: field,
+                        formState: formState,
+                        sortPriority: 10.0 + Double(index)  // Issue #165: Sequential priority starting at 10.0
+                    )
+                    .transition(.opacity)
                 }
             }
             
@@ -489,9 +504,13 @@ public struct DynamicFormSectionView: View {
             // Adaptive: choose layout based on field count
             if visibleFields.count <= 4 {
                 platformVStackContainer(spacing: 16) {
-                    ForEach(visibleFields) { field in
-                        DynamicFormFieldView(field: field, formState: formState)
-                            .transition(.opacity)
+                    ForEach(Array(visibleFields.enumerated()), id: \.element.id) { index, field in
+                        DynamicFormFieldView(
+                            field: field,
+                            formState: formState,
+                            sortPriority: 10.0 + Double(index)  // Issue #165: Sequential priority starting at 10.0
+                        )
+                        .transition(.opacity)
                     }
                 }
             } else if visibleFields.count <= 8 {
@@ -499,17 +518,25 @@ public struct DynamicFormSectionView: View {
                     GridItem(.flexible()),
                     GridItem(.flexible())
                 ], spacing: 16) {
-                    ForEach(visibleFields) { field in
-                        DynamicFormFieldView(field: field, formState: formState)
-                            .transition(.opacity)
+                    ForEach(Array(visibleFields.enumerated()), id: \.element.id) { index, field in
+                        DynamicFormFieldView(
+                            field: field,
+                            formState: formState,
+                            sortPriority: 10.0 + Double(index)  // Issue #165: Sequential priority starting at 10.0
+                        )
+                        .transition(.opacity)
                     }
                 }
             } else {
                 let columns = min(3, max(1, Int(sqrt(Double(visibleFields.count)))))
                 LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: columns), spacing: 16) {
-                    ForEach(visibleFields) { field in
-                        DynamicFormFieldView(field: field, formState: formState)
-                            .transition(.opacity)
+                    ForEach(Array(visibleFields.enumerated()), id: \.element.id) { index, field in
+                        DynamicFormFieldView(
+                            field: field,
+                            formState: formState,
+                            sortPriority: 10.0 + Double(index)  // Issue #165: Sequential priority starting at 10.0
+                        )
+                        .transition(.opacity)
                     }
                 }
             }
@@ -527,10 +554,12 @@ public struct DynamicFormFieldView: View {
     let field: DynamicFormField
     @ObservedObject var formState: DynamicFormState
     @State private var showHelpPopover = false
+    let sortPriority: Double?  // Issue #165: Sort priority for accessibility reading order
     
-    public init(field: DynamicFormField, formState: DynamicFormState) {
+    public init(field: DynamicFormField, formState: DynamicFormState, sortPriority: Double? = nil) {
         self.field = field
         self.formState = formState
+        self.sortPriority = sortPriority
     }
     
     public var body: some View {
@@ -598,7 +627,8 @@ public struct DynamicFormFieldView: View {
         .id(field.id) // Add ID for ScrollViewReader scrolling
         .environment(\.accessibilityIdentifierLabel, field.label) // TDD GREEN: Pass label to identifier generation
         .automaticCompliance(
-            identifierName: sanitizeLabelText(field.label)  // Auto-generate identifierName from field label
+            identifierName: sanitizeLabelText(field.label),  // Auto-generate identifierName from field label
+            accessibilitySortPriority: sortPriority  // Issue #165: Sort priority for reading order
         )
     }
 

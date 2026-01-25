@@ -4401,19 +4401,31 @@ public struct GenericSettingsView: View {
             if onSettingsSaved != nil || onSettingsCancelled != nil {
                 platformHStackContainer(spacing: 16) {
                     if let onSettingsCancelled = onSettingsCancelled {
-                        Button("Cancel") {
+                        platformButton("Cancel") {
                             onSettingsCancelled()
                         }
                         .buttonStyle(.bordered)
+                        .automaticCompliance(
+                            identifierName: sanitizeLabelText("Cancel"),
+                            identifierElementType: "Button",
+                            accessibilityTraits: .isButton,
+                            accessibilitySortPriority: 2.0  // Issue #165: Secondary action
+                        )
                     }
                     
                     Spacer()
                     
                     if let onSettingsSaved = onSettingsSaved {
-                        Button("Save") {
+                        platformButton("Save") {
                             onSettingsSaved()
                         }
                         .buttonStyle(.borderedProminent)
+                        .automaticCompliance(
+                            identifierName: sanitizeLabelText("Save"),
+                            identifierElementType: "Button",
+                            accessibilityTraits: .isButton,
+                            accessibilitySortPriority: 1.0  // Issue #165: Primary action
+                        )
                     }
                 }
                 .padding()

@@ -104,7 +104,8 @@ public extension View {
         // Auto-generate identifierName from title (the thing being identified)
         .automaticCompliance(
             identifierName: sanitizeLabelText(title),
-            identifierLabel: title
+            identifierLabel: title,
+            accessibilitySortPriority: 5.0  // Issue #165: Navigation elements have medium priority
         )
     }
     
