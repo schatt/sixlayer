@@ -430,7 +430,14 @@ struct CopyToClipboardExample: View {
     
     var body: some View {
         platformVStack(alignment: .leading, spacing: 12) {
-            SixLayerFramework.platformTextField("Text to copy", text: $clipboardText)
+            // Use the instance method instead to avoid ambiguity
+            TextField("Text to copy", text: $clipboardText)
+                .automaticCompliance(
+                    identifierName: "textToCopy",
+                    identifierElementType: "TextField",
+                    accessibilityLabel: "Text to copy",
+                    accessibilityHint: "Enter text to copy to clipboard"
+                )
             
             platformButton("Copy to Clipboard") {
                 _ = platformCopyToClipboard_L4(content: clipboardText)

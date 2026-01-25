@@ -16,9 +16,23 @@ The framework automatically generates accessibility labels for VoiceOver complia
 - Auto-extracted: `SixLayerFramework.accessibility.auto.{sanitizedText}` - For auto-extraction feature
 
 **Discovery Methods:**
-1. **Runtime logging** (debug mode) - Logs missing app keys to console
-2. **Build-time script** - `scripts/check_accessibility_labels_completeness.py` (to be created)
+1. **Runtime logging** (debug mode) - Logs missing app keys to console with format:
+   ```
+   ⚠️ Accessibility Label: Missing localization key "MyApp.accessibility.button.save" for button "MyApp.accessibility.button.save"
+   ```
+2. **Build-time script** - `scripts/check_accessibility_labels_completeness.py` (✅ Created - Issue #158)
+   - Scans codebase for `accessibilityLabel` parameters
+   - Scans for `.automaticCompliance(accessibilityLabel:)` calls
+   - Scans for `DynamicFormField.label` usage in Layer 1 functions
+   - Generates report of missing keys per language
 3. **Documentation** - `AccessibilityLabelsGuide.md` provides examples and guidance
+
+**Accessibility Label Key Examples:**
+- App keys: `MyApp.accessibility.button.save`, `MyApp.accessibility.field.email`
+- Framework keys: `SixLayerFramework.accessibility.button.save` (internal only)
+- Auto-extracted: `SixLayerFramework.accessibility.auto.save` (from `Button("Save")`)
+
+**Note:** Developers should use their own app keys (e.g., `MyApp.accessibility.*`), not framework keys. The framework supports any key format you choose.
 
 ## Strings That Should Be Localized
 

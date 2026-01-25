@@ -84,12 +84,24 @@ A build-time script can scan your codebase and generate a report of all accessib
 ```bash
 # Generate report of missing accessibility label keys
 ./scripts/check_accessibility_labels_completeness.py
+
+# Specify custom directories
+./scripts/check_accessibility_labels_completeness.py --codebase-dir ./Framework/Sources --base-dir ./Framework/Resources
+
+# Check specific languages only
+./scripts/check_accessibility_labels_completeness.py --languages es fr de
+
+# Custom report location
+./scripts/check_accessibility_labels_completeness.py --report ./reports/missing_keys.txt
 ```
 
 This script:
 - Scans for `accessibilityLabel` parameters in platform functions
-- Scans for `DynamicFormField.label` usage in Layer 1 functions
+- Scans for `.automaticCompliance(accessibilityLabel:)` calls
+- Scans for `DynamicFormField.label` usage in Layer 1 functions (which become accessibility labels)
+- Scans for explicit localization keys in string literals
 - Generates a report of missing keys per language
+- Accounts for parameter-based labels (not environment-based, per Issue #160)
 
 ### 3. Documentation
 
@@ -150,21 +162,52 @@ When creating your app's accessibility labels, use your app's key prefix. Here a
 
 ## Fallback Behavior
 
-When a localization key is not found:
+When a localization key is not found, the framework follows this fallback chain:
 
-1. **Framework checks app bundle** first (allows app to override)
-2. **Framework checks framework bundle** (framework defaults)
-3. **Returns the key itself** if not found in either bundle
-4. **Logs warning in debug mode** (Issue #158)
+1. **Framework checks app bundle** first (allows app to override framework defaults)
+2. **Framework checks framework bundle** (framework default strings)
+3. **Returns the key itself** if not found in either bundle (formatted with punctuation)
+4. **Logs warning in debug mode** (Issue #158) - helps developers discover missing keys
 
-**Example:**
+**Example Fallback Chain:**
 ```swift
-// If "MyApp.accessibility.button.save" is not found:
-// 1. Check app bundle → not found
-// 2. Check framework bundle → not found (framework doesn't provide app keys)
-// 3. Return "MyApp.accessibility.button.save" (the key)
-// 4. Log: ⚠️ Accessibility Label: Missing localization key "MyApp.accessibility.button.save"...
+// Developer code:
+platformButton(label: "MyApp.accessibility.button.save") {
+    save()
+}
+
+// Framework behavior:
+// 1. Check app bundle (Bundle.main) for "MyApp.accessibility.button.save"
+//    → Not found
+// 2. Check framework bundle for "MyApp.accessibility.button.save"
+//    → Not found (framework doesn't provide app-specific keys)
+// 3. Return "MyApp.accessibility.button.save" (the key itself, formatted)
+// 4. Log in debug mode:
+//    ⚠️ Accessibility Label: Missing localization key "MyApp.accessibility.button.save" for button "MyApp.accessibility.button.save"
 ```
+
+**Developer Workflow:**
+1. Run app in debug mode
+2. See console warning about missing key
+3. Add key to app's `Localizable.strings` file:
+   ```strings
+   "MyApp.accessibility.button.save" = "Save document";
+   ```
+4. Re-run app - warning disappears, localized text is used
+
+**Direct Service Access:**
+The framework uses `InternationalizationService` directly (not via environment, per Issue #160):
+
+```swift
+// In localizeAccessibilityLabel function:
+let i18n = InternationalizationService()  // Direct instantiation
+let localized = i18n.localizedString(for: label)  // Direct method call
+```
+
+This approach:
+- Eliminates environment dependencies
+- Makes localization explicit and testable
+- Simplifies debugging and logging
 
 ## Label Formatting
 
