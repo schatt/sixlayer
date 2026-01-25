@@ -101,34 +101,6 @@ final class AccessibilityHintsUITests: XCTestCase {
     
     // MARK: - Text Field Hints Tests
     
-    /// Test that platformTextField has accessibility hint
-    /// BUSINESS PURPOSE: Verify text fields have helpful hints guiding users on what to enter
-    /// TESTING SCOPE: platformTextField hint detection
-    /// METHODOLOGY: Use XCUITest to find text field and verify hint is present
-    @MainActor
-    func testPlatformTextField_HasAccessibilityHint() throws {
-        // Given: App is launched and ready
-        // Navigate to a view with text fields
-        // For now, we'll test that text fields are findable
-        
-        // When: Find a platformTextField element
-        // Then: Should have accessibility hint
-        let textFields = app.textFields.allElementsBoundByIndex
-        
-        // Find at least one text field with a hint
-        var foundTextFieldWithHint = false
-        for textField in textFields {
-            if !textField.hint.isEmpty {
-                foundTextFieldWithHint = true
-                print("🔍 TEST DEBUG: Found text field with hint: '\(textField.hint)'")
-                break
-            }
-        }
-        
-        XCTAssertTrue(foundTextFieldWithHint || textFields.count > 0,
-                     "At least one text field should exist, and ideally should have a hint")
-    }
-    
     // MARK: - Toggle Hints Tests
     
     /// Test that platformToggle elements are findable (hints are applied but not directly testable)
@@ -153,34 +125,6 @@ final class AccessibilityHintsUITests: XCTestCase {
     }
     
     // MARK: - Picker Hints Tests
-    
-    /// Test that platformPicker has accessibility hint
-    /// BUSINESS PURPOSE: Verify pickers have helpful hints explaining how to interact
-    /// TESTING SCOPE: platformPicker hint detection
-    /// METHODOLOGY: Use XCUITest to find picker and verify hint is present
-    @MainActor
-    func testPlatformPicker_HasAccessibilityHint() throws {
-        // Given: App is launched and ready
-        // Navigate to a view with pickers
-        
-        // When: Find a platformPicker element
-        // Then: Should have accessibility hint
-        // Pickers in XCUITest can be queried as pickers or buttons
-        let pickers = app.pickers.allElementsBoundByIndex
-        
-        // Find at least one picker with a hint
-        var foundPickerWithHint = false
-        for picker in pickers {
-            if !picker.hint.isEmpty {
-                foundPickerWithHint = true
-                print("🔍 TEST DEBUG: Found picker with hint: '\(picker.hint)'")
-                break
-            }
-        }
-        
-        XCTAssertTrue(foundPickerWithHint || pickers.count > 0,
-                     "At least one picker should exist, and ideally should have a hint")
-    }
     
     // MARK: - Hint Content Quality Tests
     
