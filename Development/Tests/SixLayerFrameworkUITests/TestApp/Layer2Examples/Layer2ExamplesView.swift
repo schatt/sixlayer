@@ -188,7 +188,7 @@ struct LayoutDetailsView: View {
     }
 }
 
-struct ExampleCard<Content: View>: View {
+private struct ExampleCard<Content: View>: View {
     let title: String
     let description: String
     let content: () -> Content
