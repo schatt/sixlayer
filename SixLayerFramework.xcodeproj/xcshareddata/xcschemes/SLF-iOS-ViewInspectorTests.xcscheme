@@ -44,9 +44,9 @@
             parallelizable = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "DB103505129FCA598F36B448"
-               BuildableName = "SixLayerFrameworkViewInspectorTests_iOS.xctest"
-               BlueprintName = "SixLayerFrameworkViewInspectorTests_iOS"
+               BlueprintIdentifier = "0ADA93DEBBDDEFADE109B459"
+               BuildableName = "SLFiOSViewInspectorTests.xctest"
+               BlueprintName = "SLFiOSViewInspectorTests"
                ReferencedContainer = "container:SixLayerFramework.xcodeproj">
             </BuildableReference>
          </TestableReference>
