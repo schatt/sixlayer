@@ -129,6 +129,13 @@ struct TestAppContentView: View {
                 }
                 .accessibilityIdentifier("layer3-examples-link")
             }
+            
+            Section("Layer 4 Examples (Issue #165)") {
+                NavigationLink("Layer 4 Component Examples") {
+                    Layer4ExamplesView()
+                }
+                .accessibilityIdentifier("layer4-examples-link")
+            }
         }
         .navigationTitle("UI Test Views")
     }

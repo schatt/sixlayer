@@ -531,6 +531,7 @@
 		347641BC20DC1DC950128531 /* HIGPlatformSpecificCategoriesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC03DC263BD5CBD078307C12 /* HIGPlatformSpecificCategoriesTests.swift */; };
 		348FBECBC82E450E8A254D10 /* PlatformAnyShapeStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB7E83037085D9DAB37DC1A1 /* PlatformAnyShapeStyle.swift */; };
 		34914A1B5CDC7428689A59A2 /* PlatformNavigationHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9700602A3EE7C0D38C55BABA /* PlatformNavigationHelpers.swift */; };
+		34D85B51DBC3CDD137AB543F /* Layer4ExamplesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1BCCB69FA2AB0F37CE65F2C9 /* Layer4ExamplesView.swift */; };
 		34DE57BD7F2570D21BAD731E /* StringSanitizationHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14E453367118C40AFA48924A /* StringSanitizationHelpers.swift */; };
 		350CC7144AC61851797986B1 /* CloudKitServiceQueueStatusTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1221B24719D2AE7644787C06 /* CloudKitServiceQueueStatusTests.swift */; };
 		350F7A98B385E220C9A49075 /* AppleHIGComplianceExamples.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B29E9A5671C83CD7F638332 /* AppleHIGComplianceExamples.swift */; };
@@ -1459,6 +1460,7 @@
 		921CC962D98E4C2771C97C3E /* PlatformNotificationL1.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11647581F33F14830EF36AEF /* PlatformNotificationL1.swift */; };
 		9235ED69D3F53108BA62FCD8 /* PlatformNotificationL1.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11647581F33F14830EF36AEF /* PlatformNotificationL1.swift */; };
 		923EDA5304337BE7452FA17E /* PlatformPrivacyLayer5.swift in Sources */ = {isa = PBXBuildFile; fileRef = A79B660D34A588E35C81AD66 /* PlatformPrivacyLayer5.swift */; };
+		9270C61C5593EDD49A2AE7F7 /* Layer4ExamplesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1BCCB69FA2AB0F37CE65F2C9 /* Layer4ExamplesView.swift */; };
 		92B144D55B54BFDDD3D0CDC8 /* PlatformPhotoLayoutDecisionLayer2.swift in Sources */ = {isa = PBXBuildFile; fileRef = D762AB299089808826BB4966 /* PlatformPhotoLayoutDecisionLayer2.swift */; };
 		92B343E8DCEB74F045E23719 /* RuntimeCapabilityDetectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7A524E6E06C01F309963D05 /* RuntimeCapabilityDetectionTests.swift */; };
 		931EE10189187446BC750BE7 /* NamedModifierRefactoringTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E80E226B4032C55523F36F66 /* NamedModifierRefactoringTests.swift */; };
@@ -2905,6 +2907,7 @@
 		1AC3AEB9695E9E999169D930 /* IntelligentFormViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntelligentFormViewTests.swift; sourceTree = "<group>"; };
 		1B14354459D047C9B047117B /* OCRExamplesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OCRExamplesView.swift; sourceTree = "<group>"; };
 		1BB862D740FC81E8450DA718 /* PlatformHapticFeedbackExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformHapticFeedbackExtensions.swift; sourceTree = "<group>"; };
+		1BCCB69FA2AB0F37CE65F2C9 /* Layer4ExamplesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Layer4ExamplesView.swift; sourceTree = "<group>"; };
 		1C2B85546CDAA3A3CFAA2233 /* DynamicFormView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DynamicFormView.swift; sourceTree = "<group>"; };
 		1CB60BEDCCE42B440A71195F /* MetalRenderingCrashTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetalRenderingCrashTests.swift; sourceTree = "<group>"; };
 		1D01FBA366BFF9EFA92140E1 /* AccessibilityWorkflowTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessibilityWorkflowTests.swift; sourceTree = "<group>"; };
@@ -4693,6 +4696,14 @@
 			path = Views;
 			sourceTree = "<group>";
 		};
+		BC60567E899F53B7456FFF42 /* Layer4Examples */ = {
+			isa = PBXGroup;
+			children = (
+				1BCCB69FA2AB0F37CE65F2C9 /* Layer4ExamplesView.swift */,
+			);
+			path = Layer4Examples;
+			sourceTree = "<group>";
+		};
 		BD852592B7D30217AD26C84D /* Debug */ = {
 			isa = PBXGroup;
 			children = (
@@ -4774,6 +4785,7 @@
 				E1F97A051D3EAEA8CE8A0916 /* Layer1Examples */,
 				0944D99722B04087DD7BCDBF /* Layer2Examples */,
 				804E16B664D3B55E1B1C5805 /* Layer3Examples */,
+				BC60567E899F53B7456FFF42 /* Layer4Examples */,
 				567B966F9D790AC68F4AAB47 /* TestViews */,
 			);
 			name = TestApp;
@@ -5240,7 +5252,7 @@
 			path = API;
 			sourceTree = "<group>";
 		};
-		"TEMP_6C6E7327-4D43-4BC3-92B8-51C27BBCF382" /* Utilities */ = {
+		"TEMP_5AD1CF68-543A-4573-90F1-B8AD17EAAB41" /* Utilities */ = {
 			isa = PBXGroup;
 			children = (
 			);
@@ -7403,6 +7415,7 @@
 				77B91DD3CCBD3B2B4E7A465E /* InternationalizationExamplesView.swift in Sources */,
 				8330501C3A19726208068FF8 /* Layer2ExamplesView.swift in Sources */,
 				7BEC69D35877EDF1835A53F4 /* Layer3ExamplesView.swift in Sources */,
+				34D85B51DBC3CDD137AB543F /* Layer4ExamplesView.swift in Sources */,
 				FF28132173369FC018D0ACA6 /* NavigationExamplesView.swift in Sources */,
 				FE6F9DFCBA28E32445B22025 /* NotificationExamplesView.swift in Sources */,
 				C284EEC53FDEE8D0F547DF11 /* OCRExamplesView.swift in Sources */,
@@ -7426,6 +7439,7 @@
 				36311C476D5CACD7D1D391D6 /* InternationalizationExamplesView.swift in Sources */,
 				32D6109EF88D2F686EC9E8D0 /* Layer2ExamplesView.swift in Sources */,
 				D38B1D72E184047E8F9B701B /* Layer3ExamplesView.swift in Sources */,
+				9270C61C5593EDD49A2AE7F7 /* Layer4ExamplesView.swift in Sources */,
 				2F4E61FB98421DE4214E3653 /* NavigationExamplesView.swift in Sources */,
 				CB21C95D069B5DD203B619D0 /* NotificationExamplesView.swift in Sources */,
 				B95421DCA9299B8DCEB06DDE /* OCRExamplesView.swift in Sources */,
