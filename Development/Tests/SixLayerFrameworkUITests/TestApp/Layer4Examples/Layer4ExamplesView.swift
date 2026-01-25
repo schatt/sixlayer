@@ -9,6 +9,7 @@
 import SwiftUI
 import SixLayerFramework
 import AVFoundation
+import CloudKit
 
 #if os(iOS) || os(macOS)
 #if canImport(MapKit)
@@ -135,10 +136,10 @@ struct PhotoDisplayExample: View {
     var body: some View {
         platformVStack(alignment: .leading, spacing: 12) {
             if let image = image {
-                platformPhotoDisplay_L4(image: image, style: .standard)
+                platformPhotoDisplay_L4(image: image, style: .aspectFit)
                     .frame(height: 200)
             } else {
-                platformPhotoDisplay_L4(image: nil, style: .standard)
+                platformPhotoDisplay_L4(image: nil, style: .aspectFit)
                     .frame(height: 200)
             }
         }
@@ -429,7 +430,7 @@ struct CopyToClipboardExample: View {
     
     var body: some View {
         platformVStack(alignment: .leading, spacing: 12) {
-            platformTextField("Text to copy", text: $clipboardText)
+            SixLayerFramework.platformTextField("Text to copy", text: $clipboardText)
             
             platformButton("Copy to Clipboard") {
                 _ = platformCopyToClipboard_L4(content: clipboardText)
