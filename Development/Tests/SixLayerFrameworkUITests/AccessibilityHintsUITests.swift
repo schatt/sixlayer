@@ -69,39 +69,34 @@ final class AccessibilityHintsUITests: XCTestCase {
     
     // MARK: - Button Hints Tests
     
-    /// Test that platformButton has accessibility hint
-    /// BUSINESS PURPOSE: Verify buttons have helpful hints describing their actions
-    /// TESTING SCOPE: platformButton hint detection
-    /// METHODOLOGY: Use XCUITest to find button and verify hint is present
+    /// Test that platformButton elements are findable (hints are applied but not directly testable)
+    /// BUSINESS PURPOSE: Verify buttons are accessible and hints are applied in code
+    /// TESTING SCOPE: platformButton accessibility verification
+    /// METHODOLOGY: Verify buttons are findable - hints are verified via unit tests with ViewInspector
+    /// NOTE: XCUITest cannot directly read accessibility hints (they're only available to VoiceOver)
+    /// Hints are verified via unit tests that check the SwiftUI view modifiers directly
     @MainActor
-    func testPlatformButton_HasAccessibilityHint() throws {
+    func testPlatformButton_IsAccessible() throws {
         // Given: App is launched and ready
         // Navigate to Layer 1 Examples (which has buttons with hints)
         let layer1Button = app.buttons["test-view-Layer 1 Examples"]
         XCTAssertTrue(layer1Button.waitForExistenceFast(timeout: 3.0), "Layer 1 Examples button should exist")
         layer1Button.tap()
         
-        // When: Find a platformButton element
-        // Then: Should have accessibility hint
-        // Note: We need to find a button that uses platformButton with hints
-        // For now, we'll test that buttons are findable and have hints if they exist
-        // The hint property is available via XCUIElement.hint
+        // When: Find platformButton elements
+        // Then: Should be findable and accessible
+        // Note: Hints are applied in code but cannot be read via XCUITest
+        // Hints are verified via unit tests using ViewInspector
         let buttons = app.buttons.allElementsBoundByIndex
         
-        // Find at least one button with a hint
-        var foundButtonWithHint = false
-        for button in buttons {
-            if !button.hint.isEmpty {
-                foundButtonWithHint = true
-                print("🔍 TEST DEBUG: Found button with hint: '\(button.hint)'")
-                break
-            }
-        }
+        XCTAssertTrue(buttons.count > 0, "Should find at least one button")
         
-        // Note: This is a basic test - in a real scenario, we'd navigate to specific views
-        // that we know have platformButton with hints and verify those specific hints
-        XCTAssertTrue(foundButtonWithHint || buttons.count > 0, 
-                     "At least one button should exist, and ideally should have a hint")
+        // Verify buttons have labels (required for hints to be useful)
+        for button in buttons {
+            // Buttons should have labels for accessibility
+            // Hints are applied but not directly testable via XCUITest
+            XCTAssertFalse(button.label.isEmpty, "Button should have an accessibility label")
+        }
     }
     
     // MARK: - Text Field Hints Tests
@@ -136,31 +131,25 @@ final class AccessibilityHintsUITests: XCTestCase {
     
     // MARK: - Toggle Hints Tests
     
-    /// Test that platformToggle has accessibility hint
-    /// BUSINESS PURPOSE: Verify toggles have helpful hints explaining their purpose
-    /// TESTING SCOPE: platformToggle hint detection
-    /// METHODOLOGY: Use XCUITest to find toggle and verify hint is present
+    /// Test that platformToggle elements are findable (hints are applied but not directly testable)
+    /// BUSINESS PURPOSE: Verify toggles are accessible and hints are applied in code
+    /// TESTING SCOPE: platformToggle accessibility verification
+    /// METHODOLOGY: Verify toggles are findable - hints are verified via unit tests
+    /// NOTE: XCUITest cannot directly read accessibility hints
     @MainActor
-    func testPlatformToggle_HasAccessibilityHint() throws {
+    func testPlatformToggle_IsAccessible() throws {
         // Given: App is launched and ready
         // Navigate to a view with toggles
         
-        // When: Find a platformToggle element
-        // Then: Should have accessibility hint
+        // When: Find platformToggle elements
+        // Then: Should be findable and accessible
+        // Hints are applied in code but cannot be read via XCUITest
         let switches = app.switches.allElementsBoundByIndex
         
-        // Find at least one switch/toggle with a hint
-        var foundSwitchWithHint = false
+        // Verify switches have labels (required for hints to be useful)
         for switchElement in switches {
-            if !switchElement.hint.isEmpty {
-                foundSwitchWithHint = true
-                print("🔍 TEST DEBUG: Found switch with hint: '\(switchElement.hint)'")
-                break
-            }
+            XCTAssertFalse(switchElement.label.isEmpty, "Switch should have an accessibility label")
         }
-        
-        XCTAssertTrue(foundSwitchWithHint || switches.count > 0,
-                     "At least one switch should exist, and ideally should have a hint")
     }
     
     // MARK: - Picker Hints Tests
@@ -195,68 +184,54 @@ final class AccessibilityHintsUITests: XCTestCase {
     
     // MARK: - Hint Content Quality Tests
     
-    /// Test that button hints contain appropriate content
-    /// BUSINESS PURPOSE: Verify hints are descriptive and helpful, not generic
-    /// TESTING SCOPE: Hint content quality verification
-    /// METHODOLOGY: Verify hints contain action descriptions
+    /// Test that buttons have labels (required for hints to be useful)
+    /// BUSINESS PURPOSE: Verify buttons are properly labeled for accessibility
+    /// TESTING SCOPE: Button label verification
+    /// METHODOLOGY: Verify buttons have non-empty labels
+    /// NOTE: Hint content is verified via unit tests with ViewInspector
     @MainActor
-    func testButtonHints_ContainAppropriateContent() throws {
+    func testButtonLabels_ArePresent() throws {
         // Given: App is launched and ready
         // Navigate to views with buttons
         
-        // When: Find buttons with hints
-        // Then: Hints should contain action descriptions
+        // When: Find buttons
+        // Then: Should have labels (hints are applied but not directly testable)
         let buttons = app.buttons.allElementsBoundByIndex
         
-        var hintsFound: [String] = []
+        var labelsFound = 0
         for button in buttons {
-            if !button.hint.isEmpty {
-                hintsFound.append(button.hint)
+            if !button.label.isEmpty {
+                labelsFound += 1
             }
         }
         
-        // Verify at least some hints exist and are not empty
-        if !hintsFound.isEmpty {
-            for hint in hintsFound {
-                XCTAssertFalse(hint.isEmpty, "Hint should not be empty")
-                XCTAssertTrue(hint.count > 5, "Hint should be descriptive (more than 5 characters)")
-                print("🔍 TEST DEBUG: Button hint: '\(hint)'")
-            }
-        }
+        // Verify at least some buttons have labels
+        XCTAssertTrue(labelsFound > 0 || buttons.count == 0,
+                     "Buttons should have labels for accessibility. Found \(labelsFound) labeled buttons out of \(buttons.count)")
     }
     
-    /// Test that text field hints guide users on what to enter
-    /// BUSINESS PURPOSE: Verify text field hints help users understand what to enter
-    /// TESTING SCOPE: Text field hint content quality
-    /// METHODOLOGY: Verify hints contain guidance text
+    /// Test that text fields have labels (required for hints to be useful)
+    /// BUSINESS PURPOSE: Verify text fields are properly labeled for accessibility
+    /// TESTING SCOPE: Text field label verification
+    /// METHODOLOGY: Verify text fields have non-empty labels
+    /// NOTE: Hint content is verified via unit tests with ViewInspector
     @MainActor
-    func testTextFieldHints_GuideUserInput() throws {
+    func testTextFieldLabels_ArePresent() throws {
         // Given: App is launched and ready
         
-        // When: Find text fields with hints
-        // Then: Hints should guide users on what to enter
+        // When: Find text fields
+        // Then: Should have labels (hints are applied but not directly testable)
         let textFields = app.textFields.allElementsBoundByIndex
         
-        var hintsFound: [String] = []
+        var labelsFound = 0
         for textField in textFields {
-            if !textField.hint.isEmpty {
-                hintsFound.append(textField.hint)
+            if !textField.label.isEmpty {
+                labelsFound += 1
             }
         }
         
-        // Verify hints exist and are descriptive
-        if !hintsFound.isEmpty {
-            for hint in hintsFound {
-                XCTAssertFalse(hint.isEmpty, "Hint should not be empty")
-                // Text field hints should typically contain "Enter" or similar guidance
-                let lowercased = hint.lowercased()
-                let hasGuidance = lowercased.contains("enter") || 
-                                 lowercased.contains("type") ||
-                                 lowercased.contains("input")
-                if hasGuidance {
-                    print("🔍 TEST DEBUG: Text field hint with guidance: '\(hint)'")
-                }
-            }
-        }
+        // Verify text fields have labels
+        XCTAssertTrue(labelsFound > 0 || textFields.count == 0,
+                     "Text fields should have labels for accessibility. Found \(labelsFound) labeled text fields out of \(textFields.count)")
     }
 }
