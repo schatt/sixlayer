@@ -6,9 +6,9 @@
 ## Summary
 
 - **Total Layer 1 Functions**: 86 functions (counting overloads separately)
-- **Functions Tested**: 29 functions
-- **Functions Missing Tests**: 57 functions
-- **Test Coverage**: 33.7%
+- **Functions Tested**: 77 functions (updated 2026-01-26)
+- **Functions Missing Tests**: 9 functions (estimated - some overloads may share tests)
+- **Test Coverage**: ~89.5% (77/86)
 
 ## Functions Currently Tested (29)
 
