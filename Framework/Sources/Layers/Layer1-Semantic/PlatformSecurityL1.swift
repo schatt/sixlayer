@@ -93,4 +93,5 @@ public func platformShowPrivacyIndicator_L1(
     security.showPrivacyIndicator(type, isActive: isActive)
     
     return EmptyView() // Indicator is shown via system APIs
+        .automaticCompliance(named: "platformShowPrivacyIndicator_L1")
 }
