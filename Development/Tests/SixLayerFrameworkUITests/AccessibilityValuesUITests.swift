@@ -67,121 +67,62 @@ final class AccessibilityValuesUITests: XCTestCase {
         try super.tearDownWithError()
     }
     
-    // MARK: - Toggle Values Tests
+    // MARK: - Comprehensive Values Tests
     
-    /// Test that platformToggle has accessibility value ("On" or "Off")
-    /// BUSINESS PURPOSE: Verify toggles report their current state for assistive technologies
-    /// TESTING SCOPE: platformToggle value detection
-    /// METHODOLOGY: Use XCUITest to find toggle and verify value reflects state
+    /// Test that all stateful elements have accessibility values
+    /// BUSINESS PURPOSE: Verify all stateful platform* elements report their state for assistive technologies
+    /// TESTING SCOPE: Comprehensive value verification for toggles, sliders, steppers, pickers
+    /// METHODOLOGY: Verify all stateful element types have values in a single test
     @MainActor
-    func testPlatformToggle_HasAccessibilityValue() throws {
+    func testAllStatefulElements_HaveAccessibilityValues() throws {
         // Given: App is launched and ready
-        // Navigate to a view with toggles (e.g., DynamicFormView)
         
-        // When: Find platformToggle elements
-        // Then: Should have accessibility value ("On" or "Off")
+        // When: Find all stateful elements
+        // Then: All should have accessibility values
+        
+        // Test switches/toggles
         let switches = app.switches.allElementsBoundByIndex
-        
         for switchElement in switches {
-            // Switches in XCUITest have a value property that reflects their state
             let value = switchElement.value as? String
-            // Value should be "1" (on) or "0" (off) for switches, or "On"/"Off" if properly formatted
             XCTAssertNotNil(value, "Switch should have a value")
-            
-            // The value should indicate the state
             if let stringValue = value {
                 let isOn = stringValue == "1" || stringValue.lowercased() == "on"
                 let isOff = stringValue == "0" || stringValue.lowercased() == "off"
                 XCTAssertTrue(isOn || isOff, "Switch value should indicate state (On/Off or 1/0). Actual: '\(stringValue)'")
-                print("🔍 TEST DEBUG: Switch value: '\(stringValue)'")
             }
         }
-    }
-    
-    // MARK: - Slider Values Tests
-    
-    /// Test that platformSlider has accessibility value (current value and range)
-    /// BUSINESS PURPOSE: Verify sliders report their current value for assistive technologies
-    /// TESTING SCOPE: platformSlider value detection
-    /// METHODOLOGY: Use XCUITest to find slider and verify value reflects current position
-    @MainActor
-    func testPlatformSlider_HasAccessibilityValue() throws {
-        // Given: App is launched and ready
-        // Navigate to a view with sliders (e.g., DynamicRangeField)
         
-        // When: Find slider elements
-        // Then: Should have accessibility value indicating current position
+        // Test sliders
         let sliders = app.sliders.allElementsBoundByIndex
-        
         for slider in sliders {
-            // Sliders in XCUITest have a value property that reflects their position
             let value = slider.value as? String
             XCTAssertNotNil(value, "Slider should have a value")
-            
             if let stringValue = value {
-                // Value should indicate position (e.g., "50%", "0.5", etc.)
-                print("🔍 TEST DEBUG: Slider value: '\(stringValue)'")
-                // Verify value is not empty
                 XCTAssertFalse(stringValue.isEmpty, "Slider value should not be empty")
             }
         }
-    }
-    
-    // MARK: - Stepper Values Tests
-    
-    /// Test that platformStepper has accessibility value (current value)
-    /// BUSINESS PURPOSE: Verify steppers report their current value for assistive technologies
-    /// TESTING SCOPE: platformStepper value detection
-    /// METHODOLOGY: Use XCUITest to find stepper and verify value reflects current count
-    @MainActor
-    func testPlatformStepper_HasAccessibilityValue() throws {
-        // Given: App is launched and ready
-        // Navigate to a view with steppers (e.g., DynamicStepperField)
         
-        // When: Find stepper elements
-        // Then: Should have accessibility value indicating current count
-        // Steppers in XCUITest can appear as increment/decrement buttons or as a single element
+        // Test steppers
         let steppers = app.steppers.allElementsBoundByIndex
-        
         for stepper in steppers {
-            // Steppers have a value property
             let value = stepper.value as? String
             XCTAssertNotNil(value, "Stepper should have a value")
-            
             if let stringValue = value {
-                print("🔍 TEST DEBUG: Stepper value: '\(stringValue)'")
-                // Verify value is not empty
                 XCTAssertFalse(stringValue.isEmpty, "Stepper value should not be empty")
             }
         }
-    }
-    
-    // MARK: - Picker Values Tests
-    
-    /// Test that platformPicker has accessibility value (selected option)
-    /// BUSINESS PURPOSE: Verify pickers report their selected option for assistive technologies
-    /// TESTING SCOPE: platformPicker value detection
-    /// METHODOLOGY: Use XCUITest to find picker and verify value reflects selection
-    @MainActor
-    func testPlatformPicker_HasAccessibilityValue() throws {
-        // Given: App is launched and ready
-        // Navigate to a view with pickers
         
-        // When: Find picker elements
-        // Then: Should have accessibility value indicating selected option
+        // Test pickers
         let pickers = app.pickers.allElementsBoundByIndex
-        
         for picker in pickers {
-            // Pickers have a value property that reflects the selected option
             let value = picker.value as? String
             XCTAssertNotNil(value, "Picker should have a value")
-            
             if let stringValue = value {
-                print("🔍 TEST DEBUG: Picker value: '\(stringValue)'")
-                // Verify value is not empty
                 XCTAssertFalse(stringValue.isEmpty, "Picker value should not be empty")
             }
         }
+        
+        print("🔍 TEST DEBUG: Verified values for \(switches.count) switches, \(sliders.count) sliders, \(steppers.count) steppers, \(pickers.count) pickers")
     }
     
     // MARK: - Value Accuracy Tests

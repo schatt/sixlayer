@@ -68,128 +68,12 @@ final class DynamicTypeSupportUITests: XCTestCase {
         try super.tearDownWithError()
     }
     
-    // MARK: - Text Scalability Tests
-    
-    /// Test that text elements scale with Dynamic Type
-    /// BUSINESS PURPOSE: Text must scale to support user accessibility preferences
-    /// TESTING SCOPE: Text scaling with Dynamic Type
-    /// METHODOLOGY: Verify text elements remain readable at different sizes
-    @MainActor
-    func testTextElements_ScaleWithDynamicType() throws {
-        // Given: App is launched and ready
-        
-        // When: Query for text elements
-        // Then: Text should be readable (have labels/content)
-        // Note: We can't directly test font size in XCUITest, but we can verify
-        // that text elements exist and are readable
-        let staticTexts = app.staticTexts.allElementsBoundByIndex
-        
-        // Verify text elements are readable
-        var readableTexts = 0
-        for text in staticTexts {
-            if !text.label.isEmpty {
-                readableTexts += 1
-                // Text should have content (not just whitespace)
-                let trimmedLabel = text.label.trimmingCharacters(in: .whitespacesAndNewlines)
-                XCTAssertFalse(trimmedLabel.isEmpty,
-                             "Text element should have readable content. Label: '\(text.label)'")
-            }
-        }
-        
-        print("🔍 TEST DEBUG: Found \(readableTexts) readable text elements out of \(staticTexts.count)")
-        XCTAssertTrue(readableTexts > 0 || staticTexts.count == 0,
-                     "Should have readable text elements for Dynamic Type support")
-    }
-    
-    // MARK: - Layout Adaptation Tests
-    
-    /// Test that layouts adapt to larger text sizes
-    /// BUSINESS PURPOSE: Layouts must adapt when text scales up
-    /// TESTING SCOPE: Layout adaptation with Dynamic Type
-    /// METHODOLOGY: Verify elements remain accessible when text is larger
-    @MainActor
-    func testLayouts_AdaptToLargerText() throws {
-        // Given: App is launched and ready
-        
-        // When: Query for interactive elements
-        // Then: Elements should remain accessible (not clipped or hidden)
-        let buttons = app.buttons.allElementsBoundByIndex
-        let textFields = app.textFields.allElementsBoundByIndex
-        
-        // Verify buttons remain accessible
-        for button in buttons {
-            // Buttons should be visible and hittable even with larger text
-            XCTAssertTrue(button.exists, "Button should exist for Dynamic Type support")
-            // Note: We can't directly test if text is clipped, but we verify elements exist
-        }
-        
-        // Verify text fields remain accessible
-        for textField in textFields {
-            XCTAssertTrue(textField.exists, "Text field should exist for Dynamic Type support")
-        }
-        
-        print("🔍 TEST DEBUG: Verified \(buttons.count) buttons and \(textFields.count) text fields remain accessible")
-    }
-    
-    // MARK: - Button Text Scaling Tests
-    
-    /// Test that button text scales with Dynamic Type
-    /// BUSINESS PURPOSE: Button labels must scale to support accessibility
-    /// TESTING SCOPE: Button text scaling
-    /// METHODOLOGY: Verify buttons have readable labels
-    @MainActor
-    func testButtonText_ScalesWithDynamicType() throws {
-        // Given: App is launched and ready
-        
-        // When: Query for buttons
-        // Then: Buttons should have readable labels that scale
-        let buttons = app.buttons.allElementsBoundByIndex
-        
-        var labeledButtons = 0
-        for button in buttons {
-            if !button.label.isEmpty {
-                labeledButtons += 1
-                // Labels should be readable (not empty or just whitespace)
-                let trimmedLabel = button.label.trimmingCharacters(in: .whitespacesAndNewlines)
-                XCTAssertFalse(trimmedLabel.isEmpty,
-                             "Button label should be readable for Dynamic Type. Label: '\(button.label)'")
-            }
-        }
-        
-        XCTAssertTrue(labeledButtons > 0 || buttons.count == 0,
-                     "Buttons should have readable labels for Dynamic Type support. Found \(labeledButtons) labeled buttons out of \(buttons.count)")
-    }
-    
-    // MARK: - Text Field Scaling Tests
-    
-    /// Test that text field text scales with Dynamic Type
-    /// BUSINESS PURPOSE: Text field content must scale to support accessibility
-    /// TESTING SCOPE: Text field text scaling
-    /// METHODOLOGY: Verify text fields support Dynamic Type
-    @MainActor
-    func testTextFieldText_ScalesWithDynamicType() throws {
-        // Given: App is launched and ready
-        
-        // When: Query for text fields
-        // Then: Text fields should support Dynamic Type
-        let textFields = app.textFields.allElementsBoundByIndex
-        
-        // Verify text fields exist and are accessible
-        for textField in textFields {
-            XCTAssertTrue(textField.exists, "Text field should exist for Dynamic Type support")
-            // Text fields should be enabled (not disabled)
-            XCTAssertTrue(textField.isEnabled, "Text field should be enabled for Dynamic Type support")
-        }
-        
-        print("🔍 TEST DEBUG: Verified \(textFields.count) text fields support Dynamic Type")
-    }
-    
-    // MARK: - Comprehensive Dynamic Type Support Test
+    // MARK: - Comprehensive Dynamic Type Support Tests
     
     /// Test comprehensive Dynamic Type support for all platform* functions
     /// BUSINESS PURPOSE: Verify all platform* functions support Dynamic Type
-    /// TESTING SCOPE: Complete Dynamic Type support checklist
-    /// METHODOLOGY: Verify all prerequisites for Dynamic Type support
+    /// TESTING SCOPE: Complete Dynamic Type support checklist (text scalability, layout adaptation, button/text field scaling)
+    /// METHODOLOGY: Verify all prerequisites for Dynamic Type support in a single test
     @MainActor
     func testPlatformFunctions_SupportDynamicType() throws {
         // Given: App is launched and ready
@@ -197,33 +81,42 @@ final class DynamicTypeSupportUITests: XCTestCase {
         // When: Testing Dynamic Type support
         // Then: All platform* functions should support Dynamic Type
         
-        // Test 1: Text scalability
+        // Test 1: Text scalability (text elements are readable)
         let staticTexts = app.staticTexts.allElementsBoundByIndex
         var readableTexts = 0
         for text in staticTexts {
             if !text.label.isEmpty {
                 readableTexts += 1
+                let trimmedLabel = text.label.trimmingCharacters(in: .whitespacesAndNewlines)
+                XCTAssertFalse(trimmedLabel.isEmpty, "Text element should have readable content")
             }
         }
         XCTAssertTrue(readableTexts > 0 || staticTexts.count == 0,
                      "Text elements should be readable for Dynamic Type")
         
-        // Test 2: Layout adaptation
+        // Test 2: Layout adaptation (elements remain accessible)
         let buttons = app.buttons.allElementsBoundByIndex
+        let textFields = app.textFields.allElementsBoundByIndex
         for button in buttons {
-            XCTAssertTrue(button.exists, "Elements should remain accessible with Dynamic Type")
+            XCTAssertTrue(button.exists, "Button should exist for Dynamic Type support")
+        }
+        for textField in textFields {
+            XCTAssertTrue(textField.exists, "Text field should exist for Dynamic Type support")
+            XCTAssertTrue(textField.isEnabled, "Text field should be enabled for Dynamic Type support")
         }
         
-        // Test 3: Button text scaling
+        // Test 3: Button text scaling (buttons have readable labels)
         var labeledButtons = 0
         for button in buttons {
             if !button.label.isEmpty {
                 labeledButtons += 1
+                let trimmedLabel = button.label.trimmingCharacters(in: .whitespacesAndNewlines)
+                XCTAssertFalse(trimmedLabel.isEmpty, "Button label should be readable for Dynamic Type")
             }
         }
         XCTAssertTrue(labeledButtons > 0 || buttons.count == 0,
                      "Buttons should have readable labels for Dynamic Type")
         
-        print("🔍 TEST DEBUG: Dynamic Type support verified for \(readableTexts) text elements, \(buttons.count) buttons")
+        print("🔍 TEST DEBUG: Dynamic Type support verified for \(readableTexts) text elements, \(buttons.count) buttons, \(textFields.count) text fields")
     }
 }

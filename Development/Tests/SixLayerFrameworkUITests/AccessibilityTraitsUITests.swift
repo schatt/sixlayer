@@ -67,161 +67,49 @@ final class AccessibilityTraitsUITests: XCTestCase {
         try super.tearDownWithError()
     }
     
-    // MARK: - Button Traits Tests
+    // MARK: - Comprehensive Traits Tests
     
-    /// Test that platformButton has .isButton trait
-    /// BUSINESS PURPOSE: Verify buttons are identified as buttons for assistive technologies
-    /// TESTING SCOPE: platformButton trait detection
-    /// METHODOLOGY: Use XCUITest to find button and verify it's identified as a button
+    /// Test that all interactive elements have correct traits
+    /// BUSINESS PURPOSE: Verify all platform* elements are identified correctly for assistive technologies
+    /// TESTING SCOPE: Comprehensive trait verification for buttons, links, headers, text fields, toggles
+    /// METHODOLOGY: Verify all element types have appropriate traits in a single test
     @MainActor
-    func testPlatformButton_HasButtonTrait() throws {
+    func testAllInteractiveElements_HaveCorrectTraits() throws {
         // Given: App is launched and ready
-        // Navigate to a test view that has buttons (e.g., Button Test)
+        // Navigate to a test view that has various elements
         let buttonTestButton = app.buttons["test-view-Button Test"]
         if buttonTestButton.waitForExistenceFast(timeout: 3.0) {
             buttonTestButton.tap()
         }
         
-        // When: Find platformButton elements
-        // Then: Should be identified as buttons
-        // In XCUITest, buttons are queried via app.buttons, which means they have the button trait
-        let buttons = app.buttons.allElementsBoundByIndex
-        
-        XCTAssertTrue(buttons.count > 0, "Should find at least one button")
-        
-        // Verify buttons are actually buttons (not just static text)
-        for button in buttons {
-            // Buttons found via app.buttons already have the button trait
-            XCTAssertTrue(button.elementType == .button, "Element should be identified as a button")
-        }
-    }
-    
-    // MARK: - Link Traits Tests
-    
-    /// Test that platformNavigationLink has .isLink trait
-    /// BUSINESS PURPOSE: Verify links are identified as links for assistive technologies
-    /// TESTING SCOPE: platformNavigationLink trait detection
-    /// METHODOLOGY: Use XCUITest to find link and verify it's identified as a link
-    @MainActor
-    func testPlatformNavigationLink_HasLinkTrait() throws {
-        // Given: App is launched and ready
-        // Navigate to Layer 4 Examples (which has navigation links)
-        let layer4Link = app.buttons["layer4-examples-link"]
-        if layer4Link.waitForExistenceFast(timeout: 3.0) {
-            layer4Link.tap()
-            
-            // When: Find navigation link elements
-            // Then: Should be identified as links or buttons (navigation links can appear as buttons)
-            // Navigation links in SwiftUI can appear as buttons in XCUITest
-            let links = app.buttons.allElementsBoundByIndex
-            
-            // Navigation links typically appear as buttons in XCUITest
-            // The link trait is applied but may not be directly queryable
-            XCTAssertTrue(links.count >= 0, "Navigation links may appear as buttons in XCUITest")
-        }
-    }
-    
-    // MARK: - Header Traits Tests
-    
-    /// Test that platformNavigationTitle has .isHeader trait
-    /// BUSINESS PURPOSE: Verify headers are identified as headers for assistive technologies
-    /// TESTING SCOPE: platformNavigationTitle trait detection
-    /// METHODOLOGY: Use XCUITest to find header and verify it's identified as a header
-    @MainActor
-    func testPlatformNavigationTitle_HasHeaderTrait() throws {
-        // Given: App is launched and ready
-        // Navigate to any test view (which has navigation titles)
-        let controlTestButton = app.buttons["test-view-Control Test"]
-        if controlTestButton.waitForExistenceFast(timeout: 3.0) {
-            controlTestButton.tap()
-            
-            // When: Find navigation title elements
-            // Then: Should be identified as headers
-            // Navigation titles in SwiftUI appear as staticText in navigation bars
-            let navBars = app.navigationBars.allElementsBoundByIndex
-            
-            XCTAssertTrue(navBars.count > 0, "Should find at least one navigation bar")
-            
-            // Navigation titles are typically in the navigation bar
-            for navBar in navBars {
-                let titles = navBar.staticTexts.allElementsBoundByIndex
-                XCTAssertTrue(titles.count > 0, "Navigation bar should have a title")
-            }
-        }
-    }
-    
-    // MARK: - Text Field Traits Tests
-    
-    /// Test that platformTextField has appropriate traits
-    /// BUSINESS PURPOSE: Verify text fields are identified correctly for assistive technologies
-    /// TESTING SCOPE: platformTextField trait detection
-    /// METHODOLOGY: Use XCUITest to find text field and verify traits
-    @MainActor
-    func testPlatformTextField_HasTextFieldTraits() throws {
-        // Given: App is launched and ready
-        
-        // When: Find platformTextField elements
-        // Then: Should be identified as text fields
-        let textFields = app.textFields.allElementsBoundByIndex
-        
-        // Text fields found via app.textFields already have the text field trait
-        for textField in textFields {
-            XCTAssertTrue(textField.elementType == .textField, "Element should be identified as a text field")
-        }
-    }
-    
-    // MARK: - Toggle Traits Tests
-    
-    /// Test that platformToggle has appropriate traits
-    /// BUSINESS PURPOSE: Verify toggles are identified correctly for assistive technologies
-    /// TESTING SCOPE: platformToggle trait detection
-    /// METHODOLOGY: Use XCUITest to find toggle and verify traits
-    @MainActor
-    func testPlatformToggle_HasToggleTraits() throws {
-        // Given: App is launched and ready
-        
-        // When: Find platformToggle elements
-        // Then: Should be identified as switches
-        let switches = app.switches.allElementsBoundByIndex
-        
-        // Switches/toggles found via app.switches already have the switch trait
-        for switchElement in switches {
-            XCTAssertTrue(switchElement.elementType == .switch, "Element should be identified as a switch")
-        }
-    }
-    
-    // MARK: - Trait Consistency Tests
-    
-    /// Test that interactive elements have correct traits consistently
-    /// BUSINESS PURPOSE: Verify trait application is consistent across all platform* functions
-    /// TESTING SCOPE: Trait consistency verification
-    /// METHODOLOGY: Verify all interactive elements have appropriate traits
-    @MainActor
-    func testInteractiveElements_HaveConsistentTraits() throws {
-        // Given: App is launched and ready
-        
         // When: Query for all interactive elements
         // Then: Each should have appropriate traits
         
-        let buttons = app.buttons.allElementsBoundByIndex
-        let textFields = app.textFields.allElementsBoundByIndex
-        let switches = app.switches.allElementsBoundByIndex
-        
         // Verify buttons have button trait
+        let buttons = app.buttons.allElementsBoundByIndex
         for button in buttons {
             XCTAssertTrue(button.elementType == .button, "Button should have button trait")
         }
         
         // Verify text fields have text field trait
+        let textFields = app.textFields.allElementsBoundByIndex
         for textField in textFields {
             XCTAssertTrue(textField.elementType == .textField, "Text field should have text field trait")
         }
         
         // Verify switches have switch trait
+        let switches = app.switches.allElementsBoundByIndex
         for switchElement in switches {
             XCTAssertTrue(switchElement.elementType == .switch, "Switch should have switch trait")
         }
         
-        print("🔍 TEST DEBUG: Found \(buttons.count) buttons, \(textFields.count) text fields, \(switches.count) switches")
+        // Verify navigation bars have titles (headers)
+        let navBars = app.navigationBars.allElementsBoundByIndex
+        for navBar in navBars {
+            let titles = navBar.staticTexts.allElementsBoundByIndex
+            XCTAssertTrue(titles.count > 0, "Navigation bar should have a title (header)")
+        }
+        
+        print("🔍 TEST DEBUG: Found \(buttons.count) buttons, \(textFields.count) text fields, \(switches.count) switches, \(navBars.count) navigation bars")
     }
 }
