@@ -320,10 +320,7 @@ public func platformLocalizedTextField_L1(
         .environment(\.layoutDirection, layoutDirection)
         .environment(\.locale, hints.locale)
         .environmentObject(i18n)
-        .automaticCompliance(
-            named: "platformLocalizedTextField_L1",
-            accessibilityLabel: title
-        ))
+        .automaticCompliance(named: "platformLocalizedTextField_L1"))
 }
 
 /// RTL-aware secure field with proper localization
@@ -344,10 +341,7 @@ public func platformLocalizedSecureField_L1(
         .environment(\.layoutDirection, layoutDirection)
         .environment(\.locale, hints.locale)
         .environmentObject(i18n)
-        .automaticCompliance(
-            named: "platformLocalizedSecureField_L1",
-            accessibilityLabel: title
-        ))
+        .automaticCompliance(named: "platformLocalizedSecureField_L1"))
 }
 
 /// RTL-aware text editor with proper localization
@@ -368,8 +362,5 @@ public func platformLocalizedTextEditor_L1(
         .environment(\.layoutDirection, layoutDirection)
         .environment(\.locale, hints.locale)
         .environmentObject(i18n)
-        .automaticCompliance(
-            named: "platformLocalizedTextEditor_L1",
-            accessibilityLabel: title
-        )
+        .automaticCompliance(named: "platformLocalizedTextEditor_L1")
 }
