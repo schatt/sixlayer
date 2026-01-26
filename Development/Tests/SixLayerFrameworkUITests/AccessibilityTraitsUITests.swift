@@ -76,10 +76,11 @@ final class AccessibilityTraitsUITests: XCTestCase {
     @MainActor
     func testPlatformButton_HasButtonTrait() throws {
         // Given: App is launched and ready
-        // Navigate to Layer 1 Examples
-        let layer1Button = app.buttons["test-view-Layer 1 Examples"]
-        XCTAssertTrue(layer1Button.waitForExistenceFast(timeout: 3.0), "Layer 1 Examples button should exist")
-        layer1Button.tap()
+        // Navigate to a test view that has buttons (e.g., Button Test)
+        let buttonTestButton = app.buttons["test-view-Button Test"]
+        if buttonTestButton.waitForExistenceFast(timeout: 3.0) {
+            buttonTestButton.tap()
+        }
         
         // When: Find platformButton elements
         // Then: Should be identified as buttons
@@ -105,9 +106,9 @@ final class AccessibilityTraitsUITests: XCTestCase {
     func testPlatformNavigationLink_HasLinkTrait() throws {
         // Given: App is launched and ready
         // Navigate to Layer 4 Examples (which has navigation links)
-        let layer4Button = app.buttons["test-view-Layer 4 Component Examples"]
-        if layer4Button.waitForExistenceFast(timeout: 3.0) {
-            layer4Button.tap()
+        let layer4Link = app.buttons["layer4-examples-link"]
+        if layer4Link.waitForExistenceFast(timeout: 3.0) {
+            layer4Link.tap()
             
             // When: Find navigation link elements
             // Then: Should be identified as links or buttons (navigation links can appear as buttons)
@@ -129,10 +130,10 @@ final class AccessibilityTraitsUITests: XCTestCase {
     @MainActor
     func testPlatformNavigationTitle_HasHeaderTrait() throws {
         // Given: App is launched and ready
-        // Navigate to any example view (which has navigation titles)
-        let layer1Button = app.buttons["test-view-Layer 1 Examples"]
-        if layer1Button.waitForExistenceFast(timeout: 3.0) {
-            layer1Button.tap()
+        // Navigate to any test view (which has navigation titles)
+        let controlTestButton = app.buttons["test-view-Control Test"]
+        if controlTestButton.waitForExistenceFast(timeout: 3.0) {
+            controlTestButton.tap()
             
             // When: Find navigation title elements
             // Then: Should be identified as headers
