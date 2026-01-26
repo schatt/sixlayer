@@ -307,11 +307,13 @@ public func platformRTLZStack_L1<Content: View>(
 ///   - title: The field title
 ///   - text: Binding to the text value
 ///   - hints: Internationalization hints
+///   - accessibilityLabel: Optional accessibility label for VoiceOver (if nil, uses title)
 /// - Returns: SwiftUI view with localized text field
 public func platformLocalizedTextField_L1(
     title: String,
     text: Binding<String>,
-    hints: InternationalizationHints = InternationalizationHints()
+    hints: InternationalizationHints = InternationalizationHints(),
+    accessibilityLabel: String? = nil
 ) -> AnyView {
     let i18n = InternationalizationService(locale: hints.locale)
     let layoutDirection = i18n.getLayoutDirection()
@@ -320,7 +322,10 @@ public func platformLocalizedTextField_L1(
         .environment(\.layoutDirection, layoutDirection)
         .environment(\.locale, hints.locale)
         .environmentObject(i18n)
-        .automaticCompliance(named: "platformLocalizedTextField_L1"))
+        .automaticCompliance(
+            named: "platformLocalizedTextField_L1",
+            accessibilityLabel: accessibilityLabel
+        ))
 }
 
 /// RTL-aware secure field with proper localization
@@ -328,11 +333,13 @@ public func platformLocalizedTextField_L1(
 ///   - title: The field title
 ///   - text: Binding to the text value
 ///   - hints: Internationalization hints
+///   - accessibilityLabel: Optional accessibility label for VoiceOver (if nil, uses title)
 /// - Returns: SwiftUI view with localized secure field
 public func platformLocalizedSecureField_L1(
     title: String,
     text: Binding<String>,
-    hints: InternationalizationHints = InternationalizationHints()
+    hints: InternationalizationHints = InternationalizationHints(),
+    accessibilityLabel: String? = nil
 ) -> AnyView {
     let i18n = InternationalizationService(locale: hints.locale)
     let layoutDirection = i18n.getLayoutDirection()
@@ -341,7 +348,10 @@ public func platformLocalizedSecureField_L1(
         .environment(\.layoutDirection, layoutDirection)
         .environment(\.locale, hints.locale)
         .environmentObject(i18n)
-        .automaticCompliance(named: "platformLocalizedSecureField_L1"))
+        .automaticCompliance(
+            named: "platformLocalizedSecureField_L1",
+            accessibilityLabel: accessibilityLabel
+        ))
 }
 
 /// RTL-aware text editor with proper localization
@@ -349,11 +359,13 @@ public func platformLocalizedSecureField_L1(
 ///   - title: The editor title
 ///   - text: Binding to the text value
 ///   - hints: Internationalization hints
+///   - accessibilityLabel: Optional accessibility label for VoiceOver
 /// - Returns: SwiftUI view with localized text editor
 public func platformLocalizedTextEditor_L1(
     title: String,
     text: Binding<String>,
-    hints: InternationalizationHints = InternationalizationHints()
+    hints: InternationalizationHints = InternationalizationHints(),
+    accessibilityLabel: String? = nil
 ) -> some View {
     let i18n = InternationalizationService(locale: hints.locale)
     let layoutDirection = i18n.getLayoutDirection()
@@ -362,5 +374,8 @@ public func platformLocalizedTextEditor_L1(
         .environment(\.layoutDirection, layoutDirection)
         .environment(\.locale, hints.locale)
         .environmentObject(i18n)
-        .automaticCompliance(named: "platformLocalizedTextEditor_L1")
+        .automaticCompliance(
+            named: "platformLocalizedTextEditor_L1",
+            accessibilityLabel: accessibilityLabel
+        )
 }
