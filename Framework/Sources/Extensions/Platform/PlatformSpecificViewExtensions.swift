@@ -1980,7 +1980,7 @@ public func platformPicker<SelectionValue: Hashable, Option: Hashable, S: SwiftU
         return nil
     }()
     
-    return SwiftUI.Picker(label, selection: selection) {
+    SwiftUI.Picker(label, selection: selection) {
         ForEach(options, id: \.self) { option in
             let optionText = optionLabel(option)
             // Automatically detect identifierName from the option itself:

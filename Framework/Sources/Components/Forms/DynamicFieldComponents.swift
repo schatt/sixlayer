@@ -324,7 +324,7 @@ public struct DynamicTextField: View {
         if let hints = field.displayHints,
            let pickerOptions = hints.pickerOptions,
            !pickerOptions.isEmpty {
-            return AnyView(
+            AnyView(
                 platformPicker(
                     label: field.placeholder ?? i18n.placeholderSelect(),
                     selection: field.textBinding(formState: formState),
@@ -335,7 +335,7 @@ public struct DynamicTextField: View {
         } else if let options = field.options, !options.isEmpty {
             // Fallback to field.options (String array) - convert to PickerOption
             let pickerOptions = options.map { PickerOption(value: $0, label: $0) }
-            return AnyView(
+            AnyView(
                 platformPicker(
                     label: field.placeholder ?? i18n.placeholderSelect(),
                     selection: field.textBinding(formState: formState),

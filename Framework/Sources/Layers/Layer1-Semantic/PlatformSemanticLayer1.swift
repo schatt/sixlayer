@@ -2530,7 +2530,6 @@ public struct ModalFormView: View {
                 case .select:
                     // Use platformPicker helper to automatically apply accessibility (Issue #163)
                     if let options = field.options, !options.isEmpty {
-                        let i18n = InternationalizationService()
                         platformPicker(
                             label: field.label,
                             selection: .constant(""),

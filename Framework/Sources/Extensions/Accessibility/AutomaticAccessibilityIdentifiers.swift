@@ -77,42 +77,42 @@ public struct AccessibilityLabelTextKey: EnvironmentKey {
 // MARK: - Environment Extensions
 
 public extension EnvironmentValues {
-    public var globalAutomaticAccessibilityIdentifiers: Bool {
+    var globalAutomaticAccessibilityIdentifiers: Bool {
         get { self[GlobalAutomaticAccessibilityIdentifiersKey.self] }
         set { self[GlobalAutomaticAccessibilityIdentifiersKey.self] = newValue }
     }
     
-    public var accessibilityIdentifierPrefix: String? {
+    var accessibilityIdentifierPrefix: String? {
         get { self[AccessibilityIdentifierPrefixKey.self] }
         set { self[AccessibilityIdentifierPrefixKey.self] = newValue }
     }
     
-    public var accessibilityIdentifierName: String? {
+    var accessibilityIdentifierName: String? {
         get { self[AccessibilityIdentifierNameKey.self] }
         set { self[AccessibilityIdentifierNameKey.self] = newValue }
     }
     
-    public var accessibilityIdentifierElementType: String? {
+    var accessibilityIdentifierElementType: String? {
         get { self[AccessibilityIdentifierElementTypeKey.self] }
         set { self[AccessibilityIdentifierElementTypeKey.self] = newValue }
     }
     
-    public var accessibilityIdentifierLabel: String? {
+    var accessibilityIdentifierLabel: String? {
         get { self[AccessibilityIdentifierLabelKey.self] }
         set { self[AccessibilityIdentifierLabelKey.self] = newValue }
     }
     
-    public var accessibilityIdentifierConfig: AccessibilityIdentifierConfig? {
+    var accessibilityIdentifierConfig: AccessibilityIdentifierConfig? {
         get { self[AccessibilityIdentifierConfigKey.self] }
         set { self[AccessibilityIdentifierConfigKey.self] = newValue }
     }
     
-    public var explicitAccessibilityIdentifierSet: Bool {
+    var explicitAccessibilityIdentifierSet: Bool {
         get { self[ExplicitAccessibilityIdentifierSetKey.self] }
         set { self[ExplicitAccessibilityIdentifierSetKey.self] = newValue }
     }
     
-    public var accessibilityLabelText: String? {
+    var accessibilityLabelText: String? {
         get { self[AccessibilityLabelTextKey.self] }
         set { self[AccessibilityLabelTextKey.self] = newValue }
     }
@@ -998,7 +998,7 @@ public extension View {
     ///   - accessibilitySortPriority: Optional sort priority for reading order (Issue #165)
     /// 
     /// Note: Nonisolated since AccessibilityIdentifierConfig properties are no longer @Published
-    nonisolated public func automaticCompliance(
+    nonisolated func automaticCompliance(
         named componentName: String,
         identifierLabel: String? = nil,
         accessibilityLabel: String? = nil,  // NEW: Accessibility label for VoiceOver (Issue #154)
@@ -1037,7 +1037,7 @@ public extension View {
     /// Enable automatic compliance locally (for custom views when global is off)
     /// Temporarily enables global setting, applies compliance, then restores previous setting
     /// Note: This affects all views globally, so use with caution
-    public func enableGlobalAutomaticCompliance() -> some View {
+    func enableGlobalAutomaticCompliance() -> some View {
         let config = AccessibilityIdentifierConfig.currentTaskLocalConfig ?? AccessibilityIdentifierConfig.shared
         let wasEnabled = config.globalAutomaticAccessibilityIdentifiers
         config.globalAutomaticAccessibilityIdentifiers = true
@@ -1049,19 +1049,19 @@ public extension View {
     
     /// Disable automatic accessibility identifiers
     /// This is provided for backward compatibility with tests
-    public func disableAutomaticAccessibilityIdentifiers() -> some View {
+    func disableAutomaticAccessibilityIdentifiers() -> some View {
         self.modifier(DisableAutomaticAccessibilityIdentifiersModifier())
     }
     
     /// Apply a named accessibility identifier to a view
     /// This allows for more specific component identification
-    public func named(_ name: String) -> some View {
+    func named(_ name: String) -> some View {
         self.modifier(NamedModifier(name: name))
     }
     
     /// Apply an exact named accessibility identifier to a view
     /// GREEN PHASE: Produces truly minimal identifiers without framework additions
-    public func exactNamed(_ name: String) -> some View {
+    func exactNamed(_ name: String) -> some View {
         self.modifier(ExactNamedModifier(name: name))
     }
 }
