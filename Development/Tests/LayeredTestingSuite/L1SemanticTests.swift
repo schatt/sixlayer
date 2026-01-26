@@ -1708,16 +1708,25 @@ class L1SemanticTests: BaseTestClass {
     @Test @MainActor
     func testPlatformPresentSettings_L1() {
         // Given
-        let settings: [GenericSetting] = [
-            GenericSetting(id: "setting1", title: "Setting 1", type: .toggle, value: true)
+        let settings: [SettingsSectionData] = [
+            SettingsSectionData(
+                title: "Test Section",
+                items: [
+                    SettingsItemData(
+                        key: "setting1",
+                        title: "Setting 1",
+                        type: .toggle,
+                        value: true
+                    )
+                ]
+            )
         ]
         let hints = sampleHints
         
         // When
         let view = platformPresentSettings_L1(
             settings: settings,
-            hints: hints,
-            callbacks: GenericSettingCallbacks()
+            hints: hints
         )
         
         // Then: Test that the view can actually be hosted
@@ -1728,8 +1737,18 @@ class L1SemanticTests: BaseTestClass {
     @Test @MainActor
     func testPlatformPresentSettings_L1_WithCustomSettingView() {
         // Given
-        let settings: [GenericSetting] = [
-            GenericSetting(id: "setting1", title: "Setting 1", type: .toggle, value: true)
+        let settings: [SettingsSectionData] = [
+            SettingsSectionData(
+                title: "Test Section",
+                items: [
+                    SettingsItemData(
+                        key: "setting1",
+                        title: "Setting 1",
+                        type: .toggle,
+                        value: true
+                    )
+                ]
+            )
         ]
         let hints = sampleHints
         
@@ -1737,9 +1756,8 @@ class L1SemanticTests: BaseTestClass {
         let view = platformPresentSettings_L1(
             settings: settings,
             hints: hints,
-            callbacks: GenericSettingCallbacks(),
-            customSettingView: { setting in
-                Text(setting.title)
+            customSettingView: { section in
+                Text(section.title)
             }
         )
         
@@ -1751,11 +1769,21 @@ class L1SemanticTests: BaseTestClass {
     @Test @MainActor
     func testPlatformPresentSettings_L1_WithEnhancedHints() {
         // Given
-        let settings: [GenericSetting] = [
-            GenericSetting(id: "setting1", title: "Setting 1", type: .toggle, value: true)
+        let settings: [SettingsSectionData] = [
+            SettingsSectionData(
+                title: "Test Section",
+                items: [
+                    SettingsItemData(
+                        key: "setting1",
+                        title: "Setting 1",
+                        type: .toggle,
+                        value: true
+                    )
+                ]
+            )
         ]
         let enhancedHints = EnhancedPresentationHints(
-            dataType: .settings,
+            dataType: .generic,
             presentationPreference: .automatic,
             complexity: .moderate,
             context: .dashboard
@@ -1765,9 +1793,8 @@ class L1SemanticTests: BaseTestClass {
         let view = platformPresentSettings_L1(
             settings: settings,
             hints: enhancedHints,
-            callbacks: GenericSettingCallbacks(),
-            customSettingView: { setting in
-                Text(setting.title)
+            customSettingView: { section in
+                Text(section.title)
             }
         )
         
