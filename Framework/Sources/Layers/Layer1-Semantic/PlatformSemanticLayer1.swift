@@ -215,6 +215,7 @@ public func platformResponsiveCard_L1<Content: View>(
         color: .blue,
         complexity: hints.complexity
     ))
+    .automaticCompliance(named: "platformResponsiveCard_L1")
 }
 
 /// Generic function for presenting form data using our intelligent form system
