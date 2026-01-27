@@ -16,6 +16,14 @@ struct Layer1DataAnalysisExamples: View {
             ExampleSection(title: "DataFrame Analysis") {
                 DataFrameAnalysisExamples()
             }
+            
+            ExampleSection(title: "Compare DataFrames") {
+                DataFrameComparisonExamples()
+            }
+            
+            ExampleSection(title: "Assess Data Quality") {
+                DataQualityAssessmentExamples()
+            }
         }
         .padding()
     }
@@ -37,6 +45,64 @@ struct DataFrameAnalysisExamples: View {
                 .font(.headline)
             
             platformAnalyzeDataFrame_L1(
+                dataFrame: sampleDataFrame,
+                hints: DataFrameAnalysisHints()
+            )
+            .frame(height: 400)
+        }
+        .padding()
+        .background(Color.platformSecondaryBackground)
+        .cornerRadius(8)
+    }
+}
+
+struct DataFrameComparisonExamples: View {
+    private var sampleDataFrame1: DataFrame {
+        var frame = DataFrame()
+        frame.append(column: Column(name: "Name", contents: ["Alice", "Bob"]))
+        frame.append(column: Column(name: "Age", contents: [25, 30]))
+        return frame
+    }
+    
+    private var sampleDataFrame2: DataFrame {
+        var frame = DataFrame()
+        frame.append(column: Column(name: "Name", contents: ["Alice", "Bob", "Charlie"]))
+        frame.append(column: Column(name: "Age", contents: [25, 30, 35]))
+        return frame
+    }
+    
+    var body: some View {
+        platformVStack(alignment: .leading, spacing: 12) {
+            Text("DataFrame Comparison")
+                .font(.headline)
+            
+            platformCompareDataFrames_L1(
+                dataFrames: [sampleDataFrame1, sampleDataFrame2],
+                hints: DataFrameAnalysisHints()
+            )
+            .frame(height: 400)
+        }
+        .padding()
+        .background(Color.platformSecondaryBackground)
+        .cornerRadius(8)
+    }
+}
+
+struct DataQualityAssessmentExamples: View {
+    private var sampleDataFrame: DataFrame {
+        var frame = DataFrame()
+        frame.append(column: Column(name: "Name", contents: ["Alice", "Bob", "Charlie"]))
+        frame.append(column: Column(name: "Age", contents: [25, 30, 35]))
+        frame.append(column: Column(name: "Score", contents: [85.5, 92.0, 78.5]))
+        return frame
+    }
+    
+    var body: some View {
+        platformVStack(alignment: .leading, spacing: 12) {
+            Text("Data Quality Assessment")
+                .font(.headline)
+            
+            platformAssessDataQuality_L1(
                 dataFrame: sampleDataFrame,
                 hints: DataFrameAnalysisHints()
             )

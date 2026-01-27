@@ -26,6 +26,10 @@ struct Layer1InternationalizationExamples: View {
                 LocalizedNumberExamples()
             }
             
+            ExampleSection(title: "Localized String") {
+                LocalizedStringExamples()
+            }
+            
             ExampleSection(title: "Localized Dates & Time") {
                 LocalizedDateExamples()
             }
@@ -93,6 +97,24 @@ struct LocalizedNumberExamples: View {
                 platformPresentLocalizedPercentage_L1(value: 0.75)
                 platformPresentLocalizedPlural_L1(word: "item", count: 5)
             }
+        }
+        .padding()
+        .background(Color.platformSecondaryBackground)
+        .cornerRadius(8)
+    }
+}
+
+struct LocalizedStringExamples: View {
+    var body: some View {
+        platformVStack(alignment: .leading, spacing: 12) {
+            Text("Localized String")
+                .font(.headline)
+            
+            platformPresentLocalizedString_L1(
+                string: "Hello, World!",
+                hints: PresentationHints()
+            )
+            .frame(height: 50)
         }
         .padding()
         .background(Color.platformSecondaryBackground)

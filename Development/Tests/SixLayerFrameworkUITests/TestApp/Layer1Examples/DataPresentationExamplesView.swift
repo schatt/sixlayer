@@ -28,6 +28,11 @@ struct Layer1DataPresentationExamples: View {
                 FormDataExamples()
             }
             
+            // Modal Form Examples
+            ExampleSection(title: "Modal Form") {
+                ModalFormExamples()
+            }
+            
             // Media Data Examples
             ExampleSection(title: "Media Data") {
                 MediaDataExamples()
@@ -161,6 +166,33 @@ struct FormDataExamples: View {
                 hints: hints
             )
             .frame(height: 100)
+        }
+        .padding()
+        .background(Color.platformSecondaryBackground)
+        .cornerRadius(8)
+    }
+}
+
+// MARK: - Modal Form Examples
+
+struct ModalFormExamples: View {
+    let hints = PresentationHints(
+        dataType: .form,
+        presentationPreference: .form,
+        complexity: .simple
+    )
+    
+    var body: some View {
+        platformVStack(alignment: .leading, spacing: 12) {
+            Text("Modal Form Presentation")
+                .font(.headline)
+            
+            platformPresentModalForm_L1(
+                formType: .form,
+                context: .modal,
+                hints: hints
+            )
+            .frame(height: 200)
         }
         .padding()
         .background(Color.platformSecondaryBackground)
