@@ -269,21 +269,36 @@ public func platformPresentFormData_L1(
 @MainActor
 public func platformPresentModalForm_L1(
     formType: DataTypeHint,
-    context: PresentationContext
+    context: PresentationContext,
+    hints: PresentationHints? = nil
 ) -> some View {
-    // Create presentation hints for modal context
-    let hints = PresentationHints(
-        dataType: formType,
-        presentationPreference: .modal,
-        complexity: .moderate,
-        context: context
-    )
+    // Merge provided hints with modal-specific requirements
+    // Always enforce modal presentation preference
+    let mergedHints: PresentationHints
+    if let providedHints = hints {
+        mergedHints = PresentationHints(
+            dataType: providedHints.dataType ?? formType,
+            presentationPreference: .modal, // Always modal for this function
+            complexity: providedHints.complexity,
+            context: providedHints.context ?? context,
+            customPreferences: providedHints.customPreferences,
+            fieldHints: providedHints.fieldHints
+        )
+    } else {
+        // Create default presentation hints for modal context
+        mergedHints = PresentationHints(
+            dataType: formType,
+            presentationPreference: .modal,
+            complexity: .moderate,
+            context: context
+        )
+    }
     
     // Create appropriate form fields based on the form type
     let fields = createFieldsForFormType(formType, context: context)
     
     // Return a modal form with the generated fields
-    return ModalFormView(fields: fields, formType: formType, context: context, hints: hints)
+    return ModalFormView(fields: fields, formType: formType, context: context, hints: mergedHints)
         .automaticCompliance()
 }
 
@@ -293,6 +308,7 @@ public func platformPresentModalForm_L1(
 /// - Parameters:
 ///   - formType: The type of form to present
 ///   - context: The presentation context
+///   - hints: Optional presentation hints (defaults to moderate complexity modal hints)
 ///   - customFormContainer: Optional view builder that wraps the form content with custom styling
 /// - Returns: A view presenting the modal form with optional custom container
 /// Note: Requires @MainActor because it creates a View struct
@@ -300,22 +316,37 @@ public func platformPresentModalForm_L1(
 public func platformPresentModalForm_L1<ContainerContent: View>(
     formType: DataTypeHint,
     context: PresentationContext,
+    hints: PresentationHints? = nil,
     customFormContainer: ((AnyView) -> ContainerContent)? = nil
 ) -> some View {
-    // Create presentation hints for modal context
-    let hints = PresentationHints(
-        dataType: formType,
-        presentationPreference: .modal,
-        complexity: .moderate,
-        context: context
-    )
+    // Merge provided hints with modal-specific requirements
+    // Always enforce modal presentation preference
+    let mergedHints: PresentationHints
+    if let providedHints = hints {
+        mergedHints = PresentationHints(
+            dataType: providedHints.dataType ?? formType,
+            presentationPreference: .modal, // Always modal for this function
+            complexity: providedHints.complexity,
+            context: providedHints.context ?? context,
+            customPreferences: providedHints.customPreferences,
+            fieldHints: providedHints.fieldHints
+        )
+    } else {
+        // Create default presentation hints for modal context
+        mergedHints = PresentationHints(
+            dataType: formType,
+            presentationPreference: .modal,
+            complexity: .moderate,
+            context: context
+        )
+    }
     
     // Create appropriate form fields based on the form type
     let fields = createFieldsForFormType(formType, context: context)
     
     // Create the base modal form view
     // Note: ModalFormView initializer is main-actor isolated because it's a View
-    let baseFormView = AnyView(ModalFormView(fields: fields, formType: formType, context: context, hints: hints)
+    let baseFormView = AnyView(ModalFormView(fields: fields, formType: formType, context: context, hints: mergedHints)
         .automaticCompliance())
     
     // Apply custom container if provided, otherwise return default
