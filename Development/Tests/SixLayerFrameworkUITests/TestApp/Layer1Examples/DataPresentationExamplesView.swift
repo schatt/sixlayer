@@ -189,8 +189,7 @@ struct ModalFormExamples: View {
             
             platformPresentModalForm_L1(
                 formType: .form,
-                context: .modal,
-                hints: hints
+                context: .modal
             )
             .frame(height: 200)
         }

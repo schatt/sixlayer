@@ -111,8 +111,8 @@ struct LocalizedStringExamples: View {
                 .font(.headline)
             
             platformPresentLocalizedString_L1(
-                string: "Hello, World!",
-                hints: PresentationHints()
+                key: "Hello, World!",
+                hints: InternationalizationHints()
             )
             .frame(height: 50)
         }
