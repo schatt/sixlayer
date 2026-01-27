@@ -18,6 +18,7 @@ struct Layer2ExamplesView: View {
                 }
             }
             .padding()
+            .automaticCompliance(named: "Layer2ExamplesView")
         }
         .navigationTitle("Layer 2 Examples")
         .navigationBarTitleDisplayMode(.large)
@@ -51,6 +52,7 @@ struct OCRLayoutExamples: View {
                 BusinessCardOCRLayoutExample()
             }
         }
+        .automaticCompliance(named: "OCRLayoutExamples")
     }
 }
 
@@ -78,6 +80,7 @@ struct GeneralOCRLayoutExample: View {
         .padding()
         .background(Color.platformSecondaryBackground)
         .cornerRadius(8)
+        .automaticCompliance(named: "GeneralOCRLayoutExample")
     }
 }
 
@@ -108,6 +111,7 @@ struct DocumentOCRLayoutExample: View {
         .padding()
         .background(Color.platformSecondaryBackground)
         .cornerRadius(8)
+        .automaticCompliance(named: "DocumentOCRLayoutExample")
     }
 }
 
@@ -135,6 +139,7 @@ struct ReceiptOCRLayoutExample: View {
         .padding()
         .background(Color.platformSecondaryBackground)
         .cornerRadius(8)
+        .automaticCompliance(named: "ReceiptOCRLayoutExample")
     }
 }
 
@@ -162,6 +167,7 @@ struct BusinessCardOCRLayoutExample: View {
         .padding()
         .background(Color.platformSecondaryBackground)
         .cornerRadius(8)
+        .automaticCompliance(named: "BusinessCardOCRLayoutExample")
     }
 }
 
@@ -185,6 +191,7 @@ struct LayoutDetailsView: View {
         .padding()
         .background(Color.platformBackground)
         .cornerRadius(8)
+        .automaticCompliance(named: "LayoutDetailsView")
     }
 }
 
@@ -207,6 +214,7 @@ private struct ExampleCard<Content: View>: View {
         .padding()
         .background(Color.platformSecondaryBackground)
         .cornerRadius(12)
+        .automaticCompliance(named: "ExampleCard")
     }
 }
 
@@ -222,5 +230,6 @@ private struct ExampleSection<Content: View>: View {
             
             content()
         }
+        .automaticCompliance(named: "ExampleSection")
     }
 }
