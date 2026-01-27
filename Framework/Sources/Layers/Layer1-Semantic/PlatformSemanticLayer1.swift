@@ -277,10 +277,10 @@ public func platformPresentModalForm_L1(
     let mergedHints: PresentationHints
     if let providedHints = hints {
         mergedHints = PresentationHints(
-            dataType: providedHints.dataType ?? formType,
+            dataType: providedHints.dataType,
             presentationPreference: .modal, // Always modal for this function
             complexity: providedHints.complexity,
-            context: providedHints.context ?? context,
+            context: providedHints.context,
             customPreferences: providedHints.customPreferences,
             fieldHints: providedHints.fieldHints
         )
@@ -324,10 +324,10 @@ public func platformPresentModalForm_L1<ContainerContent: View>(
     let mergedHints: PresentationHints
     if let providedHints = hints {
         mergedHints = PresentationHints(
-            dataType: providedHints.dataType ?? formType,
+            dataType: providedHints.dataType,
             presentationPreference: .modal, // Always modal for this function
             complexity: providedHints.complexity,
-            context: providedHints.context ?? context,
+            context: providedHints.context,
             customPreferences: providedHints.customPreferences,
             fieldHints: providedHints.fieldHints
         )
