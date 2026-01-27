@@ -67,7 +67,7 @@ struct OCRStrategyExamples: View {
                 BatchOCRStrategyExample()
             }
         }
-        .automaticCompliance(named: "OCRLayoutExamples")
+        .automaticCompliance(named: "OCRStrategyExamples")
     }
 }
 
