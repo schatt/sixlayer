@@ -73,6 +73,12 @@ final class Layer1AccessibilityUITests: XCTestCase {
     /// Navigate to Layer 1 examples and select a category
     @MainActor
     private func navigateToLayer1Category(_ categoryName: String) throws {
+        // Ensure app is ready
+        guard app.waitForReady(timeout: 5.0) else {
+            XCTFail("App should be ready for testing")
+            return
+        }
+        
         // Tap the "Show Layer 1 Examples" button
         let toggleButton = app.buttons["layer1-examples-toggle"]
         guard toggleButton.waitForExistenceFast(timeout: 3.0) else {
