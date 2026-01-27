@@ -18,6 +18,7 @@ struct Layer3ExamplesView: View {
                 }
             }
             .padding()
+            .automaticCompliance(named: "Layer3ExamplesView")
         }
         .navigationTitle("Layer 3 Examples")
         .navigationBarTitleDisplayMode(.large)
@@ -66,6 +67,7 @@ struct OCRStrategyExamples: View {
                 BatchOCRStrategyExample()
             }
         }
+        .automaticCompliance(named: "OCRLayoutExamples")
     }
 }
 
@@ -88,6 +90,7 @@ struct GeneralOCRStrategyExample: View {
         .padding()
         .background(Color.platformSecondaryBackground)
         .cornerRadius(8)
+        .automaticCompliance(named: "GeneralOCRStrategyExample")
     }
 }
 
@@ -110,6 +113,7 @@ struct DocumentOCRStrategyExample: View {
         .padding()
         .background(Color.platformSecondaryBackground)
         .cornerRadius(8)
+        .automaticCompliance(named: "DocumentOCRStrategyExample")
     }
 }
 
@@ -129,6 +133,7 @@ struct ReceiptOCRStrategyExample: View {
         .padding()
         .background(Color.platformSecondaryBackground)
         .cornerRadius(8)
+        .automaticCompliance(named: "ReceiptOCRStrategyExample")
     }
 }
 
@@ -148,6 +153,7 @@ struct BusinessCardOCRStrategyExample: View {
         .padding()
         .background(Color.platformSecondaryBackground)
         .cornerRadius(8)
+        .automaticCompliance(named: "BusinessCardOCRStrategyExample")
     }
 }
 
@@ -167,6 +173,7 @@ struct InvoiceOCRStrategyExample: View {
         .padding()
         .background(Color.platformSecondaryBackground)
         .cornerRadius(8)
+        .automaticCompliance(named: "InvoiceOCRStrategyExample")
     }
 }
 
@@ -190,6 +197,7 @@ struct OptimalOCRStrategyExample: View {
         .padding()
         .background(Color.platformSecondaryBackground)
         .cornerRadius(8)
+        .automaticCompliance(named: "OptimalOCRStrategyExample")
     }
 }
 
@@ -213,6 +221,7 @@ struct BatchOCRStrategyExample: View {
         .padding()
         .background(Color.platformSecondaryBackground)
         .cornerRadius(8)
+        .automaticCompliance(named: "BatchOCRStrategyExample")
     }
 }
 
@@ -241,6 +250,7 @@ struct StrategyDetailsView: View {
         .padding()
         .background(Color.platformBackground)
         .cornerRadius(8)
+        .automaticCompliance(named: "StrategyDetailsView")
     }
 }
 
@@ -258,6 +268,7 @@ private struct ExampleSection<Content: View>: View {
             
             content()
         }
+        .automaticCompliance(named: "ExampleSection")
     }
 }
 
@@ -280,5 +291,6 @@ private struct ExampleCard<Content: View>: View {
         .padding()
         .background(Color.platformSecondaryBackground)
         .cornerRadius(12)
+        .automaticCompliance(named: "ExampleCard")
     }
 }
