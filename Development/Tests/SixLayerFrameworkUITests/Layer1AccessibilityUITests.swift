@@ -79,7 +79,8 @@ final class Layer1AccessibilityUITests: XCTestCase {
             XCTFail("Layer 1 examples toggle button should exist")
             return
         }
-        if !toggleButton.value as? String == "1" { // Check if already expanded
+        // Check if already expanded (value == "1" means expanded)
+        if (toggleButton.value as? String) != "1" {
             toggleButton.tap()
         }
         
