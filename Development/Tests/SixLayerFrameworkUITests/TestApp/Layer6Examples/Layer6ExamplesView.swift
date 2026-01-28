@@ -24,7 +24,7 @@ struct Layer6ExamplesView: View {
             .padding()
         }
         .navigationTitle("Layer 6 Examples")
-        .navigationBarTitleDisplayMode(.large)
+        .platformNavigationTitleDisplayMode_L4(.large)
     }
 }
 

@@ -21,7 +21,7 @@ struct Layer3ExamplesView: View {
             .automaticCompliance(named: "Layer3ExamplesView")
         }
         .navigationTitle("Layer 3 Examples")
-        .navigationBarTitleDisplayMode(.large)
+        .platformNavigationTitleDisplayMode_L4(.large)
     }
 }
 

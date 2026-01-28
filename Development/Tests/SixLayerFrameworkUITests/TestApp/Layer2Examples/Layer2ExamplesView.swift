@@ -21,7 +21,7 @@ struct Layer2ExamplesView: View {
             .automaticCompliance(named: "Layer2ExamplesView")
         }
         .navigationTitle("Layer 2 Examples")
-        .navigationBarTitleDisplayMode(.large)
+        .platformNavigationTitleDisplayMode_L4(.large)
     }
 }
 
