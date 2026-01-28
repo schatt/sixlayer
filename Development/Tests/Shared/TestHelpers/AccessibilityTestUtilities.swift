@@ -220,6 +220,33 @@ public enum AccessibilityTestUtilities {
     
     // MARK: - Test Functions
     
+    /// Inspect a SwiftUI view using ViewInspector and attempt to retrieve the
+    /// accessibility identifier from an underlying Button. This centralizes the
+    /// common pattern used across accessibility tests.
+    @MainActor
+    public static func inspectButtonAccessibilityIdentifier<V: View>(
+        _ view: V,
+        issuePrefix: String = "Failed to inspect view for accessibility identifier"
+    ) -> String? {
+        #if canImport(ViewInspector)
+        do {
+            let inspected = try AnyView(view).inspect()
+            if let button = try? inspected.button(),
+               let id = try? button.accessibilityIdentifier() {
+                return id
+            } else {
+                Issue.record("\(issuePrefix): could not find Button or identifier")
+                return nil
+            }
+        } catch {
+            Issue.record("\(issuePrefix): \(error)")
+            return nil
+        }
+        #else
+        return nil
+        #endif
+    }
+    
     /// Test accessibility identifiers for a view on a single platform
     /// Returns true if accessibility identifiers are found matching the expected pattern
     @MainActor

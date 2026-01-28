@@ -62,20 +62,13 @@ open class AccessibilityIdentifierDisabledTests: BaseTestClass {
             }
             .accessibilityIdentifier("manual-test-button")
             
-            // Using wrapper - when ViewInspector works on this platform, verify
+            // Using helper - when ViewInspector works on this platform, verify
             #if canImport(ViewInspector)
-            do {
-                let inspected = try AnyView(view).inspect()
-                // Match the pattern used in ConsolidatedAccessibilityTests: look up
-                // the underlying Button first, then read its accessibility identifier.
-                if let button = try? inspected.button(),
-                   let buttonID = try? button.accessibilityIdentifier() {
-                    #expect(buttonID == "manual-test-button", "Manual accessibility identifier should work when automatic is disabled")
-                } else {
-                    Issue.record("Failed to inspect view for manual accessibility identifier")
-                }
-            } catch {
-                Issue.record("Failed to inspect view: \(error)")
+            if let buttonID = AccessibilityTestUtilities.inspectButtonAccessibilityIdentifier(
+                view,
+                issuePrefix: "Failed to inspect view for manual accessibility identifier"
+            ) {
+                #expect(buttonID == "manual-test-button", "Manual accessibility identifier should work when automatic is disabled")
             }
             #else
             // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure

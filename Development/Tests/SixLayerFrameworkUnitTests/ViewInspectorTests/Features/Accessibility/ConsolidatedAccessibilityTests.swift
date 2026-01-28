@@ -113,18 +113,13 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     /// Helper method to generate ID for view (used in persistence tests)
     @MainActor
     private func generateIDForView(_ view: some View) -> String {
-        #if canImport(ViewInspector)
-        if let inspectedView = try? AnyView(view).inspect(),
-           let button = try? inspectedView.button(),
-           let id = try? button.accessibilityIdentifier() {
+        if let id = AccessibilityTestUtilities.inspectButtonAccessibilityIdentifier(
+            view,
+            issuePrefix: "Failed to generate ID for view"
+        ) {
             return id
-        } else {
-            Issue.record("Failed to generate ID for view")
-            return ""
         }
-        #else
         return ""
-        #endif
     }
     
     // MARK: - Core Framework Component Identifier Tests
