@@ -38,7 +38,7 @@ TDD. DTRT. DRY. Epistemology
 
 ## **Release Quality Gate**
 - **MANDATORY**: Never create or suggest with any release unless the test suite passes completely
-- **MANDATORY**: Always run `swift test` first before any release activities
+- **MANDATORY**: Always run the full xcodebuild test suite via `dbs-build --target test` before any release activities
 - **MANDATORY**: Stop all release activities if tests fail
 - **MANDATORY**: Fix failing tests before proceeding with releases
 
