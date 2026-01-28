@@ -23,22 +23,21 @@ open class AccessibilityIdentifierConfigUserDefaultsTests: BaseTestClass {
     
     // MARK: - Test Setup
     
-    private let testUserDefaultsKeyPrefix = "SixLayer.Accessibility.Test"
+    private let testSuiteName = "SixLayer.Accessibility.Tests"
+    private let testUserDefaultsKeyPrefix = "Test.Accessibility."
+    
+    /// Convenience accessor for the isolated test UserDefaults suite
+    private var testUserDefaults: UserDefaults {
+        // This must match the suite used in BaseTestClass.initializeTestConfig()
+        return UserDefaults(suiteName: testSuiteName) ?? .standard
+    }
     
     /// Clean up test UserDefaults keys
     private func cleanupTestUserDefaults() {
-        let keys = [
-            "\(testUserDefaultsKeyPrefix).enableAutoIDs",
-            "\(testUserDefaultsKeyPrefix).includeComponentNames",
-            "\(testUserDefaultsKeyPrefix).includeElementTypes",
-            "\(testUserDefaultsKeyPrefix).enableUITestIntegration",
-            "\(testUserDefaultsKeyPrefix).namespace",
-            "\(testUserDefaultsKeyPrefix).globalPrefix",
-            "\(testUserDefaultsKeyPrefix).enableDebugLogging",
-            "\(testUserDefaultsKeyPrefix).mode"
-        ]
-        for key in keys {
-            UserDefaults.standard.removeObject(forKey: key)
+        // Remove the entire persistent domain for the test suite to ensure
+        // a completely clean state between tests.
+        if let defaults = UserDefaults(suiteName: testSuiteName) {
+            defaults.removePersistentDomain(forName: testSuiteName)
         }
     }
     
@@ -67,8 +66,7 @@ open class AccessibilityIdentifierConfigUserDefaultsTests: BaseTestClass {
             config.saveToUserDefaults()
             
             // Then: Values should be saved to UserDefaults
-            // Note: We'll check the actual keys once we implement the method
-            let savedEnableAutoIDs = UserDefaults.standard.bool(forKey: "SixLayer.Accessibility.enableAutoIDs")
+            let savedEnableAutoIDs = testUserDefaults.bool(forKey: "\(testUserDefaultsKeyPrefix)enableAutoIDs")
             #expect(savedEnableAutoIDs == false, "enableAutoIDs should be saved to UserDefaults")
         }
     }
@@ -82,13 +80,14 @@ open class AccessibilityIdentifierConfigUserDefaultsTests: BaseTestClass {
             }
             
             // Given: Saved configuration in UserDefaults
-            UserDefaults.standard.set(false, forKey: "SixLayer.Accessibility.enableAutoIDs")
-            UserDefaults.standard.set(false, forKey: "SixLayer.Accessibility.includeComponentNames")
-            UserDefaults.standard.set(true, forKey: "SixLayer.Accessibility.enableUITestIntegration")
-            UserDefaults.standard.set("SavedNamespace", forKey: "SixLayer.Accessibility.namespace")
-            UserDefaults.standard.set("SavedPrefix", forKey: "SixLayer.Accessibility.globalPrefix")
-            UserDefaults.standard.set(true, forKey: "SixLayer.Accessibility.enableDebugLogging")
-            UserDefaults.standard.set("manual", forKey: "SixLayer.Accessibility.mode")
+            let defaults = testUserDefaults
+            defaults.set(false, forKey: "\(testUserDefaultsKeyPrefix)enableAutoIDs")
+            defaults.set(false, forKey: "\(testUserDefaultsKeyPrefix)includeComponentNames")
+            defaults.set(true, forKey: "\(testUserDefaultsKeyPrefix)enableUITestIntegration")
+            defaults.set("SavedNamespace", forKey: "\(testUserDefaultsKeyPrefix)namespace")
+            defaults.set("SavedPrefix", forKey: "\(testUserDefaultsKeyPrefix)globalPrefix")
+            defaults.set(true, forKey: "\(testUserDefaultsKeyPrefix)enableDebugLogging")
+            defaults.set("manual", forKey: "\(testUserDefaultsKeyPrefix)mode")
             
             // Reset config to defaults first
             config.resetToDefaults()
@@ -197,14 +196,15 @@ open class AccessibilityIdentifierConfigUserDefaultsTests: BaseTestClass {
             config.saveToUserDefaults()
             
             // Then: All properties should be saved
-            #expect(UserDefaults.standard.object(forKey: "SixLayer.Accessibility.enableAutoIDs") != nil, "enableAutoIDs should be saved")
-            #expect(UserDefaults.standard.object(forKey: "SixLayer.Accessibility.includeComponentNames") != nil, "includeComponentNames should be saved")
-            #expect(UserDefaults.standard.object(forKey: "SixLayer.Accessibility.includeElementTypes") != nil, "includeElementTypes should be saved")
-            #expect(UserDefaults.standard.object(forKey: "SixLayer.Accessibility.enableUITestIntegration") != nil, "enableUITestIntegration should be saved")
-            #expect(UserDefaults.standard.object(forKey: "SixLayer.Accessibility.namespace") != nil, "namespace should be saved")
-            #expect(UserDefaults.standard.object(forKey: "SixLayer.Accessibility.globalPrefix") != nil, "globalPrefix should be saved")
-            #expect(UserDefaults.standard.object(forKey: "SixLayer.Accessibility.enableDebugLogging") != nil, "enableDebugLogging should be saved")
-            #expect(UserDefaults.standard.object(forKey: "SixLayer.Accessibility.mode") != nil, "mode should be saved")
+            let defaults = testUserDefaults
+            #expect(defaults.object(forKey: "\(testUserDefaultsKeyPrefix)enableAutoIDs") != nil, "enableAutoIDs should be saved")
+            #expect(defaults.object(forKey: "\(testUserDefaultsKeyPrefix)includeComponentNames") != nil, "includeComponentNames should be saved")
+            #expect(defaults.object(forKey: "\(testUserDefaultsKeyPrefix)includeElementTypes") != nil, "includeElementTypes should be saved")
+            #expect(defaults.object(forKey: "\(testUserDefaultsKeyPrefix)enableUITestIntegration") != nil, "enableUITestIntegration should be saved")
+            #expect(defaults.object(forKey: "\(testUserDefaultsKeyPrefix)namespace") != nil, "namespace should be saved")
+            #expect(defaults.object(forKey: "\(testUserDefaultsKeyPrefix)globalPrefix") != nil, "globalPrefix should be saved")
+            #expect(defaults.object(forKey: "\(testUserDefaultsKeyPrefix)enableDebugLogging") != nil, "enableDebugLogging should be saved")
+            #expect(defaults.object(forKey: "\(testUserDefaultsKeyPrefix)mode") != nil, "mode should be saved")
             
             // Cleanup
             cleanupTestUserDefaults()
@@ -220,7 +220,8 @@ open class AccessibilityIdentifierConfigUserDefaultsTests: BaseTestClass {
             }
             
             // Given: Only some keys saved in UserDefaults
-            UserDefaults.standard.set(false, forKey: "SixLayer.Accessibility.enableAutoIDs")
+            let defaults = testUserDefaults
+            defaults.set(false, forKey: "\(testUserDefaultsKeyPrefix)enableAutoIDs")
             // Don't save includeComponentNames - should keep default
             
             // Reset config to defaults

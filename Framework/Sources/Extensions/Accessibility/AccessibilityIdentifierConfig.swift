@@ -56,6 +56,12 @@ public final class AccessibilityIdentifierConfig: @unchecked Sendable {
         // Lazy initialization - first access will be from MainActor context in production
         return AccessibilityIdentifierConfig(singleton: true)
     }()
+
+    /// Backing store for persisted configuration
+    private let userDefaults: UserDefaults
+
+    /// Key prefix for all persisted values (allows tests to use isolated namespaces)
+    private let keyPrefix: String
     
     /// Whether automatic accessibility identifiers are enabled
     /// This is the global setting that controls automatic ID generation
@@ -120,12 +126,25 @@ public final class AccessibilityIdentifierConfig: @unchecked Sendable {
         currentViewHierarchy.append(viewName)
     }
     
-    /// Initialize a new config instance (allows tests to create isolated instances)
-    public init() {}
+    /// Initialize a new config instance
+    /// - Parameters:
+    ///   - userDefaults: Backing store to use (defaults to .standard for production)
+    ///   - keyPrefix: Prefix for all persisted keys (defaults to "SixLayer.Accessibility.")
+    public init(
+        userDefaults: UserDefaults = .standard,
+        keyPrefix: String = "SixLayer.Accessibility."
+    ) {
+        self.userDefaults = userDefaults
+        self.keyPrefix = keyPrefix
+    }
     
-    /// Private initializer for singleton pattern
+    /// Private initializer for singleton pattern (production global config)
     private init(singleton: Bool) {
-        // Used only by shared instance
+        // Used only by shared instance. For production we always use standard
+        // UserDefaults and the production key prefix.
+        self.userDefaults = .standard
+        self.keyPrefix = "SixLayer.Accessibility."
+        
         // Check environment variable to auto-enable debug logging
         let envValue = ProcessInfo.processInfo.environment["SIXLAYER_DEBUG_A11Y"]
         if envValue == "1" || envValue == "true" {
@@ -354,50 +373,55 @@ public final class AccessibilityIdentifierConfig: @unchecked Sendable {
     
     // MARK: - UserDefaults Persistence
     
+    /// Helper to construct full storage key
+    private func storageKey(_ suffix: String) -> String {
+        return "\(keyPrefix)\(suffix)"
+    }
+    
     /// Save configuration to UserDefaults
     /// Persists all configuration properties so they survive app restarts
     /// Follows the same pattern as PerformanceConfiguration.saveToUserDefaults()
     public func saveToUserDefaults() {
-        UserDefaults.standard.set(enableAutoIDs, forKey: "SixLayer.Accessibility.enableAutoIDs")
-        UserDefaults.standard.set(globalAutomaticAccessibilityIdentifiers, forKey: "SixLayer.Accessibility.globalAutomaticAccessibilityIdentifiers")
-        UserDefaults.standard.set(includeComponentNames, forKey: "SixLayer.Accessibility.includeComponentNames")
-        UserDefaults.standard.set(includeElementTypes, forKey: "SixLayer.Accessibility.includeElementTypes")
-        UserDefaults.standard.set(enableUITestIntegration, forKey: "SixLayer.Accessibility.enableUITestIntegration")
-        UserDefaults.standard.set(namespace, forKey: "SixLayer.Accessibility.namespace")
-        UserDefaults.standard.set(globalPrefix, forKey: "SixLayer.Accessibility.globalPrefix")
-        UserDefaults.standard.set(enableDebugLogging, forKey: "SixLayer.Accessibility.enableDebugLogging")
-        UserDefaults.standard.set(mode.rawValue, forKey: "SixLayer.Accessibility.mode")
+        userDefaults.set(enableAutoIDs, forKey: storageKey("enableAutoIDs"))
+        userDefaults.set(globalAutomaticAccessibilityIdentifiers, forKey: storageKey("globalAutomaticAccessibilityIdentifiers"))
+        userDefaults.set(includeComponentNames, forKey: storageKey("includeComponentNames"))
+        userDefaults.set(includeElementTypes, forKey: storageKey("includeElementTypes"))
+        userDefaults.set(enableUITestIntegration, forKey: storageKey("enableUITestIntegration"))
+        userDefaults.set(namespace, forKey: storageKey("namespace"))
+        userDefaults.set(globalPrefix, forKey: storageKey("globalPrefix"))
+        userDefaults.set(enableDebugLogging, forKey: storageKey("enableDebugLogging"))
+        userDefaults.set(mode.rawValue, forKey: storageKey("mode"))
     }
     
     /// Load configuration from UserDefaults
     /// Only loads values if they exist in UserDefaults (nil checks) to respect defaults
     /// Follows the same pattern as PerformanceConfiguration.loadFromUserDefaults()
     public func loadFromUserDefaults() {
-        if UserDefaults.standard.object(forKey: "SixLayer.Accessibility.enableAutoIDs") != nil {
-            enableAutoIDs = UserDefaults.standard.bool(forKey: "SixLayer.Accessibility.enableAutoIDs")
+        if userDefaults.object(forKey: storageKey("enableAutoIDs")) != nil {
+            enableAutoIDs = userDefaults.bool(forKey: storageKey("enableAutoIDs"))
         }
-        if UserDefaults.standard.object(forKey: "SixLayer.Accessibility.globalAutomaticAccessibilityIdentifiers") != nil {
-            globalAutomaticAccessibilityIdentifiers = UserDefaults.standard.bool(forKey: "SixLayer.Accessibility.globalAutomaticAccessibilityIdentifiers")
+        if userDefaults.object(forKey: storageKey("globalAutomaticAccessibilityIdentifiers")) != nil {
+            globalAutomaticAccessibilityIdentifiers = userDefaults.bool(forKey: storageKey("globalAutomaticAccessibilityIdentifiers"))
         }
-        if UserDefaults.standard.object(forKey: "SixLayer.Accessibility.includeComponentNames") != nil {
-            includeComponentNames = UserDefaults.standard.bool(forKey: "SixLayer.Accessibility.includeComponentNames")
+        if userDefaults.object(forKey: storageKey("includeComponentNames")) != nil {
+            includeComponentNames = userDefaults.bool(forKey: storageKey("includeComponentNames"))
         }
-        if UserDefaults.standard.object(forKey: "SixLayer.Accessibility.includeElementTypes") != nil {
-            includeElementTypes = UserDefaults.standard.bool(forKey: "SixLayer.Accessibility.includeElementTypes")
+        if userDefaults.object(forKey: storageKey("includeElementTypes")) != nil {
+            includeElementTypes = userDefaults.bool(forKey: storageKey("includeElementTypes"))
         }
-        if UserDefaults.standard.object(forKey: "SixLayer.Accessibility.enableUITestIntegration") != nil {
-            enableUITestIntegration = UserDefaults.standard.bool(forKey: "SixLayer.Accessibility.enableUITestIntegration")
+        if userDefaults.object(forKey: storageKey("enableUITestIntegration")) != nil {
+            enableUITestIntegration = userDefaults.bool(forKey: storageKey("enableUITestIntegration"))
         }
-        if let savedNamespace = UserDefaults.standard.string(forKey: "SixLayer.Accessibility.namespace") {
+        if let savedNamespace = userDefaults.string(forKey: storageKey("namespace")) {
             namespace = savedNamespace
         }
-        if let savedGlobalPrefix = UserDefaults.standard.string(forKey: "SixLayer.Accessibility.globalPrefix") {
+        if let savedGlobalPrefix = userDefaults.string(forKey: storageKey("globalPrefix")) {
             globalPrefix = savedGlobalPrefix
         }
-        if UserDefaults.standard.object(forKey: "SixLayer.Accessibility.enableDebugLogging") != nil {
-            enableDebugLogging = UserDefaults.standard.bool(forKey: "SixLayer.Accessibility.enableDebugLogging")
+        if userDefaults.object(forKey: storageKey("enableDebugLogging")) != nil {
+            enableDebugLogging = userDefaults.bool(forKey: storageKey("enableDebugLogging"))
         }
-        if let savedModeString = UserDefaults.standard.string(forKey: "SixLayer.Accessibility.mode"),
+        if let savedModeString = userDefaults.string(forKey: storageKey("mode")),
            let savedMode = AccessibilityMode(rawValue: savedModeString) {
             mode = savedMode
         }

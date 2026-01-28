@@ -38,7 +38,18 @@ open class BaseTestClass {
     /// Creates an isolated config instance for this test
     @MainActor
     func initializeTestConfig() {
-        testConfig = AccessibilityIdentifierConfig()
+        // Use an isolated UserDefaults suite and key prefix for tests so we do not
+        // pollute production-like UserDefaults namespaces. This also ensures
+        // deterministic behavior when running tests in parallel.
+        let testSuiteName = "SixLayer.Accessibility.Tests"
+        let testDefaults = UserDefaults(suiteName: testSuiteName) ?? .standard
+        // Clear any previous data for this suite to guarantee isolation
+        testDefaults.removePersistentDomain(forName: testSuiteName)
+        
+        testConfig = AccessibilityIdentifierConfig(
+            userDefaults: testDefaults,
+            keyPrefix: "Test.Accessibility."
+        )
         testConfig?.resetToDefaults()
         testConfig?.enableAutoIDs = true
         testConfig?.globalAutomaticAccessibilityIdentifiers = true  // Explicitly set for basicAutomaticCompliance
