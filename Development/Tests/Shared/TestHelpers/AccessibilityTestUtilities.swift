@@ -8,6 +8,7 @@
 
 import Foundation
 import SwiftUI
+import Testing
 @testable import SixLayerFramework
 
 #if canImport(ViewInspector)
