@@ -1160,10 +1160,11 @@ public struct BasicAutomaticComplianceModifier: ViewModifier {
         // Logic: Both enableAutoIDs and globalAutomaticAccessibilityIdentifiers must be true
         let shouldApply = capturedEnableAutoIDs && capturedGlobalAutomaticAccessibilityIdentifiers
         
-        // CRITICAL: Only apply identifier if explicitly requested via identifierName parameter
-        // This ensures child identifiers take precedence over parent identifiers
-        // Matches AutomaticComplianceModifier behavior for consistency
-        let shouldApplyIdentifier = shouldApply && storedIdentifierName != nil
+        // Apply identifier whenever automatic IDs are enabled. When no identifierName
+        // is provided, generate a generic identifier using the default component name.
+        // This matches existing tests that expect .automaticCompliance() to generate
+        // identifiers even without an explicit name.
+        let shouldApplyIdentifier = shouldApply
         
         // Generate identifier if needed
         // Call internal generateAccessibilityIdentifier directly (same as AutomaticComplianceModifier.generateIdentifier does)
