@@ -86,7 +86,7 @@ The SixLayer Framework follows a **layered architecture** where each layer build
 - **Automatic Discovery** - 6Layer reads hints based on `modelName` parameter
 
 ### Testing Requirements:
-- **Run `swift test` before any release** - This is mandatory per project rules
+- **Run the full xcodebuild test suite before any release** via `dbs-build --target test` - This is mandatory per project rules
 - **All tests must pass** - No exceptions for releases
 - **Use runtime capability detection** - Don't rely on compile-time platform checks
 - **Test accessibility features** - Ensure VoiceOver, Switch Control, etc. work correctly
