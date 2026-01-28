@@ -157,7 +157,10 @@ open class AccessibilityIdentifierConfigUserDefaultsTests: BaseTestClass {
             config.saveToUserDefaults()
             
             // Simulate app restart: create new config instance
-            let newConfig = AccessibilityIdentifierConfig()
+            let newConfig = AccessibilityIdentifierConfig(
+                userDefaults: testUserDefaults,
+                keyPrefix: testUserDefaultsKeyPrefix
+            )
             newConfig.resetToDefaults()
             
             // Load from UserDefaults
