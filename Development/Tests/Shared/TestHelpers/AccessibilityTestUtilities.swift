@@ -232,13 +232,20 @@ public enum AccessibilityTestUtilities {
         #if canImport(ViewInspector)
         do {
             let inspected = try AnyView(view).inspect()
-            if let button = try? inspected.button(),
-               let id = try? button.accessibilityIdentifier() {
-                return id
-            } else {
-                Issue.record("\(issuePrefix): could not find Button or identifier")
-                return nil
+            // First, try to read an accessibility identifier directly from the
+            // inspected root view. For many simple cases this is sufficient.
+            if let directID = try? inspected.accessibilityIdentifier(), !directID.isEmpty {
+                return directID
             }
+            
+            // Fallback: look for an underlying Button and read its identifier.
+            if let button = try? inspected.button(),
+               let buttonID = try? button.accessibilityIdentifier(), !buttonID.isEmpty {
+                return buttonID
+            }
+            
+            Issue.record("\(issuePrefix): could not find accessibility identifier on root or Button")
+            return nil
         } catch {
             Issue.record("\(issuePrefix): \(error)")
             return nil
