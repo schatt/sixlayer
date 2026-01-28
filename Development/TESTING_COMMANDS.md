@@ -23,9 +23,9 @@ The test suite is organized into:
 dbs-build --target test
 ```
 
-This command runs tests on both platforms as defined in `buildconfig.yml`:
-- macOS tests: `swift test`
-- iOS Simulator tests: `xcodebuild test` with iOS Simulator destination
+This command runs the full test suite on both platforms via `xcodebuild test` as
+defined in `buildconfig.yml` (dbs-build orchestrates the underlying xcodebuild
+invocations for macOS and iOS).
 
 ## Running Tests on Individual Platforms
 
@@ -34,10 +34,7 @@ This command runs tests on both platforms as defined in `buildconfig.yml`:
 # Using dbs-build
 dbs-build --target macOS_tests
 
-# Or directly with swift test
-swift test
-
-# Or with xcodebuild (for SwiftUI rendering tests)
+# Or directly with xcodebuild when not using dbs-build
 xcodebuild test \
   -workspace .swiftpm/xcode/package.xcworkspace \
   -scheme SixLayerFramework \
@@ -89,6 +86,8 @@ dbs-build --list-targets
 
 ### macOS Tests
 ```bash
+# For quick local iteration on macOS-only tests you can still use swift test,
+# but the canonical full run is via dbs-build/xcodebuild:
 swift test
 ```
 
