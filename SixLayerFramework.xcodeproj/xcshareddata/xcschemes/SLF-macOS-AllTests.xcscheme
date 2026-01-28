@@ -69,9 +69,9 @@
             parallelizable = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "321259E81B97177258CBCA05"
-               BuildableName = "SixLayerFrameworkRealUITests_macOS.xctest"
-               BlueprintName = "SixLayerFrameworkRealUITests_macOS"
+               BlueprintIdentifier = "B6D28D39EB5B2B5FDA6466FB"
+               BuildableName = "SLFmacOSViewInspectorTests.xctest"
+               BlueprintName = "SLFmacOSViewInspectorTests"
                ReferencedContainer = "container:SixLayerFramework.xcodeproj">
             </BuildableReference>
          </TestableReference>
@@ -80,9 +80,9 @@
             parallelizable = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "BC321487B78EB385BE711076"
-               BuildableName = "SixLayerFrameworkUITests_macOS.xctest"
-               BlueprintName = "SixLayerFrameworkUITests_macOS"
+               BlueprintIdentifier = "321259E81B97177258CBCA05"
+               BuildableName = "SixLayerFrameworkRealUITests_macOS.xctest"
+               BlueprintName = "SixLayerFrameworkRealUITests_macOS"
                ReferencedContainer = "container:SixLayerFramework.xcodeproj">
             </BuildableReference>
          </TestableReference>

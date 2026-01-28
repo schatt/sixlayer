@@ -61,17 +61,6 @@
                ReferencedContainer = "container:SixLayerFramework.xcodeproj">
             </BuildableReference>
          </TestableReference>
-         <TestableReference
-            skipped = "NO"
-            parallelizable = "NO">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "BC321487B78EB385BE711076"
-               BuildableName = "SixLayerFrameworkUITests_macOS.xctest"
-               BlueprintName = "SixLayerFrameworkUITests_macOS"
-               ReferencedContainer = "container:SixLayerFramework.xcodeproj">
-            </BuildableReference>
-         </TestableReference>
       </Testables>
       <CommandLineArguments>
       </CommandLineArguments>

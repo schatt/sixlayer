@@ -356,53 +356,6 @@ targets:
     dependencies:
       - target: SixLayerFramework_visionOS
 
-  # XCUITest tests - iOS (uses XCUIApplication and XCUIElement)
-  SixLayerFrameworkUITests_iOS:
-    type: bundle.ui-testing
-    platform: iOS
-    sources:
-      - path: Development/Tests/SixLayerFrameworkUITests
-        excludes:
-          - "TestApp/**"
-          - "README.md"
-    settings:
-      PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.framework.ui-tests
-      SWIFT_VERSION: "6.0"
-      GENERATE_INFOPLIST_FILE: YES
-      CODE_SIGN_STYLE: Automatic
-      ENABLE_TESTING_SEARCH_PATHS: YES
-      DEVELOPMENT_TEAM: Y53G7YPJSZ
-      developmentTeam: Y53G7YPJSZ
-      TEST_TARGET_NAME: SixLayerFrameworkTestApp_iOS
-      USE_XCUITEST_PERFORMANCE: "1"  # Enable performance logging for UITests target
-    dependencies:
-      - target: SixLayerFramework_iOS
-      - target: SixLayerFrameworkTestApp_iOS
-
-  # XCUITest tests - macOS (uses XCUIApplication and XCUIElement)
-  SixLayerFrameworkUITests_macOS:
-    type: bundle.ui-testing
-    platform: macOS
-    sources:
-      - path: Development/Tests/SixLayerFrameworkUITests
-        excludes:
-          - "TestApp/**"
-          - "README.md"
-    settings:
-      PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.framework.ui-tests
-      SWIFT_VERSION: "6.0"
-      GENERATE_INFOPLIST_FILE: YES
-      CODE_SIGN_STYLE: Automatic
-      ENABLE_TESTING_SEARCH_PATHS: YES
-      DEVELOPMENT_TEAM: Y53G7YPJSZ
-      developmentTeam: Y53G7YPJSZ
-      DEAD_CODE_STRIPPING: YES
-      TEST_TARGET_NAME: SixLayerFrameworkTestApp_macOS
-      USE_XCUITEST_PERFORMANCE: "1"  # Enable performance logging for UITests target
-    dependencies:
-      - target: SixLayerFramework_macOS
-      - target: SixLayerFrameworkTestApp_macOS
-
   # Test app for XCUITest - macOS
   # Minimal app that displays views for XCUITest to test
   SixLayerFrameworkTestApp_macOS:
@@ -568,7 +521,6 @@ schemes:
       targets:
         - SixLayerFrameworkUnitTests_iOS
         - SixLayerFrameworkExternalIntegrationTests_iOS
-        - SixLayerFrameworkUITests_iOS
 
   SLF-macOS-Framework:
     build:
@@ -578,7 +530,6 @@ schemes:
       targets:
         - SixLayerFrameworkUnitTests_macOS
         - SixLayerFrameworkExternalIntegrationTests_macOS
-        - SixLayerFrameworkUITests_macOS
 
   SLF-macOS-TestApp:
     build:
@@ -602,6 +553,7 @@ schemes:
     test:
       targets:
         - SixLayerFrameworkUnitTests_iOS
+        - SLFiOSViewInspectorTests
         - SixLayerFrameworkRealUITests_iOS
         - SixLayerFrameworkExternalIntegrationTests_iOS
 
@@ -613,26 +565,17 @@ schemes:
     test:
       targets:
         - SixLayerFrameworkUnitTests_macOS
+        - SLFmacOSViewInspectorTests
         - SixLayerFrameworkRealUITests_macOS
-        - SixLayerFrameworkUITests_macOS
         - SixLayerFrameworkExternalIntegrationTests_macOS
 
-  SLF-iOS-UnitTestsOnly:
+  SLF-iOS-UnitTests:
     build:
       targets:
         SixLayerFramework_iOS: all
     test:
       targets:
         - SixLayerFrameworkUnitTests_iOS
-
-  SLF-macOS-UnitTestsOnly:
-    build:
-      targets:
-        SixLayerFramework_macOS: all
-    test:
-      targets:
-        - name: SixLayerFrameworkUnitTests_macOS
-          parallelizable: false
 
   SLF-macOS-UnitTests:
     build:
@@ -650,7 +593,6 @@ schemes:
     test:
       targets:
         - SixLayerFrameworkRealUITests_macOS
-        - SixLayerFrameworkUITests_macOS
 
   SLF-macOS-ViewInspectorTests:
     build:
@@ -690,7 +632,7 @@ schemes:
         - SixLayerFrameworkRealUITests_tvOS
         - SixLayerFrameworkExternalIntegrationTests_tvOS
 
-  SLF-tvOS-UnitTestsOnly:
+  SLF-tvOS-UnitTests:
     build:
       targets:
         SixLayerFramework_tvOS: all
@@ -720,7 +662,7 @@ schemes:
         - SixLayerFrameworkRealUITests_watchOS
         - SixLayerFrameworkExternalIntegrationTests_watchOS
 
-  SLF-watchOS-UnitTestsOnly:
+  SLF-watchOS-UnitTests:
     build:
       targets:
         SixLayerFramework_watchOS: all
@@ -750,31 +692,10 @@ schemes:
         - SixLayerFrameworkRealUITests_visionOS
         - SixLayerFrameworkExternalIntegrationTests_visionOS
 
-  SLF-visionOS-UnitTestsOnly:
+  SLF-visionOS-UnitTests:
     build:
       targets:
         SixLayerFramework_visionOS: all
     test:
       targets:
         - SixLayerFrameworkUnitTests_visionOS
-
-  SLF-iOS-UITestsOnly:
-    build:
-      targets:
-        SixLayerFramework_iOS: all
-        SixLayerFrameworkTestApp_iOS: all
-    test:
-      targets:
-        - name: SixLayerFrameworkUITests_iOS
-          parallelizable: false
-
-  SLF-macOS-UITestsOnly:
-    build:
-      targets:
-        SixLayerFramework_macOS: all
-        SixLayerFrameworkTestApp_macOS: all
-    test:
-      targets:
-        - name: SixLayerFrameworkUITests_macOS
-          parallelizable: false
-
