@@ -5,7 +5,7 @@
 **MANDATORY RELEASE RULE**: Never create, suggest, or assist with any release (major, minor, patch, or pre-release) unless the test suite passes completely.
 
 ### Before Any Release:
-1. **ALWAYS** run `swift test` first
+1. **ALWAYS** run the full xcodebuild test suite first via `dbs-build --target test` (runs tests on macOS and iOS using xcodebuild)
 2. **VERIFY** all tests pass without failures
 3. **CONFIRM** no compilation errors exist
 4. **ONLY THEN** proceed with release activities
