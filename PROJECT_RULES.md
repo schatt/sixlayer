@@ -11,7 +11,7 @@
 - This applies to all release types (major, minor, patch, pre-release)
 
 ### Implementation
-- Run `swift test` before any release
+- Run the full xcodebuild test suite via `dbs-build --target test` before any release
 - If tests fail, fix the issues before proceeding
 - Consider this a hard blocker for any release process
 
