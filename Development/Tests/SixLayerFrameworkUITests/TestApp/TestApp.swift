@@ -51,6 +51,7 @@ struct TestAppContentView: View {
         case notifications = "Notifications"
         case internationalization = "Internationalization"
         case dataAnalysis = "Data Analysis"
+        case barcode = "Barcode"
         
         var id: String { rawValue }
     }
@@ -212,6 +213,8 @@ struct TestAppContentView: View {
                         Layer1InternationalizationExamples()
                     case .dataAnalysis:
                         Layer1DataAnalysisExamples()
+                    case .barcode:
+                        Layer1BarcodeExamples()
                     }
                 } else {
                     Text("Select a Layer 1 category to view examples")
