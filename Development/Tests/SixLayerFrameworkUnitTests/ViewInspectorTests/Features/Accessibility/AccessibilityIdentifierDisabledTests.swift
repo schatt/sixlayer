@@ -66,10 +66,10 @@ open class AccessibilityIdentifierDisabledTests: BaseTestClass {
             #if canImport(ViewInspector)
             do {
                 let inspected = try AnyView(view).inspect()
-                // Try to get the accessibility identifier from the root; if that
-                // fails, fall back to recording an informative issue rather than
-                // assuming a specific root type that may change over time.
-                if let buttonID = try? inspected.accessibilityIdentifier() {
+                // Match the pattern used in ConsolidatedAccessibilityTests: look up
+                // the underlying Button first, then read its accessibility identifier.
+                if let button = try? inspected.button(),
+                   let buttonID = try? button.accessibilityIdentifier() {
                     #expect(buttonID == "manual-test-button", "Manual accessibility identifier should work when automatic is disabled")
                 } else {
                     Issue.record("Failed to inspect view for manual accessibility identifier")
