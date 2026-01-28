@@ -175,7 +175,7 @@ DynamicFormField(
 
 ### Testing Requirements:
 
-- **Run `swift test` before any release** - Mandatory
+- **Run the full xcodebuild test suite before any release** via `dbs-build --target test` - Mandatory
 - **All tests must pass** - No exceptions
 - **Test hint loading** - Verify .hints files are read correctly
 - **Test caching behavior** - Hints should be cached
