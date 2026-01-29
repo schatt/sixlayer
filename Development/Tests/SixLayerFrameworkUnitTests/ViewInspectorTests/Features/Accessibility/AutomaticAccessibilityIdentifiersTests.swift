@@ -203,16 +203,18 @@ open class AutomaticAccessibilityIdentifiersTests: BaseTestClass {
             }
             .automaticCompliance(identifierName: "TestView")
             
-            // The modifier should use helper view pattern to defer environment access
-            // We verify this by checking that the view works correctly when inspected
+            // Modifier uses task-local config (no environment); verify identifier is generated when inspected.
             #if canImport(ViewInspector)
             if let inspected = try? AnyView(view).inspect() {
                 let identifier = try? inspected.accessibilityIdentifier()
-                // TDD RED: Should PASS - environment should be accessed only when view is installed
-                #expect(identifier != nil && !(identifier?.isEmpty ?? true), 
-                       "Modifier should access environment only when view is installed, generating identifier: '\(identifier ?? "nil")'")
+                #expect(identifier != nil && !(identifier?.isEmpty ?? true),
+                       "Modifier should generate identifier when view is inspected (task-local config), got: '\(identifier ?? "nil")'")
             } else {
-                Issue.record("Could not inspect view")
+                // Fallback: host view and get identifier from platform (modifier runs when rendered)
+                let root = Self.hostRootPlatformView(view)
+                let idFromPlatform = getAccessibilityIdentifierForTest(view: view, hostedRoot: root)
+                #expect(idFromPlatform != nil && !(idFromPlatform?.isEmpty ?? true),
+                       "Modifier should generate identifier (via platform), got: '\(idFromPlatform ?? "nil")'")
             }
             #else
             // ViewInspector not available on this platform - this is expected, not a failure
