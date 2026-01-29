@@ -1953,7 +1953,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             config.namespace = "SixLayer"
             
             // When: Using framework component (testing our framework, not SwiftUI)
-            let testView = PlatformInteractionButton(style: .primary, action: {}) {
+            let testView = PlatformInteractionButton(style: .primary, action: {}, identifierName: "Test") {
                 platformPresentContent_L1(content: "Test Button", hints: PresentationHints())
             }
             
@@ -1982,7 +1982,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         self.setupTestEnvironment()
         
         // TDD: Define the behavior I want - short, clean IDs
-        let view = PlatformInteractionButton(style: .primary, action: {}) {
+        let view = PlatformInteractionButton(style: .primary, action: {}, identifierName: "Test") {
             platformPresentContent_L1(content: "Add Fuel", hints: PresentationHints())
         }
         .named("AddFuelButton")
@@ -2030,7 +2030,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             config.mode = .automatic
             config.enableDebugLogging = false
             
-            let view = PlatformInteractionButton(style: .primary, action: {}) {
+            let view = PlatformInteractionButton(style: .primary, action: {}, identifierName: "Test") {
                 platformPresentContent_L1(content: "Test Button", hints: PresentationHints())
             }
             .named("TestButton")
@@ -2061,7 +2061,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             config.enableAutoIDs = false  // ← DISABLED
             
             // Test: Manual accessibility identifiers should still work when automatic is disabled
-            let view = PlatformInteractionButton(style: .primary, action: {}) {
+            let view = PlatformInteractionButton(style: .primary, action: {}, identifierName: "Test") {
                 platformPresentContent_L1(content: "Test Button", hints: PresentationHints())
             }
             .accessibilityIdentifier("manual-test-button")
@@ -3065,7 +3065,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         self.runWithTaskLocalConfig {
             self.setupTestEnvironment()
             
-            let view = PlatformInteractionButton(style: .primary, action: {}) {
+            let view = PlatformInteractionButton(style: .primary, action: {}, identifierName: "Test") {
                 platformPresentContent_L1(content: "Test", hints: PresentationHints())
             }
                 .named("")
@@ -3091,7 +3091,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         self.runWithTaskLocalConfig {
             self.setupTestEnvironment()
             
-            let view = PlatformInteractionButton(style: .primary, action: {}) {
+            let view = PlatformInteractionButton(style: .primary, action: {}, identifierName: "Test") {
                 platformPresentContent_L1(content: "Test", hints: PresentationHints())
             }
                 .named("Button@#$%^&*()")
@@ -3118,7 +3118,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         self.runWithTaskLocalConfig {
             self.setupTestEnvironment()
             
-            let view = PlatformInteractionButton(style: .primary, action: {}) {
+            let view = PlatformInteractionButton(style: .primary, action: {}, identifierName: "Test") {
                 Text("Test")
             }
                 .accessibilityIdentifier("manual-override")
@@ -4426,7 +4426,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         self.initializeTestConfig()
         let testContent = platformVStackContainer {
             platformPresentContent_L1(content: "HIG Compliance Content", hints: PresentationHints())
-            PlatformInteractionButton(style: .primary, action: {}) {
+            PlatformInteractionButton(style: .primary, action: {}, identifierName: "Test") {
                 platformPresentContent_L1(content: "Test Button", hints: PresentationHints())
             }
         }
@@ -7087,7 +7087,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             config.enableDebugLogging = true
             config.clearDebugLog()
             
-            let testView = PlatformInteractionButton(style: .primary, action: {}) {
+            let testView = PlatformInteractionButton(style: .primary, action: {}, identifierName: "Test") {
                 platformPresentContent_L1(content: "Add Fuel", hints: PresentationHints())
             }
             .named("AddFuelButton")
@@ -7168,7 +7168,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             config.namespace = "SixLayer"
             config.mode = .automatic
             
-            let testView = PlatformInteractionButton(style: .primary, action: {}) {
+            let testView = PlatformInteractionButton(style: .primary, action: {}, identifierName: "Test") {
                 platformPresentContent_L1(content: "Test Button", hints: PresentationHints())
             }
             .named("TestButton")
@@ -8368,7 +8368,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             self.setupTestEnvironment()
             
             let longName = String(repeating: "VeryLongName", count: 50)
-            let view = PlatformInteractionButton(style: .primary, action: {}) {
+            let view = PlatformInteractionButton(style: .primary, action: {}, identifierName: "Test") {
                 platformPresentContent_L1(content: "Test", hints: PresentationHints())
             }
             .named(longName)
@@ -9260,7 +9260,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         config.enableDebugLogging = true
         config.clearDebugLog()
 
-        let testView = PlatformInteractionButton(style: .primary, action: {}) {
+        let testView = PlatformInteractionButton(style: .primary, action: {}, identifierName: "Test") {
             platformPresentContent_L1(content: "Add Fuel", hints: PresentationHints())
         }
         .named("AddFuelButton")
@@ -9289,7 +9289,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         config.enableDebugLogging = true
         config.clearDebugLog()
 
-        let testView = PlatformInteractionButton(style: .primary, action: {}) {
+        let testView = PlatformInteractionButton(style: .primary, action: {}, identifierName: "Test") {
             platformPresentContent_L1(content: "Add Fuel", hints: PresentationHints())
         }
         .named("AddFuelButton")
@@ -9362,7 +9362,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         config.namespace = "SixLayer"
         config.mode = .automatic
 
-        let testView = PlatformInteractionButton(style: .primary, action: {}) {
+        let testView = PlatformInteractionButton(style: .primary, action: {}, identifierName: "Test") {
             platformPresentContent_L1(content: "Add Fuel", hints: PresentationHints())
         }
         .accessibilityIdentifier("manual-add-fuel-button")
@@ -12312,8 +12312,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         }
         config.enableAutoIDs = true
         
-        // Create a view with automatic accessibility identifiers (should generate ID)
-        let view = PlatformInteractionButton(style: .primary, action: {}) {
+        // Create a view with identifierName so automaticCompliance generates ID (L1 pattern)
+        let view = PlatformInteractionButton(style: .primary, action: {}, identifierName: "Test") {
             platformPresentContent_L1(content: "Test", hints: PresentationHints())
         }
             .automaticCompliance()
@@ -12350,7 +12350,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         
         // Create a view with global disable (no environment variable - set config directly)
         config.globalAutomaticAccessibilityIdentifiers = false  // ← Disable via config
-        let view = PlatformInteractionButton(style: .primary, action: {}) {
+        let view = PlatformInteractionButton(style: .primary, action: {}, identifierName: "Test") {
             platformPresentContent_L1(content: "Test", hints: PresentationHints())
         }
             .automaticCompliance()
@@ -12386,7 +12386,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         config.enableAutoIDs = false
         
         // Create a view with local enable modifier
-        let view = PlatformInteractionButton(style: .primary, action: {}) {
+        let view = PlatformInteractionButton(style: .primary, action: {}, identifierName: "Test") {
             platformPresentContent_L1(content: "Test", hints: PresentationHints())
         }
             .automaticCompliance()  // ← Local enable
@@ -12422,19 +12422,19 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         
         // Create a view with global disable (no environment variable - set config directly)
         config.globalAutomaticAccessibilityIdentifiers = false  // ← Disable via config
-        let view = PlatformInteractionButton(style: .primary, action: {}) {
+        let view = PlatformInteractionButton(style: .primary, action: {}, identifierName: "Test") {
             platformPresentContent_L1(content: "Test", hints: PresentationHints())
         }
             .automaticCompliance()
         
-        // Try to inspect for accessibility identifier
-        #if canImport(ViewInspector)
-        do {
-            let inspectedView = try view.inspect()
-            let button = try inspectedView.button()
-            let accessibilityID = try button.accessibilityIdentifier()
-            
-            // Should be empty - local disable should override global enable
+            // Try to inspect for accessibility identifier
+            #if canImport(ViewInspector)
+            do {
+                let inspectedView = try view.inspect()
+                let button = try inspectedView.button()
+                let accessibilityID = try button.accessibilityIdentifier()
+                
+                // Should be empty - local disable should override global enable
             // NOTE: Environment variable override is not working as expected
             // The modifier still generates an ID despite the environment variable being set to false
             #expect(!accessibilityID.isEmpty, "Environment variable override is not working - modifier still generates ID")
@@ -12460,7 +12460,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         config.enableAutoIDs = false
         
         // Create a view with local enable (should override global disable)
-        let view = PlatformInteractionButton(style: .primary, action: {}) {
+        let view = PlatformInteractionButton(style: .primary, action: {}, identifierName: "Test") {
             platformPresentContent_L1(content: "Test", hints: PresentationHints())
         }
             .automaticCompliance()  // ← Should override global disable
@@ -12495,12 +12495,12 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         config.enableAutoIDs = true
         
         // Create a view with environment variable override
-        let view = PlatformInteractionButton(style: .primary, action: {}) {
+        let view = PlatformInteractionButton(style: .primary, action: {}, identifierName: "Test") {
             platformPresentContent_L1(content: "Test", hints: PresentationHints())
         }
         // Create a view with global disable (no environment variable - set config directly)
         config.globalAutomaticAccessibilityIdentifiers = false  // ← Disable via config
-        let view2 = PlatformInteractionButton(style: .primary, action: {}) {
+        let view2 = PlatformInteractionButton(style: .primary, action: {}, identifierName: "Test") {
             platformPresentContent_L1(content: "Test", hints: PresentationHints())
         }
             .automaticCompliance()
@@ -12531,13 +12531,13 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         self.setupTestEnvironment()
         
         // Test: Does exactNamed() use exact names without hierarchy?
-        let view1 = PlatformInteractionButton(style: .primary, action: {}) {
+        let view1 = PlatformInteractionButton(style: .primary, action: {}, identifierName: "Test") {
             platformPresentContent_L1(content: "Test1", hints: PresentationHints())
         }
             .exactNamed("SameName")
             .enableGlobalAutomaticCompliance()
         
-        let view2 = PlatformInteractionButton(style: .primary, action: {}) {
+        let view2 = PlatformInteractionButton(style: .primary, action: {}, identifierName: "Test") {
             platformPresentContent_L1(content: "Test2", hints: PresentationHints())
         }
             .exactNamed("SameName")  // ← Same exact name
@@ -12690,7 +12690,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             
         }
         
-        let view = PlatformInteractionButton(style: .primary, action: {}) {
+        let view = PlatformInteractionButton(style: .primary, action: {}, identifierName: "Test") {
             platformPresentContent_L1(content: "Test", hints: PresentationHints())
         }
             .named("TestButton")
@@ -12763,7 +12763,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         self.setupTestEnvironment()
         
         // Test: How are Unicode characters handled?
-        let view = PlatformInteractionButton(style: .primary, action: {}) {
+        let view = PlatformInteractionButton(style: .primary, action: {}, identifierName: "Test") {
             platformPresentContent_L1(content: "Test", hints: PresentationHints())
         }
             .named("按钮")  // ← Chinese characters
@@ -12835,16 +12835,16 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         // We can't easily test the environment variable directly in unit tests,
         // but we can verify that the modifier chain compiles and the configuration is correct
         
-        let testView1 = PlatformInteractionButton(style: .primary, action: {}) {
+        let testView1 = PlatformInteractionButton(style: .primary, action: {}, identifierName: "Test") {
         platformPresentContent_L1(content: "Test", hints: PresentationHints())
     }
         .named("TestButton")
         
-        let testView2 = PlatformInteractionButton(style: .primary, action: {}) {
+        let testView2 = PlatformInteractionButton(style: .primary, action: {}, identifierName: "Test") {
         platformPresentContent_L1(content: "Test", hints: PresentationHints())
     }
         
-        let testView3 = PlatformInteractionButton(style: .primary, action: {}) {
+        let testView3 = PlatformInteractionButton(style: .primary, action: {}, identifierName: "Test") {
         platformPresentContent_L1(content: "Test", hints: PresentationHints())
     }
         
@@ -12998,7 +12998,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         // TDD: This test SHOULD FAIL initially - IDs are not persistent
         // We want IDs to be the same across app launches
         
-        let view1 = PlatformInteractionButton(style: .primary, action: {}) {
+        let view1 = PlatformInteractionButton(style: .primary, action: {}, identifierName: "Test") {
             platformPresentContent_L1(content: "Add Fuel", hints: PresentationHints())
         }
             .named("AddFuelButton")
@@ -13020,7 +13020,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         config.namespace = "SixLayer"
         config.mode = .automatic
         
-        let view2 = PlatformInteractionButton(style: .primary, action: {}) {
+        let view2 = PlatformInteractionButton(style: .primary, action: {}, identifierName: "Test") {
             platformPresentContent_L1(content: "Add Fuel", hints: PresentationHints())
         }
             .named("AddFuelButton")
@@ -13048,7 +13048,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         // TDD: This test SHOULD FAIL initially - IDs contain timestamps
         // Same view with same hierarchy should generate same ID
         
-        let view1 = PlatformInteractionButton(style: .primary, action: {}) {
+        let view1 = PlatformInteractionButton(style: .primary, action: {}, identifierName: "Test") {
             platformPresentContent_L1(content: "Add Fuel", hints: PresentationHints())
         }
             .named("AddFuelButton")
@@ -13057,7 +13057,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         let id1 = generateIDForView(view1)
         
         // Generate ID for identical view immediately after
-        let view2 = PlatformInteractionButton(style: .primary, action: {}) {
+        let view2 = PlatformInteractionButton(style: .primary, action: {}, identifierName: "Test") {
             platformPresentContent_L1(content: "Add Fuel", hints: PresentationHints())
         }
             .named("AddFuelButton")
@@ -13084,7 +13084,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         // TDD: This test SHOULD FAIL initially - IDs contain timestamps
         // IDs should be based on view structure, not time
         
-        let view = PlatformInteractionButton(style: .primary, action: {}) {
+        let view = PlatformInteractionButton(style: .primary, action: {}, identifierName: "Test") {
             platformPresentContent_L1(content: "Add Fuel", hints: PresentationHints())
         }
             .named("AddFuelButton")
@@ -13096,7 +13096,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         // Reduced from 0.1s to 0.01s for faster test execution
         Thread.sleep(forTimeInterval: 0.01)
         
-        let view2 = PlatformInteractionButton(style: .primary, action: {}) {
+        let view2 = PlatformInteractionButton(style: .primary, action: {}, identifierName: "Test") {
             platformPresentContent_L1(content: "Add Fuel", hints: PresentationHints())
         }
             .named("AddFuelButton")
@@ -13134,7 +13134,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         
         // Generate IDs for all test cases
         for (buttonName, screenContext) in testCases {
-            let view = PlatformInteractionButton(style: .primary, action: {}) {
+            let view = PlatformInteractionButton(style: .primary, action: {}, identifierName: "Test") {
             platformPresentContent_L1(content: "Test", hints: PresentationHints())
         }
                 .named(buttonName)
@@ -13158,7 +13158,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         
         // Generate IDs again for same test cases
         for (buttonName, screenContext) in testCases {
-            let view = PlatformInteractionButton(style: .primary, action: {}) {
+            let view = PlatformInteractionButton(style: .primary, action: {}, identifierName: "Test") {
             platformPresentContent_L1(content: "Test", hints: PresentationHints())
         }
                 .named(buttonName)
@@ -13187,7 +13187,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         // TDD: This test SHOULD FAIL initially
         // IDs should be based on view hierarchy and context, not random factors
         
-        let view1 = PlatformInteractionButton(style: .primary, action: {}) {
+        let view1 = PlatformInteractionButton(style: .primary, action: {}, identifierName: "Test") {
             platformPresentContent_L1(content: "Add Fuel", hints: PresentationHints())
         }
             .named("AddFuelButton")
@@ -13199,7 +13199,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         // Reduced from 0.1s to 0.01s for faster test execution
         Thread.sleep(forTimeInterval: 0.01)
         
-        let view2 = PlatformInteractionButton(style: .primary, action: {}) {
+        let view2 = PlatformInteractionButton(style: .primary, action: {}, identifierName: "Test") {
             platformPresentContent_L1(content: "Add Fuel", hints: PresentationHints())
         }
             .named("AddFuelButton")
@@ -14281,7 +14281,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         
         // TDD: Define the behavior I want - no hierarchy duplication
         let view = platformVStackContainer {
-        PlatformInteractionButton(style: .primary, action: {}) {
+        PlatformInteractionButton(style: .primary, action: {}, identifierName: "Test") {
             platformPresentContent_L1(content: "Test", hints: PresentationHints())
         }
         .named("TestButton")
@@ -14319,7 +14319,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         let view = platformVStackContainer {
         platformPresentContent_L1(content: "User Profile", hints: PresentationHints())
             .named("ProfileTitle")
-        PlatformInteractionButton(style: .primary, action: {}) {
+        PlatformInteractionButton(style: .primary, action: {}, identifierName: "Test") {
             platformPresentContent_L1(content: "Edit", hints: PresentationHints())
         }
             .named("EditButton")
@@ -15688,8 +15688,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         
         config.enableDebugLogging = true
             
-        // Test that the view can be created successfully
-        let testView = PlatformInteractionButton(style: .primary, action: {}) {
+        // Test that the view can be created successfully; identifierName so ID is generated (L1 pattern)
+        let testView = PlatformInteractionButton(style: .primary, action: {}, identifierName: "TestButton") {
             platformPresentContent_L1(content: "Test Button", hints: PresentationHints())
         }
         .automaticCompliance()
@@ -15714,7 +15714,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             
         // Test: Use centralized component accessibility testing
         // Test that the view can be created successfully
-        let testView = PlatformInteractionButton(style: .primary, action: {}) {
+        let testView = PlatformInteractionButton(style: .primary, action: {}, identifierName: "Test") {
             platformPresentContent_L1(content: "Add Fuel", hints: PresentationHints())
         }
         .named("AddFuelButton")
@@ -15742,7 +15742,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         config.enableDebugLogging = true
             
         // When: Using the exact combination from the bug report
-        let testView = PlatformInteractionButton(style: .primary, action: {}) {
+        let testView = PlatformInteractionButton(style: .primary, action: {}, identifierName: "Test") {
             platformPresentContent_L1(content: "Add Fuel", hints: PresentationHints())
         }
         .named("AddFuelButton")
@@ -15787,7 +15787,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         // Test Case 1: When automatic IDs are disabled
         config.enableAutoIDs = false
             
-        let testView1 = PlatformInteractionButton(style: .primary, action: {}) {
+        let testView1 = PlatformInteractionButton(style: .primary, action: {}, identifierName: "Test") {
             platformPresentContent_L1(content: "Test", hints: PresentationHints())
         }
         .automaticCompliance()
@@ -15815,13 +15815,13 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         // Test Case 2: When automatic IDs are enabled
         config.enableAutoIDs = true
             
-        let testView2 = PlatformInteractionButton(style: .primary, action: {}) {
+        let testView2 = PlatformInteractionButton(style: .primary, action: {}, identifierName: "Test") {
             platformPresentContent_L1(content: "Test", hints: PresentationHints())
         }
         .automaticCompliance()
             
-        // 1. View created - The view can be instantiated successfully
-        #expect(Bool(true), "View should be created when automatic IDs are enabled")  // testView2 is non-optional
+            // 1. View created - The view can be instantiated successfully
+            #expect(Bool(true), "View should be created when automatic IDs are enabled")  // testView2 is non-optional
             
         // 2. Contains what it needs to contain - The view should have an automatic accessibility identifier
         #if canImport(ViewInspector)
@@ -15864,8 +15864,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 
     @Test @MainActor func testDirectAutomaticAccessibilityIdentifiersWorks() async {
         self.initializeTestConfig()
-        // Test .automaticCompliance() directly
-        let testView = PlatformInteractionButton(style: .primary, action: {}) {
+        // Test .automaticCompliance() directly; identifierName so ID is generated (L1 pattern)
+        let testView = PlatformInteractionButton(style: .primary, action: {}, identifierName: "Test") {
         platformPresentContent_L1(content: "Test", hints: PresentationHints())
     }
         .automaticCompliance()
@@ -15894,7 +15894,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     @Test @MainActor func testNamedModifierWorks() {
         self.initializeTestConfig()
         // Test .named() modifier
-        let testView = PlatformInteractionButton(style: .primary, action: {}) {
+        let testView = PlatformInteractionButton(style: .primary, action: {}, identifierName: "Test") {
         platformPresentContent_L1(content: "Test", hints: PresentationHints())
     }
         .named("TestButton")
@@ -15924,7 +15924,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     @Test @MainActor func testAutomaticAccessibilityModifierWorks() {
         self.initializeTestConfig()
         // Test AutomaticAccessibilityModifier directly
-        let testView = PlatformInteractionButton(style: .primary, action: {}) {
+        let testView = PlatformInteractionButton(style: .primary, action: {}, identifierName: "Test") {
         platformPresentContent_L1(content: "Test", hints: PresentationHints())
     }
         .modifier(SystemAccessibilityModifier(
@@ -15956,7 +15956,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     @Test @MainActor func testAutomaticAccessibilityExtensionWorks() {
         self.initializeTestConfig()
         // Test .automaticAccessibility() extension
-        let testView = PlatformInteractionButton(style: .primary, action: {}) {
+        let testView = PlatformInteractionButton(style: .primary, action: {}, identifierName: "Test") {
         platformPresentContent_L1(content: "Test", hints: PresentationHints())
     }
         .automaticAccessibility()
@@ -16392,7 +16392,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         // clearDebugLog method doesn't exist, so we skip that
             
         // When: Using framework component with .named() modifier
-        let testView = PlatformInteractionButton(style: .primary, action: {}) {
+        let testView = PlatformInteractionButton(style: .primary, action: {}, identifierName: "Test") {
             platformPresentContent_L1(content: "Test Button", hints: PresentationHints())
         }
         .named("TestButton")
@@ -16412,7 +16412,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         // config is non-optional, so no need to check for nil
             
         // When: Using framework component with manual accessibility identifier
-        let testView = PlatformInteractionButton(style: .primary, action: {}) {
+        let testView = PlatformInteractionButton(style: .primary, action: {}, identifierName: "Test") {
             platformPresentContent_L1(content: "Test Button", hints: PresentationHints())
         }
         .accessibilityIdentifier("manual-test-button")
@@ -16459,7 +16459,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             return
         }
         config.globalAutomaticAccessibilityIdentifiers = false  // ← Disable via config
-        let testView = PlatformInteractionButton(style: .primary, action: {}) {
+        let testView = PlatformInteractionButton(style: .primary, action: {}, identifierName: "Test") {
             platformPresentContent_L1(content: "Decorative Button", hints: PresentationHints())
         }
             

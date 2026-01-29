@@ -15,7 +15,7 @@ open class AccessibilityIdentifierGenerationTests: BaseTestClass {
         setupTestEnvironment()
         
         // TDD: Define the behavior I want - short, clean IDs
-        let view = PlatformInteractionButton(style: .primary, action: {}) {
+        let view = PlatformInteractionButton(style: .primary, action: {}, identifierName: "AddFuelButton") {
             platformPresentContent_L1(content: "Add Fuel", hints: PresentationHints())
         }
             .named("AddFuelButton")
@@ -48,7 +48,7 @@ open class AccessibilityIdentifierGenerationTests: BaseTestClass {
         
         // TDD: Define the behavior I want - no hierarchy duplication
         let view = platformVStackContainer {
-            PlatformInteractionButton(style: .primary, action: {}) {
+            PlatformInteractionButton(style: .primary, action: {}, identifierName: "TestButton") {
                 platformPresentContent_L1(content: "Test", hints: PresentationHints())
             }
             .named("TestButton")
@@ -86,7 +86,7 @@ open class AccessibilityIdentifierGenerationTests: BaseTestClass {
         let view = platformVStackContainer {
             platformPresentContent_L1(content: "User Profile", hints: PresentationHints())
                 .named("ProfileTitle")
-            PlatformInteractionButton(style: .primary, action: {}) {
+            PlatformInteractionButton(style: .primary, action: {}, identifierName: "EditButton") {
                 platformPresentContent_L1(content: "Edit", hints: PresentationHints())
             }
                 .named("EditButton")

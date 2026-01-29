@@ -31,7 +31,7 @@ open class AccessibilityIdentifierGenerationVerificationTests: BaseTestClass {
                 
             #if canImport(ViewInspector)
             let testPassed = testComponentComplianceSinglePlatform(
-                PlatformInteractionButton(style: .primary, action: {}) {
+                PlatformInteractionButton(style: .primary, action: {}, identifierName: "TestButton") {
                     platformPresentContent_L1(content: "Test Button", hints: PresentationHints())
                 }
                 .automaticCompliance(),
@@ -67,7 +67,7 @@ open class AccessibilityIdentifierGenerationVerificationTests: BaseTestClass {
             // Test: Use centralized component accessibility testing
             #if canImport(ViewInspector)
             let testPassed = testComponentComplianceSinglePlatform(
-                PlatformInteractionButton(style: .primary, action: {}) {
+                PlatformInteractionButton(style: .primary, action: {}, identifierName: "AddFuelButton") {
                     platformPresentContent_L1(content: "Add Fuel", hints: PresentationHints())
                 }
                 .named("AddFuelButton"),
@@ -105,7 +105,7 @@ open class AccessibilityIdentifierGenerationVerificationTests: BaseTestClass {
             config.enableDebugLogging = true
                 
             // When: Using the exact combination from the bug report
-            let testView = PlatformInteractionButton(style: .primary, action: {}) {
+            let testView = PlatformInteractionButton(style: .primary, action: {}, identifierName: "AddFuelButton") {
                 platformPresentContent_L1(content: "Add Fuel", hints: PresentationHints())
             }
             .named("AddFuelButton")
@@ -223,10 +223,10 @@ open class AccessibilityIdentifierGenerationVerificationTests: BaseTestClass {
             #expect(Bool(true), "ViewInspector not available, treating as no ID applied")
             #endif
                 
-            // Test Case 2: When automatic IDs are enabled
+            // Test Case 2: When automatic IDs are enabled; pass identifierName so ID is generated (L1 pattern)
             config.enableAutoIDs = true
                 
-            let testView2 = PlatformInteractionButton(style: .primary, action: {}) {
+            let testView2 = PlatformInteractionButton(style: .primary, action: {}, identifierName: "Test") {
                 platformPresentContent_L1(content: "Test", hints: PresentationHints())
             }
             .automaticCompliance()

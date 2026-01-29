@@ -27,9 +27,9 @@ open class LocalEnableOverrideTests: BaseTestClass {
             config.enableAutoIDs = false
             print("🔧 Global config disabled: enableAutoIDs = false")
             
-            // 2. Create a view with local enable (without .named() to avoid modifier chain issues)
+            // 2. Create a view with local enable; pass identifierName so automaticCompliance creates an ID (L1 pattern)
             let view = Button("Special Button") { }
-                .automaticCompliance()  // ← Local enable should override global disable
+                .automaticCompliance(identifierName: "SpecialButton")  // ← Local enable + name so ID is generated
             
             // 3. Try to inspect for accessibility identifier
             #if canImport(ViewInspector)

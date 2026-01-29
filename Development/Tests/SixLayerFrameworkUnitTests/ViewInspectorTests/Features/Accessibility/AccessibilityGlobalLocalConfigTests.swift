@@ -67,8 +67,8 @@ open class AccessibilityGlobalLocalConfigTests: BaseTestClass {
             }
             config.enableAutoIDs = true
             
-            // Create a view with automatic accessibility identifiers (should generate ID)
-            let view = PlatformInteractionButton(style: .primary, action: {}) {
+            // Create a view with identifierName so automaticCompliance generates ID (L1 pattern)
+            let view = PlatformInteractionButton(style: .primary, action: {}, identifierName: "Test") {
                 platformPresentContent_L1(content: "Test", hints: PresentationHints())
             }
                 .automaticCompliance()
@@ -107,7 +107,7 @@ open class AccessibilityGlobalLocalConfigTests: BaseTestClass {
             
             // Create a view with global disable (no environment variable - set config directly)
             config.globalAutomaticAccessibilityIdentifiers = false  // ← Disable via config
-            let view = PlatformInteractionButton(style: .primary, action: {}) {
+            let view = PlatformInteractionButton(style: .primary, action: {}, identifierName: "Test") {
                 platformPresentContent_L1(content: "Test", hints: PresentationHints())
             }
                 .automaticCompliance()
@@ -142,8 +142,8 @@ open class AccessibilityGlobalLocalConfigTests: BaseTestClass {
             }
             config.enableAutoIDs = false
             
-            // Create a view with local enable modifier
-            let view = PlatformInteractionButton(style: .primary, action: {}) {
+            // Create a view with local enable + identifierName so ID is generated (L1 pattern)
+            let view = PlatformInteractionButton(style: .primary, action: {}, identifierName: "Test") {
                 platformPresentContent_L1(content: "Test", hints: PresentationHints())
             }
                 .automaticCompliance()  // ← Local enable
@@ -181,7 +181,7 @@ open class AccessibilityGlobalLocalConfigTests: BaseTestClass {
             
             // Create a view with global disable (no environment variable - set config directly)
             config.globalAutomaticAccessibilityIdentifiers = false  // ← Disable via config
-            let view = PlatformInteractionButton(style: .primary, action: {}) {
+            let view = PlatformInteractionButton(style: .primary, action: {}, identifierName: "Test") {
                 platformPresentContent_L1(content: "Test", hints: PresentationHints())
             }
                 .automaticCompliance()
@@ -218,8 +218,8 @@ open class AccessibilityGlobalLocalConfigTests: BaseTestClass {
             }
             config.enableAutoIDs = false
             
-            // Create a view with local enable (should override global disable)
-            let view = PlatformInteractionButton(style: .primary, action: {}) {
+            // Create a view with local enable + identifierName so ID is generated (L1 pattern)
+            let view = PlatformInteractionButton(style: .primary, action: {}, identifierName: "Test") {
                 platformPresentContent_L1(content: "Test", hints: PresentationHints())
             }
                 .automaticCompliance()  // ← Should override global disable
@@ -257,7 +257,7 @@ open class AccessibilityGlobalLocalConfigTests: BaseTestClass {
             
             // Create a view with global disable (no environment variable - set config directly)
             config.globalAutomaticAccessibilityIdentifiers = false  // ← Disable via config
-            let view = PlatformInteractionButton(style: .primary, action: {}) {
+            let view = PlatformInteractionButton(style: .primary, action: {}, identifierName: "Test") {
                 platformPresentContent_L1(content: "Test", hints: PresentationHints())
             }
                 .automaticCompliance()

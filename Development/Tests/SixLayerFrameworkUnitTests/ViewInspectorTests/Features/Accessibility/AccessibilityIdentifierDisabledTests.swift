@@ -23,7 +23,7 @@ open class AccessibilityIdentifierDisabledTests: BaseTestClass {
             config.mode = .automatic
             config.enableDebugLogging = false
             
-            let view = PlatformInteractionButton(style: .primary, action: {}) {
+            let view = PlatformInteractionButton(style: .primary, action: {}, identifierName: "TestButton") {
                 platformPresentContent_L1(content: "Test Button", hints: PresentationHints())
             }
             .named("TestButton")
@@ -57,7 +57,7 @@ open class AccessibilityIdentifierDisabledTests: BaseTestClass {
             config.enableAutoIDs = false  // ← DISABLED
             
             // Test: Manual accessibility identifiers should still work when automatic is disabled
-            let view = PlatformInteractionButton(style: .primary, action: {}) {
+            let view = PlatformInteractionButton(style: .primary, action: {}, identifierName: "TestButton") {
                 platformPresentContent_L1(content: "Test Button", hints: PresentationHints())
             }
             .accessibilityIdentifier("manual-test-button")

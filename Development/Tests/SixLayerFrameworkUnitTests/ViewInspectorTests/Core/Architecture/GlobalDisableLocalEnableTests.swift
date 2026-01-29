@@ -31,12 +31,12 @@ open class GlobalDisableLocalEnableTDDTests: BaseTestClass {
             config.enableAutoIDs = false
             config.enableDebugLogging = true
             
-            // 2. Create a framework component with local enable
+            // 2. Create a framework component with local enable; use platformButton so the button has an identifierName (L1 pattern)
             let view = platformPresentContent_L1(
-                content: Button("Framework Button") { },
+                content: platformButton("Framework Button") { },
                 hints: PresentationHints()
             )
-            .automaticCompliance()  // ← Local enable should override global disable
+            .automaticCompliance(identifierName: "FrameworkButton")  // ← Local enable + name so ID is generated
             
             // 3. Generate ID
             // VERIFIED: Framework function has .automaticCompliance() modifier applied

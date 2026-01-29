@@ -21,7 +21,7 @@ open class AppleHIGComplianceComponentAccessibilityTests: BaseTestClass {
         // Given: Framework components (testing our framework, not SwiftUI)
         let testContent = platformVStackContainer {
             platformPresentContent_L1(content: "HIG Compliance Content", hints: PresentationHints())
-            PlatformInteractionButton(style: .primary, action: {}) {
+            PlatformInteractionButton(style: .primary, action: {}, identifierName: "TestButton") {
                 platformPresentContent_L1(content: "Test Button", hints: PresentationHints())
             }
         }

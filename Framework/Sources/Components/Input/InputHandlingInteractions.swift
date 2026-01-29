@@ -464,21 +464,29 @@ public enum SwipeDirection: Equatable {
 
 // MARK: - Platform-Specific Interaction Components
 
-/// Platform-specific interaction components that adapt to different input methods
+/// Platform-specific interaction components that adapt to different input methods.
+/// To have accessibility identifiers applied (per L1 pattern), pass `identifierName` and/or
+/// `accessibilityLabel`; otherwise callers must use `.named("...")` for IDs.
 public struct PlatformInteractionButton<Label: View>: View {
     let label: Label
     let action: () -> Void
     let style: InteractionButtonStyle
+    let identifierName: String?
+    let accessibilityLabel: String?
     
     @StateObject private var inputManager = InputHandlingManager()
     
     public init(
         style: InteractionButtonStyle = .adaptive,
         action: @escaping () -> Void,
+        identifierName: String? = nil,
+        accessibilityLabel: String? = nil,
         @ViewBuilder label: () -> Label
     ) {
         self.style = style
         self.action = action
+        self.identifierName = identifierName
+        self.accessibilityLabel = accessibilityLabel
         self.label = label()
     }
     
@@ -500,7 +508,11 @@ public struct PlatformInteractionButton<Label: View>: View {
                 .foregroundColor(.white)
                 .cornerRadius(8)
         }
-        .automaticCompliance()
+        .automaticCompliance(
+            identifierName: identifierName.map(sanitizeLabelText),
+            identifierElementType: "Button",
+            accessibilityLabel: accessibilityLabel
+        )
     }
     
     private func backgroundColorForStyle(_ style: InteractionButtonStyle) -> Color {
