@@ -125,9 +125,9 @@ See `PROJECT_RULES.md` section "Git Workflow and Commit Practices" for more deta
 ### Push Command Format:
 ```bash
 # For pushing commits, use:
-run_terminal_cmd(command="git push origin <branch>", required_permissions=["network", "git_write"])
+run_terminal_cmd(command="git push all", required_permissions=["network", "git_write"])
 # Or for full permissions:
-run_terminal_cmd(command="git push origin <branch>", required_permissions=["all"])
+run_terminal_cmd(command="git push all", required_permissions=["all"])
 ```
 
 ### Enforcement:
