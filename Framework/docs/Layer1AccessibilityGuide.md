@@ -19,6 +19,7 @@ Every Layer 1 function that returns a `View` automatically includes:
 - Descriptive text read by VoiceOver
 - Automatically extracted from view content when available
 - Can be explicitly provided via `accessibilityLabel` parameter
+- When `accessibilityLabel` is nil, `identifierLabel` is used as the VoiceOver label (see `AutomaticAccessibilityIdentifiers.md` and `AccessibilityLabelsGuide.md`)
 
 ### ✅ **Accessibility Hints**
 - Helpful hints explaining element purpose
@@ -289,7 +290,7 @@ All have:
 
 ### Providing Custom Labels
 
-Some functions support optional `accessibilityLabel` parameters:
+Some functions support optional `accessibilityLabel` parameters. When `accessibilityLabel` is not provided, `.automaticCompliance()` uses `identifierLabel` as the VoiceOver label (localized and formatted). Pass raw text for `identifierLabel`; do not sanitize it.
 
 ```swift
 // Text field with custom label

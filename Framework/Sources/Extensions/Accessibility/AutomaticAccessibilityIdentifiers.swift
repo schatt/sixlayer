@@ -956,8 +956,8 @@ public extension View {
     /// - Parameters:
     ///   - identifierName: Optional component name for identifier generation (e.g., "platformNavigationButton_L4")
     ///   - identifierElementType: Optional element type hint (e.g., "Button", "Link", "TextField")
-    ///   - identifierLabel: Optional label text to include in identifier (e.g., button title)
-    ///   - accessibilityLabel: Optional accessibility label for VoiceOver users (Issue #154)
+    ///   - identifierLabel: Optional label text to include in identifier (e.g., button title). When `accessibilityLabel` is nil, this is also used as the VoiceOver label (localized and formatted).
+    ///   - accessibilityLabel: Optional accessibility label for VoiceOver users (Issue #154). When nil, `identifierLabel` is used as the VoiceOver label when present.
     ///   - accessibilityHint: Optional accessibility hint explaining element purpose (Issue #165)
     ///   - accessibilityTraits: Optional accessibility traits (e.g., .isButton, .isLink) (Issue #165)
     ///   - accessibilityValue: Optional accessibility value for stateful elements (Issue #165)
@@ -990,8 +990,8 @@ public extension View {
     /// Framework components should use this to set their own name for better identifier generation
     /// - Parameters:
     ///   - componentName: The name of the component (e.g., "CoverFlowCardComponent")
-    ///   - identifierLabel: Optional label text to include in identifier (e.g., button title)
-    ///   - accessibilityLabel: Optional accessibility label for VoiceOver users (Issue #154)
+    ///   - identifierLabel: Optional label text to include in identifier (e.g., button title). When `accessibilityLabel` is nil, this is also used as the VoiceOver label.
+    ///   - accessibilityLabel: Optional accessibility label for VoiceOver users (Issue #154). When nil, `identifierLabel` is used as the VoiceOver label when present.
     ///   - accessibilityHint: Optional accessibility hint explaining element purpose (Issue #165)
     ///   - accessibilityTraits: Optional accessibility traits (e.g., .isButton, .isLink) (Issue #165)
     ///   - accessibilityValue: Optional accessibility value for stateful elements (Issue #165)
@@ -1241,13 +1241,12 @@ public struct BasicAutomaticComplianceModifier: ViewModifier {
         }
         
         // Helper to conditionally apply accessibility label
-        // Only apply if explicitly provided via parameter AND an identifier is present
-        // This ensures labels are only applied when identifiers are present (consistent behavior)
+        // Use accessibilityLabel when provided; otherwise fall back to identifierLabel (same text, used for both identifier and VoiceOver).
+        // Only apply if we have a non-empty label AND an identifier is present.
         @ViewBuilder
         func applyAccessibilityLabelIfNeeded<V: View>(to view: V) -> some View {
-            // Only apply label if identifier is present - ensures consistent behavior
-            // If no identifier, we're not doing compliance, so skip label too
-            if let label = accessibilityLabel, !label.isEmpty, identifier != nil {
+            let effectiveLabel = accessibilityLabel ?? identifierLabel
+            if let label = effectiveLabel, !label.isEmpty, identifier != nil {
                 // Localize and format label according to Apple HIG guidelines
                 let localizedLabel = localizeAccessibilityLabel(
                     label,

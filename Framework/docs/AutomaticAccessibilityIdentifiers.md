@@ -314,6 +314,43 @@ Example: "user-1"
 - Converted to lowercase
 - Example: `"User Profile"` → `"user-profile"`
 
+## Using `.automaticCompliance()` – Parameters and Labels
+
+All hints are passed as **parameters** (no environment). Labels for VoiceOver are derived from parameters as follows.
+
+### Parameters
+
+| Parameter | Used for | Caller should pass |
+|-----------|----------|--------------------|
+| `identifierName` | Component name segment in the generated identifier (e.g. `"save"` in `app.main.ui.save.Button`). **Not sanitized** by the modifier. | Typically `sanitizeLabelText(title)` so the ID segment is lowercase and hyphenated. |
+| `identifierElementType` | Element type in the identifier (e.g. `"Button"`, `"TextField"`). | Type string, e.g. `"Button"`. |
+| `identifierLabel` | (1) **Identifier:** sanitized internally and appended to the identifier. (2) **VoiceOver:** when `accessibilityLabel` is nil, used as the VoiceOver label (localized and formatted). | **Raw** text (e.g. `title` or `"Save"`). Do not sanitize; the modifier sanitizes for the ID and uses raw text for VoiceOver. |
+| `accessibilityLabel` | VoiceOver label only. When provided, it overrides `identifierLabel` for VoiceOver. | Localization key or plain text. |
+
+### VoiceOver label fallback
+
+When `accessibilityLabel` is nil or empty, **`identifierLabel` is used as the VoiceOver label** (after localization and HIG formatting, e.g. punctuation). So a single label parameter can drive both the identifier and VoiceOver:
+
+```swift
+// One label for both identifier and VoiceOver
+.automaticCompliance(
+    identifierName: sanitizeLabelText(title),  // ID segment: "save"
+    identifierLabel: title                     // ID segment + VoiceOver: "Save." (formatted)
+)
+
+// Explicit VoiceOver label overrides identifierLabel for VoiceOver only
+.automaticCompliance(
+    identifierName: sanitizeLabelText(title),
+    identifierLabel: title,
+    accessibilityLabel: "MyApp.accessibility.button.save"  // VoiceOver uses this; identifier still uses title
+)
+```
+
+### Do not sanitize twice
+
+- **`identifierName`**: Caller sanitizes so the component name in the ID is consistent (e.g. `"save"`).
+- **`identifierLabel`**: Pass raw text. The modifier sanitizes it when building the identifier and uses the raw value for VoiceOver (so users hear "Save." not "save").
+
 ## Integration Points
 
 ### Apple HIG Compliance

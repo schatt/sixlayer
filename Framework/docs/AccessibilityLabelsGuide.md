@@ -8,12 +8,25 @@ SixLayerFramework automatically generates accessibility labels for VoiceOver com
 
 ## How Labels Are Generated
 
-The framework uses a **parameter-based approach** (per Issue #160) where labels are passed explicitly to `automaticCompliance()`:
+The framework uses a **parameter-based approach** (per Issue #160) where labels are passed explicitly to `automaticCompliance()`.
+
+### Two label parameters
+
+- **`accessibilityLabel`** – Used only for the VoiceOver label (localized and formatted).
+- **`identifierLabel`** – Used for (1) the accessibility identifier (sanitized internally) and (2) the VoiceOver label when `accessibilityLabel` is nil.
+
+So if you pass only `identifierLabel`, the same text is used for both the identifier and VoiceOver (identifier segment is sanitized; VoiceOver gets the raw text, localized and formatted). If you pass both, `accessibilityLabel` wins for VoiceOver; `identifierLabel` still affects the identifier.
 
 ```swift
 // Explicit label (recommended)
 platformButton(label: "Save document", action: { save() })
 platformTextField(label: "Email address", prompt: "Enter email", text: $email)
+
+// One label for both identifier and VoiceOver – pass raw text as identifierLabel
+.automaticCompliance(
+    identifierName: sanitizeLabelText(title),
+    identifierLabel: title   // Raw "Save"; modifier sanitizes for ID, uses raw for VoiceOver
+)
 
 // Layer 1 functions automatically use field.label
 platformPresentFormData_L1(field: field, hints: hints)
@@ -244,9 +257,14 @@ All labels are passed as **parameters** to `automaticCompliance()` (not environm
 // ✅ Correct: Parameter-based
 .automaticCompliance(accessibilityLabel: field.label)
 
+// ✅ Also correct: identifierLabel used as VoiceOver label when accessibilityLabel is nil
+.automaticCompliance(identifierName: sanitizeLabelText(title), identifierLabel: title)
+
 // ❌ Incorrect: Environment-based (deprecated)
 .environment(\.accessibilityLabelText, field.label)
 ```
+
+**VoiceOver label fallback:** When `accessibilityLabel` is nil, `identifierLabel` is used as the VoiceOver label (localized and formatted). Pass **raw** text for `identifierLabel`; do not sanitize it. The modifier sanitizes it only for the identifier and uses the raw value for VoiceOver.
 
 This approach:
 - Makes labels explicit and testable
