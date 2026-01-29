@@ -35,6 +35,7 @@ import AppKit
 /// 
 
 /// Depth-first search for the first non-empty accessibility identifier in the platform view hierarchy.
+/// Traverses up to 40 levels deep to find identifiers in complex SwiftUI-hosted hierarchies.
 @MainActor
 public func firstAccessibilityIdentifier(inHosted root: Any?) -> String? {
     #if canImport(UIKit)
@@ -46,27 +47,22 @@ public func firstAccessibilityIdentifier(inHosted root: Any?) -> String? {
         return id
     }
     
-    // Search through all subviews more thoroughly
-    // 6LAYER_ALLOW: test utilities must traverse platform-specific view hierarchies for accessibility testing
-    var stack: [UIView] = rootView.subviews
-    var depth = 0
+    let maxDepth = 40
+    var stack: [(UIView, Int)] = rootView.subviews.map { ($0, 1) }
     var checkedViews: Set<ObjectIdentifier> = []
     
-    while let next = stack.popLast(), depth < 20 { // Increased depth limit
+    while let (next, depth) = stack.popLast(), depth <= maxDepth {
         let nextId = ObjectIdentifier(next)
-        if checkedViews.contains(nextId) {
-            continue // Avoid infinite loops
-        }
+        if checkedViews.contains(nextId) { continue }
         checkedViews.insert(nextId)
         
         if let id = next.accessibilityIdentifier, !id.isEmpty {
             return id
         }
-        
-        // Add all subviews to the stack
-        // 6LAYER_ALLOW: test utilities must traverse platform-specific view hierarchies for accessibility testing
-        stack.append(contentsOf: next.subviews)
-        depth += 1
+        if depth < maxDepth {
+            // 6LAYER_ALLOW: test utilities must traverse platform-specific view hierarchies for accessibility testing
+            stack.append(contentsOf: next.subviews.map { ($0, depth + 1) })
+        }
     }
     return nil
     #elseif canImport(AppKit)
@@ -81,28 +77,21 @@ public func firstAccessibilityIdentifier(inHosted root: Any?) -> String? {
         return rootId
     }
     
-    // Search through all subviews more thoroughly
-    // 6LAYER_ALLOW: test utilities must traverse platform-specific view hierarchies for accessibility testing
-    var stack: [NSView] = rootView.subviews
-    var depth = 0
+    let maxDepth = 40
+    var stack: [(NSView, Int)] = rootView.subviews.map { ($0, 1) }
     var checkedViews: Set<ObjectIdentifier> = []
     
-    while let next = stack.popLast(), depth < 20 { // Increased depth limit
+    while let (next, depth) = stack.popLast(), depth <= maxDepth {
         let nextId = ObjectIdentifier(next)
-        if checkedViews.contains(nextId) {
-            continue // Avoid infinite loops
-        }
+        if checkedViews.contains(nextId) { continue }
         checkedViews.insert(nextId)
         
         let id = next.accessibilityIdentifier()
-        if !id.isEmpty {
-            return id
+        if !id.isEmpty { return id }
+        if depth < maxDepth {
+            // 6LAYER_ALLOW: test utilities must traverse platform-specific view hierarchies for accessibility testing
+            stack.append(contentsOf: next.subviews.map { ($0, depth + 1) })
         }
-        
-        // Add all subviews to the stack
-        // 6LAYER_ALLOW: test utilities must traverse platform-specific view hierarchies for accessibility testing
-        stack.append(contentsOf: next.subviews)
-        depth += 1
     }
     return nil
     #else
