@@ -34,36 +34,65 @@ import AppKit
 /// The hang occurs when accessing `hosting.view` - a synchronous UIKit/AppKit call that cannot be timed out.
 /// 
 
-/// Get accessibility identifier for a view in tests: tries ViewInspector first (root or first Button),
-/// then falls back to platform view traversal (hostedRoot). Use when either path may apply.
+/// Get accessibility identifier: ViewInspector (real hierarchy) when view is Inspectable, else platform fallback only.
+#if canImport(ViewInspector)
+@MainActor
+public func getAccessibilityIdentifierForTest<V: View & ViewInspector.Inspectable>(view: V, hostedRoot: Any? = nil) -> String? {
+    if let inspected = inspectView(view) {
+        if let id = try? inspected.accessibilityIdentifier(), !id.isEmpty { return id }
+        if let button = try? inspected.button(), let id = try? button.accessibilityIdentifier(), !id.isEmpty { return id }
+    }
+    guard let root = hostedRoot else { return nil }
+    return firstAccessibilityIdentifier(inHosted: root)
+}
+#endif
+
+/// Get accessibility identifier when view is not Inspectable: try ViewInspector via AnyView + unwrap, then platform fallback (Issue 178).
 @MainActor
 public func getAccessibilityIdentifierForTest<V: View>(view: V, hostedRoot: Any? = nil) -> String? {
     #if canImport(ViewInspector)
-    do {
-        let inspected = try AnyView(view).inspect()
-        if let id = try? inspected.accessibilityIdentifier(), !id.isEmpty {
-            return id
+    if let inspected = try? AnyView(view).inspect() {
+        if let inner = try? inspected.anyView() {
+            if let id = try? inner.accessibilityIdentifier(), !id.isEmpty { return id }
+            if let button = try? inner.button(), let id = try? button.accessibilityIdentifier(), !id.isEmpty { return id }
         }
-        if let button = try? inspected.button(), let id = try? button.accessibilityIdentifier(), !id.isEmpty {
-            return id
-        }
-    } catch { /* fall through to platform traversal */ }
+        if let id = try? inspected.accessibilityIdentifier(), !id.isEmpty { return id }
+        if let button = try? inspected.button(), let id = try? button.accessibilityIdentifier(), !id.isEmpty { return id }
+    }
     #endif
     guard let root = hostedRoot else { return nil }
     return firstAccessibilityIdentifier(inHosted: root)
 }
 
-/// Get accessibility label for a view in tests: tries ViewInspector first (root accessibilityLabel then .string()),
-/// then falls back to platform view traversal (hostedRoot). Use when either path may apply.
+/// Get accessibility label: ViewInspector (real hierarchy) when view is Inspectable, else platform fallback only.
+#if canImport(ViewInspector)
 @MainActor
-public func getAccessibilityLabelForTest<V: View>(view: V, hostedRoot: Any? = nil) -> String? {
-    #if canImport(ViewInspector)
-    do {
-        let inspected = try AnyView(view).inspect()
+public func getAccessibilityLabelForTest<V: View & ViewInspector.Inspectable>(view: V, hostedRoot: Any? = nil) -> String? {
+    if let inspected = inspectView(view) {
         if let labelView = try? inspected.accessibilityLabel(), let labelText = try? labelView.string(), !labelText.isEmpty {
             return labelText
         }
-    } catch { /* fall through to platform traversal */ }
+    }
+    guard let root = hostedRoot else { return nil }
+    return firstAccessibilityLabel(inHosted: root)
+}
+#endif
+
+/// Get accessibility label when view is not Inspectable: try ViewInspector via AnyView + unwrap, then platform fallback (Issue 178).
+@MainActor
+public func getAccessibilityLabelForTest<V: View>(view: V, hostedRoot: Any? = nil) -> String? {
+    #if canImport(ViewInspector)
+    if let inspected = try? AnyView(view).inspect() {
+        if let inner = try? inspected.anyView(),
+           let labelView = try? inner.accessibilityLabel(),
+           let labelText = try? labelView.string(), !labelText.isEmpty {
+            return labelText
+        }
+        if let labelView = try? inspected.accessibilityLabel(),
+           let labelText = try? labelView.string(), !labelText.isEmpty {
+            return labelText
+        }
+    }
     #endif
     guard let root = hostedRoot else { return nil }
     return firstAccessibilityLabel(inHosted: root)
@@ -288,17 +317,12 @@ public enum AccessibilityTestUtilities {
         #if canImport(ViewInspector)
         do {
             let inspected = try AnyView(view).inspect()
-            // First, try to read an accessibility identifier directly from the
-            // inspected root view. For many simple cases this is sufficient.
-            if let directID = try? inspected.accessibilityIdentifier(), !directID.isEmpty {
-                return directID
+            if let inner = try? inspected.anyView() {
+                if let directID = try? inner.accessibilityIdentifier(), !directID.isEmpty { return directID }
+                if let button = try? inner.button(), let buttonID = try? button.accessibilityIdentifier(), !buttonID.isEmpty { return buttonID }
             }
-            
-            // Fallback: look for an underlying Button and read its identifier.
-            if let button = try? inspected.button(),
-               let buttonID = try? button.accessibilityIdentifier(), !buttonID.isEmpty {
-                return buttonID
-            }
+            if let directID = try? inspected.accessibilityIdentifier(), !directID.isEmpty { return directID }
+            if let button = try? inspected.button(), let buttonID = try? button.accessibilityIdentifier(), !buttonID.isEmpty { return buttonID }
             // If we reach here, ViewInspector couldn't find an identifier. This is
             // treated as an inspection limitation rather than a hard failure; the
             // caller can decide whether to assert or treat it as "cannot verify".

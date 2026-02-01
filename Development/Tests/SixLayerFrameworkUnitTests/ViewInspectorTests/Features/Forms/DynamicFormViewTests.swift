@@ -69,8 +69,8 @@ open class DynamicFormViewTests: BaseTestClass {
         // Should render proper form structure
         #if canImport(ViewInspector)
         do {
-            try withInspectedViewThrowing(view) { inspected in
-                // Should have a VStack as root
+            try withInspectedViewThrowingUnwrapped(view) { inspected in
+                // Should have a VStack as root (inspected is unwrapped AnyView content)
                 let vStack = try inspected.vStack()
                 #expect(vStack.count >= 3, "Should have title, sections, and submit button")
 
@@ -117,7 +117,7 @@ open class DynamicFormViewTests: BaseTestClass {
         // Should render proper section structure
         #if canImport(ViewInspector)
         do {
-            try withInspectedViewThrowing(view) { inspected in
+            try withInspectedViewThrowingUnwrapped(view) { inspected in
                 // Should have a VStack with leading alignment
                 let vStack = try inspected.vStack()
                 #expect(vStack.count >= 3, "Should have section title and field views")
@@ -175,7 +175,7 @@ open class DynamicFormViewTests: BaseTestClass {
         // Should render normally without DisclosureGroup
         #if canImport(ViewInspector)
         do {
-            try withInspectedViewThrowing(view) { inspected in
+            try withInspectedViewThrowingUnwrapped(view) { inspected in
                 let vStack = try inspected.vStack()
                 #expect(vStack.count >= 2, "Should have section title and fields")
                 
@@ -222,7 +222,7 @@ open class DynamicFormViewTests: BaseTestClass {
         // But we can verify the view structure is correct
         #if canImport(ViewInspector)
         do {
-            try withInspectedViewThrowing(view) { inspected in
+            try withInspectedViewThrowingUnwrapped(view) { inspected in
                 let vStack = try inspected.vStack()
                 #expect(vStack.count >= 2, "Should have field label and field control")
                 
@@ -270,7 +270,7 @@ open class DynamicFormViewTests: BaseTestClass {
         // Should render proper field structure
         #if canImport(ViewInspector)
         do {
-            try withInspectedViewThrowing(view) { inspected in
+            try withInspectedViewThrowingUnwrapped(view) { inspected in
                 // Should have a VStack with leading alignment
                 let vStack = try inspected.vStack()
                 #expect(vStack.count >= 2, "Should have field label and field control")
@@ -330,7 +330,7 @@ open class DynamicFormViewTests: BaseTestClass {
         // Should render HStack with label and asterisk
         #if canImport(ViewInspector)
         do {
-            try withInspectedViewThrowing(view) { inspected in
+            try withInspectedViewThrowingUnwrapped(view) { inspected in
                 let vStack = try inspected.vStack()
                 // First element should be HStack containing label and asterisk
                 let hStacks = vStack.findAll(ViewInspector.ViewType.HStack.self)
@@ -384,7 +384,7 @@ open class DynamicFormViewTests: BaseTestClass {
         // Should render HStack with only label (no asterisk)
         #if canImport(ViewInspector)
         do {
-            try withInspectedViewThrowing(view) { inspected in
+            try withInspectedViewThrowingUnwrapped(view) { inspected in
                 let vStack = try inspected.vStack()
                 // First element should be HStack containing only label
                 let hStacks = vStack.findAll(ViewInspector.ViewType.HStack.self)
@@ -519,7 +519,7 @@ open class DynamicFormViewTests: BaseTestClass {
         // Should render HStack with label and info button
         #if canImport(ViewInspector)
         do {
-            try withInspectedViewThrowing(view) { inspected in
+            try withInspectedViewThrowingUnwrapped(view) { inspected in
                 let vStack = try inspected.vStack()
                 // First element should be HStack containing label and info button
                 let hStacks = vStack.findAll(ViewInspector.ViewType.HStack.self)
@@ -569,7 +569,7 @@ open class DynamicFormViewTests: BaseTestClass {
         // Should render HStack with only label (no info button)
         #if canImport(ViewInspector)
         do {
-            try withInspectedViewThrowing(view) { inspected in
+            try withInspectedViewThrowingUnwrapped(view) { inspected in
                 let vStack = try inspected.vStack()
                 // First element should be HStack containing only label
                 let hStacks = vStack.findAll(ViewInspector.ViewType.HStack.self)
@@ -658,7 +658,7 @@ open class DynamicFormViewTests: BaseTestClass {
         // Description should not be rendered as Text in VStack
         #if canImport(ViewInspector)
         do {
-            try withInspectedViewThrowing(view) { inspected in
+            try withInspectedViewThrowingUnwrapped(view) { inspected in
                 let vStack = try inspected.vStack()
                 // Should not have description text as a separate Text element
                 // Description should only be in popover/tooltip, not as visible text
