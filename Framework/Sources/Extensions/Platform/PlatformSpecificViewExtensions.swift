@@ -145,8 +145,8 @@ public extension View {
         clampedHeight = height
         #endif
         
-        // Use SwiftUI's frame modifier with alignment
-        return AnyView(self.frame(width: clampedWidth, height: clampedHeight, alignment: alignment))
+        // Use SwiftUI's frame modifier with alignment (no AnyView — Issue 178)
+        return self.frame(width: clampedWidth, height: clampedHeight, alignment: alignment)
     }
     
     /// Platform-specific frame constraints with custom sizes
@@ -161,8 +161,9 @@ public extension View {
     ///   - idealHeight: Ideal height constraint (clamped to screen/window size on all platforms)
     ///   - maxHeight: Maximum height constraint (clamped to screen/window size on both platforms)
     ///   - alignment: Alignment of the content within the frame (default: .center)
-    /// - Returns: A view with platform-specific frame constraints
+    /// - Returns: A view with platform-specific frame constraints (no AnyView — Issue 178)
     @MainActor
+    @ViewBuilder
     func platformFrame(
         minWidth: CGFloat? = nil,
         idealWidth: CGFloat? = nil,
@@ -187,8 +188,7 @@ public extension View {
                               clamped.minHeight != nil || clamped.idealHeight != nil || clamped.maxHeight != nil
         
         if hasAnyConstraint {
-            // Use SwiftUI's frame modifier which handles all combinations, including alignment
-            return AnyView(self.frame(
+            self.frame(
                 minWidth: clamped.minWidth,
                 idealWidth: clamped.idealWidth,
                 maxWidth: clamped.maxWidth,
@@ -196,14 +196,11 @@ public extension View {
                 idealHeight: clamped.idealHeight,
                 maxHeight: clamped.maxHeight,
                 alignment: alignment
-            ))
+            )
+        } else if let defaultMax = PlatformFrameHelpers.getDefaultMaxFrameSize() {
+            self.frame(maxWidth: defaultMax.width, maxHeight: defaultMax.height, alignment: alignment)
         } else {
-            // No constraints provided, apply default max constraints for safety on mobile platforms
-            if let defaultMax = PlatformFrameHelpers.getDefaultMaxFrameSize() {
-                return AnyView(self.frame(maxWidth: defaultMax.width, maxHeight: defaultMax.height, alignment: alignment))
-            } else {
-                return AnyView(self)
-            }
+            self
         }
     }
     
@@ -221,16 +218,13 @@ public extension View {
     /// - Parameter topPadding: Custom top padding value
     /// - Returns: A view with platform-specific content spacing
     func platformContentSpacing(topPadding: CGFloat) -> some View {
-        #if os(iOS)
-        return AnyView(self.padding(.horizontal).padding(.top, topPadding))
-            .automaticCompliance()
-        #elseif os(macOS)
-        return AnyView(self.padding(.horizontal).padding(.top, topPadding * 0.8))
-            .automaticCompliance()
+        #if os(macOS)
+        let padding = topPadding * 0.8
         #else
-        return AnyView(self.padding(.horizontal).padding(.top, topPadding))
-            .automaticCompliance()
+        let padding = topPadding
         #endif
+        return self.padding(.horizontal).padding(.top, padding)
+            .automaticCompliance()
     }
 
     /// Platform-specific content spacing with custom directional padding
@@ -248,28 +242,17 @@ public extension View {
         leading: CGFloat? = nil,
         trailing: CGFloat? = nil
     ) -> some View {
-        #if os(iOS)
-        return AnyView(self
-            .padding(.top, top ?? 0)
-            .padding(.bottom, bottom ?? 0)
-            .padding(.leading, leading ?? 0)
-            .padding(.trailing, trailing ?? 0))
-            .automaticCompliance()
-        #elseif os(macOS)
-        return AnyView(self
-            .padding(.top, (top ?? 0) * 0.8)
-            .padding(.bottom, (bottom ?? 0) * 0.8)
-            .padding(.leading, (leading ?? 0) * 0.8)
-            .padding(.trailing, (trailing ?? 0) * 0.8))
-            .automaticCompliance()
+        #if os(macOS)
+        let scale: CGFloat = 0.8
         #else
-        return AnyView(self
-            .padding(.top, top ?? 0)
-            .padding(.bottom, bottom ?? 0)
-            .padding(.leading, leading ?? 0)
-            .padding(.trailing, trailing ?? 0))
-            .automaticCompliance()
+        let scale: CGFloat = 1.0
         #endif
+        return self
+            .padding(.top, (top ?? 0) * scale)
+            .padding(.bottom, (bottom ?? 0) * scale)
+            .padding(.leading, (leading ?? 0) * scale)
+            .padding(.trailing, (trailing ?? 0) * scale)
+            .automaticCompliance()
     }
 
     /// Platform-specific content spacing with horizontal and vertical padding
@@ -283,22 +266,15 @@ public extension View {
         horizontal: CGFloat? = nil,
         vertical: CGFloat? = nil
     ) -> some View {
-        #if os(iOS)
-        return AnyView(self
-            .padding(.horizontal, horizontal ?? 0)
-            .padding(.vertical, vertical ?? 0))
-            .automaticCompliance()
-        #elseif os(macOS)
-        return AnyView(self
-            .padding(.horizontal, (horizontal ?? 0) * 0.8)
-            .padding(.vertical, (vertical ?? 0) * 0.8))
-            .automaticCompliance()
+        #if os(macOS)
+        let scale: CGFloat = 0.8
         #else
-        return AnyView(self
-            .padding(.horizontal, horizontal ?? 0)
-            .padding(.vertical, vertical ?? 0))
-            .automaticCompliance()
+        let scale: CGFloat = 1.0
         #endif
+        return self
+            .padding(.horizontal, (horizontal ?? 0) * scale)
+            .padding(.vertical, (vertical ?? 0) * scale)
+            .automaticCompliance()
     }
 
     /// Platform-specific content spacing with uniform padding on all sides
@@ -306,32 +282,20 @@ public extension View {
     ///
     /// - Parameter all: Custom padding value applied to all sides
     /// - Returns: A view with platform-specific content spacing
+    @ViewBuilder
     func platformContentSpacing(all: CGFloat? = nil) -> some View {
-        #if os(iOS)
-        if let all = all {
-            return AnyView(self.padding(.horizontal, all).padding(.vertical, all))
-                .automaticCompliance()
-        } else {
-            return AnyView(self.padding(.horizontal).padding(.top, 20))
-                .automaticCompliance()
-        }
-        #elseif os(macOS)
-        if let all = all {
-            return AnyView(self.padding(.horizontal, all * 0.8).padding(.vertical, all * 0.8))
-                .automaticCompliance()
-        } else {
-            return AnyView(self.padding(.horizontal).padding(.top, 16))
-                .automaticCompliance()
-        }
+        #if os(macOS)
+        let scale: CGFloat = 0.8
+        let defaultTop: CGFloat = 16
         #else
-        if let all = all {
-            return AnyView(self.padding(.horizontal, all).padding(.vertical, all))
-                .automaticCompliance()
-        } else {
-            return AnyView(self.padding(.horizontal).padding(.top, 20))
-                .automaticCompliance()
-        }
+        let scale: CGFloat = 1.0
+        let defaultTop: CGFloat = 20
         #endif
+        if let all = all {
+            self.padding(.horizontal, all * scale).padding(.vertical, all * scale).automaticCompliance()
+        } else {
+            self.padding(.horizontal).padding(.top, defaultTop).automaticCompliance()
+        }
     }
 
     // MARK: - Navigation Configuration
@@ -349,20 +313,21 @@ public extension View {
     }
 
     /// Platform-specific presentation detents (iOS only)
-    /// Applies presentation detents on iOS, no-op on other platforms
+    /// Applies presentation detents on iOS, no-op on other platforms (no AnyView — Issue 178)
+    @ViewBuilder
     func platformPresentationDetents(_ detents: [Any]) -> some View {
         #if os(iOS)
         if #available(iOS 16.0, *) {
             if let presentationDetents = detents.compactMap({ $0 as? PresentationDetent }) as? [PresentationDetent] {
-                return AnyView(self.presentationDetents(Set(presentationDetents)))
+                self.presentationDetents(Set(presentationDetents))
             } else {
-                return AnyView(self)
+                self
             }
         } else {
-            return AnyView(self)
+            self
         }
         #else
-        return AnyView(self)
+        self
         #endif
     }
 
@@ -1381,22 +1346,21 @@ public extension View {
 
 
 
-    /// Platform-specific navigation with path (iOS 16+ only)
+    /// Platform-specific navigation with path (iOS 16+ only) (no AnyView — Issue 178)
     /// iOS: Uses NavigationStack with path; macOS: Returns content directly
+    @ViewBuilder
     func platformNavigationWithPath<Root: View>(
         path: Binding<NavigationPath>,
         @ViewBuilder root: () -> Root
     ) -> some View {
         #if os(iOS)
         if #available(iOS 16.0, *) {
-            return AnyView(NavigationStack(path: path, root: root))
+            NavigationStack(path: path, root: root)
         } else {
-            // iOS 15 fallback: ignore path, just return root
-            return AnyView(root())
+            root()
         }
         #else
-        // macOS: return content directly
-        return AnyView(root())
+        root()
         #endif
     }
 
@@ -1419,27 +1383,23 @@ public extension View {
         #endif
     }
 
-    /// Platform-specific navigation state management with multiple data types
-    /// Provides consistent navigation state handling with multiple typed data across platforms
-    ///
+    /// Platform-specific navigation state management with multiple data types (no AnyView — Issue 178)
     /// - Parameters:
     ///   - path: Binding to the navigation path
     ///   - root: The root view
-    /// - Returns: A platform-specific navigation container with multiple typed state management
+    @ViewBuilder
     func platformNavigationWithPath<Data: Hashable, Root: View>(
         path: Binding<NavigationPath>,
         @ViewBuilder root: () -> Root
     ) -> some View {
         #if os(iOS)
         if #available(iOS 16.0, *) {
-            return AnyView(NavigationStack(path: path, root: root))
+            NavigationStack(path: path, root: root)
         } else {
-            // iOS 15 fallback: ignore path, just return root
-            return AnyView(root())
+            root()
         }
         #else
-        // macOS: return content directly
-        return AnyView(root())
+        root()
         #endif
     }
 
@@ -2587,27 +2547,20 @@ public extension View {
 
 
     // MARK: - Device-Aware Frame Sizing (Layer 4: Device-Specific Sizing)
-    /// Device-aware frame sizing for optimal display across different devices
-    /// This function provides device-specific sizing logic
+    /// Device-aware frame sizing for optimal display across different devices (no AnyView — Issue 178)
     /// Layer 4: Device-specific implementation for iPad vs iPhone sizing differences
+    @ViewBuilder
     func deviceAwareFrame() -> some View {
         #if os(iOS)
-        // iOS: Device-aware sizing based on device type and orientation
         if SixLayerPlatform.deviceType == .pad {
-            // iPad: Fill available space for optimal tablet experience
-            // Supports Split View, Stage Manager, and orientation changes
-            return AnyView(self.frame(maxWidth: .infinity, maxHeight: .infinity))
+            self.frame(maxWidth: .infinity, maxHeight: .infinity)
         } else {
-            // iPhone: Standard sizing - no special constraints
-            // Fixed screen size means we don't need adaptive frame behavior
-            return AnyView(self)
+            self
         }
         #elseif os(macOS)
-        // macOS: Use content-aware adaptive sizing (Layer 4)
-        // This delegates to platformAdaptiveFrame for intelligent content analysis
-            return AnyView(self.platformAdaptiveFrame())
+        self.platformAdaptiveFrame()
         #else
-            return AnyView(self)
+        self
         #endif
     }
 }
