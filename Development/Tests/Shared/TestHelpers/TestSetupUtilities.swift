@@ -85,13 +85,19 @@ public enum TestSetupUtilities {
         // This is a synchronous UIKit call that cannot be timed out or cancelled.
         // If this hangs, the test will hang indefinitely.
         let root = hosting.view
-        // CRITICAL: Store the hosting controller to prevent deallocation
+        // Add hosting view to a window so SwiftUI propagates accessibilityIdentifier to the UIView hierarchy.
+        // Without a window, identifiers may not be set on platform views (iOS behavior).
         if let root = root {
-            HostingControllerStorage.store(hosting, for: root)
+            let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 400, height: 400))
+            window.rootViewController = hosting
+            window.makeKeyAndVisible()
+            // Allow one run loop so UIKit/SwiftUI can apply accessibility traits to the hierarchy
+            RunLoop.current.run(until: Date().addingTimeInterval(0.05))
+            // Store both so window and controller stay alive; keyed by root for cleanup
+            HostingControllerStorage.store((controller: hosting, window: window), for: root)
         }
         // CRITICAL: Skip layoutIfNeeded() - it hangs indefinitely on NavigationStack/NavigationView
         // and complex views like platformPresentContent_L1 in test environments without proper window hierarchy.
-        // Accessibility identifiers can be found without forcing layout.
         // root?.setNeedsLayout()
         // root?.layoutIfNeeded()
         

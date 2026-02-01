@@ -29,9 +29,13 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
             let root = Self.hostRootPlatformView(view)
             let buttonID = getAccessibilityIdentifierForTest(view: view, hostedRoot: root)
             
-            // Should handle empty strings gracefully
-            #expect(buttonID != nil && !(buttonID?.isEmpty ?? true), "Should generate ID even with empty parameters")
-            #expect(buttonID?.contains("SixLayer") == true, "Should contain namespace")
+            if buttonID == nil {
+                Issue.record("Inspection unavailable: could not obtain accessibility identifier")
+            }
+            if let id = buttonID {
+                #expect(!id.isEmpty, "Should generate ID even with empty parameters")
+                #expect(id.contains("SixLayer"), "Should contain namespace")
+            }
         }
     }
     
@@ -51,10 +55,14 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
             let root = Self.hostRootPlatformView(view)
             let buttonID = getAccessibilityIdentifierForTest(view: view, hostedRoot: root)
             
-            // Should preserve special characters (NamedModifier uses name as-is in identifier)
-            #expect(buttonID != nil && !(buttonID?.isEmpty ?? true), "Should generate ID with special characters")
-            #expect(buttonID?.contains("SixLayer") == true, "Should contain namespace")
-            #expect(buttonID?.contains("Button") == true || buttonID?.contains("@#$%^&*()") == true, "Should contain name or special characters")
+            if buttonID == nil {
+                Issue.record("Inspection unavailable: could not obtain accessibility identifier")
+            }
+            if let id = buttonID {
+                #expect(!id.isEmpty, "Should generate ID with special characters")
+                #expect(id.contains("SixLayer"), "Should contain namespace")
+                #expect(id.contains("Button") || id.contains("@#$%^&*()"), "Should contain name or special characters")
+            }
         }
     }
     
@@ -76,8 +84,13 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
             let root = Self.hostRootPlatformView(view)
             let buttonID = getAccessibilityIdentifierForTest(view: view, hostedRoot: root)
             
-            #expect(buttonID != nil && !(buttonID?.isEmpty ?? true), "Should generate ID with very long names")
-            #expect(buttonID?.contains("SixLayer") == true, "Should contain namespace")
+            if buttonID == nil {
+                Issue.record("Inspection unavailable: could not obtain accessibility identifier")
+            }
+            if let id = buttonID {
+                #expect(!id.isEmpty, "Should generate ID with very long names")
+                #expect(id.contains("SixLayer"), "Should contain namespace")
+            }
             
             // Warn if extremely long (but don't fail the test)
             if let id = buttonID, id.count > 200 {
@@ -106,7 +119,12 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
             let root = Self.hostRootPlatformView(view)
             let buttonID = getAccessibilityIdentifierForTest(view: view, hostedRoot: root)
             
-            #expect(buttonID == "manual-override", "Manual ID should override automatic ID")
+            if buttonID == nil {
+                Issue.record("Inspection unavailable: could not obtain accessibility identifier")
+            }
+            if let id = buttonID {
+                #expect(id == "manual-override", "Manual ID should override automatic ID")
+            }
         }
     }
     
@@ -130,7 +148,12 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
             
             let root = Self.hostRootPlatformView(view)
             let anyID = getAccessibilityIdentifierForTest(view: view, hostedRoot: root)
-            #expect(anyID != nil && !(anyID?.isEmpty ?? true), "Auto-enabled button should produce an accessibility identifier")
+            if anyID == nil {
+                Issue.record("Inspection unavailable: could not obtain accessibility identifier")
+            }
+            if let id = anyID {
+                #expect(!id.isEmpty, "Auto-enabled button should produce an accessibility identifier")
+            }
         }
     }
     
@@ -149,9 +172,13 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
             let root = Self.hostRootPlatformView(view)
             let vStackID = getAccessibilityIdentifierForTest(view: view, hostedRoot: root)
             
-            // Should handle multiple contexts (last one wins or combines)
-            #expect(vStackID != nil && !(vStackID?.isEmpty ?? true), "Should generate ID with multiple contexts")
-            #expect(vStackID?.contains("SixLayer") == true, "Should contain namespace")
+            if vStackID == nil {
+                Issue.record("Inspection unavailable: could not obtain accessibility identifier")
+            }
+            if let id = vStackID {
+                #expect(!id.isEmpty, "Should generate ID with multiple contexts")
+                #expect(id.contains("SixLayer"), "Should contain namespace")
+            }
         }
     }
     
@@ -180,8 +207,11 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
             let id1 = getAccessibilityIdentifierForTest(view: view1, hostedRoot: root1)
             let id2 = getAccessibilityIdentifierForTest(view: view2, hostedRoot: root2)
             
-            #expect(id1 == "SameName", "exactNamed() should produce exact identifier 'SameName', got '\(id1 ?? "nil")'")
-            #expect(id2 == "SameName", "exactNamed() should produce exact identifier 'SameName', got '\(id2 ?? "nil")'")
+            if id1 == nil || id2 == nil {
+                Issue.record("Inspection unavailable: could not obtain accessibility identifier")
+            }
+            if let i1 = id1 { #expect(i1 == "SameName", "exactNamed() should produce exact identifier 'SameName', got '\(i1)'") }
+            if let i2 = id2 { #expect(i2 == "SameName", "exactNamed() should produce exact identifier 'SameName', got '\(i2)'") }
         }
     }
     
@@ -204,10 +234,15 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
             let exactID = getAccessibilityIdentifierForTest(view: exactView, hostedRoot: exactRoot)
             let namedID = getAccessibilityIdentifierForTest(view: namedView, hostedRoot: namedRoot)
             
-            #expect(exactID != namedID, "exactNamed() should produce different identifiers than named()")
-            #expect(exactID?.contains("TestButton") == true || exactID == "TestButton", "exactNamed() should contain the exact name")
-            #expect(namedID?.contains("TestButton") == true, "named() should contain the name")
-            #expect(exactID == "TestButton", "exactNamed() should produce exact identifier 'TestButton', got '\(exactID ?? "nil")'")
+            if exactID == nil || namedID == nil {
+                Issue.record("Inspection unavailable: could not obtain accessibility identifier")
+            }
+            if let e = exactID, let n = namedID {
+                #expect(e != n, "exactNamed() should produce different identifiers than named()")
+                #expect(e.contains("TestButton") || e == "TestButton", "exactNamed() should contain the exact name")
+                #expect(n.contains("TestButton"), "named() should contain the name")
+                #expect(e == "TestButton", "exactNamed() should produce exact identifier 'TestButton', got '\(e)'")
+            }
         }
     }
     
@@ -232,7 +267,12 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
             let root = Self.hostRootPlatformView(exactView)
             let exactID = getAccessibilityIdentifierForTest(view: exactView, hostedRoot: root)
             
-            #expect(exactID == "SaveButton", "exactNamed() should produce exact identifier 'SaveButton', got '\(exactID ?? "nil")'")
+            if exactID == nil {
+                Issue.record("Inspection unavailable: could not obtain accessibility identifier")
+            }
+            if let id = exactID {
+                #expect(id == "SaveButton", "exactNamed() should produce exact identifier 'SaveButton', got '\(id)'")
+            }
         }
     }
     
@@ -249,8 +289,13 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
             let root = Self.hostRootPlatformView(exactView)
             let exactID = getAccessibilityIdentifierForTest(view: exactView, hostedRoot: root)
             
+            if exactID == nil {
+                Issue.record("Inspection unavailable: could not obtain accessibility identifier")
+            }
             let expectedMinimalPattern = "MinimalButton"
-            #expect(exactID == expectedMinimalPattern, "exactNamed() should produce exact identifier '\(expectedMinimalPattern)', got '\(exactID ?? "nil")'")
+            if let id = exactID {
+                #expect(id == expectedMinimalPattern, "exactNamed() should produce exact identifier '\(expectedMinimalPattern)', got '\(id)'")
+            }
         }
     }
     
@@ -280,7 +325,12 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
             let root = Self.hostRootPlatformView(view)
             let buttonID = getAccessibilityIdentifierForTest(view: view, hostedRoot: root)
             
-            #expect(buttonID != nil && !(buttonID?.isEmpty ?? true), "Should generate ID with changed config")
+            if buttonID == nil {
+                Issue.record("Inspection unavailable: could not obtain accessibility identifier")
+            }
+            if let id = buttonID {
+                #expect(!id.isEmpty, "Should generate ID with changed config")
+            }
         }
     }
     
@@ -306,8 +356,13 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
             let root = Self.hostRootPlatformView(view)
             let buttonID = getAccessibilityIdentifierForTest(view: view, hostedRoot: root)
             
-            #expect(buttonID != nil && !(buttonID?.isEmpty ?? true), "Should generate ID with nested .named() calls")
-            #expect(buttonID?.contains("SixLayer") == true, "Should contain namespace")
+            if buttonID == nil {
+                Issue.record("Inspection unavailable: could not obtain accessibility identifier")
+            }
+            if let id = buttonID {
+                #expect(!id.isEmpty, "Should generate ID with nested .named() calls")
+                #expect(id.contains("SixLayer"), "Should contain namespace")
+            }
         }
     }
     
@@ -327,9 +382,13 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
             let root = Self.hostRootPlatformView(view)
             let buttonID = getAccessibilityIdentifierForTest(view: view, hostedRoot: root)
             
-            // Should handle Unicode gracefully
-            #expect(buttonID != nil && !(buttonID?.isEmpty ?? true), "Should generate ID with Unicode characters")
-            #expect(buttonID?.contains("SixLayer") == true, "Should contain namespace")
+            if buttonID == nil {
+                Issue.record("Inspection unavailable: could not obtain accessibility identifier")
+            }
+            if let id = buttonID {
+                #expect(!id.isEmpty, "Should generate ID with Unicode characters")
+                #expect(id.contains("SixLayer"), "Should contain namespace")
+            }
         }
     }
 }
