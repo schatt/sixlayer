@@ -172,87 +172,66 @@ private func createModalView<Content: View>(content: Content, title: String? = n
     return AnyView(content.applyNavigationStackLayer4Modifiers(title: title))
 }
 
-/// Implement NavigationStack with items based on Layer 3 strategy
+/// Implement NavigationStack with items based on Layer 3 strategy (no AnyView — Issue 178).
 /// Layer 4: Component Implementation
-/// Note: Requires @MainActor because it calls main-actor isolated methods
 @MainActor
-public func platformImplementNavigationStackItems_L4<Item: Identifiable & Hashable>(
+public func platformImplementNavigationStackItems_L4<Item: Identifiable & Hashable, ItemView: View, DetailView: View>(
     items: [Item],
     selectedItem: Binding<Item?>,
-    itemView: @escaping (Item) -> AnyView,
-    detailView: @escaping (Item) -> AnyView,
+    @ViewBuilder itemView: @escaping (Item) -> ItemView,
+    @ViewBuilder detailView: @escaping (Item) -> DetailView,
     strategy: NavigationStackStrategy
 ) -> some View {
-    // Create navigation view based on strategy
-    let navigationView = createItemsNavigationView(
+    createItemsNavigationView(
         items: items,
         selectedItem: selectedItem,
         itemView: itemView,
         detailView: detailView,
         strategy: strategy
     )
-    
-    // Apply Layer 5 and Layer 6 modifiers
-    return AnyView(
-        navigationView
-            .platformNavigationStackOptimizations_L5()
-            .platformNavigationStackEnhancements_L6()
-    )
+    .platformNavigationStackOptimizations_L5()
+    .platformNavigationStackEnhancements_L6()
 }
 
 // MARK: - Private Items Navigation Helpers
 
-/// Create navigation view for items based on strategy
+/// Create navigation view for items based on strategy (no AnyView — Issue 178).
 @MainActor
-private func createItemsNavigationView<Item: Identifiable & Hashable>(
+@ViewBuilder
+private func createItemsNavigationView<Item: Identifiable & Hashable, ItemView: View, DetailView: View>(
     items: [Item],
     selectedItem: Binding<Item?>,
-    itemView: @escaping (Item) -> AnyView,
-    detailView: @escaping (Item) -> AnyView,
+    @ViewBuilder itemView: @escaping (Item) -> ItemView,
+    @ViewBuilder detailView: @escaping (Item) -> DetailView,
     strategy: NavigationStackStrategy
-) -> AnyView {
+) -> some View {
     let analysis = DataIntrospectionEngine.analyzeCollection(items)
-    let itemViewClosure = { (item: Item) -> AnyView in itemView(item) }
-    let detailViewClosure = { (item: Item) -> AnyView in detailView(item) }
-    
-    // Default to navigationStack if no strategy
     let implementation = strategy.implementation ?? .navigationStack
     
     switch implementation {
     case .navigationStack, .navigationView:
-        // Use existing platformNavigationStack which handles iOS 16+ vs 15
-        return AnyView(
-            CrossPlatformNavigation.platformNavigationStack(
-                items: items,
-                selectedItem: selectedItem,
-                itemView: itemViewClosure,
-                detailView: detailViewClosure,
-                analysis: analysis
-            )
+        CrossPlatformNavigation.platformNavigationStack(
+            items: items,
+            selectedItem: selectedItem,
+            itemView: itemView,
+            detailView: detailView,
+            analysis: analysis
         )
-        
     case .splitView:
-        // Use NavigationSplitView
-        return AnyView(
-            CrossPlatformNavigation.platformSplitView(
-                items: items,
-                selectedItem: selectedItem,
-                itemView: itemViewClosure,
-                detailView: detailViewClosure,
-                analysis: analysis
-            )
+        CrossPlatformNavigation.platformSplitView(
+            items: items,
+            selectedItem: selectedItem,
+            itemView: itemView,
+            detailView: detailView,
+            analysis: analysis
         )
-        
     case .modal:
-        // Use modal navigation
-        return AnyView(
-            CrossPlatformNavigation.platformModalNavigation(
-                items: items,
-                selectedItem: selectedItem,
-                itemView: itemViewClosure,
-                detailView: detailViewClosure,
-                analysis: analysis
-            )
+        CrossPlatformNavigation.platformModalNavigation(
+            items: items,
+            selectedItem: selectedItem,
+            itemView: itemView,
+            detailView: detailView,
+            analysis: analysis
         )
     }
 }
