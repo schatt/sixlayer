@@ -15,6 +15,20 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
+               BlueprintIdentifier = "DADE4FB886D36D9D457B0F17"
+               BuildableName = "SixLayerFrameworkUnitTests_visionOS.xctest"
+               BlueprintName = "SixLayerFrameworkUnitTests_visionOS"
+               ReferencedContainer = "container:SixLayerFramework.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
                BlueprintIdentifier = "7938C35CFF0CD91E1D085AF3"
                BuildableName = "SixLayerFramework.framework"
                BlueprintName = "SixLayerFramework_visionOS"
@@ -32,9 +46,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "7938C35CFF0CD91E1D085AF3"
-            BuildableName = "SixLayerFramework.framework"
-            BlueprintName = "SixLayerFramework_visionOS"
+            BlueprintIdentifier = "DADE4FB886D36D9D457B0F17"
+            BuildableName = "SixLayerFrameworkUnitTests_visionOS.xctest"
+            BlueprintName = "SixLayerFrameworkUnitTests_visionOS"
             ReferencedContainer = "container:SixLayerFramework.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
@@ -67,9 +81,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "7938C35CFF0CD91E1D085AF3"
-            BuildableName = "SixLayerFramework.framework"
-            BlueprintName = "SixLayerFramework_visionOS"
+            BlueprintIdentifier = "DADE4FB886D36D9D457B0F17"
+            BuildableName = "SixLayerFrameworkUnitTests_visionOS.xctest"
+            BlueprintName = "SixLayerFrameworkUnitTests_visionOS"
             ReferencedContainer = "container:SixLayerFramework.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
@@ -83,9 +97,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "7938C35CFF0CD91E1D085AF3"
-            BuildableName = "SixLayerFramework.framework"
-            BlueprintName = "SixLayerFramework_visionOS"
+            BlueprintIdentifier = "DADE4FB886D36D9D457B0F17"
+            BuildableName = "SixLayerFrameworkUnitTests_visionOS.xctest"
+            BlueprintName = "SixLayerFrameworkUnitTests_visionOS"
             ReferencedContainer = "container:SixLayerFramework.xcodeproj">
          </BuildableReference>
       </MacroExpansion>

@@ -573,6 +573,7 @@ schemes:
     build:
       targets:
         SixLayerFramework_iOS: all
+        SixLayerFrameworkUnitTests_iOS: all
     test:
       targets:
         - SixLayerFrameworkUnitTests_iOS
@@ -581,6 +582,7 @@ schemes:
     build:
       targets:
         SixLayerFramework_macOS: all
+        SixLayerFrameworkUnitTests_macOS: all
     test:
       targets:
         - SixLayerFrameworkUnitTests_macOS
@@ -590,6 +592,7 @@ schemes:
       targets:
         SixLayerFramework_macOS: all
         SixLayerFrameworkTestApp_macOS: all
+        SixLayerFrameworkRealUITests_macOS: all
     test:
       targets:
         - SixLayerFrameworkRealUITests_macOS
@@ -598,6 +601,7 @@ schemes:
     build:
       targets:
         SixLayerFramework_macOS: all
+        SLFmacOSViewInspectorTests: all
     test:
       targets:
         - SLFmacOSViewInspectorTests
@@ -606,6 +610,7 @@ schemes:
     build:
       targets:
         SixLayerFramework_iOS: all
+        SLFiOSViewInspectorTests: all
     test:
       targets:
         - SLFiOSViewInspectorTests
@@ -636,6 +641,7 @@ schemes:
     build:
       targets:
         SixLayerFramework_tvOS: all
+        SixLayerFrameworkUnitTests_tvOS: all
     test:
       targets:
         - SixLayerFrameworkUnitTests_tvOS
@@ -666,6 +672,7 @@ schemes:
     build:
       targets:
         SixLayerFramework_watchOS: all
+        SixLayerFrameworkUnitTests_watchOS: all
     test:
       targets:
         - SixLayerFrameworkUnitTests_watchOS
@@ -696,6 +703,7 @@ schemes:
     build:
       targets:
         SixLayerFramework_visionOS: all
+        SixLayerFrameworkUnitTests_visionOS: all
     test:
       targets:
         - SixLayerFrameworkUnitTests_visionOS

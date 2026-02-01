@@ -15,6 +15,20 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
+               BlueprintIdentifier = "45DA6782648DC7699205940C"
+               BuildableName = "SixLayerFrameworkUnitTests_watchOS.xctest"
+               BlueprintName = "SixLayerFrameworkUnitTests_watchOS"
+               ReferencedContainer = "container:SixLayerFramework.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
                BlueprintIdentifier = "70F3E0477C5FD3EF1FBC7352"
                BuildableName = "SixLayerFramework.framework"
                BlueprintName = "SixLayerFramework_watchOS"
@@ -32,9 +46,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "70F3E0477C5FD3EF1FBC7352"
-            BuildableName = "SixLayerFramework.framework"
-            BlueprintName = "SixLayerFramework_watchOS"
+            BlueprintIdentifier = "45DA6782648DC7699205940C"
+            BuildableName = "SixLayerFrameworkUnitTests_watchOS.xctest"
+            BlueprintName = "SixLayerFrameworkUnitTests_watchOS"
             ReferencedContainer = "container:SixLayerFramework.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
@@ -67,9 +81,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "70F3E0477C5FD3EF1FBC7352"
-            BuildableName = "SixLayerFramework.framework"
-            BlueprintName = "SixLayerFramework_watchOS"
+            BlueprintIdentifier = "45DA6782648DC7699205940C"
+            BuildableName = "SixLayerFrameworkUnitTests_watchOS.xctest"
+            BlueprintName = "SixLayerFrameworkUnitTests_watchOS"
             ReferencedContainer = "container:SixLayerFramework.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
@@ -83,9 +97,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "70F3E0477C5FD3EF1FBC7352"
-            BuildableName = "SixLayerFramework.framework"
-            BlueprintName = "SixLayerFramework_watchOS"
+            BlueprintIdentifier = "45DA6782648DC7699205940C"
+            BuildableName = "SixLayerFrameworkUnitTests_watchOS.xctest"
+            BlueprintName = "SixLayerFrameworkUnitTests_watchOS"
             ReferencedContainer = "container:SixLayerFramework.xcodeproj">
          </BuildableReference>
       </MacroExpansion>

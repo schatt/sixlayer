@@ -15,6 +15,20 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
+               BlueprintIdentifier = "D16D10F9C91D322A0A4959E7"
+               BuildableName = "SixLayerFrameworkUnitTests_iOS.xctest"
+               BlueprintName = "SixLayerFrameworkUnitTests_iOS"
+               ReferencedContainer = "container:SixLayerFramework.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
                BlueprintIdentifier = "DB08E599D5D1C3B17A49EADA"
                BuildableName = "SixLayerFramework.framework"
                BlueprintName = "SixLayerFramework_iOS"
@@ -32,9 +46,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "DB08E599D5D1C3B17A49EADA"
-            BuildableName = "SixLayerFramework.framework"
-            BlueprintName = "SixLayerFramework_iOS"
+            BlueprintIdentifier = "D16D10F9C91D322A0A4959E7"
+            BuildableName = "SixLayerFrameworkUnitTests_iOS.xctest"
+            BlueprintName = "SixLayerFrameworkUnitTests_iOS"
             ReferencedContainer = "container:SixLayerFramework.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
@@ -67,9 +81,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "DB08E599D5D1C3B17A49EADA"
-            BuildableName = "SixLayerFramework.framework"
-            BlueprintName = "SixLayerFramework_iOS"
+            BlueprintIdentifier = "D16D10F9C91D322A0A4959E7"
+            BuildableName = "SixLayerFrameworkUnitTests_iOS.xctest"
+            BlueprintName = "SixLayerFrameworkUnitTests_iOS"
             ReferencedContainer = "container:SixLayerFramework.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
@@ -83,9 +97,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "DB08E599D5D1C3B17A49EADA"
-            BuildableName = "SixLayerFramework.framework"
-            BlueprintName = "SixLayerFramework_iOS"
+            BlueprintIdentifier = "D16D10F9C91D322A0A4959E7"
+            BuildableName = "SixLayerFrameworkUnitTests_iOS.xctest"
+            BlueprintName = "SixLayerFrameworkUnitTests_iOS"
             ReferencedContainer = "container:SixLayerFramework.xcodeproj">
          </BuildableReference>
       </MacroExpansion>

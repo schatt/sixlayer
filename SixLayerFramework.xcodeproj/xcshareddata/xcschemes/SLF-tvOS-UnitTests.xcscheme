@@ -15,6 +15,20 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
+               BlueprintIdentifier = "137ACC122FFC347C79FD3EAC"
+               BuildableName = "SixLayerFrameworkUnitTests_tvOS.xctest"
+               BlueprintName = "SixLayerFrameworkUnitTests_tvOS"
+               ReferencedContainer = "container:SixLayerFramework.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
                BlueprintIdentifier = "AB21586E5B6F5E26D37757AE"
                BuildableName = "SixLayerFramework.framework"
                BlueprintName = "SixLayerFramework_tvOS"
@@ -32,9 +46,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "AB21586E5B6F5E26D37757AE"
-            BuildableName = "SixLayerFramework.framework"
-            BlueprintName = "SixLayerFramework_tvOS"
+            BlueprintIdentifier = "137ACC122FFC347C79FD3EAC"
+            BuildableName = "SixLayerFrameworkUnitTests_tvOS.xctest"
+            BlueprintName = "SixLayerFrameworkUnitTests_tvOS"
             ReferencedContainer = "container:SixLayerFramework.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
@@ -67,9 +81,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "AB21586E5B6F5E26D37757AE"
-            BuildableName = "SixLayerFramework.framework"
-            BlueprintName = "SixLayerFramework_tvOS"
+            BlueprintIdentifier = "137ACC122FFC347C79FD3EAC"
+            BuildableName = "SixLayerFrameworkUnitTests_tvOS.xctest"
+            BlueprintName = "SixLayerFrameworkUnitTests_tvOS"
             ReferencedContainer = "container:SixLayerFramework.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
@@ -83,9 +97,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "AB21586E5B6F5E26D37757AE"
-            BuildableName = "SixLayerFramework.framework"
-            BlueprintName = "SixLayerFramework_tvOS"
+            BlueprintIdentifier = "137ACC122FFC347C79FD3EAC"
+            BuildableName = "SixLayerFrameworkUnitTests_tvOS.xctest"
+            BlueprintName = "SixLayerFrameworkUnitTests_tvOS"
             ReferencedContainer = "container:SixLayerFramework.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
