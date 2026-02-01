@@ -173,19 +173,12 @@ open class BaseTestClass {
         // view is a non-optional View parameter, so it exists if we reach here
 
         // 2. Contains what it needs to contain - The view should contain expected text
-        // NOTE: findAll() does not recurse through AnyView (type-erasure boundary). Unwrap AnyView(s) first.
-        // Framework often returns AnyView(ModifiedContent<AnyView<Concrete>, Modifier>), so unwrap up to two levels.
+        // NOTE: findAll() does not recurse through AnyView (type-erasure boundary). Unwrap root AnyView first.
         #if canImport(ViewInspector)
         do {
             let inspected = try AnyView(view).inspect()
-            let viewText: [ViewInspector.Inspectable]
-            if let one = try? inspected.anyView(), let two = try? one.anyView() {
-                viewText = two.findAll(ViewInspector.ViewType.Text.self)
-            } else if let one = try? inspected.anyView() {
-                viewText = one.findAll(ViewInspector.ViewType.Text.self)
-            } else {
-                viewText = inspected.findAll(ViewInspector.ViewType.Text.self)
-            }
+            let viewText = (try? inspected.anyView())?.findAll(ViewInspector.ViewType.Text.self)
+                ?? inspected.findAll(ViewInspector.ViewType.Text.self)
             #expect(!viewText.isEmpty, "View should contain text elements for \(testName)")
 
             let hasExpectedText = viewText.contains { text in
@@ -212,18 +205,12 @@ open class BaseTestClass {
         // view is a non-optional View parameter, so it exists if we reach here
 
         // 2. Contains what it needs to contain - The view should contain image elements
-        // NOTE: findAll() does not recurse through AnyView (type-erasure boundary). Unwrap AnyView(s) first.
+        // NOTE: findAll() does not recurse through AnyView (type-erasure boundary). Unwrap root AnyView first.
         #if canImport(ViewInspector)
         do {
             let inspected = try AnyView(view).inspect()
-            let viewImages: [ViewInspector.Inspectable]
-            if let one = try? inspected.anyView(), let two = try? one.anyView() {
-                viewImages = two.findAll(ViewInspector.ViewType.Image.self)
-            } else if let one = try? inspected.anyView() {
-                viewImages = one.findAll(ViewInspector.ViewType.Image.self)
-            } else {
-                viewImages = inspected.findAll(ViewInspector.ViewType.Image.self)
-            }
+            let viewImages = (try? inspected.anyView())?.findAll(ViewInspector.ViewType.Image.self)
+                ?? inspected.findAll(ViewInspector.ViewType.Image.self)
             #expect(!viewImages.isEmpty, "View should contain image elements for \(testName)")
         } catch {
             Issue.record("View inspection failed for \(testName): \(error)")
