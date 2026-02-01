@@ -18,7 +18,9 @@ import SwiftData
 public struct IntelligentDetailView {
     
     /// Generate a detail view for a data model with automatic field detection
-        public static func platformDetailView<T>(
+    /// Uses @ViewBuilder (no AnyView) so ViewInspector and the type system see the real view structure.
+    @ViewBuilder
+    public static func platformDetailView<T>(
         for data: T,
         hints: PresentationHints? = nil,
         showEditButton: Bool = true,
@@ -30,52 +32,51 @@ public struct IntelligentDetailView {
     ) -> some View {
         let analysis = DataIntrospectionEngine.analyze(data)
         let layoutStrategy = determineLayoutStrategy(analysis: analysis, hints: hints)
-        
         switch layoutStrategy {
         case .compact:
-            return AnyView(platformCompactDetailView(
+            platformCompactDetailView(
                 data: data,
                 analysis: analysis,
                 showEditButton: showEditButton,
                 onEdit: onEdit,
                 customFieldView: customFieldView
-            ))
+            )
             .automaticCompliance()
         case .standard:
-            return AnyView(platformStandardDetailView(
+            platformStandardDetailView(
                 data: data,
                 analysis: analysis,
                 showEditButton: showEditButton,
                 onEdit: onEdit,
                 customFieldView: customFieldView
-            ))
+            )
             .automaticCompliance()
         case .detailed:
-            return AnyView(platformDetailedDetailView(
+            platformDetailedDetailView(
                 data: data,
                 analysis: analysis,
                 showEditButton: showEditButton,
                 onEdit: onEdit,
                 customFieldView: customFieldView
-            ))
+            )
             .automaticCompliance()
         case .tabbed:
-            return AnyView(platformTabbedDetailView(
+            platformTabbedDetailView(
                 data: data,
                 analysis: analysis,
                 showEditButton: showEditButton,
                 onEdit: onEdit,
                 customFieldView: customFieldView
-            ))
+            )
             .automaticCompliance()
         case .adaptive:
-            return AnyView(platformAdaptiveDetailView(
+            platformAdaptiveDetailView(
                 data: data,
                 analysis: analysis,
                 showEditButton: showEditButton,
                 onEdit: onEdit,
                 customFieldView: customFieldView
-            ))
+            )
             .automaticCompliance()
         }
     }
@@ -307,7 +308,8 @@ public extension IntelligentDetailView {
         }
     }
     
-    /// Generate a tabbed view for very complex data
+    /// Generate a tabbed view for very complex data (no AnyView — @ViewBuilder unifies types)
+    @ViewBuilder
     static func platformTabbedDetailView<T>(
         data: T,
         analysis: DataAnalysisResult,
@@ -317,48 +319,19 @@ public extension IntelligentDetailView {
     ) -> some View {
         #if os(iOS)
         if #available(iOS 16.0, *) {
-            return AnyView(
-                TabView {
-                    // Overview tab
-                    platformStandardDetailView(
-                        data: data,
-                        analysis: analysis,
-                        showEditButton: showEditButton,
-                        onEdit: onEdit,
-                        customFieldView: customFieldView
-                    )
-                    .tabItem {
-                        Image(systemName: "info.circle")
-                        let i18n = InternationalizationService()
-Text(i18n.localizedString(for: "SixLayerFramework.detail.overview"))
-                    }
-                    
-                    // Details tab
-                    platformDetailedDetailView(
-                        data: data,
-                        analysis: analysis,
-                        showEditButton: showEditButton,
-                        onEdit: onEdit,
-                        customFieldView: customFieldView
-                    )
-                    .tabItem {
-                        Image(systemName: "doc.text")
-                        let i18n = InternationalizationService()
-Text(i18n.localizedString(for: "SixLayerFramework.detail.title"))
-                    }
-                    
-                    // Raw data tab
-                    platformRawDataView(data: data, analysis: analysis)
-                        .tabItem {
-                            Image(systemName: "code")
-                            let i18n = InternationalizationService()
-Text(i18n.localizedString(for: "SixLayerFramework.detail.rawData"))
-                        }
+            TabView {
+                platformStandardDetailView(
+                    data: data,
+                    analysis: analysis,
+                    showEditButton: showEditButton,
+                    onEdit: onEdit,
+                    customFieldView: customFieldView
+                )
+                .tabItem {
+                    Image(systemName: "info.circle")
+                    let i18n = InternationalizationService()
+                    Text(i18n.localizedString(for: "SixLayerFramework.detail.overview"))
                 }
-            )
-        } else {
-            // Fallback for older iOS versions
-            return AnyView(
                 platformDetailedDetailView(
                     data: data,
                     analysis: analysis,
@@ -366,63 +339,19 @@ Text(i18n.localizedString(for: "SixLayerFramework.detail.rawData"))
                     onEdit: onEdit,
                     customFieldView: customFieldView
                 )
-            )
-        }
-        #elseif os(macOS)
-        if #available(macOS 13.0, *) {
-            return AnyView(
-                TabView {
-                    // Overview tab
-                    platformStandardDetailView(
-                        data: data,
-                        analysis: analysis,
-                        showEditButton: showEditButton,
-                        onEdit: onEdit,
-                        customFieldView: customFieldView
-                    )
-                    .tabItem {
-                        Image(systemName: "info.circle")
-                        let i18n = InternationalizationService()
-Text(i18n.localizedString(for: "SixLayerFramework.detail.overview"))
-                    }
-                    
-                    // Details tab
-                    platformDetailedDetailView(
-                        data: data,
-                        analysis: analysis,
-                        showEditButton: showEditButton,
-                        onEdit: onEdit,
-                        customFieldView: customFieldView
-                    )
-                    .tabItem {
-                        Image(systemName: "doc.text")
-                        let i18n = InternationalizationService()
-Text(i18n.localizedString(for: "SixLayerFramework.detail.title"))
-                    }
-                    
-                    // Raw data tab
-                    platformRawDataView(data: data, analysis: analysis)
-                        .tabItem {
-                            Image(systemName: "code")
-                            let i18n = InternationalizationService()
-Text(i18n.localizedString(for: "SixLayerFramework.detail.rawData"))
-                        }
+                .tabItem {
+                    Image(systemName: "doc.text")
+                    let i18n = InternationalizationService()
+                    Text(i18n.localizedString(for: "SixLayerFramework.detail.title"))
                 }
-            )
+                platformRawDataView(data: data, analysis: analysis)
+                    .tabItem {
+                        Image(systemName: "code")
+                        let i18n = InternationalizationService()
+                        Text(i18n.localizedString(for: "SixLayerFramework.detail.rawData"))
+                    }
+            }
         } else {
-            // Fallback for older macOS versions
-            return AnyView(
-                platformDetailedDetailView(
-                    data: data,
-                    analysis: analysis,
-                    showEditButton: showEditButton,
-                    onEdit: onEdit,
-                    customFieldView: customFieldView
-                )
-            )
-        }
-        #else
-        return AnyView(
             platformDetailedDetailView(
                 data: data,
                 analysis: analysis,
@@ -430,6 +359,57 @@ Text(i18n.localizedString(for: "SixLayerFramework.detail.rawData"))
                 onEdit: onEdit,
                 customFieldView: customFieldView
             )
+        }
+        #elseif os(macOS)
+        if #available(macOS 13.0, *) {
+            TabView {
+                platformStandardDetailView(
+                    data: data,
+                    analysis: analysis,
+                    showEditButton: showEditButton,
+                    onEdit: onEdit,
+                    customFieldView: customFieldView
+                )
+                .tabItem {
+                    Image(systemName: "info.circle")
+                    let i18n = InternationalizationService()
+                    Text(i18n.localizedString(for: "SixLayerFramework.detail.overview"))
+                }
+                platformDetailedDetailView(
+                    data: data,
+                    analysis: analysis,
+                    showEditButton: showEditButton,
+                    onEdit: onEdit,
+                    customFieldView: customFieldView
+                )
+                .tabItem {
+                    Image(systemName: "doc.text")
+                    let i18n = InternationalizationService()
+                    Text(i18n.localizedString(for: "SixLayerFramework.detail.title"))
+                }
+                platformRawDataView(data: data, analysis: analysis)
+                    .tabItem {
+                        Image(systemName: "code")
+                        let i18n = InternationalizationService()
+                        Text(i18n.localizedString(for: "SixLayerFramework.detail.rawData"))
+                    }
+            }
+        } else {
+            platformDetailedDetailView(
+                data: data,
+                analysis: analysis,
+                showEditButton: showEditButton,
+                onEdit: onEdit,
+                customFieldView: customFieldView
+            )
+        }
+        #else
+        platformDetailedDetailView(
+            data: data,
+            analysis: analysis,
+            showEditButton: showEditButton,
+            onEdit: onEdit,
+            customFieldView: customFieldView
         )
         #endif
     }
@@ -448,7 +428,8 @@ Text(i18n.localizedString(for: "SixLayerFramework.detail.rawData"))
         }
     }
     
-    /// Generate an adaptive detail view
+    /// Generate an adaptive detail view (no AnyView — @ViewBuilder unifies types)
+    @ViewBuilder
     static func platformAdaptiveDetailView<T>(
         data: T,
         analysis: DataAnalysisResult,
@@ -460,25 +441,25 @@ Text(i18n.localizedString(for: "SixLayerFramework.detail.rawData"))
         let deviceType = SixLayerPlatform.deviceType
         let strategy = determineAdaptiveDetailStrategy(for: deviceType)
         
-        // Render based on the strategy decision
+        // Render based on the strategy decision (no AnyView — @ViewBuilder unifies types)
         switch strategy {
         case .standard:
-            return AnyView(platformStandardDetailView(
+            platformStandardDetailView(
                 data: data,
                 analysis: analysis,
                 showEditButton: showEditButton,
                 onEdit: onEdit,
                 customFieldView: customFieldView
-            ))
+            )
             .automaticCompliance(named: "platformAdaptiveDetailView")
         case .detailed:
-            return AnyView(platformDetailedDetailView(
+            platformDetailedDetailView(
                 data: data,
                 analysis: analysis,
                 showEditButton: showEditButton,
                 onEdit: onEdit,
                 customFieldView: customFieldView
-            ))
+            )
             .automaticCompliance(named: "platformAdaptiveDetailView")
         }
     }
