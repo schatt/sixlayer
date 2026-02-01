@@ -163,7 +163,7 @@ public func platformPresentNumericData_L1(
     return CustomNumericDataView(
         data: data,
         hints: hints,
-        customDataView: { AnyView(customDataView($0)) }
+        customDataView: customDataView
     )
     .environment(\.accessibilityIdentifierName, "platformPresentNumericData_L1")
     .automaticCompliance()
@@ -193,7 +193,7 @@ public func platformPresentNumericData_L1(
     return CustomNumericDataView(
         data: data,
         hints: processedHints,
-        customDataView: { AnyView(customDataView($0)) }
+        customDataView: customDataView
     )
     .environment(\.extensibleHints, hints.extensibleHints)
     .environment(\.accessibilityIdentifierName, "platformPresentNumericData_L1")
@@ -429,7 +429,7 @@ public func platformPresentMediaData_L1(
     return CustomMediaView(
         media: media,
         hints: hints,
-        customMediaView: { AnyView(customMediaView($0)) }
+        customMediaView: customMediaView
     )
     .environment(\.accessibilityIdentifierName, "platformPresentMediaData_L1")
     .automaticCompliance()
@@ -459,7 +459,7 @@ public func platformPresentMediaData_L1(
     return CustomMediaView(
         media: media,
         hints: processedHints,
-        customMediaView: { AnyView(customMediaView($0)) }
+        customMediaView: customMediaView
     )
     .environment(\.extensibleHints, hints.extensibleHints)
     .environment(\.accessibilityIdentifierName, "platformPresentMediaData_L1")
@@ -501,7 +501,7 @@ public func platformPresentHierarchicalData_L1(
     return CustomHierarchicalView(
         items: items,
         hints: hints,
-        customItemView: { AnyView(customItemView($0)) }
+        customItemView: customItemView
     )
     .environment(\.accessibilityIdentifierName, "platformPresentHierarchicalData_L1")
     .automaticCompliance()
@@ -531,7 +531,7 @@ public func platformPresentHierarchicalData_L1(
     return CustomHierarchicalView(
         items: items,
         hints: processedHints,
-        customItemView: { AnyView(customItemView($0)) }
+        customItemView: customItemView
     )
     .environment(\.extensibleHints, hints.extensibleHints)
     .environment(\.accessibilityIdentifierName, "platformPresentHierarchicalData_L1")
@@ -572,7 +572,7 @@ public func platformPresentTemporalData_L1(
     return CustomTemporalView(
         items: items,
         hints: hints,
-        customItemView: { AnyView(customItemView($0)) }
+        customItemView: customItemView
     )
     .environment(\.accessibilityIdentifierName, "platformPresentTemporalData_L1")
     .automaticCompliance()
@@ -629,8 +629,8 @@ public func platformPresentNavigationStack_L1<Item: Identifiable & Hashable, Ite
     return NavigationStackItemsWrapper(
         items: items,
         hints: hints,
-        itemView: { AnyView(itemView($0)) },
-        destination: { AnyView(destination($0)) }
+        itemView: itemView,
+        destination: destination
     )
     .environment(\.accessibilityIdentifierName, "platformPresentNavigationStack_L1")
     .automaticCompliance()
@@ -665,11 +665,11 @@ public func platformPresentAppNavigation_L1<SidebarContent: View, DetailContent:
     @ViewBuilder sidebar: @escaping () -> SidebarContent,
     @ViewBuilder detail: @escaping () -> DetailContent
 ) -> some View {
-    return AppNavigationWrapper<SidebarContent, DetailContent>(
+    return AppNavigationWrapper(
         columnVisibility: columnVisibility,
         showingNavigationSheet: showingNavigationSheet,
-        sidebar: { AnyView(sidebar()) },
-        detail: { AnyView(detail()) }
+        sidebar: sidebar,
+        detail: detail
     )
     .environment(\.accessibilityIdentifierName, "platformPresentAppNavigation_L1")
     .automaticCompliance()
@@ -677,11 +677,12 @@ public func platformPresentAppNavigation_L1<SidebarContent: View, DetailContent:
 
 /// Internal wrapper view for app navigation
 /// This view implements the full 6-layer flow: L1 -> L2 -> L3 -> L4
+/// Internal wrapper view for app navigation (no AnyView — Issue 178).
 private struct AppNavigationWrapper<SidebarContent: View, DetailContent: View>: View {
     let columnVisibility: Binding<NavigationSplitViewVisibility>?
     let showingNavigationSheet: Binding<Bool>?
-    let sidebar: () -> AnyView
-    let detail: () -> AnyView
+    let sidebar: () -> SidebarContent
+    let detail: () -> DetailContent
     
     var body: some View {
         // Get current device capabilities
@@ -717,8 +718,8 @@ private struct AppNavigationWrapper<SidebarContent: View, DetailContent: View>: 
                 columnVisibility: columnVisibility,
                 showingNavigationSheet: showingNavigationSheet,
                 strategy: l3Strategy,
-                sidebar: { sidebar() },
-                detail: { detail() }
+                sidebar: sidebar,
+                detail: detail
             )
     }
 }
@@ -746,7 +747,7 @@ public func platformPresentTemporalData_L1(
     return CustomTemporalView(
         items: items,
         hints: processedHints,
-        customItemView: { AnyView(customItemView($0)) }
+        customItemView: customItemView
     )
     .environment(\.extensibleHints, hints.extensibleHints)
     .environment(\.accessibilityIdentifierName, "platformPresentTemporalData_L1")
@@ -778,32 +779,32 @@ public func platformPresentContent_L1(
             .automaticCompliance()
 }
 
-/// Present basic numeric values (Int, Float, Double, Bool) with appropriate formatting
+/// Present basic numeric values (Int, Float, Double, Bool) with appropriate formatting (no AnyView — Issue 178).
 @MainActor
 public func platformPresentBasicValue_L1(
     value: Any,
     hints: PresentationHints
-) -> AnyView {
-    return AnyView(BasicValueView(value: value, hints: hints)
+) -> some View {
+    BasicValueView(value: value, hints: hints)
         .environment(\.accessibilityIdentifierName, "platformPresentBasicValue_L1")
         .automaticAccessibility()
         .platformPatterns()
         .visualConsistency()
-        .automaticCompliance())
+        .automaticCompliance()
 }
 
-/// Present basic arrays with appropriate formatting
+/// Present basic arrays with appropriate formatting (no AnyView — Issue 178).
 @MainActor
 public func platformPresentBasicArray_L1(
     array: Any,
     hints: PresentationHints
-) -> AnyView {
-    return AnyView(BasicArrayView(array: array, hints: hints)
+) -> some View {
+    BasicArrayView(array: array, hints: hints)
         .environment(\.accessibilityIdentifierName, "platformPresentBasicArray_L1")
         .automaticAccessibility()
         .platformPatterns()
         .visualConsistency()
-        .automaticCompliance())
+        .automaticCompliance()
 }
 
 /// Generic function for presenting settings interface
@@ -846,7 +847,7 @@ public func platformPresentSettings_L1(
         onSettingChanged: onSettingChanged,
         onSettingsSaved: onSettingsSaved,
         onSettingsCancelled: onSettingsCancelled,
-        customSettingView: { AnyView(customSettingView($0)) }
+        customSettingView: customSettingView
     )
     .environment(\.accessibilityIdentifierName, "platformPresentSettings_L1")
     .automaticCompliance()
@@ -881,7 +882,7 @@ public func platformPresentSettings_L1(
         onSettingChanged: onSettingChanged,
         onSettingsSaved: onSettingsSaved,
         onSettingsCancelled: onSettingsCancelled,
-        customSettingView: { AnyView(customSettingView($0)) }
+        customSettingView: customSettingView
     )
     .environment(\.extensibleHints, hints.extensibleHints)
     .environment(\.accessibilityIdentifierName, "platformPresentSettings_L1")
@@ -961,14 +962,15 @@ public func platformPresentItemCollection_L1<Item: Identifiable>(
     onItemEdited: ((Item) -> Void)? = nil,
     @ViewBuilder customItemView: @escaping (Item) -> some View
 ) -> some View {
-    return AnyView(GenericItemCollectionView(
+    return CustomItemCollectionView(
         items: items,
         hints: hints,
         onCreateItem: onCreateItem,
         onItemSelected: onItemSelected,
         onItemDeleted: onItemDeleted,
-        onItemEdited: onItemEdited
-    ))
+        onItemEdited: onItemEdited,
+        customItemView: customItemView
+    )
     .environment(\.accessibilityIdentifierName, "platformPresentItemCollection_L1")
     .automaticCompliance()
 }
@@ -997,14 +999,15 @@ public func platformPresentItemCollection_L1<Item: Identifiable>(
     // Process extensible hints and merge custom data
     let processedHints = processExtensibleHints(hints, into: basicHints)
     
-    return AnyView(GenericItemCollectionView(
+    return CustomItemCollectionView(
         items: items,
         hints: processedHints,
         onCreateItem: onCreateItem,
         onItemSelected: onItemSelected,
         onItemDeleted: onItemDeleted,
-        onItemEdited: onItemEdited
-    ))
+        onItemEdited: onItemEdited,
+        customItemView: customItemView
+    )
     .environment(\.extensibleHints, hints.extensibleHints)
     .environment(\.accessibilityIdentifierName, "platformPresentItemCollection_L1")
     .automaticCompliance()
@@ -1023,14 +1026,15 @@ public func platformPresentItemCollection_L1<Item: Identifiable>(
     customCreateView: (() -> some View)? = nil,
     customEditView: ((Item) -> some View)? = nil
 ) -> some View {
-    return AnyView(GenericItemCollectionView(
+    return CustomItemCollectionView(
         items: items,
         hints: hints,
         onCreateItem: onCreateItem,
         onItemSelected: onItemSelected,
         onItemDeleted: onItemDeleted,
-        onItemEdited: onItemEdited
-    ))
+        onItemEdited: onItemEdited,
+        customItemView: customItemView
+    )
     .environment(\.accessibilityIdentifierName, "platformPresentItemCollection_L1")
     .automaticCompliance()
 }
@@ -1544,17 +1548,15 @@ public func platformPresentTemporalData_L1(
 
 // MARK: - Generic View Structures
 
-/// Custom item collection view that supports custom views for items and actions
-public struct CustomItemCollectionView<Item: Identifiable>: View {
+/// Custom item collection view that supports custom views for items and actions (no AnyView — Issue 178)
+public struct CustomItemCollectionView<Item: Identifiable, CustomView: View>: View {
     let items: [Item]
     let hints: PresentationHints
     let onCreateItem: (() -> Void)?
     let onItemSelected: ((Item) -> Void)?
     let onItemDeleted: ((Item) -> Void)?
     let onItemEdited: ((Item) -> Void)?
-    let customItemView: (Item) -> AnyView
-    let customCreateView: (() -> AnyView)?
-    let customEditView: ((Item) -> AnyView)?
+    let customItemView: (Item) -> CustomView
     
     public init(
         items: [Item],
@@ -1563,9 +1565,7 @@ public struct CustomItemCollectionView<Item: Identifiable>: View {
         onItemSelected: ((Item) -> Void)? = nil,
         onItemDeleted: ((Item) -> Void)? = nil,
         onItemEdited: ((Item) -> Void)? = nil,
-        @ViewBuilder customItemView: @escaping (Item) -> some View,
-        customCreateView: (() -> some View)? = nil,
-        customEditView: ((Item) -> some View)? = nil
+        @ViewBuilder customItemView: @escaping (Item) -> CustomView
     ) {
         self.items = items
         self.hints = hints
@@ -1573,53 +1573,47 @@ public struct CustomItemCollectionView<Item: Identifiable>: View {
         self.onItemSelected = onItemSelected
         self.onItemDeleted = onItemDeleted
         self.onItemEdited = onItemEdited
-        self.customItemView = { AnyView(customItemView($0)) }
-        // Note: Custom views temporarily disabled due to compilation issues
-        self.customCreateView = nil
-        self.customEditView = nil
+        self.customItemView = customItemView
     }
     
+    @ViewBuilder
     public var body: some View {
         if items.isEmpty {
-            return AnyView(CollectionEmptyStateView(
-                hints: hints, 
+            CollectionEmptyStateView(
+                hints: hints,
                 onCreateItem: onCreateItem,
-                customCreateView: customCreateView
-            ))
-        }
-        
-        // Use custom item views with intelligent layout
-        let presentationStrategy = determinePresentationStrategy()
-        
-        switch presentationStrategy {
-        case .grid:
-            return AnyView(CustomGridCollectionView(
-                items: items,
-                hints: hints,
-                customItemView: customItemView,
-                onItemSelected: onItemSelected,
-                onItemDeleted: onItemDeleted,
-                onItemEdited: onItemEdited
-            ))
-        case .list:
-            return AnyView(CustomListCollectionView(
-                items: items,
-                hints: hints,
-                customItemView: customItemView,
-                onItemSelected: onItemSelected,
-                onItemDeleted: onItemDeleted,
-                onItemEdited: onItemEdited
-            ))
-        default:
-            // Fall back to grid for custom views
-            return AnyView(CustomGridCollectionView(
-                items: items,
-                hints: hints,
-                customItemView: customItemView,
-                onItemSelected: onItemSelected,
-                onItemDeleted: onItemDeleted,
-                onItemEdited: onItemEdited
-            ))
+                customCreateView: nil
+            )
+        } else {
+            switch determinePresentationStrategy() {
+            case .grid:
+                CustomGridCollectionView(
+                    items: items,
+                    hints: hints,
+                    customItemView: customItemView,
+                    onItemSelected: onItemSelected,
+                    onItemDeleted: onItemDeleted,
+                    onItemEdited: onItemEdited
+                )
+            case .list:
+                CustomListCollectionView(
+                    items: items,
+                    hints: hints,
+                    customItemView: customItemView,
+                    onItemSelected: onItemSelected,
+                    onItemDeleted: onItemDeleted,
+                    onItemEdited: onItemEdited
+                )
+            default:
+                CustomGridCollectionView(
+                    items: items,
+                    hints: hints,
+                    customItemView: customItemView,
+                    onItemSelected: onItemSelected,
+                    onItemDeleted: onItemDeleted,
+                    onItemEdited: onItemEdited
+                )
+            }
         }
     }
     
@@ -1686,84 +1680,76 @@ public struct GenericItemCollectionView<Item: Identifiable>: View {
         self.onItemEdited = onItemEdited
     }
     
+    /// No AnyView — @ViewBuilder so ViewInspector tests can traverse (Issue 178).
+    @ViewBuilder
     public var body: some View {
-        // Handle empty collections with appropriate empty state
-        if items.isEmpty {
-            return AnyView(CollectionEmptyStateView(hints: hints, onCreateItem: onCreateItem)
-                .appleHIGCompliant()
-                .automaticAccessibility()
-                .automaticCompliance()
-                .platformPatterns()
-                .visualConsistency())
+        Group {
+            if items.isEmpty {
+                CollectionEmptyStateView(hints: hints, onCreateItem: onCreateItem)
+            } else {
+                switch determinePresentationStrategy() {
+                case .expandableCards:
+                    ExpandableCardCollectionView(
+                        items: items,
+                        hints: hints,
+                        onCreateItem: onCreateItem,
+                        onItemSelected: onItemSelected,
+                        onItemDeleted: onItemDeleted,
+                        onItemEdited: onItemEdited
+                    )
+                case .coverFlow:
+                    CoverFlowCollectionView(
+                        items: items,
+                        hints: hints,
+                        onCreateItem: onCreateItem,
+                        onItemSelected: onItemSelected,
+                        onItemDeleted: onItemDeleted,
+                        onItemEdited: onItemEdited
+                    )
+                case .grid:
+                    GridCollectionView(
+                        items: items,
+                        hints: hints,
+                        onCreateItem: onCreateItem,
+                        onItemSelected: onItemSelected,
+                        onItemDeleted: onItemDeleted,
+                        onItemEdited: onItemEdited
+                    )
+                case .list:
+                    ListCollectionView(
+                        items: items,
+                        hints: hints,
+                        onCreateItem: onCreateItem,
+                        onItemSelected: onItemSelected,
+                        onItemDeleted: onItemDeleted,
+                        onItemEdited: onItemEdited
+                    )
+                case .masonry:
+                    MasonryCollectionView(
+                        items: items,
+                        hints: hints,
+                        onCreateItem: onCreateItem,
+                        onItemSelected: onItemSelected,
+                        onItemDeleted: onItemDeleted,
+                        onItemEdited: onItemEdited
+                    )
+                case .adaptive:
+                    AdaptiveCollectionView(
+                        items: items,
+                        hints: hints,
+                        onCreateItem: onCreateItem,
+                        onItemSelected: onItemSelected,
+                        onItemDeleted: onItemDeleted,
+                        onItemEdited: onItemEdited
+                    )
+                }
+            }
         }
-        
-        // Layer 1: Intelligent presentation decision based on hints and platform
-        let presentationStrategy = determinePresentationStrategy()
-        
-        let baseView: AnyView = switch presentationStrategy {
-        case .expandableCards:
-            AnyView(ExpandableCardCollectionView(
-                items: items, 
-                hints: hints, 
-                onCreateItem: onCreateItem,
-                onItemSelected: onItemSelected,
-                onItemDeleted: onItemDeleted,
-                onItemEdited: onItemEdited
-            ))
-        case .coverFlow:
-            AnyView(CoverFlowCollectionView(
-                items: items, 
-                hints: hints, 
-                onCreateItem: onCreateItem,
-                onItemSelected: onItemSelected,
-                onItemDeleted: onItemDeleted,
-                onItemEdited: onItemEdited
-            ))
-        case .grid:
-            AnyView(GridCollectionView(
-                items: items, 
-                hints: hints, 
-                onCreateItem: onCreateItem,
-                onItemSelected: onItemSelected,
-                onItemDeleted: onItemDeleted,
-                onItemEdited: onItemEdited
-            ))
-        case .list:
-            AnyView(ListCollectionView(
-                items: items, 
-                hints: hints, 
-                onCreateItem: onCreateItem,
-                onItemSelected: onItemSelected,
-                onItemDeleted: onItemDeleted,
-                onItemEdited: onItemEdited
-            ))
-        case .masonry:
-            AnyView(MasonryCollectionView(
-                items: items, 
-                hints: hints, 
-                onCreateItem: onCreateItem,
-                onItemSelected: onItemSelected,
-                onItemDeleted: onItemDeleted,
-                onItemEdited: onItemEdited
-            ))
-        case .adaptive:
-            AnyView(AdaptiveCollectionView(
-                items: items, 
-                hints: hints, 
-                onCreateItem: onCreateItem,
-                onItemSelected: onItemSelected,
-                onItemDeleted: onItemDeleted,
-                onItemEdited: onItemEdited
-            ))
-        }
-        
-        // AUTOMATICALLY apply HIG compliance - this is the key fix!
-        return AnyView(baseView
-            .appleHIGCompliant()
-            .automaticAccessibility()
-            .automaticCompliance()
-            .platformPatterns()
-            .visualConsistency())
+        .appleHIGCompliant()
+        .automaticAccessibility()
+        .automaticCompliance()
+        .platformPatterns()
+        .visualConsistency()
     }
     
     /// Determine the optimal presentation strategy based on hints and platform
@@ -4018,48 +4004,39 @@ public struct GenericContentView: View {
     let content: Any
     let hints: PresentationHints
     
+    /// No AnyView — @ViewBuilder so ViewInspector tests can traverse (Issue 178).
+    @ViewBuilder
     public var body: some View {
         // Analyze content type and delegate to appropriate function
-        
         if let formFields = content as? [DynamicFormField] {
-            // Delegate to form function
-            return AnyView(platformPresentFormData_L1(fields: formFields, hints: EnhancedPresentationHints(
+            platformPresentFormData_L1(fields: formFields, hints: EnhancedPresentationHints(
                 dataType: hints.dataType,
                 presentationPreference: hints.presentationPreference,
                 complexity: hints.complexity,
                 context: hints.context,
                 customPreferences: hints.customPreferences,
                 extensibleHints: []
-            )))
+            ))
         } else if let mediaItems = content as? [GenericMediaItem] {
-            // Delegate to media function
-            return AnyView(platformPresentMediaData_L1(media: mediaItems, hints: hints))
+            platformPresentMediaData_L1(media: mediaItems, hints: hints)
         } else if let numericData = content as? [GenericNumericData] {
-            // Delegate to numeric function
-            return AnyView(platformPresentNumericData_L1(data: numericData, hints: hints))
+            platformPresentNumericData_L1(data: numericData, hints: hints)
         } else if let hierarchicalItems = content as? [GenericHierarchicalItem] {
-            // Delegate to hierarchical function
-            return AnyView(platformPresentHierarchicalData_L1(items: hierarchicalItems, hints: hints))
+            platformPresentHierarchicalData_L1(items: hierarchicalItems, hints: hints)
         } else if let temporalItems = content as? [GenericTemporalItem] {
-            // Delegate to temporal function
-            return AnyView(platformPresentTemporalData_L1(items: temporalItems, hints: hints))
+            platformPresentTemporalData_L1(items: temporalItems, hints: hints)
         } else if isIdentifiableArray(content) {
-            // Handle any identifiable array by converting to GenericDataItem
             let items = convertToGenericDataItems(content)
-            return AnyView(platformPresentItemCollection_L1(items: items, hints: hints))
+            platformPresentItemCollection_L1(items: items, hints: hints)
         } else if isBasicNumericType(content) {
-            // Handle basic numeric types with dedicated function
-            return AnyView(platformPresentBasicValue_L1(value: content, hints: hints))
+            platformPresentBasicValue_L1(value: content, hints: hints)
         } else if isBasicArray(content) {
-            // Handle basic arrays with dedicated function
-            return AnyView(platformPresentBasicArray_L1(array: content, hints: hints))
+            platformPresentBasicArray_L1(array: content, hints: hints)
         } else if content is String {
-            // Handle String content with dedicated function
-            return AnyView(platformPresentBasicValue_L1(value: content, hints: hints))
+            platformPresentBasicValue_L1(value: content, hints: hints)
         } else {
-            // Fallback to generic presentation for truly unknown types
-            return AnyView(GenericFallbackView(content: content, hints: hints)
-                .automaticCompliance(named: "GenericContentView"))
+            GenericFallbackView(content: content, hints: hints)
+                .automaticCompliance(named: "GenericContentView")
         }
     }
     
@@ -4646,14 +4623,30 @@ struct GenericSettingsItemView: View {
 
 // MARK: - Custom Collection View Components
 
-/// Custom grid collection view that uses custom item views
-public struct CustomGridCollectionView<Item: Identifiable>: View {
+/// Custom grid collection view that uses custom item views (no AnyView — Issue 178)
+public struct CustomGridCollectionView<Item: Identifiable, CustomView: View>: View {
     let items: [Item]
     let hints: PresentationHints
-    let customItemView: (Item) -> AnyView
+    let customItemView: (Item) -> CustomView
     let onItemSelected: ((Item) -> Void)?
     let onItemDeleted: ((Item) -> Void)?
     let onItemEdited: ((Item) -> Void)?
+    
+    public init(
+        items: [Item],
+        hints: PresentationHints,
+        @ViewBuilder customItemView: @escaping (Item) -> CustomView,
+        onItemSelected: ((Item) -> Void)? = nil,
+        onItemDeleted: ((Item) -> Void)? = nil,
+        onItemEdited: ((Item) -> Void)? = nil
+    ) {
+        self.items = items
+        self.hints = hints
+        self.customItemView = customItemView
+        self.onItemSelected = onItemSelected
+        self.onItemDeleted = onItemDeleted
+        self.onItemEdited = onItemEdited
+    }
     
     public var body: some View {
         GeometryReader { geometry in
@@ -4684,14 +4677,30 @@ public struct CustomGridCollectionView<Item: Identifiable>: View {
     }
 }
 
-/// Custom list collection view that uses custom item views
-public struct CustomListCollectionView<Item: Identifiable>: View {
+/// Custom list collection view that uses custom item views (no AnyView — Issue 178)
+public struct CustomListCollectionView<Item: Identifiable, CustomView: View>: View {
     let items: [Item]
     let hints: PresentationHints
-    let customItemView: (Item) -> AnyView
+    let customItemView: (Item) -> CustomView
     let onItemSelected: ((Item) -> Void)?
     let onItemDeleted: ((Item) -> Void)?
     let onItemEdited: ((Item) -> Void)?
+    
+    public init(
+        items: [Item],
+        hints: PresentationHints,
+        @ViewBuilder customItemView: @escaping (Item) -> CustomView,
+        onItemSelected: ((Item) -> Void)? = nil,
+        onItemDeleted: ((Item) -> Void)? = nil,
+        onItemEdited: ((Item) -> Void)? = nil
+    ) {
+        self.items = items
+        self.hints = hints
+        self.customItemView = customItemView
+        self.onItemSelected = onItemSelected
+        self.onItemDeleted = onItemDeleted
+        self.onItemEdited = onItemEdited
+    }
     
     public var body: some View {
         ScrollView {
@@ -4711,14 +4720,30 @@ public struct CustomListCollectionView<Item: Identifiable>: View {
 
 // MARK: - Additional Custom View Components
 
-/// Custom settings view that supports custom setting views
-public struct CustomSettingsView: View {
+/// Custom settings view that supports custom setting views (no AnyView — Issue 178)
+public struct CustomSettingsView<CustomView: View>: View {
     let settings: [SettingsSectionData]
     let hints: PresentationHints
     let onSettingChanged: ((String, Any) -> Void)?
     let onSettingsSaved: (() -> Void)?
     let onSettingsCancelled: (() -> Void)?
-    let customSettingView: (SettingsSectionData) -> AnyView
+    let customSettingView: (SettingsSectionData) -> CustomView
+    
+    public init(
+        settings: [SettingsSectionData],
+        hints: PresentationHints,
+        onSettingChanged: ((String, Any) -> Void)?,
+        onSettingsSaved: (() -> Void)?,
+        onSettingsCancelled: (() -> Void)?,
+        @ViewBuilder customSettingView: @escaping (SettingsSectionData) -> CustomView
+    ) {
+        self.settings = settings
+        self.hints = hints
+        self.onSettingChanged = onSettingChanged
+        self.onSettingsSaved = onSettingsSaved
+        self.onSettingsCancelled = onSettingsCancelled
+        self.customSettingView = customSettingView
+    }
     
     public var body: some View {
         ScrollView {
@@ -4733,11 +4758,21 @@ public struct CustomSettingsView: View {
     }
 }
 
-/// Custom media view that supports custom media item views
-public struct CustomMediaView: View {
+/// Custom media view that supports custom media item views (no AnyView — Issue 178)
+public struct CustomMediaView<CustomView: View>: View {
     let media: [GenericMediaItem]
     let hints: PresentationHints
-    let customMediaView: (GenericMediaItem) -> AnyView
+    let customMediaView: (GenericMediaItem) -> CustomView
+    
+    public init(
+        media: [GenericMediaItem],
+        hints: PresentationHints,
+        @ViewBuilder customMediaView: @escaping (GenericMediaItem) -> CustomView
+    ) {
+        self.media = media
+        self.hints = hints
+        self.customMediaView = customMediaView
+    }
     
     public var body: some View {
         GeometryReader { geometry in
@@ -4765,11 +4800,21 @@ public struct CustomMediaView: View {
     }
 }
 
-/// Custom hierarchical view that supports custom hierarchical item views
-public struct CustomHierarchicalView: View {
+/// Custom hierarchical view that supports custom hierarchical item views (no AnyView — Issue 178)
+public struct CustomHierarchicalView<CustomView: View>: View {
     let items: [GenericHierarchicalItem]
     let hints: PresentationHints
-    let customItemView: (GenericHierarchicalItem) -> AnyView
+    let customItemView: (GenericHierarchicalItem) -> CustomView
+    
+    public init(
+        items: [GenericHierarchicalItem],
+        hints: PresentationHints,
+        @ViewBuilder customItemView: @escaping (GenericHierarchicalItem) -> CustomView
+    ) {
+        self.items = items
+        self.hints = hints
+        self.customItemView = customItemView
+    }
     
     public var body: some View {
         ScrollView {
@@ -4784,11 +4829,21 @@ public struct CustomHierarchicalView: View {
     }
 }
 
-/// Custom temporal view that supports custom temporal item views
-public struct CustomTemporalView: View {
+/// Custom temporal view that supports custom temporal item views (no AnyView — Issue 178)
+public struct CustomTemporalView<CustomView: View>: View {
     let items: [GenericTemporalItem]
     let hints: PresentationHints
-    let customItemView: (GenericTemporalItem) -> AnyView
+    let customItemView: (GenericTemporalItem) -> CustomView
+    
+    public init(
+        items: [GenericTemporalItem],
+        hints: PresentationHints,
+        @ViewBuilder customItemView: @escaping (GenericTemporalItem) -> CustomView
+    ) {
+        self.items = items
+        self.hints = hints
+        self.customItemView = customItemView
+    }
     
     public var body: some View {
         ScrollView {
@@ -4803,11 +4858,21 @@ public struct CustomTemporalView: View {
     }
 }
 
-/// Custom numeric data view that supports custom numeric data item views
-public struct CustomNumericDataView: View {
+/// Custom numeric data view that supports custom numeric data item views (no AnyView — Issue 178)
+public struct CustomNumericDataView<CustomView: View>: View {
     let data: [GenericNumericData]
     let hints: PresentationHints
-    let customDataView: (GenericNumericData) -> AnyView
+    let customDataView: (GenericNumericData) -> CustomView
+    
+    public init(
+        data: [GenericNumericData],
+        hints: PresentationHints,
+        @ViewBuilder customDataView: @escaping (GenericNumericData) -> CustomView
+    ) {
+        self.data = data
+        self.hints = hints
+        self.customDataView = customDataView
+    }
     
     public var body: some View {
         GeometryReader { geometry in
@@ -4872,13 +4937,13 @@ private struct NavigationStackWrapper<Content: View>: View {
     }
 }
 
-/// Internal wrapper view for navigation stack with items
+/// Internal wrapper view for navigation stack with items (no AnyView — Issue 178).
 /// This view implements the full 6-layer flow: L1 -> L2 -> L3 -> L4
-private struct NavigationStackItemsWrapper<Item: Identifiable & Hashable>: View {
+private struct NavigationStackItemsWrapper<Item: Identifiable & Hashable, ItemView: View, DestinationView: View>: View {
     let items: [Item]
     let hints: PresentationHints
-    let itemView: (Item) -> AnyView
-    let destination: (Item) -> AnyView
+    let itemView: (Item) -> ItemView
+    let destination: (Item) -> DestinationView
     
     @State private var selectedItem: Item?
     
@@ -4902,12 +4967,8 @@ private struct NavigationStackItemsWrapper<Item: Identifiable & Hashable>: View 
                 get: { selectedItem },
                 set: { selectedItem = $0 }
             ),
-            itemView: { item in
-                itemView(item)
-            },
-            detailView: { item in
-                destination(item)
-            },
+            itemView: itemView,
+            detailView: destination,
             strategy: l3Strategy
         )
     }
