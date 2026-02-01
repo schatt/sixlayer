@@ -125,6 +125,18 @@ public func withInspectedView<R>(
     withInspectedView(AnyView(view), perform: perform)
 }
 
+// MARK: - Hierarchy traversal (Issue 178)
+
+/// When the root is InspectableView<ViewType.AnyView> (e.g. after unwrap), get the first VStack in the hierarchy.
+/// Use when the view body is a custom type (e.g. DynamicFormView) and .vStack() on the root fails.
+@MainActor
+public func firstVStackInHierarchy(_ inspected: ViewInspector.InspectableView<ViewInspector.ViewType.AnyView>) throws -> ViewInspector.InspectableView<ViewInspector.ViewType.VStack> {
+    let list = try inspected.findAll(ViewInspector.ViewType.VStack.self)
+    struct NoVStack: Error {}
+    guard let first = list.first else { throw NoVStack() }
+    return first
+}
+
 // MARK: - Inspection from View instances
 // Prefer inspectView(view) over a View extension; ViewInspector’s Inspectable requirement
 // on Self in extension View where Self: KnownViewType caused “Self does not conform to Inspectable”.

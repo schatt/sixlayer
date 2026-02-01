@@ -70,8 +70,8 @@ open class DynamicFormViewTests: BaseTestClass {
         #if canImport(ViewInspector)
         do {
             try withInspectedViewThrowingUnwrapped(view) { inspected in
-                // Should have a VStack as root (inspected is unwrapped AnyView content)
-                let vStack = try inspected.vStack()
+                // Find first VStack in hierarchy (root may be custom type, e.g. DynamicFormView)
+                let vStack = try firstVStackInHierarchy(inspected)
                 #expect(vStack.count >= 3, "Should have title, sections, and submit button")
 
                 // Should have accessibility identifier
@@ -119,7 +119,7 @@ open class DynamicFormViewTests: BaseTestClass {
         do {
             try withInspectedViewThrowingUnwrapped(view) { inspected in
                 // Should have a VStack with leading alignment
-                let vStack = try inspected.vStack()
+                let vStack = try firstVStackInHierarchy(inspected)
                 #expect(vStack.count >= 3, "Should have section title and field views")
 
                 // First element should be the section title
@@ -176,7 +176,7 @@ open class DynamicFormViewTests: BaseTestClass {
         #if canImport(ViewInspector)
         do {
             try withInspectedViewThrowingUnwrapped(view) { inspected in
-                let vStack = try inspected.vStack()
+                let vStack = try firstVStackInHierarchy(inspected)
                 #expect(vStack.count >= 2, "Should have section title and fields")
                 
                 // First element should be section title (Text, not DisclosureGroup)
@@ -223,7 +223,7 @@ open class DynamicFormViewTests: BaseTestClass {
         #if canImport(ViewInspector)
         do {
             try withInspectedViewThrowingUnwrapped(view) { inspected in
-                let vStack = try inspected.vStack()
+                let vStack = try firstVStackInHierarchy(inspected)
                 #expect(vStack.count >= 2, "Should have field label and field control")
                 
                 // Verify field has accessibility identifier
@@ -272,7 +272,7 @@ open class DynamicFormViewTests: BaseTestClass {
         do {
             try withInspectedViewThrowingUnwrapped(view) { inspected in
                 // Should have a VStack with leading alignment
-                let vStack = try inspected.vStack()
+                let vStack = try firstVStackInHierarchy(inspected)
                 #expect(vStack.count >= 2, "Should have field label and field control")
 
                 // First element should be the field label
@@ -331,7 +331,7 @@ open class DynamicFormViewTests: BaseTestClass {
         #if canImport(ViewInspector)
         do {
             try withInspectedViewThrowingUnwrapped(view) { inspected in
-                let vStack = try inspected.vStack()
+                let vStack = try firstVStackInHierarchy(inspected)
                 // First element should be HStack containing label and asterisk
                 let hStacks = vStack.findAll(ViewInspector.ViewType.HStack.self)
                 if let hStack = hStacks.first {
@@ -385,7 +385,7 @@ open class DynamicFormViewTests: BaseTestClass {
         #if canImport(ViewInspector)
         do {
             try withInspectedViewThrowingUnwrapped(view) { inspected in
-                let vStack = try inspected.vStack()
+                let vStack = try firstVStackInHierarchy(inspected)
                 // First element should be HStack containing only label
                 let hStacks = vStack.findAll(ViewInspector.ViewType.HStack.self)
                 if let hStack = hStacks.first {
@@ -520,7 +520,7 @@ open class DynamicFormViewTests: BaseTestClass {
         #if canImport(ViewInspector)
         do {
             try withInspectedViewThrowingUnwrapped(view) { inspected in
-                let vStack = try inspected.vStack()
+                let vStack = try firstVStackInHierarchy(inspected)
                 // First element should be HStack containing label and info button
                 let hStacks = vStack.findAll(ViewInspector.ViewType.HStack.self)
                 if let hStack = hStacks.first {
@@ -570,7 +570,7 @@ open class DynamicFormViewTests: BaseTestClass {
         #if canImport(ViewInspector)
         do {
             try withInspectedViewThrowingUnwrapped(view) { inspected in
-                let vStack = try inspected.vStack()
+                let vStack = try firstVStackInHierarchy(inspected)
                 // First element should be HStack containing only label
                 let hStacks = vStack.findAll(ViewInspector.ViewType.HStack.self)
                 if let hStack = hStacks.first {
@@ -659,7 +659,7 @@ open class DynamicFormViewTests: BaseTestClass {
         #if canImport(ViewInspector)
         do {
             try withInspectedViewThrowingUnwrapped(view) { inspected in
-                let vStack = try inspected.vStack()
+                let vStack = try firstVStackInHierarchy(inspected)
                 // Should not have description text as a separate Text element
                 // Description should only be in popover/tooltip, not as visible text
                 // We verify by checking that description text is not in the VStack children

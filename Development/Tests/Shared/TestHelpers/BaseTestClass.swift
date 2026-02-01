@@ -165,61 +165,98 @@ open class BaseTestClass {
         #endif
     }
     
-    /// Verify that a view contains specific text content
-    /// Override this method in subclasses to provide custom verification logic
+    /// Verify that a view contains specific text content (Inspectable view — direct hierarchy).
+    #if canImport(ViewInspector)
     @MainActor
-    open func verifyViewContainsText(_ view: some View, expectedText: String, testName: String) {
-        // 1. View created - The view can be instantiated successfully
-        // view is a non-optional View parameter, so it exists if we reach here
-
-        // 2. Contains what it needs to contain - The view should contain expected text
-        // NOTE: findAll() does not recurse through AnyView (type-erasure boundary). Unwrap root AnyView first.
-        #if canImport(ViewInspector)
+    open func verifyViewContainsText<V: View & ViewInspector.Inspectable>(_ view: V, expectedText: String, testName: String) {
         do {
-            let inspected = try AnyView(view).inspect()
-            let viewText = (try? inspected.anyView())?.findAll(ViewInspector.ViewType.Text.self)
-                ?? inspected.findAll(ViewInspector.ViewType.Text.self)
+            guard let inspected = inspectView(view) else {
+                Issue.record("View inspection failed for \(testName): could not obtain inspected view")
+                return
+            }
+            let viewText = inspected.findAll(ViewInspector.ViewType.Text.self)
             #expect(!viewText.isEmpty, "View should contain text elements for \(testName)")
 
             let hasExpectedText = viewText.contains { text in
-                if let textContent = try? text.string() {
-                    return textContent.contains(expectedText)
-                }
-                return false
+                (try? text.string())?.contains(expectedText) ?? false
             }
             #expect(hasExpectedText, "View should contain text '\(expectedText)' for \(testName)")
         } catch {
             Issue.record("View inspection failed for \(testName): \(error)")
         }
-        #else
-        // ViewInspector not available - test passes by verifying view creation
-        #expect(Bool(true), "View created for \(testName) (ViewInspector not available)")
-        #endif
     }
-    
-    /// Verify that a view contains specific image elements
-    /// Override this method in subclasses to provide custom verification logic
-    @MainActor
-    open func verifyViewContainsImage(_ view: some View, testName: String) {
-        // 1. View created - The view can be instantiated successfully
-        // view is a non-optional View parameter, so it exists if we reach here
 
-        // 2. Contains what it needs to contain - The view should contain image elements
-        // NOTE: findAll() does not recurse through AnyView (type-erasure boundary). Unwrap root AnyView first.
-        #if canImport(ViewInspector)
+    /// Verify that a view contains specific text (non-Inspectable view — uses type-erased inspection).
+    /// Aggregates Text from root and up to two levels of AnyView unwrap so nested type-erasure still finds content (Issue 178).
+    @MainActor
+    open func verifyViewContainsText(_ view: some View, expectedText: String, testName: String) {
+        guard let viewText = withInspectedView(AnyView(view), perform: { inspected in
+            var all: [ViewInspector.InspectableView<ViewInspector.ViewType.Text>] = []
+            all.append(contentsOf: inspected.findAll(ViewInspector.ViewType.Text.self))
+            if let inner = try? inspected.anyView() {
+                all.append(contentsOf: inner.findAll(ViewInspector.ViewType.Text.self))
+                if let inner2 = try? inner.anyView() {
+                    all.append(contentsOf: inner2.findAll(ViewInspector.ViewType.Text.self))
+                }
+            }
+            return all
+        }) else {
+            Issue.record("View inspection failed for \(testName): could not obtain inspected view")
+            return
+        }
+        #expect(!viewText.isEmpty, "View should contain text elements for \(testName)")
+        let hasExpectedText = viewText.contains { (try? $0.string())?.contains(expectedText) ?? false }
+        #expect(hasExpectedText, "View should contain text '\(expectedText)' for \(testName)")
+    }
+    #else
+    @MainActor
+    open func verifyViewContainsText(_ view: some View, expectedText: String, testName: String) {
+        #expect(Bool(true), "View created for \(testName) (ViewInspector not available)")
+    }
+    #endif
+
+    /// Verify that a view contains specific image elements (Inspectable view — direct hierarchy).
+    #if canImport(ViewInspector)
+    @MainActor
+    open func verifyViewContainsImage<V: View & ViewInspector.Inspectable>(_ view: V, testName: String) {
         do {
-            let inspected = try AnyView(view).inspect()
-            let viewImages = (try? inspected.anyView())?.findAll(ViewInspector.ViewType.Image.self)
-                ?? inspected.findAll(ViewInspector.ViewType.Image.self)
+            guard let inspected = inspectView(view) else {
+                Issue.record("View inspection failed for \(testName): could not obtain inspected view")
+                return
+            }
+            let viewImages = inspected.findAll(ViewInspector.ViewType.Image.self)
             #expect(!viewImages.isEmpty, "View should contain image elements for \(testName)")
         } catch {
             Issue.record("View inspection failed for \(testName): \(error)")
         }
-        #else
-        // ViewInspector not available - test passes by verifying view creation
-        #expect(Bool(true), "View created for \(testName) (ViewInspector not available)")
-        #endif
     }
+
+    /// Verify that a view contains image elements (non-Inspectable view — uses type-erased inspection).
+    /// Aggregates Image from root and up to two levels of AnyView unwrap so nested type-erasure still finds content (Issue 178).
+    @MainActor
+    open func verifyViewContainsImage(_ view: some View, testName: String) {
+        guard let viewImages = withInspectedView(AnyView(view), perform: { inspected in
+            var all: [ViewInspector.InspectableView<ViewInspector.ViewType.Image>] = []
+            all.append(contentsOf: inspected.findAll(ViewInspector.ViewType.Image.self))
+            if let inner = try? inspected.anyView() {
+                all.append(contentsOf: inner.findAll(ViewInspector.ViewType.Image.self))
+                if let inner2 = try? inner.anyView() {
+                    all.append(contentsOf: inner2.findAll(ViewInspector.ViewType.Image.self))
+                }
+            }
+            return all
+        }) else {
+            Issue.record("View inspection failed for \(testName): could not obtain inspected view")
+            return
+        }
+        #expect(!viewImages.isEmpty, "View should contain image elements for \(testName)")
+    }
+    #else
+    @MainActor
+    open func verifyViewContainsImage(_ view: some View, testName: String) {
+        #expect(Bool(true), "View created for \(testName) (ViewInspector not available)")
+    }
+    #endif
     
     // MARK: - Common Test Data Creation
     
