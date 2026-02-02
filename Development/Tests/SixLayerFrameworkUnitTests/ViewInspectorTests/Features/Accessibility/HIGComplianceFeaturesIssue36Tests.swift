@@ -109,6 +109,8 @@ open class HIGComplianceFeaturesIssue36Tests: BaseTestClass {
     
     @Test @MainActor func testAutomaticTouchTargetSizing_NoRequirementOnMacOS() {
         initializeTestConfig()
+        // Only run on macOS — test asserts macOS-specific behavior
+        guard RuntimeCapabilityDetection.currentPlatform == .macOS else { return }
         // GIVEN: macOS platform (no touch target requirements)
         
         // WHEN: Creating a button with automatic compliance

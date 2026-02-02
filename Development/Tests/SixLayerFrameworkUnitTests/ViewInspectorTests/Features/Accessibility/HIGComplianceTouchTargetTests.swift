@@ -142,10 +142,14 @@ open class HIGComplianceTouchTargetTests: BaseTestClass {
             // WHEN: View is created on platforms that don't require touch targets
             // THEN: Touch target sizing should not be applied (but other HIG compliance should be)
             
-            // Test platforms that don't require touch targets
+            // Test platforms that don't require touch targets (only assert when actually running on that platform)
             let nonTouchPlatforms: [SixLayerPlatform] = [.macOS, .tvOS, .visionOS]
-            
-            for platform in nonTouchPlatforms {
+            let currentPlatform = RuntimeCapabilityDetection.currentPlatform
+            guard nonTouchPlatforms.contains(currentPlatform) else {
+                // Running on iOS/watchOS — skip; this test only applies to non-touch platforms
+                return
+            }
+            for platform in nonTouchPlatforms where platform == currentPlatform {
                 let expectedMinTouchTarget = RuntimeCapabilityDetection.minTouchTarget
                 
                 // Verify runtime detection says no touch target required
