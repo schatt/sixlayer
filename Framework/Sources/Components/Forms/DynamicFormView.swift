@@ -78,6 +78,8 @@ public struct DynamicFormView: View {
     }
 
     public var body: some View {
+        // Outer VStack so ViewInspector can find structure (ScrollViewReader blocks traversal — Issue 178)
+        VStack(spacing: 0) {
         ScrollViewReader { proxy in
             platformVStackContainer(spacing: 20) {
                 // Form title
@@ -196,6 +198,7 @@ public struct DynamicFormView: View {
                     formState.triggerDebouncedSave()
                 }
             }
+        }
         }
     }
     
