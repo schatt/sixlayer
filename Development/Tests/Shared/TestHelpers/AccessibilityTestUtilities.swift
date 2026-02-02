@@ -105,8 +105,34 @@ public func getAccessibilityLabelForTest<V: View>(view: V, hostedRoot: Any? = ni
     return firstAccessibilityLabel(inHosted: root)
 }
 
+#if canImport(UIKit)
+/// Return the first non-empty accessibility identifier from a view's accessibilityElements (SwiftUI may expose IDs there).
+@MainActor
+private func firstAccessibilityIdentifierFromElements(_ elements: [Any]?) -> String? {
+    guard let elements = elements else { return nil }
+    for element in elements {
+        if let ax = element as? UIAccessibilityElement, let id = ax.accessibilityIdentifier, !id.isEmpty {
+            return id
+        }
+    }
+    return nil
+}
+
+/// Return the first non-empty accessibility label from a view's accessibilityElements.
+@MainActor
+private func firstAccessibilityLabelFromElements(_ elements: [Any]?) -> String? {
+    guard let elements = elements else { return nil }
+    for element in elements {
+        if let ax = element as? UIAccessibilityElement, let label = ax.accessibilityLabel, !label.isEmpty {
+            return label
+        }
+    }
+    return nil
+}
+#endif
+
 /// Depth-first search for the first non-empty accessibility identifier in the platform view hierarchy.
-/// Traverses up to 40 levels deep to find identifiers in complex SwiftUI-hosted hierarchies.
+/// Traverses up to 40 levels deep; also checks each view's accessibilityElements (SwiftUI may expose IDs there).
 @MainActor
 public func firstAccessibilityIdentifier(inHosted root: Any?) -> String? {
     #if canImport(UIKit)
@@ -115,6 +141,10 @@ public func firstAccessibilityIdentifier(inHosted root: Any?) -> String? {
     
     // Check root view first
     if let id = rootView.accessibilityIdentifier, !id.isEmpty {
+        return id
+    }
+    // SwiftUI-hosted content may expose identifiers via accessibilityElements (Issue 178)
+    if let id = firstAccessibilityIdentifierFromElements(rootView.accessibilityElements) {
         return id
     }
     
@@ -128,6 +158,9 @@ public func firstAccessibilityIdentifier(inHosted root: Any?) -> String? {
         checkedViews.insert(nextId)
         
         if let id = next.accessibilityIdentifier, !id.isEmpty {
+            return id
+        }
+        if let id = firstAccessibilityIdentifierFromElements(next.accessibilityElements) {
             return id
         }
         if depth < maxDepth {
@@ -171,17 +204,24 @@ public func firstAccessibilityIdentifier(inHosted root: Any?) -> String? {
 }
 
 /// Depth-first search for the first non-empty accessibility label in the platform view hierarchy.
+/// Also checks each view's accessibilityElements (SwiftUI may expose labels there).
 @MainActor
 public func firstAccessibilityLabel(inHosted root: Any?) -> String? {
     #if canImport(UIKit)
     guard let rootView = root as? UIView else { return nil }
     if let label = rootView.accessibilityLabel, !label.isEmpty { return label }
+    if let label = firstAccessibilityLabelFromElements(rootView.accessibilityElements) {
+        return label
+    }
     var stack: [(UIView, Int)] = rootView.subviews.map { ($0, 1) }
     var checked: Set<ObjectIdentifier> = []
     while let (next, depth) = stack.popLast(), depth <= 40 {
         if checked.contains(ObjectIdentifier(next)) { continue }
         checked.insert(ObjectIdentifier(next))
         if let label = next.accessibilityLabel, !label.isEmpty { return label }
+        if let label = firstAccessibilityLabelFromElements(next.accessibilityElements) {
+            return label
+        }
         if depth < 40 { stack.append(contentsOf: next.subviews.map { ($0, depth + 1) }) }
     }
     return nil
