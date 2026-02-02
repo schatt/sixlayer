@@ -44,6 +44,7 @@ TDD. DTRT. DRY. Epistemology
 
 ## **Git Hygiene (Commit Early and Often)**
 - **MANDATORY**: Encourage small, cohesive commits made early and often rather than large, delayed changesets.
+- **MANDATORY**: Before every test run, commit current work first (commits are cheap).
 - **MANDATORY**: Before switching tasks or contexts, check for a logical unit of work to commit.
 - **MANDATORY**: Keep working trees clean; avoid accumulating unrelated uncommitted changes across many files.
 - **MANDATORY**: Follow the Git commit message practices defined in `.cursorrules` (clear what/why, issue links, imperative mood).

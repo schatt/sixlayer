@@ -61,6 +61,7 @@
    - After completing logical units of work
    - Small, focused commits (one cohesive change per commit)
    - Before switching contexts or pausing work
+   - **Before every test run** — commit current work first so test runs don't run with uncommitted changes; commits are cheap
    - **"Commits are cheap"** - Make frequent commits to capture incremental progress
 
 ### Examples
