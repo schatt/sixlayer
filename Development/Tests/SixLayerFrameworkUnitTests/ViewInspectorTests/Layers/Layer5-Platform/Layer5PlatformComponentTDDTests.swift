@@ -37,11 +37,11 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
 
             // Should render AI recognition interface
             #if canImport(ViewInspector)
-            if let inspected = try? AnyView(view).inspect() {
+            if let inspected = try? view.inspect() {
                 do {
-                    // Should have proper UI structure for recognition features
-                    let vStack = try inspected.vStack()
-                    let children = vStack.findAll(ViewInspector.ViewType.AnyView.self)
+                    // Should have proper UI structure for recognition features (inspect view directly — Issue 178)
+                    let vStack = try firstVStackInHierarchy(inspected)
+                    let children = vStack.findAll(ViewInspector.ViewType.Text.self)
                     #expect(children.count >= 1, "Should have recognition interface elements")
 
                 // Should have accessibility identifier
@@ -81,11 +81,12 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
 
         // Should render privacy management interface
         #if canImport(ViewInspector)
-        if let inspected = try? AnyView(view).inspect() {
+        if let inspected = try? view.inspect() {
             do {
-                // Should have proper UI structure for privacy controls
-                    let vStack = try inspected.vStack()
-                    #expect(vStack.count >= 1, "Should have privacy interface elements")
+                    // Should have proper UI structure for privacy controls (inspect view directly — Issue 178)
+                    let vStack = try firstVStackInHierarchy(inspected)
+                    let textChildren = vStack.findAll(ViewInspector.ViewType.Text.self)
+                    #expect(textChildren.count >= 1, "Should have privacy interface elements")
 
                 // Should have accessibility identifier
                 #if canImport(ViewInspector)
@@ -123,10 +124,10 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
 
         // Should render performance monitoring interface
         #if canImport(ViewInspector)
-        if let inspected = try? AnyView(view).inspect() {
+        if let inspected = try? view.inspect() {
             do {
                 // Should have proper UI structure for performance metrics
-                let vStack = try inspected.vStack()
+                let vStack = try firstVStackInHierarchy(inspected)
                 #expect(vStack.count >= 1, "Should have performance monitoring elements")
 
             // Should have accessibility identifier
@@ -165,10 +166,10 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
 
         // Should render user profiling interface
         #if canImport(ViewInspector)
-        if let inspected = try? AnyView(view).inspect() {
+        if let inspected = try? view.inspect() {
             do {
                 // Should have proper UI structure for profiling features
-                let vStack = try inspected.vStack()
+                let vStack = try firstVStackInHierarchy(inspected)
                 #expect(vStack.count >= 1, "Should have profiling interface elements")
 
                 // Should have accessibility identifier
@@ -207,10 +208,10 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
 
         // Should render safety features interface
         #if canImport(ViewInspector)
-        if let inspected = try? AnyView(view).inspect() {
+        if let inspected = try? view.inspect() {
             do {
                 // Should have proper UI structure for safety features
-                let vStack = try inspected.vStack()
+                let vStack = try firstVStackInHierarchy(inspected)
                 #expect(vStack.count >= 1, "Should have safety interface elements")
 
                 // Should have accessibility identifier
@@ -249,10 +250,10 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
 
         // Should render navigation interface
         #if canImport(ViewInspector)
-        if let inspected = try? AnyView(view).inspect() {
+        if let inspected = try? view.inspect() {
             do {
                 // Should have proper UI structure for routing features
-                let vStack = try inspected.vStack()
+                let vStack = try firstVStackInHierarchy(inspected)
                 #expect(vStack.count >= 1, "Should have routing interface elements")
 
                 // Should have accessibility identifier
@@ -291,10 +292,10 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
 
         // Should render service orchestration interface
         #if canImport(ViewInspector)
-        if let inspected = try? AnyView(view).inspect() {
+        if let inspected = try? view.inspect() {
             do {
                 // Should have proper UI structure for orchestration features
-                let vStack = try inspected.vStack()
+                let vStack = try firstVStackInHierarchy(inspected)
                 #expect(vStack.count >= 1, "Should have orchestration interface elements")
 
                 // Should have accessibility identifier
@@ -333,10 +334,10 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
 
         // Should render optimization recommendations interface
         #if canImport(ViewInspector)
-        if let inspected = try? AnyView(view).inspect() {
+        if let inspected = try? view.inspect() {
             do {
                 // Should have proper UI structure for optimization features
-                let vStack = try inspected.vStack()
+                let vStack = try firstVStackInHierarchy(inspected)
                 #expect(vStack.count >= 1, "Should have optimization interface elements")
 
                 // Should have accessibility identifier
@@ -375,10 +376,10 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
 
         // Should render data organization interface
         #if canImport(ViewInspector)
-        if let inspected = try? AnyView(view).inspect() {
+        if let inspected = try? view.inspect() {
             do {
                 // Should have proper UI structure for organization features
-                let vStack = try inspected.vStack()
+                let vStack = try firstVStackInHierarchy(inspected)
                 #expect(vStack.count >= 1, "Should have organization interface elements")
 
                 // Should have accessibility identifier
@@ -422,10 +423,10 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
 
         // Should render notification management interface
         #if canImport(ViewInspector)
-        if let inspected = try? AnyView(view).inspect() {
+        if let inspected = try? view.inspect() {
             do {
                 // Should have proper UI structure for notification features
-                let vStack = try inspected.vStack()
+                let vStack = try firstVStackInHierarchy(inspected)
                 #expect(vStack.count >= 1, "Should have notification interface elements")
 
                 // Should have accessibility identifier
@@ -469,10 +470,10 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
 
         // Should render context interpretation interface
         #if canImport(ViewInspector)
-        if let inspected = try? AnyView(view).inspect() {
+        if let inspected = try? view.inspect() {
             do {
                 // Should have proper UI structure for interpretation features
-                let vStack = try inspected.vStack()
+                let vStack = try firstVStackInHierarchy(inspected)
                 #expect(vStack.count >= 1, "Should have interpretation interface elements")
 
                 // Should have accessibility identifier

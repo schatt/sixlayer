@@ -11114,7 +11114,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         if let inspected = try? AnyView(view).inspect() {
         do {
             // Should have a VStack containing label and TextField
-            let vStack = try inspected.vStack()
+            let vStack = try firstVStackInHierarchy(inspected)
             let children = vStack.findAll(ViewInspector.ViewType.ClassifiedView.self, where: { _ in true })
             #expect(children.count >= 2, "Should have label and TextField")
         
@@ -11193,7 +11193,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         if let inspected = try? AnyView(view).inspect() {
         do {
             // Should have a VStack containing label and TextField
-            let vStack = try inspected.vStack()
+            let vStack = try firstVStackInHierarchy(inspected)
             let children = vStack.findAll(ViewInspector.ViewType.ClassifiedView.self, where: { _ in true })
             #expect(children.count >= 2, "Should have label and TextField")
         
@@ -11278,7 +11278,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         if let inspected = try? AnyView(view).inspect() {
         do {
             // Should have a VStack containing label and TextEditor
-            let vStack = try inspected.vStack()
+            let vStack = try firstVStackInHierarchy(inspected)
             #expect(vStack.count >= 2, "Should have label and TextEditor")
         
                 // First element should be the label Text
@@ -11348,7 +11348,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         if let inspected = try? AnyView(view).inspect() {
         do {
             // Should have a VStack containing label and Picker
-            let vStack = try inspected.vStack()
+            let vStack = try firstVStackInHierarchy(inspected)
             #expect(vStack.count >= 2, "Should have label and Picker")
         
                 // First element should be the label Text
@@ -11418,7 +11418,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         if let inspected = try? AnyView(view).inspect() {
         do {
             // Should have a VStack containing label and selection controls
-            let vStack = try inspected.vStack()
+            let vStack = try firstVStackInHierarchy(inspected)
             #expect(vStack.count >= 2, "Should have label and selection controls")
         
                 // First element should be the label Text
@@ -11488,7 +11488,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         if let inspected = try? AnyView(view).inspect() {
         do {
             // Should have a VStack containing label and radio controls
-            let vStack = try inspected.vStack()
+            let vStack = try firstVStackInHierarchy(inspected)
             #expect(vStack.count >= 2, "Should have label and radio controls")
         
                 // First element should be the label Text
@@ -11557,7 +11557,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         if let inspected = try? AnyView(view).inspect() {
         do {
             // Should have a VStack containing label and Toggle
-            let vStack = try inspected.vStack()
+            let vStack = try firstVStackInHierarchy(inspected)
             #expect(vStack.count >= 2, "Should have label and Toggle")
         
                 // First element should be the label Text
@@ -11626,7 +11626,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         if let inspected = try? AnyView(view).inspect() {
         do {
             // Should have a VStack containing label and Toggle
-            let vStack = try inspected.vStack()
+            let vStack = try firstVStackInHierarchy(inspected)
             #expect(vStack.count >= 2, "Should have label and Toggle")
         
                 // First element should be the label Text

@@ -47,10 +47,14 @@ public func getAccessibilityIdentifierForTest<V: View & ViewInspector.Inspectabl
 }
 #endif
 
-/// Get accessibility identifier when view is not Inspectable: try ViewInspector via AnyView + unwrap, then platform fallback (Issue 178).
+/// Get accessibility identifier when view is not Inspectable: try platform hierarchy first (IDs applied by SwiftUI), then ViewInspector (Issue 178).
 @MainActor
 public func getAccessibilityIdentifierForTest<V: View>(view: V, hostedRoot: Any? = nil) -> String? {
     #if canImport(ViewInspector)
+    // Prefer platform hierarchy when available — SwiftUI applies modifiers to hosted views
+    if let root = hostedRoot, let id = firstAccessibilityIdentifier(inHosted: root), !id.isEmpty {
+        return id
+    }
     if let inspected = try? AnyView(view).inspect() {
         if let inner = try? inspected.anyView() {
             if let id = try? inner.accessibilityIdentifier(), !id.isEmpty { return id }
@@ -78,10 +82,13 @@ public func getAccessibilityLabelForTest<V: View & ViewInspector.Inspectable>(vi
 }
 #endif
 
-/// Get accessibility label when view is not Inspectable: try ViewInspector via AnyView + unwrap, then platform fallback (Issue 178).
+/// Get accessibility label when view is not Inspectable: try platform hierarchy first, then ViewInspector (Issue 178).
 @MainActor
 public func getAccessibilityLabelForTest<V: View>(view: V, hostedRoot: Any? = nil) -> String? {
     #if canImport(ViewInspector)
+    if let root = hostedRoot, let label = firstAccessibilityLabel(inHosted: root), !label.isEmpty {
+        return label
+    }
     if let inspected = try? AnyView(view).inspect() {
         if let inner = try? inspected.anyView(),
            let labelView = try? inner.accessibilityLabel(),

@@ -26,24 +26,19 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
         // Strategy: Find a VStack that contains both a ProgressView and "Progress" text
         // This matches the structure of FormProgressIndicator
         
-        // First, check if the current view is a VStack with the right structure
-        if let vStack = try? inspected.vStack() {
-            // Check if this VStack contains a ProgressView
+        // Find VStacks in hierarchy (root may be type-erased — Issue 178)
+        let vStacks = (try? inspected.findAll(ViewInspector.ViewType.VStack.self)) ?? []
+        for vStack in vStacks {
             let progressViews = vStack.findAll(ViewInspector.ViewType.ProgressView.self)
             let hasProgressView = !progressViews.isEmpty
-            
-            // Check if it contains "Progress" text
             let texts = vStack.findAll(ViewInspector.ViewType.Text.self)
-            let hasProgressText = texts.contains { text in
-                (try? text.string()) == "Progress"
-            }
-            
+            let hasProgressText = texts.contains { (try? $0.string()) == "Progress" }
             if hasProgressView && hasProgressText {
                 return inspected
             }
         }
         
-        // Search for ProgressView and verify it's in a VStack with "Progress" text
+        // Fallback: search for ProgressView and "Progress" text anywhere
         let progressViews = inspected.findAll(ViewInspector.ViewType.ProgressView.self)
         for _ in progressViews {
             // If we found a ProgressView, check if there's "Progress" text nearby
@@ -524,8 +519,8 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
         // Then: Should have proper structure (VStack with HStack and ProgressView)
         #if canImport(ViewInspector)
         let inspectionResult = withInspectedView(progressIndicator) { inspected in
-            // Should have VStack as root
-            let vStack = try? inspected.vStack()
+            // Should have VStack in hierarchy (root may be type-erased — Issue 178)
+            let vStack = try? firstVStackInHierarchy(inspected)
             #expect(vStack != nil, "Progress indicator should have VStack as root")
             
             if let vStack = vStack {
@@ -563,8 +558,8 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
         let inspectionResult = withInspectedView(progressIndicator) { inspected in
             // Verify the view structure indicates styling (VStack with proper hierarchy)
             // ViewInspector cannot directly detect padding/background/cornerRadius modifiers,
-            // but we can verify the component structure is correct
-            let vStack = try? inspected.vStack()
+            // but we can verify the component structure is correct (Issue 178)
+            let vStack = try? firstVStackInHierarchy(inspected)
             #expect(vStack != nil, "Progress indicator should have VStack structure for styling")
             
             // Verify text elements are present (styling makes them readable)
@@ -645,8 +640,8 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
         // Then: Should be visible and readable in light mode
         #if canImport(ViewInspector)
         let inspectionResult = withInspectedView(progressIndicator) { inspected in
-            // Verify structure is present (visibility)
-            let vStack = try? inspected.vStack()
+            // Verify structure is present (visibility) — Issue 178
+            let vStack = try? firstVStackInHierarchy(inspected)
             #expect(vStack != nil, "Progress indicator should render in light mode")
             
             // Verify text elements are present (readability)
@@ -681,8 +676,8 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
         // Then: Should be visible and readable in dark mode
         #if canImport(ViewInspector)
         let inspectionResult = withInspectedView(progressIndicator) { inspected in
-            // Verify structure is present (visibility)
-            let vStack = try? inspected.vStack()
+            // Verify structure is present (visibility) — Issue 178
+            let vStack = try? firstVStackInHierarchy(inspected)
             #expect(vStack != nil, "Progress indicator should render in dark mode")
             
             // Verify text elements are present (readability)
@@ -714,7 +709,7 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
         let indicator0 = FormProgressIndicator(progress: progress0)
         #if canImport(ViewInspector)
         let inspection0 = withInspectedView(indicator0) { inspected in
-            let vStack = try? inspected.vStack()
+            let vStack = try? firstVStackInHierarchy(inspected)
             #expect(vStack != nil, "Progress indicator should render even with 0 of 0 fields")
         }
         if inspection0 == nil {

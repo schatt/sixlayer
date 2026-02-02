@@ -127,13 +127,15 @@ public func withInspectedView<R>(
 
 // MARK: - Hierarchy traversal (Issue 178)
 
+/// Thrown when no VStack is found in the inspected hierarchy.
+public struct NoVStackInHierarchy: Error {}
+
 /// When the root is InspectableView<ViewType.ClassifiedView> (e.g. from AnyView.inspect()), get the first VStack in the hierarchy.
 /// findAll from the root traverses into type-erased content so VStacks inside AnyView are found.
 @MainActor
 public func firstVStackInHierarchy(_ inspected: ViewInspector.InspectableView<ViewInspector.ViewType.ClassifiedView>) throws -> ViewInspector.InspectableView<ViewInspector.ViewType.VStack> {
     let list = try inspected.findAll(ViewInspector.ViewType.VStack.self)
-    struct NoVStack: Error {}
-    guard let first = list.first else { throw NoVStack() }
+    guard let first = list.first else { throw NoVStackInHierarchy() }
     return first
 }
 
@@ -141,8 +143,16 @@ public func firstVStackInHierarchy(_ inspected: ViewInspector.InspectableView<Vi
 @MainActor
 public func firstVStackInHierarchy(_ inspected: ViewInspector.InspectableView<ViewInspector.ViewType.AnyView>) throws -> ViewInspector.InspectableView<ViewInspector.ViewType.VStack> {
     let list = try inspected.findAll(ViewInspector.ViewType.VStack.self)
-    struct NoVStack: Error {}
-    guard let first = list.first else { throw NoVStack() }
+    guard let first = list.first else { throw NoVStackInHierarchy() }
+    return first
+}
+
+/// When the root is InspectableView<ViewType.View<V>> (direct inspect of Inspectable view), get the first VStack in the hierarchy.
+/// Use when the view type is the root (e.g. PlatformRecognitionLayer5) and its body contains a VStack — Issue 178.
+@MainActor
+public func firstVStackInHierarchy<V: View & ViewInspector.Inspectable>(_ inspected: ViewInspector.InspectableView<ViewInspector.ViewType.View<V>>) throws -> ViewInspector.InspectableView<ViewInspector.ViewType.VStack> {
+    let list = try inspected.findAll(ViewInspector.ViewType.VStack.self)
+    guard let first = list.first else { throw NoVStackInHierarchy() }
     return first
 }
 

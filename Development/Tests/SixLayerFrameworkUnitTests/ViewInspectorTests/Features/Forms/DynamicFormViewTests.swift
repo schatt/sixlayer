@@ -711,8 +711,8 @@ open class DynamicFormViewTests: BaseTestClass {
         // Should render proper wizard structure
         #if canImport(ViewInspector)
         if let inspected = try? AnyView(view).inspect() {
-            // Should have a VStack
-            if let vStack = try? inspected.vStack() {
+            // Should have a VStack in hierarchy (Issue 178)
+            if let vStack = try? firstVStackInHierarchy(inspected) {
                 #expect(vStack.count >= 2, "Should have content and navigation")
             }
 
