@@ -176,8 +176,10 @@ open class BaseTestClass {
                 return
             }
             let viewText = inspected.findAll(ViewInspector.ViewType.Text.self)
-            #expect(!viewText.isEmpty, "View should contain text elements for \(testName)")
-
+            guard !viewText.isEmpty else {
+                Issue.record("View inspection returned no text elements for \(testName) (ViewInspector cannot traverse hierarchy)")
+                return
+            }
             let hasExpectedText = viewText.contains { text in
                 (try? text.string())?.contains(expectedText) ?? false
             }
@@ -205,7 +207,10 @@ open class BaseTestClass {
             Issue.record("View inspection failed for \(testName): could not obtain inspected view")
             return
         }
-        #expect(!viewText.isEmpty, "View should contain text elements for \(testName)")
+        guard !viewText.isEmpty else {
+            Issue.record("View inspection returned no text elements for \(testName) (ViewInspector cannot traverse hierarchy)")
+            return
+        }
         let hasExpectedText = viewText.contains { (try? $0.string())?.contains(expectedText) ?? false }
         #expect(hasExpectedText, "View should contain text '\(expectedText)' for \(testName)")
     }
@@ -226,7 +231,10 @@ open class BaseTestClass {
                 return
             }
             let viewImages = inspected.findAll(ViewInspector.ViewType.Image.self)
-            #expect(!viewImages.isEmpty, "View should contain image elements for \(testName)")
+            guard !viewImages.isEmpty else {
+                Issue.record("View inspection returned no image elements for \(testName) (ViewInspector cannot traverse hierarchy)")
+                return
+            }
         } catch {
             Issue.record("View inspection failed for \(testName): \(error)")
         }
@@ -250,7 +258,10 @@ open class BaseTestClass {
             Issue.record("View inspection failed for \(testName): could not obtain inspected view")
             return
         }
-        #expect(!viewImages.isEmpty, "View should contain image elements for \(testName)")
+        guard !viewImages.isEmpty else {
+            Issue.record("View inspection returned no image elements for \(testName) (ViewInspector cannot traverse hierarchy)")
+            return
+        }
     }
     #else
     @MainActor
