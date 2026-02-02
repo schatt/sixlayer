@@ -399,8 +399,6 @@ targets:
     platform: iOS
     sources:
       - path: Development/Tests/Shared/TestHelpers
-        excludes:
-          - "ViewInspectorWrapper.swift"
       - path: Development/Tests/SixLayerFrameworkExternalIntegrationTests
         excludes:
           - "**/README.md"
@@ -423,8 +421,6 @@ targets:
     platform: macOS
     sources:
       - path: Development/Tests/Shared/TestHelpers
-        excludes:
-          - "ViewInspectorWrapper.swift"
       - path: Development/Tests/SixLayerFrameworkExternalIntegrationTests
         excludes:
           - "**/README.md"
@@ -449,8 +445,6 @@ targets:
     platform: tvOS
     sources:
       - path: Development/Tests/Shared/TestHelpers
-        excludes:
-          - "ViewInspectorWrapper.swift"
       - path: Development/Tests/SixLayerFrameworkExternalIntegrationTests
         excludes:
           - "**/README.md"
@@ -472,8 +466,6 @@ targets:
     platform: watchOS
     sources:
       - path: Development/Tests/Shared/TestHelpers
-        excludes:
-          - "ViewInspectorWrapper.swift"
       - path: Development/Tests/SixLayerFrameworkExternalIntegrationTests
         excludes:
           - "**/README.md"
@@ -495,8 +487,6 @@ targets:
     platform: visionOS
     sources:
       - path: Development/Tests/Shared/TestHelpers
-        excludes:
-          - "ViewInspectorWrapper.swift"
       - path: Development/Tests/SixLayerFrameworkExternalIntegrationTests
         excludes:
           - "**/README.md"
