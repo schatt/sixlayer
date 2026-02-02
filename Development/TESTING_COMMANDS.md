@@ -57,6 +57,17 @@ xcodebuild test \
   -destination "platform=iOS Simulator,name=iPhone 17 Pro Max"
 ```
 
+### ViewInspector Tests Only (iOS or macOS)
+ViewInspector tests live in the `ViewInspectorTests/` subdirectory and use the ViewInspector package to inspect view structure. They have dedicated dbs-build targets:
+
+```bash
+# iOS ViewInspector tests (canonical command)
+dbs-build --target iOS_viewinspector_tests
+
+# macOS ViewInspector tests
+dbs-build --target macOS_viewinspector_tests
+```
+
 ## Quick Reference Commands
 
 ### All Tests (Both Platforms)
@@ -75,6 +86,12 @@ swift test
 ### iOS Simulator Tests Only
 ```bash
 dbs-build --target iOS_tests
+```
+
+### ViewInspector Tests (iOS or macOS)
+```bash
+dbs-build --target iOS_viewinspector_tests   # iOS
+dbs-build --target macOS_viewinspector_tests # macOS
 ```
 
 ### List Available Targets
