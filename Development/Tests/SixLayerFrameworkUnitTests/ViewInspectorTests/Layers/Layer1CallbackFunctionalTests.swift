@@ -95,7 +95,7 @@ open class Layer1CallbackFunctionalTests: BaseTestClass {
         // Use ViewInspector to simulate tap
         #if canImport(ViewInspector)
         do {
-            try withInspectedViewThrowing(view) { inspector in
+            try withInspectedViewThrowing(AnyView(view)) { inspector in
                 // Find text elements to verify the view structure
                 let texts = inspector.findAll(ViewInspector.ViewType.Text.self)
                 #expect(!texts.isEmpty, "Should have text elements from items")

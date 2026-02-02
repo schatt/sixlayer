@@ -184,27 +184,53 @@ public enum TestPatterns {
         temp.verifyViewGeneration(view, testName: testName)
     }
     
-    /// BUSINESS PURPOSE: Verify that a view contains specific text content
-    /// DEPRECATED: Use BaseTestClass.verifyViewContainsText() instead
-    /// This method is kept for backward compatibility but delegates to BaseTestClass
-    @MainActor
+    #if canImport(ViewInspector)
+    /// Verify text (Inspectable view — direct hierarchy).
     @available(*, deprecated, message: "Use BaseTestClass.verifyViewContainsText() instead")
-    public static func verifyViewContainsText(_ view: some View, expectedText: String, testName: String) {
-        // Create a temporary instance to call the instance method
-        // This is a workaround - ideally tests should extend BaseTestClass and call the instance method
+    @MainActor
+    public static func verifyViewContainsText<V: View & ViewInspector.Inspectable>(_ view: V, expectedText: String, testName: String) {
         let temp = BaseTestClass()
         temp.verifyViewContainsText(view, expectedText: expectedText, testName: testName)
     }
-    
-    /// BUSINESS PURPOSE: Verify that a view contains specific image elements
-    /// DEPRECATED: Use BaseTestClass.verifyViewContainsImage() instead
-    /// This method is kept for backward compatibility but delegates to BaseTestClass
+
+    /// Verify text (any view — delegates to BaseTestClass).
+    @available(*, deprecated, message: "Use BaseTestClass.verifyViewContainsText() instead")
     @MainActor
+    public static func verifyViewContainsText(_ view: some View, expectedText: String, testName: String) {
+        let temp = BaseTestClass()
+        temp.verifyViewContainsText(view, expectedText: expectedText, testName: testName)
+    }
+
+    /// Verify image (Inspectable view — direct hierarchy).
     @available(*, deprecated, message: "Use BaseTestClass.verifyViewContainsImage() instead")
-    public static func verifyViewContainsImage(_ view: some View, testName: String) {
-        // Create a temporary instance to call the instance method
-        // This is a workaround - ideally tests should extend BaseTestClass and call the instance method
+    @MainActor
+    public static func verifyViewContainsImage<V: View & ViewInspector.Inspectable>(_ view: V, testName: String) {
         let temp = BaseTestClass()
         temp.verifyViewContainsImage(view, testName: testName)
     }
+
+    /// Verify image (any view — delegates to BaseTestClass).
+    @available(*, deprecated, message: "Use BaseTestClass.verifyViewContainsImage() instead")
+    @MainActor
+    public static func verifyViewContainsImage(_ view: some View, testName: String) {
+        let temp = BaseTestClass()
+        temp.verifyViewContainsImage(view, testName: testName)
+    }
+    #else
+    /// Verify that a view contains specific text content.
+    @available(*, deprecated, message: "Use BaseTestClass.verifyViewContainsText() instead")
+    @MainActor
+    public static func verifyViewContainsText(_ view: some View, expectedText: String, testName: String) {
+        let temp = BaseTestClass()
+        temp.verifyViewContainsText(view, expectedText: expectedText, testName: testName)
+    }
+
+    /// Verify that a view contains specific image elements.
+    @available(*, deprecated, message: "Use BaseTestClass.verifyViewContainsImage() instead")
+    @MainActor
+    public static func verifyViewContainsImage(_ view: some View, testName: String) {
+        let temp = BaseTestClass()
+        temp.verifyViewContainsImage(view, testName: testName)
+    }
+    #endif
 }
