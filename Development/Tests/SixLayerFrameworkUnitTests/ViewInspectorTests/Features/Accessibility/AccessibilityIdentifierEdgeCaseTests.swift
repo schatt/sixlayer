@@ -26,7 +26,7 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
             }
             .named("")  // ← Empty string
             
-            let root = Self.hostRootPlatformView(view)
+            let root = Self.hostRootPlatformView(view, forceLayout: true)
             let buttonID = getAccessibilityIdentifierForTest(view: view, hostedRoot: root)
             
             if buttonID == nil {
@@ -52,7 +52,7 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
             }
             .named("Button@#$%^&*()")  // ← Special characters
             
-            let root = Self.hostRootPlatformView(view)
+            let root = Self.hostRootPlatformView(view, forceLayout: true)
             let buttonID = getAccessibilityIdentifierForTest(view: view, hostedRoot: root)
             
             if buttonID == nil {
@@ -81,7 +81,7 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
             .named(longName)
             .enableGlobalAutomaticCompliance()
             
-            let root = Self.hostRootPlatformView(view)
+            let root = Self.hostRootPlatformView(view, forceLayout: true)
             let buttonID = getAccessibilityIdentifierForTest(view: view, hostedRoot: root)
             
             if buttonID == nil {
@@ -116,7 +116,7 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
             }
             .accessibilityIdentifier("manual-override")  // ← Manual override
             
-            let root = Self.hostRootPlatformView(view)
+            let root = Self.hostRootPlatformView(view, forceLayout: true)
             let buttonID = getAccessibilityIdentifierForTest(view: view, hostedRoot: root)
             
             if buttonID == nil {
@@ -146,7 +146,7 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
                     .disableAutomaticAccessibilityIdentifiers()  // ← Disable mid-hierarchy
             }
             
-            let root = Self.hostRootPlatformView(view)
+            let root = Self.hostRootPlatformView(view, forceLayout: true)
             let anyID = getAccessibilityIdentifierForTest(view: view, hostedRoot: root)
             if anyID == nil {
                 Issue.record("Inspection unavailable: could not obtain accessibility identifier")
@@ -169,7 +169,7 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
             }
             .named("TestView")
             
-            let root = Self.hostRootPlatformView(view)
+            let root = Self.hostRootPlatformView(view, forceLayout: true)
             let vStackID = getAccessibilityIdentifierForTest(view: view, hostedRoot: root)
             
             if vStackID == nil {
@@ -202,8 +202,8 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
             .exactNamed("SameName")  // ← Same exact name
             .enableGlobalAutomaticCompliance()
             
-            let root1 = Self.hostRootPlatformView(view1)
-            let root2 = Self.hostRootPlatformView(view2)
+            let root1 = Self.hostRootPlatformView(view1, forceLayout: true)
+            let root2 = Self.hostRootPlatformView(view2, forceLayout: true)
             let id1 = getAccessibilityIdentifierForTest(view: view1, hostedRoot: root1)
             let id2 = getAccessibilityIdentifierForTest(view: view2, hostedRoot: root2)
             
@@ -229,8 +229,8 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
                 .named("TestButton")
                 .enableGlobalAutomaticCompliance()
             
-            let exactRoot = Self.hostRootPlatformView(exactView)
-            let namedRoot = Self.hostRootPlatformView(namedView)
+            let exactRoot = Self.hostRootPlatformView(exactView, forceLayout: true)
+            let namedRoot = Self.hostRootPlatformView(namedView, forceLayout: true)
             let exactID = getAccessibilityIdentifierForTest(view: exactView, hostedRoot: exactRoot)
             let namedID = getAccessibilityIdentifierForTest(view: namedView, hostedRoot: namedRoot)
             
@@ -264,7 +264,7 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
                 .exactNamed("SaveButton")
                 .enableGlobalAutomaticCompliance()
             
-            let root = Self.hostRootPlatformView(exactView)
+            let root = Self.hostRootPlatformView(exactView, forceLayout: true)
             let exactID = getAccessibilityIdentifierForTest(view: exactView, hostedRoot: root)
             
             if exactID == nil {
@@ -286,7 +286,7 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
                 .exactNamed("MinimalButton")
                 .enableGlobalAutomaticCompliance()
             
-            let root = Self.hostRootPlatformView(exactView)
+            let root = Self.hostRootPlatformView(exactView, forceLayout: true)
             let exactID = getAccessibilityIdentifierForTest(view: exactView, hostedRoot: root)
             
             if exactID == nil {
@@ -322,7 +322,7 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
             config.namespace = "ChangedNamespace"
             config.mode = .semantic
             
-            let root = Self.hostRootPlatformView(view)
+            let root = Self.hostRootPlatformView(view, forceLayout: true)
             let buttonID = getAccessibilityIdentifierForTest(view: view, hostedRoot: root)
             
             if buttonID == nil {
@@ -353,7 +353,7 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
             .named("Outer")
             .named("VeryOuter")  // ← Multiple .named() calls
             
-            let root = Self.hostRootPlatformView(view)
+            let root = Self.hostRootPlatformView(view, forceLayout: true)
             let buttonID = getAccessibilityIdentifierForTest(view: view, hostedRoot: root)
             
             if buttonID == nil {
@@ -379,7 +379,7 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
             }
             .named("按钮")  // ← Chinese characters
             
-            let root = Self.hostRootPlatformView(view)
+            let root = Self.hostRootPlatformView(view, forceLayout: true)
             let buttonID = getAccessibilityIdentifierForTest(view: view, hostedRoot: root)
             
             if buttonID == nil {

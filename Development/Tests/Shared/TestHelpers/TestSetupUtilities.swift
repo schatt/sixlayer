@@ -77,8 +77,11 @@ public enum TestSetupUtilities {
     /// WARNING: This function can hang if the view contains NavigationStack/NavigationView
     /// or complex hierarchies like GenericContentView in test environments without proper window hierarchy.
     /// The hang occurs when accessing `hosting.view` - a synchronous UIKit/AppKit call that cannot be timed out.
+    /// - Parameters:
+    ///   - view: The SwiftUI view to host.
+    ///   - forceLayout: When true, call layoutIfNeeded() so SwiftUI applies accessibility identifiers to the UIView hierarchy. Use only for simple views (e.g. Text, Button); complex views (NavigationStack, platformPresentContent_L1) can hang.
     @MainActor
-    public static func hostRootPlatformView<V: View>(_ view: V) -> Any? {
+    public static func hostRootPlatformView<V: View>(_ view: V, forceLayout: Bool = false) -> Any? {
         #if canImport(UIKit)
         let hosting = UIHostingController(rootView: view)
         // CRITICAL: Accessing hosting.view can hang on complex views in test environments.
@@ -93,13 +96,15 @@ public enum TestSetupUtilities {
             window.makeKeyAndVisible()
             // Allow one run loop so UIKit/SwiftUI can apply accessibility traits to the hierarchy
             RunLoop.current.run(until: Date().addingTimeInterval(0.05))
+            // Optionally force layout so identifiers are applied to the UIView tree (Option A for a11y tests).
+            // Only use for simple views; complex views can hang (NavigationStack, platformPresentContent_L1).
+            if forceLayout {
+                root.setNeedsLayout()
+                root.layoutIfNeeded()
+            }
             // Store both so window and controller stay alive; keyed by root for cleanup
             HostingControllerStorage.store((controller: hosting, window: window), for: root)
         }
-        // CRITICAL: Skip layoutIfNeeded() - it hangs indefinitely on NavigationStack/NavigationView
-        // and complex views like platformPresentContent_L1 in test environments without proper window hierarchy.
-        // root?.setNeedsLayout()
-        // root?.layoutIfNeeded()
         
         // Force accessibility update (doesn't require layout)
         root?.accessibilityElementsHidden = false
@@ -109,18 +114,13 @@ public enum TestSetupUtilities {
         #elseif canImport(AppKit)
         let hosting = NSHostingController(rootView: view)
         // CRITICAL: Accessing hosting.view can hang on complex views in test environments.
-        // This is a synchronous AppKit call that cannot be timed out or cancelled.
-        // If this hangs, the test will hang indefinitely.
         let root = hosting.view
         // CRITICAL: Store the hosting controller to prevent deallocation
         HostingControllerStorage.store(hosting, for: root)
-        // CRITICAL: Skip layoutSubtreeIfNeeded() - it hangs indefinitely on NavigationStack/NavigationView
-        // and complex views like platformPresentContent_L1 in test environments without proper window hierarchy.
-        // Accessibility identifiers can be found without forcing layout.
-        // root.needsLayout = true
-        // root.layoutSubtreeIfNeeded()
-        
-        // Force accessibility update (doesn't require layout)
+        if forceLayout {
+            root.needsLayout = true
+            root.layoutSubtreeIfNeeded()
+        }
         root.setAccessibilityElement(true)
         return root
         #else

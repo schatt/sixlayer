@@ -18,7 +18,7 @@ open class AccessibilityIdentifierGenerationTests: BaseTestClass {
             }
             .named("AddFuelButton")
             .enableGlobalAutomaticCompliance()
-            let root = Self.hostRootPlatformView(view)
+            let root = Self.hostRootPlatformView(view, forceLayout: true)
             let buttonID = getAccessibilityIdentifierForTest(view: view, hostedRoot: root)
             #expect(buttonID != nil && !(buttonID?.isEmpty ?? true), "Should have an accessibility identifier")
             if let id = buttonID {
@@ -42,7 +42,7 @@ open class AccessibilityIdentifierGenerationTests: BaseTestClass {
             .named("Container")
             .named("OuterContainer")
             .enableGlobalAutomaticCompliance()
-            let root = Self.hostRootPlatformView(view)
+            let root = Self.hostRootPlatformView(view, forceLayout: true)
             let vStackID = getAccessibilityIdentifierForTest(view: view, hostedRoot: root)
             #expect(vStackID != nil && !(vStackID?.isEmpty ?? true), "Should have an identifier")
             if let id = vStackID {
@@ -67,7 +67,7 @@ open class AccessibilityIdentifierGenerationTests: BaseTestClass {
             .named("UserProfile")
             .named("ProfileView")
             .enableGlobalAutomaticCompliance()
-            let root = Self.hostRootPlatformView(view)
+            let root = Self.hostRootPlatformView(view, forceLayout: true)
             let vStackID = getAccessibilityIdentifierForTest(view: view, hostedRoot: root)
             #expect(vStackID != nil && !(vStackID?.isEmpty ?? true), "Should have an identifier")
             if let id = vStackID {
@@ -101,7 +101,7 @@ open class AccessibilityIdentifierGenerationTests: BaseTestClass {
             .named("ComplexView")
             .named("ComplexContainer")
             .enableGlobalAutomaticCompliance()
-            let root = Self.hostRootPlatformView(view)
+            let root = Self.hostRootPlatformView(view, forceLayout: true)
             let vStackID = getAccessibilityIdentifierForTest(view: view, hostedRoot: root)
             #expect(vStackID != nil && !(vStackID?.isEmpty ?? true), "Should have an identifier")
             if let id = vStackID {
@@ -122,8 +122,8 @@ open class AccessibilityIdentifierGenerationTests: BaseTestClass {
                 .enableGlobalAutomaticCompliance()
             let cancelButton = AdaptiveUIPatterns.AdaptiveButton("Cancel", action: { })
                 .enableGlobalAutomaticCompliance()
-            let submitRoot = Self.hostRootPlatformView(submitButton)
-            let cancelRoot = Self.hostRootPlatformView(cancelButton)
+            let submitRoot = Self.hostRootPlatformView(submitButton, forceLayout: true)
+            let cancelRoot = Self.hostRootPlatformView(cancelButton, forceLayout: true)
             let submitID = getAccessibilityIdentifierForTest(view: submitButton, hostedRoot: submitRoot)
             let cancelID = getAccessibilityIdentifierForTest(view: cancelButton, hostedRoot: cancelRoot)
             #expect((submitID?.contains("submit") ?? false) || (submitID?.contains("Submit") ?? false), "Submit button identifier should include 'Submit' label")
@@ -140,7 +140,7 @@ open class AccessibilityIdentifierGenerationTests: BaseTestClass {
             // Labels should be sanitized (lowercase, spaces to hyphens) in identifier
             let button = AdaptiveUIPatterns.AdaptiveButton("Add New Item", action: { })
                 .enableGlobalAutomaticCompliance()
-            let root = Self.hostRootPlatformView(button)
+            let root = Self.hostRootPlatformView(button, forceLayout: true)
             let buttonID = getAccessibilityIdentifierForTest(view: button, hostedRoot: root)
             #expect((buttonID?.contains("add") ?? false) || (buttonID?.contains("new") ?? false) || (buttonID?.contains("item") ?? false),
                    "Identifier should include sanitized label text")

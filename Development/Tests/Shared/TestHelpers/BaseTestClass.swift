@@ -117,14 +117,15 @@ open class BaseTestClass {
     
     /// Host a SwiftUI view and return the platform root view (delegates to TestSetupUtilities)
     @MainActor
-    func hostRootPlatformView<V: View>(_ view: V) -> Any? {
-        return Self.hostRootPlatformView(view)
+    func hostRootPlatformView<V: View>(_ view: V, forceLayout: Bool = false) -> Any? {
+        return Self.hostRootPlatformView(view, forceLayout: forceLayout)
     }
 
-    /// Static version of hostRootPlatformView for use in @Test functions (delegates to TestSetupUtilities)
+    /// Static version of hostRootPlatformView for use in @Test functions (delegates to TestSetupUtilities).
+    /// Use forceLayout: true only when hosting simple views and reading back accessibility ID/label.
     @MainActor
-    static func hostRootPlatformView<V: View>(_ view: V) -> Any? {
-        return TestSetupUtilities.hostRootPlatformView(view)
+    static func hostRootPlatformView<V: View>(_ view: V, forceLayout: Bool = false) -> Any? {
+        return TestSetupUtilities.hostRootPlatformView(view, forceLayout: forceLayout)
     }
     
     // MARK: - Test Environment Setup

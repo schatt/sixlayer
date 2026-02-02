@@ -211,7 +211,7 @@ open class AutomaticAccessibilityIdentifiersTests: BaseTestClass {
                        "Modifier should generate identifier when view is inspected (task-local config), got: '\(identifier ?? "nil")'")
             } else {
                 // Fallback: host view and get identifier from platform (modifier runs when rendered)
-                let root = Self.hostRootPlatformView(view)
+                let root = Self.hostRootPlatformView(view, forceLayout: true)
                 let idFromPlatform = getAccessibilityIdentifierForTest(view: view, hostedRoot: root)
                 #expect(idFromPlatform != nil && !(idFromPlatform?.isEmpty ?? true),
                        "Modifier should generate identifier (via platform), got: '\(idFromPlatform ?? "nil")'")
