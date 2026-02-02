@@ -29,21 +29,21 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
         // Find VStacks in hierarchy (root may be type-erased — Issue 178)
         let vStacks = (try? inspected.findAll(ViewInspector.ViewType.VStack.self)) ?? []
         for vStack in vStacks {
-            let progressViews = vStack.findAll(ViewInspector.ViewType.ProgressView.self)
+            let progressViews = (try? vStack.findAll(ViewInspector.ViewType.ProgressView.self)) ?? []
             let hasProgressView = !progressViews.isEmpty
-            let texts = vStack.findAll(ViewInspector.ViewType.Text.self)
+            let texts = (try? vStack.findAll(ViewInspector.ViewType.Text.self)) ?? []
             let hasProgressText = texts.contains { (try? $0.string()) == "Progress" }
             if hasProgressView && hasProgressText {
                 return inspected
             }
         }
         
-        // Fallback: search for ProgressView and "Progress" text anywhere
-        let progressViews = inspected.findAll(ViewInspector.ViewType.ProgressView.self)
+        // Fallback: search for ProgressView and "Progress" text anywhere (use try? so we never throw)
+        let progressViews = (try? inspected.findAll(ViewInspector.ViewType.ProgressView.self)) ?? []
         for _ in progressViews {
             // If we found a ProgressView, check if there's "Progress" text nearby
             // (indicating this is likely the progress indicator)
-            let texts = inspected.findAll(ViewInspector.ViewType.Text.self)
+            let texts = (try? inspected.findAll(ViewInspector.ViewType.Text.self)) ?? []
             let hasProgressText = texts.contains { text in
                 (try? text.string()) == "Progress"
             }
