@@ -320,32 +320,28 @@ public struct DynamicTextField: View {
     private var pickerContent: some View {
         let i18n = InternationalizationService()
         
-        // Prefer pickerOptions from displayHints (PickerOption type) for platformPicker
+        // Prefer pickerOptions from displayHints (PickerOption type) for platformPicker (no AnyView — Issue 178)
         if let hints = field.displayHints,
            let pickerOptions = hints.pickerOptions,
            !pickerOptions.isEmpty {
-            AnyView(
-                platformPicker(
-                    label: field.placeholder ?? i18n.placeholderSelect(),
-                    selection: field.textBinding(formState: formState),
-                    options: pickerOptions,
-                    pickerName: "DynamicSelectField"
-                )
+            platformPicker(
+                label: field.placeholder ?? i18n.placeholderSelect(),
+                selection: field.textBinding(formState: formState),
+                options: pickerOptions,
+                pickerName: "DynamicSelectField"
             )
         } else if let options = field.options, !options.isEmpty {
             // Fallback to field.options (String array) - convert to PickerOption
             let pickerOptions = options.map { PickerOption(value: $0, label: $0) }
-            AnyView(
-                platformPicker(
-                    label: field.placeholder ?? i18n.placeholderSelect(),
-                    selection: field.textBinding(formState: formState),
-                    options: pickerOptions,
-                    pickerName: "DynamicSelectField"
-                )
+            platformPicker(
+                label: field.placeholder ?? i18n.placeholderSelect(),
+                selection: field.textBinding(formState: formState),
+                options: pickerOptions,
+                pickerName: "DynamicSelectField"
             )
         } else {
             // Fallback to text field if no options
-            AnyView(textFieldView)
+            textFieldView
         }
     }
     
@@ -1643,6 +1639,7 @@ public struct DynamicCustomField: View {
                 .automaticCompliance(named: "FieldLabel")
 
             if let customComponent = CustomFieldRegistry.shared.createComponent(for: field, formState: formState) {
+                // any CustomFieldComponent existential must be wrapped for ViewBuilder
                 AnyView(customComponent)
             } else {
                 Text("Custom field not registered: \(field.contentType?.rawValue ?? "unknown")")
