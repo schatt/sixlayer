@@ -85,17 +85,24 @@ final class Layer1AccessibilityUITests: XCTestCase {
         }
         if (toggleButton.value as? String) != "1" {
             toggleButton.tap()
-            // Allow SwiftUI to lay out expanded section; LazyVStack content may need a moment.
+            // Allow SwiftUI to lay out expanded section; LazyVStack only loads when in view.
             sleep(1)
-            // Scroll down so Layer 1 content (picker) is in view; LazyVStack may not render off-screen.
-            app.swipeUp()
+            // Scroll so Layer 1 content (picker) enters viewport and LazyVStack renders it.
+            for _ in 0..<3 {
+                app.swipeUp()
+                sleep(1)
+                let byId = app.findElement(byIdentifier: "layer1-category-picker", primaryType: .button, secondaryTypes: [.picker, .other, .any])
+                if byId != nil { break }
+            }
             sleep(1)
         }
-        // On iOS, .menu-style Picker can expose as picker or as a button; try both.
+        // Prefer explicit ID; on iOS .menu Picker may also expose as picker or button.
+        let byId = app.findElement(byIdentifier: "layer1-category-picker", primaryType: .button, secondaryTypes: [.picker, .other, .any])
         let picker = app.pickers.firstMatch
         let categoryButton = app.buttons["Category"]
         let categorySelectButton = app.buttons["Select Category"]
-        guard picker.waitForExistenceFast(timeout: 2.0)
+        guard (byId?.waitForExistenceFast(timeout: 2.0) ?? false)
+            || picker.waitForExistenceFast(timeout: 2.0)
             || categoryButton.waitForExistenceFast(timeout: 2.0)
             || categorySelectButton.waitForExistenceFast(timeout: 2.0) else {
             XCTFail("Category picker should exist after expanding Layer 1")
@@ -104,14 +111,17 @@ final class Layer1AccessibilityUITests: XCTestCase {
     }
     
     /// Select a Layer 1 category (assumes Layer 1 section already expanded in this test).
-    /// On iOS, .menu-style Picker may expose as picker or as a button; tap whichever exists to open menu.
+    /// Prefer explicit ID; on iOS .menu Picker may expose as picker or button.
     @MainActor
     private func selectLayer1Category(_ categoryName: String) {
+        let byId = app.findElement(byIdentifier: "layer1-category-picker", primaryType: .button, secondaryTypes: [.picker, .other, .any])
         let picker = app.pickers.firstMatch
         let categoryButton = app.buttons["Category"]
         let categorySelectButton = app.buttons["Select Category"]
         let categoryControl: XCUIElement
-        if picker.waitForExistenceFast(timeout: 1.0) {
+        if let el = byId, el.waitForExistenceFast(timeout: 1.0) {
+            categoryControl = el
+        } else if picker.waitForExistenceFast(timeout: 1.0) {
             categoryControl = picker
         } else if categoryButton.waitForExistenceFast(timeout: 1.0) {
             categoryControl = categoryButton
