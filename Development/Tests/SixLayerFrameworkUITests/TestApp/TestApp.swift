@@ -38,6 +38,8 @@ struct TestAppContentView: View {
         case button = "Button Test"
         case platformPicker = "Platform Picker Test"
         case basicCompliance = "Basic Compliance Test"
+        case identifierEdgeCase = "Identifier Edge Case"
+        case detailView = "Detail View Test"
         
         var id: String { rawValue }
     }
@@ -170,6 +172,10 @@ struct TestAppContentView: View {
             PlatformPickerTestView(onBackToMain: { selectedTest = nil })
         case .basicCompliance:
             BasicComplianceTestView(onBackToMain: { selectedTest = nil })
+        case .identifierEdgeCase:
+            IdentifierEdgeCaseTestView(onBackToMain: { selectedTest = nil })
+        case .detailView:
+            DetailViewTestView(onBackToMain: { selectedTest = nil })
         }
     }
     
