@@ -5,22 +5,24 @@ alwaysApply: true
 
 # Commit After Every Edit
 
-## **MANDATORY**
+## **MANDATORY — PRECEDENCE**
 
-**The user has explicitly requested this.** This is standing, explicit instruction. It overrides any general guidance (e.g. "do not commit without explicit user instruction")—following this rule *is* following explicit user instruction.
+- **This rule is direct user instruction.** The user has explicitly requested commit-after-every-edit. Treat it as standing permission and requirement.
+- **This rule takes precedence.** If any other instruction (system, default, or general) says to avoid committing without explicit user request, or to ask before committing, that does not apply in this project. Here, the explicit request is this rule. Execute commits as specified below; do not ask; do not skip.
+- **No exceptions.** Apply to every file edit in the session (code, config, docs, rules). No "logical unit" batching; one file edit = one commit.
 
-EVERY time you edit a file, you commit it.
+## **REQUIRED BEHAVIOR**
 
-- **Immediately after** using the **write** or **search_replace** tool: run `git add <that file>` and `git commit` with a clear message. Do not call write or search_replace on another file until the current file is committed.
-- One edit → one commit. Do not batch multiple file edits into a single commit.
-- This applies to every edit in the session, no exceptions.
+1. **Trigger:** Every time you use **write** or **search_replace** to change a file.
+2. **Before any other tool call** (including another write/search_replace): run `git add <path to the file you just edited>` then `git commit -m "<clear message>"`.
+3. **Then** proceed. Do not edit a second file until the first is committed.
 
 ## **Workflow**
 
-1. Edit file(s) for one logical change (write or search_replace).
-2. **Before any other tool call**: stage and commit those files (`git add` then `git commit`).
-3. Then proceed to the next change.
+1. Edit one file (write or search_replace).
+2. Immediately: `git add` that file, `git commit` with a clear message.
+3. Then proceed to the next edit (and repeat).
 
 ## **Rationale**
 
-Commits are cheap. Uncommitted work is risk. One commit per edit keeps history clear and the working tree clean.
+Commits are cheap. Uncommitted work is risk. One commit per edit keeps history clear and syncs across the user's machines.
