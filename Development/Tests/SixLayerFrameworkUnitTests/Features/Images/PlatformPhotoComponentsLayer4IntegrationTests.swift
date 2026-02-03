@@ -84,6 +84,24 @@ open class PlatformPhotoComponentsLayer4IntegrationTests: BaseTestClass {
     }
     #endif
     
+    /// BUSINESS PURPOSE: Verify onCameraAuthorizationState callback is invoked so app can differentiate denied vs first-time.
+    /// TESTING SCOPE: CameraAuthorizationState and onCameraAuthorizationState callback in platformCameraInterface_L4.
+    /// METHODOLOGY: Host the camera interface with callback; makeUIViewController invokes callback with current state.
+    #if os(iOS)
+    @Test @MainActor func testPlatformCameraInterface_InvokesOnCameraAuthorizationState() {
+        var receivedState: CameraAuthorizationState?
+        let cameraInterface = PlatformPhotoComponentsLayer4.platformCameraInterface_L4(
+            onImageCaptured: { _ in },
+            onCameraAuthorizationState: { state in receivedState = state }
+        )
+        _ = hostRootPlatformView(cameraInterface, forceLayout: false)
+        #expect(receivedState != nil, "onCameraAuthorizationState should be invoked when view is created")
+        let state = receivedState!
+        let validStates: [CameraAuthorizationState] = [.authorized, .notDetermined, .denied, .restricted, .unavailable]
+        #expect(validStates.contains(state), "State should be one of authorized/notDetermined/denied/restricted/unavailable, got: \(state)")
+    }
+    #endif
+    
     /// BUSINESS PURPOSE: Test camera callback with real image data
     /// TESTING SCOPE: Tests that camera callbacks work with actual image data
     /// METHODOLOGY: Use real image data to test callback functionality
