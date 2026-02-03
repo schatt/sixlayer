@@ -96,12 +96,12 @@ struct TestAppContentView: View {
     }
     
     // MARK: - Launch Page
-    // Use ScrollView + LazyVStack instead of List so accessibility identifiers
-    // are exposed to XCUITest on iOS (List rows are backed by cells that can hide IDs).
+    // Use ScrollView + VStack (not LazyVStack) so Layer 1 expanded content exists in the
+    // hierarchy immediately and the category picker is findable by XCUITest without scroll.
     
     private var launchPage: some View {
         ScrollView {
-            LazyVStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: 8) {
                 sectionHeader("Accessibility Tests")
                 ForEach(TestView.allCases) { testView in
                     Group {
