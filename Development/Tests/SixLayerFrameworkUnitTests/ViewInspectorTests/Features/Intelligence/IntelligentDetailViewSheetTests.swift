@@ -62,20 +62,17 @@ struct IntelligentDetailViewSheetTests {
         
         // Verify the view can be inspected with ViewInspector
         #if canImport(ViewInspector)
+        let base = BaseTestClass()
+        base.verifyViewContainsAtLeastOneVStack(sheetContent, testName: "platformDetailView sheet content")
         if let inspector = try? AnyView(sheetContent).inspect() {
-            // Try to find VStack (standard layout structure)
-            // This proves the view has actual content structure, not blank
-            let vStacks = inspector.findAll(ViewInspector.ViewType.VStack.self)
+            let vStacks = (try? inspector.findAll(ViewInspector.ViewType.VStack.self)) ?? []
             if !vStacks.isEmpty {
-                // If we found a VStack, the view has structure and content
                 #expect(Bool(true), "platformDetailView should have view structure (proves it's not blank)")
             } else {
-                let hStacks = inspector.findAll(ViewInspector.ViewType.HStack.self)
+                let hStacks = (try? inspector.findAll(ViewInspector.ViewType.HStack.self)) ?? []
                 if !hStacks.isEmpty {
-                    // Try finding any structural view
                     #expect(Bool(true), "platformDetailView should have view structure (proves it's not blank)")
                 } else {
-                    // Any view structure is acceptable
                     #expect(Bool(true), "platformDetailView should render in sheet (not blank)")
                 }
             }
@@ -106,13 +103,7 @@ struct IntelligentDetailViewSheetTests {
         )
         
         #if canImport(ViewInspector)
-        do {
-            let inspector = try detailView.inspect()
-            let texts = inspector.findAll(ViewType.Text.self)
-            #expect(texts.count > 0, "platformDetailView should display model properties as text")
-        } catch {
-            Issue.record("platformDetailView should be inspectable (indicates it has content): \(error)")
-        }
+        BaseTestClass().verifyViewContainsAnyText(detailView, testName: "platformDetailView model properties")
         #else
         // ViewInspector not available on macOS - skip test gracefully
         // The view is created successfully, which is the main requirement

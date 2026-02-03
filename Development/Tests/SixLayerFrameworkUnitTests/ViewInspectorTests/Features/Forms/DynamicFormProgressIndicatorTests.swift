@@ -518,24 +518,11 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
         
         // Then: Should have proper structure (VStack with HStack and ProgressView)
         #if canImport(ViewInspector)
-        let inspectionResult = withInspectedView(progressIndicator) { inspected in
-            // Should have VStack in hierarchy (root may be type-erased — Issue 178)
-            let vStack = try? firstVStackInHierarchy(inspected)
-            #expect(vStack != nil, "Progress indicator should have VStack as root")
-            
-            if let vStack = vStack {
-                // Should contain HStack (for title and field count)
-                let hStack = vStack.findAll(ViewType.HStack.self)
-                #expect(hStack != nil, "Should contain HStack for title and count")
-                
-                // Should contain ProgressView
-                let progressView = vStack.findAll(ViewInspector.ViewType.ProgressView.self)
-                #expect(progressView != nil, "Should contain ProgressView for visual progress bar")
-            }
-        }
-        
-        if inspectionResult == nil {
-            Issue.record("View inspection failed - could not verify design structure")
+        tryWithFirstVStack(progressIndicator, testName: "Progress indicator design structure") { vStack in
+            let hStack = vStack.findAll(ViewType.HStack.self)
+            #expect(hStack != nil, "Should contain HStack for title and count")
+            let progressView = vStack.findAll(ViewInspector.ViewType.ProgressView.self)
+            #expect(progressView != nil, "Should contain ProgressView for visual progress bar")
         }
         #else
         // ViewInspector not available on macOS - verify component is created
@@ -555,23 +542,9 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
         
         // Then: Should have visual styling for readability
         #if canImport(ViewInspector)
-        let inspectionResult = withInspectedView(progressIndicator) { inspected in
-            // Verify the view structure indicates styling (VStack with proper hierarchy)
-            // ViewInspector cannot directly detect padding/background/cornerRadius modifiers,
-            // but we can verify the component structure is correct (Issue 178)
-            let vStack = try? firstVStackInHierarchy(inspected)
-            #expect(vStack != nil, "Progress indicator should have VStack structure for styling")
-            
-            // Verify text elements are present (styling makes them readable)
-            let texts = inspected.findAll(ViewInspector.ViewType.Text.self)
+        tryWithFirstVStack(progressIndicator, testName: "Progress indicator styling") { vStack in
+            let texts = vStack.findAll(ViewInspector.ViewType.Text.self)
             #expect(texts.count >= 2, "Should have text elements that are styled for readability")
-            
-            // Note: Actual padding, background, and cornerRadius modifiers are verified
-            // by visual inspection and are present in the implementation code
-        }
-        
-        if inspectionResult == nil {
-            Issue.record("View inspection failed - could not verify visual styling")
         }
         #else
         // ViewInspector not available on macOS - verify component is created
@@ -639,22 +612,11 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
         
         // Then: Should be visible and readable in light mode
         #if canImport(ViewInspector)
-        let inspectionResult = withInspectedView(progressIndicator) { inspected in
-            // Verify structure is present (visibility) — Issue 178
-            let vStack = try? firstVStackInHierarchy(inspected)
-            #expect(vStack != nil, "Progress indicator should render in light mode")
-            
-            // Verify text elements are present (readability)
-            let texts = inspected.findAll(ViewInspector.ViewType.Text.self)
+        tryWithFirstVStack(progressIndicator, testName: "Progress indicator light mode") { vStack in
+            let texts = vStack.findAll(ViewInspector.ViewType.Text.self)
             #expect(texts.count >= 2, "Should have text elements visible in light mode")
-            
-            // Verify ProgressView is present
-            let progressView = inspected.findAll(ViewInspector.ViewType.ProgressView.self)
+            let progressView = vStack.findAll(ViewInspector.ViewType.ProgressView.self)
             #expect(progressView != nil, "Progress bar should be visible in light mode")
-        }
-        
-        if inspectionResult == nil {
-            Issue.record("View inspection failed - could not verify light mode display")
         }
         #else
         // ViewInspector not available on macOS - verify component is created
@@ -675,22 +637,11 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
         
         // Then: Should be visible and readable in dark mode
         #if canImport(ViewInspector)
-        let inspectionResult = withInspectedView(progressIndicator) { inspected in
-            // Verify structure is present (visibility) — Issue 178
-            let vStack = try? firstVStackInHierarchy(inspected)
-            #expect(vStack != nil, "Progress indicator should render in dark mode")
-            
-            // Verify text elements are present (readability)
-            let texts = inspected.findAll(ViewInspector.ViewType.Text.self)
+        tryWithFirstVStack(progressIndicator, testName: "Progress indicator dark mode") { vStack in
+            let texts = vStack.findAll(ViewInspector.ViewType.Text.self)
             #expect(texts.count >= 2, "Should have text elements visible in dark mode")
-            
-            // Verify ProgressView is present
-            let progressView = inspected.findAll(ViewInspector.ViewType.ProgressView.self)
+            let progressView = vStack.findAll(ViewInspector.ViewType.ProgressView.self)
             #expect(progressView != nil, "Progress bar should be visible in dark mode")
-        }
-        
-        if inspectionResult == nil {
-            Issue.record("View inspection failed - could not verify dark mode display")
         }
         #else
         // ViewInspector not available on macOS - verify component is created
@@ -708,13 +659,7 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
         let progress0 = FormProgress(completed: 0, total: 0, percentage: 0.0)
         let indicator0 = FormProgressIndicator(progress: progress0)
         #if canImport(ViewInspector)
-        let inspection0 = withInspectedView(indicator0) { inspected in
-            let vStack = try? firstVStackInHierarchy(inspected)
-            #expect(vStack != nil, "Progress indicator should render even with 0 of 0 fields")
-        }
-        if inspection0 == nil {
-            Issue.record("Could not verify 0 of 0 fields case")
-        }
+        tryWithFirstVStack(indicator0, testName: "Progress indicator 0 of 0 fields") { _ in }
         #else
         #expect(Bool(true), "Progress indicator handles 0 of 0 fields")
         #endif

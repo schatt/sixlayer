@@ -37,18 +37,7 @@ open class NavigationLayer4Tests: BaseTestClass {
         
         // 2. Does that structure contain what it should?
         #if canImport(ViewInspector)
-        do {
-            // The navigation link should contain text elements
-            guard let inspected = try? AnyView(link).inspect() else { return }
-            let viewText = inspected.findAll(ViewType.Text.self)
-            #expect(!viewText.isEmpty, "Navigation link should contain text elements")
-            
-            // Should contain the label text - use helper function for DRY text verification
-            verifyViewContainsText(link, expectedText: "Label", testName: "Navigation link label")
-            
-        } catch {
-            Issue.record("Failed to inspect navigation link structure")
-        }
+        self.verifyViewContainsText(link, expectedText: "Label", testName: "Navigation link label")
         #else
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
         #endif

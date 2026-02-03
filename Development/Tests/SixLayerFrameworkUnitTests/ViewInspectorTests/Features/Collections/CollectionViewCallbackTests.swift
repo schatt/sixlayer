@@ -76,31 +76,11 @@ open class CollectionViewCallbackTests: BaseTestClass {
 
         // Then: View should be created successfully and contain expected elements
         #if canImport(ViewInspector)
-        let inspectionResult = withInspectedView(view) { inspected in
-            // The view should contain the collection items
-            let viewText = inspected.findAll(ViewType.Text.self)
-            #expect(!viewText.isEmpty, "Collection view should contain text elements for items")
-
-            // Should contain text from our sample items
-            let textContents = viewText.compactMap { try? $0.string() }
-            #expect(textContents.contains(where: { $0.contains("Item 1") }),
-                   "Should contain text from first sample item")
-            #expect(textContents.contains(where: { $0.contains("Item 2") }),
-                   "Should contain text from second sample item")
-
-        }
+        self.verifyViewContainsText(view, expectedText: "Item 1", testName: "Collection view first sample item")
+        self.verifyViewContainsText(view, expectedText: "Item 2", testName: "Collection view second sample item")
         #else
-        let inspectionResult: Bool? = nil
+        #expect(Bool(true), "Collection view callback verified by compilation (ViewInspector not available on macOS)")
         #endif
-
-        if inspectionResult == nil {
-            #if canImport(ViewInspector)
-            Issue.record("View inspection failed on this platform")
-            #else
-            // ViewInspector not available on macOS - test passes by verifying callback signature
-            #expect(Bool(true), "Collection view callback verified by compilation (ViewInspector not available on macOS)")
-            #endif
-        }
     }
     
     @Test @MainActor func testPlatformPresentItemCollectionL1WithoutCallbacks() {
@@ -116,31 +96,11 @@ open class CollectionViewCallbackTests: BaseTestClass {
 
         // Then: View should be created successfully and contain expected elements
         #if canImport(ViewInspector)
-        let inspectionResult = withInspectedView(view) { inspected in
-            // The view should contain the collection items
-            let viewText = inspected.findAll(ViewType.Text.self)
-            #expect(!viewText.isEmpty, "Collection view should contain text elements for items")
-
-            // Should contain text from our sample items
-            let textContents = viewText.compactMap { try? $0.string() }
-            #expect(textContents.contains(where: { $0.contains("Item 1") }),
-                   "Should contain text from first sample item")
-            #expect(textContents.contains(where: { $0.contains("Item 2") }),
-                   "Should contain text from second sample item")
-
-        }
+        self.verifyViewContainsText(view, expectedText: "Item 1", testName: "Collection view first sample item")
+        self.verifyViewContainsText(view, expectedText: "Item 2", testName: "Collection view second sample item")
         #else
-        let inspectionResult: Bool? = nil
+        #expect(Bool(true), "Collection view callback verified by compilation (ViewInspector not available on macOS)")
         #endif
-
-        if inspectionResult == nil {
-            #if canImport(ViewInspector)
-            Issue.record("View inspection failed on this platform")
-            #else
-            // ViewInspector not available on macOS - test passes by verifying callback signature
-            #expect(Bool(true), "Collection view callback verified by compilation (ViewInspector not available on macOS)")
-            #endif
-        }
     }
     
     @Test @MainActor func testPlatformPresentItemCollectionL1WithEnhancedHints() {
@@ -241,25 +201,10 @@ open class CollectionViewCallbackTests: BaseTestClass {
             }
         )
         
-        // When: Simulating a tap using ViewInspector
-        // Using wrapper - when ViewInspector works on macOS, no changes needed here
         #if canImport(ViewInspector)
-        do {
-            try withInspectedViewThrowing(view) { inspector in
-                // Find text elements to verify the view structure (ListCardComponent is not inspectable)
-                let texts = inspector.findAll(ViewType.Text.self)
-                
-                // Then: Verify the view structure
-                #expect(!texts.isEmpty, "Should have text elements from items")
-                
-                // Verify callback was set up (we can't directly tap ListCardComponent as it's not inspectable)
-                #expect(callbackInvoked || self.selectedItems.count > 0, "Callback should be set up")
-            }
-        } catch {
-            Issue.record("View inspection failed: \(error)")
-        }
+        self.verifyViewContainsAnyText(view, testName: "List collection items")
+        #expect(callbackInvoked || self.selectedItems.count > 0, "Callback should be set up")
         #else
-        // ViewInspector not available on macOS - test passes by verifying callback signature
         #expect(Bool(true), "Collection view callback verified by compilation (ViewInspector not available on macOS)")
         #endif
     }

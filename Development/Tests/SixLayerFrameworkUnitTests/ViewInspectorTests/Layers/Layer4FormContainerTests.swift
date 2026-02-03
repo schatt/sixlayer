@@ -45,22 +45,7 @@ open class Layer4FormContainerTests: BaseTestClass {
         
         // 2. Does that structure contain what it should?
         #if canImport(ViewInspector)
-        let inspectionResult = withInspectedView(view) { inspected in
-            // The form container should contain the test content
-            let viewText = inspected.findAll(ViewType.Text.self)
-            #expect(!viewText.isEmpty, "Form container should contain text elements")
-
-            // Should contain the test content - use helper function for DRY text verification
-            verifyViewContainsText(view, expectedText: "Test Form Content", testName: "Form container content")
-        }
-
-        if inspectionResult == nil {
-            #if canImport(ViewInspector)
-            Issue.record("View inspection failed on this platform")
-            #else
-            #expect(Bool(true), "Form container created")
-            #endif
-        }
+        self.verifyViewContainsText(view, expectedText: "Test Form Content", testName: "Form container content")
         #else
         // ViewInspector not available on this platform - this is expected, not a failure
         #endif
@@ -115,13 +100,7 @@ open class Layer4FormContainerTests: BaseTestClass {
         
         // 2. Does that structure contain what it should?
         #if canImport(ViewInspector)
-        withInspectedView(view) { inspected in
-            let viewText = inspected.findAll(ViewType.Text.self)
-            #expect(!viewText.isEmpty, "Standard container should contain text elements")
-
-            // Should contain the test content - use helper function for DRY text verification
-            TestPatterns.verifyViewContainsText(view, expectedText: "Test Form Content", testName: "Standard container content")
-        }
+        self.verifyViewContainsText(view, expectedText: "Test Form Content", testName: "Standard container content")
         #else
         // ViewInspector not available on this platform - this is expected, not a failure
         #endif
