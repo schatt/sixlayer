@@ -101,18 +101,24 @@ struct TestAppContentView: View {
         List {
             Section("Accessibility Tests") {
                 ForEach(TestView.allCases) { testView in
-                    Button(testView.rawValue) {
-                        selectedTest = testView
+                    Group {
+                        Button(testView.rawValue) {
+                            selectedTest = testView
+                        }
                     }
                     .accessibilityIdentifier("test-view-\(testView.id)")
+                    .accessibilityElement(children: .contain)
                 }
             }
             
             Section("Layer 1 Examples (Issue #166)") {
-                Button(showLayer1Examples ? "Hide Layer 1 Examples" : "Show Layer 1 Examples") {
-                    showLayer1Examples.toggle()
+                Group {
+                    Button(showLayer1Examples ? "Hide Layer 1 Examples" : "Show Layer 1 Examples") {
+                        showLayer1Examples.toggle()
+                    }
                 }
                 .accessibilityIdentifier("layer1-examples-toggle")
+                .accessibilityElement(children: .contain)
                 
                 if showLayer1Examples {
                     layer1ExamplesView
@@ -120,17 +126,23 @@ struct TestAppContentView: View {
             }
             
             Section("Layer 2 Examples (Issue #165)") {
-                NavigationLink("Layer 2 Layout Examples") {
-                    Layer2ExamplesView()
+                Group {
+                    NavigationLink("Layer 2 Layout Examples") {
+                        Layer2ExamplesView()
+                    }
                 }
                 .accessibilityIdentifier("layer2-examples-link")
+                .accessibilityElement(children: .contain)
             }
             
             Section("Layer 3 Examples (Issue #165)") {
-                NavigationLink("Layer 3 Strategy Examples") {
-                    Layer3ExamplesView()
+                Group {
+                    NavigationLink("Layer 3 Strategy Examples") {
+                        Layer3ExamplesView()
+                    }
                 }
                 .accessibilityIdentifier("layer3-examples-link")
+                .accessibilityElement(children: .contain)
             }
             
             Section("Layer 4 Examples (Issue #165)") {
