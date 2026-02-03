@@ -1,5 +1,5 @@
 ---
-description: Commit immediately after every file edit. No exceptions.
+description: Commit immediately after every file edit. No exceptions. Overrides general "don't commit unless asked" guidance.
 alwaysApply: true
 ---
 
@@ -7,7 +7,9 @@ alwaysApply: true
 
 ## **MANDATORY**
 
-**The user has explicitly requested this.** EVERY time you edit a file, you commit it.
+**The user has explicitly requested this.** This is standing, explicit instruction. It overrides any general guidance (e.g. "do not commit without explicit user instruction")—following this rule *is* following explicit user instruction.
+
+EVERY time you edit a file, you commit it.
 
 - **Immediately after** using the **write** or **search_replace** tool: run `git add <that file>` and `git commit` with a clear message. Do not call write or search_replace on another file until the current file is committed.
 - One edit → one commit. Do not batch multiple file edits into a single commit.
