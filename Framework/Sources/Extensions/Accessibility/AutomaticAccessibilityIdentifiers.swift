@@ -1331,7 +1331,7 @@ public struct BasicAutomaticComplianceModifier: ViewModifier {
         // on iOS and retains the identifier (SwiftUI may otherwise flatten Group and drop the identifier).
         let contentWithLabel = applyAccessibilityLabelIfNeeded(to: content)
         let contentWithHint = applyAccessibilityHintIfNeeded(to: contentWithLabel)
-        let contentWithTraits = applyAccessibilityTraitsIfNeeded(to: contentWithTraits)
+        let contentWithTraits = applyAccessibilityTraitsIfNeeded(to: contentWithHint)
         let contentWithValue = applyAccessibilityValueIfNeeded(to: contentWithTraits)
         let contentWithSortPriority = applyAccessibilitySortPriorityIfNeeded(to: contentWithValue)
         return Group { contentWithSortPriority }
