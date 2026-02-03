@@ -6,6 +6,11 @@ alwaysApply: true
 
 # GitHub Issue Workflow Rules
 
+## **MANDATORY — PRECEDENCE**
+
+- **Always use `--body-file` for issue comments.** Do not pass comment body inline to `gh issue comment` (e.g. `gh issue comment 3 --body "text"`). Inline bodies cause shell interpretation of backticks, `$`, and other characters. This rule has no exceptions when posting issue comments.
+- **When in doubt, use the temp file.** For any issue comment that includes formatting, code, or special characters, write the message to a temp file and use `gh issue comment <number> --body-file <file>`.
+
 ## **Core Principle**
 
 When updating GitHub issues with comments that contain backticks, code blocks, or special characters, always use a temporary file to avoid shell interpretation issues.
