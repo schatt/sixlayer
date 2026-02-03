@@ -5,6 +5,11 @@ alwaysApply: true
 
 # Project Configuration: project.yml Only
 
+## **MANDATORY — PRECEDENCE**
+
+- **Never edit generated Xcode artifacts.** Do not edit `*.xcodeproj/project.pbxproj`, `*.xcodeproj/**/*.xcscheme`, or any other generated files under the Xcode project. This rule takes precedence; if a task would require editing those files, change **project.yml** instead and regenerate.
+- **Single source of truth:** project.yml only. No exceptions.
+
 ## Core Principle
 
 This project uses **project.yml** (XcodeGen) as the single source of truth for Xcode project configuration. All targets, sources, excludes, build settings, and schemes are defined there.
