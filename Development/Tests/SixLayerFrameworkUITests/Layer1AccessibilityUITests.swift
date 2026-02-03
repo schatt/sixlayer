@@ -96,14 +96,16 @@ final class Layer1AccessibilityUITests: XCTestCase {
             }
             sleep(1)
         }
-        // Prefer explicit ID; on iOS .menu Picker may also expose as picker or button.
+        // Inspector: button has Label "Category, Select Category", Identifier None (SwiftUI doesn't set it).
         let byId = app.findElement(byIdentifier: "layer1-category-picker", primaryType: .button, secondaryTypes: [.picker, .other, .any])
         let picker = app.pickers.firstMatch
-        let categoryButton = app.buttons["Category"]
+        let categoryButton = app.buttons["Category, Select Category"]  // exact label from UI Inspector
+        let categoryButtonAlt = app.buttons["Category"]
         let categorySelectButton = app.buttons["Select Category"]
-        guard (byId?.waitForExistenceFast(timeout: 2.0) ?? false)
+        guard (byId != nil)
             || picker.waitForExistenceFast(timeout: 2.0)
             || categoryButton.waitForExistenceFast(timeout: 2.0)
+            || categoryButtonAlt.waitForExistenceFast(timeout: 2.0)
             || categorySelectButton.waitForExistenceFast(timeout: 2.0) else {
             XCTFail("Category picker should exist after expanding Layer 1")
             return
@@ -111,12 +113,13 @@ final class Layer1AccessibilityUITests: XCTestCase {
     }
     
     /// Select a Layer 1 category (assumes Layer 1 section already expanded in this test).
-    /// Prefer explicit ID; on iOS .menu Picker may expose as picker or button.
+    /// Inspector: button label is "Category, Select Category"; identifier often None.
     @MainActor
     private func selectLayer1Category(_ categoryName: String) {
         let byId = app.findElement(byIdentifier: "layer1-category-picker", primaryType: .button, secondaryTypes: [.picker, .other, .any])
         let picker = app.pickers.firstMatch
-        let categoryButton = app.buttons["Category"]
+        let categoryButton = app.buttons["Category, Select Category"]
+        let categoryButtonAlt = app.buttons["Category"]
         let categorySelectButton = app.buttons["Select Category"]
         let categoryControl: XCUIElement
         if let el = byId, el.waitForExistenceFast(timeout: 1.0) {
@@ -125,6 +128,8 @@ final class Layer1AccessibilityUITests: XCTestCase {
             categoryControl = picker
         } else if categoryButton.waitForExistenceFast(timeout: 1.0) {
             categoryControl = categoryButton
+        } else if categoryButtonAlt.waitForExistenceFast(timeout: 1.0) {
+            categoryControl = categoryButtonAlt
         } else if categorySelectButton.waitForExistenceFast(timeout: 1.0) {
             categoryControl = categorySelectButton
         } else {
