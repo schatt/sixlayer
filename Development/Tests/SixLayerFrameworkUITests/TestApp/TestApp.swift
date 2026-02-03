@@ -96,10 +96,13 @@ struct TestAppContentView: View {
     }
     
     // MARK: - Launch Page
+    // Use ScrollView + LazyVStack instead of List so accessibility identifiers
+    // are exposed to XCUITest on iOS (List rows are backed by cells that can hide IDs).
     
     private var launchPage: some View {
-        List {
-            Section("Accessibility Tests") {
+        ScrollView {
+            LazyVStack(alignment: .leading, spacing: 8) {
+                sectionHeader("Accessibility Tests")
                 ForEach(TestView.allCases) { testView in
                     Group {
                         Button(testView.rawValue) {
@@ -109,9 +112,8 @@ struct TestAppContentView: View {
                     .accessibilityIdentifier("test-view-\(testView.id)")
                     .accessibilityElement(children: .combine)
                 }
-            }
-            
-            Section("Layer 1 Examples (Issue #166)") {
+                
+                sectionHeader("Layer 1 Examples (Issue #166)")
                 Group {
                     Button(showLayer1Examples ? "Hide Layer 1 Examples" : "Show Layer 1 Examples") {
                         showLayer1Examples.toggle()
@@ -123,9 +125,8 @@ struct TestAppContentView: View {
                 if showLayer1Examples {
                     layer1ExamplesView
                 }
-            }
-            
-            Section("Layer 2 Examples (Issue #165)") {
+                
+                sectionHeader("Layer 2 Examples (Issue #165)")
                 Group {
                     NavigationLink("Layer 2 Layout Examples") {
                         Layer2ExamplesView()
@@ -133,9 +134,8 @@ struct TestAppContentView: View {
                 }
                 .accessibilityIdentifier("layer2-examples-link")
                 .accessibilityElement(children: .combine)
-            }
-            
-            Section("Layer 3 Examples (Issue #165)") {
+                
+                sectionHeader("Layer 3 Examples (Issue #165)")
                 Group {
                     NavigationLink("Layer 3 Strategy Examples") {
                         Layer3ExamplesView()
@@ -143,30 +143,36 @@ struct TestAppContentView: View {
                 }
                 .accessibilityIdentifier("layer3-examples-link")
                 .accessibilityElement(children: .combine)
-            }
-            
-            Section("Layer 4 Examples (Issue #165)") {
+                
+                sectionHeader("Layer 4 Examples (Issue #165)")
                 NavigationLink("Layer 4 Component Examples") {
                     Layer4ExamplesView()
                 }
                 .accessibilityIdentifier("layer4-examples-link")
-            }
-            
-            Section("Layer 5 Examples (Issue #165)") {
+                
+                sectionHeader("Layer 5 Examples (Issue #165)")
                 NavigationLink("Layer 5 Optimization Examples") {
                     Layer5ExamplesView()
                 }
                 .accessibilityIdentifier("layer5-examples-link")
-            }
-            
-            Section("Layer 6 Examples (Issue #165)") {
+                
+                sectionHeader("Layer 6 Examples (Issue #165)")
                 NavigationLink("Layer 6 System Examples") {
                     Layer6ExamplesView()
                 }
                 .accessibilityIdentifier("layer6-examples-link")
             }
+            .padding()
         }
         .navigationTitle("UI Test Views")
+    }
+    
+    private func sectionHeader(_ title: String) -> some View {
+        Text(title)
+            .font(.headline)
+            .foregroundColor(.secondary)
+            .padding(.top, 8)
+            .padding(.bottom, 2)
     }
     
     // MARK: - Test Views
