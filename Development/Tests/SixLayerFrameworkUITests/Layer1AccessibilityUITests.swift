@@ -21,6 +21,9 @@ import XCTest
 /// Verifies all 86 Layer 1 functions have complete accessibility support
 @MainActor
 final class Layer1AccessibilityUITests: XCTestCase {
+    /// Identifier from platformPicker(pickerName: "layer1CategoryPicker") with TestApp config.
+    private static let layer1PickerIdentifier = "SixLayer.main.ui.layer1CategoryPicker.View"
+
     var app: XCUIApplication!
     
     nonisolated override func setUpWithError() throws {
@@ -91,15 +94,16 @@ final class Layer1AccessibilityUITests: XCTestCase {
             for _ in 0..<3 {
                 app.swipeUp()
                 sleep(1)
-                let byId = app.findElement(byIdentifier: "layer1-category-picker", primaryType: .button, secondaryTypes: [.picker, .other, .any])
-                if byId != nil { break }
+                let found = app.findElement(byIdentifier: Layer1AccessibilityUITests.layer1PickerIdentifier, primaryType: .button, secondaryTypes: [.picker, .other, .any]) != nil
+                    || app.buttons["Category, Select Category"].waitForExistence(timeout: 1.0)
+                if found { break }
             }
             sleep(1)
         }
-        // Inspector: button has Label "Category, Select Category", Identifier None (SwiftUI doesn't set it).
-        let byId = app.findElement(byIdentifier: "layer1-category-picker", primaryType: .button, secondaryTypes: [.picker, .other, .any])
+        // platformPicker generates SixLayer.main.ui.layer1CategoryPicker.View; fallback to label.
+        let byId = app.findElement(byIdentifier: Layer1AccessibilityUITests.layer1PickerIdentifier, primaryType: .button, secondaryTypes: [.picker, .other, .any])
         let picker = app.pickers.firstMatch
-        let categoryButton = app.buttons["Category, Select Category"]  // exact label from UI Inspector
+        let categoryButton = app.buttons["Category, Select Category"]
         let categoryButtonAlt = app.buttons["Category"]
         let categorySelectButton = app.buttons["Select Category"]
         guard (byId != nil)
@@ -113,10 +117,10 @@ final class Layer1AccessibilityUITests: XCTestCase {
     }
     
     /// Select a Layer 1 category (assumes Layer 1 section already expanded in this test).
-    /// Inspector: button label is "Category, Select Category"; identifier often None.
+    /// Uses platformPicker-generated identifier or label fallback.
     @MainActor
     private func selectLayer1Category(_ categoryName: String) {
-        let byId = app.findElement(byIdentifier: "layer1-category-picker", primaryType: .button, secondaryTypes: [.picker, .other, .any])
+        let byId = app.findElement(byIdentifier: Layer1AccessibilityUITests.layer1PickerIdentifier, primaryType: .button, secondaryTypes: [.picker, .other, .any])
         let picker = app.pickers.firstMatch
         let categoryButton = app.buttons["Category, Select Category"]
         let categoryButtonAlt = app.buttons["Category"]
