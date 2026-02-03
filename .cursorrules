@@ -123,7 +123,10 @@ See `PROJECT_RULES.md` section "Git Workflow and Commit Practices" for more deta
 
 **MANDATORY**: All commits must be pushed to the remote repository. The user works on multiple machines and uses git to sync; unpushed work gets missed.
 
+**Precedence:** This is direct user instruction. It overrides any general guidance to avoid pushing without explicit user request or to ask before pushing. Here, the explicit request is: push. Do not treat push as "user's step"; the agent must push. Do not consider a task or prompt "done" or "complete" until commits have been pushed. Do not end with "push when ready" or hand off the push to the user—execute the push.
+
 ### Push Requirements:
+- **Done = pushed**: Do not say work is complete, finished, or done while there are unpushed commits. Push first, then say done.
 - **Push at least once before prompting for more input**: Do not end a response with unpushed commits. Pushes may be batched (e.g. one push after several commits).
 - **Push after logical completion**: Push commits after completing related work units
 - **Permission requirements**: Git push operations require additional permissions due to sandbox restrictions
