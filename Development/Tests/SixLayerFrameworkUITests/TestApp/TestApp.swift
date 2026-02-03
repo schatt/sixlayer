@@ -208,15 +208,20 @@ struct TestAppContentView: View {
                     .font(.largeTitle)
                     .padding(.bottom)
                 
-                // Category picker - plain SwiftUI for launch page; explicit ID for XCUITest
-                Picker("Category", selection: $selectedCategory) {
-                    Text("Select Category").tag(nil as TestCategory?)
-                    ForEach(TestCategory.allCases) { category in
-                        Text(category.rawValue).tag(category as TestCategory?)
+                // Category picker - plain SwiftUI for launch page. SwiftUI .menu Picker does not
+                // forward .accessibilityIdentifier to the underlying button; wrap so the
+                // combined element gets the ID (Inspector showed Identifier: None on the button).
+                Group {
+                    Picker("Category", selection: $selectedCategory) {
+                        Text("Select Category").tag(nil as TestCategory?)
+                        ForEach(TestCategory.allCases) { category in
+                            Text(category.rawValue).tag(category as TestCategory?)
+                        }
                     }
+                    .pickerStyle(.menu)
                 }
-                .pickerStyle(.menu)
                 .accessibilityIdentifier("layer1-category-picker")
+                .accessibilityElement(children: .combine)
                 .padding(.bottom)
                 
                 // Show selected category examples
