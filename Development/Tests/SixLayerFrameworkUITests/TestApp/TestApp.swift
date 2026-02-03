@@ -208,24 +208,17 @@ struct TestAppContentView: View {
                     .font(.largeTitle)
                     .padding(.bottom)
                 
-                // Category picker - accessibility on both picker and options (per framework pattern).
-                // Picker: Group+identifier+combine so control is findable (SwiftUI doesn't set ID on .menu button).
-                // Options: explicit identifier per option so menu items are identifiable.
-                Group {
-                    Picker("Category", selection: $selectedCategory) {
-                        Text("Select Category")
-                            .tag(nil as TestCategory?)
-                            .accessibilityIdentifier("layer1-category-option-select")
-                        ForEach(TestCategory.allCases) { category in
-                            Text(category.rawValue)
-                                .tag(category as TestCategory?)
-                                .accessibilityIdentifier("layer1-category-option-\(category.rawValue.replacingOccurrences(of: " ", with: "-").lowercased())")
-                        }
-                    }
-                    .pickerStyle(.menu)
-                }
-                .accessibilityIdentifier("layer1-category-picker")
-                .accessibilityElement(children: .combine)
+                // Category picker: use framework platformPicker so picker + options get automatic
+                // accessibility (Issue #163). Options include nil for "Select Category".
+                platformPicker(
+                    label: "Category",
+                    selection: $selectedCategory,
+                    options: [nil as TestCategory?] + TestCategory.allCases.map { $0 as TestCategory? },
+                    optionTag: { $0 },
+                    optionLabel: { $0?.rawValue ?? "Select Category" },
+                    pickerName: "layer1CategoryPicker",
+                    style: MenuPickerStyle()
+                )
                 .padding(.bottom)
                 
                 // Show selected category examples
