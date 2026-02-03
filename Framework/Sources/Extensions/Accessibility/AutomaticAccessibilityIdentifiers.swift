@@ -1089,6 +1089,22 @@ public extension View {
     }
 }
 
+// MARK: - Optional identifier (for manual override support)
+
+/// Applies .accessibilityIdentifier only when non-nil. Used so BasicAutomaticComplianceModifier
+/// can always return the same view structure (Group + combine) and optionally apply an identifier.
+private struct OptionalIdentifierModifier: ViewModifier {
+    let identifier: String?
+
+    func body(content: Content) -> some View {
+        if let identifier = identifier {
+            content.accessibilityIdentifier(identifier)
+        } else {
+            content
+        }
+    }
+}
+
 // MARK: - Basic Automatic Compliance (Issue #172)
 
 /// Basic automatic compliance modifier - applies only identifier and label, no HIG features
@@ -1305,16 +1321,19 @@ public struct BasicAutomaticComplianceModifier: ViewModifier {
         
         // Apply accessibility features in order: label, hint, traits, value, sort priority, then identifier
         // NOTE: This is basic compliance - NO HIG features (unlike AutomaticComplianceModifier)
-        // CRITICAL: Apply identifier LAST to ensure it takes precedence
-        // In SwiftUI, when multiple .accessibilityIdentifier() modifiers are applied,
-        // the last one wins. By applying the identifier here (after all other accessibility features), we ensure
-        // child identifiers take precedence over any parent identifiers that might be applied later
+        // CRITICAL: Apply identifier on a wrapper so that a caller-applied .accessibilityIdentifier() wins.
+        // When we apply our identifier to the same view as content, a later .accessibilityIdentifier(manual)
+        // from the call site can fail to override on some platforms (e.g. macOS). Wrapping in a Group
+        // puts our identifier on the Group; when the caller adds .accessibilityIdentifier(manual), it
+        // applies to the Group and wins (last modifier wins). We do not use .accessibilityElement(children: .combine)
+        // so that child content (e.g. Detail view title/subtitle) remains exposed as separate elements.
         let contentWithLabel = applyAccessibilityLabelIfNeeded(to: content)
         let contentWithHint = applyAccessibilityHintIfNeeded(to: contentWithLabel)
         let contentWithTraits = applyAccessibilityTraitsIfNeeded(to: contentWithHint)
         let contentWithValue = applyAccessibilityValueIfNeeded(to: contentWithTraits)
         let contentWithSortPriority = applyAccessibilitySortPriorityIfNeeded(to: contentWithValue)
-        return applyIdentifierIfNeeded(to: contentWithSortPriority)
+        return Group { contentWithSortPriority }
+            .modifier(OptionalIdentifierModifier(identifier: identifier))
     }
 }
 
