@@ -132,31 +132,45 @@ final class Layer1AccessibilityUITests: XCTestCase {
             return
         }
         categoryControl.tap()
-        // Menu/popover can take a moment to appear on iOS.
-        sleep(1)
-        // Inspector: option has identifier SixLayer.main.ui.data-presentation.View (Button).
+        // Menu/popover can take a moment to appear; wait for options to be in the accessibility tree.
+        sleep(2)
         let optionId = "SixLayer.main.ui.\(categoryName.replacingOccurrences(of: " ", with: "-").lowercased()).View"
-        let optionById = app.findElement(byIdentifier: optionId, primaryType: .button, secondaryTypes: [.cell, .other, .any])
         let menuOption = app.menuItems[categoryName]
         let buttonOption = app.buttons[categoryName]
         let textOption = app.staticTexts[categoryName]
         let cellOption = app.cells[categoryName]
-        let option: XCUIElement
-        if let el = optionById, el.waitForExistence(timeout: 2.0) {
-            option = el
-        } else if menuOption.waitForExistence(timeout: 1.0) {
-            option = menuOption
-        } else if buttonOption.waitForExistence(timeout: 1.0) {
-            option = buttonOption
-        } else if cellOption.waitForExistence(timeout: 1.0) {
-            option = cellOption
-        } else if textOption.waitForExistence(timeout: 1.0) {
-            option = textOption
-        } else {
+
+        func findOption(timeout: TimeInterval = 2.0) -> XCUIElement? {
+            // Include .menuItem so iOS MenuPickerStyle options are found (Accessibility Inspector shows identifier on menu item).
+            if let el = app.findElement(byIdentifier: optionId, primaryType: .button, secondaryTypes: [.menuItem, .cell, .other, .any], timeout: timeout), el.waitForExistence(timeout: timeout) {
+                return el
+            }
+            if menuOption.waitForExistence(timeout: timeout) { return menuOption }
+            if buttonOption.waitForExistence(timeout: 1.0) { return buttonOption }
+            if cellOption.waitForExistence(timeout: 1.0) { return cellOption }
+            if textOption.waitForExistence(timeout: 1.0) { return textOption }
+            return nil
+        }
+
+        var option: XCUIElement?
+        option = findOption(timeout: 3.0)
+        if option == nil {
+            // Menu may need scrolling for options below the fold (e.g. Navigation).
+            app.swipeUp()
+            sleep(1)
+            option = findOption(timeout: 2.0)
+        }
+        if option == nil {
+            // Retry: re-open menu in case it didn't present or closed (timing).
+            categoryControl.tap()
+            sleep(2)
+            option = findOption(timeout: 3.0)
+        }
+        if option == nil {
             XCTFail("Category '\(categoryName)' should exist in picker")
             return
         }
-        option.tap()
+        option!.tap()
         sleep(1)
     }
     
