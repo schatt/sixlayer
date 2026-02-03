@@ -132,12 +132,27 @@ final class Layer1AccessibilityUITests: XCTestCase {
             return
         }
         categoryControl.tap()
-        let categoryOption = app.menuItems[categoryName]
-        guard categoryOption.waitForExistenceFast(timeout: 2.0) else {
+        // Menu/popover can take a moment to appear on iOS.
+        sleep(1)
+        // iOS may expose Picker options as menuItems, buttons, staticTexts, or cells (list style).
+        let menuOption = app.menuItems[categoryName]
+        let buttonOption = app.buttons[categoryName]
+        let textOption = app.staticTexts[categoryName]
+        let cellOption = app.cells[categoryName]
+        let option: XCUIElement
+        if menuOption.waitForExistence(timeout: 2.0) {
+            option = menuOption
+        } else if buttonOption.waitForExistence(timeout: 1.0) {
+            option = buttonOption
+        } else if cellOption.waitForExistence(timeout: 1.0) {
+            option = cellOption
+        } else if textOption.waitForExistence(timeout: 1.0) {
+            option = textOption
+        } else {
             XCTFail("Category '\(categoryName)' should exist in picker")
             return
         }
-        categoryOption.tap()
+        option.tap()
         sleep(1)
     }
     
