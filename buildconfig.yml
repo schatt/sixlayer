@@ -63,6 +63,11 @@ platforms:
     artifact_dir: build/ios
     artifact_patterns:
       - build/ios/*.ipa
+  - name: iOS_ui_tests
+    build_command: xcodebuild test -project SixLayerFramework.xcodeproj -scheme SLF-iOS-UITests -destination "platform=iOS Simulator,name=iPhone 17 Pro Max" -parallel-testing-enabled YES
+    artifact_dir: build/ios
+    artifact_patterns:
+      - build/ios/*.ipa
   - name: iOS_tests
     build_command: xcodebuild test -project SixLayerFramework.xcodeproj -scheme SLF-iOS-AllTests -destination "platform=iOS Simulator,name=iPhone 17 Pro Max" -parallel-testing-enabled YES -maximum-concurrent-test-simulator-destinations 2
     artifact_dir: build/ios
