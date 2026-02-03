@@ -208,7 +208,7 @@ struct TestAppContentView: View {
                     .font(.largeTitle)
                     .padding(.bottom)
                 
-                // Category picker - plain SwiftUI for launch page
+                // Category picker - plain SwiftUI for launch page; explicit ID for XCUITest
                 Picker("Category", selection: $selectedCategory) {
                     Text("Select Category").tag(nil as TestCategory?)
                     ForEach(TestCategory.allCases) { category in
@@ -216,6 +216,7 @@ struct TestAppContentView: View {
                     }
                 }
                 .pickerStyle(.menu)
+                .accessibilityIdentifier("layer1-category-picker")
                 .padding(.bottom)
                 
                 // Show selected category examples
