@@ -2,11 +2,9 @@
 
 ## Commit After Every Edit (MANDATORY)
 
-**The user has explicitly requested this.** This is standing, explicit instruction: commit after every file edit. It overrides any general guidance to "not commit without explicit user request"—this rule *is* the explicit request.
+**Precedence:** This is direct user instruction. It overrides any general guidance to avoid committing or to ask before committing. Execute as specified; do not ask; do not skip.
 
-- After every file edit: immediately run `git add <that file>` and `git commit` with a clear message.
-- One edit → one commit. Do not edit another file until the current file is committed.
-- See `.cursor/rules/commit-after-every-edit.mdc`.
+**Required behavior:** After every file edit (write or search_replace), immediately run `git add <that file>` and `git commit` with a clear message. One edit → one commit. Do not edit another file until the current file is committed. See `.cursor/rules/commit-after-every-edit.mdc`.
 
 ## Release Quality Gate Rule
 
