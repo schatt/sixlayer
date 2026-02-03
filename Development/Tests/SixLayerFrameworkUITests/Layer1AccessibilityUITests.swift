@@ -88,16 +88,7 @@ final class Layer1AccessibilityUITests: XCTestCase {
         }
         if (toggleButton.value as? String) != "1" {
             toggleButton.tap()
-            // Allow SwiftUI to lay out expanded section; LazyVStack only loads when in view.
-            sleep(1)
-            // Scroll so Layer 1 content (picker) enters viewport and LazyVStack renders it.
-            for _ in 0..<3 {
-                app.swipeUp()
-                sleep(1)
-                let found = app.findElement(byIdentifier: Layer1AccessibilityUITests.layer1PickerIdentifier, primaryType: .button, secondaryTypes: [.picker, .other, .any]) != nil
-                    || app.buttons["Category, Select Category"].waitForExistence(timeout: 1.0)
-                if found { break }
-            }
+            // VStack creates Layer 1 content immediately; allow one layout pass.
             sleep(1)
         }
         // platformPicker generates SixLayer.main.ui.layer1CategoryPicker.View; fallback to label.
@@ -107,10 +98,10 @@ final class Layer1AccessibilityUITests: XCTestCase {
         let categoryButtonAlt = app.buttons["Category"]
         let categorySelectButton = app.buttons["Select Category"]
         guard (byId != nil)
-            || picker.waitForExistenceFast(timeout: 2.0)
-            || categoryButton.waitForExistenceFast(timeout: 2.0)
-            || categoryButtonAlt.waitForExistenceFast(timeout: 2.0)
-            || categorySelectButton.waitForExistenceFast(timeout: 2.0) else {
+            || picker.waitForExistence(timeout: 3.0)
+            || categoryButton.waitForExistence(timeout: 3.0)
+            || categoryButtonAlt.waitForExistence(timeout: 3.0)
+            || categorySelectButton.waitForExistence(timeout: 3.0) else {
             XCTFail("Category picker should exist after expanding Layer 1")
             return
         }
