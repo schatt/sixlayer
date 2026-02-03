@@ -208,14 +208,18 @@ struct TestAppContentView: View {
                     .font(.largeTitle)
                     .padding(.bottom)
                 
-                // Category picker - plain SwiftUI for launch page. SwiftUI .menu Picker does not
-                // forward .accessibilityIdentifier to the underlying button; wrap so the
-                // combined element gets the ID (Inspector showed Identifier: None on the button).
+                // Category picker - accessibility on both picker and options (per framework pattern).
+                // Picker: Group+identifier+combine so control is findable (SwiftUI doesn't set ID on .menu button).
+                // Options: explicit identifier per option so menu items are identifiable.
                 Group {
                     Picker("Category", selection: $selectedCategory) {
-                        Text("Select Category").tag(nil as TestCategory?)
+                        Text("Select Category")
+                            .tag(nil as TestCategory?)
+                            .accessibilityIdentifier("layer1-category-option-select")
                         ForEach(TestCategory.allCases) { category in
-                            Text(category.rawValue).tag(category as TestCategory?)
+                            Text(category.rawValue)
+                                .tag(category as TestCategory?)
+                                .accessibilityIdentifier("layer1-category-option-\(category.rawValue.replacingOccurrences(of: " ", with: "-").lowercased())")
                         }
                     }
                     .pickerStyle(.menu)
