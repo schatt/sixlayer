@@ -1,5 +1,9 @@
 # SixLayer Framework - Cursor Rules
 
+## Commit After Every Edit (MANDATORY)
+
+**After every file edit**: Immediately run `git add <that file>` and `git commit` with a clear message. One edit → one commit. Do not edit another file until the current file is committed. See `.cursor/rules/commit-after-every-edit.mdc`.
+
 ## Release Quality Gate Rule
 
 **MANDATORY RELEASE RULE**: Never create, suggest, or assist with any release (major, minor, patch, or pre-release) unless the test suite passes completely.
