@@ -134,13 +134,17 @@ final class Layer1AccessibilityUITests: XCTestCase {
         categoryControl.tap()
         // Menu/popover can take a moment to appear on iOS.
         sleep(1)
-        // iOS may expose Picker options as menuItems, buttons, staticTexts, or cells (list style).
+        // Inspector: option has identifier SixLayer.main.ui.data-presentation.View (Button).
+        let optionId = "SixLayer.main.ui.\(categoryName.replacingOccurrences(of: " ", with: "-").lowercased()).View"
+        let byId = app.findElement(byIdentifier: optionId, primaryType: .button, secondaryTypes: [.cell, .other, .any])
         let menuOption = app.menuItems[categoryName]
         let buttonOption = app.buttons[categoryName]
         let textOption = app.staticTexts[categoryName]
         let cellOption = app.cells[categoryName]
         let option: XCUIElement
-        if menuOption.waitForExistence(timeout: 2.0) {
+        if let el = byId, el.waitForExistence(timeout: 2.0) {
+            option = el
+        } else if menuOption.waitForExistence(timeout: 1.0) {
             option = menuOption
         } else if buttonOption.waitForExistence(timeout: 1.0) {
             option = buttonOption
