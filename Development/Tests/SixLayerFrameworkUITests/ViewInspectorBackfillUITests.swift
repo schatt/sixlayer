@@ -60,11 +60,14 @@ final class ViewInspectorBackfillUITests: XCTestCase {
         XCTAssertTrue(entryButton.waitForExistenceFast(timeout: 3.0), "Identifier Edge Case entry should exist")
         entryButton.tap()
 
-        let manualSubmit = app.findElement(byIdentifier: "manual-override-id", primaryType: .button, secondaryTypes: [.other, .any])
-        XCTAssertNotNil(manualSubmit, "Manual override identifier 'manual-override-id' should be findable by XCUIElement")
+        // Framework generates namespaced identifiers (e.g. SixLayer.main.ui.manual-override-id.Button)
+        let manualSubmitId = "SixLayer.main.ui.manual-override-id.Button"
+        let manualSubmit = app.findElement(byIdentifier: manualSubmitId, primaryType: .button, secondaryTypes: [.other, .any])
+        XCTAssertNotNil(manualSubmit, "Manual override identifier '\(manualSubmitId)' should be findable by XCUIElement")
 
-        let manualCancel = app.findElement(byIdentifier: "manual-cancel-id", primaryType: .button, secondaryTypes: [.other, .any])
-        XCTAssertNotNil(manualCancel, "Manual override identifier 'manual-cancel-id' should be findable by XCUIElement")
+        let manualCancelId = "SixLayer.main.ui.manual-cancel-id.Button"
+        let manualCancel = app.findElement(byIdentifier: manualCancelId, primaryType: .button, secondaryTypes: [.other, .any])
+        XCTAssertNotNil(manualCancel, "Manual override identifier '\(manualCancelId)' should be findable by XCUIElement")
     }
 
     /// UI test for IntelligentDetailView content: title and description are visible (covers view hierarchy / no text elements VI failures).
