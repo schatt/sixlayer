@@ -34,8 +34,8 @@ extension XCUIApplication {
         if staticTexts["UI Test Views"].waitForExistence(timeout: timeout) {
             return true
         }
-        // Try finding a test view button (indicates launch page is ready)
-        if buttons["test-view-Control Test"].waitForExistence(timeout: timeout) {
+        // Try finding a test view entry (indicates launch page is ready; iOS List may use .cell)
+        if (findLaunchPageEntry(identifier: "test-view-Control Test")).waitForExistence(timeout: timeout) {
             return true
         }
         // Try finding by navigation title in any element
@@ -80,9 +80,10 @@ extension XCUIElement {
     ///   - secondaryTypes: Additional element types to try if primary fails
     ///   - timeout: Maximum time to wait for each query type
     /// - Returns: The found element, or nil if not found
+    /// - Note: Includes .cell so List/Form rows on iOS (exposed as cells) are findable by identifier.
     func findElement(byIdentifier identifier: String, 
                     primaryType: XCUIElement.ElementType = .other,
-                    secondaryTypes: [XCUIElement.ElementType] = [.staticText, .button, .any],
+                    secondaryTypes: [XCUIElement.ElementType] = [.button, .cell, .staticText, .any],
                     timeout: TimeInterval = 1.0) -> XCUIElement? {
         // Strategy 1: Try primary type first (most common case)
         let primaryElement = descendants(matching: primaryType)[identifier]
@@ -105,6 +106,16 @@ extension XCUIElement {
         }
         
         return nil
+    }
+}
+
+extension XCUIApplication {
+    /// Find a launch-page list entry by identifier (iOS List rows may be .cell, not .button).
+    func findLaunchPageEntry(identifier: String) -> XCUIElement {
+        findElement(byIdentifier: identifier,
+                    primaryType: .button,
+                    secondaryTypes: [.cell, .staticText, .other, .any])
+            ?? buttons[identifier]
     }
 }
 

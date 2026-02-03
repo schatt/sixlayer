@@ -1327,13 +1327,16 @@ public struct BasicAutomaticComplianceModifier: ViewModifier {
         // puts our identifier on the Group; when the caller adds .accessibilityIdentifier(manual), it
         // applies to the Group and wins (last modifier wins). We do not use .accessibilityElement(children: .combine)
         // so that child content (e.g. Detail view title/subtitle) remains exposed as separate elements.
+        // Use .accessibilityElement(children: .contain) so the Group is an explicit accessibility element
+        // on iOS and retains the identifier (SwiftUI may otherwise flatten Group and drop the identifier).
         let contentWithLabel = applyAccessibilityLabelIfNeeded(to: content)
         let contentWithHint = applyAccessibilityHintIfNeeded(to: contentWithLabel)
-        let contentWithTraits = applyAccessibilityTraitsIfNeeded(to: contentWithHint)
+        let contentWithTraits = applyAccessibilityTraitsIfNeeded(to: contentWithTraits)
         let contentWithValue = applyAccessibilityValueIfNeeded(to: contentWithTraits)
         let contentWithSortPriority = applyAccessibilitySortPriorityIfNeeded(to: contentWithValue)
         return Group { contentWithSortPriority }
             .modifier(OptionalIdentifierModifier(identifier: identifier))
+            .accessibilityElement(children: .contain)
     }
 }
 
