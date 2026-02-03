@@ -17,11 +17,10 @@ struct ButtonTestView: View {
                 .font(.headline)
                 .automaticCompliance()
             
-            // Button with automatic compliance - using platformButton
-            platformButton("Test Button") {
+            // Button with automatic compliance - explicit id so identifier is SixLayer.main.ui.testButton.Button
+            platformButton(label: "Test Button", id: "testButton") {
                 // Action
             }
-            .automaticCompliance(identifierName: "testButton", identifierElementType: "Button")
             
             // Back to main page button
             platformButton("Back to Main") {

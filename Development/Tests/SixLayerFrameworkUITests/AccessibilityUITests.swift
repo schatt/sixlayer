@@ -235,8 +235,7 @@ final class AccessibilityUITests: XCTestCase {
         sleep(1)
         
         // Find element by accessibility identifier using helper (tries multiple query types)
-        // Updated: ButtonTestView now provides identifierName "testButton"
-        // Query by identifier first to avoid label matching issues
+        // ButtonTestView uses platformButton(label: "Test Button", id: "testButton")
         let expectedIdentifier = "SixLayer.main.ui.testButton.Button"
         let usePerformanceLogging = ProcessInfo.processInfo.environment["USE_XCUITEST_PERFORMANCE"] == "1"
         
