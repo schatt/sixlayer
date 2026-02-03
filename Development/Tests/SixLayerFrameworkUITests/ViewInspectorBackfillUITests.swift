@@ -56,7 +56,7 @@ final class ViewInspectorBackfillUITests: XCTestCase {
     /// UI test for identifier edge case: manual .accessibilityIdentifier is findable (covers testManualIDOverride-style behavior).
     @MainActor
     func testIdentifierEdgeCase_ManualOverrideIdFindable() throws {
-        let entryButton = app.buttons["test-view-Identifier Edge Case"]
+        let entryButton = app.findLaunchPageEntry(identifier: "test-view-Identifier Edge Case")
         XCTAssertTrue(entryButton.waitForExistenceFast(timeout: 3.0), "Identifier Edge Case entry should exist")
         entryButton.tap()
 
@@ -70,7 +70,7 @@ final class ViewInspectorBackfillUITests: XCTestCase {
     /// UI test for IntelligentDetailView content: title and description are visible (covers view hierarchy / no text elements VI failures).
     @MainActor
     func testDetailView_ContentVisible() throws {
-        let entryButton = app.buttons["test-view-Detail View Test"]
+        let entryButton = app.findLaunchPageEntry(identifier: "test-view-Detail View Test")
         XCTAssertTrue(entryButton.waitForExistenceFast(timeout: 3.0), "Detail View Test entry should exist")
         entryButton.tap()
 

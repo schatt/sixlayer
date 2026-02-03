@@ -81,29 +81,12 @@ final class Layer2AccessibilityUITests: XCTestCase {
             return
         }
         
-        // Tap the "Layer 2 Layout Examples" link
-        // NavigationLink might be exposed as button, staticText, or other element
-        // Try multiple strategies to find the element
-        var layer2Link: XCUIElement?
+        // Tap the "Layer 2 Layout Examples" link (List row on iOS may be .cell)
+        let layer2Link = app.findElement(byIdentifier: "layer2-examples-link",
+                                         primaryType: .button,
+                                         secondaryTypes: [.cell, .staticText, .other, .any])
         
-        // Strategy 1: Try as button
-        let buttonLink = app.buttons["layer2-examples-link"]
-        if buttonLink.waitForExistenceFast(timeout: 2.0) {
-            layer2Link = buttonLink
-        } else {
-            // Strategy 2: Try as staticText (NavigationLink label)
-            let textLink = app.staticTexts["Layer 2 Layout Examples"]
-            if textLink.waitForExistenceFast(timeout: 2.0) {
-                layer2Link = textLink
-            } else {
-                // Strategy 3: Try findElement helper
-                layer2Link = app.findElement(byIdentifier: "layer2-examples-link",
-                                            primaryType: .button,
-                                            secondaryTypes: [.staticText, .other, .any])
-            }
-        }
-        
-        guard let link = layer2Link else {
+        guard let link = layer2Link, link.waitForExistenceFast(timeout: 3.0) else {
             XCTFail("Layer 2 examples link should exist")
             return
         }

@@ -113,7 +113,7 @@ final class BasicAutomaticComplianceUITests: XCTestCase {
     func testBasicAutomaticCompliance_IdentifierIsFindable() throws {
         // Given: App is launched and ready (from setUp)
         // Navigate to Basic Compliance Test view
-        let basicComplianceButton = app.buttons["test-view-Basic Compliance Test"]
+        let basicComplianceButton = app.findLaunchPageEntry(identifier: "test-view-Basic Compliance Test")
         XCTAssertTrue(basicComplianceButton.waitForExistenceFast(timeout: 3.0), "Basic Compliance Test button should exist")
         basicComplianceButton.tap()
         
@@ -158,7 +158,7 @@ final class BasicAutomaticComplianceUITests: XCTestCase {
     func testBasicAutomaticCompliance_LabelIsReadable() throws {
         // Given: App is launched and ready (from setUp)
         // Navigate to Basic Compliance Test view
-        let basicComplianceButton = app.buttons["test-view-Basic Compliance Test"]
+        let basicComplianceButton = app.findLaunchPageEntry(identifier: "test-view-Basic Compliance Test")
         XCTAssertTrue(basicComplianceButton.waitForExistenceFast(timeout: 3.0), "Basic Compliance Test button should exist")
         basicComplianceButton.tap()
         
@@ -192,7 +192,7 @@ final class BasicAutomaticComplianceUITests: XCTestCase {
     func testTextBasicAutomaticCompliance_IdentifierIsFindable() throws {
         // Given: App is launched and ready (from setUp)
         // Navigate to Basic Compliance Test view
-        let basicComplianceButton = app.buttons["test-view-Basic Compliance Test"]
+        let basicComplianceButton = app.findLaunchPageEntry(identifier: "test-view-Basic Compliance Test")
         XCTAssertTrue(basicComplianceButton.waitForExistenceFast(timeout: 3.0), "Basic Compliance Test button should exist")
         basicComplianceButton.tap()
         
@@ -232,7 +232,7 @@ final class BasicAutomaticComplianceUITests: XCTestCase {
     func testTextBasicAutomaticCompliance_LabelIsReadable() throws {
         // Given: App is launched and ready (from setUp)
         // Navigate to Basic Compliance Test view
-        let basicComplianceButton = app.buttons["test-view-Basic Compliance Test"]
+        let basicComplianceButton = app.findLaunchPageEntry(identifier: "test-view-Basic Compliance Test")
         XCTAssertTrue(basicComplianceButton.waitForExistenceFast(timeout: 3.0), "Basic Compliance Test button should exist")
         basicComplianceButton.tap()
         
@@ -267,7 +267,7 @@ final class BasicAutomaticComplianceUITests: XCTestCase {
     func testIdentifierSanitization_SpacesAndUppercase() throws {
         // Given: App is launched and ready (from setUp)
         // Navigate to Basic Compliance Test view
-        let basicComplianceButton = app.buttons["test-view-Basic Compliance Test"]
+        let basicComplianceButton = app.findLaunchPageEntry(identifier: "test-view-Basic Compliance Test")
         XCTAssertTrue(basicComplianceButton.waitForExistenceFast(timeout: 3.0), "Basic Compliance Test button should exist")
         basicComplianceButton.tap()
         
@@ -300,7 +300,7 @@ final class BasicAutomaticComplianceUITests: XCTestCase {
     func testIdentifierSanitization_SpecialCharacters() throws {
         // Given: App is launched and ready (from setUp)
         // Navigate to Basic Compliance Test view
-        let basicComplianceButton = app.buttons["test-view-Basic Compliance Test"]
+        let basicComplianceButton = app.findLaunchPageEntry(identifier: "test-view-Basic Compliance Test")
         XCTAssertTrue(basicComplianceButton.waitForExistenceFast(timeout: 3.0), "Basic Compliance Test button should exist")
         basicComplianceButton.tap()
         
@@ -339,7 +339,7 @@ final class BasicAutomaticComplianceUITests: XCTestCase {
     func testImageBasicAutomaticCompliance_IdentifierIsFindable() throws {
         // Given: App is launched and ready (from setUp)
         // Navigate to Basic Compliance Test view
-        let basicComplianceButton = app.buttons["test-view-Basic Compliance Test"]
+        let basicComplianceButton = app.findLaunchPageEntry(identifier: "test-view-Basic Compliance Test")
         XCTAssertTrue(basicComplianceButton.waitForExistenceFast(timeout: 3.0), "Basic Compliance Test button should exist")
         basicComplianceButton.tap()
         

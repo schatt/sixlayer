@@ -48,7 +48,7 @@ final class Layer1AccessibilityUITests: XCTestCase {
             }
         }
         
-        // Launch the test app
+        // Launch the test app only. Each test expands its own sub menu once, then runs all asserts.
         nonisolated(unsafe) let instance = self
         MainActor.assumeIsolated {
             var localApp: XCUIApplication!
@@ -56,7 +56,6 @@ final class Layer1AccessibilityUITests: XCTestCase {
             localApp.launchWithOptimizations()
             instance.app = localApp
             
-            // Wait for app to be ready
             XCTAssertTrue(localApp.waitForReady(timeout: 5.0), "App should be ready for testing")
         }
     }
@@ -68,36 +67,40 @@ final class Layer1AccessibilityUITests: XCTestCase {
         }
     }
     
-    // MARK: - Helper Methods
+    // MARK: - Helper Methods (expand once per test, then select category for asserts)
     
-    /// Navigate to Layer 1 examples and select a category
+    /// Expand the Layer 1 examples section (toggle). Called once at start of test.
     @MainActor
-    private func navigateToLayer1Category(_ categoryName: String) throws {
-        // Ensure app is ready
+    private func expandLayer1ExamplesIfNeeded() {
         guard app.waitForReady(timeout: 5.0) else {
             XCTFail("App should be ready for testing")
             return
         }
-        
-        // Tap the "Show Layer 1 Examples" button
-        let toggleButton = app.buttons["layer1-examples-toggle"]
+        let toggleButton = app.findElement(byIdentifier: "layer1-examples-toggle",
+                                          primaryType: .button,
+                                          secondaryTypes: [.cell, .other, .any]) ?? app.buttons["layer1-examples-toggle"]
         guard toggleButton.waitForExistenceFast(timeout: 3.0) else {
             XCTFail("Layer 1 examples toggle button should exist")
             return
         }
-        // Check if already expanded (value == "1" means expanded)
         if (toggleButton.value as? String) != "1" {
             toggleButton.tap()
         }
-        
-        // Wait for picker to appear
+        let picker = app.pickers.firstMatch
+        guard picker.waitForExistenceFast(timeout: 2.0) else {
+            XCTFail("Category picker should exist after expanding Layer 1")
+            return
+        }
+    }
+    
+    /// Select a Layer 1 category (assumes Layer 1 section already expanded in this test).
+    @MainActor
+    private func selectLayer1Category(_ categoryName: String) {
         let picker = app.pickers.firstMatch
         guard picker.waitForExistenceFast(timeout: 2.0) else {
             XCTFail("Category picker should exist")
             return
         }
-        
-        // Select the category
         picker.tap()
         let categoryOption = app.menuItems[categoryName]
         guard categoryOption.waitForExistenceFast(timeout: 2.0) else {
@@ -105,8 +108,6 @@ final class Layer1AccessibilityUITests: XCTestCase {
             return
         }
         categoryOption.tap()
-        
-        // Wait for examples to load
         sleep(1)
     }
     
@@ -138,352 +139,131 @@ final class Layer1AccessibilityUITests: XCTestCase {
                       "\(functionName) should have correct accessibility trait. Expected: \(expectedType), Found: \(element.elementType)")
     }
     
-    // MARK: - Data Presentation Tests
-    
+    // MARK: - One test: expand Layer 1 once, then all asserts for content under Layer 1
+
+    /// App launches (setUp). This test expands Layer 1 once, then runs all asserts for Layer 1 content.
     @MainActor
-    func testDataPresentationFunctions_AccessibilityIdentifiers() throws {
-        // Given: Navigate to data presentation examples
-        try navigateToLayer1Category("Data Presentation")
-        
-        // When: Query for elements
-        // Then: All should have accessibility identifiers
-        
-        // Test item collection
-        let itemCollectionElements = app.descendants(matching: .any).matching(identifier: "platformPresentItemCollection_L1")
-        if itemCollectionElements.count > 0 {
-            for i in 0..<min(itemCollectionElements.count, 5) { // Test first 5
-                let element = itemCollectionElements.element(boundBy: i)
-                if element.exists {
-                    verifyAccessibilityIdentifier(element, functionName: "platformPresentItemCollection_L1")
-                }
-            }
-        }
-        
-        // Test numeric data
-        let numericDataElements = app.descendants(matching: .any).matching(identifier: "platformPresentNumericData_L1")
-        if numericDataElements.count > 0 {
-            for i in 0..<min(numericDataElements.count, 3) {
-                let element = numericDataElements.element(boundBy: i)
-                if element.exists {
-                    verifyAccessibilityIdentifier(element, functionName: "platformPresentNumericData_L1")
-                }
-            }
-        }
-        
-        // Test form data
-        let formDataElements = app.descendants(matching: .any).matching(identifier: "platformPresentFormData_L1")
-        if formDataElements.count > 0 {
-            for i in 0..<min(formDataElements.count, 3) {
-                let element = formDataElements.element(boundBy: i)
-                if element.exists {
-                    verifyAccessibilityIdentifier(element, functionName: "platformPresentFormData_L1")
-                }
-            }
-        }
-    }
-    
-    @MainActor
-    func testDataPresentationFunctions_AccessibilityLabels() throws {
-        // Given: Navigate to data presentation examples
-        try navigateToLayer1Category("Data Presentation")
-        
-        // When: Query for interactive elements
-        // Then: All should have accessibility labels
-        
-        let buttons = app.buttons.allElementsBoundByIndex
-        var labeledButtons = 0
-        for button in buttons {
-            if !button.label.isEmpty {
-                labeledButtons += 1
-            }
-        }
-        XCTAssertTrue(labeledButtons > 0 || buttons.count == 0,
-                     "Data presentation buttons should have accessibility labels. Found \(labeledButtons) labeled out of \(buttons.count)")
-        
-        let textFields = app.textFields.allElementsBoundByIndex
-        var labeledTextFields = 0
-        for textField in textFields {
-            if !textField.label.isEmpty {
-                labeledTextFields += 1
-            }
-        }
-        XCTAssertTrue(labeledTextFields > 0 || textFields.count == 0,
-                     "Data presentation text fields should have accessibility labels. Found \(labeledTextFields) labeled out of \(textFields.count)")
-    }
-    
-    // MARK: - Navigation Tests
-    
-    @MainActor
-    func testNavigationFunctions_AccessibilityIdentifiers() throws {
-        // Given: Navigate to navigation examples
-        try navigateToLayer1Category("Navigation")
-        
-        // When: Query for navigation elements
-        // Then: All should have accessibility identifiers
-        
-        let navElements = app.descendants(matching: .any).matching(identifier: "platformPresentNavigationStack_L1")
-        if navElements.count > 0 {
-            for i in 0..<min(navElements.count, 3) {
-                let element = navElements.element(boundBy: i)
-                if element.exists {
-                    verifyAccessibilityIdentifier(element, functionName: "platformPresentNavigationStack_L1")
-                }
-            }
-        }
-        
-        let appNavElements = app.descendants(matching: .any).matching(identifier: "platformPresentAppNavigation_L1")
-        if appNavElements.count > 0 {
-            for i in 0..<min(appNavElements.count, 2) {
-                let element = appNavElements.element(boundBy: i)
-                if element.exists {
-                    verifyAccessibilityIdentifier(element, functionName: "platformPresentAppNavigation_L1")
-                }
-            }
-        }
-    }
-    
-    // MARK: - Photo Tests
-    
-    @MainActor
-    func testPhotoFunctions_AccessibilityIdentifiers() throws {
-        // Given: Navigate to photo examples
-        try navigateToLayer1Category("Photos")
-        
-        // When: Query for photo elements
-        // Then: All should have accessibility identifiers
-        
-        let photoCaptureElements = app.descendants(matching: .any).matching(identifier: "platformPhotoCapture_L1")
-        if photoCaptureElements.count > 0 {
-            for i in 0..<min(photoCaptureElements.count, 2) {
-                let element = photoCaptureElements.element(boundBy: i)
-                if element.exists {
-                    verifyAccessibilityIdentifier(element, functionName: "platformPhotoCapture_L1")
-                }
-            }
-        }
-        
-        let photoSelectionElements = app.descendants(matching: .any).matching(identifier: "platformPhotoSelection_L1")
-        if photoSelectionElements.count > 0 {
-            for i in 0..<min(photoSelectionElements.count, 2) {
-                let element = photoSelectionElements.element(boundBy: i)
-                if element.exists {
-                    verifyAccessibilityIdentifier(element, functionName: "platformPhotoSelection_L1")
-                }
-            }
-        }
-    }
-    
-    // MARK: - Security Tests
-    
-    @MainActor
-    func testSecurityFunctions_AccessibilityIdentifiers() throws {
-        // Given: Navigate to security examples
-        try navigateToLayer1Category("Security")
-        
-        // When: Query for security elements
-        // Then: All should have accessibility identifiers
-        
-        let secureContentElements = app.descendants(matching: .any).matching(identifier: "platformPresentSecureContent_L1")
-        if secureContentElements.count > 0 {
-            for i in 0..<min(secureContentElements.count, 2) {
-                let element = secureContentElements.element(boundBy: i)
-                if element.exists {
-                    verifyAccessibilityIdentifier(element, functionName: "platformPresentSecureContent_L1")
-                }
-            }
-        }
-        
-        let secureTextFieldElements = app.descendants(matching: .any).matching(identifier: "platformPresentSecureTextField_L1")
-        if secureTextFieldElements.count > 0 {
-            for i in 0..<min(secureTextFieldElements.count, 2) {
-                let element = secureTextFieldElements.element(boundBy: i)
-                if element.exists {
-                    verifyAccessibilityIdentifier(element, functionName: "platformPresentSecureTextField_L1")
-                    verifyAccessibilityLabel(element, functionName: "platformPresentSecureTextField_L1")
-                }
-            }
-        }
-    }
-    
-    // MARK: - OCR Tests
-    
-    @MainActor
-    func testOCRFunctions_AccessibilityIdentifiers() throws {
-        // Given: Navigate to OCR examples
-        try navigateToLayer1Category("OCR")
-        
-        // When: Query for OCR elements
-        // Then: All should have accessibility identifiers
-        
-        let ocrDisambiguationElements = app.descendants(matching: .any).matching(identifier: "platformOCRWithDisambiguation_L1")
-        if ocrDisambiguationElements.count > 0 {
-            for i in 0..<min(ocrDisambiguationElements.count, 2) {
-                let element = ocrDisambiguationElements.element(boundBy: i)
-                if element.exists {
-                    verifyAccessibilityIdentifier(element, functionName: "platformOCRWithDisambiguation_L1")
-                }
-            }
-        }
-        
-        let ocrVisualCorrectionElements = app.descendants(matching: .any).matching(identifier: "platformOCRWithVisualCorrection_L1")
-        if ocrVisualCorrectionElements.count > 0 {
-            for i in 0..<min(ocrVisualCorrectionElements.count, 2) {
-                let element = ocrVisualCorrectionElements.element(boundBy: i)
-                if element.exists {
-                    verifyAccessibilityIdentifier(element, functionName: "platformOCRWithVisualCorrection_L1")
-                }
-            }
-        }
-    }
-    
-    // MARK: - Notification Tests
-    
-    @MainActor
-    func testNotificationFunctions_AccessibilityIdentifiers() throws {
-        // Given: Navigate to notification examples
-        try navigateToLayer1Category("Notifications")
-        
-        // When: Query for notification elements
-        // Then: All should have accessibility identifiers
-        
-        let alertElements = app.descendants(matching: .any).matching(identifier: "platformPresentAlert_L1")
-        if alertElements.count > 0 {
-            for i in 0..<min(alertElements.count, 2) {
-                let element = alertElements.element(boundBy: i)
-                if element.exists {
-                    verifyAccessibilityIdentifier(element, functionName: "platformPresentAlert_L1")
-                }
-            }
-        }
-    }
-    
-    // MARK: - Internationalization Tests
-    
-    @MainActor
-    func testInternationalizationFunctions_AccessibilityIdentifiers() throws {
-        // Given: Navigate to internationalization examples
-        try navigateToLayer1Category("Internationalization")
-        
-        // When: Query for internationalization elements
-        // Then: All should have accessibility identifiers
-        
-        let localizedTextElements = app.descendants(matching: .any).matching(identifier: "platformPresentLocalizedText_L1")
-        if localizedTextElements.count > 0 {
-            for i in 0..<min(localizedTextElements.count, 3) {
-                let element = localizedTextElements.element(boundBy: i)
-                if element.exists {
-                    verifyAccessibilityIdentifier(element, functionName: "platformPresentLocalizedText_L1")
-                }
-            }
-        }
-        
-        let localizedTextFieldElements = app.descendants(matching: .any).matching(identifier: "platformLocalizedTextField_L1")
-        if localizedTextFieldElements.count > 0 {
-            for i in 0..<min(localizedTextFieldElements.count, 2) {
-                let element = localizedTextFieldElements.element(boundBy: i)
-                if element.exists {
-                    verifyAccessibilityIdentifier(element, functionName: "platformLocalizedTextField_L1")
-                    verifyAccessibilityLabel(element, functionName: "platformLocalizedTextField_L1")
-                }
-            }
-        }
-    }
-    
-    // MARK: - Data Analysis Tests
-    
-    @MainActor
-    func testDataAnalysisFunctions_AccessibilityIdentifiers() throws {
-        // Given: Navigate to data analysis examples
-        try navigateToLayer1Category("Data Analysis")
-        
-        // When: Query for data analysis elements
-        // Then: All should have accessibility identifiers
-        
-        let analyzeElements = app.descendants(matching: .any).matching(identifier: "platformAnalyzeDataFrame_L1")
-        if analyzeElements.count > 0 {
-            for i in 0..<min(analyzeElements.count, 2) {
-                let element = analyzeElements.element(boundBy: i)
-                if element.exists {
-                    verifyAccessibilityIdentifier(element, functionName: "platformAnalyzeDataFrame_L1")
-                }
-            }
-        }
-        
-        let compareElements = app.descendants(matching: .any).matching(identifier: "platformCompareDataFrames_L1")
-        if compareElements.count > 0 {
-            for i in 0..<min(compareElements.count, 2) {
-                let element = compareElements.element(boundBy: i)
-                if element.exists {
-                    verifyAccessibilityIdentifier(element, functionName: "platformCompareDataFrames_L1")
-                }
-            }
-        }
-    }
-    
-    // MARK: - VoiceOver Compatibility Tests
-    
-    @MainActor
-    func testAllLayer1Functions_VoiceOverCompatible() throws {
-        // Given: App is launched and ready
-        
-        // When: Testing VoiceOver compatibility for all Layer 1 functions
-        // Then: All interactive elements should be discoverable and readable
-        
-        // Navigate through all categories
-        let categories = ["Data Presentation", "Navigation", "Photos", "Security", "OCR", 
-                         "Notifications", "Internationalization", "Data Analysis"]
-        
+    func testLayer1Examples_AccessibilityIdentifiersLabelsAndTraits() throws {
+        expandLayer1ExamplesIfNeeded()
+
+        let categories = ["Data Presentation", "Navigation", "Photos", "Security", "OCR",
+                          "Notifications", "Internationalization", "Data Analysis"]
+
         for category in categories {
-            try navigateToLayer1Category(category)
-            
-            // Verify all buttons are discoverable (have identifier or label)
-            let buttons = app.buttons.allElementsBoundByIndex
-            for button in buttons {
-                let hasIdentifier = !button.identifier.isEmpty
-                let hasLabel = !button.label.isEmpty
-                XCTAssertTrue(hasIdentifier || hasLabel,
-                             "Button in \(category) should be discoverable for VoiceOver. Identifier: '\(button.identifier)', Label: '\(button.label)'")
-            }
-            
-            // Verify all text fields are discoverable
-            let textFields = app.textFields.allElementsBoundByIndex
-            for textField in textFields {
-                let hasIdentifier = !textField.identifier.isEmpty
-                let hasLabel = !textField.label.isEmpty
-                XCTAssertTrue(hasIdentifier || hasLabel,
-                             "Text field in \(category) should be discoverable for VoiceOver. Identifier: '\(textField.identifier)', Label: '\(textField.label)'")
-            }
-        }
-    }
-    
-    // MARK: - Switch Control Compatibility Tests
-    
-    @MainActor
-    func testAllLayer1Functions_SwitchControlCompatible() throws {
-        // Given: App is launched and ready
-        
-        // When: Testing Switch Control compatibility
-        // Then: All interactive elements should have correct traits
-        
-        // Navigate through all categories
-        let categories = ["Data Presentation", "Navigation", "Photos", "Security", "OCR", 
-                         "Notifications", "Internationalization", "Data Analysis"]
-        
-        for category in categories {
-            try navigateToLayer1Category(category)
-            
-            // Verify buttons have button trait
-            let buttons = app.buttons.allElementsBoundByIndex
-            for button in buttons {
-                XCTAssertTrue(button.elementType == .button,
-                             "Button in \(category) should have button trait for Switch Control")
-            }
-            
-            // Verify text fields have text field trait
-            let textFields = app.textFields.allElementsBoundByIndex
-            for textField in textFields {
-                XCTAssertTrue(textField.elementType == .textField,
-                             "Text field in \(category) should have text field trait for Switch Control")
+            selectLayer1Category(category)
+
+            // Category-specific identifier asserts
+            switch category {
+            case "Data Presentation":
+                let itemCollection = app.descendants(matching: .any).matching(identifier: "platformPresentItemCollection_L1")
+                for i in 0..<min(itemCollection.count, 5) {
+                    let el = itemCollection.element(boundBy: i)
+                    if el.exists { verifyAccessibilityIdentifier(el, functionName: "platformPresentItemCollection_L1") }
+                }
+                let numericData = app.descendants(matching: .any).matching(identifier: "platformPresentNumericData_L1")
+                for i in 0..<min(numericData.count, 3) {
+                    let el = numericData.element(boundBy: i)
+                    if el.exists { verifyAccessibilityIdentifier(el, functionName: "platformPresentNumericData_L1") }
+                }
+                let formData = app.descendants(matching: .any).matching(identifier: "platformPresentFormData_L1")
+                for i in 0..<min(formData.count, 3) {
+                    let el = formData.element(boundBy: i)
+                    if el.exists { verifyAccessibilityIdentifier(el, functionName: "platformPresentFormData_L1") }
+                }
+                var labeledButtons = 0
+                for b in app.buttons.allElementsBoundByIndex { if !b.label.isEmpty { labeledButtons += 1 } }
+                XCTAssertTrue(labeledButtons > 0 || app.buttons.count == 0, "Data presentation: buttons should have labels")
+                var labeledFields = 0
+                for f in app.textFields.allElementsBoundByIndex { if !f.label.isEmpty { labeledFields += 1 } }
+                XCTAssertTrue(labeledFields > 0 || app.textFields.count == 0, "Data presentation: text fields should have labels")
+
+            case "Navigation":
+                let navStack = app.descendants(matching: .any).matching(identifier: "platformPresentNavigationStack_L1")
+                for i in 0..<min(navStack.count, 3) {
+                    let el = navStack.element(boundBy: i)
+                    if el.exists { verifyAccessibilityIdentifier(el, functionName: "platformPresentNavigationStack_L1") }
+                }
+                let appNav = app.descendants(matching: .any).matching(identifier: "platformPresentAppNavigation_L1")
+                for i in 0..<min(appNav.count, 2) {
+                    let el = appNav.element(boundBy: i)
+                    if el.exists { verifyAccessibilityIdentifier(el, functionName: "platformPresentAppNavigation_L1") }
+                }
+
+            case "Photos":
+                let photoCapture = app.descendants(matching: .any).matching(identifier: "platformPhotoCapture_L1")
+                for i in 0..<min(photoCapture.count, 2) {
+                    let el = photoCapture.element(boundBy: i)
+                    if el.exists { verifyAccessibilityIdentifier(el, functionName: "platformPhotoCapture_L1") }
+                }
+                let photoSelection = app.descendants(matching: .any).matching(identifier: "platformPhotoSelection_L1")
+                for i in 0..<min(photoSelection.count, 2) {
+                    let el = photoSelection.element(boundBy: i)
+                    if el.exists { verifyAccessibilityIdentifier(el, functionName: "platformPhotoSelection_L1") }
+                }
+
+            case "Security":
+                let secureContent = app.descendants(matching: .any).matching(identifier: "platformPresentSecureContent_L1")
+                for i in 0..<min(secureContent.count, 2) {
+                    let el = secureContent.element(boundBy: i)
+                    if el.exists { verifyAccessibilityIdentifier(el, functionName: "platformPresentSecureContent_L1") }
+                }
+                let secureField = app.descendants(matching: .any).matching(identifier: "platformPresentSecureTextField_L1")
+                for i in 0..<min(secureField.count, 2) {
+                    let el = secureField.element(boundBy: i)
+                    if el.exists {
+                        verifyAccessibilityIdentifier(el, functionName: "platformPresentSecureTextField_L1")
+                        verifyAccessibilityLabel(el, functionName: "platformPresentSecureTextField_L1")
+                    }
+                }
+
+            case "OCR":
+                let ocrDisambiguation = app.descendants(matching: .any).matching(identifier: "platformOCRWithDisambiguation_L1")
+                for i in 0..<min(ocrDisambiguation.count, 2) {
+                    let el = ocrDisambiguation.element(boundBy: i)
+                    if el.exists { verifyAccessibilityIdentifier(el, functionName: "platformOCRWithDisambiguation_L1") }
+                }
+                let ocrVisual = app.descendants(matching: .any).matching(identifier: "platformOCRWithVisualCorrection_L1")
+                for i in 0..<min(ocrVisual.count, 2) {
+                    let el = ocrVisual.element(boundBy: i)
+                    if el.exists { verifyAccessibilityIdentifier(el, functionName: "platformOCRWithVisualCorrection_L1") }
+                }
+
+            case "Notifications":
+                let alerts = app.descendants(matching: .any).matching(identifier: "platformPresentAlert_L1")
+                for i in 0..<min(alerts.count, 2) {
+                    let el = alerts.element(boundBy: i)
+                    if el.exists { verifyAccessibilityIdentifier(el, functionName: "platformPresentAlert_L1") }
+                }
+
+            case "Internationalization":
+                let localizedText = app.descendants(matching: .any).matching(identifier: "platformPresentLocalizedText_L1")
+                for i in 0..<min(localizedText.count, 3) {
+                    let el = localizedText.element(boundBy: i)
+                    if el.exists { verifyAccessibilityIdentifier(el, functionName: "platformPresentLocalizedText_L1") }
+                }
+                let localizedField = app.descendants(matching: .any).matching(identifier: "platformLocalizedTextField_L1")
+                for i in 0..<min(localizedField.count, 2) {
+                    let el = localizedField.element(boundBy: i)
+                    if el.exists {
+                        verifyAccessibilityIdentifier(el, functionName: "platformLocalizedTextField_L1")
+                        verifyAccessibilityLabel(el, functionName: "platformLocalizedTextField_L1")
+                    }
+                }
+
+            case "Data Analysis":
+                let analyze = app.descendants(matching: .any).matching(identifier: "platformAnalyzeDataFrame_L1")
+                for i in 0..<min(analyze.count, 2) {
+                    let el = analyze.element(boundBy: i)
+                    if el.exists { verifyAccessibilityIdentifier(el, functionName: "platformAnalyzeDataFrame_L1") }
+                }
+                let compare = app.descendants(matching: .any).matching(identifier: "platformCompareDataFrames_L1")
+                for i in 0..<min(compare.count, 2) {
+                    let el = compare.element(boundBy: i)
+                    if el.exists { verifyAccessibilityIdentifier(el, functionName: "platformCompareDataFrames_L1") }
+                }
+
+            default:
+                break
             }
         }
     }

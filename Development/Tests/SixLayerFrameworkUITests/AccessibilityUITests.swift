@@ -150,7 +150,7 @@ final class AccessibilityUITests: XCTestCase {
     func testControlDirectAccessibilityIdentifier() throws {
         // Given: App is launched and ready (from setUp)
         // Navigate to Control Test view
-        let controlTestButton = app.buttons["test-view-Control Test"]
+        let controlTestButton = app.findLaunchPageEntry(identifier: "test-view-Control Test")
         XCTAssertTrue(controlTestButton.waitForExistenceFast(timeout: 3.0), "Control Test button should exist")
         controlTestButton.tap()
         
@@ -184,7 +184,7 @@ final class AccessibilityUITests: XCTestCase {
     func testTextAccessibilityIdentifierGenerated() throws {
         // Given: App is launched and ready (from setUp)
         // Navigate to Text Test view
-        let textTestButton = app.buttons["test-view-Text Test"]
+        let textTestButton = app.findLaunchPageEntry(identifier: "test-view-Text Test")
         XCTAssertTrue(textTestButton.waitForExistenceFast(timeout: 3.0), "Text Test button should exist")
         textTestButton.tap()
         
@@ -226,7 +226,7 @@ final class AccessibilityUITests: XCTestCase {
     func testButtonAccessibilityIdentifierGenerated() throws {
         // Given: App is launched and ready (from setUp)
         // Navigate to Button Test view
-        let buttonTestButton = app.buttons["test-view-Button Test"]
+        let buttonTestButton = app.findLaunchPageEntry(identifier: "test-view-Button Test")
         XCTAssertTrue(buttonTestButton.waitForExistenceFast(timeout: 3.0), "Button Test button should exist")
         buttonTestButton.tap()
         
@@ -270,7 +270,7 @@ final class AccessibilityUITests: XCTestCase {
     func testPlatformPickerAccessibilityIdentifiers() throws {
         // Given: App is launched and ready (from setUp)
         // Navigate to Platform Picker Test view
-        let pickerTestButton = app.buttons["test-view-Platform Picker Test"]
+        let pickerTestButton = app.findLaunchPageEntry(identifier: "test-view-Platform Picker Test")
         XCTAssertTrue(pickerTestButton.waitForExistenceFast(timeout: 3.0), "Platform Picker Test button should exist")
         pickerTestButton.tap()
         

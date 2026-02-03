@@ -81,29 +81,12 @@ final class Layer3AccessibilityUITests: XCTestCase {
             return
         }
         
-        // Tap the "Layer 3 Strategy Examples" link
-        // NavigationLink might be exposed as button, staticText, or other element
-        // Try multiple strategies to find the element
-        var layer3Link: XCUIElement?
+        // Tap the "Layer 3 Strategy Examples" link (List row on iOS may be .cell)
+        let layer3Link = app.findElement(byIdentifier: "layer3-examples-link",
+                                         primaryType: .button,
+                                         secondaryTypes: [.cell, .staticText, .other, .any])
         
-        // Strategy 1: Try as button
-        let buttonLink = app.buttons["layer3-examples-link"]
-        if buttonLink.waitForExistenceFast(timeout: 2.0) {
-            layer3Link = buttonLink
-        } else {
-            // Strategy 2: Try as staticText (NavigationLink label)
-            let textLink = app.staticTexts["Layer 3 Strategy Examples"]
-            if textLink.waitForExistenceFast(timeout: 2.0) {
-                layer3Link = textLink
-            } else {
-                // Strategy 3: Try findElement helper
-                layer3Link = app.findElement(byIdentifier: "layer3-examples-link",
-                                            primaryType: .button,
-                                            secondaryTypes: [.staticText, .other, .any])
-            }
-        }
-        
-        guard let link = layer3Link else {
+        guard let link = layer3Link, link.waitForExistenceFast(timeout: 3.0) else {
             XCTFail("Layer 3 examples link should exist")
             return
         }
