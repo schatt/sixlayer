@@ -587,6 +587,16 @@ schemes:
       targets:
         - SixLayerFrameworkRealUITests_macOS
 
+  SLF-iOS-UITests:
+    build:
+      targets:
+        SixLayerFramework_iOS: all
+        SixLayerFrameworkTestApp_iOS: all
+        SixLayerFrameworkRealUITests_iOS: all
+    test:
+      targets:
+        - SixLayerFrameworkRealUITests_iOS
+
   SLF-macOS-ViewInspectorTests:
     build:
       targets:
