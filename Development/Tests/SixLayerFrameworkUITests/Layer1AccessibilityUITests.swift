@@ -85,23 +85,43 @@ final class Layer1AccessibilityUITests: XCTestCase {
         }
         if (toggleButton.value as? String) != "1" {
             toggleButton.tap()
+            // Allow SwiftUI to lay out expanded section; LazyVStack content may need a moment.
+            sleep(1)
+            // Scroll down so Layer 1 content (picker) is in view; LazyVStack may not render off-screen.
+            app.swipeUp()
+            sleep(1)
         }
+        // On iOS, .menu-style Picker can expose as picker or as a button; try both.
         let picker = app.pickers.firstMatch
-        guard picker.waitForExistenceFast(timeout: 2.0) else {
+        let categoryButton = app.buttons["Category"]
+        let categorySelectButton = app.buttons["Select Category"]
+        guard picker.waitForExistenceFast(timeout: 2.0)
+            || categoryButton.waitForExistenceFast(timeout: 2.0)
+            || categorySelectButton.waitForExistenceFast(timeout: 2.0) else {
             XCTFail("Category picker should exist after expanding Layer 1")
             return
         }
     }
     
     /// Select a Layer 1 category (assumes Layer 1 section already expanded in this test).
+    /// On iOS, .menu-style Picker may expose as picker or as a button; tap whichever exists to open menu.
     @MainActor
     private func selectLayer1Category(_ categoryName: String) {
         let picker = app.pickers.firstMatch
-        guard picker.waitForExistenceFast(timeout: 2.0) else {
+        let categoryButton = app.buttons["Category"]
+        let categorySelectButton = app.buttons["Select Category"]
+        let categoryControl: XCUIElement
+        if picker.waitForExistenceFast(timeout: 1.0) {
+            categoryControl = picker
+        } else if categoryButton.waitForExistenceFast(timeout: 1.0) {
+            categoryControl = categoryButton
+        } else if categorySelectButton.waitForExistenceFast(timeout: 1.0) {
+            categoryControl = categorySelectButton
+        } else {
             XCTFail("Category picker should exist")
             return
         }
-        picker.tap()
+        categoryControl.tap()
         let categoryOption = app.menuItems[categoryName]
         guard categoryOption.waitForExistenceFast(timeout: 2.0) else {
             XCTFail("Category '\(categoryName)' should exist in picker")
