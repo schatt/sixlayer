@@ -608,11 +608,12 @@ func platformListContainer<Content: View>(
 /// ```
 public func platformTextField(
     _ title: String,
-    text: Binding<String>
+    text: Binding<String>,
+    id: String? = nil
 ) -> some View {
     EmptyView().platformTextField(text: text, prompt: title)
         .automaticCompliance(
-            identifierName: sanitizeLabelText(title),  // Auto-generate identifierName from title
+            identifierName: id ?? sanitizeLabelText(title),
             identifierElementType: "TextField",
             accessibilityLabel: title,  // Issue #157: Auto-extract from title
             accessibilityHint: generateAccessibilityHintForTextField(prompt: title)  // Issue #165: Auto-generate hint
@@ -635,12 +636,13 @@ public func platformTextField(
 public func platformTextField(
     label: String? = nil,
     prompt: String,
-    text: Binding<String>
+    text: Binding<String>,
+    id: String? = nil
 ) -> some View {
     let identifierSource = label ?? prompt
     return EmptyView().platformTextField(text: text, prompt: prompt)
         .automaticCompliance(
-            identifierName: sanitizeLabelText(identifierSource),  // Auto-generate identifierName from label or prompt
+            identifierName: id ?? sanitizeLabelText(identifierSource),
             identifierElementType: "TextField",
             accessibilityLabel: label ?? prompt,  // Issue #157: Explicit label takes precedence, fallback to prompt
             accessibilityHint: generateAccessibilityHintForTextField(label: label, prompt: prompt)  // Issue #165: Auto-generate hint
@@ -694,11 +696,12 @@ public func platformTextField(
 public func platformTextField(
     _ title: String,
     text: Binding<String>,
-    axis: Axis
+    axis: Axis,
+    id: String? = nil
 ) -> some View {
     EmptyView().platformTextField(text: text, prompt: title, axis: axis)
         .automaticCompliance(
-            identifierName: sanitizeLabelText(title),  // Auto-generate identifierName from title
+            identifierName: id ?? sanitizeLabelText(title),
             identifierElementType: "TextField",
             accessibilityLabel: title,  // Issue #157: Auto-extract from title
             accessibilityHint: generateAccessibilityHintForTextField(prompt: title)  // Issue #165: Auto-generate hint
@@ -724,12 +727,13 @@ public func platformTextField(
     label: String? = nil,
     prompt: String,
     text: Binding<String>,
-    axis: Axis
+    axis: Axis,
+    id: String? = nil
 ) -> some View {
     let identifierSource = label ?? prompt
     return EmptyView().platformTextField(text: text, prompt: prompt, axis: axis)
         .automaticCompliance(
-            identifierName: sanitizeLabelText(identifierSource),  // Auto-generate identifierName from label or prompt
+            identifierName: id ?? sanitizeLabelText(identifierSource),
             identifierElementType: "TextField",
             accessibilityLabel: label ?? prompt,  // Issue #157: Explicit label takes precedence, fallback to prompt
             accessibilityHint: generateAccessibilityHintForTextField(label: label, prompt: prompt)  // Issue #165: Auto-generate hint
@@ -775,11 +779,12 @@ public func platformTextField(
 /// ```
 public func platformSecureField(
     _ title: String,
-    text: Binding<String>
+    text: Binding<String>,
+    id: String? = nil
 ) -> some View {
     return EmptyView().platformSecureTextField(text: text, prompt: title)
         .automaticCompliance(
-            identifierName: sanitizeLabelText(title),  // Auto-generate identifierName from title
+            identifierName: id ?? sanitizeLabelText(title),
             identifierElementType: "SecureField",
             accessibilityLabel: title,  // Issue #157: Auto-extract from title
             accessibilityHint: generateAccessibilityHintForTextField(prompt: title)  // Issue #165: Auto-generate hint
@@ -803,12 +808,13 @@ public func platformSecureField(
 public func platformSecureField(
     label: String? = nil,
     prompt: String,
-    text: Binding<String>
+    text: Binding<String>,
+    id: String? = nil
 ) -> some View {
     let identifierSource = label ?? prompt
     return EmptyView().platformSecureTextField(text: text, prompt: prompt)
         .automaticCompliance(
-            identifierName: sanitizeLabelText(identifierSource),  // Auto-generate identifierName from label or prompt
+            identifierName: id ?? sanitizeLabelText(identifierSource),
             identifierElementType: "SecureField",
             accessibilityLabel: label ?? prompt,  // Issue #157: Explicit label takes precedence, fallback to prompt
             accessibilityHint: generateAccessibilityHintForTextField(label: label, prompt: prompt)  // Issue #165: Auto-generate hint
@@ -852,13 +858,14 @@ public func platformSecureField(
 /// ```
 public func platformToggle(
     _ title: String,
-    isOn: Binding<Bool>
+    isOn: Binding<Bool>,
+    id: String? = nil
 ) -> some View {
     EmptyView().platformToggle(isOn: isOn) {
         Text(title)
     }
     .automaticCompliance(
-        identifierName: sanitizeLabelText(title),  // Auto-generate identifierName from title
+        identifierName: id ?? sanitizeLabelText(title),
         identifierElementType: "Toggle",
         accessibilityLabel: title,  // Issue #157: Auto-extract from title
         accessibilityHint: generateAccessibilityHintForToggle(label: title)  // Issue #165: Auto-generate hint
@@ -882,14 +889,15 @@ public func platformToggle(
 /// Note: This version uses the label as the accessibility label only. For visible text, use the original `platformToggle(_:isOn:)` function.
 public func platformToggle(
     label: String? = nil,
-    isOn: Binding<Bool>
+    isOn: Binding<Bool>,
+    id: String? = nil
 ) -> some View {
     let toggleLabel = label ?? "Toggle"
     return EmptyView().platformToggle(isOn: isOn) {
         Text(toggleLabel) // Use label as visible text if provided, fallback for Toggle requirement
     }
     .automaticCompliance(
-        identifierName: sanitizeLabelText(toggleLabel),  // Auto-generate identifierName from label
+        identifierName: id ?? sanitizeLabelText(toggleLabel),
         identifierElementType: "Toggle",
         accessibilityLabel: label,  // Issue #154: Parameter-based approach
         accessibilityHint: label != nil ? generateAccessibilityHintForToggle(label: label!) : nil  // Issue #165: Auto-generate hint
@@ -958,11 +966,12 @@ public func platformForm<Content: View>(
 /// ```
 public func platformTextEditor(
     _ prompt: String,
-    text: Binding<String>
+    text: Binding<String>,
+    id: String? = nil
 ) -> some View {
     EmptyView().platformTextEditor(text: text, prompt: prompt)
         .automaticCompliance(
-            identifierName: sanitizeLabelText(prompt),  // Auto-generate identifierName from prompt
+            identifierName: id ?? sanitizeLabelText(prompt),
             identifierElementType: "TextEditor",
             accessibilityLabel: prompt,  // Issue #157: Auto-extract from prompt
             accessibilityHint: generateAccessibilityHintForTextField(prompt: prompt)  // Issue #165: Auto-generate hint
@@ -986,12 +995,13 @@ public func platformTextEditor(
 public func platformTextEditor(
     label: String? = nil,
     prompt: String,
-    text: Binding<String>
+    text: Binding<String>,
+    id: String? = nil
 ) -> some View {
     let identifierSource = label ?? prompt
     return EmptyView().platformTextEditor(text: text, prompt: prompt)
         .automaticCompliance(
-            identifierName: sanitizeLabelText(identifierSource),  // Auto-generate identifierName from label or prompt
+            identifierName: id ?? sanitizeLabelText(identifierSource),
             identifierElementType: "TextEditor",
             accessibilityLabel: label ?? prompt,  // Issue #157: Explicit label takes precedence, fallback to prompt
             accessibilityHint: generateAccessibilityHintForTextField(label: label, prompt: prompt)  // Issue #165: Auto-generate hint
@@ -1160,6 +1170,7 @@ public func platformButton(
 /// ```
 public func platformButton(
     label: String? = nil,
+    id: String? = nil,
     action: @escaping () -> Void
 ) -> some View {
     let buttonLabel = label ?? "Button"
@@ -1167,7 +1178,8 @@ public func platformButton(
         Text(buttonLabel)
     }
     .automaticCompliance(
-        identifierName: sanitizeLabelText(buttonLabel),  // Auto-generate identifierName from label
+        identifierName: id ?? sanitizeLabelText(buttonLabel),
+        identifierElementType: "Button",
         accessibilityLabel: label  // Issue #154: Parameter-based approach
     )
 }
