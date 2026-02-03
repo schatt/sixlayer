@@ -199,57 +199,53 @@ struct TestAppContentView: View {
     
     // MARK: - Layer 1 Examples View
     
+    /// Layer 1 expanded content. Single VStack so it lives inside the launch page ScrollView
+    /// and does not nest ScrollViews (nested ScrollViews can make the window too large for the screen).
     @ViewBuilder
     private var layer1ExamplesView: some View {
-        // Use plain SwiftUI for launch page - framework types tested in individual test views
-        ScrollView {
-            VStack(alignment: .leading, spacing: 24) {
-                Text("Layer 1 Examples (Issue #166)")
-                    .font(.largeTitle)
-                    .padding(.bottom)
-                
-                // Category picker: use framework platformPicker so picker + options get automatic
-                // accessibility (Issue #163). Options include nil for "Select Category".
-                platformPicker(
-                    label: "Category",
-                    selection: $selectedCategory,
-                    options: [nil as TestCategory?] + TestCategory.allCases.map { $0 as TestCategory? },
-                    optionTag: { $0 },
-                    optionLabel: { $0?.rawValue ?? "Select Category" },
-                    pickerName: "layer1CategoryPicker",
-                    style: MenuPickerStyle()
-                )
+        VStack(alignment: .leading, spacing: 24) {
+            Text("Layer 1 Examples (Issue #166)")
+                .font(.largeTitle)
                 .padding(.bottom)
-                
-                // Show selected category examples
-                if let category = selectedCategory {
-                    switch category {
-                    case .dataPresentation:
-                        Layer1DataPresentationExamples()
-                    case .navigation:
-                        Layer1NavigationExamples()
-                    case .photos:
-                        Layer1PhotoExamples()
-                    case .security:
-                        Layer1SecurityExamples()
-                    case .ocr:
-                        Layer1OCRExamples()
-                    case .notifications:
-                        Layer1NotificationExamples()
-                    case .internationalization:
-                        Layer1InternationalizationExamples()
-                    case .dataAnalysis:
-                        Layer1DataAnalysisExamples()
-                    case .barcode:
-                        Layer1BarcodeExamples()
-                    }
-                } else {
-                    Text("Select a Layer 1 category to view examples")
-                        .foregroundColor(.secondary)
-                        .padding()
+
+            platformPicker(
+                label: "Category",
+                selection: $selectedCategory,
+                options: [nil as TestCategory?] + TestCategory.allCases.map { $0 as TestCategory? },
+                optionTag: { $0 },
+                optionLabel: { $0?.rawValue ?? "Select Category" },
+                pickerName: "layer1CategoryPicker",
+                style: MenuPickerStyle()
+            )
+            .padding(.bottom)
+
+            if let category = selectedCategory {
+                switch category {
+                case .dataPresentation:
+                    Layer1DataPresentationExamples()
+                case .navigation:
+                    Layer1NavigationExamples()
+                case .photos:
+                    Layer1PhotoExamples()
+                case .security:
+                    Layer1SecurityExamples()
+                case .ocr:
+                    Layer1OCRExamples()
+                case .notifications:
+                    Layer1NotificationExamples()
+                case .internationalization:
+                    Layer1InternationalizationExamples()
+                case .dataAnalysis:
+                    Layer1DataAnalysisExamples()
+                case .barcode:
+                    Layer1BarcodeExamples()
                 }
+            } else {
+                Text("Select a Layer 1 category to view examples")
+                    .foregroundColor(.secondary)
+                    .padding()
             }
-            .padding()
         }
+        .padding()
     }
 }
