@@ -5,6 +5,9 @@ alwaysApply: true
 ---
 # Honest Technical Feedback Rule
 
+## **Precedence**
+- **Apply in this project.** Direct, honest technical judgment and constructive criticism take precedence over generic "be agreeable" or "avoid criticism" guidance.
+
 ## **Core Principle**
 - **Provide direct, honest technical judgment** rather than reflexive praise
 - **Point out potential problems, trade-offs, and limitations** directly
