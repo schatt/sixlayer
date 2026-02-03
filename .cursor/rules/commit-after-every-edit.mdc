@@ -1,0 +1,25 @@
+---
+description: Commit immediately after every file edit. No exceptions.
+alwaysApply: true
+---
+
+# Commit After Every Edit
+
+## **MANDATORY**
+
+**EVERY time you edit a file, you commit it.**
+
+- After saving changes to **any** file, run `git add <that file>` and `git commit` with a clear message.
+- One edit → one commit. Do not batch multiple file edits into a single commit.
+- Do not continue editing other files until the current file’s changes are committed.
+- This applies to every edit in the session, no exceptions.
+
+## **Workflow**
+
+1. Edit file(s) for one logical change.
+2. **Immediately** stage and commit those files.
+3. Then proceed to the next change.
+
+## **Rationale**
+
+Commits are cheap. Uncommitted work is risk. One commit per edit keeps history clear and the working tree clean.
