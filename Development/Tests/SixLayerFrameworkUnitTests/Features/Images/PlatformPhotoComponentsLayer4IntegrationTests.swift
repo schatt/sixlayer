@@ -72,6 +72,18 @@ open class PlatformPhotoComponentsLayer4IntegrationTests: BaseTestClass {
         // Actual callback execution through view interaction requires integration tests
     }
     
+    /// BUSINESS PURPOSE: Ensure CameraView does not crash when camera is unavailable (e.g. iOS Simulator).
+    /// TESTING SCOPE: Issue #179 — guard in CameraView.makeUIViewController (isSourceTypeAvailable).
+    /// METHODOLOGY: Host the camera interface so makeUIViewController runs; without the guard this throws on Simulator.
+    #if os(iOS)
+    @Test @MainActor func testPlatformCameraInterface_DoesNotCrashWhenCameraUnavailable_Issue179() {
+        let cameraInterface = PlatformPhotoComponentsLayer4.platformCameraInterface_L4(onImageCaptured: { _ in })
+        // Hosting triggers makeUIViewController; on Simulator camera is unavailable — guard must use .photoLibrary.
+        let hosted = hostRootPlatformView(cameraInterface, forceLayout: false)
+        #expect(hosted != nil, "Camera interface should host without crashing when camera unavailable (Issue #179)")
+    }
+    #endif
+    
     /// BUSINESS PURPOSE: Test camera callback with real image data
     /// TESTING SCOPE: Tests that camera callbacks work with actual image data
     /// METHODOLOGY: Use real image data to test callback functionality
