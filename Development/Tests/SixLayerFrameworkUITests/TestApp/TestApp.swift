@@ -107,7 +107,7 @@ struct TestAppContentView: View {
                         }
                     }
                     .accessibilityIdentifier("test-view-\(testView.id)")
-                    .accessibilityElement(children: .contain)
+                    .accessibilityElement(children: .combine)
                 }
             }
             
@@ -118,7 +118,7 @@ struct TestAppContentView: View {
                     }
                 }
                 .accessibilityIdentifier("layer1-examples-toggle")
-                .accessibilityElement(children: .contain)
+                .accessibilityElement(children: .combine)
                 
                 if showLayer1Examples {
                     layer1ExamplesView
@@ -132,7 +132,7 @@ struct TestAppContentView: View {
                     }
                 }
                 .accessibilityIdentifier("layer2-examples-link")
-                .accessibilityElement(children: .contain)
+                .accessibilityElement(children: .combine)
             }
             
             Section("Layer 3 Examples (Issue #165)") {
@@ -142,7 +142,7 @@ struct TestAppContentView: View {
                     }
                 }
                 .accessibilityIdentifier("layer3-examples-link")
-                .accessibilityElement(children: .contain)
+                .accessibilityElement(children: .combine)
             }
             
             Section("Layer 4 Examples (Issue #165)") {
