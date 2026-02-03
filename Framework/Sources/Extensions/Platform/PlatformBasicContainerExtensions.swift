@@ -1103,35 +1103,44 @@ public func platformText(_ content: Text) -> Text {
     content
 }
 
-/// Drop-in replacement for SwiftUI's Button with simple label (auto-extracts accessibility label)
-/// Provides platform-specific button with automatic accessibility compliance
-/// Note: Button doesn't require @MainActor for creation
+/// Drop-in replacement for SwiftUI's Button with label and optional explicit accessibility identifier.
+/// When `id` is provided it is used as the accessibility identifier; when nil, an identifier is auto-derived from the label (sanitized).
 ///
 /// - Parameters:
-///   - label: The button label text (also used as accessibility label)
-///   - action: The action to perform when button is tapped
-/// - Returns: A platform-specific button with automatic accessibility compliance
+///   - label: The button label text (also used as accessibility label).
+///   - id: Optional explicit accessibility identifier; when nil, uses sanitizeLabelText(label).
+///   - action: The action to perform when button is tapped.
+/// - Returns: A platform-specific button with automatic accessibility compliance.
 ///
 /// ## Usage Example
 /// ```swift
-/// platformButton("Save") {
-///     save()
-/// }
+/// platformButton(label: "Test Button", id: "testButton") { }  // explicit id
+/// platformButton(label: "Save") { save() }                    // auto-derived id (e.g. "save")
 /// ```
+public func platformButton(
+    label: String,
+    id: String? = nil,
+    action: @escaping () -> Void
+) -> some View {
+    let identifierName = id ?? sanitizeLabelText(label)
+    return Button(action: action) {
+        Text(label)
+    }
+    .automaticCompliance(
+        identifierName: identifierName,
+        identifierElementType: "Button",
+        accessibilityLabel: label,
+        accessibilityHint: generateAccessibilityHintForButton(label: label),
+        accessibilityTraits: .isButton
+    )
+}
+
+/// Shorthand: platformButton with positional label (auto-derived identifier from label).
 public func platformButton(
     _ label: String,
     action: @escaping () -> Void
 ) -> some View {
-    Button(action: action) {
-        Text(label)
-    }
-    .automaticCompliance(
-        identifierName: sanitizeLabelText(label),  // Auto-generate identifierName from label
-        identifierElementType: "Button",
-        accessibilityLabel: label,  // Issue #157: Auto-extract from label parameter
-        accessibilityHint: generateAccessibilityHintForButton(label: label),  // Issue #165: Auto-generate hint
-        accessibilityTraits: .isButton  // Issue #165: Auto-add button trait
-    )
+    platformButton(label: label, id: nil, action: action)
 }
 
 /// Drop-in replacement for SwiftUI's Button with explicit accessibility label
