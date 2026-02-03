@@ -132,8 +132,13 @@ final class Layer1AccessibilityUITests: XCTestCase {
             return
         }
         categoryControl.tap()
-        // Menu/popover can take a moment to appear; wait for options to be in the accessibility tree.
-        sleep(2)
+        // Menu/popover can take a moment to appear; wait for any menu option so we know menu is visible.
+        let menuVisible = app.menuItems["Select Category"].waitForExistence(timeout: 3.0)
+            || app.staticTexts["Data Presentation"].waitForExistence(timeout: 2.0)
+            || app.buttons["Data Presentation"].waitForExistence(timeout: 2.0)
+        if !menuVisible {
+            sleep(2)
+        }
         let optionId = "SixLayer.main.ui.\(categoryName.replacingOccurrences(of: " ", with: "-").lowercased()).View"
         let menuOption = app.menuItems[categoryName]
         let buttonOption = app.buttons[categoryName]
@@ -141,7 +146,7 @@ final class Layer1AccessibilityUITests: XCTestCase {
         let cellOption = app.cells[categoryName]
 
         func findOption(timeout: TimeInterval = 2.0) -> XCUIElement? {
-            // Include .menuItem so iOS MenuPickerStyle options are found (Accessibility Inspector shows identifier on menu item).
+            // Include .menuItem so iOS MenuPickerStyle options are found.
             if let el = app.findElement(byIdentifier: optionId, primaryType: .button, secondaryTypes: [.menuItem, .cell, .other, .any], timeout: timeout), el.waitForExistence(timeout: timeout) {
                 return el
             }
@@ -149,19 +154,21 @@ final class Layer1AccessibilityUITests: XCTestCase {
             if buttonOption.waitForExistence(timeout: 1.0) { return buttonOption }
             if cellOption.waitForExistence(timeout: 1.0) { return cellOption }
             if textOption.waitForExistence(timeout: 1.0) { return textOption }
+            // Fallback: any descendant with this identifier or label (menu may be in popover hierarchy).
+            let predicate = NSPredicate(format: "identifier == %@ OR label == %@", optionId, categoryName)
+            let byPredicate = app.descendants(matching: .any).matching(predicate).firstMatch
+            if byPredicate.waitForExistence(timeout: 1.0) { return byPredicate }
             return nil
         }
 
         var option: XCUIElement?
         option = findOption(timeout: 3.0)
         if option == nil {
-            // Menu may need scrolling for options below the fold (e.g. Navigation).
             app.swipeUp()
             sleep(1)
             option = findOption(timeout: 2.0)
         }
         if option == nil {
-            // Retry: re-open menu in case it didn't present or closed (timing).
             categoryControl.tap()
             sleep(2)
             option = findOption(timeout: 3.0)
