@@ -25,15 +25,15 @@ struct IdentifierEdgeCaseTestView: View {
                 .accessibilityIdentifier("back-to-main-button")
                 .padding(.bottom)
 
-                // Manual override: explicit .accessibilityIdentifier overrides automatic generation.
+                // Manual override: plain SwiftUI so .accessibilityIdentifier is not overridden by framework.
                 // UI test asserts this element is findable (covers testManualIDOverride-style behavior).
-                platformVStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: 8) {
                     platformText("Manual ID override")
                         .font(.subheadline)
                         .fontWeight(.semibold)
                         .automaticCompliance()
 
-                    platformButton("Submit") { }
+                    Button("Submit") { }
                         .accessibilityIdentifier("manual-override-id")
                 }
                 .padding()
@@ -41,13 +41,13 @@ struct IdentifierEdgeCaseTestView: View {
                 .cornerRadius(8)
 
                 // Second element with different manual ID so tests can assert distinct identifiers.
-                platformVStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: 8) {
                     platformText("Second manual ID")
                         .font(.subheadline)
                         .fontWeight(.semibold)
                         .automaticCompliance()
 
-                    platformButton("Cancel") { }
+                    Button("Cancel") { }
                         .accessibilityIdentifier("manual-cancel-id")
                 }
                 .padding()
