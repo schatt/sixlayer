@@ -64,6 +64,7 @@ struct Layer1DataPresentationExamples: View {
             }
         }
         .padding()
+        .platformFrame()
     }
 }
 

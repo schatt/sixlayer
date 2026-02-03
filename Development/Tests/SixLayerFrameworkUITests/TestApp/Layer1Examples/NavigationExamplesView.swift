@@ -21,6 +21,7 @@ struct Layer1NavigationExamples: View {
             }
         }
         .padding()
+        .platformFrame()
     }
 }
 

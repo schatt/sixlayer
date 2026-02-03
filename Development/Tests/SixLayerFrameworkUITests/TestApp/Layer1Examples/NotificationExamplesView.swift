@@ -21,6 +21,7 @@ struct Layer1NotificationExamples: View {
             }
         }
         .padding()
+        .platformFrame()
     }
 }
 

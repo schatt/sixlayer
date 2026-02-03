@@ -48,6 +48,7 @@ struct DetailViewTestView: View {
             }
             .padding()
         }
+        .platformFrame()
         .navigationTitle("Detail View Test")
     }
 }

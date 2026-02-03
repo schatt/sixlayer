@@ -32,6 +32,7 @@ struct ControlTestView: View {
             .accessibilityIdentifier("back-to-main-button")
         }
         .padding()
+        .platformFrame()
         .navigationTitle("Control Test")
     }
 }

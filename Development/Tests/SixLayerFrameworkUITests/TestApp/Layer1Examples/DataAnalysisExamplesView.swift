@@ -26,6 +26,7 @@ struct Layer1DataAnalysisExamples: View {
             }
         }
         .padding()
+        .platformFrame()
     }
 }
 

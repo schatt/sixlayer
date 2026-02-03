@@ -20,6 +20,7 @@ struct Layer2ExamplesView: View {
             .padding()
             .automaticCompliance(named: "Layer2ExamplesView")
         }
+        .platformFrame()
         .navigationTitle("Layer 2 Examples")
         .platformNavigationTitleDisplayMode_L4(.large)
     }

@@ -39,6 +39,7 @@ struct Layer4ExamplesView: View {
             }
             .padding()
         }
+        .platformFrame()
         .navigationTitle("Layer 4 Examples")
         .platformNavigationTitleDisplayMode_L4(.large)
     }

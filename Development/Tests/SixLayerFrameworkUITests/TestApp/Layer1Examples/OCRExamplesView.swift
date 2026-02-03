@@ -30,6 +30,7 @@ struct Layer1OCRExamples: View {
             }
         }
         .padding()
+        .platformFrame()
     }
 }
 

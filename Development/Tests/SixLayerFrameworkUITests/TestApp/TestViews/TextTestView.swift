@@ -28,6 +28,7 @@ struct TextTestView: View {
             .accessibilityIdentifier("back-to-main-button")
         }
         .padding()
+        .platformFrame()
         .navigationTitle("Text Test")
     }
 }

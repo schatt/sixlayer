@@ -27,6 +27,7 @@ struct Layer1SecurityExamples: View {
             }
         }
         .padding()
+        .platformFrame()
     }
 }
 

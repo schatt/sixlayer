@@ -27,6 +27,7 @@ struct Layer5ExamplesView: View {
             }
             .padding()
         }
+        .platformFrame()
         .navigationTitle("Layer 5 Examples")
         .platformNavigationTitleDisplayMode_L4(.large)
     }

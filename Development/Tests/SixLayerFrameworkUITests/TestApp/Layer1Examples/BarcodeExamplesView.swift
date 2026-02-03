@@ -19,6 +19,7 @@ struct Layer1BarcodeExamples: View {
             }
         }
         .padding()
+        .platformFrame()
     }
 }
 

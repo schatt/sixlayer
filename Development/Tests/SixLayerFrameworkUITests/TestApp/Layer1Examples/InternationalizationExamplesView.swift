@@ -43,6 +43,7 @@ struct Layer1InternationalizationExamples: View {
             }
         }
         .padding()
+        .platformFrame()
     }
 }
 

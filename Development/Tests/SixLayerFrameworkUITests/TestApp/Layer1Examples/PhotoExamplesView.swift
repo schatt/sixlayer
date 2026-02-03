@@ -28,6 +28,7 @@ struct Layer1PhotoExamples: View {
             }
         }
         .padding()
+        .platformFrame()
     }
 }
 

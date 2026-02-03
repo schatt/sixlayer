@@ -40,6 +40,7 @@ struct PlatformPickerTestView: View {
             .accessibilityIdentifier("back-to-main-button")
         }
         .padding()
+        .platformFrame()
         .navigationTitle("Platform Picker Test")
     }
 }

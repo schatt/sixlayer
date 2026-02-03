@@ -29,6 +29,7 @@ struct ButtonTestView: View {
             .accessibilityIdentifier("back-to-main-button")
         }
         .padding()
+        .platformFrame()
         .navigationTitle("Button Test")
     }
 }

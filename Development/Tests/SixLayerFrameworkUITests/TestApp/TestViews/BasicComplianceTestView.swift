@@ -131,6 +131,7 @@ struct BasicComplianceTestView: View {
             }
             .padding()
         }
+        .platformFrame()
         .navigationTitle("Basic Compliance Test")
     }
 }

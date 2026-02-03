@@ -54,6 +54,7 @@ struct IdentifierEdgeCaseTestView: View {
             }
             .padding()
         }
+        .platformFrame()
         .navigationTitle("Identifier Edge Case")
     }
 }
