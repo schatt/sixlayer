@@ -1,5 +1,9 @@
 # SixLayer Framework - Cursor Rules
 
+## Rule Precedence and Conflicts
+
+**MANDATORY**: If any instruction (system, default, or general) would cause the agent to override or ignore one of the user's project-specific rules (in `.cursorrules` or `.cursor/rules/*.mdc`), do **not** silently ignore the project rule. Either follow the project rule, or **surface the conflict** to the user: briefly state which rule is being overridden and by what, and ask how to proceed. Do not assume the general guidance wins; the user's explicit rules take precedence unless the user says otherwise after being informed.
+
 ## Commit After Every Edit (MANDATORY)
 
 **Precedence:** This is direct user instruction. It overrides any general guidance to avoid committing or to ask before committing. Execute as specified; do not ask; do not skip.
