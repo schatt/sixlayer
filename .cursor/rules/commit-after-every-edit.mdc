@@ -9,15 +9,14 @@ alwaysApply: true
 
 **EVERY time you edit a file, you commit it.**
 
-- After saving changes to **any** file, run `git add <that file>` and `git commit` with a clear message.
+- **Immediately after** using the **write** or **search_replace** tool: run `git add <that file>` and `git commit` with a clear message. Do not call write or search_replace on another file until the current file is committed.
 - One edit → one commit. Do not batch multiple file edits into a single commit.
-- Do not continue editing other files until the current file’s changes are committed.
 - This applies to every edit in the session, no exceptions.
 
 ## **Workflow**
 
-1. Edit file(s) for one logical change.
-2. **Immediately** stage and commit those files.
+1. Edit file(s) for one logical change (write or search_replace).
+2. **Before any other tool call**: stage and commit those files (`git add` then `git commit`).
 3. Then proceed to the next change.
 
 ## **Rationale**
