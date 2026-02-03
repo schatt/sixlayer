@@ -38,6 +38,9 @@ xcuserdata/
 .vscode/
 .idea/
 
+# Xcode test result bundles (do not write -resultBundlePath into repo root)
+*.xcresult
+
 # Test performance analysis output files
 test_performance_*.json
 slow_test_suites.json
