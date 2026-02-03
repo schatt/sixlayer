@@ -222,9 +222,9 @@ final class Layer1AccessibilityUITests: XCTestCase {
                 var labeledButtons = 0
                 for b in app.buttons.allElementsBoundByIndex { if !b.label.isEmpty { labeledButtons += 1 } }
                 XCTAssertTrue(labeledButtons > 0 || app.buttons.count == 0, "Data presentation: buttons should have labels")
-                var labeledFields = 0
-                for f in app.textFields.allElementsBoundByIndex { if !f.label.isEmpty { labeledFields += 1 } }
-                XCTAssertTrue(labeledFields > 0 || app.textFields.count == 0, "Data presentation: text fields should have labels")
+                var fieldsWithLabelOrId = 0
+                for f in app.textFields.allElementsBoundByIndex { if !f.label.isEmpty || !f.identifier.isEmpty { fieldsWithLabelOrId += 1 } }
+                XCTAssertTrue(fieldsWithLabelOrId == app.textFields.count || app.textFields.count == 0, "Data presentation: every text field should have a label or identifier")
 
             case "Navigation":
                 let navStack = app.descendants(matching: .any).matching(identifier: "platformPresentNavigationStack_L1")
