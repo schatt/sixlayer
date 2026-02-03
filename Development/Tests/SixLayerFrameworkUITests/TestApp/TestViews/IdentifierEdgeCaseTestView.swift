@@ -33,8 +33,7 @@ struct IdentifierEdgeCaseTestView: View {
                         .fontWeight(.semibold)
                         .automaticCompliance()
 
-                    platformButton("Submit") { }
-                        .accessibilityIdentifier("manual-override-id")
+                    platformButton(label: "Submit", id: "manual-override-id") { }
                 }
                 .padding()
                 .background(Color.platformSecondaryBackground)
@@ -47,8 +46,7 @@ struct IdentifierEdgeCaseTestView: View {
                         .fontWeight(.semibold)
                         .automaticCompliance()
 
-                    platformButton("Cancel") { }
-                        .accessibilityIdentifier("manual-cancel-id")
+                    platformButton(label: "Cancel", id: "manual-cancel-id") { }
                 }
                 .padding()
                 .background(Color.platformSecondaryBackground)
