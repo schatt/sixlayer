@@ -164,6 +164,7 @@ struct TestAppContentView: View {
             }
             .padding()
         }
+        .platformFrame()
         .navigationTitle("UI Test Views")
     }
     
