@@ -2,7 +2,7 @@
 
 ## Commit After Every Edit (MANDATORY)
 
-**After every file edit**: Immediately run `git add <that file>` and `git commit` with a clear message. One edit → one commit. Do not edit another file until the current file is committed. See `.cursor/rules/commit-after-every-edit.mdc`.
+**The user has explicitly requested this.** After every file edit, immediately run `git add <that file>` and `git commit` with a clear message. One edit → one commit. Do not edit another file until the current file is committed. See `.cursor/rules/commit-after-every-edit.mdc`.
 
 ## Release Quality Gate Rule
 
@@ -119,9 +119,10 @@ See `PROJECT_RULES.md` section "Git Workflow and Commit Practices" for more deta
 
 ## Git Push Practices
 
-**MANDATORY**: All commits must be pushed to the remote repository.
+**MANDATORY**: All commits must be pushed to the remote repository. The user works on multiple machines and uses git to sync; unpushed work gets missed.
 
 ### Push Requirements:
+- **Push at least once before prompting for more input**: Do not end a response with unpushed commits. Pushes may be batched (e.g. one push after several commits).
 - **Push after logical completion**: Push commits after completing related work units
 - **Permission requirements**: Git push operations require additional permissions due to sandbox restrictions
 - **Use required permissions**: When pushing, use `required_permissions: ["network", "git_write"]` or `required_permissions: ["all"]`
