@@ -104,8 +104,7 @@ final class Layer4UITests: XCTestCase {
         navigateToViewAndSweep(entryIdentifier: "test-view-Button Test")
 
         let expectedIdentifier = "SixLayer.main.ui.testButton.Button"
-        XCTAssertTrue(app.descendants(matching: .any).matching(NSPredicate(format: "identifier == %@", expectedIdentifier)).firstMatch.waitForExistence(timeout: 5.0),
-                      "Button Test view should be ready")
+        XCTAssertTrue(app.buttons["Test Button"].waitForExistence(timeout: 3.0), "Button Test view should be ready")
         XCTAssertNotNil(app.findElement(byIdentifier: expectedIdentifier, primaryType: .other, secondaryTypes: [.button, .any]),
                         "Button identifier should be findable")
 
@@ -125,8 +124,8 @@ final class Layer4UITests: XCTestCase {
     func testPlatformPickerTestView_Compliance() throws {
         navigateToViewAndSweep(entryIdentifier: "test-view-Platform Picker Test")
 
-        XCTAssertTrue(app.descendants(matching: .any).matching(NSPredicate(format: "identifier CONTAINS %@", "PlatformPickerTest")).firstMatch.waitForExistence(timeout: 5.0),
-                      "Platform Picker view should be ready")
+        XCTAssertTrue(app.buttons["Option1"].waitForExistence(timeout: 3.0) || app.buttons["Option2"].waitForExistence(timeout: 0.5),
+                      "Platform Picker view should be ready (segment visible)")
         let pickerIdentifier = "SixLayer.main.ui.PlatformPickerTest.View"
         #if !os(macOS)
         XCTAssertNotNil(app.findElement(byIdentifier: pickerIdentifier, primaryType: .segmentedControl, secondaryTypes: [.picker, .other, .any]),
