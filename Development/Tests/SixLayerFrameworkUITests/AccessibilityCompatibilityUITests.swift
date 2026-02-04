@@ -60,13 +60,16 @@ final class AccessibilityCompatibilityUITests: XCTestCase {
         app.runAccessibilityCompatibilitySweep()
     }
 
-    /// Navigate to Button Test view, run compatibility sweep (Issue #180). Returns to launch first if needed.
+    /// Navigate to Button Test view (via Layer 4 Examples), run compatibility sweep (Issue #180).
     @MainActor
     func testButtonTestView_CompatibilitySweep() throws {
-        XCTAssertTrue(app.navigateBackToLaunch(timeout: 5.0), "Should reach launch page for Button Test")
-        let link = app.findLaunchPageEntry(identifier: "test-view-Button Test")
-        XCTAssertTrue(link.waitForExistence(timeout: 3.0), "Button Test link should exist")
-        link.tap()
+        XCTAssertTrue(app.navigateToLayerExamples(linkIdentifier: "layer4-examples-link", navigationBarTitle: "Layer 4 Examples"), "Should navigate to Layer 4 Examples")
+        let link = app.findElement(byIdentifier: "test-view-Button Test", primaryType: .button, secondaryTypes: [.cell, .staticText, .other, .any], timeout: 3.0)
+        guard let el = link, el.waitForExistence(timeout: 2.0) else {
+            XCTFail("Button Test link should exist on Layer 4 Examples")
+            return
+        }
+        el.tap()
         app.runAccessibilityCompatibilitySweep()
     }
 }
