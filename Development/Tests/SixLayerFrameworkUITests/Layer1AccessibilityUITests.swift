@@ -143,17 +143,7 @@ final class Layer1AccessibilityUITests: XCTestCase {
     /// Go back from a Layer 1 category screen to the launch page so the next category link can be tapped.
     @MainActor
     private func goBackFromLayer1Category() {
-        if app.buttons["UI Test Views"].waitForExistence(timeout: 1.0) {
-            app.buttons["UI Test Views"].tap()
-            return
-        }
-        if app.navigationBars.buttons.firstMatch.waitForExistence(timeout: 1.0) {
-            app.navigationBars.buttons.firstMatch.tap()
-            return
-        }
-        if app.buttons["Back"].waitForExistence(timeout: 0.5) {
-            app.buttons["Back"].tap()
-        }
+        _ = app.navigateBackToLaunch(timeout: 3.0)
     }
     
     /// Verify an element has accessibility identifier
@@ -311,7 +301,6 @@ final class Layer1AccessibilityUITests: XCTestCase {
                 break
             }
             goBackFromLayer1Category()
-            _ = app.staticTexts["UI Test Views"].waitForExistence(timeout: 1.5)
         }
     }
 }
