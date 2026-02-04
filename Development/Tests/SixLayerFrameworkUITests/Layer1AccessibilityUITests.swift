@@ -131,7 +131,9 @@ final class Layer1AccessibilityUITests: XCTestCase {
             XCTFail("Category picker should exist")
             return
         }
-        categoryControl.tap()
+        // Use coordinate tap to avoid XCUITest's internal "wait for button to become not hittable" after tap,
+        // which fails on iOS when the picker menu doesn't make the button report as not hittable.
+        categoryControl.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
         // Menu/popover can take a moment to appear; wait for any menu option so we know menu is visible.
         let menuVisible = app.menuItems["Select Category"].waitForExistence(timeout: 3.0)
             || app.staticTexts["Data Presentation"].waitForExistence(timeout: 2.0)
@@ -169,7 +171,7 @@ final class Layer1AccessibilityUITests: XCTestCase {
             option = findOption(timeout: 2.0)
         }
         if option == nil {
-            categoryControl.tap()
+            categoryControl.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
             sleep(2)
             option = findOption(timeout: 3.0)
         }
