@@ -56,32 +56,10 @@ final class Layer3AccessibilityUITests: XCTestCase {
     /// Navigate to Layer 3 examples
     @MainActor
     private func navigateToLayer3Examples() throws {
-        // Ensure app is ready
-        guard app.waitForReady(timeout: 5.0) else {
-            XCTFail("App should be ready for testing")
+        guard app.navigateToLayerExamples(linkIdentifier: "layer3-examples-link", navigationBarTitle: "Layer 3 Examples") else {
+            XCTFail("Should navigate to Layer 3 Examples")
             return
         }
-        
-        // Tap the "Layer 3 Strategy Examples" link (List row on iOS may be .cell)
-        let layer3Link = app.findElement(byIdentifier: "layer3-examples-link",
-                                         primaryType: .button,
-                                         secondaryTypes: [.cell, .staticText, .other, .any])
-        
-        guard let link = layer3Link, link.waitForExistenceFast(timeout: 3.0) else {
-            XCTFail("Layer 3 examples link should exist")
-            return
-        }
-        link.tap()
-        
-        // Wait for Layer 3 examples to load
-        let layer3Title = app.navigationBars["Layer 3 Examples"]
-        guard layer3Title.waitForExistenceFast(timeout: 3.0) else {
-            XCTFail("Layer 3 Examples view should load")
-            return
-        }
-        
-        // Wait for list content to appear
-        _ = app.cells.firstMatch.waitForExistence(timeout: 3.0)
     }
     
     /// Verify an element has accessibility identifier

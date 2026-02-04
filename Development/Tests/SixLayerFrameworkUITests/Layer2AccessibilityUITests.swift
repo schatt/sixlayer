@@ -56,32 +56,10 @@ final class Layer2AccessibilityUITests: XCTestCase {
     /// Navigate to Layer 2 examples
     @MainActor
     private func navigateToLayer2Examples() throws {
-        // Ensure app is ready
-        guard app.waitForReady(timeout: 5.0) else {
-            XCTFail("App should be ready for testing")
+        guard app.navigateToLayerExamples(linkIdentifier: "layer2-examples-link", navigationBarTitle: "Layer 2 Examples") else {
+            XCTFail("Should navigate to Layer 2 Examples")
             return
         }
-        
-        // Tap the "Layer 2 Layout Examples" link (List row on iOS may be .cell)
-        let layer2Link = app.findElement(byIdentifier: "layer2-examples-link",
-                                         primaryType: .button,
-                                         secondaryTypes: [.cell, .staticText, .other, .any])
-        
-        guard let link = layer2Link, link.waitForExistenceFast(timeout: 3.0) else {
-            XCTFail("Layer 2 examples link should exist")
-            return
-        }
-        link.tap()
-        
-        // Wait for Layer 2 examples to load
-        let layer2Title = app.navigationBars["Layer 2 Examples"]
-        guard layer2Title.waitForExistenceFast(timeout: 3.0) else {
-            XCTFail("Layer 2 Examples view should load")
-            return
-        }
-        
-        // Wait for list content to appear
-        _ = app.cells.firstMatch.waitForExistence(timeout: 3.0)
     }
     
     /// Verify an element has accessibility identifier

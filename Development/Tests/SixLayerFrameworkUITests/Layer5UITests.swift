@@ -36,21 +36,10 @@ final class Layer5UITests: XCTestCase {
 
     @MainActor
     private func navigateToLayer5Examples() throws {
-        guard app.waitForReady(timeout: 5.0) else {
-            XCTFail("App should be ready for testing")
+        guard app.navigateToLayerExamples(linkIdentifier: "layer5-examples-link", navigationBarTitle: "Layer 5 Examples") else {
+            XCTFail("Should navigate to Layer 5 Examples")
             return
         }
-        let link = app.findElement(byIdentifier: "layer5-examples-link", primaryType: .button, secondaryTypes: [.cell, .staticText, .other, .any])
-        guard let el = link, el.waitForExistence(timeout: 3.0) else {
-            XCTFail("Layer 5 examples link should exist")
-            return
-        }
-        el.tap()
-        guard app.navigationBars["Layer 5 Examples"].waitForExistence(timeout: 3.0) else {
-            XCTFail("Layer 5 Examples view should load")
-            return
-        }
-        _ = app.cells.firstMatch.waitForExistence(timeout: 3.0)
     }
 
     @MainActor
