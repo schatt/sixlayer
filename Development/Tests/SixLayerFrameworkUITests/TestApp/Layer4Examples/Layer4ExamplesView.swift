@@ -17,24 +17,38 @@ import MapKit
 #endif
 #endif
 
+/// Single source of truth for L4 component test views (titles and identifiers match Layer4UITests).
+private enum Layer4ComponentTestView: String, CaseIterable, Identifiable {
+    case text = "Text Test"
+    case button = "Button Test"
+    case platformPicker = "Platform Picker Test"
+    case basicCompliance = "Basic Compliance Test"
+    case identifierEdgeCase = "Identifier Edge Case"
+    case detailView = "Detail View Test"
+    var id: String { rawValue }
+    var accessibilityIdentifier: String { "test-view-\(rawValue)" }
+    @ViewBuilder var destination: some View {
+        switch self {
+        case .text: TextTestView()
+        case .button: ButtonTestView()
+        case .platformPicker: PlatformPickerTestView()
+        case .basicCompliance: BasicComplianceTestView()
+        case .identifierEdgeCase: IdentifierEdgeCaseTestView()
+        case .detailView: DetailViewTestView()
+        }
+    }
+}
+
 struct Layer4ExamplesView: View {
     var body: some View {
         ScrollView {
             platformVStack(alignment: .leading, spacing: 24) {
                 ExampleSection(title: "Component test views") {
                     platformVStack(alignment: .leading, spacing: 8) {
-                        NavigationLink("Text Test") { TextTestView() }
-                            .accessibilityIdentifier("test-view-Text Test")
-                        NavigationLink("Button Test") { ButtonTestView() }
-                            .accessibilityIdentifier("test-view-Button Test")
-                        NavigationLink("Platform Picker Test") { PlatformPickerTestView() }
-                            .accessibilityIdentifier("test-view-Platform Picker Test")
-                        NavigationLink("Basic Compliance Test") { BasicComplianceTestView() }
-                            .accessibilityIdentifier("test-view-Basic Compliance Test")
-                        NavigationLink("Identifier Edge Case") { IdentifierEdgeCaseTestView() }
-                            .accessibilityIdentifier("test-view-Identifier Edge Case")
-                        NavigationLink("Detail View Test") { DetailViewTestView() }
-                            .accessibilityIdentifier("test-view-Detail View Test")
+                        ForEach(Layer4ComponentTestView.allCases) { item in
+                            NavigationLink(item.rawValue) { item.destination }
+                                .accessibilityIdentifier(item.accessibilityIdentifier)
+                        }
                     }
                 }
                 
