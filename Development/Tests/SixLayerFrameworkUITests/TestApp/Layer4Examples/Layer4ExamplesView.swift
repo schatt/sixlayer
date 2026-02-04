@@ -21,6 +21,23 @@ struct Layer4ExamplesView: View {
     var body: some View {
         ScrollView {
             platformVStack(alignment: .leading, spacing: 24) {
+                ExampleSection(title: "Component test views") {
+                    platformVStack(alignment: .leading, spacing: 8) {
+                        NavigationLink("Text Test") { TextTestView() }
+                            .accessibilityIdentifier("test-view-Text Test")
+                        NavigationLink("Button Test") { ButtonTestView() }
+                            .accessibilityIdentifier("test-view-Button Test")
+                        NavigationLink("Platform Picker Test") { PlatformPickerTestView() }
+                            .accessibilityIdentifier("test-view-Platform Picker Test")
+                        NavigationLink("Basic Compliance Test") { BasicComplianceTestView() }
+                            .accessibilityIdentifier("test-view-Basic Compliance Test")
+                        NavigationLink("Identifier Edge Case") { IdentifierEdgeCaseTestView() }
+                            .accessibilityIdentifier("test-view-Identifier Edge Case")
+                        NavigationLink("Detail View Test") { DetailViewTestView() }
+                            .accessibilityIdentifier("test-view-Detail View Test")
+                    }
+                }
+                
                 ExampleSection(title: "Photo & Camera Components") {
                     PhotoCameraExamples()
                 }
