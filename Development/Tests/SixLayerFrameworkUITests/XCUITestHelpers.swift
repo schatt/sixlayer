@@ -68,6 +68,21 @@ extension XCUIElement {
     var existsImmediately: Bool {
         return exists
     }
+
+    /// Wait for this element to become not hittable (e.g. menu/popover dismissed).
+    /// Polls until the element is not hittable or timeout. Use after tapping a menu option to ensure the menu is gone before the next interaction.
+    /// - Parameter timeout: Maximum time to wait (default: 3.0 seconds)
+    /// - Returns: true if element became not hittable (or no longer exists), false if timeout
+    func waitForNotHittable(timeout: TimeInterval = 3.0) -> Bool {
+        let deadline = Date().addingTimeInterval(timeout)
+        while Date() < deadline {
+            if !exists || !isHittable {
+                return true
+            }
+            Thread.sleep(forTimeInterval: 0.1)
+        }
+        return !exists || !isHittable
+    }
 }
 
 // MARK: - Accessibility Identifier Helpers
