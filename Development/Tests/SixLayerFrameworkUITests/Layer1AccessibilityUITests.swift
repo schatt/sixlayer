@@ -119,13 +119,13 @@ final class Layer1AccessibilityUITests: XCTestCase {
     @MainActor
     private func selectLayer1Category(_ categoryName: String) {
         let linkId = layer1CategoryLinkIdentifier(categoryName)
-        let byId = app.findElement(byIdentifier: linkId, primaryType: .button, secondaryTypes: [.cell, .staticText, .link, .any])
+        let byId = app.findElement(byIdentifier: linkId, primaryType: .button, secondaryTypes: [.cell, .staticText, .link, .any], timeout: 0.8)
         let element: XCUIElement
-        if let el = byId, el.waitForExistence(timeout: 2.0) {
+        if let el = byId, el.waitForExistence(timeout: 1.0) {
             element = el
-        } else if app.buttons[categoryName].waitForExistence(timeout: 2.0) {
+        } else if app.buttons[categoryName].waitForExistence(timeout: 1.0) {
             element = app.buttons[categoryName]
-        } else if app.staticTexts[categoryName].waitForExistence(timeout: 2.0) {
+        } else if app.staticTexts[categoryName].waitForExistence(timeout: 1.0) {
             element = app.staticTexts[categoryName]
         } else {
             XCTFail("Category link '\(categoryName)' (id: \(linkId)) should exist")
