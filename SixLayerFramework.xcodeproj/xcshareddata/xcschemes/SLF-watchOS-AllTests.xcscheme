@@ -55,9 +55,9 @@
             parallelizable = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "B51461AFDB41C8E481834336"
-               BuildableName = "SixLayerFrameworkRealUITests_watchOS.xctest"
-               BlueprintName = "SixLayerFrameworkRealUITests_watchOS"
+               BlueprintIdentifier = "1DF0E8BA49092C22FD760132"
+               BuildableName = "SixLayerFrameworkUITests_watchOS.xctest"
+               BlueprintName = "SixLayerFrameworkUITests_watchOS"
                ReferencedContainer = "container:SixLayerFramework.xcodeproj">
             </BuildableReference>
          </TestableReference>

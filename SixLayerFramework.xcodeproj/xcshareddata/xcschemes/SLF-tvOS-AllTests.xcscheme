@@ -55,9 +55,9 @@
             parallelizable = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "50BAB6F11ADB2178C59641F9"
-               BuildableName = "SixLayerFrameworkRealUITests_tvOS.xctest"
-               BlueprintName = "SixLayerFrameworkRealUITests_tvOS"
+               BlueprintIdentifier = "7A78E091DD776FDB4D585F97"
+               BuildableName = "SixLayerFrameworkUITests_tvOS.xctest"
+               BlueprintName = "SixLayerFrameworkUITests_tvOS"
                ReferencedContainer = "container:SixLayerFramework.xcodeproj">
             </BuildableReference>
          </TestableReference>
