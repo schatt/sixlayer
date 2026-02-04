@@ -62,15 +62,16 @@ Or in Xcode:
 ## Test Structure
 
 - **TestApp/**: Minimal app that displays test views
-- **AccessibilityXCUITests.swift**: XCUITest tests that verify identifiers are findable
+- **Layer1–6, AccessibilityCompatibility, XCUITestHelpers**: XCUITest tests (navigate → sweep → asserts)
+- **WindowRenderingTestHelper.swift**: Helper for programmatic window hosting (NSWindow/UIWindow + SwiftUI) when tests need to render views in real windows without launching the full TestApp. Used for future tests; current XCUITest tests launch TestApp.
 
-## Key Differences from RealUITests
+## Key Differences from programmatic window tests
 
-| Aspect | RealUITests | XCUITests |
-|--------|-------------|-----------|
+| Aspect | WindowRenderingTestHelper (programmatic) | XCUITest (this target) |
+|--------|----------------------------------------|------------------------|
 | **Framework** | Swift Testing + manual window creation | XCUITest (XCTest) |
 | **App Lifecycle** | Programmatic window creation | Full app launch via `XCUIApplication` |
 | **Element Queries** | Manual view hierarchy search | `XCUIElement` queries (same as production) |
 | **Realism** | Good for testing rendering | Best for testing accessibility integration |
 
-Both approaches are valuable - RealUITests test rendering, XCUITests test accessibility integration.
+Both approaches are in this target: XCUITest tests launch TestApp; WindowRenderingTestHelper is available for programmatic window tests.
