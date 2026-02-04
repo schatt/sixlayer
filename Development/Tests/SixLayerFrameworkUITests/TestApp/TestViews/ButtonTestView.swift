@@ -9,8 +9,9 @@ import SwiftUI
 import SixLayerFramework
 
 struct ButtonTestView: View {
-    let onBackToMain: () -> Void
-    
+    var onBackToMain: (() -> Void)? = nil
+    @Environment(\.dismiss) private var dismiss
+
     var body: some View {
         platformVStack(spacing: 20) {
             platformText("Button Test View")
@@ -24,7 +25,7 @@ struct ButtonTestView: View {
             
             // Back to main page button
             platformButton("Back to Main") {
-                onBackToMain()
+                if let action = onBackToMain { action() } else { dismiss() }
             }
             .accessibilityIdentifier("back-to-main-button")
         }
