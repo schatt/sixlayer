@@ -203,13 +203,13 @@ final class AccessibilityUITests: XCTestCase {
         XCTAssertTrue(buttonTestButton.waitForExistenceFast(timeout: 3.0), "Button Test button should exist")
         buttonTestButton.tap()
         
-        // Wait for navigation to complete and view to appear
-        // Give SwiftUI time to render the new view and build accessibility tree
-        sleep(1)
+        // Wait for Button Test view to appear (element we need must exist)
+        let expectedIdentifier = "SixLayer.main.ui.testButton.Button"
+        let viewReady = app.descendants(matching: .any).matching(NSPredicate(format: "identifier == %@", expectedIdentifier)).firstMatch.waitForExistence(timeout: 5.0)
+        XCTAssertTrue(viewReady, "Button Test view should become ready (identifier '\(expectedIdentifier)')")
         
         // Find element by accessibility identifier using helper (tries multiple query types)
         // ButtonTestView uses platformButton(label: "Test Button", id: "testButton")
-        let expectedIdentifier = "SixLayer.main.ui.testButton.Button"
         let usePerformanceLogging = ProcessInfo.processInfo.environment["USE_XCUITEST_PERFORMANCE"] == "1"
         
         let elementFound: Bool
@@ -246,9 +246,9 @@ final class AccessibilityUITests: XCTestCase {
         XCTAssertTrue(pickerTestButton.waitForExistenceFast(timeout: 3.0), "Platform Picker Test button should exist")
         pickerTestButton.tap()
         
-        // Wait for navigation to complete and view to appear
-        // Give SwiftUI time to render the new view and build accessibility tree
-        sleep(1)
+        // Wait for Platform Picker view to appear (picker or segment with identifier)
+        let pickerReady = app.descendants(matching: .any).matching(NSPredicate(format: "identifier CONTAINS %@", "PlatformPickerTest")).firstMatch.waitForExistence(timeout: 5.0)
+        XCTAssertTrue(pickerReady, "Platform Picker Test view should become ready")
         
         // Note: On macOS, segmented pickers may not expose a container element,
         // so we test by verifying segments have identifiers instead of the picker container
