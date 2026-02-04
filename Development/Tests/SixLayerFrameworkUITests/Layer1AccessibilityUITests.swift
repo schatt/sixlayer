@@ -132,15 +132,18 @@ final class Layer1AccessibilityUITests: XCTestCase {
             return
         }
         element.tap()
-        // Wait for category content to appear (identifier CONTAINS or static text fallback).
+        // Wait for category content: try fast path (static text) first, then slow predicate (saves ~5s per category).
         if let contentId = contentIdentifierForCategory(categoryName) {
+            if let contentText = contentTextForCategory(categoryName),
+               app.staticTexts[contentText].waitForExistence(timeout: 2.5) {
+                return
+            }
             let predicate = NSPredicate(format: "identifier CONTAINS %@", contentId)
             let anchor = app.descendants(matching: .any).matching(predicate).firstMatch
-            let foundById = anchor.waitForExistence(timeout: 5.0)
-            if foundById { return }
+            if anchor.waitForExistence(timeout: 2.0) { return }
             if let contentText = contentTextForCategory(categoryName) {
-                let foundByText = app.staticTexts[contentText].waitForExistence(timeout: 3.0)
-                XCTAssertTrue(foundByText, "Category '\(categoryName)' content should appear (identifier '\(contentId)' or text '\(contentText)')")
+                XCTAssertTrue(app.staticTexts[contentText].waitForExistence(timeout: 1.0),
+                              "Category '\(categoryName)' content should appear (text '\(contentText)' or identifier '\(contentId)')")
             } else {
                 XCTFail("Category '\(categoryName)' content (\(contentId)) should appear after navigation")
             }
