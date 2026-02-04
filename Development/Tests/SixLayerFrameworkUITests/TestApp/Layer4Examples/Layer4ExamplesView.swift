@@ -27,8 +27,11 @@ private enum Layer4ComponentTestView: String, CaseIterable, Identifiable {
     case detailView = "Detail View Test"
     var id: String { rawValue }
     var accessibilityIdentifier: String { "test-view-\(rawValue)" }
-    @ViewBuilder var destination: some View {
-        switch self {
+}
+
+struct Layer4ExamplesView: View {
+    @ViewBuilder private func destinationView(for item: Layer4ComponentTestView) -> some View {
+        switch item {
         case .text: TextTestView()
         case .button: ButtonTestView()
         case .platformPicker: PlatformPickerTestView()
@@ -37,16 +40,14 @@ private enum Layer4ComponentTestView: String, CaseIterable, Identifiable {
         case .detailView: DetailViewTestView()
         }
     }
-}
 
-struct Layer4ExamplesView: View {
     var body: some View {
         ScrollView {
             platformVStack(alignment: .leading, spacing: 24) {
                 ExampleSection(title: "Component test views") {
                     platformVStack(alignment: .leading, spacing: 8) {
                         ForEach(Layer4ComponentTestView.allCases) { item in
-                            NavigationLink(item.rawValue) { item.destination }
+                            NavigationLink(item.rawValue) { destinationView(for: item) }
                                 .accessibilityIdentifier(item.accessibilityIdentifier)
                         }
                     }
