@@ -19,12 +19,13 @@ options:
   indentWidth: 4
   tabWidth: 4
 
-# Project-level build settings
+# Project-level build settings (includes Xcode recommended: Missing Localizability, String Catalog symbols)
 settings:
   base:
     DEAD_CODE_STRIPPING: YES
     ENABLE_USER_SCRIPT_SANDBOXING: YES
     SWIFT_STRING_CATALOG_SYMBOL_GENERATION: YES
+    CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED: YES
   configs:
     Debug:
       DEAD_CODE_STRIPPING: YES
@@ -56,20 +57,23 @@ targets:
     resources:
       - path: Framework/Resources/Localizable.xcstrings
     settings:
-      PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.framework
-      PRODUCT_MODULE_NAME: SixLayerFramework
-      SWIFT_VERSION: "6.0"
-      SWIFT_ACTIVE_COMPILATION_CONDITIONS: $(inherited) ENABLE_PREVIEWS
-      ENABLE_TESTABILITY: YES
-      GENERATE_INFOPLIST_FILE: YES
-      CODE_SIGN_STYLE: Automatic
-      DEVELOPMENT_TEAM: Y53G7YPJSZ
-      developmentTeam: Y53G7YPJSZ
-      DEAD_CODE_STRIPPING: YES
-      CLANG_ENABLE_MODULE_VERIFIER: YES
-      CODE_SIGN_IDENTITY: "Apple Development"
-      "CODE_SIGN_IDENTITY[sdk=iphoneos*]": "Apple Development"
-      "CODE_SIGN_IDENTITY[sdk=macosx*]": "Apple Development"
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.framework
+        PRODUCT_MODULE_NAME: SixLayerFramework
+        SWIFT_VERSION: "6.0"
+        SWIFT_ACTIVE_COMPILATION_CONDITIONS: $(inherited) ENABLE_PREVIEWS
+        ENABLE_TESTABILITY: YES
+        GENERATE_INFOPLIST_FILE: YES
+        CODE_SIGN_STYLE: Automatic
+        DEVELOPMENT_TEAM: Y53G7YPJSZ
+        developmentTeam: Y53G7YPJSZ
+        DEAD_CODE_STRIPPING: YES
+        CLANG_ENABLE_MODULE_VERIFIER: YES
+      configs:
+        Debug:
+          CODE_SIGN_IDENTITY: "-"
+        Release:
+          CODE_SIGN_IDENTITY: "-"
     dependencies: []
 
   # Unit tests - iOS
