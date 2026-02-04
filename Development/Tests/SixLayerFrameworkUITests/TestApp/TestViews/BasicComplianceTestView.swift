@@ -9,8 +9,9 @@ import SwiftUI
 import SixLayerFramework
 
 struct BasicComplianceTestView: View {
-    let onBackToMain: () -> Void
-    
+    var onBackToMain: (() -> Void)? = nil
+    @Environment(\.dismiss) private var dismiss
+
     var body: some View {
         platformScrollViewContainer {
             platformVStack(spacing: 24) {
@@ -20,7 +21,7 @@ struct BasicComplianceTestView: View {
                 
                 // Back to main page button
                 platformButton("Back to Main") {
-                    onBackToMain()
+                    if let action = onBackToMain { action() } else { dismiss() }
                 }
                 .accessibilityIdentifier("back-to-main-button")
                 .padding(.bottom)
