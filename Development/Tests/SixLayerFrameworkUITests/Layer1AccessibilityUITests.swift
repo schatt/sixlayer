@@ -207,8 +207,10 @@ final class Layer1AccessibilityUITests: XCTestCase {
         }
         option!.tap()
         // Confirm navigation by waiting for this category's content to appear (more reliable than menu-dismiss / hittability).
+        // Framework generates identifiers like SixLayer.main.ui.platformPresentItemCollection_L1.View, so match by CONTAINS.
         if let contentId = contentIdentifierForCategory(categoryName) {
-            let anchor = app.descendants(matching: .any).matching(identifier: contentId).firstMatch
+            let predicate = NSPredicate(format: "identifier CONTAINS %@", contentId)
+            let anchor = app.descendants(matching: .any).matching(predicate).firstMatch
             XCTAssertTrue(anchor.waitForExistence(timeout: 5.0), "Category '\(categoryName)' content (\(contentId)) should appear after selection")
         } else {
             sleep(1)
