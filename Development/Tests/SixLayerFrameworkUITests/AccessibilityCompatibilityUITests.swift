@@ -56,4 +56,14 @@ final class AccessibilityCompatibilityUITests: XCTestCase {
         link.tap()
         app.runAccessibilityCompatibilitySweep()
     }
+
+    /// Navigate to Button Test view, run compatibility sweep (Issue #180). Returns to launch first if needed.
+    @MainActor
+    func testButtonTestView_CompatibilitySweep() throws {
+        XCTAssertTrue(app.navigateBackToLaunch(timeout: 5.0), "Should reach launch page for Button Test")
+        let link = app.findLaunchPageEntry(identifier: "test-view-Button Test")
+        XCTAssertTrue(link.waitForExistence(timeout: 3.0), "Button Test link should exist")
+        link.tap()
+        app.runAccessibilityCompatibilitySweep()
+    }
 }
