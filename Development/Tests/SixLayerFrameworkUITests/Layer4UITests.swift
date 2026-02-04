@@ -42,14 +42,13 @@ final class Layer4UITests: XCTestCase {
         _ = app.navigateBackToLaunch(timeout: 5.0)
     }
 
-    /// Navigate to a test view by launch-page entry identifier, then run compatibility sweep. Use for Control Test only (launch page).
+    /// Navigate to a test view by launch-page entry identifier. Use for Control Test (baseline); no sweep—that view is plain SwiftUI, not L4.
     @MainActor
-    private func navigateToViewAndSweep(entryIdentifier: String) {
+    private func navigateToView(entryIdentifier: String) {
         ensureLaunchPage()
         let link = app.findLaunchPageEntry(identifier: entryIdentifier)
         XCTAssertTrue(link.waitForExistence(timeout: 3.0), "\(entryIdentifier) should exist")
         link.tap()
-        app.runAccessibilityCompatibilitySweep()
     }
 
     /// Navigate to Layer 4 Examples, tap the component test view link, then run compatibility sweep. Use for L4 test views (Text, Button, Picker, etc.).
@@ -72,7 +71,7 @@ final class Layer4UITests: XCTestCase {
 
     @MainActor
     func testControlTestView_ComplianceAndValues() throws {
-        navigateToViewAndSweep(entryIdentifier: "test-view-Control Test")
+        navigateToView(entryIdentifier: "test-view-Control Test")
 
         let controlButtonByLabel = app.buttons["Control Button"]
         XCTAssertTrue(controlButtonByLabel.waitForExistence(timeout: 3.0), "Control button should exist")
