@@ -147,10 +147,17 @@ final class Layer1AccessibilityUITests: XCTestCase {
             XCTFail("Category picker should exist")
             return
         }
-        // Use coordinate tap to avoid XCUITest's internal "wait for button to become not hittable" after tap,
-        // which fails on iOS when the picker menu doesn't make the button report as not hittable.
-        categoryControl.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
-        // Menu/popover can take a moment to appear; wait for any menu option so we know menu is visible.
+        // When picker still shows "Select Category", use regular tap so menu opens reliably.
+        // When it already shows a category, use coordinate tap to avoid XCUITest "wait for not hittable" failure on iOS.
+        let label = categoryControl.label
+        if label.contains("Select Category") || label == "Category" {
+            categoryControl.tap()
+        } else {
+            categoryControl.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
+        }
+        // Give the menu time to appear before querying (iOS MenuPickerStyle can be slow to render).
+        sleep(2)
+        // Wait for any menu option so we know menu is visible.
         let menuVisible = app.menuItems["Select Category"].waitForExistence(timeout: 3.0)
             || app.staticTexts["Data Presentation"].waitForExistence(timeout: 2.0)
             || app.buttons["Data Presentation"].waitForExistence(timeout: 2.0)
@@ -172,24 +179,27 @@ final class Layer1AccessibilityUITests: XCTestCase {
             if buttonOption.waitForExistence(timeout: 1.0) { return buttonOption }
             if cellOption.waitForExistence(timeout: 1.0) { return cellOption }
             if textOption.waitForExistence(timeout: 1.0) { return textOption }
-            // Fallback: any descendant with this identifier or label (menu may be in popover hierarchy).
+            // Fallback: any descendant of app with this identifier or label (menu may be in popover hierarchy).
             let predicate = NSPredicate(format: "identifier == %@ OR label == %@", optionId, categoryName)
             let byPredicate = app.descendants(matching: .any).matching(predicate).firstMatch
             if byPredicate.waitForExistence(timeout: 1.0) { return byPredicate }
+            // Fallback: search from picker's descendants (menu can be attached to control on iOS).
+            let fromPicker = categoryControl.descendants(matching: .any).matching(NSPredicate(format: "label == %@", categoryName)).firstMatch
+            if fromPicker.waitForExistence(timeout: 1.0) { return fromPicker }
             return nil
         }
 
         var option: XCUIElement?
-        option = findOption(timeout: 3.0)
+        option = findOption(timeout: 4.0)
         if option == nil {
             app.swipeUp()
             sleep(1)
-            option = findOption(timeout: 2.0)
+            option = findOption(timeout: 3.0)
         }
         if option == nil {
             categoryControl.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
             sleep(2)
-            option = findOption(timeout: 3.0)
+            option = findOption(timeout: 4.0)
         }
         if option == nil {
             XCTFail("Category '\(categoryName)' should exist in picker")
