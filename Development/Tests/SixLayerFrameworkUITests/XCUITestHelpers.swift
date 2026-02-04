@@ -120,6 +120,29 @@ extension XCUIApplication {
             ?? buttons[identifier]
     }
 
+    /// Navigate back to the launch page (e.g. after another test left the app on a subpage). Taps back/nav until "UI Test Views" appears.
+    /// - Parameter timeout: Maximum time to wait for launch page (default 5.0)
+    /// - Returns: true if launch page is visible (staticTexts["UI Test Views"] exists)
+    func navigateBackToLaunch(timeout: TimeInterval = 5.0) -> Bool {
+        if staticTexts["UI Test Views"].waitForExistence(timeout: 0.5) { return true }
+        let deadline = Date().addingTimeInterval(timeout)
+        while Date() < deadline {
+            if buttons["UI Test Views"].waitForExistence(timeout: 0.3) {
+                buttons["UI Test Views"].tap()
+                return staticTexts["UI Test Views"].waitForExistence(timeout: 2.0)
+            }
+            if navigationBars.buttons.firstMatch.waitForExistence(timeout: 0.3) {
+                navigationBars.buttons.firstMatch.tap()
+            } else if buttons["Back"].waitForExistence(timeout: 0.3) {
+                buttons["Back"].tap()
+            } else {
+                break
+            }
+            if staticTexts["UI Test Views"].waitForExistence(timeout: 1.0) { return true }
+        }
+        return staticTexts["UI Test Views"].waitForExistence(timeout: 0.5)
+    }
+
     // MARK: - Accessibility compatibility sweep (Issue #180)
 
     /// Run one compatibility sweep on the current view: VoiceOver, Dynamic Type, High Contrast, Switch Control.
