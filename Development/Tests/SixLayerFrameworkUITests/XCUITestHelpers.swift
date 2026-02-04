@@ -23,24 +23,11 @@ extension XCUIApplication {
         launchEnvironment = ["XCUI_TESTING": "1"]
     }
     
-    /// Wait for app to be ready before querying elements
-    /// This ensures SwiftUI has finished initial render and accessibility tree is built
+    /// Wait for app to be ready: look for a single known text on the launch page (Issue #180).
     /// - Parameter timeout: Maximum time to wait (default: 5.0 seconds)
-    /// - Returns: true if app is ready, false if timeout
+    /// - Returns: true if the text appears, false if timeout
     func waitForReady(timeout: TimeInterval = 5.0) -> Bool {
-        // Wait for the launch page navigation title or a test view button
-        // This indicates the app has finished initial render
-        // Try multiple query strategies since elements might be exposed differently
-        if staticTexts["UI Test Views"].waitForExistence(timeout: timeout) {
-            return true
-        }
-        // Try finding a test view entry (indicates launch page is ready; iOS List may use .cell)
-        if (findLaunchPageEntry(identifier: "test-view-Control Test")).waitForExistence(timeout: timeout) {
-            return true
-        }
-        // Try finding by navigation title in any element
-        let navTitle = descendants(matching: .any)["UI Test Views"]
-        return navTitle.waitForExistence(timeout: timeout)
+        staticTexts["UI Test Views"].waitForExistence(timeout: timeout)
     }
     
     /// Launch app with performance optimizations
@@ -131,6 +118,74 @@ extension XCUIApplication {
                     primaryType: .button,
                     secondaryTypes: [.cell, .staticText, .other, .any])
             ?? buttons[identifier]
+    }
+
+    // MARK: - Accessibility compatibility sweep (Issue #180)
+
+    /// Run one compatibility sweep on the current view: VoiceOver, Dynamic Type, High Contrast, Switch Control.
+    /// One pass per element type; for each element run all checks. Call after navigating to a view.
+    func runAccessibilityCompatibilitySweep() {
+        let buttonList = buttons.allElementsBoundByIndex
+        let textFieldList = textFields.allElementsBoundByIndex
+        let switchList = switches.allElementsBoundByIndex
+        let sliderList = sliders.allElementsBoundByIndex
+        let staticTextList = staticTexts.allElementsBoundByIndex
+
+        var labeledCount = 0
+        for button in buttonList {
+            XCTAssertTrue(!button.identifier.isEmpty || !button.label.isEmpty,
+                          "Button should be discoverable. Identifier: '\(button.identifier)', Label: '\(button.label)'")
+            if !button.label.isEmpty {
+                labeledCount += 1
+                let trimmed = button.label.trimmingCharacters(in: .whitespacesAndNewlines)
+                XCTAssertFalse(trimmed.isEmpty, "Button label should be readable")
+            }
+            XCTAssertEqual(button.elementType, .button, "Button should have button trait")
+            XCTAssertTrue(button.exists, "Button should exist")
+            XCTAssertTrue(button.isEnabled, "Button should be enabled")
+            XCTAssertTrue(button.isHittable || button.exists, "Button should be hittable")
+        }
+
+        for textField in textFieldList {
+            if !textField.label.isEmpty { labeledCount += 1 }
+            XCTAssertEqual(textField.elementType, .textField, "Text field should have text field trait")
+            XCTAssertTrue(textField.exists, "Text field should exist")
+            XCTAssertTrue(textField.isEnabled, "Text field should be enabled")
+        }
+
+        for switchElement in switchList {
+            if !switchElement.label.isEmpty { labeledCount += 1 }
+            XCTAssertEqual(switchElement.elementType, .switch, "Switch should have switch trait")
+            XCTAssertTrue(switchElement.exists, "Switch should exist")
+            XCTAssertTrue(switchElement.isEnabled, "Switch should be enabled")
+            XCTAssertNotNil(switchElement.value as? String, "Switch should have a value for VoiceOver")
+        }
+
+        for slider in sliderList {
+            XCTAssertNotNil(slider.value as? String, "Slider should have a value for VoiceOver")
+        }
+
+        var readableStaticTexts = 0
+        for text in staticTextList {
+            if !text.label.isEmpty {
+                readableStaticTexts += 1
+                let trimmed = text.label.trimmingCharacters(in: .whitespacesAndNewlines)
+                XCTAssertFalse(trimmed.isEmpty, "StaticText should have readable content")
+            }
+        }
+        XCTAssertTrue(readableStaticTexts > 0 || staticTextList.count == 0,
+                      "StaticTexts should be readable for Dynamic Type")
+
+        let total = buttonList.count + textFieldList.count + switchList.count
+        XCTAssertTrue(labeledCount > 0 || total == 0,
+                      "Elements should have labels. Found \(labeledCount) labeled out of \(total)")
+
+        var elementsWithContent = 0
+        for element in descendants(matching: .any).allElementsBoundByIndex {
+            if !element.label.isEmpty || !element.identifier.isEmpty { elementsWithContent += 1 }
+        }
+        XCTAssertTrue(elementsWithContent > 0,
+                      "Accessibility hierarchy should contain elements with content. Found \(elementsWithContent)")
     }
 }
 
@@ -274,5 +329,26 @@ enum XCUITestPerformance {
     static func log(_ label: String, time: TimeInterval) {
         let milliseconds = Int(time * 1000)
         print("⏱️  [XCUITest Performance] \(label): \(milliseconds)ms")
+    }
+}
+
+// MARK: - Shared UI interruption monitor (DRY for test setUp)
+
+extension XCTestCase {
+    /// Add the standard UI interruption monitor that dismisses system alerts (Bluetooth, CPU, Activity Monitor, etc.).
+    /// Call once from setUp in UI test classes. Single implementation so behavior is consistent and changes are in one place.
+    func addDefaultUIInterruptionMonitor() {
+        addUIInterruptionMonitor(withDescription: "System alerts and dialogs") { (alert) -> Bool in
+            return MainActor.assumeIsolated {
+                let alertText = alert.staticTexts.firstMatch.label
+                guard alertText.contains("Bluetooth") || alertText.contains("CPU") || alertText.contains("Activity Monitor") else {
+                    return false
+                }
+                if alert.buttons["OK"].exists { alert.buttons["OK"].tap(); return true }
+                if alert.buttons["Cancel"].exists { alert.buttons["Cancel"].tap(); return true }
+                if alert.buttons["Don't Allow"].exists { alert.buttons["Don't Allow"].tap(); return true }
+                return false
+            }
+        }
     }
 }

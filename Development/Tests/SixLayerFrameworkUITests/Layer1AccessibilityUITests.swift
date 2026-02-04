@@ -32,27 +32,8 @@ final class Layer1AccessibilityUITests: XCTestCase {
         continueAfterFailure = false
         
         // Add UI interruption monitors to dismiss system dialogs quickly
-        addUIInterruptionMonitor(withDescription: "System alerts and dialogs") { (alert) -> Bool in
-            return MainActor.assumeIsolated {
-                let alertText = alert.staticTexts.firstMatch.label
-                if alertText.contains("Bluetooth") || alertText.contains("CPU") || alertText.contains("Activity Monitor") {
-                    if alert.buttons["OK"].exists {
-                        alert.buttons["OK"].tap()
-                        return true
-                    }
-                    if alert.buttons["Cancel"].exists {
-                        alert.buttons["Cancel"].tap()
-                        return true
-                    }
-                    if alert.buttons["Don't Allow"].exists {
-                        alert.buttons["Don't Allow"].tap()
-                        return true
-                    }
-                }
-                return false
-            }
-        }
-        
+        addDefaultUIInterruptionMonitor()
+
         // Launch the test app only. Each test expands its own sub menu once, then runs all asserts.
         nonisolated(unsafe) let instance = self
         MainActor.assumeIsolated {

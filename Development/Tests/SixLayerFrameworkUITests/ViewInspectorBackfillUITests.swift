@@ -16,26 +16,7 @@ final class ViewInspectorBackfillUITests: XCTestCase {
     nonisolated override func setUpWithError() throws {
         continueAfterFailure = false
 
-        addUIInterruptionMonitor(withDescription: "System alerts and dialogs") { (alert) -> Bool in
-            return MainActor.assumeIsolated {
-                let alertText = alert.staticTexts.firstMatch.label
-                if alertText.contains("Bluetooth") || alertText.contains("CPU") || alertText.contains("Activity Monitor") {
-                    if alert.buttons["OK"].exists {
-                        alert.buttons["OK"].tap()
-                        return true
-                    }
-                    if alert.buttons["Cancel"].exists {
-                        alert.buttons["Cancel"].tap()
-                        return true
-                    }
-                    if alert.buttons["Don't Allow"].exists {
-                        alert.buttons["Don't Allow"].tap()
-                        return true
-                    }
-                }
-                return false
-            }
-        }
+        addDefaultUIInterruptionMonitor()
 
         nonisolated(unsafe) let instance = self
         MainActor.assumeIsolated {

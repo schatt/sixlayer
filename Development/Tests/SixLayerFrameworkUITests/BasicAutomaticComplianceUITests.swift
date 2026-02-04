@@ -23,35 +23,8 @@ final class BasicAutomaticComplianceUITests: XCTestCase {
     nonisolated override func setUpWithError() throws {
         continueAfterFailure = false
         
-        // Add UI interruption monitors to dismiss system dialogs quickly
-        // This prevents XCUITest from waiting for Bluetooth, CPU, and other system dialogs
-        // Note: Closure must be nonisolated because addUIInterruptionMonitor doesn't accept @MainActor closures
-        // XCUITest runs on the main thread, so accessing main actor-isolated properties is safe
-        addUIInterruptionMonitor(withDescription: "System alerts and dialogs") { (alert) -> Bool in
-            // XCUITest interruption monitors are called on the main thread
-            // Use MainActor.assumeIsolated to access main actor-isolated properties
-            return MainActor.assumeIsolated {
-                // Dismiss any system alerts that might appear
-                let alertText = alert.staticTexts.firstMatch.label
-                if alertText.contains("Bluetooth") || alertText.contains("CPU") || alertText.contains("Activity Monitor") {
-                    // Try to dismiss by clicking "OK", "Cancel", or "Don't Allow" buttons
-                    if alert.buttons["OK"].exists {
-                        alert.buttons["OK"].tap()
-                        return true
-                    }
-                    if alert.buttons["Cancel"].exists {
-                        alert.buttons["Cancel"].tap()
-                        return true
-                    }
-                    if alert.buttons["Don't Allow"].exists {
-                        alert.buttons["Don't Allow"].tap()
-                        return true
-                    }
-                }
-                return false
-            }
-        }
-        
+        addDefaultUIInterruptionMonitor()
+
         // Launch the test app with performance optimizations
         // Use performance logging if enabled (SixLayerFrameworkUITests target sets USE_XCUITEST_PERFORMANCE)
         // Note: setUpWithError() is nonisolated (inherited from XCTestCase), so we need to use MainActor.assumeIsolated
