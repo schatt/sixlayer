@@ -10,7 +10,8 @@ import SwiftUI
 import SixLayerFramework
 
 struct IdentifierEdgeCaseTestView: View {
-    let onBackToMain: () -> Void
+    var onBackToMain: (() -> Void)? = nil
+    @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         platformScrollViewContainer {
@@ -20,7 +21,7 @@ struct IdentifierEdgeCaseTestView: View {
                     .automaticCompliance()
 
                 platformButton("Back to Main") {
-                    onBackToMain()
+                    if let action = onBackToMain { action() } else { dismiss() }
                 }
                 .accessibilityIdentifier("back-to-main-button")
                 .padding(.bottom)
