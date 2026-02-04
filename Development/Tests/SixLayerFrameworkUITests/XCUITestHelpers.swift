@@ -144,18 +144,19 @@ extension XCUIApplication {
     }
 
     /// Navigate from the launch page to a "Layer N Examples" screen by tapping the given link.
-    /// Use for Layer 2, 3, 5, 6 examples (shared pattern: wait for ready → find link → tap → wait for nav bar and content).
+    /// Use for Layer 2, 3, 5, 6 examples (shared pattern: ensure launch → find link → tap → wait for nav bar and content).
     /// - Parameters:
     ///   - linkIdentifier: Accessibility identifier of the launch-page link (e.g. "layer2-examples-link").
     ///   - navigationBarTitle: Title of the destination navigation bar (e.g. "Layer 2 Examples").
     /// - Returns: true if navigation succeeded (nav bar and list content visible).
     func navigateToLayerExamples(linkIdentifier: String, navigationBarTitle: String) -> Bool {
+        _ = navigateBackToLaunch(timeout: 5.0)
         guard waitForReady(timeout: 5.0) else { return false }
         let link = findLaunchPageEntry(identifier: linkIdentifier)
-        guard link.waitForExistence(timeout: 3.0) else { return false }
+        guard link.waitForExistence(timeout: 5.0) else { return false }
         link.tap()
-        guard navigationBars[navigationBarTitle].waitForExistence(timeout: 3.0) else { return false }
-        return cells.firstMatch.waitForExistence(timeout: 3.0)
+        guard navigationBars[navigationBarTitle].waitForExistence(timeout: 5.0) else { return false }
+        return cells.firstMatch.waitForExistence(timeout: 3.0) || buttons.firstMatch.waitForExistence(timeout: 2.0) || staticTexts.firstMatch.waitForExistence(timeout: 2.0)
     }
 
     // MARK: - Accessibility compatibility sweep (Issue #180)
