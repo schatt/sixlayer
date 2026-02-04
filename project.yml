@@ -258,12 +258,11 @@ targets:
     dependencies:
       - target: SixLayerFramework_visionOS
 
-  # Real UI tests - iOS (render views in actual windows)
+  # UI tests - iOS (XCUITest against TestApp; includes WindowRenderingTestHelper)
   SixLayerFrameworkRealUITests_iOS:
     type: bundle.ui-testing
     platform: iOS
     sources:
-      - path: Development/Tests/SixLayerFrameworkRealUITests
       - path: Development/Tests/SixLayerFrameworkUITests
         excludes:
           - "TestApp/**"
@@ -281,12 +280,11 @@ targets:
       - target: SixLayerFramework_iOS
       - target: SixLayerFrameworkTestApp_iOS
 
-  # Real UI tests - macOS (render views in actual windows)
+  # UI tests - macOS (XCUITest against TestApp; includes WindowRenderingTestHelper)
   SixLayerFrameworkRealUITests_macOS:
     type: bundle.ui-testing
     platform: macOS
     sources:
-      - path: Development/Tests/SixLayerFrameworkRealUITests
       - path: Development/Tests/SixLayerFrameworkUITests
         excludes:
           - "TestApp/**"
@@ -305,12 +303,15 @@ targets:
       - target: SixLayerFramework_macOS
       - target: SixLayerFrameworkTestApp_macOS
 
-  # Real UI tests - tvOS (render views in actual windows)
+  # UI tests - tvOS (same test sources; no TestApp for tvOS)
   SixLayerFrameworkRealUITests_tvOS:
     type: bundle.ui-testing
     platform: tvOS
     sources:
-      - path: Development/Tests/SixLayerFrameworkRealUITests
+      - path: Development/Tests/SixLayerFrameworkUITests
+        excludes:
+          - "TestApp/**"
+          - "README.md"
     settings:
       PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.framework.real-ui-tests
       SWIFT_VERSION: "6.0"
@@ -322,12 +323,15 @@ targets:
     dependencies:
       - target: SixLayerFramework_tvOS
 
-  # Real UI tests - watchOS (render views in actual windows)
+  # UI tests - watchOS (same test sources; no TestApp for watchOS)
   SixLayerFrameworkRealUITests_watchOS:
     type: bundle.ui-testing
     platform: watchOS
     sources:
-      - path: Development/Tests/SixLayerFrameworkRealUITests
+      - path: Development/Tests/SixLayerFrameworkUITests
+        excludes:
+          - "TestApp/**"
+          - "README.md"
     settings:
       PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.framework.real-ui-tests
       SWIFT_VERSION: "6.0"
@@ -339,12 +343,15 @@ targets:
     dependencies:
       - target: SixLayerFramework_watchOS
 
-  # Real UI tests - visionOS (render views in actual windows)
+  # UI tests - visionOS (same test sources; no TestApp for visionOS)
   SixLayerFrameworkRealUITests_visionOS:
     type: bundle.ui-testing
     platform: visionOS
     sources:
-      - path: Development/Tests/SixLayerFrameworkRealUITests
+      - path: Development/Tests/SixLayerFrameworkUITests
+        excludes:
+          - "TestApp/**"
+          - "README.md"
     settings:
       PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.framework.real-ui-tests
       SWIFT_VERSION: "6.0"
