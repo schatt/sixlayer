@@ -58,14 +58,21 @@ final class Layer4UITests: XCTestCase {
             XCTFail("Should navigate to Layer 4 Examples")
             return
         }
-        if app.scrollViews.firstMatch.exists { app.scrollViews.firstMatch.swipeDown() }
+        _ = app.navigationBars["Layer 4 Examples"].waitForExistence(timeout: 2.0)
+        let scrollView = app.scrollViews.firstMatch
+        if scrollView.exists {
+            scrollView.swipeDown()
+            scrollView.swipeDown()
+        }
         let label = entryIdentifier.replacingOccurrences(of: "test-view-", with: "")
         var el: XCUIElement?
-        if let link = app.findElement(byIdentifier: entryIdentifier, primaryType: .button, secondaryTypes: [.link, .cell, .staticText, .other, .any], timeout: 4.0), link.waitForExistence(timeout: 1.0) {
+        if let link = app.findElement(byIdentifier: entryIdentifier, primaryType: .button, secondaryTypes: [.link, .cell, .staticText, .other, .any], timeout: 5.0), link.waitForExistence(timeout: 2.0) {
             el = link
-        } else if app.buttons[label].waitForExistence(timeout: 2.0) {
+        } else if app.links[label].waitForExistence(timeout: 3.0) {
+            el = app.links[label]
+        } else if app.buttons[label].waitForExistence(timeout: 3.0) {
             el = app.buttons[label]
-        } else if app.staticTexts[label].waitForExistence(timeout: 1.0) {
+        } else if app.staticTexts[label].waitForExistence(timeout: 2.0) {
             el = app.staticTexts[label]
         }
         guard let tapTarget = el else {
