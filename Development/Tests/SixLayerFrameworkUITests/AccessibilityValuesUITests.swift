@@ -130,8 +130,12 @@ final class AccessibilityValuesUITests: XCTestCase {
         // When: Toggle the switch
         firstSwitch.tap()
         
-        // Wait for state to update
-        sleep(1)
+        // Wait for state to update (value change or timeout)
+        let deadline = Date().addingTimeInterval(2.0)
+        while Date() < deadline {
+            if (firstSwitch.value as? String) != initialValue { break }
+            Thread.sleep(forTimeInterval: 0.1)
+        }
         
         // Then: Value should change
         let newValue = firstSwitch.value as? String
