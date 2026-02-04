@@ -69,17 +69,16 @@ final class Layer1AccessibilityUITests: XCTestCase {
             XCTFail("Layer 1 examples toggle button should exist")
             return
         }
-        var dataPresentationLink = app.findElement(byIdentifier: layer1CategoryLinkIdentifier("Data Presentation"), primaryType: .button, secondaryTypes: [.cell, .staticText, .link, .any])
+        let linkId = layer1CategoryLinkIdentifier("Data Presentation")
         if (toggleButton.value as? String) != "1" {
             toggleButton.tap()
-            _ = dataPresentationLink?.waitForExistence(timeout: 5.0)
-        }
-        if dataPresentationLink == nil {
-            dataPresentationLink = app.findElement(byIdentifier: layer1CategoryLinkIdentifier("Data Presentation"), primaryType: .button, secondaryTypes: [.cell, .staticText, .link, .any])
-        }
-        guard let link = dataPresentationLink, link.waitForExistence(timeout: 5.0) else {
-            XCTFail("Layer 1 category links should exist after expanding (e.g. Data Presentation)")
-            return
+            // Wait for link after expand; single query avoids 6 failed findElement attempts + snapshots.
+            let found = app.buttons[linkId].waitForExistence(timeout: 5.0)
+                || app.cells[linkId].waitForExistence(timeout: 1.0)
+            XCTAssertTrue(found, "Layer 1 category links should exist after expanding (e.g. Data Presentation)")
+        } else {
+            XCTAssertTrue(app.buttons[linkId].waitForExistence(timeout: 1.0) || app.cells[linkId].waitForExistence(timeout: 1.0),
+                          "Layer 1 category links should exist when already expanded")
         }
     }
     
