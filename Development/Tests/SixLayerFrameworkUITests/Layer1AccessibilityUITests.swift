@@ -178,6 +178,8 @@ final class Layer1AccessibilityUITests: XCTestCase {
             return
         }
         option!.tap()
+        // Wait for menu to dismiss so next iteration (or content query) doesn't hit "Failed to not hittable".
+        _ = option!.waitForNotHittable(timeout: 3.0)
         sleep(1)
     }
     
