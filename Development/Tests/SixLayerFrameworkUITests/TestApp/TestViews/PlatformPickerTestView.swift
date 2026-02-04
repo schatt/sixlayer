@@ -9,8 +9,9 @@ import SwiftUI
 import SixLayerFramework
 
 struct PlatformPickerTestView: View {
-    let onBackToMain: () -> Void
-    
+    var onBackToMain: (() -> Void)? = nil
+    @Environment(\.dismiss) private var dismiss
+
     @State private var platformPickerSelection: String = "Option1"
     
     // Options for platformPicker test (Issue #163)
@@ -35,7 +36,7 @@ struct PlatformPickerTestView: View {
             
             // Back to main page button
             platformButton("Back to Main") {
-                onBackToMain()
+                if let action = onBackToMain { action() } else { dismiss() }
             }
             .accessibilityIdentifier("back-to-main-button")
         }
