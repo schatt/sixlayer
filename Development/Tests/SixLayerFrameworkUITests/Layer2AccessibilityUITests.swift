@@ -80,8 +80,8 @@ final class Layer2AccessibilityUITests: XCTestCase {
             return
         }
         
-        // Wait for content to appear
-        sleep(1)
+        // Wait for list content to appear
+        _ = app.cells.firstMatch.waitForExistence(timeout: 3.0)
     }
     
     /// Verify an element has accessibility identifier
