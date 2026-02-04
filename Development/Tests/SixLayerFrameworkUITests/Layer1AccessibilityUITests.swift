@@ -323,7 +323,7 @@ final class Layer1AccessibilityUITests: XCTestCase {
                 break
             }
             goBackFromLayer1Category()
-            _ = app.staticTexts["UI Test Views"].waitForExistence(timeout: 3.0)
+            _ = app.staticTexts["UI Test Views"].waitForExistence(timeout: 1.5)
         }
     }
 }
