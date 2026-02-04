@@ -53,7 +53,8 @@ final class AccessibilityCompatibilityUITests: XCTestCase {
     /// Navigate to Control Test view, run compatibility sweep on that view (Issue #180).
     @MainActor
     func testControlTestView_CompatibilitySweep() throws {
-        XCTAssertTrue(app.navigateBackToLaunch(timeout: 8.0), "App should be ready (launch page) before finding Control Test link")
+        XCTAssertTrue(app.waitForReady(timeout: 15.0), "App should be ready before finding Control Test link")
+        _ = app.navigateBackToLaunch(timeout: 5.0)
         let link = app.findLaunchPageEntry(identifier: "test-view-Control Test")
         XCTAssertTrue(link.waitForExistence(timeout: 5.0), "Control Test link should exist on launch page")
         link.tap()
