@@ -259,7 +259,7 @@ targets:
       - target: SixLayerFramework_visionOS
 
   # UI tests - iOS (XCUITest against TestApp; includes WindowRenderingTestHelper)
-  SixLayerFrameworkRealUITests_iOS:
+  SixLayerFrameworkUITests_iOS:
     type: bundle.ui-testing
     platform: iOS
     sources:
@@ -268,7 +268,7 @@ targets:
           - "TestApp/**"
           - "README.md"
     settings:
-      PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.framework.real-ui-tests
+      PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.framework.ui-tests
       SWIFT_VERSION: "6.0"
       GENERATE_INFOPLIST_FILE: YES
       CODE_SIGN_STYLE: Automatic
@@ -281,7 +281,7 @@ targets:
       - target: SixLayerFrameworkTestApp_iOS
 
   # UI tests - macOS (XCUITest against TestApp; includes WindowRenderingTestHelper)
-  SixLayerFrameworkRealUITests_macOS:
+  SixLayerFrameworkUITests_macOS:
     type: bundle.ui-testing
     platform: macOS
     sources:
@@ -290,7 +290,7 @@ targets:
           - "TestApp/**"
           - "README.md"
     settings:
-      PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.framework.real-ui-tests
+      PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.framework.ui-tests
       SWIFT_VERSION: "6.0"
       GENERATE_INFOPLIST_FILE: YES
       CODE_SIGN_STYLE: Automatic
@@ -304,7 +304,7 @@ targets:
       - target: SixLayerFrameworkTestApp_macOS
 
   # UI tests - tvOS (same test sources; no TestApp for tvOS)
-  SixLayerFrameworkRealUITests_tvOS:
+  SixLayerFrameworkUITests_tvOS:
     type: bundle.ui-testing
     platform: tvOS
     sources:
@@ -313,7 +313,7 @@ targets:
           - "TestApp/**"
           - "README.md"
     settings:
-      PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.framework.real-ui-tests
+      PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.framework.ui-tests
       SWIFT_VERSION: "6.0"
       GENERATE_INFOPLIST_FILE: YES
       CODE_SIGN_STYLE: Automatic
@@ -324,7 +324,7 @@ targets:
       - target: SixLayerFramework_tvOS
 
   # UI tests - watchOS (same test sources; no TestApp for watchOS)
-  SixLayerFrameworkRealUITests_watchOS:
+  SixLayerFrameworkUITests_watchOS:
     type: bundle.ui-testing
     platform: watchOS
     sources:
@@ -333,7 +333,7 @@ targets:
           - "TestApp/**"
           - "README.md"
     settings:
-      PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.framework.real-ui-tests
+      PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.framework.ui-tests
       SWIFT_VERSION: "6.0"
       GENERATE_INFOPLIST_FILE: YES
       CODE_SIGN_STYLE: Automatic
@@ -344,7 +344,7 @@ targets:
       - target: SixLayerFramework_watchOS
 
   # UI tests - visionOS (same test sources; no TestApp for visionOS)
-  SixLayerFrameworkRealUITests_visionOS:
+  SixLayerFrameworkUITests_visionOS:
     type: bundle.ui-testing
     platform: visionOS
     sources:
@@ -353,7 +353,7 @@ targets:
           - "TestApp/**"
           - "README.md"
     settings:
-      PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.framework.real-ui-tests
+      PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.framework.ui-tests
       SWIFT_VERSION: "6.0"
       GENERATE_INFOPLIST_FILE: YES
       CODE_SIGN_STYLE: Automatic
@@ -551,7 +551,7 @@ schemes:
       targets:
         - SixLayerFrameworkUnitTests_iOS
         - SLFiOSViewInspectorTests
-        - SixLayerFrameworkRealUITests_iOS
+        - SixLayerFrameworkUITests_iOS
         - SixLayerFrameworkExternalIntegrationTests_iOS
 
   SLF-macOS-AllTests:
@@ -563,7 +563,7 @@ schemes:
       targets:
         - SixLayerFrameworkUnitTests_macOS
         - SLFmacOSViewInspectorTests
-        - SixLayerFrameworkRealUITests_macOS
+        - SixLayerFrameworkUITests_macOS
         - SixLayerFrameworkExternalIntegrationTests_macOS
 
   SLF-iOS-UnitTests:
@@ -589,20 +589,20 @@ schemes:
       targets:
         SixLayerFramework_macOS: all
         SixLayerFrameworkTestApp_macOS: all
-        SixLayerFrameworkRealUITests_macOS: all
+        SixLayerFrameworkUITests_macOS: all
     test:
       targets:
-        - SixLayerFrameworkRealUITests_macOS
+        - SixLayerFrameworkUITests_macOS
 
   SLF-iOS-UITests:
     build:
       targets:
         SixLayerFramework_iOS: all
         SixLayerFrameworkTestApp_iOS: all
-        SixLayerFrameworkRealUITests_iOS: all
+        SixLayerFrameworkUITests_iOS: all
     test:
       targets:
-        - SixLayerFrameworkRealUITests_iOS
+        - SixLayerFrameworkUITests_iOS
 
   SLF-macOS-ViewInspectorTests:
     build:
@@ -641,7 +641,7 @@ schemes:
     test:
       targets:
         - SixLayerFrameworkUnitTests_tvOS
-        - SixLayerFrameworkRealUITests_tvOS
+        - SixLayerFrameworkUITests_tvOS
         - SixLayerFrameworkExternalIntegrationTests_tvOS
 
   SLF-tvOS-UnitTests:
@@ -672,7 +672,7 @@ schemes:
     test:
       targets:
         - SixLayerFrameworkUnitTests_watchOS
-        - SixLayerFrameworkRealUITests_watchOS
+        - SixLayerFrameworkUITests_watchOS
         - SixLayerFrameworkExternalIntegrationTests_watchOS
 
   SLF-watchOS-UnitTests:
@@ -703,7 +703,7 @@ schemes:
     test:
       targets:
         - SixLayerFrameworkUnitTests_visionOS
-        - SixLayerFrameworkRealUITests_visionOS
+        - SixLayerFrameworkUITests_visionOS
         - SixLayerFrameworkExternalIntegrationTests_visionOS
 
   SLF-visionOS-UnitTests:
