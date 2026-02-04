@@ -102,15 +102,13 @@ struct TestAppContentView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 8) {
                 sectionHeader("Accessibility Tests")
-                ForEach(TestView.allCases) { testView in
-                    Group {
-                        Button(testView.rawValue) {
-                            selectedTest = testView
-                        }
+                Group {
+                    Button(TestView.control.rawValue) {
+                        selectedTest = .control
                     }
-                    .accessibilityIdentifier("test-view-\(testView.id)")
-                    .accessibilityElement(children: .combine)
                 }
+                .accessibilityIdentifier("test-view-\(TestView.control.id)")
+                .accessibilityElement(children: .combine)
                 
                 sectionHeader("Layer 1 Examples (Issue #166)")
                 Group {
