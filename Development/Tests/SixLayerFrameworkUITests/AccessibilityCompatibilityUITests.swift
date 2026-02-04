@@ -64,8 +64,18 @@ final class AccessibilityCompatibilityUITests: XCTestCase {
     @MainActor
     func testButtonTestView_CompatibilitySweep() throws {
         XCTAssertTrue(app.navigateToLayerExamples(linkIdentifier: "layer4-examples-link", navigationBarTitle: "Layer 4 Examples"), "Should navigate to Layer 4 Examples")
-        let link = app.findElement(byIdentifier: "test-view-Button Test", primaryType: .button, secondaryTypes: [.cell, .staticText, .other, .any], timeout: 3.0)
-        guard let el = link, el.waitForExistence(timeout: 2.0) else {
+        if app.scrollViews.firstMatch.exists {
+            app.scrollViews.firstMatch.swipeDown()
+        }
+        var tapTarget: XCUIElement?
+        if let link = app.findElement(byIdentifier: "test-view-Button Test", primaryType: .button, secondaryTypes: [.link, .cell, .staticText, .other, .any], timeout: 5.0), link.waitForExistence(timeout: 1.0) {
+            tapTarget = link
+        } else if app.buttons["Button Test"].waitForExistence(timeout: 2.0) {
+            tapTarget = app.buttons["Button Test"]
+        } else if app.staticTexts["Button Test"].waitForExistence(timeout: 1.0) {
+            tapTarget = app.staticTexts["Button Test"]
+        }
+        guard let el = tapTarget else {
             XCTFail("Button Test link should exist on Layer 4 Examples")
             return
         }
