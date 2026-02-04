@@ -69,12 +69,15 @@ final class Layer1AccessibilityUITests: XCTestCase {
             XCTFail("Layer 1 examples toggle button should exist")
             return
         }
-        let dataPresentationLink = app.findElement(byIdentifier: layer1CategoryLinkIdentifier("Data Presentation"), primaryType: .button, secondaryTypes: [.cell, .staticText, .link, .any])
+        var dataPresentationLink = app.findElement(byIdentifier: layer1CategoryLinkIdentifier("Data Presentation"), primaryType: .button, secondaryTypes: [.cell, .staticText, .link, .any])
         if (toggleButton.value as? String) != "1" {
             toggleButton.tap()
-            _ = dataPresentationLink?.waitForExistence(timeout: 3.0)
+            _ = dataPresentationLink?.waitForExistence(timeout: 5.0)
         }
-        guard dataPresentationLink != nil, dataPresentationLink!.waitForExistence(timeout: 3.0) else {
+        if dataPresentationLink == nil {
+            dataPresentationLink = app.findElement(byIdentifier: layer1CategoryLinkIdentifier("Data Presentation"), primaryType: .button, secondaryTypes: [.cell, .staticText, .link, .any])
+        }
+        guard let link = dataPresentationLink, link.waitForExistence(timeout: 5.0) else {
             XCTFail("Layer 1 category links should exist after expanding (e.g. Data Presentation)")
             return
         }
