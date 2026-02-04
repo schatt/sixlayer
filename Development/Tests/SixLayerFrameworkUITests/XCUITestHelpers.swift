@@ -143,6 +143,21 @@ extension XCUIApplication {
         return staticTexts["UI Test Views"].waitForExistence(timeout: 0.5)
     }
 
+    /// Navigate from the launch page to a "Layer N Examples" screen by tapping the given link.
+    /// Use for Layer 2, 3, 5, 6 examples (shared pattern: wait for ready → find link → tap → wait for nav bar and content).
+    /// - Parameters:
+    ///   - linkIdentifier: Accessibility identifier of the launch-page link (e.g. "layer2-examples-link").
+    ///   - navigationBarTitle: Title of the destination navigation bar (e.g. "Layer 2 Examples").
+    /// - Returns: true if navigation succeeded (nav bar and list content visible).
+    func navigateToLayerExamples(linkIdentifier: String, navigationBarTitle: String) -> Bool {
+        guard waitForReady(timeout: 5.0) else { return false }
+        let link = findLaunchPageEntry(identifier: linkIdentifier)
+        guard link.waitForExistence(timeout: 3.0) else { return false }
+        link.tap()
+        guard navigationBars[navigationBarTitle].waitForExistence(timeout: 3.0) else { return false }
+        return cells.firstMatch.waitForExistence(timeout: 3.0)
+    }
+
     // MARK: - Accessibility compatibility sweep (Issue #180)
 
     /// Run one compatibility sweep on the current view: VoiceOver, Dynamic Type, High Contrast, Switch Control.
