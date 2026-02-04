@@ -69,11 +69,11 @@ final class Layer1AccessibilityUITests: XCTestCase {
             XCTFail("Layer 1 examples toggle button should exist")
             return
         }
+        let dataPresentationLink = app.findElement(byIdentifier: layer1CategoryLinkIdentifier("Data Presentation"), primaryType: .button, secondaryTypes: [.cell, .staticText, .link, .any])
         if (toggleButton.value as? String) != "1" {
             toggleButton.tap()
-            sleep(1)
+            _ = dataPresentationLink?.waitForExistence(timeout: 3.0)
         }
-        let dataPresentationLink = app.findElement(byIdentifier: layer1CategoryLinkIdentifier("Data Presentation"), primaryType: .button, secondaryTypes: [.cell, .staticText, .link, .any])
         guard dataPresentationLink != nil, dataPresentationLink!.waitForExistence(timeout: 3.0) else {
             XCTFail("Layer 1 category links should exist after expanding (e.g. Data Presentation)")
             return
@@ -142,7 +142,7 @@ final class Layer1AccessibilityUITests: XCTestCase {
                 XCTFail("Category '\(categoryName)' content (\(contentId)) should appear after navigation")
             }
         } else {
-            sleep(1)
+            _ = app.navigationBars.buttons.firstMatch.waitForExistence(timeout: 2.0)
         }
     }
 
@@ -317,7 +317,7 @@ final class Layer1AccessibilityUITests: XCTestCase {
                 break
             }
             goBackFromLayer1Category()
-            sleep(1)
+            _ = app.staticTexts["UI Test Views"].waitForExistence(timeout: 3.0)
         }
     }
 }
