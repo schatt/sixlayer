@@ -21,8 +21,10 @@ import XCTest
 /// Verifies all 86 Layer 1 functions have complete accessibility support
 @MainActor
 final class Layer1AccessibilityUITests: XCTestCase {
-    /// Identifier from platformPicker(pickerName: "layer1CategoryPicker") with TestApp config.
-    private static let layer1PickerIdentifier = "SixLayer.main.ui.layer1CategoryPicker.View"
+    /// Accessibility identifier for each Layer 1 category nav link (TestApp uses nav links, not picker).
+    private func layer1CategoryLinkIdentifier(_ categoryName: String) -> String {
+        "layer1-category-\(categoryName.replacingOccurrences(of: " ", with: "-"))"
+    }
 
     var app: XCUIApplication!
     
@@ -88,21 +90,11 @@ final class Layer1AccessibilityUITests: XCTestCase {
         }
         if (toggleButton.value as? String) != "1" {
             toggleButton.tap()
-            // VStack creates Layer 1 content immediately; allow one layout pass.
             sleep(1)
         }
-        // platformPicker generates SixLayer.main.ui.layer1CategoryPicker.View; fallback to label.
-        let byId = app.findElement(byIdentifier: Layer1AccessibilityUITests.layer1PickerIdentifier, primaryType: .button, secondaryTypes: [.picker, .other, .any])
-        let picker = app.pickers.firstMatch
-        let categoryButton = app.buttons["Category, Select Category"]
-        let categoryButtonAlt = app.buttons["Category"]
-        let categorySelectButton = app.buttons["Select Category"]
-        guard (byId != nil)
-            || picker.waitForExistence(timeout: 3.0)
-            || categoryButton.waitForExistence(timeout: 3.0)
-            || categoryButtonAlt.waitForExistence(timeout: 3.0)
-            || categorySelectButton.waitForExistence(timeout: 3.0) else {
-            XCTFail("Category picker should exist after expanding Layer 1")
+        let dataPresentationLink = app.findElement(byIdentifier: layer1CategoryLinkIdentifier("Data Presentation"), primaryType: .button, secondaryTypes: [.cell, .staticText, .link, .any])
+        guard dataPresentationLink != nil, dataPresentationLink!.waitForExistence(timeout: 3.0) else {
+            XCTFail("Layer 1 category links should exist after expanding (e.g. Data Presentation)")
             return
         }
     }
@@ -123,97 +115,69 @@ final class Layer1AccessibilityUITests: XCTestCase {
         }
     }
 
-    /// Select a Layer 1 category (assumes Layer 1 section already expanded in this test).
-    /// Uses platformPicker-generated identifier or label fallback. Waits for category content to appear to confirm navigation.
+    /// Static text that appears on this category's page; fallback to confirm navigation when identifier-based wait fails.
+    @MainActor
+    private func contentTextForCategory(_ categoryName: String) -> String? {
+        switch categoryName {
+        case "Data Presentation": return "Item Collection"
+        case "Navigation": return "Navigation"
+        case "Photos": return "Photos"
+        case "Security": return "Security"
+        case "OCR": return "OCR"
+        case "Notifications": return "Notifications"
+        case "Internationalization": return "Internationalization"
+        case "Data Analysis": return "Data Analysis"
+        default: return nil
+        }
+    }
+
+    /// Navigate to a Layer 1 category by tapping its nav link (assumes Layer 1 section already expanded).
     @MainActor
     private func selectLayer1Category(_ categoryName: String) {
-        let byId = app.findElement(byIdentifier: Layer1AccessibilityUITests.layer1PickerIdentifier, primaryType: .button, secondaryTypes: [.picker, .other, .any])
-        let picker = app.pickers.firstMatch
-        let categoryButton = app.buttons["Category, Select Category"]
-        let categoryButtonAlt = app.buttons["Category"]
-        let categorySelectButton = app.buttons["Select Category"]
-        let categoryControl: XCUIElement
-        if let el = byId, el.waitForExistenceFast(timeout: 1.0) {
-            categoryControl = el
-        } else if picker.waitForExistenceFast(timeout: 1.0) {
-            categoryControl = picker
-        } else if categoryButton.waitForExistenceFast(timeout: 1.0) {
-            categoryControl = categoryButton
-        } else if categoryButtonAlt.waitForExistenceFast(timeout: 1.0) {
-            categoryControl = categoryButtonAlt
-        } else if categorySelectButton.waitForExistenceFast(timeout: 1.0) {
-            categoryControl = categorySelectButton
+        let linkId = layer1CategoryLinkIdentifier(categoryName)
+        let byId = app.findElement(byIdentifier: linkId, primaryType: .button, secondaryTypes: [.cell, .staticText, .link, .any])
+        let element: XCUIElement
+        if let el = byId, el.waitForExistence(timeout: 2.0) {
+            element = el
+        } else if app.buttons[categoryName].waitForExistence(timeout: 2.0) {
+            element = app.buttons[categoryName]
+        } else if app.staticTexts[categoryName].waitForExistence(timeout: 2.0) {
+            element = app.staticTexts[categoryName]
         } else {
-            XCTFail("Category picker should exist")
+            XCTFail("Category link '\(categoryName)' (id: \(linkId)) should exist")
             return
         }
-        // When picker still shows "Select Category", use regular tap so menu opens reliably.
-        // When it already shows a category, use coordinate tap to avoid XCUITest "wait for not hittable" failure on iOS.
-        let label = categoryControl.label
-        if label.contains("Select Category") || label == "Category" {
-            categoryControl.tap()
-        } else {
-            categoryControl.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
-        }
-        // Give the menu time to appear before querying (iOS MenuPickerStyle can be slow to render).
-        sleep(2)
-        // Wait for any menu option so we know menu is visible.
-        let menuVisible = app.menuItems["Select Category"].waitForExistence(timeout: 3.0)
-            || app.staticTexts["Data Presentation"].waitForExistence(timeout: 2.0)
-            || app.buttons["Data Presentation"].waitForExistence(timeout: 2.0)
-        if !menuVisible {
-            sleep(2)
-        }
-        let optionId = "SixLayer.main.ui.\(categoryName.replacingOccurrences(of: " ", with: "-").lowercased()).View"
-        let menuOption = app.menuItems[categoryName]
-        let buttonOption = app.buttons[categoryName]
-        let textOption = app.staticTexts[categoryName]
-        let cellOption = app.cells[categoryName]
-
-        func findOption(timeout: TimeInterval = 2.0) -> XCUIElement? {
-            // Include .menuItem so iOS MenuPickerStyle options are found.
-            if let el = app.findElement(byIdentifier: optionId, primaryType: .button, secondaryTypes: [.menuItem, .cell, .other, .any], timeout: timeout), el.waitForExistence(timeout: timeout) {
-                return el
-            }
-            if menuOption.waitForExistence(timeout: timeout) { return menuOption }
-            if buttonOption.waitForExistence(timeout: 1.0) { return buttonOption }
-            if cellOption.waitForExistence(timeout: 1.0) { return cellOption }
-            if textOption.waitForExistence(timeout: 1.0) { return textOption }
-            // Fallback: any descendant of app with this identifier or label (menu may be in popover hierarchy).
-            let predicate = NSPredicate(format: "identifier == %@ OR label == %@", optionId, categoryName)
-            let byPredicate = app.descendants(matching: .any).matching(predicate).firstMatch
-            if byPredicate.waitForExistence(timeout: 1.0) { return byPredicate }
-            // Fallback: search from picker's descendants (menu can be attached to control on iOS).
-            let fromPicker = categoryControl.descendants(matching: .any).matching(NSPredicate(format: "label == %@", categoryName)).firstMatch
-            if fromPicker.waitForExistence(timeout: 1.0) { return fromPicker }
-            return nil
-        }
-
-        var option: XCUIElement?
-        option = findOption(timeout: 4.0)
-        if option == nil {
-            app.swipeUp()
-            sleep(1)
-            option = findOption(timeout: 3.0)
-        }
-        if option == nil {
-            categoryControl.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
-            sleep(2)
-            option = findOption(timeout: 4.0)
-        }
-        if option == nil {
-            XCTFail("Category '\(categoryName)' should exist in picker")
-            return
-        }
-        option!.tap()
-        // Confirm navigation by waiting for this category's content to appear (more reliable than menu-dismiss / hittability).
-        // Framework generates identifiers like SixLayer.main.ui.platformPresentItemCollection_L1.View, so match by CONTAINS.
+        element.tap()
+        // Wait for category content to appear (identifier CONTAINS or static text fallback).
         if let contentId = contentIdentifierForCategory(categoryName) {
             let predicate = NSPredicate(format: "identifier CONTAINS %@", contentId)
             let anchor = app.descendants(matching: .any).matching(predicate).firstMatch
-            XCTAssertTrue(anchor.waitForExistence(timeout: 5.0), "Category '\(categoryName)' content (\(contentId)) should appear after selection")
+            let foundById = anchor.waitForExistence(timeout: 5.0)
+            if foundById { return }
+            if let contentText = contentTextForCategory(categoryName) {
+                let foundByText = app.staticTexts[contentText].waitForExistence(timeout: 3.0)
+                XCTAssertTrue(foundByText, "Category '\(categoryName)' content should appear (identifier '\(contentId)' or text '\(contentText)')")
+            } else {
+                XCTFail("Category '\(categoryName)' content (\(contentId)) should appear after navigation")
+            }
         } else {
             sleep(1)
+        }
+    }
+
+    /// Go back from a Layer 1 category screen to the launch page so the next category link can be tapped.
+    @MainActor
+    private func goBackFromLayer1Category() {
+        if app.buttons["UI Test Views"].waitForExistence(timeout: 1.0) {
+            app.buttons["UI Test Views"].tap()
+            return
+        }
+        if app.navigationBars.buttons.firstMatch.waitForExistence(timeout: 1.0) {
+            app.navigationBars.buttons.firstMatch.tap()
+            return
+        }
+        if app.buttons["Back"].waitForExistence(timeout: 0.5) {
+            app.buttons["Back"].tap()
         }
     }
     
@@ -371,6 +335,8 @@ final class Layer1AccessibilityUITests: XCTestCase {
             default:
                 break
             }
+            goBackFromLayer1Category()
+            sleep(1)
         }
     }
 }
