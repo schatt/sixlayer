@@ -19,13 +19,14 @@ options:
   indentWidth: 4
   tabWidth: 4
 
-# Project-level build settings (includes Xcode recommended: Missing Localizability, String Catalog symbols)
+# Project-level build settings (Xcode recommended: localizability, symbols, asset extensions)
 settings:
   base:
     DEAD_CODE_STRIPPING: YES
     ENABLE_USER_SCRIPT_SANDBOXING: YES
     SWIFT_STRING_CATALOG_SYMBOL_GENERATION: YES
     CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED: YES
+    ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS: YES
   configs:
     Debug:
       DEAD_CODE_STRIPPING: YES
