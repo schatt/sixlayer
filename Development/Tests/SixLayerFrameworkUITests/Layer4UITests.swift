@@ -58,12 +58,21 @@ final class Layer4UITests: XCTestCase {
             XCTFail("Should navigate to Layer 4 Examples")
             return
         }
-        let link = app.findElement(byIdentifier: entryIdentifier, primaryType: .button, secondaryTypes: [.cell, .staticText, .other, .any], timeout: 3.0)
-        guard let el = link, el.waitForExistence(timeout: 2.0) else {
+        if app.scrollViews.firstMatch.exists { app.scrollViews.firstMatch.swipeDown() }
+        let label = entryIdentifier.replacingOccurrences(of: "test-view-", with: "")
+        var el: XCUIElement?
+        if let link = app.findElement(byIdentifier: entryIdentifier, primaryType: .button, secondaryTypes: [.link, .cell, .staticText, .other, .any], timeout: 4.0), link.waitForExistence(timeout: 1.0) {
+            el = link
+        } else if app.buttons[label].waitForExistence(timeout: 2.0) {
+            el = app.buttons[label]
+        } else if app.staticTexts[label].waitForExistence(timeout: 1.0) {
+            el = app.staticTexts[label]
+        }
+        guard let tapTarget = el else {
             XCTFail("\(entryIdentifier) should exist on Layer 4 Examples")
             return
         }
-        el.tap()
+        tapTarget.tap()
     }
 
     // MARK: - Control Test view (identifiers, values)
