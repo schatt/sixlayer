@@ -107,8 +107,24 @@ final class Layer1AccessibilityUITests: XCTestCase {
         }
     }
     
+    /// Content identifier that appears on this category's page; used to confirm navigation.
+    @MainActor
+    private func contentIdentifierForCategory(_ categoryName: String) -> String? {
+        switch categoryName {
+        case "Data Presentation": return "platformPresentItemCollection_L1"
+        case "Navigation": return "platformPresentNavigationStack_L1"
+        case "Photos": return "platformPhotoCapture_L1"
+        case "Security": return "platformPresentSecureContent_L1"
+        case "OCR": return "platformOCRWithDisambiguation_L1"
+        case "Notifications": return "platformPresentAlert_L1"
+        case "Internationalization": return "platformPresentLocalizedText_L1"
+        case "Data Analysis": return "platformAnalyzeDataFrame_L1"
+        default: return nil
+        }
+    }
+
     /// Select a Layer 1 category (assumes Layer 1 section already expanded in this test).
-    /// Uses platformPicker-generated identifier or label fallback.
+    /// Uses platformPicker-generated identifier or label fallback. Waits for category content to appear to confirm navigation.
     @MainActor
     private func selectLayer1Category(_ categoryName: String) {
         let byId = app.findElement(byIdentifier: Layer1AccessibilityUITests.layer1PickerIdentifier, primaryType: .button, secondaryTypes: [.picker, .other, .any])
@@ -180,9 +196,13 @@ final class Layer1AccessibilityUITests: XCTestCase {
             return
         }
         option!.tap()
-        // Wait for menu to dismiss so next iteration (or content query) doesn't hit "Failed to not hittable".
-        _ = option!.waitForNotHittable(timeout: 3.0)
-        sleep(1)
+        // Confirm navigation by waiting for this category's content to appear (more reliable than menu-dismiss / hittability).
+        if let contentId = contentIdentifierForCategory(categoryName) {
+            let anchor = app.descendants(matching: .any).matching(identifier: contentId).firstMatch
+            XCTAssertTrue(anchor.waitForExistence(timeout: 5.0), "Category '\(categoryName)' content (\(contentId)) should appear after selection")
+        } else {
+            sleep(1)
+        }
     }
     
     /// Verify an element has accessibility identifier
