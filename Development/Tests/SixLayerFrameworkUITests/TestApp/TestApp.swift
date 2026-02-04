@@ -29,7 +29,6 @@ struct TestApp: App {
 struct TestAppContentView: View {
     @State private var selectedTest: TestView? = nil
     @State private var showLayer1Examples = false
-    @State private var selectedCategory: TestCategory? = nil
     @State private var isConfigured = false
     
     enum TestView: String, CaseIterable, Identifiable {
@@ -97,7 +96,7 @@ struct TestAppContentView: View {
     
     // MARK: - Launch Page
     // Use ScrollView + VStack (not LazyVStack) so Layer 1 expanded content exists in the
-    // hierarchy immediately and the category picker is findable by XCUITest without scroll.
+    // hierarchy immediately and category nav links are findable by XCUITest without scroll.
     
     private var launchPage: some View {
         ScrollView {
@@ -199,54 +198,50 @@ struct TestAppContentView: View {
     }
     
     // MARK: - Layer 1 Examples View
-    
-    /// Layer 1 expanded content. Single VStack so it lives inside the launch page ScrollView
-    /// and does not nest ScrollViews (nested ScrollViews can make the window too large for the screen).
+
+    /// Layer 1 expanded content: list of nav links (one per category). No picker.
     @ViewBuilder
     private var layer1ExamplesView: some View {
-        VStack(alignment: .leading, spacing: 24) {
+        VStack(alignment: .leading, spacing: 12) {
             Text("Layer 1 Examples (Issue #166)")
                 .font(.largeTitle)
-                .padding(.bottom)
+                .padding(.bottom, 8)
 
-            platformPicker(
-                label: "Category",
-                selection: $selectedCategory,
-                options: [nil as TestCategory?] + TestCategory.allCases.map { $0 as TestCategory? },
-                optionTag: { $0 },
-                optionLabel: { $0?.rawValue ?? "Select Category" },
-                pickerName: "layer1CategoryPicker",
-                style: MenuPickerStyle()
-            )
-            .padding(.bottom)
-
-            if let category = selectedCategory {
-                switch category {
-                case .dataPresentation:
-                    Layer1DataPresentationExamples()
-                case .navigation:
-                    Layer1NavigationExamples()
-                case .photos:
-                    Layer1PhotoExamples()
-                case .security:
-                    Layer1SecurityExamples()
-                case .ocr:
-                    Layer1OCRExamples()
-                case .notifications:
-                    Layer1NotificationExamples()
-                case .internationalization:
-                    Layer1InternationalizationExamples()
-                case .dataAnalysis:
-                    Layer1DataAnalysisExamples()
-                case .barcode:
-                    Layer1BarcodeExamples()
+            ForEach(TestCategory.allCases, id: \.self) { category in
+                NavigationLink(category.rawValue) {
+                    layer1CategoryView(for: category)
                 }
-            } else {
-                Text("Select a Layer 1 category to view examples")
-                    .foregroundColor(.secondary)
-                    .padding()
+                .accessibilityIdentifier("layer1-category-\(category.rawValue.replacingOccurrences(of: " ", with: "-"))")
             }
         }
         .padding()
+    }
+
+    @ViewBuilder
+    private func layer1CategoryView(for category: TestCategory) -> some View {
+        Group {
+            switch category {
+            case .dataPresentation:
+                Layer1DataPresentationExamples()
+            case .navigation:
+                Layer1NavigationExamples()
+            case .photos:
+                Layer1PhotoExamples()
+            case .security:
+                Layer1SecurityExamples()
+            case .ocr:
+                Layer1OCRExamples()
+            case .notifications:
+                Layer1NotificationExamples()
+            case .internationalization:
+                Layer1InternationalizationExamples()
+            case .dataAnalysis:
+                Layer1DataAnalysisExamples()
+            case .barcode:
+                Layer1BarcodeExamples()
+            }
+        }
+        .navigationTitle(category.rawValue)
+        .navigationBarTitleDisplayMode(.inline)
     }
 }
