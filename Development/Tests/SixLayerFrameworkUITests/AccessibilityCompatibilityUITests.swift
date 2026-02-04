@@ -43,16 +43,19 @@ final class AccessibilityCompatibilityUITests: XCTestCase {
     }
 
     override class func tearDown() {
-        sharedApp = nil
-        didLaunch = false
+        MainActor.assumeIsolated {
+            sharedApp = nil
+            didLaunch = false
+        }
         super.tearDown()
     }
 
     /// Navigate to Control Test view, run compatibility sweep on that view (Issue #180).
     @MainActor
     func testControlTestView_CompatibilitySweep() throws {
+        XCTAssertTrue(app.waitForReady(timeout: 5.0), "App should be ready before finding Control Test link")
         let link = app.findLaunchPageEntry(identifier: "test-view-Control Test")
-        XCTAssertTrue(link.waitForExistence(timeout: 3.0), "Control Test link should exist")
+        XCTAssertTrue(link.waitForExistence(timeout: 5.0), "Control Test link should exist on launch page")
         link.tap()
         app.runAccessibilityCompatibilitySweep()
     }
