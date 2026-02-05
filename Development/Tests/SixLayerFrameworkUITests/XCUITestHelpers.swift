@@ -113,14 +113,84 @@ extension XCUIElement {
 
 // MARK: - Accessibility contract verification (DRY)
 
+/// When automaticCompliance is in the chain (e.g. called by a layer or platformButton),
+/// we must ensure the correct a11y is present. Requirements differ by element type
+/// (e.g. image vs text field): interactive controls need a label; meaningful images
+/// need a label; decorative images may not.
+///
+/// **Pickers:** Per Apple requirements, the picker control must have an identifier and label; options alone do not suffice.
+/// When testing a picker, always use verifyPickerAccessibilityContract so the picker itself is asserted first, then option identifiers if provided.
 extension XCUIElement {
+
+    /// Whether this element type normally requires an accessibility label when automaticCompliance is applied.
+    /// - Parameter type: The expected element type.
+    /// - Returns: true for interactive controls (button, textField, switch, slider, link); false for image/other by default.
+    private static func labelRequiredForType(_ type: XCUIElement.ElementType) -> Bool {
+        switch type {
+        case .button, .textField, .switch, .slider, .link:
+            return true
+        case .image, .staticText, .other, .cell, .any:
+            return false
+        @unknown default:
+            return false
+        }
+    }
+
+    /// Verify picker a11y contract per Apple requirements: the picker control MUST have an identifier and label;
+    /// having only option elements with IDs does not meet requirements. Option elements must also have identifiers.
+    /// Call on the picker element (e.g. the menu button). Option identifiers are often only in the hierarchy when the picker is open.
+    /// - Parameters:
+    ///   - pickerElementName: Name for failure messages.
+    ///   - expectedOptionIdentifiers: Optional list of accessibility identifiers for the picker's options. When provided, asserts each exists. Open the picker first if options are only visible when expanded.
+    func verifyPickerAccessibilityContract(
+        pickerElementName: String,
+        expectedOptionIdentifiers: [String]? = nil
+    ) {
+        XCTAssertFalse(identifier.isEmpty,
+                       "\(pickerElementName): Picker must have accessibility identifier (Apple requirement). Options alone are not sufficient. Found: '\(identifier)'")
+        XCTAssertFalse(label.isEmpty,
+                       "\(pickerElementName): Picker must have accessibility label (Apple requirement). Found: '\(label)'")
+        guard let optionIds = expectedOptionIdentifiers else { return }
+        for optionId in optionIds {
+            let el = descendants(matching: .any)[optionId].firstMatch
+            if !el.waitForExistence(timeout: 1.0) {
+                let app = XCUIApplication()
+                let anywhere = app.descendants(matching: .any)[optionId].firstMatch
+                XCTAssertTrue(anywhere.waitForExistence(timeout: 1.0),
+                              "\(pickerElementName) picker option '\(optionId)' should have accessibility identifier (open picker if options are in a menu)")
+            }
+        }
+    }
+
+    /// Verify the full a11y contract for this element type. Use this when automaticCompliance is in the chain.
+    /// - Parameters:
+    ///   - elementName: Name for failure messages.
+    ///   - expectedType: The expected element type (traits).
+    ///   - requireLabel: Override label requirement. When nil, uses type default: required for button, textField, switch, slider, link; not for image/staticText (pass true for meaningful images).
+    func verifyAccessibilityContract(
+        elementName: String,
+        expectedType: XCUIElement.ElementType,
+        requireLabel: Bool? = nil
+    ) {
+        XCTAssertFalse(identifier.isEmpty,
+                       "\(elementName) should have accessibility identifier. Found: '\(identifier)'")
+        XCTAssertEqual(elementType, expectedType,
+                       "\(elementName) should have correct accessibility trait. Expected: \(expectedType), Found: \(elementType)")
+        let needsLabel = requireLabel ?? Self.labelRequiredForType(expectedType)
+        if needsLabel {
+            XCTAssertFalse(label.isEmpty,
+                           "\(elementName) should have accessibility label for type \(expectedType). Found: '\(label)'")
+        }
+    }
+
     /// Verify the element has a non-empty accessibility identifier.
     func verifyAccessibilityIdentifier(elementName: String) {
         XCTAssertFalse(identifier.isEmpty,
                        "\(elementName) should have accessibility identifier. Found: '\(identifier)'")
     }
 
-    /// Verify interactive elements (button, textField, switch, slider) have a non-empty accessibility label.
+    /// Verify the element has a non-empty accessibility label. Use for interactive elements (button, textField, switch, slider) or meaningful images.
+    /// For type-specific contracts, use verifyAccessibilityContract(elementName:expectedType:requireLabel:) instead.
     func verifyAccessibilityLabel(elementName: String) {
         let needsLabel = elementType == .button || elementType == .textField
             || elementType == .switch || elementType == .slider
