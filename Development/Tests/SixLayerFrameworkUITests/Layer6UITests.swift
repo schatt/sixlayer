@@ -13,6 +13,8 @@ import XCTest
 /// Layer 6 UI tests: verify the Layer 6 examples screen shows the real Layer 6 functions
 /// (platformSpecificOptimizations, performanceOptimizations, uiPatternOptimizations) and
 /// that the demo controls are accessible. Uses launch argument -OpenLayer6Examples.
+/// Tests run on a single platform per run; use compile-time conditionals (#if os(iOS), etc.)
+/// in the test to assert platform-specific Layer 6 behavior when needed.
 @MainActor
 final class Layer6UITests: XCTestCase {
     var app: XCUIApplication!
