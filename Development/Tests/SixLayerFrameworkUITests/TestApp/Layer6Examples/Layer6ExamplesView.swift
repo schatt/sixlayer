@@ -235,15 +235,49 @@ private struct ExampleCard<Content: View>: View {
     }
 }
 
+// MARK: - L6 modifier contract (test that L6 modifiers do the right thing on the element they're applied to)
+
+/// Elements that have ONLY the L6 modifier applied (no platformButton, no other automaticCompliance).
+/// automaticCompliance runs only on the element it's called on; the L6 modifiers call it on their content.
+/// So this Text and Button get a11y solely from the L6 modifier — we can verify the modifier did its job.
+private struct L6ModifierContractSection: View {
+    @ObservedObject var optimizationManager: CrossPlatformOptimizationManager
+
+    var body: some View {
+        platformVStack(alignment: .leading, spacing: 16) {
+            Text("L6 modifier contract: elements below have only the L6 modifier applied (no platformButton).")
+                .font(.caption)
+                .foregroundColor(.secondary)
+
+            // Plain Text — only a11y comes from .platformSpecificOptimizations' .automaticCompliance()
+            Text("L6ContractText")
+                .platformSpecificOptimizations(for: optimizationManager.currentPlatform)
+
+            // Plain Button — only a11y comes from the modifier
+            Button("L6ContractButton") { }
+                .platformSpecificOptimizations(for: optimizationManager.currentPlatform)
+        }
+        .padding()
+        .background(Color.platformSecondaryBackground)
+        .cornerRadius(8)
+    }
+}
+
 // MARK: - Direct-open for UI tests (launch argument -OpenLayer6Examples)
 
 /// Shows both Layer 6 sections (Navigation Stack Enhancements + Cross-Platform Optimizations) so
 /// UI tests can assert on the actual Layer 6 API names: platformNavigationStackEnhancements_L6 and
 /// platformSpecificOptimizations/performanceOptimizations/uiPatternOptimizations.
+/// Includes L6 modifier contract section so tests can verify the modifier applies a11y to the element it wraps.
 struct Layer6CrossPlatformOnlyView: View {
+    @StateObject private var optimizationManager = CrossPlatformOptimizationManager()
+
     var body: some View {
         ScrollView {
             platformVStack(alignment: .leading, spacing: 24) {
+                ExampleSection(title: "L6 modifier contract") {
+                    L6ModifierContractSection(optimizationManager: optimizationManager)
+                }
                 ExampleSection(title: "Navigation Stack Enhancements") {
                     NavigationStackEnhancementExamples()
                 }
