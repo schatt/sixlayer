@@ -30,6 +30,10 @@ struct TestAppContentView: View {
     @State private var selectedTest: TestView? = nil
     @State private var showLayer1Examples = false
     @State private var isConfigured = false
+    /// When true, app opens directly to Layer 5 Accessibility section (launch arg -OpenLayer5Accessibility).
+    private let openLayer5Accessibility = ProcessInfo.processInfo.arguments.contains("-OpenLayer5Accessibility")
+    /// When true, app opens directly to Layer 6 Cross-Platform section (launch arg -OpenLayer6Examples).
+    private let openLayer6Examples = ProcessInfo.processInfo.arguments.contains("-OpenLayer6Examples")
     
     enum TestView: String, CaseIterable, Identifiable {
         case control = "Control Test"
@@ -78,13 +82,23 @@ struct TestAppContentView: View {
     }
     
     var body: some View {
-        NavigationStack {
-            if let selected = selectedTest {
-                // Navigate to specific test view
-                testView(for: selected)
+        Group {
+            if openLayer5Accessibility {
+                NavigationStack {
+                    Layer5AccessibilityOnlyView()
+                }
+            } else if openLayer6Examples {
+                NavigationStack {
+                    Layer6CrossPlatformOnlyView()
+                }
             } else {
-                // Launch page with buttons
-                launchPage
+                NavigationStack {
+                    if let selected = selectedTest {
+                        testView(for: selected)
+                    } else {
+                        launchPage
+                    }
+                }
             }
         }
         .onAppear {
