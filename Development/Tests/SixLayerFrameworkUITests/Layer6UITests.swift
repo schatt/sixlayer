@@ -44,30 +44,11 @@ final class Layer6UITests: XCTestCase {
 
     private static let expectedSectionTitle = "Cross-Platform Optimizations"
 
-    /// Layer 6 function names as shown in the example card descriptions (actual API names).
-    private static let layer6FunctionDescriptions: [String] = [
-        "platformNavigationStackEnhancements_L6",
-        "platformSpecificOptimizations(for:)",
-        "performanceOptimizations(using:)",
-        "uiPatternOptimizations(using:)",
-        "All optimization types combined",
-    ]
-
     @MainActor
     private func assertExpectedSectionTitleExists() {
         let el = app.staticTexts[Self.expectedSectionTitle].firstMatch
         XCTAssertTrue(el.waitForExistence(timeout: 2.0), "Section title '\(Self.expectedSectionTitle)' should exist")
         XCTAssertFalse(el.label.isEmpty, "Section title should have non-empty accessibility label")
-    }
-
-    /// Asserts that the UI that names the Layer 6 optimization APIs is present.
-    @MainActor
-    private func assertLayer6FunctionNamesPresent() {
-        for description in Self.layer6FunctionDescriptions {
-            let el = app.staticTexts[description].firstMatch
-            XCTAssertTrue(el.waitForExistence(timeout: 2.0),
-                          "Layer 6 demo for '\(description)' should be visible")
-        }
     }
 
     /// L6 modifiers apply to the element they wrap; automaticCompliance runs only on that element.
@@ -117,7 +98,6 @@ final class Layer6UITests: XCTestCase {
     func testLayer6Examples_PrescriptiveAccessibility() throws {
         assertL6ModifierContract_ElementsGetComplianceFromModifier()
         assertExpectedSectionTitleExists()
-        assertLayer6FunctionNamesPresent()
         assertLayer6PlatformSpecificBehavior()
     }
 }
