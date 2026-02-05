@@ -106,10 +106,6 @@ struct PlatformSpecificOptimizationExample: View {
             Text("This view has platform-specific optimizations applied for \(optimizationManager.currentPlatform.rawValue).")
                 .font(.caption)
                 .foregroundColor(.secondary)
-            
-            platformButton(label: "Optimized Button", id: "platform-specific-optimized") {
-                // Action
-            }
         }
         .padding()
         .platformSpecificOptimizations(for: optimizationManager.currentPlatform)
@@ -130,10 +126,6 @@ struct PerformanceOptimizationExample: View {
             Text("Performance Level: \(String(describing: optimizationManager.optimizationSettings.performanceLevel))")
                 .font(.caption)
                 .foregroundColor(.secondary)
-            
-            platformButton(label: "Optimized Button", id: "performance-optimized") {
-                // Action
-            }
         }
         .padding()
         .performanceOptimizations(using: optimizationManager.optimizationSettings)
@@ -150,10 +142,6 @@ struct UIPatternOptimizationExample: View {
             Text("This view has UI pattern optimizations applied.")
                 .font(.caption)
                 .foregroundColor(.secondary)
-            
-            platformButton(label: "Optimized Button", id: "ui-pattern-optimized") {
-                // Action
-            }
         }
         .padding()
         .uiPatternOptimizations(using: optimizationManager.uiPatterns)
@@ -182,10 +170,6 @@ struct CombinedOptimizationExample: View {
             Text("• UI pattern optimizations")
                 .font(.caption)
                 .foregroundColor(.secondary)
-            
-            platformButton(label: "Fully Optimized Button", id: "fully-optimized") {
-                // Action
-            }
         }
         .padding()
         .platformSpecificOptimizations(for: optimizationManager.currentPlatform)
