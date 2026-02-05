@@ -132,9 +132,10 @@ final class Layer4UITests: XCTestCase {
     @MainActor
     func testButtonTestView_ComplianceHintsAndTraits() throws {
         navigateToLayer4View(entryIdentifier: "test-view-Button Test")
+        _ = app.navigationBars["Button Test"].waitForExistence(timeout: 5.0)
         app.runAccessibilityCompatibilitySweep()
         let expectedIdentifier = "SixLayer.main.ui.testButton.Button"
-        XCTAssertTrue(app.buttons["Test Button"].waitForExistence(timeout: 3.0), "Button Test view should be ready")
+        XCTAssertTrue(app.buttons["Test Button"].waitForExistence(timeout: 5.0), "Button Test view should be ready")
         XCTAssertNotNil(app.findElement(byIdentifier: expectedIdentifier, primaryType: .other, secondaryTypes: [.button, .any]),
                         "Button identifier should be findable")
 
