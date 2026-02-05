@@ -408,3 +408,21 @@ private struct ExampleCard<Content: View>: View {
         .cornerRadius(12)
     }
 }
+
+// MARK: - Direct-open for UI tests (launch argument -OpenLayer5Accessibility)
+
+/// Shows only the Accessibility Features section with Layer 5 Examples nav title.
+/// Used when the app is launched with -OpenLayer5Accessibility so the UI test can assert without navigating or scrolling.
+struct Layer5AccessibilityOnlyView: View {
+    var body: some View {
+        ScrollView {
+            ExampleSection(title: "Accessibility Features") {
+                AccessibilityFeatureExamples()
+            }
+            .padding()
+        }
+        .platformFrame()
+        .navigationTitle("Layer 5 Examples")
+        .platformNavigationTitleDisplayMode_L4(.large)
+    }
+}
