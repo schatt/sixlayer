@@ -411,13 +411,28 @@ private struct ExampleCard<Content: View>: View {
 
 // MARK: - Direct-open for UI tests (launch argument -OpenLayer5Accessibility)
 
-/// Shows only the Accessibility Features section with Layer 5 Examples nav title.
-/// Used when the app is launched with -OpenLayer5Accessibility so the UI test can assert without navigating or scrolling.
+/// Shows L5 modifier contract section first, then Accessibility Features.
+/// Used when the app is launched with -OpenLayer5Accessibility so the UI test can assert contract (modifier applies a11y).
 struct Layer5AccessibilityOnlyView: View {
     var body: some View {
         ScrollView {
-            ExampleSection(title: "Accessibility Features") {
-                AccessibilityFeatureExamples()
+            platformVStack(alignment: .leading, spacing: 24) {
+                // L5 modifier contract: plain elements with only the L5 modifier (no platformButton etc.)
+                ExampleSection(title: "L5 Modifier Contract") {
+                    platformVStack(alignment: .leading, spacing: 12) {
+                        Text("L5AccessibilityEnhancedContract")
+                            .accessibilityEnhanced()
+                        Text("L5VoiceOverContract")
+                            .voiceOverEnabled()
+                        Text("L5KeyboardNavigableContract")
+                            .keyboardNavigable()
+                        Text("L5HighContrastContract")
+                            .highContrastEnabled()
+                    }
+                }
+                ExampleSection(title: "Accessibility Features") {
+                    AccessibilityFeatureExamples()
+                }
             }
             .padding()
         }

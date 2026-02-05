@@ -2,82 +2,71 @@
 //  Layer5UITests.swift
 //  SixLayerFrameworkUITests
 //
-//  Layer 5 (Optimization) UI tests: launch with -OpenLayer5Accessibility so the app opens
-//  directly to the Accessibility Features section; no navigation or scrolling.
+//  Layer 5 UI tests: one test method per L5 accessibility modifier. Launch with -OpenLayer5Accessibility.
+//  Each test verifies that the modifier applies a11y (automaticCompliance) to the element it wraps.
 //
 
 import XCTest
 @testable import SixLayerFramework
 
-/// Layer 5 optimization example tests. Prescriptive: require expected elements to exist and have required accessibility.
-/// Uses launch argument -OpenLayer5Accessibility so the test app opens on the right screen.
+/// Layer 5 UI tests: one test per L5 accessibility modifier so the run shows a clear pass count per function.
+/// Uses launch argument -OpenLayer5Accessibility. One app launch for the suite.
 @MainActor
 final class Layer5UITests: XCTestCase {
-    var app: XCUIApplication!
+    /// Shared across test instances (Xcode creates one instance per test method).
+    private static var sharedApp: XCUIApplication?
+    private var app: XCUIApplication! { Self.sharedApp! }
 
+    /// One app launch for the suite; all 4 test methods reuse the same launch.
     nonisolated override func setUpWithError() throws {
         continueAfterFailure = false
         addDefaultUIInterruptionMonitor()
 
-        nonisolated(unsafe) let instance = self
         MainActor.assumeIsolated {
+            guard Self.sharedApp == nil else { return }
             let localApp = XCUIApplication()
             localApp.configureForFastTesting()
             localApp.launchArguments.append("-OpenLayer5Accessibility")
             localApp.launch()
-            instance.app = localApp
+            Self.sharedApp = localApp
             XCTAssertTrue(localApp.navigationBars["Layer 5 Examples"].waitForExistence(timeout: 5.0),
-                          "App should open on Layer 5 Accessibility (launch arg)")
+                          "App should open on Layer 5 Examples (launch arg)")
         }
     }
 
     nonisolated override func tearDownWithError() throws {
-        nonisolated(unsafe) let instance = self
-        MainActor.assumeIsolated {
-            instance.app = nil
-        }
         try super.tearDownWithError()
     }
 
-    /// Section title on the direct-open screen (only the Accessibility Features section is shown).
-    private static let expectedSectionTitle = "Accessibility Features"
-
-    /// Expected button labels in the Accessibility Features section (platformButton titles).
-    private static let expectedAccessibilityButtonLabels = [
-        "Accessible Button",
-        "VoiceOver Button",
-        "Keyboard Button",
-        "High Contrast Button",
-    ]
-
-    /// Sanitized form of label for framework-generated identifier (e.g. "Accessible Button" -> "accessible-button").
-    private static func frameworkIdentifierSuffix(for label: String) -> String {
-        label.lowercased()
-            .replacingOccurrences(of: " ", with: "-")
-            .replacingOccurrences(of: "[^a-z0-9-]", with: "", options: .regularExpression)
+    @MainActor
+    private func assertElementHasIdentifierFromModifier(label: String, modifierName: String) {
+        let el = app.staticTexts[label].firstMatch
+        XCTAssertTrue(el.waitForExistence(timeout: 2.0), "\(modifierName): element '\(label)' should exist")
+        XCTAssertFalse(el.identifier.isEmpty,
+                       "\(modifierName) must apply a11y to the element it wraps. '\(label)' should have identifier. Found: '\(el.identifier)'")
     }
 
     @MainActor
-    private func assertExpectedSectionTitleExists() {
-        let el = app.staticTexts[Self.expectedSectionTitle].firstMatch
-        XCTAssertTrue(el.waitForExistence(timeout: 2.0), "Section title '\(Self.expectedSectionTitle)' should exist")
-        XCTAssertFalse(el.label.isEmpty, "Section title should have non-empty accessibility label")
+    func testL5_accessibilityEnhanced() throws {
+        assertElementHasIdentifierFromModifier(label: "L5AccessibilityEnhancedContract", modifierName: "accessibilityEnhanced()")
     }
 
     @MainActor
-    private func assertExpectedAccessibilityButtonsExistAndAreAccessible() {
-        for label in Self.expectedAccessibilityButtonLabels {
-            let frameworkId = "SixLayer.main.ui.\(Self.frameworkIdentifierSuffix(for: label)).Button"
-            let el = app.buttons[frameworkId].firstMatch
-            XCTAssertTrue(el.waitForExistence(timeout: 2.0), "Button '\(label)' should exist (identifier: \(frameworkId))")
-            el.verifyAccessibilityContract(elementName: label, expectedType: .button)
-            XCTAssertTrue(el.isEnabled, "Button '\(label)' should be enabled")
-        }
+    func testL5_voiceOverEnabled() throws {
+        // voiceOverEnabled() uses .accessibilityElement(children: .contain); identifier is on the container.
+        let el = app.otherElements["Enhanced accessibility view"].firstMatch
+        XCTAssertTrue(el.waitForExistence(timeout: 2.0), "voiceOverEnabled(): container 'Enhanced accessibility view' should exist")
+        XCTAssertFalse(el.identifier.isEmpty,
+                       "voiceOverEnabled() must apply a11y to the view it presents. Container should have identifier. Found: '\(el.identifier)'")
     }
 
     @MainActor
-    func testLayer5Examples_PrescriptiveAccessibility() throws {
-        assertExpectedSectionTitleExists()
-        assertExpectedAccessibilityButtonsExistAndAreAccessible()
+    func testL5_keyboardNavigable() throws {
+        assertElementHasIdentifierFromModifier(label: "L5KeyboardNavigableContract", modifierName: "keyboardNavigable()")
+    }
+
+    @MainActor
+    func testL5_highContrastEnabled() throws {
+        assertElementHasIdentifierFromModifier(label: "L5HighContrastContract", modifierName: "highContrastEnabled()")
     }
 }
