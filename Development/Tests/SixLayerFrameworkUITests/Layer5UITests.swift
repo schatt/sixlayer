@@ -70,9 +70,7 @@ final class Layer5UITests: XCTestCase {
             let frameworkId = "SixLayer.main.ui.\(Self.frameworkIdentifierSuffix(for: label)).Button"
             let el = app.buttons[frameworkId].firstMatch
             XCTAssertTrue(el.waitForExistence(timeout: 2.0), "Button '\(label)' should exist (identifier: \(frameworkId))")
-            el.verifyAccessibilityIdentifier(elementName: label)
-            el.verifyAccessibilityLabel(elementName: label)
-            el.verifyAccessibilityTraits(elementName: label, expectedType: .button)
+            el.verifyAccessibilityContract(elementName: label, expectedType: .button)
             XCTAssertTrue(el.isEnabled, "Button '\(label)' should be enabled")
         }
     }

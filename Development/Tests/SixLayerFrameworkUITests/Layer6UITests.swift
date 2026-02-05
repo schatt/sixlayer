@@ -83,9 +83,7 @@ final class Layer6UITests: XCTestCase {
             let frameworkId = "SixLayer.main.ui.\(idSuffix).Button"
             let el = app.buttons[frameworkId].firstMatch
             XCTAssertTrue(el.waitForExistence(timeout: 2.0), "Demo button '\(label)' (id: \(idSuffix)) should exist")
-            el.verifyAccessibilityIdentifier(elementName: "\(label) (\(idSuffix))")
-            el.verifyAccessibilityLabel(elementName: "\(label) (\(idSuffix))")
-            el.verifyAccessibilityTraits(elementName: "\(label) (\(idSuffix))", expectedType: .button)
+            el.verifyAccessibilityContract(elementName: "\(label) (\(idSuffix))", expectedType: .button)
             XCTAssertTrue(el.isEnabled, "Demo button '\(label)' (\(idSuffix)) should be enabled")
         }
     }
