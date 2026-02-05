@@ -15,27 +15,27 @@ import XCTest
 final class Layer6UITests: XCTestCase {
     var app: XCUIApplication!
 
+    /// One app launch for the suite; launch only when app is nil so all 4 test methods reuse it.
     nonisolated override func setUpWithError() throws {
         continueAfterFailure = false
         addDefaultUIInterruptionMonitor()
 
         nonisolated(unsafe) let instance = self
         MainActor.assumeIsolated {
-            let localApp = XCUIApplication()
-            localApp.configureForFastTesting()
-            localApp.launchArguments.append("-OpenLayer6Examples")
-            localApp.launch()
-            instance.app = localApp
-            XCTAssertTrue(localApp.navigationBars["Layer 6 Examples"].waitForExistence(timeout: 5.0),
-                          "App should open on Layer 6 Examples (launch arg)")
+            if instance.app == nil {
+                let localApp = XCUIApplication()
+                localApp.configureForFastTesting()
+                localApp.launchArguments.append("-OpenLayer6Examples")
+                localApp.launch()
+                instance.app = localApp
+                XCTAssertTrue(localApp.navigationBars["Layer 6 Examples"].waitForExistence(timeout: 5.0),
+                              "App should open on Layer 6 Examples (launch arg)")
+            }
         }
     }
 
     nonisolated override func tearDownWithError() throws {
-        nonisolated(unsafe) let instance = self
-        MainActor.assumeIsolated {
-            instance.app = nil
-        }
+        // Keep app so next test reuses same launch (one launch per suite).
         try super.tearDownWithError()
     }
 
