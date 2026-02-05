@@ -577,3 +577,36 @@ private struct ExampleCard<Content: View>: View {
         .cornerRadius(12)
     }
 }
+
+// MARK: - Direct-open for UI tests (launch argument -OpenLayer4Examples)
+
+/// Shows only the L4 component contract section: plain elements with exactly one L4 API each.
+/// Used when the app is launched with -OpenLayer4Examples so UI tests assert L4 contract (a11y from component).
+struct Layer4ContractOnlyView: View {
+    @State private var l4ContractText = ""
+    @State private var l4ContractSecureText = ""
+    @State private var l4ContractPickerSelection = "A"
+
+    var body: some View {
+        ScrollView {
+            platformVStack(alignment: .leading, spacing: 24) {
+                ExampleSection(title: "L4 Component Contract") {
+                    platformVStack(alignment: .leading, spacing: 16) {
+                        platformButton("L4ContractButton") { }
+                        SixLayerFramework.platformTextField("L4ContractTextField", text: $l4ContractText)
+                        platformPicker(
+                            label: "L4ContractPicker",
+                            selection: $l4ContractPickerSelection,
+                            options: ["A", "B", "C"]
+                        )
+                        platformSecureField("L4ContractSecureField", text: $l4ContractSecureText)
+                    }
+                }
+            }
+            .padding()
+        }
+        .platformFrame()
+        .navigationTitle("Layer 4 Examples")
+        .platformNavigationTitleDisplayMode_L4(.large)
+    }
+}

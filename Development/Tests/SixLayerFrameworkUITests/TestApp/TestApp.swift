@@ -30,6 +30,8 @@ struct TestAppContentView: View {
     @State private var selectedTest: TestView? = nil
     @State private var showLayer1Examples = false
     @State private var isConfigured = false
+    /// When true, app opens directly to Layer 4 contract section (launch arg -OpenLayer4Examples).
+    private let openLayer4Examples = ProcessInfo.processInfo.arguments.contains("-OpenLayer4Examples")
     /// When true, app opens directly to Layer 5 Accessibility section (launch arg -OpenLayer5Accessibility).
     private let openLayer5Accessibility = ProcessInfo.processInfo.arguments.contains("-OpenLayer5Accessibility")
     /// When true, app opens directly to Layer 6 Cross-Platform section (launch arg -OpenLayer6Examples).
@@ -83,7 +85,11 @@ struct TestAppContentView: View {
     
     var body: some View {
         Group {
-            if openLayer5Accessibility {
+            if openLayer4Examples {
+                NavigationStack {
+                    Layer4ContractOnlyView()
+                }
+            } else if openLayer5Accessibility {
                 NavigationStack {
                     Layer5AccessibilityOnlyView()
                 }
