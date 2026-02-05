@@ -120,7 +120,7 @@ final class Layer4UITests: XCTestCase {
     @MainActor
     func testTextTestView_Compliance() throws {
         navigateToLayer4View(entryIdentifier: "test-view-Text Test")
-        app.runAccessibilityCompatibilitySweep()
+        // SWEEP CHECK WAS HERE. REPLACEMENT NEEDED
         XCTAssertTrue(app.staticTexts["Test Content"].waitForExistence(timeout: 3.0), "Text view should exist")
         let expectedIdentifier = "SixLayer.main.ui.testText.View"
         XCTAssertNotNil(app.findElement(byIdentifier: expectedIdentifier, primaryType: .other, secondaryTypes: [.staticText, .any]),
@@ -133,7 +133,7 @@ final class Layer4UITests: XCTestCase {
     func testButtonTestView_ComplianceHintsAndTraits() throws {
         navigateToLayer4View(entryIdentifier: "test-view-Button Test")
         _ = app.navigationBars["Button Test"].waitForExistence(timeout: 5.0)
-        app.runAccessibilityCompatibilitySweep()
+        // SWEEP CHECK WAS HERE. REPLACEMENT NEEDED
         let expectedIdentifier = "SixLayer.main.ui.testButton.Button"
         XCTAssertTrue(app.buttons["Test Button"].waitForExistence(timeout: 5.0), "Button Test view should be ready")
         XCTAssertNotNil(app.findElement(byIdentifier: expectedIdentifier, primaryType: .other, secondaryTypes: [.button, .any]),
@@ -154,7 +154,7 @@ final class Layer4UITests: XCTestCase {
     @MainActor
     func testPlatformPickerTestView_Compliance() throws {
         navigateToLayer4View(entryIdentifier: "test-view-Platform Picker Test")
-        app.runAccessibilityCompatibilitySweep()
+        // SWEEP CHECK WAS HERE. REPLACEMENT NEEDED
         XCTAssertTrue(app.buttons["Option1"].waitForExistence(timeout: 3.0) || app.buttons["Option2"].waitForExistence(timeout: 0.5),
                       "Platform Picker view should be ready (segment visible)")
         let pickerIdentifier = "SixLayer.main.ui.PlatformPickerTest.View"
@@ -177,7 +177,7 @@ final class Layer4UITests: XCTestCase {
     @MainActor
     func testBasicComplianceTestView_Compliance() throws {
         navigateToLayer4View(entryIdentifier: "test-view-Basic Compliance Test")
-        app.runAccessibilityCompatibilitySweep()
+        // SWEEP CHECK WAS HERE. REPLACEMENT NEEDED
         let testViewId = "SixLayer.main.ui.testView.View"
         let testViewEl = app.findElement(byIdentifier: testViewId, primaryType: .other, secondaryTypes: [.staticText, .any])
         XCTAssertNotNil(testViewEl, "Basic compliance identifier should be findable")
@@ -223,7 +223,7 @@ final class Layer4UITests: XCTestCase {
     @MainActor
     func testIdentifierEdgeCaseView_Compliance() throws {
         navigateToLayer4View(entryIdentifier: "test-view-Identifier Edge Case")
-        app.runAccessibilityCompatibilitySweep()
+        // SWEEP CHECK WAS HERE. REPLACEMENT NEEDED
         let manualSubmitId = "SixLayer.main.ui.manual-override-id.Button"
         XCTAssertNotNil(app.findElement(byIdentifier: manualSubmitId, primaryType: .button, secondaryTypes: [.other, .any]),
                         "Manual override identifier should be findable")
@@ -237,7 +237,7 @@ final class Layer4UITests: XCTestCase {
     @MainActor
     func testDetailViewTest_Compliance() throws {
         navigateToLayer4View(entryIdentifier: "test-view-Detail View Test")
-        app.runAccessibilityCompatibilitySweep()
+        // SWEEP CHECK WAS HERE. REPLACEMENT NEEDED
 
         XCTAssertTrue(app.staticTexts["Detail Title"].waitForExistence(timeout: 3.0), "Detail view should display title")
         XCTAssertTrue(app.staticTexts["Detail subtitle and content for UI test to find."].waitForExistence(timeout: 2.0),

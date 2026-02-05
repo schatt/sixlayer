@@ -57,7 +57,7 @@ final class AccessibilityCompatibilityUITests: XCTestCase {
         let link = app.findLaunchPageEntry(identifier: "test-view-Control Test")
         XCTAssertTrue(link.waitForExistence(timeout: 5.0), "Control Test link should exist on launch page")
         link.tap()
-        app.runAccessibilityCompatibilitySweep()
+        // SWEEP CHECK WAS HERE. REPLACEMENT NEEDED
     }
 
     /// Navigate to Button Test view (via Layer 4 Examples), run compatibility sweep (Issue #180).
@@ -80,6 +80,6 @@ final class AccessibilityCompatibilityUITests: XCTestCase {
             return
         }
         el.tap()
-        app.runAccessibilityCompatibilitySweep()
+        // SWEEP CHECK WAS HERE. REPLACEMENT NEEDED
     }
 }

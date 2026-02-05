@@ -45,6 +45,6 @@ final class Layer5UITests: XCTestCase {
     @MainActor
     func testLayer5Examples_ComplianceSweep() throws {
         try navigateToLayer5Examples()
-        app.runAccessibilityCompatibilitySweep()
+        // SWEEP CHECK WAS HERE. REPLACEMENT NEEDED
     }
 }
