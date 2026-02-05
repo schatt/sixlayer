@@ -107,7 +107,7 @@ struct PlatformSpecificOptimizationExample: View {
                 .font(.caption)
                 .foregroundColor(.secondary)
             
-            platformButton("Optimized Button") {
+            platformButton(label: "Optimized Button", id: "platform-specific-optimized") {
                 // Action
             }
         }
@@ -131,7 +131,7 @@ struct PerformanceOptimizationExample: View {
                 .font(.caption)
                 .foregroundColor(.secondary)
             
-            platformButton("Optimized Button") {
+            platformButton(label: "Optimized Button", id: "performance-optimized") {
                 // Action
             }
         }
@@ -151,7 +151,7 @@ struct UIPatternOptimizationExample: View {
                 .font(.caption)
                 .foregroundColor(.secondary)
             
-            platformButton("Optimized Button") {
+            platformButton(label: "Optimized Button", id: "ui-pattern-optimized") {
                 // Action
             }
         }
@@ -183,7 +183,7 @@ struct CombinedOptimizationExample: View {
                 .font(.caption)
                 .foregroundColor(.secondary)
             
-            platformButton("Fully Optimized Button") {
+            platformButton(label: "Fully Optimized Button", id: "fully-optimized") {
                 // Action
             }
         }
@@ -232,5 +232,23 @@ private struct ExampleCard<Content: View>: View {
         .padding()
         .background(Color.platformSecondaryBackground)
         .cornerRadius(12)
+    }
+}
+
+// MARK: - Direct-open for UI tests (launch argument -OpenLayer6Examples)
+
+/// Shows only the Cross-Platform Optimizations section with Layer 6 Examples nav title.
+/// Used when the app is launched with -OpenLayer6Examples so the UI test can assert without navigating or scrolling.
+struct Layer6CrossPlatformOnlyView: View {
+    var body: some View {
+        ScrollView {
+            ExampleSection(title: "Cross-Platform Optimizations") {
+                CrossPlatformOptimizationExamples()
+            }
+            .padding()
+        }
+        .platformFrame()
+        .navigationTitle("Layer 6 Examples")
+        .platformNavigationTitleDisplayMode_L4(.large)
     }
 }
