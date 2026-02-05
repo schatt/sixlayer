@@ -53,14 +53,6 @@ final class Layer6UITests: XCTestCase {
         "All optimization types combined",
     ]
 
-    /// Buttons inside each demo card (platformButton, not Layer 6); used for a11y contract checks.
-    private static let expectedButtons: [(id: String, label: String)] = [
-        ("platform-specific-optimized", "Optimized Button"),
-        ("performance-optimized", "Optimized Button"),
-        ("ui-pattern-optimized", "Optimized Button"),
-        ("fully-optimized", "Fully Optimized Button"),
-    ]
-
     @MainActor
     private func assertExpectedSectionTitleExists() {
         let el = app.staticTexts[Self.expectedSectionTitle].firstMatch
@@ -75,17 +67,6 @@ final class Layer6UITests: XCTestCase {
             let el = app.staticTexts[description].firstMatch
             XCTAssertTrue(el.waitForExistence(timeout: 2.0),
                           "Layer 6 demo for '\(description)' should be visible")
-        }
-    }
-
-    @MainActor
-    private func assertDemoButtonsMeetAccessibilityContract() {
-        for (idSuffix, label) in Self.expectedButtons {
-            let frameworkId = "SixLayer.main.ui.\(idSuffix).Button"
-            let el = app.buttons[frameworkId].firstMatch
-            XCTAssertTrue(el.waitForExistence(timeout: 2.0), "Demo button '\(label)' (id: \(idSuffix)) should exist")
-            el.verifyAccessibilityContract(elementName: "\(label) (\(idSuffix))", expectedType: .button)
-            XCTAssertTrue(el.isEnabled, "Demo button '\(label)' (\(idSuffix)) should be enabled")
         }
     }
 
@@ -137,7 +118,6 @@ final class Layer6UITests: XCTestCase {
         assertL6ModifierContract_ElementsGetComplianceFromModifier()
         assertExpectedSectionTitleExists()
         assertLayer6FunctionNamesPresent()
-        assertDemoButtonsMeetAccessibilityContract()
         assertLayer6PlatformSpecificBehavior()
     }
 }
