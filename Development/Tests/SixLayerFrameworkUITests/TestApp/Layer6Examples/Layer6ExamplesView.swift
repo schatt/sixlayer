@@ -233,13 +233,18 @@ private struct L6ModifierContractSection: View {
                 .font(.caption)
                 .foregroundColor(.secondary)
 
-            // Plain Text — only a11y comes from .platformSpecificOptimizations' .automaticCompliance()
+            // One element per L6 modifier; only a11y comes from that modifier's .automaticCompliance()
             Text("L6ContractText")
                 .platformSpecificOptimizations(for: optimizationManager.currentPlatform)
 
-            // Plain Button — only a11y comes from the modifier
             Button("L6ContractButton") { }
                 .platformSpecificOptimizations(for: optimizationManager.currentPlatform)
+
+            Text("L6PerformanceContractText")
+                .performanceOptimizations(using: optimizationManager.optimizationSettings)
+
+            Text("L6UIPatternContractText")
+                .uiPatternOptimizations(using: optimizationManager.uiPatterns)
         }
         .padding()
         .background(Color.platformSecondaryBackground)
