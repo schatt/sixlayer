@@ -111,6 +111,32 @@ extension XCUIElement {
     }
 }
 
+// MARK: - Accessibility contract verification (DRY)
+
+extension XCUIElement {
+    /// Verify the element has a non-empty accessibility identifier.
+    func verifyAccessibilityIdentifier(elementName: String) {
+        XCTAssertFalse(identifier.isEmpty,
+                       "\(elementName) should have accessibility identifier. Found: '\(identifier)'")
+    }
+
+    /// Verify interactive elements (button, textField, switch, slider) have a non-empty accessibility label.
+    func verifyAccessibilityLabel(elementName: String) {
+        let needsLabel = elementType == .button || elementType == .textField
+            || elementType == .switch || elementType == .slider
+        if needsLabel {
+            XCTAssertFalse(label.isEmpty,
+                           "\(elementName) interactive element should have accessibility label. Found: '\(label)'")
+        }
+    }
+
+    /// Verify the element has the expected accessibility trait (element type).
+    func verifyAccessibilityTraits(elementName: String, expectedType: XCUIElement.ElementType) {
+        XCTAssertEqual(elementType, expectedType,
+                       "\(elementName) should have correct accessibility trait. Expected: \(expectedType), Found: \(elementType)")
+    }
+}
+
 extension XCUIApplication {
     /// Find a launch-page list entry by identifier (iOS List rows may be .cell, not .button).
     func findLaunchPageEntry(identifier: String) -> XCUIElement {
