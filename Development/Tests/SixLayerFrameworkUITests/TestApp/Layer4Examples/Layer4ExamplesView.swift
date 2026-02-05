@@ -602,8 +602,8 @@ struct Layer4ContractOnlyView: View {
                             options: ["A", "B", "C"]
                         )
                         platformSecureField("L4ContractSecureField", text: $l4ContractSecureText)
-                        platformToggle("L4ContractToggle", isOn: $l4ContractToggleOn)
-                        platformTextEditor("L4ContractTextEditor", text: $l4ContractEditorText)
+                        SixLayerFramework.platformToggle("L4ContractToggle", isOn: $l4ContractToggleOn)
+                        SixLayerFramework.platformTextEditor("L4ContractTextEditor", text: $l4ContractEditorText)
                     }
                 }
             }
