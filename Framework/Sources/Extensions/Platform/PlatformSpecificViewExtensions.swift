@@ -1833,7 +1833,7 @@ public extension View {
 ///   - options: Array of option strings to display
 ///   - pickerName: Optional name for the picker (used in accessibility identifier generation)
 ///   - style: Picker style (default: .menu)
-/// - Returns: A picker with automatic accessibility compliance applied to picker and segments
+/// - Returns: A picker with automatic accessibility compliance: identifiers are applied to both the picker and each option element.
 @ViewBuilder
 public func platformPicker<S: SwiftUI.PickerStyle>(
     label: String,
@@ -1870,7 +1870,7 @@ public func platformPicker<S: SwiftUI.PickerStyle>(
 ///   - options: Array of PickerOption (has value and label)
 ///   - pickerName: Optional name for the picker (used in accessibility identifier generation)
 ///   - style: Picker style (default: .menu)
-/// - Returns: A picker with automatic accessibility compliance applied to picker and segments
+/// - Returns: A picker with automatic accessibility compliance: identifiers are applied to both the picker and each option element.
 @ViewBuilder
 public func platformPicker<S: SwiftUI.PickerStyle>(
     label: String,
@@ -1909,7 +1909,7 @@ public func platformPicker<S: SwiftUI.PickerStyle>(
 ///   - optionLabel: Closure to extract label string from each option
 ///   - pickerName: Optional name for the picker (used in accessibility identifier generation)
 ///   - style: Picker style (default: .menu)
-/// - Returns: A picker with automatic accessibility compliance applied to picker and segments
+/// - Returns: A picker with automatic accessibility compliance: identifiers are applied to both the picker control and to each option element.
 ///
 /// ## Usage Example
 /// ```swift
