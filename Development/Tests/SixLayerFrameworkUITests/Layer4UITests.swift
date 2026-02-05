@@ -10,8 +10,16 @@ import XCTest
 @testable import SixLayerFramework
 
 /// Layer 4 component tests: one test per L4 API. Contract = full contract (behavior, structure, a11y), not just accessibility.
-/// We test ALL L4 APIs that can be exercised in the contract screen(s); each test asserts the API's contract.
+/// We test ALL L4 APIs; each test asserts the API's contract.
 /// Uses launch argument -OpenLayer4Examples. One app launch for the suite.
+///
+/// Currently covered: platformButton, platformTextField, platformPicker, platformSecureField, platformToggle,
+/// platformTextEditor, platformDatePicker, platformForm, platformFormSection, platformFormField, platformFormFieldGroup,
+/// platformValidationMessage, platformListRow, platformListSectionHeader, platformListEmptyState.
+/// Remaining L4 APIs to add: navigation (platformNavigationTitle_L4, platformImplementNavigationStack_L4,
+/// platformNavigationLink_L4, platformAppNavigation_L4, ...), platformSheet_L4, platformPopover_L4, platformRowActions_L4,
+/// platformPhotoPicker_L4, platformPhotoDisplay_L4, platformMapView_L4, platformCloudKit*, platformCopyToClipboard_L4,
+/// platformPrint_L4, platformShare_L4, platformVerticalSplit_L4, platformHorizontalSplit_L4, platformStyledContainer_L4, etc.
 @MainActor
 final class Layer4UITests: XCTestCase {
     /// Shared across test instances (Xcode creates one instance per test method).
