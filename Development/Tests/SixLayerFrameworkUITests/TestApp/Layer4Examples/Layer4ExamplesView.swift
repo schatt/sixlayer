@@ -588,11 +588,12 @@ struct Layer4ContractOnlyView: View {
     @State private var l4ContractPickerSelection = "A"
     @State private var l4ContractToggleOn = false
     @State private var l4ContractEditorText = ""
+    @State private var l4ContractDate = Date()
 
     var body: some View {
         ScrollView {
             platformVStack(alignment: .leading, spacing: 24) {
-                ExampleSection(title: "L4 Component Contract") {
+                ExampleSection(title: "L4 Controls") {
                     platformVStack(alignment: .leading, spacing: 16) {
                         platformButton("L4ContractButton") { }
                         SixLayerFramework.platformTextField("L4ContractTextField", text: $l4ContractText)
@@ -604,6 +605,37 @@ struct Layer4ContractOnlyView: View {
                         platformSecureField("L4ContractSecureField", text: $l4ContractSecureText)
                         SixLayerFramework.platformToggle("L4ContractToggle", isOn: $l4ContractToggleOn)
                         SixLayerFramework.platformTextEditor("L4ContractTextEditor", text: $l4ContractEditorText)
+                        EmptyView()
+                            .platformDatePicker(selection: $l4ContractDate, displayedComponents: .date) { Text("L4ContractDatePicker") }
+                    }
+                }
+                ExampleSection(title: "L4 Form") {
+                    platformVStack(alignment: .leading, spacing: 16) {
+                        SixLayerFramework.platformForm {
+                            Group { Text("Form section body") }
+                                .platformFormSection(header: { Text("L4FormSectionContract") }, content: { Text("Section body") })
+                        }
+                        platformVStack(alignment: .leading, spacing: 8) {
+                            EmptyView()
+                                .platformFormField(label: "L4FormFieldContract") { Text("Field content") }
+                            EmptyView()
+                                .platformFormFieldGroup(title: "L4FormFieldGroupContract") { Text("Group content") }
+                            EmptyView()
+                                .platformValidationMessage("L4ValidationMessageContract")
+                        }
+                    }
+                }
+                ExampleSection(title: "L4 List") {
+                    platformVStack(alignment: .leading, spacing: 8) {
+                        List {
+                            EmptyView()
+                                .platformListRow(title: "L4ListRowContract")
+                        }
+                        .frame(height: 60)
+                        EmptyView()
+                            .platformListSectionHeader(title: "L4ListSectionHeaderContract")
+                        EmptyView()
+                            .platformListEmptyState(systemImage: "tray", title: "L4ListEmptyStateContract", message: "Empty")
                     }
                 }
             }

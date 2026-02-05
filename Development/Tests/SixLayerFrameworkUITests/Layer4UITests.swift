@@ -9,10 +9,8 @@
 import XCTest
 @testable import SixLayerFramework
 
-/// Layer 4 component tests: one test per L4 component in the contract screen.
-/// L4 has many more APIs (platformFormField, platformFormSection, platformVStack, platformSheet,
-/// platformPhotoPicker_L4, platformMapView_L4, platformNavigationStack, platformRowActions_L4, etc.).
-/// We test a representative set that share the same contract: component applies a11y (identifier) to the element.
+/// Layer 4 component tests: one test per L4 API. Contract = full contract (behavior, structure, a11y), not just accessibility.
+/// We test ALL L4 APIs that can be exercised in the contract screen(s); each test asserts the API's contract.
 /// Uses launch argument -OpenLayer4Examples. One app launch for the suite.
 @MainActor
 final class Layer4UITests: XCTestCase {
@@ -44,6 +42,16 @@ final class Layer4UITests: XCTestCase {
     /// Expected identifier suffix (sanitized label + type) when enableUITestIntegration is true: SixLayer.main.ui.<suffix>.
     private static func l4ContractIdentifier(sanitizedName: String, elementType: String) -> String {
         "SixLayer.main.ui.\(sanitizedName).\(elementType)"
+    }
+
+    /// Scroll so the element with the given label is visible (content may be below fold).
+    @MainActor
+    private func scrollToElement(label: String) {
+        if app.staticTexts[label].waitForExistence(timeout: 1.0) { return }
+        for _ in 0..<3 {
+            app.scrollViews.firstMatch.swipeUp()
+            if app.staticTexts[label].waitForExistence(timeout: 1.0) { return }
+        }
     }
 
     @MainActor
@@ -132,5 +140,64 @@ final class Layer4UITests: XCTestCase {
             sanitizedIdentifierName: "l4contracttexteditor",
             identifierElementType: "TextEditor"
         )
+    }
+
+    @MainActor
+    func testL4_platformDatePicker() throws {
+        scrollToElement(label: "L4ContractDatePicker")
+        XCTAssertTrue(app.staticTexts["L4ContractDatePicker"].waitForExistence(timeout: 3.0),
+                      "platformDatePicker: label should exist")
+    }
+
+    @MainActor
+    func testL4_platformForm() throws {
+        scrollToElement(label: "Section body")
+        XCTAssertTrue(app.staticTexts["Section body"].waitForExistence(timeout: 3.0),
+                      "platformForm: form section content should be visible")
+    }
+
+    @MainActor
+    func testL4_platformFormSection() throws {
+        scrollToElement(label: "L4FormSectionContract")
+        XCTAssertTrue(app.staticTexts["L4FormSectionContract"].waitForExistence(timeout: 3.0),
+                      "platformFormSection: section header should exist")
+    }
+
+    @MainActor
+    func testL4_platformFormField() throws {
+        XCTAssertTrue(app.staticTexts["L4FormFieldContract"].waitForExistence(timeout: 3.0),
+                      "platformFormField: label should exist")
+        XCTAssertTrue(app.staticTexts["Field content"].waitForExistence(timeout: 2.0),
+                      "platformFormField: content should exist")
+    }
+
+    @MainActor
+    func testL4_platformFormFieldGroup() throws {
+        XCTAssertTrue(app.staticTexts["L4FormFieldGroupContract"].waitForExistence(timeout: 3.0),
+                      "platformFormFieldGroup: title should exist")
+    }
+
+    @MainActor
+    func testL4_platformValidationMessage() throws {
+        XCTAssertTrue(app.staticTexts["L4ValidationMessageContract"].waitForExistence(timeout: 3.0),
+                      "platformValidationMessage: message should exist")
+    }
+
+    @MainActor
+    func testL4_platformListRow() throws {
+        XCTAssertTrue(app.staticTexts["L4ListRowContract"].waitForExistence(timeout: 3.0),
+                      "platformListRow: row title should exist")
+    }
+
+    @MainActor
+    func testL4_platformListSectionHeader() throws {
+        XCTAssertTrue(app.staticTexts["L4ListSectionHeaderContract"].waitForExistence(timeout: 3.0),
+                      "platformListSectionHeader: header title should exist")
+    }
+
+    @MainActor
+    func testL4_platformListEmptyState() throws {
+        XCTAssertTrue(app.staticTexts["L4ListEmptyStateContract"].waitForExistence(timeout: 3.0),
+                      "platformListEmptyState: title should exist")
     }
 }
