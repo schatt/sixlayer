@@ -89,6 +89,21 @@ final class Layer6UITests: XCTestCase {
         }
     }
 
+    /// L6 modifiers apply to the element they wrap; automaticCompliance runs only on that element.
+    /// Assert that the plain Text and Button that have ONLY .platformSpecificOptimizations applied get a11y from the modifier.
+    @MainActor
+    private func assertL6ModifierContract_ElementsGetComplianceFromModifier() {
+        let textEl = app.staticTexts["L6ContractText"].firstMatch
+        XCTAssertTrue(textEl.waitForExistence(timeout: 2.0), "L6 contract: Text with only L6 modifier should exist")
+        XCTAssertFalse(textEl.identifier.isEmpty,
+                       "L6 modifier must apply a11y to the view it wraps; L6ContractText should have identifier from modifier's automaticCompliance. Found: '\(textEl.identifier)'")
+
+        let buttonEl = app.buttons["L6ContractButton"].firstMatch
+        XCTAssertTrue(buttonEl.waitForExistence(timeout: 2.0), "L6 contract: Button with only L6 modifier should exist")
+        XCTAssertFalse(buttonEl.identifier.isEmpty,
+                       "L6 modifier must apply a11y to the view it wraps; L6ContractButton should have identifier from modifier's automaticCompliance. Found: '\(buttonEl.identifier)'")
+    }
+
     /// Platform-specific Layer 6 checks. Each platform's Layer 6 code path is tested when this target runs on that platform.
     @MainActor
     private func assertLayer6PlatformSpecificBehavior() {
@@ -119,6 +134,7 @@ final class Layer6UITests: XCTestCase {
 
     @MainActor
     func testLayer6Examples_PrescriptiveAccessibility() throws {
+        assertL6ModifierContract_ElementsGetComplianceFromModifier()
         assertExpectedSectionTitleExists()
         assertLayer6FunctionNamesPresent()
         assertDemoButtonsMeetAccessibilityContract()
