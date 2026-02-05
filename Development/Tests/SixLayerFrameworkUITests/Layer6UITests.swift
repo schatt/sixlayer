@@ -89,10 +89,39 @@ final class Layer6UITests: XCTestCase {
         }
     }
 
+    /// Platform-specific Layer 6 checks. Each platform's Layer 6 code path is tested when this target runs on that platform.
+    @MainActor
+    private func assertLayer6PlatformSpecificBehavior() {
+        #if os(iOS)
+        // iOS: Navigation Stack Enhancements section uses platformIOSNavigationStackEnhancements_L6()
+        let navStackSection = app.staticTexts["Navigation Stack Enhancements"].firstMatch
+        XCTAssertTrue(navStackSection.waitForExistence(timeout: 2.0),
+                      "iOS Layer 6: Navigation Stack Enhancements section should be visible")
+        #elseif os(macOS)
+        // macOS: Navigation Stack Enhancements section uses platformMacOSNavigationStackEnhancements_L6()
+        let navStackSection = app.staticTexts["Navigation Stack Enhancements"].firstMatch
+        XCTAssertTrue(navStackSection.waitForExistence(timeout: 2.0),
+                      "macOS Layer 6: Navigation Stack Enhancements section should be visible")
+        #elseif os(tvOS)
+        // tvOS: Layer 6 dispatcher returns self for nav stack; Cross-Platform Optimizations still apply
+        XCTAssertTrue(app.staticTexts[Self.expectedSectionTitle].waitForExistence(timeout: 2.0),
+                      "tvOS Layer 6: Cross-Platform Optimizations section should be visible")
+        #elseif os(watchOS)
+        // watchOS: same as tvOS for shared optimization section
+        XCTAssertTrue(app.staticTexts[Self.expectedSectionTitle].waitForExistence(timeout: 2.0),
+                      "watchOS Layer 6: Cross-Platform Optimizations section should be visible")
+        #elseif os(visionOS)
+        // visionOS: same as tvOS for shared optimization section
+        XCTAssertTrue(app.staticTexts[Self.expectedSectionTitle].waitForExistence(timeout: 2.0),
+                      "visionOS Layer 6: Cross-Platform Optimizations section should be visible")
+        #endif
+    }
+
     @MainActor
     func testLayer6Examples_PrescriptiveAccessibility() throws {
         assertExpectedSectionTitleExists()
         assertLayer6FunctionNamesPresent()
         assertDemoButtonsMeetAccessibilityContract()
+        assertLayer6PlatformSpecificBehavior()
     }
 }
