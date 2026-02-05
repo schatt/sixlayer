@@ -237,13 +237,19 @@ private struct ExampleCard<Content: View>: View {
 
 // MARK: - Direct-open for UI tests (launch argument -OpenLayer6Examples)
 
-/// Shows only the Cross-Platform Optimizations section with Layer 6 Examples nav title.
-/// Used when the app is launched with -OpenLayer6Examples so the UI test can assert without navigating or scrolling.
+/// Shows both Layer 6 sections (Navigation Stack Enhancements + Cross-Platform Optimizations) so
+/// UI tests can assert on the actual Layer 6 API names: platformNavigationStackEnhancements_L6 and
+/// platformSpecificOptimizations/performanceOptimizations/uiPatternOptimizations.
 struct Layer6CrossPlatformOnlyView: View {
     var body: some View {
         ScrollView {
-            ExampleSection(title: "Cross-Platform Optimizations") {
-                CrossPlatformOptimizationExamples()
+            platformVStack(alignment: .leading, spacing: 24) {
+                ExampleSection(title: "Navigation Stack Enhancements") {
+                    NavigationStackEnhancementExamples()
+                }
+                ExampleSection(title: "Cross-Platform Optimizations") {
+                    CrossPlatformOptimizationExamples()
+                }
             }
             .padding()
         }

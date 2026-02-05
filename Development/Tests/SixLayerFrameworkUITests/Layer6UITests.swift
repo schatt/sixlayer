@@ -3,14 +3,16 @@
 //  SixLayerFrameworkUITests
 //
 //  Layer 6 (System) UI tests: launch with -OpenLayer6Examples so the app opens
-//  directly to the Cross-Platform Optimizations section; prescriptive a11y via DRY helpers.
+//  directly to the Cross-Platform Optimizations section. Asserts that the screen
+//  presents the actual Layer 6 optimization APIs by name and that demo controls meet a11y.
 //
 
 import XCTest
 @testable import SixLayerFramework
 
-/// Layer 6 system example tests. Prescriptive: require expected elements and full accessibility contract.
-/// Uses launch argument -OpenLayer6Examples so the test app opens on the right screen.
+/// Layer 6 UI tests: verify the Layer 6 examples screen shows the real Layer 6 functions
+/// (platformSpecificOptimizations, performanceOptimizations, uiPatternOptimizations) and
+/// that the demo controls are accessible. Uses launch argument -OpenLayer6Examples.
 @MainActor
 final class Layer6UITests: XCTestCase {
     var app: XCUIApplication!
@@ -41,7 +43,16 @@ final class Layer6UITests: XCTestCase {
 
     private static let expectedSectionTitle = "Cross-Platform Optimizations"
 
-    /// All four framework buttons on the direct-open screen: (id passed to platformButton, label for assertions).
+    /// Layer 6 function names as shown in the example card descriptions (actual API names).
+    private static let layer6FunctionDescriptions: [String] = [
+        "platformNavigationStackEnhancements_L6",
+        "platformSpecificOptimizations(for:)",
+        "performanceOptimizations(using:)",
+        "uiPatternOptimizations(using:)",
+        "All optimization types combined",
+    ]
+
+    /// Buttons inside each demo card (platformButton, not Layer 6); used for a11y contract checks.
     private static let expectedButtons: [(id: String, label: String)] = [
         ("platform-specific-optimized", "Optimized Button"),
         ("performance-optimized", "Optimized Button"),
@@ -56,22 +67,33 @@ final class Layer6UITests: XCTestCase {
         XCTAssertFalse(el.label.isEmpty, "Section title should have non-empty accessibility label")
     }
 
+    /// Asserts that the UI that names the Layer 6 optimization APIs is present.
     @MainActor
-    private func assertExpectedButtonsExistAndMeetContract() {
+    private func assertLayer6FunctionNamesPresent() {
+        for description in Self.layer6FunctionDescriptions {
+            let el = app.staticTexts[description].firstMatch
+            XCTAssertTrue(el.waitForExistence(timeout: 2.0),
+                          "Layer 6 demo for '\(description)' should be visible")
+        }
+    }
+
+    @MainActor
+    private func assertDemoButtonsMeetAccessibilityContract() {
         for (idSuffix, label) in Self.expectedButtons {
             let frameworkId = "SixLayer.main.ui.\(idSuffix).Button"
             let el = app.buttons[frameworkId].firstMatch
-            XCTAssertTrue(el.waitForExistence(timeout: 2.0), "Button '\(label)' (id: \(idSuffix)) should exist")
+            XCTAssertTrue(el.waitForExistence(timeout: 2.0), "Demo button '\(label)' (id: \(idSuffix)) should exist")
             el.verifyAccessibilityIdentifier(elementName: "\(label) (\(idSuffix))")
             el.verifyAccessibilityLabel(elementName: "\(label) (\(idSuffix))")
             el.verifyAccessibilityTraits(elementName: "\(label) (\(idSuffix))", expectedType: .button)
-            XCTAssertTrue(el.isEnabled, "Button '\(label)' (\(idSuffix)) should be enabled")
+            XCTAssertTrue(el.isEnabled, "Demo button '\(label)' (\(idSuffix)) should be enabled")
         }
     }
 
     @MainActor
     func testLayer6Examples_PrescriptiveAccessibility() throws {
         assertExpectedSectionTitleExists()
-        assertExpectedButtonsExistAndMeetContract()
+        assertLayer6FunctionNamesPresent()
+        assertDemoButtonsMeetAccessibilityContract()
     }
 }
