@@ -156,7 +156,7 @@ extension XCUIApplication {
         guard link.waitForExistence(timeout: 5.0) else { return false }
         link.tap()
         guard navigationBars[navigationBarTitle].waitForExistence(timeout: 5.0) else { return false }
-        return cells.firstMatch.waitForExistence(timeout: 3.0) || buttons.firstMatch.waitForExistence(timeout: 2.0) || staticTexts.firstMatch.waitForExistence(timeout: 2.0)
+        return buttons.firstMatch.waitForExistence(timeout: 2.0) || staticTexts.firstMatch.waitForExistence(timeout: 2.0) || cells.firstMatch.waitForExistence(timeout: 1.0)
     }
 
     // MARK: - Accessibility compatibility sweep (Issue #180)
