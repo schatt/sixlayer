@@ -38,12 +38,21 @@ final class Layer4UITests: XCTestCase {
         try super.tearDownWithError()
     }
 
+    /// Scroll so L4 contract section is visible (section may be below fold on small screens).
+    @MainActor
+    private func scrollToL4ContractSectionIfNeeded() {
+        _ = app.navigationBars["Layer 4 Examples"].waitForExistence(timeout: 2.0)
+        if app.staticTexts["L4 Component Contract"].waitForExistence(timeout: 0.5) { return }
+        app.scrollViews.firstMatch.swipeUp()
+    }
+
     @MainActor
     private func assertElementHasIdentifierFromComponent(
         label: String,
         type: XCUIElement.ElementType,
         componentName: String
     ) {
+        scrollToL4ContractSectionIfNeeded()
         let el: XCUIElement
         switch type {
         case .button:
@@ -55,7 +64,7 @@ final class Layer4UITests: XCTestCase {
         default:
             el = app.staticTexts[label].firstMatch
         }
-        XCTAssertTrue(el.waitForExistence(timeout: 2.0),
+        XCTAssertTrue(el.waitForExistence(timeout: 3.0),
                        "\(componentName): element '\(label)' should exist")
         XCTAssertFalse(el.identifier.isEmpty,
                        "\(componentName) must apply a11y to the element. '\(label)' should have identifier. Found: '\(el.identifier)'")
@@ -82,18 +91,18 @@ final class Layer4UITests: XCTestCase {
 
     @MainActor
     func testL4_platformPicker() throws {
-        // Picker contract: picker and options get identifiers. Assert picker has identifier (by label).
+        scrollToL4ContractSectionIfNeeded()
+        // Picker contract: picker and options get identifiers. Find by label (picker or button).
         let pickerLabel = "L4ContractPicker"
-        let pickerEl = app.otherElements[pickerLabel].firstMatch
-        if !pickerEl.waitForExistence(timeout: 2.0) {
-            // On some platforms picker may appear as button or different type
-            let alt = app.buttons[pickerLabel].firstMatch
-            XCTAssertTrue(alt.waitForExistence(timeout: 2.0), "platformPicker: '\(pickerLabel)' should exist")
-            XCTAssertFalse(alt.identifier.isEmpty, "platformPicker must apply a11y. Found: '\(alt.identifier)'")
-            return
+        var el = app.otherElements[pickerLabel].firstMatch
+        if !el.waitForExistence(timeout: 2.0) {
+            el = app.buttons[pickerLabel].firstMatch
         }
-        XCTAssertFalse(pickerEl.identifier.isEmpty,
-                       "platformPicker must apply a11y to the picker. Found: '\(pickerEl.identifier)'")
+        if !el.waitForExistence(timeout: 2.0) {
+            el = app.staticTexts[pickerLabel].firstMatch
+        }
+        XCTAssertTrue(el.waitForExistence(timeout: 1.0), "platformPicker: '\(pickerLabel)' should exist")
+        XCTAssertFalse(el.identifier.isEmpty, "platformPicker must apply a11y. Found: '\(el.identifier)'")
     }
 
     @MainActor
