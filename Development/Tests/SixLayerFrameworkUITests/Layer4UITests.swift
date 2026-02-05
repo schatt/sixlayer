@@ -9,7 +9,10 @@
 import XCTest
 @testable import SixLayerFramework
 
-/// Layer 4 component tests: one test per L4 component (platformButton, platformTextField, platformPicker, platformSecureField).
+/// Layer 4 component tests: one test per L4 component in the contract screen.
+/// L4 has many more APIs (platformFormField, platformFormSection, platformVStack, platformSheet,
+/// platformPhotoPicker_L4, platformMapView_L4, platformNavigationStack, platformRowActions_L4, etc.).
+/// We test a representative set that share the same contract: component applies a11y (identifier) to the element.
 /// Uses launch argument -OpenLayer4Examples. One app launch for the suite.
 @MainActor
 final class Layer4UITests: XCTestCase {
@@ -106,6 +109,28 @@ final class Layer4UITests: XCTestCase {
             componentName: "platformSecureField",
             sanitizedIdentifierName: "l4contractsecurefield",
             identifierElementType: "SecureField"
+        )
+    }
+
+    @MainActor
+    func testL4_platformToggle() throws {
+        assertElementHasIdentifierFromComponent(
+            label: "L4ContractToggle",
+            type: .switch,
+            componentName: "platformToggle",
+            sanitizedIdentifierName: "l4contracttoggle",
+            identifierElementType: "Toggle"
+        )
+    }
+
+    @MainActor
+    func testL4_platformTextEditor() throws {
+        assertElementHasIdentifierFromComponent(
+            label: "L4ContractTextEditor",
+            type: .textView,
+            componentName: "platformTextEditor",
+            sanitizedIdentifierName: "l4contracttexteditor",
+            identifierElementType: "TextEditor"
         )
     }
 }

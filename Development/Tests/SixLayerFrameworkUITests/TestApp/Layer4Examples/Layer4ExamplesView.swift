@@ -586,6 +586,8 @@ struct Layer4ContractOnlyView: View {
     @State private var l4ContractText = ""
     @State private var l4ContractSecureText = ""
     @State private var l4ContractPickerSelection = "A"
+    @State private var l4ContractToggleOn = false
+    @State private var l4ContractEditorText = ""
 
     var body: some View {
         ScrollView {
@@ -600,6 +602,8 @@ struct Layer4ContractOnlyView: View {
                             options: ["A", "B", "C"]
                         )
                         platformSecureField("L4ContractSecureField", text: $l4ContractSecureText)
+                        platformToggle("L4ContractToggle", isOn: $l4ContractToggleOn)
+                        platformTextEditor("L4ContractTextEditor", text: $l4ContractEditorText)
                     }
                 }
             }
