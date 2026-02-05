@@ -84,8 +84,8 @@ final class Layer4UITests: XCTestCase {
 
     @MainActor
     func testL4_platformPicker() throws {
-        // Picker contract: picker has identifier (format: SixLayer.main.ui.<pickerName>.View or similar).
-        let identifier = Self.l4ContractIdentifier(sanitizedName: "l4contractpicker", elementType: "View")
+        // platformPicker uses automaticCompliance(named: pickerName ?? "Picker"), so identifier suffix is "picker.View".
+        let identifier = Self.l4ContractIdentifier(sanitizedName: "picker", elementType: "View")
         let el = app.findElement(byIdentifier: identifier, primaryType: .other, secondaryTypes: [.button, .picker, .segmentedControl, .any], timeout: 5.0)
         XCTAssertNotNil(el, "platformPicker: picker with identifier '\(identifier)' should exist")
         if let el = el {
