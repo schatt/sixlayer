@@ -1,0 +1,21 @@
+---
+description: Commit all current changes before running any test. Blocking—no test command until committed.
+alwaysApply: true
+---
+
+# Commit Before Test (BLOCKING)
+
+## **MANDATORY — BLOCKING**
+
+- **Do not run any test command** (e.g. `xcodebuild test`, `dbs-build --target test`, `pytest`, `npm test`, or any `run_terminal_cmd` that runs tests) **until all current work is committed.**
+
+## **REQUIRED SEQUENCE**
+
+1. **Before** invoking a test run: run `git status`.
+2. **If** there are uncommitted changes: run `git add` for the relevant path(s), then `git commit -m "<message>"`.
+3. **Only then** run the test command.
+
+## **NO EXCEPTIONS**
+
+- Running tests with uncommitted changes violates this rule.
+- "I'll commit after the test" is not allowed. Commit first, then test.
