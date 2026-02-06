@@ -175,23 +175,19 @@ open class BaseTestClass {
     #if canImport(ViewInspector)
     @MainActor
     open func verifyViewContainsText<V: View & ViewInspector.Inspectable>(_ view: V, expectedText: String, testName: String) {
-        do {
-            guard let inspected = inspectView(view) else {
-                Issue.record("View inspection failed for \(testName): could not obtain inspected view")
-                return
-            }
-            let viewText = inspected.findAll(ViewInspector.ViewType.Text.self)
-            guard !viewText.isEmpty else {
-                Issue.record("View inspection returned no text elements for \(testName) (ViewInspector cannot traverse hierarchy)")
-                return
-            }
-            let hasExpectedText = viewText.contains { text in
-                (try? text.string())?.contains(expectedText) ?? false
-            }
-            #expect(hasExpectedText, "View should contain text '\(expectedText)' for \(testName)")
-        } catch {
-            Issue.record("View inspection failed for \(testName): \(error)")
+        guard let inspected = inspectView(view) else {
+            Issue.record("View inspection failed for \(testName): could not obtain inspected view")
+            return
         }
+        let viewText = inspected.findAll(ViewInspector.ViewType.Text.self)
+        guard !viewText.isEmpty else {
+            Issue.record("View inspection returned no text elements for \(testName) (ViewInspector cannot traverse hierarchy)")
+            return
+        }
+        let hasExpectedText = viewText.contains { text in
+            (try? text.string())?.contains(expectedText) ?? false
+        }
+        #expect(hasExpectedText, "View should contain text '\(expectedText)' for \(testName)")
     }
 
     /// Verify that a view contains specific text (non-Inspectable view — uses type-erased inspection).
@@ -230,18 +226,14 @@ open class BaseTestClass {
     #if canImport(ViewInspector)
     @MainActor
     open func verifyViewContainsImage<V: View & ViewInspector.Inspectable>(_ view: V, testName: String) {
-        do {
-            guard let inspected = inspectView(view) else {
-                Issue.record("View inspection failed for \(testName): could not obtain inspected view")
-                return
-            }
-            let viewImages = inspected.findAll(ViewInspector.ViewType.Image.self)
-            guard !viewImages.isEmpty else {
-                Issue.record("View inspection returned no image elements for \(testName) (ViewInspector cannot traverse hierarchy)")
-                return
-            }
-        } catch {
-            Issue.record("View inspection failed for \(testName): \(error)")
+        guard let inspected = inspectView(view) else {
+            Issue.record("View inspection failed for \(testName): could not obtain inspected view")
+            return
+        }
+        let viewImages = inspected.findAll(ViewInspector.ViewType.Image.self)
+        guard !viewImages.isEmpty else {
+            Issue.record("View inspection returned no image elements for \(testName) (ViewInspector cannot traverse hierarchy)")
+            return
         }
     }
 
@@ -273,18 +265,14 @@ open class BaseTestClass {
     /// Records issue and returns when inspection returns no Text (traversal limitation).
     @MainActor
     open func verifyViewContainsAnyText<V: View & ViewInspector.Inspectable>(_ view: V, testName: String) {
-        do {
-            guard let inspected = inspectView(view) else {
-                Issue.record("View inspection failed for \(testName): could not obtain inspected view")
-                return
-            }
-            let viewText = inspected.findAll(ViewInspector.ViewType.Text.self)
-            guard !viewText.isEmpty else {
-                Issue.record("View inspection returned no text elements for \(testName) (ViewInspector cannot traverse hierarchy)")
-                return
-            }
-        } catch {
-            Issue.record("View inspection failed for \(testName): \(error)")
+        guard let inspected = inspectView(view) else {
+            Issue.record("View inspection failed for \(testName): could not obtain inspected view")
+            return
+        }
+        let viewText = inspected.findAll(ViewInspector.ViewType.Text.self)
+        guard !viewText.isEmpty else {
+            Issue.record("View inspection returned no text elements for \(testName) (ViewInspector cannot traverse hierarchy)")
+            return
         }
     }
 
@@ -316,7 +304,7 @@ open class BaseTestClass {
     @MainActor
     open func verifyViewContainsAtLeastOneVStack(_ view: some View, testName: String) {
         guard let vStacks = withInspectedView(AnyView(view), perform: { inspected in
-            (try? inspected.findAll(ViewInspector.ViewType.VStack.self)) ?? []
+            inspected.findAll(ViewInspector.ViewType.VStack.self)
         }) else {
             Issue.record("View inspection failed for \(testName): could not obtain inspected view")
             return
