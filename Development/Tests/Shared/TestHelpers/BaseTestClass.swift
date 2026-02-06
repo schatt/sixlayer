@@ -20,6 +20,12 @@ import SwiftUI
 import ViewInspector
 #endif
 
+/// Used with Issue.record when recording a message string (Swift Testing expects Error for that overload).
+private struct ViewInspectionRecordedIssue: Error, LocalizedError {
+    let message: String
+    var errorDescription: String? { message }
+}
+
 /// Base class for all test classes
 /// Provides isolated test configuration and setup utilities
 /// NOTE: Not marked @MainActor on class to allow parallel execution
@@ -334,8 +340,7 @@ open class BaseTestClass {
             return
         }
         if let min = minChildren, vStack.count < min {
-            let msg = "View inspection for \(testName): VStack has \(vStack.count) children, expected at least \(min) (ViewInspector cannot traverse hierarchy)"
-            Issue.record(msg)
+            Issue.record(ViewInspectionRecordedIssue(message: "View inspection for \(testName): VStack has \(vStack.count) children, expected at least \(min) (ViewInspector cannot traverse hierarchy)"))
             return
         }
         body(vStack)
