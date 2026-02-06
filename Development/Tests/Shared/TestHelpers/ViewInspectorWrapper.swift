@@ -135,12 +135,7 @@ public struct NoVStackInHierarchy: Error {}
 /// On traversal errors (e.g. type mismatch), throws NoVStackInHierarchy so callers get a consistent error.
 @MainActor
 public func firstVStackInHierarchy(_ inspected: ViewInspector.InspectableView<ViewInspector.ViewType.ClassifiedView>) throws -> ViewInspector.InspectableView<ViewInspector.ViewType.VStack> {
-    let list: [ViewInspector.InspectableView<ViewInspector.ViewType.VStack>]
-    do {
-        list = try inspected.findAll(ViewInspector.ViewType.VStack.self)
-    } catch {
-        throw NoVStackInHierarchy()
-    }
+    let list = inspected.findAll(ViewInspector.ViewType.VStack.self)
     guard let first = list.first else { throw NoVStackInHierarchy() }
     return first
 }
@@ -148,12 +143,7 @@ public func firstVStackInHierarchy(_ inspected: ViewInspector.InspectableView<Vi
 /// When the root is InspectableView<ViewType.AnyView> (e.g. after unwrap), get the first VStack in the hierarchy.
 @MainActor
 public func firstVStackInHierarchy(_ inspected: ViewInspector.InspectableView<ViewInspector.ViewType.AnyView>) throws -> ViewInspector.InspectableView<ViewInspector.ViewType.VStack> {
-    let list: [ViewInspector.InspectableView<ViewInspector.ViewType.VStack>]
-    do {
-        list = try inspected.findAll(ViewInspector.ViewType.VStack.self)
-    } catch {
-        throw NoVStackInHierarchy()
-    }
+    let list = inspected.findAll(ViewInspector.ViewType.VStack.self)
     guard let first = list.first else { throw NoVStackInHierarchy() }
     return first
 }
@@ -162,12 +152,7 @@ public func firstVStackInHierarchy(_ inspected: ViewInspector.InspectableView<Vi
 /// Use when the view type is the root (e.g. PlatformRecognitionLayer5) and its body contains a VStack — Issue 178.
 @MainActor
 public func firstVStackInHierarchy<V: View & ViewInspector.Inspectable>(_ inspected: ViewInspector.InspectableView<ViewInspector.ViewType.View<V>>) throws -> ViewInspector.InspectableView<ViewInspector.ViewType.VStack> {
-    let list: [ViewInspector.InspectableView<ViewInspector.ViewType.VStack>]
-    do {
-        list = try inspected.findAll(ViewInspector.ViewType.VStack.self)
-    } catch {
-        throw NoVStackInHierarchy()
-    }
+    let list = inspected.findAll(ViewInspector.ViewType.VStack.self)
     guard let first = list.first else { throw NoVStackInHierarchy() }
     return first
 }
