@@ -14,8 +14,8 @@ alwaysApply: true
 ## **REQUIRED BEHAVIOR**
 
 1. **Trigger:** Every time you use **write** or **search_replace** to change a file.
-2. **Before any other tool call** (including another write/search_replace): run `git add <path to the file you just edited>` then `git commit -m "<clear message>"`.
-3. **Then** proceed. Do not edit a second file until the first is committed.
+2. **Before any other tool call** (including another write/search_replace, **or run_terminal_cmd** e.g. to run tests): run `git add <path to the file you just edited>` then `git commit -m "<clear message>"`.
+3. **Then** proceed. Do not edit a second file until the first is committed. Do not run tests until the current edit is committed (see also `.cursor/rules/commit-before-test.mdc`).
 
 ## **Workflow**
 
