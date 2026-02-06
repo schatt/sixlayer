@@ -192,7 +192,7 @@ echo "📋 Step 2: Running test suite..."
 # Run macOS unit tests first
 echo "🧪 Running macOS unit tests..."
 # Note: do NOT use -quiet here so that any failures print detailed diagnostics
-if ! xcodebuild test -project SixLayerFramework.xcodeproj -scheme SixLayerFramework-UnitTestsOnly-macOS -quiet -destination "platform=macOS,arch=arm64"; then
+if ! xcodebuild test -project SixLayerFramework.xcodeproj -scheme SLF-macOS-UnitTests -quiet -destination "platform=macOS,arch=arm64"; then
     log_error "macOS unit tests failed! Cannot proceed with release."
     exit 1
 fi
@@ -209,7 +209,7 @@ else
     echo "⚠️  xcrun not available; attempting to run iOS tests without explicit simulator boot"
 fi
 
-if ! xcodebuild test -project SixLayerFramework.xcodeproj -scheme SixLayerFramework-UnitTestsOnly-iOS -quiet -destination "platform=iOS Simulator,name=iPhone 17 Pro Max"; then
+if ! xcodebuild test -project SixLayerFramework.xcodeproj -scheme SLF-iOS-UnitTests -quiet -destination "platform=iOS Simulator,name=iPhone 17 Pro Max"; then
     log_error "iOS unit tests failed! Cannot proceed with release."
     exit 1
 fi

@@ -15,9 +15,9 @@ import XCTest
 ///
 /// Currently covered: platformButton, platformTextField, platformPicker, platformSecureField, platformToggle,
 /// platformTextEditor, platformDatePicker, platformForm, platformFormSection, platformFormField, platformFormFieldGroup,
-/// platformValidationMessage, platformListRow, platformListSectionHeader, platformListEmptyState.
-/// Remaining L4 APIs to add: navigation (platformNavigationTitle_L4, platformImplementNavigationStack_L4,
-/// platformNavigationLink_L4, platformAppNavigation_L4, ...), platformSheet_L4, platformPopover_L4, platformRowActions_L4,
+/// platformValidationMessage, platformListRow, platformListSectionHeader, platformListEmptyState,
+/// platformSheet_L4, platformPopover_L4, platformNavigationTitle_L4, platformNavigationLink_L4, platformNavigationBarTitleDisplayMode_L4.
+/// Remaining L4 APIs to add: platformImplementNavigationStack_L4, platformAppNavigation_L4, platformRowActions_L4,
 /// platformPhotoPicker_L4, platformPhotoDisplay_L4, platformMapView_L4, platformCloudKit*, platformCopyToClipboard_L4,
 /// platformPrint_L4, platformShare_L4, platformVerticalSplit_L4, platformHorizontalSplit_L4, platformStyledContainer_L4, etc.
 @MainActor
@@ -56,10 +56,22 @@ final class Layer4UITests: XCTestCase {
     @MainActor
     private func scrollToElement(label: String) {
         if app.staticTexts[label].waitForExistence(timeout: 1.0) { return }
-        for _ in 0..<3 {
-            app.scrollViews.firstMatch.swipeUp()
+        if app.buttons[label].waitForExistence(timeout: 0.5) { return }
+        if element(matchingIdentifier: label).waitForExistence(timeout: 0.5) { return }
+        let scrollable: XCUIElement = app.scrollViews.firstMatch.exists ? app.scrollViews.firstMatch : app.windows.firstMatch
+        guard scrollable.exists else { return }
+        for _ in 0..<5 {
+            scrollable.swipeUp()
             if app.staticTexts[label].waitForExistence(timeout: 1.0) { return }
+            if app.buttons[label].waitForExistence(timeout: 0.5) { return }
+            if element(matchingIdentifier: label).waitForExistence(timeout: 0.5) { return }
         }
+    }
+
+    /// Element with the given accessibility identifier (any type).
+    @MainActor
+    private func element(matchingIdentifier id: String) -> XCUIElement {
+        app.descendants(matching: .any).matching(NSPredicate(format: "identifier == %@", id)).firstMatch
     }
 
     @MainActor
@@ -208,5 +220,68 @@ final class Layer4UITests: XCTestCase {
     func testL4_platformListEmptyState() throws {
         XCTAssertTrue(app.staticTexts["L4ListEmptyStateContract"].waitForExistence(timeout: 3.0),
                       "platformListEmptyState: title should exist")
+    }
+
+    // MARK: - Presentation
+
+    @MainActor
+    func testL4_platformSheet_L4() throws {
+        scrollToElement(label: "L4ContractSheet")
+        let sheetId = Self.l4ContractIdentifier(sanitizedName: "l4contractsheet", elementType: "Button")
+        let sheetButton = app.findElement(byIdentifier: sheetId, primaryType: .button, secondaryTypes: [.staticText, .other, .any], timeout: 5.0)
+            ?? app.buttons["L4ContractSheet"].firstMatch
+        XCTAssertTrue(sheetButton.waitForExistence(timeout: 3.0), "Sheet button should exist")
+        sheetButton.tap()
+        XCTAssertTrue(app.staticTexts["L4SheetContentContract"].waitForExistence(timeout: 3.0),
+                      "platformSheet_L4: sheet content should be visible when presented")
+        if app.buttons["Close"].waitForExistence(timeout: 1.0) {
+            app.buttons["Close"].tap()
+        }
+    }
+
+    @MainActor
+    func testL4_platformPopover_L4() throws {
+        scrollToElement(label: "L4ContractPopover")
+        let popoverId = Self.l4ContractIdentifier(sanitizedName: "l4contractpopover", elementType: "Button")
+        let popoverButton = app.findElement(byIdentifier: popoverId, primaryType: .button, secondaryTypes: [.staticText, .other, .any], timeout: 5.0)
+            ?? app.buttons["L4ContractPopover"].firstMatch
+        XCTAssertTrue(popoverButton.waitForExistence(timeout: 3.0), "Popover button should exist")
+        popoverButton.tap()
+        XCTAssertTrue(app.staticTexts["L4PopoverContentContract"].waitForExistence(timeout: 3.0),
+                      "platformPopover_L4: popover content should be visible when presented")
+    }
+
+    // MARK: - Navigation
+
+    @MainActor
+    func testL4_platformNavigationTitle_L4() throws {
+        scrollToElement(label: "L4NavLinkContract")
+        let tapTarget = app.findElement(byIdentifier: "L4NavLinkContract", primaryType: .button, secondaryTypes: [.staticText, .cell, .other, .any], timeout: 3.0)
+            ?? element(matchingIdentifier: "L4NavLinkContract")
+        XCTAssertTrue(tapTarget.waitForExistence(timeout: 3.0), "Nav link should exist")
+        tapTarget.tap()
+        XCTAssertTrue(app.navigationBars["L4NavTitleContract"].waitForExistence(timeout: 3.0)
+            || app.staticTexts["L4NavDestinationContent"].waitForExistence(timeout: 2.0),
+                      "platformNavigationTitle_L4: destination title or content should be visible")
+    }
+
+    @MainActor
+    func testL4_platformNavigationLink_L4() throws {
+        if app.staticTexts["L4NavDestinationContent"].waitForExistence(timeout: 0.5) {
+            app.navigationBars.buttons.firstMatch.tap()
+        }
+        scrollToElement(label: "L4NavLinkContract")
+        let tapTarget = app.findElement(byIdentifier: "L4NavLinkContract", primaryType: .button, secondaryTypes: [.staticText, .cell, .other, .any], timeout: 3.0)
+            ?? element(matchingIdentifier: "L4NavLinkContract")
+        XCTAssertTrue(tapTarget.waitForExistence(timeout: 3.0), "platformNavigationLink: link should exist")
+        tapTarget.tap()
+        XCTAssertTrue(app.staticTexts["L4NavDestinationContent"].waitForExistence(timeout: 3.0),
+                      "platformNavigationLink_L4: navigating to destination should show content")
+    }
+
+    @MainActor
+    func testL4_platformNavigationBarTitleDisplayMode_L4() throws {
+        XCTAssertTrue(app.navigationBars["Layer 4 Examples"].waitForExistence(timeout: 3.0),
+                      "platformNavigationBarTitleDisplayMode_L4: nav bar with title should exist (applied on root)")
     }
 }

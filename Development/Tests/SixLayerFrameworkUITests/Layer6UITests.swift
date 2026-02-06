@@ -13,29 +13,28 @@ import XCTest
 /// Uses launch argument -OpenLayer6Examples. Compile-time conditionals for platform-specific behavior.
 @MainActor
 final class Layer6UITests: XCTestCase {
-    var app: XCUIApplication!
+    /// Shared across test instances (Xcode creates one instance per test method).
+    private static var sharedApp: XCUIApplication?
+    private var app: XCUIApplication! { Self.sharedApp! }
 
-    /// One app launch for the suite; launch only when app is nil so all 4 test methods reuse it.
+    /// One app launch for the suite; all 4 test methods reuse the same launch.
     nonisolated override func setUpWithError() throws {
         continueAfterFailure = false
         addDefaultUIInterruptionMonitor()
 
-        nonisolated(unsafe) let instance = self
         MainActor.assumeIsolated {
-            if instance.app == nil {
-                let localApp = XCUIApplication()
-                localApp.configureForFastTesting()
-                localApp.launchArguments.append("-OpenLayer6Examples")
-                localApp.launch()
-                instance.app = localApp
-                XCTAssertTrue(localApp.navigationBars["Layer 6 Examples"].waitForExistence(timeout: 5.0),
-                              "App should open on Layer 6 Examples (launch arg)")
-            }
+            guard Self.sharedApp == nil else { return }
+            let localApp = XCUIApplication()
+            localApp.configureForFastTesting()
+            localApp.launchArguments.append("-OpenLayer6Examples")
+            localApp.launch()
+            Self.sharedApp = localApp
+            XCTAssertTrue(localApp.navigationBars["Layer 6 Examples"].waitForExistence(timeout: 5.0),
+                          "App should open on Layer 6 Examples (launch arg)")
         }
     }
 
     nonisolated override func tearDownWithError() throws {
-        // Keep app so next test reuses same launch (one launch per suite).
         try super.tearDownWithError()
     }
 

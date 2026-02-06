@@ -582,6 +582,26 @@ private struct ExampleCard<Content: View>: View {
 
 /// Shows only the L4 component contract section: plain elements with exactly one L4 API each.
 /// Used when the app is launched with -OpenLayer4Examples so UI tests assert L4 contract (a11y from component).
+/// Destination for L4 navigation contract: uses platformNavigationTitle_L4.
+private struct L4NavDestinationView: View {
+    var body: some View {
+        Text("L4NavDestinationContent")
+            .platformNavigationTitle_L4("L4NavTitleContract")
+    }
+}
+
+/// Sheet content for L4 platformSheet_L4 contract; provides Close so tests can dismiss.
+private struct L4SheetContentContractView: View {
+    @Environment(\.dismiss) private var dismiss
+    var body: some View {
+        VStack(spacing: 16) {
+            Text("L4SheetContentContract")
+            Button("Close") { dismiss() }
+        }
+        .padding()
+    }
+}
+
 struct Layer4ContractOnlyView: View {
     @State private var l4ContractText = ""
     @State private var l4ContractSecureText = ""
@@ -589,10 +609,32 @@ struct Layer4ContractOnlyView: View {
     @State private var l4ContractToggleOn = false
     @State private var l4ContractEditorText = ""
     @State private var l4ContractDate = Date()
+    @State private var l4ShowSheet = false
+    @State private var l4ShowPopover = false
 
     var body: some View {
         ScrollView {
             platformVStack(alignment: .leading, spacing: 24) {
+                ExampleSection(title: "L4 Presentation") {
+                    platformVStack(alignment: .leading, spacing: 12) {
+                        platformButton("L4ContractSheet") { l4ShowSheet = true }
+                            .accessibilityIdentifier("L4ContractSheet")
+                        platformButton("L4ContractPopover") { l4ShowPopover = true }
+                            .accessibilityIdentifier("L4ContractPopover")
+                    }
+                }
+                .platformSheet_L4(isPresented: $l4ShowSheet) {
+                    L4SheetContentContractView()
+                }
+                .platformPopover_L4(isPresented: $l4ShowPopover) {
+                    Text("L4PopoverContentContract")
+                }
+                ExampleSection(title: "L4 Navigation") {
+                    NavigationLink("L4NavLinkContract") {
+                        L4NavDestinationView()
+                    }
+                    .accessibilityIdentifier("L4NavLinkContract")
+                }
                 ExampleSection(title: "L4 Controls") {
                     platformVStack(alignment: .leading, spacing: 16) {
                         platformButton("L4ContractButton") { }
