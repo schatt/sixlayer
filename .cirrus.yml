@@ -2,7 +2,7 @@
 # Each scheme runs as a separate task so you can re-run any one individually in the Cirrus UI.
 
 macos_instance:
-  image: ghcr.io/cirruslabs/macos-runner:sonoma
+  image: ghcr.io/cirruslabs/macos-runner:tahoe
 
 task:
   name: "macOS ($SCHEME)"
