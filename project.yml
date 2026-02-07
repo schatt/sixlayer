@@ -81,8 +81,6 @@ targets:
     platform: iOS
     sources:
       - path: Development/Tests/Shared/TestHelpers
-        excludes:
-          - "ViewInspectorWrapper.swift"  # Simplified wrapper without complex API
       - path: Development/Tests/SixLayerFrameworkUnitTests
         excludes:
           - "**/README.md"
