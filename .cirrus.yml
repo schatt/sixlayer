@@ -1,0 +1,18 @@
+# Cirrus CI: macOS test targets
+# Each scheme runs as a separate task so you can re-run any one individually in the Cirrus UI.
+
+macos_instance:
+  image: ghcr.io/cirruslabs/macos-runner:sonoma
+
+task:
+  name: "macOS ($SCHEME)"
+  matrix:
+    - SCHEME: SLF-macOS-Framework
+    - SCHEME: SLF-macOS-UnitTests
+    - SCHEME: SLF-macOS-UITests
+    - SCHEME: SLF-macOS-ViewInspectorTests
+  timeout_in: 60m
+  test_script:
+    - brew install xcodegen
+    - xcodegen generate
+    - xcodebuild test -project SixLayerFramework.xcodeproj -scheme $SCHEME -destination "platform=macOS,arch=arm64" -quiet
