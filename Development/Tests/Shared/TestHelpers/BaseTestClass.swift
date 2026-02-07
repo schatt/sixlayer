@@ -334,8 +334,7 @@ open class BaseTestClass {
             return
         }
         if let min = minChildren, vStack.count < min {
-            let msg: Comment = "View inspection for \(testName): VStack has \(vStack.count) children, expected at least \(min) (ViewInspector cannot traverse hierarchy)"
-            Issue.record(msg)
+            Issue.record("View inspection for \(testName): VStack has \(vStack.count) children, expected at least \(min) (ViewInspector cannot traverse hierarchy)")
             return
         }
         body(vStack)
