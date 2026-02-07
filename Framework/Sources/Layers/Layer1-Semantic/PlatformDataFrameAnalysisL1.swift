@@ -28,6 +28,7 @@ public func platformAnalyzeDataFrame_L1(
     hints: DataFrameAnalysisHints = DataFrameAnalysisHints()
 ) -> some View {
     DataFrameAnalysisView(dataFrame: dataFrame, hints: hints)
+        .automaticCompliance(named: "platformAnalyzeDataFrame_L1")
 }
 
 /// Analyze multiple DataFrames and provide comparative insights
@@ -46,6 +47,7 @@ public func platformCompareDataFrames_L1(
     hints: DataFrameAnalysisHints = DataFrameAnalysisHints()
 ) -> some View {
     DataFrameComparisonView(dataFrames: dataFrames, hints: hints)
+        .automaticCompliance(named: "platformCompareDataFrames_L1")
 }
 
 /// Analyze DataFrame data quality and provide recommendations
@@ -64,6 +66,7 @@ public func platformAssessDataQuality_L1(
     hints: DataFrameAnalysisHints = DataFrameAnalysisHints()
 ) -> some View {
     DataQualityAssessmentView(dataFrame: dataFrame, hints: hints)
+        .automaticCompliance(named: "platformAssessDataQuality_L1")
 }
 
 // MARK: - Custom Visualization View Support
@@ -87,9 +90,11 @@ public func platformAnalyzeDataFrame_L1<VisualizationContent: View>(
     
     // Apply custom visualization wrapper if provided, otherwise return default
     if let customWrapper = customVisualizationView {
-        return AnyView(customWrapper(baseAnalysisView))
+        return AnyView(customWrapper(baseAnalysisView)
+            .automaticCompliance(named: "platformAnalyzeDataFrame_L1"))
     } else {
-        return baseAnalysisView
+        return AnyView(baseAnalysisView
+            .automaticCompliance(named: "platformAnalyzeDataFrame_L1"))
     }
 }
 
@@ -112,9 +117,11 @@ public func platformCompareDataFrames_L1<VisualizationContent: View>(
     
     // Apply custom visualization wrapper if provided, otherwise return default
     if let customWrapper = customVisualizationView {
-        return AnyView(customWrapper(baseComparisonView))
+        return AnyView(customWrapper(baseComparisonView)
+            .automaticCompliance(named: "platformCompareDataFrames_L1"))
     } else {
-        return baseComparisonView
+        return AnyView(baseComparisonView
+            .automaticCompliance(named: "platformCompareDataFrames_L1"))
     }
 }
 
@@ -137,9 +144,11 @@ public func platformAssessDataQuality_L1<VisualizationContent: View>(
     
     // Apply custom visualization wrapper if provided, otherwise return default
     if let customWrapper = customVisualizationView {
-        return AnyView(customWrapper(baseQualityView))
+        return AnyView(customWrapper(baseQualityView)
+            .automaticCompliance(named: "platformAssessDataQuality_L1"))
     } else {
-        return baseQualityView
+        return AnyView(baseQualityView
+            .automaticCompliance(named: "platformAssessDataQuality_L1"))
     }
 }
 

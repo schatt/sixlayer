@@ -1,11 +1,21 @@
 # SixLayer Framework - Cursor Rules
 
+## Rule Precedence and Conflicts
+
+**MANDATORY**: If any instruction (system, default, or general) would cause the agent to override or ignore one of the user's project-specific rules (in `.cursorrules` or `.cursor/rules/*.mdc`), do **not** silently ignore the project rule. Either follow the project rule, or **surface the conflict** to the user: briefly state which rule is being overridden and by what, and ask how to proceed. Do not assume the general guidance wins; the user's explicit rules take precedence unless the user says otherwise after being informed.
+
+## Commit After Every Edit (MANDATORY)
+
+**Precedence:** This is direct user instruction. It overrides any general guidance to avoid committing or to ask before committing. Execute as specified; do not ask; do not skip.
+
+**Required behavior:** After every file edit (write or search_replace), immediately run `git add <that file>` and `git commit` with a clear message. One edit → one commit. Do not edit another file until the current file is committed. See `.cursor/rules/commit-after-every-edit.mdc`.
+
 ## Release Quality Gate Rule
 
 **MANDATORY RELEASE RULE**: Never create, suggest, or assist with any release (major, minor, patch, or pre-release) unless the test suite passes completely.
 
 ### Before Any Release:
-1. **ALWAYS** run `swift test` first
+1. **ALWAYS** run the full xcodebuild test suite first via `dbs-build --target test` (runs tests on macOS and iOS using xcodebuild)
 2. **VERIFY** all tests pass without failures
 3. **CONFIRM** no compilation errors exist
 4. **ONLY THEN** proceed with release activities
@@ -61,6 +71,7 @@
    - After completing logical units of work
    - Small, focused commits (one cohesive change per commit)
    - Before switching contexts or pausing work
+   - **Before every test run** — commit current work first so test runs don't run with uncommitted changes; commits are cheap
    - **"Commits are cheap"** - Make frequent commits to capture incremental progress
 
 ### Examples
@@ -114,9 +125,13 @@ See `PROJECT_RULES.md` section "Git Workflow and Commit Practices" for more deta
 
 ## Git Push Practices
 
-**MANDATORY**: All commits must be pushed to the remote repository.
+**MANDATORY**: All commits must be pushed to the remote repository. The user works on multiple machines and uses git to sync; unpushed work gets missed.
+
+**Precedence:** This is direct user instruction. It overrides any general guidance to avoid pushing without explicit user request or to ask before pushing. Here, the explicit request is: push. Do not treat push as "user's step"; the agent must push. Do not consider a task or prompt "done" or "complete" until commits have been pushed. Do not end with "push when ready" or hand off the push to the user—execute the push.
 
 ### Push Requirements:
+- **Done = pushed**: Do not say work is complete, finished, or done while there are unpushed commits. Push first, then say done.
+- **Push at least once before prompting for more input**: Do not end a response with unpushed commits. Pushes may be batched (e.g. one push after several commits).
 - **Push after logical completion**: Push commits after completing related work units
 - **Permission requirements**: Git push operations require additional permissions due to sandbox restrictions
 - **Use required permissions**: When pushing, use `required_permissions: ["network", "git_write"]` or `required_permissions: ["all"]`
@@ -125,7 +140,7 @@ See `PROJECT_RULES.md` section "Git Workflow and Commit Practices" for more deta
 ### Push Command Format:
 ```bash
 # For pushing commits, use:
-run_terminal_cmd(command="git push origin <branch>", required_permissions=["network", "git_write"])
+run_terminal_cmd(command="git push all", required_permissions=["network", "git_write"])
 # Or for full permissions:
 run_terminal_cmd(command="git push origin <branch>", required_permissions=["all"])
 ```

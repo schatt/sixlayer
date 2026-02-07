@@ -1,0 +1,40 @@
+---
+description: Project configuration uses project.yml exclusively; never edit generated Xcode files
+alwaysApply: true
+---
+
+# Project Configuration: project.yml Only
+
+## **MANDATORY — PRECEDENCE**
+
+- **Never edit generated Xcode artifacts.** Do not edit `*.xcodeproj/project.pbxproj`, `*.xcodeproj/**/*.xcscheme`, or any other generated files under the Xcode project. This rule takes precedence; if a task would require editing those files, change **project.yml** instead and regenerate.
+- **Single source of truth:** project.yml only. No exceptions.
+
+## Core Principle
+
+This project uses **project.yml** (XcodeGen) as the single source of truth for Xcode project configuration. All targets, sources, excludes, build settings, and schemes are defined there.
+
+## MANDATORY
+
+- **Edit only project.yml** when changing:
+  - Targets (adding, removing, renaming)
+  - Source file membership or excludes
+  - Build settings
+  - Schemes
+  - Dependencies
+
+- **Never edit** generated project artifacts:
+  - `*.xcodeproj/project.pbxproj`
+  - `*.xcodeproj/**/*.xcscheme`
+  - Any other files under `*.xcodeproj/` that are produced by XcodeGen
+
+## Workflow
+
+1. Make project-structure or config changes in **project.yml**.
+2. Regenerate the Xcode project (e.g. `xcodegen generate` or your project’s command).
+3. Do not hand-edit the generated `.xcodeproj` or its contents.
+
+## Rationale
+
+- Single source of truth avoids drift and merge conflicts.
+- project.yml is version-controlled and readable; pbxproj is generated and brittle to edit by hand.

@@ -552,9 +552,28 @@ platformPresentItemCollection_L1(
 - **Intent Validation:** Validate intent parameters before processing
 - **Intent Chaining:** Chain multiple intents together
 
+## ♿ Accessibility
+
+All Layer 1 functions have complete accessibility support:
+
+- ✅ **Accessibility Identifiers**: Automatically generated for all functions
+- ✅ **Accessibility Labels**: Descriptive labels for VoiceOver
+- ✅ **Accessibility Hints**: Context-appropriate hints
+- ✅ **Accessibility Traits**: Correct traits for all elements
+- ✅ **VoiceOver Compatibility**: Full screen reader support
+- ✅ **Switch Control Compatibility**: Full switch control support
+- ✅ **Dynamic Type Support**: Text scaling support
+- ✅ **HIG Compliance**: Touch targets, color contrast, typography
+
+**See [Layer 1 Accessibility Guide](Layer1AccessibilityGuide.md) for complete documentation.**
+
+**See [Layer 1 Accessibility Testing Guide](Layer1AccessibilityTestingGuide.md) for testing information.**
+
 ## 📚 Related Documentation
 
 - **Architecture Overview:** [README_6LayerArchitecture.md](README_6LayerArchitecture.md)
 - **Layer 2:** [README_Layer2_Decision.md](README_Layer2_Decision.md)
 - **Layer 4:** [README_Layer4_Implementation.md](README_Layer4_Implementation.md)
 - **Usage Examples:** [README_UsageExamples.md](README_UsageExamples.md)
+- **Accessibility Guide:** [Layer1AccessibilityGuide.md](Layer1AccessibilityGuide.md) - Complete accessibility documentation
+- **Accessibility Testing:** [Layer1AccessibilityTestingGuide.md](Layer1AccessibilityTestingGuide.md) - Testing guide

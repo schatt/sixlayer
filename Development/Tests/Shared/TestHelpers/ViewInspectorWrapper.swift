@@ -4,48 +4,160 @@
 //
 //  BUSINESS PURPOSE:
 //  Centralized wrapper for ViewInspector APIs to handle cross-platform compatibility
-//  and provide safe, non-throwing access to ViewInspector functionality
+//  and provide safe, non-throwing access to ViewInspector functionality.
+//  All inspection uses the view directly (no AnyView wrap) so ViewInspector can traverse — Issue 178.
 //
 
 import SwiftUI
 import ViewInspector
 @testable import SixLayerFramework
 
-// MARK: - Helper Functions for Common Patterns
+// MARK: - Canonical inspection (DRY) — direct inspection only, no AnyView
 
-/// Safely inspect a view and execute a throwing closure
-/// Throws when ViewInspector cannot inspect the view
+/// Inspect a view directly so ViewInspector traverses the real hierarchy.
+/// Call only with views whose type conforms to ViewInspector.Inspectable.
 @MainActor
-public func withInspectedViewThrowing<V: View, R>(
+public func inspectView<V: View & ViewInspector.Inspectable>(_ view: V) -> ViewInspector.InspectableView<ViewInspector.ViewType.View<V>>? {
+    try? view.inspect()
+}
+
+/// Safely inspect a view and run a throwing closure on the inspected hierarchy.
+/// Use only with views whose type conforms to ViewInspector.Inspectable.
+@MainActor
+public func withInspectedViewThrowing<V: View & ViewInspector.Inspectable, R>(
     _ view: V,
-    perform: (ViewInspector.InspectableView<ViewInspector.ViewType.ClassifiedView>) throws -> R
+    perform: (ViewInspector.InspectableView<ViewInspector.ViewType.View<V>>) throws -> R
 ) throws -> R {
-    let inspected = try AnyView(view).inspect()
+    let inspected = try view.inspect()
     return try perform(inspected)
 }
 
-/// Safely inspect a view and execute a closure, returning nil on failure
-/// This is the non-throwing version that returns nil when inspection fails
+/// Safely inspect a view and run a closure, returning nil if inspection fails.
+/// Use only with views whose type conforms to ViewInspector.Inspectable.
 @MainActor
-public func withInspectedView<V: View, R>(
+public func withInspectedView<V: View & ViewInspector.Inspectable, R>(
     _ view: V,
-    perform: (ViewInspector.InspectableView<ViewInspector.ViewType.ClassifiedView>) -> R?
+    perform: (ViewInspector.InspectableView<ViewInspector.ViewType.View<V>>) -> R?
 ) -> R? {
-    guard let inspected = try? AnyView(view).inspect() else {
-        return nil
-    }
+    guard let inspected = try? view.inspect() else { return nil }
     return perform(inspected)
 }
 
-// MARK: - View Extension
+// MARK: - Type-erased opt-in (non-Inspectable view types)
 
-extension View where Self: ViewInspector.KnownViewType {
-    /// Try to inspect a view, returning nil if inspection fails
-    /// Only available for views that conform to KnownViewType
-    @MainActor
-    func tryInspect() -> ViewInspector.InspectableView<ViewInspector.ViewType.ClassifiedView>? {
-        // For KnownViewType, inspect() returns InspectableView<ViewType.ClassifiedView>
-        // We need to use AnyView to get the correct type
-        return try? AnyView(self).inspect()
-    }
+/// Inspect via AnyView when the concrete type does not conform to Inspectable.
+/// ViewInspector returns InspectableView<ViewType.ClassifiedView> for AnyView.inspect().
+@MainActor
+public func withInspectedViewThrowing<R>(
+    _ view: AnyView,
+    perform: (ViewInspector.InspectableView<ViewInspector.ViewType.ClassifiedView>) throws -> R
+) throws -> R {
+    let inspected = try view.inspect()
+    return try perform(inspected)
 }
+
+/// Run a closure with an inspected AnyView when the concrete type does not conform to Inspectable.
+@MainActor
+public func withInspectedView<R>(
+    _ view: AnyView,
+    perform: (ViewInspector.InspectableView<ViewInspector.ViewType.ClassifiedView>) -> R?
+) -> R? {
+    guard let inspected = try? view.inspect() else { return nil }
+    return perform(inspected)
+}
+
+// MARK: - Type-erased with unwrapped content (for .vStack() etc. — Issue 178)
+
+/// Like withInspectedViewThrowing(AnyView) but passes the unwrapped inner view so .vStack() works.
+@MainActor
+public func withInspectedViewThrowingUnwrapped<R>(
+    _ view: AnyView,
+    perform: (ViewInspector.InspectableView<ViewInspector.ViewType.AnyView>) throws -> R
+) throws -> R {
+    let inspected = try view.inspect()
+    let inner = try inspected.anyView()
+    return try perform(inner)
+}
+
+/// Like withInspectedView(AnyView) but passes the unwrapped inner view so .vStack() works.
+@MainActor
+public func withInspectedViewUnwrapped<R>(
+    _ view: AnyView,
+    perform: (ViewInspector.InspectableView<ViewInspector.ViewType.AnyView>) -> R?
+) -> R? {
+    guard let inspected = try? view.inspect(), let inner = try? inspected.anyView() else { return nil }
+    return perform(inner)
+}
+
+/// Convenience: inspect any view and pass unwrapped content so .vStack() etc. work.
+@MainActor
+public func withInspectedViewThrowingUnwrapped<R>(
+    _ view: some View,
+    perform: (ViewInspector.InspectableView<ViewInspector.ViewType.AnyView>) throws -> R
+) throws -> R {
+    try withInspectedViewThrowingUnwrapped(AnyView(view), perform: perform)
+}
+
+/// Convenience: inspect any view and pass unwrapped content so .vStack() etc. work.
+@MainActor
+public func withInspectedViewUnwrapped<R>(
+    _ view: some View,
+    perform: (ViewInspector.InspectableView<ViewInspector.ViewType.AnyView>) -> R?
+) -> R? {
+    withInspectedViewUnwrapped(AnyView(view), perform: perform)
+}
+
+/// Convenience: inspect any view via AnyView when the type does not conform to Inspectable.
+@MainActor
+public func withInspectedViewThrowing<R>(
+    _ view: some View,
+    perform: (ViewInspector.InspectableView<ViewInspector.ViewType.ClassifiedView>) throws -> R
+) throws -> R {
+    try withInspectedViewThrowing(AnyView(view), perform: perform)
+}
+
+/// Convenience: inspect any view via AnyView when the type does not conform to Inspectable.
+@MainActor
+public func withInspectedView<R>(
+    _ view: some View,
+    perform: (ViewInspector.InspectableView<ViewInspector.ViewType.ClassifiedView>) -> R?
+) -> R? {
+    withInspectedView(AnyView(view), perform: perform)
+}
+
+// MARK: - Hierarchy traversal (Issue 178)
+
+/// Thrown when no VStack is found in the inspected hierarchy.
+public struct NoVStackInHierarchy: Error {}
+
+/// When the root is InspectableView<ViewType.ClassifiedView> (e.g. from AnyView.inspect()), get the first VStack in the hierarchy.
+/// findAll from the root traverses into type-erased content so VStacks inside AnyView are found.
+/// On traversal errors (e.g. type mismatch), throws NoVStackInHierarchy so callers get a consistent error.
+@MainActor
+public func firstVStackInHierarchy(_ inspected: ViewInspector.InspectableView<ViewInspector.ViewType.ClassifiedView>) throws -> ViewInspector.InspectableView<ViewInspector.ViewType.VStack> {
+    let list = inspected.findAll(ViewInspector.ViewType.VStack.self)
+    guard let first = list.first else { throw NoVStackInHierarchy() }
+    return first
+}
+
+/// When the root is InspectableView<ViewType.AnyView> (e.g. after unwrap), get the first VStack in the hierarchy.
+@MainActor
+public func firstVStackInHierarchy(_ inspected: ViewInspector.InspectableView<ViewInspector.ViewType.AnyView>) throws -> ViewInspector.InspectableView<ViewInspector.ViewType.VStack> {
+    let list = inspected.findAll(ViewInspector.ViewType.VStack.self)
+    guard let first = list.first else { throw NoVStackInHierarchy() }
+    return first
+}
+
+/// When the root is InspectableView<ViewType.View<V>> (direct inspect of Inspectable view), get the first VStack in the hierarchy.
+/// Use when the view type is the root (e.g. PlatformRecognitionLayer5) and its body contains a VStack — Issue 178.
+@MainActor
+public func firstVStackInHierarchy<V: View & ViewInspector.Inspectable>(_ inspected: ViewInspector.InspectableView<ViewInspector.ViewType.View<V>>) throws -> ViewInspector.InspectableView<ViewInspector.ViewType.VStack> {
+    let list = inspected.findAll(ViewInspector.ViewType.VStack.self)
+    guard let first = list.first else { throw NoVStackInHierarchy() }
+    return first
+}
+
+// MARK: - Inspection from View instances
+// Prefer inspectView(view) over a View extension; ViewInspector’s Inspectable requirement
+// on Self in extension View where Self: KnownViewType caused “Self does not conform to Inspectable”.
+// Issue 178.

@@ -19,12 +19,14 @@ options:
   indentWidth: 4
   tabWidth: 4
 
-# Project-level build settings
+# Project-level build settings (Xcode recommended: localizability, symbols, asset extensions)
 settings:
   base:
     DEAD_CODE_STRIPPING: YES
     ENABLE_USER_SCRIPT_SANDBOXING: YES
     SWIFT_STRING_CATALOG_SYMBOL_GENERATION: YES
+    CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED: YES
+    ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS: YES
   configs:
     Debug:
       DEAD_CODE_STRIPPING: YES
@@ -56,20 +58,21 @@ targets:
     resources:
       - path: Framework/Resources/Localizable.xcstrings
     settings:
-      PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.framework
-      PRODUCT_MODULE_NAME: SixLayerFramework
-      SWIFT_VERSION: "6.0"
-      SWIFT_ACTIVE_COMPILATION_CONDITIONS: $(inherited) ENABLE_PREVIEWS
-      ENABLE_TESTABILITY: YES
-      GENERATE_INFOPLIST_FILE: YES
-      CODE_SIGN_STYLE: Automatic
-      DEVELOPMENT_TEAM: Y53G7YPJSZ
-      developmentTeam: Y53G7YPJSZ
-      DEAD_CODE_STRIPPING: YES
-      CLANG_ENABLE_MODULE_VERIFIER: YES
-      CODE_SIGN_IDENTITY: "Apple Development"
-      "CODE_SIGN_IDENTITY[sdk=iphoneos*]": "Apple Development"
-      "CODE_SIGN_IDENTITY[sdk=macosx*]": "Apple Development"
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.framework
+        PRODUCT_MODULE_NAME: SixLayerFramework
+        SWIFT_VERSION: "6.0"
+        SWIFT_ACTIVE_COMPILATION_CONDITIONS: $(inherited) ENABLE_PREVIEWS
+        ENABLE_TESTABILITY: YES
+        GENERATE_INFOPLIST_FILE: YES
+        CODE_SIGN_STYLE: Automatic
+        DEVELOPMENT_TEAM: Y53G7YPJSZ
+        developmentTeam: Y53G7YPJSZ
+        DEAD_CODE_STRIPPING: YES
+        CLANG_ENABLE_MODULE_VERIFIER: YES
+        CODE_SIGN_IDENTITY: "Apple Development"
+        "CODE_SIGN_IDENTITY[sdk=iphoneos*]": "Apple Development"
+        "CODE_SIGN_IDENTITY[sdk=macosx*]": "Apple Development"
     dependencies: []
 
   # Unit tests - iOS
@@ -78,8 +81,6 @@ targets:
     platform: iOS
     sources:
       - path: Development/Tests/Shared/TestHelpers
-        excludes:
-          - "ViewInspectorWrapper.swift"  # Simplified wrapper without complex API
       - path: Development/Tests/SixLayerFrameworkUnitTests
         excludes:
           - "**/README.md"
@@ -100,6 +101,57 @@ targets:
       developmentTeam: Y53G7YPJSZ
     dependencies:
       - target: SixLayerFramework_iOS
+      - package: ViewInspector
+        product: ViewInspector
+
+  # ViewInspector tests - iOS (includes ViewInspectorTests directory)
+  SLFiOSViewInspectorTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: Development/Tests/Shared/TestHelpers
+      - path: Development/Tests/SixLayerFrameworkUnitTests/ViewInspectorTests
+        excludes:
+          - "**/README.md"
+          - "**/CoreDataTestingGuide.md"
+    settings:
+      PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.framework.viewinspector-tests
+      SWIFT_VERSION: "6.0"
+      SWIFT_ACTIVE_COMPILATION_CONDITIONS: $(inherited) VIEW_INSPECTOR_MAC_FIXED
+      SWIFT_STRICT_CONCURRENCY: disabled
+      GENERATE_INFOPLIST_FILE: YES
+      CODE_SIGN_STYLE: Automatic
+      ENABLE_TESTING_SEARCH_PATHS: YES
+      DEVELOPMENT_TEAM: Y53G7YPJSZ
+      developmentTeam: Y53G7YPJSZ
+    dependencies:
+      - target: SixLayerFramework_iOS
+      - package: ViewInspector
+        product: ViewInspector
+
+  # ViewInspector tests - macOS (includes ViewInspectorTests directory)
+  SLFmacOSViewInspectorTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - path: Development/Tests/Shared/TestHelpers
+      - path: Development/Tests/SixLayerFrameworkUnitTests/ViewInspectorTests
+        excludes:
+          - "**/README.md"
+          - "**/CoreDataTestingGuide.md"
+    settings:
+      PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.framework.viewinspector-tests
+      SWIFT_VERSION: "6.0"
+      SWIFT_ACTIVE_COMPILATION_CONDITIONS: $(inherited) VIEW_INSPECTOR_MAC_FIXED
+      SWIFT_STRICT_CONCURRENCY: disabled
+      GENERATE_INFOPLIST_FILE: YES
+      CODE_SIGN_STYLE: Automatic
+      ENABLE_TESTING_SEARCH_PATHS: YES
+      DEVELOPMENT_TEAM: Y53G7YPJSZ
+      developmentTeam: Y53G7YPJSZ
+      DEAD_CODE_STRIPPING: YES
+    dependencies:
+      - target: SixLayerFramework_macOS
       - package: ViewInspector
         product: ViewInspector
 
@@ -207,35 +259,39 @@ targets:
     dependencies:
       - target: SixLayerFramework_visionOS
 
-  # Real UI tests - iOS (render views in actual windows)
-  # Note: Using bundle.unit-test for now - xcodegen doesn't support bundle.ui-test
-  # These tests render views in windows but don't require an app target
-  SixLayerFrameworkRealUITests_iOS:
-    type: bundle.unit-test
+  # UI tests - iOS (XCUITest against TestApp; includes WindowRenderingTestHelper)
+  SixLayerFrameworkUITests_iOS:
+    type: bundle.ui-testing
     platform: iOS
     sources:
-      - path: Development/Tests/SixLayerFrameworkRealUITests
+      - path: Development/Tests/SixLayerFrameworkUITests
+        excludes:
+          - "TestApp/**"
+          - "README.md"
     settings:
-      PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.framework.real-ui-tests
+      PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.framework.ui-tests
       SWIFT_VERSION: "6.0"
       GENERATE_INFOPLIST_FILE: YES
       CODE_SIGN_STYLE: Automatic
       ENABLE_TESTING_SEARCH_PATHS: YES
       DEVELOPMENT_TEAM: Y53G7YPJSZ
       developmentTeam: Y53G7YPJSZ
+      TEST_TARGET_NAME: SixLayerFrameworkTestApp_iOS
     dependencies:
       - target: SixLayerFramework_iOS
+      - target: SixLayerFrameworkTestApp_iOS
 
-  # Real UI tests - macOS (render views in actual windows)
-  # Note: Using bundle.unit-test for now - xcodegen doesn't support bundle.ui-test
-  # These tests render views in windows but don't require an app target
-  SixLayerFrameworkRealUITests_macOS:
-    type: bundle.unit-test
+  # UI tests - macOS (XCUITest against TestApp; includes WindowRenderingTestHelper)
+  SixLayerFrameworkUITests_macOS:
+    type: bundle.ui-testing
     platform: macOS
     sources:
-      - path: Development/Tests/SixLayerFrameworkRealUITests
+      - path: Development/Tests/SixLayerFrameworkUITests
+        excludes:
+          - "TestApp/**"
+          - "README.md"
     settings:
-      PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.framework.real-ui-tests
+      PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.framework.ui-tests
       SWIFT_VERSION: "6.0"
       GENERATE_INFOPLIST_FILE: YES
       CODE_SIGN_STYLE: Automatic
@@ -243,19 +299,22 @@ targets:
       DEVELOPMENT_TEAM: Y53G7YPJSZ
       developmentTeam: Y53G7YPJSZ
       DEAD_CODE_STRIPPING: YES
+      TEST_TARGET_NAME: SixLayerFrameworkTestApp_macOS
     dependencies:
       - target: SixLayerFramework_macOS
+      - target: SixLayerFrameworkTestApp_macOS
 
-  # Real UI tests - tvOS (render views in actual windows)
-  # Note: Using bundle.unit-test for now - xcodegen doesn't support bundle.ui-test
-  # These tests render views in windows but don't require an app target
-  SixLayerFrameworkRealUITests_tvOS:
-    type: bundle.unit-test
+  # UI tests - tvOS (same test sources; no TestApp for tvOS)
+  SixLayerFrameworkUITests_tvOS:
+    type: bundle.ui-testing
     platform: tvOS
     sources:
-      - path: Development/Tests/SixLayerFrameworkRealUITests
+      - path: Development/Tests/SixLayerFrameworkUITests
+        excludes:
+          - "TestApp/**"
+          - "README.md"
     settings:
-      PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.framework.real-ui-tests
+      PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.framework.ui-tests
       SWIFT_VERSION: "6.0"
       GENERATE_INFOPLIST_FILE: YES
       CODE_SIGN_STYLE: Automatic
@@ -265,16 +324,17 @@ targets:
     dependencies:
       - target: SixLayerFramework_tvOS
 
-  # Real UI tests - watchOS (render views in actual windows)
-  # Note: Using bundle.unit-test for now - xcodegen doesn't support bundle.ui-test
-  # These tests render views in windows but don't require an app target
-  SixLayerFrameworkRealUITests_watchOS:
-    type: bundle.unit-test
+  # UI tests - watchOS (same test sources; no TestApp for watchOS)
+  SixLayerFrameworkUITests_watchOS:
+    type: bundle.ui-testing
     platform: watchOS
     sources:
-      - path: Development/Tests/SixLayerFrameworkRealUITests
+      - path: Development/Tests/SixLayerFrameworkUITests
+        excludes:
+          - "TestApp/**"
+          - "README.md"
     settings:
-      PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.framework.real-ui-tests
+      PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.framework.ui-tests
       SWIFT_VERSION: "6.0"
       GENERATE_INFOPLIST_FILE: YES
       CODE_SIGN_STYLE: Automatic
@@ -284,16 +344,17 @@ targets:
     dependencies:
       - target: SixLayerFramework_watchOS
 
-  # Real UI tests - visionOS (render views in actual windows)
-  # Note: Using bundle.unit-test for now - xcodegen doesn't support bundle.ui-test
-  # These tests render views in windows but don't require an app target
-  SixLayerFrameworkRealUITests_visionOS:
-    type: bundle.unit-test
+  # UI tests - visionOS (same test sources; no TestApp for visionOS)
+  SixLayerFrameworkUITests_visionOS:
+    type: bundle.ui-testing
     platform: visionOS
     sources:
-      - path: Development/Tests/SixLayerFrameworkRealUITests
+      - path: Development/Tests/SixLayerFrameworkUITests
+        excludes:
+          - "TestApp/**"
+          - "README.md"
     settings:
-      PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.framework.real-ui-tests
+      PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.framework.ui-tests
       SWIFT_VERSION: "6.0"
       GENERATE_INFOPLIST_FILE: YES
       CODE_SIGN_STYLE: Automatic
@@ -303,14 +364,49 @@ targets:
     dependencies:
       - target: SixLayerFramework_visionOS
 
+  # Test app for XCUITest - macOS
+  # Minimal app that displays views for XCUITest to test
+  SixLayerFrameworkTestApp_macOS:
+    type: application
+    platform: macOS
+    sources:
+      - path: Development/Tests/SixLayerFrameworkUITests/TestApp
+    settings:
+      PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.framework.test-app
+      SWIFT_VERSION: "6.0"
+      GENERATE_INFOPLIST_FILE: YES
+      CODE_SIGN_STYLE: Automatic
+      DEVELOPMENT_TEAM: Y53G7YPJSZ
+      developmentTeam: Y53G7YPJSZ
+      MACOSX_DEPLOYMENT_TARGET: "15.0"
+    dependencies:
+      - target: SixLayerFramework_macOS
+
+  # Test app for XCUITest - iOS
+  # Minimal app that displays views for XCUITest to test
+  SixLayerFrameworkTestApp_iOS:
+    type: application
+    platform: iOS
+    sources:
+      - path: Development/Tests/SixLayerFrameworkUITests/TestApp
+    settings:
+      PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.framework.test-app
+      SWIFT_VERSION: "6.0"
+      GENERATE_INFOPLIST_FILE: YES
+      CODE_SIGN_STYLE: Automatic
+      DEVELOPMENT_TEAM: Y53G7YPJSZ
+      developmentTeam: Y53G7YPJSZ
+      IPHONEOS_DEPLOYMENT_TARGET: "17.0"
+    dependencies:
+      - target: SixLayerFramework_iOS
+
+
   # External integration tests - iOS
   SixLayerFrameworkExternalIntegrationTests_iOS:
     type: bundle.unit-test
     platform: iOS
     sources:
       - path: Development/Tests/Shared/TestHelpers
-        excludes:
-          - "ViewInspectorWrapper.swift"
       - path: Development/Tests/SixLayerFrameworkExternalIntegrationTests
         excludes:
           - "**/README.md"
@@ -333,8 +429,6 @@ targets:
     platform: macOS
     sources:
       - path: Development/Tests/Shared/TestHelpers
-        excludes:
-          - "ViewInspectorWrapper.swift"
       - path: Development/Tests/SixLayerFrameworkExternalIntegrationTests
         excludes:
           - "**/README.md"
@@ -359,8 +453,6 @@ targets:
     platform: tvOS
     sources:
       - path: Development/Tests/Shared/TestHelpers
-        excludes:
-          - "ViewInspectorWrapper.swift"
       - path: Development/Tests/SixLayerFrameworkExternalIntegrationTests
         excludes:
           - "**/README.md"
@@ -382,8 +474,6 @@ targets:
     platform: watchOS
     sources:
       - path: Development/Tests/Shared/TestHelpers
-        excludes:
-          - "ViewInspectorWrapper.swift"
       - path: Development/Tests/SixLayerFrameworkExternalIntegrationTests
         excludes:
           - "**/README.md"
@@ -405,8 +495,6 @@ targets:
     platform: visionOS
     sources:
       - path: Development/Tests/Shared/TestHelpers
-        excludes:
-          - "ViewInspectorWrapper.swift"
       - path: Development/Tests/SixLayerFrameworkExternalIntegrationTests
         excludes:
           - "**/README.md"
@@ -423,7 +511,7 @@ targets:
       - target: SixLayerFramework_visionOS
 
 schemes:
-  SixLayerFramework-iOS:
+  SLF-iOS-Framework:
     build:
       targets:
         SixLayerFramework_iOS: all
@@ -431,11 +519,8 @@ schemes:
       targets:
         - SixLayerFrameworkUnitTests_iOS
         - SixLayerFrameworkExternalIntegrationTests_iOS
-      # UITests excluded by default due to ViewInspector Swift 6 issues
-      # Uncomment when ViewInspector is fixed:
-      # - SixLayerFrameworkUITests_iOS
 
-  SixLayerFramework-macOS:
+  SLF-macOS-Framework:
     build:
       targets:
         SixLayerFramework_macOS: all
@@ -443,72 +528,102 @@ schemes:
       targets:
         - SixLayerFrameworkUnitTests_macOS
         - SixLayerFrameworkExternalIntegrationTests_macOS
-      # UITests excluded by default due to ViewInspector Swift 6 issues
-      # Uncomment when ViewInspector is fixed:
-      # - SixLayerFrameworkUITests_macOS
 
-  SixLayerFramework-AllTests-iOS:
+  SLF-macOS-TestApp:
+    build:
+      targets:
+        SixLayerFrameworkTestApp_macOS: all
+    test:
+      targets: []
+
+  SLF-iOS-TestApp:
+    build:
+      targets:
+        SixLayerFrameworkTestApp_iOS: all
+    test:
+      targets: []
+
+  SLF-iOS-AllTests:
     build:
       targets:
         SixLayerFramework_iOS: all
+        SixLayerFrameworkTestApp_iOS: all
     test:
       targets:
         - SixLayerFrameworkUnitTests_iOS
-        - SixLayerFrameworkRealUITests_iOS
+        - SLFiOSViewInspectorTests
+        - SixLayerFrameworkUITests_iOS
         - SixLayerFrameworkExternalIntegrationTests_iOS
 
-  SixLayerFramework-AllTests-macOS:
+  SLF-macOS-AllTests:
     build:
       targets:
         SixLayerFramework_macOS: all
+        SixLayerFrameworkTestApp_macOS: all
     test:
       targets:
         - SixLayerFrameworkUnitTests_macOS
-        - SixLayerFrameworkRealUITests_macOS
+        - SLFmacOSViewInspectorTests
+        - SixLayerFrameworkUITests_macOS
         - SixLayerFrameworkExternalIntegrationTests_macOS
 
-  SixLayerFramework-UnitTestsOnly-iOS:
+  SLF-iOS-UnitTests:
     build:
       targets:
         SixLayerFramework_iOS: all
+        SixLayerFrameworkUnitTests_iOS: all
     test:
       targets:
         - SixLayerFrameworkUnitTests_iOS
 
-  SixLayerFramework-UnitTestsOnly-macOS:
+  SLF-macOS-UnitTests:
     build:
       targets:
         SixLayerFramework_macOS: all
+        SixLayerFrameworkUnitTests_macOS: all
     test:
       targets:
         - SixLayerFrameworkUnitTests_macOS
 
-  SixLayerFramework-macOS-UnitTests:
+  SLF-macOS-UITests:
     build:
       targets:
         SixLayerFramework_macOS: all
+        SixLayerFrameworkTestApp_macOS: all
+        SixLayerFrameworkUITests_macOS: all
     test:
       targets:
-        - SixLayerFrameworkUnitTests_macOS
+        - SixLayerFrameworkUITests_macOS
 
-  SixLayerFramework-macOS-UITests:
+  SLF-iOS-UITests:
+    build:
+      targets:
+        SixLayerFramework_iOS: all
+        SixLayerFrameworkTestApp_iOS: all
+        SixLayerFrameworkUITests_iOS: all
+    test:
+      targets:
+        - SixLayerFrameworkUITests_iOS
+
+  SLF-macOS-ViewInspectorTests:
     build:
       targets:
         SixLayerFramework_macOS: all
+        SLFmacOSViewInspectorTests: all
     test:
       targets:
-        - SixLayerFrameworkRealUITests_macOS
+        - SLFmacOSViewInspectorTests
 
-  SixLayerFramework-macOS-ViewInspectorTests:
+  SLF-iOS-ViewInspectorTests:
     build:
       targets:
-        SixLayerFramework_macOS: all
+        SixLayerFramework_iOS: all
+        SLFiOSViewInspectorTests: all
     test:
       targets:
-        - SixLayerFrameworkUnitTests_macOS
+        - SLFiOSViewInspectorTests
 
-
-  SixLayerFramework-tvOS:
+  SLF-tvOS-Framework:
     build:
       targets:
         SixLayerFramework_tvOS: all
@@ -520,25 +635,26 @@ schemes:
       # Uncomment when ViewInspector is fixed:
       # - SixLayerFrameworkUITests_tvOS
 
-  SixLayerFramework-AllTests-tvOS:
+  SLF-tvOS-AllTests:
     build:
       targets:
         SixLayerFramework_tvOS: all
     test:
       targets:
         - SixLayerFrameworkUnitTests_tvOS
-        - SixLayerFrameworkRealUITests_tvOS
+        - SixLayerFrameworkUITests_tvOS
         - SixLayerFrameworkExternalIntegrationTests_tvOS
 
-  SixLayerFramework-UnitTestsOnly-tvOS:
+  SLF-tvOS-UnitTests:
     build:
       targets:
         SixLayerFramework_tvOS: all
+        SixLayerFrameworkUnitTests_tvOS: all
     test:
       targets:
         - SixLayerFrameworkUnitTests_tvOS
 
-  SixLayerFramework-watchOS:
+  SLF-watchOS-Framework:
     build:
       targets:
         SixLayerFramework_watchOS: all
@@ -550,25 +666,26 @@ schemes:
       # Uncomment when ViewInspector is fixed:
       # - SixLayerFrameworkUITests_watchOS
 
-  SixLayerFramework-AllTests-watchOS:
+  SLF-watchOS-AllTests:
     build:
       targets:
         SixLayerFramework_watchOS: all
     test:
       targets:
         - SixLayerFrameworkUnitTests_watchOS
-        - SixLayerFrameworkRealUITests_watchOS
+        - SixLayerFrameworkUITests_watchOS
         - SixLayerFrameworkExternalIntegrationTests_watchOS
 
-  SixLayerFramework-UnitTestsOnly-watchOS:
+  SLF-watchOS-UnitTests:
     build:
       targets:
         SixLayerFramework_watchOS: all
+        SixLayerFrameworkUnitTests_watchOS: all
     test:
       targets:
         - SixLayerFrameworkUnitTests_watchOS
 
-  SixLayerFramework-visionOS:
+  SLF-visionOS-Framework:
     build:
       targets:
         SixLayerFramework_visionOS: all
@@ -580,37 +697,21 @@ schemes:
       # Uncomment when ViewInspector is fixed:
       # - SixLayerFrameworkUITests_visionOS
 
-  SixLayerFramework-AllTests-visionOS:
+  SLF-visionOS-AllTests:
     build:
       targets:
         SixLayerFramework_visionOS: all
     test:
       targets:
         - SixLayerFrameworkUnitTests_visionOS
-        - SixLayerFrameworkRealUITests_visionOS
+        - SixLayerFrameworkUITests_visionOS
         - SixLayerFrameworkExternalIntegrationTests_visionOS
 
-  SixLayerFramework-UnitTestsOnly-visionOS:
+  SLF-visionOS-UnitTests:
     build:
       targets:
         SixLayerFramework_visionOS: all
+        SixLayerFrameworkUnitTests_visionOS: all
     test:
       targets:
         - SixLayerFrameworkUnitTests_visionOS
-
-  # SixLayerFramework-UITestsOnly-iOS:
-  #   build:
-  #     targets:
-  #       SixLayerFramework_iOS: all
-  #   test:
-  #     targets:
-  #       - SixLayerFrameworkUITests_iOS  # TODO: Create real UI tests
-
-  # SixLayerFramework-UITestsOnly-macOS:
-  #   build:
-  #     targets:
-  #       SixLayerFramework_macOS: all
-  #   test:
-  #     targets:
-  #       - SixLayerFrameworkUITests_macOS  # TODO: Create real UI tests
-

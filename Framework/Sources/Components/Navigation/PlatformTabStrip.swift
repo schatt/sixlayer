@@ -24,18 +24,26 @@ public struct PlatformTabStrip: View {
                     }
                     .buttonStyle(.plain)
                     .environment(\.accessibilityIdentifierLabel, item.title) // TDD GREEN: Pass label to identifier generation
-                    .automaticCompliance(named: "PlatformTabStripButton")
+                    .automaticCompliance(
+                        identifierName: sanitizeLabelText(item.title)  // Auto-generate identifierName from item title
+                    )
                 }
             }
             .padding(.horizontal, 8)
         }
         #else
-        Picker("", selection: $selection) {
-            ForEach(Array(items.enumerated()), id: \.offset) { index, item in
-                Text(item.title).tag(index)
-            }
-        }
-        .pickerStyle(.segmented)
+        // Use platformPicker helper to automatically apply accessibility to picker and segments (Issue #163)
+        // Use indices as options (Hashable) and map to items for labels
+        let indices = Array(items.indices)
+        platformPicker(
+            label: "",
+            selection: $selection,
+            options: indices,
+            optionTag: { $0 },
+            optionLabel: { items[$0].title },
+            pickerName: "PlatformTabStrip",
+            style: SegmentedPickerStyle()
+        )
         #endif
     }
 }

@@ -82,7 +82,9 @@ public struct CustomFieldView: View {
                 DynamicCustomField(field: field, formState: formState)
             }
         }
-        .automaticCompliance(named: "CustomFieldView")
+        .automaticCompliance(
+            identifierName: sanitizeLabelText(field.label)  // Auto-generate identifierName from field label
+        )
     }
 }
 
@@ -316,16 +318,27 @@ public struct DynamicTextField: View {
     /// Picker content view
     @ViewBuilder
     private var pickerContent: some View {
-        let pickerOptions = field.pickerOptionsFromHints
-        if !pickerOptions.isEmpty {
-            let i18n = InternationalizationService()
-            Picker(field.placeholder ?? i18n.placeholderSelect(), selection: field.textBinding(formState: formState)) {
-                ForEach(pickerOptions, id: \.value) { option in
-                    Text(option.label).tag(option.value)
-                }
-            }
-            .pickerStyle(.menu)
-            .automaticCompliance()
+        let i18n = InternationalizationService()
+        
+        // Prefer pickerOptions from displayHints (PickerOption type) for platformPicker (no AnyView — Issue 178)
+        if let hints = field.displayHints,
+           let pickerOptions = hints.pickerOptions,
+           !pickerOptions.isEmpty {
+            platformPicker(
+                label: field.placeholder ?? i18n.placeholderSelect(),
+                selection: field.textBinding(formState: formState),
+                options: pickerOptions,
+                pickerName: "DynamicSelectField"
+            )
+        } else if let options = field.options, !options.isEmpty {
+            // Fallback to field.options (String array) - convert to PickerOption
+            let pickerOptions = options.map { PickerOption(value: $0, label: $0) }
+            platformPicker(
+                label: field.placeholder ?? i18n.placeholderSelect(),
+                selection: field.textBinding(formState: formState),
+                options: pickerOptions,
+                pickerName: "DynamicSelectField"
+            )
         } else {
             // Fallback to text field if no options
             textFieldView
@@ -671,7 +684,9 @@ public struct DynamicNumberField: View {
         }
         .padding()
         .environment(\.accessibilityIdentifierLabel, field.label)
-        .automaticCompliance(named: "DynamicNumberField")
+        .automaticCompliance(
+            identifierName: sanitizeLabelText(field.label)  // Auto-generate identifierName from field label
+        )
     }
 }
 
@@ -705,7 +720,9 @@ public struct DynamicIntegerField: View {
         }
         .padding()
         .environment(\.accessibilityIdentifierLabel, field.label) // TDD GREEN: Pass label to identifier generation
-        .automaticCompliance(named: "DynamicIntegerField")
+        .automaticCompliance(
+            identifierName: sanitizeLabelText(field.label)  // Auto-generate identifierName from field label
+        )
     }
 }
 
@@ -769,6 +786,13 @@ public struct DynamicStepperField: View {
                 in: range,
                 step: step
             )
+            .automaticCompliance(
+                identifierName: sanitizeLabelText(field.label),  // Auto-generate identifierName from field label
+                identifierElementType: "Stepper",
+                accessibilityValue: step.truncatingRemainder(dividingBy: 1.0) == 0.0 
+                    ? "\(Int(value.wrappedValue))" 
+                    : String(format: "%.2f", value.wrappedValue)  // Issue #165: Current value
+            )
 
             // Show current value - use appropriate format based on step size
             Text(step.truncatingRemainder(dividingBy: 1.0) == 0.0 
@@ -779,7 +803,7 @@ public struct DynamicStepperField: View {
         }
         .padding()
         .environment(\.accessibilityIdentifierLabel, field.label)
-        .automaticCompliance(named: "DynamicStepperField")
+        .automaticCompliance()  // Container view - no identifierName
     }
 }
 
@@ -808,11 +832,13 @@ public struct DynamicDateField: View {
                           set: { _ in } // TODO: Store in formState
                       ),
                       displayedComponents: .date)
-            .automaticCompliance()
+            .automaticCompliance(
+                identifierName: sanitizeLabelText(field.label)  // Auto-generate identifierName from field label
+            )
         }
         .padding()
         .environment(\.accessibilityIdentifierLabel, field.label) // TDD GREEN: Pass label to identifier generation
-        .automaticCompliance(named: "DynamicDateField")
+        .automaticCompliance()  // Container view - no identifierName
     }
 }
 
@@ -845,7 +871,9 @@ public struct DynamicTimeField: View {
         }
         .padding()
         .environment(\.accessibilityIdentifierLabel, field.label) // TDD GREEN: Pass label to identifier generation
-        .automaticCompliance(named: "DynamicTimeField")
+        .automaticCompliance(
+            identifierName: sanitizeLabelText(field.label)  // Auto-generate identifierName from field label
+        )
     }
 }
 
@@ -877,7 +905,9 @@ public struct DynamicDateTimeField: View {
         }
         .padding()
         .environment(\.accessibilityIdentifierLabel, field.label) // TDD GREEN: Pass label to identifier generation
-        .automaticCompliance(named: "DynamicDateTimeField")
+        .automaticCompliance(
+            identifierName: sanitizeLabelText(field.label)  // Auto-generate identifierName from field label
+        )
     }
 }
 
@@ -989,7 +1019,9 @@ public struct DynamicMultiDateField: View {
         }
         .padding()
         .environment(\.accessibilityIdentifierLabel, field.label)
-        .automaticCompliance(named: "DynamicMultiDateField")
+        .automaticCompliance(
+            identifierName: sanitizeLabelText(field.label)  // Auto-generate identifierName from field label
+        )
     }
 }
 
@@ -1038,7 +1070,9 @@ public struct DynamicMultiSelectField: View {
         }
         .padding()
         .environment(\.accessibilityIdentifierLabel, field.label) // TDD GREEN: Pass label to identifier generation
-        .automaticCompliance(named: "DynamicMultiSelectField")
+        .automaticCompliance(
+            identifierName: sanitizeLabelText(field.label)  // Auto-generate identifierName from field label
+        )
     }
 }
 
@@ -1061,18 +1095,20 @@ public struct DynamicRadioField: View {
                 .bold()
                 .automaticCompliance(named: "FieldLabel")
 
-            if let options = field.options {
+            if let options = field.options, !options.isEmpty {
                 #if os(macOS)
-                Picker(field.label, selection: Binding(
-                    get: { formState.fieldValues[field.id] as? String ?? "" },
-                    set: { formState.setValue($0, for: field.id) }
-                )) {
-                    ForEach(options, id: \.self) { option in
-                        Text(option).tag(option)
-                    }
-                }
-                .pickerStyle(.radioGroup)
-                .automaticCompliance(named: "RadioGroup")
+                // Use platformPicker helper to automatically apply accessibility (Issue #163)
+                // Note: radioGroup style is macOS-specific for radio button groups
+                platformPicker(
+                    label: field.label,
+                    selection: Binding(
+                        get: { formState.fieldValues[field.id] as? String ?? "" },
+                        set: { formState.setValue($0, for: field.id) }
+                    ),
+                    options: options,
+                    pickerName: "RadioGroup",
+                    style: RadioGroupPickerStyle()
+                )
                 #else
                 // iOS: Use custom radio button implementation
                 platformVStackContainer(alignment: .leading, spacing: 8) {
@@ -1098,7 +1134,9 @@ public struct DynamicRadioField: View {
             }
         }
         .padding()
-        .automaticCompliance(named: "DynamicRadioField")
+        .automaticCompliance(
+            identifierName: sanitizeLabelText(field.label)  // Auto-generate identifierName from field label
+        )
     }
 }
 
@@ -1146,7 +1184,9 @@ public struct DynamicCheckboxField: View {
         }
         .padding()
         .environment(\.accessibilityIdentifierLabel, field.label) // TDD GREEN: Pass label to identifier generation
-        .automaticCompliance(named: "DynamicCheckboxField")
+        .automaticCompliance(
+            identifierName: sanitizeLabelText(field.label)  // Auto-generate identifierName from field label
+        )
     }
 }
 
@@ -1236,7 +1276,9 @@ public struct DynamicFileField: View {
         }
         .padding()
         .environment(\.accessibilityIdentifierLabel, field.label) // TDD GREEN: Pass label to identifier generation
-        .automaticCompliance(named: "DynamicFileField")
+        .automaticCompliance(
+            identifierName: sanitizeLabelText(field.label)  // Auto-generate identifierName from field label
+        )
     }
 }
 
@@ -1311,15 +1353,21 @@ public struct DynamicRangeField: View {
             Text(field.label)
                 .font(.subheadline)
 
-            Slider(value: Binding(
+            let sliderValue = Binding(
                 get: { Double((formState.getValue(for: field.id) as String?) ?? field.defaultValue ?? "0") ?? 0 },
                 set: { formState.setValue(String($0), for: field.id) }
-            ), in: 0...100)
-            .automaticCompliance()
+            )
+            Slider(value: sliderValue, in: 0...100)
+                .automaticCompliance(
+                    identifierElementType: "Slider",
+                    accessibilityValue: "\(Int(sliderValue.wrappedValue)) percent"  // Issue #165: Current value with range context
+                )
         }
         .padding()
         .environment(\.accessibilityIdentifierLabel, field.label) // TDD GREEN: Pass label to identifier generation
-        .automaticCompliance(named: "DynamicRangeField")
+        .automaticCompliance(
+            identifierName: sanitizeLabelText(field.label)  // Auto-generate identifierName from field label
+        )
     }
 }
 
@@ -1389,7 +1437,9 @@ public struct DynamicArrayField: View {
         }
         .padding()
         .environment(\.accessibilityIdentifierLabel, field.label) // TDD GREEN: Pass label to identifier generation
-        .automaticCompliance(named: "DynamicArrayField")
+        .automaticCompliance(
+            identifierName: sanitizeLabelText(field.label)  // Auto-generate identifierName from field label
+        )
     }
 }
 
@@ -1437,7 +1487,9 @@ public struct DynamicDataField: View {
             }
         }
         .padding()
-        .automaticCompliance(named: "DynamicDataField")
+        .automaticCompliance(
+            identifierName: sanitizeLabelText(field.label)  // Auto-generate identifierName from field label
+        )
     }
 }
 
@@ -1505,7 +1557,9 @@ public struct DynamicAutocompleteField: View {
             }
         }
         .padding()
-        .automaticCompliance(named: "DynamicAutocompleteField")
+        .automaticCompliance(
+            identifierName: sanitizeLabelText(field.label)  // Auto-generate identifierName from field label
+        )
     }
 }
 
@@ -1544,21 +1598,24 @@ public struct DynamicEnumField: View {
                 .automaticCompliance(named: "FieldLabel")
 
             if !pickerOptions.isEmpty {
-                Picker(field.label, selection: Binding(
-                    get: { formState.fieldValues[field.id] as? String ?? "" },
-                    set: { formState.setValue($0, for: field.id) }
-                )) {
-                    ForEach(pickerOptions, id: \.value) { option in
-                        Text(option.label).tag(option.value)
-                    }
-                }
-                .pickerStyle(.menu)
-                .automaticCompliance(named: "EnumPicker")
+                // Convert tuple array to PickerOption array for platformPicker
+                let pickerOptionArray = pickerOptions.map { PickerOption(value: $0.value, label: $0.label) }
+                platformPicker(
+                    label: field.label,
+                    selection: Binding(
+                        get: { formState.fieldValues[field.id] as? String ?? "" },
+                        set: { formState.setValue($0, for: field.id) }
+                    ),
+                    options: pickerOptionArray,
+                    pickerName: "EnumPicker"
+                )
             }
         }
         .padding()
         .environment(\.accessibilityIdentifierLabel, field.label) // TDD GREEN: Pass label to identifier generation
-        .automaticCompliance(named: "DynamicEnumField")
+        .automaticCompliance(
+            identifierName: sanitizeLabelText(field.label)  // Auto-generate identifierName from field label
+        )
     }
 }
 
@@ -1582,6 +1639,7 @@ public struct DynamicCustomField: View {
                 .automaticCompliance(named: "FieldLabel")
 
             if let customComponent = CustomFieldRegistry.shared.createComponent(for: field, formState: formState) {
+                // any CustomFieldComponent existential must be wrapped for ViewBuilder
                 AnyView(customComponent)
             } else {
                 Text("Custom field not registered: \(field.contentType?.rawValue ?? "unknown")")
@@ -1591,7 +1649,9 @@ public struct DynamicCustomField: View {
             }
         }
         .padding()
-        .automaticCompliance(named: "DynamicCustomField")
+        .automaticCompliance(
+            identifierName: sanitizeLabelText(field.label)  // Auto-generate identifierName from field label
+        )
     }
 }
 
@@ -1636,7 +1696,9 @@ public struct DynamicColorField: View {
                 .automaticCompliance(named: "ColorPreview")
         }
         .padding()
-        .automaticCompliance(named: "DynamicColorField")
+        .automaticCompliance(
+            identifierName: sanitizeLabelText(field.label)  // Auto-generate identifierName from field label
+        )
     }
 }
 
@@ -1652,16 +1714,41 @@ public struct DynamicToggleField: View {
         self.formState = formState
     }
     
+    private var isOn: Binding<Bool> {
+        Binding(
+            get: {
+                if let value: Any = formState.getValue(for: field.id) {
+                    if let boolValue = value as? Bool {
+                        return boolValue
+                    } else if let stringValue = value as? String {
+                        return stringValue.lowercased() == "true" || stringValue == "1"
+                    }
+                }
+                return field.defaultValue?.lowercased() == "true" || field.defaultValue == "1" || false
+            },
+            set: { newValue in
+                formState.setValue(String(newValue), for: field.id)
+            }
+        )
+    }
+    
     public var body: some View {
         platformVStackContainer(alignment: .leading) {
             Text(field.label)
                 .font(.subheadline)
             
-            Toggle("Toggle Field - TDD Red Phase Stub", isOn: .constant(false))
+            Toggle(field.label, isOn: isOn)
+                .automaticCompliance(
+                    identifierName: sanitizeLabelText(field.label),  // Auto-generate identifierName from field label
+                    identifierElementType: "Toggle",
+                    accessibilityValue: generateAccessibilityValueForToggle(isOn: isOn.wrappedValue)  // Issue #165: Dynamic value
+                )
         }
         .padding()
         .environment(\.accessibilityIdentifierLabel, field.label) // TDD GREEN: Pass label to identifier generation
-        .automaticCompliance(named: "DynamicToggleField")
+        .automaticCompliance(
+            identifierName: sanitizeLabelText(field.label)  // Auto-generate identifierName from field label
+        )
     }
 }
 
@@ -1741,7 +1828,9 @@ public struct DynamicDisplayField: View {
                         .foregroundColor(.secondary)
                 }
             }
-            .automaticCompliance(named: "DynamicDisplayField")
+            .automaticCompliance(
+                identifierName: sanitizeLabelText(field.label)  // Auto-generate identifierName from field label
+            )
         } else {
             // Fallback for older platforms
             HStack {
@@ -1756,7 +1845,9 @@ public struct DynamicDisplayField: View {
                 }
             }
             .padding()
-            .automaticCompliance(named: "DynamicDisplayField")
+            .automaticCompliance(
+                identifierName: sanitizeLabelText(field.label)  // Auto-generate identifierName from field label
+            )
         }
     }
 }
@@ -1868,6 +1959,8 @@ public struct DynamicGaugeField: View {
             }
         }
         .padding()
-        .automaticCompliance(named: "DynamicGaugeField")
+        .automaticCompliance(
+            identifierName: sanitizeLabelText(field.label)  // Auto-generate identifierName from field label
+        )
     }
 }

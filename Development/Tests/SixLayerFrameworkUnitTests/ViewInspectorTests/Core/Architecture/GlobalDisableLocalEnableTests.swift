@@ -31,12 +31,12 @@ open class GlobalDisableLocalEnableTDDTests: BaseTestClass {
             config.enableAutoIDs = false
             config.enableDebugLogging = true
             
-            // 2. Create a framework component with local enable
+            // 2. Create a framework component with local enable; use platformButton so the button has an identifierName (L1 pattern)
             let view = platformPresentContent_L1(
-                content: Button("Framework Button") { },
+                content: platformButton("Framework Button") { },
                 hints: PresentationHints()
             )
-            .automaticCompliance()  // ← Local enable should override global disable
+            .automaticCompliance(identifierName: "FrameworkButton")  // ← Local enable + name so ID is generated
             
             // 3. Generate ID
             // VERIFIED: Framework function has .automaticCompliance() modifier applied
@@ -49,8 +49,7 @@ open class GlobalDisableLocalEnableTDDTests: BaseTestClass {
             
             print("🔍 Framework Component Test: Generated ID='\(id)'")
             #else
-            // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-            // The modifier IS present in the code, but ViewInspector can't detect it on macOS
+            // ViewInspector not available on this platform - this is expected, not a failure
             #endif
         }
     }
@@ -86,8 +85,7 @@ open class GlobalDisableLocalEnableTDDTests: BaseTestClass {
             
             print("Testing .named() with global settings: Generated ID='\(id)'")
             #else
-            // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-            // The modifier IS present in the code, but ViewInspector can't detect it on macOS
+            // ViewInspector not available on this platform - this is expected, not a failure
             #endif
         }
     }
@@ -120,8 +118,7 @@ open class GlobalDisableLocalEnableTDDTests: BaseTestClass {
             #expect(!id.isEmpty, ".named() should always work regardless of global config")
             #expect(id.contains("FrameworkButton"), "Should contain the explicit name")
             #else
-            // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-            // The modifier IS present in the code, but ViewInspector can't detect it on macOS
+            // ViewInspector not available on this platform - this is expected, not a failure
             #endif
             
         }
@@ -155,8 +152,7 @@ open class GlobalDisableLocalEnableTDDTests: BaseTestClass {
             #expect(!id.isEmpty, ".named() should always work regardless of global config")
             #expect(id.contains("PlainButton"), "Should contain the explicit name")
             #else
-            // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-            // The modifier IS present in the code, but ViewInspector can't detect it on macOS
+            // ViewInspector not available on this platform - this is expected, not a failure
             #endif
             
         }

@@ -92,25 +92,13 @@ open class Layer1CallbackFunctionalTests: BaseTestClass {
             }
         )
         
-        // Use ViewInspector to simulate tap
-        // Using wrapper - when ViewInspector works on macOS, no changes needed here
         #if canImport(ViewInspector)
-        do {
-            try withInspectedViewThrowing(view) { inspector in
-                // Find text elements to verify the view structure
-                let texts = inspector.findAll(ViewInspector.ViewType.Text.self)
-                #expect(!texts.isEmpty, "Should have text elements from items")
-
-                // Try to find and tap elements - ListCardComponent is not directly inspectable
-                // so we'll verify the view structure instead
-                #expect(callbackInvoked || self.selectedItems.count > 0, "Callback should be invoked or items selected")
-            }
-        } catch {
-            Issue.record("View inspection failed: \(error)")
-        }
+        self.verifyViewContainsAnyText(view, testName: "Collection items")
+        // Try to find and tap elements - ListCardComponent is not directly inspectable; verify callback or structure
+        #expect(callbackInvoked || self.selectedItems.count > 0, "Callback should be invoked or items selected")
         #else
         // ViewInspector not available on macOS - test passes by verifying callback signature
-        #expect(Bool(true), "Layer 1 callback verified by compilation (ViewInspector not available on macOS)")
+        #expect(Bool(true), "Layer 1 callback verified by compilation")
         #endif
     }
     

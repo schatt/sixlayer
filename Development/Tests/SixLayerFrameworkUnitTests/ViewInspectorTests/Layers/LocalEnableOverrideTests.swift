@@ -27,9 +27,9 @@ open class LocalEnableOverrideTests: BaseTestClass {
             config.enableAutoIDs = false
             print("🔧 Global config disabled: enableAutoIDs = false")
             
-            // 2. Create a view with local enable (without .named() to avoid modifier chain issues)
+            // 2. Create a view with local enable; pass identifierName so automaticCompliance creates an ID (L1 pattern)
             let view = Button("Special Button") { }
-                .automaticCompliance()  // ← Local enable should override global disable
+                .automaticCompliance(identifierName: "SpecialButton")  // ← Local enable + name so ID is generated
             
             // 3. Try to inspect for accessibility identifier
             #if canImport(ViewInspector)
@@ -49,7 +49,7 @@ open class LocalEnableOverrideTests: BaseTestClass {
                 Issue.record("Failed to inspect view with local enable")
             }
             #else
-            // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+            // ViewInspector not available on this platform - this is expected, not a failure
             #endif
             
             cleanupTestEnvironment()
@@ -97,7 +97,7 @@ open class LocalEnableOverrideTests: BaseTestClass {
                 Issue.record("Failed to inspect view with explicit naming")
             }
             #else
-            // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+            // ViewInspector not available on this platform - this is expected, not a failure
             #endif
             
             cleanupTestEnvironment()
@@ -143,7 +143,7 @@ open class LocalEnableOverrideTests: BaseTestClass {
                 // If we can't inspect, that's also fine - means no accessibility identifier was applied
             }
             #else
-            // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+            // ViewInspector not available on this platform - this is expected, not a failure
             #endif
             
             cleanupTestEnvironment()

@@ -8,6 +8,7 @@
 
 import Foundation
 import SwiftUI
+import Testing
 @testable import SixLayerFramework
 
 #if canImport(ViewInspector)
@@ -33,7 +34,105 @@ import AppKit
 /// The hang occurs when accessing `hosting.view` - a synchronous UIKit/AppKit call that cannot be timed out.
 /// 
 
+/// Get accessibility identifier: ViewInspector (real hierarchy) when view is Inspectable, else platform fallback only.
+#if canImport(ViewInspector)
+@MainActor
+public func getAccessibilityIdentifierForTest<V: View & ViewInspector.Inspectable>(view: V, hostedRoot: Any? = nil) -> String? {
+    if let inspected = inspectView(view) {
+        if let id = try? inspected.accessibilityIdentifier(), !id.isEmpty { return id }
+        if let button = try? inspected.button(), let id = try? button.accessibilityIdentifier(), !id.isEmpty { return id }
+    }
+    guard let root = hostedRoot else { return nil }
+    return firstAccessibilityIdentifier(inHosted: root)
+}
+#endif
+
+/// Get accessibility identifier when view is not Inspectable: try platform hierarchy first (IDs applied by SwiftUI), then ViewInspector (Issue 178).
+@MainActor
+public func getAccessibilityIdentifierForTest<V: View>(view: V, hostedRoot: Any? = nil) -> String? {
+    #if canImport(ViewInspector)
+    // Prefer platform hierarchy when available — SwiftUI applies modifiers to hosted views
+    if let root = hostedRoot, let id = firstAccessibilityIdentifier(inHosted: root), !id.isEmpty {
+        return id
+    }
+    if let inspected = try? AnyView(view).inspect() {
+        if let inner = try? inspected.anyView() {
+            if let id = try? inner.accessibilityIdentifier(), !id.isEmpty { return id }
+            if let button = try? inner.button(), let id = try? button.accessibilityIdentifier(), !id.isEmpty { return id }
+        }
+        if let id = try? inspected.accessibilityIdentifier(), !id.isEmpty { return id }
+        if let button = try? inspected.button(), let id = try? button.accessibilityIdentifier(), !id.isEmpty { return id }
+    }
+    #endif
+    guard let root = hostedRoot else { return nil }
+    return firstAccessibilityIdentifier(inHosted: root)
+}
+
+/// Get accessibility label: ViewInspector (real hierarchy) when view is Inspectable, else platform fallback only.
+#if canImport(ViewInspector)
+@MainActor
+public func getAccessibilityLabelForTest<V: View & ViewInspector.Inspectable>(view: V, hostedRoot: Any? = nil) -> String? {
+    if let inspected = inspectView(view) {
+        if let labelView = try? inspected.accessibilityLabel(), let labelText = try? labelView.string(), !labelText.isEmpty {
+            return labelText
+        }
+    }
+    guard let root = hostedRoot else { return nil }
+    return firstAccessibilityLabel(inHosted: root)
+}
+#endif
+
+/// Get accessibility label when view is not Inspectable: try platform hierarchy first, then ViewInspector (Issue 178).
+@MainActor
+public func getAccessibilityLabelForTest<V: View>(view: V, hostedRoot: Any? = nil) -> String? {
+    #if canImport(ViewInspector)
+    if let root = hostedRoot, let label = firstAccessibilityLabel(inHosted: root), !label.isEmpty {
+        return label
+    }
+    if let inspected = try? AnyView(view).inspect() {
+        if let inner = try? inspected.anyView(),
+           let labelView = try? inner.accessibilityLabel(),
+           let labelText = try? labelView.string(), !labelText.isEmpty {
+            return labelText
+        }
+        if let labelView = try? inspected.accessibilityLabel(),
+           let labelText = try? labelView.string(), !labelText.isEmpty {
+            return labelText
+        }
+    }
+    #endif
+    guard let root = hostedRoot else { return nil }
+    return firstAccessibilityLabel(inHosted: root)
+}
+
+#if canImport(UIKit)
+/// Return the first non-empty accessibility identifier from a view's accessibilityElements (SwiftUI may expose IDs there).
+@MainActor
+private func firstAccessibilityIdentifierFromElements(_ elements: [Any]?) -> String? {
+    guard let elements = elements else { return nil }
+    for element in elements {
+        if let ax = element as? UIAccessibilityElement, let id = ax.accessibilityIdentifier, !id.isEmpty {
+            return id
+        }
+    }
+    return nil
+}
+
+/// Return the first non-empty accessibility label from a view's accessibilityElements.
+@MainActor
+private func firstAccessibilityLabelFromElements(_ elements: [Any]?) -> String? {
+    guard let elements = elements else { return nil }
+    for element in elements {
+        if let ax = element as? UIAccessibilityElement, let label = ax.accessibilityLabel, !label.isEmpty {
+            return label
+        }
+    }
+    return nil
+}
+#endif
+
 /// Depth-first search for the first non-empty accessibility identifier in the platform view hierarchy.
+/// Traverses up to 40 levels deep; also checks each view's accessibilityElements (SwiftUI may expose IDs there).
 @MainActor
 public func firstAccessibilityIdentifier(inHosted root: Any?) -> String? {
     #if canImport(UIKit)
@@ -44,28 +143,30 @@ public func firstAccessibilityIdentifier(inHosted root: Any?) -> String? {
     if let id = rootView.accessibilityIdentifier, !id.isEmpty {
         return id
     }
+    // SwiftUI-hosted content may expose identifiers via accessibilityElements (Issue 178)
+    if let id = firstAccessibilityIdentifierFromElements(rootView.accessibilityElements) {
+        return id
+    }
     
-    // Search through all subviews more thoroughly
-    // 6LAYER_ALLOW: test utilities must traverse platform-specific view hierarchies for accessibility testing
-    var stack: [UIView] = rootView.subviews
-    var depth = 0
+    let maxDepth = 40
+    var stack: [(UIView, Int)] = rootView.subviews.map { ($0, 1) }
     var checkedViews: Set<ObjectIdentifier> = []
     
-    while let next = stack.popLast(), depth < 20 { // Increased depth limit
+    while let (next, depth) = stack.popLast(), depth <= maxDepth {
         let nextId = ObjectIdentifier(next)
-        if checkedViews.contains(nextId) {
-            continue // Avoid infinite loops
-        }
+        if checkedViews.contains(nextId) { continue }
         checkedViews.insert(nextId)
         
         if let id = next.accessibilityIdentifier, !id.isEmpty {
             return id
         }
-        
-        // Add all subviews to the stack
-        // 6LAYER_ALLOW: test utilities must traverse platform-specific view hierarchies for accessibility testing
-        stack.append(contentsOf: next.subviews)
-        depth += 1
+        if let id = firstAccessibilityIdentifierFromElements(next.accessibilityElements) {
+            return id
+        }
+        if depth < maxDepth {
+            // 6LAYER_ALLOW: test utilities must traverse platform-specific view hierarchies for accessibility testing
+            stack.append(contentsOf: next.subviews.map { ($0, depth + 1) })
+        }
     }
     return nil
     #elseif canImport(AppKit)
@@ -80,28 +181,60 @@ public func firstAccessibilityIdentifier(inHosted root: Any?) -> String? {
         return rootId
     }
     
-    // Search through all subviews more thoroughly
-    // 6LAYER_ALLOW: test utilities must traverse platform-specific view hierarchies for accessibility testing
-    var stack: [NSView] = rootView.subviews
-    var depth = 0
+    let maxDepth = 40
+    var stack: [(NSView, Int)] = rootView.subviews.map { ($0, 1) }
     var checkedViews: Set<ObjectIdentifier> = []
     
-    while let next = stack.popLast(), depth < 20 { // Increased depth limit
+    while let (next, depth) = stack.popLast(), depth <= maxDepth {
         let nextId = ObjectIdentifier(next)
-        if checkedViews.contains(nextId) {
-            continue // Avoid infinite loops
-        }
+        if checkedViews.contains(nextId) { continue }
         checkedViews.insert(nextId)
         
         let id = next.accessibilityIdentifier()
-        if !id.isEmpty {
-            return id
+        if !id.isEmpty { return id }
+        if depth < maxDepth {
+            // 6LAYER_ALLOW: test utilities must traverse platform-specific view hierarchies for accessibility testing
+            stack.append(contentsOf: next.subviews.map { ($0, depth + 1) })
         }
-        
-        // Add all subviews to the stack
-        // 6LAYER_ALLOW: test utilities must traverse platform-specific view hierarchies for accessibility testing
-        stack.append(contentsOf: next.subviews)
-        depth += 1
+    }
+    return nil
+    #else
+    return nil
+    #endif
+}
+
+/// Depth-first search for the first non-empty accessibility label in the platform view hierarchy.
+/// Also checks each view's accessibilityElements (SwiftUI may expose labels there).
+@MainActor
+public func firstAccessibilityLabel(inHosted root: Any?) -> String? {
+    #if canImport(UIKit)
+    guard let rootView = root as? UIView else { return nil }
+    if let label = rootView.accessibilityLabel, !label.isEmpty { return label }
+    if let label = firstAccessibilityLabelFromElements(rootView.accessibilityElements) {
+        return label
+    }
+    var stack: [(UIView, Int)] = rootView.subviews.map { ($0, 1) }
+    var checked: Set<ObjectIdentifier> = []
+    while let (next, depth) = stack.popLast(), depth <= 40 {
+        if checked.contains(ObjectIdentifier(next)) { continue }
+        checked.insert(ObjectIdentifier(next))
+        if let label = next.accessibilityLabel, !label.isEmpty { return label }
+        if let label = firstAccessibilityLabelFromElements(next.accessibilityElements) {
+            return label
+        }
+        if depth < 40 { stack.append(contentsOf: next.subviews.map { ($0, depth + 1) }) }
+    }
+    return nil
+    #elseif canImport(AppKit)
+    guard let rootView = root as? NSView else { return nil }
+    if let label = rootView.accessibilityLabel(), !label.isEmpty { return label }
+    var stack: [(NSView, Int)] = rootView.subviews.map { ($0, 1) }
+    var checked: Set<ObjectIdentifier> = []
+    while let (next, depth) = stack.popLast(), depth <= 40 {
+        if checked.contains(ObjectIdentifier(next)) { continue }
+        checked.insert(ObjectIdentifier(next))
+        if let label = next.accessibilityLabel(), !label.isEmpty { return label }
+        if depth < 40 { stack.append(contentsOf: next.subviews.map { ($0, depth + 1) }) }
     }
     return nil
     #else
@@ -219,6 +352,36 @@ public func findAllAccessibilityIdentifiersFromPlatformView(_ root: Any?) -> [St
 public enum AccessibilityTestUtilities {
     
     // MARK: - Test Functions
+    
+    /// Inspect a SwiftUI view using ViewInspector and attempt to retrieve the
+    /// accessibility identifier from an underlying Button. This centralizes the
+    /// common pattern used across accessibility tests.
+    @MainActor
+    public static func inspectButtonAccessibilityIdentifier<V: View>(
+        _ view: V,
+        issuePrefix: String = "Failed to inspect view for accessibility identifier"
+    ) -> String? {
+        #if canImport(ViewInspector)
+        do {
+            let inspected = try AnyView(view).inspect()
+            if let inner = try? inspected.anyView() {
+                if let directID = try? inner.accessibilityIdentifier(), !directID.isEmpty { return directID }
+                if let button = try? inner.button(), let buttonID = try? button.accessibilityIdentifier(), !buttonID.isEmpty { return buttonID }
+            }
+            if let directID = try? inspected.accessibilityIdentifier(), !directID.isEmpty { return directID }
+            if let button = try? inspected.button(), let buttonID = try? button.accessibilityIdentifier(), !buttonID.isEmpty { return buttonID }
+            // If we reach here, ViewInspector couldn't find an identifier. This is
+            // treated as an inspection limitation rather than a hard failure; the
+            // caller can decide whether to assert or treat it as "cannot verify".
+            return nil
+        } catch {
+            Issue.record("\(issuePrefix): \(error)")
+            return nil
+        }
+        #else
+        return nil
+        #endif
+    }
     
     /// Test accessibility identifiers for a view on a single platform
     /// Returns true if accessibility identifiers are found matching the expected pattern

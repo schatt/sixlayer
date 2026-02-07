@@ -29,6 +29,68 @@ public extension View {
             .automaticCompliance(named: "platformBackground")
     }
     
+    /// Platform-specific background with custom color and safe area control
+    /// Provides precise control over safe area behavior matching SwiftUI's background modifier
+    ///
+    /// - Parameters:
+    ///   - color: The background color
+    ///   - ignoresSafeAreaEdges: Which edges should ignore safe area (default: .all)
+    /// - Returns: A view with platform-specific background applied
+    ///
+    /// ## Usage Example
+    /// ```swift
+    /// Text("Content")
+    ///     .platformBackground(.blue, ignoresSafeAreaEdges: .all)
+    /// ```
+    func platformBackground(_ color: Color, ignoresSafeAreaEdges: Edge.Set = .all) -> some View {
+        return self.background(color, ignoresSafeAreaEdges: ignoresSafeAreaEdges)
+            .automaticCompliance(named: "platformBackground")
+    }
+    
+    /// Platform-specific background with view-based content
+    /// Provides view-based background matching SwiftUI's background modifier
+    ///
+    /// - Parameters:
+    ///   - alignment: Alignment of the background view (default: .center)
+    ///   - content: View builder for the background content
+    /// - Returns: A view with platform-specific view-based background applied
+    ///
+    /// ## Usage Example
+    /// ```swift
+    /// Text("Content")
+    ///     .platformBackground(alignment: .center) {
+    ///         Color.blue
+    ///     }
+    /// ```
+    func platformBackground<BackgroundContent: View>(
+        alignment: Alignment = .center,
+        @ViewBuilder content: () -> BackgroundContent
+    ) -> some View {
+        return self.background(alignment: alignment, content: content)
+            .automaticCompliance(named: "platformBackground")
+    }
+    
+    /// Platform-specific background with ShapeStyle
+    /// Provides ShapeStyle-based background matching SwiftUI's background modifier
+    ///
+    /// - Parameters:
+    ///   - style: The ShapeStyle to use as background (Color, gradient, etc.)
+    ///   - ignoresSafeAreaEdges: Which edges should ignore safe area (default: .all)
+    /// - Returns: A view with platform-specific ShapeStyle background applied
+    ///
+    /// ## Usage Example
+    /// ```swift
+    /// Text("Content")
+    ///     .platformBackground(.blue.gradient, ignoresSafeAreaEdges: .all)
+    /// ```
+    func platformBackground<S: ShapeStyle>(
+        _ style: S,
+        ignoresSafeAreaEdges: Edge.Set = .all
+    ) -> some View {
+        return self.background(style, ignoresSafeAreaEdges: ignoresSafeAreaEdges)
+            .automaticCompliance(named: "platformBackground")
+    }
+    
     // MARK: - Padding Styling
     
     /// Platform-specific padding modifier
@@ -56,6 +118,22 @@ public extension View {
     func platformPadding(_ value: CGFloat) -> some View {
         return self.padding(value)
             .automaticCompliance()
+    }
+    
+    /// Platform-specific padding with EdgeInsets
+    /// Provides precise per-edge padding control matching SwiftUI's padding(_ insets: EdgeInsets) modifier
+    ///
+    /// - Parameter insets: EdgeInsets specifying top, leading, bottom, and trailing padding values
+    /// - Returns: A view with platform-specific padding applied
+    ///
+    /// ## Usage Example
+    /// ```swift
+    /// Text("Content")
+    ///     .platformPadding(EdgeInsets(top: 10, leading: 15, bottom: 20, trailing: 25))
+    /// ```
+    func platformPadding(_ insets: EdgeInsets) -> some View {
+        return self.padding(insets)
+            .automaticCompliance(named: "platformPadding")
     }
     
     /// Platform-specific reduced padding values

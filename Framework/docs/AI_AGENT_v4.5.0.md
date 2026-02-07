@@ -109,7 +109,7 @@ The CardDisplayHelper follows this priority order:
 - **Maintain 100% test coverage** - All new code must be tested
 
 ### Testing Requirements:
-- **Run `swift test` before any release** - This is mandatory per project rules
+- **Run the full xcodebuild test suite before any release** via `dbs-build --target test` - This is mandatory per project rules
 - **All tests must pass** - No exceptions for releases
 - **Test hint system functionality** - Verify custom property mapping works
 - **Test fallback scenarios** - Ensure reflection works when hints fail

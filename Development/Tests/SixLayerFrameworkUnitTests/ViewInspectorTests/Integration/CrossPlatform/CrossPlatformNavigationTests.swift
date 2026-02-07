@@ -25,7 +25,7 @@ open class CrossPlatformNavigationTests: BaseTestClass {
     
 @Test @MainActor func testCrossPlatformNavigationGeneratesAccessibilityIdentifiersOnIOS() async {
         let view = Text("Test Navigation")
-            .platformNavigation {
+            .platformNavigation_L4 {
                 Text("Content")
             }
         
@@ -38,14 +38,13 @@ open class CrossPlatformNavigationTests: BaseTestClass {
         )
  #expect(hasAccessibilityID, "platformNavigation should generate accessibility identifiers on iOS ")
         #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-        // The modifier IS present in the code, but ViewInspector can't detect it on macOS
+        // ViewInspector not available on this platform - this is expected, not a failure
         #endif
     }
     
     @Test @MainActor func testCrossPlatformNavigationGeneratesAccessibilityIdentifiersOnMacOS() async {
         let view = Text("Test Navigation")
-            .platformNavigation {
+            .platformNavigation_L4 {
                 Text("Content")
             }
         
@@ -58,8 +57,7 @@ open class CrossPlatformNavigationTests: BaseTestClass {
         )
  #expect(hasAccessibilityID, "platformNavigation should generate accessibility identifiers on macOS ")
         #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-        // The modifier IS present in the code, but ViewInspector can't detect it on macOS
+        // ViewInspector not available on this platform - this is expected, not a failure
         #endif
     }
 }

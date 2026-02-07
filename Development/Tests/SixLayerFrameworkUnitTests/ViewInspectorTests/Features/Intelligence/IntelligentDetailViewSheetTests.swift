@@ -62,20 +62,17 @@ struct IntelligentDetailViewSheetTests {
         
         // Verify the view can be inspected with ViewInspector
         #if canImport(ViewInspector)
+        let base = BaseTestClass()
+        base.verifyViewContainsAtLeastOneVStack(sheetContent, testName: "platformDetailView sheet content")
         if let inspector = try? AnyView(sheetContent).inspect() {
-            // Try to find VStack (standard layout structure)
-            // This proves the view has actual content structure, not blank
-            let vStacks = inspector.findAll(ViewInspector.ViewType.VStack.self)
+            let vStacks = (try? inspector.findAll(ViewInspector.ViewType.VStack.self)) ?? []
             if !vStacks.isEmpty {
-                // If we found a VStack, the view has structure and content
                 #expect(Bool(true), "platformDetailView should have view structure (proves it's not blank)")
             } else {
-                let hStacks = inspector.findAll(ViewInspector.ViewType.HStack.self)
+                let hStacks = (try? inspector.findAll(ViewInspector.ViewType.HStack.self)) ?? []
                 if !hStacks.isEmpty {
-                    // Try finding any structural view
                     #expect(Bool(true), "platformDetailView should have view structure (proves it's not blank)")
                 } else {
-                    // Any view structure is acceptable
                     #expect(Bool(true), "platformDetailView should render in sheet (not blank)")
                 }
             }
@@ -89,7 +86,8 @@ struct IntelligentDetailViewSheetTests {
         #endif
     }
     
-    /// Verify that platformDetailView extracts and displays data model properties
+    /// Verify that platformDetailView extracts and displays data model properties (Issue 178: no AnyView from API).
+    /// Standard layout (ScrollView + LazyVStack); inspect directly — framework no longer returns AnyView.
     @Test @MainActor func testPlatformDetailViewDisplaysModelProperties() async throws {
         let task = TestTask(title: "Test Task", description: "Task description", priority: 5)
         
@@ -104,31 +102,8 @@ struct IntelligentDetailViewSheetTests {
             )
         )
         
-        // Verify the view can be inspected (proves it's not blank)
         #if canImport(ViewInspector)
-        do {
-            guard let inspector = try? AnyView(detailView).inspect() else {
-                Issue.record("platformDetailView should be inspectable (indicates it has content)")
-                return
-            }
-            
-            // Try to find Text views (which would contain the field values)
-            do {
-                #if canImport(ViewInspector)
-                let texts = inspector.findAll(ViewType.Text.self)
-                #else
-                let texts: [Inspectable] = []
-                #endif
-                // If we found text views, the view is displaying content
-                #expect(texts.count > 0, "platformDetailView should display model properties as text")
-            } catch {
-                // ViewInspector might have issues finding nested texts
-                // But at least we can inspect, which proves structure exists
-                #expect(Bool(true), "platformDetailView should be inspectable (indicates content exists)")
-            }
-        } catch {
-            Issue.record("platformDetailView should be inspectable (indicates it has content)")
-        }
+        BaseTestClass().verifyViewContainsAnyText(detailView, testName: "platformDetailView model properties")
         #else
         // ViewInspector not available on macOS - skip test gracefully
         // The view is created successfully, which is the main requirement

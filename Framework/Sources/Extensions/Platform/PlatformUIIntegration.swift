@@ -51,6 +51,9 @@ public struct PlatformUIIntegration {
             }
             .navigationTitle(title)
             .platformNavigationTitleDisplayMode_L4(adaptiveTitleDisplayMode)
+            .automaticCompliance(
+                identifierName: sanitizeLabelText(title)  // Auto-generate identifierName from title
+            )
         }
         
         private var shouldShowHeader: Bool {

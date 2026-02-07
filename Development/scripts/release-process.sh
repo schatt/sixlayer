@@ -192,7 +192,7 @@ echo "📋 Step 2: Running test suite..."
 # Run macOS unit tests first
 echo "🧪 Running macOS unit tests..."
 # Note: do NOT use -quiet here so that any failures print detailed diagnostics
-if ! xcodebuild test -project SixLayerFramework.xcodeproj -scheme SixLayerFramework-UnitTestsOnly-macOS -quiet -destination "platform=macOS,arch=arm64"; then
+if ! xcodebuild test -project SixLayerFramework.xcodeproj -scheme SLF-macOS-UnitTests -quiet -destination "platform=macOS,arch=arm64"; then
     log_error "macOS unit tests failed! Cannot proceed with release."
     exit 1
 fi
@@ -209,7 +209,7 @@ else
     echo "⚠️  xcrun not available; attempting to run iOS tests without explicit simulator boot"
 fi
 
-if ! xcodebuild test -project SixLayerFramework.xcodeproj -scheme SixLayerFramework-UnitTestsOnly-iOS -quiet -destination "platform=iOS Simulator,name=iPhone 17 Pro Max"; then
+if ! xcodebuild test -project SixLayerFramework.xcodeproj -scheme SLF-iOS-UnitTests -quiet -destination "platform=iOS Simulator,name=iPhone 17 Pro Max"; then
     log_error "iOS unit tests failed! Cannot proceed with release."
     exit 1
 fi
@@ -438,6 +438,7 @@ if [ -f "$RELEASE_FILE" ]; then
         echo "🔍 Validating that all closed milestone issues are documented in release notes..."
         
         MISSING_CLOSED_ISSUES=""
+        ISSUES_WITH_INSUFFICIENT_DETAIL=""
         
         for ISSUE_NUM in $CLOSED_ISSUES; do
             # Check if issue is referenced in release notes (multiple patterns)
@@ -446,6 +447,59 @@ if [ -f "$RELEASE_FILE" ]; then
                     MISSING_CLOSED_ISSUES="$ISSUE_NUM"
                 else
                     MISSING_CLOSED_ISSUES="$MISSING_CLOSED_ISSUES $ISSUE_NUM"
+                fi
+            else
+                # Issue is referenced - check if it has sufficient detail based on issue type
+                # Extract the section containing this issue reference
+                ISSUE_SECTION=$(grep -A 10 -B 2 "#$ISSUE_NUM\b\|Issue #$ISSUE_NUM\b\|issues/$ISSUE_NUM\b" "$RELEASE_FILE" | head -15)
+                
+                # Determine if this issue requires detailed documentation
+                REQUIRES_DETAIL=false
+                ISSUE_LABELS=""
+                
+                if command -v gh &> /dev/null; then
+                    ISSUE_LABELS=$(gh issue view "$ISSUE_NUM" --json labels --jq '.labels[].name' 2>/dev/null | tr '\n' ' ' || echo "")
+                    
+                    # Issues that require detailed documentation:
+                    # - Breaking changes
+                    # - Major features
+                    # - Security fixes
+                    # - Performance improvements
+                    # - API changes
+                    if echo "$ISSUE_LABELS" | grep -qiE "breaking|major|feature|enhancement|security|performance|api"; then
+                        REQUIRES_DETAIL=true
+                    fi
+                fi
+                
+                # Check if the section is just a one-liner with issue number and title
+                # Count lines in the issue section (excluding blank lines and headers)
+                NON_BLANK_LINES=$(echo "$ISSUE_SECTION" | grep -v '^[[:space:]]*$' | grep -v '^#' | grep -v '^⚠️' | wc -l | tr -d ' ')
+                
+                # Count words in the issue section (excluding headers)
+                ISSUE_WORDS=$(echo "$ISSUE_SECTION" | grep -v '^#' | grep -v '^⚠️' | wc -w | tr -d ' ')
+                
+                # Check if it looks like just "Issue #123 - Title" (one-liner)
+                # Pattern: Issue #123 followed by dash and title, with minimal other content
+                IS_ONE_LINER=false
+                if echo "$ISSUE_SECTION" | grep -qE "#$ISSUE_NUM\b.*[-–—].*[A-Z]" && [ "$NON_BLANK_LINES" -le 2 ] && [ "$ISSUE_WORDS" -lt 20 ]; then
+                    IS_ONE_LINER=true
+                fi
+                
+                # Flag issues that need detail but don't have it
+                if [ "$REQUIRES_DETAIL" = true ] && [ "$IS_ONE_LINER" = true ]; then
+                    if [ -z "$ISSUES_WITH_INSUFFICIENT_DETAIL" ]; then
+                        ISSUES_WITH_INSUFFICIENT_DETAIL="$ISSUE_NUM"
+                    else
+                        ISSUES_WITH_INSUFFICIENT_DETAIL="$ISSUES_WITH_INSUFFICIENT_DETAIL $ISSUE_NUM"
+                    fi
+                elif [ "$IS_ONE_LINER" = true ] && [ "$NON_BLANK_LINES" -lt 2 ]; then
+                    # Even minor issues should have at least a brief explanation, not just "Issue #123 - Title"
+                    # But we'll only warn, not error, for non-significant issues
+                    if [ -z "$ISSUES_WITH_INSUFFICIENT_DETAIL" ]; then
+                        ISSUES_WITH_INSUFFICIENT_DETAIL="$ISSUE_NUM"
+                    else
+                        ISSUES_WITH_INSUFFICIENT_DETAIL="$ISSUES_WITH_INSUFFICIENT_DETAIL $ISSUE_NUM"
+                    fi
                 fi
             fi
         done
@@ -457,6 +511,83 @@ if [ -f "$RELEASE_FILE" ]; then
             echo "💡 View milestone: https://github.com/schatt/6layer/milestone/$MILESTONE_NUMBER"
         else
             echo "✅ All $CLOSED_COUNT closed issue(s) from milestone $MILESTONE_TITLE are documented in release notes"
+        fi
+        
+        # Check for issues with insufficient detail
+        if [ -n "$ISSUES_WITH_INSUFFICIENT_DETAIL" ]; then
+            echo ""
+            echo "⚠️  Warning: The following issues are referenced but may lack sufficient detail:"
+            for ISSUE_NUM in $ISSUES_WITH_INSUFFICIENT_DETAIL; do
+                echo "  - Issue #$ISSUE_NUM"
+                if command -v gh &> /dev/null; then
+                    ISSUE_TITLE=$(gh issue view "$ISSUE_NUM" --json title --jq '.title' 2>/dev/null || echo "")
+                    ISSUE_BODY=$(gh issue view "$ISSUE_NUM" --json body --jq '.body' 2>/dev/null | head -c 200 || echo "")
+                    ISSUE_LABELS=$(gh issue view "$ISSUE_NUM" --json labels --jq '.labels[].name' 2>/dev/null | tr '\n' ',' | sed 's/,$//' || echo "")
+                    echo "    Title: $ISSUE_TITLE"
+                    if [ -n "$ISSUE_LABELS" ] && [ "$ISSUE_LABELS" != "null" ]; then
+                        echo "    Labels: $ISSUE_LABELS"
+                    fi
+                    if [ -n "$ISSUE_BODY" ] && [ "$ISSUE_BODY" != "null" ]; then
+                        echo "    Description: ${ISSUE_BODY}..."
+                    fi
+                    echo "    View: https://github.com/schatt/6layer/issues/$ISSUE_NUM"
+                    
+                    # Check if this is a significant issue that requires more detail
+                    if echo "$ISSUE_LABELS" | grep -qiE "breaking|major|feature|enhancement|security|performance|api"; then
+                        echo "    ⚠️  This is a significant issue and requires detailed documentation"
+                    fi
+                fi
+            done
+            echo ""
+            echo "💡 Release notes should include:"
+            echo "   - Summary of what was changed/improved (not just issue number and title)"
+            echo "   - For significant issues (features, breaking changes, major bugs):"
+            echo "     * Technical details about the implementation"
+            echo "     * Migration guide if there are breaking changes"
+            echo "     * Context about what the change means for users"
+            echo "   - For minor issues: Brief explanation is sufficient"
+            echo ""
+            echo "💡 Example of good release note entry (significant feature):"
+            echo "   ## 🆕 New Feature"
+            echo "   "
+            echo "   ### Configurable Photo Sources (Issue #145)"
+            echo "   "
+            echo "   Added configurable photo source options to FieldActionOCRScanner, allowing"
+            echo "   developers to choose whether to offer camera, photo library, or both options."
+            echo "   The implementation includes automatic device capability detection and graceful"
+            echo "   fallbacks when camera hardware is unavailable."
+            echo ""
+            echo "💡 Example of acceptable release note entry (minor fix):"
+            echo "   ## 🐛 Bug Fixes"
+            echo "   "
+            echo "   - **Fixed typo in error message** (Issue #123): Corrected spelling error in"
+            echo "     validation error message displayed to users."
+            echo ""
+        fi
+        
+        # Extract and display issue details to help write better release notes
+        if command -v gh &> /dev/null && [ $CLOSED_COUNT -gt 0 ]; then
+            echo "📋 Issue details to help write comprehensive release notes:"
+            echo ""
+            for ISSUE_NUM in $CLOSED_ISSUES; do
+                ISSUE_DATA=$(gh issue view "$ISSUE_NUM" --json number,title,body,labels,state 2>/dev/null || echo "")
+                if [ -n "$ISSUE_DATA" ] && [ "$ISSUE_DATA" != "null" ]; then
+                    ISSUE_TITLE=$(echo "$ISSUE_DATA" | jq -r '.title' 2>/dev/null || echo "")
+                    ISSUE_BODY=$(echo "$ISSUE_DATA" | jq -r '.body' 2>/dev/null | head -c 300 || echo "")
+                    ISSUE_LABELS=$(echo "$ISSUE_DATA" | jq -r '.labels[].name' 2>/dev/null | tr '\n' ',' | sed 's/,$//' || echo "")
+                    
+                    echo "  Issue #$ISSUE_NUM: $ISSUE_TITLE"
+                    if [ -n "$ISSUE_LABELS" ] && [ "$ISSUE_LABELS" != "null" ]; then
+                        echo "    Labels: $ISSUE_LABELS"
+                    fi
+                    if [ -n "$ISSUE_BODY" ] && [ "$ISSUE_BODY" != "null" ] && [ "$ISSUE_BODY" != "" ]; then
+                        echo "    Description: ${ISSUE_BODY}..."
+                    fi
+                    echo "    URL: https://github.com/schatt/6layer/issues/$ISSUE_NUM"
+                    echo ""
+                fi
+            done
+            echo "💡 Use these details to write comprehensive release notes with summaries, not just issue numbers and titles"
         fi
     fi
     
@@ -478,6 +609,78 @@ if [ -f "$RELEASE_FILE" ]; then
             echo "💡 Release notes should only document completed (closed) issues"
             echo "💡 Either close these issues if they're done, or remove them from the release notes"
         fi
+    fi
+    
+    # Validate breaking changes are clearly marked
+    echo "🔍 Checking for breaking changes documentation..."
+    if grep -qiE "breaking|BREAKING" "$RELEASE_FILE"; then
+        # Check if breaking changes section exists and has content
+        if grep -qiE "##.*[Bb]reaking|###.*[Bb]reaking|⚠️.*[Bb]reaking" "$RELEASE_FILE"; then
+            # Check if breaking changes section has more than just a header
+            BREAKING_SECTION=$(grep -A 20 -iE "##.*[Bb]reaking|###.*[Bb]reaking|⚠️.*[Bb]reaking" "$RELEASE_FILE" | head -25)
+            BREAKING_CONTENT_LINES=$(echo "$BREAKING_SECTION" | grep -v '^[[:space:]]*$' | grep -v '^#' | grep -v '^⚠️' | wc -l | tr -d ' ')
+            
+            if [ "$BREAKING_CONTENT_LINES" -lt 3 ]; then
+                echo "⚠️  Warning: Breaking changes section found but may lack sufficient detail"
+                echo "💡 Breaking changes should include:"
+                echo "   - Clear explanation of what changed"
+                echo "   - Before/after code examples"
+                echo "   - Migration guide"
+                echo "   - Impact on users"
+            else
+                echo "✅ Breaking changes are documented with sufficient detail"
+            fi
+        else
+            echo "⚠️  Warning: Breaking changes mentioned but no dedicated section found"
+            echo "💡 Consider adding a '## ⚠️ Breaking Changes' section with detailed migration guide"
+        fi
+    else
+        # Check if any issues are labeled as breaking changes
+        if command -v gh &> /dev/null && [ -n "$CLOSED_ISSUES" ] && [ $CLOSED_COUNT -gt 0 ]; then
+            BREAKING_ISSUES=""
+            for ISSUE_NUM in $CLOSED_ISSUES; do
+                ISSUE_LABELS=$(gh issue view "$ISSUE_NUM" --json labels --jq '.labels[].name' 2>/dev/null | tr '\n' ' ' || echo "")
+                if echo "$ISSUE_LABELS" | grep -qiE "breaking|major"; then
+                    if [ -z "$BREAKING_ISSUES" ]; then
+                        BREAKING_ISSUES="$ISSUE_NUM"
+                    else
+                        BREAKING_ISSUES="$BREAKING_ISSUES $ISSUE_NUM"
+                    fi
+                fi
+            done
+            
+            if [ -n "$BREAKING_ISSUES" ]; then
+                log_error "Issues labeled as breaking changes are not clearly marked in release notes: $BREAKING_ISSUES"
+                echo "💡 Add a '## ⚠️ Breaking Changes' section with detailed migration guide"
+            fi
+        fi
+    fi
+    
+    # Validate release notes have sufficient content (not just issue numbers and titles)
+    # This is a softer check - we account for that some issues need less detail
+    echo "🔍 Validating release notes have sufficient content..."
+    RELEASE_FILE_LINES=$(wc -l < "$RELEASE_FILE" | tr -d ' ')
+    RELEASE_FILE_WORDS=$(wc -w < "$RELEASE_FILE" | tr -d ' ')
+    
+    # Count issue references
+    ISSUE_REF_COUNT=$(grep -oE "#[0-9]+|Issue #[0-9]+" "$RELEASE_FILE" | wc -l | tr -d ' ')
+    
+    # Calculate expected word count based on issue types
+    # Significant issues (features, breaking changes) need ~100 words
+    # Minor issues (bug fixes, patches) need ~20 words
+    # We'll use a conservative average of ~30 words per issue as minimum
+    MIN_EXPECTED_WORDS=$((ISSUE_REF_COUNT * 30))
+    
+    # If there are many issue references but few words, it might be just issue numbers and titles
+    # But we're more lenient - this is just a warning, not an error
+    if [ "$ISSUE_REF_COUNT" -gt 0 ] && [ "$RELEASE_FILE_WORDS" -lt "$MIN_EXPECTED_WORDS" ]; then
+        echo "⚠️  Warning: Release notes may lack sufficient detail"
+        echo "   Found $ISSUE_REF_COUNT issue reference(s) but only $RELEASE_FILE_WORDS words"
+        echo "   Expected at least ~$MIN_EXPECTED_WORDS words (average ~30 words per issue)"
+        echo "💡 Note: Significant issues (features, breaking changes) need more detail"
+        echo "💡 Minor issues (bug fixes) can be shorter, but should still explain what was fixed"
+    else
+        echo "✅ Release notes appear to have sufficient content"
     fi
 fi
 

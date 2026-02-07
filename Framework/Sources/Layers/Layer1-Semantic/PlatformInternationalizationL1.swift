@@ -65,7 +65,8 @@ public func platformPresentLocalizedNumber_L1(
     
     return AnyView(Text(formatted)
         .environment(\.locale, hints.locale)
-        .environmentObject(i18n))
+        .environmentObject(i18n)
+        .automaticCompliance(named: "platformPresentLocalizedNumber_L1"))
 }
 
 /// Present localized currency with proper formatting
@@ -82,7 +83,8 @@ public func platformPresentLocalizedCurrency_L1(
     
     return AnyView(Text(formatted)
         .environment(\.locale, hints.locale)
-        .environmentObject(i18n))
+        .environmentObject(i18n)
+        .automaticCompliance(named: "platformPresentLocalizedCurrency_L1"))
 }
 
 /// Present localized date with proper formatting
@@ -99,7 +101,8 @@ public func platformPresentLocalizedDate_L1(
     
     return AnyView(Text(formatted)
         .environment(\.locale, hints.locale)
-        .environmentObject(i18n))
+        .environmentObject(i18n)
+        .automaticCompliance(named: "platformPresentLocalizedDate_L1"))
 }
 
 /// Present localized time with proper formatting
@@ -116,7 +119,8 @@ public func platformPresentLocalizedTime_L1(
     
     return AnyView(Text(formatted)
         .environment(\.locale, hints.locale)
-        .environmentObject(i18n))
+        .environmentObject(i18n)
+        .automaticCompliance(named: "platformPresentLocalizedTime_L1"))
 }
 
 /// Present localized percentage with proper formatting
@@ -133,7 +137,8 @@ public func platformPresentLocalizedPercentage_L1(
     
     return AnyView(Text(formatted)
         .environment(\.locale, hints.locale)
-        .environmentObject(i18n))
+        .environmentObject(i18n)
+        .automaticCompliance(named: "platformPresentLocalizedPercentage_L1"))
 }
 
 /// Present localized pluralized text
@@ -152,7 +157,8 @@ public func platformPresentLocalizedPlural_L1(
     
     return AnyView(Text(pluralized)
         .environment(\.locale, hints.locale)
-        .environmentObject(i18n))
+        .environmentObject(i18n)
+        .automaticCompliance(named: "platformPresentLocalizedPlural_L1"))
 }
 
 /// Present localized string with arguments
@@ -171,7 +177,8 @@ public func platformPresentLocalizedString_L1(
     
     return AnyView(Text(localized)
         .environment(\.locale, hints.locale)
-        .environmentObject(i18n))
+        .environmentObject(i18n)
+        .automaticCompliance(named: "platformPresentLocalizedString_L1"))
 }
 
 // MARK: - Internationalization Hints
@@ -222,7 +229,8 @@ public func platformRTLContainer_L1<Content: View>(
     return AnyView(content
         .environment(\.layoutDirection, layoutDirection)
         .environment(\.locale, hints.locale)
-        .environmentObject(i18n))
+        .environmentObject(i18n)
+        .automaticCompliance(named: "platformRTLContainer_L1"))
 }
 
 /// RTL-aware HStack that automatically adjusts alignment
@@ -244,7 +252,8 @@ public func platformRTLHStack_L1<Content: View>(
     return AnyView(platformHStackContainer(alignment: alignment, spacing: spacing, content: content)
         .environment(\.layoutDirection, layoutDirection)
         .environment(\.locale, hints.locale)
-        .environmentObject(i18n))
+        .environmentObject(i18n)
+        .automaticCompliance(named: "platformRTLHStack_L1"))
 }
 
 /// RTL-aware VStack that automatically adjusts alignment
@@ -266,7 +275,8 @@ public func platformRTLVStack_L1<Content: View>(
     return AnyView(platformVStackContainer(alignment: alignment, spacing: spacing, content: content)
         .environment(\.layoutDirection, layoutDirection)
         .environment(\.locale, hints.locale)
-        .environmentObject(i18n))
+        .environmentObject(i18n)
+        .automaticCompliance(named: "platformRTLVStack_L1"))
 }
 
 /// RTL-aware ZStack that automatically adjusts alignment
@@ -286,7 +296,8 @@ public func platformRTLZStack_L1<Content: View>(
     return AnyView(platformZStackContainer(alignment: alignment, content: content)
         .environment(\.layoutDirection, layoutDirection)
         .environment(\.locale, hints.locale)
-        .environmentObject(i18n))
+        .environmentObject(i18n)
+        .automaticCompliance(named: "platformRTLZStack_L1"))
 }
 
 // MARK: - Localized Form Fields
@@ -296,11 +307,13 @@ public func platformRTLZStack_L1<Content: View>(
 ///   - title: The field title
 ///   - text: Binding to the text value
 ///   - hints: Internationalization hints
+///   - accessibilityLabel: Optional accessibility label for VoiceOver (if nil, uses title)
 /// - Returns: SwiftUI view with localized text field
 public func platformLocalizedTextField_L1(
     title: String,
     text: Binding<String>,
-    hints: InternationalizationHints = InternationalizationHints()
+    hints: InternationalizationHints = InternationalizationHints(),
+    accessibilityLabel: String? = nil
 ) -> AnyView {
     let i18n = InternationalizationService(locale: hints.locale)
     let layoutDirection = i18n.getLayoutDirection()
@@ -308,7 +321,11 @@ public func platformLocalizedTextField_L1(
     return AnyView(TextField(title, text: text)
         .environment(\.layoutDirection, layoutDirection)
         .environment(\.locale, hints.locale)
-        .environmentObject(i18n))
+        .environmentObject(i18n)
+        .automaticCompliance(
+            named: "platformLocalizedTextField_L1",
+            accessibilityLabel: accessibilityLabel
+        ))
 }
 
 /// RTL-aware secure field with proper localization
@@ -316,11 +333,13 @@ public func platformLocalizedTextField_L1(
 ///   - title: The field title
 ///   - text: Binding to the text value
 ///   - hints: Internationalization hints
+///   - accessibilityLabel: Optional accessibility label for VoiceOver (if nil, uses title)
 /// - Returns: SwiftUI view with localized secure field
 public func platformLocalizedSecureField_L1(
     title: String,
     text: Binding<String>,
-    hints: InternationalizationHints = InternationalizationHints()
+    hints: InternationalizationHints = InternationalizationHints(),
+    accessibilityLabel: String? = nil
 ) -> AnyView {
     let i18n = InternationalizationService(locale: hints.locale)
     let layoutDirection = i18n.getLayoutDirection()
@@ -328,7 +347,11 @@ public func platformLocalizedSecureField_L1(
     return AnyView(SecureField(title, text: text)
         .environment(\.layoutDirection, layoutDirection)
         .environment(\.locale, hints.locale)
-        .environmentObject(i18n))
+        .environmentObject(i18n)
+        .automaticCompliance(
+            named: "platformLocalizedSecureField_L1",
+            accessibilityLabel: accessibilityLabel
+        ))
 }
 
 /// RTL-aware text editor with proper localization
@@ -336,11 +359,13 @@ public func platformLocalizedSecureField_L1(
 ///   - title: The editor title
 ///   - text: Binding to the text value
 ///   - hints: Internationalization hints
+///   - accessibilityLabel: Optional accessibility label for VoiceOver
 /// - Returns: SwiftUI view with localized text editor
 public func platformLocalizedTextEditor_L1(
     title: String,
     text: Binding<String>,
-    hints: InternationalizationHints = InternationalizationHints()
+    hints: InternationalizationHints = InternationalizationHints(),
+    accessibilityLabel: String? = nil
 ) -> some View {
     let i18n = InternationalizationService(locale: hints.locale)
     let layoutDirection = i18n.getLayoutDirection()
@@ -349,4 +374,8 @@ public func platformLocalizedTextEditor_L1(
         .environment(\.layoutDirection, layoutDirection)
         .environment(\.locale, hints.locale)
         .environmentObject(i18n)
+        .automaticCompliance(
+            named: "platformLocalizedTextEditor_L1",
+            accessibilityLabel: accessibilityLabel
+        )
 }

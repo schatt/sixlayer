@@ -11,23 +11,6 @@ import CoreData
 import CloudKit
 @testable import SixLayerFramework
 
-// MARK: - Mock Persistent Container
-
-@MainActor
-class MockPersistentContainer: NSPersistentContainer, @unchecked Sendable {
-    // Test state properties - nonisolated to allow access from nonisolated override
-    nonisolated(unsafe) var loadPersistentStoresCalled = false
-    nonisolated(unsafe) var loadPersistentStoresError: Error?
-    nonisolated(unsafe) var loadPersistentStoresResult: NSPersistentStoreDescription?
-    
-    override func loadPersistentStores(completionHandler block: @escaping (NSPersistentStoreDescription, Error?) -> Void) {
-        loadPersistentStoresCalled = true
-        if let description = persistentStoreDescriptions.first {
-            block(description, loadPersistentStoresError)
-        }
-    }
-}
-
 // MARK: - Core Data Integration Tests
 
 @Suite("CloudKit Service Core Data Integration")
@@ -60,7 +43,7 @@ final class CloudKitServiceCoreDataTests {
     // MARK: - syncWithCoreData Tests
     
     @Test func testSyncWithCoreDataBasicUsage() async throws {
-        let delegate = MockCloudKitDelegate()
+        let delegate = TestCloudKitDelegate()
         let service = CloudKitService(delegate: delegate)
         let context = createTestManagedObjectContext()
         
@@ -71,7 +54,7 @@ final class CloudKitServiceCoreDataTests {
     }
     
     @Test func testSyncWithCoreDataThreadSafety() async throws {
-        let delegate = MockCloudKitDelegate()
+        let delegate = TestCloudKitDelegate()
         let service = CloudKitService(delegate: delegate)
         let context = createTestManagedObjectContext()
         
@@ -85,7 +68,7 @@ final class CloudKitServiceCoreDataTests {
     }
     
     @Test func testSyncWithCoreDataWithBackgroundContext() async throws {
-        let delegate = MockCloudKitDelegate()
+        let delegate = TestCloudKitDelegate()
         let service = CloudKitService(delegate: delegate)
         
         // Create background context
@@ -109,7 +92,7 @@ final class CloudKitServiceCoreDataTests {
     }
     
     @Test func testSyncWithCoreDataErrorHandling() async throws {
-        let delegate = MockCloudKitDelegate()
+        let delegate = TestCloudKitDelegate()
         let service = CloudKitService(delegate: delegate)
         let context = createTestManagedObjectContext()
         
@@ -131,7 +114,7 @@ final class CloudKitServiceCoreDataTests {
     // MARK: - Platform-Specific Workarounds Tests
     
     @Test func testSyncWithCoreDataPlatformDetection() async throws {
-        let delegate = MockCloudKitDelegate()
+        let delegate = TestCloudKitDelegate()
         let service = CloudKitService(delegate: delegate)
         let context = createTestManagedObjectContext()
         
@@ -152,29 +135,22 @@ final class CloudKitServiceCoreDataTests {
     // MARK: - Integration with CloudKitService Tests
     
     @Test func testSyncWithCoreDataUsesCloudKitServiceDelegate() async throws {
-        _ = false  // delegateCalled - intentionally unused
-        _ = MockCloudKitDelegate()
-        
-        // Create a custom delegate that tracks calls
-        class TrackingDelegate: MockCloudKitDelegate {
-            var syncCalled = false
-        }
-        
-        let trackingDelegate = TrackingDelegate()
-        let service = CloudKitService(delegate: trackingDelegate)
+        // Create a test delegate
+        let delegate = TestCloudKitDelegate()
+        let service = CloudKitService(delegate: delegate)
         let context = createTestManagedObjectContext()
         
         // Sync should use the service's delegate
         try await service.syncWithCoreData(context: context)
         
         // Verify delegate is accessible (indirectly through service)
-        #expect(service.delegate === trackingDelegate)
+        #expect(service.delegate === delegate)
     }
     
     // MARK: - Context Management Tests
     
     @Test func testSyncWithCoreDataPreservesContextState() async throws {
-        let delegate = MockCloudKitDelegate()
+        let delegate = TestCloudKitDelegate()
         let service = CloudKitService(delegate: delegate)
         let context = createTestManagedObjectContext()
         
@@ -189,7 +165,7 @@ final class CloudKitServiceCoreDataTests {
     }
     
     @Test func testSyncWithCoreDataMultipleCalls() async throws {
-        let delegate = MockCloudKitDelegate()
+        let delegate = TestCloudKitDelegate()
         let service = CloudKitService(delegate: delegate)
         let context = createTestManagedObjectContext()
         

@@ -125,8 +125,7 @@ public func platformPresentItemCollection_L1<Item: Identifiable>(
         onItemDeleted: onItemDeleted,
         onItemEdited: onItemEdited
     )
-    .environment(\.accessibilityIdentifierName, "platformPresentItemCollection_L1")
-    .automaticCompliance()
+    .automaticCompliance(identifierName: "platformPresentItemCollection_L1")
 }
 
 /// Generic function for presenting numeric data
@@ -164,7 +163,7 @@ public func platformPresentNumericData_L1(
     return CustomNumericDataView(
         data: data,
         hints: hints,
-        customDataView: { AnyView(customDataView($0)) }
+        customDataView: customDataView
     )
     .environment(\.accessibilityIdentifierName, "platformPresentNumericData_L1")
     .automaticCompliance()
@@ -194,7 +193,7 @@ public func platformPresentNumericData_L1(
     return CustomNumericDataView(
         data: data,
         hints: processedHints,
-        customDataView: { AnyView(customDataView($0)) }
+        customDataView: customDataView
     )
     .environment(\.extensibleHints, hints.extensibleHints)
     .environment(\.accessibilityIdentifierName, "platformPresentNumericData_L1")
@@ -216,6 +215,7 @@ public func platformResponsiveCard_L1<Content: View>(
         color: .blue,
         complexity: hints.complexity
     ))
+    .automaticCompliance(named: "platformResponsiveCard_L1")
 }
 
 /// Generic function for presenting form data using our intelligent form system
@@ -269,21 +269,36 @@ public func platformPresentFormData_L1(
 @MainActor
 public func platformPresentModalForm_L1(
     formType: DataTypeHint,
-    context: PresentationContext
+    context: PresentationContext,
+    hints: PresentationHints? = nil
 ) -> some View {
-    // Create presentation hints for modal context
-    let hints = PresentationHints(
-        dataType: formType,
-        presentationPreference: .modal,
-        complexity: .moderate,
-        context: context
-    )
+    // Merge provided hints with modal-specific requirements
+    // Always enforce modal presentation preference
+    let mergedHints: PresentationHints
+    if let providedHints = hints {
+        mergedHints = PresentationHints(
+            dataType: providedHints.dataType,
+            presentationPreference: .modal, // Always modal for this function
+            complexity: providedHints.complexity,
+            context: providedHints.context,
+            customPreferences: providedHints.customPreferences,
+            fieldHints: providedHints.fieldHints
+        )
+    } else {
+        // Create default presentation hints for modal context
+        mergedHints = PresentationHints(
+            dataType: formType,
+            presentationPreference: .modal,
+            complexity: .moderate,
+            context: context
+        )
+    }
     
     // Create appropriate form fields based on the form type
     let fields = createFieldsForFormType(formType, context: context)
     
     // Return a modal form with the generated fields
-    return ModalFormView(fields: fields, formType: formType, context: context, hints: hints)
+    return ModalFormView(fields: fields, formType: formType, context: context, hints: mergedHints)
         .automaticCompliance()
 }
 
@@ -293,6 +308,7 @@ public func platformPresentModalForm_L1(
 /// - Parameters:
 ///   - formType: The type of form to present
 ///   - context: The presentation context
+///   - hints: Optional presentation hints (defaults to moderate complexity modal hints)
 ///   - customFormContainer: Optional view builder that wraps the form content with custom styling
 /// - Returns: A view presenting the modal form with optional custom container
 /// Note: Requires @MainActor because it creates a View struct
@@ -300,22 +316,37 @@ public func platformPresentModalForm_L1(
 public func platformPresentModalForm_L1<ContainerContent: View>(
     formType: DataTypeHint,
     context: PresentationContext,
+    hints: PresentationHints? = nil,
     customFormContainer: ((AnyView) -> ContainerContent)? = nil
 ) -> some View {
-    // Create presentation hints for modal context
-    let hints = PresentationHints(
-        dataType: formType,
-        presentationPreference: .modal,
-        complexity: .moderate,
-        context: context
-    )
+    // Merge provided hints with modal-specific requirements
+    // Always enforce modal presentation preference
+    let mergedHints: PresentationHints
+    if let providedHints = hints {
+        mergedHints = PresentationHints(
+            dataType: providedHints.dataType,
+            presentationPreference: .modal, // Always modal for this function
+            complexity: providedHints.complexity,
+            context: providedHints.context,
+            customPreferences: providedHints.customPreferences,
+            fieldHints: providedHints.fieldHints
+        )
+    } else {
+        // Create default presentation hints for modal context
+        mergedHints = PresentationHints(
+            dataType: formType,
+            presentationPreference: .modal,
+            complexity: .moderate,
+            context: context
+        )
+    }
     
     // Create appropriate form fields based on the form type
     let fields = createFieldsForFormType(formType, context: context)
     
     // Create the base modal form view
     // Note: ModalFormView initializer is main-actor isolated because it's a View
-    let baseFormView = AnyView(ModalFormView(fields: fields, formType: formType, context: context, hints: hints)
+    let baseFormView = AnyView(ModalFormView(fields: fields, formType: formType, context: context, hints: mergedHints)
         .automaticCompliance())
     
     // Apply custom container if provided, otherwise return default
@@ -398,7 +429,7 @@ public func platformPresentMediaData_L1(
     return CustomMediaView(
         media: media,
         hints: hints,
-        customMediaView: { AnyView(customMediaView($0)) }
+        customMediaView: customMediaView
     )
     .environment(\.accessibilityIdentifierName, "platformPresentMediaData_L1")
     .automaticCompliance()
@@ -428,7 +459,7 @@ public func platformPresentMediaData_L1(
     return CustomMediaView(
         media: media,
         hints: processedHints,
-        customMediaView: { AnyView(customMediaView($0)) }
+        customMediaView: customMediaView
     )
     .environment(\.extensibleHints, hints.extensibleHints)
     .environment(\.accessibilityIdentifierName, "platformPresentMediaData_L1")
@@ -470,7 +501,7 @@ public func platformPresentHierarchicalData_L1(
     return CustomHierarchicalView(
         items: items,
         hints: hints,
-        customItemView: { AnyView(customItemView($0)) }
+        customItemView: customItemView
     )
     .environment(\.accessibilityIdentifierName, "platformPresentHierarchicalData_L1")
     .automaticCompliance()
@@ -500,7 +531,7 @@ public func platformPresentHierarchicalData_L1(
     return CustomHierarchicalView(
         items: items,
         hints: processedHints,
-        customItemView: { AnyView(customItemView($0)) }
+        customItemView: customItemView
     )
     .environment(\.extensibleHints, hints.extensibleHints)
     .environment(\.accessibilityIdentifierName, "platformPresentHierarchicalData_L1")
@@ -541,7 +572,7 @@ public func platformPresentTemporalData_L1(
     return CustomTemporalView(
         items: items,
         hints: hints,
-        customItemView: { AnyView(customItemView($0)) }
+        customItemView: customItemView
     )
     .environment(\.accessibilityIdentifierName, "platformPresentTemporalData_L1")
     .automaticCompliance()
@@ -572,8 +603,10 @@ public func platformPresentNavigationStack_L1<Content: View>(
         title: title,
         hints: hints
     )
-    .environment(\.accessibilityIdentifierName, "platformPresentNavigationStack_L1")
-    .automaticCompliance()
+    .environment(\.accessibilityIdentifierName, title ?? "platformPresentNavigationStack_L1")
+    .automaticCompliance(
+        identifierName: title != nil ? sanitizeLabelText(title!) : nil  // Auto-generate identifierName from title if provided
+    )
 }
 
 /// Layer 1 semantic function for presenting a collection of items in a navigation stack
@@ -596,8 +629,8 @@ public func platformPresentNavigationStack_L1<Item: Identifiable & Hashable, Ite
     return NavigationStackItemsWrapper(
         items: items,
         hints: hints,
-        itemView: { AnyView(itemView($0)) },
-        destination: { AnyView(destination($0)) }
+        itemView: itemView,
+        destination: destination
     )
     .environment(\.accessibilityIdentifierName, "platformPresentNavigationStack_L1")
     .automaticCompliance()
@@ -632,11 +665,11 @@ public func platformPresentAppNavigation_L1<SidebarContent: View, DetailContent:
     @ViewBuilder sidebar: @escaping () -> SidebarContent,
     @ViewBuilder detail: @escaping () -> DetailContent
 ) -> some View {
-    return AppNavigationWrapper<SidebarContent, DetailContent>(
+    return AppNavigationWrapper(
         columnVisibility: columnVisibility,
         showingNavigationSheet: showingNavigationSheet,
-        sidebar: { AnyView(sidebar()) },
-        detail: { AnyView(detail()) }
+        sidebar: sidebar,
+        detail: detail
     )
     .environment(\.accessibilityIdentifierName, "platformPresentAppNavigation_L1")
     .automaticCompliance()
@@ -644,11 +677,12 @@ public func platformPresentAppNavigation_L1<SidebarContent: View, DetailContent:
 
 /// Internal wrapper view for app navigation
 /// This view implements the full 6-layer flow: L1 -> L2 -> L3 -> L4
+/// Internal wrapper view for app navigation (no AnyView — Issue 178).
 private struct AppNavigationWrapper<SidebarContent: View, DetailContent: View>: View {
     let columnVisibility: Binding<NavigationSplitViewVisibility>?
     let showingNavigationSheet: Binding<Bool>?
-    let sidebar: () -> AnyView
-    let detail: () -> AnyView
+    let sidebar: () -> SidebarContent
+    let detail: () -> DetailContent
     
     var body: some View {
         // Get current device capabilities
@@ -684,8 +718,8 @@ private struct AppNavigationWrapper<SidebarContent: View, DetailContent: View>: 
                 columnVisibility: columnVisibility,
                 showingNavigationSheet: showingNavigationSheet,
                 strategy: l3Strategy,
-                sidebar: { sidebar() },
-                detail: { detail() }
+                sidebar: sidebar,
+                detail: detail
             )
     }
 }
@@ -713,7 +747,7 @@ public func platformPresentTemporalData_L1(
     return CustomTemporalView(
         items: items,
         hints: processedHints,
-        customItemView: { AnyView(customItemView($0)) }
+        customItemView: customItemView
     )
     .environment(\.extensibleHints, hints.extensibleHints)
     .environment(\.accessibilityIdentifierName, "platformPresentTemporalData_L1")
@@ -745,32 +779,32 @@ public func platformPresentContent_L1(
             .automaticCompliance()
 }
 
-/// Present basic numeric values (Int, Float, Double, Bool) with appropriate formatting
+/// Present basic numeric values (Int, Float, Double, Bool) with appropriate formatting (no AnyView — Issue 178).
 @MainActor
 public func platformPresentBasicValue_L1(
     value: Any,
     hints: PresentationHints
-) -> AnyView {
-    return AnyView(BasicValueView(value: value, hints: hints)
+) -> some View {
+    BasicValueView(value: value, hints: hints)
         .environment(\.accessibilityIdentifierName, "platformPresentBasicValue_L1")
         .automaticAccessibility()
         .platformPatterns()
         .visualConsistency()
-        .automaticCompliance())
+        .automaticCompliance()
 }
 
-/// Present basic arrays with appropriate formatting
+/// Present basic arrays with appropriate formatting (no AnyView — Issue 178).
 @MainActor
 public func platformPresentBasicArray_L1(
     array: Any,
     hints: PresentationHints
-) -> AnyView {
-    return AnyView(BasicArrayView(array: array, hints: hints)
+) -> some View {
+    BasicArrayView(array: array, hints: hints)
         .environment(\.accessibilityIdentifierName, "platformPresentBasicArray_L1")
         .automaticAccessibility()
         .platformPatterns()
         .visualConsistency()
-        .automaticCompliance())
+        .automaticCompliance()
 }
 
 /// Generic function for presenting settings interface
@@ -813,7 +847,7 @@ public func platformPresentSettings_L1(
         onSettingChanged: onSettingChanged,
         onSettingsSaved: onSettingsSaved,
         onSettingsCancelled: onSettingsCancelled,
-        customSettingView: { AnyView(customSettingView($0)) }
+        customSettingView: customSettingView
     )
     .environment(\.accessibilityIdentifierName, "platformPresentSettings_L1")
     .automaticCompliance()
@@ -848,7 +882,7 @@ public func platformPresentSettings_L1(
         onSettingChanged: onSettingChanged,
         onSettingsSaved: onSettingsSaved,
         onSettingsCancelled: onSettingsCancelled,
-        customSettingView: { AnyView(customSettingView($0)) }
+        customSettingView: customSettingView
     )
     .environment(\.extensibleHints, hints.extensibleHints)
     .environment(\.accessibilityIdentifierName, "platformPresentSettings_L1")
@@ -928,14 +962,15 @@ public func platformPresentItemCollection_L1<Item: Identifiable>(
     onItemEdited: ((Item) -> Void)? = nil,
     @ViewBuilder customItemView: @escaping (Item) -> some View
 ) -> some View {
-    return AnyView(GenericItemCollectionView(
+    return CustomItemCollectionView(
         items: items,
         hints: hints,
         onCreateItem: onCreateItem,
         onItemSelected: onItemSelected,
         onItemDeleted: onItemDeleted,
-        onItemEdited: onItemEdited
-    ))
+        onItemEdited: onItemEdited,
+        customItemView: customItemView
+    )
     .environment(\.accessibilityIdentifierName, "platformPresentItemCollection_L1")
     .automaticCompliance()
 }
@@ -964,14 +999,15 @@ public func platformPresentItemCollection_L1<Item: Identifiable>(
     // Process extensible hints and merge custom data
     let processedHints = processExtensibleHints(hints, into: basicHints)
     
-    return AnyView(GenericItemCollectionView(
+    return CustomItemCollectionView(
         items: items,
         hints: processedHints,
         onCreateItem: onCreateItem,
         onItemSelected: onItemSelected,
         onItemDeleted: onItemDeleted,
-        onItemEdited: onItemEdited
-    ))
+        onItemEdited: onItemEdited,
+        customItemView: customItemView
+    )
     .environment(\.extensibleHints, hints.extensibleHints)
     .environment(\.accessibilityIdentifierName, "platformPresentItemCollection_L1")
     .automaticCompliance()
@@ -990,14 +1026,15 @@ public func platformPresentItemCollection_L1<Item: Identifiable>(
     customCreateView: (() -> some View)? = nil,
     customEditView: ((Item) -> some View)? = nil
 ) -> some View {
-    return AnyView(GenericItemCollectionView(
+    return CustomItemCollectionView(
         items: items,
         hints: hints,
         onCreateItem: onCreateItem,
         onItemSelected: onItemSelected,
         onItemDeleted: onItemDeleted,
-        onItemEdited: onItemEdited
-    ))
+        onItemEdited: onItemEdited,
+        customItemView: customItemView
+    )
     .environment(\.accessibilityIdentifierName, "platformPresentItemCollection_L1")
     .automaticCompliance()
 }
@@ -1249,6 +1286,10 @@ private func createSimpleFieldView(for field: DynamicFormField, hints: Presentat
                 TextField(field.placeholder ?? "Enter \(field.label)", text: .constant(field.defaultValue ?? ""))
                     .textFieldStyle(.roundedBorder)
                     .applyFieldHints(fieldHints)
+                    .automaticCompliance(
+                        identifierElementType: "TextField",
+                        accessibilityLabel: field.label  // Issue #156: Parameter-based approach
+                    )
                     #if canImport(UIKit)
                     .textContentType(textContentType.uiTextContentType)
                     #endif
@@ -1260,50 +1301,101 @@ private func createSimpleFieldView(for field: DynamicFormField, hints: Presentat
             case .number, .integer:
                 TextField(field.placeholder ?? "Enter \(field.label)", value: .constant(0), format: .number)
                     .textFieldStyle(.roundedBorder)
+                    .automaticCompliance(
+                        identifierElementType: "TextField",
+                        accessibilityLabel: field.label  // Issue #156: Parameter-based approach
+                    )
             case .stepper:
                 Stepper(field.label, value: .constant(0.0), in: 0...100, step: 1.0)
+                    .automaticCompliance(
+                        identifierName: sanitizeLabelText(field.label),  // Auto-generate identifierName from field label
+                        identifierElementType: "Stepper",
+                        accessibilityLabel: field.label  // Issue #156: Parameter-based approach
+                    )
             case .textarea, .richtext:
                 TextEditor(text: .constant(field.defaultValue ?? ""))
                     .frame(minHeight: 80)
                     .applyFieldHints(fieldHints)
+                    .automaticCompliance(
+                        identifierElementType: "TextEditor",
+                        accessibilityLabel: field.label  // Issue #156: Parameter-based approach
+                    )
                     .overlay(
                         RoundedRectangle(cornerRadius: 8)
                             .stroke(Color.gray.opacity(0.3), lineWidth: 1)
                     )
             case .toggle, .boolean:
                 Toggle(field.label, isOn: .constant(false))
+                    .automaticCompliance(
+                        identifierName: sanitizeLabelText(field.label),  // Auto-generate identifierName from field label
+                        identifierElementType: "Toggle",
+                        accessibilityLabel: field.label  // Issue #156: Parameter-based approach
+                    )
             case .select:
-                let i18n = InternationalizationService()
-                Picker(field.placeholder ?? i18n.placeholderSelectOption(), selection: .constant("")) {
-                    Text(i18n.placeholderSelectOption()).tag("")
-                    if let options = field.options {
-                        ForEach(options, id: \.self) { option in
-                            Text(option).tag(option)
-                        }
-                    }
+                // Use platformPicker helper to automatically apply accessibility (Issue #163)
+                if let options = field.options, !options.isEmpty {
+                    platformPicker(
+                        label: field.label,
+                        selection: .constant(""),
+                        options: options,
+                        pickerName: "Layer1SelectField",
+                        style: MenuPickerStyle()
+                    )
+                    .automaticCompliance(
+                        identifierElementType: "Picker",
+                        accessibilityLabel: field.label  // Issue #156: Parameter-based approach
+                    )
+                } else {
+                    let i18n = InternationalizationService()
+                    Text(field.placeholder ?? i18n.placeholderSelectOption())
+                        .foregroundColor(.secondary)
                 }
-                .pickerStyle(.menu)
             case .date:
                 let i18n = InternationalizationService()
                 DatePicker("", selection: .constant(Date()))
                     .datePickerStyle(.compact)
                     .selfLabelingControl(label: field.placeholder ?? i18n.placeholderSelectDate())
+                    .automaticCompliance(
+                        identifierName: sanitizeLabelText(field.label),  // Auto-generate identifierName from field label
+                        identifierElementType: "DatePicker",
+                        accessibilityLabel: field.label  // Issue #156: Parameter-based approach
+                    )
             case .multiDate, .dateRange:
                 // Use DatePicker as fallback for Layer1 (MultiDatePicker requires iOS 16+)
                 let i18n = InternationalizationService()
                 DatePicker("", selection: .constant(Date()))
                     .datePickerStyle(.compact)
                     .selfLabelingControl(label: field.placeholder ?? i18n.placeholderSelectDates())
+                    .automaticCompliance(
+                        identifierName: sanitizeLabelText(field.label),  // Auto-generate identifierName from field label
+                        identifierElementType: "DatePicker",
+                        accessibilityLabel: field.label  // Issue #156: Parameter-based approach
+                    )
             case .time:
                 let i18n = InternationalizationService()
                 DatePicker("", selection: .constant(Date()), displayedComponents: .hourAndMinute)
                     .datePickerStyle(.compact)
                     .selfLabelingControl(label: field.placeholder ?? i18n.placeholderSelectTime())
+                    .automaticCompliance(
+                        identifierName: sanitizeLabelText(field.label),  // Auto-generate identifierName from field label
+                        identifierElementType: "DatePicker",
+                        accessibilityLabel: field.label  // Issue #156: Parameter-based approach
+                    )
             case .color:
                 ColorPicker("", selection: .constant(.blue))
                     .selfLabelingControl(label: field.label)
+                    .automaticCompliance(
+                        identifierName: sanitizeLabelText(field.label),  // Auto-generate identifierName from field label
+                        identifierElementType: "ColorPicker",
+                        accessibilityLabel: field.label  // Issue #156: Parameter-based approach
+                    )
             case .range:
                 Slider(value: .constant(0.5), in: 0...1)
+                    .automaticCompliance(
+                        identifierName: sanitizeLabelText(field.label),  // Auto-generate identifierName from field label
+                        identifierElementType: "Slider",
+                        accessibilityLabel: field.label  // Issue #156: Parameter-based approach
+                    )
             case .display:
                 // Display fields use LabeledContent or fallback HStack
                 if #available(iOS 16.0, macOS 13.0, *) {
@@ -1367,12 +1459,20 @@ private func createSimpleFieldView(for field: DynamicFormField, hints: Presentat
             case .multiselect, .radio, .checkbox, .file, .image, .datetime, .array, .data, .custom, .text, .email, .password, .phone, .url, .autocomplete, .enum:
                 TextField(field.placeholder ?? "Enter \(field.label)", text: .constant(field.defaultValue ?? ""))
                     .textFieldStyle(.roundedBorder)
+                    .automaticCompliance(
+                        identifierElementType: "TextField",
+                        accessibilityLabel: field.label  // Issue #156: Parameter-based approach
+                    )
             }
         }
         // Fallback for fields with neither textContentType nor contentType
         else {
             TextField(field.placeholder ?? "Enter \(field.label)", text: .constant(field.defaultValue ?? ""))
                 .textFieldStyle(.roundedBorder)
+                .automaticCompliance(
+                    identifierElementType: "TextField",
+                    accessibilityLabel: field.label  // Issue #156: Parameter-based approach
+                )
         }
     }
 }
@@ -1448,17 +1548,15 @@ public func platformPresentTemporalData_L1(
 
 // MARK: - Generic View Structures
 
-/// Custom item collection view that supports custom views for items and actions
-public struct CustomItemCollectionView<Item: Identifiable>: View {
+/// Custom item collection view that supports custom views for items and actions (no AnyView — Issue 178)
+public struct CustomItemCollectionView<Item: Identifiable, CustomView: View>: View {
     let items: [Item]
     let hints: PresentationHints
     let onCreateItem: (() -> Void)?
     let onItemSelected: ((Item) -> Void)?
     let onItemDeleted: ((Item) -> Void)?
     let onItemEdited: ((Item) -> Void)?
-    let customItemView: (Item) -> AnyView
-    let customCreateView: (() -> AnyView)?
-    let customEditView: ((Item) -> AnyView)?
+    let customItemView: (Item) -> CustomView
     
     public init(
         items: [Item],
@@ -1467,9 +1565,7 @@ public struct CustomItemCollectionView<Item: Identifiable>: View {
         onItemSelected: ((Item) -> Void)? = nil,
         onItemDeleted: ((Item) -> Void)? = nil,
         onItemEdited: ((Item) -> Void)? = nil,
-        @ViewBuilder customItemView: @escaping (Item) -> some View,
-        customCreateView: (() -> some View)? = nil,
-        customEditView: ((Item) -> some View)? = nil
+        @ViewBuilder customItemView: @escaping (Item) -> CustomView
     ) {
         self.items = items
         self.hints = hints
@@ -1477,53 +1573,47 @@ public struct CustomItemCollectionView<Item: Identifiable>: View {
         self.onItemSelected = onItemSelected
         self.onItemDeleted = onItemDeleted
         self.onItemEdited = onItemEdited
-        self.customItemView = { AnyView(customItemView($0)) }
-        // Note: Custom views temporarily disabled due to compilation issues
-        self.customCreateView = nil
-        self.customEditView = nil
+        self.customItemView = customItemView
     }
     
+    @ViewBuilder
     public var body: some View {
         if items.isEmpty {
-            return AnyView(CollectionEmptyStateView(
-                hints: hints, 
+            CollectionEmptyStateView(
+                hints: hints,
                 onCreateItem: onCreateItem,
-                customCreateView: customCreateView
-            ))
-        }
-        
-        // Use custom item views with intelligent layout
-        let presentationStrategy = determinePresentationStrategy()
-        
-        switch presentationStrategy {
-        case .grid:
-            return AnyView(CustomGridCollectionView(
-                items: items,
-                hints: hints,
-                customItemView: customItemView,
-                onItemSelected: onItemSelected,
-                onItemDeleted: onItemDeleted,
-                onItemEdited: onItemEdited
-            ))
-        case .list:
-            return AnyView(CustomListCollectionView(
-                items: items,
-                hints: hints,
-                customItemView: customItemView,
-                onItemSelected: onItemSelected,
-                onItemDeleted: onItemDeleted,
-                onItemEdited: onItemEdited
-            ))
-        default:
-            // Fall back to grid for custom views
-            return AnyView(CustomGridCollectionView(
-                items: items,
-                hints: hints,
-                customItemView: customItemView,
-                onItemSelected: onItemSelected,
-                onItemDeleted: onItemDeleted,
-                onItemEdited: onItemEdited
-            ))
+                customCreateView: nil
+            )
+        } else {
+            switch determinePresentationStrategy() {
+            case .grid:
+                CustomGridCollectionView(
+                    items: items,
+                    hints: hints,
+                    customItemView: customItemView,
+                    onItemSelected: onItemSelected,
+                    onItemDeleted: onItemDeleted,
+                    onItemEdited: onItemEdited
+                )
+            case .list:
+                CustomListCollectionView(
+                    items: items,
+                    hints: hints,
+                    customItemView: customItemView,
+                    onItemSelected: onItemSelected,
+                    onItemDeleted: onItemDeleted,
+                    onItemEdited: onItemEdited
+                )
+            default:
+                CustomGridCollectionView(
+                    items: items,
+                    hints: hints,
+                    customItemView: customItemView,
+                    onItemSelected: onItemSelected,
+                    onItemDeleted: onItemDeleted,
+                    onItemEdited: onItemEdited
+                )
+            }
         }
     }
     
@@ -1590,84 +1680,76 @@ public struct GenericItemCollectionView<Item: Identifiable>: View {
         self.onItemEdited = onItemEdited
     }
     
+    /// No AnyView — @ViewBuilder so ViewInspector tests can traverse (Issue 178).
+    @ViewBuilder
     public var body: some View {
-        // Handle empty collections with appropriate empty state
-        if items.isEmpty {
-            return AnyView(CollectionEmptyStateView(hints: hints, onCreateItem: onCreateItem)
-                .appleHIGCompliant()
-                .automaticAccessibility()
-                .automaticCompliance()
-                .platformPatterns()
-                .visualConsistency())
+        Group {
+            if items.isEmpty {
+                CollectionEmptyStateView(hints: hints, onCreateItem: onCreateItem)
+            } else {
+                switch determinePresentationStrategy() {
+                case .expandableCards:
+                    ExpandableCardCollectionView(
+                        items: items,
+                        hints: hints,
+                        onCreateItem: onCreateItem,
+                        onItemSelected: onItemSelected,
+                        onItemDeleted: onItemDeleted,
+                        onItemEdited: onItemEdited
+                    )
+                case .coverFlow:
+                    CoverFlowCollectionView(
+                        items: items,
+                        hints: hints,
+                        onCreateItem: onCreateItem,
+                        onItemSelected: onItemSelected,
+                        onItemDeleted: onItemDeleted,
+                        onItemEdited: onItemEdited
+                    )
+                case .grid:
+                    GridCollectionView(
+                        items: items,
+                        hints: hints,
+                        onCreateItem: onCreateItem,
+                        onItemSelected: onItemSelected,
+                        onItemDeleted: onItemDeleted,
+                        onItemEdited: onItemEdited
+                    )
+                case .list:
+                    ListCollectionView(
+                        items: items,
+                        hints: hints,
+                        onCreateItem: onCreateItem,
+                        onItemSelected: onItemSelected,
+                        onItemDeleted: onItemDeleted,
+                        onItemEdited: onItemEdited
+                    )
+                case .masonry:
+                    MasonryCollectionView(
+                        items: items,
+                        hints: hints,
+                        onCreateItem: onCreateItem,
+                        onItemSelected: onItemSelected,
+                        onItemDeleted: onItemDeleted,
+                        onItemEdited: onItemEdited
+                    )
+                case .adaptive:
+                    AdaptiveCollectionView(
+                        items: items,
+                        hints: hints,
+                        onCreateItem: onCreateItem,
+                        onItemSelected: onItemSelected,
+                        onItemDeleted: onItemDeleted,
+                        onItemEdited: onItemEdited
+                    )
+                }
+            }
         }
-        
-        // Layer 1: Intelligent presentation decision based on hints and platform
-        let presentationStrategy = determinePresentationStrategy()
-        
-        let baseView: AnyView = switch presentationStrategy {
-        case .expandableCards:
-            AnyView(ExpandableCardCollectionView(
-                items: items, 
-                hints: hints, 
-                onCreateItem: onCreateItem,
-                onItemSelected: onItemSelected,
-                onItemDeleted: onItemDeleted,
-                onItemEdited: onItemEdited
-            ))
-        case .coverFlow:
-            AnyView(CoverFlowCollectionView(
-                items: items, 
-                hints: hints, 
-                onCreateItem: onCreateItem,
-                onItemSelected: onItemSelected,
-                onItemDeleted: onItemDeleted,
-                onItemEdited: onItemEdited
-            ))
-        case .grid:
-            AnyView(GridCollectionView(
-                items: items, 
-                hints: hints, 
-                onCreateItem: onCreateItem,
-                onItemSelected: onItemSelected,
-                onItemDeleted: onItemDeleted,
-                onItemEdited: onItemEdited
-            ))
-        case .list:
-            AnyView(ListCollectionView(
-                items: items, 
-                hints: hints, 
-                onCreateItem: onCreateItem,
-                onItemSelected: onItemSelected,
-                onItemDeleted: onItemDeleted,
-                onItemEdited: onItemEdited
-            ))
-        case .masonry:
-            AnyView(MasonryCollectionView(
-                items: items, 
-                hints: hints, 
-                onCreateItem: onCreateItem,
-                onItemSelected: onItemSelected,
-                onItemDeleted: onItemDeleted,
-                onItemEdited: onItemEdited
-            ))
-        case .adaptive:
-            AnyView(AdaptiveCollectionView(
-                items: items, 
-                hints: hints, 
-                onCreateItem: onCreateItem,
-                onItemSelected: onItemSelected,
-                onItemDeleted: onItemDeleted,
-                onItemEdited: onItemEdited
-            ))
-        }
-        
-        // AUTOMATICALLY apply HIG compliance - this is the key fix!
-        return AnyView(baseView
-            .appleHIGCompliant()
-            .automaticAccessibility()
-            .automaticCompliance()
-            .platformPatterns()
-            .visualConsistency())
+        .appleHIGCompliant()
+        .automaticAccessibility()
+        .automaticCompliance()
+        .platformPatterns()
+        .visualConsistency()
     }
     
     /// Determine the optimal presentation strategy based on hints and platform
@@ -2267,14 +2349,20 @@ public struct GenericFormView: View {
                             case .toggle, .boolean:
                                 Toggle(field.label, isOn: .constant(false))
                             case .select:
-                                Picker(field.label, selection: .constant("")) {
-                                    if let options = field.options {
-                                        ForEach(options, id: \.self) { option in
-                                            Text(option).tag(option)
-                                        }
-                                    }
+                                // Use platformPicker helper to automatically apply accessibility (Issue #163)
+                                if let options = field.options, !options.isEmpty {
+                                    platformPicker(
+                                        label: field.label,
+                                        selection: .constant(""),
+                                        options: options,
+                                        pickerName: "GenericFormSelectField",
+                                        style: MenuPickerStyle()
+                                    )
+                                } else {
+                                    // Fallback if no options
+                                    Text("No options available")
+                                        .foregroundColor(.secondary)
                                 }
-                                .pickerStyle(.menu)
                             default:
                                 TextField(field.placeholder ?? "Enter \(field.label)", text: .constant(""))
                                     .textFieldStyle(.roundedBorder)
@@ -2399,6 +2487,10 @@ public struct ModalFormView: View {
                 // Handle text fields using OS UITextContentType
                 TextField(field.placeholder ?? "Enter text", text: .constant(""))
                     .textFieldStyle(.roundedBorder)
+                    .automaticCompliance(
+                        identifierElementType: "TextField",
+                        accessibilityLabel: field.label  // Issue #156: Parameter-based approach
+                    )
                     #if canImport(UIKit)
                     .textContentType(textContentType.uiTextContentType)
                     #endif
@@ -2408,46 +2500,86 @@ public struct ModalFormView: View {
                 case .text:
                     TextField(field.placeholder ?? "Enter text", text: .constant(""))
                         .textFieldStyle(.roundedBorder)
+                        .automaticCompliance(
+                            identifierElementType: "TextField",
+                            accessibilityLabel: field.label  // Issue #156: Parameter-based approach
+                        )
                 case .email:
                     TextField(field.placeholder ?? "Enter email", text: .constant(""))
                         .textFieldStyle(.roundedBorder)
+                        .automaticCompliance(
+                            identifierElementType: "TextField",
+                            accessibilityLabel: field.label  // Issue #156: Parameter-based approach
+                        )
                 case .password:
                     SecureField(field.placeholder ?? "Enter password", text: .constant(""))
                         .textFieldStyle(.roundedBorder)
+                        .automaticCompliance(
+                            identifierElementType: "SecureField",
+                            accessibilityLabel: field.label  // Issue #156: Parameter-based approach
+                        )
                 case .number:
                     TextField(field.placeholder ?? "Enter number", text: .constant(""))
                         .textFieldStyle(.roundedBorder)
+                        .automaticCompliance(
+                            identifierElementType: "TextField",
+                            accessibilityLabel: field.label  // Issue #156: Parameter-based approach
+                        )
                 case .date:
                     let i18n = InternationalizationService()
                     DatePicker("", selection: .constant(Date()))
                         .datePickerStyle(.compact)
                         .selfLabelingControl(label: field.placeholder ?? i18n.placeholderSelectDate())
+                        .automaticCompliance(
+                            identifierElementType: "DatePicker",
+                            accessibilityLabel: field.label  // Issue #156: Parameter-based approach
+                        )
                 case .multiDate, .dateRange:
                     // Use DatePicker as fallback for Layer1 (MultiDatePicker requires iOS 16+)
                     let i18n = InternationalizationService()
                     DatePicker("", selection: .constant(Date()))
                         .datePickerStyle(.compact)
                         .selfLabelingControl(label: field.placeholder ?? i18n.placeholderSelectDates())
+                        .automaticCompliance(
+                            identifierElementType: "DatePicker",
+                            accessibilityLabel: field.label  // Issue #156: Parameter-based approach
+                        )
                 case .select:
-                    let i18n = InternationalizationService()
-                    Picker(field.placeholder ?? i18n.placeholderSelectOption(), selection: .constant("")) {
-                        Text(i18n.placeholderSelectOption()).tag("")
-                        if let options = field.options {
-                            ForEach(options, id: \.self) { option in
-                                Text(option).tag(option)
-                            }
-                        }
+                    // Use platformPicker helper to automatically apply accessibility (Issue #163)
+                    if let options = field.options, !options.isEmpty {
+                        platformPicker(
+                            label: field.label,
+                            selection: .constant(""),
+                            options: options,
+                            pickerName: "Layer1SelectField",
+                            style: MenuPickerStyle()
+                        )
+                        .automaticCompliance(
+                            identifierElementType: "Picker",
+                            accessibilityLabel: field.label  // Issue #156: Parameter-based approach
+                        )
+                    } else {
+                        let i18n = InternationalizationService()
+                        Text(field.placeholder ?? i18n.placeholderSelectOption())
+                            .foregroundColor(.secondary)
                     }
-                    .pickerStyle(.menu)
                 case .textarea:
                     TextEditor(text: .constant(""))
                         .frame(minHeight: 80)
+                        .automaticCompliance(
+                            identifierElementType: "TextEditor",
+                            accessibilityLabel: field.label  // Issue #156: Parameter-based approach
+                        )
                         .overlay(
                             RoundedRectangle(cornerRadius: 8)
                                 .stroke(Color.gray.opacity(0.3), lineWidth: 1)
                         )
                 case .checkbox:
                     Toggle(field.placeholder ?? "Toggle", isOn: .constant(false))
+                        .automaticCompliance(
+                            identifierElementType: "Toggle",
+                            accessibilityLabel: field.label  // Issue #156: Parameter-based approach
+                        )
                 case .radio:
                     platformVStackContainer(alignment: .leading) {
                         Text(field.label)
@@ -2463,39 +2595,79 @@ public struct ModalFormView: View {
                                         Image(systemName: "circle")
                                             .foregroundColor(.gray)
                                     }
+                                    .automaticCompliance(
+                                        identifierElementType: "Button",
+                                        accessibilityLabel: "\(field.label): \(option)"  // Issue #156: Parameter-based approach
+                                    )
                                     Text(option)
                                 }
                             }
                         }
                     }
+                    .automaticCompliance(
+                        identifierElementType: "View",
+                        accessibilityLabel: field.label  // Issue #156: Parameter-based approach
+                    )
                 case .phone:
                     TextField(field.placeholder ?? "Enter phone", text: .constant(""))
                         .textFieldStyle(.roundedBorder)
+                        .automaticCompliance(
+                            identifierElementType: "TextField",
+                            accessibilityLabel: field.label  // Issue #156: Parameter-based approach
+                        )
                 case .time:
                     let i18n = InternationalizationService()
                     DatePicker("", selection: .constant(Date()), displayedComponents: .hourAndMinute)
                         .datePickerStyle(.compact)
                         .selfLabelingControl(label: field.placeholder ?? i18n.placeholderSelectTime())
+                        .automaticCompliance(
+                            identifierElementType: "DatePicker",
+                            accessibilityLabel: field.label  // Issue #156: Parameter-based approach
+                        )
                 case .datetime:
                     let i18n = InternationalizationService()
                     DatePicker("", selection: .constant(Date()), displayedComponents: [.date, .hourAndMinute])
                         .datePickerStyle(.compact)
                         .selfLabelingControl(label: field.placeholder ?? i18n.placeholderSelectDateTime())
+                        .automaticCompliance(
+                            identifierElementType: "DatePicker",
+                            accessibilityLabel: field.label  // Issue #156: Parameter-based approach
+                        )
                 case .multiselect:
                     Text("Multi-select field: \(field.label)")
                         .foregroundColor(.secondary)
+                        .automaticCompliance(
+                            identifierElementType: "View",
+                            accessibilityLabel: field.label  // Issue #156: Parameter-based approach
+                        )
                 case .file:
                     Text("File upload field: \(field.label)")
                         .foregroundColor(.secondary)
+                        .automaticCompliance(
+                            identifierElementType: "View",
+                            accessibilityLabel: field.label  // Issue #156: Parameter-based approach
+                        )
                 case .url:
                     TextField(field.placeholder ?? "Enter URL", text: .constant(""))
                         .textFieldStyle(.roundedBorder)
+                        .automaticCompliance(
+                            identifierElementType: "TextField",
+                            accessibilityLabel: field.label  // Issue #156: Parameter-based approach
+                        )
                 case .color:
                     Text("Color picker field: \(field.label)")
                         .foregroundColor(.secondary)
+                        .automaticCompliance(
+                            identifierElementType: "View",
+                            accessibilityLabel: field.label  // Issue #156: Parameter-based approach
+                        )
                 case .range:
                     Text("Range field: \(field.label)")
                         .foregroundColor(.secondary)
+                        .automaticCompliance(
+                            identifierElementType: "View",
+                            accessibilityLabel: field.label  // Issue #156: Parameter-based approach
+                        )
                 case .toggle, .boolean:
                     Toggle(field.placeholder ?? "Toggle", isOn: .constant(false))
                 case .richtext:
@@ -2504,21 +2676,45 @@ public struct ModalFormView: View {
                 case .autocomplete:
                     Text("Autocomplete field: \(field.label)")
                         .foregroundColor(.secondary)
+                        .automaticCompliance(
+                            identifierElementType: "View",
+                            accessibilityLabel: field.label  // Issue #156: Parameter-based approach
+                        )
                 case .integer:
                     TextField(field.placeholder ?? "Enter integer", text: .constant(""))
                         .textFieldStyle(.roundedBorder)
+                        .automaticCompliance(
+                            identifierElementType: "TextField",
+                            accessibilityLabel: field.label  // Issue #156: Parameter-based approach
+                        )
                 case .image:
                     Text("Image field: \(field.label)")
                         .foregroundColor(.secondary)
+                        .automaticCompliance(
+                            identifierElementType: "View",
+                            accessibilityLabel: field.label  // Issue #156: Parameter-based approach
+                        )
                 case .array:
                     Text("Array field: \(field.label)")
                         .foregroundColor(.secondary)
+                        .automaticCompliance(
+                            identifierElementType: "View",
+                            accessibilityLabel: field.label  // Issue #156: Parameter-based approach
+                        )
                 case .data:
                     Text("Data field: \(field.label)")
                         .foregroundColor(.secondary)
+                        .automaticCompliance(
+                            identifierElementType: "View",
+                            accessibilityLabel: field.label  // Issue #156: Parameter-based approach
+                        )
                 case .custom:
                     Text("Custom field: \(field.label)")
                         .foregroundColor(.secondary)
+                        .automaticCompliance(
+                        identifierElementType: "View",
+                        accessibilityLabel: field.label  // Issue #156: Parameter-based approach
+                    )
                 case .display:
                     // Display fields use LabeledContent or fallback HStack
                     if #available(iOS 16.0, macOS 13.0, *) {
@@ -2583,20 +2779,34 @@ public struct ModalFormView: View {
                     Stepper(field.label, value: .constant(0.0), in: 0...100, step: 1.0)
                 case .enum:
                     let i18n = InternationalizationService()
-                    Picker(field.placeholder ?? i18n.localizedString(for: "SixLayerFramework.form.placeholder.selectOption"), selection: .constant("")) {
-                        Text(i18n.localizedString(for: "SixLayerFramework.form.placeholder.selectOption")).tag("")
-                        if let options = field.options {
-                            ForEach(options, id: \.self) { option in
-                                Text(option).tag(option)
-                            }
-                        }
+                    // Use platformPicker helper to automatically apply accessibility (Issue #163)
+                    if let options = field.options, !options.isEmpty {
+                        platformPicker(
+                            label: field.label,
+                            selection: .constant(""),
+                            options: options,
+                            pickerName: "GenericFormEnumField",
+                            style: MenuPickerStyle()
+                        )
+                        .automaticCompliance(
+                            identifierElementType: "View",
+                            accessibilityLabel: field.label  // Issue #156: Parameter-based approach
+                        )
+                    } else {
+                        // Fallback if no options
+                        let placeholderText = field.placeholder ?? i18n.localizedString(for: "SixLayerFramework.form.placeholder.selectOption")
+                        Text(placeholderText)
+                            .foregroundColor(.secondary)
                     }
-                    .pickerStyle(.menu)
                 }
             } else {
                 // Fallback for fields with neither textContentType nor contentType
                 TextField(field.placeholder ?? "Enter text", text: .constant(""))
                     .textFieldStyle(.roundedBorder)
+                    .automaticCompliance(
+                        identifierElementType: "View",
+                        accessibilityLabel: field.label  // Issue #156: Parameter-based approach
+                    )
             }
         }
         .automaticCompliance()
@@ -2824,12 +3034,20 @@ public struct SimpleFormView: View {
                     // Handle text fields using OS UITextContentType
                     TextField(field.placeholder ?? "Enter text", text: .constant(field.defaultValue ?? ""))
                         .textFieldStyle(.roundedBorder)
+                        .automaticCompliance(
+                            identifierElementType: "TextField",
+                            accessibilityLabel: field.label  // Issue #156: Parameter-based approach
+                        )
                 } else if let contentType = field.contentType {
                     // Handle UI components using our custom DynamicContentType
                     switch contentType {
                 case .text:
                     TextField(field.placeholder ?? "Enter text", text: .constant(field.defaultValue ?? ""))
                         .textFieldStyle(.roundedBorder)
+                        .automaticCompliance(
+                            identifierElementType: "TextField",
+                            accessibilityLabel: field.label  // Issue #156: Parameter-based approach
+                        )
                         .onChange(of: field.defaultValue) { _ in
                             clearFieldError(field)
                         }
@@ -2837,6 +3055,10 @@ public struct SimpleFormView: View {
                 case .email:
                     TextField(field.placeholder ?? "Enter email", text: field.$value)
                         .textFieldStyle(.roundedBorder)
+                        .automaticCompliance(
+                            identifierElementType: "TextField",
+                            accessibilityLabel: field.label  // Issue #156: Parameter-based approach
+                        )
                         #if os(iOS)
                         .keyboardType(.emailAddress)
                         .autocapitalization(.none)
@@ -2848,6 +3070,10 @@ public struct SimpleFormView: View {
                 case .password:
                     SecureField(field.placeholder ?? "Enter password", text: field.$value)
                         .textFieldStyle(.roundedBorder)
+                        .automaticCompliance(
+                            identifierElementType: "SecureField",
+                            accessibilityLabel: field.label  // Issue #156: Parameter-based approach
+                        )
                         .onChange(of: field.value) { _ in
                             clearFieldError(field)
                         }
@@ -2855,6 +3081,10 @@ public struct SimpleFormView: View {
                 case .number:
                     TextField(field.placeholder ?? "Enter number", text: field.$value)
                         .textFieldStyle(.roundedBorder)
+                        .automaticCompliance(
+                            identifierElementType: "TextField",
+                            accessibilityLabel: field.label  // Issue #156: Parameter-based approach
+                        )
                         #if os(iOS)
                         .keyboardType(.decimalPad)
                         #endif
@@ -2874,20 +3104,42 @@ public struct SimpleFormView: View {
                     .datePickerStyle(.compact)
                     let i18nDate = InternationalizationService()
                     .selfLabelingControl(label: field.placeholder ?? i18nDate.placeholderSelectDate())
+                    .automaticCompliance(
+                        identifierElementType: "DatePicker",
+                        accessibilityLabel: field.label  // Issue #156: Parameter-based approach
+                    )
                     
                 case .select:
-                    let i18nSelect = InternationalizationService()
-                    Picker(field.placeholder ?? i18nSelect.placeholderSelectOption(), selection: field.$value) {
-                        Text(i18nSelect.placeholderSelectOption()).tag("")
-                        ForEach(field.options, id: \.self) { option in
-                            Text(option).tag(option)
+                    // Use platformPicker helper to automatically apply accessibility (Issue #163)
+                    // Note: This version uses field.$value binding (not constant), so it's interactive
+                    Group {
+                        if !field.options.isEmpty {
+                            let i18nSelect = InternationalizationService()
+                            platformPicker(
+                                label: field.label,
+                                selection: field.$value,
+                                options: field.options,
+                                pickerName: "Layer1SelectField",
+                                style: MenuPickerStyle()
+                            )
+                            .automaticCompliance(
+                                identifierElementType: "Picker",
+                                accessibilityLabel: field.label  // Issue #156: Parameter-based approach
+                            )
+                        } else {
+                            let i18nSelect = InternationalizationService()
+                            Text(field.placeholder ?? i18nSelect.placeholderSelectOption())
+                                .foregroundColor(.secondary)
                         }
                     }
-                    .pickerStyle(.menu)
                     
                 case .textarea:
                     TextEditor(text: field.$value)
                         .frame(minHeight: 80)
+                        .automaticCompliance(
+                            identifierElementType: "TextEditor",
+                            accessibilityLabel: field.label  // Issue #156: Parameter-based approach
+                        )
                         .overlay(
                             RoundedRectangle(cornerRadius: 8)
                                 .stroke(Color.gray.opacity(0.3), lineWidth: 1)
@@ -2901,6 +3153,10 @@ public struct SimpleFormView: View {
                         get: { field.value.lowercased() == "true" },
                         set: { field.value = $0 ? "true" : "false" }
                     ))
+                    .automaticCompliance(
+                        identifierElementType: "Toggle",
+                        accessibilityLabel: field.label  // Issue #156: Parameter-based approach
+                    )
                     
                 case .radio:
                     platformVStackContainer(alignment: .leading, spacing: 4) {
@@ -2917,14 +3173,26 @@ public struct SimpleFormView: View {
                                     }
                                 }
                                 .buttonStyle(.plain)
+                                .automaticCompliance(
+                                    identifierElementType: "Button",
+                                    accessibilityLabel: "\(field.label): \(option)"  // Issue #156: Parameter-based approach
+                                )
                                 Spacer()
                             }
                         }
                     }
+                    .automaticCompliance(
+                        identifierElementType: "View",
+                        accessibilityLabel: field.label  // Issue #156: Parameter-based approach
+                    )
                     
                 case .phone:
                     TextField(field.placeholder ?? "Enter phone", text: field.$value)
                         .textFieldStyle(.roundedBorder)
+                        .automaticCompliance(
+                            identifierElementType: "TextField",
+                            accessibilityLabel: field.label  // Issue #156: Parameter-based approach
+                        )
                         #if os(iOS)
                         .keyboardType(.phonePad)
                         #endif
@@ -2944,6 +3212,10 @@ public struct SimpleFormView: View {
                     .datePickerStyle(.compact)
                     let i18nTime = InternationalizationService()
                     .selfLabelingControl(label: field.placeholder ?? i18nTime.placeholderSelectTime())
+                    .automaticCompliance(
+                        identifierElementType: "DatePicker",
+                        accessibilityLabel: field.label  // Issue #156: Parameter-based approach
+                    )
                     
                 case .datetime:
                     let i18nDateTime = InternationalizationService()
@@ -2957,6 +3229,10 @@ public struct SimpleFormView: View {
                     )
                     .datePickerStyle(.compact)
                     .selfLabelingControl(label: field.placeholder ?? i18nDateTime.placeholderSelectDateTime())
+                    .automaticCompliance(
+                        identifierElementType: "DatePicker",
+                        accessibilityLabel: field.label  // Issue #156: Parameter-based approach
+                    )
                     
                 case .multiselect:
                     platformVStackContainer(alignment: .leading, spacing: 4) {
@@ -2973,10 +3249,18 @@ public struct SimpleFormView: View {
                                     }
                                 }
                                 .buttonStyle(.plain)
+                                .automaticCompliance(
+                                    identifierElementType: "Button",
+                                    accessibilityLabel: "\(field.label): \(option)"  // Issue #156: Parameter-based approach
+                                )
                                 Spacer()
                             }
                         }
                     }
+                    .automaticCompliance(
+                        identifierElementType: "View",
+                        accessibilityLabel: field.label  // Issue #156: Parameter-based approach
+                    )
                     
                 case .file:
                     Button(action: {
@@ -2994,10 +3278,18 @@ public struct SimpleFormView: View {
                         .cornerRadius(8)
                     }
                     .buttonStyle(.plain)
+                    .automaticCompliance(
+                        identifierElementType: "View",
+                        accessibilityLabel: field.label  // Issue #156: Parameter-based approach
+                    )
                     
                 case .url:
                     TextField(field.placeholder ?? "Enter URL", text: field.$value)
                         .textFieldStyle(.roundedBorder)
+                        .automaticCompliance(
+                            identifierElementType: "TextField",
+                            accessibilityLabel: field.label  // Issue #156: Parameter-based approach
+                        )
                         #if os(iOS)
                         .keyboardType(.URL)
                         .autocapitalization(.none)
@@ -3054,27 +3346,54 @@ public struct SimpleFormView: View {
                 case .integer:
                     TextField(field.placeholder ?? "Enter integer", text: field.$value)
                         .textFieldStyle(.roundedBorder)
+                        .automaticCompliance(
+                        identifierElementType: "View",
+                        accessibilityLabel: field.label  // Issue #156: Parameter-based approach
+                    )
                         .onChange(of: field.value) { _ in
                             clearFieldError(field)
                         }
                 case .image:
                     Text("Image field: \(field.label)")
                         .foregroundColor(.secondary)
+                        .automaticCompliance(
+                        identifierElementType: "View",
+                        accessibilityLabel: field.label  // Issue #156: Parameter-based approach
+                    )
                 case .array:
                     Text("Array field: \(field.label)")
                         .foregroundColor(.secondary)
+                        .automaticCompliance(
+                        identifierElementType: "View",
+                        accessibilityLabel: field.label  // Issue #156: Parameter-based approach
+                    )
                 case .data:
                     Text("Data field: \(field.label)")
                         .foregroundColor(.secondary)
+                        .automaticCompliance(
+                        identifierElementType: "View",
+                        accessibilityLabel: field.label  // Issue #156: Parameter-based approach
+                    )
                 case .`enum`:
-                    let i18n = InternationalizationService()
-                    Picker(field.placeholder ?? i18n.localizedString(for: "SixLayerFramework.form.placeholder.selectOption"), selection: field.$value) {
-                        Text(i18n.localizedString(for: "SixLayerFramework.form.placeholder.selectOption")).tag("")
-                        ForEach(field.options, id: \.self) { option in
-                            Text(option).tag(option)
-                        }
+                    // Use platformPicker helper to automatically apply accessibility (Issue #163)
+                    if !field.options.isEmpty {
+                        let i18n = InternationalizationService()
+                        platformPicker(
+                            label: field.label,
+                            selection: field.$value,
+                            options: field.options,
+                            pickerName: "Layer1EnumField",
+                            style: MenuPickerStyle()
+                        )
+                        .automaticCompliance(
+                            identifierElementType: "View",
+                            accessibilityLabel: field.label  // Issue #156: Parameter-based approach
+                        )
+                    } else {
+                        let i18n = InternationalizationService()
+                        Text(field.placeholder ?? i18n.localizedString(for: "SixLayerFramework.form.placeholder.selectOption"))
+                            .foregroundColor(.secondary)
                     }
-                    .pickerStyle(.menu)
                 case .custom:
                     TextField(field.placeholder ?? "Custom field", text: field.$value)
                         .textFieldStyle(.roundedBorder)
@@ -3685,48 +4004,39 @@ public struct GenericContentView: View {
     let content: Any
     let hints: PresentationHints
     
+    /// No AnyView — @ViewBuilder so ViewInspector tests can traverse (Issue 178).
+    @ViewBuilder
     public var body: some View {
         // Analyze content type and delegate to appropriate function
-        
         if let formFields = content as? [DynamicFormField] {
-            // Delegate to form function
-            return AnyView(platformPresentFormData_L1(fields: formFields, hints: EnhancedPresentationHints(
+            platformPresentFormData_L1(fields: formFields, hints: EnhancedPresentationHints(
                 dataType: hints.dataType,
                 presentationPreference: hints.presentationPreference,
                 complexity: hints.complexity,
                 context: hints.context,
                 customPreferences: hints.customPreferences,
                 extensibleHints: []
-            )))
+            ))
         } else if let mediaItems = content as? [GenericMediaItem] {
-            // Delegate to media function
-            return AnyView(platformPresentMediaData_L1(media: mediaItems, hints: hints))
+            platformPresentMediaData_L1(media: mediaItems, hints: hints)
         } else if let numericData = content as? [GenericNumericData] {
-            // Delegate to numeric function
-            return AnyView(platformPresentNumericData_L1(data: numericData, hints: hints))
+            platformPresentNumericData_L1(data: numericData, hints: hints)
         } else if let hierarchicalItems = content as? [GenericHierarchicalItem] {
-            // Delegate to hierarchical function
-            return AnyView(platformPresentHierarchicalData_L1(items: hierarchicalItems, hints: hints))
+            platformPresentHierarchicalData_L1(items: hierarchicalItems, hints: hints)
         } else if let temporalItems = content as? [GenericTemporalItem] {
-            // Delegate to temporal function
-            return AnyView(platformPresentTemporalData_L1(items: temporalItems, hints: hints))
+            platformPresentTemporalData_L1(items: temporalItems, hints: hints)
         } else if isIdentifiableArray(content) {
-            // Handle any identifiable array by converting to GenericDataItem
             let items = convertToGenericDataItems(content)
-            return AnyView(platformPresentItemCollection_L1(items: items, hints: hints))
+            platformPresentItemCollection_L1(items: items, hints: hints)
         } else if isBasicNumericType(content) {
-            // Handle basic numeric types with dedicated function
-            return AnyView(platformPresentBasicValue_L1(value: content, hints: hints))
+            platformPresentBasicValue_L1(value: content, hints: hints)
         } else if isBasicArray(content) {
-            // Handle basic arrays with dedicated function
-            return AnyView(platformPresentBasicArray_L1(array: content, hints: hints))
+            platformPresentBasicArray_L1(array: content, hints: hints)
         } else if content is String {
-            // Handle String content with dedicated function
-            return AnyView(platformPresentBasicValue_L1(value: content, hints: hints))
+            platformPresentBasicValue_L1(value: content, hints: hints)
         } else {
-            // Fallback to generic presentation for truly unknown types
-            return AnyView(GenericFallbackView(content: content, hints: hints)
-                .automaticCompliance(named: "GenericContentView"))
+            GenericFallbackView(content: content, hints: hints)
+                .automaticCompliance(named: "GenericContentView")
         }
     }
     
@@ -4099,19 +4409,31 @@ public struct GenericSettingsView: View {
             if onSettingsSaved != nil || onSettingsCancelled != nil {
                 platformHStackContainer(spacing: 16) {
                     if let onSettingsCancelled = onSettingsCancelled {
-                        Button("Cancel") {
+                        platformButton("Cancel") {
                             onSettingsCancelled()
                         }
                         .buttonStyle(.bordered)
+                        .automaticCompliance(
+                            identifierName: sanitizeLabelText("Cancel"),
+                            identifierElementType: "Button",
+                            accessibilityTraits: .isButton,
+                            accessibilitySortPriority: 2.0  // Issue #165: Secondary action
+                        )
                     }
                     
                     Spacer()
                     
                     if let onSettingsSaved = onSettingsSaved {
-                        Button("Save") {
+                        platformButton("Save") {
                             onSettingsSaved()
                         }
                         .buttonStyle(.borderedProminent)
+                        .automaticCompliance(
+                            identifierName: sanitizeLabelText("Save"),
+                            identifierElementType: "Button",
+                            accessibilityTraits: .isButton,
+                            accessibilitySortPriority: 1.0  // Issue #165: Primary action
+                        )
                     }
                 }
                 .padding()
@@ -4189,6 +4511,9 @@ struct SettingsSectionView: View {
         .padding()
         .background(Color.platformSecondaryBackground)
         .cornerRadius(12)
+        .automaticCompliance(
+            identifierName: sanitizeLabelText(section.title)  // Auto-generate identifierName from section title
+        )
     }
 }
 
@@ -4241,17 +4566,21 @@ struct GenericSettingsItemView: View {
                 .disabled(!item.isEnabled)
                 
             case .select:
-                if let options = item.options {
-                    Picker("", selection: Binding(
-                        get: { value as? String ?? options.first ?? "" },
-                        set: { value = $0 }
-                    )) {
-                        ForEach(options, id: \.self) { option in
-                            Text(option).tag(option)
-                        }
+                // Use platformPicker helper to automatically apply accessibility (Issue #163)
+                Group {
+                    if let options = item.options, !options.isEmpty {
+                        platformPicker(
+                            label: item.title,
+                            selection: Binding(
+                                get: { value as? String ?? options.first ?? "" },
+                                set: { value = $0 }
+                            ),
+                            options: options,
+                            pickerName: "Layer1SelectItem",
+                            style: MenuPickerStyle()
+                        )
+                        .disabled(!item.isEnabled)
                     }
-                    .pickerStyle(.menu)
-                    .disabled(!item.isEnabled)
                 }
                 
             case .slider:
@@ -4273,7 +4602,7 @@ struct GenericSettingsItemView: View {
                 }
                 
             case .button:
-                Button(item.title) {
+                platformButton(item.title) {
                     // Button action would be handled by onSettingChanged
                     // TODO: Implement when onSettingChanged is available in scope
                 }
@@ -4286,19 +4615,38 @@ struct GenericSettingsItemView: View {
             }
         }
         .padding(.vertical, 4)
+        .automaticCompliance(
+            identifierName: sanitizeLabelText(item.title)  // Auto-generate identifierName from item title
+        )
     }
 }
 
 // MARK: - Custom Collection View Components
 
-/// Custom grid collection view that uses custom item views
-public struct CustomGridCollectionView<Item: Identifiable>: View {
+/// Custom grid collection view that uses custom item views (no AnyView — Issue 178)
+public struct CustomGridCollectionView<Item: Identifiable, CustomView: View>: View {
     let items: [Item]
     let hints: PresentationHints
-    let customItemView: (Item) -> AnyView
+    let customItemView: (Item) -> CustomView
     let onItemSelected: ((Item) -> Void)?
     let onItemDeleted: ((Item) -> Void)?
     let onItemEdited: ((Item) -> Void)?
+    
+    public init(
+        items: [Item],
+        hints: PresentationHints,
+        @ViewBuilder customItemView: @escaping (Item) -> CustomView,
+        onItemSelected: ((Item) -> Void)? = nil,
+        onItemDeleted: ((Item) -> Void)? = nil,
+        onItemEdited: ((Item) -> Void)? = nil
+    ) {
+        self.items = items
+        self.hints = hints
+        self.customItemView = customItemView
+        self.onItemSelected = onItemSelected
+        self.onItemDeleted = onItemDeleted
+        self.onItemEdited = onItemEdited
+    }
     
     public var body: some View {
         GeometryReader { geometry in
@@ -4329,14 +4677,30 @@ public struct CustomGridCollectionView<Item: Identifiable>: View {
     }
 }
 
-/// Custom list collection view that uses custom item views
-public struct CustomListCollectionView<Item: Identifiable>: View {
+/// Custom list collection view that uses custom item views (no AnyView — Issue 178)
+public struct CustomListCollectionView<Item: Identifiable, CustomView: View>: View {
     let items: [Item]
     let hints: PresentationHints
-    let customItemView: (Item) -> AnyView
+    let customItemView: (Item) -> CustomView
     let onItemSelected: ((Item) -> Void)?
     let onItemDeleted: ((Item) -> Void)?
     let onItemEdited: ((Item) -> Void)?
+    
+    public init(
+        items: [Item],
+        hints: PresentationHints,
+        @ViewBuilder customItemView: @escaping (Item) -> CustomView,
+        onItemSelected: ((Item) -> Void)? = nil,
+        onItemDeleted: ((Item) -> Void)? = nil,
+        onItemEdited: ((Item) -> Void)? = nil
+    ) {
+        self.items = items
+        self.hints = hints
+        self.customItemView = customItemView
+        self.onItemSelected = onItemSelected
+        self.onItemDeleted = onItemDeleted
+        self.onItemEdited = onItemEdited
+    }
     
     public var body: some View {
         ScrollView {
@@ -4356,14 +4720,30 @@ public struct CustomListCollectionView<Item: Identifiable>: View {
 
 // MARK: - Additional Custom View Components
 
-/// Custom settings view that supports custom setting views
-public struct CustomSettingsView: View {
+/// Custom settings view that supports custom setting views (no AnyView — Issue 178)
+public struct CustomSettingsView<CustomView: View>: View {
     let settings: [SettingsSectionData]
     let hints: PresentationHints
     let onSettingChanged: ((String, Any) -> Void)?
     let onSettingsSaved: (() -> Void)?
     let onSettingsCancelled: (() -> Void)?
-    let customSettingView: (SettingsSectionData) -> AnyView
+    let customSettingView: (SettingsSectionData) -> CustomView
+    
+    public init(
+        settings: [SettingsSectionData],
+        hints: PresentationHints,
+        onSettingChanged: ((String, Any) -> Void)?,
+        onSettingsSaved: (() -> Void)?,
+        onSettingsCancelled: (() -> Void)?,
+        @ViewBuilder customSettingView: @escaping (SettingsSectionData) -> CustomView
+    ) {
+        self.settings = settings
+        self.hints = hints
+        self.onSettingChanged = onSettingChanged
+        self.onSettingsSaved = onSettingsSaved
+        self.onSettingsCancelled = onSettingsCancelled
+        self.customSettingView = customSettingView
+    }
     
     public var body: some View {
         ScrollView {
@@ -4378,11 +4758,21 @@ public struct CustomSettingsView: View {
     }
 }
 
-/// Custom media view that supports custom media item views
-public struct CustomMediaView: View {
+/// Custom media view that supports custom media item views (no AnyView — Issue 178)
+public struct CustomMediaView<CustomView: View>: View {
     let media: [GenericMediaItem]
     let hints: PresentationHints
-    let customMediaView: (GenericMediaItem) -> AnyView
+    let customMediaView: (GenericMediaItem) -> CustomView
+    
+    public init(
+        media: [GenericMediaItem],
+        hints: PresentationHints,
+        @ViewBuilder customMediaView: @escaping (GenericMediaItem) -> CustomView
+    ) {
+        self.media = media
+        self.hints = hints
+        self.customMediaView = customMediaView
+    }
     
     public var body: some View {
         GeometryReader { geometry in
@@ -4410,11 +4800,21 @@ public struct CustomMediaView: View {
     }
 }
 
-/// Custom hierarchical view that supports custom hierarchical item views
-public struct CustomHierarchicalView: View {
+/// Custom hierarchical view that supports custom hierarchical item views (no AnyView — Issue 178)
+public struct CustomHierarchicalView<CustomView: View>: View {
     let items: [GenericHierarchicalItem]
     let hints: PresentationHints
-    let customItemView: (GenericHierarchicalItem) -> AnyView
+    let customItemView: (GenericHierarchicalItem) -> CustomView
+    
+    public init(
+        items: [GenericHierarchicalItem],
+        hints: PresentationHints,
+        @ViewBuilder customItemView: @escaping (GenericHierarchicalItem) -> CustomView
+    ) {
+        self.items = items
+        self.hints = hints
+        self.customItemView = customItemView
+    }
     
     public var body: some View {
         ScrollView {
@@ -4429,11 +4829,21 @@ public struct CustomHierarchicalView: View {
     }
 }
 
-/// Custom temporal view that supports custom temporal item views
-public struct CustomTemporalView: View {
+/// Custom temporal view that supports custom temporal item views (no AnyView — Issue 178)
+public struct CustomTemporalView<CustomView: View>: View {
     let items: [GenericTemporalItem]
     let hints: PresentationHints
-    let customItemView: (GenericTemporalItem) -> AnyView
+    let customItemView: (GenericTemporalItem) -> CustomView
+    
+    public init(
+        items: [GenericTemporalItem],
+        hints: PresentationHints,
+        @ViewBuilder customItemView: @escaping (GenericTemporalItem) -> CustomView
+    ) {
+        self.items = items
+        self.hints = hints
+        self.customItemView = customItemView
+    }
     
     public var body: some View {
         ScrollView {
@@ -4448,11 +4858,21 @@ public struct CustomTemporalView: View {
     }
 }
 
-/// Custom numeric data view that supports custom numeric data item views
-public struct CustomNumericDataView: View {
+/// Custom numeric data view that supports custom numeric data item views (no AnyView — Issue 178)
+public struct CustomNumericDataView<CustomView: View>: View {
     let data: [GenericNumericData]
     let hints: PresentationHints
-    let customDataView: (GenericNumericData) -> AnyView
+    let customDataView: (GenericNumericData) -> CustomView
+    
+    public init(
+        data: [GenericNumericData],
+        hints: PresentationHints,
+        @ViewBuilder customDataView: @escaping (GenericNumericData) -> CustomView
+    ) {
+        self.data = data
+        self.hints = hints
+        self.customDataView = customDataView
+    }
     
     public var body: some View {
         GeometryReader { geometry in
@@ -4517,13 +4937,13 @@ private struct NavigationStackWrapper<Content: View>: View {
     }
 }
 
-/// Internal wrapper view for navigation stack with items
+/// Internal wrapper view for navigation stack with items (no AnyView — Issue 178).
 /// This view implements the full 6-layer flow: L1 -> L2 -> L3 -> L4
-private struct NavigationStackItemsWrapper<Item: Identifiable & Hashable>: View {
+private struct NavigationStackItemsWrapper<Item: Identifiable & Hashable, ItemView: View, DestinationView: View>: View {
     let items: [Item]
     let hints: PresentationHints
-    let itemView: (Item) -> AnyView
-    let destination: (Item) -> AnyView
+    let itemView: (Item) -> ItemView
+    let destination: (Item) -> DestinationView
     
     @State private var selectedItem: Item?
     
@@ -4547,12 +4967,8 @@ private struct NavigationStackItemsWrapper<Item: Identifiable & Hashable>: View 
                 get: { selectedItem },
                 set: { selectedItem = $0 }
             ),
-            itemView: { item in
-                itemView(item)
-            },
-            detailView: { item in
-                destination(item)
-            },
+            itemView: itemView,
+            detailView: destination,
             strategy: l3Strategy
         )
     }

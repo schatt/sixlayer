@@ -18,7 +18,11 @@ public struct ActionButton: View {
         }
         .buttonStyle(.borderedProminent)
         .environment(\.accessibilityIdentifierLabel, title) // TDD GREEN: Pass label to identifier generation
-        .automaticCompliance(named: "ActionButton")
+        .automaticCompliance(
+            identifierName: sanitizeLabelText(title),  // Auto-generate identifierName from title
+            identifierElementType: "Button",
+            accessibilityTraits: .isButton  // Issue #165: ActionButton is a button
+        )
     }
 }
 

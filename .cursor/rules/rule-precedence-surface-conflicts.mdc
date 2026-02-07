@@ -1,0 +1,18 @@
+---
+description: If project rules would be overridden by other guidance, surface the conflict to the user instead of silently ignoring the project rule.
+alwaysApply: true
+---
+
+# Rule Precedence — Surface Conflicts
+
+## **MANDATORY**
+
+- **Do not silently override project rules.** Project-specific rules are in `.cursorrules` and `.cursor/rules/*.mdc`. If some other instruction (system, default, or general) would cause the agent to ignore or override one of those rules, do **not** just follow the other instruction and say nothing.
+- **Either follow the project rule, or surface the conflict.** Options:
+  1. **Follow the project rule** (preferred when the project rule clearly applies).
+  2. **Surface the conflict:** Tell the user briefly which project rule would be overridden and by what guidance, then ask how they want to proceed. Example: "General guidance says not to push without being asked, but your Git Push Practices require pushing before considering work done. I'm pushing. If you'd rather I not push in some cases, we can adjust the rule."
+- **Do not assume general guidance wins.** The user's explicit rules take precedence unless the user, after being informed, says otherwise.
+
+## **Rationale**
+
+Silently ignoring project rules (e.g. commit-after-every-edit, push-before-done) leads to missed expectations. Surfacing conflicts gives the user visibility and a chance to clarify or strengthen rules.

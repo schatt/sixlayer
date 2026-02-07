@@ -8,6 +8,7 @@ import SwiftUI
 // MARK: - Navigation Types
 // PlatformTitleDisplayMode is defined in PlatformUITypes.swift
 
+
 public extension View {
     
     /// Platform-specific navigation wrapper that provides consistent navigation patterns
@@ -98,8 +99,14 @@ public extension View {
         .accessibilityLabel(accessibilityLabel)
         .accessibilityHint(accessibilityHint)
         .accessibilityAddTraits(.isButton)
-        .environment(\.accessibilityIdentifierLabel, title) // TDD GREEN: Pass label to identifier generation
-        .automaticCompliance(named: "platformNavigationButton_L4")
+        // Apply automaticCompliance directly to the Button so identifier goes to Button, not container
+        // Pass hints as parameters (Option A) - explicit, no environment dependencies
+        // Auto-generate identifierName from title (the thing being identified)
+        .automaticCompliance(
+            identifierName: sanitizeLabelText(title),
+            identifierLabel: title,
+            accessibilitySortPriority: 5.0  // Issue #165: Navigation elements have medium priority
+        )
     }
     
 
@@ -108,16 +115,28 @@ public extension View {
     func platformNavigationTitle_L4(_ title: String) -> some View {
         #if os(iOS)
         return self.navigationTitle(title)
-            .environment(\.accessibilityIdentifierLabel, title) // TDD GREEN: Pass label to identifier generation
-            .automaticCompliance(named: "platformNavigationTitle_L4")
+            .automaticCompliance(
+                identifierName: sanitizeLabelText(title),  // Auto-generate identifierName from title
+                identifierElementType: "Header",
+                identifierLabel: title,
+                accessibilityTraits: .isHeader  // Issue #165: Navigation titles are headers
+            )
         #elseif os(macOS)
         return self.navigationTitle(title)
-            .environment(\.accessibilityIdentifierLabel, title) // TDD GREEN: Pass label to identifier generation
-            .automaticCompliance(named: "platformNavigationTitle_L4")
+            .automaticCompliance(
+                identifierName: sanitizeLabelText(title),  // Auto-generate identifierName from title
+                identifierElementType: "Header",
+                identifierLabel: title,
+                accessibilityTraits: .isHeader  // Issue #165: Navigation titles are headers
+            )
         #else
         return self.navigationTitle(title)
-            .environment(\.accessibilityIdentifierLabel, title) // TDD GREEN: Pass label to identifier generation
-            .automaticCompliance(named: "platformNavigationTitle_L4")
+            .automaticCompliance(
+                identifierName: sanitizeLabelText(title),  // Auto-generate identifierName from title
+                identifierElementType: "Header",
+                identifierLabel: title,
+                accessibilityTraits: .isHeader  // Issue #165: Navigation titles are headers
+            )
         #endif
     }
     
@@ -235,7 +254,11 @@ public extension View {
                 Label(title, systemImage: systemImage)
                     .foregroundColor(.primary)
             }
-            .environment(\.accessibilityIdentifierLabel, title) // TDD GREEN: Pass label to identifier generation
+            .automaticCompliance(
+                identifierName: sanitizeLabelText(title),  // Auto-generate identifierName from title
+                identifierElementType: "Link",
+                accessibilityTraits: .isLink  // Issue #165: Navigation links are links
+            )
             .navigationDestination(isPresented: isActive) {
                 destination()
             }
@@ -244,7 +267,11 @@ public extension View {
                 Label(title, systemImage: systemImage)
                     .foregroundColor(.primary)
             }
-            .environment(\.accessibilityIdentifierLabel, title) // TDD GREEN: Pass label to identifier generation
+            .automaticCompliance(
+                identifierName: sanitizeLabelText(title),  // Auto-generate identifierName from title
+                identifierElementType: "Link",
+                accessibilityTraits: .isLink  // Issue #165: Navigation links are links
+            )
             .background(
                 NavigationLink(destination: destination(), isActive: isActive) {
                     EmptyView()
@@ -270,7 +297,11 @@ public extension View {
             #endif
         }
         .buttonStyle(PlainButtonStyle())
-        .environment(\.accessibilityIdentifierLabel, title) // TDD GREEN: Pass label to identifier generation
+        .automaticCompliance(
+            identifierName: sanitizeLabelText(title),  // Auto-generate identifierName from title
+            identifierElementType: "Link",
+            accessibilityTraits: .isLink  // Issue #165: Navigation links are links
+        )
         #endif
     }
 
@@ -282,10 +313,13 @@ public extension View {
     ) -> some View {
         #if os(iOS)
         return NavigationLink(destination: destination, label: label)
+            .accessibilityAddTraits(.isLink)  // Issue #165: Navigation links are links
         #elseif os(macOS)
         return NavigationLink(destination: destination, label: label)
+            .accessibilityAddTraits(.isLink)  // Issue #165: Navigation links are links
         #else
         return NavigationLink(destination: destination, label: label)
+            .accessibilityAddTraits(.isLink)  // Issue #165: Navigation links are links
         #endif
     }
 
@@ -301,13 +335,16 @@ public extension View {
             return AnyView(NavigationLink(value: value, label: label)
                 .navigationDestination(for: Value.self) { value in
                     destination(value)
-                })
+                }
+                .accessibilityAddTraits(.isLink))  // Issue #165: Navigation links are links
         } else {
             // iOS 15 fallback: use traditional NavigationLink
             if let value = value {
-                return AnyView(NavigationLink(destination: destination(value), label: label))
+                return AnyView(NavigationLink(destination: destination(value), label: label)
+                    .accessibilityAddTraits(.isLink))  // Issue #165: Navigation links are links
             } else {
-                return AnyView(NavigationLink(destination: EmptyView(), label: label))
+                return AnyView(NavigationLink(destination: EmptyView(), label: label)
+                    .accessibilityAddTraits(.isLink))  // Issue #165: Navigation links are links
             }
         }
         #elseif os(macOS)
@@ -315,17 +352,21 @@ public extension View {
             return AnyView(NavigationLink(value: value, label: label)
                 .navigationDestination(for: Value.self) { value in
                     destination(value)
-                })
+                }
+                .accessibilityAddTraits(.isLink))  // Issue #165: Navigation links are links
         } else {
             // macOS 12 fallback: use traditional NavigationLink
             if let value = value {
-                return AnyView(NavigationLink(destination: destination(value), label: label))
+                return AnyView(NavigationLink(destination: destination(value), label: label)
+                    .accessibilityAddTraits(.isLink))  // Issue #165: Navigation links are links
             } else {
-                return AnyView(NavigationLink(destination: EmptyView(), label: label))
+                return AnyView(NavigationLink(destination: EmptyView(), label: label)
+                    .accessibilityAddTraits(.isLink))  // Issue #165: Navigation links are links
             }
         }
         #else
         return AnyView(NavigationLink(value: value, label: label)
+            .accessibilityAddTraits(.isLink)  // Issue #165: Navigation links are links
             .navigationDestination(for: Value.self) { value in
                 destination(value)
             })

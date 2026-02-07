@@ -30,8 +30,8 @@ open class DefaultAccessibilityIdentifierTests: BaseTestClass {    /// BUSINESS 
             config.enableAutoIDs = true
             config.namespace = "SixLayer"
                 
-            // When: Using framework component (testing our framework, not SwiftUI)
-            let testView = PlatformInteractionButton(style: .primary, action: {}) {
+            // When: Using framework component with identifierName so ID is generated (L1 pattern)
+            let testView = PlatformInteractionButton(style: .primary, action: {}, identifierName: "TestButton") {
                 platformPresentContent_L1(content: "Test Button", hints: PresentationHints())
             }
                 
@@ -71,8 +71,8 @@ open class DefaultAccessibilityIdentifierTests: BaseTestClass {    /// BUSINESS 
             config.enableDebugLogging = true
             // clearDebugLog method doesn't exist, so we skip that
                 
-            // When: Using framework component with .named() modifier
-            let testView = PlatformInteractionButton(style: .primary, action: {}) {
+            // When: Using framework component with .named() modifier (identifierName for ID; .named for label)
+            let testView = PlatformInteractionButton(style: .primary, action: {}, identifierName: "TestButton") {
                 platformPresentContent_L1(content: "Test Button", hints: PresentationHints())
             }
             .named("TestButton")
@@ -95,8 +95,8 @@ open class DefaultAccessibilityIdentifierTests: BaseTestClass {    /// BUSINESS 
             // Given: Default configuration
             // config is non-optional, so no need to check for nil
                 
-            // When: Using framework component with manual accessibility identifier
-            let testView = PlatformInteractionButton(style: .primary, action: {}) {
+            // When: Using framework component with manual accessibility identifier (identifierName still needed for button; manual overrides)
+            let testView = PlatformInteractionButton(style: .primary, action: {}, identifierName: "TestButton") {
                 platformPresentContent_L1(content: "Test Button", hints: PresentationHints())
             }
             .accessibilityIdentifier("manual-test-button")
@@ -139,7 +139,8 @@ open class DefaultAccessibilityIdentifierTests: BaseTestClass {    /// BUSINESS 
             let testView = PlatformInteractionButton(style: .primary, action: {}) {
                 platformPresentContent_L1(content: "Decorative Button", hints: PresentationHints())
             }
-            .environment(\.globalAutomaticAccessibilityIdentifiers, false)
+            // Set config directly (no environment variable)
+            config.globalAutomaticAccessibilityIdentifiers = false
                 
             // Then: The view should be created successfully
             // testView is non-optional, so no need to check for nil

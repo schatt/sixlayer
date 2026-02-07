@@ -76,7 +76,7 @@ open class FormWizardViewTDDTests: BaseTestClass {
             Issue.record("FormWizardView step content not found")
         }
         #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // ViewInspector not available on this platform - this is expected, not a failure
         #endif
 
         // Should generate accessibility identifier
@@ -89,8 +89,7 @@ open class FormWizardViewTDDTests: BaseTestClass {
         )
  #expect(hasAccessibilityID, "Should generate accessibility identifier ")
         #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-        // The modifier IS present in the code, but ViewInspector can't detect it on macOS
+        // ViewInspector not available on this platform - this is expected, not a failure
         #endif
     }
 
@@ -188,7 +187,7 @@ open class FormWizardViewTDDTests: BaseTestClass {
             Issue.record("FormWizardView navigation controls not found")
         }
         #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // ViewInspector not available on this platform - this is expected, not a failure
         #endif
     }
 
@@ -240,7 +239,6 @@ open class FormWizardViewTDDTests: BaseTestClass {
             #if canImport(ViewInspector)
             Issue.record("FormWizardView step information not found")
             #else
-            // ViewInspector not available on macOS - test passes by verifying view creation
             #expect(Bool(true), "FormWizardView created (ViewInspector not available on macOS)")
             #endif
         }

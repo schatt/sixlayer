@@ -813,8 +813,8 @@ open class AutomaticAccessibilityIdentifierTests: BaseTestClass {
             config.enableDebugLogging = true
             config.enableDebugLogging = true
                 
-            // When: A view uses .named() modifier (as per user's bug report)
-            let testView = PlatformInteractionButton(style: .primary, action: {}) {
+            // When: A view uses .named() modifier (as per user's bug report); identifierName for ID
+            let testView = PlatformInteractionButton(style: .primary, action: {}, identifierName: "AddFuelButton") {
                 platformPresentContent_L1(content: "Add Fuel", hints: PresentationHints())
             }
             .named("AddFuelButton")

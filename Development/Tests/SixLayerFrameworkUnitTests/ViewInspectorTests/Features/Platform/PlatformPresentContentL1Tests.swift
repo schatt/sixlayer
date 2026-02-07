@@ -62,61 +62,10 @@ open class PlatformPresentContentL1Tests: BaseTestClass {
         // 1. View created - The view can be instantiated successfully
         // view is a non-optional View, so it exists if we reach here
         
-        // 2. Contains what it needs to contain - The view should contain the actual string content
+        // 2. Contains what it needs to contain - The view should contain text (currently "Value" per framework behavior)
         #if canImport(ViewInspector)
-        do {
-            // The view should be wrapped in AnyView
-            guard let inspected = try? AnyView(view).inspect() else { return }
-            #if canImport(ViewInspector)
-            let anyView = try inspected.anyView()
-            // anyView is non-optional InspectableView (throws on failure), so it exists if we reach here
-            
-            // The view should contain text elements with our string content
-            let viewText = inspected.findAll(ViewType.Text.self)
-            #else
-            let anyView: Inspectable = DummyInspectable()
-            let viewText: [Inspectable] = []
-            #endif
-            #expect(!viewText.isEmpty, "String content view should contain text elements")
-            
-            // Should contain our actual string content
-            // NOTE: Currently BasicValueView doesn't handle String values properly
-            // It only shows "Value" instead of the actual string content
-            // This is a framework bug that should be fixed
-            let hasStringContent = viewText.contains { text in
-                do {
-                    let textContent = try text.string()
-                    print("DEBUG: Found text content: '\(textContent)'")
-                    return textContent.contains("Hello, World!")
-                } catch {
-                    return false
-                }
-            }
-            
-            // Verify string content detection works
-            #expect(Bool(true), "String content detection should work")  // hasStringContent is non-optional
-            // Note: Currently BasicValueView shows "Value" instead of actual content due to framework bug
-            // So we expect hasStringContent to be false until the bug is fixed
-            #expect(!hasStringContent, "Currently BasicValueView doesn't show actual string content due to framework bug")
-            
-            // For now, we expect the framework to show "Value" instead of the actual content
-            // This test documents the current behavior until the framework bug is fixed
-            let hasValueLabel = viewText.contains { text in
-                do {
-                    let textContent = try text.string()
-                    return textContent.contains("Value")
-                } catch {
-                    return false
-                }
-            }
-            #expect(hasValueLabel, "View should contain 'Value' label (current framework behavior)")
-            
-            // TODO: Fix BasicValueView to handle String values and then update this test
-            // XCTAssertTrue(hasStringContent, "View should contain the actual string content 'Hello, World!'")
-            
-        } catch {
-            Issue.record("Failed to inspect string content view")
-        }
+        // Currently BasicValueView shows "Value" instead of actual string content; test documents that behavior
+        self.verifyViewContainsText(view, expectedText: "Value", testName: "String content view (Value label)")
         #else
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
         #endif
@@ -141,28 +90,7 @@ open class PlatformPresentContentL1Tests: BaseTestClass {
         
         // 2. Contains what it needs to contain - The view should contain the actual number content
         #if canImport(ViewInspector)
-        do {
-            // The view should be wrapped in AnyView
-            guard let inspected = try? AnyView(view).inspect() else { return }
-            #if canImport(ViewInspector)
-            let anyView = try inspected.anyView()
-            #expect(Bool(true), "Number content should be wrapped in AnyView")  // anyView is non-optional
-            
-            // The view should contain text elements with our number content
-            let viewText = inspected.findAll(ViewType.Text.self)
-            #else
-            let anyView: Inspectable = DummyInspectable()
-            let viewText: [Inspectable] = []
-            #endif
-            #expect(!viewText.isEmpty, "Number content view should contain text elements")
-            
-            // Should contain our actual number content
-            // Use helper function for DRY text verification
-            verifyViewContainsText(view, expectedText: "42", testName: "Number content view")
-            
-        } catch {
-            Issue.record("Failed to inspect number content view")
-        }
+        self.verifyViewContainsText(view, expectedText: "42", testName: "Number content view")
         #else
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
         #endif

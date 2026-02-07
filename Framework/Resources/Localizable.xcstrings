@@ -566,6 +566,9 @@
     "No Liquid Glass features available" : {
 
     },
+    "No options available" : {
+
+    },
     "No statistical analysis available" : {
 
     },
@@ -20114,36 +20117,6 @@
         }
       }
     },
-    "SixLayerFramework.photo.camera" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Camera"
-          }
-        }
-      }
-    },
-    "SixLayerFramework.photo.library" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Library"
-          }
-        }
-      }
-    },
-    "SixLayerFramework.photo.captureNew" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Capture New"
-          }
-        }
-      }
-    },
     "SixLayerFramework.image.optimizationFailed" : {
       "localizations" : {
         "da" : {
@@ -24813,6 +24786,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Vision框架在此平台上不可用"
+          }
+        }
+      }
+    },
+    "SixLayerFramework.photo.camera" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Camera"
+          }
+        }
+      }
+    },
+    "SixLayerFramework.photo.captureNew" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Capture New"
+          }
+        }
+      }
+    },
+    "SixLayerFramework.photo.library" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Library"
           }
         }
       }

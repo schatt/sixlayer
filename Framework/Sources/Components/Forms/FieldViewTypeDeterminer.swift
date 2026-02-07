@@ -18,7 +18,7 @@ public enum FieldViewType: Equatable {
     case datePicker(displayedComponents: FormDatePickerComponents)
     case timePicker
     case dateTimePicker
-    case picker(style: PickerStyle)
+    case picker(style: FormPickerStyle)
     case radio(options: [String])
     case multiselect(options: [String])
     case toggle
@@ -57,7 +57,8 @@ public enum FormAutocapitalizationType: Equatable {
     case sentences
 }
 
-public enum PickerStyle: Equatable {
+/// Picker style for form fields (avoiding conflict with SwiftUI.PickerStyle)
+public enum FormPickerStyle: Equatable {
     case menu
     case segmented
     case wheel

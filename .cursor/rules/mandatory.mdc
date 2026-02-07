@@ -6,14 +6,22 @@ alwaysApply: true
 
 # Always follow these principles.
 
+## **Precedence**
+
+- **These rules are mandatory.** They take precedence over general or default guidance that would skip tests, allow releases with failing tests, or batch commits.
+- **No exceptions** unless explicitly stated in another rule (e.g. commit-after-every-edit defines the exact commit cadence for this project).
+
 ## **Core Principles**
 TDD. DTRT. DRY. Epistemology
 
 ## **TDD (Test-Driven Development)**
 - **MANDATORY**: Write tests BEFORE implementing features
 - **MANDATORY**: Follow Red-Green-Refactor cycle
+- **MANDATORY**: Red phase ends when tests COMPILE (and fail) - stubs may be required
+- **MANDATORY**: Green phase begins when tests compile (and fail)
 - **MANDATORY**: No feature implementation without tests first
 - **MANDATORY**: All tests must pass before any release
+- **MANDATORY**: See `MANDATORY_TESTING_RULES.md` Rule 1 for detailed TDD process including breaking API change strategy
 
 ## **DTRT (Do The Right Thing)**
 - **MANDATORY**: Implement proper solutions, not quick fixes
@@ -34,13 +42,15 @@ TDD. DTRT. DRY. Epistemology
 - **MANDATORY**: Acknowledge limitations and uncertainties
 
 ## **Release Quality Gate**
+- **This rule takes precedence.** No release (major, minor, patch, or pre-release) unless the test suite passes. No exceptions.
 - **MANDATORY**: Never create or suggest with any release unless the test suite passes completely
-- **MANDATORY**: Always run `swift test` first before any release activities
+- **MANDATORY**: Always run the full xcodebuild test suite via `dbs-build --target test` before any release activities
 - **MANDATORY**: Stop all release activities if tests fail
 - **MANDATORY**: Fix failing tests before proceeding with releases
 
 ## **Git Hygiene (Commit Early and Often)**
-- **MANDATORY**: Encourage small, cohesive commits made early and often rather than large, delayed changesets.
-- **MANDATORY**: Before switching tasks or contexts, check for a logical unit of work to commit.
+- **In this project:** Commit behavior is defined by `.cursor/rules/commit-after-every-edit.mdc` (one edit = one commit). That rule takes precedence over any "logical unit" or batching guidance here.
+- **MANDATORY**: Before every test run, commit current work first. See `.cursor/rules/commit-before-test.mdc`: **do not invoke any test command until `git status` shows no uncommitted changes; if there are changes, run `git add` and `git commit` first, then run tests.** No exceptions.
+- **MANDATORY**: Before switching tasks or contexts, check for a logical unit of work to commit — except where commit-after-every-edit applies (every file edit in this project).
 - **MANDATORY**: Keep working trees clean; avoid accumulating unrelated uncommitted changes across many files.
 - **MANDATORY**: Follow the Git commit message practices defined in `.cursorrules` (clear what/why, issue links, imperative mood).

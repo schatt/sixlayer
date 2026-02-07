@@ -46,7 +46,7 @@ open class PlatformNavigationSplitViewHelperTests: BaseTestClass {
                 #expect(Bool(true), "iPad should use NavigationSplitView on iOS 16+")
             } else {
                 // iOS 15 fallback
-                let hasNavigationView = (try? inspected.sixLayerFind(ViewType.NavigationView.self)) != nil
+                let hasNavigationView = (try? inspected.find(ViewType.NavigationView.self)) != nil
                 #expect(hasNavigationView || true, "iPad should use NavigationView on iOS 15")
             }
             #elseif os(macOS)
@@ -89,7 +89,7 @@ open class PlatformNavigationSplitViewHelperTests: BaseTestClass {
                 #expect(Bool(true), "iPhone portrait should use NavigationStack on iOS 16+")
             } else {
                 // iOS 15 fallback
-                let hasNavigationView = (try? inspected.sixLayerFind(ViewType.NavigationView.self)) != nil
+                let hasNavigationView = (try? inspected.find(ViewType.NavigationView.self)) != nil
                 #expect(hasNavigationView || true, "iPhone portrait should use NavigationView on iOS 15")
             }
             #endif
@@ -167,7 +167,7 @@ open class PlatformNavigationSplitViewHelperTests: BaseTestClass {
                 #expect(Bool(true), "iPad should use NavigationSplitView on iOS 16+")
             } else {
                 // iOS 15 fallback
-                let hasNavigationView = (try? inspected.sixLayerFind(ViewType.NavigationView.self)) != nil
+                let hasNavigationView = (try? inspected.find(ViewType.NavigationView.self)) != nil
                 #expect(hasNavigationView || true, "iPad should use NavigationView on iOS 15")
             }
             #elseif os(macOS)
@@ -213,7 +213,7 @@ open class PlatformNavigationSplitViewHelperTests: BaseTestClass {
                 #expect(Bool(true), "iPhone portrait should use NavigationStack on iOS 16+")
             } else {
                 // iOS 15 fallback
-                let hasNavigationView = (try? inspected.sixLayerFind(ViewType.NavigationView.self)) != nil
+                let hasNavigationView = (try? inspected.find(ViewType.NavigationView.self)) != nil
                 #expect(hasNavigationView || true, "iPhone portrait should use NavigationView on iOS 15")
             }
             #endif

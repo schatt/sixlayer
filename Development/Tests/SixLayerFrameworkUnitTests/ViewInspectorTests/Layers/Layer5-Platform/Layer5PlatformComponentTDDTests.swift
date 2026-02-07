@@ -37,34 +37,19 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
 
             // Should render AI recognition interface
             #if canImport(ViewInspector)
-            if let inspected = try? AnyView(view).inspect() {
-                do {
-                    // Should have proper UI structure for recognition features
-                    let vStack = try inspected.vStack()
-                    let children = vStack.findAll(ViewInspector.ViewType.AnyView.self)
-                    #expect(children.count >= 1, "Should have recognition interface elements")
-
-                // Should have accessibility identifier
-                #if canImport(ViewInspector)
-                let hasAccessibilityID = testComponentComplianceSinglePlatform(
-                    view,
-                    expectedPattern: "SixLayer.main.ui.*PlatformRecognitionLayer5.*",
-                    platform: .iOS,
-                    componentName: "PlatformRecognitionLayer5"
-                )
- #expect(hasAccessibilityID, "Should generate accessibility identifier")
-        #else
-                // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-                // The modifier IS present in the code, but ViewInspector can't detect it on macOS
-                #endif
-                } catch {
-                    Issue.record("PlatformRecognitionLayer5 inspection error: \(error)")
-                }
-            } else {
-                Issue.record("PlatformRecognitionLayer5 inspection failed - AI recognition features not implemented")
+            tryWithFirstVStack(view, testName: "PlatformRecognitionLayer5", minChildren: 1) { vStack in
+                let children = vStack.findAll(ViewInspector.ViewType.Text.self)
+                #expect(children.count >= 1, "Should have recognition interface elements")
             }
+            let hasAccessibilityIDRec = testComponentComplianceSinglePlatform(
+                view,
+                expectedPattern: "SixLayer.main.ui.*PlatformRecognitionLayer5.*",
+                platform: .iOS,
+                componentName: "PlatformRecognitionLayer5"
+            )
+            #expect(hasAccessibilityIDRec, "Should generate accessibility identifier")
             #else
-            // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+            // ViewInspector not available on this platform - this is expected, not a failure
             #endif
         }
     }
@@ -82,33 +67,19 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
 
         // Should render privacy management interface
         #if canImport(ViewInspector)
-        if let inspected = try? AnyView(view).inspect() {
-            do {
-                // Should have proper UI structure for privacy controls
-                    let vStack = try inspected.vStack()
-                    #expect(vStack.count >= 1, "Should have privacy interface elements")
-
-                // Should have accessibility identifier
-                #if canImport(ViewInspector)
-                let hasAccessibilityID = testComponentComplianceSinglePlatform(
-                    view,
-                    expectedPattern: "SixLayer.main.ui.*PlatformPrivacyLayer5.*",
-                    platform: .iOS,
-                    componentName: "PlatformPrivacyLayer5"
-                )
- #expect(hasAccessibilityID, "Should generate accessibility identifier")
-        #else
-                // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-                // The modifier IS present in the code, but ViewInspector can't detect it on macOS
-                #endif
-            } catch {
-                Issue.record("PlatformPrivacyLayer5 inspection error: \(error)")
-            }
-        } else {
-            Issue.record("PlatformPrivacyLayer5 inspection failed - privacy management not implemented")
+        tryWithFirstVStack(view, testName: "PlatformPrivacyLayer5", minChildren: 1) { vStack in
+            let textChildren = vStack.findAll(ViewInspector.ViewType.Text.self)
+            #expect(textChildren.count >= 1, "Should have privacy interface elements")
         }
+        let hasAccessibilityIDPriv = testComponentComplianceSinglePlatform(
+            view,
+            expectedPattern: "SixLayer.main.ui.*PlatformPrivacyLayer5.*",
+            platform: .iOS,
+            componentName: "PlatformPrivacyLayer5"
+        )
+        #expect(hasAccessibilityIDPriv, "Should generate accessibility identifier")
         #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // ViewInspector not available on this platform - this is expected, not a failure
         #endif
     }
 
@@ -125,33 +96,16 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
 
         // Should render performance monitoring interface
         #if canImport(ViewInspector)
-        if let inspected = try? AnyView(view).inspect() {
-            do {
-                // Should have proper UI structure for performance metrics
-                let vStack = try inspected.vStack()
-                #expect(vStack.count >= 1, "Should have performance monitoring elements")
-
-            // Should have accessibility identifier
-            #if canImport(ViewInspector)
-            let hasAccessibilityID = testComponentComplianceSinglePlatform(
-                view,
-                expectedPattern: "SixLayer.main.ui.*PlatformPerformanceLayer6.*",
-                platform: .iOS,
-                componentName: "PlatformPerformanceLayer6"
-            )
- #expect(hasAccessibilityID, "Should generate accessibility identifier")
+        tryWithFirstVStack(view, testName: "PlatformPerformanceLayer6", minChildren: 1) { _ in }
+        let hasAccessibilityIDPerf = testComponentComplianceSinglePlatform(
+            view,
+            expectedPattern: "SixLayer.main.ui.*PlatformPerformanceLayer6.*",
+            platform: .iOS,
+            componentName: "PlatformPerformanceLayer6"
+        )
+        #expect(hasAccessibilityIDPerf, "Should generate accessibility identifier")
         #else
-            // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-            // The modifier IS present in the code, but ViewInspector can't detect it on macOS
-            #endif
-            } catch {
-                Issue.record("PlatformPerformanceLayer6 inspection error: \(error)")
-            }
-        } else {
-            Issue.record("PlatformPerformanceLayer6 inspection failed - performance monitoring not implemented")
-        }
-        #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // ViewInspector not available on this platform - this is expected, not a failure
         #endif
     }
 
@@ -168,33 +122,16 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
 
         // Should render user profiling interface
         #if canImport(ViewInspector)
-        if let inspected = try? AnyView(view).inspect() {
-            do {
-                // Should have proper UI structure for profiling features
-                let vStack = try inspected.vStack()
-                #expect(vStack.count >= 1, "Should have profiling interface elements")
-
-                // Should have accessibility identifier
-                #if canImport(ViewInspector)
-                let hasAccessibilityID = testComponentComplianceSinglePlatform(
-                    view,
-                    expectedPattern: "SixLayer.main.ui.*PlatformProfilingLayer5.*",
-                    platform: .iOS,
-                    componentName: "PlatformProfilingLayer5"
-                )
- #expect(hasAccessibilityID, "Should generate accessibility identifier")
+        tryWithFirstVStack(view, testName: "PlatformProfilingLayer5", minChildren: 1) { _ in }
+        let hasAccessibilityIDProf = testComponentComplianceSinglePlatform(
+            view,
+            expectedPattern: "SixLayer.main.ui.*PlatformProfilingLayer5.*",
+            platform: .iOS,
+            componentName: "PlatformProfilingLayer5"
+        )
+        #expect(hasAccessibilityIDProf, "Should generate accessibility identifier")
         #else
-                // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-                // The modifier IS present in the code, but ViewInspector can't detect it on macOS
-                #endif
-            } catch {
-                Issue.record("PlatformProfilingLayer5 inspection error: \(error)")
-            }
-        } else {
-            Issue.record("PlatformProfilingLayer5 inspection failed - user profiling not implemented")
-        }
-        #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // ViewInspector not available on this platform - this is expected, not a failure
         #endif
     }
 
@@ -211,33 +148,16 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
 
         // Should render safety features interface
         #if canImport(ViewInspector)
-        if let inspected = try? AnyView(view).inspect() {
-            do {
-                // Should have proper UI structure for safety features
-                let vStack = try inspected.vStack()
-                #expect(vStack.count >= 1, "Should have safety interface elements")
-
-                // Should have accessibility identifier
-                #if canImport(ViewInspector)
-                let hasAccessibilityID = testComponentComplianceSinglePlatform(
-                    view,
-                    expectedPattern: "SixLayer.main.ui.*PlatformSafetyLayer5.*",
-                    platform: .iOS,
-                    componentName: "PlatformSafetyLayer5"
-                )
- #expect(hasAccessibilityID, "Should generate accessibility identifier")
+        tryWithFirstVStack(view, testName: "PlatformSafetyLayer5", minChildren: 1) { _ in }
+        let hasAccessibilityIDSafe = testComponentComplianceSinglePlatform(
+            view,
+            expectedPattern: "SixLayer.main.ui.*PlatformSafetyLayer5.*",
+            platform: .iOS,
+            componentName: "PlatformSafetyLayer5"
+        )
+        #expect(hasAccessibilityIDSafe, "Should generate accessibility identifier")
         #else
-                // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-                // The modifier IS present in the code, but ViewInspector can't detect it on macOS
-                #endif
-            } catch {
-                Issue.record("PlatformSafetyLayer5 inspection error: \(error)")
-            }
-        } else {
-            Issue.record("PlatformSafetyLayer5 inspection failed - safety features not implemented")
-        }
-        #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // ViewInspector not available on this platform - this is expected, not a failure
         #endif
     }
 
@@ -254,33 +174,16 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
 
         // Should render navigation interface
         #if canImport(ViewInspector)
-        if let inspected = try? AnyView(view).inspect() {
-            do {
-                // Should have proper UI structure for routing features
-                let vStack = try inspected.vStack()
-                #expect(vStack.count >= 1, "Should have routing interface elements")
-
-                // Should have accessibility identifier
-                #if canImport(ViewInspector)
-                let hasAccessibilityID = testComponentComplianceSinglePlatform(
-                    view,
-                    expectedPattern: "SixLayer.main.ui.*PlatformRoutingLayer5.*",
-                    platform: .iOS,
-                    componentName: "PlatformRoutingLayer5"
-                )
- #expect(hasAccessibilityID, "Should generate accessibility identifier")
+        tryWithFirstVStack(view, testName: "PlatformRoutingLayer5", minChildren: 1) { _ in }
+        let hasAccessibilityIDRoute = testComponentComplianceSinglePlatform(
+            view,
+            expectedPattern: "SixLayer.main.ui.*PlatformRoutingLayer5.*",
+            platform: .iOS,
+            componentName: "PlatformRoutingLayer5"
+        )
+        #expect(hasAccessibilityIDRoute, "Should generate accessibility identifier")
         #else
-                // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-                // The modifier IS present in the code, but ViewInspector can't detect it on macOS
-                #endif
-            } catch {
-                Issue.record("PlatformRoutingLayer5 inspection error: \(error)")
-            }
-        } else {
-            Issue.record("PlatformRoutingLayer5 inspection failed - navigation routing not implemented")
-        }
-        #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // ViewInspector not available on this platform - this is expected, not a failure
         #endif
     }
 
@@ -297,33 +200,16 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
 
         // Should render service orchestration interface
         #if canImport(ViewInspector)
-        if let inspected = try? AnyView(view).inspect() {
-            do {
-                // Should have proper UI structure for orchestration features
-                let vStack = try inspected.vStack()
-                #expect(vStack.count >= 1, "Should have orchestration interface elements")
-
-                // Should have accessibility identifier
-                #if canImport(ViewInspector)
-                let hasAccessibilityID = testComponentComplianceSinglePlatform(
-                    view,
-                    expectedPattern: "SixLayer.main.ui.*PlatformOrchestrationLayer5.*",
-                    platform: .iOS,
-                    componentName: "PlatformOrchestrationLayer5"
-                )
- #expect(hasAccessibilityID, "Should generate accessibility identifier")
+        tryWithFirstVStack(view, testName: "PlatformOrchestrationLayer5", minChildren: 1) { _ in }
+        let hasAccessibilityIDOrch = testComponentComplianceSinglePlatform(
+            view,
+            expectedPattern: "SixLayer.main.ui.*PlatformOrchestrationLayer5.*",
+            platform: .iOS,
+            componentName: "PlatformOrchestrationLayer5"
+        )
+        #expect(hasAccessibilityIDOrch, "Should generate accessibility identifier")
         #else
-                // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-                // The modifier IS present in the code, but ViewInspector can't detect it on macOS
-                #endif
-            } catch {
-                Issue.record("PlatformOrchestrationLayer5 inspection error: \(error)")
-            }
-        } else {
-            Issue.record("PlatformOrchestrationLayer5 inspection failed - service orchestration not implemented")
-        }
-        #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // ViewInspector not available on this platform - this is expected, not a failure
         #endif
     }
 
@@ -340,33 +226,16 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
 
         // Should render optimization recommendations interface
         #if canImport(ViewInspector)
-        if let inspected = try? AnyView(view).inspect() {
-            do {
-                // Should have proper UI structure for optimization features
-                let vStack = try inspected.vStack()
-                #expect(vStack.count >= 1, "Should have optimization interface elements")
-
-                // Should have accessibility identifier
-                #if canImport(ViewInspector)
-                let hasAccessibilityID = testComponentComplianceSinglePlatform(
-                    view,
-                    expectedPattern: "SixLayer.main.ui.*PlatformOptimizationLayer5.*",
-                    platform: .iOS,
-                    componentName: "PlatformOptimizationLayer5"
-                )
- #expect(hasAccessibilityID, "Should generate accessibility identifier")
+        tryWithFirstVStack(view, testName: "PlatformOptimizationLayer5", minChildren: 1) { _ in }
+        let hasAccessibilityIDOpt = testComponentComplianceSinglePlatform(
+            view,
+            expectedPattern: "SixLayer.main.ui.*PlatformOptimizationLayer5.*",
+            platform: .iOS,
+            componentName: "PlatformOptimizationLayer5"
+        )
+        #expect(hasAccessibilityIDOpt, "Should generate accessibility identifier")
         #else
-                // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-                // The modifier IS present in the code, but ViewInspector can't detect it on macOS
-                #endif
-            } catch {
-                Issue.record("PlatformOptimizationLayer5 inspection error: \(error)")
-            }
-        } else {
-            Issue.record("PlatformOptimizationLayer5 inspection failed - optimization features not implemented")
-        }
-        #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // ViewInspector not available on this platform - this is expected, not a failure
         #endif
     }
 
@@ -383,38 +252,16 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
 
         // Should render data organization interface
         #if canImport(ViewInspector)
-        if let inspected = try? AnyView(view).inspect() {
-            do {
-                // Should have proper UI structure for organization features
-                let vStack = try inspected.vStack()
-                #expect(vStack.count >= 1, "Should have organization interface elements")
-
-                // Should have accessibility identifier
-                #if canImport(ViewInspector)
-
-                let hasAccessibilityID =                 testComponentComplianceSinglePlatform(
-                    view,
-                    expectedPattern: "SixLayer.main.ui.*PlatformOrganizationLayer5.*",
-                    platform: .iOS,
-                    componentName: "PlatformOrganizationLayer5"
-                )
- #expect(hasAccessibilityID, "Should generate accessibility identifier")
+        tryWithFirstVStack(view, testName: "PlatformOrganizationLayer5", minChildren: 1) { _ in }
+        let hasAccessibilityIDOrg = testComponentComplianceSinglePlatform(
+            view,
+            expectedPattern: "SixLayer.main.ui.*PlatformOrganizationLayer5.*",
+            platform: .iOS,
+            componentName: "PlatformOrganizationLayer5"
+        )
+        #expect(hasAccessibilityIDOrg, "Should generate accessibility identifier")
         #else
-
-                // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-
-                // The modifier IS present in the code, but ViewInspector can't detect it on macOS
-
-                #endif
-
-            } catch {
-                Issue.record("PlatformOrganizationLayer5 inspection error: \(error)")
-            }
-        } else {
-            Issue.record("PlatformOrganizationLayer5 inspection failed - data organization not implemented")
-        }
-        #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // ViewInspector not available on this platform - this is expected, not a failure
         #endif
     }
 
@@ -431,38 +278,16 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
 
         // Should render notification management interface
         #if canImport(ViewInspector)
-        if let inspected = try? AnyView(view).inspect() {
-            do {
-                // Should have proper UI structure for notification features
-                let vStack = try inspected.vStack()
-                #expect(vStack.count >= 1, "Should have notification interface elements")
-
-                // Should have accessibility identifier
-                #if canImport(ViewInspector)
-
-                let hasAccessibilityID =                 testComponentComplianceSinglePlatform(
-                    view,
-                    expectedPattern: "SixLayer.main.ui.*PlatformNotificationLayer5.*",
-                    platform: .iOS,
-                    componentName: "PlatformNotificationLayer5"
-                )
- #expect(hasAccessibilityID, "Should generate accessibility identifier")
+        tryWithFirstVStack(view, testName: "PlatformNotificationLayer5", minChildren: 1) { _ in }
+        let hasAccessibilityIDNotif = testComponentComplianceSinglePlatform(
+            view,
+            expectedPattern: "SixLayer.main.ui.*PlatformNotificationLayer5.*",
+            platform: .iOS,
+            componentName: "PlatformNotificationLayer5"
+        )
+        #expect(hasAccessibilityIDNotif, "Should generate accessibility identifier")
         #else
-
-                // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-
-                // The modifier IS present in the code, but ViewInspector can't detect it on macOS
-
-                #endif
-
-            } catch {
-                Issue.record("PlatformNotificationLayer5 inspection error: \(error)")
-            }
-        } else {
-            Issue.record("PlatformNotificationLayer5 inspection failed - notification management not implemented")
-        }
-        #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // ViewInspector not available on this platform - this is expected, not a failure
         #endif
     }
 
@@ -479,38 +304,16 @@ open class Layer5PlatformComponentTDDTests: BaseTestClass {
 
         // Should render context interpretation interface
         #if canImport(ViewInspector)
-        if let inspected = try? AnyView(view).inspect() {
-            do {
-                // Should have proper UI structure for interpretation features
-                let vStack = try inspected.vStack()
-                #expect(vStack.count >= 1, "Should have interpretation interface elements")
-
-                // Should have accessibility identifier
-                #if canImport(ViewInspector)
-
-                let hasAccessibilityID =                 testComponentComplianceSinglePlatform(
-                    view,
-                    expectedPattern: "SixLayer.main.ui.*PlatformInterpretationLayer5.*",
-                    platform: .iOS,
-                    componentName: "PlatformInterpretationLayer5"
-                )
- #expect(hasAccessibilityID, "Should generate accessibility identifier")
+        tryWithFirstVStack(view, testName: "PlatformInterpretationLayer5", minChildren: 1) { _ in }
+        let hasAccessibilityIDInterp = testComponentComplianceSinglePlatform(
+            view,
+            expectedPattern: "SixLayer.main.ui.*PlatformInterpretationLayer5.*",
+            platform: .iOS,
+            componentName: "PlatformInterpretationLayer5"
+        )
+        #expect(hasAccessibilityIDInterp, "Should generate accessibility identifier")
         #else
-
-                // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-
-                // The modifier IS present in the code, but ViewInspector can't detect it on macOS
-
-                #endif
-
-            } catch {
-                Issue.record("PlatformInterpretationLayer5 inspection error: \(error)")
-            }
-        } else {
-            Issue.record("PlatformInterpretationLayer5 inspection failed - context interpretation not implemented")
-        }
-        #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // ViewInspector not available on this platform - this is expected, not a failure
         #endif
     }
 }

@@ -45,13 +45,14 @@ public struct DynamicSelectField: View {
             // Select picker - use hints if available, otherwise fallback to field.options
             let i18n = InternationalizationService()
             if !pickerOptions.isEmpty {
-                Picker(field.placeholder ?? i18n.localizedString(for: "SixLayerFramework.form.placeholder.select"), selection: selectedValue) {
-                    ForEach(pickerOptions, id: \.value) { option in
-                        Text(option.label).tag(option.value)
-                    }
-                }
-                .pickerStyle(.menu)
-                .accessibilityIdentifier("SixLayer.main.element.select.\(field.id)")
+                // Convert tuple array to PickerOption array for platformPicker
+                let pickerOptionArray = pickerOptions.map { PickerOption(value: $0.value, label: $0.label) }
+                platformPicker(
+                    label: field.placeholder ?? i18n.localizedString(for: "SixLayerFramework.form.placeholder.select"),
+                    selection: selectedValue,
+                    options: pickerOptionArray,
+                    pickerName: "DynamicSelectField"
+                )
             } else {
                 // No options available
                 Text(i18n.localizedString(for: "SixLayerFramework.form.noOptionsAvailable"))

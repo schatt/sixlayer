@@ -154,10 +154,13 @@ open class AutomaticAccessibilityIdentifiersTests: BaseTestClass {
             
             // Create a simple root view with the modifier applied
             // This simulates the scenario from Issue #7 where warnings occur
+            // Updated to use new parameter-based API (no environment dependencies)
+            let testConfig = AccessibilityIdentifierConfig.shared
+            testConfig.enableAutoIDs = true
+            testConfig.globalAutomaticAccessibilityIdentifiers = true
+            
             let rootView = Text("Test Content")
                 .automaticCompliance()
-                .environment(\.accessibilityIdentifierConfig, testConfig)
-                .environment(\.globalAutomaticAccessibilityIdentifiers, true)
             
             // The modifier should work without accessing environment during initialization
             // We can't directly test for warnings, but we can verify:
@@ -190,28 +193,28 @@ open class AutomaticAccessibilityIdentifiersTests: BaseTestClass {
         await runWithTaskLocalConfig {
             setupTestEnvironment()
             
-            // Create a view with environment values set
+            // Create a view with config values set (no environment dependencies)
             let testConfig = AccessibilityIdentifierConfig.shared
             testConfig.enableAutoIDs = true
+            testConfig.globalAutomaticAccessibilityIdentifiers = true
             
             let view = platformVStackContainer {
                 Text("Content")
             }
-            .automaticCompliance()
-            .environment(\.accessibilityIdentifierConfig, testConfig)
-            .environment(\.globalAutomaticAccessibilityIdentifiers, true)
-            .environment(\.accessibilityIdentifierName, "TestView")
+            .automaticCompliance(identifierName: "TestView")
             
-            // The modifier should use helper view pattern to defer environment access
-            // We verify this by checking that the view works correctly when inspected
+            // Modifier uses task-local config (no environment); verify identifier is generated when inspected.
             #if canImport(ViewInspector)
             if let inspected = try? AnyView(view).inspect() {
                 let identifier = try? inspected.accessibilityIdentifier()
-                // TDD RED: Should PASS - environment should be accessed only when view is installed
-                #expect(identifier != nil && !(identifier?.isEmpty ?? true), 
-                       "Modifier should access environment only when view is installed, generating identifier: '\(identifier ?? "nil")'")
+                #expect(identifier != nil && !(identifier?.isEmpty ?? true),
+                       "Modifier should generate identifier when view is inspected (task-local config), got: '\(identifier ?? "nil")'")
             } else {
-                Issue.record("Could not inspect view")
+                // Fallback: host view and get identifier from platform (modifier runs when rendered)
+                let root = Self.hostRootPlatformView(view, forceLayout: true)
+                let idFromPlatform = getAccessibilityIdentifierForTest(view: view, hostedRoot: root)
+                #expect(idFromPlatform != nil && !(idFromPlatform?.isEmpty ?? true),
+                       "Modifier should generate identifier (via platform), got: '\(idFromPlatform ?? "nil")'")
             }
             #else
             // ViewInspector not available on this platform - this is expected, not a failure
@@ -231,21 +234,19 @@ open class AutomaticAccessibilityIdentifiersTests: BaseTestClass {
             
             let testConfig = AccessibilityIdentifierConfig.shared
             testConfig.enableAutoIDs = true
+            testConfig.globalAutomaticAccessibilityIdentifiers = true
             
-            // Test automaticAccessibilityIdentifiers()
+            // Test automaticCompliance() - no environment dependencies
             let view1 = Text("Test")
                 .automaticCompliance()
-                .environment(\.accessibilityIdentifierConfig, testConfig)
             
-            // Test automaticAccessibilityIdentifiers(named:)
+            // Test automaticCompliance(named:) - no environment dependencies
             let view2 = Text("Test")
                 .automaticCompliance(named: "TestComponent")
-                .environment(\.accessibilityIdentifierConfig, testConfig)
             
-            // Test named()
+            // Test named() - no environment dependencies
             let view3 = Text("Test")
                 .named("TestElement")
-                .environment(\.accessibilityIdentifierConfig, testConfig)
             
             // All should work without environment access warnings
             #if canImport(ViewInspector)

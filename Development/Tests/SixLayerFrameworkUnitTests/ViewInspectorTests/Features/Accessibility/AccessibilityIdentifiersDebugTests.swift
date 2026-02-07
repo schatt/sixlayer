@@ -10,7 +10,7 @@ open class AccessibilityIdentifiersDebugTests: BaseTestClass {
     @Test @MainActor func testDirectAutomaticAccessibilityIdentifiersWorks() async {
         initializeTestConfig()
         // Test .automaticCompliance() directly
-        let testView = PlatformInteractionButton(style: .primary, action: {}) {
+        let testView = PlatformInteractionButton(style: .primary, action: {}, identifierName: "DirectAutomaticCompliance") {
             platformPresentContent_L1(content: "Test", hints: PresentationHints())
         }
             .automaticCompliance()
@@ -32,8 +32,8 @@ open class AccessibilityIdentifiersDebugTests: BaseTestClass {
     
     @Test @MainActor func testNamedModifierWorks() {
             initializeTestConfig()
-        // Test .named() modifier
-        let testView = PlatformInteractionButton(style: .primary, action: {}) {
+        // Test .named() modifier (identifierName for ID generation)
+        let testView = PlatformInteractionButton(style: .primary, action: {}, identifierName: "TestButton") {
             platformPresentContent_L1(content: "Test", hints: PresentationHints())
         }
             .named("TestButton")
@@ -56,8 +56,8 @@ open class AccessibilityIdentifiersDebugTests: BaseTestClass {
     
     @Test @MainActor func testAutomaticAccessibilityModifierWorks() {
             initializeTestConfig()
-        // Test AutomaticAccessibilityModifier directly
-        let testView = PlatformInteractionButton(style: .primary, action: {}) {
+        // Test AutomaticAccessibilityModifier directly (identifierName for ID)
+        let testView = PlatformInteractionButton(style: .primary, action: {}, identifierName: "Test") {
             platformPresentContent_L1(content: "Test", hints: PresentationHints())
         }
             .modifier(SystemAccessibilityModifier(
@@ -82,8 +82,8 @@ open class AccessibilityIdentifiersDebugTests: BaseTestClass {
     
     @Test @MainActor func testAutomaticAccessibilityExtensionWorks() {
             initializeTestConfig()
-        // Test .automaticAccessibility() extension
-        let testView = PlatformInteractionButton(style: .primary, action: {}) {
+        // Test .automaticAccessibility() extension (identifierName for ID)
+        let testView = PlatformInteractionButton(style: .primary, action: {}, identifierName: "Test") {
             platformPresentContent_L1(content: "Test", hints: PresentationHints())
         }
             .automaticAccessibility()

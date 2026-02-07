@@ -181,16 +181,26 @@ public struct PlatformUIExamples {
                 style: .adaptive
             ) {
                 VStack(spacing: 0) {
-                    // Style picker
-                    Picker("List Style", selection: $selectedStyle) {
-                        Text("Adaptive").tag(ListStyle.adaptive)
-                        Text("Plain").tag(ListStyle.plain)
-                        Text("Grouped").tag(ListStyle.grouped)
-                        Text("Inset Grouped").tag(ListStyle.insetGrouped)
-                        Text("Sidebar").tag(ListStyle.sidebar)
-                        Text("Carousel").tag(ListStyle.carousel)
-                    }
-                    .pickerStyle(SegmentedPickerStyle())
+                    // Style picker - use platformPicker for automatic accessibility (Issue #163)
+                    let listStyles: [ListStyle] = [.adaptive, .plain, .grouped, .insetGrouped, .sidebar, .carousel]
+                    platformPicker(
+                        label: "List Style",
+                        selection: $selectedStyle,
+                        options: listStyles,
+                        optionTag: { $0 },
+                        optionLabel: { style in
+                            switch style {
+                            case .adaptive: return "Adaptive"
+                            case .plain: return "Plain"
+                            case .grouped: return "Grouped"
+                            case .insetGrouped: return "Inset Grouped"
+                            case .sidebar: return "Sidebar"
+                            case .carousel: return "Carousel"
+                            }
+                        },
+                        pickerName: "ListStylePicker",
+                        style: SegmentedPickerStyle()
+                    )
                     .padding()
                     
                     Divider()

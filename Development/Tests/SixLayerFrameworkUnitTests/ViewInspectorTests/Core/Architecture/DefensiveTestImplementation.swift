@@ -41,7 +41,7 @@ struct DefensiveTestImplementation {
 
 /// Test-specific error types
 enum TestError: Error, CustomStringConvertible {
-    case validationFailed(ValidationError)
+    case validationFailed(String)
     case testSetupFailed(String)
     
     var description: String {

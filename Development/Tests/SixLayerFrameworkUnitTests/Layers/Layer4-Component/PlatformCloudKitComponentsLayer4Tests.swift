@@ -78,7 +78,7 @@ final class PlatformCloudKitComponentsLayer4Tests {
     
     @Test func testPlatformCloudKitServiceStatus() async {
         // Given: A service with mock delegate
-        let delegate = MockCloudKitDelegate()
+        let delegate = TestCloudKitDelegate()
         let service = CloudKitService(delegate: delegate)
         
         // When: Creating status view
@@ -92,7 +92,7 @@ final class PlatformCloudKitComponentsLayer4Tests {
     
     @Test func testPlatformCloudKitSyncButton() async {
         // Given: A service with mock delegate
-        let delegate = MockCloudKitDelegate()
+        let delegate = TestCloudKitDelegate()
         let service = CloudKitService(delegate: delegate)
         
         // When: Creating sync button
@@ -104,7 +104,7 @@ final class PlatformCloudKitComponentsLayer4Tests {
     
     @Test func testPlatformCloudKitSyncButtonWithCustomLabel() async {
         // Given: A service with mock delegate
-        let delegate = MockCloudKitDelegate()
+        let delegate = TestCloudKitDelegate()
         let service = CloudKitService(delegate: delegate)
         
         // When: Creating sync button with custom label
@@ -118,7 +118,7 @@ final class PlatformCloudKitComponentsLayer4Tests {
     
     @Test func testPlatformCloudKitStatusBadge() async {
         // Given: A service with mock delegate
-        let delegate = MockCloudKitDelegate()
+        let delegate = TestCloudKitDelegate()
         let service = CloudKitService(delegate: delegate)
         
         // When: Creating status badge

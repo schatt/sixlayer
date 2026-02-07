@@ -97,6 +97,58 @@ public extension View {
         #endif
     }
 
+    /// Platform-specific frame constraints with fixed width and height
+    /// Provides fixed-size frame constraints that are automatically clamped to available
+    /// screen/window space to prevent views that are too large for the device.
+    ///
+    /// - Parameters:
+    ///   - width: Fixed width constraint (clamped to screen/window size on all platforms)
+    ///   - height: Fixed height constraint (clamped to screen/window size on all platforms)
+    ///   - alignment: Alignment of the content within the frame (default: .center)
+    /// - Returns: A view with platform-specific frame constraints
+    @MainActor
+    func platformFrame(
+        width: CGFloat? = nil,
+        height: CGFloat? = nil,
+        alignment: Alignment = .center
+    ) -> some View {
+        // Clamp width and height if provided
+        let clampedWidth: CGFloat?
+        let clampedHeight: CGFloat?
+        
+        #if os(iOS) || os(watchOS) || os(tvOS) || os(visionOS)
+        if let width = width {
+            let maxSize = PlatformFrameHelpers.getMaxFrameSize()
+            clampedWidth = min(width, maxSize.width)
+        } else {
+            clampedWidth = nil
+        }
+        if let height = height {
+            let maxSize = PlatformFrameHelpers.getMaxFrameSize()
+            clampedHeight = min(height, maxSize.height)
+        } else {
+            clampedHeight = nil
+        }
+        #elseif os(macOS)
+        if let width = width {
+            clampedWidth = PlatformFrameHelpers.clampMaxFrameSize(width, dimension: .width)
+        } else {
+            clampedWidth = nil
+        }
+        if let height = height {
+            clampedHeight = PlatformFrameHelpers.clampMaxFrameSize(height, dimension: .height)
+        } else {
+            clampedHeight = nil
+        }
+        #else
+        clampedWidth = width
+        clampedHeight = height
+        #endif
+        
+        // Use SwiftUI's frame modifier with alignment (no AnyView — Issue 178)
+        return self.frame(width: clampedWidth, height: clampedHeight, alignment: alignment)
+    }
+    
     /// Platform-specific frame constraints with custom sizes
     /// Provides flexible frame constraints that are automatically clamped to available
     /// screen/window space to prevent views that are too large for the device.
@@ -108,15 +160,18 @@ public extension View {
     ///   - minHeight: Minimum height constraint (clamped to screen size on macOS)
     ///   - idealHeight: Ideal height constraint (clamped to screen/window size on all platforms)
     ///   - maxHeight: Maximum height constraint (clamped to screen/window size on both platforms)
-    /// - Returns: A view with platform-specific frame constraints
+    ///   - alignment: Alignment of the content within the frame (default: .center)
+    /// - Returns: A view with platform-specific frame constraints (no AnyView — Issue 178)
     @MainActor
+    @ViewBuilder
     func platformFrame(
         minWidth: CGFloat? = nil,
         idealWidth: CGFloat? = nil,
         maxWidth: CGFloat? = nil,
         minHeight: CGFloat? = nil,
         idealHeight: CGFloat? = nil,
-        maxHeight: CGFloat? = nil
+        maxHeight: CGFloat? = nil,
+        alignment: Alignment = .center
     ) -> some View {
         // Use shared helper for DRY implementation
         let clamped = PlatformFrameHelpers.clampFrameConstraints(
@@ -133,22 +188,19 @@ public extension View {
                               clamped.minHeight != nil || clamped.idealHeight != nil || clamped.maxHeight != nil
         
         if hasAnyConstraint {
-            // Use SwiftUI's frame modifier which handles all combinations
-            return AnyView(self.frame(
+            self.frame(
                 minWidth: clamped.minWidth,
                 idealWidth: clamped.idealWidth,
                 maxWidth: clamped.maxWidth,
                 minHeight: clamped.minHeight,
                 idealHeight: clamped.idealHeight,
-                maxHeight: clamped.maxHeight
-            ))
+                maxHeight: clamped.maxHeight,
+                alignment: alignment
+            )
+        } else if let defaultMax = PlatformFrameHelpers.getDefaultMaxFrameSize() {
+            self.frame(maxWidth: defaultMax.width, maxHeight: defaultMax.height, alignment: alignment)
         } else {
-            // No constraints provided, apply default max constraints for safety on mobile platforms
-            if let defaultMax = PlatformFrameHelpers.getDefaultMaxFrameSize() {
-                return AnyView(self.frame(maxWidth: defaultMax.width, maxHeight: defaultMax.height))
-            } else {
-                return AnyView(self)
-            }
+            self
         }
     }
     
@@ -166,16 +218,13 @@ public extension View {
     /// - Parameter topPadding: Custom top padding value
     /// - Returns: A view with platform-specific content spacing
     func platformContentSpacing(topPadding: CGFloat) -> some View {
-        #if os(iOS)
-        return AnyView(self.padding(.horizontal).padding(.top, topPadding))
-            .automaticCompliance()
-        #elseif os(macOS)
-        return AnyView(self.padding(.horizontal).padding(.top, topPadding * 0.8))
-            .automaticCompliance()
+        #if os(macOS)
+        let padding = topPadding * 0.8
         #else
-        return AnyView(self.padding(.horizontal).padding(.top, topPadding))
-            .automaticCompliance()
+        let padding = topPadding
         #endif
+        return self.padding(.horizontal).padding(.top, padding)
+            .automaticCompliance()
     }
 
     /// Platform-specific content spacing with custom directional padding
@@ -193,28 +242,17 @@ public extension View {
         leading: CGFloat? = nil,
         trailing: CGFloat? = nil
     ) -> some View {
-        #if os(iOS)
-        return AnyView(self
-            .padding(.top, top ?? 0)
-            .padding(.bottom, bottom ?? 0)
-            .padding(.leading, leading ?? 0)
-            .padding(.trailing, trailing ?? 0))
-            .automaticCompliance()
-        #elseif os(macOS)
-        return AnyView(self
-            .padding(.top, (top ?? 0) * 0.8)
-            .padding(.bottom, (bottom ?? 0) * 0.8)
-            .padding(.leading, (leading ?? 0) * 0.8)
-            .padding(.trailing, (trailing ?? 0) * 0.8))
-            .automaticCompliance()
+        #if os(macOS)
+        let scale: CGFloat = 0.8
         #else
-        return AnyView(self
-            .padding(.top, top ?? 0)
-            .padding(.bottom, bottom ?? 0)
-            .padding(.leading, leading ?? 0)
-            .padding(.trailing, trailing ?? 0))
-            .automaticCompliance()
+        let scale: CGFloat = 1.0
         #endif
+        return self
+            .padding(.top, (top ?? 0) * scale)
+            .padding(.bottom, (bottom ?? 0) * scale)
+            .padding(.leading, (leading ?? 0) * scale)
+            .padding(.trailing, (trailing ?? 0) * scale)
+            .automaticCompliance()
     }
 
     /// Platform-specific content spacing with horizontal and vertical padding
@@ -228,22 +266,15 @@ public extension View {
         horizontal: CGFloat? = nil,
         vertical: CGFloat? = nil
     ) -> some View {
-        #if os(iOS)
-        return AnyView(self
-            .padding(.horizontal, horizontal ?? 0)
-            .padding(.vertical, vertical ?? 0))
-            .automaticCompliance()
-        #elseif os(macOS)
-        return AnyView(self
-            .padding(.horizontal, (horizontal ?? 0) * 0.8)
-            .padding(.vertical, (vertical ?? 0) * 0.8))
-            .automaticCompliance()
+        #if os(macOS)
+        let scale: CGFloat = 0.8
         #else
-        return AnyView(self
-            .padding(.horizontal, horizontal ?? 0)
-            .padding(.vertical, vertical ?? 0))
-            .automaticCompliance()
+        let scale: CGFloat = 1.0
         #endif
+        return self
+            .padding(.horizontal, (horizontal ?? 0) * scale)
+            .padding(.vertical, (vertical ?? 0) * scale)
+            .automaticCompliance()
     }
 
     /// Platform-specific content spacing with uniform padding on all sides
@@ -251,32 +282,20 @@ public extension View {
     ///
     /// - Parameter all: Custom padding value applied to all sides
     /// - Returns: A view with platform-specific content spacing
+    @ViewBuilder
     func platformContentSpacing(all: CGFloat? = nil) -> some View {
-        #if os(iOS)
-        if let all = all {
-            return AnyView(self.padding(.horizontal, all).padding(.vertical, all))
-                .automaticCompliance()
-        } else {
-            return AnyView(self.padding(.horizontal).padding(.top, 20))
-                .automaticCompliance()
-        }
-        #elseif os(macOS)
-        if let all = all {
-            return AnyView(self.padding(.horizontal, all * 0.8).padding(.vertical, all * 0.8))
-                .automaticCompliance()
-        } else {
-            return AnyView(self.padding(.horizontal).padding(.top, 16))
-                .automaticCompliance()
-        }
+        #if os(macOS)
+        let scale: CGFloat = 0.8
+        let defaultTop: CGFloat = 16
         #else
-        if let all = all {
-            return AnyView(self.padding(.horizontal, all).padding(.vertical, all))
-                .automaticCompliance()
-        } else {
-            return AnyView(self.padding(.horizontal).padding(.top, 20))
-                .automaticCompliance()
-        }
+        let scale: CGFloat = 1.0
+        let defaultTop: CGFloat = 20
         #endif
+        if let all = all {
+            self.padding(.horizontal, all * scale).padding(.vertical, all * scale).automaticCompliance()
+        } else {
+            self.padding(.horizontal).padding(.top, defaultTop).automaticCompliance()
+        }
     }
 
     // MARK: - Navigation Configuration
@@ -294,20 +313,21 @@ public extension View {
     }
 
     /// Platform-specific presentation detents (iOS only)
-    /// Applies presentation detents on iOS, no-op on other platforms
+    /// Applies presentation detents on iOS, no-op on other platforms (no AnyView — Issue 178)
+    @ViewBuilder
     func platformPresentationDetents(_ detents: [Any]) -> some View {
         #if os(iOS)
         if #available(iOS 16.0, *) {
             if let presentationDetents = detents.compactMap({ $0 as? PresentationDetent }) as? [PresentationDetent] {
-                return AnyView(self.presentationDetents(Set(presentationDetents)))
+                self.presentationDetents(Set(presentationDetents))
             } else {
-                return AnyView(self)
+                self
             }
         } else {
-            return AnyView(self)
+            self
         }
         #else
-        return AnyView(self)
+        self
         #endif
     }
 
@@ -593,12 +613,17 @@ public extension View {
     /// - Parameters:
     ///   - isPresented: Binding to control sheet presentation
     ///   - detents: Platform-specific presentation detents (iOS only)
+    ///   - onDismiss: Optional callback when sheet is dismissed
     ///   - content: The sheet content
     /// - Returns: A view with platform-specific sheet presentation
     ///
     /// ## Usage Example
     /// ```swift
-    /// .platformSheet(isPresented: $showingSheet, detents: [.medium, .large]) {
+    /// .platformSheet(
+    ///     isPresented: $showingSheet,
+    ///     detents: [.medium, .large],
+    ///     onDismiss: { print("Sheet dismissed") }
+    /// ) {
     ///     VStack {
     ///         Text("Sheet Content")
     ///         Button("Dismiss") { showingSheet = false }
@@ -609,10 +634,11 @@ public extension View {
     func platformSheet<SheetContent: View>(
         isPresented: Binding<Bool>,
         detents: [PlatformPresentationDetent] = [.large],
+        onDismiss: (() -> Void)? = nil,
         @ViewBuilder content: @escaping () -> SheetContent
     ) -> some View {
         #if os(iOS)
-        return self.sheet(isPresented: isPresented) {
+        return self.sheet(isPresented: isPresented, onDismiss: onDismiss) {
             Group {
                 if #available(iOS 16.0, *) {
                     // Use NavigationStack on iOS 16+
@@ -655,14 +681,103 @@ public extension View {
             minWidth = 820
             minHeight = 640
         }
-        return self.sheet(isPresented: isPresented) {
+        return self.sheet(isPresented: isPresented, onDismiss: onDismiss) {
             content()
                 .frame(minWidth: minWidth, minHeight: minHeight)
         }
         #else
-        return self.sheet(isPresented: isPresented) {
+        return self.sheet(isPresented: isPresented, onDismiss: onDismiss) {
             content()
         }
+        #endif
+    }
+    
+    /// Platform-specific sheet presentation with item-based binding
+    /// Provides consistent sheet presentation using item binding (matches SwiftUI's item-based sheet overload)
+    ///
+    /// - Parameters:
+    ///   - item: Optional item binding for sheet presentation (sheet presents when item is non-nil)
+    ///   - detents: Platform-specific presentation detents (iOS only)
+    ///   - onDismiss: Optional callback when sheet is dismissed
+    ///   - content: The sheet content builder that receives the item
+    /// - Returns: A view with platform-specific sheet presentation
+    ///
+    /// ## Usage Example
+    /// ```swift
+    /// struct Item: Identifiable {
+    ///     let id: Int
+    ///     let name: String
+    /// }
+    ///
+    /// @State var selectedItem: Item?
+    ///
+    /// .platformSheet(
+    ///     item: $selectedItem,
+    ///     onDismiss: { print("Sheet dismissed") }
+    /// ) { item in
+    ///     VStack {
+    ///         Text("Editing: \(item.name)")
+    ///         Button("Done") { selectedItem = nil }
+    ///     }
+    ///     .navigationTitle("Edit Item")
+    /// }
+    /// ```
+    func platformSheet<Item: Identifiable, SheetContent: View>(
+        item: Binding<Item?>,
+        detents: [PlatformPresentationDetent] = [.large],
+        onDismiss: (() -> Void)? = nil,
+        @ViewBuilder content: @escaping (Item) -> SheetContent
+    ) -> some View {
+        #if os(iOS)
+        return self.sheet(item: item, onDismiss: onDismiss) { item in
+            Group {
+                if #available(iOS 16.0, *) {
+                    // Use NavigationStack on iOS 16+
+                    NavigationStack {
+                        content(item)
+                    }
+                } else {
+                    // Fallback to NavigationView for iOS 15 and earlier
+                    NavigationView {
+                        content(item)
+                    }
+                }
+            }
+            .platformPresentationDetents(detents)
+            .deviceAwareFrame() // Layer 4: Device-aware sizing for iPad vs iPhone
+        }
+        #elseif os(macOS)
+        // Compute desired macOS sheet size outside the ViewBuilder closure
+        let hasLarge = detents.contains { detent in
+            if case .large = detent { return true } else { return false }
+        }
+        let hasMedium = detents.contains { detent in
+            if case .medium = detent { return true } else { return false }
+        }
+        let customHeights: [CGFloat] = detents.compactMap { detent in
+            if case .custom(let h) = detent { return h } else { return nil }
+        }
+        let minWidth: CGFloat
+        let minHeight: CGFloat
+        if let maxCustom = customHeights.max() {
+            minWidth = max(800, min(1400, maxCustom * 1.0))
+            minHeight = max(640, min(1100, maxCustom))
+        } else if hasLarge {
+            minWidth = 1024
+            minHeight = 800
+        } else if hasMedium {
+            minWidth = 820
+            minHeight = 640
+        } else {
+            minWidth = 820
+            minHeight = 640
+        }
+        return self.sheet(item: item, onDismiss: onDismiss) { item in
+            content(item)
+                .frame(minWidth: minWidth, minHeight: minHeight)
+        }
+        #else
+        return self.sheet(item: item, onDismiss: onDismiss, content: content)
         #endif
     }
 
@@ -834,6 +949,95 @@ public extension View {
         ) {
             Button("OK") { }
         }
+    }
+    
+    /// Platform-specific alert presentation with data-presenting
+    /// Provides data-driven alert patterns matching SwiftUI's alert modifier
+    ///
+    /// - Parameters:
+    ///   - title: The alert title
+    ///   - isPresented: Binding to control alert presentation
+    ///   - presenting: The data to present (alert shows when data is non-nil)
+    ///   - actions: The alert actions builder that receives the data
+    ///   - message: The alert message builder that receives the data
+    /// - Returns: A view with platform-specific data-presenting alert
+    ///
+    /// ## Usage Example
+    /// ```swift
+    /// struct Item: Identifiable {
+    ///     let id: Int
+    ///     let name: String
+    /// }
+    ///
+    /// @State var itemToDelete: Item?
+    ///
+    /// .platformAlert(
+    ///     Text("Delete Item"),
+    ///     isPresented: .constant(itemToDelete != nil),
+    ///     presenting: itemToDelete
+    /// ) { item in
+    ///     Button("Delete", role: .destructive) { deleteItem(item) }
+    ///     Button("Cancel", role: .cancel) { itemToDelete = nil }
+    /// } message: { item in
+    ///     Text("Are you sure you want to delete \(item.name)?")
+    /// }
+    /// ```
+    func platformAlert<Data: Identifiable, A: View, M: View>(
+        _ title: Text,
+        isPresented: Binding<Bool>,
+        presenting data: Data?,
+        @ViewBuilder actions: @escaping (Data) -> A,
+        @ViewBuilder message: @escaping (Data) -> M
+    ) -> some View {
+        #if os(iOS)
+        return self.alert(title, isPresented: isPresented, presenting: data, actions: actions, message: message)
+        #elseif os(macOS)
+        return self.alert(title, isPresented: isPresented, presenting: data, actions: actions, message: message)
+        #else
+        return self.alert(title, isPresented: isPresented, presenting: data, actions: actions, message: message)
+        #endif
+    }
+    
+    /// Platform-specific alert presentation with data-presenting (no message)
+    /// Convenience method for data-presenting alerts without a message
+    ///
+    /// - Parameters:
+    ///   - title: The alert title
+    ///   - isPresented: Binding to control alert presentation
+    ///   - presenting: The data to present (alert shows when data is non-nil)
+    ///   - actions: The alert actions builder that receives the data
+    /// - Returns: A view with platform-specific data-presenting alert
+    ///
+    /// ## Usage Example
+    /// ```swift
+    /// struct Item: Identifiable {
+    ///     let id: Int
+    /// }
+    ///
+    /// @State var itemToConfirm: Item?
+    ///
+    /// .platformAlert(
+    ///     Text("Confirm"),
+    ///     isPresented: .constant(itemToConfirm != nil),
+    ///     presenting: itemToConfirm
+    /// ) { item in
+    ///     Button("OK") { confirmItem(item) }
+    ///     Button("Cancel", role: .cancel) { itemToConfirm = nil }
+    /// }
+    /// ```
+    func platformAlert<Data: Identifiable, A: View>(
+        _ title: Text,
+        isPresented: Binding<Bool>,
+        presenting data: Data?,
+        @ViewBuilder actions: @escaping (Data) -> A
+    ) -> some View {
+        #if os(iOS)
+        return self.alert(title, isPresented: isPresented, presenting: data, actions: actions)
+        #elseif os(macOS)
+        return self.alert(title, isPresented: isPresented, presenting: data, actions: actions)
+        #else
+        return self.alert(title, isPresented: isPresented, presenting: data, actions: actions)
+        #endif
     }
 
 
@@ -1142,22 +1346,21 @@ public extension View {
 
 
 
-    /// Platform-specific navigation with path (iOS 16+ only)
+    /// Platform-specific navigation with path (iOS 16+ only) (no AnyView — Issue 178)
     /// iOS: Uses NavigationStack with path; macOS: Returns content directly
+    @ViewBuilder
     func platformNavigationWithPath<Root: View>(
         path: Binding<NavigationPath>,
         @ViewBuilder root: () -> Root
     ) -> some View {
         #if os(iOS)
         if #available(iOS 16.0, *) {
-            return AnyView(NavigationStack(path: path, root: root))
+            NavigationStack(path: path, root: root)
         } else {
-            // iOS 15 fallback: ignore path, just return root
-            return AnyView(root())
+            root()
         }
         #else
-        // macOS: return content directly
-        return AnyView(root())
+        root()
         #endif
     }
 
@@ -1180,27 +1383,23 @@ public extension View {
         #endif
     }
 
-    /// Platform-specific navigation state management with multiple data types
-    /// Provides consistent navigation state handling with multiple typed data across platforms
-    ///
+    /// Platform-specific navigation state management with multiple data types (no AnyView — Issue 178)
     /// - Parameters:
     ///   - path: Binding to the navigation path
     ///   - root: The root view
-    /// - Returns: A platform-specific navigation container with multiple typed state management
+    @ViewBuilder
     func platformNavigationWithPath<Data: Hashable, Root: View>(
         path: Binding<NavigationPath>,
         @ViewBuilder root: () -> Root
     ) -> some View {
         #if os(iOS)
         if #available(iOS 16.0, *) {
-            return AnyView(NavigationStack(path: path, root: root))
+            NavigationStack(path: path, root: root)
         } else {
-            // iOS 15 fallback: ignore path, just return root
-            return AnyView(root())
+            root()
         }
         #else
-        // macOS: return content directly
-        return AnyView(root())
+        root()
         #endif
     }
 
@@ -1617,26 +1816,154 @@ public extension View {
         #endif
     }
 
-    /// Platform-specific picker with selection
-    /// Provides consistent picker behavior across platforms
-    ///
-    /// - Parameters:
-    ///   - selection: Binding to the selected value
-    ///   - content: The picker content
-    ///   - label: The picker label
-    /// - Returns: A platform-specific picker
-    func platformPicker<SelectionValue: Hashable, Content: View, Label: View>(
-        selection: Binding<SelectionValue>,
-        @ViewBuilder content: () -> Content,
-        @ViewBuilder label: () -> Label
-    ) -> some View {
-        #if os(iOS)
-        return Picker(selection: selection, content: content, label: label)
-        #else
-        return Picker(selection: selection, content: content, label: label)
-        #endif
-    }
+}
 
+// MARK: - Platform Picker Functions
+
+/// Platform-specific picker with automatic accessibility compliance
+/// Fixes #163: Automatically applies accessibility identifiers and labels to both
+/// the picker and its segments, following the Stack Overflow pattern for segmented pickers.
+///
+/// Standalone function matching SwiftUI.Picker behavior - returns a View directly.
+/// Convenience overload for String arrays - delegates to generic implementation.
+///
+/// - Parameters:
+///   - label: The picker label (for accessibility)
+///   - selection: Binding to the selected value (String)
+///   - options: Array of option strings to display
+///   - pickerName: Optional name for the picker (used in accessibility identifier generation)
+///   - style: Picker style (default: .menu)
+/// - Returns: A picker with automatic accessibility compliance: identifiers are applied to both the picker and each option element.
+@ViewBuilder
+public func platformPicker<S: SwiftUI.PickerStyle>(
+    label: String,
+    selection: Binding<String>,
+    options: [String],
+    pickerName: String? = nil,
+    style: S = MenuPickerStyle()
+) -> some View {
+    // Delegate to generic implementation
+    platformPicker(
+        label: label,
+        selection: selection,
+        options: options,
+        optionTag: { $0 },
+        optionLabel: { $0 },
+        pickerName: pickerName,
+        style: style
+    )
+}
+
+/// Platform-specific picker with automatic accessibility compliance (PickerOption type)
+/// Fixes #163: Automatically applies accessibility identifiers and labels to both
+/// the picker and its segments, following the Stack Overflow pattern for segmented pickers.
+///
+/// Standalone function matching SwiftUI.Picker behavior - returns a View directly.
+/// Convenience overload for PickerOption arrays - delegates to generic implementation.
+/// This is the recommended overload for framework components that use `PickerOption` from
+/// `FieldDisplayHints.pickerOptions`. It automatically uses `value` for selection binding
+/// and `label` for display and accessibility.
+///
+/// - Parameters:
+///   - label: The picker label (for accessibility)
+///   - selection: Binding to the selected value (String)
+///   - options: Array of PickerOption (has value and label)
+///   - pickerName: Optional name for the picker (used in accessibility identifier generation)
+///   - style: Picker style (default: .menu)
+/// - Returns: A picker with automatic accessibility compliance: identifiers are applied to both the picker and each option element.
+@ViewBuilder
+public func platformPicker<S: SwiftUI.PickerStyle>(
+    label: String,
+    selection: Binding<String>,
+    options: [PickerOption],
+    pickerName: String? = nil,
+    style: S = MenuPickerStyle()
+) -> some View {
+    // Delegate to generic implementation
+    platformPicker(
+        label: label,
+        selection: selection,
+        options: options,
+        optionTag: { $0.value },
+        optionLabel: { $0.label },
+        pickerName: pickerName,
+        style: style
+    )
+}
+
+/// Platform-specific picker with automatic accessibility compliance (generic implementation)
+/// Fixes #163: Automatically applies accessibility identifiers and labels to both
+/// the picker and its segments, following the Stack Overflow pattern for segmented pickers.
+///
+/// Standalone function matching SwiftUI.Picker behavior - returns a View directly.
+/// This is the single implementation that all platformPicker overloads delegate to.
+/// It ensures that when pickers are created, accessibility is automatically applied at
+/// both the picker level and the segment level, eliminating the need for manual
+/// `.accessibilityIdentifier()` and `.accessibility(label:)` calls on each segment.
+///
+/// - Parameters:
+///   - label: The picker label (for accessibility)
+///   - selection: Binding to the selected value
+///   - options: Array of options (must be Hashable and provide a String representation)
+///   - optionTag: Closure to convert option to SelectionValue for tagging
+///   - optionLabel: Closure to extract label string from each option
+///   - pickerName: Optional name for the picker (used in accessibility identifier generation)
+///   - style: Picker style (default: .menu)
+/// - Returns: A picker with automatic accessibility compliance: identifiers are applied to both the picker control and to each option element.
+///
+/// ## Usage Example
+/// ```swift
+/// platformPicker(
+///     label: "Test View",
+///     selection: $testViewType,
+///     options: TestViewType.allCases,
+///     optionTag: { $0 },
+///     optionLabel: { $0.rawValue },
+///     pickerName: "TestViewPicker"
+/// )
+/// ```
+@ViewBuilder
+public func platformPicker<SelectionValue: Hashable, Option: Hashable, S: SwiftUI.PickerStyle>(
+    label: String,
+    selection: Binding<SelectionValue>,
+    options: [Option],
+    optionTag: @escaping (Option) -> SelectionValue,
+    optionLabel: @escaping (Option) -> String,
+    pickerName: String? = nil,
+    style: S = MenuPickerStyle()
+) -> some View {
+    // Get selected option label for accessibility value
+    let selectedValue: String? = {
+        if let selectedOption = options.first(where: { optionTag($0) == selection.wrappedValue }) {
+            return optionLabel(selectedOption)
+        }
+        return nil
+    }()
+    
+    SwiftUI.Picker(label, selection: selection) {
+        ForEach(options, id: \.self) { option in
+            let optionText = optionLabel(option)
+            // Automatically detect identifierName from the option itself:
+            // identifierName should be the name of the thing being identified (the segment/option)
+            // Sanitize the option text to make it suitable for use as an identifier name
+            let segmentIdentifierName = sanitizeLabelText(optionText)  // e.g., "Option1" -> "option1"
+            Text(optionText)
+                .tag(optionTag(option))
+                .automaticCompliance(
+                    identifierName: segmentIdentifierName  // Auto-detect from option text (the thing being identified)
+                )
+        }
+    }
+    .pickerStyle(style)
+    // Apply to picker level: identifierName is the picker name (the thing being identified)
+    .automaticCompliance(
+        named: pickerName ?? "Picker",  // Issue #163
+        accessibilityHint: generateAccessibilityHintForPicker(label: label, pickerName: pickerName),  // Issue #165: Auto-generate hint
+        accessibilityValue: selectedValue  // Issue #165: Selected option as value
+    )
+}
+
+public extension View {
     /// Platform-specific date picker
     /// Provides consistent date picker behavior across platforms
     ///
@@ -2220,27 +2547,20 @@ public extension View {
 
 
     // MARK: - Device-Aware Frame Sizing (Layer 4: Device-Specific Sizing)
-    /// Device-aware frame sizing for optimal display across different devices
-    /// This function provides device-specific sizing logic
+    /// Device-aware frame sizing for optimal display across different devices (no AnyView — Issue 178)
     /// Layer 4: Device-specific implementation for iPad vs iPhone sizing differences
+    @ViewBuilder
     func deviceAwareFrame() -> some View {
         #if os(iOS)
-        // iOS: Device-aware sizing based on device type and orientation
         if SixLayerPlatform.deviceType == .pad {
-            // iPad: Fill available space for optimal tablet experience
-            // Supports Split View, Stage Manager, and orientation changes
-            return AnyView(self.frame(maxWidth: .infinity, maxHeight: .infinity))
+            self.frame(maxWidth: .infinity, maxHeight: .infinity)
         } else {
-            // iPhone: Standard sizing - no special constraints
-            // Fixed screen size means we don't need adaptive frame behavior
-            return AnyView(self)
+            self
         }
         #elseif os(macOS)
-        // macOS: Use content-aware adaptive sizing (Layer 4)
-        // This delegates to platformAdaptiveFrame for intelligent content analysis
-            return AnyView(self.platformAdaptiveFrame())
+        self.platformAdaptiveFrame()
         #else
-            return AnyView(self)
+        self
         #endif
     }
 }

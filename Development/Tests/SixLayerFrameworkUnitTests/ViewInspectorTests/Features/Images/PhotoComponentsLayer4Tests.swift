@@ -208,7 +208,6 @@ open class PhotoComponentsLayer4Tests: BaseTestClass {
             
             // 2. Does that structure contain what it should?
             #if canImport(ViewInspector)
-            // Use helper function for DRY image verification
             verifyViewContainsImage(result, testName: "Photo display")
             #else
             // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure

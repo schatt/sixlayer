@@ -26,6 +26,8 @@ class L1SemanticTests: BaseTestClass {
     private var sampleOCRContext: OCRContext = OCRContext()
     private var samplePhotoPurpose: PhotoPurpose = .general
     private var samplePhotoContext: PhotoContext = PhotoContext()
+    private var sampleBarcodeContext: BarcodeContext = BarcodeContext()
+    private var sampleItems: [TestItem] = []
     
     private func createSampleNumericData() {
 
@@ -193,6 +195,22 @@ class L1SemanticTests: BaseTestClass {
             quality: .high,
             editingAllowed: true
         )
+    }
+    
+    private func createSampleBarcodeContext() -> BarcodeContext {
+        return BarcodeContext(
+            supportedBarcodeTypes: [.qrCode, .code128],
+            confidenceThreshold: 0.8,
+            allowsMultipleBarcodes: true
+        )
+    }
+    
+    private func createSampleItems() -> [TestPatterns.TestItem] {
+        return [
+            TestPatterns.TestItem(id: UUID(), title: "Item 1"),
+            TestPatterns.TestItem(id: UUID(), title: "Item 2"),
+            TestPatterns.TestItem(id: UUID(), title: "Item 3")
+        ]
     }
     
     // MARK: - Core Data Presentation Functions
@@ -729,5 +747,1105 @@ class L1SemanticTests: BaseTestClass {
         // Then: Test that the view can actually be hosted
         let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
         #expect(Bool(true), "platformAssessDataQuality_L1 view should be hostable")  // hostingView is non-optional
+    }
+    
+    // MARK: - Item Collection Functions
+    
+    @Test @MainActor
+    func testPlatformPresentItemCollection_L1() {
+        // Given
+        let items = createSampleItems()
+        let hints = sampleHints
+        
+        // When
+        let view = platformPresentItemCollection_L1(
+            items: items,
+            hints: hints
+        )
+        
+        // Then: Test that the view can actually be hosted
+        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
+        #expect(Bool(true), "platformPresentItemCollection_L1 view should be hostable")
+    }
+    
+    @Test @MainActor
+    func testPlatformPresentItemCollection_L1_WithCustomItemView() {
+        // Given
+        let items = createSampleItems()
+        let hints = sampleHints
+        
+        // When
+        let view = platformPresentItemCollection_L1(
+            items: items,
+            hints: hints,
+            customItemView: { item in
+                Text(item.title)
+            }
+        )
+        
+        // Then: Test that the view can actually be hosted
+        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
+        #expect(Bool(true), "platformPresentItemCollection_L1 with customItemView should be hostable")
+    }
+    
+    @Test @MainActor
+    func testPlatformPresentItemCollection_L1_WithEnhancedHints() {
+        // Given
+        let items = createSampleItems()
+        let enhancedHints = EnhancedPresentationHints(
+            dataType: .collection,
+            presentationPreference: .automatic,
+            complexity: .moderate,
+            context: .dashboard
+        )
+        
+        // When
+        let view = platformPresentItemCollection_L1(
+            items: items,
+            hints: enhancedHints
+        )
+        
+        // Then: Test that the view can actually be hosted
+        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
+        #expect(Bool(true), "platformPresentItemCollection_L1 with enhanced hints should be hostable")
+    }
+    
+    @Test @MainActor
+    func testPlatformPresentItemCollection_L1_WithEnhancedHintsAndCustomView() {
+        // Given
+        let items = createSampleItems()
+        let enhancedHints = EnhancedPresentationHints(
+            dataType: .collection,
+            presentationPreference: .automatic,
+            complexity: .moderate,
+            context: .dashboard
+        )
+        
+        // When
+        let view = platformPresentItemCollection_L1(
+            items: items,
+            hints: enhancedHints,
+            customItemView: { item in
+                Text(item.title)
+            }
+        )
+        
+        // Then: Test that the view can actually be hosted
+        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
+        #expect(Bool(true), "platformPresentItemCollection_L1 with enhanced hints and custom view should be hostable")
+    }
+    
+    @Test @MainActor
+    func testPlatformPresentItemCollection_L1_WithFullCustomization() {
+        // Given
+        let items = createSampleItems()
+        let hints = sampleHints
+        
+        // When
+        let view = platformPresentItemCollection_L1(
+            items: items,
+            hints: hints,
+            customItemView: { item in
+                Text(item.title)
+            },
+            customCreateView: {
+                Text("Create New")
+            },
+            customEditView: { item in
+                Text("Edit \(item.title)")
+            }
+        )
+        
+        // Then: Test that the view can actually be hosted
+        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
+        #expect(Bool(true), "platformPresentItemCollection_L1 with full customization should be hostable")
+    }
+    
+    // MARK: - Navigation Functions
+    
+    @Test @MainActor
+    func testPlatformPresentNavigationStack_L1() {
+        // Given
+        let hints = sampleHints
+        
+        // When
+        let view = platformPresentNavigationStack_L1(
+            content: { Text("Test Content") },
+            title: "Test Title",
+            hints: hints
+        )
+        
+        // Then: Test that the view can actually be hosted
+        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
+        #expect(Bool(true), "platformPresentNavigationStack_L1 view should be hostable")
+    }
+    
+    @Test @MainActor
+    func testPlatformPresentNavigationStack_L1_WithItems() {
+        // Given
+        let items = createSampleItems()
+        let hints = sampleHints
+        
+        // When
+        let view = platformPresentNavigationStack_L1(
+            items: items,
+            hints: hints,
+            itemView: { item in
+                Text(item.title)
+            },
+            destination: { item in
+                Text("Detail for \(item.title)")
+            }
+        )
+        
+        // Then: Test that the view can actually be hosted
+        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
+        #expect(Bool(true), "platformPresentNavigationStack_L1 with items should be hostable")
+    }
+    
+    @Test @MainActor
+    func testPlatformPresentAppNavigation_L1() {
+        // Given
+        // No specific data needed
+        
+        // When
+        let view = platformPresentAppNavigation_L1(
+            sidebar: {
+                Text("Sidebar Content")
+            },
+            detail: {
+                Text("Detail Content")
+            }
+        )
+        
+        // Then: Test that the view can actually be hosted
+        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
+        #expect(Bool(true), "platformPresentAppNavigation_L1 view should be hostable")
+    }
+    
+    // MARK: - OCR Disambiguation Functions
+    
+    @Test @MainActor
+    func testPlatformOCRWithDisambiguation_L1() {
+        // Given
+        let image = PlatformImage()
+        let context = sampleOCRContext
+        
+        // When
+        let view = platformOCRWithDisambiguation_L1(
+            image: image,
+            context: context,
+            onResult: { _ in }
+        )
+        
+        // Then: Test that the view can actually be hosted
+        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
+        #expect(Bool(true), "platformOCRWithDisambiguation_L1 view should be hostable")
+    }
+    
+    @Test @MainActor
+    func testPlatformOCRWithDisambiguation_L1_WithConfiguration() {
+        // Given
+        let image = PlatformImage()
+        let context = sampleOCRContext
+        let configuration = OCRDisambiguationConfiguration()
+        
+        // When
+        let view = platformOCRWithDisambiguation_L1(
+            image: image,
+            context: context,
+            configuration: configuration,
+            onResult: { _ in }
+        )
+        
+        // Then: Test that the view can actually be hosted
+        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
+        #expect(Bool(true), "platformOCRWithDisambiguation_L1 with configuration should be hostable")
+    }
+    
+    // MARK: - Barcode Functions
+    
+    @Test @MainActor
+    func testPlatformScanBarcode_L1() {
+        // Given
+        let image = PlatformImage()
+        let context = createSampleBarcodeContext()
+        
+        // When
+        let view = platformScanBarcode_L1(
+            image: image,
+            context: context,
+            onResult: { _ in }
+        )
+        
+        // Then: Test that the view can actually be hosted
+        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
+        #expect(Bool(true), "platformScanBarcode_L1 view should be hostable")
+    }
+    
+    // MARK: - Security Functions
+    
+    @Test @MainActor
+    func testPlatformPresentSecureContent_L1() {
+        // Given
+        let hints = SecurityHints()
+        
+        // When
+        let view = platformPresentSecureContent_L1(
+            content: { Text("Secure Content") },
+            hints: hints
+        )
+        
+        // Then: Test that the view can actually be hosted
+        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
+        #expect(Bool(true), "platformPresentSecureContent_L1 view should be hostable")
+    }
+    
+    @Test @MainActor
+    func testPlatformPresentSecureTextField_L1() {
+        // Given
+        let title = "Password"
+        var text = ""
+        let textBinding = Binding(
+            get: { text },
+            set: { text = $0 }
+        )
+        let hints = SecurityHints()
+        
+        // When
+        let view = platformPresentSecureTextField_L1(
+            title: title,
+            text: textBinding,
+            hints: hints
+        )
+        
+        // Then: Test that the view can actually be hosted
+        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
+        #expect(Bool(true), "platformPresentSecureTextField_L1 view should be hostable")
+    }
+    
+    @Test @MainActor
+    func testPlatformShowPrivacyIndicator_L1() {
+        // Given
+        let hints = SecurityHints()
+        
+        // When
+        let view = platformShowPrivacyIndicator_L1(
+            type: .camera,
+            isActive: true,
+            hints: hints
+        )
+        
+        // Then: Test that the view can actually be hosted (returns EmptyView)
+        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
+        #expect(Bool(true), "platformShowPrivacyIndicator_L1 view should be hostable")
+    }
+    
+    // MARK: - Notification Functions
+    
+    @Test @MainActor
+    func testPlatformPresentAlert_L1() {
+        // Given
+        let hints = NotificationHints()
+        
+        // When
+        let view = platformPresentAlert_L1(
+            title: "Test Alert",
+            message: "Test message",
+            hints: hints
+        )
+        
+        // Then: Test that the view can actually be hosted
+        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
+        #expect(Bool(true), "platformPresentAlert_L1 view should be hostable")
+    }
+    
+    // MARK: - Internationalization Functions
+    
+    @Test @MainActor
+    func testPlatformPresentLocalizedContent_L1() {
+        // Given
+        let hints = InternationalizationHints()
+        
+        // When
+        let view = platformPresentLocalizedContent_L1(
+            content: { Text("Localized Content") },
+            hints: hints
+        )
+        
+        // Then: Test that the view can actually be hosted
+        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
+        #expect(Bool(true), "platformPresentLocalizedContent_L1 view should be hostable")
+    }
+    
+    @Test @MainActor
+    func testPlatformRTLContainer_L1() {
+        // Given
+        let hints = InternationalizationHints()
+        
+        // When
+        let view = platformRTLContainer_L1(
+            content: { Text("RTL Content") },
+            hints: hints
+        )
+        
+        // Then: Test that the view can actually be hosted
+        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
+        #expect(Bool(true), "platformRTLContainer_L1 view should be hostable")
+    }
+    
+    @Test @MainActor
+    func testPlatformRTLHStack_L1() {
+        // Given
+        let hints = InternationalizationHints()
+        
+        // When
+        let view = platformRTLHStack_L1(
+            alignment: .center,
+            spacing: 8,
+            content: {
+                Text("Item 1")
+                Text("Item 2")
+            },
+            hints: hints
+        )
+        
+        // Then: Test that the view can actually be hosted
+        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
+        #expect(Bool(true), "platformRTLHStack_L1 view should be hostable")
+    }
+    
+    @Test @MainActor
+    func testPlatformRTLVStack_L1() {
+        // Given
+        let hints = InternationalizationHints()
+        
+        // When
+        let view = platformRTLVStack_L1(
+            alignment: .center,
+            spacing: 8,
+            content: {
+                Text("Item 1")
+                Text("Item 2")
+            },
+            hints: hints
+        )
+        
+        // Then: Test that the view can actually be hosted
+        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
+        #expect(Bool(true), "platformRTLVStack_L1 view should be hostable")
+    }
+    
+    @Test @MainActor
+    func testPlatformRTLZStack_L1() {
+        // Given
+        let hints = InternationalizationHints()
+        
+        // When
+        let view = platformRTLZStack_L1(
+            alignment: .center,
+            content: {
+                Text("Item 1")
+                Text("Item 2")
+            },
+            hints: hints
+        )
+        
+        // Then: Test that the view can actually be hosted
+        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
+        #expect(Bool(true), "platformRTLZStack_L1 view should be hostable")
+    }
+    
+    // MARK: - Photo Functions with Custom Picker
+    
+    @Test @MainActor
+    func testPlatformPhotoSelection_L1_WithCustomPickerView() {
+        // Given
+        let purpose = samplePhotoPurpose
+        let context = samplePhotoContext
+        
+        // When: Using custom picker view wrapper
+        let view = platformPhotoSelection_L1(
+            purpose: purpose,
+            context: context,
+            onImageSelected: { _ in },
+            customPickerView: { (pickerContent: AnyView) in
+                platformVStackContainer {
+                    Text("Custom Picker Interface")
+                        .font(.headline)
+                    pickerContent
+                        .padding()
+                }
+            }
+        )
+        
+        // Then: Should return a view with custom wrapper
+        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
+        #expect(Bool(true), "platformPhotoSelection_L1 with custom picker view should return a view")
+    }
+    
+    // MARK: - Data Analysis Functions with Custom Visualization
+    
+    @Test @MainActor
+    func testPlatformAnalyzeDataFrame_L1_WithCustomVisualization() {
+        // Given
+        let dataFrame = DataFrame()
+        let hints = DataFrameAnalysisHints()
+        
+        // When
+        let view = platformAnalyzeDataFrame_L1(
+            dataFrame: dataFrame,
+            hints: hints,
+            customVisualizationView: { (analysisContent: AnyView) in
+                platformVStackContainer {
+                    Text("Custom Visualization")
+                        .font(.headline)
+                    analysisContent
+                        .padding()
+                }
+            }
+        )
+        
+        // Then: Test that the view can actually be hosted
+        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
+        #expect(Bool(true), "platformAnalyzeDataFrame_L1 with custom visualization should be hostable")
+    }
+    
+    @Test @MainActor
+    func testPlatformCompareDataFrames_L1_WithCustomVisualization() {
+        // Given
+        let dataFrames = [DataFrame()]
+        let hints = DataFrameAnalysisHints()
+        
+        // When
+        let view = platformCompareDataFrames_L1(
+            dataFrames: dataFrames,
+            hints: hints,
+            customVisualizationView: { (comparisonContent: AnyView) in
+                platformVStackContainer {
+                    Text("Custom Comparison")
+                        .font(.headline)
+                    comparisonContent
+                        .padding()
+                }
+            }
+        )
+        
+        // Then: Test that the view can actually be hosted
+        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
+        #expect(Bool(true), "platformCompareDataFrames_L1 with custom visualization should be hostable")
+    }
+    
+    @Test @MainActor
+    func testPlatformAssessDataQuality_L1_WithCustomVisualization() {
+        // Given
+        let dataFrame = DataFrame()
+        let hints = DataFrameAnalysisHints()
+        
+        // When
+        let view = platformAssessDataQuality_L1(
+            dataFrame: dataFrame,
+            hints: hints,
+            customVisualizationView: { (qualityContent: AnyView) in
+                platformVStackContainer {
+                    Text("Custom Quality Assessment")
+                        .font(.headline)
+                    qualityContent
+                        .padding()
+                }
+            }
+        )
+        
+        // Then: Test that the view can actually be hosted
+        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
+        #expect(Bool(true), "platformAssessDataQuality_L1 with custom visualization should be hostable")
+    }
+    
+    // MARK: - Basic Value Functions
+    
+    @Test @MainActor
+    func testPlatformPresentBasicValue_L1() {
+        // Given
+        let value = 42
+        let hints = sampleHints
+        
+        // When
+        let view = platformPresentBasicValue_L1(
+            value: value,
+            hints: hints
+        )
+        
+        // Then: Test that the view can actually be hosted
+        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
+        #expect(Bool(true), "platformPresentBasicValue_L1 view should be hostable")
+    }
+    
+    @Test @MainActor
+    func testPlatformPresentBasicArray_L1() {
+        // Given
+        let array = [1, 2, 3, 4, 5]
+        let hints = sampleHints
+        
+        // When
+        let view = platformPresentBasicArray_L1(
+            array: array,
+            hints: hints
+        )
+        
+        // Then: Test that the view can actually be hosted
+        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
+        #expect(Bool(true), "platformPresentBasicArray_L1 view should be hostable")
+    }
+    
+    // MARK: - Numeric Data Overloads
+    
+    @Test @MainActor
+    func testPlatformPresentNumericData_L1_SingleItem() {
+        // Given
+        let singleData = GenericNumericData(value: 42.5, label: "Test Value", unit: "units")
+        let hints = sampleHints
+        
+        // When
+        let view = platformPresentNumericData_L1(
+            data: singleData,
+            hints: hints
+        )
+        
+        // Then: Test that the view can actually be hosted
+        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
+        #expect(Bool(true), "platformPresentNumericData_L1 single item should be hostable")
+    }
+    
+    @Test @MainActor
+    func testPlatformPresentNumericData_L1_WithCustomDataView() {
+        // Given
+        let data = sampleNumericData
+        let hints = sampleHints
+        
+        // When
+        let view = platformPresentNumericData_L1(
+            data: data,
+            hints: hints,
+            customDataView: { numericData in
+                Text("\(numericData.value) \(numericData.unit ?? "")")
+            }
+        )
+        
+        // Then: Test that the view can actually be hosted
+        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
+        #expect(Bool(true), "platformPresentNumericData_L1 with customDataView should be hostable")
+    }
+    
+    @Test @MainActor
+    func testPlatformPresentNumericData_L1_WithEnhancedHints() {
+        // Given
+        let data = sampleNumericData
+        let enhancedHints = EnhancedPresentationHints(
+            dataType: .numeric,
+            presentationPreference: .automatic,
+            complexity: .moderate,
+            context: .dashboard
+        )
+        
+        // When
+        let view = platformPresentNumericData_L1(
+            data: data,
+            hints: enhancedHints,
+            customDataView: { numericData in
+                Text("\(numericData.value)")
+            }
+        )
+        
+        // Then: Test that the view can actually be hosted
+        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
+        #expect(Bool(true), "platformPresentNumericData_L1 with enhanced hints should be hostable")
+    }
+    
+    @Test @MainActor
+    func testPlatformPresentNumericData_L1_WithFullCustomization() {
+        // Given
+        let data = sampleNumericData
+        let enhancedHints = EnhancedPresentationHints(
+            dataType: .numeric,
+            presentationPreference: .automatic,
+            complexity: .moderate,
+            context: .dashboard
+        )
+        
+        // When
+        let view = platformPresentNumericData_L1(
+            data: data,
+            hints: enhancedHints,
+            customDataView: { numericData in
+                Text("\(numericData.value)")
+            },
+            customContainer: { content in
+                platformVStackContainer {
+                    Text("Custom Container")
+                    content
+                }
+            }
+        )
+        
+        // Then: Test that the view can actually be hosted
+        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
+        #expect(Bool(true), "platformPresentNumericData_L1 with full customization should be hostable")
+    }
+    
+    // MARK: - Form Data Overloads
+    
+    @Test @MainActor
+    func testPlatformPresentFormData_L1_SingleField() {
+        // Given
+        let field = sampleFormFields.first!
+        let hints = sampleHints
+        
+        // When
+        let view = platformPresentFormData_L1(
+            field: field,
+            hints: hints
+        )
+        
+        // Then: Test that the view can actually be hosted
+        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
+        #expect(Bool(true), "platformPresentFormData_L1 single field should be hostable")
+    }
+    
+    // MARK: - Modal Form Overloads
+    
+    @Test @MainActor
+    func testPlatformPresentModalForm_L1_WithCustomContainer() {
+        // Given
+        let fields = sampleFormFields
+        let hints = sampleHints
+        
+        // When
+        let view = platformPresentModalForm_L1(
+            fields: fields,
+            hints: hints,
+            customFormContainer: { content in
+                platformVStackContainer {
+                    Text("Custom Modal Container")
+                    content
+                }
+            }
+        )
+        
+        // Then: Test that the view can actually be hosted
+        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
+        #expect(Bool(true), "platformPresentModalForm_L1 with custom container should be hostable")
+    }
+    
+    // MARK: - Media Data Overloads
+    
+    @Test @MainActor
+    func testPlatformPresentMediaData_L1_SingleItem() {
+        // Given
+        let singleMedia = sampleMediaItems.first!
+        let hints = sampleHints
+        
+        // When
+        let view = platformPresentMediaData_L1(
+            mediaItem: singleMedia,
+            hints: hints
+        )
+        
+        // Then: Test that the view can actually be hosted
+        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
+        #expect(Bool(true), "platformPresentMediaData_L1 single item should be hostable")
+    }
+    
+    @Test @MainActor
+    func testPlatformPresentMediaData_L1_SingleItemWithEnhancedHints() {
+        // Given
+        let singleMedia = sampleMediaItems.first!
+        let enhancedHints = EnhancedPresentationHints(
+            dataType: .media,
+            presentationPreference: .automatic,
+            complexity: .moderate,
+            context: .dashboard
+        )
+        
+        // When
+        let view = platformPresentMediaData_L1(
+            mediaItem: singleMedia,
+            hints: enhancedHints
+        )
+        
+        // Then: Test that the view can actually be hosted
+        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
+        #expect(Bool(true), "platformPresentMediaData_L1 single item with enhanced hints should be hostable")
+    }
+    
+    @Test @MainActor
+    func testPlatformPresentMediaData_L1_WithCustomMediaView() {
+        // Given
+        let mediaItems = sampleMediaItems
+        let hints = sampleHints
+        
+        // When
+        let view = platformPresentMediaData_L1(
+            mediaItems: mediaItems,
+            hints: hints,
+            customMediaView: { mediaItem in
+                Text(mediaItem.title ?? "Media")
+            }
+        )
+        
+        // Then: Test that the view can actually be hosted
+        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
+        #expect(Bool(true), "platformPresentMediaData_L1 with customMediaView should be hostable")
+    }
+    
+    @Test @MainActor
+    func testPlatformPresentMediaData_L1_WithEnhancedHintsAndCustomView() {
+        // Given
+        let mediaItems = sampleMediaItems
+        let enhancedHints = EnhancedPresentationHints(
+            dataType: .media,
+            presentationPreference: .automatic,
+            complexity: .moderate,
+            context: .dashboard
+        )
+        
+        // When
+        let view = platformPresentMediaData_L1(
+            mediaItems: mediaItems,
+            hints: enhancedHints,
+            customMediaView: { mediaItem in
+                Text(mediaItem.title ?? "Media")
+            }
+        )
+        
+        // Then: Test that the view can actually be hosted
+        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
+        #expect(Bool(true), "platformPresentMediaData_L1 with enhanced hints and custom view should be hostable")
+    }
+    
+    @Test @MainActor
+    func testPlatformPresentMediaData_L1_WithFullCustomization() {
+        // Given
+        let mediaItems = sampleMediaItems
+        let enhancedHints = EnhancedPresentationHints(
+            dataType: .media,
+            presentationPreference: .automatic,
+            complexity: .moderate,
+            context: .dashboard
+        )
+        
+        // When
+        let view = platformPresentMediaData_L1(
+            mediaItems: mediaItems,
+            hints: enhancedHints,
+            customMediaView: { mediaItem in
+                Text(mediaItem.title ?? "Media")
+            },
+            customContainer: { content in
+                platformVStackContainer {
+                    Text("Custom Media Container")
+                    content
+                }
+            }
+        )
+        
+        // Then: Test that the view can actually be hosted
+        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
+        #expect(Bool(true), "platformPresentMediaData_L1 with full customization should be hostable")
+    }
+    
+    // MARK: - Hierarchical Data Overloads
+    
+    @Test @MainActor
+    func testPlatformPresentHierarchicalData_L1_SingleItem() {
+        // Given
+        let singleItem = sampleHierarchicalItems.first!
+        let hints = sampleHints
+        
+        // When
+        let view = platformPresentHierarchicalData_L1(
+            hierarchicalItem: singleItem,
+            hints: hints
+        )
+        
+        // Then: Test that the view can actually be hosted
+        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
+        #expect(Bool(true), "platformPresentHierarchicalData_L1 single item should be hostable")
+    }
+    
+    @Test @MainActor
+    func testPlatformPresentHierarchicalData_L1_WithEnhancedHints() {
+        // Given
+        let hierarchicalItems = sampleHierarchicalItems
+        let enhancedHints = EnhancedPresentationHints(
+            dataType: .hierarchical,
+            presentationPreference: .automatic,
+            complexity: .moderate,
+            context: .dashboard
+        )
+        
+        // When
+        let view = platformPresentHierarchicalData_L1(
+            hierarchicalItems: hierarchicalItems,
+            hints: enhancedHints,
+            customItemView: { item in
+                Text(item.title)
+            }
+        )
+        
+        // Then: Test that the view can actually be hosted
+        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
+        #expect(Bool(true), "platformPresentHierarchicalData_L1 with enhanced hints should be hostable")
+    }
+    
+    @Test @MainActor
+    func testPlatformPresentHierarchicalData_L1_WithFullCustomization() {
+        // Given
+        let hierarchicalItems = sampleHierarchicalItems
+        let enhancedHints = EnhancedPresentationHints(
+            dataType: .hierarchical,
+            presentationPreference: .automatic,
+            complexity: .moderate,
+            context: .dashboard
+        )
+        
+        // When
+        let view = platformPresentHierarchicalData_L1(
+            hierarchicalItems: hierarchicalItems,
+            hints: enhancedHints,
+            customItemView: { item in
+                Text(item.title)
+            },
+            customContainer: { content in
+                platformVStackContainer {
+                    Text("Custom Hierarchical Container")
+                    content
+                }
+            }
+        )
+        
+        // Then: Test that the view can actually be hosted
+        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
+        #expect(Bool(true), "platformPresentHierarchicalData_L1 with full customization should be hostable")
+    }
+    
+    // MARK: - Temporal Data Overloads
+    
+    @Test @MainActor
+    func testPlatformPresentTemporalData_L1_SingleItem() {
+        // Given
+        let singleItem = sampleTemporalItems.first!
+        let hints = sampleHints
+        
+        // When
+        let view = platformPresentTemporalData_L1(
+            temporalItem: singleItem,
+            hints: hints
+        )
+        
+        // Then: Test that the view can actually be hosted
+        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
+        #expect(Bool(true), "platformPresentTemporalData_L1 single item should be hostable")
+    }
+    
+    @Test @MainActor
+    func testPlatformPresentTemporalData_L1_WithEnhancedHints() {
+        // Given
+        let temporalItems = sampleTemporalItems
+        let enhancedHints = EnhancedPresentationHints(
+            dataType: .temporal,
+            presentationPreference: .automatic,
+            complexity: .moderate,
+            context: .dashboard
+        )
+        
+        // When
+        let view = platformPresentTemporalData_L1(
+            temporalItems: temporalItems,
+            hints: enhancedHints,
+            customItemView: { item in
+                Text(item.title)
+            }
+        )
+        
+        // Then: Test that the view can actually be hosted
+        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
+        #expect(Bool(true), "platformPresentTemporalData_L1 with enhanced hints should be hostable")
+    }
+    
+    @Test @MainActor
+    func testPlatformPresentTemporalData_L1_WithFullCustomization() {
+        // Given
+        let temporalItems = sampleTemporalItems
+        let enhancedHints = EnhancedPresentationHints(
+            dataType: .temporal,
+            presentationPreference: .automatic,
+            complexity: .moderate,
+            context: .dashboard
+        )
+        
+        // When
+        let view = platformPresentTemporalData_L1(
+            temporalItems: temporalItems,
+            hints: enhancedHints,
+            customItemView: { item in
+                Text(item.title)
+            },
+            customContainer: { content in
+                platformVStackContainer {
+                    Text("Custom Temporal Container")
+                    content
+                }
+            }
+        )
+        
+        // Then: Test that the view can actually be hosted
+        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
+        #expect(Bool(true), "platformPresentTemporalData_L1 with full customization should be hostable")
+    }
+    
+    // MARK: - Settings Functions
+    
+    @Test @MainActor
+    func testPlatformPresentSettings_L1() {
+        // Given
+        let settings: [SettingsSectionData] = [
+            SettingsSectionData(
+                title: "Test Section",
+                items: [
+                    SettingsItemData(
+                        key: "setting1",
+                        title: "Setting 1",
+                        type: .toggle,
+                        value: true
+                    )
+                ]
+            )
+        ]
+        let hints = sampleHints
+        
+        // When
+        let view = platformPresentSettings_L1(
+            settings: settings,
+            hints: hints
+        )
+        
+        // Then: Test that the view can actually be hosted
+        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
+        #expect(Bool(true), "platformPresentSettings_L1 view should be hostable")
+    }
+    
+    @Test @MainActor
+    func testPlatformPresentSettings_L1_WithCustomSettingView() {
+        // Given
+        let settings: [SettingsSectionData] = [
+            SettingsSectionData(
+                title: "Test Section",
+                items: [
+                    SettingsItemData(
+                        key: "setting1",
+                        title: "Setting 1",
+                        type: .toggle,
+                        value: true
+                    )
+                ]
+            )
+        ]
+        let hints = sampleHints
+        
+        // When
+        let view = platformPresentSettings_L1(
+            settings: settings,
+            hints: hints,
+            customSettingView: { section in
+                Text(section.title)
+            }
+        )
+        
+        // Then: Test that the view can actually be hosted
+        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
+        #expect(Bool(true), "platformPresentSettings_L1 with customSettingView should be hostable")
+    }
+    
+    @Test @MainActor
+    func testPlatformPresentSettings_L1_WithEnhancedHints() {
+        // Given
+        let settings: [SettingsSectionData] = [
+            SettingsSectionData(
+                title: "Test Section",
+                items: [
+                    SettingsItemData(
+                        key: "setting1",
+                        title: "Setting 1",
+                        type: .toggle,
+                        value: true
+                    )
+                ]
+            )
+        ]
+        let enhancedHints = EnhancedPresentationHints(
+            dataType: .generic,
+            presentationPreference: .automatic,
+            complexity: .moderate,
+            context: .dashboard
+        )
+        
+        // When
+        let view = platformPresentSettings_L1(
+            settings: settings,
+            hints: enhancedHints,
+            customSettingView: { section in
+                Text(section.title)
+            }
+        )
+        
+        // Then: Test that the view can actually be hosted
+        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
+        #expect(Bool(true), "platformPresentSettings_L1 with enhanced hints should be hostable")
+    }
+    
+    // MARK: - Responsive Card Overloads
+    
+    @Test @MainActor
+    func testPlatformResponsiveCard_L1_WithCustomCardView() {
+        // Given
+        let hints = sampleHints
+        
+        // When
+        let view = platformResponsiveCard_L1(
+            content: { Text("Test Content") },
+            hints: hints,
+            customCardView: { content in
+                platformVStackContainer {
+                    Text("Custom Card")
+                    content
+                }
+            }
+        )
+        
+        // Then: Test that the view can actually be hosted
+        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
+        #expect(Bool(true), "platformResponsiveCard_L1 with customCardView should be hostable")
+    }
+    
+    // MARK: - OCR With Visual Correction Overloads
+    
+    @Test @MainActor
+    func testPlatformOCRWithVisualCorrection_L1_WithConfiguration() {
+        // Given
+        let image = PlatformImage()
+        let context = sampleOCRContext
+        let configuration = OCROverlayConfiguration()
+        
+        // When
+        let view = platformOCRWithVisualCorrection_L1(
+            image: image,
+            context: context,
+            configuration: configuration,
+            onResult: { _ in }
+        )
+        
+        // Then: Test that the view can actually be hosted
+        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
+        #expect(Bool(true), "platformOCRWithVisualCorrection_L1 with configuration should be hostable")
     }
 }

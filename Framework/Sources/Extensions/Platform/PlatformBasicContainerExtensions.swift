@@ -10,6 +10,94 @@ import SwiftUI
 
 // MARK: - Platform Basic Container Extensions
 
+// MARK: - Accessibility Helper Functions (Issue #165)
+
+/// Generate accessibility hint for buttons based on label
+/// - Parameter label: The button label
+/// - Returns: Appropriate hint describing button action
+public func generateAccessibilityHintForButton(label: String) -> String {
+    let lowercased = label.lowercased()
+    
+    // Generate context-aware hints based on common button labels
+    if lowercased.contains("save") {
+        return "Saves your current work"
+    } else if lowercased.contains("cancel") {
+        return "Cancels the current operation"
+    } else if lowercased.contains("delete") || lowercased.contains("remove") {
+        return "Deletes this item"
+    } else if lowercased.contains("edit") {
+        return "Opens editing mode"
+    } else if lowercased.contains("done") || lowercased.contains("finish") {
+        return "Completes the current task"
+    } else if lowercased.contains("add") || lowercased.contains("create") {
+        return "Creates a new item"
+    } else if lowercased.contains("close") {
+        return "Closes this view"
+    } else if lowercased.contains("back") {
+        return "Returns to the previous screen"
+    } else if lowercased.contains("next") {
+        return "Advances to the next step"
+    } else if lowercased.contains("submit") {
+        return "Submits the form"
+    } else {
+        // Generic hint for buttons
+        return "Double tap to activate"
+    }
+}
+
+/// Generate accessibility hint for text fields based on prompt/label
+/// - Parameters:
+///   - label: Optional accessibility label
+///   - prompt: Optional placeholder text
+/// - Returns: Appropriate hint describing what to enter
+public func generateAccessibilityHintForTextField(label: String? = nil, prompt: String? = nil) -> String {
+    let source = label ?? prompt ?? "text"
+    let lowercased = source.lowercased()
+    
+    // Generate context-aware hints based on field type
+    if lowercased.contains("email") || lowercased.contains("e-mail") {
+        return "Enter your email address"
+    } else if lowercased.contains("password") || lowercased.contains("passcode") {
+        return "Enter your password"
+    } else if lowercased.contains("phone") || lowercased.contains("telephone") {
+        return "Enter your phone number"
+    } else if lowercased.contains("name") {
+        return "Enter your name"
+    } else if lowercased.contains("address") {
+        return "Enter your address"
+    } else if lowercased.contains("search") {
+        return "Enter search text"
+    } else if lowercased.contains("url") || lowercased.contains("website") {
+        return "Enter a web address"
+    } else {
+        // Generic hint for text fields
+        return "Enter \(source)"
+    }
+}
+
+/// Generate accessibility hint for toggles
+/// - Parameter label: The toggle label
+/// - Returns: Appropriate hint explaining toggle interaction
+internal func generateAccessibilityHintForToggle(label: String) -> String {
+    return "Double tap to toggle \(label.lowercased())"
+}
+
+/// Generate accessibility hint for pickers
+/// - Parameters:
+///   - label: The picker label
+///   - pickerName: Optional picker name
+/// - Returns: Appropriate hint explaining picker interaction
+public func generateAccessibilityHintForPicker(label: String, pickerName: String? = nil) -> String {
+    return "Double tap to select an option"
+}
+
+/// Generate accessibility value for toggle based on state
+/// - Parameter isOn: Whether toggle is on
+/// - Returns: "On" or "Off"
+public func generateAccessibilityValueForToggle(isOn: Bool) -> String {
+    return isOn ? "On" : "Off"
+}
+
 /// Platform-specific basic container extensions
 /// Provides consistent container behavior across iOS and macOS
 public extension View {
@@ -42,6 +130,9 @@ public extension View {
             content()
         }
         .automaticCompliance()
+        // CRITICAL: Container views apply .automaticCompliance() without identifierName
+        // This applies HIG compliance features but skips identifier generation,
+        // ensuring child identifiers take precedence over parent identifiers
     }
     
     /// Platform-specific HStack container with consistent styling and automatic accessibility
@@ -192,6 +283,10 @@ public extension View {
         ScrollView(axes, showsIndicators: showsIndicators) {
             content()
         }
+        .automaticCompliance()
+        // CRITICAL: Container views apply .automaticCompliance() without identifierName
+        // This applies HIG compliance features but skips identifier generation,
+        // ensuring child identifiers take precedence over parent identifiers
     }
     
     /// Platform-specific GroupBox container with consistent styling
@@ -219,6 +314,7 @@ public extension View {
         GroupBox(title) {
             content()
         }
+        .automaticCompliance()
     }
     
     /// Platform-specific Section container with consistent styling
@@ -249,6 +345,7 @@ public extension View {
         Section(header: header, footer: footer) {
             content()
         }
+        .automaticCompliance()
     }
     
     /// Platform-specific Section container with header only
@@ -274,6 +371,7 @@ public extension View {
         Section(header: header) {
             content()
         }
+        .automaticCompliance()
     }
     
     /// Platform-specific Section container with string header
@@ -299,6 +397,7 @@ public extension View {
         Section(header) {
             content()
         }
+        .automaticCompliance()
     }
     
     /// Platform-specific List container with consistent styling
@@ -324,6 +423,7 @@ public extension View {
         List {
             content()
         }
+        .automaticCompliance()
     }
 }
 
@@ -508,9 +608,74 @@ func platformListContainer<Content: View>(
 /// ```
 public func platformTextField(
     _ title: String,
-    text: Binding<String>
+    text: Binding<String>,
+    id: String? = nil
 ) -> some View {
     EmptyView().platformTextField(text: text, prompt: title)
+        .automaticCompliance(
+            identifierName: id ?? sanitizeLabelText(title),
+            identifierElementType: "TextField",
+            accessibilityLabel: title,  // Issue #157: Auto-extract from title
+            accessibilityHint: generateAccessibilityHintForTextField(prompt: title)  // Issue #165: Auto-generate hint
+        )
+}
+
+/// Provides platform-specific text field with automatic accessibility compliance and explicit label
+/// Note: TextField doesn't require @MainActor for creation, only for binding access
+///
+/// - Parameters:
+///   - label: The accessibility label for VoiceOver (optional)
+///   - prompt: The placeholder text
+///   - text: Binding to the text value
+/// - Returns: A platform-specific text field with automatic accessibility compliance
+///
+/// ## Usage Example
+/// ```swift
+/// platformTextField(label: "Full name", prompt: "Enter name", text: $name)
+/// ```
+public func platformTextField(
+    label: String? = nil,
+    prompt: String,
+    text: Binding<String>,
+    id: String? = nil
+) -> some View {
+    let identifierSource = label ?? prompt
+    return EmptyView().platformTextField(text: text, prompt: prompt)
+        .automaticCompliance(
+            identifierName: id ?? sanitizeLabelText(identifierSource),
+            identifierElementType: "TextField",
+            accessibilityLabel: label ?? prompt,  // Issue #157: Explicit label takes precedence, fallback to prompt
+            accessibilityHint: generateAccessibilityHintForTextField(label: label, prompt: prompt)  // Issue #165: Auto-generate hint
+        )
+}
+
+/// Provides platform-specific text field with automatic accessibility compliance and explicit label (LocalizedStringKey)
+/// - Parameters:
+///   - label: The accessibility label for VoiceOver using LocalizedStringKey
+///   - prompt: The placeholder text
+///   - text: Binding to the text value
+public func platformTextField(
+    label: LocalizedStringKey,
+    prompt: String,
+    text: Binding<String>
+) -> some View {
+    EmptyView().platformTextField(text: text, prompt: prompt)
+        .accessibilityLabel(label)
+        .automaticCompliance()
+}
+
+/// Provides platform-specific text field with automatic accessibility compliance and explicit label (Text)
+/// - Parameters:
+///   - label: The accessibility label for VoiceOver using Text
+///   - prompt: The placeholder text
+///   - text: Binding to the text value
+public func platformTextField(
+    label: Text,
+    prompt: String,
+    text: Binding<String>
+) -> some View {
+    EmptyView().platformTextField(text: text, prompt: prompt)
+        .accessibilityLabel(label)
         .automaticCompliance()
 }
 
@@ -531,9 +696,71 @@ public func platformTextField(
 public func platformTextField(
     _ title: String,
     text: Binding<String>,
-    axis: Axis
+    axis: Axis,
+    id: String? = nil
 ) -> some View {
     EmptyView().platformTextField(text: text, prompt: title, axis: axis)
+        .automaticCompliance(
+            identifierName: id ?? sanitizeLabelText(title),
+            identifierElementType: "TextField",
+            accessibilityLabel: title,  // Issue #157: Auto-extract from title
+            accessibilityHint: generateAccessibilityHintForTextField(prompt: title)  // Issue #165: Auto-generate hint
+        )
+}
+
+/// Drop-in replacement for SwiftUI's TextField with axis support and explicit label (iOS 16+)
+/// Provides platform-specific text field with automatic accessibility compliance
+/// Note: TextField doesn't require @MainActor for creation, only for binding access
+///
+/// - Parameters:
+///   - label: The accessibility label for VoiceOver (optional)
+///   - prompt: The placeholder text
+///   - text: Binding to the text value
+///   - axis: The text field axis (horizontal or vertical)
+/// - Returns: A platform-specific text field with automatic accessibility compliance
+///
+/// ## Usage Example
+/// ```swift
+/// platformTextField(label: "Description field", prompt: "Enter description", text: $description, axis: .vertical)
+/// ```
+public func platformTextField(
+    label: String? = nil,
+    prompt: String,
+    text: Binding<String>,
+    axis: Axis,
+    id: String? = nil
+) -> some View {
+    let identifierSource = label ?? prompt
+    return EmptyView().platformTextField(text: text, prompt: prompt, axis: axis)
+        .automaticCompliance(
+            identifierName: id ?? sanitizeLabelText(identifierSource),
+            identifierElementType: "TextField",
+            accessibilityLabel: label ?? prompt,  // Issue #157: Explicit label takes precedence, fallback to prompt
+            accessibilityHint: generateAccessibilityHintForTextField(label: label, prompt: prompt)  // Issue #165: Auto-generate hint
+        )
+}
+
+/// platformTextField with LocalizedStringKey label and axis
+public func platformTextField(
+    label: LocalizedStringKey,
+    prompt: String,
+    text: Binding<String>,
+    axis: Axis
+) -> some View {
+    EmptyView().platformTextField(text: text, prompt: prompt, axis: axis)
+        .accessibilityLabel(label)
+        .automaticCompliance()
+}
+
+/// platformTextField with Text label and axis
+public func platformTextField(
+    label: Text,
+    prompt: String,
+    text: Binding<String>,
+    axis: Axis
+) -> some View {
+    EmptyView().platformTextField(text: text, prompt: prompt, axis: axis)
+        .accessibilityLabel(label)
         .automaticCompliance()
 }
 
@@ -552,9 +779,67 @@ public func platformTextField(
 /// ```
 public func platformSecureField(
     _ title: String,
+    text: Binding<String>,
+    id: String? = nil
+) -> some View {
+    return EmptyView().platformSecureTextField(text: text, prompt: title)
+        .automaticCompliance(
+            identifierName: id ?? sanitizeLabelText(title),
+            identifierElementType: "SecureField",
+            accessibilityLabel: title,  // Issue #157: Auto-extract from title
+            accessibilityHint: generateAccessibilityHintForTextField(prompt: title)  // Issue #165: Auto-generate hint
+        )
+}
+
+/// Drop-in replacement for SwiftUI's SecureField with explicit label
+/// Provides platform-specific secure text field with automatic accessibility compliance
+/// Note: SecureField doesn't require @MainActor for creation, only for binding access
+///
+/// - Parameters:
+///   - label: The accessibility label for VoiceOver (optional)
+///   - prompt: The placeholder text
+///   - text: Binding to the text value
+/// - Returns: A platform-specific secure text field with automatic accessibility compliance
+///
+/// ## Usage Example
+/// ```swift
+/// platformSecureField(label: "Password field", prompt: "Enter password", text: $password)
+/// ```
+public func platformSecureField(
+    label: String? = nil,
+    prompt: String,
+    text: Binding<String>,
+    id: String? = nil
+) -> some View {
+    let identifierSource = label ?? prompt
+    return EmptyView().platformSecureTextField(text: text, prompt: prompt)
+        .automaticCompliance(
+            identifierName: id ?? sanitizeLabelText(identifierSource),
+            identifierElementType: "SecureField",
+            accessibilityLabel: label ?? prompt,  // Issue #157: Explicit label takes precedence, fallback to prompt
+            accessibilityHint: generateAccessibilityHintForTextField(label: label, prompt: prompt)  // Issue #165: Auto-generate hint
+        )
+}
+
+/// platformSecureField with LocalizedStringKey label
+public func platformSecureField(
+    label: LocalizedStringKey,
+    prompt: String,
     text: Binding<String>
 ) -> some View {
-    EmptyView().platformSecureTextField(text: text, prompt: title)
+    EmptyView().platformSecureTextField(text: text, prompt: prompt)
+        .accessibilityLabel(label)
+        .automaticCompliance()
+}
+
+/// platformSecureField with Text label
+public func platformSecureField(
+    label: Text,
+    prompt: String,
+    text: Binding<String>
+) -> some View {
+    EmptyView().platformSecureTextField(text: text, prompt: prompt)
+        .accessibilityLabel(label)
         .automaticCompliance()
 }
 
@@ -573,11 +858,74 @@ public func platformSecureField(
 /// ```
 public func platformToggle(
     _ title: String,
-    isOn: Binding<Bool>
+    isOn: Binding<Bool>,
+    id: String? = nil
 ) -> some View {
     EmptyView().platformToggle(isOn: isOn) {
         Text(title)
     }
+    .automaticCompliance(
+        identifierName: id ?? sanitizeLabelText(title),
+        identifierElementType: "Toggle",
+        accessibilityLabel: title,  // Issue #157: Auto-extract from title
+        accessibilityHint: generateAccessibilityHintForToggle(label: title)  // Issue #165: Auto-generate hint
+    )
+    .accessibilityValue(isOn.wrappedValue ? "On" : "Off")  // Issue #165: Dynamic value based on state
+}
+
+/// Drop-in replacement for SwiftUI's Toggle with explicit accessibility label
+/// Provides platform-specific toggle with automatic accessibility compliance
+/// Note: Toggle doesn't require @MainActor for creation, only for binding access
+///
+/// - Parameters:
+///   - label: The accessibility label for VoiceOver (optional, separate from visible title)
+///   - isOn: Binding to the toggle state
+/// - Returns: A platform-specific toggle with automatic accessibility compliance
+///
+/// ## Usage Example
+/// ```swift
+/// platformToggle(label: "Enable notifications", isOn: $notificationsEnabled)
+/// ```
+/// Note: This version uses the label as the accessibility label only. For visible text, use the original `platformToggle(_:isOn:)` function.
+public func platformToggle(
+    label: String? = nil,
+    isOn: Binding<Bool>,
+    id: String? = nil
+) -> some View {
+    let toggleLabel = label ?? "Toggle"
+    return EmptyView().platformToggle(isOn: isOn) {
+        Text(toggleLabel) // Use label as visible text if provided, fallback for Toggle requirement
+    }
+    .automaticCompliance(
+        identifierName: id ?? sanitizeLabelText(toggleLabel),
+        identifierElementType: "Toggle",
+        accessibilityLabel: label,  // Issue #154: Parameter-based approach
+        accessibilityHint: label != nil ? generateAccessibilityHintForToggle(label: label!) : nil  // Issue #165: Auto-generate hint
+    )
+    .accessibilityValue(isOn.wrappedValue ? "On" : "Off")  // Issue #165: Dynamic value based on state
+}
+
+/// platformToggle with LocalizedStringKey label
+public func platformToggle(
+    label: LocalizedStringKey,
+    isOn: Binding<Bool>
+) -> some View {
+    EmptyView().platformToggle(isOn: isOn) {
+        Text(label)
+    }
+    .accessibilityLabel(label)
+    .automaticCompliance()
+}
+
+/// platformToggle with Text label
+public func platformToggle(
+    label: Text,
+    isOn: Binding<Bool>
+) -> some View {
+    EmptyView().platformToggle(isOn: isOn) {
+        label
+    }
+    .accessibilityLabel(label)
     .automaticCompliance()
 }
 
@@ -618,8 +966,250 @@ public func platformForm<Content: View>(
 /// ```
 public func platformTextEditor(
     _ prompt: String,
+    text: Binding<String>,
+    id: String? = nil
+) -> some View {
+    EmptyView().platformTextEditor(text: text, prompt: prompt)
+        .automaticCompliance(
+            identifierName: id ?? sanitizeLabelText(prompt),
+            identifierElementType: "TextEditor",
+            accessibilityLabel: prompt,  // Issue #157: Auto-extract from prompt
+            accessibilityHint: generateAccessibilityHintForTextField(prompt: prompt)  // Issue #165: Auto-generate hint
+        )
+}
+
+/// Drop-in replacement for SwiftUI's TextEditor with explicit label
+/// Provides platform-specific text editor with automatic accessibility compliance
+/// Note: TextEditor doesn't require @MainActor for creation, only for binding access
+///
+/// - Parameters:
+///   - label: The accessibility label for VoiceOver (optional)
+///   - prompt: The placeholder text (shown when editor is empty)
+///   - text: Binding to the text value
+/// - Returns: A platform-specific text editor with automatic accessibility compliance
+///
+/// ## Usage Example
+/// ```swift
+/// platformTextEditor(label: "Description editor", prompt: "Enter description", text: $description)
+/// ```
+public func platformTextEditor(
+    label: String? = nil,
+    prompt: String,
+    text: Binding<String>,
+    id: String? = nil
+) -> some View {
+    let identifierSource = label ?? prompt
+    return EmptyView().platformTextEditor(text: text, prompt: prompt)
+        .automaticCompliance(
+            identifierName: id ?? sanitizeLabelText(identifierSource),
+            identifierElementType: "TextEditor",
+            accessibilityLabel: label ?? prompt,  // Issue #157: Explicit label takes precedence, fallback to prompt
+            accessibilityHint: generateAccessibilityHintForTextField(label: label, prompt: prompt)  // Issue #165: Auto-generate hint
+        )
+}
+
+/// platformTextEditor with LocalizedStringKey label
+public func platformTextEditor(
+    label: LocalizedStringKey,
+    prompt: String,
     text: Binding<String>
 ) -> some View {
     EmptyView().platformTextEditor(text: text, prompt: prompt)
+        .accessibilityLabel(label)
         .automaticCompliance()
+}
+
+/// platformTextEditor with Text label
+public func platformTextEditor(
+    label: Text,
+    prompt: String,
+    text: Binding<String>
+) -> some View {
+    EmptyView().platformTextEditor(text: text, prompt: prompt)
+        .accessibilityLabel(label)
+        .automaticCompliance()
+}
+
+// MARK: - Platform Text Functions
+
+/// Drop-in replacement for SwiftUI's Text
+/// Returns Text, allowing chaining of Text-specific modifiers like .bold(), .font(), etc.
+/// Note: Text doesn't require @MainActor for creation
+/// 
+/// **Limitation**: SwiftUI's type system prevents applying `.automaticCompliance()` 
+/// (which returns `some View`) while preserving the `Text` type needed for chaining.
+/// Apply `.automaticCompliance()` after Text modifiers if you need full compliance:
+/// ```swift
+/// platformText("Hello").bold().automaticCompliance()
+/// ```
+///
+/// - Parameter content: The text content
+/// - Returns: A Text view (true drop-in replacement)
+///
+/// ## Usage Example
+/// ```swift
+/// platformText("Hello, World!")
+/// platformText("Hello").bold()
+/// platformText("Hello").bold().automaticCompliance()  // For full compliance
+/// ```
+public func platformText(_ content: String) -> Text {
+    Text(content)
+}
+
+/// Drop-in replacement for SwiftUI's Text with explicit accessibility label
+/// Returns Text, allowing chaining of Text-specific modifiers like .bold(), .font(), etc.
+/// Note: Text doesn't require @MainActor for creation
+/// Note: Apply .automaticCompliance() manually if you need SixLayer accessibility benefits
+///
+/// - Parameters:
+///   - content: The text content to display
+///   - accessibilityLabel: The accessibility label for VoiceOver (applied via .accessibilityLabel())
+/// - Returns: A Text view with accessibility label applied (true drop-in replacement)
+///
+/// ## Usage Example
+/// ```swift
+/// platformText("42", accessibilityLabel: "Answer: forty-two")
+/// platformText("42", accessibilityLabel: "Answer").bold()
+/// ```
+public func platformText(
+    _ content: String,
+    accessibilityLabel: String
+) -> Text {
+    Text(content)
+        .accessibilityLabel(accessibilityLabel)
+}
+
+/// platformText with LocalizedStringKey
+/// Returns Text, allowing chaining of Text-specific modifiers like .bold(), .font(), etc.
+/// Note: Text doesn't require @MainActor for creation
+/// Note: Apply .automaticCompliance() manually if you need SixLayer accessibility benefits
+///
+/// - Parameter content: The localized text content
+/// - Returns: A Text view with accessibility label applied (true drop-in replacement)
+///
+/// ## Usage Example
+/// ```swift
+/// platformText("greeting")
+/// platformText("greeting").bold()
+/// ```
+public func platformText(_ content: LocalizedStringKey) -> Text {
+    Text(content)
+        .accessibilityLabel(content)
+}
+
+/// platformText with Text view
+/// Returns the Text view as-is, allowing further chaining
+/// Note: Text doesn't require @MainActor for creation
+/// Note: Apply .automaticCompliance() manually if you need SixLayer accessibility benefits
+///
+/// - Parameter content: The Text view
+/// - Returns: The Text view unchanged (true drop-in replacement)
+///
+/// ## Usage Example
+/// ```swift
+/// platformText(Text("Hello").bold())
+/// ```
+public func platformText(_ content: Text) -> Text {
+    content
+}
+
+/// Drop-in replacement for SwiftUI's Button with label and optional explicit accessibility identifier.
+/// When `id` is provided it is used as the accessibility identifier; when nil, an identifier is auto-derived from the label (sanitized).
+///
+/// - Parameters:
+///   - label: The button label text (also used as accessibility label).
+///   - id: Optional explicit accessibility identifier; when nil, uses sanitizeLabelText(label).
+///   - action: The action to perform when button is tapped.
+/// - Returns: A platform-specific button with automatic accessibility compliance.
+///
+/// ## Usage Example
+/// ```swift
+/// platformButton(label: "Test Button", id: "testButton") { }  // explicit id
+/// platformButton(label: "Save") { save() }                    // auto-derived id (e.g. "save")
+/// ```
+public func platformButton(
+    label: String,
+    id: String? = nil,
+    action: @escaping () -> Void
+) -> some View {
+    let identifierName = id ?? sanitizeLabelText(label)
+    return Button(action: action) {
+        Text(label)
+    }
+    .automaticCompliance(
+        identifierName: identifierName,
+        identifierElementType: "Button",
+        accessibilityLabel: label,
+        accessibilityHint: generateAccessibilityHintForButton(label: label),
+        accessibilityTraits: .isButton
+    )
+}
+
+/// Shorthand: platformButton with positional label (auto-derived identifier from label).
+public func platformButton(
+    _ label: String,
+    action: @escaping () -> Void
+) -> some View {
+    platformButton(label: label, id: nil, action: action)
+}
+
+/// Drop-in replacement for SwiftUI's Button with explicit accessibility label
+/// Provides platform-specific button with automatic accessibility compliance
+/// Note: Button doesn't require @MainActor for creation
+///
+/// - Parameters:
+///   - label: The accessibility label for VoiceOver (optional)
+///   - action: The action to perform when button is tapped
+/// - Returns: A platform-specific button with automatic accessibility compliance
+///
+/// ## Usage Example
+/// ```swift
+/// platformButton(label: "Save document") {
+///     save()
+/// }
+/// ```
+public func platformButton(
+    label: String? = nil,
+    id: String? = nil,
+    action: @escaping () -> Void
+) -> some View {
+    let buttonLabel = label ?? "Button"
+    return Button(action: action) {
+        Text(buttonLabel)
+    }
+    .automaticCompliance(
+        identifierName: id ?? sanitizeLabelText(buttonLabel),
+        identifierElementType: "Button",
+        accessibilityLabel: label  // Issue #154: Parameter-based approach
+    )
+}
+
+/// platformButton with LocalizedStringKey label
+public func platformButton(
+    label: LocalizedStringKey,
+    action: @escaping () -> Void
+) -> some View {
+    Button(action: action) {
+        Text(label)
+    }
+    .accessibilityLabel(label)
+    .automaticCompliance(
+        identifierElementType: "Button",
+        accessibilityTraits: .isButton  // Issue #165: Auto-add button trait
+    )
+}
+
+/// platformButton with Text label
+public func platformButton(
+    label: Text,
+    action: @escaping () -> Void
+) -> some View {
+    Button(action: action) {
+        label
+    }
+    .accessibilityLabel(label)
+    .automaticCompliance(
+        identifierElementType: "Button",
+        accessibilityTraits: .isButton  // Issue #165: Auto-add button trait
+    )
 }

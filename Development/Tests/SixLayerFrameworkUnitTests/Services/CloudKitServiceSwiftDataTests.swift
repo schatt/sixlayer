@@ -39,7 +39,7 @@ final class CloudKitServiceSwiftDataTests {
     // MARK: - syncWithSwiftData Tests
     
     @Test func testSyncWithSwiftDataBasicUsage() async throws {
-        let delegate = MockCloudKitDelegate()
+        let delegate = TestCloudKitDelegate()
         let service = CloudKitService(delegate: delegate)
         let container = createTestModelContainer()
         let context = container.mainContext
@@ -51,7 +51,7 @@ final class CloudKitServiceSwiftDataTests {
     }
     
     @Test func testSyncWithSwiftDataThreadSafety() async throws {
-        let delegate = MockCloudKitDelegate()
+        let delegate = TestCloudKitDelegate()
         let service = CloudKitService(delegate: delegate)
         let container = createTestModelContainer()
         let context = container.mainContext
@@ -65,7 +65,7 @@ final class CloudKitServiceSwiftDataTests {
     }
     
     @Test func testSyncWithSwiftDataWithBackgroundContext() async throws {
-        let delegate = MockCloudKitDelegate()
+        let delegate = TestCloudKitDelegate()
         let service = CloudKitService(delegate: delegate)
         let container = createTestModelContainer()
         
@@ -78,7 +78,7 @@ final class CloudKitServiceSwiftDataTests {
     }
     
     @Test func testSyncWithSwiftDataErrorHandling() async throws {
-        let delegate = MockCloudKitDelegate()
+        let delegate = TestCloudKitDelegate()
         let service = CloudKitService(delegate: delegate)
         let container = createTestModelContainer()
         let context = container.mainContext
@@ -101,7 +101,7 @@ final class CloudKitServiceSwiftDataTests {
     // MARK: - Platform-Specific Workarounds Tests
     
     @Test func testSyncWithSwiftDataPlatformDetection() async throws {
-        let delegate = MockCloudKitDelegate()
+        let delegate = TestCloudKitDelegate()
         let service = CloudKitService(delegate: delegate)
         let container = createTestModelContainer()
         let context = container.mainContext
@@ -123,15 +123,9 @@ final class CloudKitServiceSwiftDataTests {
     // MARK: - Integration with CloudKitService Tests
     
     @Test func testSyncWithSwiftDataUsesCloudKitServiceDelegate() async throws {
-        _ = MockCloudKitDelegate()
-        
-        // Create a custom delegate that tracks calls
-        class TrackingDelegate: MockCloudKitDelegate {
-            var syncCalled = false
-        }
-        
-        let trackingDelegate = TrackingDelegate()
-        let service = CloudKitService(delegate: trackingDelegate)
+        // Create a test delegate
+        let delegate = TestCloudKitDelegate()
+        let service = CloudKitService(delegate: delegate)
         let container = createTestModelContainer()
         let context = container.mainContext
         
@@ -139,13 +133,13 @@ final class CloudKitServiceSwiftDataTests {
         try await service.syncWithSwiftData(context: context)
         
         // Verify delegate is accessible (indirectly through service)
-        #expect(service.delegate === trackingDelegate)
+        #expect(service.delegate === delegate)
     }
     
     // MARK: - Context Management Tests
     
     @Test func testSyncWithSwiftDataPreservesContextState() async throws {
-        let delegate = MockCloudKitDelegate()
+        let delegate = TestCloudKitDelegate()
         let service = CloudKitService(delegate: delegate)
         let container = createTestModelContainer()
         let context = container.mainContext
@@ -160,7 +154,7 @@ final class CloudKitServiceSwiftDataTests {
     }
     
     @Test func testSyncWithSwiftDataMultipleCalls() async throws {
-        let delegate = MockCloudKitDelegate()
+        let delegate = TestCloudKitDelegate()
         let service = CloudKitService(delegate: delegate)
         let container = createTestModelContainer()
         let context = container.mainContext
@@ -177,7 +171,7 @@ final class CloudKitServiceSwiftDataTests {
     // MARK: - API Consistency Tests
     
     @Test func testSyncWithSwiftDataMirrorsCoreDataAPI() async throws {
-        let delegate = MockCloudKitDelegate()
+        let delegate = TestCloudKitDelegate()
         let service = CloudKitService(delegate: delegate)
         let container = createTestModelContainer()
         let context = container.mainContext

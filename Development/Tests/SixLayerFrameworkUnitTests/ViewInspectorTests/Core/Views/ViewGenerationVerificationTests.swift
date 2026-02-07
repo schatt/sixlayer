@@ -62,24 +62,11 @@ open class ViewGenerationVerificationTests: BaseTestClass {
         // detailView is a non-optional View, so it exists if we reach here
         
         // 2. Contains what it needs to contain - The view has the expected structure and content
-        // Using direct ViewInspector API
         #if canImport(ViewInspector)
-        guard let inspected = try? AnyView(detailView).inspect() else {
-            Issue.record("View inspection not available")
-            return
-        }
-
-        // The view should contain text elements with our data
-        let viewText = inspected.findAll(ViewInspector.ViewType.Text.self)
-        #expect(!viewText.isEmpty, "Detail view should contain text elements")
-
-        // Should contain the title and subtitle from our test data
-        // Use helper function for DRY text verification
         self.verifyViewContainsText(detailView, expectedText: "Item 1", testName: "Detail view title")
         self.verifyViewContainsText(detailView, expectedText: "Subtitle 1", testName: "Detail view subtitle")
         #else
-        // ViewInspector not available on macOS - test passes by verifying compilation
-        #expect(Bool(true), "View inspection not available on this platform (likely macOS) - test passes by verifying compilation")
+        #expect(Bool(true), "View inspection not available on this platform - test passes by verifying compilation")
         #endif
     }
     
@@ -116,33 +103,11 @@ open class ViewGenerationVerificationTests: BaseTestClass {
         // Compact and detailed views creation succeeded (non-optional results)
         
         // 2. Contains what it needs to contain - Both views should contain our data
-        // Using wrapper - when ViewInspector works on macOS, no changes needed here
         #if canImport(ViewInspector)
-        guard let compactInspected = try? AnyView(compactView).inspect() else {
-            Issue.record("Compact view inspection not available")
-            return
-        }
-        let compactText = compactInspected.findAll(ViewInspector.ViewType.Text.self)
-        #expect(!compactText.isEmpty, "Compact view should contain text elements")
-        // Use helper function for DRY text verification
         self.verifyViewContainsText(compactView, expectedText: "Item 1", testName: "Compact view title")
-
-        guard let detailedInspected = try? AnyView(detailedView).inspect() else {
-            Issue.record("Detailed view inspection not available")
-            return
-        }
-        let detailedText = detailedInspected.findAll(ViewInspector.ViewType.Text.self)
-        #expect(!detailedText.isEmpty, "Detailed view should contain text elements")
-        // Use helper function for DRY text verification
         self.verifyViewContainsText(detailedView, expectedText: "Item 1", testName: "Detailed view title")
         #else
-        let compactInspectionResult: Bool? = nil
-        let detailedInspectionResult: Bool? = nil
-        #endif
-
-        #if !(canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED))
-        // ViewInspector not available on macOS - test passes by verifying compilation
-        #expect(Bool(true), "View inspection not available on this platform (likely macOS) - test passes by verifying compilation")
+        #expect(Bool(true), "View inspection not available on this platform - test passes by verifying compilation")
         #endif
     }
 
@@ -168,13 +133,10 @@ open class ViewGenerationVerificationTests: BaseTestClass {
         
         // 2. Contains what it needs to contain - The view should contain custom field content
         #if canImport(ViewInspector)
-        // Use helper function for DRY text verification
-        // Check for both "Custom:" and "=" to verify custom field content
-        TestPatterns.verifyViewContainsText(detailView, expectedText: "Custom:", testName: "Detail view custom field")
-        TestPatterns.verifyViewContainsText(detailView, expectedText: "=", testName: "Detail view custom field separator")
+        self.verifyViewContainsText(detailView, expectedText: "Custom:", testName: "Detail view custom field")
+        self.verifyViewContainsText(detailView, expectedText: "=", testName: "Detail view custom field separator")
         #else
-        // ViewInspector not available on macOS - test passes by verifying compilation
-        #expect(Bool(true), "View inspection not available on this platform (likely macOS) - test passes by verifying compilation")
+        #expect(Bool(true), "View inspection not available on this platform - test passes by verifying compilation")
         #endif
     }
     
@@ -195,26 +157,10 @@ open class ViewGenerationVerificationTests: BaseTestClass {
         
         // 2. Contains what it needs to contain - The view should contain available data
         #if canImport(ViewInspector)
-        do {
-            // The view should contain text elements
-            guard let inspected = try? AnyView(detailView).inspect() else {
-                Issue.record("View inspection not available")
-                return
-            }
-            let viewText = inspected.findAll(ViewInspector.ViewType.Text.self)
-            #expect(!viewText.isEmpty, "Detail view should contain text elements")
-            
-            // Should contain the title and description (which are not nil)
-            // Use helper function for DRY text verification
-            self.verifyViewContainsText(detailView, expectedText: "Item 2", testName: "Detail view title with nil subtitle")
-            self.verifyViewContainsText(detailView, expectedText: "Description 2", testName: "Detail view description")
-            
-        } catch {
-            Issue.record("Failed to inspect detail view with nil values")
-        }
+        self.verifyViewContainsText(detailView, expectedText: "Item 2", testName: "Detail view title with nil subtitle")
+        self.verifyViewContainsText(detailView, expectedText: "Description 2", testName: "Detail view description")
         #else
-        // ViewInspector not available on macOS - test passes by verifying compilation
-        #expect(Bool(true), "View inspection not available on this platform (likely macOS) - test passes by verifying compilation")
+        #expect(Bool(true), "View inspection not available on this platform - test passes by verifying compilation")
         #endif
     }
     

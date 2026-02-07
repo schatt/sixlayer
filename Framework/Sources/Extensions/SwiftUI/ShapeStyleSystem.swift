@@ -360,7 +360,7 @@ public extension View {
     }
     
     /// Apply a platform-appropriate text style
-    func platformText(
+    func platformShapeText(
         for platform: SixLayerPlatform,
         variant: TextVariant = .primary
     ) -> some View {

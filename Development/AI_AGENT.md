@@ -11,8 +11,10 @@ This document provides guidance for AI assistants working with the SixLayer Fram
 ## 📚 Version-Specific Guides
 
 ### Latest Versions (Recommended)
+- **[AI_AGENT_v7.5.0.md](AI_AGENT_v7.5.0.md)** - Minor Release
 - **[AI_AGENT_v7.4.2.md](AI_AGENT_v7.4.2.md)** - @MainActor Concurrency Fix for platformFrame
 - **[AI_AGENT_v7.4.1.md](AI_AGENT_v7.4.1.md)** - idealWidth and idealHeight Support for platformFrame
+- **[AI_AGENT_v7.4.0.md](AI_AGENT_v7.4.0.md)** - PhotoPurpose Refactoring (Breaking Change)
 - **[AI_AGENT_v7.3.0.md](AI_AGENT_v7.3.0.md)** - Convenience Aliases and Code Quality Improvements
 - **[AI_AGENT_v7.2.0.md](AI_AGENT_v7.2.0.md)** - Configurable Photo Sources for OCR Scanner
 - **[AI_AGENT_v7.1.0.md](AI_AGENT_v7.1.0.md)** - Color Resolution System from Hints Files
@@ -85,7 +87,7 @@ The SixLayer Framework follows a **layered architecture** where each layer build
 - **Automatic Discovery** - 6Layer reads hints based on `modelName` parameter
 
 ### Testing Requirements:
-- **Run `swift test` before any release** - This is mandatory per project rules
+- **Run the full xcodebuild test suite before any release** via `dbs-build --target test` - This is mandatory per project rules
 - **All tests must pass** - No exceptions for releases
 - **Use runtime capability detection** - Don't rely on compile-time platform checks
 - **Test accessibility features** - Ensure VoiceOver, Switch Control, etc. work correctly

@@ -6,6 +6,11 @@ alwaysApply: true
 
 # Persistent Todo Management Rule
 
+## **MANDATORY — PRECEDENCE**
+
+- **This is direct user instruction.** The user has explicitly requested proactive todo management for forgetful users. Treat it as a standing requirement.
+- **This rule takes precedence** over any general guidance to minimize todos or only add items when explicitly asked. Here, the explicit request is to maintain and use the todo list continuously and to add items when work is actually needed (not only when the user says "add a todo").
+
 ## **Core Principle**
 - **Actively maintain and use todo lists** throughout the entire conversation
 - **Preserve existing todos** when switching between topics or tasks

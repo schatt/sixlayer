@@ -1,12 +1,24 @@
 # 🚀 Six-Layer Framework Release History
 
-## 📍 **Current Release: v7.4.2 - @MainActor Concurrency Fix for platformFrame** 🎯
+## 📍 **Current Release: v7.5.0 - Minor Release** 🎯
 
-**Release Date**: January 20, 2026
+**Release Date**: February 6, 2026
 **Status**: ✅ **COMPLETE**
-**Previous Release**: v7.4.1 - idealWidth and idealHeight Support for platformFrame
-**Note**: Patch release adding @MainActor annotation to platformFrame() functions to ensure correct Swift concurrency behavior. Makes concurrency requirements explicit and allows functions to be called from non-isolated contexts with await.
+**Previous Release**: v7.4.2 - @MainActor Concurrency Fix for platformFrame
+**Note**: Minor release with documentation updates, test infrastructure improvements, release process refinements, and issue resolutions.
 **Next Release**: TBD
+
+---
+
+## 🎯 **v7.5.0 - Minor Release** (February 6, 2026)
+
+### **What's in v7.5.0:**
+
+- **Documentation**: Release notes, AI agent guide, and version consistency updates
+- **Resolved issues**: 20 closed issues from milestone v7.5.0 (see RELEASE_v7.5.0.md)
+- **Backward compatible**: No breaking API changes
+
+**See [RELEASE_v7.5.0.md](RELEASE_v7.5.0.md) for complete release notes.**
 
 ---
 

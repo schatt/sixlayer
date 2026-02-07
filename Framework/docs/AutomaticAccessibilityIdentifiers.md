@@ -56,6 +56,52 @@ AccessibilityIdentifierConfig.shared.mode = .automatic     // ✅ Already automa
 
 **That's it!** Framework components automatically get accessibility identifiers without any additional code.
 
+### UserDefaults Persistence
+
+Configuration settings can be persisted to UserDefaults so they survive app restarts:
+
+```swift
+// Configure settings
+let config = AccessibilityIdentifierConfig.shared
+config.enableAutoIDs = true
+config.namespace = "myapp"
+config.globalPrefix = "feature"
+config.enableUITestIntegration = true
+
+// Save to UserDefaults (persists across app launches)
+config.saveToUserDefaults()
+```
+
+**Load on app startup:**
+
+```swift
+// In your app initialization (e.g., App.swift or SceneDelegate)
+@main
+struct MyApp: App {
+    init() {
+        // Load saved configuration from UserDefaults
+        AccessibilityIdentifierConfig.shared.loadFromUserDefaults()
+        
+        // Optionally override with custom settings
+        AccessibilityIdentifierConfig.shared.enableDebugLogging = true
+    }
+    
+    var body: some Scene {
+        WindowGroup {
+            ContentView()
+        }
+    }
+}
+```
+
+**Benefits:**
+- ✅ User preferences persist across app launches
+- ✅ Developers can save/load configuration programmatically
+- ✅ Follows the same pattern as `PerformanceConfiguration`
+- ✅ Only loads values if they exist in UserDefaults (respects defaults)
+
+**Note:** The `loadFromUserDefaults()` method only loads values if they exist in UserDefaults. If a key doesn't exist, the default value is preserved. This ensures that new app installations start with sensible defaults.
+
 ### ⚠️ Important: GlobalAutomaticAccessibilityIdentifierModifier is Unnecessary
 
 **For Framework Components:** The `GlobalAutomaticAccessibilityIdentifierModifier` is **not needed** because framework components automatically check the global configuration and apply accessibility identifiers when appropriate.
@@ -118,13 +164,102 @@ struct CustomFuelView: View {
 }
 ```
 
-### Opt-out for Specific Views
+### Disabling Accessibility Identifiers
+
+If your app uses SixLayer framework methods but doesn't want accessibility identifiers, you can disable them either globally or on individual calls.
+
+#### Global Disable
+
+Disable accessibility identifiers for your entire app:
 
 ```swift
-// Disable automatic identifiers for specific views
+// In your app initialization (e.g., App.swift or SceneDelegate)
+@main
+struct MyApp: App {
+    init() {
+        // Disable automatic accessibility identifiers globally
+        AccessibilityIdentifierConfig.shared.enableAutoIDs = false
+    }
+    
+    var body: some Scene {
+        WindowGroup {
+            ContentView()
+        }
+    }
+}
+```
+
+**Note:** This disables automatic identifier generation for all framework components and custom views throughout your app.
+
+#### Per-View Disable
+
+Disable accessibility identifiers for specific views:
+
+```swift
+// Disable for a specific view
 Button("Decorative") { }
     .disableAutomaticAccessibilityIdentifiers()
+
+// Disable for a container and all its children
+VStack {
+    Text("Content")
+    Button("Action") { }
+}
+.disableAutomaticAccessibilityIdentifiers()
 ```
+
+#### Per-Call Disable (Framework Methods)
+
+Disable accessibility identifiers for individual framework method calls:
+
+```swift
+// Disable for a specific framework method call
+platformNavigationButton_L4(
+    title: "Settings",
+    systemImage: "gear",
+    accessibilityLabel: "Settings",
+    accessibilityHint: "Open settings",
+    action: { }
+)
+.disableAutomaticAccessibilityIdentifiers()
+
+// Disable for Layer 1 functions
+platformPresentContent_L1(content: myContent)
+    .disableAutomaticAccessibilityIdentifiers()
+```
+
+#### When to Disable
+
+Consider disabling accessibility identifiers when:
+- ✅ Your app doesn't use UI testing
+- ✅ You have performance concerns (though overhead is minimal)
+- ✅ You prefer manual identifier management
+- ✅ You're building a prototype and don't need identifiers yet
+- ✅ Specific views are purely decorative and don't need testing
+
+#### Re-enabling After Global Disable
+
+If you've disabled globally but want identifiers for specific views:
+
+```swift
+// Global disable
+AccessibilityIdentifierConfig.shared.enableAutoIDs = false
+
+// Re-enable for specific views by temporarily enabling the global setting
+// Note: This affects all views in the app, so use with caution
+let wasEnabled = AccessibilityIdentifierConfig.shared.enableAutoIDs
+AccessibilityIdentifierConfig.shared.enableAutoIDs = true
+
+Button("Important") { }
+    .automaticCompliance()
+
+// Restore previous setting if needed
+AccessibilityIdentifierConfig.shared.enableAutoIDs = wasEnabled
+```
+
+**Important:** Framework components (L1-L6 methods) respect the global `enableAutoIDs` setting. If you disable globally, framework components won't generate identifiers. To enable for specific views, you'll need to either:
+- Temporarily enable the global setting (affects all views)
+- Use manual `.accessibilityIdentifier()` calls instead
 
 ## Configuration Options
 
@@ -139,7 +274,7 @@ Button("Decorative") { }
 | `enableDebugLogging` | `Bool` | `false` | DEBUG logging of generated IDs |
 | `enableViewHierarchyTracking` | `Bool` | `false` | Track view hierarchy for breadcrumbs |
 | `enableUITestIntegration` | `Bool` | `false` | Enable UI test code generation |
-| `globalAutomaticAccessibilityIdentifiers` | `Bool` | `true` | ✅ **NEW**: Environment variable now defaults to true |
+| `enableAutoIDs` | `Bool` | `true` | Whether to generate automatic identifiers (global setting) |
 
 ### Generation Modes
 
@@ -178,6 +313,43 @@ Example: "user-1"
 - Special characters → hyphens
 - Converted to lowercase
 - Example: `"User Profile"` → `"user-profile"`
+
+## Using `.automaticCompliance()` – Parameters and Labels
+
+All hints are passed as **parameters** (no environment). Labels for VoiceOver are derived from parameters as follows.
+
+### Parameters
+
+| Parameter | Used for | Caller should pass |
+|-----------|----------|--------------------|
+| `identifierName` | Component name segment in the generated identifier (e.g. `"save"` in `app.main.ui.save.Button`). **Not sanitized** by the modifier. | Typically `sanitizeLabelText(title)` so the ID segment is lowercase and hyphenated. |
+| `identifierElementType` | Element type in the identifier (e.g. `"Button"`, `"TextField"`). | Type string, e.g. `"Button"`. |
+| `identifierLabel` | (1) **Identifier:** sanitized internally and appended to the identifier. (2) **VoiceOver:** when `accessibilityLabel` is nil, used as the VoiceOver label (localized and formatted). | **Raw** text (e.g. `title` or `"Save"`). Do not sanitize; the modifier sanitizes for the ID and uses raw text for VoiceOver. |
+| `accessibilityLabel` | VoiceOver label only. When provided, it overrides `identifierLabel` for VoiceOver. | Localization key or plain text. |
+
+### VoiceOver label fallback
+
+When `accessibilityLabel` is nil or empty, **`identifierLabel` is used as the VoiceOver label** (after localization and HIG formatting, e.g. punctuation). So a single label parameter can drive both the identifier and VoiceOver:
+
+```swift
+// One label for both identifier and VoiceOver
+.automaticCompliance(
+    identifierName: sanitizeLabelText(title),  // ID segment: "save"
+    identifierLabel: title                     // ID segment + VoiceOver: "Save." (formatted)
+)
+
+// Explicit VoiceOver label overrides identifierLabel for VoiceOver only
+.automaticCompliance(
+    identifierName: sanitizeLabelText(title),
+    identifierLabel: title,
+    accessibilityLabel: "MyApp.accessibility.button.save"  // VoiceOver uses this; identifier still uses title
+)
+```
+
+### Do not sanitize twice
+
+- **`identifierName`**: Caller sanitizes so the component name in the ID is consistent (e.g. `"save"`).
+- **`identifierLabel`**: Pass raw text. The modifier sanitizes it when building the identifier and uses the raw value for VoiceOver (so users hear "Save." not "save").
 
 ## Integration Points
 

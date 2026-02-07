@@ -28,13 +28,16 @@ open class FrameworkComponentGlobalConfigTests: BaseTestClass {
             config.enableAutoIDs = false
             
             // Create a framework component WITHOUT .named() (this should NOT generate an ID)
-            // Also set environment variable to false to ensure no IDs are generated
+            // Also set config to false to ensure no IDs are generated
+            guard let config = testConfig else {
+                Issue.record("testConfig is nil")
+                return
+            }
+            config.globalAutomaticAccessibilityIdentifiers = false  // ← Disable via config
             let view = Button("Test") { }
-                .environment(\.globalAutomaticAccessibilityIdentifiers, false)
                 .automaticCompliance()
             
             // Try to inspect for accessibility identifier
-            // Using wrapper - when ViewInspector works on macOS, no changes needed here
             #if canImport(ViewInspector)
             if let inspectedView = try? AnyView(view).inspect(),
                let button = try? inspectedView.button(),
@@ -72,12 +75,11 @@ open class FrameworkComponentGlobalConfigTests: BaseTestClass {
             
             // Create a framework component with .named() (this SHOULD generate an ID)
             // .named() always generates IDs regardless of global config
+            config.globalAutomaticAccessibilityIdentifiers = true  // ← Enable via config
             let view = Button("Test") { }
-                .environment(\.globalAutomaticAccessibilityIdentifiers, true)
                 .named("TestButton")
             
             // Try to inspect for accessibility identifier
-            // Using wrapper - when ViewInspector works on macOS, no changes needed here
             #if canImport(ViewInspector)
             if let inspectedView = try? AnyView(view).inspect(),
                let button = try? inspectedView.button(),
@@ -91,7 +93,7 @@ open class FrameworkComponentGlobalConfigTests: BaseTestClass {
                 Issue.record("Failed to inspect framework component")
             }
             #else
-            // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+            // ViewInspector not available on this platform - this is expected, not a failure
             #endif
             
             cleanupTestEnvironment()

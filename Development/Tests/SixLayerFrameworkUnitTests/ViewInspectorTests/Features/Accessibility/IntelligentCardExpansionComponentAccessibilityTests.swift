@@ -52,6 +52,7 @@ open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
             let testItem = CardTestItem(id: "1", title: "Test Card")
             
             // When: Creating ExpandableCardComponent
+            let hints = PresentationHints()
             let view = ExpandableCardComponent(
                 item: testItem,
                 layoutDecision: IntelligentCardLayoutDecision(
@@ -67,6 +68,7 @@ open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
                     expansionScale: 1.15,
                     animationDuration: 0.3
                 ),
+                hints: hints,
                 isExpanded: false,
                 isHovered: false,
                 onExpand: { },
@@ -129,8 +131,10 @@ open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
             let testItem = CardTestItem(id: "1", title: "CoverFlow Card")
             
             // When: Creating CoverFlowCardComponent
+            let hints = PresentationHints()
             let view = CoverFlowCardComponent(
                 item: testItem,
+                hints: hints,
                 onItemSelected: { _ in },
                 onItemDeleted: { _ in },
                 onItemEdited: { _ in }

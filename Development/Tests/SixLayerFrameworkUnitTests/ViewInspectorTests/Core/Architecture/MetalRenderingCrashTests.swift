@@ -43,14 +43,13 @@ open class MetalRenderingCrashTDDTests: BaseTestClass {
         // view is a non-optional View, so it exists if we reach here
         
         // Try to inspect the view (should not crash)
-        // Using wrapper - when ViewInspector works on macOS, no changes needed here
         #if canImport(ViewInspector)
         if let _ = try? AnyView(view).inspect() {
         } else {
             Issue.record("platformPresentItemCollection_L1 should not crash during inspection")
         }
         #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // ViewInspector not available on this platform - this is expected, not a failure
         #endif
         
     }
@@ -84,14 +83,13 @@ open class MetalRenderingCrashTDDTests: BaseTestClass {
         #expect(Bool(true), "GenericItemCollectionView should not crash")  // view is non-optional
         
         // Try to inspect the view (should not crash)
-        // Using wrapper - when ViewInspector works on macOS, no changes needed here
         #if canImport(ViewInspector)
         if let _ = try? AnyView(view).inspect() {
         } else {
             Issue.record("GenericItemCollectionView should not crash during inspection")
         }
         #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // ViewInspector not available on this platform - this is expected, not a failure
         #endif
         
     }
@@ -132,14 +130,13 @@ open class MetalRenderingCrashTDDTests: BaseTestClass {
         #expect(Bool(true), "Metal rendering should not crash")  // view is non-optional
         
         // Try to inspect the view (should not crash)
-        // Using wrapper - when ViewInspector works on macOS, no changes needed here
         #if canImport(ViewInspector)
         if let _ = try? AnyView(view).inspect() {
         } else {
             Issue.record("Metal rendering should not crash during inspection")
         }
         #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // ViewInspector not available on this platform - this is expected, not a failure
         #endif
         
     }
@@ -170,14 +167,13 @@ open class MetalRenderingCrashTDDTests: BaseTestClass {
         #expect(Bool(true), "SimpleCardComponent should not crash")  // view is non-optional
         
         // Try to inspect the view (should not crash)
-        // Using wrapper - when ViewInspector works on macOS, no changes needed here
         #if canImport(ViewInspector)
         if let _ = try? AnyView(view).inspect() {
         } else {
             Issue.record("SimpleCardComponent should not crash during inspection")
         }
         #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+        // ViewInspector not available on this platform - this is expected, not a failure
         #endif
         
     }

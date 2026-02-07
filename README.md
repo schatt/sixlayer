@@ -27,7 +27,7 @@ Navigate to the `Framework/` directory and use it as a Swift Package:
 ```swift
 // In your Package.swift
 dependencies: [
-    .package(url: "https://github.com/schatt/sixlayer.git", from: "7.4.2")
+    .package(url: "https://github.com/schatt/sixlayer.git", from: "7.5.0")
 ]
 ```
 
@@ -41,9 +41,12 @@ dependencies: [
 
 The framework is distributed as a Swift Package from the `Framework/` directory. This ensures that only the essential framework code is included when other projects consume it.
 
-## 🆕 Latest Release: v7.4.2
+## 🆕 Latest Release: v7.5.0
 
-### **@MainActor Concurrency Fix for platformFrame**
+### **Minor Release**
+📋 **Documentation & quality**: Release notes, AI agent guide, and version consistency updates. Resolved 20 issues from milestone v7.5.0. Fully backward compatible.
+
+### **Previous Release: v7.4.2 - @MainActor Concurrency Fix for platformFrame**
 🔧 **Concurrency Correctness**: Added `@MainActor` annotation to `platformFrame()` functions to ensure correct Swift concurrency behavior. Makes concurrency requirements explicit and allows functions to be called from non-isolated contexts with `await`. Aligns with Swift 6 strict concurrency requirements.
 
 ### **Previous Release: v7.4.1 - idealWidth and idealHeight Support for platformFrame**
@@ -196,8 +199,8 @@ These guides contain critical information about the Layer 1 Semantic Intent phil
 
 ## 📋 Current Status
 
-**Version**: v7.4.2 (@MainActor Concurrency Fix for platformFrame)
-**Phase**: Patch Release
+**Version**: v7.5.0 (Minor Release)
+**Phase**: Minor Release
 **Next**: TBD
 
 ## 🤝 Contributing

@@ -5,6 +5,23 @@ import AVFoundation
 import PhotosUI
 #endif
 
+// MARK: - Camera Authorization State
+
+/// Why the camera interface is or isn’t using the camera.
+/// Lets the app show different UI (e.g. “Enable in Settings” when denied vs first-time prompt).
+public enum CameraAuthorizationState: Sendable {
+    /// Camera is available and authorized; picker will use camera.
+    case authorized
+    /// Permission not requested yet (first time); picker will use camera and system will prompt.
+    case notDetermined
+    /// User denied camera access; picker falls back to photo library.
+    case denied
+    /// Camera restricted by device policy (e.g. parental controls); picker falls back to photo library.
+    case restricted
+    /// No camera hardware (e.g. Simulator); picker falls back to photo library.
+    case unavailable
+}
+
 /// Layer 4: Component - Platform Photo Components
 ///
 /// This layer provides platform-aware UI components specifically designed for displaying and interacting with photos.
@@ -20,13 +37,19 @@ public enum PlatformPhotoComponentsLayer4 {
     
     // MARK: - Camera Interface Components
     
-    /// Creates a platform-specific camera interface
+    /// Creates a platform-specific camera interface.
+    /// - Parameters:
+    ///   - onImageCaptured: Called when the user captures or selects an image.
+    ///   - onCameraAuthorizationState: Optional. Called with why camera is or isn’t used (e.g. `.denied` → show “Open Settings”).
     /// Note: Requires @MainActor because CameraView uses @State
     @ViewBuilder
     @MainActor
-    public static func platformCameraInterface_L4(onImageCaptured: @escaping (PlatformImage) -> Void) -> some View {
+    public static func platformCameraInterface_L4(
+        onImageCaptured: @escaping (PlatformImage) -> Void,
+        onCameraAuthorizationState: ((CameraAuthorizationState) -> Void)? = nil
+    ) -> some View {
         #if os(iOS)
-        CameraView(onImageCaptured: onImageCaptured)
+        CameraView(onImageCaptured: onImageCaptured, onCameraAuthorizationState: onCameraAuthorizationState)
             .automaticCompliance()
         #elseif os(macOS)
         MacCameraView(onImageCaptured: onImageCaptured)
@@ -137,11 +160,39 @@ import UIKit
 
 public struct CameraView: UIViewControllerRepresentable {
     let onImageCaptured: (PlatformImage) -> Void
+    let onCameraAuthorizationState: ((CameraAuthorizationState) -> Void)?
     
+    public init(
+        onImageCaptured: @escaping (PlatformImage) -> Void,
+        onCameraAuthorizationState: ((CameraAuthorizationState) -> Void)? = nil
+    ) {
+        self.onImageCaptured = onImageCaptured
+        self.onCameraAuthorizationState = onCameraAuthorizationState
+    }
     
     public func makeUIViewController(context: Context) -> UIImagePickerController {
         let picker = UIImagePickerController()
-        picker.sourceType = .camera
+        // Issue #179: Simulator and some devices have no camera; setting .camera throws.
+        // When user has denied camera permission, use photo library to avoid black screen.
+        let cameraAvailable = UIImagePickerController.isSourceTypeAvailable(.camera)
+        let authStatus = AVCaptureDevice.authorizationStatus(for: .video)
+        let state: CameraAuthorizationState = {
+            if !cameraAvailable { return .unavailable }
+            switch authStatus {
+            case .authorized: return .authorized
+            case .notDetermined: return .notDetermined
+            case .denied: return .denied
+            case .restricted: return .restricted
+            @unknown default: return .denied
+            }
+        }()
+        onCameraAuthorizationState?(state)
+        let useCamera = cameraAvailable && (authStatus == .authorized || authStatus == .notDetermined)
+        if useCamera {
+            picker.sourceType = .camera
+        } else {
+            picker.sourceType = .photoLibrary
+        }
         picker.delegate = context.coordinator
         return picker
     }
@@ -163,6 +214,10 @@ public struct CameraView: UIViewControllerRepresentable {
             if let image = info[.originalImage] as? UIImage {
                 parent.onImageCaptured(PlatformImage(image))  // Implicit conversion: UIImage → PlatformImage
             }
+            picker.dismiss(animated: true)
+        }
+        
+        public func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
             picker.dismiss(animated: true)
         }
     }
@@ -660,12 +715,20 @@ public func platformPhotoPicker_L4(onImageSelected: @escaping (PlatformImage) ->
     PlatformPhotoComponentsLayer4.platformPhotoPicker_L4(onImageSelected: onImageSelected)
 }
 
-/// Creates a platform-specific camera interface (convenience wrapper)
-/// Note: Requires @MainActor because it calls main-actor isolated methods
+/// Creates a platform-specific camera interface (convenience wrapper).
+/// - Parameters:
+///   - onImageCaptured: Called when the user captures or selects an image.
+///   - onCameraAuthorizationState: Optional. Called with why camera is or isn’t used.
 @ViewBuilder
 @MainActor
-public func platformCameraInterface_L4(onImageCaptured: @escaping (PlatformImage) -> Void) -> some View {
-    PlatformPhotoComponentsLayer4.platformCameraInterface_L4(onImageCaptured: onImageCaptured)
+public func platformCameraInterface_L4(
+    onImageCaptured: @escaping (PlatformImage) -> Void,
+    onCameraAuthorizationState: ((CameraAuthorizationState) -> Void)? = nil
+) -> some View {
+    PlatformPhotoComponentsLayer4.platformCameraInterface_L4(
+        onImageCaptured: onImageCaptured,
+        onCameraAuthorizationState: onCameraAuthorizationState
+    )
 }
 
 /// Creates a platform-specific photo display (convenience wrapper)
