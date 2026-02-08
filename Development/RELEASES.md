@@ -6,7 +6,18 @@
 **Status**: ✅ **COMPLETE**
 **Previous Release**: v7.5.0 - Minor Release
 **Note**: Patch release. Clamp minWidth/minHeight on iOS and watchOS/tvOS/visionOS to 90% of available space when they exceed screen size, preventing overflow. Fixes #182.
-**Next Release**: TBD
+**Next Release**: v7.5.2
+
+---
+
+## 🎯 **v7.5.2 - verboseMinClamping debug flag** (TBD)
+
+### **What's New:**
+
+#### **🆕 platformFrame min clamping debug**
+- **verboseMinClamping**: Optional static flag `PlatformFrameHelpers.verboseMinClamping`; when `true`, logs when a min width or height is clamped to fit available space (for debugging layout).
+
+**See [RELEASE_v7.5.2.md](RELEASE_v7.5.2.md) for complete release notes.**
 
 ---
 
