@@ -2,7 +2,7 @@
 
 **Purpose**: Track planned upcoming work and future enhancements.  
 **Last Updated**: February 7, 2026  
-**Current Release**: v7.5.1
+**Current Release**: v7.5.2
 
 > **Note**: This roadmap tracks planned work. For active todos, see [`todos.md`](../todos.md). For release history, see [`RELEASES.md`](RELEASES.md).
 
@@ -10,7 +10,7 @@
 
 ## 📍 **Current Status**
 
-**Last Release**: v7.5.1 - platformFrame min clamping fix
+**Last Release**: v7.5.2 - verboseMinClamping debug flag
 **Current Phase**: Patch Release
 **Next Phase**: Continue framework evolution and stability improvements
 

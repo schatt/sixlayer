@@ -1,5 +1,5 @@
 // swift-tools-version: 6.0
-// SixLayerFramework v7.5.1 - platformFrame min clamping fix
+// SixLayerFramework v7.5.2 - verboseMinClamping debug flag
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
