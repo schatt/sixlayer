@@ -30,6 +30,7 @@ public enum PlatformFrameHelpers {
     /// When `true`, log to the console whenever a min width or min height is clamped
     /// (i.e. reduced to fit available space). Use for debugging layout when a requested
     /// minimum is larger than 90% of the screen/window.
+    @MainActor
     public static var verboseMinClamping: Bool = false
     
     // MARK: - Maximum Frame Size Detection
