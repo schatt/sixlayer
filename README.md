@@ -27,7 +27,7 @@ Navigate to the `Framework/` directory and use it as a Swift Package:
 ```swift
 // In your Package.swift
 dependencies: [
-    .package(url: "https://github.com/schatt/sixlayer.git", from: "7.5.0")
+    .package(url: "https://github.com/schatt/sixlayer.git", from: "7.5.1")
 ]
 ```
 
@@ -41,9 +41,12 @@ dependencies: [
 
 The framework is distributed as a Swift Package from the `Framework/` directory. This ensures that only the essential framework code is included when other projects consume it.
 
-## 🆕 Latest Release: v7.5.0
+## 🆕 Latest Release: v7.5.1
 
-### **Minor Release**
+### **platformFrame Min Clamping Fix**
+🔧 **Bugfix**: Clamp minWidth/minHeight on iOS and watchOS/tvOS/visionOS to 90% of available space when they exceed screen size, preventing overflow. Matches macOS behavior. Fixes #182.
+
+### **Previous Release: v7.5.0 - Minor Release**
 📋 **Documentation & quality**: Release notes, AI agent guide, and version consistency updates. Resolved 20 issues from milestone v7.5.0. Fully backward compatible.
 
 ### **Previous Release: v7.4.2 - @MainActor Concurrency Fix for platformFrame**
@@ -199,8 +202,8 @@ These guides contain critical information about the Layer 1 Semantic Intent phil
 
 ## 📋 Current Status
 
-**Version**: v7.5.0 (Minor Release)
-**Phase**: Minor Release
+**Version**: v7.5.1 (Patch - platformFrame min clamping fix)
+**Phase**: Patch Release
 **Next**: TBD
 
 ## 🤝 Contributing
