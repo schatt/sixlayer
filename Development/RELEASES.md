@@ -1,12 +1,24 @@
 # 🚀 Six-Layer Framework Release History
 
-## 📍 **Current Release: v7.5.0 - Minor Release** 🎯
+## 📍 **Current Release: v7.5.1 - platformFrame Min Clamping Fix** 🎯
 
-**Release Date**: February 6, 2026
+**Release Date**: February 7, 2026
 **Status**: ✅ **COMPLETE**
-**Previous Release**: v7.4.2 - @MainActor Concurrency Fix for platformFrame
-**Note**: Minor release with documentation updates, test infrastructure improvements, release process refinements, and issue resolutions.
+**Previous Release**: v7.5.0 - Minor Release
+**Note**: Patch release. Clamp minWidth/minHeight on iOS and watchOS/tvOS/visionOS to 90% of available space when they exceed screen size, preventing overflow. Fixes #182.
 **Next Release**: TBD
+
+---
+
+## 🎯 **v7.5.1 - platformFrame Min Clamping Fix** (February 7, 2026)
+
+### **What's Fixed:**
+
+#### **🔧 platformFrame min constraint clamping on non-macOS**
+- **Bug**: minWidth/minHeight were not clamped on iOS, watchOS, tvOS, or visionOS when larger than the display, causing overflow or clipping.
+- **Fix**: Min constraints are now capped at 90% of available space on all platforms (matching macOS behavior).
+
+**See [RELEASE_v7.5.1.md](RELEASE_v7.5.1.md) for complete release notes.**
 
 ---
 

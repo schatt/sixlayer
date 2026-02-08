@@ -151,11 +151,15 @@ public enum PlatformFrameHelpers {
     ) -> (minWidth: CGFloat?, idealWidth: CGFloat?, maxWidth: CGFloat?, minHeight: CGFloat?, idealHeight: CGFloat?, maxHeight: CGFloat?) {
         #if os(iOS)
         let maxSize = getMaxFrameSize()
+        // Clamp min to available space so a min larger than screen doesn't cause overflow (matches macOS behavior)
+        let effectiveMaxForMin = CGSize(width: maxSize.width * 0.9, height: maxSize.height * 0.9)
+        let clampedMinWidth = minWidth.map { min($0, effectiveMaxForMin.width) }
+        let clampedMinHeight = minHeight.map { min($0, effectiveMaxForMin.height) }
         let clampedIdealWidth = idealWidth.map { min($0, maxSize.width) }
         let clampedMaxWidth = maxWidth.map { min($0, maxSize.width) }
         let clampedIdealHeight = idealHeight.map { min($0, maxSize.height) }
         let clampedMaxHeight = maxHeight.map { min($0, maxSize.height) }
-        return (minWidth: minWidth, idealWidth: clampedIdealWidth, maxWidth: clampedMaxWidth, minHeight: minHeight, idealHeight: clampedIdealHeight, maxHeight: clampedMaxHeight)
+        return (minWidth: clampedMinWidth, idealWidth: clampedIdealWidth, maxWidth: clampedMaxWidth, minHeight: clampedMinHeight, idealHeight: clampedIdealHeight, maxHeight: clampedMaxHeight)
         
         #elseif os(macOS)
         let clampedMinWidth = minWidth.map { clampFrameSize($0, dimension: .width) }
@@ -168,11 +172,15 @@ public enum PlatformFrameHelpers {
         
         #elseif os(watchOS) || os(tvOS) || os(visionOS)
         let maxSize = getMaxFrameSize()
+        // Clamp min to available space so a min larger than screen doesn't cause overflow (matches macOS behavior)
+        let effectiveMaxForMin = CGSize(width: maxSize.width * 0.9, height: maxSize.height * 0.9)
+        let clampedMinWidth = minWidth.map { min($0, effectiveMaxForMin.width) }
+        let clampedMinHeight = minHeight.map { min($0, effectiveMaxForMin.height) }
         let clampedIdealWidth = idealWidth.map { min($0, maxSize.width) }
         let clampedMaxWidth = maxWidth.map { min($0, maxSize.width) }
         let clampedIdealHeight = idealHeight.map { min($0, maxSize.height) }
         let clampedMaxHeight = maxHeight.map { min($0, maxSize.height) }
-        return (minWidth: minWidth, idealWidth: clampedIdealWidth, maxWidth: clampedMaxWidth, minHeight: minHeight, idealHeight: clampedIdealHeight, maxHeight: clampedMaxHeight)
+        return (minWidth: clampedMinWidth, idealWidth: clampedIdealWidth, maxWidth: clampedMaxWidth, minHeight: clampedMinHeight, idealHeight: clampedIdealHeight, maxHeight: clampedMaxHeight)
         
         #else
         return (minWidth: minWidth, idealWidth: idealWidth, maxWidth: maxWidth, minHeight: minHeight, idealHeight: idealHeight, maxHeight: maxHeight)
