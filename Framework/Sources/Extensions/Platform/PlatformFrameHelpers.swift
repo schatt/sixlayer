@@ -27,6 +27,11 @@ import WatchKit
 /// Provides screen size safety across all platforms
 public enum PlatformFrameHelpers {
     
+    /// When `true`, log to the console whenever a min width or min height is clamped
+    /// (i.e. reduced to fit available space). Use for debugging layout when a requested
+    /// minimum is larger than 90% of the screen/window.
+    public static var verboseMinClamping: Bool = false
+    
     // MARK: - Maximum Frame Size Detection
     
     /// Get maximum frame size for iOS based on actual window/screen size
@@ -155,6 +160,10 @@ public enum PlatformFrameHelpers {
         let effectiveMaxForMin = CGSize(width: maxSize.width * 0.9, height: maxSize.height * 0.9)
         let clampedMinWidth = minWidth.map { min($0, effectiveMaxForMin.width) }
         let clampedMinHeight = minHeight.map { min($0, effectiveMaxForMin.height) }
+        if verboseMinClamping {
+            if let req = minWidth, let cl = clampedMinWidth, cl < req { print("[PlatformFrameHelpers] minWidth clamped: \(req) → \(cl) (iOS)") }
+            if let req = minHeight, let cl = clampedMinHeight, cl < req { print("[PlatformFrameHelpers] minHeight clamped: \(req) → \(cl) (iOS)") }
+        }
         let clampedIdealWidth = idealWidth.map { min($0, maxSize.width) }
         let clampedMaxWidth = maxWidth.map { min($0, maxSize.width) }
         let clampedIdealHeight = idealHeight.map { min($0, maxSize.height) }
@@ -164,6 +173,10 @@ public enum PlatformFrameHelpers {
         #elseif os(macOS)
         let clampedMinWidth = minWidth.map { clampFrameSize($0, dimension: .width) }
         let clampedMinHeight = minHeight.map { clampFrameSize($0, dimension: .height) }
+        if verboseMinClamping {
+            if let req = minWidth, let cl = clampedMinWidth, cl < req { print("[PlatformFrameHelpers] minWidth clamped: \(req) → \(cl) (macOS)") }
+            if let req = minHeight, let cl = clampedMinHeight, cl < req { print("[PlatformFrameHelpers] minHeight clamped: \(req) → \(cl) (macOS)") }
+        }
         let clampedIdealWidth = idealWidth.map { clampMaxFrameSize($0, dimension: .width) }
         let clampedIdealHeight = idealHeight.map { clampMaxFrameSize($0, dimension: .height) }
         let clampedMaxWidth = maxWidth.map { clampMaxFrameSize($0, dimension: .width) }
@@ -176,6 +189,10 @@ public enum PlatformFrameHelpers {
         let effectiveMaxForMin = CGSize(width: maxSize.width * 0.9, height: maxSize.height * 0.9)
         let clampedMinWidth = minWidth.map { min($0, effectiveMaxForMin.width) }
         let clampedMinHeight = minHeight.map { min($0, effectiveMaxForMin.height) }
+        if verboseMinClamping {
+            if let req = minWidth, let cl = clampedMinWidth, cl < req { print("[PlatformFrameHelpers] minWidth clamped: \(req) → \(cl)") }
+            if let req = minHeight, let cl = clampedMinHeight, cl < req { print("[PlatformFrameHelpers] minHeight clamped: \(req) → \(cl)") }
+        }
         let clampedIdealWidth = idealWidth.map { min($0, maxSize.width) }
         let clampedMaxWidth = maxWidth.map { min($0, maxSize.width) }
         let clampedIdealHeight = idealHeight.map { min($0, maxSize.height) }
