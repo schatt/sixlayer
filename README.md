@@ -27,7 +27,7 @@ Navigate to the `Framework/` directory and use it as a Swift Package:
 ```swift
 // In your Package.swift
 dependencies: [
-    .package(url: "https://github.com/schatt/sixlayer.git", from: "7.5.2")
+    .package(url: "https://github.com/schatt/sixlayer.git", from: "7.5.3")
 ]
 ```
 
@@ -41,9 +41,12 @@ dependencies: [
 
 The framework is distributed as a Swift Package from the `Framework/` directory. This ensures that only the essential framework code is included when other projects consume it.
 
-## 🆕 Latest Release: v7.5.2
+## 🆕 Latest Release: v7.5.3
 
-### **verboseMinClamping debug flag**
+### **Modifier debug logs gated**
+🔧 **Patch**: All accessibility modifier debug logs (IDENTIFIER GEN DEBUG, MODIFIER INIT, BASIC COMPLIANCE DEBUG, etc.) now only print when `AccessibilityIdentifierConfig.shared.enableDebugLogging` is true. No more unconditional output when debug logging is off.
+
+### **Previous Release: v7.5.2 - verboseMinClamping debug flag**
 🔧 **Patch**: Optional `PlatformFrameHelpers.verboseMinClamping` flag; when `true`, logs when platformFrame clamps min width/height to fit available space. Resolves #183.
 
 ### **Previous Release: v7.5.1 - platformFrame Min Clamping Fix**
@@ -205,7 +208,7 @@ These guides contain critical information about the Layer 1 Semantic Intent phil
 
 ## 📋 Current Status
 
-**Version**: v7.5.2 (Patch - verboseMinClamping debug flag)
+**Version**: v7.5.3 (Patch - Modifier debug logs gated)
 **Phase**: Patch Release
 **Next**: TBD
 
