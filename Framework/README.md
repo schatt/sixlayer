@@ -1,6 +1,6 @@
 # SixLayer Framework
 
-[![Version](https://img.shields.io/badge/version-v7.5.2-blue.svg)](https://github.com/schatt/sixlayer/releases/tag/v7.5.2)
+[![Version](https://img.shields.io/badge/version-v7.5.3-blue.svg)](https://github.com/schatt/sixlayer/releases/tag/v7.5.3)
 [![Platform](https://img.shields.io/badge/platform-iOS%2016%2B%20%7C%20macOS%2013%2B-lightgrey.svg)](https://github.com/schatt/6layer)
 [![Swift](https://img.shields.io/badge/Swift-5.9+-orange.svg)](https://swift.org)
 
@@ -39,6 +39,12 @@ Layer 1: Semantic Intent → Layer 2: Layout Decision → Layer 3: Strategy Sele
 - **Extensible**: Easy to extend with custom layers and strategies
 - **Comprehensively Tested**: 800+ tests with platform-aware testing and mandatory TDD implementation
 - **DRY Architecture**: Define hints once in files, use everywhere automatically
+
+## 🆕 What's New in v7.5.3
+
+### Modifier debug logs gated (Patch)
+
+All accessibility modifier debug logs (IDENTIFIER GEN DEBUG, MODIFIER INIT, BASIC COMPLIANCE DEBUG, etc.) now only print when `AccessibilityIdentifierConfig.shared.enableDebugLogging` is true. No more unconditional output when debug logging is off. See [RELEASE_v7.5.3.md](../Development/RELEASE_v7.5.3.md).
 
 ## 🆕 What's New in v7.5.2
 

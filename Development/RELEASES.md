@@ -1,12 +1,24 @@
 # 🚀 Six-Layer Framework Release History
 
-## 📍 **Current Release: v7.5.2 - verboseMinClamping debug flag** 🎯
+## 📍 **Current Release: v7.5.3 - Modifier debug logs gated** 🎯
 
-**Release Date**: February 7, 2026
+**Release Date**: February 10, 2026
 **Status**: ✅ **COMPLETE**
-**Previous Release**: v7.5.1 - platformFrame Min Clamping Fix
-**Note**: Patch release. Optional debug flag to log when platformFrame clamps min width/height. Resolves #183.
+**Previous Release**: v7.5.2 - verboseMinClamping debug flag
+**Note**: Patch release. All accessibility modifier debug logs now only print when enableDebugLogging is true.
 **Next Release**: TBD
+
+---
+
+## 🎯 **v7.5.3 - Modifier debug logs gated** (February 10, 2026)
+
+### **What's Fixed:**
+
+#### **🔧 Modifier debug logs gated behind enableDebugLogging**
+- **IDENTIFIER GEN DEBUG**, **MODIFIER INIT** / **MODIFIER INIT VERIFY**, and **BASIC COMPLIANCE DEBUG** now only log when `AccessibilityIdentifierConfig.shared.enableDebugLogging` is true.
+- No more unconditional modifier debug output when debug logging is off.
+
+**See [RELEASE_v7.5.3.md](RELEASE_v7.5.3.md) for complete release notes.**
 
 ---
 
