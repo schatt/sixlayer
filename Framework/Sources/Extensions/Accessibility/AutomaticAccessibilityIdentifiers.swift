@@ -226,12 +226,14 @@ internal func generateAccessibilityIdentifier(
     // Determine component name (from parameter, not environment)
     let componentName = identifierName ?? "element"
     
-    // DEBUG: Always log to verify function is being called (unconditional for debugging)
-    let debugMsg = "🔍 IDENTIFIER GEN DEBUG: identifierName='\(identifierName ?? "nil")', componentName='\(componentName)', enableDebugLogging=\(capturedEnableDebugLogging)"
-    print(debugMsg)
-    NSLog("%@", debugMsg)
-    os_log("%{public}@", log: .default, type: .debug, debugMsg)
-    fflush(stdout)
+    // DEBUG: Log only when debug logging is enabled
+    if capturedEnableDebugLogging {
+        let debugMsg = "🔍 IDENTIFIER GEN DEBUG: identifierName='\(identifierName ?? "nil")', componentName='\(componentName)', enableDebugLogging=\(capturedEnableDebugLogging)"
+        print(debugMsg)
+        NSLog("%@", debugMsg)
+        os_log("%{public}@", log: .default, type: .debug, debugMsg)
+        fflush(stdout)
+    }
     
     // Determine element type (from parameter, not environment)
     let elementType = identifierElementType ?? defaultElementType
