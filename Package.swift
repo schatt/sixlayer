@@ -1,5 +1,5 @@
 // swift-tools-version: 6.0
-// SixLayerFramework v7.5.2 - verboseMinClamping debug flag
+// SixLayerFramework v7.5.3 - Modifier debug logs gated
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
