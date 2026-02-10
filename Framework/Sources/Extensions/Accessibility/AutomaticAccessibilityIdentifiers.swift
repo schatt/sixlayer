@@ -1131,13 +1131,6 @@ public struct BasicAutomaticComplianceModifier: ViewModifier {
         accessibilityValue: String? = nil,  // NEW: Accessibility value for stateful elements (Issue #165)
         accessibilitySortPriority: Double? = nil  // NEW: Accessibility sort priority for reading order (Issue #165)
     ) {
-        // DEBUG: Log what we're receiving in init
-        let debugMsg = "🔍 MODIFIER INIT: identifierName='\(identifierName ?? "nil")', identifierElementType='\(identifierElementType ?? "nil")'"
-        print(debugMsg)
-        NSLog("%@", debugMsg)
-        os_log("%{public}@", log: .default, type: .debug, debugMsg)
-        fflush(stdout)
-        
         self.identifierName = identifierName
         self.identifierElementType = identifierElementType
         self.identifierLabel = identifierLabel
@@ -1147,12 +1140,20 @@ public struct BasicAutomaticComplianceModifier: ViewModifier {
         self.accessibilityValue = accessibilityValue
         self.accessibilitySortPriority = accessibilitySortPriority
         
-        // DEBUG: Verify it was stored correctly
-        let verifyMsg = "🔍 MODIFIER INIT VERIFY: stored identifierName='\(self.identifierName ?? "nil")'"
-        print(verifyMsg)
-        NSLog("%@", verifyMsg)
-        os_log("%{public}@", log: .default, type: .debug, verifyMsg)
-        fflush(stdout)
+        // DEBUG: Log only when debug logging is enabled
+        let config = AccessibilityIdentifierConfig.currentTaskLocalConfig ?? AccessibilityIdentifierConfig.shared
+        if config.enableDebugLogging {
+            let debugMsg = "🔍 MODIFIER INIT: identifierName='\(identifierName ?? "nil")', identifierElementType='\(identifierElementType ?? "nil")'"
+            print(debugMsg)
+            NSLog("%@", debugMsg)
+            os_log("%{public}@", log: .default, type: .debug, debugMsg)
+            fflush(stdout)
+            let verifyMsg = "🔍 MODIFIER INIT VERIFY: stored identifierName='\(self.identifierName ?? "nil")'"
+            print(verifyMsg)
+            NSLog("%@", verifyMsg)
+            os_log("%{public}@", log: .default, type: .debug, verifyMsg)
+            fflush(stdout)
+        }
     }
     
     public func body(content: Content) -> some View {
@@ -1186,12 +1187,14 @@ public struct BasicAutomaticComplianceModifier: ViewModifier {
         
         // Generate identifier if needed
         // Call internal generateAccessibilityIdentifier directly (same as AutomaticComplianceModifier.generateIdentifier does)
-        // DEBUG: Always log to verify modifier is being called (unconditional for debugging)
-        let debugMsg = "🔍 BASIC COMPLIANCE DEBUG: identifierName='\(storedIdentifierName ?? "nil")', identifierElementType='\(identifierElementType ?? "nil")', enableDebugLogging=\(capturedEnableDebugLogging), shouldApplyIdentifier=\(shouldApplyIdentifier)"
-        print(debugMsg)
-        NSLog("%@", debugMsg)
-        os_log("%{public}@", log: .default, type: .debug, debugMsg)
-        fflush(stdout)
+        // DEBUG: Log only when debug logging is enabled
+        if capturedEnableDebugLogging {
+            let debugMsg = "🔍 BASIC COMPLIANCE DEBUG: identifierName='\(storedIdentifierName ?? "nil")', identifierElementType='\(identifierElementType ?? "nil")', enableDebugLogging=\(capturedEnableDebugLogging), shouldApplyIdentifier=\(shouldApplyIdentifier)"
+            print(debugMsg)
+            NSLog("%@", debugMsg)
+            os_log("%{public}@", log: .default, type: .debug, debugMsg)
+            fflush(stdout)
+        }
         
         // Additional debug logging if enabled
         if capturedEnableDebugLogging {
