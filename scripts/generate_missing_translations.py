@@ -49,6 +49,7 @@ import os
 import sys
 import time
 import shutil
+from contextlib import contextmanager
 from pathlib import Path
 from typing import Dict, Set, List, Optional, Tuple
 import re
@@ -259,6 +260,30 @@ class LocalizationTranslator:
         """Convert Xcode language code to translation API code."""
         return self.LANGUAGE_CODE_MAP.get(lang_code, lang_code.split("-")[0] if "-" in lang_code else lang_code)
     
+    @contextmanager
+    def _progress_tracker(self, total: int, unit: str = "str"):
+        """Context manager yielding a tick() callable for progress. Uses tqdm when available, else print every 10."""
+        if PROGRESS_AVAILABLE and total > 0:
+            pbar = tqdm(total=total, desc="Translating", unit=unit,
+                        bar_format='{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}]')
+            def tick():
+                pbar.update(1)
+                pbar.set_postfix(translated=self.stats["translated"], skipped=self.stats["skipped"], errors=self.stats["errors"])
+            try:
+                yield tick
+            finally:
+                pbar.close()
+        else:
+            if total > 0 and not PROGRESS_AVAILABLE:
+                print("Tip: Install 'tqdm' for progress bar: pip3 install tqdm\n")
+            processed = [0]
+            def tick():
+                processed[0] += 1
+                if processed[0] % 10 == 0:
+                    print(f"Progress: {processed[0]}/{total} ({processed[0] * 100 // total}%) - "
+                          f"Translated: {self.stats['translated']}, Errors: {self.stats['errors']}")
+            yield tick
+    
     def _do_single_translate(self, text: str, target_code: str, source_code: str):
         """Perform one API call (run in thread for timeout)."""
         if self.provider == "google":
@@ -344,28 +369,12 @@ class LocalizationTranslator:
         if self.dry_run:
             print("DRY RUN MODE - No changes will be saved\n")
         
-        if PROGRESS_AVAILABLE and total > 0:
-            pbar = tqdm(total=total, desc="Translating", unit="str",
-                        bar_format='{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}]')
-        else:
-            pbar = None
-            if total > 0 and not PROGRESS_AVAILABLE:
-                print("Tip: Install 'tqdm' for progress bar: pip3 install tqdm\n")
-        processed = 0
-        
-        try:
+        with self._progress_tracker(total, unit="str") as tick:
             for key, entry in strings.items():
                 source_text = self._extract_source_string(entry)
                 if not source_text:
                     continue
-                
-                if pbar:
-                    pbar.update(1)
-                    pbar.set_postfix(translated=self.stats["translated"], skipped=self.stats["skipped"], errors=self.stats["errors"])
-                else:
-                    processed += 1
-                    if processed % 10 == 0:
-                        print(f"Progress: {processed}/{total} ({processed*100//total}%)")
+                tick()
                 
                 # Initialize localizations if needed
                 if "localizations" not in entry:
@@ -401,9 +410,6 @@ class LocalizationTranslator:
                             self.last_save_count = self.stats["translated"]
                     else:
                         self.stats["skipped"] += 1
-        finally:
-            if pbar:
-                pbar.close()
     
     def translate_strings(self, target_languages: Optional[List[str]] = None):
         """Translate missing keys in .strings files (gap-filling approach)."""
@@ -453,19 +459,10 @@ class LocalizationTranslator:
         else:
             print(f"Estimated time: ~{estimated_seconds:.0f} seconds\n")
         
-        # Use progress bar if available
-        if PROGRESS_AVAILABLE and total_missing > 0:
-            pbar = tqdm(total=total_missing, desc="Translating", unit="trans", 
-                       bar_format='{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}]')
-        else:
-            pbar = None
-            if total_missing > 0:
-                print("Tip: Install 'tqdm' for progress bar: pip3 install tqdm\n")
-        
         if self.dry_run:
             print("DRY RUN MODE - No changes will be saved\n")
         
-        try:
+        with self._progress_tracker(total_missing, unit="trans") as tick:
             for lang_code, key in work_items:
                 if lang_code not in self.LANGUAGE_NAMES:
                     continue
@@ -484,15 +481,13 @@ class LocalizationTranslator:
                 # Skip if already translated
                 if key in lang_strings:
                     self.stats["skipped"] += 1
-                    if pbar:
-                        pbar.update(1)
+                    tick()
                     continue
                 
                 english_value = en_strings.get(key, '')
                 if not english_value:
                     self.stats["skipped"] += 1
-                    if pbar:
-                        pbar.update(1)
+                    tick()
                     continue
                 
                 # Translate
@@ -507,22 +502,7 @@ class LocalizationTranslator:
                         self.last_save_count = self.stats["translated"]
                 else:
                     self.stats["skipped"] += 1
-                
-                if pbar:
-                    pbar.update(1)
-                    pbar.set_postfix({
-                        'translated': self.stats["translated"],
-                        'skipped': self.stats["skipped"],
-                        'errors': self.stats["errors"]
-                    })
-                elif not PROGRESS_AVAILABLE and (self.stats["translated"] + self.stats["skipped"]) % 50 == 0:
-                    # Fallback progress update every 50 translations
-                    progress = self.stats["translated"] + self.stats["skipped"]
-                    print(f"Progress: {progress}/{total_missing} ({progress*100//total_missing}%) - "
-                          f"Translated: {self.stats['translated']}, Errors: {self.stats['errors']}")
-        finally:
-            if pbar:
-                pbar.close()
+                tick()
     
     def translate(self, target_languages: Optional[List[str]] = None):
         """Translate based on file format."""
