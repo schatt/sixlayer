@@ -100,9 +100,10 @@ public struct DynamicFormView: View {
 }
 
 // MARK: - Dynamic Form View Inner (Issue #186: uses resolved formState for observation)
+// Internal so tests can add ViewInspector.Inspectable and find the Submit button.
 
 @MainActor
-private struct DynamicFormViewInner: View {
+struct DynamicFormViewInner: View {
     @ObservedObject var formState: DynamicFormState
     let configuration: DynamicFormConfiguration
     let onSubmit: ([String: Any]) -> Void
