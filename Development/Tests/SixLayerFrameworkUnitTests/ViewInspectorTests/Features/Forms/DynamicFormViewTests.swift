@@ -2478,12 +2478,16 @@ open class DynamicFormViewTests: BaseTestClass {
             .environment(\.dynamicFormState, injectedFormState)
         
         #if canImport(ViewInspector)
-        let exp = try? view.inspect().find(button: "Submit")
-        guard let submitButton = exp else {
-            Issue.record("Submit button not found")
-            return
+        _ = withInspectedView(view) { inspector in
+            let buttons = inspector.findAll(ViewInspector.ViewType.Button.self)
+            for button in buttons {
+                guard let labelView = try? button.labelView(),
+                      let labelText = try? labelView.find(ViewInspector.ViewType.Text.self).string(),
+                      labelText == "Submit" else { continue }
+                try? button.tap()
+                break
+            }
         }
-        try? submitButton.tap()
         #expect(submittedValues?["name"] as? String == "Alice", "onSubmit should receive injected formState's fieldValues")
         #else
         #expect(Bool(true), "View created with injected formState (submit not triggered without ViewInspector)")
@@ -2511,8 +2515,16 @@ open class DynamicFormViewTests: BaseTestClass {
         // Do not inject formState
         
         #if canImport(ViewInspector)
-        let submitButton = try? view.inspect().find(button: "Submit")
-        try? submitButton?.tap()
+        _ = withInspectedView(view) { inspector in
+            let buttons = inspector.findAll(ViewInspector.ViewType.Button.self)
+            for button in buttons {
+                guard let labelView = try? button.labelView(),
+                      let labelText = try? labelView.find(ViewInspector.ViewType.Text.self).string(),
+                      labelText == "Submit" else { continue }
+                try? button.tap()
+                break
+            }
+        }
         // With internal state, submitted values should be whatever is in the form (defaults/empty)
         #expect(submittedValues != nil, "onSubmit should be called with internal formState's fieldValues")
         #else
@@ -2550,8 +2562,16 @@ open class DynamicFormViewTests: BaseTestClass {
             .environment(\.dynamicFormState, injectedFormState)
         
         #if canImport(ViewInspector)
-        let submitButton = try? view.inspect().find(button: "Submit")
-        try? submitButton?.tap()
+        _ = withInspectedView(view) { inspector in
+            let buttons = inspector.findAll(ViewInspector.ViewType.Button.self)
+            for button in buttons {
+                guard let labelView = try? button.labelView(),
+                      let labelText = try? labelView.find(ViewInspector.ViewType.Text.self).string(),
+                      labelText == "Submit" else { continue }
+                try? button.tap()
+                break
+            }
+        }
         let submittedImage = submittedValues?[imageFieldId] as? PlatformImage
         #expect(submittedImage != nil, "onSubmit should include image when image field is set")
         #else
