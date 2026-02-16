@@ -15,6 +15,7 @@ import ViewInspector
 // MARK: - Form views (direct inspection so ViewInspector can traverse — Option A for Issue 178)
 
 extension DynamicFormView: ViewInspector.Inspectable {}
+extension DynamicFormViewInner: ViewInspector.Inspectable {}
 extension FormProgressIndicator: ViewInspector.Inspectable {}
 extension DynamicFormSectionView: ViewInspector.Inspectable {}
 
