@@ -48,22 +48,14 @@ public struct DynamicFormView: View {
     let onEntityCreated: ((Any) -> Void)?
     let onError: ((Error) -> Void)?
     let entityType: Any.Type?
-    @StateObject private var formState: DynamicFormState
+    
+    @Environment(\.dynamicFormState) private var injectedFormState
+    @StateObject private var internalFormState: DynamicFormState
     
     // Batch OCR state (Issue #83)
     @State private var showImagePicker = false
     @State private var isProcessingOCR = false
     @State private var ocrError: String?
-    
-    // Environment contexts
-    #if canImport(CoreData)
-    @Environment(\.managedObjectContext) private var managedObjectContext
-    #endif
-    
-    #if canImport(SwiftData)
-    @available(macOS 14.0, iOS 17.0, *)
-    @Environment(\.modelContext) private var modelContext: ModelContext
-    #endif
 
     /// Initialize DynamicFormView
     /// - Parameters:
@@ -89,10 +81,48 @@ public struct DynamicFormView: View {
         
         // Store effective configuration (with hints applied if applicable)
         self.configuration = effectiveConfiguration
-        _formState = StateObject(wrappedValue: DynamicFormState(configuration: effectiveConfiguration))
+        _internalFormState = StateObject(wrappedValue: DynamicFormState(configuration: effectiveConfiguration))
     }
 
     public var body: some View {
+        DynamicFormViewInner(
+            formState: injectedFormState ?? internalFormState,
+            configuration: configuration,
+            onSubmit: onSubmit,
+            onEntityCreated: onEntityCreated,
+            onError: onError,
+            entityType: entityType,
+            showImagePicker: $showImagePicker,
+            isProcessingOCR: $isProcessingOCR,
+            ocrError: $ocrError
+        )
+    }
+}
+
+// MARK: - Dynamic Form View Inner (Issue #186: uses resolved formState for observation)
+
+@MainActor
+private struct DynamicFormViewInner: View {
+    @ObservedObject var formState: DynamicFormState
+    let configuration: DynamicFormConfiguration
+    let onSubmit: ([String: Any]) -> Void
+    let onEntityCreated: ((Any) -> Void)?
+    let onError: ((Error) -> Void)?
+    let entityType: Any.Type?
+    @Binding var showImagePicker: Bool
+    @Binding var isProcessingOCR: Bool
+    @Binding var ocrError: String?
+    
+    #if canImport(CoreData)
+    @Environment(\.managedObjectContext) private var managedObjectContext
+    #endif
+    
+    #if canImport(SwiftData)
+    @available(macOS 14.0, iOS 17.0, *)
+    @Environment(\.modelContext) private var modelContext: ModelContext
+    #endif
+
+    var body: some View {
         // Outer VStack so ViewInspector can find structure (ScrollViewReader blocks traversal — Issue 178)
         VStack(spacing: 0) {
         ScrollViewReader { proxy in
@@ -222,6 +252,11 @@ public struct DynamicFormView: View {
         isProcessingOCR = true
         ocrError = nil
         showImagePicker = false
+        
+        // Store selected image on first image-type field (Issue #185) so thumbnail and submit include photo
+        if let imageField = configuration.allFields.first(where: { $0.contentType == .image }) {
+            formState.setValue(image, for: imageField.id)
+        }
         
         Task {
             do {
