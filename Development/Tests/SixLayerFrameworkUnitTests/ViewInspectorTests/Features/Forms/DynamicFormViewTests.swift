@@ -2478,7 +2478,7 @@ open class DynamicFormViewTests: BaseTestClass {
             .environment(\.dynamicFormState, injectedFormState)
         
         #if canImport(ViewInspector)
-        _ = withInspectedView(view) { inspector in
+        _ = withInspectedView(AnyView(view)) { inspector in
             let buttons = inspector.findAll(ViewInspector.ViewType.Button.self)
             for button in buttons {
                 guard let labelView = try? button.labelView(),
@@ -2515,7 +2515,7 @@ open class DynamicFormViewTests: BaseTestClass {
         // Do not inject formState
         
         #if canImport(ViewInspector)
-        _ = withInspectedView(view) { inspector in
+        _ = withInspectedView(AnyView(view)) { inspector in
             let buttons = inspector.findAll(ViewInspector.ViewType.Button.self)
             for button in buttons {
                 guard let labelView = try? button.labelView(),
@@ -2562,7 +2562,7 @@ open class DynamicFormViewTests: BaseTestClass {
             .environment(\.dynamicFormState, injectedFormState)
         
         #if canImport(ViewInspector)
-        _ = withInspectedView(view) { inspector in
+        _ = withInspectedView(AnyView(view)) { inspector in
             let buttons = inspector.findAll(ViewInspector.ViewType.Button.self)
             for button in buttons {
                 guard let labelView = try? button.labelView(),
