@@ -6,6 +6,21 @@ import CoreData
 import SwiftData
 #endif
 
+// MARK: - Optional Injected Form State (Issue #186)
+
+/// Environment key for optional host-provided form state.
+/// When set, DynamicFormView uses this state instead of creating its own.
+public struct DynamicFormStateEnvironmentKey: EnvironmentKey {
+    public static let defaultValue: DynamicFormState? = nil
+}
+
+public extension EnvironmentValues {
+    var dynamicFormState: DynamicFormState? {
+        get { self[DynamicFormStateEnvironmentKey.self] }
+        set { self[DynamicFormStateEnvironmentKey.self] = newValue }
+    }
+}
+
 // MARK: - Dynamic Form View
 
 /// Main dynamic form view component
