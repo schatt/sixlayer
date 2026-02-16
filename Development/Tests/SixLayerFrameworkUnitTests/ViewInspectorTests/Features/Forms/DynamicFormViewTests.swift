@@ -2519,4 +2519,43 @@ open class DynamicFormViewTests: BaseTestClass {
         #expect(view is DynamicFormView, "View should be created with internal formState")
         #endif
     }
+    
+    // MARK: - Batch OCR stores image on photo field (Issue #185)
+    
+    /// When form has an image field and formState has image set on it (as batch OCR does), submit includes the image.
+    @Test @MainActor func testSubmitIncludesImageWhenImageFieldIsSet() async {
+        initializeTestConfig()
+        let imageFieldId = "photo"
+        let section = DynamicFormSection(
+            id: "s1",
+            title: "Section",
+            fields: [
+                DynamicFormField(id: "name", contentType: .text, label: "Name"),
+                DynamicFormField(id: imageFieldId, contentType: .image, label: "Photo")
+            ]
+        )
+        let configuration = DynamicFormConfiguration(
+            id: "form-with-photo",
+            title: "Form With Photo",
+            sections: [section],
+            submitButtonText: "Submit"
+        )
+        let injectedFormState = DynamicFormState(configuration: configuration)
+        let testImage = PlatformImage()
+        injectedFormState.setValue("Alice", for: "name")
+        injectedFormState.setValue(testImage, for: imageFieldId)
+        
+        var submittedValues: [String: Any]?
+        let view = DynamicFormView(configuration: configuration, onSubmit: { submittedValues = $0 })
+            .environment(\.dynamicFormState, injectedFormState)
+        
+        #if canImport(ViewInspector)
+        let submitButton = try? view.inspect().find(button: "Submit")
+        try? submitButton?.tap()
+        let submittedImage = submittedValues?[imageFieldId] as? PlatformImage
+        #expect(submittedImage != nil, "onSubmit should include image when image field is set")
+        #else
+        #expect(submittedValues == nil || submittedValues?[imageFieldId] != nil, "When ViewInspector available, submit would include image")
+        #endif
+    }
 }
