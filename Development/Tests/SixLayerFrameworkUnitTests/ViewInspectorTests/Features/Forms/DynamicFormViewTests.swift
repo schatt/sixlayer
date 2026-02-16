@@ -2451,4 +2451,72 @@ open class DynamicFormViewTests: BaseTestClass {
             cleanupTestEnvironment()
         }
     }
+    
+    // MARK: - Injected formState (Issue #186)
+    
+    /// When host provides formState via environment, form uses it and onSubmit receives that formState's fieldValues.
+    @Test @MainActor func testWhenHostProvidesFormStateViaEnvironment_formUsesItForSubmit() async {
+        initializeTestConfig()
+        let section = DynamicFormSection(
+            id: "s1",
+            title: "Section",
+            fields: [
+                DynamicFormField(id: "name", contentType: .text, label: "Name")
+            ]
+        )
+        let configuration = DynamicFormConfiguration(
+            id: "env-form",
+            title: "Env Form",
+            sections: [section],
+            submitButtonText: "Submit"
+        )
+        let injectedFormState = DynamicFormState(configuration: configuration)
+        injectedFormState.setValue("Alice", for: "name")
+        
+        var submittedValues: [String: Any]?
+        let view = DynamicFormView(configuration: configuration, onSubmit: { submittedValues = $0 })
+            .environment(\.dynamicFormState, injectedFormState)
+        
+        #if canImport(ViewInspector)
+        let exp = try? view.inspect().find(button: "Submit")
+        guard let submitButton = exp else {
+            Issue.record("Submit button not found")
+            return
+        }
+        try? submitButton.tap()
+        #expect(submittedValues?["name"] as? String == "Alice", "onSubmit should receive injected formState's fieldValues")
+        #else
+        #expect(Bool(true), "View created with injected formState (submit not triggered without ViewInspector)")
+        #endif
+    }
+    
+    /// When no formState is provided via environment, form creates and uses its own (unchanged behavior).
+    @Test @MainActor func testWhenNoFormStateProvided_formCreatesInternalState() async {
+        initializeTestConfig()
+        let section = DynamicFormSection(
+            id: "s1",
+            title: "Section",
+            fields: [
+                DynamicFormField(id: "x", contentType: .text, label: "X")
+            ]
+        )
+        let configuration = DynamicFormConfiguration(
+            id: "no-env-form",
+            title: "No Env Form",
+            sections: [section],
+            submitButtonText: "Submit"
+        )
+        var submittedValues: [String: Any]?
+        let view = DynamicFormView(configuration: configuration, onSubmit: { submittedValues = $0 })
+        // Do not inject formState
+        
+        #if canImport(ViewInspector)
+        let submitButton = try? view.inspect().find(button: "Submit")
+        try? submitButton?.tap()
+        // With internal state, submitted values should be whatever is in the form (defaults/empty)
+        #expect(submittedValues != nil, "onSubmit should be called with internal formState's fieldValues")
+        #else
+        #expect(view is DynamicFormView, "View should be created with internal formState")
+        #endif
+    }
 }
