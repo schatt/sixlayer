@@ -879,10 +879,10 @@ public struct FormWizardView<Content: View, Navigation: View>: View {
     }
 }
 
-// MARK: - Form Wizard View Inner (Issue #187: observes resolved wizard state)
+// MARK: - Form Wizard View Inner (Issue #187: observes resolved wizard state; internal for ViewInspector)
 
 @MainActor
-private struct FormWizardViewInner<Content: View, Navigation: View>: View {
+struct FormWizardViewInner<Content: View, Navigation: View>: View {
     @ObservedObject var wizardState: FormWizardState
     let steps: [FormWizardStep]
     let content: (FormWizardStep, FormWizardState) -> Content
