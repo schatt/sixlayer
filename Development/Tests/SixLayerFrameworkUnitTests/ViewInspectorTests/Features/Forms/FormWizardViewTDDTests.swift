@@ -270,9 +270,11 @@ open class FormWizardViewTDDTests: BaseTestClass {
         .environment(\.formWizardState, injectedState)
 
         #if canImport(ViewInspector)
-        let inspected = try? AnyView(view).inspect()
-        let texts = inspected?.findAll(ViewInspector.ViewType.Text.self) ?? []
-        let showsStep2 = texts.contains { (try? $0.string()) == "Step 2" }
+        var showsStep2 = false
+        _ = withInspectedView(AnyView(view)) { inspector in
+            let texts = (try? inspector.findAll(ViewInspector.ViewType.Text.self)) ?? []
+            showsStep2 = texts.contains { (try? $0.string()) == "Step 2" }
+        }
         #expect(showsStep2, "Wizard should display step from injected wizardState (Step 2)")
         #else
         #expect(Bool(true), "View with injected wizardState builds")
@@ -297,9 +299,11 @@ open class FormWizardViewTDDTests: BaseTestClass {
         )
 
         #if canImport(ViewInspector)
-        let inspected = try? AnyView(view).inspect()
-        let texts = inspected?.findAll(ViewInspector.ViewType.Text.self) ?? []
-        let showsStep1 = texts.contains { (try? $0.string()) == "Step 1" }
+        var showsStep1 = false
+        _ = withInspectedView(view) { inspector in
+            let texts = (try? inspector.findAll(ViewInspector.ViewType.Text.self)) ?? []
+            showsStep1 = texts.contains { (try? $0.string()) == "Step 1" }
+        }
         #expect(showsStep1, "Wizard without injection should show first step (internal state)")
         #else
         #expect(Bool(true), "FormWizardView created with internal state")
