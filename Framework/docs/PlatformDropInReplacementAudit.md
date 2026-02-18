@@ -37,8 +37,9 @@ A **drop-in replacement** must satisfy:
 | `platformSecureField(_:text:)` | `SecureField(_:text:)` | ✅ Drop-in | Same signature. |
 | `platformToggle(_:isOn:)` (String label) | `Toggle(_:isOn:)` | ✅ Drop-in | Same shape. |
 | `platformForm { }` | `Form { }` | ✅ Drop-in | ViewBuilder. |
-| `platformTextEditor(_:text:)` | `TextEditor(text:)` | ⚠️ Audit | Prompt vs binding-only; verify signature. |
-| `platformButton(_:action:)` | `Button(_:action:)` | ⚠️ Audit | Verify label/action order and overloads. |
+| `platformTextEditor(_:text:)` | `TextEditor(text:)` | ⚠️ Partial | SwiftUI has only `TextEditor(text:)`; we add `prompt` (extension). For strict drop-in, add overload `platformTextEditor(text:)` with no prompt. |
+| `platformButton(_ label: String, action:)` | `Button(_ title: String, action:)` | ✅ Drop-in | Same signature; adds automaticCompliance. |
+| `platformButton(label: LocalizedStringKey, action:)` | `Button(LocalizedStringKey, action:)` | ✅ Drop-in | Same shape. |
 
 ### 2. View modifiers (replace SwiftUI modifiers)
 
