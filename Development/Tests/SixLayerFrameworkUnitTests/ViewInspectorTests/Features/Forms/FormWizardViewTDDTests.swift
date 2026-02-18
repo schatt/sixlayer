@@ -243,4 +243,66 @@ open class FormWizardViewTDDTests: BaseTestClass {
             #endif
         }
     }
+
+    // MARK: - Injected wizardState (Issue #187)
+
+    @Test @MainActor func testWhenHostProvidesWizardStateViaEnvironment_wizardUsesIt() async {
+        initializeTestConfig()
+        let steps = [
+            FormWizardStep(id: "s1", title: "Step 1", stepOrder: 0),
+            FormWizardStep(id: "s2", title: "Step 2", stepOrder: 1),
+            FormWizardStep(id: "s3", title: "Step 3", stepOrder: 2)
+        ]
+        let injectedState = FormWizardState()
+        injectedState.setSteps(steps)
+        injectedState.currentStepIndex = 1
+
+        let view = FormWizardView(
+            steps: steps,
+            content: { step, _ in Text(step.title) },
+            navigation: { _, next, prev, _ in
+                platformHStackContainer {
+                    Button("Prev", action: prev)
+                    Button("Next", action: next)
+                }
+            }
+        )
+        .environment(\.formWizardState, injectedState)
+
+        #if canImport(ViewInspector)
+        let inspected = try? AnyView(view).inspect()
+        let texts = inspected?.findAll(ViewInspector.ViewType.Text.self) ?? []
+        let showsStep2 = texts.contains { (try? $0.string()) == "Step 2" }
+        #expect(showsStep2, "Wizard should display step from injected wizardState (Step 2)")
+        #else
+        #expect(Bool(true), "View with injected wizardState builds")
+        #endif
+    }
+
+    @Test @MainActor func testWhenNoWizardStateProvided_wizardCreatesInternalState() async {
+        initializeTestConfig()
+        let steps = [
+            FormWizardStep(id: "a", title: "Step 1", stepOrder: 0),
+            FormWizardStep(id: "b", title: "Step 2", stepOrder: 1)
+        ]
+        let view = FormWizardView(
+            steps: steps,
+            content: { step, _ in Text(step.title) },
+            navigation: { _, next, prev, _ in
+                platformHStackContainer {
+                    Button("Prev", action: prev)
+                    Button("Next", action: next)
+                }
+            }
+        )
+
+        #if canImport(ViewInspector)
+        let inspected = try? AnyView(view).inspect()
+        let texts = inspected?.findAll(ViewInspector.ViewType.Text.self) ?? []
+        let showsStep1 = texts.contains { (try? $0.string()) == "Step 1" }
+        #expect(showsStep1, "Wizard without injection should show first step (internal state)")
+        #else
+        #expect(Bool(true), "FormWizardView created with internal state")
+        #endif
+    }
 }
