@@ -43,10 +43,9 @@ TDD. DTRT. DRY. Epistemology
 
 ## **Release Quality Gate**
 - **This rule takes precedence.** No release (major, minor, patch, or pre-release) unless the test suite passes. No exceptions.
-- **MANDATORY**: Never create or suggest with any release unless the test suite passes completely
-- **MANDATORY**: Always run the full xcodebuild test suite via `dbs-build --target test` before any release activities
-- **MANDATORY**: Stop all release activities if tests fail
-- **MANDATORY**: Fix failing tests before proceeding with releases
+- **MANDATORY**: Never create or suggest a release unless the test suite passes completely.
+- **MANDATORY**: The release script (`Development/scripts/release-process.sh`) runs the full test suite (macOS + iOS); the agent does not run `dbs-build --target test` before release—the script does. Do not tell the user to run the full suite before release; the script enforces it.
+- **MANDATORY**: Stop all release activities if tests fail; fix failing tests before proceeding.
 
 ## **Git Hygiene (Commit Early and Often)**
 - **In this project:** Commit behavior is defined by `.cursor/rules/commit-after-every-edit.mdc` (one edit = one commit). That rule takes precedence over any "logical unit" or batching guidance here.
