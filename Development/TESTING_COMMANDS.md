@@ -1,5 +1,9 @@
 # Testing Commands for macOS and iOS
 
+## Default: iOS Simulator (day-to-day)
+
+**Normal development:** Run `dbs-build --target iOS_tests`. This is the default for day-to-day testing. Release checks use `dbs-build --target test` (both macOS and iOS).
+
 ## Test Organization
 
 The test suite is organized into:
