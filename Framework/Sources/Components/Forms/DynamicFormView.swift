@@ -833,8 +833,9 @@ public struct FormProgressIndicator: View {
 
 /// Environment key for optional host-provided wizard state.
 /// When set, FormWizardView uses this state instead of creating its own.
+/// Uses nonisolated(unsafe) because FormWizardState is MainActor-bound; environment is read only in View body on main actor.
 public struct FormWizardStateEnvironmentKey: EnvironmentKey {
-    public static let defaultValue: FormWizardState? = nil
+    public static nonisolated(unsafe) let defaultValue: FormWizardState? = nil
 }
 
 public extension EnvironmentValues {
