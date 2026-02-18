@@ -47,6 +47,19 @@ public func getAccessibilityIdentifierForTest<V: View & ViewInspector.Inspectabl
 }
 #endif
 
+#if canImport(ViewInspector)
+/// Recursively find first non-empty accessibility identifier in ViewInspector hierarchy (for iOS when platform returns nil).
+@MainActor
+private func firstAccessibilityIdentifierInInspected(_ inspected: ViewInspector.InspectableView<ViewInspector.ViewType.ClassifiedView>) -> String? {
+    if let id = try? inspected.accessibilityIdentifier(), !id.isEmpty { return id }
+    let buttons = (try? inspected.findAll(ViewInspector.ViewType.Button.self)) ?? []
+    for button in buttons {
+        if let id = try? button.accessibilityIdentifier(), !id.isEmpty { return id }
+    }
+    return nil
+}
+#endif
+
 /// Get accessibility identifier when view is not Inspectable: try platform hierarchy first (IDs applied by SwiftUI), then ViewInspector (Issue 178).
 @MainActor
 public func getAccessibilityIdentifierForTest<V: View>(view: V, hostedRoot: Any? = nil) -> String? {
@@ -56,6 +69,7 @@ public func getAccessibilityIdentifierForTest<V: View>(view: V, hostedRoot: Any?
         return id
     }
     if let inspected = try? AnyView(view).inspect() {
+        if let id = firstAccessibilityIdentifierInInspected(inspected) { return id }
         if let inner = try? inspected.anyView() {
             if let id = try? inner.accessibilityIdentifier(), !id.isEmpty { return id }
             if let button = try? inner.button(), let id = try? button.accessibilityIdentifier(), !id.isEmpty { return id }
