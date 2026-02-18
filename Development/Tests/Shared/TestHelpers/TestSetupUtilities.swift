@@ -94,11 +94,15 @@ public enum TestSetupUtilities {
             let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 400, height: 400))
             window.rootViewController = hosting
             window.makeKeyAndVisible()
-            // Allow one run loop so UIKit/SwiftUI can apply accessibility traits to the hierarchy
+            // Allow run loop so UIKit/SwiftUI can apply accessibility traits to the hierarchy
             RunLoop.current.run(until: Date().addingTimeInterval(0.05))
             // Optionally force layout so identifiers are applied to the UIView tree (Option A for a11y tests).
             // Only use for simple views; complex views can hang (NavigationStack, platformPresentContent_L1).
             if forceLayout {
+                root.setNeedsLayout()
+                root.layoutIfNeeded()
+                // Second run loop on iOS so SwiftUI can propagate accessibilityIdentifier to nested views
+                RunLoop.current.run(until: Date().addingTimeInterval(0.02))
                 root.setNeedsLayout()
                 root.layoutIfNeeded()
             }
