@@ -37,7 +37,8 @@ A **drop-in replacement** must satisfy:
 | `platformSecureField(_:text:)` | `SecureField(_:text:)` | ✅ Drop-in | Same signature. |
 | `platformToggle(_:isOn:)` (String label) | `Toggle(_:isOn:)` | ✅ Drop-in | Same shape. |
 | `platformForm { }` | `Form { }` | ✅ Drop-in | ViewBuilder. |
-| `platformTextEditor(_:text:)` | `TextEditor(text:)` | ⚠️ Partial | SwiftUI has only `TextEditor(text:)`; we add `prompt` (extension). For strict drop-in, add overload `platformTextEditor(text:)` with no prompt. |
+| `platformTextEditor(text:)` | `TextEditor(text:)` | ✅ Drop-in | Same signature; adds automaticCompliance (added for #164). |
+| `platformTextEditor(_:text:)` | (extends TextEditor) | ✅ Extended | Adds prompt and optional id; backward-compatible. |
 | `platformButton(_ label: String, action:)` | `Button(_ title: String, action:)` | ✅ Drop-in | Same signature; adds automaticCompliance. |
 | `platformButton(label: LocalizedStringKey, action:)` | `Button(LocalizedStringKey, action:)` | ✅ Drop-in | Same shape. |
 
