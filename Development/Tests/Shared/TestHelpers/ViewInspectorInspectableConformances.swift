@@ -19,6 +19,7 @@ extension DynamicFormViewInner: ViewInspector.Inspectable {}
 extension FormProgressIndicator: ViewInspector.Inspectable {}
 extension DynamicFormSectionView: ViewInspector.Inspectable {}
 extension FormWizardView: ViewInspector.Inspectable {}
+extension FormWizardViewInner: ViewInspector.Inspectable {}
 
 // MARK: - Layer 5 platform components (so firstVStackInHierarchy(inspected) works)
 
