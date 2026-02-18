@@ -1,0 +1,23 @@
+---
+description: Default test target is iOS Simulator for day-to-day; full suite (macOS + iOS) for release.
+alwaysApply: true
+---
+
+# Test Target Default
+
+## **Default: iOS Simulator**
+
+- **Day-to-day testing:** Use `dbs-build --target iOS_tests`. This runs the test suite in the iOS Simulator and is the normal default when the user or agent runs tests during development.
+- When you run tests to verify a change, run **iOS_tests** unless the user asks for macOS or both.
+
+## **Release / quality gate**
+
+- **Before any release:** Use `dbs-build --target test` (runs tests on both macOS and iOS). This is mandatory per the Release Quality Gate rule; do not use only iOS_tests for release verification.
+- macOS tests are checked before release; day-to-day testing is in the iOS Simulator.
+
+## **Summary**
+
+| Context              | Command                    |
+|----------------------|----------------------------|
+| Normal test run      | `dbs-build --target iOS_tests` |
+| Pre-release check   | `dbs-build --target test`  |
