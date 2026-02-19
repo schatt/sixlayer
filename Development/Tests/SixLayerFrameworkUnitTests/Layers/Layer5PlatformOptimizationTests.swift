@@ -91,18 +91,20 @@ open class Layer5PlatformOptimizationTests: BaseTestClass {
     }
     
     @Test @MainActor func testGetCardExpansionPlatformConfig_AllPlatforms() async {
+        // Pin hover off so hoverDelay is deterministic (0.0) when run in parallel with other tests
+        RuntimeCapabilityDetection.setTestHover(false)
+
         let platforms: [SixLayerPlatform] = [.iOS, .macOS, .visionOS, .watchOS, .tvOS]
-        
+
         // Verify platform-appropriate values for current platform (not simulated platform)
         let currentPlatform = SixLayerPlatform.current
         let expectedMinTouchTarget: CGFloat = (currentPlatform == .iOS || currentPlatform == .watchOS) ? 44.0 : 0.0
-        // When hover is not explicitly enabled, hoverDelay should be 0.0 (Issue #141)
-        // Note: This test doesn't set hover support, so it will use default (likely false)
+        // With hover disabled via setTestHover(false), hoverDelay is 0.0 (Issue #141)
         let expectedHoverDelay: TimeInterval = 0.0
-        
+
         for _ in platforms {
             let config = getCardExpansionPlatformConfig()
-            
+
             // Verify platform-appropriate values for current platform
             #expect(config.minTouchTarget == expectedMinTouchTarget, "Current platform \(currentPlatform) should have platform-appropriate minTouchTarget (\(expectedMinTouchTarget))")
             #expect(config.hoverDelay == expectedHoverDelay, "Current platform \(currentPlatform) should have hoverDelay 0.0 when hover is not enabled")

@@ -186,11 +186,11 @@ else
     echo "⚠️  xcodegen not available, skipping project regeneration"
 fi
 
-# Step 2: Run tests
-echo "📋 Step 2: Running test suite..."
+# Step 2: Run tests (unit tests only per platform — no UI tests, no ViewInspector, no AllTests)
+echo "📋 Step 2: Running unit test suite (macOS + iOS unit tests only)..."
 
 # Run macOS unit tests first
-echo "🧪 Running macOS unit tests..."
+echo "🧪 Running macOS unit tests (SLF-macOS-UnitTests)..."
 # Note: do NOT use -quiet here so that any failures print detailed diagnostics
 if ! xcodebuild test -project SixLayerFramework.xcodeproj -scheme SLF-macOS-UnitTests -quiet -destination "platform=macOS,arch=arm64"; then
     log_error "macOS unit tests failed! Cannot proceed with release."
@@ -199,7 +199,7 @@ fi
 echo "✅ macOS unit tests passed"
 
 # Run iOS unit tests on Simulator
-echo "🧪 Running iOS unit tests on Simulator..."
+echo "🧪 Running iOS unit tests on Simulator (SLF-iOS-UnitTests)..."
 
 # Ensure an iOS Simulator is booted (non-fatal if already booted or missing)
 if command -v xcrun &> /dev/null; then
@@ -215,11 +215,8 @@ if ! xcodebuild test -project SixLayerFramework.xcodeproj -scheme SLF-iOS-UnitTe
 fi
 echo "✅ iOS unit tests passed"
 
-# Note: UI tests are currently disabled due to ViewInspector Swift 6 compatibility issues
-# They compile successfully but have concurrency warnings treated as errors
-echo "ℹ️  UI tests temporarily disabled (ViewInspector Swift 6 compatibility)"
-echo "ℹ️  UI test compilation verified - infrastructure is working"
-echo "✅ Unit test suite validation passed"
+# Release gate runs unit tests only (SLF-*-UnitTests). UI/ViewInspector/AllTests are not run here.
+echo "✅ Unit test suite validation passed (macOS + iOS unit tests only)"
 
 # Step 2: Check git is clean (no uncommitted changes)
 echo "📋 Step 2: Checking git repository status..."

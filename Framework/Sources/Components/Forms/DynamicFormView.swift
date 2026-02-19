@@ -6,6 +6,21 @@ import CoreData
 import SwiftData
 #endif
 
+// MARK: - Optional Injected Form State (Issue #186)
+
+/// Environment key for optional host-provided form state.
+/// When set, DynamicFormView uses this state instead of creating its own.
+public struct DynamicFormStateEnvironmentKey: EnvironmentKey {
+    public static let defaultValue: DynamicFormState? = nil
+}
+
+public extension EnvironmentValues {
+    var dynamicFormState: DynamicFormState? {
+        get { self[DynamicFormStateEnvironmentKey.self] }
+        set { self[DynamicFormStateEnvironmentKey.self] = newValue }
+    }
+}
+
 // MARK: - Dynamic Form View
 
 /// Main dynamic form view component
@@ -33,22 +48,14 @@ public struct DynamicFormView: View {
     let onEntityCreated: ((Any) -> Void)?
     let onError: ((Error) -> Void)?
     let entityType: Any.Type?
-    @StateObject private var formState: DynamicFormState
+    
+    @Environment(\.dynamicFormState) private var injectedFormState
+    @StateObject private var internalFormState: DynamicFormState
     
     // Batch OCR state (Issue #83)
     @State private var showImagePicker = false
     @State private var isProcessingOCR = false
     @State private var ocrError: String?
-    
-    // Environment contexts
-    #if canImport(CoreData)
-    @Environment(\.managedObjectContext) private var managedObjectContext
-    #endif
-    
-    #if canImport(SwiftData)
-    @available(macOS 14.0, iOS 17.0, *)
-    @Environment(\.modelContext) private var modelContext: ModelContext
-    #endif
 
     /// Initialize DynamicFormView
     /// - Parameters:
@@ -74,10 +81,49 @@ public struct DynamicFormView: View {
         
         // Store effective configuration (with hints applied if applicable)
         self.configuration = effectiveConfiguration
-        _formState = StateObject(wrappedValue: DynamicFormState(configuration: effectiveConfiguration))
+        _internalFormState = StateObject(wrappedValue: DynamicFormState(configuration: effectiveConfiguration))
     }
 
     public var body: some View {
+        DynamicFormViewInner(
+            formState: injectedFormState ?? internalFormState,
+            configuration: configuration,
+            onSubmit: onSubmit,
+            onEntityCreated: onEntityCreated,
+            onError: onError,
+            entityType: entityType,
+            showImagePicker: $showImagePicker,
+            isProcessingOCR: $isProcessingOCR,
+            ocrError: $ocrError
+        )
+    }
+}
+
+// MARK: - Dynamic Form View Inner (Issue #186: uses resolved formState for observation)
+// Internal so tests can add ViewInspector.Inspectable and find the Submit button.
+
+@MainActor
+struct DynamicFormViewInner: View {
+    @ObservedObject var formState: DynamicFormState
+    let configuration: DynamicFormConfiguration
+    let onSubmit: ([String: Any]) -> Void
+    let onEntityCreated: ((Any) -> Void)?
+    let onError: ((Error) -> Void)?
+    let entityType: Any.Type?
+    @Binding var showImagePicker: Bool
+    @Binding var isProcessingOCR: Bool
+    @Binding var ocrError: String?
+    
+    #if canImport(CoreData)
+    @Environment(\.managedObjectContext) private var managedObjectContext
+    #endif
+    
+    #if canImport(SwiftData)
+    @available(macOS 14.0, iOS 17.0, *)
+    @Environment(\.modelContext) private var modelContext: ModelContext
+    #endif
+
+    var body: some View {
         // Outer VStack so ViewInspector can find structure (ScrollViewReader blocks traversal — Issue 178)
         VStack(spacing: 0) {
         ScrollViewReader { proxy in
@@ -207,6 +253,11 @@ public struct DynamicFormView: View {
         isProcessingOCR = true
         ocrError = nil
         showImagePicker = false
+        
+        // Store selected image on first image-type field (Issue #185) so thumbnail and submit include photo
+        if let imageField = configuration.allFields.first(where: { $0.contentType == .image }) {
+            formState.setValue(image, for: imageField.id)
+        }
         
         Task {
             do {
@@ -778,6 +829,22 @@ public struct FormProgressIndicator: View {
     }
 }
 
+// MARK: - Optional Injected Wizard State (Issue #187)
+
+/// Environment key for optional host-provided wizard state.
+/// When set, FormWizardView uses this state instead of creating its own.
+/// Marked @unchecked Sendable so EnvironmentKey conformance does not cross into main actor; value is only read in View body on main actor.
+public struct FormWizardStateEnvironmentKey: EnvironmentKey, @unchecked Sendable {
+    public static nonisolated(unsafe) let defaultValue: FormWizardState? = nil
+}
+
+public extension EnvironmentValues {
+    var formWizardState: FormWizardState? {
+        get { self[FormWizardStateEnvironmentKey.self] }
+        set { self[FormWizardStateEnvironmentKey.self] = newValue }
+    }
+}
+
 // MARK: - Form Wizard View
 
 /// Wizard-style form view
@@ -788,7 +855,8 @@ public struct FormWizardView<Content: View, Navigation: View>: View {
     let content: (FormWizardStep, FormWizardState) -> Content
     let navigation: (FormWizardState, @escaping () -> Void, @escaping () -> Void, @escaping () -> Void) -> Navigation
     
-    @StateObject private var wizardState: FormWizardState
+    @Environment(\.formWizardState) private var injectedWizardState
+    @StateObject private var internalWizardState: FormWizardState
     
     public init(
         steps: [FormWizardStep],
@@ -798,10 +866,29 @@ public struct FormWizardView<Content: View, Navigation: View>: View {
         self.steps = steps
         self.content = content
         self.navigation = navigation
-        _wizardState = StateObject(wrappedValue: FormWizardState())
+        _internalWizardState = StateObject(wrappedValue: FormWizardState())
     }
     
     public var body: some View {
+        FormWizardViewInner(
+            wizardState: injectedWizardState ?? internalWizardState,
+            steps: steps,
+            content: content,
+            navigation: navigation
+        )
+    }
+}
+
+// MARK: - Form Wizard View Inner (Issue #187: observes resolved wizard state; internal for ViewInspector)
+
+@MainActor
+struct FormWizardViewInner<Content: View, Navigation: View>: View {
+    @ObservedObject var wizardState: FormWizardState
+    let steps: [FormWizardStep]
+    let content: (FormWizardStep, FormWizardState) -> Content
+    let navigation: (FormWizardState, @escaping () -> Void, @escaping () -> Void, @escaping () -> Void) -> Navigation
+
+    var body: some View {
         platformVStackContainer(spacing: 20) {
             // Step progress indicator
             if steps.count > 1 {

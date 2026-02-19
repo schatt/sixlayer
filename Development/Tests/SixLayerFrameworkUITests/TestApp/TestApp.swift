@@ -260,6 +260,6 @@ struct TestAppContentView: View {
             }
         }
         .navigationTitle(category.rawValue)
-        .navigationBarTitleDisplayMode(.inline)
+        .platformNavigationTitleDisplayMode_L4(.inline)
     }
 }

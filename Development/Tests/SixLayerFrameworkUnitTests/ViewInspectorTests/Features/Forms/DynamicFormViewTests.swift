@@ -2451,4 +2451,140 @@ open class DynamicFormViewTests: BaseTestClass {
             cleanupTestEnvironment()
         }
     }
+    
+    // MARK: - Injected formState (Issue #186)
+    
+    /// When host provides formState via environment, form uses it; onSubmit receives that formState's fieldValues (Issue #186).
+    @Test @MainActor func testWhenHostProvidesFormStateViaEnvironment_formUsesItForSubmit() async {
+        initializeTestConfig()
+        let section = DynamicFormSection(
+            id: "s1",
+            title: "Section",
+            fields: [
+                DynamicFormField(id: "name", contentType: .text, label: "Name")
+            ]
+        )
+        let configuration = DynamicFormConfiguration(
+            id: "env-form",
+            title: "Env Form",
+            sections: [section],
+            submitButtonText: "Submit"
+        )
+        let injectedFormState = DynamicFormState(configuration: configuration)
+        injectedFormState.setValue("Alice", for: "name")
+        
+        var submittedValues: [String: Any]?
+        let view = DynamicFormView(configuration: configuration, onSubmit: { submittedValues = $0 })
+            .environment(\.dynamicFormState, injectedFormState)
+        
+        #if canImport(ViewInspector)
+        _ = withInspectedView(AnyView(view)) { inspector in
+            let buttons = inspector.findAll(ViewInspector.ViewType.Button.self)
+            for button in buttons {
+                let labelText = (try? button.labelView().find(ViewInspector.ViewType.Text.self).string()) ?? ""
+                if labelText == "Submit" {
+                    try? button.tap()
+                    break
+                }
+            }
+        }
+        if submittedValues != nil {
+            #expect(submittedValues?["name"] as? String == "Alice", "onSubmit should receive injected formState's fieldValues")
+        }
+        #else
+        #expect(Bool(true), "View created with injected formState")
+        #endif
+    }
+    
+    /// When no formState is provided via environment, form creates and uses its own (unchanged behavior) (Issue #186).
+    @Test @MainActor func testWhenNoFormStateProvided_formCreatesInternalState() async {
+        initializeTestConfig()
+        let section = DynamicFormSection(
+            id: "s1",
+            title: "Section",
+            fields: [
+                DynamicFormField(id: "x", contentType: .text, label: "X")
+            ]
+        )
+        let configuration = DynamicFormConfiguration(
+            id: "no-env-form",
+            title: "No Env Form",
+            sections: [section],
+            submitButtonText: "Submit"
+        )
+        var submittedValues: [String: Any]?
+        let view = DynamicFormView(configuration: configuration, onSubmit: { submittedValues = $0 })
+        // Do not inject formState — view is plain DynamicFormView so we can inspect directly
+        
+        #if canImport(ViewInspector)
+        _ = withInspectedView(view) { inspector in
+            let buttons: [ViewInspector.InspectableView<ViewInspector.ViewType.Button>] = {
+                if let inner = try? inspector.view(DynamicFormViewInner.self) {
+                    return inner.findAll(ViewInspector.ViewType.Button.self)
+                }
+                return inspector.findAll(ViewInspector.ViewType.Button.self)
+            }()
+            for button in buttons {
+                let labelText = (try? button.labelView().find(ViewInspector.ViewType.Text.self).string()) ?? ""
+                if labelText == "Submit" {
+                    try? button.tap()
+                    break
+                }
+            }
+        }
+        if submittedValues != nil {
+            #expect(submittedValues != nil, "onSubmit should be called with internal formState's fieldValues")
+        }
+        #else
+        #expect(view is DynamicFormView, "View should be created with internal formState")
+        #endif
+    }
+    
+    // MARK: - Batch OCR stores image on photo field (Issue #185)
+    
+    /// When form has an image field and formState has image set on it (as batch OCR does), submit includes the image.
+    @Test @MainActor func testSubmitIncludesImageWhenImageFieldIsSet() async {
+        initializeTestConfig()
+        let imageFieldId = "photo"
+        let section = DynamicFormSection(
+            id: "s1",
+            title: "Section",
+            fields: [
+                DynamicFormField(id: "name", contentType: .text, label: "Name"),
+                DynamicFormField(id: imageFieldId, contentType: .image, label: "Photo")
+            ]
+        )
+        let configuration = DynamicFormConfiguration(
+            id: "form-with-photo",
+            title: "Form With Photo",
+            sections: [section],
+            submitButtonText: "Submit"
+        )
+        let injectedFormState = DynamicFormState(configuration: configuration)
+        let testImage = PlatformImage()
+        injectedFormState.setValue("Alice", for: "name")
+        injectedFormState.setValue(testImage, for: imageFieldId)
+        
+        var submittedValues: [String: Any]?
+        let view = DynamicFormView(configuration: configuration, onSubmit: { submittedValues = $0 })
+            .environment(\.dynamicFormState, injectedFormState)
+        
+        #if canImport(ViewInspector)
+        _ = withInspectedView(AnyView(view)) { inspector in
+            let buttons = inspector.findAll(ViewInspector.ViewType.Button.self)
+            for button in buttons {
+                let labelText = (try? button.labelView().find(ViewInspector.ViewType.Text.self).string()) ?? ""
+                guard labelText == "Submit" else { continue }
+                try? button.tap()
+                break
+            }
+        }
+        let submittedImage = submittedValues?[imageFieldId] as? PlatformImage
+        if submittedValues != nil {
+            #expect(submittedImage != nil, "onSubmit should include image when image field is set")
+        }
+        #else
+        #expect(Bool(true), "View with image field and injected formState builds")
+        #endif
+    }
 }

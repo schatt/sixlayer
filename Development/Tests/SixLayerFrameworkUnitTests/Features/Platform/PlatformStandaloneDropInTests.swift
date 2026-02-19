@@ -205,6 +205,18 @@ struct PlatformStandaloneDropInTests {
         #expect(true)
     }
     
+    @Test @MainActor func testPlatformTextEditor_StrictDropIn_TextOnly() {
+        // Given: Text binding only (same signature as SwiftUI TextEditor(text:))
+        let text = State(initialValue: "")
+        
+        // When: Creating text editor with strict drop-in overload
+        let view = platformTextEditor(text: text.projectedValue)
+        
+        // Then: View should be created successfully
+        _ = view
+        #expect(true)
+    }
+    
     // MARK: - Integration Tests
     
     @Test @MainActor func testStandaloneFunctions_WorkTogether() {

@@ -960,6 +960,23 @@ public func platformForm<Content: View>(
 ///   - text: Binding to the text value
 /// - Returns: A platform-specific text editor with automatic accessibility compliance
 ///
+/// Strict drop-in for SwiftUI's `TextEditor(text:)` — same signature, adds automatic accessibility.
+/// Use when you do not need a placeholder; for placeholder text use `platformTextEditor("Placeholder", text: $text)`.
+///
+/// ## Usage Example
+/// ```swift
+/// platformTextEditor(text: $description)
+/// ```
+public func platformTextEditor(text: Binding<String>) -> some View {
+    EmptyView().platformTextEditor(text: text, prompt: nil)
+        .automaticCompliance(
+            identifierName: "textEditor",
+            identifierElementType: "TextEditor"
+        )
+}
+
+/// Drop-in-style text editor with placeholder; extends SwiftUI TextEditor with prompt and accessibility.
+///
 /// ## Usage Example
 /// ```swift
 /// platformTextEditor("Enter description", text: $description)

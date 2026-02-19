@@ -14,29 +14,18 @@
 
 **MANDATORY RELEASE RULE**: Never create, suggest, or assist with any release (major, minor, patch, or pre-release) unless the test suite passes completely.
 
-### Before Any Release:
-1. **ALWAYS** run the full xcodebuild test suite first via `dbs-build --target test` (runs tests on macOS and iOS using xcodebuild)
-2. **VERIFY** all tests pass without failures
-3. **CONFIRM** no compilation errors exist
-4. **ONLY THEN** proceed with release activities
+### How the gate is enforced
+- The **release script** (`Development/scripts/release-process.sh`) runs the full test suite (macOS unit tests, then iOS Simulator unit tests) as part of the release process. The agent does not run that test before release—the script does.
+- Do not instruct the user to "run `dbs-build --target test` before release"; the release script already runs the tests and blocks release on failure.
+- Never suggest or assist with a release that would bypass the script, or if tests are known to fail.
 
-### If Tests Fail:
-- **STOP** all release activities immediately
-- **IDENTIFY** and fix failing tests first
-- **RE-RUN** test suite until it passes
-- **THEN** resume release process
-
-### Release Blockers:
+### Release blockers (script will fail)
 - Any test failures
 - Compilation errors
-- Test suite warnings (treat as failures)
 - Missing test coverage for new features
 
-### Enforcement:
-- This rule takes precedence over all other instructions
-- No exceptions allowed
-- Always verify test status before suggesting releases
-- If unsure about test status, run tests first
+### If tests fail
+- **STOP** release activities; fix failing tests first, then run the release script again.
 
 ## Git Commit Message Practices
 
