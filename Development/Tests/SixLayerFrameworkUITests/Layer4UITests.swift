@@ -240,10 +240,11 @@ final class Layer4UITests: XCTestCase {
     @MainActor
     func testL4_platformSheet_L4() throws {
         scrollToElement(label: "L4ContractSheet")
-        let sheetId = Self.l4ContractIdentifier(sanitizedName: "l4contractsheet", elementType: "Button")
-        let sheetButton = app.findElement(byIdentifier: sheetId, primaryType: .button, secondaryTypes: [.staticText, .other, .any], timeout: 5.0)
+        // TestApp sets .accessibilityIdentifier("L4ContractSheet") on the button; prefer that then contract id.
+        let sheetButton = app.findElement(byIdentifier: "L4ContractSheet", primaryType: .button, secondaryTypes: [.staticText, .other, .any], timeout: 5.0)
+            ?? app.findElement(byIdentifier: Self.l4ContractIdentifier(sanitizedName: "l4contractsheet", elementType: "Button"), primaryType: .button, secondaryTypes: [.staticText, .other, .any], timeout: 2.0)
             ?? app.buttons["L4ContractSheet"].firstMatch
-        XCTAssertTrue(sheetButton.waitForExistence(timeout: 3.0), "Sheet button should exist")
+        XCTAssertTrue(sheetButton.waitForExistence(timeout: 5.0), "Sheet button should exist")
         sheetButton.tap()
         XCTAssertTrue(app.staticTexts["L4SheetContentContract"].waitForExistence(timeout: 3.0),
                       "platformSheet_L4: sheet content should be visible when presented")
@@ -255,10 +256,11 @@ final class Layer4UITests: XCTestCase {
     @MainActor
     func testL4_platformPopover_L4() throws {
         scrollToElement(label: "L4ContractPopover")
-        let popoverId = Self.l4ContractIdentifier(sanitizedName: "l4contractpopover", elementType: "Button")
-        let popoverButton = app.findElement(byIdentifier: popoverId, primaryType: .button, secondaryTypes: [.staticText, .other, .any], timeout: 5.0)
+        // TestApp sets .accessibilityIdentifier("L4ContractPopover") on the button; prefer that then contract id.
+        let popoverButton = app.findElement(byIdentifier: "L4ContractPopover", primaryType: .button, secondaryTypes: [.staticText, .other, .any], timeout: 5.0)
+            ?? app.findElement(byIdentifier: Self.l4ContractIdentifier(sanitizedName: "l4contractpopover", elementType: "Button"), primaryType: .button, secondaryTypes: [.staticText, .other, .any], timeout: 2.0)
             ?? app.buttons["L4ContractPopover"].firstMatch
-        XCTAssertTrue(popoverButton.waitForExistence(timeout: 3.0), "Popover button should exist")
+        XCTAssertTrue(popoverButton.waitForExistence(timeout: 5.0), "Popover button should exist")
         popoverButton.tap()
         XCTAssertTrue(app.staticTexts["L4PopoverContentContract"].waitForExistence(timeout: 3.0),
                       "platformPopover_L4: popover content should be visible when presented")
