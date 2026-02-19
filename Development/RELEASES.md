@@ -1,12 +1,34 @@
 # 🚀 Six-Layer Framework Release History
 
-## 📍 **Current Release: v7.5.3 - Modifier debug logs gated** 🎯
+## 📍 **Current Release: v7.5.4 - Injected state, drop-in, test stability** 🎯
 
-**Release Date**: February 10, 2026
-**Status**: ✅ **COMPLETE**
-**Previous Release**: v7.5.2 - verboseMinClamping debug flag
-**Note**: Patch release. All accessibility modifier debug logs now only print when enableDebugLogging is true.
+**Release Date**: February 2026
+**Status**: In preparation
+**Previous Release**: v7.5.3 - Modifier debug logs gated
+**Note**: Patch release. Optional injected FormWizardView/DynamicFormView state, platformTextEditor(text:) drop-in, test and release-docs updates.
 **Next Release**: TBD
+
+---
+
+## 🎯 **v7.5.4 - Injected state, drop-in, test stability** (February 2026)
+
+### **What's New:**
+
+#### **🆕 Optional injected wizard state (Issue #187)**
+- FormWizardView and FormWizardStateEnvironmentKey support optional `wizardState` via environment for testing/previews.
+- Concurrency-safe FormWizardStateEnvironmentKey; ViewInspector.Inspectable for FormWizardView/FormWizardViewInner.
+
+#### **🆕 Optional injected form state and OCR image (Issues #186, #185)**
+- DynamicFormState environment key; DynamicFormViewInner ViewInspector.Inspectable; submit includes image when image field set.
+
+#### **🆕 platformTextEditor(text:) strict drop-in (Issue #164)**
+- Strict drop-in overload for TextEditor(text:); PlatformDropInReplacementAudit.md added.
+
+### **What's Fixed:**
+- Test stability: unique UserDefaults suite names, deterministic capability/hover overrides, iOS a11y run loop/layout, FormWizard/DynamicForm ViewInspector fixes; macOS TestApp platformNavigationTitleDisplayMode_L4.
+- Release/rule docs: default test target iOS_tests, release script runs full suite, commit-before-test and quality gate clarified.
+
+**See [RELEASE_v7.5.4.md](RELEASE_v7.5.4.md) for complete release notes.**
 
 ---
 
