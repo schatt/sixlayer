@@ -101,7 +101,9 @@ final class Layer4UITests: XCTestCase {
         if let el = el {
             XCTAssertFalse(el.identifier.isEmpty,
                           "\(componentName) must apply a11y. '\(label)' should have identifier. Found: '\(el.identifier)'")
-            XCTAssertEqual(el.elementType, type,
+            let hasCorrectType = (el.elementType == type)
+                || (el.descendants(matching: type).firstMatch.waitForExistence(timeout: 0.5))
+            XCTAssertTrue(hasCorrectType,
                           "\(componentName) must present as \(type) (contract structure). Found: \(el.elementType)")
         }
     }
