@@ -192,7 +192,7 @@ final class Layer4UITests: XCTestCase {
     @MainActor
     func testL4_platformForm() throws {
         scrollToElement(label: "L4 Form")
-        scrollToElement(label: "L4FormSectionContract")
+        scrollToElement(label: "Section body")
         XCTAssertTrue(app.staticTexts["L4 Form"].waitForExistence(timeout: 3.0),
                       "platformForm: form section title (L4 Form) should be visible")
         XCTAssertTrue(app.staticTexts["L4FormSectionContract"].waitForExistence(timeout: 3.0),
@@ -202,7 +202,7 @@ final class Layer4UITests: XCTestCase {
     @MainActor
     func testL4_platformFormSection() throws {
         scrollToElement(label: "L4 Form")
-        scrollToElement(label: "L4FormSectionContract")
+        scrollToElement(label: "Section body")
         XCTAssertTrue(app.staticTexts["L4FormSectionContract"].waitForExistence(timeout: 3.0),
                       "platformFormSection: section header must be visible (contract structure)")
     }
