@@ -223,6 +223,7 @@ final class Layer4UITests: XCTestCase {
 
     @MainActor
     func testL4_platformValidationMessage() throws {
+        scrollToElement(label: "L4 Form")
         scrollToElement(label: "L4ValidationMessageContract")
         XCTAssertTrue(app.staticTexts["L4ValidationMessageContract"].waitForExistence(timeout: 3.0),
                       "platformValidationMessage: message text must be visible (contract structure)")
