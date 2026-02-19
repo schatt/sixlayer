@@ -27,7 +27,7 @@ Navigate to the `Framework/` directory and use it as a Swift Package:
 ```swift
 // In your Package.swift
 dependencies: [
-    .package(url: "https://github.com/schatt/sixlayer.git", from: "7.5.4")
+    .package(url: "https://github.com/schatt/sixlayer.git", from: "7.5.5")
 ]
 ```
 
@@ -41,10 +41,13 @@ dependencies: [
 
 The framework is distributed as a Swift Package from the `Framework/` directory. This ensures that only the essential framework code is included when other projects consume it.
 
-## 🆕 Latest Release: v7.5.4
+## 🆕 Latest Release: v7.5.5
 
-### **Injected state, drop-in, test stability**
-🔧 **Patch**: Optional injected FormWizardView/DynamicFormView state (#187, #186, #185), platformTextEditor(text:) strict drop-in (#164), test and build stability fixes, release/rule docs (default iOS_tests, quality gate).
+### **Patch release**
+🔧 **Patch**: See [RELEASE_v7.5.5.md](Development/RELEASE_v7.5.5.md).
+
+### **Previous Release: v7.5.4 - Injected state, drop-in, test stability**
+🔧 **Patch**: Optional injected FormWizardView/DynamicFormView state (#187, #186, #185), platformTextEditor(text:) strict drop-in (#164), test and build stability fixes.
 
 ### **Previous Release: v7.5.3 - Modifier debug logs gated**
 🔧 **Patch**: All accessibility modifier debug logs only print when `AccessibilityIdentifierConfig.shared.enableDebugLogging` is true.
@@ -211,7 +214,7 @@ These guides contain critical information about the Layer 1 Semantic Intent phil
 
 ## 📋 Current Status
 
-**Version**: v7.5.4 (Patch - Injected state, drop-in, test stability)
+**Version**: v7.5.5 (Patch)
 **Phase**: Patch Release
 **Next**: TBD
 
