@@ -1,6 +1,6 @@
 # SixLayer Framework
 
-[![Version](https://img.shields.io/badge/version-v7.5.4-blue.svg)](https://github.com/schatt/sixlayer/releases/tag/v7.5.4)
+[![Version](https://img.shields.io/badge/version-v7.5.5-blue.svg)](https://github.com/schatt/sixlayer/releases/tag/v7.5.5)
 [![Platform](https://img.shields.io/badge/platform-iOS%2016%2B%20%7C%20macOS%2013%2B-lightgrey.svg)](https://github.com/schatt/6layer)
 [![Swift](https://img.shields.io/badge/Swift-5.9+-orange.svg)](https://swift.org)
 
@@ -40,11 +40,17 @@ Layer 1: Semantic Intent → Layer 2: Layout Decision → Layer 3: Strategy Sele
 - **Comprehensively Tested**: 800+ tests with platform-aware testing and mandatory TDD implementation
 - **DRY Architecture**: Define hints once in files, use everywhere automatically
 
+## 🆕 What's New in v7.5.5
+
+### Patch release
+
+See [RELEASE_v7.5.5.md](../Development/RELEASE_v7.5.5.md).
+
 ## 🆕 What's New in v7.5.4
 
 ### Injected state, drop-in, test stability (Patch)
 
-Optional injected FormWizardView/DynamicFormView state (Issues #187, #186, #185), platformTextEditor(text:) strict drop-in (#164), test and build stability fixes, release/rule docs. See [RELEASE_v7.5.4.md](../Development/RELEASE_v7.5.4.md).
+Optional injected FormWizardView/DynamicFormView state (Issues #187, #186, #185), platformTextEditor(text:) strict drop-in (#164), test and build stability fixes. See [RELEASE_v7.5.4.md](../Development/RELEASE_v7.5.4.md).
 
 ## 🆕 What's New in v7.5.3
 
