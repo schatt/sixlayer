@@ -97,19 +97,11 @@ final class Layer4UITests: XCTestCase {
         if el == nil {
             el = app.findElement(byIdentifier: identifier, primaryType: .any, secondaryTypes: [.other, .button, .staticText], timeout: 2.0)
         }
+        XCTAssertNotNil(el, "\(componentName): element with identifier '\(identifier)' should exist (contract)")
         if let el = el {
             XCTAssertFalse(el.identifier.isEmpty,
                           "\(componentName) must apply a11y. '\(label)' should have identifier. Found: '\(el.identifier)'")
-            return
         }
-        // Fallback: on iOS the contract identifier may not be in the tree; accept label/control presence.
-        let labelExists = app.staticTexts[label].waitForExistence(timeout: 2.0)
-            || app.buttons[label].waitForExistence(timeout: 2.0)
-            || app.textFields[label].waitForExistence(timeout: 1.0)
-            || app.secureTextFields[label].waitForExistence(timeout: 1.0)
-            || app.switches[label].waitForExistence(timeout: 1.0)
-            || element(matchingIdentifier: label).waitForExistence(timeout: 1.0)
-        XCTAssertTrue(labelExists, "\(componentName): element with identifier '\(identifier)' or label '\(label)' should exist")
     }
 
     @MainActor
@@ -138,19 +130,17 @@ final class Layer4UITests: XCTestCase {
     func testL4_platformPicker() throws {
         scrollToElement(label: "L4 Controls")
         scrollToElement(label: "L4ContractPicker")
-        // platformPicker contract: picker or an option has identifier. Find by predicate (picker may be menu button with varying hierarchy).
+        // platformPicker contract: picker or an option has identifier.
         let pred = NSPredicate(format: "identifier CONTAINS[c] %@", "picker")
         let pickerEl = app.descendants(matching: .any).matching(pred).firstMatch
         if pickerEl.waitForExistence(timeout: 3.0) {
             XCTAssertFalse(pickerEl.identifier.isEmpty, "platformPicker must apply a11y. Found: '\(pickerEl.identifier)'")
             return
         }
-        // Fallback: label or picker control (e.g. "A" selected option) exists.
-        let hasLabel = app.staticTexts["L4ContractPicker"].waitForExistence(timeout: 3.0)
-            || app.buttons["L4ContractPicker"].waitForExistence(timeout: 2.0)
-        let hasPickerControl = app.buttons["A"].waitForExistence(timeout: 2.0)
-            || app.staticTexts["A"].waitForExistence(timeout: 2.0)
-        XCTAssertTrue(hasLabel || hasPickerControl, "platformPicker: L4ContractPicker label or picker control should exist")
+        let optionAId = Self.l4ContractIdentifier(sanitizedName: "a", elementType: "View")
+        let optionEl = app.findElement(byIdentifier: optionAId, primaryType: .button, secondaryTypes: [.staticText, .other, .any], timeout: 3.0)
+        XCTAssertNotNil(optionEl, "platformPicker: picker or option should have identifier (tried 'picker' and '\(optionAId)')")
+        if let el = optionEl { XCTAssertFalse(el.identifier.isEmpty, "platformPicker must apply a11y.") }
     }
 
     @MainActor
@@ -289,11 +279,10 @@ final class Layer4UITests: XCTestCase {
             _ = app.staticTexts["L4NavLinkContract"].waitForExistence(timeout: 2.0)
         }
         scrollToElement(label: "L4NavLinkContract")
-        let tapTarget = app.findElement(byIdentifier: "L4NavLinkContract", primaryType: .button, secondaryTypes: [.staticText, .cell, .other, .any], timeout: 5.0)
-            ?? element(matchingIdentifier: "L4NavLinkContract")
-            ?? (app.buttons["L4NavLinkContract"].waitForExistence(timeout: 2.0) ? app.buttons["L4NavLinkContract"].firstMatch : nil)
-            ?? (app.staticTexts["L4NavLinkContract"].waitForExistence(timeout: 1.0) ? app.staticTexts["L4NavLinkContract"].firstMatch : nil)
-        XCTAssertNotNil(tapTarget, "Nav link should exist")
+        let byId = app.findElement(byIdentifier: "L4NavLinkContract", primaryType: .button, secondaryTypes: [.staticText, .cell, .other, .any], timeout: 5.0)
+        let byPred = element(matchingIdentifier: "L4NavLinkContract")
+        let tapTarget: XCUIElement? = byId ?? (byPred.waitForExistence(timeout: 1.0) ? byPred : nil)
+        XCTAssertNotNil(tapTarget, "Nav link with identifier L4NavLinkContract should exist")
         tapTarget!.tap()
         XCTAssertTrue(app.navigationBars["L4NavTitleContract"].waitForExistence(timeout: 3.0)
             || app.staticTexts["L4NavDestinationContent"].waitForExistence(timeout: 2.0),
@@ -307,11 +296,10 @@ final class Layer4UITests: XCTestCase {
             _ = app.staticTexts["L4NavLinkContract"].waitForExistence(timeout: 2.0)
         }
         scrollToElement(label: "L4NavLinkContract")
-        let tapTarget = app.findElement(byIdentifier: "L4NavLinkContract", primaryType: .button, secondaryTypes: [.staticText, .cell, .other, .any], timeout: 5.0)
-            ?? element(matchingIdentifier: "L4NavLinkContract")
-            ?? (app.buttons["L4NavLinkContract"].waitForExistence(timeout: 2.0) ? app.buttons["L4NavLinkContract"].firstMatch : nil)
-            ?? (app.staticTexts["L4NavLinkContract"].waitForExistence(timeout: 1.0) ? app.staticTexts["L4NavLinkContract"].firstMatch : nil)
-        XCTAssertNotNil(tapTarget, "platformNavigationLink: link should exist")
+        let byId = app.findElement(byIdentifier: "L4NavLinkContract", primaryType: .button, secondaryTypes: [.staticText, .cell, .other, .any], timeout: 5.0)
+        let byPred = element(matchingIdentifier: "L4NavLinkContract")
+        let tapTarget: XCUIElement? = byId ?? (byPred.waitForExistence(timeout: 1.0) ? byPred : nil)
+        XCTAssertNotNil(tapTarget, "platformNavigationLink: link with identifier L4NavLinkContract should exist")
         tapTarget!.tap()
         XCTAssertTrue(app.staticTexts["L4NavDestinationContent"].waitForExistence(timeout: 5.0),
                       "platformNavigationLink_L4: navigating to destination should show content")
