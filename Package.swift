@@ -1,5 +1,5 @@
 // swift-tools-version: 6.0
-// SixLayerFramework v7.5.4 - Injected state, drop-in, test stability
+// SixLayerFramework v7.5.5 - Patch release
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
