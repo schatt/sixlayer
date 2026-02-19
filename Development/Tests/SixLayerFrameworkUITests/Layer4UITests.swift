@@ -270,10 +270,14 @@ final class Layer4UITests: XCTestCase {
 
     @MainActor
     func testL4_platformNavigationTitle_L4() throws {
+        if app.staticTexts["L4NavDestinationContent"].waitForExistence(timeout: 0.5) {
+            app.navigationBars.buttons.firstMatch.tap()
+            _ = app.staticTexts["L4NavLinkContract"].waitForExistence(timeout: 2.0)
+        }
         scrollToElement(label: "L4NavLinkContract")
-        let tapTarget = app.findElement(byIdentifier: "L4NavLinkContract", primaryType: .button, secondaryTypes: [.staticText, .cell, .other, .any], timeout: 3.0)
+        let tapTarget = app.findElement(byIdentifier: "L4NavLinkContract", primaryType: .button, secondaryTypes: [.staticText, .cell, .other, .any], timeout: 5.0)
             ?? element(matchingIdentifier: "L4NavLinkContract")
-        XCTAssertTrue(tapTarget.waitForExistence(timeout: 3.0), "Nav link should exist")
+        XCTAssertTrue(tapTarget.waitForExistence(timeout: 5.0), "Nav link should exist")
         tapTarget.tap()
         XCTAssertTrue(app.navigationBars["L4NavTitleContract"].waitForExistence(timeout: 3.0)
             || app.staticTexts["L4NavDestinationContent"].waitForExistence(timeout: 2.0),
@@ -284,13 +288,14 @@ final class Layer4UITests: XCTestCase {
     func testL4_platformNavigationLink_L4() throws {
         if app.staticTexts["L4NavDestinationContent"].waitForExistence(timeout: 0.5) {
             app.navigationBars.buttons.firstMatch.tap()
+            _ = app.staticTexts["L4NavLinkContract"].waitForExistence(timeout: 2.0)
         }
         scrollToElement(label: "L4NavLinkContract")
-        let tapTarget = app.findElement(byIdentifier: "L4NavLinkContract", primaryType: .button, secondaryTypes: [.staticText, .cell, .other, .any], timeout: 3.0)
+        let tapTarget = app.findElement(byIdentifier: "L4NavLinkContract", primaryType: .button, secondaryTypes: [.staticText, .cell, .other, .any], timeout: 5.0)
             ?? element(matchingIdentifier: "L4NavLinkContract")
-        XCTAssertTrue(tapTarget.waitForExistence(timeout: 3.0), "platformNavigationLink: link should exist")
+        XCTAssertTrue(tapTarget.waitForExistence(timeout: 5.0), "platformNavigationLink: link should exist")
         tapTarget.tap()
-        XCTAssertTrue(app.staticTexts["L4NavDestinationContent"].waitForExistence(timeout: 3.0),
+        XCTAssertTrue(app.staticTexts["L4NavDestinationContent"].waitForExistence(timeout: 5.0),
                       "platformNavigationLink_L4: navigating to destination should show content")
     }
 
