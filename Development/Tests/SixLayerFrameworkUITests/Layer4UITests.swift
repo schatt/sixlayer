@@ -141,6 +141,8 @@ final class Layer4UITests: XCTestCase {
             XCTAssertFalse(pickerEl.identifier.isEmpty, "platformPicker must apply a11y. Found: '\(pickerEl.identifier)'")
             return
         }
+        // Options may be in hierarchy only when menu is open; tap picker (shows selected "A") to open.
+        if app.buttons["A"].waitForExistence(timeout: 2.0) { app.buttons["A"].firstMatch.tap() }
         let optionAId = Self.l4ContractIdentifier(sanitizedName: "a", elementType: "View")
         let optionEl = app.findElement(byIdentifier: optionAId, primaryType: .button, secondaryTypes: [.staticText, .other, .any], timeout: 3.0)
         XCTAssertNotNil(optionEl, "platformPicker: picker or option should have identifier (tried 'picker' and '\(optionAId)')")
