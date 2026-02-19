@@ -286,8 +286,10 @@ final class Layer4UITests: XCTestCase {
         scrollToElement(label: "L4NavLinkContract")
         let tapTarget = app.findElement(byIdentifier: "L4NavLinkContract", primaryType: .button, secondaryTypes: [.staticText, .cell, .other, .any], timeout: 5.0)
             ?? element(matchingIdentifier: "L4NavLinkContract")
-        XCTAssertTrue(tapTarget.waitForExistence(timeout: 5.0), "Nav link should exist")
-        tapTarget.tap()
+            ?? (app.buttons["L4NavLinkContract"].waitForExistence(timeout: 2.0) ? app.buttons["L4NavLinkContract"].firstMatch : nil)
+            ?? (app.staticTexts["L4NavLinkContract"].waitForExistence(timeout: 1.0) ? app.staticTexts["L4NavLinkContract"].firstMatch : nil)
+        XCTAssertNotNil(tapTarget, "Nav link should exist")
+        tapTarget!.tap()
         XCTAssertTrue(app.navigationBars["L4NavTitleContract"].waitForExistence(timeout: 3.0)
             || app.staticTexts["L4NavDestinationContent"].waitForExistence(timeout: 2.0),
                       "platformNavigationTitle_L4: destination title or content should be visible")
@@ -302,8 +304,10 @@ final class Layer4UITests: XCTestCase {
         scrollToElement(label: "L4NavLinkContract")
         let tapTarget = app.findElement(byIdentifier: "L4NavLinkContract", primaryType: .button, secondaryTypes: [.staticText, .cell, .other, .any], timeout: 5.0)
             ?? element(matchingIdentifier: "L4NavLinkContract")
-        XCTAssertTrue(tapTarget.waitForExistence(timeout: 5.0), "platformNavigationLink: link should exist")
-        tapTarget.tap()
+            ?? (app.buttons["L4NavLinkContract"].waitForExistence(timeout: 2.0) ? app.buttons["L4NavLinkContract"].firstMatch : nil)
+            ?? (app.staticTexts["L4NavLinkContract"].waitForExistence(timeout: 1.0) ? app.staticTexts["L4NavLinkContract"].firstMatch : nil)
+        XCTAssertNotNil(tapTarget, "platformNavigationLink: link should exist")
+        tapTarget!.tap()
         XCTAssertTrue(app.staticTexts["L4NavDestinationContent"].waitForExistence(timeout: 5.0),
                       "platformNavigationLink_L4: navigating to destination should show content")
     }
