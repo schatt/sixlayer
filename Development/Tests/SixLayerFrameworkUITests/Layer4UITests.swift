@@ -255,7 +255,7 @@ final class Layer4UITests: XCTestCase {
     @MainActor
     func testL4_platformSheet_L4() throws {
         scrollToElement(label: "L4 Presentation")
-        scrollToElement(label: "L4ContractSheet")
+        // Do not scroll to L4ContractSheet (can swipe and hide top); find by id after section is in view.
         // TestApp sets .accessibilityIdentifier("L4ContractSheet") on the button; prefer that then contract id.
         let sheetButton = app.findElement(byIdentifier: "L4ContractSheet", primaryType: .button, secondaryTypes: [.staticText, .other, .any], timeout: 5.0)
             ?? app.findElement(byIdentifier: Self.l4ContractIdentifier(sanitizedName: "l4contractsheet", elementType: "Button"), primaryType: .button, secondaryTypes: [.staticText, .other, .any], timeout: 2.0)
@@ -272,7 +272,7 @@ final class Layer4UITests: XCTestCase {
     @MainActor
     func testL4_platformPopover_L4() throws {
         scrollToElement(label: "L4 Presentation")
-        scrollToElement(label: "L4ContractPopover")
+        // Do not scroll to L4ContractPopover (can swipe and hide top); find by id after section is in view.
         // TestApp sets .accessibilityIdentifier("L4ContractPopover") on the button; prefer that then contract id.
         let popoverButton = app.findElement(byIdentifier: "L4ContractPopover", primaryType: .button, secondaryTypes: [.staticText, .other, .any], timeout: 5.0)
             ?? app.findElement(byIdentifier: Self.l4ContractIdentifier(sanitizedName: "l4contractpopover", elementType: "Button"), primaryType: .button, secondaryTypes: [.staticText, .other, .any], timeout: 2.0)
