@@ -3,7 +3,7 @@
 //  SixLayerFrameworkUITests
 //
 //  Layer 4 (Component) UI tests: one test method per L4 component. Launch with -OpenLayer4Examples.
-//  Each test verifies that the L4 component applies its contract (a11y identifier/label) to the element.
+//  Each test asserts the full contract: a11y (identifier/label), structure (element type, hierarchy), and behavior.
 //
 
 import XCTest
@@ -85,9 +85,9 @@ final class Layer4UITests: XCTestCase {
     ) {
         scrollToElement(label: label)
         let identifier = Self.l4ContractIdentifier(sanitizedName: sanitizedIdentifierName, elementType: identifierElementType)
-        // On iOS, SwiftUI often exposes the identified view as .other; try .other first for input controls.
+        // Prefer contract type first so we find the real control; then .other as fallback (type assertion will fail if only wrapper has id).
         let typesToTry: [(XCUIElement.ElementType, TimeInterval)] = (type == .textField || type == .secureTextField || type == .switch || type == .textView)
-            ? [(.other, 5.0), (type, 3.0)]
+            ? [(type, 5.0), (.other, 2.0)]
             : [(type, 5.0)]
         var el: XCUIElement?
         for (primaryType, timeout) in typesToTry {
@@ -101,6 +101,8 @@ final class Layer4UITests: XCTestCase {
         if let el = el {
             XCTAssertFalse(el.identifier.isEmpty,
                           "\(componentName) must apply a11y. '\(label)' should have identifier. Found: '\(el.identifier)'")
+            XCTAssertEqual(el.elementType, type,
+                          "\(componentName) must present as \(type) (contract structure). Found: \(el.elementType)")
         }
     }
 
@@ -180,61 +182,67 @@ final class Layer4UITests: XCTestCase {
     func testL4_platformDatePicker() throws {
         scrollToElement(label: "L4ContractDatePicker")
         XCTAssertTrue(app.staticTexts["L4ContractDatePicker"].waitForExistence(timeout: 3.0),
-                      "platformDatePicker: label should exist")
+                      "platformDatePicker: label must exist (contract); date picker control is platform-rendered")
     }
 
     @MainActor
     func testL4_platformForm() throws {
         scrollToElement(label: "L4 Form")
         XCTAssertTrue(app.staticTexts["L4 Form"].waitForExistence(timeout: 3.0),
-                      "platformForm: form section (L4 Form) should be visible")
-        // Form contains section; on iOS Section may not expose header/content as separate static texts
+                      "platformForm: form section title (L4 Form) should be visible")
+        XCTAssertTrue(app.staticTexts["L4FormSectionContract"].waitForExistence(timeout: 2.0),
+                      "platformForm: form must contain section with header (contract structure)")
     }
 
     @MainActor
     func testL4_platformFormSection() throws {
         scrollToElement(label: "L4 Form")
-        XCTAssertTrue(app.staticTexts["L4 Form"].waitForExistence(timeout: 3.0),
-                      "platformFormSection: section is inside L4 Form; section title should be visible")
+        XCTAssertTrue(app.staticTexts["L4FormSectionContract"].waitForExistence(timeout: 3.0),
+                      "platformFormSection: section header must be visible (contract structure)")
     }
 
     @MainActor
     func testL4_platformFormField() throws {
+        scrollToElement(label: "L4FormFieldContract")
         XCTAssertTrue(app.staticTexts["L4FormFieldContract"].waitForExistence(timeout: 3.0),
-                      "platformFormField: label should exist")
+                      "platformFormField: label must exist (contract structure)")
         XCTAssertTrue(app.staticTexts["Field content"].waitForExistence(timeout: 2.0),
-                      "platformFormField: content should exist")
+                      "platformFormField: content must exist (contract structure)")
     }
 
     @MainActor
     func testL4_platformFormFieldGroup() throws {
+        scrollToElement(label: "L4FormFieldGroupContract")
         XCTAssertTrue(app.staticTexts["L4FormFieldGroupContract"].waitForExistence(timeout: 3.0),
-                      "platformFormFieldGroup: title should exist")
+                      "platformFormFieldGroup: title must exist (contract structure)")
     }
 
     @MainActor
     func testL4_platformValidationMessage() throws {
         scrollToElement(label: "L4ValidationMessageContract")
         XCTAssertTrue(app.staticTexts["L4ValidationMessageContract"].waitForExistence(timeout: 3.0),
-                      "platformValidationMessage: message should exist")
+                      "platformValidationMessage: message text must be visible (contract structure)")
     }
 
     @MainActor
     func testL4_platformListRow() throws {
-        XCTAssertTrue(app.staticTexts["L4ListRowContract"].waitForExistence(timeout: 3.0),
-                      "platformListRow: row title should exist")
+        scrollToElement(label: "L4ListRowContract")
+        XCTAssertTrue(app.cells.staticTexts["L4ListRowContract"].waitForExistence(timeout: 3.0),
+                      "platformListRow: row title must be in list cell (contract structure)")
     }
 
     @MainActor
     func testL4_platformListSectionHeader() throws {
+        scrollToElement(label: "L4ListSectionHeaderContract")
         XCTAssertTrue(app.staticTexts["L4ListSectionHeaderContract"].waitForExistence(timeout: 3.0),
-                      "platformListSectionHeader: header title should exist")
+                      "platformListSectionHeader: header title must exist (contract structure)")
     }
 
     @MainActor
     func testL4_platformListEmptyState() throws {
+        scrollToElement(label: "L4ListEmptyStateContract")
         XCTAssertTrue(app.staticTexts["L4ListEmptyStateContract"].waitForExistence(timeout: 3.0),
-                      "platformListEmptyState: title should exist")
+                      "platformListEmptyState: title must exist (contract structure)")
     }
 
     // MARK: - Presentation
@@ -250,10 +258,10 @@ final class Layer4UITests: XCTestCase {
         XCTAssertTrue(sheetButton.waitForExistence(timeout: 5.0), "Sheet button should exist")
         sheetButton.tap()
         XCTAssertTrue(app.staticTexts["L4SheetContentContract"].waitForExistence(timeout: 3.0),
-                      "platformSheet_L4: sheet content should be visible when presented")
-        if app.buttons["Close"].waitForExistence(timeout: 1.0) {
-            app.buttons["Close"].tap()
-        }
+                      "platformSheet_L4: sheet content must be visible when presented (contract behavior)")
+        XCTAssertTrue(app.buttons["Close"].waitForExistence(timeout: 2.0),
+                      "platformSheet_L4: sheet must provide dismiss (contract structure)")
+        app.buttons["Close"].firstMatch.tap()
     }
 
     @MainActor
@@ -267,7 +275,7 @@ final class Layer4UITests: XCTestCase {
         XCTAssertTrue(popoverButton.waitForExistence(timeout: 5.0), "Popover button should exist")
         popoverButton.tap()
         XCTAssertTrue(app.staticTexts["L4PopoverContentContract"].waitForExistence(timeout: 3.0),
-                      "platformPopover_L4: popover content should be visible when presented")
+                      "platformPopover_L4: popover content must be visible when presented (contract behavior)")
     }
 
     // MARK: - Navigation
@@ -284,9 +292,10 @@ final class Layer4UITests: XCTestCase {
         let tapTarget: XCUIElement? = byId ?? (byPred.waitForExistence(timeout: 1.0) ? byPred : nil)
         XCTAssertNotNil(tapTarget, "Nav link with identifier L4NavLinkContract should exist")
         tapTarget!.tap()
-        XCTAssertTrue(app.navigationBars["L4NavTitleContract"].waitForExistence(timeout: 3.0)
-            || app.staticTexts["L4NavDestinationContent"].waitForExistence(timeout: 2.0),
-                      "platformNavigationTitle_L4: destination title or content should be visible")
+        XCTAssertTrue(app.navigationBars["L4NavTitleContract"].waitForExistence(timeout: 3.0),
+                      "platformNavigationTitle_L4: destination title must appear in nav bar (contract structure)")
+        XCTAssertTrue(app.staticTexts["L4NavDestinationContent"].waitForExistence(timeout: 2.0),
+                      "platformNavigationTitle_L4: destination content should be visible")
     }
 
     @MainActor
