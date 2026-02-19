@@ -460,6 +460,14 @@ open class IntelligentCardExpansionComprehensiveTests: BaseTestClass {    // MAR
     // or when testing the actual platform.
     
     @Test @MainActor func testGetCardExpansionPlatformConfig_iOS() async {
+        // Set iOS-like overrides so assertions are deterministic when run in parallel with other tests
+        RuntimeCapabilityDetection.setTestTouchSupport(true)
+        RuntimeCapabilityDetection.setTestHapticFeedback(true)
+        RuntimeCapabilityDetection.setTestHover(false)
+        RuntimeCapabilityDetection.setTestVoiceOver(true)
+        RuntimeCapabilityDetection.setTestSwitchControl(true)
+        RuntimeCapabilityDetection.setTestAssistiveTouch(true)
+
         let config = getCardExpansionPlatformConfig()
 
         // Check runtime platform instead of compile-time platform

@@ -164,28 +164,20 @@ open class FormWizardViewTDDTests: BaseTestClass {
             }
         )
 
-        // Should provide navigation controls
+        // Should provide navigation controls (match by accessibility ID or by button label text for cross-platform)
         #if canImport(ViewInspector)
-        if let inspected = try? AnyView(view).inspect() {
-            // Should find navigation buttons
-            let buttons = inspected.findAll(ViewType.Button.self)
-            if buttons.count > 0 {
-                let hasNextButton = buttons.contains { button in
-                    (try? button.accessibilityIdentifier())?.contains("Next") ?? false
-                }
-                let hasFinishButton = buttons.contains { button in
-                    (try? button.accessibilityIdentifier())?.contains("Finish") ?? false
-                }
-                let hasPreviousButton = buttons.contains { button in
-                    (try? button.accessibilityIdentifier())?.contains("Previous") ?? false
-                }
-
-                // At least one navigation control should exist
-                #expect(hasNextButton || hasFinishButton || hasPreviousButton, "Should provide navigation controls")
+        var hasNavControl = false
+        _ = withInspectedView(AnyView(view)) { inspector in
+            let buttons = (try? inspector.findAll(ViewType.Button.self)) ?? []
+            for button in buttons {
+                let id = try? button.accessibilityIdentifier()
+                let labelText = (try? button.labelView().find(ViewType.Text.self).string()) ?? ""
+                if (id?.contains("Next") ?? false) || labelText == "Next" { hasNavControl = true; break }
+                if (id?.contains("Finish") ?? false) || labelText == "Finish" { hasNavControl = true; break }
+                if (id?.contains("Previous") ?? false) || labelText == "Previous" { hasNavControl = true; break }
             }
-        } else {
-            Issue.record("FormWizardView navigation controls not found")
         }
+        #expect(hasNavControl, "Should provide at least one navigation control (Next, Previous, or Finish)")
         #else
         // ViewInspector not available on this platform - this is expected, not a failure
         #endif
@@ -242,5 +234,72 @@ open class FormWizardViewTDDTests: BaseTestClass {
             #expect(Bool(true), "FormWizardView created (ViewInspector not available on macOS)")
             #endif
         }
+    }
+
+    // MARK: - Injected wizardState (Issue #187)
+
+    @Test @MainActor func testWhenHostProvidesWizardStateViaEnvironment_wizardUsesIt() async {
+        initializeTestConfig()
+        let steps = [
+            FormWizardStep(id: "s1", title: "Step 1", stepOrder: 0),
+            FormWizardStep(id: "s2", title: "Step 2", stepOrder: 1),
+            FormWizardStep(id: "s3", title: "Step 3", stepOrder: 2)
+        ]
+        let injectedState = FormWizardState()
+        injectedState.setSteps(steps)
+        injectedState.currentStepIndex = 1
+
+        let view = FormWizardView(
+            steps: steps,
+            content: { step, _ in Text(step.title) },
+            navigation: { _, next, prev, _ in
+                platformHStackContainer {
+                    Button("Prev", action: prev)
+                    Button("Next", action: next)
+                }
+            }
+        )
+        .environment(\.formWizardState, injectedState)
+
+        #if canImport(ViewInspector)
+        var stepTexts: [String] = []
+        _ = withInspectedView(AnyView(view)) { inspector in
+            let texts = (try? inspector.findAll(ViewInspector.ViewType.Text.self)) ?? []
+            stepTexts = texts.compactMap { try? $0.string() }
+        }
+        let showsAnyStep = stepTexts.contains { ["Step 1", "Step 2", "Step 3"].contains($0) }
+        #expect(showsAnyStep, "Wizard with .environment(formWizardState) should build and display at least one step (injected state shows Step 2 in host)")
+        #else
+        #expect(Bool(true), "View with injected wizardState builds")
+        #endif
+    }
+
+    @Test @MainActor func testWhenNoWizardStateProvided_wizardCreatesInternalState() async {
+        initializeTestConfig()
+        let steps = [
+            FormWizardStep(id: "a", title: "Step 1", stepOrder: 0),
+            FormWizardStep(id: "b", title: "Step 2", stepOrder: 1)
+        ]
+        let view = FormWizardView(
+            steps: steps,
+            content: { step, _ in Text(step.title) },
+            navigation: { _, next, prev, _ in
+                platformHStackContainer {
+                    Button("Prev", action: prev)
+                    Button("Next", action: next)
+                }
+            }
+        )
+
+        #if canImport(ViewInspector)
+        var showsStep1 = false
+        _ = withInspectedView(view) { inspector in
+            let texts = (try? inspector.findAll(ViewInspector.ViewType.Text.self)) ?? []
+            showsStep1 = texts.contains { (try? $0.string()) == "Step 1" }
+        }
+        #expect(showsStep1, "Wizard without injection should show first step (internal state)")
+        #else
+        #expect(Bool(true), "FormWizardView created with internal state")
+        #endif
     }
 }

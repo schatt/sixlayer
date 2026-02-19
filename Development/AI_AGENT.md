@@ -11,6 +11,8 @@ This document provides guidance for AI assistants working with the SixLayer Fram
 ## 📚 Version-Specific Guides
 
 ### Latest Versions (Recommended)
+- **v7.5.5** - Patch release (see [RELEASE_v7.5.5.md](RELEASE_v7.5.5.md))
+- **v7.5.4** - Injected state, drop-in, test stability (patch — see [RELEASE_v7.5.4.md](RELEASE_v7.5.4.md))
 - **v7.5.3** - Modifier debug logs gated (patch — see [RELEASE_v7.5.3.md](RELEASE_v7.5.3.md))
 - **v7.5.2** - verboseMinClamping debug flag (patch — see [RELEASE_v7.5.2.md](RELEASE_v7.5.2.md))
 - **v7.5.1** - platformFrame min clamping fix (patch — see [RELEASE_v7.5.1.md](RELEASE_v7.5.1.md))

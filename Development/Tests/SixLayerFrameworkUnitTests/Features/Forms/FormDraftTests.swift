@@ -172,20 +172,21 @@ open class FormDraftTests: BaseTestClass {
     /// TESTING SCOPE: Tests clearing drafts from UserDefaults
     /// METHODOLOGY: Save a draft, clear it, and verify it's gone
     @Test func testUserDefaultsStorageClear() throws {
-        let testDefaults = UserDefaults(suiteName: "test_form_storage")!
-        testDefaults.removePersistentDomain(forName: "test_form_storage")
-        
+        let suiteName = "test_form_storage_clear_\(UUID().uuidString)"
+        let testDefaults = UserDefaults(suiteName: suiteName)!
+        testDefaults.removePersistentDomain(forName: suiteName)
+
         let storage = UserDefaultsFormStateStorage(userDefaults: testDefaults)
         let fieldValues: [String: Any] = ["name": "Test"]
         let draft = FormDraft(formId: "test-form", fieldValues: fieldValues)
-        
+
         try storage.saveDraft(draft)
         #expect(storage.hasDraft(formId: "test-form"))
-        
+
         try storage.clearDraft(formId: "test-form")
         #expect(!storage.hasDraft(formId: "test-form"))
         #expect(storage.loadDraft(formId: "test-form") == nil)
-        
-        testDefaults.removePersistentDomain(forName: "test_form_storage")
+
+        testDefaults.removePersistentDomain(forName: suiteName)
     }
 }
