@@ -82,8 +82,20 @@ final class Layer4UITests: XCTestCase {
         sanitizedIdentifierName: String,
         identifierElementType: String
     ) {
+        scrollToElement(label: label)
         let identifier = Self.l4ContractIdentifier(sanitizedName: sanitizedIdentifierName, elementType: identifierElementType)
-        let el = app.findElement(byIdentifier: identifier, primaryType: type, secondaryTypes: [.other, .button, .staticText, .any], timeout: 5.0)
+        // On iOS, SwiftUI often exposes the identified view as .other; try .other first for input controls.
+        let typesToTry: [(XCUIElement.ElementType, TimeInterval)] = (type == .textField || type == .secureTextField || type == .switch || type == .textView)
+            ? [(.other, 5.0), (type, 3.0)]
+            : [(type, 5.0)]
+        var el: XCUIElement?
+        for (primaryType, timeout) in typesToTry {
+            el = app.findElement(byIdentifier: identifier, primaryType: primaryType, secondaryTypes: [.other, .button, .staticText, .any], timeout: timeout)
+            if el != nil { break }
+        }
+        if el == nil {
+            el = app.findElement(byIdentifier: identifier, primaryType: .any, secondaryTypes: [.other, .button, .staticText], timeout: 2.0)
+        }
         XCTAssertNotNil(el, "\(componentName): element with identifier '\(identifier)' should exist")
         if let el = el {
             XCTAssertFalse(el.identifier.isEmpty,
