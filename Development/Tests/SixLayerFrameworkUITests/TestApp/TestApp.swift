@@ -12,11 +12,18 @@ import SixLayerFramework
 @main
 struct TestApp: App {
     init() {
-        // Configuration is now done in TestAppContentView.onAppear to avoid
-        // static initialization order issues that can cause dyld_start crashes.
-        // The framework must be fully loaded before accessing singletons.
+        // Set accessibility config before any view body runs so L4/L5/L6 contract identifiers are applied.
+        let config = AccessibilityIdentifierConfig.shared
+        config.namespace = "SixLayer"
+        config.mode = .automatic
+        config.enableAutoIDs = true
+        config.globalAutomaticAccessibilityIdentifiers = true
+        config.includeComponentNames = true
+        config.includeElementTypes = true
+        config.enableUITestIntegration = true
+        config.enableDebugLogging = false
     }
-    
+
     var body: some Scene {
         WindowGroup {
             TestAppContentView()
@@ -63,26 +70,8 @@ struct TestAppContentView: View {
         var id: String { rawValue }
     }
     
-    // Configure accessibility identifier generation in initializer
-    // This ensures namespace is set before view body is evaluated
-    // Safe because we're not accessing during App.init() static initialization
-    init() {
-        // Configure accessibility identifier generation
-        // This is safe here because we're in a view initializer, not App.init()
-        let config = AccessibilityIdentifierConfig.shared
-        config.namespace = "SixLayer"
-        config.mode = .automatic
-        config.enableAutoIDs = true
-        config.globalAutomaticAccessibilityIdentifiers = true
-        config.includeComponentNames = true
-        config.includeElementTypes = true
-        config.enableUITestIntegration = true  // CRITICAL: Enables "main.ui" format for stable identifiers
-        
-        // Enable debug logging unconditionally for debugging identifierName issue
-        // TODO: Revert to conditional after fixing identifierName bug
-        config.enableDebugLogging = true
-    }
-    
+    init() {}
+
     var body: some View {
         Group {
             if openLayer4Examples {
