@@ -1,12 +1,21 @@
 # 🚀 Six-Layer Framework Release History
 
-## 📍 **Current Release: v7.5.5** 🎯
+## 📍 **Current Release: v7.5.6** 🎯
 
 **Release Date**: February 2026
 **Status**: In preparation
-**Previous Release**: v7.5.4 - Injected state, drop-in, test stability
-**Note**: Patch release.
+**Previous Release**: v7.5.5 - Patch release
+**Note**: Patch release. Batch OCR target and scope (Issue #188).
 **Next Release**: TBD
+
+---
+
+## 🎯 **v7.5.6 - Batch OCR target and scope** (February 2026)
+
+### **What's in v7.5.6:**
+- Patch release. See [RELEASE_v7.5.6.md](RELEASE_v7.5.6.md) for details.
+
+**See [RELEASE_v7.5.6.md](RELEASE_v7.5.6.md) for complete release notes.**
 
 ---
 
