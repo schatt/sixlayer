@@ -75,7 +75,11 @@ public struct DataHintsResult: @unchecked Sendable {
     /// Presentation preference configuration (parsed from _presentationPreference in hints file)
     /// Can be a simple string or a countBased configuration object
     public let presentationPreference: PresentationPreferenceConfig?
-    
+    /// OCR groups for batch OCR target scoping (parsed from _ocrGroups in hints file).
+    /// Maps group name to field IDs; e.g. {"front": ["firstName", "frontImage"], "back": ["expiryDate", "backImage"]}.
+    /// Fields may appear in multiple groups.
+    public let ocrGroups: [String: [String]]?
+
     public init(
         fieldHints: [String: FieldDisplayHints] = [:],
         sections: [DynamicFormSection] = [],
@@ -86,7 +90,8 @@ public struct DataHintsResult: @unchecked Sendable {
         complexity: String? = nil,
         context: String? = nil,
         customPreferences: [String: String]? = nil,
-        presentationPreference: PresentationPreferenceConfig? = nil
+        presentationPreference: PresentationPreferenceConfig? = nil,
+        ocrGroups: [String: [String]]? = nil
     ) {
         self.fieldHints = fieldHints
         self.sections = sections
@@ -98,6 +103,7 @@ public struct DataHintsResult: @unchecked Sendable {
         self.context = context
         self.customPreferences = customPreferences
         self.presentationPreference = presentationPreference
+        self.ocrGroups = ocrGroups
     }
 }
 
