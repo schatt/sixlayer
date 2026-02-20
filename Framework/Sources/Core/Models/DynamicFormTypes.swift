@@ -772,7 +772,22 @@ public struct DynamicFormConfiguration: Identifiable {
     public func getOCREnabledFields() -> [DynamicFormField] {
         return sections.flatMap { $0.fields }.filter { $0.supportsOCR }
     }
-    
+
+    /// Resolve batch OCR target scope to allowed field IDs (no reflection).
+    /// - Parameter scope: .all (nil = no filter), .fieldIds([String]), or .group(name) from ocrGroups
+    /// - Returns: nil for .all (apply to any field in OCR result); otherwise the set of allowed field IDs
+    public func fieldIds(for scope: OCRTargetScope) -> Set<String>? {
+        switch scope {
+        case .all:
+            return nil
+        case .fieldIds(let ids):
+            return Set(ids)
+        case .group(let name):
+            guard let ids = ocrGroups?[name] else { return nil }
+            return Set(ids)
+        }
+    }
+
     /// Apply hints from .hints file to this configuration
     /// If modelName is provided, loads hints and applies them to matching fields
     /// - Parameter hintsLoader: Optional hints loader (defaults to FileBasedDataHintsLoader)
