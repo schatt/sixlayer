@@ -57,6 +57,11 @@ public struct DynamicFormView: View {
     @State private var isProcessingOCR = false
     @State private var ocrError: String?
 
+    /// Optional binding for host to trigger batch OCR with target image field and scope (Issue #188).
+    /// When the host sets this to a non-nil value, the form shows the image picker and runs batch OCR
+    /// with that target and scope when the user selects an image. Use for "Scan front" / "Scan back" flows.
+    var batchOCRRequest: Binding<BatchOCRRequest?>?
+
     /// Initialize DynamicFormView
     /// - Parameters:
     ///   - configuration: Form configuration with fields and optional modelName
@@ -64,21 +69,24 @@ public struct DynamicFormView: View {
     ///   - onEntityCreated: Optional callback with created entity (called if modelName provided and entity created)
     ///   - onError: Optional callback for errors (called if entity creation or save fails)
     ///   - entityType: Optional SwiftData entity type (required for SwiftData entity creation)
+    ///   - batchOCRRequest: Optional binding to trigger batch OCR with target field and scope (e.g. "Scan front" / "Scan back")
     public init(
         configuration: DynamicFormConfiguration,
         onSubmit: @escaping ([String: Any]) -> Void,
         onEntityCreated: ((Any) -> Void)? = nil,
         onError: ((Error) -> Void)? = nil,
-        entityType: Any.Type? = nil
+        entityType: Any.Type? = nil,
+        batchOCRRequest: Binding<BatchOCRRequest?>? = nil
     ) {
         self.onSubmit = onSubmit
         self.onEntityCreated = onEntityCreated
         self.onError = onError
         self.entityType = entityType
-        
+        self.batchOCRRequest = batchOCRRequest
+
         // Auto-load hints if modelName provided (Issue #71)
         let effectiveConfiguration = configuration.applyingHints()
-        
+
         // Store effective configuration (with hints applied if applicable)
         self.configuration = effectiveConfiguration
         _internalFormState = StateObject(wrappedValue: DynamicFormState(configuration: effectiveConfiguration))
@@ -94,7 +102,8 @@ public struct DynamicFormView: View {
             entityType: entityType,
             showImagePicker: $showImagePicker,
             isProcessingOCR: $isProcessingOCR,
-            ocrError: $ocrError
+            ocrError: $ocrError,
+            batchOCRRequest: batchOCRRequest ?? .constant(nil)
         )
     }
 }
@@ -113,7 +122,11 @@ struct DynamicFormViewInner: View {
     @Binding var showImagePicker: Bool
     @Binding var isProcessingOCR: Bool
     @Binding var ocrError: String?
-    
+    @Binding var batchOCRRequest: BatchOCRRequest?
+
+    /// Pending target/scope for the current batch OCR run (set when host triggers via batchOCRRequest or nil for single button).
+    @State private var pendingBatchOCRTarget: BatchOCRRequest?
+
     #if canImport(CoreData)
     @Environment(\.managedObjectContext) private var managedObjectContext
     #endif
@@ -165,6 +178,7 @@ struct DynamicFormViewInner: View {
                 // Show batch OCR button if any fields support OCR
                 if !configuration.getOCREnabledFields().isEmpty {
                     Button(action: {
+                        pendingBatchOCRTarget = nil
                         showImagePicker = true
                     }) {
                         HStack {
@@ -186,7 +200,20 @@ struct DynamicFormViewInner: View {
                     .automaticCompliance(named: "BatchOCRButton")
                     .sheet(isPresented: $showImagePicker) {
                         UnifiedImagePicker { image in
-                            processBatchOCR(image: image)
+                            let target = pendingBatchOCRTarget
+                            pendingBatchOCRTarget = nil
+                            processBatchOCR(
+                                image: image,
+                                targetImageFieldId: target?.targetImageFieldId,
+                                targetScope: target?.targetScope
+                            )
+                        }
+                    }
+                    .onChange(of: batchOCRRequest.wrappedValue) { _, newValue in
+                        if let request = newValue {
+                            pendingBatchOCRTarget = request
+                            showImagePicker = true
+                            batchOCRRequest = nil
                         }
                     }
                     
