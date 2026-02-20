@@ -699,13 +699,24 @@ public struct DynamicFormSection: Identifiable {
 // MARK: - OCR Target Scope
 
 /// Scope for which fields receive this batch OCR run's text (no reflection).
-public enum OCRTargetScope: Sendable {
+public enum OCRTargetScope: Sendable, Equatable {
     /// Apply to any field in the OCR result (no filter).
     case all
     /// Apply only to these field IDs (allowlist).
     case fieldIds([String])
     /// Apply only to field IDs in the named group (from ocrGroups in .hints/config).
     case group(String)
+}
+
+/// Request to run batch OCR with a target image field and optional scope (Issue #188).
+public struct BatchOCRRequest: Sendable, Equatable {
+    public let targetImageFieldId: String?
+    public let targetScope: OCRTargetScope?
+
+    public init(targetImageFieldId: String? = nil, targetScope: OCRTargetScope? = nil) {
+        self.targetImageFieldId = targetImageFieldId
+        self.targetScope = targetScope
+    }
 }
 
 // MARK: - Dynamic Form Configuration
