@@ -209,7 +209,7 @@ struct DynamicFormViewInner: View {
                             )
                         }
                     }
-                    .onChange(of: batchOCRRequest.wrappedValue) { _, newValue in
+                    .onChange(of: batchOCRRequest) { _, newValue in
                         if let request = newValue {
                             pendingBatchOCRTarget = request
                             showImagePicker = true
@@ -286,7 +286,7 @@ struct DynamicFormViewInner: View {
         showImagePicker = false
 
         let ocrEnabledFields = configuration.getOCREnabledFields()
-        let allowedFieldIds = targetScope.map { configuration.fieldIds(for: $0) }
+        let allowedFieldIds: Set<String>? = targetScope.flatMap { configuration.fieldIds(for: $0) }
 
         // Store selected image on target field or first OCR-enabled image field (Issue #185)
         if let targetId = targetImageFieldId, configuration.getField(by: targetId) != nil {
