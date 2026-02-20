@@ -249,20 +249,27 @@ struct DynamicFormViewInner: View {
     }
     
     /// Process batch OCR: extract structured data and populate form fields (Issue #83)
-    private func processBatchOCR(image: PlatformImage) {
+    /// - Parameters:
+    ///   - image: The image to process and optionally store on an image field.
+    ///   - targetImageFieldId: If set, store the image on this field; else use first OCR-enabled image field.
+    ///   - targetScope: If set, only apply extracted text to these field IDs (.fieldIds, .group, or .all); nil = apply to any.
+    private func processBatchOCR(image: PlatformImage, targetImageFieldId: String? = nil, targetScope: OCRTargetScope? = nil) {
         isProcessingOCR = true
         ocrError = nil
         showImagePicker = false
-        
+
         let ocrEnabledFields = configuration.getOCREnabledFields()
-        // Store selected image on the image-type field that is part of this OCR flow (Issue #185)
-        if let imageField = ocrEnabledFields.first(where: { $0.contentType == .image }) {
+        let allowedFieldIds = targetScope.map { configuration.fieldIds(for: $0) }
+
+        // Store selected image on target field or first OCR-enabled image field (Issue #185)
+        if let targetId = targetImageFieldId, configuration.getField(by: targetId) != nil {
+            formState.setValue(image, for: targetId)
+        } else if let imageField = ocrEnabledFields.first(where: { $0.contentType == .image }) {
             formState.setValue(image, for: imageField.id)
         }
 
         Task {
             do {
-                
                 // Collect all text types from OCR-enabled fields
                 var textTypes: Set<TextType> = []
                 for field in ocrEnabledFields {
@@ -297,12 +304,17 @@ struct DynamicFormViewInner: View {
                 let service = OCRService()
                 let result = try await service.processStructuredExtraction(image, context: context)
                 
-                // Populate form fields from structuredData
+                // Populate form fields from structuredData (respect targetScope when set)
                 await MainActor.run {
-                    for (fieldId, value) in result.structuredData {
-                        formState.setValue(value, for: fieldId)
+                    if let allowed = allowedFieldIds {
+                        for (fieldId, value) in result.structuredData where allowed.contains(fieldId) {
+                            formState.setValue(value, for: fieldId)
+                        }
+                    } else {
+                        for (fieldId, value) in result.structuredData {
+                            formState.setValue(value, for: fieldId)
+                        }
                     }
-                    
                     isProcessingOCR = false
                 }
             } catch {
