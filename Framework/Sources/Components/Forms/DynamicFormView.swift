@@ -254,15 +254,14 @@ struct DynamicFormViewInner: View {
         ocrError = nil
         showImagePicker = false
         
-        // Store selected image on first image-type field (Issue #185) so thumbnail and submit include photo
-        if let imageField = configuration.allFields.first(where: { $0.contentType == .image }) {
+        let ocrEnabledFields = configuration.getOCREnabledFields()
+        // Store selected image on the image-type field that is part of this OCR flow (Issue #185)
+        if let imageField = ocrEnabledFields.first(where: { $0.contentType == .image }) {
             formState.setValue(image, for: imageField.id)
         }
-        
+
         Task {
             do {
-                // Build OCR context from form configuration
-                let ocrEnabledFields = configuration.getOCREnabledFields()
                 
                 // Collect all text types from OCR-enabled fields
                 var textTypes: Set<TextType> = []
