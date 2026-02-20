@@ -57,6 +57,11 @@ public struct DynamicFormView: View {
     @State private var isProcessingOCR = false
     @State private var ocrError: String?
 
+    /// Optional binding for host to trigger batch OCR with target image field and scope (Issue #188).
+    /// When the host sets this to a non-nil value, the form shows the image picker and runs batch OCR
+    /// with that target and scope when the user selects an image. Use for "Scan front" / "Scan back" flows.
+    var batchOCRRequest: Binding<BatchOCRRequest?>?
+
     /// Initialize DynamicFormView
     /// - Parameters:
     ///   - configuration: Form configuration with fields and optional modelName
@@ -64,21 +69,24 @@ public struct DynamicFormView: View {
     ///   - onEntityCreated: Optional callback with created entity (called if modelName provided and entity created)
     ///   - onError: Optional callback for errors (called if entity creation or save fails)
     ///   - entityType: Optional SwiftData entity type (required for SwiftData entity creation)
+    ///   - batchOCRRequest: Optional binding to trigger batch OCR with target field and scope (e.g. "Scan front" / "Scan back")
     public init(
         configuration: DynamicFormConfiguration,
         onSubmit: @escaping ([String: Any]) -> Void,
         onEntityCreated: ((Any) -> Void)? = nil,
         onError: ((Error) -> Void)? = nil,
-        entityType: Any.Type? = nil
+        entityType: Any.Type? = nil,
+        batchOCRRequest: Binding<BatchOCRRequest?>? = nil
     ) {
         self.onSubmit = onSubmit
         self.onEntityCreated = onEntityCreated
         self.onError = onError
         self.entityType = entityType
-        
+        self.batchOCRRequest = batchOCRRequest
+
         // Auto-load hints if modelName provided (Issue #71)
         let effectiveConfiguration = configuration.applyingHints()
-        
+
         // Store effective configuration (with hints applied if applicable)
         self.configuration = effectiveConfiguration
         _internalFormState = StateObject(wrappedValue: DynamicFormState(configuration: effectiveConfiguration))
@@ -94,7 +102,8 @@ public struct DynamicFormView: View {
             entityType: entityType,
             showImagePicker: $showImagePicker,
             isProcessingOCR: $isProcessingOCR,
-            ocrError: $ocrError
+            ocrError: $ocrError,
+            batchOCRRequest: batchOCRRequest ?? .constant(nil)
         )
     }
 }
@@ -113,7 +122,11 @@ struct DynamicFormViewInner: View {
     @Binding var showImagePicker: Bool
     @Binding var isProcessingOCR: Bool
     @Binding var ocrError: String?
-    
+    @Binding var batchOCRRequest: BatchOCRRequest?
+
+    /// Pending target/scope for the current batch OCR run (set when host triggers via batchOCRRequest or nil for single button).
+    @State private var pendingBatchOCRTarget: BatchOCRRequest?
+
     #if canImport(CoreData)
     @Environment(\.managedObjectContext) private var managedObjectContext
     #endif
@@ -165,6 +178,7 @@ struct DynamicFormViewInner: View {
                 // Show batch OCR button if any fields support OCR
                 if !configuration.getOCREnabledFields().isEmpty {
                     Button(action: {
+                        pendingBatchOCRTarget = nil
                         showImagePicker = true
                     }) {
                         HStack {
@@ -186,7 +200,20 @@ struct DynamicFormViewInner: View {
                     .automaticCompliance(named: "BatchOCRButton")
                     .sheet(isPresented: $showImagePicker) {
                         UnifiedImagePicker { image in
-                            processBatchOCR(image: image)
+                            let target = pendingBatchOCRTarget
+                            pendingBatchOCRTarget = nil
+                            processBatchOCR(
+                                image: image,
+                                targetImageFieldId: target?.targetImageFieldId,
+                                targetScope: target?.targetScope
+                            )
+                        }
+                    }
+                    .onChange(of: batchOCRRequest) { _, newValue in
+                        if let request = newValue {
+                            pendingBatchOCRTarget = request
+                            showImagePicker = true
+                            batchOCRRequest = nil
                         }
                     }
                     
@@ -249,21 +276,27 @@ struct DynamicFormViewInner: View {
     }
     
     /// Process batch OCR: extract structured data and populate form fields (Issue #83)
-    private func processBatchOCR(image: PlatformImage) {
+    /// - Parameters:
+    ///   - image: The image to process and optionally store on an image field.
+    ///   - targetImageFieldId: If set, store the image on this field; else use first OCR-enabled image field.
+    ///   - targetScope: If set, only apply extracted text to these field IDs (.fieldIds, .group, or .all); nil = apply to any.
+    private func processBatchOCR(image: PlatformImage, targetImageFieldId: String? = nil, targetScope: OCRTargetScope? = nil) {
         isProcessingOCR = true
         ocrError = nil
         showImagePicker = false
-        
-        // Store selected image on first image-type field (Issue #185) so thumbnail and submit include photo
-        if let imageField = configuration.allFields.first(where: { $0.contentType == .image }) {
+
+        let ocrEnabledFields = configuration.getOCREnabledFields()
+        let allowedFieldIds: Set<String>? = targetScope.flatMap { configuration.fieldIds(for: $0) }
+
+        // Store selected image on target field or first OCR-enabled image field (Issue #185)
+        if let targetId = targetImageFieldId, configuration.getField(by: targetId) != nil {
+            formState.setValue(image, for: targetId)
+        } else if let imageField = ocrEnabledFields.first(where: { $0.contentType == .image }) {
             formState.setValue(image, for: imageField.id)
         }
-        
+
         Task {
             do {
-                // Build OCR context from form configuration
-                let ocrEnabledFields = configuration.getOCREnabledFields()
-                
                 // Collect all text types from OCR-enabled fields
                 var textTypes: Set<TextType> = []
                 for field in ocrEnabledFields {
@@ -298,12 +331,17 @@ struct DynamicFormViewInner: View {
                 let service = OCRService()
                 let result = try await service.processStructuredExtraction(image, context: context)
                 
-                // Populate form fields from structuredData
+                // Populate form fields from structuredData (respect targetScope when set)
                 await MainActor.run {
-                    for (fieldId, value) in result.structuredData {
-                        formState.setValue(value, for: fieldId)
+                    if let allowed = allowedFieldIds {
+                        for (fieldId, value) in result.structuredData where allowed.contains(fieldId) {
+                            formState.setValue(value, for: fieldId)
+                        }
+                    } else {
+                        for (fieldId, value) in result.structuredData {
+                            formState.setValue(value, for: fieldId)
+                        }
                     }
-                    
                     isProcessingOCR = false
                 }
             } catch {
