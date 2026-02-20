@@ -264,18 +264,7 @@ public class FileBasedDataHintsLoader: DataHintsLoader {
             }
         }
         
-        // Parse _ocrGroups if present (group name -> [field IDs] for batch OCR scoping)
-        var ocrGroups: [String: [String]]?
-        if let groupsDict = json["_ocrGroups"] as? [String: Any] {
-            ocrGroups = [String: [String]]()
-            for (groupName, value) in groupsDict {
-                if let ids = value as? [String] {
-                    ocrGroups?[groupName] = ids
-                }
-            }
-        }
-
-        // Parse field hints (all keys except _sections, __example, _defaults, and _ocrGroups)
+        // Parse field hints (all keys except _sections, __example, and _defaults)
         for (key, value) in json {
             if key == "_sections" {
                 continue // Handle sections separately
@@ -285,9 +274,6 @@ public class FileBasedDataHintsLoader: DataHintsLoader {
             }
             if key == "_defaults" {
                 continue // Handle color config separately
-            }
-            if key == "_ocrGroups" {
-                continue // Handle ocr groups above
             }
             
             if let properties = value as? [String: Any] {
@@ -388,8 +374,7 @@ public class FileBasedDataHintsLoader: DataHintsLoader {
             complexity: complexity,
             context: context,
             customPreferences: customPreferences,
-            presentationPreference: presentationPreference,
-            ocrGroups: ocrGroups
+            presentationPreference: presentationPreference
         )
     }
     
