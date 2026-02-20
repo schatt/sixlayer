@@ -27,7 +27,7 @@ Navigate to the `Framework/` directory and use it as a Swift Package:
 ```swift
 // In your Package.swift
 dependencies: [
-    .package(url: "https://github.com/schatt/sixlayer.git", from: "7.5.5")
+    .package(url: "https://github.com/schatt/sixlayer.git", from: "7.5.6")
 ]
 ```
 
@@ -41,9 +41,12 @@ dependencies: [
 
 The framework is distributed as a Swift Package from the `Framework/` directory. This ensures that only the essential framework code is included when other projects consume it.
 
-## 🆕 Latest Release: v7.5.5
+## 🆕 Latest Release: v7.5.6
 
 ### **Patch release**
+🔧 **Patch**: See [RELEASE_v7.5.6.md](Development/RELEASE_v7.5.6.md).
+
+### **Previous Release: v7.5.5 - Patch release**
 🔧 **Patch**: See [RELEASE_v7.5.5.md](Development/RELEASE_v7.5.5.md).
 
 ### **Previous Release: v7.5.4 - Injected state, drop-in, test stability**
@@ -214,7 +217,7 @@ These guides contain critical information about the Layer 1 Semantic Intent phil
 
 ## 📋 Current Status
 
-**Version**: v7.5.5 (Patch)
+**Version**: v7.5.6 (Patch)
 **Phase**: Patch Release
 **Next**: TBD
 
