@@ -696,6 +696,18 @@ public struct DynamicFormSection: Identifiable {
     }
 }
 
+// MARK: - OCR Target Scope
+
+/// Scope for which fields receive this batch OCR run's text (no reflection).
+public enum OCRTargetScope: Sendable {
+    /// Apply to any field in the OCR result (no filter).
+    case all
+    /// Apply only to these field IDs (allowlist).
+    case fieldIds([String])
+    /// Apply only to field IDs in the named group (from ocrGroups in .hints/config).
+    case group(String)
+}
+
 // MARK: - Dynamic Form Configuration
 
 /// Complete configuration for a dynamic form
