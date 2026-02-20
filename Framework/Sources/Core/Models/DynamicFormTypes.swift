@@ -712,7 +712,10 @@ public struct DynamicFormConfiguration: Identifiable {
     public let modelName: String?
     /// Whether to show form progress indicator (Issue #82)
     public let showProgress: Bool
-    
+    /// OCR groups for batch OCR target scoping (e.g. from _ocrGroups in .hints).
+    /// Maps group name to field IDs; fields may appear in multiple groups.
+    public let ocrGroups: [String: [String]]?
+
     public init(
         id: String,
         title: String,
@@ -722,7 +725,8 @@ public struct DynamicFormConfiguration: Identifiable {
         cancelButtonText: String? = "Cancel",
         metadata: [String: String]? = nil,
         modelName: String? = nil,
-        showProgress: Bool = false
+        showProgress: Bool = false,
+        ocrGroups: [String: [String]]? = nil
     ) {
         self.id = id
         self.title = title
@@ -733,6 +737,7 @@ public struct DynamicFormConfiguration: Identifiable {
         self.metadata = metadata
         self.modelName = modelName
         self.showProgress = showProgress
+        self.ocrGroups = ocrGroups
     }
     
     /// Get all fields from all sections
@@ -804,7 +809,7 @@ public struct DynamicFormConfiguration: Identifiable {
         }
         #endif
         
-        // Create configuration with hints-applied sections
+        // Create configuration with hints-applied sections; use ocrGroups from hints when present
         return DynamicFormConfiguration(
             id: id,
             title: title,
@@ -813,7 +818,9 @@ public struct DynamicFormConfiguration: Identifiable {
             submitButtonText: submitButtonText,
             cancelButtonText: cancelButtonText,
             metadata: metadata,
-            modelName: modelName
+            modelName: modelName,
+            showProgress: showProgress,
+            ocrGroups: hintsResult.ocrGroups ?? ocrGroups
         )
     }
 }
