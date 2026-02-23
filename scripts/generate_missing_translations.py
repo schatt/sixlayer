@@ -108,14 +108,16 @@ class LocalizationTranslator:
         "sv": "Swedish",
     }
     
-    def __init__(self, base_dir: Path, provider: str = "google", dry_run: bool = False, 
-                 save_interval: int = 50, mark_as_translated: bool = False, create_backup: bool = False):
+    def __init__(self, base_dir: Path, provider: str = "google", dry_run: bool = False,
+                 save_interval: int = 50, mark_as_translated: bool = False, create_backup: bool = False,
+                 retry_needs_review: bool = False):
         self.base_dir = Path(base_dir)
         self.provider = provider
         self.dry_run = dry_run
         self.save_interval = save_interval  # Save every N translations
         self.mark_as_translated = mark_as_translated  # If True, mark translations as "translated" instead of "needs_review"
         self.create_backup = create_backup  # If True, create backups before saving
+        self.retry_needs_review = retry_needs_review  # If True, re-translate entries marked needs_review
         self.translator = None
         self.file_format = None  # 'xcstrings' or 'strings'
         self.source_language = "en"
@@ -299,14 +301,32 @@ class LocalizationTranslator:
             return MyMemoryTranslator(source=source_code, target=target_code).translate(text)
         return None
 
+    def _is_untranslatable(self, text: str) -> bool:
+        """True if the string should not be sent to the API (symbols, punctuation-only, etc.)."""
+        s = (text or "").strip()
+        if not s:
+            return True
+        # Format specifiers / placeholders
+        if s in ["", ":", "%@", "%d", "%f", "%.2f", "%.3f", "%.4f"]:
+            return True
+        # Single character that isn't a letter (e.g. "*", ".", "-")
+        if len(s) == 1 and not s.isalpha():
+            return True
+        # Very short punctuation/symbol sequence (e.g. "...", "**")
+        if len(s) <= 3 and all(not c.isalnum() for c in s):
+            return True
+        return False
+
     def _translate_string(self, text: str, target_lang: str) -> Optional[str]:
-        """Translate a single string to target language. Tries primary provider, then MyMemory as fallback."""
+        """Translate a single string to target language. Tries primary provider, then MyMemory as fallback.
+        For untranslatable strings (e.g. '*', symbols), returns the source string so the catalog is filled with the same value.
+        """
         if not text or not text.strip():
             return None
 
-        # Skip strings that are just format specifiers or placeholders
-        if text.strip() in ["", ":", "%@", "%d", "%f", "%.2f", "%.3f", "%.4f"]:
-            return None
+        # Untranslatable: use source as "translation" so the slot is filled (e.g. "*" in all languages)
+        if self._is_untranslatable(text):
+            return text
 
         target_code = self._get_translation_code(target_lang)
         source_code = self._get_translation_code(self.source_language)
@@ -385,7 +405,7 @@ class LocalizationTranslator:
         num_languages = len(self.target_languages)
         total_translations = total * num_languages
 
-        # Count how many translations already exist and how many strings are incomplete (resume capability)
+        # Count how many translations already exist (skip needs_review if retry_needs_review) and incomplete strings
         existing_count = 0
         incomplete_string_count = 0
         for key, entry in strings.items():
@@ -395,9 +415,13 @@ class LocalizationTranslator:
             string_complete = True
             for target_lang in self.target_languages:
                 if target_lang in entry.get("localizations", {}):
-                    existing = entry["localizations"][target_lang].get("stringUnit", {}).get("value")
+                    su = entry["localizations"][target_lang].get("stringUnit", {})
+                    existing = su.get("value")
                     if existing and existing.strip():
-                        existing_count += 1
+                        if self.retry_needs_review and su.get("state") == "needs_review":
+                            string_complete = False
+                        else:
+                            existing_count += 1
                     else:
                         string_complete = False
                 else:
@@ -432,23 +456,31 @@ class LocalizationTranslator:
 
                 # Translate to each target language
                 for target_lang in sorted(self.target_languages):
-                    # Skip if translation already exists (resume capability)
+                    # Skip if translation already exists (resume). With --retry-needs-review, re-translate needs_review.
                     if target_lang in entry["localizations"]:
-                        existing = entry["localizations"][target_lang].get("stringUnit", {}).get("value")
+                        su = entry["localizations"][target_lang].get("stringUnit", {})
+                        existing = su.get("value")
                         if existing and existing.strip():
-                            self.stats["skipped"] += 1
-                            continue
+                            if self.retry_needs_review and su.get("state") == "needs_review":
+                                pass  # Re-translate
+                            else:
+                                self.stats["skipped"] += 1
+                                continue
 
                     # Translate (this is the work we're tracking)
                     translated = self._translate_string(source_text, target_lang)
                     tick()
+                    # Use source as fallback when translation fails so the slot is filled (no missing translation)
+                    if not translated:
+                        translated = source_text
+                        translation_state = "needs_review"
+                    else:
+                        translation_state = "translated" if self.mark_as_translated else "needs_review"
                     if translated:
                         # Create localization entry
                         if target_lang not in entry["localizations"]:
                             entry["localizations"][target_lang] = {}
 
-                        # Set state based on flag: "translated" if mark_as_translated is True, otherwise "needs_review"
-                        translation_state = "translated" if self.mark_as_translated else "needs_review"
                         entry["localizations"][target_lang]["stringUnit"] = {
                             "state": translation_state,
                             "value": translated
@@ -812,7 +844,13 @@ Examples:
         action="store_true",
         help="Create backups of localization files before saving (default: False)"
     )
-    
+
+    parser.add_argument(
+        "--retry-needs-review",
+        action="store_true",
+        help="Re-translate entries marked needs_review (default: False). Use to retry machine translations that were flagged for review."
+    )
+
     args = parser.parse_args()
     
     # Base directory is required
@@ -829,7 +867,8 @@ Examples:
             dry_run=args.dry_run,
             save_interval=args.save_interval,
             mark_as_translated=args.mark_as_translated,
-            create_backup=args.backup
+            create_backup=args.backup,
+            retry_needs_review=args.retry_needs_review
         )
         
         translator.translate(target_languages=args.languages)
