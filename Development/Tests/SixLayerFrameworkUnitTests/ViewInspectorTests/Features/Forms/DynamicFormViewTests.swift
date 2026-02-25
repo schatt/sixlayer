@@ -450,12 +450,23 @@ open class DynamicFormViewTests: BaseTestClass {
         let view = DynamicFormView(configuration: configuration, onSubmit: { _ in onSubmitCalled = true })
         let expectedFieldLabels = ["Odometer", "Station", "Gallons"]
         #if canImport(ViewInspector)
-        tryWithFirstVStack(view, testName: "Each field label shown exactly once (Issue #189)", minChildren: 1) { vStack in
-            let texts = vStack.findAll(ViewInspector.ViewType.Text.self)
-            for label in expectedFieldLabels {
-                let count = texts.filter { (try? $0.string()) == label }.count
-                #expect(count == 1, "Field label '\(label)' should appear exactly once (Issue #189); found \(count)")
+        guard let allTexts: [ViewInspector.InspectableView<ViewInspector.ViewType.Text>] = withInspectedView(AnyView(view), perform: { inspected in
+            var list: [ViewInspector.InspectableView<ViewInspector.ViewType.Text>] = []
+            list.append(contentsOf: inspected.findAll(ViewInspector.ViewType.Text.self))
+            if let inner = try? inspected.anyView() {
+                list.append(contentsOf: inner.findAll(ViewInspector.ViewType.Text.self))
+                if let inner2 = try? inner.anyView() {
+                    list.append(contentsOf: inner2.findAll(ViewInspector.ViewType.Text.self))
+                }
             }
+            return list
+        }) else {
+            Issue.record("View inspection failed for Each field label shown exactly once (Issue #189): could not obtain inspected view")
+            return
+        }
+        for label in expectedFieldLabels {
+            let count = allTexts.filter { (try? $0.string()) == label }.count
+            #expect(count == 1, "Field label '\(label)' should appear exactly once (Issue #189); found \(count)")
         }
         #else
         #expect(Bool(true), "ViewInspector not available; skip duplicate-label assertion")
