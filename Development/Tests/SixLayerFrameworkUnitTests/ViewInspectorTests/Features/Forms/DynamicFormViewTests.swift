@@ -437,7 +437,7 @@ open class DynamicFormViewTests: BaseTestClass {
             fields: [
                 DynamicFormField(id: "odometer", contentType: .text, label: "Odometer", isRequired: true),
                 DynamicFormField(id: "station", contentType: .text, label: "Station"),
-                DynamicFormField(id: "gallons", contentType: .decimal, label: "Gallons")
+                DynamicFormField(id: "gallons", contentType: .number, label: "Gallons")
             ]
         )
         let configuration = DynamicFormConfiguration(
