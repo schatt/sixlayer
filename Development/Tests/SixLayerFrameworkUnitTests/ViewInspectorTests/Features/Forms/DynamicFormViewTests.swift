@@ -448,25 +448,17 @@ open class DynamicFormViewTests: BaseTestClass {
         )
         let expectedFieldLabels = ["Odometer", "Station", "Gallons"]
         #if canImport(ViewInspector)
-        // Inspect section view directly so we avoid ScrollViewReader in DynamicFormView (Issue 178 blocks traversal).
+        // Inspect section view directly (avoids ScrollViewReader in full form — Issue 178). Use direct .inspect() and root findAll(Text) so we can count label occurrences.
+        // NOTE: On some platforms ViewInspector finds 0 Text views (traversal limit); intended red is count==2 per label before fix. Test still fails on assertion.
         let formState = DynamicFormState(configuration: configuration)
         let sectionView = DynamicFormSectionView(section: section, formState: formState)
-        guard let allTexts: [ViewInspector.InspectableView<ViewInspector.ViewType.Text>] = withInspectedView(AnyView(sectionView), perform: { inspected in
-            var list: [ViewInspector.InspectableView<ViewInspector.ViewType.Text>] = []
-            list.append(contentsOf: inspected.findAll(ViewInspector.ViewType.Text.self))
-            if let inner = try? inspected.anyView() {
-                list.append(contentsOf: inner.findAll(ViewInspector.ViewType.Text.self))
-                if let inner2 = try? inner.anyView() {
-                    list.append(contentsOf: inner2.findAll(ViewInspector.ViewType.Text.self))
-                }
-            }
-            return list
-        }) else {
-            Issue.record("View inspection failed for Each field label shown exactly once (Issue #189): could not obtain inspected view")
+        guard let inspected = try? sectionView.inspect() else {
+            Issue.record("View inspection failed for Each field label shown exactly once (Issue #189): could not inspect DynamicFormSectionView")
             return
         }
+        let texts = inspected.findAll(ViewInspector.ViewType.Text.self)
         for label in expectedFieldLabels {
-            let count = allTexts.filter { (try? $0.string()) == label }.count
+            let count = texts.filter { (try? $0.string()) == label }.count
             #expect(count == 1, "Field label '\(label)' should appear exactly once (Issue #189); found \(count)")
         }
         #else
