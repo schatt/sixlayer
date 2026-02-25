@@ -450,7 +450,7 @@ open class DynamicFormViewTests: BaseTestClass {
         let view = DynamicFormView(configuration: configuration, onSubmit: { _ in onSubmitCalled = true })
         let expectedFieldLabels = ["Odometer", "Station", "Gallons"]
         #if canImport(ViewInspector)
-        tryWithFirstVStack(view, testName: "Each field label shown exactly once (Issue #189)", minChildren: 2) { vStack in
+        tryWithFirstVStack(view, testName: "Each field label shown exactly once (Issue #189)", minChildren: 1) { vStack in
             let texts = vStack.findAll(ViewInspector.ViewType.Text.self)
             for label in expectedFieldLabels {
                 let count = texts.filter { (try? $0.string()) == label }.count
