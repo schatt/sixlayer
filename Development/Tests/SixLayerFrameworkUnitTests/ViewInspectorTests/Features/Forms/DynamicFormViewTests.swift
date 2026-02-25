@@ -446,11 +446,12 @@ open class DynamicFormViewTests: BaseTestClass {
             sections: [section],
             submitButtonText: "Submit"
         )
-        var onSubmitCalled = false
-        let view = DynamicFormView(configuration: configuration, onSubmit: { _ in onSubmitCalled = true })
         let expectedFieldLabels = ["Odometer", "Station", "Gallons"]
         #if canImport(ViewInspector)
-        guard let allTexts: [ViewInspector.InspectableView<ViewInspector.ViewType.Text>] = withInspectedView(AnyView(view), perform: { inspected in
+        // Inspect section view directly so we avoid ScrollViewReader in DynamicFormView (Issue 178 blocks traversal).
+        let formState = DynamicFormState(configuration: configuration)
+        let sectionView = DynamicFormSectionView(section: section, formState: formState)
+        guard let allTexts: [ViewInspector.InspectableView<ViewInspector.ViewType.Text>] = withInspectedView(AnyView(sectionView), perform: { inspected in
             var list: [ViewInspector.InspectableView<ViewInspector.ViewType.Text>] = []
             list.append(contentsOf: inspected.findAll(ViewInspector.ViewType.Text.self))
             if let inner = try? inspected.anyView() {
