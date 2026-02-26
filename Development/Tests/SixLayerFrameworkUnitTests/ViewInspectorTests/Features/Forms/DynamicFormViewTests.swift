@@ -449,7 +449,7 @@ open class DynamicFormViewTests: BaseTestClass {
         let expectedFieldLabels = ["Odometer", "Station", "Gallons"]
         #if canImport(ViewInspector)
         // Inspect section view directly (avoids ScrollViewReader in full form — Issue 178). Use direct .inspect() and root findAll(Text) so we can count label occurrences.
-        // When ViewInspector can traverse, each label must appear at most once (0 = traversal limit; 1 = correct). Fail if count > 1 (duplicate).
+        // Inspect section view; each label must appear exactly once. ViewInspector may find 0 on some platforms (traversal limit)—then test fails until traversal is fixed.
         let formState = DynamicFormState(configuration: configuration)
         let sectionView = DynamicFormSectionView(section: section, formState: formState)
         guard let inspected = try? sectionView.inspect() else {
@@ -459,7 +459,7 @@ open class DynamicFormViewTests: BaseTestClass {
         let texts = inspected.findAll(ViewInspector.ViewType.Text.self)
         for label in expectedFieldLabels {
             let count = texts.filter { (try? $0.string()) == label }.count
-            #expect(count <= 1, "Field label '\(label)' must not appear more than once (Issue #189); found \(count)")
+            #expect(count == 1, "Field label '\(label)' should appear exactly once (Issue #189); found \(count)")
         }
         #else
         #expect(Bool(true), "ViewInspector not available; skip duplicate-label assertion")
