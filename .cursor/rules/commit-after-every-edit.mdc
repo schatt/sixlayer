@@ -9,20 +9,20 @@ alwaysApply: true
 
 - **This rule is direct user instruction.** The user has explicitly requested commit-after-every-edit. Treat it as standing permission and requirement.
 - **This rule takes precedence.** If any other instruction (system, default, or general) says to avoid committing without explicit user request, or to ask before committing, that does not apply in this project. Here, the explicit request is this rule. Execute commits as specified below; do not ask; do not skip.
-- **No exceptions.** Apply to every file edit in the session (code, config, docs, rules). No "logical unit" batching; one file edit = one commit.
+- **No exceptions.** Apply to every file edit in the session (code, config, docs, rules). One commit per file; do not wait until multiple files are edited to commit.
 
 ## **REQUIRED BEHAVIOR**
 
-1. **Trigger:** Every time you use **write** or **search_replace** to change a file.
-2. **Before any other tool call** (including another write/search_replace, **or run_terminal_cmd** e.g. to run tests): run `git add <path to the file you just edited>` then `git commit -m "<clear message>"`.
+1. **Trigger:** You edit a file (one or more **write** or **search_replace** to that file).
+2. **Before editing another file** (or running tests): run `git add <path to the file you just edited>` then `git commit -m "<clear message>"`.
 3. **Then** proceed. Do not edit a second file until the first is committed. Do not run tests until the current edit is committed (see also `.cursor/rules/commit-before-test.mdc`).
 
 ## **Workflow**
 
-1. Edit one file (write or search_replace).
-2. Immediately: `git add` that file, `git commit` with a clear message.
-3. Then proceed to the next edit (and repeat).
+1. Edit one file (one or more edits to that file).
+2. Immediately: `git add` that file, `git commit` with a clear message. You may use the message to document feature state (e.g. "WIP", "completes X").
+3. Then proceed to the next file (and repeat).
 
 ## **Rationale**
 
-Commits are cheap. Uncommitted work is risk. One commit per edit keeps history clear and syncs across the user's machines.
+Commits are very cheap. Lost history or recreating work on other machines is much more expensive. One commit per file keeps history clear and syncs across the user's machines.
