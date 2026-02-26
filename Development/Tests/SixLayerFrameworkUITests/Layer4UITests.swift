@@ -89,21 +89,18 @@ final class Layer4UITests: XCTestCase {
             if backButton.exists { backButton.tap() }
             _ = app.navigationBars["Layer 4 Examples"].waitForExistence(timeout: 3.0)
         }
-        if app.navigationBars["Layer 4 Examples"].waitForExistence(timeout: 6.0) {
-            if app.staticTexts["L4 System"].waitForExistence(timeout: 2.0) { return }
-            let scrollable = app.scrollViews.firstMatch
-            if scrollable.exists {
-                for _ in 0..<6 {
-                    scrollable.swipeDown()
-                    if app.staticTexts["L4 System"].waitForExistence(timeout: 0.5) { return }
-                }
+        XCTAssertTrue(app.navigationBars["Layer 4 Examples"].waitForExistence(timeout: 6.0),
+                      "Contract root: Layer 4 Examples nav bar should exist")
+        if app.staticTexts["L4 System"].waitForExistence(timeout: 2.0) { return }
+        let scrollable = app.scrollViews.firstMatch
+        if scrollable.exists {
+            for _ in 0..<6 {
+                scrollable.swipeDown()
+                if app.staticTexts["L4 System"].waitForExistence(timeout: 0.5) { return }
             }
-            XCTAssertTrue(app.staticTexts["L4 System"].waitForExistence(timeout: 5.0),
-                          "Contract root (L4 System) should be visible after scroll to top")
-            return
         }
-        if app.staticTexts["L4 System"].waitForExistence(timeout: 4.0) { return }
-        XCTFail("Contract root: neither Layer 4 Examples nav bar nor L4 System was visible")
+        XCTAssertTrue(app.staticTexts["L4 System"].waitForExistence(timeout: 5.0),
+                      "Contract root (L4 System) should be visible after scroll to top")
     }
 
     @MainActor
