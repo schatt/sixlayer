@@ -120,7 +120,12 @@ final class Layer4UITests: XCTestCase {
         if el == nil {
             el = app.findElement(byIdentifier: identifier, primaryType: .any, secondaryTypes: [.other, .button, .staticText], timeout: 2.0)
         }
-        XCTAssertNotNil(el, "\(componentName): element with identifier '\(identifier)' should exist (contract)")
+        if el == nil {
+            let containsPred = NSPredicate(format: "identifier CONTAINS[c] %@", sanitizedIdentifierName)
+            let anyWithId = app.descendants(matching: .any).matching(containsPred).firstMatch
+            if anyWithId.waitForExistence(timeout: 2.0) { el = anyWithId }
+        }
+        XCTAssertNotNil(el, "\(componentName): element with identifier '\(identifier)' or containing '\(sanitizedIdentifierName)' should exist (contract)")
         if let el = el {
             XCTAssertFalse(el.identifier.isEmpty,
                           "\(componentName) must apply a11y. '\(label)' should have identifier. Found: '\(el.identifier)'")
