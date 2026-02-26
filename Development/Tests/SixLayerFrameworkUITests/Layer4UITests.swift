@@ -344,4 +344,18 @@ final class Layer4UITests: XCTestCase {
         copyButton.tap()
         // Behavior: copy invoked without crash; optional paste verification would require a paste target in contract UI
     }
+
+    @MainActor
+    func testL4_platformPrint_L4() throws {
+        scrollToElement(label: "L4 System")
+        scrollToElement(label: "L4ContractPrint")
+        let printButton = app.findElement(byIdentifier: "L4ContractPrint", primaryType: .button, secondaryTypes: [.staticText, .other, .any], timeout: 5.0)
+            ?? app.buttons["L4ContractPrint"].firstMatch
+        XCTAssertTrue(printButton.waitForExistence(timeout: 5.0),
+                      "platformPrint_L4: Print button with identifier L4ContractPrint should exist (contract a11y)")
+        printButton.tap()
+        // Behavior: print sheet appears (iOS) or print panel (macOS); dismiss if present so suite can continue
+        let cancelPrint = app.buttons["Cancel"].firstMatch
+        if cancelPrint.waitForExistence(timeout: 2.0) { cancelPrint.tap() }
+    }
 }
