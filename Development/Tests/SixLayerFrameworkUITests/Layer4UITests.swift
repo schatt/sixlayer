@@ -76,6 +76,28 @@ final class Layer4UITests: XCTestCase {
         app.descendants(matching: .any).matching(NSPredicate(format: "identifier == %@", id)).firstMatch
     }
 
+    /// Ensure we're on the contract root with top of content visible. Pop from nav stack if needed; scroll to top if L4 System is off-screen.
+    @MainActor
+    private func ensureContractRoot() {
+        if app.staticTexts["L4NavDestinationContent"].waitForExistence(timeout: 0.5) {
+            let backButton = app.navigationBars.buttons.firstMatch
+            if backButton.exists { backButton.tap() }
+            _ = app.staticTexts["L4NavLinkContract"].waitForExistence(timeout: 2.0)
+        }
+        XCTAssertTrue(app.navigationBars["Layer 4 Examples"].waitForExistence(timeout: 3.0),
+                      "Contract root: Layer 4 Examples nav bar should exist")
+        if app.staticTexts["L4 System"].waitForExistence(timeout: 2.0) { return }
+        let scrollable = app.scrollViews.firstMatch
+        if scrollable.exists {
+            for _ in 0..<6 {
+                scrollable.swipeDown()
+                if app.staticTexts["L4 System"].waitForExistence(timeout: 0.5) { return }
+            }
+        }
+        XCTAssertTrue(app.staticTexts["L4 System"].waitForExistence(timeout: 5.0),
+                      "Contract root (L4 System) should be visible after scroll to top")
+    }
+
     @MainActor
     private func assertElementHasIdentifierFromComponent(
         label: String,
@@ -111,6 +133,7 @@ final class Layer4UITests: XCTestCase {
 
     @MainActor
     func testL4_platformButton() throws {
+        ensureContractRoot()
         assertElementHasIdentifierFromComponent(
             label: "L4ContractButton",
             type: .button,
@@ -122,6 +145,7 @@ final class Layer4UITests: XCTestCase {
 
     @MainActor
     func testL4_platformTextField() throws {
+        ensureContractRoot()
         assertElementHasIdentifierFromComponent(
             label: "L4ContractTextField",
             type: .textField,
@@ -133,6 +157,7 @@ final class Layer4UITests: XCTestCase {
 
     @MainActor
     func testL4_platformPicker() throws {
+        ensureContractRoot()
         scrollToElement(label: "L4 Controls")
         scrollToElement(label: "L4ContractPicker")
         // platformPicker contract: picker or an option has identifier.
@@ -152,6 +177,7 @@ final class Layer4UITests: XCTestCase {
 
     @MainActor
     func testL4_platformSecureField() throws {
+        ensureContractRoot()
         assertElementHasIdentifierFromComponent(
             label: "L4ContractSecureField",
             type: .secureTextField,
@@ -163,6 +189,7 @@ final class Layer4UITests: XCTestCase {
 
     @MainActor
     func testL4_platformToggle() throws {
+        ensureContractRoot()
         assertElementHasIdentifierFromComponent(
             label: "L4ContractToggle",
             type: .switch,
@@ -174,6 +201,7 @@ final class Layer4UITests: XCTestCase {
 
     @MainActor
     func testL4_platformTextEditor() throws {
+        ensureContractRoot()
         assertElementHasIdentifierFromComponent(
             label: "L4ContractTextEditor",
             type: .textView,
@@ -185,6 +213,7 @@ final class Layer4UITests: XCTestCase {
 
     @MainActor
     func testL4_platformDatePicker() throws {
+        ensureContractRoot()
         scrollToElement(label: "L4ContractDatePicker")
         XCTAssertTrue(app.staticTexts["L4ContractDatePicker"].waitForExistence(timeout: 3.0),
                       "platformDatePicker: label must exist (contract); date picker control is platform-rendered")
@@ -192,6 +221,7 @@ final class Layer4UITests: XCTestCase {
 
     @MainActor
     func testL4_platformForm() throws {
+        ensureContractRoot()
         scrollToElement(label: "L4 Form")
         scrollToElement(label: "Section body")
         XCTAssertTrue(app.staticTexts["L4 Form"].waitForExistence(timeout: 3.0),
@@ -202,6 +232,7 @@ final class Layer4UITests: XCTestCase {
 
     @MainActor
     func testL4_platformFormSection() throws {
+        ensureContractRoot()
         scrollToElement(label: "L4 Form")
         scrollToElement(label: "Section body")
         XCTAssertTrue(app.staticTexts["L4FormSectionContract"].waitForExistence(timeout: 3.0),
@@ -210,6 +241,7 @@ final class Layer4UITests: XCTestCase {
 
     @MainActor
     func testL4_platformFormField() throws {
+        ensureContractRoot()
         scrollToElement(label: "L4FormFieldContract")
         XCTAssertTrue(app.staticTexts["L4FormFieldContract"].waitForExistence(timeout: 3.0),
                       "platformFormField: label must exist (contract structure)")
@@ -219,6 +251,7 @@ final class Layer4UITests: XCTestCase {
 
     @MainActor
     func testL4_platformFormFieldGroup() throws {
+        ensureContractRoot()
         scrollToElement(label: "L4FormFieldGroupContract")
         XCTAssertTrue(app.staticTexts["L4FormFieldGroupContract"].waitForExistence(timeout: 3.0),
                       "platformFormFieldGroup: title must exist (contract structure)")
@@ -226,6 +259,7 @@ final class Layer4UITests: XCTestCase {
 
     @MainActor
     func testL4_platformValidationMessage() throws {
+        ensureContractRoot()
         scrollToElement(label: "L4 Form")
         scrollToElement(label: "L4ValidationMessageContract")
         XCTAssertTrue(app.staticTexts["L4ValidationMessageContract"].waitForExistence(timeout: 3.0),
@@ -234,6 +268,7 @@ final class Layer4UITests: XCTestCase {
 
     @MainActor
     func testL4_platformListRow() throws {
+        ensureContractRoot()
         scrollToElement(label: "L4ListRowContract")
         XCTAssertTrue(app.cells.staticTexts["L4ListRowContract"].waitForExistence(timeout: 3.0),
                       "platformListRow: row title must be in list cell (contract structure)")
@@ -241,6 +276,7 @@ final class Layer4UITests: XCTestCase {
 
     @MainActor
     func testL4_platformListSectionHeader() throws {
+        ensureContractRoot()
         scrollToElement(label: "L4ListSectionHeaderContract")
         XCTAssertTrue(app.staticTexts["L4ListSectionHeaderContract"].waitForExistence(timeout: 3.0),
                       "platformListSectionHeader: header title must exist (contract structure)")
@@ -248,6 +284,7 @@ final class Layer4UITests: XCTestCase {
 
     @MainActor
     func testL4_platformListEmptyState() throws {
+        ensureContractRoot()
         scrollToElement(label: "L4ListEmptyStateContract")
         XCTAssertTrue(app.staticTexts["L4ListEmptyStateContract"].waitForExistence(timeout: 3.0),
                       "platformListEmptyState: title must exist (contract structure)")
@@ -257,6 +294,7 @@ final class Layer4UITests: XCTestCase {
 
     @MainActor
     func testL4_platformSheet_L4() throws {
+        ensureContractRoot()
         scrollToElement(label: "L4 Presentation")
         // Do not scroll to L4ContractSheet (can swipe and hide top); find by id after section is in view.
         // TestApp sets .accessibilityIdentifier("L4ContractSheet") on the button; prefer that then contract id.
@@ -274,6 +312,7 @@ final class Layer4UITests: XCTestCase {
 
     @MainActor
     func testL4_platformPopover_L4() throws {
+        ensureContractRoot()
         scrollToElement(label: "L4 Presentation")
         // Do not scroll to L4ContractPopover (can swipe and hide top); find by id after section is in view.
         // TestApp sets .accessibilityIdentifier("L4ContractPopover") on the button; prefer that then contract id.
@@ -290,6 +329,7 @@ final class Layer4UITests: XCTestCase {
 
     @MainActor
     func testL4_platformNavigationTitle_L4() throws {
+        ensureContractRoot()
         if app.staticTexts["L4NavDestinationContent"].waitForExistence(timeout: 0.5) {
             app.navigationBars.buttons.firstMatch.tap()
             _ = app.staticTexts["L4NavLinkContract"].waitForExistence(timeout: 2.0)
@@ -309,6 +349,7 @@ final class Layer4UITests: XCTestCase {
 
     @MainActor
     func testL4_platformNavigationLink_L4() throws {
+        ensureContractRoot()
         if app.staticTexts["L4NavDestinationContent"].waitForExistence(timeout: 0.5) {
             app.navigationBars.buttons.firstMatch.tap()
             _ = app.staticTexts["L4NavLinkContract"].waitForExistence(timeout: 2.0)
@@ -326,6 +367,7 @@ final class Layer4UITests: XCTestCase {
 
     @MainActor
     func testL4_platformNavigationBarTitleDisplayMode_L4() throws {
+        ensureContractRoot()
         XCTAssertTrue(app.navigationBars["Layer 4 Examples"].waitForExistence(timeout: 3.0),
                       "platformNavigationBarTitleDisplayMode_L4: nav bar with title should exist (applied on root)")
     }
@@ -334,7 +376,7 @@ final class Layer4UITests: XCTestCase {
 
     @MainActor
     func testL4_platformCopyToClipboard_L4() throws {
-        XCTAssertTrue(app.staticTexts["L4 System"].waitForExistence(timeout: 5.0), "L4 System section should be visible")
+        ensureContractRoot()
         scrollToElement(label: "L4ContractCopy")
         let copyButton = app.descendants(matching: .any).matching(NSPredicate(format: "identifier == %@", "L4ContractCopy")).firstMatch
         XCTAssertTrue(copyButton.waitForExistence(timeout: 10.0),
@@ -347,7 +389,7 @@ final class Layer4UITests: XCTestCase {
 
     @MainActor
     func testL4_platformPrint_L4() throws {
-        XCTAssertTrue(app.staticTexts["L4 System"].waitForExistence(timeout: 5.0), "L4 System section should be visible")
+        ensureContractRoot()
         scrollToElement(label: "L4ContractPrint")
         let printButton = app.descendants(matching: .any).matching(NSPredicate(format: "identifier == %@", "L4ContractPrint")).firstMatch
         XCTAssertTrue(printButton.waitForExistence(timeout: 10.0),
@@ -360,7 +402,7 @@ final class Layer4UITests: XCTestCase {
 
     @MainActor
     func testL4_platformCloudKitSyncStatus_L4() throws {
-        XCTAssertTrue(app.staticTexts["L4 System"].waitForExistence(timeout: 5.0), "L4 System section should be visible")
+        ensureContractRoot()
         scrollToElement(label: "CloudKit Sync Status")
         XCTAssertTrue(app.staticTexts["CloudKit Sync: Idle"].waitForExistence(timeout: 5.0),
                       "platformCloudKitSyncStatus_L4: status text must be visible (contract structure)")
@@ -371,7 +413,7 @@ final class Layer4UITests: XCTestCase {
 
     @MainActor
     func testL4_platformPhotoDisplay_L4() throws {
-        XCTAssertTrue(app.staticTexts["L4 System"].waitForExistence(timeout: 5.0), "L4 System section should be visible")
+        ensureContractRoot()
         scrollToElement(label: "Photo Display")
         let photoView = app.descendants(matching: .any).matching(NSPredicate(format: "identifier CONTAINS[c] %@", "platformPhotoDisplay")).firstMatch
         XCTAssertTrue(photoView.waitForExistence(timeout: 10.0),
