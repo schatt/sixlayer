@@ -215,6 +215,11 @@ public struct CameraView: UIViewControllerRepresentable {
         }
         
         public func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+            #if DEBUG
+            if ProcessInfo.processInfo.environment["SLF_DEBUG_PHOTO_CAPTURE"] != nil {
+                print("[SLF CameraView] didFinishPickingMediaWithInfo (Use Photo)")
+            }
+            #endif
             if let image = info[.originalImage] as? UIImage {
                 parent.onImageCaptured(PlatformImage(image))  // Implicit conversion: UIImage → PlatformImage
             }
@@ -222,6 +227,11 @@ public struct CameraView: UIViewControllerRepresentable {
         }
         
         public func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+            #if DEBUG
+            if ProcessInfo.processInfo.environment["SLF_DEBUG_PHOTO_CAPTURE"] != nil {
+                print("[SLF CameraView] imagePickerControllerDidCancel (Cancel or system dismissed picker)")
+            }
+            #endif
             picker.dismiss(animated: true)
         }
     }
