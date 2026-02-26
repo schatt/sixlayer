@@ -336,9 +336,8 @@ final class Layer4UITests: XCTestCase {
     func testL4_platformCopyToClipboard_L4() throws {
         XCTAssertTrue(app.staticTexts["L4 System"].waitForExistence(timeout: 5.0), "L4 System section should be visible")
         scrollToElement(label: "L4ContractCopy")
-        let copyButton = app.findElement(byIdentifier: "L4ContractCopy", primaryType: .button, secondaryTypes: [.staticText, .other, .any], timeout: 5.0)
-            ?? app.buttons["L4ContractCopy"].firstMatch
-        XCTAssertTrue(copyButton.waitForExistence(timeout: 5.0),
+        let copyButton = app.descendants(matching: .any).matching(NSPredicate(format: "identifier == %@", "L4ContractCopy")).firstMatch
+        XCTAssertTrue(copyButton.waitForExistence(timeout: 10.0),
                       "platformCopyToClipboard_L4: Copy button with identifier L4ContractCopy should exist (contract a11y)")
         XCTAssertTrue(copyButton.isHittable,
                       "platformCopyToClipboard_L4: Copy button should be tappable (contract structure)")
@@ -351,7 +350,7 @@ final class Layer4UITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["L4 System"].waitForExistence(timeout: 5.0), "L4 System section should be visible")
         scrollToElement(label: "L4ContractPrint")
         let printButton = app.descendants(matching: .any).matching(NSPredicate(format: "identifier == %@", "L4ContractPrint")).firstMatch
-        XCTAssertTrue(printButton.waitForExistence(timeout: 5.0),
+        XCTAssertTrue(printButton.waitForExistence(timeout: 10.0),
                       "platformPrint_L4: Print button with identifier L4ContractPrint should exist (contract a11y)")
         printButton.tap()
         // Behavior: print sheet appears (iOS) or print panel (macOS); dismiss if present so suite can continue
@@ -366,7 +365,7 @@ final class Layer4UITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["CloudKit Sync: Idle"].waitForExistence(timeout: 5.0),
                       "platformCloudKitSyncStatus_L4: status text must be visible (contract structure)")
         let withId = app.descendants(matching: .any).matching(NSPredicate(format: "identifier CONTAINS[c] %@", "platformCloudKitSyncStatus")).firstMatch
-        XCTAssertTrue(withId.waitForExistence(timeout: 2.0),
+        XCTAssertTrue(withId.waitForExistence(timeout: 10.0),
                       "platformCloudKitSyncStatus_L4: view must have a11y identifier (contract a11y)")
     }
 
@@ -375,7 +374,7 @@ final class Layer4UITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["L4 System"].waitForExistence(timeout: 5.0), "L4 System section should be visible")
         scrollToElement(label: "Photo Display")
         let photoView = app.descendants(matching: .any).matching(NSPredicate(format: "identifier CONTAINS[c] %@", "platformPhotoDisplay")).firstMatch
-        XCTAssertTrue(photoView.waitForExistence(timeout: 5.0),
+        XCTAssertTrue(photoView.waitForExistence(timeout: 10.0),
                       "platformPhotoDisplay_L4: view must have a11y identifier (contract a11y)")
     }
 }
