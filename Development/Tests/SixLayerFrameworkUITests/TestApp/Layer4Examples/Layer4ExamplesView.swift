@@ -717,26 +717,6 @@ struct Layer4ContractOnlyView: View {
     var body: some View {
         ScrollView {
             platformVStack(alignment: .leading, spacing: 24) {
-                ExampleSection(title: "L4 Presentation") {
-                    platformVStack(alignment: .leading, spacing: 12) {
-                        platformButton("L4ContractSheet") { l4ShowSheet = true }
-                            .accessibilityIdentifier("L4ContractSheet")
-                        platformButton("L4ContractPopover") { l4ShowPopover = true }
-                            .accessibilityIdentifier("L4ContractPopover")
-                    }
-                }
-                .platformSheet_L4(isPresented: $l4ShowSheet) {
-                    L4SheetContentContractView()
-                }
-                .platformPopover_L4(isPresented: $l4ShowPopover) {
-                    Text("L4PopoverContentContract")
-                }
-                ExampleSection(title: "L4 Navigation") {
-                    NavigationLink("L4NavLinkContract") {
-                        L4NavDestinationView()
-                    }
-                    .accessibilityIdentifier("L4NavLinkContract")
-                }
                 ExampleSection(title: "L4 System") {
                     platformVStack(alignment: .leading, spacing: 12) {
                         Text("Copy to Clipboard (platformCopyToClipboard_L4)")
@@ -763,6 +743,26 @@ struct Layer4ContractOnlyView: View {
                         PlatformPhotoComponentsLayer4.platformPhotoDisplay_L4(image: nil, style: .aspectFit)
                             .frame(height: 80)
                     }
+                }
+                ExampleSection(title: "L4 Presentation") {
+                    platformVStack(alignment: .leading, spacing: 12) {
+                        platformButton("L4ContractSheet") { l4ShowSheet = true }
+                            .accessibilityIdentifier("L4ContractSheet")
+                        platformButton("L4ContractPopover") { l4ShowPopover = true }
+                            .accessibilityIdentifier("L4ContractPopover")
+                    }
+                }
+                .platformSheet_L4(isPresented: $l4ShowSheet) {
+                    L4SheetContentContractView()
+                }
+                .platformPopover_L4(isPresented: $l4ShowPopover) {
+                    Text("L4PopoverContentContract")
+                }
+                ExampleSection(title: "L4 Navigation") {
+                    NavigationLink("L4NavLinkContract") {
+                        L4NavDestinationView()
+                    }
+                    .accessibilityIdentifier("L4NavLinkContract")
                 }
                 ExampleSection(title: "L4 Controls") {
                     platformVStack(alignment: .leading, spacing: 16) {
