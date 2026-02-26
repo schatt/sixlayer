@@ -28,7 +28,7 @@ public struct CustomFieldView: View {
                 DynamicPhoneField(field: field, formState: formState)
             case .url:
                 DynamicURLField(field: field, formState: formState)
-            case .number:
+            case .number, .decimal:
                 DynamicNumberField(field: field, formState: formState)
             case .integer:
                 DynamicIntegerField(field: field, formState: formState)
