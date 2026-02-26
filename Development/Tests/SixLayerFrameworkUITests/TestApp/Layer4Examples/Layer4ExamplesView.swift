@@ -61,6 +61,10 @@ struct Layer4ExamplesView: View {
                     MapExamples()
                 }
                 
+                ExampleSection(title: "Navigation Stack Components") {
+                    NavigationStackExamples()
+                }
+                
                 ExampleSection(title: "CloudKit Components") {
                     CloudKitExamples()
                 }
@@ -268,23 +272,119 @@ struct MapViewExample: View {
 
 @available(iOS 17.0, macOS 14.0, *)
 struct MapWithLocationExample: View {
+    @State private var locationService: LocationService?
+
     var body: some View {
         platformVStack(alignment: .leading, spacing: 12) {
             Text("Map with current location (requires location permissions)")
                 .font(.caption)
                 .foregroundColor(.secondary)
-            
-            // Note: Would need actual LocationService instance
-            Text("Location service example")
+
+            if let locationService = locationService {
+                PlatformMapComponentsLayer4.platformMapViewWithCurrentLocation_L4(
+                    locationService: locationService,
+                    showCurrentLocation: true
+                )
+                .frame(height: 200)
+                .cornerRadius(8)
+            } else {
+                ProgressView("Initializing location…")
+                    .frame(height: 200)
+            }
+        }
+        .padding()
+        .background(Color.platformSecondaryBackground)
+        .cornerRadius(8)
+        .onAppear {
+            if locationService == nil {
+                locationService = LocationService()
+            }
+        }
+    }
+}
+#endif
+
+// MARK: - Navigation Stack Examples
+
+private struct NavStackDemoItem: Identifiable, Hashable {
+    let id: String
+    let name: String
+}
+
+struct NavigationStackExamples: View {
+    var body: some View {
+        platformVStack(alignment: .leading, spacing: 16) {
+            Text("Layer 4 navigation stack components implement stack or split navigation from Layer 3 strategy.")
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+
+            ExampleCard(title: "Navigation Stack", description: "platformImplementNavigationStack_L4") {
+                NavigationStackExample()
+            }
+
+            ExampleCard(title: "Navigation Stack with Items", description: "platformImplementNavigationStackItems_L4") {
+                NavigationStackItemsExample()
+            }
+        }
+    }
+}
+
+struct NavigationStackExample: View {
+    private let strategy = NavigationStackStrategy(implementation: .navigationStack, reasoning: nil)
+
+    var body: some View {
+        platformVStack(alignment: .leading, spacing: 12) {
+            Text("Stack with root and title")
                 .font(.caption)
                 .foregroundColor(.secondary)
+            platformImplementNavigationStack_L4(
+                content: NavigationStackExampleContent(),
+                title: "L4 Stack Demo",
+                strategy: strategy
+            )
+            .frame(minHeight: 120)
         }
         .padding()
         .background(Color.platformSecondaryBackground)
         .cornerRadius(8)
     }
 }
-#endif
+
+private struct NavigationStackExampleContent: View {
+    var body: some View {
+        Text("Root content")
+            .padding()
+    }
+}
+
+struct NavigationStackItemsExample: View {
+    private static let items: [NavStackDemoItem] = [
+        NavStackDemoItem(id: "a", name: "Item A"),
+        NavStackDemoItem(id: "b", name: "Item B"),
+        NavStackDemoItem(id: "c", name: "Item C")
+    ]
+    @State private var selectedItem: NavStackDemoItem?
+    private let strategy = NavigationStackStrategy(implementation: .navigationStack, reasoning: nil)
+
+    var body: some View {
+        platformVStack(alignment: .leading, spacing: 12) {
+            Text("List with detail navigation")
+                .font(.caption)
+                .foregroundColor(.secondary)
+            platformImplementNavigationStackItems_L4(
+                items: Self.items,
+                selectedItem: $selectedItem,
+                itemView: { item in Text(item.name) },
+                detailView: { item in Text("Detail: \(item.name)").padding() },
+                strategy: strategy
+            )
+            .frame(minHeight: 180)
+        }
+        .padding()
+        .background(Color.platformSecondaryBackground)
+        .cornerRadius(8)
+    }
+}
 
 // MARK: - CloudKit Examples
 
