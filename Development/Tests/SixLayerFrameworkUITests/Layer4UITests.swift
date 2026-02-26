@@ -328,4 +328,20 @@ final class Layer4UITests: XCTestCase {
         XCTAssertTrue(app.navigationBars["Layer 4 Examples"].waitForExistence(timeout: 3.0),
                       "platformNavigationBarTitleDisplayMode_L4: nav bar with title should exist (applied on root)")
     }
+
+    // MARK: - System (Copy, Print, Share)
+
+    @MainActor
+    func testL4_platformCopyToClipboard_L4() throws {
+        scrollToElement(label: "L4 System")
+        scrollToElement(label: "L4ContractCopy")
+        let copyButton = app.findElement(byIdentifier: "L4ContractCopy", primaryType: .button, secondaryTypes: [.staticText, .other, .any], timeout: 5.0)
+            ?? app.buttons["L4ContractCopy"].firstMatch
+        XCTAssertTrue(copyButton.waitForExistence(timeout: 5.0),
+                      "platformCopyToClipboard_L4: Copy button with identifier L4ContractCopy should exist (contract a11y)")
+        XCTAssertTrue(copyButton.isHittable,
+                      "platformCopyToClipboard_L4: Copy button should be tappable (contract structure)")
+        copyButton.tap()
+        // Behavior: copy invoked without crash; optional paste verification would require a paste target in contract UI
+    }
 }
