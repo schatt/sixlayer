@@ -20,7 +20,7 @@ alwaysApply: true
 ## **Workflow**
 
 1. Edit one file (one or more edits to that file).
-2. Immediately: `git add` that file, `git commit` with a clear message. You may use the message to document feature state (e.g. "WIP", "completes X").
+2. Immediately: `git add` that file, `git commit` with a clear message. Optionally document feature state in the message (e.g. "completes X") so it's clear when a multi-file feature is done; not required, since completion is also tracked in GitHub issues.
 3. Then proceed to the next file (and repeat).
 
 ## **Rationale**
