@@ -334,7 +334,7 @@ final class Layer4UITests: XCTestCase {
 
     @MainActor
     func testL4_platformCopyToClipboard_L4() throws {
-        scrollToElement(label: "L4 System")
+        XCTAssertTrue(app.staticTexts["L4 System"].waitForExistence(timeout: 5.0), "L4 System section should be visible")
         scrollToElement(label: "L4ContractCopy")
         let copyButton = app.findElement(byIdentifier: "L4ContractCopy", primaryType: .button, secondaryTypes: [.staticText, .other, .any], timeout: 5.0)
             ?? app.buttons["L4ContractCopy"].firstMatch
@@ -348,7 +348,7 @@ final class Layer4UITests: XCTestCase {
 
     @MainActor
     func testL4_platformPrint_L4() throws {
-        scrollToElement(label: "L4 System")
+        XCTAssertTrue(app.staticTexts["L4 System"].waitForExistence(timeout: 5.0), "L4 System section should be visible")
         scrollToElement(label: "L4ContractPrint")
         let printButton = app.descendants(matching: .any).matching(NSPredicate(format: "identifier == %@", "L4ContractPrint")).firstMatch
         XCTAssertTrue(printButton.waitForExistence(timeout: 5.0),
@@ -361,7 +361,7 @@ final class Layer4UITests: XCTestCase {
 
     @MainActor
     func testL4_platformCloudKitSyncStatus_L4() throws {
-        scrollToElement(label: "L4 System")
+        XCTAssertTrue(app.staticTexts["L4 System"].waitForExistence(timeout: 5.0), "L4 System section should be visible")
         scrollToElement(label: "CloudKit Sync Status")
         XCTAssertTrue(app.staticTexts["CloudKit Sync: Idle"].waitForExistence(timeout: 5.0),
                       "platformCloudKitSyncStatus_L4: status text must be visible (contract structure)")
@@ -372,7 +372,7 @@ final class Layer4UITests: XCTestCase {
 
     @MainActor
     func testL4_platformPhotoDisplay_L4() throws {
-        scrollToElement(label: "L4 System")
+        XCTAssertTrue(app.staticTexts["L4 System"].waitForExistence(timeout: 5.0), "L4 System section should be visible")
         scrollToElement(label: "Photo Display")
         let photoView = app.descendants(matching: .any).matching(NSPredicate(format: "identifier CONTAINS[c] %@", "platformPhotoDisplay")).firstMatch
         XCTAssertTrue(photoView.waitForExistence(timeout: 5.0),
