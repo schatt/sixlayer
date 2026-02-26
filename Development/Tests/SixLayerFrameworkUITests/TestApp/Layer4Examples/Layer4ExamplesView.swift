@@ -802,6 +802,11 @@ struct Layer4ContractOnlyView: View {
                             .font(.caption)
                             .foregroundColor(.secondary)
                         platformCloudKitSyncStatus_L4(status: .idle)
+                        Text("Photo Display (platformPhotoDisplay_L4)")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                        PlatformPhotoComponentsLayer4.platformPhotoDisplay_L4(image: nil, style: .aspectFit)
+                            .frame(height: 80)
                     }
                 }
             }
