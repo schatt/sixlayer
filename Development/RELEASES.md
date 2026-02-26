@@ -1,12 +1,21 @@
 # 🚀 Six-Layer Framework Release History
 
-## 📍 **Current Release: v7.5.7** 🎯
+## 📍 **Current Release: v7.5.8** 🎯
 
 **Release Date**: February 2026
 **Status**: In preparation
-**Previous Release**: v7.5.6 - Patch release
-**Note**: Patch release. Duplicate field labels fix (Issue #189), DynamicContentType.decimal.
+**Previous Release**: v7.5.7 - Patch release
+**Note**: Patch release. Photo capture camera/library tabbed UI (Issue #190).
 **Next Release**: TBD
+
+---
+
+## 🎯 **v7.5.8 - Photo capture camera/library selector** (February 2026)
+
+### **What's in v7.5.8:**
+- Patch release. See [RELEASE_v7.5.8.md](RELEASE_v7.5.8.md) for details.
+
+**See [RELEASE_v7.5.8.md](RELEASE_v7.5.8.md) for complete release notes.**
 
 ---
 
