@@ -737,6 +737,7 @@ struct Layer4ContractOnlyView: View {
                             .font(.caption)
                             .foregroundColor(.secondary)
                         platformCloudKitSyncStatus_L4(status: .idle)
+                            .accessibilityIdentifier("platformCloudKitSyncStatus_L4")
                         Text("Photo Display (platformPhotoDisplay_L4)")
                             .font(.caption)
                             .foregroundColor(.secondary)
