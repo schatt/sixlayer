@@ -798,6 +798,10 @@ struct Layer4ContractOnlyView: View {
                         platformButton("L4ContractPrint") { l4ShowPrint = true }
                             .accessibilityIdentifier("L4ContractPrint")
                             .platformPrint_L4(isPresented: $l4ShowPrint, content: .text("L4 Print Contract"))
+                        Text("CloudKit Sync Status (platformCloudKitSyncStatus_L4)")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                        platformCloudKitSyncStatus_L4(status: .idle)
                     }
                 }
             }
