@@ -17,9 +17,9 @@ import XCTest
 /// platformTextEditor, platformDatePicker, platformForm, platformFormSection, platformFormField, platformFormFieldGroup,
 /// platformValidationMessage, platformListRow, platformListSectionHeader, platformListEmptyState,
 /// platformSheet_L4, platformPopover_L4, platformNavigationTitle_L4, platformNavigationLink_L4, platformNavigationBarTitleDisplayMode_L4,
-/// platformCopyToClipboard_L4, platformPrint_L4, platformCloudKitSyncStatus_L4.
+/// platformCopyToClipboard_L4, platformPrint_L4, platformCloudKitSyncStatus_L4, platformPhotoDisplay_L4.
 /// Remaining L4 APIs to add: platformImplementNavigationStack_L4, platformAppNavigation_L4, platformRowActions_L4,
-/// platformPhotoPicker_L4, platformPhotoDisplay_L4, platformMapView_L4, other platformCloudKit*,
+/// platformPhotoPicker_L4, platformMapView_L4, other platformCloudKit*,
 /// platformShare_L4, platformVerticalSplit_L4, platformHorizontalSplit_L4, platformStyledContainer_L4, etc.
 @MainActor
 final class Layer4UITests: XCTestCase {
