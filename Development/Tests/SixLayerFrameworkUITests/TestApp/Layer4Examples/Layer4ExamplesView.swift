@@ -742,6 +742,7 @@ struct Layer4ContractOnlyView: View {
                             .foregroundColor(.secondary)
                         PlatformPhotoComponentsLayer4.platformPhotoDisplay_L4(image: nil, style: .aspectFit)
                             .frame(height: 80)
+                            .accessibilityIdentifier("platformPhotoDisplay_L4")
                     }
                 }
                 ExampleSection(title: "L4 Presentation") {
