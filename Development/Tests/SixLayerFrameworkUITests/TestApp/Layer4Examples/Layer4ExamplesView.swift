@@ -712,6 +712,7 @@ struct Layer4ContractOnlyView: View {
     @State private var l4ShowSheet = false
     @State private var l4ShowPopover = false
     @State private var l4ContractCopySource = "L4CopyContractText"
+    @State private var l4ShowPrint = false
 
     var body: some View {
         ScrollView {
@@ -791,6 +792,12 @@ struct Layer4ContractOnlyView: View {
                             _ = platformCopyToClipboard_L4(content: l4ContractCopySource)
                         }
                         .accessibilityIdentifier("L4ContractCopy")
+                        Text("Print (platformPrint_L4)")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                        platformButton("L4ContractPrint") { l4ShowPrint = true }
+                            .accessibilityIdentifier("L4ContractPrint")
+                            .platformPrint_L4(isPresented: $l4ShowPrint, content: .text("L4 Print Contract"))
                     }
                 }
             }
