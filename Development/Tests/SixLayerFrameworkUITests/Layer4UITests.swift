@@ -370,4 +370,13 @@ final class Layer4UITests: XCTestCase {
         XCTAssertTrue(withId.waitForExistence(timeout: 2.0),
                       "platformCloudKitSyncStatus_L4: view must have a11y identifier (contract a11y)")
     }
+
+    @MainActor
+    func testL4_platformPhotoDisplay_L4() throws {
+        scrollToElement(label: "L4 System")
+        scrollToElement(label: "Photo Display")
+        let photoView = app.descendants(matching: .any).matching(NSPredicate(format: "identifier CONTAINS[c] %@", "platformPhotoDisplay")).firstMatch
+        XCTAssertTrue(photoView.waitForExistence(timeout: 5.0),
+                      "platformPhotoDisplay_L4: view must have a11y identifier (contract a11y)")
+    }
 }
