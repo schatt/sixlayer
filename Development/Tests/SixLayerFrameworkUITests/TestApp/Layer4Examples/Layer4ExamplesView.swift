@@ -711,6 +711,7 @@ struct Layer4ContractOnlyView: View {
     @State private var l4ContractDate = Date()
     @State private var l4ShowSheet = false
     @State private var l4ShowPopover = false
+    @State private var l4ContractCopySource = "L4CopyContractText"
 
     var body: some View {
         ScrollView {
@@ -778,6 +779,18 @@ struct Layer4ContractOnlyView: View {
                             .platformListSectionHeader(title: "L4ListSectionHeaderContract")
                         EmptyView()
                             .platformListEmptyState(systemImage: "tray", title: "L4ListEmptyStateContract", message: "Empty")
+                    }
+                }
+                ExampleSection(title: "L4 System") {
+                    platformVStack(alignment: .leading, spacing: 12) {
+                        Text("Copy to Clipboard (platformCopyToClipboard_L4)")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                        SixLayerFramework.platformTextField("L4ContractCopySource", text: $l4ContractCopySource)
+                        platformButton("L4ContractCopy") {
+                            _ = platformCopyToClipboard_L4(content: l4ContractCopySource)
+                        }
+                        .accessibilityIdentifier("L4ContractCopy")
                     }
                 }
             }
