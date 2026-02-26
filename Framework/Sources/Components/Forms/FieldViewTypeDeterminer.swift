@@ -92,7 +92,7 @@ public struct FieldViewTypeDeterminer {
             return .textField(keyboardType: FormKeyboardType.phonePad, autocapitalization: FormAutocapitalizationType.none)
         case .password:
             return .secureField
-        case .number, .integer:
+        case .number, .decimal, .integer:
             return .textField(keyboardType: FormKeyboardType.decimalPad, autocapitalization: FormAutocapitalizationType.none)
         case .url:
             return .textField(keyboardType: FormKeyboardType.url, autocapitalization: FormAutocapitalizationType.none)
