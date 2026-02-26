@@ -737,6 +737,33 @@ struct Layer4ContractOnlyView: View {
                     }
                     .accessibilityIdentifier("L4NavLinkContract")
                 }
+                ExampleSection(title: "L4 System") {
+                    platformVStack(alignment: .leading, spacing: 12) {
+                        Text("Copy to Clipboard (platformCopyToClipboard_L4)")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                        SixLayerFramework.platformTextField("L4ContractCopySource", text: $l4ContractCopySource)
+                        platformButton("L4ContractCopy") {
+                            _ = platformCopyToClipboard_L4(content: l4ContractCopySource)
+                        }
+                        .accessibilityIdentifier("L4ContractCopy")
+                        Text("Print (platformPrint_L4)")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                        platformButton("L4ContractPrint") { l4ShowPrint = true }
+                            .accessibilityIdentifier("L4ContractPrint")
+                            .platformPrint_L4(isPresented: $l4ShowPrint, content: .text("L4 Print Contract"))
+                        Text("CloudKit Sync Status (platformCloudKitSyncStatus_L4)")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                        platformCloudKitSyncStatus_L4(status: .idle)
+                        Text("Photo Display (platformPhotoDisplay_L4)")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                        PlatformPhotoComponentsLayer4.platformPhotoDisplay_L4(image: nil, style: .aspectFit)
+                            .frame(height: 80)
+                    }
+                }
                 ExampleSection(title: "L4 Controls") {
                     platformVStack(alignment: .leading, spacing: 16) {
                         platformButton("L4ContractButton") { }
@@ -780,33 +807,6 @@ struct Layer4ContractOnlyView: View {
                             .platformListSectionHeader(title: "L4ListSectionHeaderContract")
                         EmptyView()
                             .platformListEmptyState(systemImage: "tray", title: "L4ListEmptyStateContract", message: "Empty")
-                    }
-                }
-                ExampleSection(title: "L4 System") {
-                    platformVStack(alignment: .leading, spacing: 12) {
-                        Text("Copy to Clipboard (platformCopyToClipboard_L4)")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                        SixLayerFramework.platformTextField("L4ContractCopySource", text: $l4ContractCopySource)
-                        platformButton("L4ContractCopy") {
-                            _ = platformCopyToClipboard_L4(content: l4ContractCopySource)
-                        }
-                        .accessibilityIdentifier("L4ContractCopy")
-                        Text("Print (platformPrint_L4)")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                        platformButton("L4ContractPrint") { l4ShowPrint = true }
-                            .accessibilityIdentifier("L4ContractPrint")
-                            .platformPrint_L4(isPresented: $l4ShowPrint, content: .text("L4 Print Contract"))
-                        Text("CloudKit Sync Status (platformCloudKitSyncStatus_L4)")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                        platformCloudKitSyncStatus_L4(status: .idle)
-                        Text("Photo Display (platformPhotoDisplay_L4)")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                        PlatformPhotoComponentsLayer4.platformPhotoDisplay_L4(image: nil, style: .aspectFit)
-                            .frame(height: 80)
                     }
                 }
             }
