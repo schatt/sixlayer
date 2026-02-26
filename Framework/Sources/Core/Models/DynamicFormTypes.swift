@@ -611,6 +611,7 @@ public enum DynamicContentType: String, CaseIterable, Hashable {
     case phone = "phone"             // Phone number input
     case url = "url"                 // URL input
     case number = "number"           // Number input with validation
+    case decimal = "decimal"         // Decimal number input (e.g. gallons, currency)
     case integer = "integer"         // Integer input
     case date = "date"               // Date picker
     case time = "time"               // Time picker
@@ -1563,7 +1564,7 @@ public class DynamicFormState: ObservableObject {
     private func isFieldFocusable(_ field: DynamicFormField) -> Bool {
         // Text-based fields support focus
         switch field.contentType {
-        case .text, .email, .password, .phone, .url, .number, .integer, .textarea, .autocomplete:
+        case .text, .email, .password, .phone, .url, .number, .decimal, .integer, .textarea, .autocomplete:
             return true
         case .date, .time, .datetime, .multiDate, .dateRange:
             // Date pickers don't support keyboard focus in the same way

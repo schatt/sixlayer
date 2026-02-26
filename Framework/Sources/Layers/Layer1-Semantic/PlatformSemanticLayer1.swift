@@ -1298,7 +1298,7 @@ private func createSimpleFieldView(for field: DynamicFormField, hints: Presentat
         // Handle UI components using our custom DynamicContentType
         else if let contentType = field.contentType {
             switch contentType {
-            case .number, .integer:
+            case .number, .decimal, .integer:
                 TextField(field.placeholder ?? "Enter \(field.label)", value: .constant(0), format: .number)
                     .textFieldStyle(.roundedBorder)
                     .automaticCompliance(
@@ -2518,7 +2518,7 @@ public struct ModalFormView: View {
                             identifierElementType: "SecureField",
                             accessibilityLabel: field.label  // Issue #156: Parameter-based approach
                         )
-                case .number:
+                case .number, .decimal:
                     TextField(field.placeholder ?? "Enter number", text: .constant(""))
                         .textFieldStyle(.roundedBorder)
                         .automaticCompliance(

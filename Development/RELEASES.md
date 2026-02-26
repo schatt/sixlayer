@@ -1,12 +1,21 @@
 # 🚀 Six-Layer Framework Release History
 
-## 📍 **Current Release: v7.5.6** 🎯
+## 📍 **Current Release: v7.5.7** 🎯
 
 **Release Date**: February 2026
 **Status**: In preparation
-**Previous Release**: v7.5.5 - Patch release
-**Note**: Patch release. Batch OCR target and scope (Issue #188).
+**Previous Release**: v7.5.6 - Patch release
+**Note**: Patch release. Duplicate field labels fix (Issue #189), DynamicContentType.decimal.
 **Next Release**: TBD
+
+---
+
+## 🎯 **v7.5.7 - Duplicate field labels fix, .decimal** (February 2026)
+
+### **What's in v7.5.7:**
+- Patch release. See [RELEASE_v7.5.7.md](RELEASE_v7.5.7.md) for details.
+
+**See [RELEASE_v7.5.7.md](RELEASE_v7.5.7.md) for complete release notes.**
 
 ---
 

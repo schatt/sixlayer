@@ -425,7 +425,47 @@ open class DynamicFormViewTests: BaseTestClass {
         #expect(Bool(true), "View should be created successfully")
         #endif
     }
-    
+
+    /// BUSINESS PURPOSE: Each form field label must appear exactly once (Issue #189)
+    /// TESTING SCOPE: DynamicFormView + DynamicFieldComponents must not duplicate labels
+    /// METHODOLOGY: Render form with known field labels, count Text occurrences of each label, expect 1 each
+    @Test @MainActor func testEachFieldLabelShownExactlyOnceIssue189() async {
+        initializeTestConfig()
+        let section = DynamicFormSection(
+            id: "fuel",
+            title: "Fuel Entry",
+            fields: [
+                DynamicFormField(id: "odometer", contentType: .text, label: "Odometer", isRequired: true),
+                DynamicFormField(id: "station", contentType: .text, label: "Station"),
+                DynamicFormField(id: "gallons", contentType: .decimal, label: "Gallons")
+            ]
+        )
+        let configuration = DynamicFormConfiguration(
+            id: "testForm",
+            title: "Test Form",
+            sections: [section],
+            submitButtonText: "Submit"
+        )
+        let expectedFieldLabels = ["Odometer", "Station", "Gallons"]
+        #if canImport(ViewInspector)
+        // Inspect section view directly (avoids ScrollViewReader in full form — Issue 178). Use direct .inspect() and root findAll(Text) so we can count label occurrences.
+        // Inspect section view; each label must appear exactly once. ViewInspector may find 0 on some platforms (traversal limit)—then test fails until traversal is fixed.
+        let formState = DynamicFormState(configuration: configuration)
+        let sectionView = DynamicFormSectionView(section: section, formState: formState)
+        guard let inspected = try? sectionView.inspect() else {
+            Issue.record("View inspection failed for Each field label shown exactly once (Issue #189): could not inspect DynamicFormSectionView")
+            return
+        }
+        let texts = inspected.findAll(ViewInspector.ViewType.Text.self)
+        for label in expectedFieldLabels {
+            let count = texts.filter { (try? $0.string()) == label }.count
+            #expect(count == 1, "Field label '\(label)' should appear exactly once (Issue #189); found \(count)")
+        }
+        #else
+        #expect(Bool(true), "ViewInspector not available; skip duplicate-label assertion")
+        #endif
+    }
+
     // MARK: - Field-Level Help Tooltip Tests (Issue #79)
     
     /// BUSINESS PURPOSE: Verify info button appears when field has description

@@ -28,7 +28,7 @@ public struct CustomFieldView: View {
                 DynamicPhoneField(field: field, formState: formState)
             case .url:
                 DynamicURLField(field: field, formState: formState)
-            case .number:
+            case .number, .decimal:
                 DynamicNumberField(field: field, formState: formState)
             case .integer:
                 DynamicIntegerField(field: field, formState: formState)
@@ -186,12 +186,11 @@ extension DynamicFormField {
         )
     }
     
-    /// Creates a standard field label view
-    /// - Returns: A Text view with the field label
+    /// Creates a placeholder for the field label when used inside field components.
+    /// Parent (DynamicFormFieldView) owns the single visible label (Issue #189). Use this so a11y still gets label via environment/identifierName.
     @ViewBuilder
     func fieldLabel() -> some View {
-        Text(label)
-            .font(.subheadline)
+        EmptyView()
     }
     
     /// Applies standard field container styling and modifiers
@@ -668,9 +667,6 @@ public struct DynamicNumberField: View {
 
     public var body: some View {
         platformVStackContainer(alignment: .leading) {
-            Text(field.label)
-                .font(.subheadline)
-
             let i18n = InternationalizationService()
             TextField(field.placeholder ?? i18n.localizedString(for: "SixLayerFramework.form.placeholder.enterNumber"), text: Binding(
                 get: { (formState.getValue(for: field.id) as String?) ?? field.defaultValue ?? "" },
@@ -704,9 +700,6 @@ public struct DynamicIntegerField: View {
 
     public var body: some View {
         platformVStackContainer(alignment: .leading) {
-            Text(field.label)
-                .font(.subheadline)
-
             let i18n = InternationalizationService()
             TextField(field.placeholder ?? i18n.localizedString(for: "SixLayerFramework.form.placeholder.enterInteger"), text: Binding(
                 get: { (formState.getValue(for: field.id) as String?) ?? field.defaultValue ?? "" },
@@ -776,16 +769,13 @@ public struct DynamicStepperField: View {
 
     public var body: some View {
         platformVStackContainer(alignment: .leading, spacing: 8) {
-            Text(field.label)
-                .font(.subheadline)
-                .bold()
-
             Stepper(
-                field.label,
+                "",
                 value: value,
                 in: range,
                 step: step
             )
+            .accessibilityLabel(field.label)
             .automaticCompliance(
                 identifierName: sanitizeLabelText(field.label),  // Auto-generate identifierName from field label
                 identifierElementType: "Stepper",
@@ -823,9 +813,6 @@ public struct DynamicDateField: View {
         let i18n = InternationalizationService()
         
         return platformVStackContainer(alignment: .leading) {
-            Text(field.label)
-                .font(.subheadline)
-
             DatePicker(field.placeholder ?? i18n.placeholderSelectDate(),
                       selection: Binding(
                           get: { Date() }, // TODO: Parse from formState
@@ -858,9 +845,6 @@ public struct DynamicTimeField: View {
         let i18n = InternationalizationService()
         
         return platformVStackContainer(alignment: .leading) {
-            Text(field.label)
-                .font(.subheadline)
-
             DatePicker(field.placeholder ?? i18n.placeholderSelectTime(),
                       selection: Binding(
                           get: { Date() }, // TODO: Parse from formState
@@ -893,9 +877,6 @@ public struct DynamicDateTimeField: View {
         let i18n = InternationalizationService()
         
         return platformVStackContainer(alignment: .leading) {
-            Text(field.label)
-                .font(.subheadline)
-
             DatePicker(field.placeholder ?? i18n.placeholderSelectDateTime(),
                       selection: Binding(
                           get: { Date() }, // TODO: Parse from formState
@@ -962,10 +943,7 @@ public struct DynamicMultiDateField: View {
         let i18n = InternationalizationService()
         
         return platformVStackContainer(alignment: .leading, spacing: 8) {
-            Text(field.label)
-                .font(.subheadline)
-                .bold()
-            
+
             #if os(iOS)
             if #available(iOS 16.0, *) {
                 Group {
@@ -1040,10 +1018,6 @@ public struct DynamicMultiSelectField: View {
 
     public var body: some View {
         platformVStackContainer(alignment: .leading, spacing: 8) {
-            Text(field.label)
-                .font(.subheadline)
-                .bold()
-                .automaticCompliance(named: "FieldLabel")
 
             if let options = field.options {
                 ForEach(options, id: \.self) { option in
@@ -1090,10 +1064,6 @@ public struct DynamicRadioField: View {
 
     public var body: some View {
         platformVStackContainer(alignment: .leading, spacing: 8) {
-            Text(field.label)
-                .font(.subheadline)
-                .bold()
-                .automaticCompliance(named: "FieldLabel")
 
             if let options = field.options, !options.isEmpty {
                 #if os(macOS)
@@ -1154,10 +1124,6 @@ public struct DynamicCheckboxField: View {
 
     public var body: some View {
         platformVStackContainer(alignment: .leading, spacing: 8) {
-            Text(field.label)
-                .font(.subheadline)
-                .bold()
-                .automaticCompliance(named: "FieldLabel")
 
             if let options = field.options {
                 ForEach(options, id: \.self) { option in
@@ -1209,11 +1175,6 @@ public struct DynamicRichTextField: View {
 
     public var body: some View {
         field.fieldContainer(content: {
-            Text(field.label)
-                .font(.subheadline)
-                .bold()
-                .automaticCompliance(named: "FieldLabel")
-
             #if os(iOS)
             TextEditor(text: field.textBinding(formState: formState))
                 .frame(minHeight: 100)
@@ -1247,10 +1208,6 @@ public struct DynamicFileField: View {
 
     public var body: some View {
         platformVStackContainer(alignment: .leading, spacing: 8) {
-            Text(field.label)
-                .font(.subheadline)
-                .bold()
-                .automaticCompliance(named: "FieldLabel")
 
             let i18n = InternationalizationService()
             
@@ -1296,10 +1253,6 @@ public struct DynamicImageField: View {
 
     public var body: some View {
         platformVStackContainer(alignment: .leading, spacing: 8) {
-            Text(field.label)
-                .font(.subheadline)
-                .bold()
-                .automaticCompliance(named: "FieldLabel")
 
             Button(action: {
                 // TODO: Implement image picker integration
@@ -1350,9 +1303,6 @@ public struct DynamicRangeField: View {
 
     public var body: some View {
         platformVStackContainer(alignment: .leading) {
-            Text(field.label)
-                .font(.subheadline)
-
             let sliderValue = Binding(
                 get: { Double((formState.getValue(for: field.id) as String?) ?? field.defaultValue ?? "0") ?? 0 },
                 set: { formState.setValue(String($0), for: field.id) }
@@ -1385,10 +1335,6 @@ public struct DynamicArrayField: View {
 
     public var body: some View {
         platformVStackContainer(alignment: .leading, spacing: 8) {
-            Text(field.label)
-                .font(.subheadline)
-                .bold()
-                .automaticCompliance(named: "FieldLabel")
 
             ForEach(Array((formState.fieldValues[field.id] as? [String] ?? []).enumerated()), id: \.offset) { index, value in
                 HStack {
@@ -1457,10 +1403,6 @@ public struct DynamicDataField: View {
 
     public var body: some View {
         platformVStackContainer(alignment: .leading, spacing: 8) {
-            Text(field.label)
-                .font(.subheadline)
-                .bold()
-                .automaticCompliance(named: "FieldLabel")
 
             TextEditor(text: Binding(
                 get: {
@@ -1509,10 +1451,6 @@ public struct DynamicAutocompleteField: View {
 
     public var body: some View {
         platformVStackContainer(alignment: .leading, spacing: 8) {
-            Text(field.label)
-                .font(.subheadline)
-                .bold()
-                .automaticCompliance(named: "FieldLabel")
 
             let i18n = InternationalizationService()
             TextField(field.placeholder ?? i18n.localizedString(for: "SixLayerFramework.form.placeholder.typeToSearch"), text: Binding(
@@ -1592,10 +1530,6 @@ public struct DynamicEnumField: View {
     
     public var body: some View {
         platformVStackContainer(alignment: .leading, spacing: 8) {
-            Text(field.label)
-                .font(.subheadline)
-                .bold()
-                .automaticCompliance(named: "FieldLabel")
 
             if !pickerOptions.isEmpty {
                 // Convert tuple array to PickerOption array for platformPicker
@@ -1633,10 +1567,6 @@ public struct DynamicCustomField: View {
 
     public var body: some View {
         platformVStackContainer(alignment: .leading, spacing: 8) {
-            Text(field.label)
-                .font(.subheadline)
-                .bold()
-                .automaticCompliance(named: "FieldLabel")
 
             if let customComponent = CustomFieldRegistry.shared.createComponent(for: field, formState: formState) {
                 // any CustomFieldComponent existential must be wrapped for ViewBuilder
@@ -1671,11 +1601,6 @@ public struct DynamicColorField: View {
     
     public var body: some View {
         platformVStackContainer(alignment: .leading, spacing: 8) {
-            Text(field.label)
-                .font(.subheadline)
-                .bold()
-                .automaticCompliance(named: "FieldLabel")
-            
             let colorValue = formState.fieldValues[field.id] as? String ?? "#000000"
             let color = Color(hex: colorValue) ?? .black
             
@@ -1734,10 +1659,8 @@ public struct DynamicToggleField: View {
     
     public var body: some View {
         platformVStackContainer(alignment: .leading) {
-            Text(field.label)
-                .font(.subheadline)
-            
-            Toggle(field.label, isOn: isOn)
+            Toggle("", isOn: isOn)
+                .accessibilityLabel(field.label)
                 .automaticCompliance(
                     identifierName: sanitizeLabelText(field.label),  // Auto-generate identifierName from field label
                     identifierElementType: "Toggle",
@@ -1767,11 +1690,6 @@ public struct DynamicTextAreaField: View {
     
     public var body: some View {
         field.fieldContainer(content: {
-            Text(field.label)
-                .font(.subheadline)
-                .bold()
-                .automaticCompliance(named: "FieldLabel")
-            
             #if os(iOS)
             TextEditor(text: field.textBinding(formState: formState))
                 .frame(minHeight: 100)
@@ -1819,8 +1737,8 @@ public struct DynamicDisplayField: View {
     
     public var body: some View {
         if #available(iOS 16.0, macOS 13.0, *) {
-            // Use LabeledContent on supported platforms
-            LabeledContent(field.label) {
+            // Use LabeledContent on supported platforms (label shown by parent — Issue #189)
+            LabeledContent("") {
                 if let customValueView = field.valueView {
                     customValueView(field, formState)
                 } else {
@@ -1828,14 +1746,13 @@ public struct DynamicDisplayField: View {
                         .foregroundColor(.secondary)
                 }
             }
+            .accessibilityLabel(field.label)
             .automaticCompliance(
                 identifierName: sanitizeLabelText(field.label)  // Auto-generate identifierName from field label
             )
         } else {
             // Fallback for older platforms
             HStack {
-                Text(field.label)
-                    .font(.subheadline)
                 Spacer()
                 if let customValueView = field.valueView {
                     customValueView(field, formState)
@@ -1845,6 +1762,7 @@ public struct DynamicDisplayField: View {
                 }
             }
             .padding()
+            .accessibilityLabel(field.label)
             .automaticCompliance(
                 identifierName: sanitizeLabelText(field.label)  // Auto-generate identifierName from field label
             )
@@ -1908,11 +1826,6 @@ public struct DynamicGaugeField: View {
     
     public var body: some View {
         platformVStackContainer(alignment: .leading, spacing: 8) {
-            Text(field.label)
-                .font(.subheadline)
-                .bold()
-                .automaticCompliance(named: "FieldLabel")
-            
             if #available(iOS 16.0, macOS 13.0, *) {
                 // Use native Gauge component on supported platforms
                 if gaugeStyle == "circular" {
