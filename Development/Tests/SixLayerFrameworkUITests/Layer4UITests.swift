@@ -16,10 +16,11 @@ import XCTest
 /// Currently covered: platformButton, platformTextField, platformPicker, platformSecureField, platformToggle,
 /// platformTextEditor, platformDatePicker, platformForm, platformFormSection, platformFormField, platformFormFieldGroup,
 /// platformValidationMessage, platformListRow, platformListSectionHeader, platformListEmptyState,
-/// platformSheet_L4, platformPopover_L4, platformNavigationTitle_L4, platformNavigationLink_L4, platformNavigationBarTitleDisplayMode_L4.
+/// platformSheet_L4, platformPopover_L4, platformNavigationTitle_L4, platformNavigationLink_L4, platformNavigationBarTitleDisplayMode_L4,
+/// platformCopyToClipboard_L4, platformPrint_L4, platformCloudKitSyncStatus_L4.
 /// Remaining L4 APIs to add: platformImplementNavigationStack_L4, platformAppNavigation_L4, platformRowActions_L4,
-/// platformPhotoPicker_L4, platformPhotoDisplay_L4, platformMapView_L4, platformCloudKit*, platformCopyToClipboard_L4,
-/// platformPrint_L4, platformShare_L4, platformVerticalSplit_L4, platformHorizontalSplit_L4, platformStyledContainer_L4, etc.
+/// platformPhotoPicker_L4, platformPhotoDisplay_L4, platformMapView_L4, other platformCloudKit*,
+/// platformShare_L4, platformVerticalSplit_L4, platformHorizontalSplit_L4, platformStyledContainer_L4, etc.
 @MainActor
 final class Layer4UITests: XCTestCase {
     /// Shared across test instances (Xcode creates one instance per test method).
@@ -357,5 +358,16 @@ final class Layer4UITests: XCTestCase {
         // Behavior: print sheet appears (iOS) or print panel (macOS); dismiss if present so suite can continue
         let cancelPrint = app.buttons["Cancel"].firstMatch
         if cancelPrint.waitForExistence(timeout: 2.0) { cancelPrint.tap() }
+    }
+
+    @MainActor
+    func testL4_platformCloudKitSyncStatus_L4() throws {
+        scrollToElement(label: "L4 System")
+        scrollToElement(label: "CloudKit Sync Status")
+        XCTAssertTrue(app.staticTexts["CloudKit Sync: Idle"].waitForExistence(timeout: 5.0),
+                      "platformCloudKitSyncStatus_L4: status text must be visible (contract structure)")
+        let withId = app.descendants(matching: .any).matching(NSPredicate(format: "identifier CONTAINS[c] %@", "platformCloudKitSyncStatus")).firstMatch
+        XCTAssertTrue(withId.waitForExistence(timeout: 2.0),
+                      "platformCloudKitSyncStatus_L4: view must have a11y identifier (contract a11y)")
     }
 }
