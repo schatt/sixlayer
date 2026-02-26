@@ -731,8 +731,8 @@ struct Layer4ContractOnlyView: View {
                             .font(.caption)
                             .foregroundColor(.secondary)
                         platformButton("L4ContractPrint") { l4ShowPrint = true }
-                            .accessibilityIdentifier("L4ContractPrint")
                             .platformPrint_L4(isPresented: $l4ShowPrint, content: .text("L4 Print Contract"))
+                            .accessibilityIdentifier("L4ContractPrint")
                         Text("CloudKit Sync Status (platformCloudKitSyncStatus_L4)")
                             .font(.caption)
                             .foregroundColor(.secondary)
