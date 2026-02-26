@@ -11,6 +11,7 @@ This document provides guidance for AI assistants working with the SixLayer Fram
 ## 📚 Version-Specific Guides
 
 ### Latest Versions (Recommended)
+- **v7.5.8** - Patch release (see [RELEASE_v7.5.8.md](RELEASE_v7.5.8.md))
 - **v7.5.7** - Patch release (see [RELEASE_v7.5.7.md](RELEASE_v7.5.7.md))
 - **v7.5.6** - Patch release (see [RELEASE_v7.5.6.md](RELEASE_v7.5.6.md))
 - **v7.5.5** - Patch release (see [RELEASE_v7.5.5.md](RELEASE_v7.5.5.md))

@@ -13,9 +13,10 @@ alwaysApply: true
 
 ## **REQUIRED BEHAVIOR**
 
-1. **Before ending a response:** If there are unpushed commits, run `git push all` with `required_permissions: ["network", "git_write"]` (or `["all"]`). Then respond.
+1. **Before ending a response:** If there are unpushed commits, run `git push all` with `required_permissions: ["network", "git_write"]` (or `["all"]`). Then respond. Push at least once before the user sends a new prompt.
 2. **Do not** say work is complete while unpushed commits exist.
 3. **Do not** end with "push when ready" or "you can push when ready"—execute the push.
+4. **Push cadence:** Pushes may be batched (after several commits) or after each file; either is fine. Minimum: at least one push before ending the response.
 
 ## **Rationale**
 
