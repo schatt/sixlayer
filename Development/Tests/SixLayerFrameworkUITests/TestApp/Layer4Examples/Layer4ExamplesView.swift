@@ -62,7 +62,7 @@ struct Layer4ExamplesView: View {
                 }
                 
                 ExampleSection(title: "Navigation Stack Components") {
-                    NavigationStackExamples()
+                    Layer4NavigationStackExamples()
                 }
                 
                 ExampleSection(title: "CloudKit Components") {
@@ -311,7 +311,7 @@ private struct NavStackDemoItem: Identifiable, Hashable {
     let name: String
 }
 
-struct NavigationStackExamples: View {
+struct Layer4NavigationStackExamples: View {
     var body: some View {
         platformVStack(alignment: .leading, spacing: 16) {
             Text("Layer 4 navigation stack components implement stack or split navigation from Layer 3 strategy.")
@@ -319,17 +319,17 @@ struct NavigationStackExamples: View {
                 .foregroundColor(.secondary)
 
             ExampleCard(title: "Navigation Stack", description: "platformImplementNavigationStack_L4") {
-                NavigationStackExample()
+                Layer4NavigationStackExample()
             }
 
             ExampleCard(title: "Navigation Stack with Items", description: "platformImplementNavigationStackItems_L4") {
-                NavigationStackItemsExample()
+                Layer4NavigationStackItemsExample()
             }
         }
     }
 }
 
-struct NavigationStackExample: View {
+struct Layer4NavigationStackExample: View {
     private let strategy = NavigationStackStrategy(implementation: .navigationStack, reasoning: nil)
 
     var body: some View {
@@ -338,7 +338,7 @@ struct NavigationStackExample: View {
                 .font(.caption)
                 .foregroundColor(.secondary)
             platformImplementNavigationStack_L4(
-                content: NavigationStackExampleContent(),
+                content: Layer4NavigationStackExampleContent(),
                 title: "L4 Stack Demo",
                 strategy: strategy
             )
@@ -350,14 +350,14 @@ struct NavigationStackExample: View {
     }
 }
 
-private struct NavigationStackExampleContent: View {
+private struct Layer4NavigationStackExampleContent: View {
     var body: some View {
         Text("Root content")
             .padding()
     }
 }
 
-struct NavigationStackItemsExample: View {
+struct Layer4NavigationStackItemsExample: View {
     private static let items: [NavStackDemoItem] = [
         NavStackDemoItem(id: "a", name: "Item A"),
         NavStackDemoItem(id: "b", name: "Item B"),
