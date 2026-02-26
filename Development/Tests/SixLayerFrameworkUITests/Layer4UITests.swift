@@ -350,8 +350,7 @@ final class Layer4UITests: XCTestCase {
     func testL4_platformPrint_L4() throws {
         scrollToElement(label: "L4 System")
         scrollToElement(label: "L4ContractPrint")
-        let printButton = app.findElement(byIdentifier: "L4ContractPrint", primaryType: .button, secondaryTypes: [.staticText, .other, .any], timeout: 5.0)
-            ?? app.buttons["L4ContractPrint"].firstMatch
+        let printButton = app.descendants(matching: .any).matching(NSPredicate(format: "identifier == %@", "L4ContractPrint")).firstMatch
         XCTAssertTrue(printButton.waitForExistence(timeout: 5.0),
                       "platformPrint_L4: Print button with identifier L4ContractPrint should exist (contract a11y)")
         printButton.tap()
