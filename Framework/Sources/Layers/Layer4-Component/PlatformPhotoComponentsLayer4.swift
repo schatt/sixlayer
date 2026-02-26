@@ -109,15 +109,19 @@ public enum PlatformPhotoComponentsLayer4 {
     // MARK: - Tabbed Photo Source Components
     
     /// Creates a tabbed interface for switching between camera and photo library
-    /// Provides a tab bar at the top to switch between camera and library options
+    /// Provides a tab bar at the top to switch between camera and library options.
+    /// When both sources are available, the selector is always present so the user can switch from either view (Issue #190).
+    /// - Parameter initialSource: Which tab to show first (.camera, .photoLibrary, or .both → camera). Default nil uses .camera.
     /// Note: Requires @MainActor because it creates Views
     @ViewBuilder
     @MainActor
     public static func platformPhotoSourceTabbed_L4(
+        initialSource: PhotoSource = .camera,
         onImageCaptured: @escaping (PlatformImage) -> Void,
         onImageSelected: @escaping (PlatformImage) -> Void
     ) -> some View {
         PhotoSourceTabbedView(
+            initialSource: initialSource,
             onImageCaptured: onImageCaptured,
             onImageSelected: onImageSelected
         )
@@ -211,6 +215,11 @@ public struct CameraView: UIViewControllerRepresentable {
         }
         
         public func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+            #if DEBUG
+            if ProcessInfo.processInfo.environment["SLF_DEBUG_PHOTO_CAPTURE"] != nil {
+                print("[SLF CameraView] didFinishPickingMediaWithInfo (Use Photo)")
+            }
+            #endif
             if let image = info[.originalImage] as? UIImage {
                 parent.onImageCaptured(PlatformImage(image))  // Implicit conversion: UIImage → PlatformImage
             }
@@ -218,6 +227,11 @@ public struct CameraView: UIViewControllerRepresentable {
         }
         
         public func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+            #if DEBUG
+            if ProcessInfo.processInfo.environment["SLF_DEBUG_PHOTO_CAPTURE"] != nil {
+                print("[SLF CameraView] imagePickerControllerDidCancel (Cancel or system dismissed picker)")
+            }
+            #endif
             picker.dismiss(animated: true)
         }
     }
@@ -632,11 +646,27 @@ struct PlaceholderPhotoView: View {
 
 // MARK: - Tabbed Photo Source View
 
-/// Tabbed interface for switching between camera and photo library
+/// Tabbed interface for switching between camera and photo library.
+/// Selector is always visible so the user can switch from camera to library or library to camera (Issue #190).
 struct PhotoSourceTabbedView: View {
-    @State private var selectedSource: PhotoSourceTab = .camera
+    @State private var selectedSource: PhotoSourceTab
+    
     let onImageCaptured: (PlatformImage) -> Void
     let onImageSelected: (PlatformImage) -> Void
+    
+    init(
+        initialSource: PhotoSource = .camera,
+        onImageCaptured: @escaping (PlatformImage) -> Void,
+        onImageSelected: @escaping (PlatformImage) -> Void
+    ) {
+        let tab: PhotoSourceTab = switch initialSource {
+        case .camera, .both: .camera
+        case .photoLibrary: .library
+        }
+        _selectedSource = State(initialValue: tab)
+        self.onImageCaptured = onImageCaptured
+        self.onImageSelected = onImageSelected
+    }
     
     enum PhotoSourceTab: String, CaseIterable {
         case camera = "camera"

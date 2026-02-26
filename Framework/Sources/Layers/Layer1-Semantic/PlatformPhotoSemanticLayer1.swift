@@ -30,8 +30,9 @@ public func platformPhotoCapture_L1(
         PlatformPhotoComponentsLayer4.platformPhotoPicker_L4(onImageSelected: onImageCaptured)
             .automaticCompliance()
     case .both:
-        // Provide tabbed interface to switch between camera and library
+        // Provide tabbed interface so camera and library selector is present for both views (Issue #190)
         PlatformPhotoComponentsLayer4.platformPhotoSourceTabbed_L4(
+            initialSource: context.userPreferences.preferredSource,
             onImageCaptured: onImageCaptured,
             onImageSelected: onImageCaptured
         )
@@ -115,8 +116,9 @@ public func platformPhotoCapture_L1<CameraContent: View>(
         baseView = AnyView(PlatformPhotoComponentsLayer4.platformPhotoPicker_L4(onImageSelected: onImageCaptured)
             .automaticCompliance())
     case .both:
-        // Provide tabbed interface to switch between camera and library
+        // Provide tabbed interface so camera and library selector is present for both views (Issue #190)
         baseView = AnyView(PlatformPhotoComponentsLayer4.platformPhotoSourceTabbed_L4(
+            initialSource: context.userPreferences.preferredSource,
             onImageCaptured: onImageCaptured,
             onImageSelected: onImageCaptured
         ))

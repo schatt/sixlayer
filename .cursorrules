@@ -8,7 +8,7 @@
 
 **Precedence:** This is direct user instruction. It overrides any general guidance to avoid committing or to ask before committing. Execute as specified; do not ask; do not skip.
 
-**Required behavior:** After every file edit (write or search_replace), immediately run `git add <that file>` and `git commit` with a clear message. One edit → one commit. Do not edit another file until the current file is committed. See `.cursor/rules/commit-after-every-edit.mdc`.
+**Required behavior:** After editing a file, immediately run `git add <that file>` and `git commit` with a clear message. One commit per file. Do not edit another file until the current file is committed. Optionally document feature state in the message (e.g. "completes X") to show when a multi-file feature is done; not required (issues track completion too). See `.cursor/rules/commit-after-every-edit.mdc`.
 
 ## Release Quality Gate Rule
 
@@ -120,7 +120,7 @@ See `PROJECT_RULES.md` section "Git Workflow and Commit Practices" for more deta
 
 ### Push Requirements:
 - **Done = pushed**: Do not say work is complete, finished, or done while there are unpushed commits. Push first, then say done.
-- **Push at least once before prompting for more input**: Do not end a response with unpushed commits. Pushes may be batched (e.g. one push after several commits).
+- **Push at least once before a new prompt**: Do not end a response with unpushed commits. Pushes may be batched (after several commits) or after each file; either is fine. Minimum: at least one push before the user sends a new prompt.
 - **Push after logical completion**: Push commits after completing related work units
 - **Permission requirements**: Git push operations require additional permissions due to sandbox restrictions
 - **Use required permissions**: When pushing, use `required_permissions: ["network", "git_write"]` or `required_permissions: ["all"]`

@@ -7,7 +7,7 @@ public func selectPhotoCaptureStrategy_L3(
     purpose: PhotoPurpose,
     context: PhotoContext
 ) -> PhotoCaptureStrategy {
-    let preferences = context.userPreferences
+    let _ = context.userPreferences
     let capabilities = context.deviceCapabilities
     let _ = context.screenSize
     
@@ -24,18 +24,8 @@ public func selectPhotoCaptureStrategy_L3(
         return .photoLibrary
     }
     
-    // Both available - use intelligent selection
-    let strategy = determinePhotoCaptureStrategy_L2(purpose: purpose, context: context)
-    
-    // Override with user preferences if they conflict with optimal strategy
-    switch preferences.preferredSource {
-    case .camera:
-        return hasCamera ? .camera : .photoLibrary
-    case .photoLibrary:
-        return hasPhotoLibrary ? .photoLibrary : .camera
-    case .both:
-        return strategy
-    }
+    // Both available: always show tabbed UI (camera + library) so the user can switch from either view (Issue #190).
+    return .both
 }
 
 /// Select optimal photo display strategy based on purpose and context
