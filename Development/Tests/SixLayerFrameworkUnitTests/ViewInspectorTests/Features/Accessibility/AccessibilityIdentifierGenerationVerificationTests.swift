@@ -235,15 +235,15 @@ open class AccessibilityIdentifierGenerationVerificationTests: BaseTestClass {
             #expect(Bool(true), "View should be created when automatic IDs are enabled")  // testView2 is non-optional
                 
             // 2. Contains what it needs to contain - The view should have an automatic accessibility identifier
-            // Use try? so that when ViewInspector cannot read back .accessibilityIdentifier() (known iOS limitation),
-            // we skip the assertion instead of failing. See VIEWINSPECTOR_IOS_TRIAGE.md.
+            // We must be able to inspect to verify presence; if we can't, we don't know it's there and must fail.
             #if canImport(ViewInspector)
-            if let accessibilityIdentifier2 = try? testView2.inspect().button().accessibilityIdentifier() {
+            do {
+                let accessibilityIdentifier2 = try testView2.inspect().button().accessibilityIdentifier()
                 #expect(!accessibilityIdentifier2.isEmpty, "An identifier should be generated when enabled")
-                // ID format: test.main.ui.element.View (namespace is first)
                 #expect(accessibilityIdentifier2.hasPrefix("test."), "Generated ID should start with namespace 'test.'")
+            } catch {
+                Issue.record("Could not verify identifier when enabled: inspection failed. Cannot distinguish 'identifier missing' from ViewInspector limitation.")
             }
-            // If we can't inspect, skip assertions (same as Test Case 1 when disabled)
             #else
             // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
             #endif
