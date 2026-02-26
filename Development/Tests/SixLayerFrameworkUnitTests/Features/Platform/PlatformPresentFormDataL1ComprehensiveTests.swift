@@ -671,7 +671,7 @@ open class PlatformPresentFormDataL1ComprehensiveTests: BaseTestClass {
             return "user@example.com"
         case .password:
             return "password123"
-        case .number, .range, .integer, .stepper, .gauge:
+        case .number, .decimal, .range, .integer, .stepper, .gauge:
             return "42"
         case .phone:
             return "+1 (555) 123-4567"

@@ -16,6 +16,7 @@ import ViewInspector
 
 extension DynamicFormView: ViewInspector.Inspectable {}
 extension DynamicFormViewInner: ViewInspector.Inspectable {}
+extension DynamicFormFieldView: ViewInspector.Inspectable {}
 extension FormProgressIndicator: ViewInspector.Inspectable {}
 extension DynamicFormSectionView: ViewInspector.Inspectable {}
 extension FormWizardView: ViewInspector.Inspectable {}
