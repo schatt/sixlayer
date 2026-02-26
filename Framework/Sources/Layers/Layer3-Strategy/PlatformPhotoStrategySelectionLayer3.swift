@@ -7,7 +7,7 @@ public func selectPhotoCaptureStrategy_L3(
     purpose: PhotoPurpose,
     context: PhotoContext
 ) -> PhotoCaptureStrategy {
-    let preferences = context.userPreferences
+    let _ = context.userPreferences
     let capabilities = context.deviceCapabilities
     let _ = context.screenSize
     
