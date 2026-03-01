@@ -90,6 +90,47 @@ open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
         }
     }
     
+    /// Issue #191: ExpandableCardComponent must expose the card as a single tappable accessibility element
+    /// (one combined element with explicit label and button trait so VoiceOver and UI tests see one activatable control).
+    @Test @MainActor func testExpandableCardComponentExposesSingleTappableElement() async {
+        let cardTitle = "Vehicle One"
+        let testItem = CardTestItem(id: "1", title: cardTitle)
+        let hints = PresentationHints()
+        let view = ExpandableCardComponent(
+            item: testItem,
+            layoutDecision: IntelligentCardLayoutDecision(
+                columns: 2,
+                spacing: 16,
+                cardWidth: 200,
+                cardHeight: 150,
+                padding: 16
+            ),
+            strategy: CardExpansionStrategy(
+                supportedStrategies: [.hoverExpand],
+                primaryStrategy: .hoverExpand,
+                expansionScale: 1.15,
+                animationDuration: 0.3
+            ),
+            hints: hints,
+            isExpanded: false,
+            isHovered: false,
+            onExpand: { },
+            onCollapse: { },
+            onHover: { _ in },
+            onItemSelected: { _ in },
+            onItemDeleted: nil,
+            onItemEdited: nil
+        )
+        #if canImport(UIKit)
+        initializeTestConfig()
+        let root = runWithTaskLocalConfig { TestSetupUtilities.hostRootPlatformView(view, forceLayout: true) }
+        let hasSingleTappable = hostedViewHasAccessibilityElementWithLabelAndButtonTrait(root: root, expectedLabel: cardTitle)
+        #expect(hasSingleTappable, "ExpandableCardComponent should expose one accessibility element with label '\(cardTitle)' and button trait (Issue #191)")
+        #else
+        #expect(Bool(true), "Single tappable element verification runs on iOS (UIKit) only")
+        #endif
+    }
+    
     // MARK: - CoverFlowCollectionView Tests
     
     @Test @MainActor func testCoverFlowCollectionViewGeneratesAccessibilityIdentifiers() async {
