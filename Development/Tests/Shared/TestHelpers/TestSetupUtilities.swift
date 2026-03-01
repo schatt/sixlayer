@@ -80,8 +80,9 @@ public enum TestSetupUtilities {
     /// - Parameters:
     ///   - view: The SwiftUI view to host.
     ///   - forceLayout: When true, call layoutIfNeeded() so SwiftUI applies accessibility identifiers to the UIView hierarchy. Use only for simple views (e.g. Text, Button); complex views (NavigationStack, platformPresentContent_L1) can hang.
+    ///   - exposeContentAccessibility: When true, leave the hosting root as a container (isAccessibilityElement = false) so the SwiftUI content's accessibility tree is exposed for verification (e.g. single tappable element with label + button trait). Use for tests that traverse the hierarchy to assert on content a11y (Issue #191).
     @MainActor
-    public static func hostRootPlatformView<V: View>(_ view: V, forceLayout: Bool = false) -> Any? {
+    public static func hostRootPlatformView<V: View>(_ view: V, forceLayout: Bool = false, exposeContentAccessibility: Bool = false) -> Any? {
         #if canImport(UIKit)
         let hosting = UIHostingController(rootView: view)
         // CRITICAL: Accessing hosting.view can hang on complex views in test environments.
@@ -110,9 +111,9 @@ public enum TestSetupUtilities {
             HostingControllerStorage.store((controller: hosting, window: window), for: root)
         }
         
-        // Force accessibility update (doesn't require layout)
+        // When exposeContentAccessibility is true, keep root as a container so content's a11y (e.g. combined card element) is visible to traversal. Otherwise mark root as element for other tests.
         root?.accessibilityElementsHidden = false
-        root?.isAccessibilityElement = true
+        root?.isAccessibilityElement = !exposeContentAccessibility
         
         return root
         #elseif canImport(AppKit)
@@ -125,7 +126,7 @@ public enum TestSetupUtilities {
             root.needsLayout = true
             root.layoutSubtreeIfNeeded()
         }
-        root.setAccessibilityElement(true)
+        root.setAccessibilityElement(!exposeContentAccessibility)
         return root
         #else
         return nil
