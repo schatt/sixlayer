@@ -58,6 +58,23 @@ private func firstAccessibilityIdentifierInInspected(_ inspected: ViewInspector.
     }
     return nil
 }
+
+/// Collect accessibility identifiers from inspected view (current node and one level of anyView + buttons).
+@MainActor
+private func allAccessibilityIdentifiersInInspected(_ inspected: ViewInspector.InspectableView<ViewInspector.ViewType.ClassifiedView>) -> [String] {
+    var ids: [String] = []
+    if let id = try? inspected.accessibilityIdentifier(), !id.isEmpty { ids.append(id) }
+    for button in (try? inspected.findAll(ViewInspector.ViewType.Button.self)) ?? [] {
+        if let id = try? button.accessibilityIdentifier(), !id.isEmpty { ids.append(id) }
+    }
+    // One level deeper: AnyView unwrap (modifier often wraps content in ModifiedContent + AnyView)
+    guard let inner = try? inspected.anyView() else { return ids }
+    if let id = try? inner.accessibilityIdentifier(), !id.isEmpty { ids.append(id) }
+    for button in (try? inner.findAll(ViewInspector.ViewType.Button.self)) ?? [] {
+        if let id = try? button.accessibilityIdentifier(), !id.isEmpty { ids.append(id) }
+    }
+    return ids
+}
 #endif
 
 /// Get accessibility identifier when view is not Inspectable: try platform hierarchy first (IDs applied by SwiftUI), then ViewInspector (Issue 178).
@@ -411,7 +428,8 @@ public enum AccessibilityTestUtilities {
     /// Test accessibility identifiers for a view on a single platform.
     /// Returns true only if at least one accessibility identifier in the view hierarchy
     /// matches the expected pattern (prefix) or contains the component name.
-    /// Uses platform hosting when available so SwiftUI-applied modifiers are verified.
+    /// Uses platform hosting (with task-local config) then ViewInspector collection.
+    /// Some views may not expose identifiers in unit-test hosting; those tests will fail until the environment is fixed.
     @MainActor
     public static func testComponentComplianceSinglePlatform<V: View>(
         _ view: V,
@@ -425,21 +443,27 @@ public enum AccessibilityTestUtilities {
             return id.hasPrefix(prefix) || id.contains(componentName)
         }
         #if canImport(UIKit) || canImport(AppKit)
-        // Prefer platform hierarchy: host view so SwiftUI applies modifiers, then collect identifiers
-        if let root = TestSetupUtilities.hostRootPlatformView(view, forceLayout: true) {
+        // Host view with task-local config so automaticCompliance generates identifiers (namespace "SixLayer", etc.)
+        let testDefaults = UserDefaults(suiteName: "SixLayer.A11yTestHelper") ?? .standard
+        let config = AccessibilityIdentifierConfig(userDefaults: testDefaults, keyPrefix: "Test.A11y.")
+        config.enableAutoIDs = true
+        config.globalAutomaticAccessibilityIdentifiers = true
+        config.namespace = "SixLayer"
+        config.enableUITestIntegration = true
+        let root: Any? = AccessibilityIdentifierConfig.$taskLocalConfig.withValue(config) {
+            TestSetupUtilities.hostRootPlatformView(view, forceLayout: true)
+        }
+        if let root = root {
             let ids = findAllAccessibilityIdentifiersFromPlatformView(root)
             if ids.contains(where: identifierMatches) { return true }
         }
         #endif
         #if canImport(ViewInspector)
-        // Fallback: ViewInspector – get first identifier from inspected hierarchy
-        if let id = getAccessibilityIdentifierForTest(view: view, hostedRoot: nil), identifierMatches(id) {
-            return true
-        }
+        // Fallback: ViewInspector – collect all identifiers from inspected hierarchy and check for match
         do {
             let inspected = try AnyView(view).inspect()
-            if let id = try? inspected.accessibilityIdentifier(), !id.isEmpty, identifierMatches(id) { return true }
-            if let inner = try? inspected.anyView(), let id = try? inner.accessibilityIdentifier(), !id.isEmpty, identifierMatches(id) { return true }
+            let allIds = allAccessibilityIdentifiersInInspected(inspected)
+            if allIds.contains(where: identifierMatches) { return true }
         } catch {
             return false
         }
