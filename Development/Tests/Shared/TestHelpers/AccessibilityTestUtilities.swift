@@ -132,6 +132,19 @@ private func firstAccessibilityIdentifierFromElements(_ elements: [Any]?) -> Str
     return nil
 }
 
+/// Collect all non-empty accessibility identifiers from a view's accessibilityElements.
+@MainActor
+private func allAccessibilityIdentifiersFromElements(_ elements: [Any]?) -> [String] {
+    guard let elements = elements else { return [] }
+    var ids: [String] = []
+    for element in elements {
+        if let ax = element as? UIAccessibilityElement, let id = ax.accessibilityIdentifier, !id.isEmpty {
+            ids.append(id)
+        }
+    }
+    return ids
+}
+
 /// Return the first non-empty accessibility label from a view's accessibilityElements.
 @MainActor
 private func firstAccessibilityLabelFromElements(_ elements: [Any]?) -> String? {
@@ -267,10 +280,9 @@ public func findAllAccessibilityIdentifiersFromPlatformView(_ root: Any?) -> [St
     // 6LAYER_ALLOW: test utilities must traverse platform-specific view hierarchies for accessibility testing
     guard let rootView = root as? UIView else { return [] }
 
-    // Check root view
-    if let id = rootView.accessibilityIdentifier, !id.isEmpty {
-        identifiers.insert(id)
-    }
+    // Check root view and its accessibilityElements (SwiftUI may expose IDs there)
+    if let id = rootView.accessibilityIdentifier, !id.isEmpty { identifiers.insert(id) }
+    for id in allAccessibilityIdentifiersFromElements(rootView.accessibilityElements) { identifiers.insert(id) }
 
     // Search through all subviews
     // 6LAYER_ALLOW: test utilities must traverse platform-specific view hierarchies for accessibility testing
@@ -292,9 +304,8 @@ public func findAllAccessibilityIdentifiersFromPlatformView(_ root: Any?) -> [St
         }
         checkedViews.insert(nextId)
         
-        if let id = next.accessibilityIdentifier, !id.isEmpty {
-            identifiers.insert(id)
-        }
+        if let id = next.accessibilityIdentifier, !id.isEmpty { identifiers.insert(id) }
+        for id in allAccessibilityIdentifiersFromElements(next.accessibilityElements) { identifiers.insert(id) }
         
         // 6LAYER_ALLOW: test utilities must traverse platform-specific view hierarchies for accessibility testing
         // Limit subviews to prevent excessive traversal
