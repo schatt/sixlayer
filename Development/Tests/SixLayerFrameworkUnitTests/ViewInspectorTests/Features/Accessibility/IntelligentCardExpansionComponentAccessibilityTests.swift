@@ -14,10 +14,9 @@ import SwiftUI
 /// NOTE: Not marked @MainActor on class to allow parallel execution
 ///
 /// Single-tappable element tests (Issue #191): The tests *ExposesSingleTappableElement assert the correct contract
-/// (one combined a11y element with label and button trait). In the ViewInspector test host, _UIHostingView does not
-/// expose SwiftUI content as UIView subviews, so traversal cannot find the element there. To verify in the real runtime,
-/// add XCUITest coverage that presents a screen with one of these cards and asserts via XCUIApplication (e.g. button
-/// with expected label). Do not relax the unit test assertions; fix the verification environment (e.g. XCUITest).
+/// (one combined a11y element with label and button trait). The helper uses the view's UIAccessibilityContainer-style
+/// API (accessibilityElementCount / accessibilityElementAtIndex:) when present, so SwiftUI hosting views that expose
+/// elements that way are verified correctly.
 @Suite("Intelligent Card Expansion Component Accessibility")
 open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
     
