@@ -1,22 +1,30 @@
 ---
-description: Default test target is iOS Simulator for day-to-day; full suite (macOS + iOS) for release.
+description: Prefer xcode-tools MCP for tests; fallback to dbs-build. Default test target is iOS Simulator; full suite for release.
 alwaysApply: true
 ---
 
 # Test Target Default
 
+## **Prefer xcode-tools MCP**
+
+- **When running tests:** Use the **xcode-tools** MCP instead of the build script when possible.
+  - **RunAllTests** or **RunSomeTests**: require `tabIdentifier` from the active Xcode workspace. Use **XcodeListWindows** to discover open windows/tabs and the workspace tab identifier.
+  - **GetTestList**: use to discover test targets and identifiers for **RunSomeTests** (e.g. run a single test class or target).
+- **Fallback:** If xcode-tools is unavailable or no Xcode tab identifier (e.g. Xcode not open with the project), use `dbs-build --target iOS_tests` or `xcodebuild test` as below.
+
 ## **Default: iOS Simulator**
 
-- **Day-to-day testing:** Use `dbs-build --target iOS_tests`. This runs the test suite in the iOS Simulator and is the normal default when the user or agent runs tests during development.
-- When you run tests to verify a change, run **iOS_tests** unless the user asks for macOS or both.
+- **Day-to-day testing:** Run **iOS_tests** (iOS Simulator) unless the user asks for macOS or both.
+- With MCP: use **RunAllTests** or **RunSomeTests** for the scheme that runs iOS tests (e.g. SLF-iOS-AllTests).
+- Without MCP: use `dbs-build --target iOS_tests`.
 
 ## **Release**
 
-- **Release script** runs the full suite (macOS + iOS unit tests) as part of `Development/scripts/release-process.sh`. The agent does not run the full test before release—the script does. Day-to-day testing is iOS Simulator (`iOS_tests`).
+- **Release script** runs the full suite (macOS + iOS unit tests) as part of `Development/scripts/release-process.sh`. The agent does not run the full test before release—the script does.
 
 ## **Summary**
 
-| Context              | Command                    |
-|----------------------|----------------------------|
-| Normal test run      | `dbs-build --target iOS_tests` |
-| Pre-release check   | `dbs-build --target test`  |
+| Context              | Preferred                         | Fallback                    |
+|----------------------|-----------------------------------|-----------------------------|
+| Normal test run      | xcode-tools **RunAllTests** / **RunSomeTests** (with tabIdentifier) | `dbs-build --target iOS_tests` |
+| Pre-release check    | xcode-tools (full plan)           | `dbs-build --target test`   |
