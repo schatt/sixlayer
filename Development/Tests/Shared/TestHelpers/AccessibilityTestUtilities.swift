@@ -336,11 +336,15 @@ public func hostedViewHasAccessibilityElementWithLabelAndButtonTrait(root: Any?,
                 if let ax = el as? UIAccessibilityElement, checkElement(ax) { return true }
             }
         }
-        // SwiftUI hosting often exposes elements via UIAccessibilityContainer (accessibilityElementCount / accessibilityElement(at:)) instead of subviews or accessibilityElements array.
-        if let container = view as? UIAccessibilityContainer {
-            let n = container.accessibilityElementCount()
+        // SwiftUI hosting often exposes elements via the container API (accessibilityElementCount / accessibilityElement(at:)) instead of subviews or accessibilityElements array. Use runtime so we don't depend on UIAccessibilityContainer being in scope.
+        let countSel = NSSelectorFromString("accessibilityElementCount")
+        let atSel = NSSelectorFromString("accessibilityElementAtIndex:")
+        if view.responds(to: countSel), view.responds(to: atSel),
+           let countResult = view.perform(countSel) {
+            let n = countResult.takeUnretainedValue() as? Int ?? 0
             for i in 0 ..< n {
-                if let el = container.accessibilityElement(at: i) as? UIAccessibilityElement, checkElement(el) {
+                let atResult = view.perform(atSel, with: i)
+                if let el = atResult?.takeUnretainedValue() as? UIAccessibilityElement, checkElement(el) {
                     return true
                 }
             }
