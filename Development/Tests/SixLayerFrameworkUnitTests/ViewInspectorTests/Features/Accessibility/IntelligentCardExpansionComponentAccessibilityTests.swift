@@ -165,6 +165,28 @@ open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
     
     // MARK: - CoverFlowCardComponent Tests
     
+    /// Issue #191: CoverFlowCardComponent must expose the card as a single tappable accessibility element.
+    @Test @MainActor func testCoverFlowCardComponentExposesSingleTappableElement() async {
+        let cardTitle = "CoverFlow Item"
+        let testItem = CardTestItem(id: "1", title: cardTitle)
+        let hints = PresentationHints()
+        let view = CoverFlowCardComponent(
+            item: testItem,
+            hints: hints,
+            onItemSelected: { _ in },
+            onItemDeleted: nil,
+            onItemEdited: nil
+        )
+        #if canImport(UIKit)
+        initializeTestConfig()
+        let root = runWithTaskLocalConfig { TestSetupUtilities.hostRootPlatformView(view, forceLayout: true) }
+        let hasSingleTappable = hostedViewHasAccessibilityElementWithLabelAndButtonTrait(root: root, expectedLabel: cardTitle)
+        #expect(hasSingleTappable, "CoverFlowCardComponent should expose one accessibility element with label '\(cardTitle)' and button trait (Issue #191)")
+        #else
+        #expect(Bool(true), "Single tappable element verification runs on iOS (UIKit) only")
+        #endif
+    }
+    
     @Test @MainActor func testCoverFlowCardComponentGeneratesAccessibilityIdentifiers() async {
             initializeTestConfig()
         runWithTaskLocalConfig {
@@ -301,6 +323,35 @@ open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
     
     // MARK: - SimpleCardComponent Tests
     
+    /// Issue #191: SimpleCardComponent must expose the card as a single tappable accessibility element.
+    @Test @MainActor func testSimpleCardComponentExposesSingleTappableElement() async {
+        let cardTitle = "Simple Card Item"
+        let testItem = CardTestItem(id: "1", title: cardTitle)
+        let hints = PresentationHints()
+        let view = SimpleCardComponent(
+            item: testItem,
+            layoutDecision: IntelligentCardLayoutDecision(
+                columns: 1,
+                spacing: 8,
+                cardWidth: 300,
+                cardHeight: 100,
+                padding: 16
+            ),
+            hints: hints,
+            onItemSelected: { _ in },
+            onItemDeleted: nil,
+            onItemEdited: nil
+        )
+        #if canImport(UIKit)
+        initializeTestConfig()
+        let root = runWithTaskLocalConfig { TestSetupUtilities.hostRootPlatformView(view, forceLayout: true) }
+        let hasSingleTappable = hostedViewHasAccessibilityElementWithLabelAndButtonTrait(root: root, expectedLabel: cardTitle)
+        #expect(hasSingleTappable, "SimpleCardComponent should expose one accessibility element with label '\(cardTitle)' and button trait (Issue #191)")
+        #else
+        #expect(Bool(true), "Single tappable element verification runs on iOS (UIKit) only")
+        #endif
+    }
+    
     @Test @MainActor func testSimpleCardComponentGeneratesAccessibilityIdentifiers() async {
             initializeTestConfig()
         runWithTaskLocalConfig {
@@ -335,6 +386,28 @@ open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
     }
     
     // MARK: - ListCardComponent Tests
+    
+    /// Issue #191: ListCardComponent must expose the card as a single tappable accessibility element.
+    @Test @MainActor func testListCardComponentExposesSingleTappableElement() async {
+        let cardTitle = "List Card Item"
+        let testItem = CardTestItem(id: "1", title: cardTitle)
+        let hints = PresentationHints()
+        let view = ListCardComponent(
+            item: testItem,
+            hints: hints,
+            onItemSelected: { _ in },
+            onItemDeleted: nil,
+            onItemEdited: nil
+        )
+        #if canImport(UIKit)
+        initializeTestConfig()
+        let root = runWithTaskLocalConfig { TestSetupUtilities.hostRootPlatformView(view, forceLayout: true) }
+        let hasSingleTappable = hostedViewHasAccessibilityElementWithLabelAndButtonTrait(root: root, expectedLabel: cardTitle)
+        #expect(hasSingleTappable, "ListCardComponent should expose one accessibility element with label '\(cardTitle)' and button trait (Issue #191)")
+        #else
+        #expect(Bool(true), "Single tappable element verification runs on iOS (UIKit) only")
+        #endif
+    }
     
     @Test @MainActor func testListCardComponentGeneratesAccessibilityIdentifiers() async {
             initializeTestConfig()
