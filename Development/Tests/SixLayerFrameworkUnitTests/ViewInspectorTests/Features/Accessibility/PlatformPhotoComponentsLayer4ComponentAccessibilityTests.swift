@@ -41,5 +41,35 @@ open class PlatformPhotoComponentsLayer4ComponentAccessibilityTests: BaseTestCla
         )
         #expect(hasAccessibilityID, "platformCameraInterface_L4 should generate accessibility identifiers")
     }
+
+    // MARK: - platformPhotoDisplay_L4
+
+    @Test @MainActor func testPlatformPhotoDisplayL4GeneratesAccessibilityIdentifiers() async {
+        let view = PlatformPhotoComponentsLayer4.platformPhotoDisplay_L4(image: nil, style: .aspectFit)
+        let hasAccessibilityID = testComponentComplianceSinglePlatform(
+            view,
+            expectedPattern: "SixLayer.main.ui.*",
+            platform: SixLayerPlatform.iOS,
+            componentName: "platformPhotoDisplay_L4"
+        )
+        #expect(hasAccessibilityID, "platformPhotoDisplay_L4 should generate accessibility identifiers")
+    }
+
+    // MARK: - platformPhotoSourceTabbed_L4
+
+    @Test @MainActor func testPlatformPhotoSourceTabbedL4GeneratesAccessibilityIdentifiers() async {
+        let view = PlatformPhotoComponentsLayer4.platformPhotoSourceTabbed_L4(
+            initialSource: .camera,
+            onImageCaptured: { _ in },
+            onImageSelected: { _ in }
+        )
+        let hasAccessibilityID = testComponentComplianceSinglePlatform(
+            view,
+            expectedPattern: "SixLayer.main.ui.*",
+            platform: SixLayerPlatform.iOS,
+            componentName: "platformPhotoSourceTabbed_L4"
+        )
+        #expect(hasAccessibilityID, "platformPhotoSourceTabbed_L4 should generate accessibility identifiers")
+    }
 }
 
