@@ -397,8 +397,10 @@ public enum AccessibilityTestUtilities {
         #endif
     }
     
-    /// Test accessibility identifiers for a view on a single platform
-    /// Returns true if accessibility identifiers are found matching the expected pattern
+    /// Test accessibility identifiers for a view on a single platform.
+    /// Returns true only if at least one accessibility identifier in the view hierarchy
+    /// matches the expected pattern (prefix) or contains the component name.
+    /// Uses platform hosting when available so SwiftUI-applied modifiers are verified.
     @MainActor
     public static func testComponentComplianceSinglePlatform<V: View>(
         _ view: V,
@@ -407,23 +409,37 @@ public enum AccessibilityTestUtilities {
         componentName: String,
         testHIGCompliance: Bool = true
     ) -> Bool {
+        func identifierMatches(_ id: String) -> Bool {
+            let prefix = expectedPattern.replacingOccurrences(of: ".*", with: "")
+            return id.hasPrefix(prefix) || id.contains(componentName)
+        }
+        #if canImport(UIKit) || canImport(AppKit)
+        // Prefer platform hierarchy: host view so SwiftUI applies modifiers, then collect identifiers
+        if let root = TestSetupUtilities.hostRootPlatformView(view, forceLayout: true) {
+            let ids = findAllAccessibilityIdentifiersFromPlatformView(root)
+            if ids.contains(where: identifierMatches) { return true }
+        }
+        #endif
         #if canImport(ViewInspector)
+        // Fallback: ViewInspector – get first identifier from inspected hierarchy
+        if let id = getAccessibilityIdentifierForTest(view: view, hostedRoot: nil), identifierMatches(id) {
+            return true
+        }
         do {
-            _ = try view.inspect()
-            // Search for accessibility identifiers matching the pattern
-            // This is a simplified implementation - full implementation would search the view hierarchy
-            return true // Placeholder - actual implementation would check for identifiers
+            let inspected = try AnyView(view).inspect()
+            if let id = try? inspected.accessibilityIdentifier(), !id.isEmpty, identifierMatches(id) { return true }
+            if let inner = try? inspected.anyView(), let id = try? inner.accessibilityIdentifier(), !id.isEmpty, identifierMatches(id) { return true }
         } catch {
             return false
         }
+        return false
         #else
-        // ViewInspector not available - return true to allow tests to pass
-        return true
+        return false
         #endif
     }
     
-    /// Test accessibility identifiers for a view across platforms
-    /// Returns true if accessibility identifiers are found matching the expected pattern
+    /// Test accessibility identifiers for a view across platforms.
+    /// Returns true only if at least one accessibility identifier matches the expected pattern or contains the component name.
     @MainActor
     public static func testAccessibilityIdentifiersCrossPlatform<V: View>(
         _ view: V,
@@ -431,19 +447,13 @@ public enum AccessibilityTestUtilities {
         componentName: String,
         testName: String? = nil
     ) -> Bool {
-        #if canImport(ViewInspector)
-        do {
-            _ = try view.inspect()
-            // Search for accessibility identifiers matching the pattern
-            // This is a simplified implementation - full implementation would search the view hierarchy
-            return true // Placeholder - actual implementation would check for identifiers
-        } catch {
-            return false
-        }
-        #else
-        // ViewInspector not available - return true to allow tests to pass
-        return true
-        #endif
+        return testComponentComplianceSinglePlatform(
+            view,
+            expectedPattern: expectedPattern,
+            platform: SixLayerPlatform.current,
+            componentName: componentName,
+            testHIGCompliance: true
+        )
     }
     
     /// Cleanup accessibility test environment
