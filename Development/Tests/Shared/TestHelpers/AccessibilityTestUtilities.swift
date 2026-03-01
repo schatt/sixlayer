@@ -319,18 +319,28 @@ public func dumpAccessibilityTreeForDiagnostics(root: Any?, maxViews: Int = 150)
 
 /// Returns true if the hosted view hierarchy contains an accessibility element that has the given label (or label contains expected) and the button trait.
 /// Used to verify tappable cards expose a single button-like element (Issue #191).
+/// Checks both view.accessibilityElements and UIAccessibilityContainer (SwiftUI hosting views often expose elements via the container API, not subviews).
 @MainActor
 public func hostedViewHasAccessibilityElementWithLabelAndButtonTrait(root: Any?, expectedLabel: String) -> Bool {
     guard let rootView = root as? UIView, !expectedLabel.isEmpty else { return false }
+    func checkElement(_ ax: UIAccessibilityElement) -> Bool {
+        guard let label = ax.accessibilityLabel, label.contains(expectedLabel) else { return false }
+        return ax.accessibilityTraits.contains(.button)
+    }
     func checkView(_ view: UIView) -> Bool {
         if let label = view.accessibilityLabel, label.contains(expectedLabel), view.accessibilityTraits.contains(.button) {
             return true
         }
         if let elements = view.accessibilityElements {
             for el in elements {
-                if let ax = el as? UIAccessibilityElement,
-                   let label = ax.accessibilityLabel, label.contains(expectedLabel),
-                   ax.accessibilityTraits.contains(.button) {
+                if let ax = el as? UIAccessibilityElement, checkElement(ax) { return true }
+            }
+        }
+        // SwiftUI hosting often exposes elements via UIAccessibilityContainer (accessibilityElementCount / accessibilityElement(at:)) instead of subviews or accessibilityElements array.
+        if let container = view as? UIAccessibilityContainer {
+            let n = container.accessibilityElementCount()
+            for i in 0 ..< n {
+                if let el = container.accessibilityElement(at: i) as? UIAccessibilityElement, checkElement(el) {
                     return true
                 }
             }
@@ -345,7 +355,6 @@ public func hostedViewHasAccessibilityElementWithLabelAndButtonTrait(root: Any?,
         count += 1
         guard checked.insert(ObjectIdentifier(next)).inserted else { continue }
         if checkView(next) { return true }
-        // SwiftUI hosting can produce many subviews; check more so we find the card view (Issue #191).
         stack.append(contentsOf: next.subviews.prefix(80))
     }
     return false
