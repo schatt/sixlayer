@@ -286,6 +286,41 @@ public func firstAccessibilityLabel(inHosted root: Any?) -> String? {
     #endif
 }
 
+#if canImport(UIKit)
+/// Returns true if the hosted view hierarchy contains an accessibility element that has the given label (or label contains expected) and the button trait.
+/// Used to verify tappable cards expose a single button-like element (Issue #191).
+@MainActor
+public func hostedViewHasAccessibilityElementWithLabelAndButtonTrait(root: Any?, expectedLabel: String) -> Bool {
+    guard let rootView = root as? UIView, !expectedLabel.isEmpty else { return false }
+    func checkView(_ view: UIView) -> Bool {
+        if let label = view.accessibilityLabel, label.contains(expectedLabel), view.accessibilityTraits.contains(.button) {
+            return true
+        }
+        if let elements = view.accessibilityElements {
+            for el in elements {
+                if let ax = el as? UIAccessibilityElement,
+                   let label = ax.accessibilityLabel, label.contains(expectedLabel),
+                   ax.accessibilityTraits.contains(.button) {
+                    return true
+                }
+            }
+        }
+        return false
+    }
+    if checkView(rootView) { return true }
+    var stack: [UIView] = rootView.subviews
+    var checked: Set<ObjectIdentifier> = []
+    var count = 0
+    while let next = stack.popLast(), count < 300 {
+        count += 1
+        guard checked.insert(ObjectIdentifier(next)).inserted else { continue }
+        if checkView(next) { return true }
+        stack.append(contentsOf: next.subviews.prefix(30))
+    }
+    return false
+}
+#endif
+
 /// Find ALL accessibility identifiers in a platform view hierarchy (not just the first one)
 /// This is used as a fallback when ViewInspector is not available
 /// Made public for navigation view tests that must bypass ViewInspector
