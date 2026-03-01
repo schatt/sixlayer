@@ -222,7 +222,9 @@ public struct ExpandableCardComponent<Item: Identifiable>: View {
             onHover(isHovering)
         }
         .accessibilityElement(children: .combine)
-        .accessibilityAddTraits(isExpanded ? .isSelected : [])
+        .accessibilityLabel(cardTitle)
+        .accessibilityAddTraits(isExpanded ? [.isButton, .isSelected] : .isButton)
+        .accessibilityHint("Tap to view details")
         .accessibilityAction(named: "Activate") {
             handleTap()
         }
