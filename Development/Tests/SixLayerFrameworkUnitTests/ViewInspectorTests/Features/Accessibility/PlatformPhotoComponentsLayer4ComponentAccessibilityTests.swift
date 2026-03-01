@@ -5,7 +5,8 @@ import Testing
 //  PlatformPhotoComponentsLayer4ComponentAccessibilityTests.swift
 //  SixLayerFrameworkTests
 //
-//  Comprehensive accessibility tests for ALL Platform Photo Components Layer 4
+//  Comprehensive accessibility tests for ALL Platform Photo Components Layer 4.
+//  Issue #169: Complete accessibility for Layer 4 platform* methods.
 //
 
 import SwiftUI
@@ -14,24 +15,31 @@ import SwiftUI
 /// NOTE: Not marked @MainActor on class to allow parallel execution
 @Suite("Platform Photo Components Layer Component Accessibility")
 open class PlatformPhotoComponentsLayer4ComponentAccessibilityTests: BaseTestClass {
-    
-    // MARK: - Platform Photo Components Layer 4 Tests
-    
-    @Test @MainActor func testPlatformPhotoComponentsLayer4GeneratesAccessibilityIdentifiers() async {
-        // Given: PlatformPhotoComponentsLayer4
-        
-        
-        // When: Get a view from the component
-        let testView = PlatformPhotoComponentsLayer4.platformPhotoPicker_L4(onImageSelected: { _ in })
-        
-        // Then: Should generate accessibility identifiers
+
+    // MARK: - platformPhotoPicker_L4
+
+    @Test @MainActor func testPlatformPhotoPickerL4GeneratesAccessibilityIdentifiers() async {
+        let view = PlatformPhotoComponentsLayer4.platformPhotoPicker_L4(onImageSelected: { _ in })
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
-            testView,
+            view,
             expectedPattern: "SixLayer.main.ui.*",
             platform: SixLayerPlatform.iOS,
-            componentName: "PlatformPhotoComponentsLayer4"
+            componentName: "platformPhotoPicker_L4"
         )
-        #expect(hasAccessibilityID, "PlatformPhotoComponentsLayer4 should generate accessibility identifiers ")
+        #expect(hasAccessibilityID, "platformPhotoPicker_L4 should generate accessibility identifiers")
+    }
+
+    // MARK: - platformCameraInterface_L4
+
+    @Test @MainActor func testPlatformCameraInterfaceL4GeneratesAccessibilityIdentifiers() async {
+        let view = PlatformPhotoComponentsLayer4.platformCameraInterface_L4(onImageCaptured: { _ in })
+        let hasAccessibilityID = testComponentComplianceSinglePlatform(
+            view,
+            expectedPattern: "SixLayer.main.ui.*",
+            platform: SixLayerPlatform.iOS,
+            componentName: "platformCameraInterface_L4"
+        )
+        #expect(hasAccessibilityID, "platformCameraInterface_L4 should generate accessibility identifiers")
     }
 }
 
