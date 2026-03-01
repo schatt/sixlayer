@@ -287,6 +287,36 @@ public func firstAccessibilityLabel(inHosted root: Any?) -> String? {
 }
 
 #if canImport(UIKit)
+/// Diagnostic: dump the hosted view's accessibility tree to a string for debugging single-tappable tests (Issue #191).
+/// Call when hostedViewHasAccessibilityElementWithLabelAndButtonTrait returns false to see where label/traits appear.
+@MainActor
+public func dumpAccessibilityTreeForDiagnostics(root: Any?, maxViews: Int = 150) -> String {
+    guard let rootView = root as? UIView else { return "root is not a UIView" }
+    var lines: [String] = []
+    var count = 0
+    func describe(_ view: UIView, depth: Int) {
+        guard count < maxViews else { return }
+        count += 1
+        let indent = String(repeating: "  ", count: depth)
+        let label = view.accessibilityLabel ?? ""
+        let traits = view.accessibilityTraits.rawValue
+        let elemDesc: String
+        if let el = view.accessibilityElements as? [UIAccessibilityElement], !el.isEmpty {
+            elemDesc = el.prefix(5).map { e in
+                "\(e.accessibilityLabel ?? "?") traits=\(e.accessibilityTraits.rawValue)"
+            }.joined(separator: "; ")
+        } else {
+            elemDesc = "none"
+        }
+        lines.append("\(indent)\(type(of: view)) label=\"\(label.prefix(60))\" traits=\(traits) elements=[\(elemDesc)]")
+        for sub in view.subviews.prefix(40) {
+            describe(sub, depth: depth + 1)
+        }
+    }
+    describe(rootView, depth: 0)
+    return lines.joined(separator: "\n")
+}
+
 /// Returns true if the hosted view hierarchy contains an accessibility element that has the given label (or label contains expected) and the button trait.
 /// Used to verify tappable cards expose a single button-like element (Issue #191).
 @MainActor
