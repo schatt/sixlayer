@@ -311,11 +311,12 @@ public func hostedViewHasAccessibilityElementWithLabelAndButtonTrait(root: Any?,
     var stack: [UIView] = rootView.subviews
     var checked: Set<ObjectIdentifier> = []
     var count = 0
-    while let next = stack.popLast(), count < 300 {
+    while let next = stack.popLast(), count < 500 {
         count += 1
         guard checked.insert(ObjectIdentifier(next)).inserted else { continue }
         if checkView(next) { return true }
-        stack.append(contentsOf: next.subviews.prefix(30))
+        // SwiftUI hosting can produce many subviews; check more so we find the card view (Issue #191).
+        stack.append(contentsOf: next.subviews.prefix(80))
     }
     return false
 }
