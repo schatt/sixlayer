@@ -471,6 +471,13 @@ public struct CoverFlowCardComponent<Item: Identifiable>: View {
         .onTapGesture {
             onItemSelected?(item)
         }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(cardTitle)
+        .accessibilityAddTraits(.isButton)
+        .accessibilityHint("Tap to view details")
+        .accessibilityAction(named: "Activate") {
+            onItemSelected?(item)
+        }
         .environment(\.accessibilityIdentifierLabel, cardTitle) // TDD GREEN: Pass label to identifier generation
         .automaticCompliance(named: "CoverFlowCardComponent")
     }
@@ -886,9 +893,12 @@ public struct SimpleCardComponent<Item: Identifiable>: View {
             })
         }
         
-        // Conditionally apply accessibility modifiers
+        // Conditionally apply accessibility modifiers (Issue #191: single tappable element)
         if config.supportsVoiceOver || config.supportsSwitchControl {
+            view = AnyView(view.accessibilityElement(children: .combine))
+            view = AnyView(view.accessibilityLabel(cardTitle))
             view = AnyView(view.accessibilityAddTraits(.isButton))
+            view = AnyView(view.accessibilityHint("Tap to view details"))
             view = AnyView(view.accessibilityAction(named: "Activate") {
                 onItemSelected?(item)
             })
@@ -1025,6 +1035,9 @@ public struct ListCardComponent<Item: Identifiable>: View {
             }
         }
         .accessibilityElement(children: .combine)
+        .accessibilityLabel(cardTitle)
+        .accessibilityAddTraits(.isButton)
+        .accessibilityHint("Tap to view details")
         .accessibilityAction(named: "Activate") {
             onItemSelected?(item)
         }
