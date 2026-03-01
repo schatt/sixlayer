@@ -50,14 +50,14 @@ public enum PlatformPhotoComponentsLayer4 {
     ) -> some View {
         #if os(iOS)
         CameraView(onImageCaptured: onImageCaptured, onCameraAuthorizationState: onCameraAuthorizationState)
-            .automaticCompliance()
+            .automaticCompliance(named: "platformCameraInterface_L4")
         #elseif os(macOS)
         MacCameraView(onImageCaptured: onImageCaptured)
-            .automaticCompliance()
+            .automaticCompliance(named: "platformCameraInterface_L4")
         #else
         let i18n = InternationalizationService()
         Text(i18n.localizedString(for: "SixLayerFramework.camera.notAvailable"))
-            .automaticCompliance()
+            .automaticCompliance(named: "platformCameraInterface_L4")
         #endif
     }
     
