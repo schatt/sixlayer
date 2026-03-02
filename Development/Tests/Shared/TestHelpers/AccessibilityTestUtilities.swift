@@ -376,9 +376,35 @@ public func findAllAccessibilityIdentifiersFromPlatformView(_ root: Any?) -> [St
     // 6LAYER_ALLOW: test utilities must traverse platform-specific view hierarchies for accessibility testing
     guard let rootView = root as? UIView else { return [] }
 
-    // Check root view and its accessibilityElements (SwiftUI may expose IDs there)
-    if let id = rootView.accessibilityIdentifier, !id.isEmpty { identifiers.insert(id) }
-    for id in allAccessibilityIdentifiersFromElements(rootView.accessibilityElements) { identifiers.insert(id) }
+    func addIdentifiers(from view: UIView) {
+        if let id = view.accessibilityIdentifier, !id.isEmpty {
+            identifiers.insert(id)
+        }
+        for id in allAccessibilityIdentifiersFromElements(view.accessibilityElements) {
+            identifiers.insert(id)
+        }
+        // Some SwiftUI hosting views expose IDs via the UIAccessibilityContainer-style API
+        // (accessibilityElementCount / accessibilityElementAtIndex:) instead of subviews or accessibilityElements.
+        let countSel = NSSelectorFromString("accessibilityElementCount")
+        let atSel = NSSelectorFromString("accessibilityElementAtIndex:")
+        if view.responds(to: countSel), view.responds(to: atSel),
+           let countResult = view.perform(countSel) {
+            let n = countResult.takeUnretainedValue() as? Int ?? 0
+            if n > 0 {
+                for i in 0 ..< n {
+                    let atResult = view.perform(atSel, with: i)
+                    if let el = atResult?.takeUnretainedValue() as? UIAccessibilityElement,
+                       let id = el.accessibilityIdentifier,
+                       !id.isEmpty {
+                        identifiers.insert(id)
+                    }
+                }
+            }
+        }
+    }
+
+    // Check root view and its accessibility-related elements
+    addIdentifiers(from: rootView)
 
     // Search through all subviews
     // 6LAYER_ALLOW: test utilities must traverse platform-specific view hierarchies for accessibility testing
@@ -400,8 +426,7 @@ public func findAllAccessibilityIdentifiersFromPlatformView(_ root: Any?) -> [St
         }
         checkedViews.insert(nextId)
         
-        if let id = next.accessibilityIdentifier, !id.isEmpty { identifiers.insert(id) }
-        for id in allAccessibilityIdentifiersFromElements(next.accessibilityElements) { identifiers.insert(id) }
+        addIdentifiers(from: next)
         
         // 6LAYER_ALLOW: test utilities must traverse platform-specific view hierarchies for accessibility testing
         // Limit subviews to prevent excessive traversal
