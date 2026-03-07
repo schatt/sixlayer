@@ -151,10 +151,13 @@ struct TestAppContentView: View {
                 .accessibilityElement(children: .combine)
                 
                 sectionHeader("Layer 4 Examples (Issue #165)")
-                NavigationLink("Layer 4 Component Examples") {
-                    Layer4ExamplesView()
+                Group {
+                    NavigationLink("Layer 4 Component Examples") {
+                        Layer4ExamplesView()
+                    }
                 }
                 .accessibilityIdentifier("layer4-examples-link")
+                .accessibilityElement(children: .combine)
                 
                 sectionHeader("Layer 5 Examples (Issue #165)")
                 NavigationLink("Layer 5 Optimization Examples") {
