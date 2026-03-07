@@ -244,11 +244,17 @@ extension XCUIApplication {
     /// - Parameters:
     ///   - linkIdentifier: Accessibility identifier of the launch-page link (e.g. "layer2-examples-link").
     ///   - navigationBarTitle: Title of the destination navigation bar (e.g. "Layer 2 Examples").
+    ///   - linkLabel: Optional visible label to tap if identifier lookup fails (e.g. "Layer 4 Component Examples").
     /// - Returns: true if navigation succeeded (nav bar and list content visible).
-    func navigateToLayerExamples(linkIdentifier: String, navigationBarTitle: String) -> Bool {
+    func navigateToLayerExamples(linkIdentifier: String, navigationBarTitle: String, linkLabel: String? = nil) -> Bool {
         _ = navigateBackToLaunch(timeout: 5.0)
         guard waitForReady(timeout: 5.0) else { return false }
-        let link = findLaunchPageEntry(identifier: linkIdentifier)
+        var link = findLaunchPageEntry(identifier: linkIdentifier)
+        if !link.waitForExistence(timeout: 2.0), let label = linkLabel {
+            link = buttons[label].firstMatch
+            if !link.exists { link = staticTexts[label].firstMatch }
+            if !link.exists { link = cells[label].firstMatch }
+        }
         guard link.waitForExistence(timeout: 5.0) else { return false }
         link.tap()
         guard navigationBars[navigationBarTitle].waitForExistence(timeout: 5.0) else { return false }
