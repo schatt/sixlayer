@@ -249,6 +249,17 @@ extension XCUIApplication {
     func navigateToLayerExamples(linkIdentifier: String, navigationBarTitle: String, linkLabel: String? = nil) -> Bool {
         _ = navigateBackToLaunch(timeout: 5.0)
         guard waitForReady(timeout: 5.0) else { return false }
+        // Layer 4+ links are below the fold; scroll down so they become visible and tappable
+        if linkIdentifier.contains("layer4") || linkIdentifier.contains("layer5") || linkIdentifier.contains("layer6") {
+            let scrollView = scrollViews.firstMatch
+            if scrollView.exists {
+                for _ in 0..<5 {
+                    scrollView.swipeUp()
+                    let found = findLaunchPageEntry(identifier: linkIdentifier)
+                    if found.waitForExistence(timeout: 0.8) && found.isHittable { break }
+                }
+            }
+        }
         var link = findLaunchPageEntry(identifier: linkIdentifier)
         if !link.waitForExistence(timeout: 2.0), let label = linkLabel {
             link = buttons[label].firstMatch
