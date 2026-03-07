@@ -255,6 +255,17 @@ extension XCUIApplication {
             if !link.exists { link = staticTexts[label].firstMatch }
             if !link.exists { link = cells[label].firstMatch }
         }
+        var attempts = 0
+        while !link.waitForExistence(timeout: 1.0), attempts < 3 {
+            if scrollViews.firstMatch.exists { scrollViews.firstMatch.swipeUp() }
+            attempts += 1
+            link = findLaunchPageEntry(identifier: linkIdentifier)
+            if !link.waitForExistence(timeout: 1.0), let label = linkLabel {
+                link = buttons[label].firstMatch
+                if !link.exists { link = staticTexts[label].firstMatch }
+                if !link.exists { link = cells[label].firstMatch }
+            }
+        }
         guard link.waitForExistence(timeout: 5.0) else { return false }
         link.tap()
         guard navigationBars[navigationBarTitle].waitForExistence(timeout: 5.0) else { return false }
