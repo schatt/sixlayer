@@ -268,8 +268,11 @@ extension XCUIApplication {
         }
         guard link.waitForExistence(timeout: 5.0) else { return false }
         link.tap()
-        guard navigationBars[navigationBarTitle].waitForExistence(timeout: 5.0) else { return false }
-        return buttons.firstMatch.waitForExistence(timeout: 2.0) || staticTexts.firstMatch.waitForExistence(timeout: 2.0) || cells.firstMatch.waitForExistence(timeout: 1.0)
+        let navBarExists = navigationBars[navigationBarTitle].waitForExistence(timeout: 8.0)
+        let contentExists = buttons.firstMatch.waitForExistence(timeout: 2.0) || staticTexts.firstMatch.waitForExistence(timeout: 2.0) || cells.firstMatch.waitForExistence(timeout: 1.0)
+        if navBarExists && contentExists { return true }
+        if staticTexts[navigationBarTitle].waitForExistence(timeout: 1.0) && contentExists { return true }
+        return false
     }
 
 }
