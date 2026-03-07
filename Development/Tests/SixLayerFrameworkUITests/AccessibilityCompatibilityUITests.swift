@@ -63,7 +63,7 @@ final class AccessibilityCompatibilityUITests: XCTestCase {
     /// Navigate to Button Test view (via Layer 4 Examples), run compatibility sweep (Issue #180).
     @MainActor
     func testButtonTestView_CompatibilitySweep() throws {
-        XCTAssertTrue(app.navigateToLayerExamples(linkIdentifier: "layer4-examples-link", navigationBarTitle: "Layer 4 Examples"), "Should navigate to Layer 4 Examples")
+        XCTAssertTrue(app.navigateToLayerExamples(linkIdentifier: "layer4-examples-link", navigationBarTitle: "Layer 4 Examples", linkLabel: "Layer 4 Component Examples"), "Should navigate to Layer 4 Examples")
         if app.scrollViews.firstMatch.exists {
             app.scrollViews.firstMatch.swipeDown()
         }
