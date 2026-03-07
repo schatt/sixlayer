@@ -52,10 +52,9 @@ public func platformPhotoSelection_L1(
     // Determine optimal layout for selection interface
     let layout = determineOptimalPhotoLayout_L2(purpose: purpose, context: context)
     
-    // Use photo picker with optimized layout
+    // Use photo picker with optimized layout (compliance already applied in platformPhotoPicker_L4/UnifiedImagePicker; avoid stacking modifiers to prevent copy crash)
     PlatformPhotoComponentsLayer4.platformPhotoPicker_L4(onImageSelected: onImageSelected)
         .frame(width: layout.width, height: layout.height)
-        .automaticCompliance()
 }
 
 /// Cross-platform semantic photo display interface
