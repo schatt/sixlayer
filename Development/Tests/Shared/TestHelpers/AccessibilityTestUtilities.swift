@@ -134,6 +134,10 @@ private func allAccessibilityIdentifiersFromTypedInspectable<V: View & ViewInspe
     for v in (try? inspected.findAll(ViewInspector.ViewType.HStack.self)) ?? [] { collect(try? v.accessibilityIdentifier()) }
     for v in (try? inspected.findAll(ViewInspector.ViewType.ZStack.self)) ?? [] { collect(try? v.accessibilityIdentifier()) }
     for v in (try? inspected.findAll(ViewInspector.ViewType.Button.self)) ?? [] { collect(try? v.accessibilityIdentifier()) }
+    // Deep traversal: modifier may be on a node that only appears as ClassifiedView (same as AnyView path).
+    for node in (try? inspected.findAll(ViewInspector.ViewType.ClassifiedView.self, where: { _ in true })) ?? [] {
+        collect(try? node.accessibilityIdentifier())
+    }
     return ids
 }
 #endif
