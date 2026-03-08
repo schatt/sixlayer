@@ -714,9 +714,10 @@ public enum AccessibilityTestUtilities {
         #if canImport(UIKit) || canImport(AppKit)
         _ = root
         #endif
+        #endif
         return false
     }
-    
+
     /// Test accessibility identifiers for a view across platforms.
     /// Returns true only if at least one accessibility identifier matches the expected pattern or contains the component name.
     @MainActor
