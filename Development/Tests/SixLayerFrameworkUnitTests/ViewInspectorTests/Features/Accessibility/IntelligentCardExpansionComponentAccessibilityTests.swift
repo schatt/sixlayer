@@ -44,7 +44,8 @@ open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
                 expectedPattern: "SixLayer.main.ui.*",
                 platform: SixLayerPlatform.iOS,
                 componentName: "ExpandableCardCollectionView",
-                diagnostic: &diagnostic
+                diagnostic: &diagnostic,
+                exposeContentAccessibility: false
             )
             if !hasAccessibilityID, let d = diagnostic { Issue.record(DiagnosticMessage(message: d)) }
             #expect(hasAccessibilityID, "ExpandableCardCollectionView should generate accessibility identifiers")
@@ -94,7 +95,8 @@ open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
                 expectedPattern: "SixLayer.main.ui.*",
                 platform: SixLayerPlatform.iOS,
                 componentName: "ExpandableCardComponent",
-                diagnostic: &diagnostic
+                diagnostic: &diagnostic,
+                exposeContentAccessibility: false
             )
             if !hasAccessibilityID, let d = diagnostic { Issue.record(DiagnosticMessage(message: d)) }
             #expect(hasAccessibilityID, "ExpandableCardComponent should generate accessibility identifiers")
@@ -168,7 +170,8 @@ open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
                 view,
                 expectedPattern: "SixLayer.main.ui.*",
                 platform: SixLayerPlatform.iOS,
-                componentName: "CoverFlowCollectionView"
+                componentName: "CoverFlowCollectionView",
+                exposeContentAccessibility: false
             )
             #expect(hasAccessibilityID, "CoverFlowCollectionView should generate accessibility identifiers ")
         }
@@ -221,7 +224,8 @@ open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
                 expectedPattern: "SixLayer.main.ui.*",
                 platform: SixLayerPlatform.iOS,
                 componentName: "CoverFlowCardComponent",
-                diagnostic: &diagnostic
+                diagnostic: &diagnostic,
+                exposeContentAccessibility: false
             )
             if !hasAccessibilityID, let d = diagnostic { Issue.record(DiagnosticMessage(message: d)) }
             #expect(hasAccessibilityID, "CoverFlowCardComponent should generate accessibility identifiers")
@@ -248,7 +252,8 @@ open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
                 view,
                 expectedPattern: "SixLayer.main.ui.*",
                 platform: SixLayerPlatform.iOS,
-                componentName: "GridCollectionView"
+                componentName: "GridCollectionView",
+                exposeContentAccessibility: false
             )
             #expect(hasAccessibilityID, "GridCollectionView should generate accessibility identifiers ")
         }
@@ -274,7 +279,8 @@ open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
                 view,
                 expectedPattern: "SixLayer.main.ui.*",
                 platform: SixLayerPlatform.iOS,
-                componentName: "ListCollectionView"
+                componentName: "ListCollectionView",
+                exposeContentAccessibility: false
             )
             #expect(hasAccessibilityID, "ListCollectionView should generate accessibility identifiers ")
         }
@@ -300,7 +306,8 @@ open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
                 view,
                 expectedPattern: "SixLayer.main.ui.*",
                 platform: SixLayerPlatform.iOS,
-                componentName: "MasonryCollectionView"
+                componentName: "MasonryCollectionView",
+                exposeContentAccessibility: false
             )
             #expect(hasAccessibilityID, "MasonryCollectionView should generate accessibility identifiers ")
         }
@@ -329,7 +336,8 @@ open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
                 view,
                 expectedPattern: "SixLayer.main.ui.*",
                 platform: SixLayerPlatform.iOS,
-                componentName: "AdaptiveCollectionView"
+                componentName: "AdaptiveCollectionView",
+                exposeContentAccessibility: false
             )
             #expect(hasAccessibilityID, "AdaptiveCollectionView should generate accessibility identifiers ")
         }
@@ -393,7 +401,8 @@ open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
                 view,
                 expectedPattern: "SixLayer.main.ui.*",
                 platform: SixLayerPlatform.iOS,
-                componentName: "SimpleCardComponent"
+                componentName: "SimpleCardComponent",
+                exposeContentAccessibility: false
             )
             #expect(hasAccessibilityID, "SimpleCardComponent should generate accessibility identifiers ")
         }
@@ -439,7 +448,8 @@ open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
                 expectedPattern: "SixLayer.main.ui.*",
                 platform: SixLayerPlatform.iOS,
                 componentName: "ListCardComponent",
-                diagnostic: &diagnostic
+                diagnostic: &diagnostic,
+                exposeContentAccessibility: false
             )
             if !hasAccessibilityID, let d = diagnostic { Issue.record(DiagnosticMessage(message: d)) }
             #expect(hasAccessibilityID, "ListCardComponent should generate accessibility identifiers")
@@ -464,7 +474,8 @@ open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
                 expectedPattern: "SixLayer.main.ui.*",
                 platform: SixLayerPlatform.iOS,
                 componentName: "MasonryCardComponent",
-                diagnostic: &diagnostic
+                diagnostic: &diagnostic,
+                exposeContentAccessibility: false
             )
             if !hasAccessibilityID, let d = diagnostic { Issue.record(DiagnosticMessage(message: d)) }
             #expect(hasAccessibilityID, "MasonryCardComponent should generate accessibility identifiers")
@@ -495,7 +506,8 @@ open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
                 expectedPattern: "SixLayer.main.ui.*",
                 platform: SixLayerPlatform.iOS,
                 componentName: "NativeExpandableCardView",
-                diagnostic: &diagnostic
+                diagnostic: &diagnostic,
+                exposeContentAccessibility: false
             )
             if !hasAccessibilityID, let d = diagnostic { Issue.record(DiagnosticMessage(message: d)) }
             #expect(hasAccessibilityID, "NativeExpandableCardView should generate accessibility identifiers")
@@ -522,7 +534,8 @@ open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
                 view,
                 expectedPattern: "SixLayer.main.ui.*",
                 platform: SixLayerPlatform.iOS,
-                componentName: "iOSExpandableCardView"
+                componentName: "iOSExpandableCardView",
+                exposeContentAccessibility: false
             )
             #expect(hasAccessibilityID, "iOSExpandableCardView should generate accessibility identifiers ")
         }
@@ -548,7 +561,8 @@ open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
                 view,
                 expectedPattern: "SixLayer.main.ui.*",
                 platform: SixLayerPlatform.iOS,
-                componentName: "macOSExpandableCardView"
+                componentName: "macOSExpandableCardView",
+                exposeContentAccessibility: false
             )
             #expect(hasAccessibilityID, "macOSExpandableCardView should generate accessibility identifiers ")
         }
@@ -574,7 +588,8 @@ open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
                 view,
                 expectedPattern: "SixLayer.main.ui.*",
                 platform: SixLayerPlatform.iOS,
-                componentName: "visionOSExpandableCardView"
+                componentName: "visionOSExpandableCardView",
+                exposeContentAccessibility: false
             )
             #expect(hasAccessibilityID, "visionOSExpandableCardView should generate accessibility identifiers ")
         }
@@ -602,7 +617,8 @@ open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
                 expectedPattern: "SixLayer.main.ui.*",
                 platform: SixLayerPlatform.iOS,
                 componentName: "PlatformAwareExpandableCardView",
-                diagnostic: &diagnostic
+                diagnostic: &diagnostic,
+                exposeContentAccessibility: false
             )
             if !hasAccessibilityID, let d = diagnostic { Issue.record(DiagnosticMessage(message: d)) }
             #expect(hasAccessibilityID, "PlatformAwareExpandableCardView should generate accessibility identifiers")
