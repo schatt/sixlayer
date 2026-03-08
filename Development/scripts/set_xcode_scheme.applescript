@@ -2,10 +2,12 @@
 -- Usage:
 --   Run with no args: prompts for scheme (and optionally window).
 --   Run with scheme name: osascript set_xcode_scheme.applescript "SLF-iOS-AllTests"
+--     IMPORTANT: The Xcode window for the target project must be frontmost, or you get SCHEME_NOT_FOUND.
+--     (e.g. for SixLayer: click the SixLayer window, then run with "SLF-iOS-ViewInspectorTests".)
 --   Run with scheme and window: osascript set_xcode_scheme.applescript "SLF-iOS-AllTests" 2
 --     (window 2 = second window; 1 = frontmost)
 --   Run with scheme and window title fragment: osascript set_xcode_scheme.applescript "SLF-iOS-AllTests" "SixLayer"
---     (brings first window whose title contains "SixLayer" to front, then sets scheme)
+--     (brings first window whose title contains "SixLayer" to front, then sets scheme; may hit -10006 in some environments)
 
 on run argv
 	if (count of argv) = 0 then
