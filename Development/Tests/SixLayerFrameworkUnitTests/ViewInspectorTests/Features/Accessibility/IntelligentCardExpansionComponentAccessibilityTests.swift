@@ -46,8 +46,8 @@ open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
                 componentName: "ExpandableCardCollectionView",
                 diagnostic: &diagnostic
             )
-            let message = diagnostic ?? "ExpandableCardCollectionView should generate accessibility identifiers "
-            #expect(hasAccessibilityID, message)
+            if !hasAccessibilityID, let d = diagnostic { Issue.record(DiagnosticMessage(message: d)) }
+            #expect(hasAccessibilityID, "ExpandableCardCollectionView should generate accessibility identifiers")
         }
     }
     
@@ -96,8 +96,8 @@ open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
                 componentName: "ExpandableCardComponent",
                 diagnostic: &diagnostic
             )
-            let message = diagnostic ?? "ExpandableCardComponent should generate accessibility identifiers "
-            #expect(hasAccessibilityID, message)
+            if !hasAccessibilityID, let d = diagnostic { Issue.record(DiagnosticMessage(message: d)) }
+            #expect(hasAccessibilityID, "ExpandableCardComponent should generate accessibility identifiers")
         }
     }
     
@@ -223,8 +223,8 @@ open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
                 componentName: "CoverFlowCardComponent",
                 diagnostic: &diagnostic
             )
-            let message = diagnostic ?? "CoverFlowCardComponent should generate accessibility identifiers "
-            #expect(hasAccessibilityID, message)
+            if !hasAccessibilityID, let d = diagnostic { Issue.record(DiagnosticMessage(message: d)) }
+            #expect(hasAccessibilityID, "CoverFlowCardComponent should generate accessibility identifiers")
         }
     }
     
@@ -441,8 +441,8 @@ open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
                 componentName: "ListCardComponent",
                 diagnostic: &diagnostic
             )
-            let message = diagnostic ?? "ListCardComponent should generate accessibility identifiers "
-            #expect(hasAccessibilityID, message)
+            if !hasAccessibilityID, let d = diagnostic { Issue.record(DiagnosticMessage(message: d)) }
+            #expect(hasAccessibilityID, "ListCardComponent should generate accessibility identifiers")
         }
     }
     
@@ -466,8 +466,8 @@ open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
                 componentName: "MasonryCardComponent",
                 diagnostic: &diagnostic
             )
-            let message = diagnostic ?? "MasonryCardComponent should generate accessibility identifiers "
-            #expect(hasAccessibilityID, message)
+            if !hasAccessibilityID, let d = diagnostic { Issue.record(DiagnosticMessage(message: d)) }
+            #expect(hasAccessibilityID, "MasonryCardComponent should generate accessibility identifiers")
         }
     }
     
@@ -497,8 +497,8 @@ open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
                 componentName: "NativeExpandableCardView",
                 diagnostic: &diagnostic
             )
-            let message = diagnostic ?? "NativeExpandableCardView should generate accessibility identifiers "
-            #expect(hasAccessibilityID, message)
+            if !hasAccessibilityID, let d = diagnostic { Issue.record(DiagnosticMessage(message: d)) }
+            #expect(hasAccessibilityID, "NativeExpandableCardView should generate accessibility identifiers")
         }
     }
     
@@ -604,13 +604,19 @@ open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
                 componentName: "PlatformAwareExpandableCardView",
                 diagnostic: &diagnostic
             )
-            let message = diagnostic ?? "PlatformAwareExpandableCardView should generate accessibility identifiers "
-            #expect(hasAccessibilityID, message)
+            if !hasAccessibilityID, let d = diagnostic { Issue.record(DiagnosticMessage(message: d)) }
+            #expect(hasAccessibilityID, "PlatformAwareExpandableCardView should generate accessibility identifiers")
         }
     }
 }
 
 // MARK: - Test Data Types
+
+/// Used to pass dynamic diagnostic strings to Issue.record (Swift Testing expects Error, not String).
+fileprivate struct DiagnosticMessage: Error, CustomStringConvertible {
+    let message: String
+    var description: String { message }
+}
 
 fileprivate struct CardTestItem: Identifiable {
     let id: String
