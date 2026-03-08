@@ -46,7 +46,8 @@ open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
                 componentName: "ExpandableCardCollectionView",
                 diagnostic: &diagnostic
             )
-            #expect(hasAccessibilityID, diagnostic ?? "ExpandableCardCollectionView should generate accessibility identifiers ")
+            let message = diagnostic ?? "ExpandableCardCollectionView should generate accessibility identifiers "
+            #expect(hasAccessibilityID, message)
         }
     }
     
@@ -95,7 +96,8 @@ open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
                 componentName: "ExpandableCardComponent",
                 diagnostic: &diagnostic
             )
-            #expect(hasAccessibilityID, diagnostic ?? "ExpandableCardComponent should generate accessibility identifiers ")
+            let message = diagnostic ?? "ExpandableCardComponent should generate accessibility identifiers "
+            #expect(hasAccessibilityID, message)
         }
     }
     
@@ -221,7 +223,8 @@ open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
                 componentName: "CoverFlowCardComponent",
                 diagnostic: &diagnostic
             )
-            #expect(hasAccessibilityID, diagnostic ?? "CoverFlowCardComponent should generate accessibility identifiers ")
+            let message = diagnostic ?? "CoverFlowCardComponent should generate accessibility identifiers "
+            #expect(hasAccessibilityID, message)
         }
     }
     
@@ -438,7 +441,8 @@ open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
                 componentName: "ListCardComponent",
                 diagnostic: &diagnostic
             )
-            #expect(hasAccessibilityID, diagnostic ?? "ListCardComponent should generate accessibility identifiers ")
+            let message = diagnostic ?? "ListCardComponent should generate accessibility identifiers "
+            #expect(hasAccessibilityID, message)
         }
     }
     
@@ -462,7 +466,8 @@ open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
                 componentName: "MasonryCardComponent",
                 diagnostic: &diagnostic
             )
-            #expect(hasAccessibilityID, diagnostic ?? "MasonryCardComponent should generate accessibility identifiers ")
+            let message = diagnostic ?? "MasonryCardComponent should generate accessibility identifiers "
+            #expect(hasAccessibilityID, message)
         }
     }
     
@@ -492,7 +497,8 @@ open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
                 componentName: "NativeExpandableCardView",
                 diagnostic: &diagnostic
             )
-            #expect(hasAccessibilityID, diagnostic ?? "NativeExpandableCardView should generate accessibility identifiers ")
+            let message = diagnostic ?? "NativeExpandableCardView should generate accessibility identifiers "
+            #expect(hasAccessibilityID, message)
         }
     }
     
@@ -598,7 +604,8 @@ open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
                 componentName: "PlatformAwareExpandableCardView",
                 diagnostic: &diagnostic
             )
-            #expect(hasAccessibilityID, diagnostic ?? "PlatformAwareExpandableCardView should generate accessibility identifiers ")
+            let message = diagnostic ?? "PlatformAwareExpandableCardView should generate accessibility identifiers "
+            #expect(hasAccessibilityID, message)
         }
     }
 }
