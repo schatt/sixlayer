@@ -126,14 +126,6 @@ struct PhotoPickerExample: View {
                 showPicker = true
             }
             
-            if showPicker {
-                platformPhotoPicker_L4 { image in
-                    selectedImage = image
-                    showPicker = false
-                }
-                .frame(height: 200)
-            }
-            
             if selectedImage != nil {
                 Text("Photo selected")
                     .font(.caption)
@@ -143,6 +135,12 @@ struct PhotoPickerExample: View {
         .padding()
         .background(Color.platformSecondaryBackground)
         .cornerRadius(8)
+        .sheet(isPresented: $showPicker) {
+            platformPhotoPicker_L4 { image in
+                selectedImage = image
+                showPicker = false
+            }
+        }
     }
 }
 
