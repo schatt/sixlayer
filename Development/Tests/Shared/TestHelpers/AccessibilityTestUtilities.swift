@@ -619,8 +619,12 @@ public enum AccessibilityTestUtilities {
             let inspected = try AnyView(view).inspect()
             let allIds = allAccessibilityIdentifiersInInspectedRecursive(inspected)
             if allIds.contains(where: identifierMatches) { return true }
+            let viNote = allIds.isEmpty
+                ? "; ViewInspector collected 0 IDs"
+                : "; ViewInspector collected \(allIds.count) IDs: \(allIds.prefix(5).joined(separator: ", "))\(allIds.count > 5 ? "…" : "")"
+            if let d = diagnostic { diagnostic = d + viNote } else { diagnostic = viNote }
         } catch {
-            return false
+            if let d = diagnostic { diagnostic = d + "; ViewInspector inspect() threw: \(error)" } else { diagnostic = "ViewInspector inspect() threw: \(error)" }
         }
         return false
         #else
