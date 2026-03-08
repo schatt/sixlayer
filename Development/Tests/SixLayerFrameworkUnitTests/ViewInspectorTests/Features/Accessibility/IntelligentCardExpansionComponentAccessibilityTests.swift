@@ -22,7 +22,8 @@ open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
 
     // MARK: - Sanity: minimal view with same compliance helper (diagnose 0 IDs)
 
-    /// Same setup as card tests but with a minimal view. If this passes, 0 IDs are card-view specific.
+    /// Same setup as card tests but with a minimal view. In SLF-iOS-ViewInspectorTests this fails with 0 IDs
+    /// (as do PlatformInteractionButton + compliance helper); 0 IDs appear environment-wide for this scheme.
     @Test @MainActor func testMinimalViewWithAutomaticComplianceGeneratesAccessibilityIdentifiers() async {
         initializeTestConfig()
         runWithTaskLocalConfig {
