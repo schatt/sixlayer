@@ -540,13 +540,16 @@ public enum AccessibilityTestUtilities {
         expectedPattern: String,
         platform: SixLayerPlatform,
         componentName: String,
-        testHIGCompliance: Bool = true
+        testHIGCompliance: Bool = true,
+        exposeContentAccessibility: Bool = true
     ) -> Bool {
         var diagnostic: String? = nil
-        return testComponentComplianceSinglePlatform(view, expectedPattern: expectedPattern, platform: platform, componentName: componentName, testHIGCompliance: testHIGCompliance, diagnostic: &diagnostic)
+        return testComponentComplianceSinglePlatform(view, expectedPattern: expectedPattern, platform: platform, componentName: componentName, testHIGCompliance: testHIGCompliance, diagnostic: &diagnostic, exposeContentAccessibility: exposeContentAccessibility)
     }
 
     /// Overload that populates diagnostic on failure (collected identifiers) for clearer test failures.
+    /// - Parameter exposeContentAccessibility: When true (default), root is a container and content a11y tree is exposed.
+    ///   When false, root is an accessibility element; use for views where SwiftUI assigns the identifier to the host view (e.g. card components in unit-test hosting).
     @MainActor
     public static func testComponentComplianceSinglePlatform<V: View>(
         _ view: V,
@@ -554,7 +557,8 @@ public enum AccessibilityTestUtilities {
         platform: SixLayerPlatform,
         componentName: String,
         testHIGCompliance: Bool = true,
-        diagnostic: inout String?
+        diagnostic: inout String?,
+        exposeContentAccessibility: Bool = true
     ) -> Bool {
         func identifierMatches(_ id: String) -> Bool {
             let prefix = expectedPattern.replacingOccurrences(of: ".*", with: "")
@@ -562,8 +566,7 @@ public enum AccessibilityTestUtilities {
         }
         #if canImport(UIKit) || canImport(AppKit)
         // Host view with task-local config so automaticCompliance generates identifiers (namespace "SixLayer", etc.).
-        // Use exposeContentAccessibility: true so the hosting root is a container and SwiftUI content's a11y tree
-        // (including identifiers from automaticCompliance) is exposed to findAllAccessibilityIdentifiersFromPlatformView.
+        // exposeContentAccessibility: true = root is container, content a11y tree visible. false = root is element (identifier may be on host view).
         let testDefaults = UserDefaults(suiteName: "SixLayer.A11yTestHelper") ?? .standard
         let config = AccessibilityIdentifierConfig(userDefaults: testDefaults, keyPrefix: "Test.A11y.")
         config.enableAutoIDs = true
@@ -571,7 +574,7 @@ public enum AccessibilityTestUtilities {
         config.namespace = "SixLayer"
         config.enableUITestIntegration = true
         let root: Any? = AccessibilityIdentifierConfig.$taskLocalConfig.withValue(config) {
-            TestSetupUtilities.hostRootPlatformView(view, forceLayout: true, exposeContentAccessibility: true)
+            TestSetupUtilities.hostRootPlatformView(view, forceLayout: true, exposeContentAccessibility: exposeContentAccessibility)
         }
         if let root = root {
             let ids = findAllAccessibilityIdentifiersFromPlatformView(root)
@@ -634,14 +637,16 @@ public func testComponentComplianceSinglePlatform<V: View>(
     expectedPattern: String,
     platform: SixLayerPlatform,
     componentName: String,
-    testHIGCompliance: Bool = true
+    testHIGCompliance: Bool = true,
+    exposeContentAccessibility: Bool = true
 ) -> Bool {
     return AccessibilityTestUtilities.testComponentComplianceSinglePlatform(
         view,
         expectedPattern: expectedPattern,
         platform: platform,
         componentName: componentName,
-        testHIGCompliance: testHIGCompliance
+        testHIGCompliance: testHIGCompliance,
+        exposeContentAccessibility: exposeContentAccessibility
     )
 }
 
@@ -653,7 +658,8 @@ public func testComponentComplianceSinglePlatform<V: View>(
     platform: SixLayerPlatform,
     componentName: String,
     testHIGCompliance: Bool = true,
-    diagnostic: inout String?
+    diagnostic: inout String?,
+    exposeContentAccessibility: Bool = true
 ) -> Bool {
     return AccessibilityTestUtilities.testComponentComplianceSinglePlatform(
         view,
@@ -661,7 +667,8 @@ public func testComponentComplianceSinglePlatform<V: View>(
         platform: platform,
         componentName: componentName,
         testHIGCompliance: testHIGCompliance,
-        diagnostic: &diagnostic
+        diagnostic: &diagnostic,
+        exposeContentAccessibility: exposeContentAccessibility
     )
 }
 
