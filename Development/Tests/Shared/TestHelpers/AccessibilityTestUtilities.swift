@@ -636,33 +636,35 @@ public enum AccessibilityTestUtilities {
         config.globalAutomaticAccessibilityIdentifiers = true
         config.namespace = "SixLayer"
         config.enableUITestIntegration = true
+        var passed = false
         let root: Any? = AccessibilityIdentifierConfig.$taskLocalConfig.withValue(config) {
-            TestSetupUtilities.hostRootPlatformView(view, forceLayout: true, exposeContentAccessibility: exposeContentAccessibility)
+            let hosted = TestSetupUtilities.hostRootPlatformView(view, forceLayout: true, exposeContentAccessibility: exposeContentAccessibility)
+            if let root = hosted {
+                let ids = findAllAccessibilityIdentifiersFromPlatformView(root)
+                if ids.contains(where: identifierMatches) { passed = true; return hosted }
+                diagnostic = "Collected identifiers (\(ids.count)): \(ids.prefix(30).joined(separator: ", "))\(ids.count > 30 ? "…" : "")"
+            } else {
+                diagnostic = "Hosting returned nil (no platform view to collect identifiers from)"
+            }
+            #if canImport(ViewInspector)
+            do {
+                let inspected = try AnyView(view).inspect()
+                let allIds = allAccessibilityIdentifiersInInspectedRecursive(inspected)
+                if allIds.contains(where: identifierMatches) { passed = true; return hosted }
+                let viNote = allIds.isEmpty
+                    ? "; ViewInspector collected 0 IDs"
+                    : "; ViewInspector collected \(allIds.count) IDs: \(allIds.prefix(5).joined(separator: ", "))\(allIds.count > 5 ? "…" : "")"
+                if let d = diagnostic { diagnostic = d + viNote } else { diagnostic = viNote }
+            } catch {
+                if let d = diagnostic { diagnostic = d + "; ViewInspector inspect() threw: \(error)" } else { diagnostic = "ViewInspector inspect() threw: \(error)" }
+            }
+            #endif
+            return hosted
         }
-        if let root = root {
-            let ids = findAllAccessibilityIdentifiersFromPlatformView(root)
-            if ids.contains(where: identifierMatches) { return true }
-            diagnostic = "Collected identifiers (\(ids.count)): \(ids.prefix(30).joined(separator: ", "))\(ids.count > 30 ? "…" : "")"
-        } else {
-            diagnostic = "Hosting returned nil (no platform view to collect identifiers from)"
-        }
+        if passed { return true }
+        _ = root
         #endif
-        #if canImport(ViewInspector)
-        do {
-            let inspected = try AnyView(view).inspect()
-            let allIds = allAccessibilityIdentifiersInInspectedRecursive(inspected)
-            if allIds.contains(where: identifierMatches) { return true }
-            let viNote = allIds.isEmpty
-                ? "; ViewInspector collected 0 IDs"
-                : "; ViewInspector collected \(allIds.count) IDs: \(allIds.prefix(5).joined(separator: ", "))\(allIds.count > 5 ? "…" : "")"
-            if let d = diagnostic { diagnostic = d + viNote } else { diagnostic = viNote }
-        } catch {
-            if let d = diagnostic { diagnostic = d + "; ViewInspector inspect() threw: \(error)" } else { diagnostic = "ViewInspector inspect() threw: \(error)" }
-        }
         return false
-        #else
-        return false
-        #endif
     }
 
     /// Same as testComponentComplianceSinglePlatform but for Inspectable views: uses direct view.inspect() (no AnyView — Issue 178).
