@@ -2,12 +2,13 @@
 -- Usage:
 --   Run with no args: prompts for scheme (and optionally window).
 --   Run with scheme name: osascript set_xcode_scheme.applescript "SLF-iOS-AllTests"
---     IMPORTANT: The Xcode window for the target project must be frontmost, or you get SCHEME_NOT_FOUND.
---     (e.g. for SixLayer: click the SixLayer window, then run with "SLF-iOS-ViewInspectorTests".)
+--     Tries the frontmost window first; if the scheme is not found there, searches other Xcode
+--     windows and brings the one that has the scheme to front, then sets it. No need to click
+--     the target window first.
 --   Run with scheme and window: osascript set_xcode_scheme.applescript "SLF-iOS-AllTests" 2
 --     (window 2 = second window; 1 = frontmost)
 --   Run with scheme and window title fragment: osascript set_xcode_scheme.applescript "SLF-iOS-AllTests" "SixLayer"
---     (brings first window whose title contains "SixLayer" to front, then sets scheme; may hit -10006 in some environments)
+--     (brings first window whose title contains "SixLayer" to front, then sets scheme)
 
 on run argv
 	if (count of argv) = 0 then
@@ -58,7 +59,7 @@ on setSchemeInXcode(schemeName, windowSelector)
 					set sel to windowSelector as integer
 					-- sel is 1-based: 1 = front, 2 = second, etc.
 					if sel > 1 and sel ≤ windowCount then
-						set index of window sel to 1
+						my bringWindowToFront(window sel)
 						delay 0.2
 					end if
 				on error
@@ -67,7 +68,7 @@ on setSchemeInXcode(schemeName, windowSelector)
 						set win to window i
 						set winName to name of win
 						if winName contains (windowSelector as text) then
-							set index of win to 1
+							my bringWindowToFront(win)
 							delay 0.2
 							exit repeat
 						end if
@@ -75,8 +76,36 @@ on setSchemeInXcode(schemeName, windowSelector)
 				end try
 			end tell
 		end tell
+	else
+		-- "front": try current window first; if scheme not found, search other windows
+		set tryResult to trySetSchemeInActiveDocument(schemeName)
+		if tryResult is not "SCHEME_NOT_FOUND" then
+			return tryResult
+		end if
+		tell application "System Events"
+			tell process "Xcode"
+				set windowCount to count of windows
+				if windowCount < 2 then
+					return "SCHEME_NOT_FOUND"
+				end if
+				repeat with i from 2 to windowCount
+					my bringWindowToFront(window i)
+					delay 0.2
+					set tryResult to trySetSchemeInActiveDocument(schemeName)
+					if tryResult is not "SCHEME_NOT_FOUND" then
+						return tryResult
+					end if
+				end repeat
+			end tell
+		end tell
+		return "SCHEME_NOT_FOUND"
 	end if
 
+	return trySetSchemeInActiveDocument(schemeName)
+end setSchemeInXcode
+
+-- Try to set the scheme in Xcode's current active workspace document. Returns "OK", "NO_DOCUMENT", or "SCHEME_NOT_FOUND".
+on trySetSchemeInActiveDocument(schemeName)
 	tell application "Xcode"
 		if (count of documents) = 0 then
 			return "NO_DOCUMENT"
@@ -91,4 +120,22 @@ on setSchemeInXcode(schemeName, windowSelector)
 		end repeat
 		return "SCHEME_NOT_FOUND"
 	end tell
-end setSchemeInXcode
+end trySetSchemeInActiveDocument
+
+-- Bring an Xcode window to front. Tries "set index to 1"; on error (e.g. -10006) clicks the window to focus it.
+on bringWindowToFront(win)
+	tell application "System Events"
+		tell process "Xcode"
+			try
+				set index of win to 1
+			on error
+				-- Fallback: click inside the window to focus it (avoids -10006 in some environments)
+				set pos to position of win
+				set sz to size of win
+				set clickX to (item 1 of pos) + (item 1 of sz) / 2
+				set clickY to (item 2 of pos) + (item 2 of sz) / 2
+				click at {clickX, clickY}
+			end try
+		end tell
+	end tell
+end bringWindowToFront
