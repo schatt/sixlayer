@@ -75,6 +75,35 @@ private func allAccessibilityIdentifiersInInspected(_ inspected: ViewInspector.I
     }
     return ids
 }
+
+/// Collect all accessibility identifiers from the full ViewInspector hierarchy.
+/// Uses findAll for AnyView, VStack, HStack, ZStack so nodes that hold modifiers are checked (card components nest deep).
+@MainActor
+private func allAccessibilityIdentifiersInInspectedRecursive(
+    _ inspected: ViewInspector.InspectableView<ViewInspector.ViewType.ClassifiedView>
+) -> [String] {
+    var ids: [String] = []
+    func collect(_ id: String?) {
+        if let id = id, !id.isEmpty { ids.append(id) }
+    }
+    collect(try? inspected.accessibilityIdentifier())
+    for av in (try? inspected.findAll(ViewInspector.ViewType.AnyView.self)) ?? [] {
+        collect(try? av.accessibilityIdentifier())
+    }
+    for v in (try? inspected.findAll(ViewInspector.ViewType.VStack.self)) ?? [] {
+        collect(try? v.accessibilityIdentifier())
+    }
+    for v in (try? inspected.findAll(ViewInspector.ViewType.HStack.self)) ?? [] {
+        collect(try? v.accessibilityIdentifier())
+    }
+    for v in (try? inspected.findAll(ViewInspector.ViewType.ZStack.self)) ?? [] {
+        collect(try? v.accessibilityIdentifier())
+    }
+    for v in (try? inspected.findAll(ViewInspector.ViewType.Button.self)) ?? [] {
+        collect(try? v.accessibilityIdentifier())
+    }
+    return ids
+}
 #endif
 
 /// Get accessibility identifier when view is not Inspectable: try platform hierarchy first (IDs applied by SwiftUI), then ViewInspector (Issue 178).
@@ -585,10 +614,10 @@ public enum AccessibilityTestUtilities {
         }
         #endif
         #if canImport(ViewInspector)
-        // Fallback: ViewInspector – collect all identifiers from inspected hierarchy and check for match
+        // Fallback: ViewInspector – recursively collect all identifiers from full hierarchy (card components nest modifiers deep).
         do {
             let inspected = try AnyView(view).inspect()
-            let allIds = allAccessibilityIdentifiersInInspected(inspected)
+            let allIds = allAccessibilityIdentifiersInInspectedRecursive(inspected)
             if allIds.contains(where: identifierMatches) { return true }
         } catch {
             return false
