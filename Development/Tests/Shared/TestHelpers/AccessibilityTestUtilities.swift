@@ -77,7 +77,7 @@ private func allAccessibilityIdentifiersInInspected(_ inspected: ViewInspector.I
 }
 
 /// Collect all accessibility identifiers from the full ViewInspector hierarchy.
-/// Uses findAll for AnyView, VStack, HStack, ZStack so nodes that hold modifiers are checked (card components nest deep).
+/// Uses findAll for AnyView, VStack, HStack, ZStack and unwraps root AnyView so the inner view (e.g. card with modifier) is checked.
 @MainActor
 private func allAccessibilityIdentifiersInInspectedRecursive(
     _ inspected: ViewInspector.InspectableView<ViewInspector.ViewType.ClassifiedView>
@@ -87,6 +87,15 @@ private func allAccessibilityIdentifiersInInspectedRecursive(
         if let id = id, !id.isEmpty { ids.append(id) }
     }
     collect(try? inspected.accessibilityIdentifier())
+    // Unwrap root AnyView: the modifier is on the inner view (e.g. ExpandableCardComponent), not the AnyView container.
+    if let inner = try? inspected.anyView() {
+        collect(try? inner.accessibilityIdentifier())
+        for av in (try? inner.findAll(ViewInspector.ViewType.AnyView.self)) ?? [] { collect(try? av.accessibilityIdentifier()) }
+        for v in (try? inner.findAll(ViewInspector.ViewType.VStack.self)) ?? [] { collect(try? v.accessibilityIdentifier()) }
+        for v in (try? inner.findAll(ViewInspector.ViewType.HStack.self)) ?? [] { collect(try? v.accessibilityIdentifier()) }
+        for v in (try? inner.findAll(ViewInspector.ViewType.ZStack.self)) ?? [] { collect(try? v.accessibilityIdentifier()) }
+        for v in (try? inner.findAll(ViewInspector.ViewType.Button.self)) ?? [] { collect(try? v.accessibilityIdentifier()) }
+    }
     for av in (try? inspected.findAll(ViewInspector.ViewType.AnyView.self)) ?? [] {
         collect(try? av.accessibilityIdentifier())
     }
@@ -102,6 +111,29 @@ private func allAccessibilityIdentifiersInInspectedRecursive(
     for v in (try? inspected.findAll(ViewInspector.ViewType.Button.self)) ?? [] {
         collect(try? v.accessibilityIdentifier())
     }
+    // ClassifiedView is the generic "any" view type; the modifier may be on a node that only appears as ClassifiedView.
+    for node in (try? inspected.findAll(ViewInspector.ViewType.ClassifiedView.self, where: { _ in true })) ?? [] {
+        collect(try? node.accessibilityIdentifier())
+    }
+    return ids
+}
+
+/// Collect accessibility identifiers from a directly inspected view (no AnyView wrap).
+/// Use when the view type conforms to ViewInspector.Inspectable (Issue 178).
+@MainActor
+private func allAccessibilityIdentifiersFromTypedInspectable<V: View & ViewInspector.Inspectable>(
+    _ inspected: ViewInspector.InspectableView<ViewInspector.ViewType.View<V>>
+) -> [String] {
+    var ids: [String] = []
+    func collect(_ id: String?) {
+        if let id = id, !id.isEmpty { ids.append(id) }
+    }
+    collect(try? inspected.accessibilityIdentifier())
+    for av in (try? inspected.findAll(ViewInspector.ViewType.AnyView.self)) ?? [] { collect(try? av.accessibilityIdentifier()) }
+    for v in (try? inspected.findAll(ViewInspector.ViewType.VStack.self)) ?? [] { collect(try? v.accessibilityIdentifier()) }
+    for v in (try? inspected.findAll(ViewInspector.ViewType.HStack.self)) ?? [] { collect(try? v.accessibilityIdentifier()) }
+    for v in (try? inspected.findAll(ViewInspector.ViewType.ZStack.self)) ?? [] { collect(try? v.accessibilityIdentifier()) }
+    for v in (try? inspected.findAll(ViewInspector.ViewType.Button.self)) ?? [] { collect(try? v.accessibilityIdentifier()) }
     return ids
 }
 #endif
@@ -594,8 +626,6 @@ public enum AccessibilityTestUtilities {
             return id.hasPrefix(prefix) || id.contains(componentName)
         }
         #if canImport(UIKit) || canImport(AppKit)
-        // Host view with task-local config so automaticCompliance generates identifiers (namespace "SixLayer", etc.).
-        // exposeContentAccessibility: true = root is container, content a11y tree visible. false = root is element (identifier may be on host view).
         let testDefaults = UserDefaults(suiteName: "SixLayer.A11yTestHelper") ?? .standard
         let config = AccessibilityIdentifierConfig(userDefaults: testDefaults, keyPrefix: "Test.A11y.")
         config.enableAutoIDs = true
@@ -614,7 +644,6 @@ public enum AccessibilityTestUtilities {
         }
         #endif
         #if canImport(ViewInspector)
-        // Fallback: ViewInspector – recursively collect all identifiers from full hierarchy (card components nest modifiers deep).
         do {
             let inspected = try AnyView(view).inspect()
             let allIds = allAccessibilityIdentifiersInInspectedRecursive(inspected)
@@ -622,6 +651,57 @@ public enum AccessibilityTestUtilities {
             let viNote = allIds.isEmpty
                 ? "; ViewInspector collected 0 IDs"
                 : "; ViewInspector collected \(allIds.count) IDs: \(allIds.prefix(5).joined(separator: ", "))\(allIds.count > 5 ? "…" : "")"
+            if let d = diagnostic { diagnostic = d + viNote } else { diagnostic = viNote }
+        } catch {
+            if let d = diagnostic { diagnostic = d + "; ViewInspector inspect() threw: \(error)" } else { diagnostic = "ViewInspector inspect() threw: \(error)" }
+        }
+        return false
+        #else
+        return false
+        #endif
+    }
+
+    /// Same as testComponentComplianceSinglePlatform but for Inspectable views: uses direct view.inspect() (no AnyView — Issue 178).
+    @MainActor
+    public static func testComponentComplianceSinglePlatform<V: View & ViewInspector.Inspectable>(
+        _ view: V,
+        expectedPattern: String,
+        platform: SixLayerPlatform,
+        componentName: String,
+        testHIGCompliance: Bool = true,
+        diagnostic: inout String?,
+        exposeContentAccessibility: Bool = true
+    ) -> Bool {
+        func identifierMatches(_ id: String) -> Bool {
+            let prefix = expectedPattern.replacingOccurrences(of: ".*", with: "")
+            return id.hasPrefix(prefix) || id.contains(componentName)
+        }
+        #if canImport(UIKit) || canImport(AppKit)
+        let testDefaults = UserDefaults(suiteName: "SixLayer.A11yTestHelper") ?? .standard
+        let config = AccessibilityIdentifierConfig(userDefaults: testDefaults, keyPrefix: "Test.A11y.")
+        config.enableAutoIDs = true
+        config.globalAutomaticAccessibilityIdentifiers = true
+        config.namespace = "SixLayer"
+        config.enableUITestIntegration = true
+        let root: Any? = AccessibilityIdentifierConfig.$taskLocalConfig.withValue(config) {
+            TestSetupUtilities.hostRootPlatformView(view, forceLayout: true, exposeContentAccessibility: exposeContentAccessibility)
+        }
+        if let root = root {
+            let ids = findAllAccessibilityIdentifiersFromPlatformView(root)
+            if ids.contains(where: identifierMatches) { return true }
+            diagnostic = "Collected identifiers (\(ids.count)): \(ids.prefix(30).joined(separator: ", "))\(ids.count > 30 ? "…" : "")"
+        } else {
+            diagnostic = "Hosting returned nil (no platform view to collect identifiers from)"
+        }
+        #endif
+        #if canImport(ViewInspector)
+        do {
+            let inspected = try view.inspect()
+            let allIds = allAccessibilityIdentifiersFromTypedInspectable(inspected)
+            if allIds.contains(where: identifierMatches) { return true }
+            let viNote = allIds.isEmpty
+                ? "; ViewInspector (direct) collected 0 IDs"
+                : "; ViewInspector (direct) collected \(allIds.count) IDs: \(allIds.prefix(5).joined(separator: ", "))\(allIds.count > 5 ? "…" : "")"
             if let d = diagnostic { diagnostic = d + viNote } else { diagnostic = viNote }
         } catch {
             if let d = diagnostic { diagnostic = d + "; ViewInspector inspect() threw: \(error)" } else { diagnostic = "ViewInspector inspect() threw: \(error)" }
@@ -704,6 +784,30 @@ public func testComponentComplianceSinglePlatform<V: View>(
         exposeContentAccessibility: exposeContentAccessibility
     )
 }
+
+#if canImport(ViewInspector)
+/// Global alias for Inspectable views: uses direct view.inspect() (no AnyView — Issue 178).
+@MainActor
+public func testComponentComplianceSinglePlatform<V: View & ViewInspector.Inspectable>(
+    _ view: V,
+    expectedPattern: String,
+    platform: SixLayerPlatform,
+    componentName: String,
+    testHIGCompliance: Bool = true,
+    diagnostic: inout String?,
+    exposeContentAccessibility: Bool = true
+) -> Bool {
+    return AccessibilityTestUtilities.testComponentComplianceSinglePlatform(
+        view,
+        expectedPattern: expectedPattern,
+        platform: platform,
+        componentName: componentName,
+        testHIGCompliance: testHIGCompliance,
+        diagnostic: &diagnostic,
+        exposeContentAccessibility: exposeContentAccessibility
+    )
+}
+#endif
 
 /// Global function alias for testAccessibilityIdentifiersCrossPlatform
 @MainActor
