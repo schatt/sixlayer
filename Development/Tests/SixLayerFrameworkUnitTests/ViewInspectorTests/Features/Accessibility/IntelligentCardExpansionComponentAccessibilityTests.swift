@@ -19,9 +19,30 @@ import SwiftUI
 /// elements that way are verified correctly.
 @Suite("Intelligent Card Expansion Component Accessibility")
 open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
-    
+
+    // MARK: - Sanity: minimal view with same compliance helper (diagnose 0 IDs)
+
+    /// Same setup as card tests but with a minimal view. If this passes, 0 IDs are card-view specific.
+    @Test @MainActor func testMinimalViewWithAutomaticComplianceGeneratesAccessibilityIdentifiers() async {
+        initializeTestConfig()
+        runWithTaskLocalConfig {
+            let view = Text("Minimal").automaticCompliance(named: "MinimalCardSanity")
+            var diagnostic: String? = nil
+            let hasAccessibilityID = testComponentComplianceSinglePlatform(
+                view,
+                expectedPattern: "SixLayer.main.ui.*",
+                platform: SixLayerPlatform.iOS,
+                componentName: "MinimalCardSanity",
+                diagnostic: &diagnostic,
+                exposeContentAccessibility: false
+            )
+            if !hasAccessibilityID, let d = diagnostic { Issue.record(DiagnosticMessage(message: d)) }
+            #expect(hasAccessibilityID, "Minimal view with .automaticCompliance(named:) should generate identifiers in same setup as card tests; diagnostic: \(diagnostic ?? "nil")")
+        }
+    }
+
     // MARK: - Layer 4 Components Tests
-    
+
     // MARK: - ExpandableCardCollectionView Tests
     
     @Test @MainActor func testExpandableCardCollectionViewGeneratesAccessibilityIdentifiers() async {
