@@ -24,6 +24,7 @@ open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
 
     /// Same setup as card tests but with a minimal view. In SLF-iOS-ViewInspectorTests this fails with 0 IDs
     /// (as do PlatformInteractionButton + compliance helper); 0 IDs appear environment-wide for this scheme.
+    /// Identifiers are visible in UI tests (XCUITest); the 0-ID result is limited to this unit-test hosting/ViewInspector setup.
     @Test @MainActor func testMinimalViewWithAutomaticComplianceGeneratesAccessibilityIdentifiers() async {
         initializeTestConfig()
         runWithTaskLocalConfig {
