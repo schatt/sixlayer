@@ -542,12 +542,28 @@ public enum AccessibilityTestUtilities {
         componentName: String,
         testHIGCompliance: Bool = true
     ) -> Bool {
+        var diagnostic: String? = nil
+        return testComponentComplianceSinglePlatform(view, expectedPattern: expectedPattern, platform: platform, componentName: componentName, testHIGCompliance: testHIGCompliance, diagnostic: &diagnostic)
+    }
+
+    /// Overload that populates diagnostic on failure (collected identifiers) for clearer test failures.
+    @MainActor
+    public static func testComponentComplianceSinglePlatform<V: View>(
+        _ view: V,
+        expectedPattern: String,
+        platform: SixLayerPlatform,
+        componentName: String,
+        testHIGCompliance: Bool = true,
+        diagnostic: inout String?
+    ) -> Bool {
         func identifierMatches(_ id: String) -> Bool {
             let prefix = expectedPattern.replacingOccurrences(of: ".*", with: "")
             return id.hasPrefix(prefix) || id.contains(componentName)
         }
         #if canImport(UIKit) || canImport(AppKit)
-        // Host view with task-local config so automaticCompliance generates identifiers (namespace "SixLayer", etc.)
+        // Host view with task-local config so automaticCompliance generates identifiers (namespace "SixLayer", etc.).
+        // Use exposeContentAccessibility: true so the hosting root is a container and SwiftUI content's a11y tree
+        // (including identifiers from automaticCompliance) is exposed to findAllAccessibilityIdentifiersFromPlatformView.
         let testDefaults = UserDefaults(suiteName: "SixLayer.A11yTestHelper") ?? .standard
         let config = AccessibilityIdentifierConfig(userDefaults: testDefaults, keyPrefix: "Test.A11y.")
         config.enableAutoIDs = true
@@ -555,11 +571,14 @@ public enum AccessibilityTestUtilities {
         config.namespace = "SixLayer"
         config.enableUITestIntegration = true
         let root: Any? = AccessibilityIdentifierConfig.$taskLocalConfig.withValue(config) {
-            TestSetupUtilities.hostRootPlatformView(view, forceLayout: true)
+            TestSetupUtilities.hostRootPlatformView(view, forceLayout: true, exposeContentAccessibility: true)
         }
         if let root = root {
             let ids = findAllAccessibilityIdentifiersFromPlatformView(root)
             if ids.contains(where: identifierMatches) { return true }
+            diagnostic = "Collected identifiers (\(ids.count)): \(ids.prefix(30).joined(separator: ", "))\(ids.count > 30 ? "…" : "")"
+        } else {
+            diagnostic = "Hosting returned nil (no platform view to collect identifiers from)"
         }
         #endif
         #if canImport(ViewInspector)
@@ -623,6 +642,26 @@ public func testComponentComplianceSinglePlatform<V: View>(
         platform: platform,
         componentName: componentName,
         testHIGCompliance: testHIGCompliance
+    )
+}
+
+/// Global function alias for testComponentComplianceSinglePlatform (with diagnostic)
+@MainActor
+public func testComponentComplianceSinglePlatform<V: View>(
+    _ view: V,
+    expectedPattern: String,
+    platform: SixLayerPlatform,
+    componentName: String,
+    testHIGCompliance: Bool = true,
+    diagnostic: inout String?
+) -> Bool {
+    return AccessibilityTestUtilities.testComponentComplianceSinglePlatform(
+        view,
+        expectedPattern: expectedPattern,
+        platform: platform,
+        componentName: componentName,
+        testHIGCompliance: testHIGCompliance,
+        diagnostic: &diagnostic
     )
 }
 
