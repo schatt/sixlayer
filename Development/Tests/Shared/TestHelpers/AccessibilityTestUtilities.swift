@@ -710,7 +710,7 @@ public enum AccessibilityTestUtilities {
                     }
                     // Mark this as a tooling limitation rather than a real contract failure.
                     if let message = diagnostic {
-                        Issue.record(message)
+                        Issue.record(NSError(domain: "SixLayer.A11yTestHelper", code: 1, userInfo: [NSLocalizedDescriptionKey: message]))
                     }
                     return hosted
                 }
@@ -792,7 +792,7 @@ public enum AccessibilityTestUtilities {
                         diagnostic = baseMessage
                     }
                     if let message = diagnostic {
-                        Issue.record(message)
+                        Issue.record(NSError(domain: "SixLayer.A11yTestHelper", code: 1, userInfo: [NSLocalizedDescriptionKey: message]))
                     }
                     return hosted
                 }
