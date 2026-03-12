@@ -263,6 +263,98 @@ extension DynamicFormField {
     }
 }
 
+// MARK: - Localization Key Helpers
+
+/// Role for field-localized strings (label, placeholder, help text, etc.).
+public enum FieldLocalizationRole: String, Sendable {
+    case label
+    case placeholder
+    case help
+    case accessibilityLabel
+    case accessibilityHint
+}
+
+@MainActor
+extension DynamicFormField {
+    /// Resolve the base localization key for this field.
+    ///
+    /// Resolution priority (highest first):
+    /// 1. Explicit override passed in (`localizationKeyBaseOverride`)
+    /// 2. Accessibility identifier passed in (`accessibilityId`)
+    /// 3. Field id (`self.id`)
+    ///
+    /// An optional `namespace` (e.g. model or screen name) is prepended when provided.
+    public func localizationBaseKey(
+        namespace: String? = nil,
+        localizationKeyBaseOverride: String? = nil,
+        accessibilityId: String? = nil
+    ) -> String {
+        let base: String
+        if let override = localizationKeyBaseOverride, !override.isEmpty {
+            base = override
+        } else if let accessibilityId, !accessibilityId.isEmpty {
+            base = accessibilityId
+        } else {
+            base = id
+        }
+        
+        if let namespace, !namespace.isEmpty {
+            return "\(namespace).\(base)"
+        } else {
+            return base
+        }
+    }
+    
+    /// Build a localization key for a specific role (label, placeholder, etc.).
+    ///
+    /// This is a pure helper and does not hit bundles; callers inject their own resolver.
+    public func localizationKey(
+        role: FieldLocalizationRole,
+        namespace: String? = nil,
+        localizationKeyBaseOverride: String? = nil,
+        accessibilityId: String? = nil
+    ) -> String {
+        let base = localizationBaseKey(
+            namespace: namespace,
+            localizationKeyBaseOverride: localizationKeyBaseOverride,
+            accessibilityId: accessibilityId
+        )
+        return "\(base).\(role.rawValue)"
+    }
+    
+    /// Resolve a localized string for this field and role using a provided resolver closure.
+    ///
+    /// - Parameters:
+    ///   - role: The logical role for the string (label, placeholder, etc.).
+    ///   - resolver: Function that maps a localization key to a localized string.
+    ///   - namespace: Optional namespace prefix (e.g. model or screen name).
+    ///   - localizationKeyBaseOverride: Optional explicit base key override.
+    ///   - accessibilityId: Optional accessibility identifier to use as default base key.
+    ///   - fallback: Fallback string to use when resolver returns the key unchanged.
+    /// - Returns: Localized string, or `fallback` when no translation is found.
+    public func resolveLocalizedString(
+        role: FieldLocalizationRole,
+        resolver: (String) -> String,
+        namespace: String? = nil,
+        localizationKeyBaseOverride: String? = nil,
+        accessibilityId: String? = nil,
+        fallback: String?
+    ) -> String? {
+        let key = localizationKey(
+            role: role,
+            namespace: namespace,
+            localizationKeyBaseOverride: localizationKeyBaseOverride,
+            accessibilityId: accessibilityId
+        )
+        let value = resolver(key)
+        // If resolver returns the key itself, treat it as "not localized" and fall back.
+        if value == key {
+            return fallback
+        }
+        return value
+    }
+}
+
 // MARK: - Individual Field Components (TDD Red Phase Stubs)
 
 /// Text field component
