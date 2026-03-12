@@ -19,8 +19,15 @@ on run argv
 		return setSchemeInXcode(schemeName, windowSelector)
 	else
 		set schemeName to item 1 of argv
-		set windowSelector to item 2 of argv
-		return setSchemeInXcode(schemeName, windowSelector)
+		set secondArg to item 2 of argv
+		-- If second arg looks like a path (contains "/" or ":"), treat it as a workspace/project path
+		-- so we can force the correct window by opening that file first.
+		if (secondArg contains "/") or (secondArg contains ":") then
+			return setSchemeForWorkspace(schemeName, secondArg)
+		else
+			set windowSelector to secondArg
+			return setSchemeInXcode(schemeName, windowSelector)
+		end if
 	end if
 end run
 
@@ -103,6 +110,20 @@ on setSchemeInXcode(schemeName, windowSelector)
 
 	return trySetSchemeInActiveDocument(schemeName)
 end setSchemeInXcode
+
+-- Open a specific workspace/project file in Xcode (if needed), bring it to the front, then set the scheme.
+-- This forces the "active workspace document" to be the one at workspacePath, avoiding ambiguity when
+-- multiple unrelated projects are open.
+on setSchemeForWorkspace(schemeName, workspacePath)
+	set wsFile to POSIX file workspacePath
+	tell application "Xcode"
+		activate
+		open wsFile
+	end tell
+	-- Give Xcode a moment to open/focus the workspace, then set scheme in the frontmost window.
+	delay 0.5
+	return setSchemeInXcode(schemeName, "front")
+end setSchemeForWorkspace
 
 -- Try to set the scheme in Xcode's current active workspace document. Returns "OK", "NO_DOCUMENT", or "SCHEME_NOT_FOUND".
 on trySetSchemeInActiveDocument(schemeName)
