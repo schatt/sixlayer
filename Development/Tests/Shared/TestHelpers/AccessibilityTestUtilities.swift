@@ -672,7 +672,7 @@ public enum AccessibilityTestUtilities {
             if let root = hosted {
                 platformIds = findAllAccessibilityIdentifiersFromPlatformView(root)
                 if platformIds.contains(where: identifierMatches) { passed = true; return hosted }
-                diagnostic = "Collected identifiers (\(platformIds.count)): \(platformIds.prefix(30).joined(separator: \", \"))\(platformIds.count > 30 ? \"…\" : \"\")"
+                diagnostic = "Collected identifiers (\(platformIds.count)): \(platformIds.prefix(30).joined(separator: ", "))\(platformIds.count > 30 ? "…" : "")"
             } else {
                 diagnostic = "Hosting returned nil (no platform view to collect identifiers from)"
             }
@@ -683,7 +683,7 @@ public enum AccessibilityTestUtilities {
                 if viewInspectorIds.contains(where: identifierMatches) { passed = true; return hosted }
                 let viNote = viewInspectorIds.isEmpty
                     ? "; ViewInspector collected 0 IDs"
-                    : "; ViewInspector collected \(viewInspectorIds.count) IDs: \(viewInspectorIds.prefix(5).joined(separator: \", \"))\(viewInspectorIds.count > 5 ? \"…\" : \"\")"
+                    : "; ViewInspector collected \(viewInspectorIds.count) IDs: \(viewInspectorIds.prefix(5).joined(separator: ", "))\(viewInspectorIds.count > 5 ? "…" : "")"
                 if let d = diagnostic { diagnostic = d + viNote } else { diagnostic = viNote }
             } catch {
                 if let d = diagnostic { diagnostic = d + "; ViewInspector inspect() threw: \(error)" } else { diagnostic = "ViewInspector inspect() threw: \(error)" }
@@ -701,7 +701,7 @@ public enum AccessibilityTestUtilities {
                     passed = true
                     let genSummary = generatorIds.isEmpty
                         ? "generator produced matching ID (no IDs collected from platform/ViewInspector)"
-                        : "generator produced IDs: \(generatorIds.prefix(5).joined(separator: \", \"))"
+                        : "generator produced IDs: \(generatorIds.prefix(5).joined(separator: ", "))"
                     let baseMessage = "Generator debug log matched expected accessibility identifier for component '\(componentName)': \(genSummary)"
                     if let d = diagnostic {
                         diagnostic = d + "; " + baseMessage
@@ -756,7 +756,7 @@ public enum AccessibilityTestUtilities {
             if let root = hosted {
                 platformIds = findAllAccessibilityIdentifiersFromPlatformView(root)
                 if platformIds.contains(where: identifierMatches) { passed = true; return hosted }
-                diagnostic = "Collected identifiers (\(platformIds.count)): \(platformIds.prefix(30).joined(separator: \", \"))\(platformIds.count > 30 ? \"…\" : \"\")"
+                diagnostic = "Collected identifiers (\(platformIds.count)): \(platformIds.prefix(30).joined(separator: ", "))\(platformIds.count > 30 ? "…" : "")"
             } else {
                 diagnostic = "Hosting returned nil (no platform view to collect identifiers from)"
             }
@@ -768,7 +768,7 @@ public enum AccessibilityTestUtilities {
                 if viewInspectorIds.contains(where: identifierMatches) { passed = true; return hosted }
                 let viNote = viewInspectorIds.isEmpty
                     ? "; ViewInspector (direct) collected 0 IDs"
-                    : "; ViewInspector (direct) collected \(viewInspectorIds.count) IDs: \(viewInspectorIds.prefix(5).joined(separator: \", \"))\(viewInspectorIds.count > 5 ? \"…\" : \"\")"
+                    : "; ViewInspector (direct) collected \(viewInspectorIds.count) IDs: \(viewInspectorIds.prefix(5).joined(separator: ", "))\(viewInspectorIds.count > 5 ? "…" : "")"
                 if let d = diagnostic { diagnostic = d + viNote } else { diagnostic = viNote }
             } catch {
                 if let d = diagnostic { diagnostic = d + "; ViewInspector inspect() threw: \(error)" } else { diagnostic = "ViewInspector inspect() threw: \(error)" }
@@ -784,7 +784,7 @@ public enum AccessibilityTestUtilities {
                     passed = true
                     let genSummary = generatorIds.isEmpty
                         ? "generator produced matching ID (no IDs collected from platform/ViewInspector)"
-                        : "generator produced IDs: \(generatorIds.prefix(5).joined(separator: \", \"))"
+                        : "generator produced IDs: \(generatorIds.prefix(5).joined(separator: ", "))"
                     let baseMessage = "Generator debug log matched expected accessibility identifier for component '\(componentName)': \(genSummary)"
                     if let d = diagnostic {
                         diagnostic = d + "; " + baseMessage
