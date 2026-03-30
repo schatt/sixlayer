@@ -880,8 +880,18 @@ public enum AccessibilityTestUtilities {
             return false
         }
         
-        let config = AccessibilityIdentifierConfig.currentTaskLocalConfig ?? AccessibilityIdentifierConfig.shared
-        return runCore(config: config)
+        // When @TaskLocal is unset, do not use `.shared` for compliance checks: the singleton defaults to
+        // an empty `namespace`, so generated IDs are `main.ui.*` while tests expect `SixLayer.main.ui.*`.
+        // Hosting must run inside `withValue` so SwiftUI body evaluation sees the same config as
+        // `runCore` (mirrors the diagnostic overload). Callers using `runWithTaskLocalConfig` keep
+        // their existing task-local instance.
+        if let config = AccessibilityIdentifierConfig.currentTaskLocalConfig {
+            return runCore(config: config)
+        }
+        let isolated = TestSetupUtilities.makeIsolatedAccessibilityIdentifierConfig()
+        return AccessibilityIdentifierConfig.$taskLocalConfig.withValue(isolated) {
+            runCore(config: isolated)
+        }
     }
 
     /// Overload that populates diagnostic on failure (collected identifiers) for clearer test failures.
