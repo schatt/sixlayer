@@ -721,22 +721,20 @@ struct Layer4ContractOnlyView: View {
                             .font(.caption)
                             .foregroundColor(.secondary)
                         SixLayerFramework.platformTextField("L4ContractCopySource", text: $l4ContractCopySource)
-                        platformButton("L4ContractCopy") {
+                        platformButton(label: "L4ContractCopy", id: "L4ContractCopy") {
                             _ = platformCopyToClipboard_L4(content: l4ContractCopySource)
                         }
-                        .accessibilityIdentifier("L4ContractCopy")
                         Text("Print (platformPrint_L4)")
                             .font(.caption)
                             .foregroundColor(.secondary)
-                        platformButton("L4ContractPrint") { l4ShowPrint = true }
+                        platformButton(label: "L4ContractPrint", id: "L4ContractPrint") { l4ShowPrint = true }
                             .platformPrint_L4(isPresented: $l4ShowPrint, content: .text("L4 Print Contract"))
-                            .accessibilityIdentifier("L4ContractPrint")
-                        Text("CloudKit Sync Status (platformCloudKitSyncStatus_L4)")
+                        Text("CloudKit Sync Status")
                             .font(.caption)
                             .foregroundColor(.secondary)
                         platformCloudKitSyncStatus_L4(status: .idle)
                             .accessibilityIdentifier("platformCloudKitSyncStatus_L4")
-                        Text("Photo Display (platformPhotoDisplay_L4)")
+                        Text("Photo Display")
                             .font(.caption)
                             .foregroundColor(.secondary)
                         PlatformPhotoComponentsLayer4.platformPhotoDisplay_L4(image: nil, style: .aspectFit)
@@ -746,21 +744,15 @@ struct Layer4ContractOnlyView: View {
                 }
                 ExampleSection(title: "L4 Presentation") {
                     platformVStack(alignment: .leading, spacing: 12) {
-                        platformButton("L4ContractSheet") { l4ShowSheet = true }
-                            .accessibilityIdentifier("L4ContractSheet")
-                        platformButton("L4ContractPopover") { l4ShowPopover = true }
-                            .accessibilityIdentifier("L4ContractPopover")
+                        platformButton(label: "L4ContractSheet", id: "L4ContractSheet") { l4ShowSheet = true }
+                        platformButton(label: "L4ContractPopover", id: "L4ContractPopover") { l4ShowPopover = true }
                     }
                 }
-                .platformSheet_L4(isPresented: $l4ShowSheet) {
-                    L4SheetContentContractView()
-                }
-                .platformPopover_L4(isPresented: $l4ShowPopover) {
-                    Text("L4PopoverContentContract")
-                }
                 ExampleSection(title: "L4 Navigation") {
-                    NavigationLink("L4NavLinkContract") {
+                    NavigationLink {
                         L4NavDestinationView()
+                    } label: {
+                        Text("L4NavLinkContract")
                     }
                     .accessibilityIdentifier("L4NavLinkContract")
                 }
@@ -783,7 +775,7 @@ struct Layer4ContractOnlyView: View {
                 ExampleSection(title: "L4 Form") {
                     platformVStack(alignment: .leading, spacing: 16) {
                         SixLayerFramework.platformForm {
-                            Group { Text("Form section body") }
+                            EmptyView()
                                 .platformFormSection(header: { Text("L4FormSectionContract") }, content: { Text("Section body") })
                         }
                         platformVStack(alignment: .leading, spacing: 8) {
@@ -815,5 +807,11 @@ struct Layer4ContractOnlyView: View {
         .platformFrame()
         .navigationTitle("Layer 4 Examples")
         .platformNavigationTitleDisplayMode_L4(.large)
+        .platformSheet_L4(isPresented: $l4ShowSheet) {
+            L4SheetContentContractView()
+        }
+        .platformPopover_L4(isPresented: $l4ShowPopover) {
+            Text("L4PopoverContentContract")
+        }
     }
 }
