@@ -211,7 +211,19 @@ public enum TestSetupUtilities {
     public static func setupTestEnvironment() {
         // Clear any existing test overrides
         RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-        // Additional setup can be added here as needed
+        
+        // Ensure global (production) config does not leak between tests.
+        // Some tests still touch `AccessibilityIdentifierConfig.shared` directly; resetting here
+        // keeps the namespace stable and prevents cross-test contamination.
+        let shared = AccessibilityIdentifierConfig.shared
+        shared.enableAutoIDs = true
+        shared.globalAutomaticAccessibilityIdentifiers = true
+        shared.enableUITestIntegration = true
+        shared.globalPrefix = ""
+        shared.namespace = "SixLayer"
+        shared.currentScreenContext = "main"
+        shared.currentViewHierarchy = []
+        shared.clearDebugLog()
     }
     
     /// Cleanup test environment (placeholder - can be extended as needed)
@@ -219,6 +231,16 @@ public enum TestSetupUtilities {
     public static func cleanupTestEnvironment() {
         // Clear all test overrides
         RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-        // Additional cleanup can be added here as needed
+        
+        // Mirror setup reset to avoid leaking mutated `shared` state to subsequent tests.
+        let shared = AccessibilityIdentifierConfig.shared
+        shared.enableAutoIDs = true
+        shared.globalAutomaticAccessibilityIdentifiers = true
+        shared.enableUITestIntegration = true
+        shared.globalPrefix = ""
+        shared.namespace = "SixLayer"
+        shared.currentScreenContext = "main"
+        shared.currentViewHierarchy = []
+        shared.clearDebugLog()
     }
 }
