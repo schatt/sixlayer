@@ -367,6 +367,54 @@ public enum AccessibilityTestUtilities {
     
     // MARK: - Test Functions
     
+    @MainActor
+    private static func matchesExpectedPattern(_ identifier: String, expectedPattern: String) -> Bool {
+        guard !expectedPattern.isEmpty else { return false }
+        
+        // Treat expectedPattern as a simple glob where `*` matches any characters.
+        // Escape regex metacharacters in the pattern, then re-introduce `.*` for glob wildcards.
+        let escaped = NSRegularExpression.escapedPattern(for: expectedPattern)
+        let regexPattern = "^" + escaped.replacingOccurrences(of: "\\*", with: ".*") + "$"
+        
+        guard let regex = try? NSRegularExpression(pattern: regexPattern) else {
+            return false
+        }
+        let range = NSRange(identifier.startIndex..<identifier.endIndex, in: identifier)
+        return regex.firstMatch(in: identifier, range: range) != nil
+    }
+    
+    @MainActor
+    private static func parseGeneratedIdentifiers(from debugLog: String) -> [String] {
+        guard !debugLog.isEmpty else { return [] }
+        var identifiers: [String] = []
+        
+        // Two common formats exist in the framework debug log:
+        // - "Generated identifier 'SixLayer.main.ui....'"
+        // - "Generated ID: SixLayer.main.ui.... for: ..."
+        for line in debugLog.split(separator: "\n", omittingEmptySubsequences: true) {
+            let s = String(line)
+            
+            if let start = s.range(of: "Generated identifier '")?.upperBound,
+               let end = s[start...].firstIndex(of: "'") {
+                identifiers.append(String(s[start..<end]))
+                continue
+            }
+            
+            if let start = s.range(of: "Generated ID: ")?.upperBound {
+                // Capture until " for:" if present, otherwise take rest of line
+                if let end = s.range(of: " for:", range: start..<s.endIndex)?.lowerBound {
+                    identifiers.append(String(s[start..<end]).trimmingCharacters(in: .whitespaces))
+                } else {
+                    identifiers.append(String(s[start...]).trimmingCharacters(in: .whitespaces))
+                }
+            }
+        }
+        
+        // Preserve order but remove duplicates
+        var seen = Set<String>()
+        return identifiers.filter { seen.insert($0).inserted }
+    }
+    
     /// Inspect a SwiftUI view using ViewInspector and attempt to retrieve the
     /// accessibility identifier from an underlying Button. This centralizes the
     /// common pattern used across accessibility tests.
@@ -407,19 +455,47 @@ public enum AccessibilityTestUtilities {
         componentName: String,
         testHIGCompliance: Bool = true
     ) -> Bool {
-        #if canImport(ViewInspector)
-        do {
-            _ = try view.inspect()
-            // Search for accessibility identifiers matching the pattern
-            // This is a simplified implementation - full implementation would search the view hierarchy
-            return true // Placeholder - actual implementation would check for identifiers
-        } catch {
-            return false
+        // Primary signal: hosted platform view traversal (what XCUITest will ultimately see)
+        // Secondary signal: generator/debug log (for cases where hosting/tooling can't surface identifiers reliably)
+        let config = AccessibilityIdentifierConfig.currentTaskLocalConfig ?? AccessibilityIdentifierConfig.shared
+        let previousDebug = config.enableDebugLogging
+        config.enableDebugLogging = true
+        config.clearDebugLog()
+        defer { config.enableDebugLogging = previousDebug }
+        
+        // Hosting can hang for complex view hierarchies; avoid forceLayout here and rely on config debug log when needed.
+        let hostedRoot = TestSetupUtilities.hostRootPlatformView(view, forceLayout: false)
+        let platformIdentifiers = findAllAccessibilityIdentifiersFromPlatformView(hostedRoot)
+        let debugIdentifiers = parseGeneratedIdentifiers(from: config.getDebugLog())
+        
+        let platformMatches = platformIdentifiers.first(where: { matchesExpectedPattern($0, expectedPattern: expectedPattern) })
+        let debugMatches = debugIdentifiers.first(where: { matchesExpectedPattern($0, expectedPattern: expectedPattern) })
+        
+        if platformMatches != nil {
+            return true
         }
-        #else
-        // ViewInspector not available - return true to allow tests to pass
-        return true
-        #endif
+        
+        if debugMatches != nil {
+            // Tooling limitation: generator produced the right ID but hosting traversal couldn't see it.
+            // Treat as pass but record diagnostics so we keep pressure on improving the harness.
+            if platformIdentifiers.isEmpty {
+                Issue.record("""
+                Tooling limitation: generator produced matching identifier for \(componentName) but platform traversal found none.
+                Expected pattern: \(expectedPattern)
+                Debug identifiers (sample): \(debugIdentifiers.prefix(10))
+                """)
+            }
+            return true
+        }
+        
+        // Hard failure: no evidence in either source.
+        Issue.record("""
+        No accessibility identifiers matched expected pattern for \(componentName).
+        Expected pattern: \(expectedPattern)
+        Platform identifiers (sample): \(platformIdentifiers.prefix(10))
+        Debug identifiers (sample): \(debugIdentifiers.prefix(10))
+        """)
+        return false
     }
     
     /// Test accessibility identifiers for a view across platforms
