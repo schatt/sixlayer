@@ -381,7 +381,7 @@ struct AccessibilityHostingControllerWrapper<Content: View>: NSViewControllerRep
     
     private func transferAccessibilityIdentifier(to view: NSView) {
         // Get the generated accessibility identifier from the automatic system
-        let config = AccessibilityIdentifierConfig.shared
+        let config = AccessibilityIdentifierConfig.currentTaskLocalConfig ?? AccessibilityIdentifierConfig.shared
         if config.enableAutoIDs {
             // Use the configured namespace (respect user settings)
             let namespace = config.namespace.isEmpty ? "SixLayer" : config.namespace
