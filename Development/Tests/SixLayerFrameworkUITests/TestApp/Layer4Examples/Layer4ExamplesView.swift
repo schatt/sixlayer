@@ -683,8 +683,13 @@ private struct ExampleCard<Content: View>: View {
 /// Destination for L4 navigation contract: uses platformNavigationTitle_L4.
 private struct L4NavDestinationView: View {
     var body: some View {
-        Text("L4NavDestinationContent")
-            .platformNavigationTitle_L4("L4NavTitleContract")
+        VStack(alignment: .leading, spacing: 12) {
+            Text("L4NavDestinationContent")
+                .accessibilityIdentifier("L4NavDestinationContent")
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .padding()
+        .platformNavigationTitle_L4("L4NavTitleContract")
     }
 }
 
@@ -721,31 +726,37 @@ struct Layer4ContractOnlyView: View {
                             .font(.caption)
                             .foregroundColor(.secondary)
                         SixLayerFramework.platformTextField("L4ContractCopySource", text: $l4ContractCopySource)
-                        platformButton(label: "L4ContractCopy", id: "L4ContractCopy") {
+                        Button("L4ContractCopy") {
                             _ = platformCopyToClipboard_L4(content: l4ContractCopySource)
                         }
+                        .accessibilityIdentifier("L4ContractCopy")
+                        .accessibilityLabel("L4ContractCopy")
                         Text("Print (platformPrint_L4)")
                             .font(.caption)
                             .foregroundColor(.secondary)
-                        platformButton(label: "L4ContractPrint", id: "L4ContractPrint") { l4ShowPrint = true }
+                        Button("L4ContractPrint") { l4ShowPrint = true }
                             .platformPrint_L4(isPresented: $l4ShowPrint, content: .text("L4 Print Contract"))
+                            .accessibilityIdentifier("L4ContractPrint")
+                            .accessibilityLabel("L4ContractPrint")
                         Text("CloudKit Sync Status")
                             .font(.caption)
                             .foregroundColor(.secondary)
                         platformCloudKitSyncStatus_L4(status: .idle)
-                            .accessibilityIdentifier("platformCloudKitSyncStatus_L4")
                         Text("Photo Display")
                             .font(.caption)
                             .foregroundColor(.secondary)
                         PlatformPhotoComponentsLayer4.platformPhotoDisplay_L4(image: nil, style: .aspectFit)
                             .frame(height: 80)
-                            .accessibilityIdentifier("platformPhotoDisplay_L4")
                     }
                 }
                 ExampleSection(title: "L4 Presentation") {
                     platformVStack(alignment: .leading, spacing: 12) {
-                        platformButton(label: "L4ContractSheet", id: "L4ContractSheet") { l4ShowSheet = true }
-                        platformButton(label: "L4ContractPopover", id: "L4ContractPopover") { l4ShowPopover = true }
+                        Button("L4ContractSheet") { l4ShowSheet = true }
+                            .accessibilityIdentifier("L4ContractSheet")
+                            .accessibilityLabel("L4ContractSheet")
+                        Button("L4ContractPopover") { l4ShowPopover = true }
+                            .accessibilityIdentifier("L4ContractPopover")
+                            .accessibilityLabel("L4ContractPopover")
                     }
                 }
                 ExampleSection(title: "L4 Navigation") {
@@ -775,8 +786,16 @@ struct Layer4ContractOnlyView: View {
                 ExampleSection(title: "L4 Form") {
                     platformVStack(alignment: .leading, spacing: 16) {
                         SixLayerFramework.platformForm {
-                            EmptyView()
-                                .platformFormSection(header: { Text("L4FormSectionContract") }, content: { Text("Section body") })
+                            Color.clear
+                                .frame(width: 1, height: 1)
+                                .accessibilityHidden(true)
+                                .platformFormSection(
+                                    header: {
+                                        Text("L4FormSectionContract")
+                                            .accessibilityIdentifier("L4FormSectionContract")
+                                    },
+                                    content: { Text("Section body") }
+                                )
                         }
                         platformVStack(alignment: .leading, spacing: 8) {
                             EmptyView()
