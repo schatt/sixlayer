@@ -76,7 +76,7 @@ final class Layer4UITests: XCTestCase {
         app.descendants(matching: .any).matching(NSPredicate(format: "identifier == %@", id)).firstMatch
     }
 
-    /// Ensure we're on the contract root with top of content visible. Pop from nav stack if needed; scroll to top if L4 System is off-screen.
+    /// Ensure we're on the contract root with top of content visible. Pop from nav stack if needed; scroll to top if the first contract section is off-screen.
     @MainActor
     private func ensureContractRoot() {
         if app.staticTexts["L4NavDestinationContent"].waitForExistence(timeout: 0.5) {
@@ -91,16 +91,23 @@ final class Layer4UITests: XCTestCase {
         }
         XCTAssertTrue(app.navigationBars["Layer 4 Examples"].waitForExistence(timeout: 6.0),
                       "Contract root: Layer 4 Examples nav bar should exist")
-        if app.staticTexts["L4 System"].waitForExistence(timeout: 2.0) { return }
+        func contractTopVisible() -> Bool {
+            app.staticTexts["L4 Presentation"].waitForExistence(timeout: 0.3)
+                || app.staticTexts["L4 System"].waitForExistence(timeout: 0.3)
+        }
+        if contractTopVisible() { return }
         let scrollable = app.scrollViews.firstMatch
         if scrollable.exists {
             for _ in 0..<6 {
                 scrollable.swipeDown()
-                if app.staticTexts["L4 System"].waitForExistence(timeout: 0.5) { return }
+                if contractTopVisible() { return }
             }
         }
-        XCTAssertTrue(app.staticTexts["L4 System"].waitForExistence(timeout: 5.0),
-                      "Contract root (L4 System) should be visible after scroll to top")
+        XCTAssertTrue(
+            app.staticTexts["L4 Presentation"].waitForExistence(timeout: 5.0)
+                || app.staticTexts["L4 System"].waitForExistence(timeout: 0.5),
+            "Contract root (L4 Presentation or L4 System) should be visible after scroll to top"
+        )
     }
 
     @MainActor
