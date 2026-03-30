@@ -1,9 +1,9 @@
 # SixLayer Framework v7.5.9 Release Documentation
 
-**Release Date**: March 2026  
+**Release Date**: March 30, 2026  
 **Release Type**: Patch  
 **Previous Release**: v7.5.8  
-**Status**: In preparation
+**Status**: Released
 
 ---
 
