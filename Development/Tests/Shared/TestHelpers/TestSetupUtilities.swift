@@ -220,7 +220,8 @@ public enum TestSetupUtilities {
         }
         let config = AccessibilityIdentifierConfig(
             userDefaults: defaults,
-            keyPrefix: "Test.Accessibility."
+            keyPrefix: "Test.Accessibility.",
+            suiteNameForIsolation: suiteName
         )
         config.resetToDefaults()
         config.enableAutoIDs = true
