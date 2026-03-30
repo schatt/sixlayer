@@ -34,9 +34,9 @@ import Testing
 
 @testable import SixLayerFramework
 
-/// NOTE: Not marked @MainActor on class to allow parallel execution
+/// NOTE: Suite is a struct so Swift Testing macros avoid class/inheritance isolation issues.
 @Suite("Form Progress Integration")
-open class DynamicFormProgressIntegrationTests: BaseTestClass {
+struct DynamicFormProgressIntegrationTests {
     
     // MARK: - All Field Types Integration Tests
     
