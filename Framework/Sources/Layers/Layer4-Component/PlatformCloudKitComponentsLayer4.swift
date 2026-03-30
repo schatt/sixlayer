@@ -43,7 +43,6 @@ public func platformCloudKitSyncStatus_L4(status: CloudKitSyncStatus) -> some Vi
                 .help(error.localizedDescription)
         }
     }
-    .accessibilityElement(children: .combine)
     .automaticCompliance(named: "platformCloudKitSyncStatus_L4")
     .accessibilityIdentifier("platformCloudKitSyncStatus_L4")
 }
