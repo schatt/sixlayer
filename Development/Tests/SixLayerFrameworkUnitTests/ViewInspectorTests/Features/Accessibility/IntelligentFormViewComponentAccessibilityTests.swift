@@ -151,7 +151,7 @@ open class IntelligentFormViewComponentAccessibilityTests: BaseTestClass {
             }
             
             // When: Creating type-only form
-            let view = IntelligentFormView.generateForm(
+            _ = IntelligentFormView.generateForm(
                 for: TestEntity.self,
                 initialData: nil,  // Triggers TypeOnlyFormWrapper
                 onSubmit: { _ in },
