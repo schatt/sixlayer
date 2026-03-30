@@ -36,9 +36,8 @@ open class AccessibilityIdentifierConfigUserDefaultsTests: BaseTestClass {
     /// Clean up test UserDefaults keys
     private func cleanupTestUserDefaults() {
         guard let config = testConfig else { return }
-        let defaults = config.testingBackingUserDefaults
-        if let suiteName = defaults.suiteName {
-            defaults.removePersistentDomain(forName: suiteName)
+        if let suiteName = config.testingSuiteNameForPersistentDomain {
+            config.testingBackingUserDefaults.removePersistentDomain(forName: suiteName)
         }
     }
     
