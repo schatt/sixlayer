@@ -23,21 +23,22 @@ open class AccessibilityIdentifierConfigUserDefaultsTests: BaseTestClass {
     
     // MARK: - Test Setup
     
-    private let testSuiteName = "SixLayer.Accessibility.Tests"
     private let testUserDefaultsKeyPrefix = "Test.Accessibility."
     
-    /// Convenience accessor for the isolated test UserDefaults suite
+    /// Same backing store as `testConfig` (see `BaseTestClass.initializeTestConfig()` / `makeIsolatedAccessibilityIdentifierConfig()`).
     private var testUserDefaults: UserDefaults {
-        // This must match the suite used in BaseTestClass.initializeTestConfig()
-        return UserDefaults(suiteName: testSuiteName) ?? .standard
+        guard let config = testConfig else {
+            fatalError("initializeTestConfig() must run before accessing test UserDefaults")
+        }
+        return config.testingBackingUserDefaults
     }
     
     /// Clean up test UserDefaults keys
     private func cleanupTestUserDefaults() {
-        // Remove the entire persistent domain for the test suite to ensure
-        // a completely clean state between tests.
-        if let defaults = UserDefaults(suiteName: testSuiteName) {
-            defaults.removePersistentDomain(forName: testSuiteName)
+        guard let config = testConfig else { return }
+        let defaults = config.testingBackingUserDefaults
+        if let suiteName = defaults.suiteName {
+            defaults.removePersistentDomain(forName: suiteName)
         }
     }
     
