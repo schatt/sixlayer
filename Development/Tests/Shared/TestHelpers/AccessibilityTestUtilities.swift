@@ -821,59 +821,70 @@ public enum AccessibilityTestUtilities {
         testHIGCompliance: Bool = true,
         exposeContentAccessibility: Bool = true
     ) -> Bool {
-        // Primary signal: hosted platform view traversal (what XCUITest will ultimately see)
-        // Secondary signal: generator/debug log (for cases where hosting/tooling can't surface identifiers reliably)
-        let config = AccessibilityIdentifierConfig.currentTaskLocalConfig ?? AccessibilityIdentifierConfig.shared
-        let previousDebug = config.enableDebugLogging
-        config.enableDebugLogging = true
-        config.clearDebugLog()
-        defer { config.enableDebugLogging = previousDebug }
-        
-        // Hosting can hang for complex view hierarchies; avoid forceLayout here and rely on config debug log when needed.
-        let hostedRoot = TestSetupUtilities.hostRootPlatformView(view, forceLayout: false)
-        let platformIdentifiers = findAllAccessibilityIdentifiersFromPlatformView(hostedRoot)
-        let debugIdentifiers = parseGeneratedIdentifiers(from: config.getDebugLog())
-        let directIdentifier = getAccessibilityIdentifierForTest(view: view, hostedRoot: hostedRoot)
-        let inspectButtonIdentifier = inspectButtonAccessibilityIdentifier(view)
-        
-        var allSignals: [String] = []
-        allSignals.append(contentsOf: platformIdentifiers)
-        allSignals.append(contentsOf: debugIdentifiers)
-        if let directIdentifier, !directIdentifier.isEmpty { allSignals.append(directIdentifier) }
-        if let inspectButtonIdentifier, !inspectButtonIdentifier.isEmpty { allSignals.append(inspectButtonIdentifier) }
-        var seenSignals = Set<String>()
-        let uniqueSignals = allSignals.filter { seenSignals.insert($0).inserted }
-        
-        let platformMatches = platformIdentifiers.first(where: { matchesExpectedPattern($0, expectedPattern: expectedPattern) })
-        let debugMatches = debugIdentifiers.first(where: { matchesExpectedPattern($0, expectedPattern: expectedPattern) })
-        let anyMatches = uniqueSignals.first(where: { matchesExpectedPattern($0, expectedPattern: expectedPattern) })
-        
-        if platformMatches != nil || anyMatches != nil {
-            return true
-        }
-        
-        if debugMatches != nil {
-            // Tooling limitation: generator produced the right ID but hosting traversal couldn't see it.
-            // Treat as pass but record diagnostics so we keep pressure on improving the harness.
-            if platformIdentifiers.isEmpty {
-                Issue.record("""
-                Tooling limitation: generator produced matching identifier for \(componentName) but platform traversal found none.
-                Expected pattern: \(expectedPattern)
-                Debug identifiers (sample): \(debugIdentifiers.prefix(10))
-                """)
+        // Never fall back to `AccessibilityIdentifierConfig.shared` — it races under parallel tests.
+        // When @TaskLocal is unset, run with a fresh isolated config for this invocation only.
+        func runCore(config: AccessibilityIdentifierConfig) -> Bool {
+            // Primary signal: hosted platform view traversal (what XCUITest will ultimately see)
+            // Secondary signal: generator/debug log (for cases where hosting/tooling can't surface identifiers reliably)
+            let previousDebug = config.enableDebugLogging
+            config.enableDebugLogging = true
+            config.clearDebugLog()
+            defer { config.enableDebugLogging = previousDebug }
+            
+            // Hosting can hang for complex view hierarchies; avoid forceLayout here and rely on config debug log when needed.
+            let hostedRoot = TestSetupUtilities.hostRootPlatformView(view, forceLayout: false)
+            let platformIdentifiers = findAllAccessibilityIdentifiersFromPlatformView(hostedRoot)
+            let debugIdentifiers = parseGeneratedIdentifiers(from: config.getDebugLog())
+            let directIdentifier = getAccessibilityIdentifierForTest(view: view, hostedRoot: hostedRoot)
+            let inspectButtonIdentifier = inspectButtonAccessibilityIdentifier(view)
+            
+            var allSignals: [String] = []
+            allSignals.append(contentsOf: platformIdentifiers)
+            allSignals.append(contentsOf: debugIdentifiers)
+            if let directIdentifier, !directIdentifier.isEmpty { allSignals.append(directIdentifier) }
+            if let inspectButtonIdentifier, !inspectButtonIdentifier.isEmpty { allSignals.append(inspectButtonIdentifier) }
+            var seenSignals = Set<String>()
+            let uniqueSignals = allSignals.filter { seenSignals.insert($0).inserted }
+            
+            let platformMatches = platformIdentifiers.first(where: { matchesExpectedPattern($0, expectedPattern: expectedPattern) })
+            let debugMatches = debugIdentifiers.first(where: { matchesExpectedPattern($0, expectedPattern: expectedPattern) })
+            let anyMatches = uniqueSignals.first(where: { matchesExpectedPattern($0, expectedPattern: expectedPattern) })
+            
+            if platformMatches != nil || anyMatches != nil {
+                return true
             }
-            return true
+            
+            if debugMatches != nil {
+                // Tooling limitation: generator produced the right ID but hosting traversal couldn't see it.
+                // Treat as pass but record diagnostics so we keep pressure on improving the harness.
+                if platformIdentifiers.isEmpty {
+                    Issue.record("""
+                    Tooling limitation: generator produced matching identifier for \(componentName) but platform traversal found none.
+                    Expected pattern: \(expectedPattern)
+                    Debug identifiers (sample): \(debugIdentifiers.prefix(10))
+                    """)
+                }
+                return true
+            }
+            
+            // Hard failure: no evidence in either source.
+            Issue.record("""
+            No accessibility identifiers matched expected pattern for \(componentName).
+            Expected pattern: \(expectedPattern)
+            Platform identifiers (sample): \(platformIdentifiers.prefix(10))
+            Debug identifiers (sample): \(debugIdentifiers.prefix(10))
+            Direct identifiers (sample): \(uniqueSignals.prefix(10))
+            """)
+            return false
         }
         
-        // Hard failure: no evidence in either source.
-        Issue.record("""
-        No accessibility identifiers matched expected pattern for \(componentName).
-        Expected pattern: \(expectedPattern)
-        Platform identifiers (sample): \(platformIdentifiers.prefix(10))
-        Debug identifiers (sample): \(debugIdentifiers.prefix(10))
-        Direct identifiers (sample): \(uniqueSignals.prefix(10))
-        """)
-        return false
+        if let taskLocal = AccessibilityIdentifierConfig.currentTaskLocalConfig {
+            return runCore(config: taskLocal)
+        }
+        let isolated = TestSetupUtilities.makeIsolatedAccessibilityIdentifierConfig()
+        return AccessibilityIdentifierConfig.$taskLocalConfig.withValue(isolated) {
+            runCore(config: isolated)
+        }
     }
 
     /// Overload that populates diagnostic on failure (collected identifiers) for clearer test failures.
@@ -894,12 +905,7 @@ public enum AccessibilityTestUtilities {
             return id.hasPrefix(prefix) || id.contains(componentName)
         }
         #if canImport(UIKit) || canImport(AppKit)
-        let testDefaults = UserDefaults(suiteName: "SixLayer.A11yTestHelper") ?? .standard
-        let config = AccessibilityIdentifierConfig(userDefaults: testDefaults, keyPrefix: "Test.A11y.")
-        config.enableAutoIDs = true
-        config.globalAutomaticAccessibilityIdentifiers = true
-        config.namespace = "SixLayer"
-        config.enableUITestIntegration = true
+        let config = TestSetupUtilities.makeIsolatedAccessibilityIdentifierConfig()
         config.enableDebugLogging = true
         config.clearDebugLog()
         var passed = false
@@ -977,12 +983,7 @@ public enum AccessibilityTestUtilities {
             return id.hasPrefix(prefix) || id.contains(componentName)
         }
         #if canImport(UIKit) || canImport(AppKit)
-        let testDefaults = UserDefaults(suiteName: "SixLayer.A11yTestHelper") ?? .standard
-        let config = AccessibilityIdentifierConfig(userDefaults: testDefaults, keyPrefix: "Test.A11y.")
-        config.enableAutoIDs = true
-        config.globalAutomaticAccessibilityIdentifiers = true
-        config.namespace = "SixLayer"
-        config.enableUITestIntegration = true
+        let config = TestSetupUtilities.makeIsolatedAccessibilityIdentifierConfig()
         config.enableDebugLogging = true
         config.clearDebugLog()
         var passed = false
@@ -1065,12 +1066,8 @@ public enum AccessibilityTestUtilities {
     
     /// Cleanup accessibility test environment
     public static func cleanupAccessibilityTestEnvironment() async {
-        // Clear any test overrides
+        // Clear any test overrides (do not mutate `AccessibilityIdentifierConfig.shared` — parallel-unsafe).
         RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-        // Reset accessibility config if needed
-        await MainActor.run {
-            AccessibilityIdentifierConfig.shared.resetToDefaults()
-        }
     }
 }
 
