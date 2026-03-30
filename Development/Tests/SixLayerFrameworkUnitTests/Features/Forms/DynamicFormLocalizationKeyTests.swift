@@ -19,6 +19,7 @@ import SwiftUI
 //
 
 @Suite("Dynamic Form Localization Keys")
+@MainActor
 struct DynamicFormLocalizationKeyTests {
     
     // MARK: - Helpers
