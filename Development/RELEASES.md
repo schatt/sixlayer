@@ -1,12 +1,21 @@
 # 🚀 Six-Layer Framework Release History
 
-## 📍 **Current Release: v7.5.8** 🎯
+## 📍 **Current Release: v7.5.9** 🎯
 
-**Release Date**: February 2026
+**Release Date**: March 2026
 **Status**: In preparation
-**Previous Release**: v7.5.7 - Patch release
-**Note**: Patch release. Photo capture camera/library tabbed UI (Issue #190).
+**Previous Release**: v7.5.8 - Patch release
+**Note**: Patch release. Advanced field drop concurrency (#196); accessibility test pattern glob (#192).
 **Next Release**: TBD
+
+---
+
+## 🎯 **v7.5.9 - Advanced field drop concurrency, accessibility test patterns** (March 2026)
+
+### **What's in v7.5.9:**
+- Patch release. See [RELEASE_v7.5.9.md](RELEASE_v7.5.9.md) for details.
+
+**See [RELEASE_v7.5.9.md](RELEASE_v7.5.9.md) for complete release notes.**
 
 ---
 
