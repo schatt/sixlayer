@@ -236,16 +236,12 @@ open class Layer4ComponentAccessibilityTests: BaseTestClass {
         }
         
         @State var selectedItem: TestItem? = TestItem(id: 1, name: "Test")
-        var dismissCalled = false
-        let onDismiss = {
-            dismissCalled = true
-        }
         
         // When: Applying platformSheet with item binding and onDismiss
         let sheet = Text("Content")
             .platformSheet(
                 item: $selectedItem,
-                onDismiss: onDismiss
+                onDismiss: { }
             ) { item in
                 Text("Sheet for: \(item.name)")
             }
