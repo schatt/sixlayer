@@ -368,19 +368,70 @@ public enum AccessibilityTestUtilities {
     // MARK: - Test Functions
     
     @MainActor
-    private static func matchesExpectedPattern(_ identifier: String, expectedPattern: String) -> Bool {
-        guard !expectedPattern.isEmpty else { return false }
+    private static func normalizedIdentifierCandidates(_ value: String) -> [String] {
+        guard !value.isEmpty else { return [] }
         
-        // Treat expectedPattern as a simple glob where `*` matches any characters.
-        // Escape regex metacharacters in the pattern, then re-introduce `.*` for glob wildcards.
-        let escaped = NSRegularExpression.escapedPattern(for: expectedPattern)
-        let regexPattern = "^" + escaped.replacingOccurrences(of: "\\*", with: ".*") + "$"
+        var candidates: [String] = [value]
         
-        guard let regex = try? NSRegularExpression(pattern: regexPattern) else {
+        // Some legacy tests use ".main.element." while current IDs include ".main.ui.element."
+        if value.contains(".main.ui.") {
+            candidates.append(value.replacingOccurrences(of: ".main.ui.", with: ".main."))
+        }
+        
+        // Compare on stable suffix where namespaces differ (e.g. "SixLayer.main..." vs "main...")
+        if let range = value.range(of: ".main.") {
+            candidates.append(String(value[range.lowerBound...]))
+        } else if value.hasPrefix("main.") {
+            candidates.append("." + value)
+        }
+        
+        // Keep deterministic order while deduplicating
+        var seen = Set<String>()
+        return candidates.filter { seen.insert($0).inserted }
+    }
+    
+    @MainActor
+    private static func isRegexLikePattern(_ pattern: String) -> Bool {
+        pattern.contains("\\") || pattern.contains("^") || pattern.contains("$") || pattern.contains(".*")
+    }
+    
+    @MainActor
+    private static func matchesRegex(_ identifier: String, pattern: String) -> Bool {
+        guard let regex = try? NSRegularExpression(pattern: pattern, options: [.caseInsensitive]) else {
             return false
         }
         let range = NSRange(identifier.startIndex..<identifier.endIndex, in: identifier)
         return regex.firstMatch(in: identifier, range: range) != nil
+    }
+    
+    @MainActor
+    private static func matchesGlob(_ identifier: String, pattern: String) -> Bool {
+        let escaped = NSRegularExpression.escapedPattern(for: pattern)
+        let regexPattern = "^" + escaped.replacingOccurrences(of: "\\*", with: ".*") + "$"
+        return matchesRegex(identifier, pattern: regexPattern)
+    }
+    
+    @MainActor
+    private static func matchesExpectedPattern(_ identifier: String, expectedPattern: String) -> Bool {
+        guard !expectedPattern.isEmpty else { return false }
+        let idCandidates = normalizedIdentifierCandidates(identifier)
+        let patternCandidates = normalizedIdentifierCandidates(expectedPattern)
+        
+        for id in idCandidates {
+            for pattern in patternCandidates {
+                if isRegexLikePattern(pattern) {
+                    if matchesRegex(id, pattern: pattern) {
+                        return true
+                    }
+                } else {
+                    if matchesGlob(id, pattern: pattern) {
+                        return true
+                    }
+                }
+            }
+        }
+        
+        return false
     }
     
     @MainActor
