@@ -170,6 +170,50 @@ log_error() {
     ERROR_MESSAGES="${ERROR_MESSAGES}\n❌ $1"
 }
 
+# Optional: create GitHub Release (requires gh CLI, auth, and remote tag v$VERSION)
+create_github_release_for_version() {
+    local ver=$1
+    local tag="v${ver}"
+    local notes_file="Development/RELEASE_${tag}.md"
+
+    if ! command -v gh &> /dev/null; then
+        echo "ℹ️  gh (GitHub CLI) not installed; skipping GitHub Release"
+        echo "💡 https://cli.github.com/manual/installation"
+        echo "💡 Manual: gh release create $tag --title \"SixLayer Framework $tag\" --notes-file $notes_file"
+        return 0
+    fi
+
+    if ! gh auth status &> /dev/null; then
+        echo "⚠️  gh not authenticated; skipping GitHub Release"
+        echo "💡 Run: gh auth login"
+        return 0
+    fi
+
+    if [ ! -f "$notes_file" ]; then
+        echo "⚠️  $notes_file not found; skipping GitHub Release"
+        return 0
+    fi
+
+    if gh release view "$tag" &> /dev/null; then
+        echo "ℹ️  GitHub Release $tag already exists; skipping"
+        return 0
+    fi
+
+    echo "📦 Creating GitHub Release $tag..."
+    if gh release create "$tag" --title "SixLayer Framework $tag" --notes-file "$notes_file"; then
+        local owner_repo
+        owner_repo=$(gh repo view --json nameWithOwner -q .nameWithOwner 2>/dev/null || echo "")
+        if [ -n "$owner_repo" ]; then
+            echo "✅ GitHub Release: https://github.com/$owner_repo/releases/tag/$tag"
+        else
+            echo "✅ GitHub Release created"
+        fi
+    else
+        echo "⚠️  GitHub Release creation failed (tag was pushed). Create manually:"
+        echo "   gh release create $tag --title \"SixLayer Framework $tag\" --notes-file $notes_file"
+    fi
+}
+
 echo "🚀 Starting release process for v$VERSION ($RELEASE_TYPE)"
 
 # Step 1: Regenerate Xcode project
@@ -877,6 +921,7 @@ echo ""
 echo "🚀 All checks passed! Ready for tagging and release."
 
 # Handle different workflows based on current branch
+# After tag + main push, create_github_release_for_version runs when gh is installed and authenticated.
 if [ "$CURRENT_BRANCH" = "main" ]; then
     # On main: use direct tag/push workflow
     read -p "🚀 Auto-tag and push v$VERSION to all remotes? (y/N): " -n 1 -r
@@ -894,6 +939,8 @@ if [ "$CURRENT_BRANCH" = "main" ]; then
         echo "📤 Pushing commits to all remotes..."
         git push all main
 
+        create_github_release_for_version "$VERSION"
+
         echo ""
         echo "🎉 Release v$VERSION completed successfully!"
         echo "📦 Tag: v$VERSION"
@@ -905,6 +952,7 @@ if [ "$CURRENT_BRANCH" = "main" ]; then
         echo "1. git tag -a v$VERSION -m \"Release v$VERSION\""
         echo "2. git push all --tags"
         echo "3. git push all main"
+        echo "4. gh release create v$VERSION --title \"SixLayer Framework v$VERSION\" --notes-file Development/RELEASE_v$VERSION.md"
     fi
 else
     # On a branch: merge to main, then tag/push
@@ -916,6 +964,7 @@ else
     echo "   2. Merge $CURRENT_BRANCH into main"
     echo "   3. Create and push tag v$VERSION (tags use v$VERSION format)"
     echo "   4. Push to all remotes"
+    echo "   5. Create GitHub Release from Development/RELEASE_v$VERSION.md (if gh is installed and authenticated)"
     echo ""
     read -p "🚀 Proceed with merge and release? (y/N): " -n 1 -r
     echo
@@ -961,6 +1010,8 @@ else
         # Push commits to all remotes
         echo "📤 Pushing commits to all remotes..."
         git push all main
+
+        create_github_release_for_version "$VERSION"
         
         echo ""
         echo "🎉 Release v$VERSION completed successfully!"
@@ -997,6 +1048,7 @@ else
         echo "3. git tag -a v$VERSION -m \"Release v$VERSION\"  # Tags use v$VERSION format"
         echo "4. git push all --tags"
         echo "5. git push all main"
+        echo "6. gh release create v$VERSION --title \"SixLayer Framework v$VERSION\" --notes-file Development/RELEASE_v$VERSION.md"
     fi
 fi
 
