@@ -4,6 +4,7 @@
 
 ## Current
 
+- [x] Verify Xcode MCP (`mcpbridge-wrapper`) after restart: `GetTestList` + `tabIdentifier` works for sixlayer `windowtab1`
 - [x] Fix Swift concurrency data-race warning in `AdvancedFieldTypes.handleDrop` (`newFiles` capture)
 - [x] **#191** Make `ExpandableCardComponent` a single tappable accessibility button with explicit card label
 - [x] **#192** Make accessibility identifier compliance tests robust via platform traversal + debug-log fallback
