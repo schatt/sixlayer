@@ -237,7 +237,7 @@ open class CollectionEmptyStateViewTests: BaseTestClass {
             #if canImport(ViewInspector)
             verifyViewContainsAtLeastOneVStack(view, testName: "platformPresentItemCollection empty state")
             if let inspected = try? AnyView(view).inspect() {
-                let emptyStates = (try? inspected.findAll(ViewType.VStack.self)) ?? []
+                let emptyStates = inspected.findAll(ViewType.VStack.self)
                 if let emptyState = emptyStates.first {
                     // Check that custom message is displayed
                     let texts = emptyState.findAll(ViewType.Text.self)
