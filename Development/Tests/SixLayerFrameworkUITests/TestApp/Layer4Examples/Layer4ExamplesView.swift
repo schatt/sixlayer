@@ -720,6 +720,26 @@ struct Layer4ContractOnlyView: View {
     var body: some View {
         ScrollView {
             platformVStack(alignment: .leading, spacing: 24) {
+                // Presentation and navigation first so XCUITest can reach controls without
+                // scrolling past the long System block (Issue #193).
+                ExampleSection(title: "L4 Presentation") {
+                    platformVStack(alignment: .leading, spacing: 12) {
+                        Button("L4ContractSheet") { l4ShowSheet = true }
+                            .accessibilityIdentifier("L4ContractSheet")
+                            .accessibilityLabel("L4ContractSheet")
+                        Button("L4ContractPopover") { l4ShowPopover = true }
+                            .accessibilityIdentifier("L4ContractPopover")
+                            .accessibilityLabel("L4ContractPopover")
+                    }
+                }
+                ExampleSection(title: "L4 Navigation") {
+                    NavigationLink {
+                        L4NavDestinationView()
+                    } label: {
+                        Text("L4NavLinkContract")
+                    }
+                    .accessibilityIdentifier("L4NavLinkContract")
+                }
                 ExampleSection(title: "L4 System") {
                     platformVStack(alignment: .leading, spacing: 12) {
                         Text("Copy to Clipboard (platformCopyToClipboard_L4)")
@@ -748,24 +768,6 @@ struct Layer4ContractOnlyView: View {
                         PlatformPhotoComponentsLayer4.platformPhotoDisplay_L4(image: nil, style: .aspectFit)
                             .frame(height: 80)
                     }
-                }
-                ExampleSection(title: "L4 Presentation") {
-                    platformVStack(alignment: .leading, spacing: 12) {
-                        Button("L4ContractSheet") { l4ShowSheet = true }
-                            .accessibilityIdentifier("L4ContractSheet")
-                            .accessibilityLabel("L4ContractSheet")
-                        Button("L4ContractPopover") { l4ShowPopover = true }
-                            .accessibilityIdentifier("L4ContractPopover")
-                            .accessibilityLabel("L4ContractPopover")
-                    }
-                }
-                ExampleSection(title: "L4 Navigation") {
-                    NavigationLink {
-                        L4NavDestinationView()
-                    } label: {
-                        Text("L4NavLinkContract")
-                    }
-                    .accessibilityIdentifier("L4NavLinkContract")
                 }
                 ExampleSection(title: "L4 Controls") {
                     platformVStack(alignment: .leading, spacing: 16) {
