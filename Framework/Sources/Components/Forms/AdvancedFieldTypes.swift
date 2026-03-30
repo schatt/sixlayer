@@ -441,12 +441,14 @@ public struct FileUploadArea: View {
         // Handle dropped files
         // This would process the dropped file providers
         // For now, this is a placeholder for the actual implementation
-        var newFiles: [FileInfo] = []
+        let group = DispatchGroup()
         
         for provider in providers {
             if provider.hasItemConformingToTypeIdentifier(UTType.image.identifier) {
                 // Handle image files
+                group.enter()
                 provider.loadItem(forTypeIdentifier: UTType.image.identifier, options: nil) { item, error in
+                    defer { group.leave() }
                     if let url = item as? URL {
                         Task { @MainActor in
                             let fileInfo = FileInfo(
@@ -455,13 +457,15 @@ public struct FileUploadArea: View {
                                 type: UTType.image,
                                 url: url
                             )
-                            newFiles.append(fileInfo)
+                            onFilesSelected([fileInfo])
                         }
                     }
                 }
             } else if provider.hasItemConformingToTypeIdentifier(UTType.pdf.identifier) {
                 // Handle PDF files
+                group.enter()
                 provider.loadItem(forTypeIdentifier: UTType.pdf.identifier, options: nil) { item, error in
+                    defer { group.leave() }
                     if let url = item as? URL {
                         Task { @MainActor in
                             let fileInfo = FileInfo(
@@ -470,15 +474,11 @@ public struct FileUploadArea: View {
                                 type: UTType.pdf,
                                 url: url
                             )
-                            newFiles.append(fileInfo)
+                            onFilesSelected([fileInfo])
                         }
                     }
                 }
             }
-        }
-        
-        if !newFiles.isEmpty {
-            onFilesSelected(newFiles)
         }
     }
 }
