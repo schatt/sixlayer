@@ -827,7 +827,8 @@ struct Layer4ContractOnlyView: View {
         }
         .platformFrame()
         .navigationTitle("Layer 4 Examples")
-        .platformNavigationTitleDisplayMode_L4(.large)
+        // Inline title keeps the first contract sections in the visible safe area for XCUITest (Issue #193).
+        .platformNavigationTitleDisplayMode_L4(.inline)
         .platformSheet_L4(isPresented: $l4ShowSheet) {
             L4SheetContentContractView()
         }
