@@ -206,24 +206,38 @@ public enum TestSetupUtilities {
     
     // MARK: - Test Environment Setup
     
+    /// Creates a fresh `AccessibilityIdentifierConfig` for unit tests.
+    ///
+    /// **Parallel safety:** Uses a unique `UserDefaults` suite per call so parallel tests do not
+    /// read/write the same persisted keys. Combine with `AccessibilityIdentifierConfig.$taskLocalConfig.withValue`.
+    ///
+    /// Do **not** rely on `AccessibilityIdentifierConfig.shared` from tests; it is global mutable state.
+    @MainActor
+    public static func makeIsolatedAccessibilityIdentifierConfig() -> AccessibilityIdentifierConfig {
+        let suiteName = "SixLayer.Accessibility.Isolated.\(UUID().uuidString)"
+        guard let defaults = UserDefaults(suiteName: suiteName) else {
+            fatalError("Could not create UserDefaults suite for accessibility test isolation: \(suiteName)")
+        }
+        let config = AccessibilityIdentifierConfig(
+            userDefaults: defaults,
+            keyPrefix: "Test.Accessibility."
+        )
+        config.resetToDefaults()
+        config.enableAutoIDs = true
+        config.globalAutomaticAccessibilityIdentifiers = true
+        config.namespace = "SixLayer"
+        config.mode = .automatic
+        config.enableUITestIntegration = true
+        config.currentScreenContext = "main"
+        config.currentViewHierarchy = []
+        return config
+    }
+    
     /// Setup test environment (placeholder - can be extended as needed)
     @MainActor
     public static func setupTestEnvironment() {
         // Clear any existing test overrides
         RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-        
-        // Ensure global (production) config does not leak between tests.
-        // Some tests still touch `AccessibilityIdentifierConfig.shared` directly; resetting here
-        // keeps the namespace stable and prevents cross-test contamination.
-        let shared = AccessibilityIdentifierConfig.shared
-        shared.enableAutoIDs = true
-        shared.globalAutomaticAccessibilityIdentifiers = true
-        shared.enableUITestIntegration = true
-        shared.globalPrefix = ""
-        shared.namespace = "SixLayer"
-        shared.currentScreenContext = "main"
-        shared.currentViewHierarchy = []
-        shared.clearDebugLog()
     }
     
     /// Cleanup test environment (placeholder - can be extended as needed)
@@ -231,16 +245,5 @@ public enum TestSetupUtilities {
     public static func cleanupTestEnvironment() {
         // Clear all test overrides
         RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-        
-        // Mirror setup reset to avoid leaking mutated `shared` state to subsequent tests.
-        let shared = AccessibilityIdentifierConfig.shared
-        shared.enableAutoIDs = true
-        shared.globalAutomaticAccessibilityIdentifiers = true
-        shared.enableUITestIntegration = true
-        shared.globalPrefix = ""
-        shared.namespace = "SixLayer"
-        shared.currentScreenContext = "main"
-        shared.currentViewHierarchy = []
-        shared.clearDebugLog()
     }
 }
