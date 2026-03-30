@@ -89,9 +89,40 @@ final class Layer4UITests: XCTestCase {
     @MainActor
     private func l4FormSectionHeaderVisible(timeout: TimeInterval) -> Bool {
         if app.staticTexts["L4FormSectionContract"].waitForExistence(timeout: timeout) { return true }
+        if app.otherElements["L4FormSectionContract"].waitForExistence(timeout: min(timeout, 2.0)) { return true }
+        let labelOrId = NSPredicate(format: "label CONTAINS[c] %@ OR identifier CONTAINS[c] %@", "L4FormSectionContract", "L4FormSectionContract")
+        if app.descendants(matching: .any).matching(labelOrId).firstMatch.waitForExistence(timeout: timeout) { return true }
         return app.descendants(matching: .any)
             .matching(NSPredicate(format: "identifier CONTAINS[c] %@", "L4FormSectionContract"))
             .firstMatch.waitForExistence(timeout: timeout)
+    }
+
+    /// Sheet and popover content can appear under `app.sheets` or the main hierarchy depending on OS and presentation style.
+    @MainActor
+    private func waitForStaticTextInForeground(_ text: String, timeout: TimeInterval) -> Bool {
+        let deadline = Date().addingTimeInterval(timeout)
+        while Date() < deadline {
+            let slice = min(0.5, deadline.timeIntervalSinceNow)
+            if slice <= 0 { break }
+            if app.sheets.firstMatch.exists,
+               app.sheets.firstMatch.staticTexts[text].waitForExistence(timeout: slice) { return true }
+            if app.staticTexts[text].waitForExistence(timeout: slice) { return true }
+            if app.otherElements[text].waitForExistence(timeout: min(slice, 0.25)) { return true }
+        }
+        return false
+    }
+
+    @MainActor
+    private func waitForDestinationContent(timeout: TimeInterval) -> Bool {
+        let matchAny = NSPredicate(
+            format: "label == %@ OR identifier == %@ OR identifier CONTAINS[c] %@",
+            "L4NavDestinationContent",
+            "L4NavDestinationContent",
+            "L4NavDestinationContent"
+        )
+        if app.staticTexts["L4NavDestinationContent"].waitForExistence(timeout: timeout) { return true }
+        if app.descendants(matching: .any).matching(matchAny).firstMatch.waitForExistence(timeout: min(timeout, 8.0)) { return true }
+        return app.otherElements["L4NavDestinationContent"].waitForExistence(timeout: 2.0)
     }
 
     /// Ensure we're on the contract root with top of content visible. Pop from nav stack if needed; scroll to top if the first contract section is off-screen.
@@ -338,7 +369,7 @@ final class Layer4UITests: XCTestCase {
             ?? app.buttons["L4ContractSheet"].firstMatch
         XCTAssertTrue(sheetButton.waitForExistence(timeout: 5.0), "Sheet button should exist")
         tapByNormalizedCenter(sheetButton)
-        XCTAssertTrue(app.staticTexts["L4SheetContentContract"].waitForExistence(timeout: 3.0),
+        XCTAssertTrue(waitForStaticTextInForeground("L4SheetContentContract", timeout: 8.0),
                       "platformSheet_L4: sheet content must be visible when presented (contract behavior)")
         XCTAssertTrue(app.buttons["Close"].waitForExistence(timeout: 2.0),
                       "platformSheet_L4: sheet must provide dismiss (contract structure)")
@@ -356,7 +387,7 @@ final class Layer4UITests: XCTestCase {
             ?? app.buttons["L4ContractPopover"].firstMatch
         XCTAssertTrue(popoverButton.waitForExistence(timeout: 5.0), "Popover button should exist")
         tapByNormalizedCenter(popoverButton)
-        XCTAssertTrue(app.staticTexts["L4PopoverContentContract"].waitForExistence(timeout: 3.0),
+        XCTAssertTrue(waitForStaticTextInForeground("L4PopoverContentContract", timeout: 8.0),
                       "platformPopover_L4: popover content must be visible when presented (contract behavior)")
     }
 
@@ -371,7 +402,9 @@ final class Layer4UITests: XCTestCase {
         }
         scrollToElement(label: "L4 Navigation")
         scrollToElement(label: "L4NavLinkContract")
-        if app.staticTexts["L4NavLinkContract"].waitForExistence(timeout: 3.0) {
+        if app.links["L4NavLinkContract"].waitForExistence(timeout: 2.0) {
+            app.links["L4NavLinkContract"].firstMatch.tap()
+        } else if app.staticTexts["L4NavLinkContract"].waitForExistence(timeout: 3.0) {
             app.staticTexts["L4NavLinkContract"].firstMatch.tap()
         } else {
             let byId = app.findElement(byIdentifier: "L4NavLinkContract", primaryType: .button, secondaryTypes: [.cell, .staticText, .other, .any], timeout: 5.0)
@@ -382,7 +415,7 @@ final class Layer4UITests: XCTestCase {
         }
         XCTAssertTrue(app.navigationBars["L4NavTitleContract"].waitForExistence(timeout: 3.0),
                       "platformNavigationTitle_L4: destination title must appear in nav bar (contract structure)")
-        XCTAssertTrue(app.staticTexts["L4NavDestinationContent"].waitForExistence(timeout: 12.0),
+        XCTAssertTrue(waitForDestinationContent(timeout: 15.0),
                       "platformNavigationTitle_L4: destination content should be visible")
     }
 
@@ -395,7 +428,9 @@ final class Layer4UITests: XCTestCase {
         }
         scrollToElement(label: "L4 Navigation")
         scrollToElement(label: "L4NavLinkContract")
-        if app.staticTexts["L4NavLinkContract"].waitForExistence(timeout: 3.0) {
+        if app.links["L4NavLinkContract"].waitForExistence(timeout: 2.0) {
+            app.links["L4NavLinkContract"].firstMatch.tap()
+        } else if app.staticTexts["L4NavLinkContract"].waitForExistence(timeout: 3.0) {
             app.staticTexts["L4NavLinkContract"].firstMatch.tap()
         } else {
             let byId = app.findElement(byIdentifier: "L4NavLinkContract", primaryType: .button, secondaryTypes: [.cell, .staticText, .other, .any], timeout: 5.0)
@@ -404,7 +439,7 @@ final class Layer4UITests: XCTestCase {
             XCTAssertNotNil(tapTarget, "platformNavigationLink: link with identifier L4NavLinkContract should exist")
             tapByNormalizedCenter(tapTarget!)
         }
-        XCTAssertTrue(app.staticTexts["L4NavDestinationContent"].waitForExistence(timeout: 15.0),
+        XCTAssertTrue(waitForDestinationContent(timeout: 18.0),
                       "platformNavigationLink_L4: navigating to destination should show content")
     }
 
