@@ -685,6 +685,7 @@ private struct L4NavDestinationView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("L4NavDestinationContent")
+                .accessibilityLabel("L4NavDestinationContent")
                 .accessibilityIdentifier("L4NavDestinationContent")
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
@@ -699,6 +700,7 @@ private struct L4SheetContentContractView: View {
     var body: some View {
         VStack(spacing: 16) {
             Text("L4SheetContentContract")
+                .accessibilityIdentifier("L4SheetContentContract")
             Button("Close") { dismiss() }
         }
         .padding()
@@ -762,10 +764,12 @@ struct Layer4ContractOnlyView: View {
                             .font(.caption)
                             .foregroundColor(.secondary)
                         platformCloudKitSyncStatus_L4(status: .idle)
+                            .accessibilityIdentifier("platformCloudKitSyncStatus_L4")
                         Text("Photo Display")
                             .font(.caption)
                             .foregroundColor(.secondary)
                         PlatformPhotoComponentsLayer4.platformPhotoDisplay_L4(image: nil, style: .aspectFit)
+                            .accessibilityIdentifier("platformPhotoDisplay_L4")
                             .frame(height: 80)
                     }
                 }
@@ -794,6 +798,7 @@ struct Layer4ContractOnlyView: View {
                                 .platformFormSection(
                                     header: {
                                         Text("L4FormSectionContract")
+                                            .accessibilityLabel("L4FormSectionContract")
                                             .accessibilityIdentifier("L4FormSectionContract")
                                     },
                                     content: { Text("Section body") }
@@ -834,6 +839,7 @@ struct Layer4ContractOnlyView: View {
         }
         .platformPopover_L4(isPresented: $l4ShowPopover) {
             Text("L4PopoverContentContract")
+                .accessibilityIdentifier("L4PopoverContentContract")
         }
     }
 }
