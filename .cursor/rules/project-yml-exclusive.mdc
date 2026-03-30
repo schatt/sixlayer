@@ -33,6 +33,7 @@ This project uses **project.yml** (XcodeGen) as the single source of truth for X
 1. Make project-structure or config changes in **project.yml**.
 2. Regenerate the Xcode project (e.g. `xcodegen generate` or your project’s command).
 3. Do not hand-edit the generated `.xcodeproj` or its contents.
+4. **Commit** `project.yml` and **all** generated files from that XcodeGen run in **one** commit (see `.cursor/rules/commit-after-every-edit.mdc` — XcodeGen exception).
 
 ## Rationale
 
