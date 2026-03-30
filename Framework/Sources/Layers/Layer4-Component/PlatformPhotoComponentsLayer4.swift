@@ -91,7 +91,6 @@ public enum PlatformPhotoComponentsLayer4 {
                 PlaceholderPhotoView(style: style, onCaptureRequested: onCaptureRequested)
             }
         }
-        .accessibilityElement(children: .combine)
         .automaticCompliance(named: "platformPhotoDisplay_L4")
         .accessibilityIdentifier("platformPhotoDisplay_L4")
     }
@@ -623,6 +622,7 @@ struct PlaceholderPhotoView: View {
             .clipShape(clipShapeForStyle(style))
         }
         .automaticCompliance(named: "PlaceholderPhotoView")
+        .accessibilityIdentifier("platformPhotoDisplay_L4")
     }
     
     private func sizeForStyle(_ style: PhotoDisplayStyle) -> CGSize {
