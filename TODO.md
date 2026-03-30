@@ -4,6 +4,7 @@
 
 ## Current
 
+- [x] Fix Swift concurrency data-race warning in `AdvancedFieldTypes.handleDrop` (`newFiles` capture)
 - [ ] **#177** Fix remaining iOS ViewInspector/accessibility test failures (TDD green phase; commit/push per go workflow)
 - [x] Fix `ModalContainerTests.swift` missing closing brace (build error)
 - [x] Fix Swift 6 actor-isolation errors in `DynamicFormTests.swift`
