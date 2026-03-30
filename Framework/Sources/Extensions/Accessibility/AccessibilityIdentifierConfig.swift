@@ -63,6 +63,9 @@ public final class AccessibilityIdentifierConfig: @unchecked Sendable {
     /// Key prefix for all persisted values (allows tests to use isolated namespaces)
     private let keyPrefix: String
     
+    /// Same `UserDefaults` instance used by `saveToUserDefaults()` / `loadFromUserDefaults()` (for unit test assertions).
+    internal var testingBackingUserDefaults: UserDefaults { userDefaults }
+    
     /// Whether automatic accessibility identifiers are enabled
     /// This is the global setting that controls automatic ID generation
     public var enableAutoIDs: Bool = true
