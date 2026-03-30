@@ -411,11 +411,92 @@ public enum AccessibilityTestUtilities {
         return regex.firstMatch(in: identifier, range: range) != nil
     }
     
+    /// Glob matching for test patterns like `SixLayer.*ui` or `*.main.element.*`.
+    ///
+    /// The previous implementation turned `*` into `.*` in a single regex, which made
+    /// `SixLayer.*ui` behave like `^SixLayer\..*ui$` and **required the string to end with `ui`**.
+    /// Tests intend `*` as “any substring between segments”, so
+    /// `SixLayer.main.ui.test.Button` must match `SixLayer.*ui`.
     @MainActor
     private static func matchesGlob(_ identifier: String, pattern: String) -> Bool {
-        let escaped = NSRegularExpression.escapedPattern(for: pattern)
-        let regexPattern = "^" + escaped.replacingOccurrences(of: "\\*", with: ".*") + "$"
-        return matchesRegex(identifier, pattern: regexPattern)
+        guard !pattern.isEmpty else { return identifier.isEmpty }
+        
+        if !pattern.contains("*") {
+            return identifier.caseInsensitiveCompare(pattern) == .orderedSame
+        }
+        
+        let parts = pattern.split(separator: "*", omittingEmptySubsequences: false).map(String.init)
+        if parts.allSatisfy({ $0.isEmpty }) {
+            return true
+        }
+        
+        let startsWithStar = pattern.hasPrefix("*")
+        let endsWithStar = pattern.hasSuffix("*")
+        let nonEmptyParts = parts.filter { !$0.isEmpty }
+        
+        // *suffix — must end with the suffix (case-insensitive)
+        if startsWithStar && !endsWithStar && nonEmptyParts.count == 1 {
+            let suf = nonEmptyParts[0]
+            guard identifier.count >= suf.count else { return false }
+            let tail = String(identifier.suffix(suf.count))
+            return tail.caseInsensitiveCompare(suf) == .orderedSame
+        }
+        
+        // prefix* — must start with the prefix (case-insensitive)
+        if !startsWithStar && endsWithStar && nonEmptyParts.count == 1 {
+            let pre = nonEmptyParts[0]
+            guard identifier.count >= pre.count else { return false }
+            let head = String(identifier.prefix(pre.count))
+            return head.caseInsensitiveCompare(pre) == .orderedSame
+        }
+        
+        var cursor = identifier.startIndex
+        var partIndex = 0
+        
+        while partIndex < parts.count && parts[partIndex].isEmpty {
+            partIndex += 1
+        }
+        if partIndex >= parts.count {
+            return true
+        }
+        
+        if !startsWithStar {
+            let p = parts[partIndex]
+            let remaining = String(identifier[cursor...])
+            guard remaining.count >= p.count else { return false }
+            let head = String(remaining.prefix(p.count))
+            guard head.caseInsensitiveCompare(p) == .orderedSame else { return false }
+            cursor = identifier.index(cursor, offsetBy: p.count)
+            partIndex += 1
+        } else {
+            let p = parts[partIndex]
+            guard let r = identifier.range(of: p, options: .caseInsensitive, range: cursor..<identifier.endIndex) else {
+                return false
+            }
+            cursor = r.upperBound
+            partIndex += 1
+        }
+        
+        while partIndex < parts.count {
+            let p = parts[partIndex]
+            if p.isEmpty {
+                partIndex += 1
+                continue
+            }
+            guard let r = identifier.range(of: p, options: .caseInsensitive, range: cursor..<identifier.endIndex) else {
+                return false
+            }
+            cursor = r.upperBound
+            partIndex += 1
+        }
+        
+        return true
+    }
+    
+    /// Exposed for unit tests of pattern semantics (glob vs regex vs namespace normalization).
+    @MainActor
+    public static func identifierMatchesExpectedPattern(_ identifier: String, expectedPattern: String) -> Bool {
+        matchesExpectedPattern(identifier, expectedPattern: expectedPattern)
     }
     
     @MainActor
