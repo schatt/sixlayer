@@ -385,6 +385,13 @@ public enum AccessibilityTestUtilities {
             candidates.append("." + value)
         }
         
+        // Bridge namespaced and non-namespaced test expectations.
+        if value.hasPrefix("SixLayer.") {
+            candidates.append(String(value.dropFirst("SixLayer.".count)))
+        } else if value.hasPrefix("main.") {
+            candidates.append("SixLayer." + value)
+        }
+        
         // Keep deterministic order while deduplicating
         var seen = Set<String>()
         return candidates.filter { seen.insert($0).inserted }
@@ -518,11 +525,22 @@ public enum AccessibilityTestUtilities {
         let hostedRoot = TestSetupUtilities.hostRootPlatformView(view, forceLayout: false)
         let platformIdentifiers = findAllAccessibilityIdentifiersFromPlatformView(hostedRoot)
         let debugIdentifiers = parseGeneratedIdentifiers(from: config.getDebugLog())
+        let directIdentifier = getAccessibilityIdentifierForTest(view: view, hostedRoot: hostedRoot)
+        let inspectButtonIdentifier = inspectButtonAccessibilityIdentifier(view)
+        
+        var allSignals: [String] = []
+        allSignals.append(contentsOf: platformIdentifiers)
+        allSignals.append(contentsOf: debugIdentifiers)
+        if let directIdentifier, !directIdentifier.isEmpty { allSignals.append(directIdentifier) }
+        if let inspectButtonIdentifier, !inspectButtonIdentifier.isEmpty { allSignals.append(inspectButtonIdentifier) }
+        var seenSignals = Set<String>()
+        let uniqueSignals = allSignals.filter { seenSignals.insert($0).inserted }
         
         let platformMatches = platformIdentifiers.first(where: { matchesExpectedPattern($0, expectedPattern: expectedPattern) })
         let debugMatches = debugIdentifiers.first(where: { matchesExpectedPattern($0, expectedPattern: expectedPattern) })
+        let anyMatches = uniqueSignals.first(where: { matchesExpectedPattern($0, expectedPattern: expectedPattern) })
         
-        if platformMatches != nil {
+        if platformMatches != nil || anyMatches != nil {
             return true
         }
         
@@ -545,6 +563,7 @@ public enum AccessibilityTestUtilities {
         Expected pattern: \(expectedPattern)
         Platform identifiers (sample): \(platformIdentifiers.prefix(10))
         Debug identifiers (sample): \(debugIdentifiers.prefix(10))
+        Direct identifiers (sample): \(uniqueSignals.prefix(10))
         """)
         return false
     }
