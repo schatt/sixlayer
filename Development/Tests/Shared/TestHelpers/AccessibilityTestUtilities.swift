@@ -821,8 +821,10 @@ public enum AccessibilityTestUtilities {
         testHIGCompliance: Bool = true,
         exposeContentAccessibility: Bool = true
     ) -> Bool {
-        // Never fall back to `AccessibilityIdentifierConfig.shared` — it races under parallel tests.
-        // When @TaskLocal is unset, run with a fresh isolated config for this invocation only.
+        // Prefer task-local config when the test wrapped work in `runWithTaskLocalConfig`.
+        // When @TaskLocal is unset, use the same resolution as the framework (`taskLocal ?? shared`).
+        // A synthetic isolated config only inside this helper does not match SwiftUI/UIKit hosting:
+        // identifier generation and debug logs must use the same instance the modifiers see.
         func runCore(config: AccessibilityIdentifierConfig) -> Bool {
             // Primary signal: hosted platform view traversal (what XCUITest will ultimately see)
             // Secondary signal: generator/debug log (for cases where hosting/tooling can't surface identifiers reliably)
@@ -878,13 +880,8 @@ public enum AccessibilityTestUtilities {
             return false
         }
         
-        if let taskLocal = AccessibilityIdentifierConfig.currentTaskLocalConfig {
-            return runCore(config: taskLocal)
-        }
-        let isolated = TestSetupUtilities.makeIsolatedAccessibilityIdentifierConfig()
-        return AccessibilityIdentifierConfig.$taskLocalConfig.withValue(isolated) {
-            runCore(config: isolated)
-        }
+        let config = AccessibilityIdentifierConfig.currentTaskLocalConfig ?? AccessibilityIdentifierConfig.shared
+        return runCore(config: config)
     }
 
     /// Overload that populates diagnostic on failure (collected identifiers) for clearer test failures.
