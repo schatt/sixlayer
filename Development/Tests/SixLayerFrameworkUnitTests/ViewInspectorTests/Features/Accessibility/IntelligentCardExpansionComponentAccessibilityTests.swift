@@ -90,6 +90,43 @@ open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
         }
     }
     
+    @Test @MainActor func testExpandableCardComponentUsesSingleCardAccessibilityLabel() async {
+            initializeTestConfig()
+        runWithTaskLocalConfig {
+            let testItem = CardTestItem(id: "1", title: "Accessibility Card")
+            let hints = PresentationHints()
+            let view = ExpandableCardComponent(
+                item: testItem,
+                layoutDecision: IntelligentCardLayoutDecision(
+                    columns: 2,
+                    spacing: 16,
+                    cardWidth: 200,
+                    cardHeight: 150,
+                    padding: 16
+                ),
+                strategy: CardExpansionStrategy(
+                    supportedStrategies: [.hoverExpand],
+                    primaryStrategy: .hoverExpand,
+                    expansionScale: 1.15,
+                    animationDuration: 0.3
+                ),
+                hints: hints,
+                isExpanded: false,
+                isHovered: false,
+                onExpand: { },
+                onCollapse: { },
+                onHover: { _ in },
+                onItemSelected: { _ in },
+                onItemDeleted: { _ in },
+                onItemEdited: { _ in }
+            )
+            
+            let hostedRoot = TestSetupUtilities.hostRootPlatformView(view, forceLayout: true)
+            let accessibilityLabel = getAccessibilityLabelForTest(view: view, hostedRoot: hostedRoot)
+            #expect(accessibilityLabel == "Accessibility Card", "ExpandableCardComponent should expose one card label for the entire tappable card element")
+        }
+    }
+    
     // MARK: - CoverFlowCollectionView Tests
     
     @Test @MainActor func testCoverFlowCollectionViewGeneratesAccessibilityIdentifiers() async {
