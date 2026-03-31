@@ -62,6 +62,26 @@ public struct NavigationLayoutResolution: Sendable, Equatable {
     public let detailWidth: CGFloat
 }
 
+/// Maps resolver output to Layer 4 UI (split vs detail-only vs outer overlay). See issue #206.
+public enum NavigationLayoutCompactPresentation: Sendable, Equatable {
+    case fullSplit
+    case detailOnlyCollapsedInner
+    case overlayOuterSidebar
+}
+
+public extension NavigationLayoutCompactPresentation {
+    init(resolution: NavigationLayoutResolution) {
+        switch resolution.mode {
+        case .sideBySide:
+            self = .fullSplit
+        case .compactCollapsedOuter:
+            self = .overlayOuterSidebar
+        case .compactCollapsedInner:
+            self = .detailOnlyCollapsedInner
+        }
+    }
+}
+
 // MARK: - Core resolution
 
 public enum NavigationLayoutResolver {
@@ -147,14 +167,14 @@ public enum NavigationLayoutResolver {
     /// Minimum width reserved for the detail pane when resolving Layer 4 nested split shells (host + inner + detail).
     private static let layer4NestedSplitShellMinimumDetailWidth: CGFloat = 480
 
-    /// Shared preset for nested split columns: host `compactList` plus inner `textSidebar`, preferring the outer column when space is tight (`.preferOuter`).
+    /// Shared preset for nested split columns: host `compactList` plus inner `textSidebar`. When the width budget fails, `.automatic` yields `.compactCollapsedOuter` (collapse outer first; overlay expansion in Layer 4). Issue #206.
     private static func resolveLayer4NestedSplitShell(availableWidth: CGFloat) -> NavigationLayoutResolution {
         resolve(
             availableWidth: availableWidth,
             outerProfile: .compactList,
             innerProfile: .textSidebar,
             minimumDetailWidth: layer4NestedSplitShellMinimumDetailWidth,
-            policy: .preferOuter
+            policy: .automatic
         )
     }
 
