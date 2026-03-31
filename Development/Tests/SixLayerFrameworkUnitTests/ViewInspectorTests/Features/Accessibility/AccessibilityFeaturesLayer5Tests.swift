@@ -115,7 +115,7 @@ open class AccessibilityFeaturesLayer5Tests: BaseTestClass {
      * METHODOLOGY: Test successful removal
      */
     @Test @MainActor func testRemoveFocusableItemSuccess() {
-        let _ = KeyboardNavigationManager()
+        let navigationManager = KeyboardNavigationManager()
         // GIVEN: Keyboard manager with items
         navigationManager.addFocusableItem("button1")
         navigationManager.addFocusableItem("button2")
@@ -136,7 +136,7 @@ open class AccessibilityFeaturesLayer5Tests: BaseTestClass {
      * METHODOLOGY: Test removal of non-existent item
      */
     @Test @MainActor func testRemoveFocusableItemNotExists() {
-        let navigationManager = KeyboardNavigationManager()
+        let _ = KeyboardNavigationManager()
         // GIVEN: Keyboard manager with items
         navigationManager.addFocusableItem("button1")
         #expect(navigationManager.focusableItems.count == 1)
