@@ -77,14 +77,42 @@ public enum NavigationLayoutResolver {
         let widthBudget = outerWidth + innerWidth + safeDetailMin
 
         if widthBudget <= safeAvailableWidth {
-            return NavigationLayoutResolution(
-                mode: .sideBySide,
+            return sideBySideResolution(
+                availableWidth: safeAvailableWidth,
                 outerWidth: outerWidth,
-                innerWidth: innerWidth,
-                detailWidth: safeAvailableWidth - outerWidth - innerWidth
+                innerWidth: innerWidth
             )
         }
 
+        return compactResolution(
+            availableWidth: safeAvailableWidth,
+            minimumDetailWidth: safeDetailMin,
+            outerWidth: outerWidth,
+            innerWidth: innerWidth,
+            policy: policy
+        )
+    }
+
+    private static func sideBySideResolution(
+        availableWidth: CGFloat,
+        outerWidth: CGFloat,
+        innerWidth: CGFloat
+    ) -> NavigationLayoutResolution {
+        NavigationLayoutResolution(
+            mode: .sideBySide,
+            outerWidth: outerWidth,
+            innerWidth: innerWidth,
+            detailWidth: availableWidth - outerWidth - innerWidth
+        )
+    }
+
+    private static func compactResolution(
+        availableWidth: CGFloat,
+        minimumDetailWidth: CGFloat,
+        outerWidth: CGFloat,
+        innerWidth: CGFloat,
+        policy: NavigationLayoutPolicy
+    ) -> NavigationLayoutResolution {
         let mode: NavigationLayoutMode
         switch policy {
         case .automatic, .preferInner:
@@ -97,7 +125,7 @@ public enum NavigationLayoutResolver {
             mode: mode,
             outerWidth: outerWidth,
             innerWidth: innerWidth,
-            detailWidth: max(0, safeAvailableWidth - safeDetailMin)
+            detailWidth: max(0, availableWidth - minimumDetailWidth)
         )
     }
 
