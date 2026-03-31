@@ -641,10 +641,7 @@ public extension View {
         if layoutResolution.mode == .compactCollapsedInner {
             detail()
                 .automaticCompliance(named: "platformSettingsContainer_L4")
-            return
-        }
-
-        if #available(iOS 16.0, *) {
+        } else if #available(iOS 16.0, *) {
             // Use existing helper to avoid duplication
             createNavigationSplitView(
                 columnVisibility: columnVisibility,
@@ -715,10 +712,7 @@ public extension View {
         if layoutResolution.mode == .compactCollapsedInner {
             detail()
                 .automaticCompliance(named: "platformSettingsContainer_L4")
-            return
-        }
-
-        if #available(macOS 13.0, *) {
+        } else if #available(macOS 13.0, *) {
             // Use existing helper to avoid duplication
             createNavigationSplitView(
                 columnVisibility: columnVisibility,
