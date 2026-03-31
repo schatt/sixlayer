@@ -43,7 +43,7 @@ open class BasicAutomaticComplianceTests: BaseTestClass {
         initializeTestConfig()
         runWithTaskLocalConfig {
             // Given: A simple view
-            let view = Text("Test Content")
+            let _ = Text("Test Content")
                 .basicAutomaticCompliance(identifierName: "testView")
             
             // When: View is created with basic compliance
@@ -61,7 +61,7 @@ open class BasicAutomaticComplianceTests: BaseTestClass {
         initializeTestConfig()
         runWithTaskLocalConfig {
             // Given: A simple view with accessibility label
-            let view = Text("Test Content")
+            let _ = Text("Test Content")
                 .basicAutomaticCompliance(accessibilityLabel: "Test label")
             
             // When: View is created with basic compliance
@@ -78,10 +78,10 @@ open class BasicAutomaticComplianceTests: BaseTestClass {
         initializeTestConfig()
         runWithTaskLocalConfig {
             // Given: A simple view
-            let basicView = Text("Test")
+            let _ = Text("Test")
                 .basicAutomaticCompliance()
             
-            let fullView = Text("Test")
+            let _ = Text("Test")
                 .automaticCompliance()
             
             // When: Comparing basic vs full compliance
@@ -193,9 +193,9 @@ open class BasicAutomaticComplianceTests: BaseTestClass {
     /// BUSINESS PURPOSE: .basicAutomaticCompliance() should respect globalAutomaticAccessibilityIdentifiers
     /// TESTING SCOPE: Config option globalAutomaticAccessibilityIdentifiers
     /// METHODOLOGY: Test with globalAutomaticAccessibilityIdentifiers disabled, verify identifier is not applied
-    @Test @MainActor func testBasicAutomaticCompliance_RespectsGlobalAutomaticAccessibilityIdentifiers() async {
+    @Test @MainActor func testBasicAutomaticCompliance_RespectsGlobalAutomaticAccessibilityIdentifiers() {
         initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             guard let config = self.testConfig else {
                 Issue.record("testConfig is nil")
                 return
@@ -290,7 +290,7 @@ open class BasicAutomaticComplianceTests: BaseTestClass {
             config.enableUITestIntegration = true
             
             // When: Generating identifier with label text containing spaces and uppercase
-            let view = Text("Test")
+            let _ = Text("Test")
                 .basicAutomaticCompliance(
                     identifierName: "TestButton",
                     identifierLabel: "Save File"
@@ -320,7 +320,7 @@ open class BasicAutomaticComplianceTests: BaseTestClass {
             config.enableUITestIntegration = true
             
             // Given: A view with identifier label containing special characters
-            let view = Text("Test")
+            let _ = Text("Test")
                 .basicAutomaticCompliance(
                     identifierName: "TestButton",
                     identifierLabel: "Save & Load!"
@@ -348,7 +348,7 @@ open class BasicAutomaticComplianceTests: BaseTestClass {
             // When: Checking return type
             // Then: Should return Text (allows chaining)
             // Compile-time check: if this compiles, type is preserved
-            let chained = text.bold()
+            let _ = text.bold()
             #expect(Bool(true), "Text.basicAutomaticCompliance() should return Text type allowing .bold() chaining")
         }
     }
@@ -361,7 +361,7 @@ open class BasicAutomaticComplianceTests: BaseTestClass {
         initializeTestConfig()
         runWithTaskLocalConfig {
             // Given: Text with basic compliance
-            let text = Text("Hello")
+            let _ = Text("Hello")
                 .basicAutomaticCompliance(identifierName: "helloText")
             
             // When: Text is created with basic compliance
@@ -379,7 +379,7 @@ open class BasicAutomaticComplianceTests: BaseTestClass {
         initializeTestConfig()
         runWithTaskLocalConfig {
             // Given: Text with basic compliance and label
-            let text = Text("Hello")
+            let _ = Text("Hello")
                 .basicAutomaticCompliance(accessibilityLabel: "Hello text")
             
             // When: Text is created with basic compliance
@@ -396,7 +396,7 @@ open class BasicAutomaticComplianceTests: BaseTestClass {
         initializeTestConfig()
         runWithTaskLocalConfig {
             // Given: Text with basic compliance
-            let text = Text("Hello")
+            let _ = Text("Hello")
                 .basicAutomaticCompliance()
                 .bold()
             
@@ -413,7 +413,7 @@ open class BasicAutomaticComplianceTests: BaseTestClass {
         initializeTestConfig()
         runWithTaskLocalConfig {
             // Given: Text with basic compliance
-            let text = Text("Hello")
+            let _ = Text("Hello")
                 .basicAutomaticCompliance()
                 .italic()
             
@@ -430,7 +430,7 @@ open class BasicAutomaticComplianceTests: BaseTestClass {
         initializeTestConfig()
         runWithTaskLocalConfig {
             // Given: Text with basic compliance
-            let text = Text("Hello")
+            let _ = Text("Hello")
                 .basicAutomaticCompliance()
                 .font(.title)
             
@@ -447,7 +447,7 @@ open class BasicAutomaticComplianceTests: BaseTestClass {
         initializeTestConfig()
         runWithTaskLocalConfig {
             // Given: Text with basic compliance and multiple chained modifiers
-            let text = Text("Hello")
+            let _ = Text("Hello")
                 .basicAutomaticCompliance()
                 .bold()
                 .italic()
@@ -469,7 +469,7 @@ open class BasicAutomaticComplianceTests: BaseTestClass {
         initializeTestConfig()
         runWithTaskLocalConfig {
             // Given: platformText with basic compliance
-            let view = platformText("Hello")
+            let _ = platformText("Hello")
                 .basicAutomaticCompliance()
             
             // When: Using platformText with basic compliance
@@ -486,7 +486,7 @@ open class BasicAutomaticComplianceTests: BaseTestClass {
         initializeTestConfig()
         runWithTaskLocalConfig {
             // Given: platformText with basic compliance and chaining
-            let text = platformText("Hello")
+            let _ = platformText("Hello")
                 .basicAutomaticCompliance()
                 .bold()
             
