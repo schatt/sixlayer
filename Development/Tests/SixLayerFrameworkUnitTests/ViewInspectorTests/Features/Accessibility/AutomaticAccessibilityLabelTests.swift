@@ -26,7 +26,8 @@ import ViewInspector
 /// METHODOLOGY: Test each function, verify label is applied via ViewInspector
 @Suite("Automatic Accessibility Labels - ViewInspector")
 /// NOTE: Not marked @MainActor on class to allow parallel execution
-open class AutomaticAccessibilityLabelTests: BaseTestClass {
+/// Renamed from AutomaticAccessibilityLabelTests to avoid duplicate type name with Features/Accessibility/AutomaticAccessibilityLabelTests.swift in the same test target.
+open class AutomaticAccessibilityLabelViewInspectorTests: BaseTestClass {
     
     // MARK: - AutomaticComplianceModifier Accessibility Label Tests
     
