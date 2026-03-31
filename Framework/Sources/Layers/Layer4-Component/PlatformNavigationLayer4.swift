@@ -891,7 +891,6 @@ public extension View {
     /// - Returns: A view with platform-appropriate settings container pattern
     /// Layer 4: Component Implementation
     /// Implements Issue #58: Add platformSettingsContainer_L4 for Settings Views (Layer 4)
-    @MainActor
     func resolveSettingsContainerLayout_L4(
         availableWidth: CGFloat
     ) -> NavigationLayoutResolution {
