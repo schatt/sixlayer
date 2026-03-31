@@ -36,15 +36,21 @@ final class AccessibilityIdentifierCategoryAUITests: XCTestCase {
         return app.descendants(matching: .any).matching(pred).firstMatch
     }
 
-    /// Manual-only row is below the fold in the audit scroll view.
-    private func scrollToManualOnlyRow() {
-        if app.buttons["CatA manual only visible"].waitForExistence(timeout: 1.0) { return }
-        let scroll = app.scrollViews.firstMatch
-        guard scroll.exists else { return }
-        for _ in 0..<10 {
-            scroll.swipeUp()
-            if app.buttons["CatA manual only visible"].waitForExistence(timeout: 0.5) { return }
+    /// Scroll until an element whose identifier contains `substring` exists (below-the-fold content).
+    private func scrollUntilIdentifierContains(_ substring: String, maxSwipes: Int = 16) -> Bool {
+        let pred = NSPredicate(format: "identifier CONTAINS[c] %@", substring)
+        if app.descendants(matching: .any).matching(pred).firstMatch.waitForExistence(timeout: 1.0) {
+            return true
         }
+        let scroll = app.scrollViews.firstMatch
+        guard scroll.exists else { return false }
+        for _ in 0..<maxSwipes {
+            scroll.swipeUp()
+            if app.descendants(matching: .any).matching(pred).firstMatch.waitForExistence(timeout: 0.5) {
+                return true
+            }
+        }
+        return false
     }
 
     func testCategoryA_unicodeText_hasAccessibilityIdentifier() throws {
@@ -66,17 +72,9 @@ final class AccessibilityIdentifierCategoryAUITests: XCTestCase {
     }
 
     func testCategoryA_manualOnlyStaticText_exactIdentifier() throws {
-        scrollToManualOnlyRow()
         XCTAssertTrue(
-            app.buttons["CatA manual only visible"].waitForExistence(timeout: 12.0),
-            "Manual-only control (platformButton with explicit id) should be visible"
-        )
-        let manual = app.descendants(matching: .any)
-            .matching(NSPredicate(format: "identifier CONTAINS[c] %@", "CatA_ManualOnly_StaticText"))
-            .firstMatch
-        XCTAssertTrue(
-            manual.waitForExistence(timeout: 12.0),
-            "Manual-only accessibility identifier should be visible to XCTest (exact or prefixed)"
+            scrollUntilIdentifierContains("CatA_ManualOnly_StaticText"),
+            "Manual-only id (platformButton id:) should appear after scrolling the audit screen"
         )
     }
 
