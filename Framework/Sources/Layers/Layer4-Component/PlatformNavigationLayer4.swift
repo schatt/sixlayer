@@ -451,13 +451,21 @@ public extension View {
         }
     }
 
-    /// Detail-only branch when the resolver collapses the inner column (parity with `platformSettingsContainer_L4`).
+    // MARK: - Layer 4 nested split shell (app + settings)
+
+    private func layer4NestedSplitShellResolution() -> NavigationLayoutResolution {
+        NavigationLayoutResolver.resolveAppNavigationShell(
+            availableWidth: DeviceCapabilities().screenSize.width
+        )
+    }
+
     @ViewBuilder
-    private func appNavigationDetailOnly<DetailContent: View>(
+    private func layer4ResolverDetailOnly<DetailContent: View>(
+        complianceName: String,
         @ViewBuilder detail: () -> DetailContent
     ) -> some View {
         detail()
-            .automaticCompliance(named: "platformAppNavigation_L4")
+            .automaticCompliance(named: complianceName)
     }
 
     @ViewBuilder
@@ -468,7 +476,7 @@ public extension View {
         @ViewBuilder detail: () -> DetailContent
     ) -> some View {
         if layoutResolution.mode == .compactCollapsedInner {
-            appNavigationDetailOnly(detail: detail)
+            layer4ResolverDetailOnly(complianceName: "platformAppNavigation_L4", detail: detail)
         } else {
             createNavigationSplitView(
                 columnVisibility: columnVisibility,
@@ -480,15 +488,30 @@ public extension View {
     }
 
     @ViewBuilder
+    private func createAppNavigationMacOS12Split<SidebarContent: View, DetailContent: View>(
+        layoutResolution: NavigationLayoutResolution,
+        @ViewBuilder sidebar: () -> SidebarContent,
+        @ViewBuilder detail: () -> DetailContent
+    ) -> some View {
+        if layoutResolution.mode == .compactCollapsedInner {
+            layer4ResolverDetailOnly(complianceName: "platformAppNavigation_L4", detail: detail)
+        } else {
+            platformHStackContainer(spacing: 0) {
+                sidebar()
+                detail()
+            }
+            .automaticCompliance(named: "platformAppNavigation_L4")
+        }
+    }
+
+    @ViewBuilder
     private func platformAppNavigationSplitViewBranch<SidebarContent: View, DetailContent: View>(
         columnVisibility: Binding<NavigationSplitViewVisibility>?,
         showingNavigationSheet: Binding<Bool>?,
         @ViewBuilder sidebar: () -> SidebarContent,
         @ViewBuilder detail: () -> DetailContent
     ) -> some View {
-        let layoutResolution = NavigationLayoutResolver.resolveAppNavigationShell(
-            availableWidth: DeviceCapabilities().screenSize.width
-        )
+        let layoutResolution = layer4NestedSplitShellResolution()
         #if os(iOS)
         if #available(iOS 16.0, *) {
             createAppNavigationSplitView(
@@ -514,15 +537,11 @@ public extension View {
                 detail: detail
             )
         } else {
-            if layoutResolution.mode == .compactCollapsedInner {
-                appNavigationDetailOnly(detail: detail)
-            } else {
-                platformHStackContainer(spacing: 0) {
-                    sidebar()
-                    detail()
-                }
-                .automaticCompliance(named: "platformAppNavigation_L4")
-            }
+            createAppNavigationMacOS12Split(
+                layoutResolution: layoutResolution,
+                sidebar: sidebar,
+                detail: detail
+            )
         }
         #else
         detail()
@@ -670,15 +689,6 @@ public extension View {
     
     // MARK: - Settings Container Layer 4
 
-    /// Detail-only branch when the resolver collapses the inner settings sidebar (avoids nested split squeeze).
-    @ViewBuilder
-    private func settingsContainerDetailOnly<Detail: View>(
-        @ViewBuilder detail: () -> Detail
-    ) -> some View {
-        detail()
-            .automaticCompliance(named: "platformSettingsContainer_L4")
-    }
-
     /// Helper to create settings container for iPad (NavigationSplitView)
     /// - Parameters:
     ///   - columnVisibility: Optional binding for NavigationSplitView column visibility
@@ -693,7 +703,7 @@ public extension View {
         @ViewBuilder detail: () -> Detail
     ) -> some View {
         if layoutResolution.mode == .compactCollapsedInner {
-            settingsContainerDetailOnly(detail: detail)
+            layer4ResolverDetailOnly(complianceName: "platformSettingsContainer_L4", detail: detail)
         } else if #available(iOS 16.0, *) {
             // Use existing helper to avoid duplication
             createNavigationSplitView(
@@ -763,7 +773,7 @@ public extension View {
         @ViewBuilder detail: () -> Detail
     ) -> some View {
         if layoutResolution.mode == .compactCollapsedInner {
-            settingsContainerDetailOnly(detail: detail)
+            layer4ResolverDetailOnly(complianceName: "platformSettingsContainer_L4", detail: detail)
         } else if #available(macOS 13.0, *) {
             // Use existing helper to avoid duplication
             createNavigationSplitView(
@@ -958,10 +968,7 @@ public extension View {
         @ViewBuilder detail: () -> Detail
     ) -> some View {
         let deviceType = DeviceType.current
-        let availableWidth = DeviceCapabilities().screenSize.width
-        let layoutResolution = NavigationLayoutResolver.resolveSettingsContainer(
-            availableWidth: availableWidth
-        )
+        let layoutResolution = layer4NestedSplitShellResolution()
         
         #if os(iOS)
         switch deviceType {
