@@ -8,6 +8,51 @@ import SwiftUI
 // MARK: - Navigation Types
 // PlatformTitleDisplayMode is defined in PlatformUITypes.swift
 
+// MARK: - Layer 4 compact outer overlay (issue #206)
+
+/// Detail-first shell with toolbar affordance and dismissible sheet for the outer sidebar (no column squeeze).
+private struct Layer4OuterSidebarOverlayHost<SidebarSheet: View, Detail: View>: View {
+    @State private var isOuterSidebarPresented = false
+    let complianceName: String
+    @ViewBuilder let sidebarSheet: () -> SidebarSheet
+    let detailContent: Detail
+
+    var body: some View {
+        Group {
+            #if os(iOS)
+            if #available(iOS 16.0, *) {
+                NavigationStack {
+                    detailContent
+                }
+            } else {
+                NavigationView {
+                    detailContent
+                }
+            }
+            #elseif os(macOS)
+            NavigationStack {
+                detailContent
+            }
+            #else
+            detailContent
+            #endif
+        }
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                Button {
+                    isOuterSidebarPresented = true
+                } label: {
+                    Image(systemName: "sidebar.left")
+                }
+                .accessibilityLabel("Show sidebar")
+            }
+        }
+        .sheet(isPresented: $isOuterSidebarPresented) {
+            sidebarSheet()
+        }
+        .automaticCompliance(named: complianceName)
+    }
+}
 
 public extension View {
     
@@ -468,6 +513,20 @@ public extension View {
             .automaticCompliance(named: complianceName)
     }
 
+    private func layer4OuterSidebarOverlay<Sidebar: View, Detail: View>(
+        complianceName: String,
+        @ViewBuilder sidebar: () -> Sidebar,
+        @ViewBuilder detail: () -> Detail
+    ) -> some View {
+        let sidebarContent = sidebar()
+        let detailContent = detail()
+        return Layer4OuterSidebarOverlayHost(
+            complianceName: complianceName,
+            sidebarSheet: { createSidebarSheetContent(sidebarContent: sidebarContent) },
+            detailContent: detailContent
+        )
+    }
+
     @ViewBuilder
     private func createAppNavigationSplitView<SidebarContent: View, DetailContent: View>(
         layoutResolution: NavigationLayoutResolution,
@@ -475,15 +534,22 @@ public extension View {
         @ViewBuilder sidebar: () -> SidebarContent,
         @ViewBuilder detail: () -> DetailContent
     ) -> some View {
-        if layoutResolution.mode == .compactCollapsedInner {
-            layer4ResolverDetailOnly(complianceName: "platformAppNavigation_L4", detail: detail)
-        } else {
+        switch NavigationLayoutCompactPresentation(resolution: layoutResolution) {
+        case .fullSplit:
             createNavigationSplitView(
                 columnVisibility: columnVisibility,
                 sidebar: sidebar,
                 detail: detail
             )
             .automaticCompliance(named: "platformAppNavigation_L4")
+        case .detailOnlyCollapsedInner:
+            layer4ResolverDetailOnly(complianceName: "platformAppNavigation_L4", detail: detail)
+        case .overlayOuterSidebar:
+            layer4OuterSidebarOverlay(
+                complianceName: "platformAppNavigation_L4",
+                sidebar: sidebar,
+                detail: detail
+            )
         }
     }
 
@@ -493,14 +559,21 @@ public extension View {
         @ViewBuilder sidebar: () -> SidebarContent,
         @ViewBuilder detail: () -> DetailContent
     ) -> some View {
-        if layoutResolution.mode == .compactCollapsedInner {
-            layer4ResolverDetailOnly(complianceName: "platformAppNavigation_L4", detail: detail)
-        } else {
+        switch NavigationLayoutCompactPresentation(resolution: layoutResolution) {
+        case .fullSplit:
             platformHStackContainer(spacing: 0) {
                 sidebar()
                 detail()
             }
             .automaticCompliance(named: "platformAppNavigation_L4")
+        case .detailOnlyCollapsedInner:
+            layer4ResolverDetailOnly(complianceName: "platformAppNavigation_L4", detail: detail)
+        case .overlayOuterSidebar:
+            layer4OuterSidebarOverlay(
+                complianceName: "platformAppNavigation_L4",
+                sidebar: sidebar,
+                detail: detail
+            )
         }
     }
 
@@ -702,24 +775,31 @@ public extension View {
         @ViewBuilder sidebar: () -> Sidebar,
         @ViewBuilder detail: () -> Detail
     ) -> some View {
-        if layoutResolution.mode == .compactCollapsedInner {
+        switch NavigationLayoutCompactPresentation(resolution: layoutResolution) {
+        case .fullSplit:
+            if #available(iOS 16.0, *) {
+                createNavigationSplitView(
+                    columnVisibility: columnVisibility,
+                    sidebar: sidebar,
+                    detail: detail
+                )
+                .automaticCompliance(named: "platformSettingsContainer_L4")
+            } else {
+                NavigationView {
+                    sidebar()
+                    detail()
+                }
+                .navigationViewStyle(.columns)
+                .automaticCompliance(named: "platformSettingsContainer_L4")
+            }
+        case .detailOnlyCollapsedInner:
             layer4ResolverDetailOnly(complianceName: "platformSettingsContainer_L4", detail: detail)
-        } else if #available(iOS 16.0, *) {
-            // Use existing helper to avoid duplication
-            createNavigationSplitView(
-                columnVisibility: columnVisibility,
+        case .overlayOuterSidebar:
+            layer4OuterSidebarOverlay(
+                complianceName: "platformSettingsContainer_L4",
                 sidebar: sidebar,
                 detail: detail
             )
-            .automaticCompliance(named: "platformSettingsContainer_L4")
-        } else {
-            // iOS 15 fallback: Use NavigationView with columns style for iPad
-            NavigationView {
-                sidebar()
-                detail()
-            }
-            .navigationViewStyle(.columns)
-            .automaticCompliance(named: "platformSettingsContainer_L4")
         }
     }
     
@@ -772,23 +852,30 @@ public extension View {
         @ViewBuilder sidebar: () -> Sidebar,
         @ViewBuilder detail: () -> Detail
     ) -> some View {
-        if layoutResolution.mode == .compactCollapsedInner {
+        switch NavigationLayoutCompactPresentation(resolution: layoutResolution) {
+        case .fullSplit:
+            if #available(macOS 13.0, *) {
+                createNavigationSplitView(
+                    columnVisibility: columnVisibility,
+                    sidebar: sidebar,
+                    detail: detail
+                )
+                .automaticCompliance(named: "platformSettingsContainer_L4")
+            } else {
+                HStack(spacing: 0) {
+                    sidebar()
+                    detail()
+                }
+                .automaticCompliance(named: "platformSettingsContainer_L4")
+            }
+        case .detailOnlyCollapsedInner:
             layer4ResolverDetailOnly(complianceName: "platformSettingsContainer_L4", detail: detail)
-        } else if #available(macOS 13.0, *) {
-            // Use existing helper to avoid duplication
-            createNavigationSplitView(
-                columnVisibility: columnVisibility,
+        case .overlayOuterSidebar:
+            layer4OuterSidebarOverlay(
+                complianceName: "platformSettingsContainer_L4",
                 sidebar: sidebar,
                 detail: detail
             )
-            .automaticCompliance(named: "platformSettingsContainer_L4")
-        } else {
-            // macOS 12 fallback: Use HStack layout
-            HStack(spacing: 0) {
-                sidebar()
-                detail()
-            }
-            .automaticCompliance(named: "platformSettingsContainer_L4")
         }
     }
     
