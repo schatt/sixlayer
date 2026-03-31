@@ -16,6 +16,7 @@
 - [x] Fix Swift 6 actor-isolation errors in `LabeledContentDisplayFieldTests.swift`
 - [x] **#202** Review issue details for nested sidebar overlap in host settings split UI
 - [ ] **#202** Implement framework-level nested sidebar coordination policy (opt-in API + tests)
+- [ ] **#203** TDD: Add navigation layout resolver core with profile/policy types
 - [ ] Run `swift test` to confirm everything passes
 - [x] Group current uncommitted changes in the v6.6.0 branch into small, logical commits
 - [ ] Adjust development workflow to encourage committing early and often (small, cohesive commits per TDD cycle)
