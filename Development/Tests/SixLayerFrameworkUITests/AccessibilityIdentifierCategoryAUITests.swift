@@ -145,4 +145,11 @@ final class AccessibilityIdentifierCategoryAUITests: XCTestCase {
             "outer Group accessibilityIdentifier should be findable (manual override on wrapper)"
         )
     }
+
+    func testCategoryA_emptyIdentifierName_sanitizedLabelInIdentifier() throws {
+        XCTAssertTrue(
+            scrollUntilIdentifierContains("empty-name-row"),
+            "Empty identifierName should still include sanitized identifierLabel in generated identifier"
+        )
+    }
 }
