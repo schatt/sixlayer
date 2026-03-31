@@ -43,6 +43,14 @@ public final class AccessibilityIdentifierConfig: @unchecked Sendable {
         return taskLocalConfig
     }
     
+    /// Resolves config for identifier generation: optional injected environment (tests), then task-local, then shared.
+    /// Environment injection is required when SwiftUI evaluates bodies outside the test task (e.g. some Swift Testing / async cases where `@TaskLocal` is not visible); tests pass `\.accessibilityIdentifierConfig` from the hosting root.
+    @MainActor
+    internal static func resolvedForIdentifierGeneration(environment: AccessibilityIdentifierConfig?) -> AccessibilityIdentifierConfig {
+        if let environment = environment { return environment }
+        return currentTaskLocalConfig ?? shared
+    }
+    
     /// Shared instance for global configuration (PRODUCTION ONLY)
     /// Tests use task-local config automatically via @TaskLocal - never use .shared in tests
     /// 
