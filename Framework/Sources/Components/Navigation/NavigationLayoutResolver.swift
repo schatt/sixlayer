@@ -187,4 +187,9 @@ public enum NavigationLayoutResolver {
     public static func resolveAppNavigationShell(availableWidth: CGFloat) -> NavigationLayoutResolution {
         resolveLayer4NestedSplitShell(availableWidth: availableWidth)
     }
+
+    /// Canonical Layer 4 UI presentation for `availableWidth` (issue #206). Red-phase stub: wrong until TDD green.
+    public static func layer4CompactPresentation(forAvailableWidth width: CGFloat) -> NavigationLayoutCompactPresentation {
+        .fullSplit
+    }
 }
