@@ -55,7 +55,7 @@ open class AccessibilityFeaturesLayer5Tests: BaseTestClass {
      * METHODOLOGY: Test success/failure scenarios with different focus configurations
      */
     @Test @MainActor func testAddFocusableItemSuccess() {
-        let navigationManager = KeyboardNavigationManager()
+        let _ = KeyboardNavigationManager()
         // GIVEN: Empty keyboard navigation manager
         let _ = HighContrastManager()
         let _ = Set<AnyCancellable>()
