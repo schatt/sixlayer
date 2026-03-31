@@ -1,6 +1,5 @@
 import Testing
 import CoreGraphics
-import SwiftUI
 @testable import SixLayerFramework
 
 @Suite("Navigation Layout Resolver")
@@ -63,20 +62,16 @@ struct NavigationLayoutResolverTests {
         #expect(profile.maxWidth == 260)
     }
 
-    @Test @MainActor
-    func resolveSettingsContainerLayout_usesSideBySide_whenWideEnough() {
-        let resolution = EmptyView().resolveSettingsContainerLayout_L4(
-            availableWidth: 1300
-        )
+    @Test
+    func resolveSettingsContainer_usesSideBySide_whenWideEnough() {
+        let resolution = NavigationLayoutResolver.resolveSettingsContainer(availableWidth: 1300)
 
         #expect(resolution.mode == .sideBySide)
     }
 
-    @Test @MainActor
-    func resolveSettingsContainerLayout_collapsesInner_whenConstrained() {
-        let resolution = EmptyView().resolveSettingsContainerLayout_L4(
-            availableWidth: 620
-        )
+    @Test
+    func resolveSettingsContainer_collapsesInner_whenConstrained() {
+        let resolution = NavigationLayoutResolver.resolveSettingsContainer(availableWidth: 620)
 
         #expect(resolution.mode == .compactCollapsedInner)
     }
