@@ -37,6 +37,8 @@ struct TestAppContentView: View {
     @State private var selectedTest: TestView? = nil
     @State private var showLayer1Examples = false
     @State private var isConfigured = false
+    /// When true, app opens to Category A accessibility identifier audit (launch arg -OpenCategoryAAccessibility). Issue #197.
+    private let openCategoryAAccessibility = ProcessInfo.processInfo.arguments.contains("-OpenCategoryAAccessibility")
     /// When true, app opens directly to Layer 4 contract section (launch arg -OpenLayer4Examples).
     private let openLayer4Examples = ProcessInfo.processInfo.arguments.contains("-OpenLayer4Examples")
     /// When true, app opens directly to Layer 5 Accessibility section (launch arg -OpenLayer5Accessibility).
@@ -74,7 +76,11 @@ struct TestAppContentView: View {
 
     var body: some View {
         Group {
-            if openLayer4Examples {
+            if openCategoryAAccessibility {
+                NavigationStack {
+                    AccessibilityIdentifierCategoryAUDITView()
+                }
+            } else if openLayer4Examples {
                 NavigationStack {
                     Layer4ContractOnlyView()
                 }
