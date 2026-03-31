@@ -93,7 +93,7 @@ final class CloudKitServiceSwiftDataTests {
             // Errors should be properly typed
             // Note: All errors can be cast to NSError, so we only check for CloudKitServiceError specifically
             // Other errors (like NSError) are also acceptable but not explicitly checked
-            let isCloudKitError = error is CloudKitServiceError
+            _ = error is CloudKitServiceError
             #expect(Bool(true), "Error should be CloudKitServiceError or another Error type")
         }
     }
