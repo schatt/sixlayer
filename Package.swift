@@ -84,5 +84,15 @@ let package = Package(
             ]
         ),
 
+        /// Isolated unit tests for pure layout resolver logic (no ViewInspector / BaseTestClass).
+        /// Enables `swift test --filter NavigationLayoutResolverTests` without building the full UI test suite.
+        .testTarget(
+            name: "NavigationLayoutResolverTests",
+            dependencies: [
+                "SixLayerFramework"
+            ],
+            path: "Development/Tests/NavigationLayoutResolverTests"
+        ),
+
     ]
 )
