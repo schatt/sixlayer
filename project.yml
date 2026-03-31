@@ -79,6 +79,7 @@ targets:
     platform: iOS
     sources:
       - path: Development/Tests/Shared/TestHelpers
+      - path: Development/Tests/NavigationLayoutResolverTests
       - path: Development/Tests/SixLayerFrameworkUnitTests
         excludes:
           - "**/README.md"
@@ -153,6 +154,7 @@ targets:
     platform: macOS
     sources:
       - path: Development/Tests/Shared/TestHelpers
+      - path: Development/Tests/NavigationLayoutResolverTests
       - path: Development/Tests/SixLayerFrameworkUnitTests
         excludes:
           - "**/README.md"
@@ -180,6 +182,7 @@ targets:
     platform: tvOS
     sources:
       - path: Development/Tests/Shared/TestHelpers
+      - path: Development/Tests/NavigationLayoutResolverTests
       - path: Development/Tests/SixLayerFrameworkUnitTests
         excludes:
           - "**/README.md"
@@ -203,6 +206,7 @@ targets:
     platform: watchOS
     sources:
       - path: Development/Tests/Shared/TestHelpers
+      - path: Development/Tests/NavigationLayoutResolverTests
       - path: Development/Tests/SixLayerFrameworkUnitTests
         excludes:
           - "**/README.md"
@@ -226,6 +230,7 @@ targets:
     platform: visionOS
     sources:
       - path: Development/Tests/Shared/TestHelpers
+      - path: Development/Tests/NavigationLayoutResolverTests
       - path: Development/Tests/SixLayerFrameworkUnitTests
         excludes:
           - "**/README.md"
