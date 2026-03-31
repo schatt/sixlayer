@@ -75,4 +75,14 @@ struct NavigationLayoutResolverTests {
 
         #expect(resolution.mode == .compactCollapsedInner)
     }
+
+    @Test
+    func resolveAppNavigationShell_matchesSettingsContainer_forParity() {
+        let widths: [CGFloat] = [0, 320, 620, 900, 1300, 2000]
+        for width in widths {
+            let app = NavigationLayoutResolver.resolveAppNavigationShell(availableWidth: width)
+            let settings = NavigationLayoutResolver.resolveSettingsContainer(availableWidth: width)
+            #expect(app == settings)
+        }
+    }
 }
