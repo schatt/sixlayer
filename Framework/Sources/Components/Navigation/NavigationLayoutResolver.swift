@@ -1,0 +1,112 @@
+import Foundation
+import CoreGraphics
+
+public struct NavigationSidebarProfile: Sendable, Hashable {
+    public let id: String
+    public let minWidth: CGFloat
+    public let idealWidthRatio: CGFloat
+    public let maxWidth: CGFloat
+
+    public init(
+        id: String,
+        minWidth: CGFloat,
+        idealWidthRatio: CGFloat,
+        maxWidth: CGFloat
+    ) {
+        self.id = id
+        self.minWidth = minWidth
+        self.idealWidthRatio = idealWidthRatio
+        self.maxWidth = maxWidth
+    }
+}
+
+public extension NavigationSidebarProfile {
+    static let iconRail = NavigationSidebarProfile(
+        id: "iconRail",
+        minWidth: 80,
+        idealWidthRatio: 0.12,
+        maxWidth: 120
+    )
+
+    static let compactList = NavigationSidebarProfile(
+        id: "compactList",
+        minWidth: 140,
+        idealWidthRatio: 0.18,
+        maxWidth: 220
+    )
+
+    static let textSidebar = NavigationSidebarProfile(
+        id: "textSidebar",
+        minWidth: 180,
+        idealWidthRatio: 0.25,
+        maxWidth: 320
+    )
+}
+
+public enum NavigationLayoutPolicy: Sendable {
+    case automatic
+    case preferOuter
+    case preferInner
+}
+
+public enum NavigationLayoutMode: Sendable, Equatable {
+    case sideBySide
+    case compactCollapsedOuter
+    case compactCollapsedInner
+}
+
+public struct NavigationLayoutResolution: Sendable, Equatable {
+    public let mode: NavigationLayoutMode
+    public let outerWidth: CGFloat
+    public let innerWidth: CGFloat
+    public let detailWidth: CGFloat
+}
+
+public enum NavigationLayoutResolver {
+    public static func resolve(
+        availableWidth: CGFloat,
+        outerProfile: NavigationSidebarProfile,
+        innerProfile: NavigationSidebarProfile,
+        minimumDetailWidth: CGFloat,
+        policy: NavigationLayoutPolicy
+    ) -> NavigationLayoutResolution {
+        let safeAvailableWidth = max(0, availableWidth)
+        let safeDetailMin = max(0, minimumDetailWidth)
+        let outerWidth = resolvedWidth(for: outerProfile, availableWidth: safeAvailableWidth)
+        let innerWidth = resolvedWidth(for: innerProfile, availableWidth: safeAvailableWidth)
+        let widthBudget = outerWidth + innerWidth + safeDetailMin
+
+        if widthBudget <= safeAvailableWidth {
+            return NavigationLayoutResolution(
+                mode: .sideBySide,
+                outerWidth: outerWidth,
+                innerWidth: innerWidth,
+                detailWidth: safeAvailableWidth - outerWidth - innerWidth
+            )
+        }
+
+        let mode: NavigationLayoutMode
+        switch policy {
+        case .automatic, .preferInner:
+            mode = .compactCollapsedOuter
+        case .preferOuter:
+            mode = .compactCollapsedInner
+        }
+
+        return NavigationLayoutResolution(
+            mode: mode,
+            outerWidth: outerWidth,
+            innerWidth: innerWidth,
+            detailWidth: max(0, safeAvailableWidth - safeDetailMin)
+        )
+    }
+
+    private static func resolvedWidth(
+        for profile: NavigationSidebarProfile,
+        availableWidth: CGFloat
+    ) -> CGFloat {
+        let ideal = availableWidth * profile.idealWidthRatio
+        let lowerBound = min(profile.minWidth, profile.maxWidth)
+        return min(max(ideal, lowerBound), profile.maxWidth)
+    }
+}
