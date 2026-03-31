@@ -450,6 +450,85 @@ public extension View {
             }
         }
     }
+
+    /// Detail-only branch when the resolver collapses the inner column (parity with `platformSettingsContainer_L4`).
+    @ViewBuilder
+    private func appNavigationDetailOnly<DetailContent: View>(
+        @ViewBuilder detail: () -> DetailContent
+    ) -> some View {
+        detail()
+            .automaticCompliance(named: "platformAppNavigation_L4")
+    }
+
+    @ViewBuilder
+    private func createAppNavigationSplitView<SidebarContent: View, DetailContent: View>(
+        layoutResolution: NavigationLayoutResolution,
+        columnVisibility: Binding<NavigationSplitViewVisibility>?,
+        @ViewBuilder sidebar: () -> SidebarContent,
+        @ViewBuilder detail: () -> DetailContent
+    ) -> some View {
+        if layoutResolution.mode == .compactCollapsedInner {
+            appNavigationDetailOnly(detail: detail)
+        } else {
+            createNavigationSplitView(
+                columnVisibility: columnVisibility,
+                sidebar: sidebar,
+                detail: detail
+            )
+            .automaticCompliance(named: "platformAppNavigation_L4")
+        }
+    }
+
+    @ViewBuilder
+    private func platformAppNavigationSplitViewBranch<SidebarContent: View, DetailContent: View>(
+        columnVisibility: Binding<NavigationSplitViewVisibility>?,
+        showingNavigationSheet: Binding<Bool>?,
+        @ViewBuilder sidebar: () -> SidebarContent,
+        @ViewBuilder detail: () -> DetailContent
+    ) -> some View {
+        let layoutResolution = NavigationLayoutResolver.resolveAppNavigationShell(
+            availableWidth: DeviceCapabilities().screenSize.width
+        )
+        #if os(iOS)
+        if #available(iOS 16.0, *) {
+            createAppNavigationSplitView(
+                layoutResolution: layoutResolution,
+                columnVisibility: columnVisibility,
+                sidebar: sidebar,
+                detail: detail
+            )
+        } else {
+            let sidebarContent = sidebar()
+            createDetailOnlyWithSheet(
+                showingNavigationSheet: showingNavigationSheet,
+                detail: detail,
+                sidebarContent: sidebarContent
+            )
+        }
+        #elseif os(macOS)
+        if #available(macOS 13.0, *) {
+            createAppNavigationSplitView(
+                layoutResolution: layoutResolution,
+                columnVisibility: columnVisibility,
+                sidebar: sidebar,
+                detail: detail
+            )
+        } else {
+            if layoutResolution.mode == .compactCollapsedInner {
+                appNavigationDetailOnly(detail: detail)
+            } else {
+                platformHStackContainer(spacing: 0) {
+                    sidebar()
+                    detail()
+                }
+                .automaticCompliance(named: "platformAppNavigation_L4")
+            }
+        }
+        #else
+        detail()
+            .automaticCompliance(named: "platformAppNavigation_L4")
+        #endif
+    }
     
     /// Helper to create sidebar sheet content with platform-appropriate navigation wrapper
     @ViewBuilder
@@ -516,47 +595,13 @@ public extension View {
     ) -> some View {
         switch strategy.implementation {
         case .splitView:
-            // Use NavigationSplitView
-            #if os(iOS)
-            if #available(iOS 16.0, *) {
-                createNavigationSplitView(
-                    columnVisibility: columnVisibility,
-                    sidebar: sidebar,
-                    detail: detail
-                )
-                .automaticCompliance(named: "platformAppNavigation_L4")
-            } else {
-                // iOS 15 fallback: Use detail-only with sheet
-                // Capture sidebar content before using in escaping closure
-                let sidebarContent = sidebar()
-                createDetailOnlyWithSheet(
-                    showingNavigationSheet: showingNavigationSheet,
-                    detail: detail,
-                    sidebarContent: sidebarContent
-                )
-            }
-            #elseif os(macOS)
-            if #available(macOS 13.0, *) {
-                createNavigationSplitView(
-                    columnVisibility: columnVisibility,
-                    sidebar: sidebar,
-                    detail: detail
-                )
-                .automaticCompliance(named: "platformAppNavigation_L4")
-            } else {
-                // macOS 12 fallback: Use HStack layout
-                platformHStackContainer(spacing: 0) {
-                    sidebar()
-                    detail()
-                }
-                .automaticCompliance(named: "platformAppNavigation_L4")
-            }
-            #else
-            // Other platforms: Use detail-only
-            detail()
-                .automaticCompliance(named: "platformAppNavigation_L4")
-            #endif
-            
+            platformAppNavigationSplitViewBranch(
+                columnVisibility: columnVisibility,
+                showingNavigationSheet: showingNavigationSheet,
+                sidebar: sidebar,
+                detail: detail
+            )
+
         case .detailOnly:
             // Use detail-only view with optional sheet for sidebar
             // Capture sidebar content before using in escaping closure
