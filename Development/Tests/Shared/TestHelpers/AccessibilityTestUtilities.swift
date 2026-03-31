@@ -90,17 +90,17 @@ private func allAccessibilityIdentifiersInInspectedRecursive(
     // Unwrap root AnyView: the modifier is on the inner view (e.g. ExpandableCardComponent), not the AnyView container.
     if let inner = try? inspected.anyView() {
         collect(try? inner.accessibilityIdentifier())
-        for av in (try? inner.findAll(ViewInspector.ViewType.AnyView.self)) ?? [] { collect(try? av.accessibilityIdentifier()) }
-        for v in (try? inner.findAll(ViewInspector.ViewType.VStack.self)) ?? [] { collect(try? v.accessibilityIdentifier()) }
+        for av in inner.findAll(ViewInspector.ViewType.AnyView.self) { collect(av.accessibilityIdentifier()) }
+        for v in inner.findAll(ViewInspector.ViewType.VStack.self) { collect(v.accessibilityIdentifier()) }
         for v in (try? inner.findAll(ViewInspector.ViewType.HStack.self)) ?? [] { collect(try? v.accessibilityIdentifier()) }
         for v in (try? inner.findAll(ViewInspector.ViewType.ZStack.self)) ?? [] { collect(try? v.accessibilityIdentifier()) }
         for v in (try? inner.findAll(ViewInspector.ViewType.Button.self)) ?? [] { collect(try? v.accessibilityIdentifier()) }
     }
-    for av in (try? inspected.findAll(ViewInspector.ViewType.AnyView.self)) ?? [] {
-        collect(try? av.accessibilityIdentifier())
+    for av in inspected.findAll(ViewInspector.ViewType.AnyView.self) {
+        collect(av.accessibilityIdentifier())
     }
-    for v in (try? inspected.findAll(ViewInspector.ViewType.VStack.self)) ?? [] {
-        collect(try? v.accessibilityIdentifier())
+    for v in inspected.findAll(ViewInspector.ViewType.VStack.self) {
+        collect(v.accessibilityIdentifier())
     }
     for v in (try? inspected.findAll(ViewInspector.ViewType.HStack.self)) ?? [] {
         collect(try? v.accessibilityIdentifier())
@@ -129,8 +129,8 @@ private func allAccessibilityIdentifiersFromTypedInspectable<V: View & ViewInspe
         if let id = id, !id.isEmpty { ids.append(id) }
     }
     collect(try? inspected.accessibilityIdentifier())
-    for av in (try? inspected.findAll(ViewInspector.ViewType.AnyView.self)) ?? [] { collect(try? av.accessibilityIdentifier()) }
-    for v in (try? inspected.findAll(ViewInspector.ViewType.VStack.self)) ?? [] { collect(try? v.accessibilityIdentifier()) }
+    for av in inspected.findAll(ViewInspector.ViewType.AnyView.self) { collect(av.accessibilityIdentifier()) }
+    for v in inspected.findAll(ViewInspector.ViewType.VStack.self) { collect(v.accessibilityIdentifier()) }
     for v in (try? inspected.findAll(ViewInspector.ViewType.HStack.self)) ?? [] { collect(try? v.accessibilityIdentifier()) }
     for v in (try? inspected.findAll(ViewInspector.ViewType.ZStack.self)) ?? [] { collect(try? v.accessibilityIdentifier()) }
     for v in (try? inspected.findAll(ViewInspector.ViewType.Button.self)) ?? [] { collect(try? v.accessibilityIdentifier()) }
