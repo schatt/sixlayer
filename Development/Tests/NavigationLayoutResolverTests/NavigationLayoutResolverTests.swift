@@ -1,5 +1,6 @@
 import Testing
 import CoreGraphics
+import SwiftUI
 @testable import SixLayerFramework
 
 @Suite("Navigation Layout Resolver")
