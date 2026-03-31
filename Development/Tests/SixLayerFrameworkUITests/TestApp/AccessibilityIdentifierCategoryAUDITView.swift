@@ -77,6 +77,31 @@ struct AccessibilityIdentifierCategoryAUDITView: View {
                         identifierName: longIdentifierName,
                         identifierLabel: "Long"
                     )
+
+                // exactNamed: minimal identifier string (no namespace) — audit exactNamed* / minimal IDs.
+                sectionCaption("exactNamed (minimal identifier)")
+                platformText("Exact named minimal")
+                    .exactNamed("CatAExactNamed")
+
+                // accessibilityLabel parameter (AutomaticAccessibilityLabelTests / VoiceOver string).
+                sectionCaption("Explicit accessibilityLabel (basicAutomaticCompliance)")
+                platformText("Label row")
+                    .basicAutomaticCompliance(
+                        identifierName: "CatALabelAndId",
+                        identifierLabel: "Visible",
+                        accessibilityLabel: "VoiceOver Cat A Label"
+                    )
+
+                // Manual identifier on outer Group after inner basicAutomaticCompliance (override contract).
+                sectionCaption("Manual id on outer Group (overrides inner auto id on wrapper)")
+                Group {
+                    platformText("Manual wins on wrapper")
+                        .basicAutomaticCompliance(
+                            identifierName: "CatAAutoInnerOverride",
+                            identifierElementType: "Text"
+                        )
+                }
+                .accessibilityIdentifier("CatAManualWinsOnOuter")
             }
             .padding()
         }
