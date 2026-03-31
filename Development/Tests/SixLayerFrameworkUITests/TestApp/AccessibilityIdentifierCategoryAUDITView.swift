@@ -62,7 +62,8 @@ struct AccessibilityIdentifierCategoryAUDITView: View {
                 }
 
                 sectionCaption("Manual-only identifier (no automaticCompliance on this view)")
-                platformText("CatA manual only visible")
+                Button("CatA manual only visible") {}
+                    .buttonStyle(.plain)
                     .accessibilityIdentifier("CatA_ManualOnly_StaticText")
 
                 sectionCaption("Special characters in label")
