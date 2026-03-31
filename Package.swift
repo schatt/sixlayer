@@ -59,33 +59,12 @@ let package = Package(
             ]
         ),
 
-        // Unit tests - main test suite
-        .testTarget(
-            name: "SixLayerFrameworkUnitTests",
-            dependencies: [
-                "SixLayerFramework",
-                "SixLayerTestKit"
-            ],
-            path: "Development/Tests/SixLayerFrameworkUnitTests",
-            exclude: [
-                // Documentation and example files
-                "BugReports/PlatformTypes_v4.6.4/README.md",
-                "BugReports/README.md",
-                "BugReports/PlatformTypes_v4.6.6/README.md",
-                "BugReports/ButtonStyle_v4.6.3/README.md",
-                "BugReports/PlatformImage_v4.6.2/README.md",
-                "BugReports/PlatformPhotoPicker_v4.6.5/README.md",
-                "ViewInspectorTests/Utilities/TestHelpers/CoreDataTestingGuide.md",
-                "Utilities/TestHelpers/CoreDataTestingGuide.md"
-            ],
-            swiftSettings: [
-                // Disable strict concurrency checking for tests to work around Swift 6 region-based isolation checker issues
-                .define("SWIFT_DISABLE_STRICT_CONCURRENCY_CHECKING")
-            ]
-        ),
+        // Full unit test suite is built and run via Xcode (see project.yml); SwiftPM does not include
+        // SixLayerFrameworkUnitTests because it depends on shared test helpers and ViewInspector wiring
+        // that are not fully represented here.
 
         /// Isolated unit tests for pure layout resolver logic (no ViewInspector / BaseTestClass).
-        /// Enables `swift test --filter NavigationLayoutResolverTests` without building the full UI test suite.
+        /// Enables `swift test` / `swift test --filter NavigationLayoutResolverTests` without building the full UI test suite.
         .testTarget(
             name: "NavigationLayoutResolverTests",
             dependencies: [
