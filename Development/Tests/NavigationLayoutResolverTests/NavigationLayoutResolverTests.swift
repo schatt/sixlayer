@@ -70,10 +70,43 @@ struct NavigationLayoutResolverTests {
     }
 
     @Test
-    func resolveSettingsContainer_collapsesInner_whenConstrained() {
+    func resolveSettingsContainer_usesCompactCollapsedOuter_whenConstrained() {
         let resolution = NavigationLayoutResolver.resolveSettingsContainer(availableWidth: 620)
 
-        #expect(resolution.mode == .compactCollapsedInner)
+        #expect(resolution.mode == .compactCollapsedOuter)
+    }
+
+    @Test
+    func layer4CompactPresentation_mapsResolutionModes() {
+        let outer = NavigationLayoutResolution(
+            mode: .compactCollapsedOuter,
+            outerWidth: 140,
+            innerWidth: 180,
+            detailWidth: 300
+        )
+        #expect(NavigationLayoutCompactPresentation(resolution: outer) == .overlayOuterSidebar)
+
+        let inner = NavigationLayoutResolution(
+            mode: .compactCollapsedInner,
+            outerWidth: 140,
+            innerWidth: 180,
+            detailWidth: 300
+        )
+        #expect(NavigationLayoutCompactPresentation(resolution: inner) == .detailOnlyCollapsedInner)
+
+        let side = NavigationLayoutResolution(
+            mode: .sideBySide,
+            outerWidth: 140,
+            innerWidth: 180,
+            detailWidth: 500
+        )
+        #expect(NavigationLayoutCompactPresentation(resolution: side) == .fullSplit)
+    }
+
+    @Test
+    func resolveSettingsContainer_constrained_matchesOverlayPresentation() {
+        let resolution = NavigationLayoutResolver.resolveSettingsContainer(availableWidth: 620)
+        #expect(NavigationLayoutCompactPresentation(resolution: resolution) == .overlayOuterSidebar)
     }
 
     @Test
