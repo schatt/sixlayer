@@ -22,6 +22,10 @@ struct TestApp: App {
         config.includeElementTypes = true
         config.enableUITestIntegration = true
         config.enableDebugLogging = false
+        // Category A global-off UI audit (issue #197): `-CategoryAGlobalAutoOff` with `-OpenCategoryAAccessibility`
+        if ProcessInfo.processInfo.arguments.contains("-CategoryAGlobalAutoOff") {
+            config.globalAutomaticAccessibilityIdentifiers = false
+        }
     }
 
     var body: some Scene {
@@ -76,7 +80,11 @@ struct TestAppContentView: View {
 
     var body: some View {
         Group {
-            if openCategoryAAccessibility {
+            if openCategoryAAccessibility, ProcessInfo.processInfo.arguments.contains("-CategoryAGlobalAutoOff") {
+                NavigationStack {
+                    AccessibilityIdentifierCategoryAGlobalOffAUDITView()
+                }
+            } else if openCategoryAAccessibility {
                 NavigationStack {
                     AccessibilityIdentifierCategoryAUDITView()
                 }
