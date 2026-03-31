@@ -10,6 +10,7 @@
 - [x] **#192** Make accessibility identifier compliance tests robust via platform traversal + debug-log fallback
 - [ ] **#177** Fix remaining iOS ViewInspector/accessibility test failures (TDD green phase; commit/push per go workflow)
 - [x] **#197** (slice) Category A UI backfill: exactNamed, accessibilityLabel row, outer manual Group id + tests (commit/push; issue commented)
+- [x] **#197** (slice) Global-off audit (`-CategoryAGlobalAutoOff`), empty identifierName row + UI tests
 - [x] Fix `ModalContainerTests.swift` missing closing brace (build error)
 - [x] Fix Swift 6 actor-isolation errors in `DynamicFormTests.swift`
 - [x] Fix Swift 6 actor-isolation errors in `LabeledContentDisplayFieldTests.swift`
