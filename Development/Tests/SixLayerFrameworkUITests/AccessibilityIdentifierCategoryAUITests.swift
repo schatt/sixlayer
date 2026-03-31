@@ -55,16 +55,11 @@ final class AccessibilityIdentifierCategoryAUITests: XCTestCase {
     }
 
     func testCategoryA_manualOnlyStaticText_exactIdentifier() throws {
-        let exact = app.descendants(matching: .any)
+        let manual = app.descendants(matching: .any)
             .matching(NSPredicate(format: "identifier == %@", "CatA_ManualOnly_StaticText"))
             .firstMatch
-        let contains = app.descendants(matching: .any)
-            .matching(NSPredicate(format: "identifier CONTAINS[c] %@", "CatA_ManualOnly_StaticText"))
-            .firstMatch
-        XCTAssertTrue(
-            exact.waitForExistence(timeout: 12.0) || contains.waitForExistence(timeout: 2.0),
-            "Manual-only accessibility identifier should be visible to XCTest (exact or substring)"
-        )
+        XCTAssertTrue(manual.waitForExistence(timeout: 12.0),
+                      "Manual-only accessibility identifier should be visible to XCTest")
     }
 
     func testCategoryA_specialCharsInLabel_hasIdentifier() throws {
