@@ -77,7 +77,7 @@ open class AccessibilityFeaturesLayer5Tests: BaseTestClass {
      * METHODOLOGY: Test duplicate item handling
      */
     @Test @MainActor func testAddFocusableItemDuplicate() {
-        let _ = KeyboardNavigationManager()
+        let navigationManager = KeyboardNavigationManager()
         // GIVEN: Keyboard navigation manager with existing item
         navigationManager.addFocusableItem("button1")
         #expect(navigationManager.focusableItems.count == 1)
@@ -96,7 +96,7 @@ open class AccessibilityFeaturesLayer5Tests: BaseTestClass {
      * METHODOLOGY: Test empty string handling
      */
     @Test @MainActor func testAddFocusableItemEmptyString() {
-        let navigationManager = KeyboardNavigationManager()
+        let _ = KeyboardNavigationManager()
         // GIVEN: Empty keyboard navigation manager
         #expect(navigationManager.focusableItems.count == 0)
         
