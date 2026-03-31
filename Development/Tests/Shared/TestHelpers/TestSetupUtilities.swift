@@ -81,10 +81,22 @@ public enum TestSetupUtilities {
     ///   - view: The SwiftUI view to host.
     ///   - forceLayout: When true, call layoutIfNeeded() so SwiftUI applies accessibility identifiers to the UIView hierarchy. Use only for simple views (e.g. Text, Button); complex views (NavigationStack, platformPresentContent_L1) can hang.
     ///   - exposeContentAccessibility: When true, leave the hosting root as a container (isAccessibilityElement = false) so the SwiftUI content's accessibility tree is exposed for verification (e.g. single tappable element with label + button trait). Use for tests that traverse the hierarchy to assert on content a11y (Issue #191).
+    ///   - accessibilityIdentifierConfig: When set, injects `\.accessibilityIdentifierConfig` so SwiftUI bodies resolve the same instance as test harness when `@TaskLocal` is not visible (e.g. some async test runners).
     @MainActor
-    public static func hostRootPlatformView<V: View>(_ view: V, forceLayout: Bool = false, exposeContentAccessibility: Bool = false) -> Any? {
+    public static func hostRootPlatformView<V: View>(
+        _ view: V,
+        forceLayout: Bool = false,
+        exposeContentAccessibility: Bool = false,
+        accessibilityIdentifierConfig: AccessibilityIdentifierConfig? = nil
+    ) -> Any? {
         #if canImport(UIKit)
-        let hosting = UIHostingController(rootView: view)
+        let rootView: AnyView = {
+            if let cfg = accessibilityIdentifierConfig {
+                return AnyView(view.environment(\.accessibilityIdentifierConfig, cfg))
+            }
+            return AnyView(view)
+        }()
+        let hosting = UIHostingController(rootView: rootView)
         // CRITICAL: Accessing hosting.view can hang on complex views in test environments.
         // This is a synchronous UIKit call that cannot be timed out or cancelled.
         // If this hangs, the test will hang indefinitely.
@@ -117,7 +129,13 @@ public enum TestSetupUtilities {
         
         return root
         #elseif canImport(AppKit)
-        let hosting = NSHostingController(rootView: view)
+        let rootView: AnyView = {
+            if let cfg = accessibilityIdentifierConfig {
+                return AnyView(view.environment(\.accessibilityIdentifierConfig, cfg))
+            }
+            return AnyView(view)
+        }()
+        let hosting = NSHostingController(rootView: rootView)
         // CRITICAL: Accessing hosting.view can hang on complex views in test environments.
         let root = hosting.view
         // CRITICAL: Store the hosting controller to prevent deallocation
