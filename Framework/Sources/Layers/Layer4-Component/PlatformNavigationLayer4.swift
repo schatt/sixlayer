@@ -624,7 +624,16 @@ public extension View {
     }
     
     // MARK: - Settings Container Layer 4
-    
+
+    /// Detail-only branch when the resolver collapses the inner settings sidebar (avoids nested split squeeze).
+    @ViewBuilder
+    private func settingsContainerDetailOnly<Detail: View>(
+        @ViewBuilder detail: () -> Detail
+    ) -> some View {
+        detail()
+            .automaticCompliance(named: "platformSettingsContainer_L4")
+    }
+
     /// Helper to create settings container for iPad (NavigationSplitView)
     /// - Parameters:
     ///   - columnVisibility: Optional binding for NavigationSplitView column visibility
@@ -639,8 +648,7 @@ public extension View {
         @ViewBuilder detail: () -> Detail
     ) -> some View {
         if layoutResolution.mode == .compactCollapsedInner {
-            detail()
-                .automaticCompliance(named: "platformSettingsContainer_L4")
+            settingsContainerDetailOnly(detail: detail)
         } else if #available(iOS 16.0, *) {
             // Use existing helper to avoid duplication
             createNavigationSplitView(
@@ -710,8 +718,7 @@ public extension View {
         @ViewBuilder detail: () -> Detail
     ) -> some View {
         if layoutResolution.mode == .compactCollapsedInner {
-            detail()
-                .automaticCompliance(named: "platformSettingsContainer_L4")
+            settingsContainerDetailOnly(detail: detail)
         } else if #available(macOS 13.0, *) {
             // Use existing helper to avoid duplication
             createNavigationSplitView(
@@ -894,13 +901,7 @@ public extension View {
     func resolveSettingsContainerLayout_L4(
         availableWidth: CGFloat
     ) -> NavigationLayoutResolution {
-        NavigationLayoutResolver.resolve(
-            availableWidth: availableWidth,
-            outerProfile: .compactList,
-            innerProfile: .textSidebar,
-            minimumDetailWidth: 480,
-            policy: .preferOuter
-        )
+        NavigationLayoutResolver.resolveSettingsContainer(availableWidth: availableWidth)
     }
 
     @MainActor
@@ -913,7 +914,9 @@ public extension View {
     ) -> some View {
         let deviceType = DeviceType.current
         let availableWidth = DeviceCapabilities().screenSize.width
-        let layoutResolution = resolveSettingsContainerLayout_L4(availableWidth: availableWidth)
+        let layoutResolution = NavigationLayoutResolver.resolveSettingsContainer(
+            availableWidth: availableWidth
+        )
         
         #if os(iOS)
         switch deviceType {
