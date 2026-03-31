@@ -22,11 +22,15 @@ struct AccessibilityIdentifierCategoryAUDITView: View {
     var body: some View {
         platformScrollViewContainer {
             platformVStack(alignment: .leading, spacing: 24) {
-                // Named compliance + explicit ID: some Text + font chains do not surface generated IDs to XCTest; last wins for UI tests.
-                platformText("Category A — identifier audit (#197)")
-                    .automaticCompliance(named: "CatAAuditTitle")
-                    .font(.headline)
-                    .accessibilityIdentifier(Self.auditTitleUITestID)
+                // Group + combine: Text + font chains often omit identifiers on the leaf XCUITest sees; collapse to one a11y element.
+                Group {
+                    Text("Category A — identifier audit (#197)")
+                        .font(.headline)
+                        .automaticCompliance(named: "CatAAuditTitle")
+                }
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel("Category A — identifier audit (#197)")
+                .accessibilityIdentifier(Self.auditTitleUITestID)
 
                 sectionCaption("Unicode + label")
                 platformText("café 日本語")
@@ -36,13 +40,17 @@ struct AccessibilityIdentifierCategoryAUDITView: View {
                     )
 
                 // Outer name on a Text — layout containers often do not surface a stable identifier to XCTest.
-                platformText("Nested named components")
-                    .font(.subheadline)
-                    .fontWeight(.semibold)
-                    .foregroundColor(.secondary)
-                    .padding(.top, 8)
-                    .automaticCompliance(named: "CatANestedOuter")
-                    .accessibilityIdentifier(Self.nestedOuterUITestID)
+                Group {
+                    Text("Nested named components")
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.secondary)
+                        .padding(.top, 8)
+                        .automaticCompliance(named: "CatANestedOuter")
+                }
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel("Nested named components")
+                .accessibilityIdentifier(Self.nestedOuterUITestID)
                 platformVStack(alignment: .leading, spacing: 8) {
                     platformButton(label: "CatA Nested Action", id: nil) { }
                         .automaticCompliance(named: "CatANestedInnerButton")
@@ -50,8 +58,12 @@ struct AccessibilityIdentifierCategoryAUDITView: View {
                 }
 
                 sectionCaption("Manual-only identifier (no automaticCompliance on this view)")
-                Text("CatA manual only visible")
-                    .accessibilityIdentifier("CatA_ManualOnly_StaticText")
+                Group {
+                    Text("CatA manual only visible")
+                }
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel("CatA manual only visible")
+                .accessibilityIdentifier("CatA_ManualOnly_StaticText")
 
                 sectionCaption("Special characters in label")
                 platformText("Special")
