@@ -143,20 +143,30 @@ public enum NavigationLayoutResolver {
     }
 }
 
-// MARK: - Settings container preset (Layer 4)
+// MARK: - Layer 4 nested split presets (settings + app navigation)
 
 extension NavigationLayoutResolver {
-    /// Minimum width reserved for the settings detail pane when resolving the nested settings shell.
-    private static let settingsContainerMinimumDetailWidth: CGFloat = 480
+    /// Minimum width reserved for the detail pane when resolving Layer 4 nested split shells (host + inner + detail).
+    private static let layer4NestedSplitShellMinimumDetailWidth: CGFloat = 480
 
-    /// Preset resolution for the Layer 4 settings container: host `compactList` plus inner `textSidebar`, preferring the outer column when space is tight (`.preferOuter`).
-    public static func resolveSettingsContainer(availableWidth: CGFloat) -> NavigationLayoutResolution {
+    /// Shared preset for nested split columns: host `compactList` plus inner `textSidebar`, preferring the outer column when space is tight (`.preferOuter`).
+    private static func resolveLayer4NestedSplitShell(availableWidth: CGFloat) -> NavigationLayoutResolution {
         resolve(
             availableWidth: availableWidth,
             outerProfile: .compactList,
             innerProfile: .textSidebar,
-            minimumDetailWidth: settingsContainerMinimumDetailWidth,
+            minimumDetailWidth: layer4NestedSplitShellMinimumDetailWidth,
             policy: .preferOuter
         )
+    }
+
+    /// Preset resolution for the Layer 4 settings container.
+    public static func resolveSettingsContainer(availableWidth: CGFloat) -> NavigationLayoutResolution {
+        resolveLayer4NestedSplitShell(availableWidth: availableWidth)
+    }
+
+    /// Preset resolution for the Layer 4 app navigation split shell (same contract as `resolveSettingsContainer`).
+    public static func resolveAppNavigationShell(availableWidth: CGFloat) -> NavigationLayoutResolution {
+        resolveLayer4NestedSplitShell(availableWidth: availableWidth)
     }
 }
