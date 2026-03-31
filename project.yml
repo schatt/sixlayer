@@ -68,7 +68,7 @@ targets:
         CODE_SIGN_STYLE: Automatic
         DEAD_CODE_STRIPPING: YES
         CLANG_ENABLE_MODULE_VERIFIER: YES
-        CODE_SIGN_IDENTITY: "Don't Code Sign"
+        CODE_SIGN_IDENTITY: "Apple Development"
         "CODE_SIGN_IDENTITY[sdk=iphoneos*]": "Apple Development"
         "CODE_SIGN_IDENTITY[sdk=macosx*]": "Apple Development"
     dependencies: []
