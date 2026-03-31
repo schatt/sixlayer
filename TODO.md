@@ -21,3 +21,4 @@
 - [ ] Run `swift test` to confirm everything passes
 - [x] Group current uncommitted changes in the v6.6.0 branch into small, logical commits
 - [ ] Adjust development workflow to encourage committing early and often (small, cohesive commits per TDD cycle)
+- [ ] SLFiOSViewInspectorTests: clear remaining compiler warnings (many files; ConsolidatedAccessibilityTests.swift is the bulk)
