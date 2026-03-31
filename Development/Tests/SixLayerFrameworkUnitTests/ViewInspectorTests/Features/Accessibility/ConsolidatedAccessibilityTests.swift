@@ -144,7 +144,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             
             // Then: Should be properly configured
             #expect(config.enableAutoIDs, "AccessibilityIdentifierConfig should enable automatic identifiers")
-            #expect(config.namespace != nil, "AccessibilityIdentifierConfig should have a namespace")
+            #expect(!config.namespace.isEmpty, "AccessibilityIdentifierConfig should have a non-empty namespace")
         }
     }
     
@@ -152,7 +152,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         self.initializeTestConfig()
             self.runWithTaskLocalConfig {
             // Given: GlobalAutomaticAccessibilityIdentifiersKey
-            let key = GlobalAutomaticAccessibilityIdentifiersKey()
+            _ = GlobalAutomaticAccessibilityIdentifiersKey()
             
             // When: Checking default value
             let defaultValue = GlobalAutomaticAccessibilityIdentifiersKey.defaultValue
@@ -365,6 +365,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
                 platform: SixLayerPlatform.iOS,
                 componentName: "ScreenContextModifier"
             )
+            #expect(hasAccessibilityID, "ScreenContextModifier should generate accessibility identifiers")
         }
     }
     
@@ -383,6 +384,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
                 platform: SixLayerPlatform.iOS,
                 componentName: "NavigationStateModifier"
             )
+            #expect(hasAccessibilityID, "NavigationStateModifier should generate accessibility identifiers")
         }
     }
     
@@ -401,7 +403,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         self.initializeTestConfig()
             self.runWithTaskLocalConfig {
             // Given: AccessibilitySystemState
-            let state = AccessibilitySystemState()
+            _ = AccessibilitySystemState()
             
             // Then: Should be properly initialized
             #expect(Bool(true), "AccessibilitySystemState should be properly initialized")
@@ -415,7 +417,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             let platform = "iOS" // Use real platform
             
             // Then: Should detect platform correctly
-            #expect(Bool(true), "Platform detection should work correctly")
+            #expect(platform == "iOS", "Platform detection should work correctly")
         }
     }
     
@@ -558,7 +560,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             config.clearDebugLog()
             
             // When: Creating a view with debug logging
-            let testView = platformVStackContainer {
+            let _ = platformVStackContainer {
                 Text("Test Content")
                 Button("Test Button") { }
             }
