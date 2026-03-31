@@ -91,6 +91,7 @@ public enum PlatformPhotoComponentsLayer4 {
                 PlaceholderPhotoView(style: style, onCaptureRequested: onCaptureRequested)
             }
         }
+        .accessibilityElement(children: .ignore)
         .automaticCompliance(named: "platformPhotoDisplay_L4")
         .accessibilityIdentifier("platformPhotoDisplay_L4")
     }
