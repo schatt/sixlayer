@@ -39,7 +39,7 @@ open class ComponentLabelTextAccessibilityTests: BaseTestClass {
             #expect((buttonID?.contains("submit") ?? false) || (buttonID?.contains("Submit") ?? false), 
                    "AdaptiveButton identifier should include label text 'Submit' (implementation verified in code)")
             
-            print("✅ GREEN: AdaptiveButton ID: '\(buttonID)' - Implementation verified")
+            print("✅ GREEN: AdaptiveButton ID: '\(buttonID ?? "nil")' - Implementation verified")
         } else {
             // TODO: ViewInspector Detection Issue - VERIFIED: AdaptiveButton DOES pass label via .environment(\.accessibilityIdentifierLabel, title)
             // Implementation is correct, ViewInspector just can't detect it
@@ -1672,7 +1672,7 @@ open class ComponentLabelTextAccessibilityTests: BaseTestClass {
             // This is a simplified test - full test would inspect nested buttons
             let stripID = try? inspected.accessibilityIdentifier()
             
-            print("🔴 RED: PlatformTabStrip ID: '\(stripID)'")
+            print("🔴 RED: PlatformTabStrip ID: '\(stripID ?? "nil")'")
             print("🔴 RED: Note - Need to verify each button in tab strip gets unique identifier with item.title")
             
             // TDD RED: Should verify buttons have unique identifiers with titles
