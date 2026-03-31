@@ -68,7 +68,7 @@ final class AccessibilityIdentifierCategoryAGlobalOffUITests: XCTestCase {
     }
 
     /// Asserts no descendant has an accessibility identifier containing `substring` (scrolls to search).
-    private func assertNoIdentifierContaining(_ substring: String, maxSwipes: Int = 16, file: StaticString = #file, line: UInt = #line) {
+    private func assertNoIdentifierContaining(_ substring: String, maxSwipes: Int = 16, file: StaticString = #filePath, line: UInt = #line) {
         let pred = NSPredicate(format: "identifier CONTAINS[c] %@", substring)
         let first = app.descendants(matching: .any).matching(pred).firstMatch
         if first.waitForExistence(timeout: 1.0) {
