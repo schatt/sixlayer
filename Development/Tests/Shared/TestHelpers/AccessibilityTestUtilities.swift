@@ -762,6 +762,13 @@ public enum AccessibilityTestUtilities {
                 continue
             }
             
+            // Named / forced modifiers log "Applying identifier '…'" (not "Generated identifier '…'")
+            if let start = s.range(of: "Applying identifier '")?.upperBound,
+               let end = s[start...].firstIndex(of: "'") {
+                identifiers.append(String(s[start..<end]))
+                continue
+            }
+            
             if let start = s.range(of: "Generated ID: ")?.upperBound {
                 // Capture until " for:" if present, otherwise take rest of line
                 if let end = s.range(of: " for:", range: start..<s.endIndex)?.lowerBound {
@@ -834,7 +841,13 @@ public enum AccessibilityTestUtilities {
             defer { config.enableDebugLogging = previousDebug }
             
             // Hosting can hang for complex view hierarchies; avoid forceLayout here and rely on config debug log when needed.
-            let hostedRoot = TestSetupUtilities.hostRootPlatformView(view, forceLayout: false)
+            // Inject config via environment so modifiers see the same instance when @TaskLocal is not propagated into SwiftUI updates.
+            let hostedRoot = TestSetupUtilities.hostRootPlatformView(
+                view,
+                forceLayout: false,
+                exposeContentAccessibility: exposeContentAccessibility,
+                accessibilityIdentifierConfig: config
+            )
             let platformIdentifiers = findAllAccessibilityIdentifiersFromPlatformView(hostedRoot)
             let debugIdentifiers = parseGeneratedIdentifiers(from: config.getDebugLog())
             let directIdentifier = getAccessibilityIdentifierForTest(view: view, hostedRoot: hostedRoot)
@@ -917,7 +930,12 @@ public enum AccessibilityTestUtilities {
         config.clearDebugLog()
         var passed = false
         let root: Any? = AccessibilityIdentifierConfig.$taskLocalConfig.withValue(config) {
-            let hosted = TestSetupUtilities.hostRootPlatformView(view, forceLayout: true, exposeContentAccessibility: exposeContentAccessibility)
+            let hosted = TestSetupUtilities.hostRootPlatformView(
+                view,
+                forceLayout: true,
+                exposeContentAccessibility: exposeContentAccessibility,
+                accessibilityIdentifierConfig: config
+            )
             var platformIds: [String] = []
             var viewInspectorIds: [String] = []
             if let root = hosted {
@@ -995,7 +1013,12 @@ public enum AccessibilityTestUtilities {
         config.clearDebugLog()
         var passed = false
         let root: Any? = AccessibilityIdentifierConfig.$taskLocalConfig.withValue(config) {
-            let hosted = TestSetupUtilities.hostRootPlatformView(view, forceLayout: true, exposeContentAccessibility: exposeContentAccessibility)
+            let hosted = TestSetupUtilities.hostRootPlatformView(
+                view,
+                forceLayout: true,
+                exposeContentAccessibility: exposeContentAccessibility,
+                accessibilityIdentifierConfig: config
+            )
             var platformIds: [String] = []
             var viewInspectorIds: [String] = []
             #if canImport(UIKit) || canImport(AppKit)
