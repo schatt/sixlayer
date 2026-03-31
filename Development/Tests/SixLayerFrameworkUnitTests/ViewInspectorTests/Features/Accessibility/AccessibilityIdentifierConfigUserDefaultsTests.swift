@@ -43,9 +43,9 @@ open class AccessibilityIdentifierConfigUserDefaultsTests: BaseTestClass {
     
     // MARK: - TDD Red Phase: Tests That Should Fail Initially
     
-    @Test @MainActor func testSaveToUserDefaultsSavesConfiguration() async {
+    @Test @MainActor func testSaveToUserDefaultsSavesConfiguration() {
         initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             guard let config = testConfig else {
                 Issue.record("testConfig is nil")
                 return
@@ -71,9 +71,9 @@ open class AccessibilityIdentifierConfigUserDefaultsTests: BaseTestClass {
         }
     }
     
-    @Test @MainActor func testLoadFromUserDefaultsLoadsConfiguration() async {
+    @Test @MainActor func testLoadFromUserDefaultsLoadsConfiguration() {
         initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             guard let config = testConfig else {
                 Issue.record("testConfig is nil")
                 return
@@ -110,9 +110,9 @@ open class AccessibilityIdentifierConfigUserDefaultsTests: BaseTestClass {
         }
     }
     
-    @Test @MainActor func testLoadFromUserDefaultsRespectsDefaultsWhenNoSavedConfig() async {
+    @Test @MainActor func testLoadFromUserDefaultsRespectsDefaultsWhenNoSavedConfig() {
         initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             guard let config = testConfig else {
                 Issue.record("testConfig is nil")
                 return
@@ -139,9 +139,9 @@ open class AccessibilityIdentifierConfigUserDefaultsTests: BaseTestClass {
         }
     }
     
-    @Test @MainActor func testConfigurationPersistenceAcrossAppLaunches() async {
+    @Test @MainActor func testConfigurationPersistenceAcrossAppLaunches() {
         initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             guard let config = testConfig else {
                 Issue.record("testConfig is nil")
                 return
@@ -177,9 +177,9 @@ open class AccessibilityIdentifierConfigUserDefaultsTests: BaseTestClass {
         }
     }
     
-    @Test @MainActor func testSaveToUserDefaultsSavesAllProperties() async {
+    @Test @MainActor func testSaveToUserDefaultsSavesAllProperties() {
         initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             guard let config = testConfig else {
                 Issue.record("testConfig is nil")
                 return
@@ -214,9 +214,9 @@ open class AccessibilityIdentifierConfigUserDefaultsTests: BaseTestClass {
         }
     }
     
-    @Test @MainActor func testLoadFromUserDefaultsOnlyLoadsIfKeyExists() async {
+    @Test @MainActor func testLoadFromUserDefaultsOnlyLoadsIfKeyExists() {
         initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             guard let config = testConfig else {
                 Issue.record("testConfig is nil")
                 return
