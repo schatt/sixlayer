@@ -61,4 +61,22 @@ struct NavigationLayoutResolverTests {
         #expect(profile.idealWidthRatio == 0.2)
         #expect(profile.maxWidth == 260)
     }
+
+    @Test
+    func resolveSettingsContainerLayout_usesSideBySide_whenWideEnough() {
+        let resolution = EmptyView().resolveSettingsContainerLayout_L4(
+            availableWidth: 1300
+        )
+
+        #expect(resolution.mode == .sideBySide)
+    }
+
+    @Test
+    func resolveSettingsContainerLayout_collapsesInner_whenConstrained() {
+        let resolution = EmptyView().resolveSettingsContainerLayout_L4(
+            availableWidth: 620
+        )
+
+        #expect(resolution.mode == .compactCollapsedInner)
+    }
 }
