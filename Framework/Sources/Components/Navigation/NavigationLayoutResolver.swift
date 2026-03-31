@@ -141,11 +141,9 @@ public enum NavigationLayoutResolver {
         let lowerBound = min(profile.minWidth, profile.maxWidth)
         return min(max(ideal, lowerBound), profile.maxWidth)
     }
-}
 
-// MARK: - Layer 4 nested split presets (settings + app navigation)
+    // MARK: Layer 4 nested split presets (settings + app navigation)
 
-extension NavigationLayoutResolver {
     /// Minimum width reserved for the detail pane when resolving Layer 4 nested split shells (host + inner + detail).
     private static let layer4NestedSplitShellMinimumDetailWidth: CGFloat = 480
 
