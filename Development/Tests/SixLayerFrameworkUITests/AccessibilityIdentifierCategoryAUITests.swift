@@ -38,7 +38,29 @@ final class AccessibilityIdentifierCategoryAUITests: XCTestCase {
 
     /// Scroll until an element whose identifier contains `substring` exists (below-the-fold content).
     private func scrollUntilIdentifierContains(_ substring: String, maxSwipes: Int = 16) -> Bool {
-        let pred = NSPredicate(format: "identifier CONTAINS[c] %@", substring)
+        scrollUntil(
+            matching: NSPredicate(format: "identifier CONTAINS[c] %@", substring),
+            maxSwipes: maxSwipes
+        )
+    }
+
+    /// Scroll until an element whose identifier equals `exact` (e.g. `exactNamed` minimal IDs).
+    private func scrollUntilIdentifierEquals(_ exact: String, maxSwipes: Int = 16) -> Bool {
+        scrollUntil(
+            matching: NSPredicate(format: "identifier == %@", exact),
+            maxSwipes: maxSwipes
+        )
+    }
+
+    /// Scroll until an element whose accessibility label contains `substring`.
+    private func scrollUntilLabelContains(_ substring: String, maxSwipes: Int = 16) -> Bool {
+        scrollUntil(
+            matching: NSPredicate(format: "label CONTAINS[c] %@", substring),
+            maxSwipes: maxSwipes
+        )
+    }
+
+    private func scrollUntil(matching pred: NSPredicate, maxSwipes: Int) -> Bool {
         if app.descendants(matching: .any).matching(pred).firstMatch.waitForExistence(timeout: 1.0) {
             return true
         }
@@ -96,6 +118,31 @@ final class AccessibilityIdentifierCategoryAUITests: XCTestCase {
         XCTAssertTrue(
             anyElement(identifierContains: "CatAAuditTitle").waitForExistence(timeout: 12.0),
             "Headline named title should expose identifier for UITest"
+        )
+    }
+
+    func testCategoryA_exactNamed_minimalIdentifier() throws {
+        XCTAssertTrue(
+            scrollUntilIdentifierEquals("CatAExactNamed"),
+            "exactNamed should set identifier to the literal name (no SixLayer prefix)"
+        )
+    }
+
+    func testCategoryA_accessibilityLabel_parameter_surfacesInLabel() throws {
+        XCTAssertTrue(
+            scrollUntilLabelContains("VoiceOver Cat A Label"),
+            "basicAutomaticCompliance accessibilityLabel should appear on XCUIElement label"
+        )
+        XCTAssertTrue(
+            anyElement(identifierContains: "CatALabelAndId").waitForExistence(timeout: 8.0),
+            "identifier should still include CatALabelAndId when accessibilityLabel is set"
+        )
+    }
+
+    func testCategoryA_manualOnOuterGroup_overridesWrapper() throws {
+        XCTAssertTrue(
+            scrollUntilIdentifierContains("CatAManualWinsOnOuter"),
+            "outer Group accessibilityIdentifier should be findable (manual override on wrapper)"
         )
     }
 }
