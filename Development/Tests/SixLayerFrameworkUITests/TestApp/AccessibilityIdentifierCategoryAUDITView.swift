@@ -52,18 +52,19 @@ struct AccessibilityIdentifierCategoryAUDITView: View {
                 .accessibilityLabel("Nested named components")
                 .accessibilityIdentifier(Self.nestedOuterUITestID)
                 platformVStack(alignment: .leading, spacing: 8) {
-                    platformButton(label: "CatA Nested Action", id: nil) { }
-                        .automaticCompliance(named: "CatANestedInnerButton")
-                        .accessibilityIdentifier(Self.nestedInnerUITestID)
+                    Group {
+                        platformButton(label: "CatA Nested Action", id: nil) { }
+                            .automaticCompliance(named: "CatANestedInnerButton")
+                    }
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel("CatA Nested Action")
+                    .accessibilityIdentifier(Self.nestedInnerUITestID)
                 }
 
                 sectionCaption("Manual-only identifier (no automaticCompliance on this view)")
-                Group {
-                    Text("CatA manual only visible")
-                }
-                .accessibilityElement(children: .ignore)
-                .accessibilityLabel("CatA manual only visible")
-                .accessibilityIdentifier("CatA_ManualOnly_StaticText")
+                Text("CatA manual only visible")
+                    .accessibilityElement(children: .combine)
+                    .accessibilityIdentifier("CatA_ManualOnly_StaticText")
 
                 sectionCaption("Special characters in label")
                 platformText("Special")
