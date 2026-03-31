@@ -66,11 +66,9 @@ targets:
         ENABLE_TESTABILITY: YES
         GENERATE_INFOPLIST_FILE: YES
         CODE_SIGN_STYLE: Automatic
-        DEVELOPMENT_TEAM: Y53G7YPJSZ
-        developmentTeam: Y53G7YPJSZ
         DEAD_CODE_STRIPPING: YES
         CLANG_ENABLE_MODULE_VERIFIER: YES
-        CODE_SIGN_IDENTITY: "Apple Development"
+        CODE_SIGN_IDENTITY: "Don't Code Sign"
         "CODE_SIGN_IDENTITY[sdk=iphoneos*]": "Apple Development"
         "CODE_SIGN_IDENTITY[sdk=macosx*]": "Apple Development"
     dependencies: []
@@ -97,8 +95,6 @@ targets:
       GENERATE_INFOPLIST_FILE: YES
       CODE_SIGN_STYLE: Automatic
       ENABLE_TESTING_SEARCH_PATHS: YES
-      DEVELOPMENT_TEAM: Y53G7YPJSZ
-      developmentTeam: Y53G7YPJSZ
     dependencies:
       - target: SixLayerFramework_iOS
       - package: ViewInspector
@@ -122,8 +118,6 @@ targets:
       GENERATE_INFOPLIST_FILE: YES
       CODE_SIGN_STYLE: Automatic
       ENABLE_TESTING_SEARCH_PATHS: YES
-      DEVELOPMENT_TEAM: Y53G7YPJSZ
-      developmentTeam: Y53G7YPJSZ
     dependencies:
       - target: SixLayerFramework_iOS
       - package: ViewInspector
@@ -147,8 +141,6 @@ targets:
       GENERATE_INFOPLIST_FILE: YES
       CODE_SIGN_STYLE: Automatic
       ENABLE_TESTING_SEARCH_PATHS: YES
-      DEVELOPMENT_TEAM: Y53G7YPJSZ
-      developmentTeam: Y53G7YPJSZ
       DEAD_CODE_STRIPPING: YES
     dependencies:
       - target: SixLayerFramework_macOS
@@ -176,8 +168,6 @@ targets:
       GENERATE_INFOPLIST_FILE: YES
       CODE_SIGN_STYLE: Automatic
       ENABLE_TESTING_SEARCH_PATHS: YES
-      DEVELOPMENT_TEAM: Y53G7YPJSZ
-      developmentTeam: Y53G7YPJSZ
       DEAD_CODE_STRIPPING: YES
     dependencies:
       - target: SixLayerFramework_macOS
@@ -204,8 +194,6 @@ targets:
       GENERATE_INFOPLIST_FILE: YES
       CODE_SIGN_STYLE: Automatic
       ENABLE_TESTING_SEARCH_PATHS: YES
-      DEVELOPMENT_TEAM: Y53G7YPJSZ
-      developmentTeam: Y53G7YPJSZ
     dependencies:
       - target: SixLayerFramework_tvOS
 
@@ -229,8 +217,6 @@ targets:
       GENERATE_INFOPLIST_FILE: YES
       CODE_SIGN_STYLE: Automatic
       ENABLE_TESTING_SEARCH_PATHS: YES
-      DEVELOPMENT_TEAM: Y53G7YPJSZ
-      developmentTeam: Y53G7YPJSZ
     dependencies:
       - target: SixLayerFramework_watchOS
 
@@ -254,8 +240,6 @@ targets:
       GENERATE_INFOPLIST_FILE: YES
       CODE_SIGN_STYLE: Automatic
       ENABLE_TESTING_SEARCH_PATHS: YES
-      DEVELOPMENT_TEAM: Y53G7YPJSZ
-      developmentTeam: Y53G7YPJSZ
     dependencies:
       - target: SixLayerFramework_visionOS
 
@@ -274,8 +258,6 @@ targets:
       GENERATE_INFOPLIST_FILE: YES
       CODE_SIGN_STYLE: Automatic
       ENABLE_TESTING_SEARCH_PATHS: YES
-      DEVELOPMENT_TEAM: Y53G7YPJSZ
-      developmentTeam: Y53G7YPJSZ
       TEST_TARGET_NAME: SixLayerFrameworkTestApp_iOS
     dependencies:
       - target: SixLayerFramework_iOS
@@ -296,8 +278,6 @@ targets:
       GENERATE_INFOPLIST_FILE: YES
       CODE_SIGN_STYLE: Automatic
       ENABLE_TESTING_SEARCH_PATHS: YES
-      DEVELOPMENT_TEAM: Y53G7YPJSZ
-      developmentTeam: Y53G7YPJSZ
       DEAD_CODE_STRIPPING: YES
       TEST_TARGET_NAME: SixLayerFrameworkTestApp_macOS
     dependencies:
@@ -319,8 +299,6 @@ targets:
       GENERATE_INFOPLIST_FILE: YES
       CODE_SIGN_STYLE: Automatic
       ENABLE_TESTING_SEARCH_PATHS: YES
-      DEVELOPMENT_TEAM: Y53G7YPJSZ
-      developmentTeam: Y53G7YPJSZ
     dependencies:
       - target: SixLayerFramework_tvOS
 
@@ -339,8 +317,6 @@ targets:
       GENERATE_INFOPLIST_FILE: YES
       CODE_SIGN_STYLE: Automatic
       ENABLE_TESTING_SEARCH_PATHS: YES
-      DEVELOPMENT_TEAM: Y53G7YPJSZ
-      developmentTeam: Y53G7YPJSZ
     dependencies:
       - target: SixLayerFramework_watchOS
 
@@ -359,8 +335,6 @@ targets:
       GENERATE_INFOPLIST_FILE: YES
       CODE_SIGN_STYLE: Automatic
       ENABLE_TESTING_SEARCH_PATHS: YES
-      DEVELOPMENT_TEAM: Y53G7YPJSZ
-      developmentTeam: Y53G7YPJSZ
     dependencies:
       - target: SixLayerFramework_visionOS
 
@@ -376,8 +350,6 @@ targets:
       SWIFT_VERSION: "6.0"
       GENERATE_INFOPLIST_FILE: YES
       CODE_SIGN_STYLE: Automatic
-      DEVELOPMENT_TEAM: Y53G7YPJSZ
-      developmentTeam: Y53G7YPJSZ
       MACOSX_DEPLOYMENT_TARGET: "15.0"
     dependencies:
       - target: SixLayerFramework_macOS
@@ -394,8 +366,6 @@ targets:
       SWIFT_VERSION: "6.0"
       GENERATE_INFOPLIST_FILE: YES
       CODE_SIGN_STYLE: Automatic
-      DEVELOPMENT_TEAM: Y53G7YPJSZ
-      developmentTeam: Y53G7YPJSZ
       IPHONEOS_DEPLOYMENT_TARGET: "17.0"
     dependencies:
       - target: SixLayerFramework_iOS
@@ -416,8 +386,6 @@ targets:
       GENERATE_INFOPLIST_FILE: YES
       CODE_SIGN_STYLE: Automatic
       ENABLE_TESTING_SEARCH_PATHS: YES
-      DEVELOPMENT_TEAM: Y53G7YPJSZ
-      developmentTeam: Y53G7YPJSZ
     dependencies:
       - target: SixLayerFramework_iOS
       - package: ViewInspector
@@ -439,8 +407,6 @@ targets:
       GENERATE_INFOPLIST_FILE: YES
       CODE_SIGN_STYLE: Automatic
       ENABLE_TESTING_SEARCH_PATHS: YES
-      DEVELOPMENT_TEAM: Y53G7YPJSZ
-      developmentTeam: Y53G7YPJSZ
       DEAD_CODE_STRIPPING: YES
     dependencies:
       - target: SixLayerFramework_macOS
@@ -463,8 +429,6 @@ targets:
       GENERATE_INFOPLIST_FILE: YES
       CODE_SIGN_STYLE: Automatic
       ENABLE_TESTING_SEARCH_PATHS: YES
-      DEVELOPMENT_TEAM: Y53G7YPJSZ
-      developmentTeam: Y53G7YPJSZ
     dependencies:
       - target: SixLayerFramework_tvOS
 
@@ -484,8 +448,6 @@ targets:
       GENERATE_INFOPLIST_FILE: YES
       CODE_SIGN_STYLE: Automatic
       ENABLE_TESTING_SEARCH_PATHS: YES
-      DEVELOPMENT_TEAM: Y53G7YPJSZ
-      developmentTeam: Y53G7YPJSZ
     dependencies:
       - target: SixLayerFramework_watchOS
 
@@ -505,8 +467,6 @@ targets:
       GENERATE_INFOPLIST_FILE: YES
       CODE_SIGN_STYLE: Automatic
       ENABLE_TESTING_SEARCH_PATHS: YES
-      DEVELOPMENT_TEAM: Y53G7YPJSZ
-      developmentTeam: Y53G7YPJSZ
     dependencies:
       - target: SixLayerFramework_visionOS
 

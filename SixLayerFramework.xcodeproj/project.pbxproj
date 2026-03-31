@@ -870,6 +870,7 @@
 		50FB0069EA0B4BCC18EA7938 /* FieldViewTypeDeterminer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1714ED78CC3BEE3E81B013DF /* FieldViewTypeDeterminer.swift */; };
 		510336B36ABC854E6ECAF311 /* CardContentDisplayTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1DA5707A46577A1E1797C54 /* CardContentDisplayTests.swift */; };
 		5105FE40572C16D1D010C1FB /* DynamicFormGridLayoutTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 391F24462104C647E4AEF81D /* DynamicFormGridLayoutTests.swift */; };
+		512EAE54DDB26EC095ECFD7F /* AccessibilityIdentifierCategoryAGlobalOffUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78B68894334BDAE3EE7AB17D /* AccessibilityIdentifierCategoryAGlobalOffUITests.swift */; };
 		5156017C034C19A72904B45B /* DataValueExtraction.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1CD4CFE4D6947CF16F82C3F /* DataValueExtraction.swift */; };
 		5167ADD06E5EDE39308B77CC /* FrameworkComponentIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C6179CF823FA01587121862 /* FrameworkComponentIntegrationTests.swift */; };
 		51781BF6E884E669A6A2BFFB /* PlatformMapComponentsLayer4Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4FB2BECC1F58977CC02C8DB /* PlatformMapComponentsLayer4Tests.swift */; };
@@ -1032,6 +1033,7 @@
 		5EC135CF2808FC3D64D753C5 /* SixLayerFramework.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 77ADA5A0EF4DADCCD2C559D8 /* SixLayerFramework.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		5EC9E7EBFB21F887BFC368F4 /* ViewInspectorWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02F45A8DE3F47F9710880580 /* ViewInspectorWrapper.swift */; };
 		5EE80939F23ECB65361A981E /* PlatformStandaloneDropInTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F7C7FAE43233FE34BF6C20A /* PlatformStandaloneDropInTests.swift */; };
+		5EE824ACD303A128B1F36DAD /* AccessibilityIdentifierCategoryAGlobalOffUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78B68894334BDAE3EE7AB17D /* AccessibilityIdentifierCategoryAGlobalOffUITests.swift */; };
 		5EEF0D068B19F115DF6C94B8 /* PlatformBehaviorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11AA3F1E7257631C0FF13A30 /* PlatformBehaviorTests.swift */; };
 		5F29DD7C22526CCE5534B37D /* PlatformInternationalizationL1Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23D910EDAF50C965800E5EC1 /* PlatformInternationalizationL1Tests.swift */; };
 		5F7817C0159AD09270063D38 /* IntelligentCardExpansionLayer2Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEAAB236351B68057C864ECC /* IntelligentCardExpansionLayer2Tests.swift */; };
@@ -1042,6 +1044,7 @@
 		5FF6C5D6CC5EE786457ABE93 /* L2LayoutDecisionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B2B7B9EC73AD808C6E3BE60 /* L2LayoutDecisionTests.swift */; };
 		60377D59B8CCCAB057794B12 /* PlatformResponsiveCardsLayer4.swift in Sources */ = {isa = PBXBuildFile; fileRef = 890F21622E47799868BD0C15 /* PlatformResponsiveCardsLayer4.swift */; };
 		604A46D6BADDBB54105ED0AE /* DefensiveTestImplementation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 304EA31EEC374E30F2B04656 /* DefensiveTestImplementation.swift */; };
+		6052FDC00AC809015470FE90 /* AccessibilityIdentifierCategoryAGlobalOffAUDITView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E12FE47B2B3C5573FCE86E4 /* AccessibilityIdentifierCategoryAGlobalOffAUDITView.swift */; };
 		60557CB27688EA9BF3B385F4 /* ModalContainerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09FFAA8FB08DDD888050C880 /* ModalContainerTests.swift */; };
 		60592DBCD10578ADD549DF62 /* GenericLayoutDecisionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 835009EB90738B43E70B90DA /* GenericLayoutDecisionTests.swift */; };
 		605A33421A36F86EA1DFA69C /* PlatformRecognitionLayer5.swift in Sources */ = {isa = PBXBuildFile; fileRef = E13030B41DBD414B673D289A /* PlatformRecognitionLayer5.swift */; };
@@ -1370,6 +1373,7 @@
 		7F530F8446A083DDA5D14293 /* FieldHintsOCRExtensionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51C76DF826AE55E108692F37 /* FieldHintsOCRExtensionTests.swift */; };
 		7F61171E304B8A78D79ABD3F /* PlatformCloudKitComponentsLayer4ComponentAccessibilityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41524ADE716D871C7C6E0106 /* PlatformCloudKitComponentsLayer4ComponentAccessibilityTests.swift */; };
 		7F690BE20EF56976EA1DEA40 /* ResponsiveLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34E461D81CEDF5CEEC3705F3 /* ResponsiveLayout.swift */; };
+		7F71F9258E208E4664958989 /* AccessibilityIdentifierCategoryAGlobalOffUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78B68894334BDAE3EE7AB17D /* AccessibilityIdentifierCategoryAGlobalOffUITests.swift */; };
 		7F7F9A3918A4800BC177B58A /* DynamicFormStateAutoSaveTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CB3790F12922281A23590E6 /* DynamicFormStateAutoSaveTests.swift */; };
 		7F83367DE67E837ED38F459E /* ViewInspector in Frameworks */ = {isa = PBXBuildFile; productRef = E8FAB3571BEB410137D3E648 /* ViewInspector */; };
 		7F891D020237424017F1BB5E /* PlatformBarcodeSemanticLayer1.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA5864720CF968FCFB1F1C92 /* PlatformBarcodeSemanticLayer1.swift */; };
@@ -1814,6 +1818,7 @@
 		A8F42D0A6FA07451CF2FD1A2 /* DataAnalysisExamplesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E6DD05B085E60F958C1CA5C /* DataAnalysisExamplesView.swift */; };
 		A9191D25EFF11C6FBC1708D8 /* BaseTestClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E931AD708DFE7065526FEC6 /* BaseTestClass.swift */; };
 		A9292F6AA17DFCCE8DA0B39D /* ViewInspectorInspectableConformances.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC8338DF7402C7DBEB9CE9FD /* ViewInspectorInspectableConformances.swift */; };
+		A987B7D6B8B4630E7C3163DC /* AccessibilityIdentifierCategoryAGlobalOffAUDITView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E12FE47B2B3C5573FCE86E4 /* AccessibilityIdentifierCategoryAGlobalOffAUDITView.swift */; };
 		A991B993FFDAA48C6628ECDE /* DataIntrospectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0C0E65C23832EAA36685796 /* DataIntrospectionTests.swift */; };
 		A99C5FA5D4B9A168C3189840 /* Layer1AccessibilityUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 542676489730512F04940BC3 /* Layer1AccessibilityUITests.swift */; };
 		A9BE60595F9FFEF2C1EF903C /* EyeTrackingManagerAccessibilityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86D879E1BCD12C3FACF91580 /* EyeTrackingManagerAccessibilityTests.swift */; };
@@ -1864,6 +1869,7 @@
 		AEBDA0A16E01E9228EF48268 /* PlatformSystemActionsLayer4Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75CFFCBEACCA713F34D06C5A /* PlatformSystemActionsLayer4Tests.swift */; };
 		AEDCB2EE0FF671AF45E79EE4 /* AppleHIGComplianceExamples.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B29E9A5671C83CD7F638332 /* AppleHIGComplianceExamples.swift */; };
 		AF2361528BEE10D0E329C9CC /* BarcodeExamplesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54B6D6E4B6AF23A6A0D26983 /* BarcodeExamplesView.swift */; };
+		AF537A4CD3DC420BA8750359 /* AccessibilityIdentifierCategoryAGlobalOffUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78B68894334BDAE3EE7AB17D /* AccessibilityIdentifierCategoryAGlobalOffUITests.swift */; };
 		AF585657ADA752D20450CDEB /* RuntimeCapabilityDetection.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF24C793FD142E6B5379925C /* RuntimeCapabilityDetection.swift */; };
 		AF5F04A7FD4DC5058B3B4B59 /* DynamicFormProgressIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D906015D2507EB970A9A2BC /* DynamicFormProgressIntegrationTests.swift */; };
 		AFA7A815BF74F0DD610D7F48 /* CloudKitService+DataSyncHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C0D005EB9DDDF232D5565A4 /* CloudKitService+DataSyncHelpers.swift */; };
@@ -2417,6 +2423,7 @@
 		E3E1653B815A447DBBAA37FB /* ErrorPropagationRenderingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F597414B115307A2ADB5F70 /* ErrorPropagationRenderingTests.swift */; };
 		E3E2689EE5DDCB3CFD797F7F /* SecurityService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF97967AA3FB5CBC529DDAD4 /* SecurityService.swift */; };
 		E3F85286076FB8B5EE65A1A3 /* L4_CONTRACT_INVENTORY.md in Resources */ = {isa = PBXBuildFile; fileRef = 82D190F72B3FB1C803487155 /* L4_CONTRACT_INVENTORY.md */; };
+		E42FE42C17CD237861D2FF0B /* AccessibilityIdentifierCategoryAGlobalOffUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78B68894334BDAE3EE7AB17D /* AccessibilityIdentifierCategoryAGlobalOffUITests.swift */; };
 		E451D1600DED75371D1EE8AC /* ItemBadgeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F705A5F33E5F219CDFB207EE /* ItemBadgeTests.swift */; };
 		E473F5945C43BD5991A3F9A4 /* TestPatterns.swift in Sources */ = {isa = PBXBuildFile; fileRef = F512E80E77E2ABD9AAD456FF /* TestPatterns.swift */; };
 		E48C90078B95B9961F1D2B08 /* PlatformHapticFeedbackExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1BB862D740FC81E8450DA718 /* PlatformHapticFeedbackExtensions.swift */; };
@@ -3202,6 +3209,7 @@
 		3AF9B38DE0012FA10783F256 /* LayoutSpec.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayoutSpec.swift; sourceTree = "<group>"; };
 		3C6179CF823FA01587121862 /* FrameworkComponentIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FrameworkComponentIntegrationTests.swift; sourceTree = "<group>"; };
 		3D93C6914566A356E50A3197 /* InternationalizationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InternationalizationService.swift; sourceTree = "<group>"; };
+		3E12FE47B2B3C5573FCE86E4 /* AccessibilityIdentifierCategoryAGlobalOffAUDITView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessibilityIdentifierCategoryAGlobalOffAUDITView.swift; sourceTree = "<group>"; };
 		3E4DD6E1E4B678C9B1B518A6 /* FormWizardTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FormWizardTypes.swift; sourceTree = "<group>"; };
 		3E6DD05B085E60F958C1CA5C /* DataAnalysisExamplesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataAnalysisExamplesView.swift; sourceTree = "<group>"; };
 		3E91314BE90E01338E3F0A60 /* GenericItemCollectionViewAccessibilityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenericItemCollectionViewAccessibilityTests.swift; sourceTree = "<group>"; };
@@ -3353,6 +3361,7 @@
 		77B52C5563B7550031E55A8B /* PlatformTypesCompilationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformTypesCompilationTests.swift; sourceTree = "<group>"; };
 		7869679E42C75BED58BA2851 /* AutomaticHIGComplianceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutomaticHIGComplianceTests.swift; sourceTree = "<group>"; };
 		786A368404F2C6D3674EC0B4 /* GenericMediaViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenericMediaViewTests.swift; sourceTree = "<group>"; };
+		78B68894334BDAE3EE7AB17D /* AccessibilityIdentifierCategoryAGlobalOffUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessibilityIdentifierCategoryAGlobalOffUITests.swift; sourceTree = "<group>"; };
 		7931A9A6CD7ED530901663D7 /* InternationalizationTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InternationalizationTypes.swift; sourceTree = "<group>"; };
 		79E21B0E6DAA74433E8B0879 /* InputHandlingInteractionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputHandlingInteractionsTests.swift; sourceTree = "<group>"; };
 		7A2E1F31DF09981E263DD46E /* PresentationHintsColorConfigurationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresentationHintsColorConfigurationTests.swift; sourceTree = "<group>"; };
@@ -4295,6 +4304,7 @@
 			isa = PBXGroup;
 			children = (
 				7B2FFF2B41A183C603985A1A /* AccessibilityCompatibilityUITests.swift */,
+				78B68894334BDAE3EE7AB17D /* AccessibilityIdentifierCategoryAGlobalOffUITests.swift */,
 				EEFA22F1A468E2CDDD7F34D9 /* AccessibilityIdentifierCategoryAUITests.swift */,
 				82D190F72B3FB1C803487155 /* L4_CONTRACT_INVENTORY.md */,
 				542676489730512F04940BC3 /* Layer1AccessibilityUITests.swift */,
@@ -5016,6 +5026,7 @@
 		C4D264BCFBF22D89D84C2C1B /* TestApp */ = {
 			isa = PBXGroup;
 			children = (
+				3E12FE47B2B3C5573FCE86E4 /* AccessibilityIdentifierCategoryAGlobalOffAUDITView.swift */,
 				7EEE1631FAC86AD6B9DB1187 /* AccessibilityIdentifierCategoryAUDITView.swift */,
 				7EDACCF9CFEB4AC7C9C0825D /* TestApp.swift */,
 				E1F97A051D3EAEA8CE8A0916 /* Layer1Examples */,
@@ -5502,7 +5513,7 @@
 			path = API;
 			sourceTree = "<group>";
 		};
-		"TEMP_73B1F601-2997-4D42-9B93-895FF14861AD" /* Utilities */ = {
+		"TEMP_4B41A435-D708-40BA-81B0-2212E79F0DA8" /* Utilities */ = {
 			isa = PBXGroup;
 			children = (
 			);
@@ -6017,101 +6028,77 @@
 				LastUpgradeCheck = 1610;
 				TargetAttributes = {
 					00F2F339FB87EE78B96E537C = {
-						DevelopmentTeam = Y53G7YPJSZ;
 						ProvisioningStyle = Automatic;
 					};
 					0ADA93DEBBDDEFADE109B459 = {
-						DevelopmentTeam = Y53G7YPJSZ;
 						ProvisioningStyle = Automatic;
 					};
 					12DE7C62AF83961E28065CD1 = {
-						DevelopmentTeam = Y53G7YPJSZ;
 						ProvisioningStyle = Automatic;
 					};
 					137ACC122FFC347C79FD3EAC = {
-						DevelopmentTeam = Y53G7YPJSZ;
 						ProvisioningStyle = Automatic;
 					};
 					1DF0E8BA49092C22FD760132 = {
-						DevelopmentTeam = Y53G7YPJSZ;
 						ProvisioningStyle = Automatic;
 					};
 					257257DB7C1F4BC76621E0F2 = {
-						DevelopmentTeam = Y53G7YPJSZ;
 						ProvisioningStyle = Automatic;
 					};
 					2E103CCC86F203033642BFDC = {
-						DevelopmentTeam = Y53G7YPJSZ;
 						ProvisioningStyle = Automatic;
 					};
 					45DA6782648DC7699205940C = {
-						DevelopmentTeam = Y53G7YPJSZ;
 						ProvisioningStyle = Automatic;
 					};
 					6C9062455876D118D544087A = {
-						DevelopmentTeam = Y53G7YPJSZ;
 						ProvisioningStyle = Automatic;
 					};
 					70F3E0477C5FD3EF1FBC7352 = {
-						DevelopmentTeam = Y53G7YPJSZ;
 						ProvisioningStyle = Automatic;
 					};
 					7938C35CFF0CD91E1D085AF3 = {
-						DevelopmentTeam = Y53G7YPJSZ;
 						ProvisioningStyle = Automatic;
 					};
 					7A78E091DD776FDB4D585F97 = {
-						DevelopmentTeam = Y53G7YPJSZ;
 						ProvisioningStyle = Automatic;
 					};
 					8BE142B2785E0C64142DC201 = {
-						DevelopmentTeam = Y53G7YPJSZ;
 						ProvisioningStyle = Automatic;
 					};
 					9C1F797A0B1D774C13CD0C14 = {
-						DevelopmentTeam = Y53G7YPJSZ;
 						ProvisioningStyle = Automatic;
 						TestTargetID = 12DE7C62AF83961E28065CD1;
 					};
 					AB21586E5B6F5E26D37757AE = {
-						DevelopmentTeam = Y53G7YPJSZ;
 						ProvisioningStyle = Automatic;
 					};
 					B66C6368DD6DB3EFA18474C3 = {
-						DevelopmentTeam = Y53G7YPJSZ;
 						ProvisioningStyle = Automatic;
 					};
 					B6D28D39EB5B2B5FDA6466FB = {
-						DevelopmentTeam = Y53G7YPJSZ;
 						ProvisioningStyle = Automatic;
 					};
 					BC321487B78EB385BE711076 = {
-						DevelopmentTeam = Y53G7YPJSZ;
 						ProvisioningStyle = Automatic;
 						TestTargetID = 8BE142B2785E0C64142DC201;
 					};
 					D16D10F9C91D322A0A4959E7 = {
-						DevelopmentTeam = Y53G7YPJSZ;
 						ProvisioningStyle = Automatic;
 					};
 					D6C0DC22A61DCC79BE816615 = {
-						DevelopmentTeam = Y53G7YPJSZ;
 						ProvisioningStyle = Automatic;
 					};
 					DADE4FB886D36D9D457B0F17 = {
-						DevelopmentTeam = Y53G7YPJSZ;
 						ProvisioningStyle = Automatic;
 					};
 					DB08E599D5D1C3B17A49EADA = {
-						DevelopmentTeam = Y53G7YPJSZ;
 						ProvisioningStyle = Automatic;
 					};
 					F649C5D34D47DF8A30F6477A = {
-						DevelopmentTeam = Y53G7YPJSZ;
 						ProvisioningStyle = Automatic;
 					};
 					FE2D3D438B9D5E433A37967D = {
-						DevelopmentTeam = Y53G7YPJSZ;
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -6814,6 +6801,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				C77DD9E24205570327409818 /* AccessibilityCompatibilityUITests.swift in Sources */,
+				AF537A4CD3DC420BA8750359 /* AccessibilityIdentifierCategoryAGlobalOffUITests.swift in Sources */,
 				F40BA6F739612A98B1E3665B /* AccessibilityIdentifierCategoryAUITests.swift in Sources */,
 				A99C5FA5D4B9A168C3189840 /* Layer1AccessibilityUITests.swift in Sources */,
 				B2925821781157F93A5F8799 /* Layer2AccessibilityUITests.swift in Sources */,
@@ -7077,6 +7065,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				76B5F7126E7D5DE643BF4C27 /* AccessibilityCompatibilityUITests.swift in Sources */,
+				512EAE54DDB26EC095ECFD7F /* AccessibilityIdentifierCategoryAGlobalOffUITests.swift in Sources */,
 				3DB23B41A970FA43FF421301 /* AccessibilityIdentifierCategoryAUITests.swift in Sources */,
 				23AFC0E0749319EF3B01879A /* Layer1AccessibilityUITests.swift in Sources */,
 				05DCADB6F130CC802DE710B4 /* Layer2AccessibilityUITests.swift in Sources */,
@@ -7246,6 +7235,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				148A3F303A42C136525EA589 /* AccessibilityCompatibilityUITests.swift in Sources */,
+				5EE824ACD303A128B1F36DAD /* AccessibilityIdentifierCategoryAGlobalOffUITests.swift in Sources */,
 				8CCD66B735FF06D9B5550543 /* AccessibilityIdentifierCategoryAUITests.swift in Sources */,
 				827CACF2201EAD9D48524629 /* Layer1AccessibilityUITests.swift in Sources */,
 				4C2C3AEBDD7DC05F4C3F0E94 /* Layer2AccessibilityUITests.swift in Sources */,
@@ -7295,6 +7285,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F869F8CDB403098D847C1A98 /* AccessibilityCompatibilityUITests.swift in Sources */,
+				E42FE42C17CD237861D2FF0B /* AccessibilityIdentifierCategoryAGlobalOffUITests.swift in Sources */,
 				6BB0A1452A9B0B251017B365 /* AccessibilityIdentifierCategoryAUITests.swift in Sources */,
 				1EAC2CB5BFFBE8DBD336EEA0 /* Layer1AccessibilityUITests.swift in Sources */,
 				FBF5CD87709DFF928E6747B7 /* Layer2AccessibilityUITests.swift in Sources */,
@@ -7312,6 +7303,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				414DDFD9B7309A81D36A831D /* AccessibilityCompatibilityUITests.swift in Sources */,
+				7F71F9258E208E4664958989 /* AccessibilityIdentifierCategoryAGlobalOffUITests.swift in Sources */,
 				D86068AB5DD433A19AA8D86A /* AccessibilityIdentifierCategoryAUITests.swift in Sources */,
 				96E2D38328B60AC07063FBE4 /* Layer1AccessibilityUITests.swift in Sources */,
 				52EC3B6630372B008B25A340 /* Layer2AccessibilityUITests.swift in Sources */,
@@ -7780,6 +7772,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				6052FDC00AC809015470FE90 /* AccessibilityIdentifierCategoryAGlobalOffAUDITView.swift in Sources */,
 				CE159B4FA4DC0080D3C45332 /* AccessibilityIdentifierCategoryAUDITView.swift in Sources */,
 				AF2361528BEE10D0E329C9CC /* BarcodeExamplesView.swift in Sources */,
 				5E56FF7D50002CD4DE4231D6 /* BasicComplianceTestView.swift in Sources */,
@@ -7962,6 +7955,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A987B7D6B8B4630E7C3163DC /* AccessibilityIdentifierCategoryAGlobalOffAUDITView.swift in Sources */,
 				85CF65021C3A08855200B6B0 /* AccessibilityIdentifierCategoryAUDITView.swift in Sources */,
 				BB4D7A83D45D1C40696050E2 /* BarcodeExamplesView.swift in Sources */,
 				B199FCFC0BB684B0942C4B17 /* BasicComplianceTestView.swift in Sources */,
@@ -9260,14 +9254,13 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_MODULE_VERIFIER = YES;
-				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_IDENTITY = "Don't Code Sign";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
 				DEFINES_MODULE = YES;
-				DEVELOPMENT_TEAM = Y53G7YPJSZ;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
@@ -9288,7 +9281,6 @@
 				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VERSIONING_SYSTEM = "apple-generic";
-				developmentTeam = Y53G7YPJSZ;
 			};
 			name = Debug;
 		};
@@ -9296,14 +9288,13 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_MODULE_VERIFIER = YES;
-				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_IDENTITY = "Don't Code Sign";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
 				DEFINES_MODULE = YES;
-				DEVELOPMENT_TEAM = Y53G7YPJSZ;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
@@ -9324,7 +9315,6 @@
 				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = 7;
 				VERSIONING_SYSTEM = "apple-generic";
-				developmentTeam = Y53G7YPJSZ;
 			};
 			name = Release;
 		};
@@ -9333,7 +9323,6 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = Y53G7YPJSZ;
 				ENABLE_TESTING_SEARCH_PATHS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -9347,7 +9336,6 @@
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited)";
 				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = 4;
-				developmentTeam = Y53G7YPJSZ;
 			};
 			name = Debug;
 		};
@@ -9356,7 +9344,6 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = Y53G7YPJSZ;
 				ENABLE_TESTING_SEARCH_PATHS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -9369,7 +9356,6 @@
 				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_TARGET_NAME = SixLayerFrameworkTestApp_iOS;
-				developmentTeam = Y53G7YPJSZ;
 			};
 			name = Debug;
 		};
@@ -9379,7 +9365,6 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				DEVELOPMENT_TEAM = Y53G7YPJSZ;
 				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -9389,7 +9374,6 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.sixlayer.framework.test-app";
 				SDKROOT = macosx;
 				SWIFT_VERSION = 6.0;
-				developmentTeam = Y53G7YPJSZ;
 			};
 			name = Debug;
 		};
@@ -9398,7 +9382,6 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = Y53G7YPJSZ;
 				ENABLE_TESTING_SEARCH_PATHS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -9412,7 +9395,6 @@
 				SWIFT_STRICT_CONCURRENCY = disabled;
 				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				developmentTeam = Y53G7YPJSZ;
 			};
 			name = Debug;
 		};
@@ -9421,7 +9403,6 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = Y53G7YPJSZ;
 				ENABLE_TESTING_SEARCH_PATHS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -9434,7 +9415,6 @@
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited)";
 				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = 7;
-				developmentTeam = Y53G7YPJSZ;
 			};
 			name = Debug;
 		};
@@ -9444,7 +9424,6 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = Y53G7YPJSZ;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -9455,7 +9434,6 @@
 				SDKROOT = iphoneos;
 				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				developmentTeam = Y53G7YPJSZ;
 			};
 			name = Release;
 		};
@@ -9463,7 +9441,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_MODULE_VERIFIER = YES;
-				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_IDENTITY = "Don't Code Sign";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
@@ -9471,7 +9449,6 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
 				DEFINES_MODULE = YES;
-				DEVELOPMENT_TEAM = Y53G7YPJSZ;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
@@ -9491,7 +9468,6 @@
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) ENABLE_PREVIEWS";
 				SWIFT_VERSION = 6.0;
 				VERSIONING_SYSTEM = "apple-generic";
-				developmentTeam = Y53G7YPJSZ;
 			};
 			name = Debug;
 		};
@@ -9499,14 +9475,13 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_MODULE_VERIFIER = YES;
-				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_IDENTITY = "Don't Code Sign";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
 				DEFINES_MODULE = YES;
-				DEVELOPMENT_TEAM = Y53G7YPJSZ;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
@@ -9527,7 +9502,6 @@
 				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VERSIONING_SYSTEM = "apple-generic";
-				developmentTeam = Y53G7YPJSZ;
 			};
 			name = Release;
 		};
@@ -9536,7 +9510,6 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = Y53G7YPJSZ;
 				ENABLE_TESTING_SEARCH_PATHS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -9550,7 +9523,6 @@
 				SWIFT_STRICT_CONCURRENCY = disabled;
 				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				developmentTeam = Y53G7YPJSZ;
 			};
 			name = Release;
 		};
@@ -9559,7 +9531,6 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = Y53G7YPJSZ;
 				ENABLE_TESTING_SEARCH_PATHS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -9571,7 +9542,6 @@
 				SDKROOT = iphoneos;
 				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				developmentTeam = Y53G7YPJSZ;
 			};
 			name = Debug;
 		};
@@ -9582,7 +9552,6 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEAD_CODE_STRIPPING = YES;
-				DEVELOPMENT_TEAM = Y53G7YPJSZ;
 				ENABLE_TESTING_SEARCH_PATHS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -9594,7 +9563,6 @@
 				SDKROOT = macosx;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) VIEW_INSPECTOR_MAC_FIXED";
 				SWIFT_VERSION = 6.0;
-				developmentTeam = Y53G7YPJSZ;
 			};
 			name = Debug;
 		};
@@ -9605,7 +9573,6 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEAD_CODE_STRIPPING = YES;
-				DEVELOPMENT_TEAM = Y53G7YPJSZ;
 				ENABLE_TESTING_SEARCH_PATHS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -9618,7 +9585,6 @@
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) VIEW_INSPECTOR_MAC_FIXED";
 				SWIFT_STRICT_CONCURRENCY = disabled;
 				SWIFT_VERSION = 6.0;
-				developmentTeam = Y53G7YPJSZ;
 			};
 			name = Debug;
 		};
@@ -9627,7 +9593,6 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = Y53G7YPJSZ;
 				ENABLE_TESTING_SEARCH_PATHS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -9641,7 +9606,6 @@
 				SWIFT_STRICT_CONCURRENCY = disabled;
 				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				developmentTeam = Y53G7YPJSZ;
 			};
 			name = Debug;
 		};
@@ -9649,14 +9613,13 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_MODULE_VERIFIER = YES;
-				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_IDENTITY = "Don't Code Sign";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
 				DEFINES_MODULE = YES;
-				DEVELOPMENT_TEAM = Y53G7YPJSZ;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
@@ -9673,7 +9636,6 @@
 				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = 4;
 				VERSIONING_SYSTEM = "apple-generic";
-				developmentTeam = Y53G7YPJSZ;
 			};
 			name = Release;
 		};
@@ -9684,7 +9646,6 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEAD_CODE_STRIPPING = YES;
-				DEVELOPMENT_TEAM = Y53G7YPJSZ;
 				ENABLE_TESTING_SEARCH_PATHS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -9697,7 +9658,6 @@
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) VIEW_INSPECTOR_MAC_FIXED";
 				SWIFT_STRICT_CONCURRENCY = disabled;
 				SWIFT_VERSION = 6.0;
-				developmentTeam = Y53G7YPJSZ;
 			};
 			name = Release;
 		};
@@ -9707,7 +9667,6 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				DEVELOPMENT_TEAM = Y53G7YPJSZ;
 				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -9717,7 +9676,6 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.sixlayer.framework.test-app";
 				SDKROOT = macosx;
 				SWIFT_VERSION = 6.0;
-				developmentTeam = Y53G7YPJSZ;
 			};
 			name = Release;
 		};
@@ -9726,7 +9684,6 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = Y53G7YPJSZ;
 				ENABLE_TESTING_SEARCH_PATHS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -9741,7 +9698,6 @@
 				SWIFT_STRICT_CONCURRENCY = disabled;
 				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = 4;
-				developmentTeam = Y53G7YPJSZ;
 			};
 			name = Release;
 		};
@@ -9751,7 +9707,6 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = Y53G7YPJSZ;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -9762,7 +9717,6 @@
 				SDKROOT = iphoneos;
 				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				developmentTeam = Y53G7YPJSZ;
 			};
 			name = Debug;
 		};
@@ -9842,7 +9796,6 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = Y53G7YPJSZ;
 				ENABLE_TESTING_SEARCH_PATHS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -9856,7 +9809,6 @@
 				SWIFT_STRICT_CONCURRENCY = disabled;
 				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = 3;
-				developmentTeam = Y53G7YPJSZ;
 			};
 			name = Release;
 		};
@@ -9865,7 +9817,6 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = Y53G7YPJSZ;
 				ENABLE_TESTING_SEARCH_PATHS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -9879,7 +9830,6 @@
 				SWIFT_STRICT_CONCURRENCY = disabled;
 				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = 7;
-				developmentTeam = Y53G7YPJSZ;
 			};
 			name = Debug;
 		};
@@ -9888,7 +9838,6 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = Y53G7YPJSZ;
 				ENABLE_TESTING_SEARCH_PATHS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -9901,7 +9850,6 @@
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited)";
 				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = 3;
-				developmentTeam = Y53G7YPJSZ;
 			};
 			name = Debug;
 		};
@@ -9909,14 +9857,13 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_MODULE_VERIFIER = YES;
-				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_IDENTITY = "Don't Code Sign";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
 				DEFINES_MODULE = YES;
-				DEVELOPMENT_TEAM = Y53G7YPJSZ;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
@@ -9937,7 +9884,6 @@
 				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = 3;
 				VERSIONING_SYSTEM = "apple-generic";
-				developmentTeam = Y53G7YPJSZ;
 			};
 			name = Debug;
 		};
@@ -9946,7 +9892,6 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = Y53G7YPJSZ;
 				ENABLE_TESTING_SEARCH_PATHS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -9958,7 +9903,6 @@
 				SDKROOT = xros;
 				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = 7;
-				developmentTeam = Y53G7YPJSZ;
 			};
 			name = Debug;
 		};
@@ -9969,7 +9913,6 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEAD_CODE_STRIPPING = YES;
-				DEVELOPMENT_TEAM = Y53G7YPJSZ;
 				ENABLE_TESTING_SEARCH_PATHS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -9981,7 +9924,6 @@
 				SDKROOT = macosx;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) VIEW_INSPECTOR_MAC_FIXED";
 				SWIFT_VERSION = 6.0;
-				developmentTeam = Y53G7YPJSZ;
 			};
 			name = Release;
 		};
@@ -9990,7 +9932,6 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = Y53G7YPJSZ;
 				ENABLE_TESTING_SEARCH_PATHS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -10004,7 +9945,6 @@
 				SWIFT_STRICT_CONCURRENCY = disabled;
 				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = 3;
-				developmentTeam = Y53G7YPJSZ;
 			};
 			name = Debug;
 		};
@@ -10013,7 +9953,6 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = Y53G7YPJSZ;
 				ENABLE_TESTING_SEARCH_PATHS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -10025,7 +9964,6 @@
 				SDKROOT = iphoneos;
 				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				developmentTeam = Y53G7YPJSZ;
 			};
 			name = Release;
 		};
@@ -10033,14 +9971,13 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_MODULE_VERIFIER = YES;
-				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_IDENTITY = "Don't Code Sign";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
 				DEFINES_MODULE = YES;
-				DEVELOPMENT_TEAM = Y53G7YPJSZ;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
@@ -10061,7 +9998,6 @@
 				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = 3;
 				VERSIONING_SYSTEM = "apple-generic";
-				developmentTeam = Y53G7YPJSZ;
 			};
 			name = Release;
 		};
@@ -10069,14 +10005,13 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_MODULE_VERIFIER = YES;
-				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_IDENTITY = "Don't Code Sign";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
 				DEFINES_MODULE = YES;
-				DEVELOPMENT_TEAM = Y53G7YPJSZ;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
@@ -10097,7 +10032,6 @@
 				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = 7;
 				VERSIONING_SYSTEM = "apple-generic";
-				developmentTeam = Y53G7YPJSZ;
 			};
 			name = Debug;
 		};
@@ -10108,7 +10042,6 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEAD_CODE_STRIPPING = YES;
-				DEVELOPMENT_TEAM = Y53G7YPJSZ;
 				ENABLE_TESTING_SEARCH_PATHS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -10121,7 +10054,6 @@
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) VIEW_INSPECTOR_MAC_FIXED";
 				SWIFT_STRICT_CONCURRENCY = disabled;
 				SWIFT_VERSION = 6.0;
-				developmentTeam = Y53G7YPJSZ;
 			};
 			name = Debug;
 		};
@@ -10130,7 +10062,6 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = Y53G7YPJSZ;
 				ENABLE_TESTING_SEARCH_PATHS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -10144,7 +10075,6 @@
 				SWIFT_STRICT_CONCURRENCY = disabled;
 				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = 7;
-				developmentTeam = Y53G7YPJSZ;
 			};
 			name = Release;
 		};
@@ -10153,7 +10083,6 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = Y53G7YPJSZ;
 				ENABLE_TESTING_SEARCH_PATHS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -10167,7 +10096,6 @@
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited)";
 				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = 4;
-				developmentTeam = Y53G7YPJSZ;
 			};
 			name = Release;
 		};
@@ -10178,7 +10106,6 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEAD_CODE_STRIPPING = YES;
-				DEVELOPMENT_TEAM = Y53G7YPJSZ;
 				ENABLE_TESTING_SEARCH_PATHS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -10190,7 +10117,6 @@
 				SDKROOT = macosx;
 				SWIFT_VERSION = 6.0;
 				TEST_TARGET_NAME = SixLayerFrameworkTestApp_macOS;
-				developmentTeam = Y53G7YPJSZ;
 			};
 			name = Release;
 		};
@@ -10199,7 +10125,6 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = Y53G7YPJSZ;
 				ENABLE_TESTING_SEARCH_PATHS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -10212,7 +10137,6 @@
 				SKIP_INSTALL = YES;
 				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = 4;
-				developmentTeam = Y53G7YPJSZ;
 			};
 			name = Release;
 		};
@@ -10220,7 +10144,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_MODULE_VERIFIER = YES;
-				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_IDENTITY = "Don't Code Sign";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
@@ -10228,7 +10152,6 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
 				DEFINES_MODULE = YES;
-				DEVELOPMENT_TEAM = Y53G7YPJSZ;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
@@ -10248,7 +10171,6 @@
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) ENABLE_PREVIEWS";
 				SWIFT_VERSION = 6.0;
 				VERSIONING_SYSTEM = "apple-generic";
-				developmentTeam = Y53G7YPJSZ;
 			};
 			name = Release;
 		};
@@ -10257,7 +10179,6 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = Y53G7YPJSZ;
 				ENABLE_TESTING_SEARCH_PATHS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -10269,7 +10190,6 @@
 				SDKROOT = appletvos;
 				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = 3;
-				developmentTeam = Y53G7YPJSZ;
 			};
 			name = Debug;
 		};
@@ -10280,7 +10200,6 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEAD_CODE_STRIPPING = YES;
-				DEVELOPMENT_TEAM = Y53G7YPJSZ;
 				ENABLE_TESTING_SEARCH_PATHS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -10293,7 +10212,6 @@
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) VIEW_INSPECTOR_MAC_FIXED";
 				SWIFT_STRICT_CONCURRENCY = disabled;
 				SWIFT_VERSION = 6.0;
-				developmentTeam = Y53G7YPJSZ;
 			};
 			name = Release;
 		};
@@ -10302,7 +10220,6 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = Y53G7YPJSZ;
 				ENABLE_TESTING_SEARCH_PATHS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -10314,7 +10231,6 @@
 				SDKROOT = xros;
 				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = 7;
-				developmentTeam = Y53G7YPJSZ;
 			};
 			name = Release;
 		};
@@ -10323,7 +10239,6 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = Y53G7YPJSZ;
 				ENABLE_TESTING_SEARCH_PATHS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -10336,7 +10251,6 @@
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited)";
 				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = 3;
-				developmentTeam = Y53G7YPJSZ;
 			};
 			name = Release;
 		};
@@ -10345,7 +10259,6 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = Y53G7YPJSZ;
 				ENABLE_TESTING_SEARCH_PATHS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -10359,7 +10272,6 @@
 				SWIFT_STRICT_CONCURRENCY = disabled;
 				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				developmentTeam = Y53G7YPJSZ;
 			};
 			name = Release;
 		};
@@ -10432,7 +10344,6 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = Y53G7YPJSZ;
 				ENABLE_TESTING_SEARCH_PATHS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -10444,7 +10355,6 @@
 				SDKROOT = appletvos;
 				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = 3;
-				developmentTeam = Y53G7YPJSZ;
 			};
 			name = Release;
 		};
@@ -10455,7 +10365,6 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEAD_CODE_STRIPPING = YES;
-				DEVELOPMENT_TEAM = Y53G7YPJSZ;
 				ENABLE_TESTING_SEARCH_PATHS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -10467,7 +10376,6 @@
 				SDKROOT = macosx;
 				SWIFT_VERSION = 6.0;
 				TEST_TARGET_NAME = SixLayerFrameworkTestApp_macOS;
-				developmentTeam = Y53G7YPJSZ;
 			};
 			name = Debug;
 		};
@@ -10476,7 +10384,6 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = Y53G7YPJSZ;
 				ENABLE_TESTING_SEARCH_PATHS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -10489,7 +10396,6 @@
 				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_TARGET_NAME = SixLayerFrameworkTestApp_iOS;
-				developmentTeam = Y53G7YPJSZ;
 			};
 			name = Release;
 		};
@@ -10498,7 +10404,6 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = Y53G7YPJSZ;
 				ENABLE_TESTING_SEARCH_PATHS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -10511,7 +10416,6 @@
 				SKIP_INSTALL = YES;
 				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = 4;
-				developmentTeam = Y53G7YPJSZ;
 			};
 			name = Debug;
 		};
@@ -10520,7 +10424,6 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = Y53G7YPJSZ;
 				ENABLE_TESTING_SEARCH_PATHS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -10533,7 +10436,6 @@
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited)";
 				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = 7;
-				developmentTeam = Y53G7YPJSZ;
 			};
 			name = Release;
 		};
@@ -10542,7 +10444,6 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = Y53G7YPJSZ;
 				ENABLE_TESTING_SEARCH_PATHS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -10557,7 +10458,6 @@
 				SWIFT_STRICT_CONCURRENCY = disabled;
 				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = 4;
-				developmentTeam = Y53G7YPJSZ;
 			};
 			name = Debug;
 		};
@@ -10565,14 +10465,13 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_MODULE_VERIFIER = YES;
-				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_IDENTITY = "Don't Code Sign";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
 				DEFINES_MODULE = YES;
-				DEVELOPMENT_TEAM = Y53G7YPJSZ;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
@@ -10589,7 +10488,6 @@
 				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = 4;
 				VERSIONING_SYSTEM = "apple-generic";
-				developmentTeam = Y53G7YPJSZ;
 			};
 			name = Debug;
 		};
