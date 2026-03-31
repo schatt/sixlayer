@@ -96,7 +96,7 @@ open class AccessibilityFeaturesLayer5Tests: BaseTestClass {
      * METHODOLOGY: Test empty string handling
      */
     @Test @MainActor func testAddFocusableItemEmptyString() {
-        let _ = KeyboardNavigationManager()
+        let navigationManager = KeyboardNavigationManager()
         // GIVEN: Empty keyboard navigation manager
         #expect(navigationManager.focusableItems.count == 0)
         
