@@ -67,9 +67,9 @@ open class AutomaticAccessibilityIdentifierTests: BaseTestClass {
     /// BUSINESS PURPOSE: Global config should control automatic identifier generation
     /// TESTING SCOPE: Tests that enabling/disabling automatic IDs works globally
     /// METHODOLOGY: Tests global config toggle and verifies behavior changes
-    @Test @MainActor func testGlobalConfigControlsAutomaticIdentifiers() async {
+    @Test @MainActor func testGlobalConfigControlsAutomaticIdentifiers() {
         initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             // Given: Automatic IDs explicitly enabled for this test
             guard let config = self.testConfig else {
                 Issue.record("testConfig is nil")
@@ -96,9 +96,9 @@ open class AutomaticAccessibilityIdentifierTests: BaseTestClass {
     /// BUSINESS PURPOSE: Global config should support custom namespace
     /// TESTING SCOPE: Tests that custom namespace affects generated identifiers
     /// METHODOLOGY: Sets custom namespace and verifies it's used in generated IDs
-    @Test @MainActor func testGlobalConfigSupportsCustomNamespace() async {
+    @Test @MainActor func testGlobalConfigSupportsCustomNamespace() {
         initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             // Given: Custom namespace
             let customNamespace = "myapp.users"
             guard let config = self.testConfig else {
@@ -119,9 +119,9 @@ open class AutomaticAccessibilityIdentifierTests: BaseTestClass {
     /// BUSINESS PURPOSE: Global config should support different generation modes
     /// TESTING SCOPE: Tests that different modes affect ID generation strategy
     /// METHODOLOGY: Tests various generation modes and their behavior
-    @Test @MainActor func testGlobalConfigSupportsGenerationModes() async {
+    @Test @MainActor func testGlobalConfigSupportsGenerationModes() {
         initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             // Test configuration properties
             guard let config = testConfig else {
 
@@ -140,9 +140,9 @@ open class AutomaticAccessibilityIdentifierTests: BaseTestClass {
     /// BUSINESS PURPOSE: Automatic ID generator should create stable identifiers based on object identity
     /// TESTING SCOPE: Tests that generated IDs are stable and based on item.id, not position
     /// METHODOLOGY: Creates views with same items in different orders and verifies stable IDs
-    @Test @MainActor func testAutomaticIDGeneratorCreatesStableIdentifiers() async {
+    @Test @MainActor func testAutomaticIDGeneratorCreatesStableIdentifiers() {
         initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             // Given: Automatic IDs enabled
             guard let config = self.testConfig else {
                 Issue.record("testConfig is nil")
@@ -184,9 +184,9 @@ open class AutomaticAccessibilityIdentifierTests: BaseTestClass {
     /// BUSINESS PURPOSE: Automatic ID generator should handle different roles and contexts
     /// TESTING SCOPE: Tests that different roles and contexts create appropriate IDs
     /// METHODOLOGY: Tests various role/context combinations
-    @Test @MainActor func testAutomaticIDGeneratorHandlesDifferentRolesAndContexts() async {
+    @Test @MainActor func testAutomaticIDGeneratorHandlesDifferentRolesAndContexts() {
             initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             // Given: Automatic IDs enabled with namespace
             guard let config = self.testConfig else {
                 Issue.record("testConfig is nil")
@@ -222,9 +222,9 @@ open class AutomaticAccessibilityIdentifierTests: BaseTestClass {
     /// BUSINESS PURPOSE: Automatic ID generator should handle non-Identifiable objects
     /// TESTING SCOPE: Tests that non-Identifiable objects get appropriate fallback IDs
     /// METHODOLOGY: Tests ID generation for objects without stable identity
-    @Test @MainActor func testAutomaticIDGeneratorHandlesNonIdentifiableObjects() async {
+    @Test @MainActor func testAutomaticIDGeneratorHandlesNonIdentifiableObjects() {
             initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             // Given: Automatic IDs enabled
             guard let config = self.testConfig else {
                 Issue.record("testConfig is nil")
@@ -252,9 +252,9 @@ open class AutomaticAccessibilityIdentifierTests: BaseTestClass {
     /// BUSINESS PURPOSE: Manual accessibility identifiers should always override automatic ones
     /// TESTING SCOPE: Tests that explicit .accessibilityIdentifier() takes precedence over automatic generation
     /// METHODOLOGY: Creates view with manual identifier and verifies it's used instead of automatic
-    @Test @MainActor func testManualAccessibilityIdentifiersOverrideAutomatic() async {
+    @Test @MainActor func testManualAccessibilityIdentifiersOverrideAutomatic() {
             initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             // Given: Automatic IDs enabled, set namespace for this test
             guard let config = self.testConfig else {
                 Issue.record("testConfig is nil")
@@ -294,9 +294,9 @@ open class AutomaticAccessibilityIdentifierTests: BaseTestClass {
     /// BUSINESS PURPOSE: Automatic IDs can be disabled globally
     /// TESTING SCOPE: Tests that disabling automatic IDs prevents generation
     /// METHODOLOGY: Tests that when enableAutoIDs is false, no automatic identifiers are generated
-    @Test @MainActor func testViewLevelOptOutDisablesAutomaticIDs() async {
+    @Test @MainActor func testViewLevelOptOutDisablesAutomaticIDs() {
             initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             // Given: Automatic IDs disabled globally
             guard let config = self.testConfig else {
                 Issue.record("testConfig is nil")
@@ -335,9 +335,9 @@ open class AutomaticAccessibilityIdentifierTests: BaseTestClass {
     /// BUSINESS PURPOSE: Automatic identifiers should integrate with AppleHIGComplianceModifier
     /// TESTING SCOPE: Tests that HIG compliance modifier includes automatic ID generation
     /// METHODOLOGY: Tests integration with existing HIG compliance system
-    @Test @MainActor func testAutomaticIdentifiersIntegrateWithHIGCompliance() async {
+    @Test @MainActor func testAutomaticIdentifiersIntegrateWithHIGCompliance() {
             initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             // Given: Automatic IDs enabled
             guard let config = self.testConfig else {
                 Issue.record("testConfig is nil")
@@ -348,7 +348,7 @@ open class AutomaticAccessibilityIdentifierTests: BaseTestClass {
             config.namespace = "hig"
                 
             // When: Creating view with HIG compliance
-            let view = platformPresentContent_L1(
+            let _ = platformPresentContent_L1(
                 content: "Test",
                 hints: PresentationHints()
             )
@@ -362,9 +362,9 @@ open class AutomaticAccessibilityIdentifierTests: BaseTestClass {
     /// BUSINESS PURPOSE: Layer 1 functions should automatically apply identifier generation
     /// TESTING SCOPE: Tests that platformPresentItemCollection_L1 includes automatic IDs
     /// METHODOLOGY: Tests that Layer 1 functions automatically apply identifier generation
-    @Test @MainActor func testLayer1FunctionsIncludeAutomaticIdentifiers() async {
+    @Test @MainActor func testLayer1FunctionsIncludeAutomaticIdentifiers() {
             initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             // Given: Automatic IDs enabled
             guard let config = self.testConfig else {
                 Issue.record("testConfig is nil")
@@ -423,9 +423,9 @@ open class AutomaticAccessibilityIdentifierTests: BaseTestClass {
     /// BUSINESS PURPOSE: DEBUG collision detection should identify ID conflicts
     /// TESTING SCOPE: Tests that collision detection works in DEBUG builds
     /// METHODOLOGY: Tests collision detection and logging
-    @Test @MainActor func testCollisionDetectionIdentifiesConflicts() async {
+    @Test @MainActor func testCollisionDetectionIdentifiesConflicts() {
         initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             // Setup test data first
             setupTestData()
                 
@@ -477,9 +477,9 @@ open class AutomaticAccessibilityIdentifierTests: BaseTestClass {
     /// BUSINESS PURPOSE: Debug logging should capture generated IDs for inspection
     /// TESTING SCOPE: Tests that debug logging works correctly
     /// METHODOLOGY: Unit tests for debug logging functionality
-    @Test @MainActor func testDebugLoggingCapturesGeneratedIDs() async {
+    @Test @MainActor func testDebugLoggingCapturesGeneratedIDs() {
         initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             guard let config = testConfig else {
 
                 Issue.record("testConfig is nil")
@@ -507,9 +507,9 @@ open class AutomaticAccessibilityIdentifierTests: BaseTestClass {
     /// BUSINESS PURPOSE: Debug logging should be controllable
     /// TESTING SCOPE: Tests that debug logging can be disabled
     /// METHODOLOGY: Unit tests for debug logging control
-    @Test @MainActor func testDebugLoggingDisabledWhenTurnedOff() async {
+    @Test @MainActor func testDebugLoggingDisabledWhenTurnedOff() {
         initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             guard let config = testConfig else {
 
                 Issue.record("testConfig is nil")
@@ -535,9 +535,9 @@ open class AutomaticAccessibilityIdentifierTests: BaseTestClass {
     /// BUSINESS PURPOSE: Debug log should be formatted for readability
     /// TESTING SCOPE: Tests that debug log formatting works correctly
     /// METHODOLOGY: Unit tests for debug log formatting
-    @Test @MainActor func testDebugLogFormatting() async {
+    @Test @MainActor func testDebugLogFormatting() {
         initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             guard let config = testConfig else {
 
                 Issue.record("testConfig is nil")
@@ -566,9 +566,9 @@ open class AutomaticAccessibilityIdentifierTests: BaseTestClass {
     /// BUSINESS PURPOSE: Debug log should be clearable
     /// TESTING SCOPE: Tests that debug log can be cleared
     /// METHODOLOGY: Unit tests for debug log clearing
-    @Test @MainActor func testDebugLogClearing() async {
+    @Test @MainActor func testDebugLogClearing() {
         initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             guard let config = testConfig else {
 
                 Issue.record("testConfig is nil")
@@ -601,9 +601,9 @@ open class AutomaticAccessibilityIdentifierTests: BaseTestClass {
     /// BUSINESS PURPOSE: View hierarchy tracking should work correctly
     /// TESTING SCOPE: Tests that view hierarchy is properly tracked
     /// METHODOLOGY: Unit tests for view hierarchy management
-    @Test @MainActor func testViewHierarchyTracking() async {
+    @Test @MainActor func testViewHierarchyTracking() {
         initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             guard let config = testConfig else {
 
                 Issue.record("testConfig is nil")
@@ -640,9 +640,9 @@ open class AutomaticAccessibilityIdentifierTests: BaseTestClass {
     /// BUSINESS PURPOSE: UI test code generation should work correctly
     /// TESTING SCOPE: Tests that UI test code is generated properly
     /// METHODOLOGY: Unit tests for UI test code generation
-    @Test @MainActor func testUITestCodeGeneration() async {
+    @Test @MainActor func testUITestCodeGeneration() {
         initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             guard let config = testConfig else {
 
                 Issue.record("testConfig is nil")
@@ -677,9 +677,9 @@ open class AutomaticAccessibilityIdentifierTests: BaseTestClass {
     /// BUSINESS PURPOSE: UI test helpers should generate correct code
     /// TESTING SCOPE: Tests that UI test helper methods work correctly
     /// METHODOLOGY: Unit tests for UI test helper methods
-    @Test @MainActor func testUITestHelpers() async {
+    @Test @MainActor func testUITestHelpers() {
         initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             guard let config = testConfig else {
 
                 Issue.record("testConfig is nil")
@@ -707,9 +707,9 @@ open class AutomaticAccessibilityIdentifierTests: BaseTestClass {
     /// BUSINESS PURPOSE: UI test code should be generated and saved to file
     /// TESTING SCOPE: Tests that UI test code can be saved to autoGeneratedTests folder
     /// METHODOLOGY: Unit tests for file generation functionality
-    @Test @MainActor func testUITestCodeFileGeneration() async {
+    @Test @MainActor func testUITestCodeFileGeneration() {
         initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             guard let config = testConfig else {
 
                 Issue.record("testConfig is nil")
@@ -757,9 +757,9 @@ open class AutomaticAccessibilityIdentifierTests: BaseTestClass {
     /// BUSINESS PURPOSE: Clipboard integration should work on macOS
     /// TESTING SCOPE: Tests that UI test code can be copied to clipboard
     /// METHODOLOGY: Unit tests for clipboard functionality
-    @Test @MainActor func testUITestCodeClipboardGeneration() async {
+    @Test @MainActor func testUITestCodeClipboardGeneration() {
             initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             guard let config = testConfig else {
 
                 Issue.record("testConfig is nil")
@@ -794,9 +794,9 @@ open class AutomaticAccessibilityIdentifierTests: BaseTestClass {
     
     /// Reproduces the user's bug report
     /// Tests that accessibility identifiers are automatically generated
-    @Test @MainActor func testTrackViewHierarchyAutomaticallyAppliesAccessibilityIdentifiers() async {
+    @Test @MainActor func testTrackViewHierarchyAutomaticallyAppliesAccessibilityIdentifiers() {
             initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             // Given: Configuration is enabled (as per user's bug report)
             guard let config = testConfig else {
 
@@ -846,9 +846,9 @@ open class AutomaticAccessibilityIdentifierTests: BaseTestClass {
     }
     
     /// TDD Test: Tests that global automatic accessibility identifiers work
-    @Test @MainActor func testGlobalAutomaticAccessibilityIdentifiersWork() async {
+    @Test @MainActor func testGlobalAutomaticAccessibilityIdentifiersWork() {
         initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             // Given: Configuration is enabled
             guard let config = testConfig else {
 
@@ -876,9 +876,9 @@ open class AutomaticAccessibilityIdentifierTests: BaseTestClass {
     }
     
     /// TDD Test: Tests that ID generation uses actual view context instead of hardcoded values
-    @Test @MainActor func testIDGenerationUsesActualViewContext() async {
+    @Test @MainActor func testIDGenerationUsesActualViewContext() {
         initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             // Given: Configuration with view hierarchy tracking
             guard let config = testConfig else {
 
@@ -922,9 +922,9 @@ open class AutomaticAccessibilityIdentifierTests: BaseTestClass {
     /// BUSINESS PURPOSE: Test that automaticAccessibilityIdentifiers(named:) helper function works correctly
     /// TESTING SCOPE: Verify that components can set their own name using the helper
     /// METHODOLOGY: Create a test view and verify the identifier includes the component name
-    @Test @MainActor func testAutomaticAccessibilityIdentifiersWithNamedComponent() async {
+    @Test @MainActor func testAutomaticAccessibilityIdentifiersWithNamedComponent() {
         initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             // Given: A view using the named helper function
             let view = Text("Test Content")
                 .automaticCompliance(named: "TestComponent")
