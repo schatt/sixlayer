@@ -468,7 +468,7 @@ open class BasicAutomaticComplianceLogicTests: BaseTestClass {
     /// TESTING SCOPE: Stub behavior verification - this test FAILS in Red phase
     /// METHODOLOGY: Test that the stub modifier doesn't use its parameters to generate identifiers
     /// The stub should use its parameters to generate identifiers, but it doesn't
-    @Test func testBasicAutomaticComplianceModifier_StubDoesNotApplyLogic() {
+    @Test @MainActor func testBasicAutomaticComplianceModifier_StubDoesNotApplyLogic() {
         // Given: A modifier with parameters that SHOULD be used to generate identifiers
         let modifier = BasicAutomaticComplianceModifier(
             identifierName: "testView",
@@ -496,7 +496,7 @@ open class BasicAutomaticComplianceLogicTests: BaseTestClass {
     /// BUSINESS PURPOSE: Verify modifier stores identifierName parameter correctly
     /// TESTING SCOPE: Modifier initialization and property storage
     /// METHODOLOGY: Create modifier with identifierName, verify it's stored correctly
-    @Test func testBasicAutomaticComplianceModifier_StoresIdentifierName() {
+    @Test @MainActor func testBasicAutomaticComplianceModifier_StoresIdentifierName() {
         // Given: A modifier created with identifierName
         let identifierName = "testView"
         let modifier = BasicAutomaticComplianceModifier(identifierName: identifierName)
