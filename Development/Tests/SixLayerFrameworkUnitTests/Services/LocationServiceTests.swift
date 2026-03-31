@@ -127,7 +127,7 @@ open class LocationServiceTests: BaseTestClass {
         #expect(service.authorizationStatus == .notDetermined || 
                 service.authorizationStatus == .denied || 
                 service.authorizationStatus == .restricted || 
-                service.authorizationStatus == .authorized || 
+                service.authorizationStatus == .authorizedWhenInUse || 
                 service.authorizationStatus == .authorizedAlways)
     }
     
@@ -143,7 +143,7 @@ open class LocationServiceTests: BaseTestClass {
         
         // Then: Should access successfully without actor isolation errors
         // This test verifies the @MainActor annotation works correctly
-        #expect(status == .notDetermined || status == .denied || status == .restricted || status == .authorized || status == .authorizedAlways)
+        #expect(status == .notDetermined || status == .denied || status == .restricted || status == .authorizedWhenInUse || status == .authorizedAlways)
         #expect(isEnabled == true || isEnabled == false)
     }
     
@@ -158,7 +158,7 @@ open class LocationServiceTests: BaseTestClass {
         
         // Then: Should access successfully without actor isolation errors
         // The protocol is now @MainActor, so properties can satisfy requirements
-        #expect(status == .notDetermined || status == .denied || status == .restricted || status == .authorized || status == .authorizedAlways)
+        #expect(status == .notDetermined || status == .denied || status == .restricted || status == .authorizedWhenInUse || status == .authorizedAlways)
         #expect(isEnabled == true || isEnabled == false)
         #expect(error == nil || error != nil)
     }
@@ -192,7 +192,7 @@ open class LocationServiceTests: BaseTestClass {
         let status = manager.authorizationStatus // Safe to access from nonisolated context
         
         // The delegate methods should handle the MainActor bridge correctly
-        #expect(status == .notDetermined || status == .denied || status == .restricted || status == .authorized || status == .authorizedAlways)
+        #expect(status == .notDetermined || status == .denied || status == .restricted || status == .authorizedWhenInUse || status == .authorizedAlways)
     }
     
     @Test @MainActor func testLocationServiceNoUncheckedSendableConflict() async {
