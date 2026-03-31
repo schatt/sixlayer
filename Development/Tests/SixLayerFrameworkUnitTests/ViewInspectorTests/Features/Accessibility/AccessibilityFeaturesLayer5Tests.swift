@@ -156,7 +156,7 @@ open class AccessibilityFeaturesLayer5Tests: BaseTestClass {
      * METHODOLOGY: Test wraparound behavior
      */
     @Test @MainActor func testMoveFocusNextWithWraparound() {
-        let _ = KeyboardNavigationManager()
+        let navigationManager = KeyboardNavigationManager()
         // GIVEN: Keyboard manager with items
         navigationManager.addFocusableItem("button1")
         navigationManager.addFocusableItem("button2")
@@ -387,7 +387,6 @@ open class AccessibilityFeaturesLayer5Tests: BaseTestClass {
      */
     @Test @MainActor func testVoiceOverEnabledViewModifier() {
         initializeTestConfig()
-        let navigationManager = KeyboardNavigationManager()
         // GIVEN: A view
         let testView = platformPresentContent_L1(
             content: "Test",
