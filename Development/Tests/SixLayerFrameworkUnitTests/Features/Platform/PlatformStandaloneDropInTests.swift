@@ -372,13 +372,10 @@ struct PlatformStandaloneDropInTests {
     
     @Test @MainActor func testPlatformButton_WithLabelParameter() {
         // Given: Action and explicit label
-        var actionCalled = false
         let label = "Save document"
         
         // When: Creating button with label parameter
-        let view = platformButton(label: label) {
-            actionCalled = true
-        }
+        let view = platformButton(label: label) { }
         
         // Then: View should be created successfully
         _ = view
@@ -415,13 +412,10 @@ struct PlatformStandaloneDropInTests {
     
     @Test @MainActor func testPlatformButton_WithLocalizedStringKey() {
         // Given: Action and LocalizedStringKey label
-        var actionCalled = false
         let label = LocalizedStringKey("button.save")
         
         // When: Creating button with LocalizedStringKey
-        let view = platformButton(label: label) {
-            actionCalled = true
-        }
+        let view = platformButton(label: label) { }
         
         // Then: View should be created successfully
         _ = view
@@ -430,13 +424,10 @@ struct PlatformStandaloneDropInTests {
     
     @Test @MainActor func testPlatformButton_WithTextLabel() {
         // Given: Action and Text label
-        var actionCalled = false
         let label = Text("Save document")
         
         // When: Creating button with Text label
-        let view = platformButton(label: label) {
-            actionCalled = true
-        }
+        let view = platformButton(label: label) { }
         
         // Then: View should be created successfully
         _ = view
