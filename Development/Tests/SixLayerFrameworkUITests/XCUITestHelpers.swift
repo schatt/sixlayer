@@ -129,9 +129,7 @@ extension XCUIElement {
         switch type {
         case .button, .textField, .switch, .slider, .link:
             return true
-        case .image, .staticText, .other, .cell, .any:
-            return false
-        @unknown default:
+        default:
             return false
         }
     }
