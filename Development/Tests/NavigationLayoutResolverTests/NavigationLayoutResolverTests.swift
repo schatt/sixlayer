@@ -118,4 +118,27 @@ struct NavigationLayoutResolverTests {
             #expect(app == settings)
         }
     }
+
+    @Test
+    func layer4CompactPresentation_forConstrainedWidth_isOverlayOuterSidebar() {
+        let p = NavigationLayoutResolver.layer4CompactPresentation(forAvailableWidth: 620)
+        #expect(p == .overlayOuterSidebar)
+    }
+
+    @Test
+    func layer4CompactPresentation_forWideWidth_isFullSplit() {
+        let p = NavigationLayoutResolver.layer4CompactPresentation(forAvailableWidth: 1300)
+        #expect(p == .fullSplit)
+    }
+
+    @Test
+    func layer4CompactPresentation_matchesComposedResolutionMapping() {
+        for w in stride(from: 0, through: 2500, by: 17) {
+            let width = CGFloat(w)
+            let resolution = NavigationLayoutResolver.resolveSettingsContainer(availableWidth: width)
+            let expected = NavigationLayoutCompactPresentation(resolution: resolution)
+            let actual = NavigationLayoutResolver.layer4CompactPresentation(forAvailableWidth: width)
+            #expect(actual == expected, "width \(width)")
+        }
+    }
 }
