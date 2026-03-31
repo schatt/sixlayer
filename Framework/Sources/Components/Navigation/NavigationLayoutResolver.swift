@@ -63,6 +63,20 @@ public struct NavigationLayoutResolution: Sendable, Equatable {
 }
 
 public enum NavigationLayoutResolver {
+    /// Minimum width reserved for the settings detail pane when resolving the nested settings shell.
+    private static let settingsContainerMinimumDetailWidth: CGFloat = 480
+
+    /// Preset resolution for the Layer 4 settings container: host `compactList` plus inner `textSidebar`, preferring the outer column when space is tight (`.preferOuter`).
+    public static func resolveSettingsContainer(availableWidth: CGFloat) -> NavigationLayoutResolution {
+        resolve(
+            availableWidth: availableWidth,
+            outerProfile: .compactList,
+            innerProfile: .textSidebar,
+            minimumDetailWidth: settingsContainerMinimumDetailWidth,
+            policy: .preferOuter
+        )
+    }
+
     public static func resolve(
         availableWidth: CGFloat,
         outerProfile: NavigationSidebarProfile,
