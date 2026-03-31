@@ -36,6 +36,17 @@ final class AccessibilityIdentifierCategoryAUITests: XCTestCase {
         return app.descendants(matching: .any).matching(pred).firstMatch
     }
 
+    /// Manual-only row is below the fold in the audit scroll view.
+    private func scrollToManualOnlyRow() {
+        if app.buttons["CatA manual only visible"].waitForExistence(timeout: 1.0) { return }
+        let scroll = app.scrollViews.firstMatch
+        guard scroll.exists else { return }
+        for _ in 0..<10 {
+            scroll.swipeUp()
+            if app.buttons["CatA manual only visible"].waitForExistence(timeout: 0.5) { return }
+        }
+    }
+
     func testCategoryA_unicodeText_hasAccessibilityIdentifier() throws {
         XCTAssertTrue(
             anyElement(identifierContains: "CatAUnicodeText").waitForExistence(timeout: 12.0),
@@ -55,9 +66,10 @@ final class AccessibilityIdentifierCategoryAUITests: XCTestCase {
     }
 
     func testCategoryA_manualOnlyStaticText_exactIdentifier() throws {
+        scrollToManualOnlyRow()
         XCTAssertTrue(
             app.buttons["CatA manual only visible"].waitForExistence(timeout: 12.0),
-            "Manual-only control (plain button) should be visible"
+            "Manual-only control (platformButton with explicit id) should be visible"
         )
         let manual = app.descendants(matching: .any)
             .matching(NSPredicate(format: "identifier CONTAINS[c] %@", "CatA_ManualOnly_StaticText"))
