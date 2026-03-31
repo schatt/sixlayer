@@ -56,8 +56,8 @@ final class AccessibilityIdentifierCategoryAUITests: XCTestCase {
 
     func testCategoryA_manualOnlyStaticText_exactIdentifier() throws {
         XCTAssertTrue(
-            app.staticTexts["CatA manual only visible"].waitForExistence(timeout: 12.0),
-            "Manual-only label should be visible"
+            app.buttons["CatA manual only visible"].waitForExistence(timeout: 12.0),
+            "Manual-only control (plain button) should be visible"
         )
         let manual = app.descendants(matching: .any)
             .matching(NSPredicate(format: "identifier CONTAINS[c] %@", "CatA_ManualOnly_StaticText"))
