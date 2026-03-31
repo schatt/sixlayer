@@ -102,6 +102,14 @@ struct AccessibilityIdentifierCategoryAUDITView: View {
                         )
                 }
                 .accessibilityIdentifier("CatAManualWinsOnOuter")
+
+                // Empty identifierName: generator falls back to "element" and includes sanitized label (audit empty string).
+                sectionCaption("Empty identifier name (sanitized label segment)")
+                platformText("Empty name row")
+                    .basicAutomaticCompliance(
+                        identifierName: "",
+                        identifierLabel: "Empty name row"
+                    )
             }
             .padding()
         }
