@@ -14,13 +14,19 @@ struct AccessibilityIdentifierCategoryAUDITView: View {
     /// Long `identifierName` exercises sanitization / truncation paths (audit: very long names).
     private let longIdentifierName = "CatALong" + String(repeating: "Z", count: 48)
 
+    /// Matches `generateAccessibilityIdentifier` when `enableUITestIntegration` is true (TestApp `init`).
+    private static let auditTitleUITestID = "SixLayer.main.ui.CatAAuditTitle.View"
+    private static let nestedOuterUITestID = "SixLayer.main.ui.CatANestedOuter.View"
+    private static let nestedInnerUITestID = "SixLayer.main.ui.CatANestedInnerButton.View"
+
     var body: some View {
         platformScrollViewContainer {
             platformVStack(alignment: .leading, spacing: 24) {
-                // Apply named compliance before font so the identifier stays on the styled text element (XCUITest can read it).
+                // Named compliance + explicit ID: some Text + font chains do not surface generated IDs to XCTest; last wins for UI tests.
                 platformText("Category A — identifier audit (#197)")
                     .automaticCompliance(named: "CatAAuditTitle")
                     .font(.headline)
+                    .accessibilityIdentifier(Self.auditTitleUITestID)
 
                 sectionCaption("Unicode + label")
                 platformText("café 日本語")
@@ -36,14 +42,15 @@ struct AccessibilityIdentifierCategoryAUDITView: View {
                     .foregroundColor(.secondary)
                     .padding(.top, 8)
                     .automaticCompliance(named: "CatANestedOuter")
+                    .accessibilityIdentifier(Self.nestedOuterUITestID)
                 platformVStack(alignment: .leading, spacing: 8) {
                     platformButton(label: "CatA Nested Action", id: nil) { }
                         .automaticCompliance(named: "CatANestedInnerButton")
+                        .accessibilityIdentifier(Self.nestedInnerUITestID)
                 }
 
                 sectionCaption("Manual-only identifier (no automaticCompliance on this view)")
-                platformText("CatA manual only visible")
-                    .accessibilityElement(children: .ignore)
+                Text("CatA manual only visible")
                     .accessibilityIdentifier("CatA_ManualOnly_StaticText")
 
                 sectionCaption("Special characters in label")
