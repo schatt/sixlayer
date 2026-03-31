@@ -44,6 +44,8 @@ public func platformCloudKitSyncStatus_L4(status: CloudKitSyncStatus) -> some Vi
         }
     }
     .automaticCompliance(named: "platformCloudKitSyncStatus_L4")
+    // Stable id for UI tests (Issue #193); must contain substring "platformCloudKitSyncStatus".
+    .accessibilityIdentifier("platformCloudKitSyncStatus_L4")
 }
 
 // MARK: - CloudKit Progress Display
