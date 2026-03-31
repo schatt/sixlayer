@@ -44,7 +44,6 @@ public func platformCloudKitSyncStatus_L4(status: CloudKitSyncStatus) -> some Vi
         }
     }
     .automaticCompliance(named: "platformCloudKitSyncStatus_L4")
-    .accessibilityIdentifier("platformCloudKitSyncStatus_L4")
 }
 
 // MARK: - CloudKit Progress Display
