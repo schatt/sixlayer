@@ -633,10 +633,17 @@ public extension View {
     /// - Returns: NavigationSplitView on iOS 16+, NavigationView on iOS 15
     @ViewBuilder
     private func createSettingsContainerForiPad<Sidebar: View, Detail: View>(
+        layoutResolution: NavigationLayoutResolution,
         columnVisibility: Binding<NavigationSplitViewVisibility>?,
         @ViewBuilder sidebar: () -> Sidebar,
         @ViewBuilder detail: () -> Detail
     ) -> some View {
+        if layoutResolution.mode == .compactCollapsedInner {
+            detail()
+                .automaticCompliance(named: "platformSettingsContainer_L4")
+            return
+        }
+
         if #available(iOS 16.0, *) {
             // Use existing helper to avoid duplication
             createNavigationSplitView(
@@ -700,10 +707,17 @@ public extension View {
     /// - Returns: NavigationSplitView on macOS 13+, HStack on macOS 12
     @ViewBuilder
     private func createSettingsContainerForMacOS<Sidebar: View, Detail: View>(
+        layoutResolution: NavigationLayoutResolution,
         columnVisibility: Binding<NavigationSplitViewVisibility>?,
         @ViewBuilder sidebar: () -> Sidebar,
         @ViewBuilder detail: () -> Detail
     ) -> some View {
+        if layoutResolution.mode == .compactCollapsedInner {
+            detail()
+                .automaticCompliance(named: "platformSettingsContainer_L4")
+            return
+        }
+
         if #available(macOS 13.0, *) {
             // Use existing helper to avoid duplication
             createNavigationSplitView(
@@ -884,6 +898,19 @@ public extension View {
     /// Layer 4: Component Implementation
     /// Implements Issue #58: Add platformSettingsContainer_L4 for Settings Views (Layer 4)
     @MainActor
+    func resolveSettingsContainerLayout_L4(
+        availableWidth: CGFloat
+    ) -> NavigationLayoutResolution {
+        NavigationLayoutResolver.resolve(
+            availableWidth: availableWidth,
+            outerProfile: .compactList,
+            innerProfile: .textSidebar,
+            minimumDetailWidth: 480,
+            policy: .preferOuter
+        )
+    }
+
+    @MainActor
     @ViewBuilder
     func platformSettingsContainer_L4<Sidebar: View, Detail: View>(
         columnVisibility: Binding<NavigationSplitViewVisibility>? = nil,
@@ -892,12 +919,15 @@ public extension View {
         @ViewBuilder detail: () -> Detail
     ) -> some View {
         let deviceType = DeviceType.current
+        let availableWidth = DeviceCapabilities().screenSize.width
+        let layoutResolution = resolveSettingsContainerLayout_L4(availableWidth: availableWidth)
         
         #if os(iOS)
         switch deviceType {
         case .pad:
             // iPad: Use NavigationSplitView
             createSettingsContainerForiPad(
+                layoutResolution: layoutResolution,
                 columnVisibility: columnVisibility,
                 sidebar: sidebar,
                 detail: detail
@@ -919,6 +949,7 @@ public extension View {
         #elseif os(macOS)
         // macOS: Always use NavigationSplitView
         createSettingsContainerForMacOS(
+            layoutResolution: layoutResolution,
             columnVisibility: columnVisibility,
             sidebar: sidebar,
             detail: detail
