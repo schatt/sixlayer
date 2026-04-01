@@ -94,6 +94,13 @@ public extension NavigationLayoutCompactPresentation {
 
 // MARK: - Core resolution
 
+/// Width-driven layout resolution for nested sidebars and Layer 4 shells.
+///
+/// Callers pass an **available width in points** along the split axis. The resolver does **not** read
+/// locale, layout direction (LTR/RTL), Dynamic Type, or string metrics (issue #208 stress matrix).
+/// Long labels and accessibility scaling affect SwiftUI typography in the host; if the host needs
+/// those to influence column budgets, it should fold that into the `availableWidth` (or profiles)
+/// before calling these APIs.
 public enum NavigationLayoutResolver {
     public static func resolve(
         availableWidth: CGFloat,
