@@ -528,6 +528,41 @@ final class Layer4UITests: XCTestCase {
                       "overlay contract: focus/interaction should return to expand affordance after dismiss")
     }
 
+    @MainActor
+    func testL4_overlayAccessibility_modalRootVisible_whenPresented() throws {
+        ensureContractRoot()
+        scrollToElement(label: "L4 Overlay Accessibility")
+
+        let showSidebarButton = app.buttons["L4OverlayShowSidebar"].firstMatch
+        XCTAssertTrue(showSidebarButton.waitForExistence(timeout: 6.0),
+                      "overlay contract: explicit expand affordance button should exist")
+        tapByNormalizedCenter(showSidebarButton)
+
+        let modalRoot = app.otherElements["L4OverlayModalRoot"].firstMatch
+        XCTAssertTrue(modalRoot.waitForExistence(timeout: 5.0),
+                      "overlay contract: modal root should be exposed for a11y navigation")
+    }
+
+    @MainActor
+    func testL4_overlayAccessibility_sidebarContentHidden_afterDismiss() throws {
+        ensureContractRoot()
+        scrollToElement(label: "L4 Overlay Accessibility")
+
+        let showSidebarButton = app.buttons["L4OverlayShowSidebar"].firstMatch
+        XCTAssertTrue(showSidebarButton.waitForExistence(timeout: 6.0),
+                      "overlay contract: explicit expand affordance button should exist")
+        tapByNormalizedCenter(showSidebarButton)
+
+        let closeSidebarButton = app.buttons["L4OverlayCloseSidebar"].firstMatch
+        XCTAssertTrue(closeSidebarButton.waitForExistence(timeout: 4.0),
+                      "overlay contract: explicit close affordance should exist in overlay")
+        tapByNormalizedCenter(closeSidebarButton)
+
+        let sidebarContent = app.staticTexts["L4OverlaySidebarContent"].firstMatch
+        XCTAssertFalse(sidebarContent.waitForExistence(timeout: 2.0),
+                       "overlay contract: sidebar content should not remain exposed after dismiss")
+    }
+
     // MARK: - System (Copy, Print, Share)
 
     @MainActor
