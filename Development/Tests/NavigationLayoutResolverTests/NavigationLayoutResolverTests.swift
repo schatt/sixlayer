@@ -256,6 +256,29 @@ struct NavigationLayoutResolverTests {
     }
 
     @Test
+    func layer4MeasuredSplitPresentationSync_seededPresentation_nilWhenNotDetailOnly() {
+        #expect(Layer4MeasuredSplitPresentationSync.seededPresentation(isDetailOnlyColumn: false) == nil)
+    }
+
+    @Test
+    func layer4MeasuredSplitPresentationSync_seededPresentation_detailOnlyWhenDetailOnlyColumn() {
+        #expect(
+            Layer4MeasuredSplitPresentationSync.seededPresentation(isDetailOnlyColumn: true)
+                == .detailOnlyCollapsedInner
+        )
+    }
+
+    @Test
+    func layer4CompactPresentationForTransition_preservesDetailOnly_whenPreviousMatchesColumnSeed() {
+        let seeded = Layer4MeasuredSplitPresentationSync.seededPresentation(isDetailOnlyColumn: true)!
+        let churn = NavigationLayoutResolver.layer4CompactPresentationForTransition(
+            availableWidth: 680,
+            previousPresentation: seeded
+        )
+        #expect(churn == .detailOnlyCollapsedInner)
+    }
+
+    @Test
     func resolveSettingsContainer_numericWidthOnly_invariantForMatrixSmoke() {
         let w: CGFloat = 842
         let a = NavigationLayoutResolver.resolveSettingsContainer(availableWidth: w)
