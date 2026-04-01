@@ -49,6 +49,7 @@ private struct Layer4OuterSidebarOverlayHost<SidebarSheet: View, Detail: View>: 
                     Image(systemName: "sidebar.left")
                 }
                 .accessibilityLabel("Show sidebar")
+                .accessibilityIdentifier("L4OverlayShowSidebar")
             }
         }
         .sheet(isPresented: $isOuterSidebarPresented) {
