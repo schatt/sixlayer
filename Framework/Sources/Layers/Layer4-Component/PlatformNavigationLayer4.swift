@@ -20,6 +20,19 @@ private struct Layer4OuterSidebarOverlayHost<SidebarSheet: View, Detail: View>: 
     @ViewBuilder let sidebarSheet: () -> SidebarSheet
     let detailContent: Detail
 
+    @ViewBuilder
+    private func overlaySheetContent() -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Button("Close") {
+                isOuterSidebarPresented = false
+            }
+            .accessibilityIdentifier(layer4OverlayCloseSidebarAccessibilityIdentifier)
+            sidebarSheet()
+        }
+        .padding()
+        .accessibilityAddTraits(.isModal)
+    }
+
     var body: some View {
         let accessibilityState = NavigationLayoutResolver.layer4OverlayAccessibilityState(
             isOverlayPresented: isOuterSidebarPresented
@@ -56,15 +69,7 @@ private struct Layer4OuterSidebarOverlayHost<SidebarSheet: View, Detail: View>: 
             }
         }
         .sheet(isPresented: $isOuterSidebarPresented) {
-            VStack(alignment: .leading, spacing: 12) {
-                Button("Close") {
-                    isOuterSidebarPresented = false
-                }
-                .accessibilityIdentifier(layer4OverlayCloseSidebarAccessibilityIdentifier)
-                sidebarSheet()
-            }
-            .padding()
-            .accessibilityAddTraits(.isModal)
+            overlaySheetContent()
         }
         .automaticCompliance(named: complianceName)
     }
