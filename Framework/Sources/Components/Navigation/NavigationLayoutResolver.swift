@@ -214,4 +214,13 @@ public enum NavigationLayoutResolver {
     private static func layer4OverlayFocusTarget(isOverlayPresented: Bool) -> Layer4OverlayFocusTarget {
         isOverlayPresented ? .overlayContent : .expandSidebarButton
     }
+
+    /// Transition-level focus handoff for overlay open/close.
+    /// Stubbed for TDD red phase; intentionally incomplete.
+    public static func layer4OverlayAccessibilityTransition(
+        previouslyPresented: Bool,
+        currentlyPresented: Bool
+    ) -> Layer4OverlayFocusTarget? {
+        nil
+    }
 }
