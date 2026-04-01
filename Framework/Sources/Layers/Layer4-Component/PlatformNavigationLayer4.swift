@@ -11,6 +11,7 @@ import SwiftUI
 // MARK: - Layer 4 compact outer overlay (issue #206)
 
 private let layer4OverlayShowSidebarAccessibilityIdentifier = "L4OverlayShowSidebar"
+private let layer4OverlayCloseSidebarAccessibilityIdentifier = "L4OverlayCloseSidebar"
 
 /// Detail-first shell with toolbar affordance and dismissible sheet for the outer sidebar (no column squeeze).
 private struct Layer4OuterSidebarOverlayHost<SidebarSheet: View, Detail: View>: View {
@@ -55,8 +56,15 @@ private struct Layer4OuterSidebarOverlayHost<SidebarSheet: View, Detail: View>: 
             }
         }
         .sheet(isPresented: $isOuterSidebarPresented) {
-            sidebarSheet()
-                .accessibilityAddTraits(.isModal)
+            VStack(alignment: .leading, spacing: 12) {
+                Button("Close") {
+                    isOuterSidebarPresented = false
+                }
+                .accessibilityIdentifier(layer4OverlayCloseSidebarAccessibilityIdentifier)
+                sidebarSheet()
+            }
+            .padding()
+            .accessibilityAddTraits(.isModal)
         }
         .automaticCompliance(named: complianceName)
     }
