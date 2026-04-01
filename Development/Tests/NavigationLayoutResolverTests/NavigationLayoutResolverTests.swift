@@ -187,4 +187,33 @@ struct NavigationLayoutResolverTests {
         #expect(noChangeClosed == nil)
         #expect(noChangeOpen == nil)
     }
+
+    @Test
+    func layer4CompactPresentationForTransition_preservesPreviousCompactPresentation_duringConstrainedResizeChurn() {
+        let widths: [CGFloat] = [620, 700, 760, 680, 640]
+        var previous = NavigationLayoutCompactPresentation.detailOnlyCollapsedInner
+
+        for width in widths {
+            previous = NavigationLayoutResolver.layer4CompactPresentationForTransition(
+                availableWidth: width,
+                previousPresentation: previous
+            )
+            #expect(previous == .detailOnlyCollapsedInner, "width \(width)")
+        }
+    }
+
+    @Test
+    func layer4CompactPresentationForTransition_resetsToFullSplit_whenWidthRecovers() {
+        let first = NavigationLayoutResolver.layer4CompactPresentationForTransition(
+            availableWidth: 620,
+            previousPresentation: .detailOnlyCollapsedInner
+        )
+        #expect(first == .detailOnlyCollapsedInner)
+
+        let recovered = NavigationLayoutResolver.layer4CompactPresentationForTransition(
+            availableWidth: 1300,
+            previousPresentation: first
+        )
+        #expect(recovered == .fullSplit)
+    }
 }
