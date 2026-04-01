@@ -221,6 +221,9 @@ public enum NavigationLayoutResolver {
         previouslyPresented: Bool,
         currentlyPresented: Bool
     ) -> Layer4OverlayFocusTarget? {
-        nil
+        if previouslyPresented == currentlyPresented {
+            return nil
+        }
+        return layer4OverlayFocusTarget(isOverlayPresented: currentlyPresented)
     }
 }
