@@ -1,0 +1,30 @@
+---
+description: Strict TDD definition and required phase test runs
+alwaysApply: true
+---
+
+# Strict TDD Definition
+
+Follow this sequence exactly for all feature and bug-fix work:
+
+1. Define expected behavior and test scope.
+2. Write tests first.
+3. Run tests for a red phase.
+   - If tests do not compile, add minimal stubs only to make tests compile and run.
+   - Re-run until tests execute and fail for the intended reason (no false positives).
+4. Green phase: implement behavior to the best of ability.
+5. Run tests and verify green.
+6. Refactor for clarity/maintainability without changing behavior.
+7. Run tests again and verify green after refactor.
+
+## Required Evidence
+
+- Show/record at least one failing test run in red phase.
+- Show/record a passing run after green implementation.
+- Show/record a passing run after refactor.
+
+## Guardrails
+
+- Do not skip red phase.
+- Do not treat compile-only failure as complete red phase when runtime-failing tests are possible.
+- Do not merge or close work with failing tests.
