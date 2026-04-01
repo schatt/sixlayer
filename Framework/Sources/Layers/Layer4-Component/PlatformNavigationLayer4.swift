@@ -83,6 +83,13 @@ private struct Layer4OuterSidebarOverlayHost<SidebarSheet: View, Detail: View>: 
 
 // MARK: - Layer 4 measured split shell (issue #208)
 
+/// Maps `NavigationSplitViewVisibility.detailOnly` into the compact presentation seed used with measured width (#208).
+internal enum Layer4MeasuredSplitPresentationSync {
+    static func seededPresentation(isDetailOnlyColumn: Bool) -> NavigationLayoutCompactPresentation? {
+        isDetailOnlyColumn ? .detailOnlyCollapsedInner : nil
+    }
+}
+
 /// Hosts nested split shells with **container width** from `GeometryReader` and
 /// `NavigationLayoutResolver.layer4CompactPresentationForTransition` so resize churn does not thrash modes.
 private struct Layer4NestedSplitShellPresentationHost<Sidebar: View, Detail: View>: View {
@@ -115,7 +122,10 @@ private struct Layer4NestedSplitShellPresentationHost<Sidebar: View, Detail: Vie
         GeometryReader { geo in
             let width = max(0, geo.size.width)
             let fresh = NavigationLayoutResolver.layer4CompactPresentation(forAvailableWidth: width)
-            let prev = persistedPresentation ?? fresh
+            let columnSeeded = Layer4MeasuredSplitPresentationSync.seededPresentation(
+                isDetailOnlyColumn: columnVisibility.map { $0.wrappedValue == .detailOnly } ?? false
+            )
+            let prev = persistedPresentation ?? columnSeeded ?? fresh
             let presentation = NavigationLayoutResolver.layer4CompactPresentationForTransition(
                 availableWidth: width,
                 previousPresentation: prev
@@ -123,11 +133,22 @@ private struct Layer4NestedSplitShellPresentationHost<Sidebar: View, Detail: Vie
             shellContent(presentation: presentation)
                 .task(id: widthTaskID(width)) {
                     let f = NavigationLayoutResolver.layer4CompactPresentation(forAvailableWidth: width)
-                    let p = persistedPresentation ?? f
+                    let seeded = Layer4MeasuredSplitPresentationSync.seededPresentation(
+                        isDetailOnlyColumn: columnVisibility.map { $0.wrappedValue == .detailOnly } ?? false
+                    )
+                    let p = persistedPresentation ?? seeded ?? f
                     persistedPresentation = NavigationLayoutResolver.layer4CompactPresentationForTransition(
                         availableWidth: width,
                         previousPresentation: p
                     )
+                }
+                .onChange(of: columnVisibility.map { $0.wrappedValue }) { _, visibility in
+                    guard let visibility else { return }
+                    if visibility == .detailOnly {
+                        persistedPresentation = .detailOnlyCollapsedInner
+                    } else if persistedPresentation == .detailOnlyCollapsedInner {
+                        persistedPresentation = nil
+                    }
                 }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
