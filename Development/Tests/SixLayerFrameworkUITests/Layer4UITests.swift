@@ -483,6 +483,27 @@ final class Layer4UITests: XCTestCase {
                       "platformNavigationBarTitleDisplayMode_L4: nav bar with title should exist (applied on root)")
     }
 
+    @MainActor
+    func testL4_overlayAccessibility_hidesUnderlyingContent_whenOverlayPresented() throws {
+        ensureContractRoot()
+        scrollToElement(label: "L4 Overlay Accessibility")
+
+        let showSidebarButton = app.buttons["L4OverlayShowSidebar"].firstMatch
+        XCTAssertTrue(showSidebarButton.waitForExistence(timeout: 6.0),
+                      "overlay contract: explicit expand affordance button should exist")
+
+        let detailAction = app.buttons["L4OverlayDetailAction"].firstMatch
+        XCTAssertTrue(detailAction.waitForExistence(timeout: 4.0),
+                      "overlay contract: underlying detail action should exist before overlay opens")
+
+        tapByNormalizedCenter(showSidebarButton)
+        XCTAssertTrue(app.staticTexts["L4OverlaySidebarContent"].waitForExistence(timeout: 5.0),
+                      "overlay contract: sidebar content should be presented in overlay")
+
+        XCTAssertFalse(detailAction.isHittable,
+                       "overlay contract: underlying detail action should not be hittable while overlay is active")
+    }
+
     // MARK: - System (Copy, Print, Share)
 
     @MainActor
