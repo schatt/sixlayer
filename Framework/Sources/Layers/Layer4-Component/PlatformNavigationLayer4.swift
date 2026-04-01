@@ -18,6 +18,9 @@ private struct Layer4OuterSidebarOverlayHost<SidebarSheet: View, Detail: View>: 
     let detailContent: Detail
 
     var body: some View {
+        let accessibilityState = NavigationLayoutResolver.layer4OverlayAccessibilityState(
+            isOverlayPresented: isOuterSidebarPresented
+        )
         Group {
             #if os(iOS)
             if #available(iOS 16.0, *) {
@@ -37,6 +40,7 @@ private struct Layer4OuterSidebarOverlayHost<SidebarSheet: View, Detail: View>: 
             detailContent
             #endif
         }
+        .accessibilityHidden(accessibilityState.isUnderlyingContentAccessibilityHidden)
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Button {
@@ -49,6 +53,7 @@ private struct Layer4OuterSidebarOverlayHost<SidebarSheet: View, Detail: View>: 
         }
         .sheet(isPresented: $isOuterSidebarPresented) {
             sidebarSheet()
+                .accessibilityAddTraits(.isModal)
         }
         .automaticCompliance(named: complianceName)
     }
