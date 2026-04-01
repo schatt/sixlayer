@@ -54,9 +54,14 @@ final class Layer4UITests: XCTestCase {
     }
 
     /// iOS `Form` is backed by a table; swiping the first `scrollView` often does not scroll form rows (Issue #193).
+    /// When multiple `tables` exist, `firstMatch` is often a nested list (e.g. L4 overlay split), not the root `Form` — use the last table.
     @MainActor
     private func primaryScrollHost() -> XCUIElement {
-        if app.tables.firstMatch.exists { return app.tables.firstMatch }
+        let tables = app.tables
+        if tables.count > 1 {
+            return tables.element(boundBy: tables.count - 1)
+        }
+        if tables.firstMatch.exists { return tables.firstMatch }
         if app.scrollViews.firstMatch.exists { return app.scrollViews.firstMatch }
         return app.windows.firstMatch
     }
