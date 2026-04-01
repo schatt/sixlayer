@@ -22,7 +22,7 @@
 - [x] **#205** TDD: Resolver in `platformAppNavigation_L4` + parity with settings (`resolveAppNavigationShell`)
 - [x] **#206** Compact fallback: automatic preset + overlay outer sidebar (`NavigationLayoutCompactPresentation`)
 - [x] **#207** Accessibility hardening: overlay close semantics + modal/restore UI contract tests
-- [ ] **#208** Stress matrix: resolver API + overlay/detail churn tests + width-only doc (done); optional follow-up: Layer 4 `persistedPresentation` + UITests for RTL/Dynamic Type
+- [x] **#208** Stress matrix: resolver API + overlay/detail churn tests + width-only doc + Layer 4 measured-width `layer4CompactPresentationForTransition` wiring; optional: UITests for RTL/Dynamic Type
 - [ ] Run `swift test` to confirm everything passes
 - [x] Group current uncommitted changes in the v6.6.0 branch into small, logical commits
 - [ ] Adjust development workflow to encourage committing early and often (small, cohesive commits per TDD cycle)
