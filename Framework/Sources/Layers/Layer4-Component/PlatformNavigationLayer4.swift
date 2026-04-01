@@ -24,10 +24,11 @@ private struct Layer4OuterSidebarOverlayHost<SidebarSheet: View, Detail: View>: 
     @ViewBuilder
     private func overlaySheetContent() -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            Button("Close") {
+            Button {
                 isOuterSidebarPresented = false
+            } label: {
+                Text("Close sidebar")
             }
-            .accessibilityElement(children: .ignore)
             .accessibilityLabel("Close sidebar")
             .accessibilityHint("Dismisses the sidebar overlay and returns focus to the show sidebar button")
             .accessibilityIdentifier(layer4OverlayCloseSidebarAccessibilityIdentifier)
