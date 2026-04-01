@@ -437,7 +437,9 @@ extension XCTestCase {
     func addDefaultUIInterruptionMonitor() {
         addUIInterruptionMonitor(withDescription: "System alerts and dialogs") { (alert) -> Bool in
             return MainActor.assumeIsolated {
-                let alertText = alert.staticTexts.firstMatch.label
+                // Avoid querying alert descendants here; on newer runtimes this can throw
+                // snapshot type-mismatch errors for SwiftUI accessibility nodes.
+                let alertText = alert.label
                 guard alertText.contains("Bluetooth") || alertText.contains("CPU") || alertText.contains("Activity Monitor") else {
                     return false
                 }
