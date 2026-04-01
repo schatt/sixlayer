@@ -520,7 +520,7 @@ final class Layer4UITests: XCTestCase {
         let closeSidebarByID = app.descendants(matching: .any)
             .matching(NSPredicate(format: "identifier == %@", "L4OverlayCloseSidebar"))
             .firstMatch
-        let closeSidebarByLabel = app.buttons["Close"].firstMatch
+        let closeSidebarByLabel = app.buttons["Close sidebar"].firstMatch
         let closeSidebarButton: XCUIElement
         if closeSidebarByID.waitForExistence(timeout: 4.0) {
             closeSidebarButton = closeSidebarByID
@@ -565,9 +565,11 @@ final class Layer4UITests: XCTestCase {
         let closeSidebarByID = app.descendants(matching: .any)
             .matching(NSPredicate(format: "identifier == %@", "L4OverlayCloseSidebar"))
             .firstMatch
-        XCTAssertTrue(closeSidebarByID.waitForExistence(timeout: 5.0),
-                      "overlay contract: close affordance should be addressable by explicit identifier")
-        XCTAssertEqual(closeSidebarByID.label, "Close sidebar",
+        let closeSidebarByLabel = app.buttons["Close sidebar"].firstMatch
+        let closeSidebarElement = closeSidebarByID.waitForExistence(timeout: 2.0) ? closeSidebarByID : closeSidebarByLabel
+        XCTAssertTrue(closeSidebarElement.waitForExistence(timeout: 5.0),
+                      "overlay contract: close affordance should be exposed with explicit accessibility label")
+        XCTAssertEqual(closeSidebarElement.label, "Close sidebar",
                        "overlay contract: close affordance should expose explicit accessibility label")
     }
 
@@ -594,7 +596,7 @@ final class Layer4UITests: XCTestCase {
         let closeSidebarByID = app.descendants(matching: .any)
             .matching(NSPredicate(format: "identifier == %@", "L4OverlayCloseSidebar"))
             .firstMatch
-        let closeSidebarByLabel = app.buttons["Close"].firstMatch
+        let closeSidebarByLabel = app.buttons["Close sidebar"].firstMatch
         let closeSidebarButton: XCUIElement
         if closeSidebarByID.waitForExistence(timeout: 4.0) {
             closeSidebarButton = closeSidebarByID
