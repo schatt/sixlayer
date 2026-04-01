@@ -9,7 +9,7 @@
 - [x] **#191** Make `ExpandableCardComponent` a single tappable accessibility button with explicit card label
 - [x] **#192** Make accessibility identifier compliance tests robust via platform traversal + debug-log fallback
 - [ ] **#177** Fix remaining iOS ViewInspector/accessibility test failures (TDD green phase; commit/push per go workflow)
-- [ ] **#193** L4 UITests: iOS Form contract UI + ensureContractRoot/scroll fixes pushed; re-run SLF-iOS-UITests via MCP/CLI to confirm green
+- [ ] **#193** L4 UITests: table-first scroll + nav identifier tap (Form/table); re-run SLF-iOS-UITests to confirm green
 - [x] **#197** (slice) Category A UI backfill: exactNamed, accessibilityLabel row, outer manual Group id + tests (commit/push; issue commented)
 - [x] **#197** (slice) Global-off audit (`-CategoryAGlobalAutoOff`), empty identifierName row + UI tests
 - [x] Fix `ModalContainerTests.swift` missing closing brace (build error)
