@@ -216,4 +216,52 @@ struct NavigationLayoutResolverTests {
         )
         #expect(recovered == .fullSplit)
     }
+
+    @Test
+    func layer4CompactPresentationForTransition_preservesOverlay_whenChurningConstrainedWidths() {
+        let widths: [CGFloat] = [620, 700, 760, 680, 640]
+        var previous = NavigationLayoutCompactPresentation.overlayOuterSidebar
+
+        for width in widths {
+            previous = NavigationLayoutResolver.layer4CompactPresentationForTransition(
+                availableWidth: width,
+                previousPresentation: previous
+            )
+            #expect(previous == .overlayOuterSidebar, "width \(width)")
+        }
+    }
+
+    @Test
+    func layer4CompactPresentationForTransition_fromFullSplitUsesFreshMappingWhenConstrained() {
+        let constrained = NavigationLayoutResolver.layer4CompactPresentationForTransition(
+            availableWidth: 620,
+            previousPresentation: .fullSplit
+        )
+        #expect(constrained == NavigationLayoutResolver.layer4CompactPresentation(forAvailableWidth: 620))
+    }
+
+    @Test
+    func layer4CompactPresentationForTransition_isIdempotent_forSameWidthAndPrevious() {
+        let width: CGFloat = 900
+        let previous = NavigationLayoutCompactPresentation.overlayOuterSidebar
+        let once = NavigationLayoutResolver.layer4CompactPresentationForTransition(
+            availableWidth: width,
+            previousPresentation: previous
+        )
+        let twice = NavigationLayoutResolver.layer4CompactPresentationForTransition(
+            availableWidth: width,
+            previousPresentation: once
+        )
+        #expect(once == twice)
+    }
+
+    @Test
+    func resolveSettingsContainer_numericWidthOnly_invariantForMatrixSmoke() {
+        let w: CGFloat = 842
+        let a = NavigationLayoutResolver.resolveSettingsContainer(availableWidth: w)
+        let b = NavigationLayoutResolver.resolveSettingsContainer(availableWidth: w)
+        #expect(a == b)
+        #expect(NavigationLayoutResolver.layer4CompactPresentation(forAvailableWidth: w)
+            == NavigationLayoutResolver.layer4CompactPresentation(forAvailableWidth: w))
+    }
 }
