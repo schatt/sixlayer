@@ -12,6 +12,10 @@ import SwiftUI
 
 /// Detail-first shell with toolbar affordance and dismissible sheet for the outer sidebar (no column squeeze).
 private struct Layer4OuterSidebarOverlayHost<SidebarSheet: View, Detail: View>: View {
+    private enum AccessibilityIDs {
+        static let showSidebarButton = "L4OverlayShowSidebar"
+    }
+
     @State private var isOuterSidebarPresented = false
     let complianceName: String
     @ViewBuilder let sidebarSheet: () -> SidebarSheet
@@ -49,7 +53,7 @@ private struct Layer4OuterSidebarOverlayHost<SidebarSheet: View, Detail: View>: 
                     Image(systemName: "sidebar.left")
                 }
                 .accessibilityLabel("Show sidebar")
-                .accessibilityIdentifier("L4OverlayShowSidebar")
+                .accessibilityIdentifier(AccessibilityIDs.showSidebarButton)
             }
         }
         .sheet(isPresented: $isOuterSidebarPresented) {
