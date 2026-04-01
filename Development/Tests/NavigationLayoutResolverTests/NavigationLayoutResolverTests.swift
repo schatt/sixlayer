@@ -155,4 +155,36 @@ struct NavigationLayoutResolverTests {
         #expect(state.isUnderlyingContentAccessibilityHidden == false)
         #expect(state.focusTarget == .expandSidebarButton)
     }
+
+    @Test
+    func layer4OverlayAccessibilityTransition_movesFocusIntoOverlay_onPresent() {
+        let focus = NavigationLayoutResolver.layer4OverlayAccessibilityTransition(
+            previouslyPresented: false,
+            currentlyPresented: true
+        )
+        #expect(focus == .overlayContent)
+    }
+
+    @Test
+    func layer4OverlayAccessibilityTransition_returnsFocusToButton_onDismiss() {
+        let focus = NavigationLayoutResolver.layer4OverlayAccessibilityTransition(
+            previouslyPresented: true,
+            currentlyPresented: false
+        )
+        #expect(focus == .expandSidebarButton)
+    }
+
+    @Test
+    func layer4OverlayAccessibilityTransition_noFocusMove_whenStateUnchanged() {
+        let noChangeClosed = NavigationLayoutResolver.layer4OverlayAccessibilityTransition(
+            previouslyPresented: false,
+            currentlyPresented: false
+        )
+        let noChangeOpen = NavigationLayoutResolver.layer4OverlayAccessibilityTransition(
+            previouslyPresented: true,
+            currentlyPresented: true
+        )
+        #expect(noChangeClosed == nil)
+        #expect(noChangeOpen == nil)
+    }
 }
