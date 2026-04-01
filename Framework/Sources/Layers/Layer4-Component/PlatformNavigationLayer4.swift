@@ -27,6 +27,9 @@ private struct Layer4OuterSidebarOverlayHost<SidebarSheet: View, Detail: View>: 
             Button("Close") {
                 isOuterSidebarPresented = false
             }
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel("Close sidebar")
+            .accessibilityHint("Dismisses the sidebar overlay and returns focus to the show sidebar button")
             .accessibilityIdentifier(layer4OverlayCloseSidebarAccessibilityIdentifier)
             sidebarSheet()
         }
