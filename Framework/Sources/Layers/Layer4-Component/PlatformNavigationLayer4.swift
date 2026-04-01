@@ -12,6 +12,7 @@ import SwiftUI
 
 private let layer4OverlayShowSidebarAccessibilityIdentifier = "L4OverlayShowSidebar"
 private let layer4OverlayCloseSidebarAccessibilityIdentifier = "L4OverlayCloseSidebar"
+private let layer4OverlayModalRootAccessibilityIdentifier = "L4OverlayModalRoot"
 
 /// Detail-first shell with toolbar affordance and dismissible sheet for the outer sidebar (no column squeeze).
 private struct Layer4OuterSidebarOverlayHost<SidebarSheet: View, Detail: View>: View {
@@ -30,6 +31,7 @@ private struct Layer4OuterSidebarOverlayHost<SidebarSheet: View, Detail: View>: 
             sidebarSheet()
         }
         .padding()
+        .accessibilityIdentifier(layer4OverlayModalRootAccessibilityIdentifier)
         .accessibilityAddTraits(.isModal)
     }
 
