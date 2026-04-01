@@ -141,4 +141,18 @@ struct NavigationLayoutResolverTests {
             #expect(actual == expected, "width \(width)")
         }
     }
+
+    @Test
+    func layer4OverlayAccessibilityState_hidesUnderlyingContent_whenPresented() {
+        let state = NavigationLayoutResolver.layer4OverlayAccessibilityState(isOverlayPresented: true)
+        #expect(state.isUnderlyingContentAccessibilityHidden)
+        #expect(state.focusTarget == .overlayContent)
+    }
+
+    @Test
+    func layer4OverlayAccessibilityState_showsUnderlyingContent_whenDismissed() {
+        let state = NavigationLayoutResolver.layer4OverlayAccessibilityState(isOverlayPresented: false)
+        #expect(state.isUnderlyingContentAccessibilityHidden == false)
+        #expect(state.focusTarget == .expandSidebarButton)
+    }
 }
