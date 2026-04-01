@@ -81,6 +81,96 @@ private struct Layer4OuterSidebarOverlayHost<SidebarSheet: View, Detail: View>: 
     }
 }
 
+// MARK: - Layer 4 measured split shell (issue #208)
+
+/// Hosts nested split shells with **container width** from `GeometryReader` and
+/// `NavigationLayoutResolver.layer4CompactPresentationForTransition` so resize churn does not thrash modes.
+private struct Layer4NestedSplitShellPresentationHost<Sidebar: View, Detail: View>: View {
+    enum ShellKind: Equatable {
+        case appNavigation
+        case appNavigationMacOS12
+        case settingsIPad
+        case settingsMacOS
+    }
+
+    @State private var persistedPresentation: NavigationLayoutCompactPresentation?
+    let kind: ShellKind
+    let columnVisibility: Binding<NavigationSplitViewVisibility>?
+    let sidebar: () -> Sidebar
+    let detail: () -> Detail
+
+    init(
+        kind: ShellKind,
+        columnVisibility: Binding<NavigationSplitViewVisibility>?,
+        @ViewBuilder sidebar: @escaping () -> Sidebar,
+        @ViewBuilder detail: @escaping () -> Detail
+    ) {
+        self.kind = kind
+        self.columnVisibility = columnVisibility
+        self.sidebar = sidebar
+        self.detail = detail
+    }
+
+    var body: some View {
+        GeometryReader { geo in
+            let width = max(0, geo.size.width)
+            let fresh = NavigationLayoutResolver.layer4CompactPresentation(forAvailableWidth: width)
+            let prev = persistedPresentation ?? fresh
+            let presentation = NavigationLayoutResolver.layer4CompactPresentationForTransition(
+                availableWidth: width,
+                previousPresentation: prev
+            )
+            shellContent(presentation: presentation)
+                .task(id: widthTaskID(width)) {
+                    let f = NavigationLayoutResolver.layer4CompactPresentation(forAvailableWidth: width)
+                    let p = persistedPresentation ?? f
+                    persistedPresentation = NavigationLayoutResolver.layer4CompactPresentationForTransition(
+                        availableWidth: width,
+                        previousPresentation: p
+                    )
+                }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    private func widthTaskID(_ w: CGFloat) -> Int {
+        Int((w * 100).rounded(.towardZero))
+    }
+
+    @ViewBuilder
+    private func shellContent(presentation: NavigationLayoutCompactPresentation) -> some View {
+        switch kind {
+        case .appNavigation:
+            EmptyView().layer4CreateAppNavigationSplitView(
+                presentation: presentation,
+                columnVisibility: columnVisibility,
+                sidebar: sidebar,
+                detail: detail
+            )
+        case .appNavigationMacOS12:
+            EmptyView().layer4CreateAppNavigationMacOS12Split(
+                presentation: presentation,
+                sidebar: sidebar,
+                detail: detail
+            )
+        case .settingsIPad:
+            EmptyView().layer4CreateSettingsContainerForiPad(
+                presentation: presentation,
+                columnVisibility: columnVisibility,
+                sidebar: sidebar,
+                detail: detail
+            )
+        case .settingsMacOS:
+            EmptyView().layer4CreateSettingsContainerForMacOS(
+                presentation: presentation,
+                columnVisibility: columnVisibility,
+                sidebar: sidebar,
+                detail: detail
+            )
+        }
+    }
+}
+
 public extension View {
     
     /// Platform-specific navigation wrapper that provides consistent navigation patterns
@@ -525,12 +615,6 @@ public extension View {
 
     // MARK: - Layer 4 nested split shell (app + settings)
 
-    private func layer4NestedSplitShellResolution() -> NavigationLayoutResolution {
-        NavigationLayoutResolver.resolveAppNavigationShell(
-            availableWidth: DeviceCapabilities().screenSize.width
-        )
-    }
-
     @ViewBuilder
     private func layer4ResolverDetailOnly<DetailContent: View>(
         complianceName: String,
@@ -555,13 +639,13 @@ public extension View {
     }
 
     @ViewBuilder
-    private func createAppNavigationSplitView<SidebarContent: View, DetailContent: View>(
-        layoutResolution: NavigationLayoutResolution,
+    fileprivate func layer4CreateAppNavigationSplitView<SidebarContent: View, DetailContent: View>(
+        presentation: NavigationLayoutCompactPresentation,
         columnVisibility: Binding<NavigationSplitViewVisibility>?,
         @ViewBuilder sidebar: () -> SidebarContent,
         @ViewBuilder detail: () -> DetailContent
     ) -> some View {
-        switch NavigationLayoutCompactPresentation(resolution: layoutResolution) {
+        switch presentation {
         case .fullSplit:
             createNavigationSplitView(
                 columnVisibility: columnVisibility,
@@ -581,12 +665,12 @@ public extension View {
     }
 
     @ViewBuilder
-    private func createAppNavigationMacOS12Split<SidebarContent: View, DetailContent: View>(
-        layoutResolution: NavigationLayoutResolution,
+    fileprivate func layer4CreateAppNavigationMacOS12Split<SidebarContent: View, DetailContent: View>(
+        presentation: NavigationLayoutCompactPresentation,
         @ViewBuilder sidebar: () -> SidebarContent,
         @ViewBuilder detail: () -> DetailContent
     ) -> some View {
-        switch NavigationLayoutCompactPresentation(resolution: layoutResolution) {
+        switch presentation {
         case .fullSplit:
             platformHStackContainer(spacing: 0) {
                 sidebar()
@@ -611,14 +695,15 @@ public extension View {
         @ViewBuilder sidebar: () -> SidebarContent,
         @ViewBuilder detail: () -> DetailContent
     ) -> some View {
-        let layoutResolution = layer4NestedSplitShellResolution()
         #if os(iOS)
         if #available(iOS 16.0, *) {
-            createAppNavigationSplitView(
-                layoutResolution: layoutResolution,
+            let sidebarView = sidebar()
+            let detailView = detail()
+            Layer4NestedSplitShellPresentationHost(
+                kind: .appNavigation,
                 columnVisibility: columnVisibility,
-                sidebar: sidebar,
-                detail: detail
+                sidebar: { sidebarView },
+                detail: { detailView }
             )
         } else {
             let sidebarContent = sidebar()
@@ -630,17 +715,22 @@ public extension View {
         }
         #elseif os(macOS)
         if #available(macOS 13.0, *) {
-            createAppNavigationSplitView(
-                layoutResolution: layoutResolution,
+            let sidebarView = sidebar()
+            let detailView = detail()
+            Layer4NestedSplitShellPresentationHost(
+                kind: .appNavigation,
                 columnVisibility: columnVisibility,
-                sidebar: sidebar,
-                detail: detail
+                sidebar: { sidebarView },
+                detail: { detailView }
             )
         } else {
-            createAppNavigationMacOS12Split(
-                layoutResolution: layoutResolution,
-                sidebar: sidebar,
-                detail: detail
+            let sidebarView = sidebar()
+            let detailView = detail()
+            Layer4NestedSplitShellPresentationHost(
+                kind: .appNavigationMacOS12,
+                columnVisibility: columnVisibility,
+                sidebar: { sidebarView },
+                detail: { detailView }
             )
         }
         #else
@@ -796,13 +886,13 @@ public extension View {
     ///   - detail: View builder for detail content
     /// - Returns: NavigationSplitView on iOS 16+, NavigationView on iOS 15
     @ViewBuilder
-    private func createSettingsContainerForiPad<Sidebar: View, Detail: View>(
-        layoutResolution: NavigationLayoutResolution,
+    fileprivate func layer4CreateSettingsContainerForiPad<Sidebar: View, Detail: View>(
+        presentation: NavigationLayoutCompactPresentation,
         columnVisibility: Binding<NavigationSplitViewVisibility>?,
         @ViewBuilder sidebar: () -> Sidebar,
         @ViewBuilder detail: () -> Detail
     ) -> some View {
-        switch NavigationLayoutCompactPresentation(resolution: layoutResolution) {
+        switch presentation {
         case .fullSplit:
             if #available(iOS 16.0, *) {
                 createNavigationSplitView(
@@ -873,13 +963,13 @@ public extension View {
     ///   - detail: View builder for detail content
     /// - Returns: NavigationSplitView on macOS 13+, HStack on macOS 12
     @ViewBuilder
-    private func createSettingsContainerForMacOS<Sidebar: View, Detail: View>(
-        layoutResolution: NavigationLayoutResolution,
+    fileprivate func layer4CreateSettingsContainerForMacOS<Sidebar: View, Detail: View>(
+        presentation: NavigationLayoutCompactPresentation,
         columnVisibility: Binding<NavigationSplitViewVisibility>?,
         @ViewBuilder sidebar: () -> Sidebar,
         @ViewBuilder detail: () -> Detail
     ) -> some View {
-        switch NavigationLayoutCompactPresentation(resolution: layoutResolution) {
+        switch presentation {
         case .fullSplit:
             if #available(macOS 13.0, *) {
                 createNavigationSplitView(
@@ -1082,17 +1172,18 @@ public extension View {
         @ViewBuilder detail: () -> Detail
     ) -> some View {
         let deviceType = DeviceType.current
-        let layoutResolution = layer4NestedSplitShellResolution()
         
         #if os(iOS)
         switch deviceType {
         case .pad:
             // iPad: Use NavigationSplitView
-            createSettingsContainerForiPad(
-                layoutResolution: layoutResolution,
+            let sidebarView = sidebar()
+            let detailView = detail()
+            Layer4NestedSplitShellPresentationHost(
+                kind: .settingsIPad,
                 columnVisibility: columnVisibility,
-                sidebar: sidebar,
-                detail: detail
+                sidebar: { sidebarView },
+                detail: { detailView }
             )
             
         case .phone:
@@ -1110,11 +1201,13 @@ public extension View {
         }
         #elseif os(macOS)
         // macOS: Always use NavigationSplitView
-        createSettingsContainerForMacOS(
-            layoutResolution: layoutResolution,
+        let sidebarView = sidebar()
+        let detailView = detail()
+        Layer4NestedSplitShellPresentationHost(
+            kind: .settingsMacOS,
             columnVisibility: columnVisibility,
-            sidebar: sidebar,
-            detail: detail
+            sidebar: { sidebarView },
+            detail: { detailView }
         )
         #else
         // Other platforms: Default to sidebar
