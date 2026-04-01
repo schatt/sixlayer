@@ -60,7 +60,11 @@ final class Layer4UITests: XCTestCase {
         if app.staticTexts[label].waitForExistence(timeout: 1.0) { return }
         if app.buttons[label].waitForExistence(timeout: 2.0) { return }
         if element(matchingIdentifier: label).waitForExistence(timeout: 1.0) { return }
-        let scrollable: XCUIElement = app.scrollViews.firstMatch.exists ? app.scrollViews.firstMatch : app.windows.firstMatch
+        let scrollable: XCUIElement = {
+            if app.scrollViews.firstMatch.exists { return app.scrollViews.firstMatch }
+            if app.tables.firstMatch.exists { return app.tables.firstMatch }
+            return app.windows.firstMatch
+        }()
         guard scrollable.exists else { return }
         for _ in 0..<5 {
             scrollable.swipeUp()
@@ -141,21 +145,31 @@ final class Layer4UITests: XCTestCase {
         XCTAssertTrue(app.navigationBars["Layer 4 Examples"].waitForExistence(timeout: 6.0),
                       "Contract root: Layer 4 Examples nav bar should exist")
         func contractTopVisible() -> Bool {
-            app.staticTexts["L4 Presentation"].waitForExistence(timeout: 0.3)
-                || app.staticTexts["L4 System"].waitForExistence(timeout: 0.3)
+            if app.staticTexts["L4 Presentation"].waitForExistence(timeout: 0.3) { return true }
+            if app.staticTexts["L4 System"].waitForExistence(timeout: 0.3) { return true }
+            // iOS root `Form`: section titles are not always `staticTexts`; sheet button is a stable top anchor (Issue #193).
+            if app.buttons["L4ContractSheet"].waitForExistence(timeout: 0.3) { return true }
+            if element(matchingIdentifier: "L4ContractSheet").waitForExistence(timeout: 0.3) { return true }
+            return false
         }
         if contractTopVisible() { return }
-        let scrollable = app.scrollViews.firstMatch
-        if scrollable.exists {
-            for _ in 0..<6 {
-                scrollable.swipeDown()
+        let scrollHost: XCUIElement = {
+            if app.scrollViews.firstMatch.exists { return app.scrollViews.firstMatch }
+            if app.tables.firstMatch.exists { return app.tables.firstMatch }
+            return app.windows.firstMatch
+        }()
+        if scrollHost.exists {
+            for _ in 0..<8 {
+                scrollHost.swipeDown()
                 if contractTopVisible() { return }
             }
         }
         XCTAssertTrue(
-            app.staticTexts["L4 Presentation"].waitForExistence(timeout: 5.0)
-                || app.staticTexts["L4 System"].waitForExistence(timeout: 0.5),
-            "Contract root (L4 Presentation or L4 System) should be visible after scroll to top"
+            app.staticTexts["L4 Presentation"].waitForExistence(timeout: 3.0)
+                || app.staticTexts["L4 System"].waitForExistence(timeout: 0.5)
+                || app.buttons["L4ContractSheet"].waitForExistence(timeout: 3.0)
+                || element(matchingIdentifier: "L4ContractSheet").waitForExistence(timeout: 2.0),
+            "Contract root (L4 Presentation, L4 System, or L4 sheet trigger) should be visible after scroll to top"
         )
     }
 
