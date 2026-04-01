@@ -471,21 +471,21 @@ public func findAllAccessibilityIdentifiersFromPlatformView(_ root: Any?) -> [St
     // Check root view and its accessibility-related elements
     addIdentifiers(from: rootView)
 
-    // Search through all subviews
+    // Search through all subviews (tree depth vs visit count: previously `depth` incremented every
+    // pop and capped at 20, so only ~20 views were ever visited — platform a11y IDs were often missed; Issue #193 / ViewInspector suite).
     // 6LAYER_ALLOW: test utilities must traverse platform-specific view hierarchies for accessibility testing
-    var stack: [UIView] = rootView.subviews
-    var depth = 0
+    let maxTreeDepth = 40
+    var stack: [(UIView, Int)] = rootView.subviews.map { ($0, 1) }
     var checkedViews: Set<ObjectIdentifier> = []
     var viewCount = 0
-    let maxViews = 500 // Reduced limit to prevent hangs on very complex hierarchies
+    let maxViews = 500 // Cap total visits to prevent hangs on very complex hierarchies
     
-    while let next = stack.popLast(), depth < 20, viewCount < maxViews {
+    while let (next, treeDepth) = stack.popLast(), viewCount < maxViews {
         viewCount += 1
         let nextId = ObjectIdentifier(next)
         if checkedViews.contains(nextId) {
             continue
         }
-        // Prevent infinite loops from circular references
         if checkedViews.count > maxViews {
             break
         }
@@ -493,16 +493,13 @@ public func findAllAccessibilityIdentifiersFromPlatformView(_ root: Any?) -> [St
         
         addIdentifiers(from: next)
         
-        // 6LAYER_ALLOW: test utilities must traverse platform-specific view hierarchies for accessibility testing
-        // Limit subviews to prevent excessive traversal
+        guard treeDepth < maxTreeDepth else { continue }
         let subviews = next.subviews
-        if subviews.count > 20 {
-            // For views with many subviews, only check first 20 to prevent hangs
-            stack.append(contentsOf: subviews.prefix(20))
-        } else {
-            stack.append(contentsOf: subviews)
+        let children: ArraySlice<UIView> = subviews.count > 20 ? subviews.prefix(20) : subviews[...]
+        let childDepth = treeDepth + 1
+        for sub in children {
+            stack.append((sub, childDepth))
         }
-        depth += 1
     }
     
     return Array(identifiers)
@@ -516,21 +513,20 @@ public func findAllAccessibilityIdentifiersFromPlatformView(_ root: Any?) -> [St
         identifiers.insert(rootId)
     }
 
-    // Search through all subviews
+    // Same tree-depth fix as UIKit: do not treat visit count as "depth" (was capping at ~20 views total).
     // 6LAYER_ALLOW: test utilities must traverse platform-specific view hierarchies for accessibility testing
-    var stack: [NSView] = rootView.subviews
-    var depth = 0
+    let maxTreeDepth = 40
+    var stack: [(NSView, Int)] = rootView.subviews.map { ($0, 1) }
     var checkedViews: Set<ObjectIdentifier> = []
     var viewCount = 0
-    let maxViews = 500 // Reduced limit to prevent hangs on very complex hierarchies
+    let maxViews = 500
     
-    while let next = stack.popLast(), depth < 20, viewCount < maxViews {
+    while let (next, treeDepth) = stack.popLast(), viewCount < maxViews {
         viewCount += 1
         let nextId = ObjectIdentifier(next)
         if checkedViews.contains(nextId) {
             continue
         }
-        // Prevent infinite loops from circular references
         if checkedViews.count > maxViews {
             break
         }
@@ -541,16 +537,13 @@ public func findAllAccessibilityIdentifiersFromPlatformView(_ root: Any?) -> [St
             identifiers.insert(id)
         }
         
-        // 6LAYER_ALLOW: test utilities must traverse platform-specific view hierarchies for accessibility testing
-        // Limit subviews to prevent excessive traversal
+        guard treeDepth < maxTreeDepth else { continue }
         let subviews = next.subviews
-        if subviews.count > 20 {
-            // For views with many subviews, only check first 20 to prevent hangs
-            stack.append(contentsOf: subviews.prefix(20))
-        } else {
-            stack.append(contentsOf: subviews)
+        let children: ArraySlice<NSView> = subviews.count > 20 ? subviews.prefix(20) : subviews[...]
+        let childDepth = treeDepth + 1
+        for sub in children {
+            stack.append((sub, childDepth))
         }
-        depth += 1
     }
     
     return Array(identifiers)
