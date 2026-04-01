@@ -553,9 +553,9 @@ final class Layer4UITests: XCTestCase {
                       "overlay contract: explicit expand affordance button should exist")
         tapByNormalizedCenter(showSidebarButton)
 
-        let closeSidebarButton = app.buttons["L4OverlayCloseSidebar"].firstMatch
-        XCTAssertTrue(closeSidebarButton.waitForExistence(timeout: 4.0),
-                      "overlay contract: explicit close affordance should exist in overlay")
+        let modalRoot = app.otherElements["L4OverlayModalRoot"].firstMatch
+        XCTAssertTrue(modalRoot.waitForExistence(timeout: 5.0),
+                      "overlay contract: modal root should be exposed while overlay is active before dismiss")
 
         let sidebarContentAny = app.descendants(matching: .any)
             .matching(NSPredicate(format: "identifier == %@", "L4OverlaySidebarContent"))
@@ -563,9 +563,12 @@ final class Layer4UITests: XCTestCase {
         XCTAssertTrue(sidebarContentAny.waitForExistence(timeout: 4.0),
                       "overlay contract: sidebar content should be exposed while overlay is active before dismiss")
 
+        let closeSidebarButton = app.buttons["L4OverlayCloseSidebar"].firstMatch
+        XCTAssertTrue(closeSidebarButton.waitForExistence(timeout: 4.0),
+                      "overlay contract: explicit close affordance should exist in overlay")
+
         tapByNormalizedCenter(closeSidebarButton)
 
-        let modalRoot = app.otherElements["L4OverlayModalRoot"].firstMatch
         XCTAssertFalse(modalRoot.waitForExistence(timeout: 2.0),
                        "overlay contract: modal root should be removed after dismiss")
         XCTAssertFalse(sidebarContentAny.waitForExistence(timeout: 2.0),
