@@ -504,6 +504,30 @@ final class Layer4UITests: XCTestCase {
                        "overlay contract: underlying detail action should not be hittable while overlay is active")
     }
 
+    @MainActor
+    func testL4_overlayAccessibility_returnsFocusToExpandButton_onDismiss() throws {
+        ensureContractRoot()
+        scrollToElement(label: "L4 Overlay Accessibility")
+
+        let showSidebarButton = app.buttons["L4OverlayShowSidebar"].firstMatch
+        XCTAssertTrue(showSidebarButton.waitForExistence(timeout: 6.0),
+                      "overlay contract: explicit expand affordance button should exist")
+
+        tapByNormalizedCenter(showSidebarButton)
+        XCTAssertTrue(app.staticTexts["L4OverlaySidebarContent"].waitForExistence(timeout: 5.0),
+                      "overlay contract: sidebar content should be presented in overlay")
+
+        let closeSidebarButton = app.buttons["L4OverlayCloseSidebar"].firstMatch
+        XCTAssertTrue(closeSidebarButton.waitForExistence(timeout: 4.0),
+                      "overlay contract: explicit close affordance should exist in overlay")
+        tapByNormalizedCenter(closeSidebarButton)
+
+        XCTAssertTrue(showSidebarButton.waitForExistence(timeout: 4.0),
+                      "overlay contract: expand affordance should remain available after dismiss")
+        XCTAssertTrue(showSidebarButton.isHittable,
+                      "overlay contract: focus/interaction should return to expand affordance after dismiss")
+    }
+
     // MARK: - System (Copy, Print, Share)
 
     @MainActor
