@@ -80,8 +80,13 @@ struct AccessibilityIdentifierCategoryAUDITView: View {
 
                 // exactNamed: minimal identifier string (no namespace) — audit exactNamed* / minimal IDs.
                 sectionCaption("exactNamed (minimal identifier)")
-                platformText("Exact named minimal")
-                    .exactNamed("CatAExactNamed")
+                Group {
+                    platformText("Exact named minimal")
+                        .exactNamed("CatAExactNamed")
+                }
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel("Exact named minimal")
+                .accessibilityIdentifier("CatAExactNamed")
 
                 // accessibilityLabel parameter (AutomaticAccessibilityLabelTests / VoiceOver string).
                 sectionCaption("Explicit accessibilityLabel (basicAutomaticCompliance)")
@@ -101,6 +106,8 @@ struct AccessibilityIdentifierCategoryAUDITView: View {
                             identifierElementType: "Text"
                         )
                 }
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel("Manual wins on wrapper")
                 .accessibilityIdentifier("CatAManualWinsOnOuter")
 
                 // Empty identifierName: generator falls back to "element" and includes sanitized label (audit empty string).
