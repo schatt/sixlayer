@@ -207,7 +207,11 @@ public enum NavigationLayoutResolver {
     public static func layer4OverlayAccessibilityState(isOverlayPresented: Bool) -> Layer4OverlayAccessibilityState {
         Layer4OverlayAccessibilityState(
             isUnderlyingContentAccessibilityHidden: isOverlayPresented,
-            focusTarget: isOverlayPresented ? .overlayContent : .expandSidebarButton
+            focusTarget: layer4OverlayFocusTarget(isOverlayPresented: isOverlayPresented)
         )
+    }
+
+    private static func layer4OverlayFocusTarget(isOverlayPresented: Bool) -> Layer4OverlayFocusTarget {
+        isOverlayPresented ? .overlayContent : .expandSidebarButton
     }
 }
