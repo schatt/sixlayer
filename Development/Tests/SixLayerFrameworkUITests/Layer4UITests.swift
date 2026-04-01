@@ -553,6 +553,25 @@ final class Layer4UITests: XCTestCase {
     }
 
     @MainActor
+    func testL4_overlayAccessibility_closeAffordanceHasExplicitAccessibilityLabel() throws {
+        ensureContractRoot()
+        scrollToElement(label: "L4 Overlay Accessibility")
+
+        let showSidebarButton = app.buttons["L4OverlayShowSidebar"].firstMatch
+        XCTAssertTrue(showSidebarButton.waitForExistence(timeout: 6.0),
+                      "overlay contract: explicit expand affordance button should exist")
+        tapByNormalizedCenter(showSidebarButton)
+
+        let closeSidebarByID = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "identifier == %@", "L4OverlayCloseSidebar"))
+            .firstMatch
+        XCTAssertTrue(closeSidebarByID.waitForExistence(timeout: 5.0),
+                      "overlay contract: close affordance should be addressable by explicit identifier")
+        XCTAssertEqual(closeSidebarByID.label, "Close sidebar",
+                       "overlay contract: close affordance should expose explicit accessibility label")
+    }
+
+    @MainActor
     func testL4_overlayAccessibility_sidebarContentHidden_afterDismiss() throws {
         ensureContractRoot()
         scrollToElement(label: "L4 Overlay Accessibility")
