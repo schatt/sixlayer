@@ -53,6 +53,14 @@ final class Layer4UITests: XCTestCase {
         "SixLayer.main.ui.\(sanitizedName).\(elementType)"
     }
 
+    /// iOS `Form` is backed by a table; swiping the first `scrollView` often does not scroll form rows (Issue #193).
+    @MainActor
+    private func primaryScrollHost() -> XCUIElement {
+        if app.tables.firstMatch.exists { return app.tables.firstMatch }
+        if app.scrollViews.firstMatch.exists { return app.scrollViews.firstMatch }
+        return app.windows.firstMatch
+    }
+
     /// Scroll so the element with the given label is visible (content may be below fold).
     /// Uses longer initial wait for buttons so top-of-screen elements (e.g. L4 Presentation) are not skipped.
     @MainActor
@@ -61,11 +69,7 @@ final class Layer4UITests: XCTestCase {
         if app.buttons[label].waitForExistence(timeout: 2.0) { return }
         if app.links[label].waitForExistence(timeout: 1.0) { return }
         if element(matchingIdentifier: label).waitForExistence(timeout: 1.0) { return }
-        let scrollable: XCUIElement = {
-            if app.scrollViews.firstMatch.exists { return app.scrollViews.firstMatch }
-            if app.tables.firstMatch.exists { return app.tables.firstMatch }
-            return app.windows.firstMatch
-        }()
+        let scrollable = primaryScrollHost()
         guard scrollable.exists else { return }
         for _ in 0..<5 {
             scrollable.swipeUp()
@@ -154,11 +158,7 @@ final class Layer4UITests: XCTestCase {
             return false
         }
         if contractTopVisible() { return }
-        let scrollHost: XCUIElement = {
-            if app.scrollViews.firstMatch.exists { return app.scrollViews.firstMatch }
-            if app.tables.firstMatch.exists { return app.tables.firstMatch }
-            return app.windows.firstMatch
-        }()
+        let scrollHost = primaryScrollHost()
         if scrollHost.exists {
             for _ in 0..<8 {
                 scrollHost.swipeDown()
@@ -435,7 +435,10 @@ final class Layer4UITests: XCTestCase {
         }
         scrollToElement(label: "L4 Navigation")
         scrollToElement(label: "L4NavLinkContract")
-        if app.links["L4NavLinkContract"].waitForExistence(timeout: 2.0) {
+        let navById = element(matchingIdentifier: "L4NavLinkContract")
+        if navById.waitForExistence(timeout: 3.0) {
+            tapByNormalizedCenter(navById)
+        } else if app.links["L4NavLinkContract"].waitForExistence(timeout: 2.0) {
             app.links["L4NavLinkContract"].firstMatch.tap()
         } else if app.staticTexts["L4NavLinkContract"].waitForExistence(timeout: 3.0) {
             tapByNormalizedCenter(app.staticTexts["L4NavLinkContract"].firstMatch)
@@ -461,7 +464,10 @@ final class Layer4UITests: XCTestCase {
         }
         scrollToElement(label: "L4 Navigation")
         scrollToElement(label: "L4NavLinkContract")
-        if app.links["L4NavLinkContract"].waitForExistence(timeout: 2.0) {
+        let navByIdLink = element(matchingIdentifier: "L4NavLinkContract")
+        if navByIdLink.waitForExistence(timeout: 3.0) {
+            tapByNormalizedCenter(navByIdLink)
+        } else if app.links["L4NavLinkContract"].waitForExistence(timeout: 2.0) {
             app.links["L4NavLinkContract"].firstMatch.tap()
         } else if app.staticTexts["L4NavLinkContract"].waitForExistence(timeout: 3.0) {
             tapByNormalizedCenter(app.staticTexts["L4NavLinkContract"].firstMatch)
