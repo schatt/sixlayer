@@ -196,6 +196,8 @@ public final class AccessibilityIdentifierConfig: @unchecked Sendable {
         currentScreenContext = nil
         enableDebugLogging = false
         mode = .automatic
+        enableUITestIntegration = false
+        enableViewHierarchyTracking = false
         // CRITICAL: Clear accumulating data stores to prevent test state leakage
         debugLogEntries.removeAll()  // Clear debug log accumulation
     }
