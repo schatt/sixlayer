@@ -719,6 +719,12 @@ struct Layer4ContractOnlyView: View {
     @State private var l4ShowPopover = false
     @State private var l4ContractCopySource = "L4CopyContractText"
     @State private var l4ShowPrint = false
+    @State private var l4OverlayColumnVisibility = NavigationSplitViewVisibility.automatic
+    @State private var l4OverlayNavigationSheet = false
+    private let l4OverlayStrategy = AppNavigationStrategy(
+        implementation: .splitView,
+        reasoning: "L4 overlay accessibility contract"
+    )
 
     /// Section title styling aligned with ExampleSection (scroll layout).
     @ViewBuilder
@@ -748,6 +754,34 @@ struct Layer4ContractOnlyView: View {
             Text("L4NavLinkContract")
         }
         .accessibilityIdentifier("L4NavLinkContract")
+    }
+
+    @ViewBuilder
+    private var contractOverlayAccessibilityContent: some View {
+        EmptyView()
+            .platformAppNavigation_L4(
+                columnVisibility: $l4OverlayColumnVisibility,
+                showingNavigationSheet: $l4OverlayNavigationSheet,
+                strategy: l4OverlayStrategy,
+                sidebar: {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("L4OverlaySidebarContent")
+                            .accessibilityIdentifier("L4OverlaySidebarContent")
+                        Text("Overlay menu")
+                    }
+                    .padding()
+                },
+                detail: {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("L4OverlayDetailContent")
+                            .accessibilityIdentifier("L4OverlayDetailContent")
+                        Button("L4OverlayDetailAction") { }
+                            .accessibilityIdentifier("L4OverlayDetailAction")
+                    }
+                    .padding()
+                }
+            )
+            .frame(height: 180)
     }
 
     @ViewBuilder
@@ -869,6 +903,11 @@ struct Layer4ContractOnlyView: View {
                     contractSectionHeader("L4 Navigation")
                 }
                 Section {
+                    contractOverlayAccessibilityContent
+                } header: {
+                    contractSectionHeader("L4 Overlay Accessibility")
+                }
+                Section {
                     contractSystemContent
                 } header: {
                     contractSectionHeader("L4 System")
@@ -899,6 +938,9 @@ struct Layer4ContractOnlyView: View {
                     }
                     ExampleSection(title: "L4 Navigation") {
                         contractNavigationContent
+                    }
+                    ExampleSection(title: "L4 Overlay Accessibility") {
+                        contractOverlayAccessibilityContent
                     }
                     ExampleSection(title: "L4 System") {
                         contractSystemContent
