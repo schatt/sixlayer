@@ -203,6 +203,25 @@ public enum NavigationLayoutResolver {
         NavigationLayoutCompactPresentation(resolution: resolveSettingsContainer(availableWidth: width))
     }
 
+    /// Layer 4 compact presentation after a resize, using the previous UI mode to avoid thrashing (issue #208).
+    ///
+    /// When the width budget fits a full split, always returns ``NavigationLayoutCompactPresentation/fullSplit``.
+    /// When constrained, if the shell was already in ``NavigationLayoutCompactPresentation/detailOnlyCollapsedInner``,
+    /// that mode is preserved across rapid width changes; otherwise the current resolution mapping applies.
+    public static func layer4CompactPresentationForTransition(
+        availableWidth: CGFloat,
+        previousPresentation: NavigationLayoutCompactPresentation
+    ) -> NavigationLayoutCompactPresentation {
+        let fresh = layer4CompactPresentation(forAvailableWidth: availableWidth)
+        if fresh == .fullSplit {
+            return .fullSplit
+        }
+        if previousPresentation == .detailOnlyCollapsedInner {
+            return .detailOnlyCollapsedInner
+        }
+        return fresh
+    }
+
     /// Deterministic accessibility state for Layer 4 overlay open/close transitions (issue #207).
     public static func layer4OverlayAccessibilityState(isOverlayPresented: Bool) -> Layer4OverlayAccessibilityState {
         Layer4OverlayAccessibilityState(
@@ -216,7 +235,6 @@ public enum NavigationLayoutResolver {
     }
 
     /// Transition-level focus handoff for overlay open/close.
-    /// Stubbed for TDD red phase; intentionally incomplete.
     public static func layer4OverlayAccessibilityTransition(
         previouslyPresented: Bool,
         currentlyPresented: Bool
