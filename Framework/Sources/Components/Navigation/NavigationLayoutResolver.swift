@@ -69,6 +69,16 @@ public enum NavigationLayoutCompactPresentation: Sendable, Equatable {
     case overlayOuterSidebar
 }
 
+public enum Layer4OverlayFocusTarget: Sendable, Equatable {
+    case expandSidebarButton
+    case overlayContent
+}
+
+public struct Layer4OverlayAccessibilityState: Sendable, Equatable {
+    public let isUnderlyingContentAccessibilityHidden: Bool
+    public let focusTarget: Layer4OverlayFocusTarget
+}
+
 public extension NavigationLayoutCompactPresentation {
     init(resolution: NavigationLayoutResolution) {
         switch resolution.mode {
@@ -191,5 +201,13 @@ public enum NavigationLayoutResolver {
     /// Canonical Layer 4 UI presentation for `availableWidth` (issue #206).
     public static func layer4CompactPresentation(forAvailableWidth width: CGFloat) -> NavigationLayoutCompactPresentation {
         NavigationLayoutCompactPresentation(resolution: resolveSettingsContainer(availableWidth: width))
+    }
+
+    /// Deterministic accessibility state for Layer 4 overlay open/close transitions (issue #207).
+    public static func layer4OverlayAccessibilityState(isOverlayPresented: Bool) -> Layer4OverlayAccessibilityState {
+        Layer4OverlayAccessibilityState(
+            isUnderlyingContentAccessibilityHidden: isOverlayPresented,
+            focusTarget: isOverlayPresented ? .overlayContent : .expandSidebarButton
+        )
     }
 }
