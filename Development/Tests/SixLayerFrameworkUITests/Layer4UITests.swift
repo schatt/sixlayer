@@ -517,9 +517,18 @@ final class Layer4UITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["L4OverlaySidebarContent"].waitForExistence(timeout: 5.0),
                       "overlay contract: sidebar content should be presented in overlay")
 
-        let closeSidebarButton = app.buttons["L4OverlayCloseSidebar"].firstMatch
-        XCTAssertTrue(closeSidebarButton.waitForExistence(timeout: 4.0),
-                      "overlay contract: explicit close affordance should exist in overlay")
+        let closeSidebarByID = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "identifier == %@", "L4OverlayCloseSidebar"))
+            .firstMatch
+        let closeSidebarByLabel = app.buttons["Close"].firstMatch
+        let closeSidebarButton: XCUIElement
+        if closeSidebarByID.waitForExistence(timeout: 4.0) {
+            closeSidebarButton = closeSidebarByID
+        } else {
+            XCTAssertTrue(closeSidebarByLabel.waitForExistence(timeout: 4.0),
+                          "overlay contract: explicit close affordance should exist in overlay")
+            closeSidebarButton = closeSidebarByLabel
+        }
         tapByNormalizedCenter(closeSidebarButton)
 
         XCTAssertTrue(showSidebarButton.waitForExistence(timeout: 4.0),
@@ -563,9 +572,18 @@ final class Layer4UITests: XCTestCase {
         XCTAssertTrue(sidebarContentAny.waitForExistence(timeout: 4.0),
                       "overlay contract: sidebar content should be exposed while overlay is active before dismiss")
 
-        let closeSidebarButton = app.buttons["L4OverlayCloseSidebar"].firstMatch
-        XCTAssertTrue(closeSidebarButton.waitForExistence(timeout: 4.0),
-                      "overlay contract: explicit close affordance should exist in overlay")
+        let closeSidebarByID = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "identifier == %@", "L4OverlayCloseSidebar"))
+            .firstMatch
+        let closeSidebarByLabel = app.buttons["Close"].firstMatch
+        let closeSidebarButton: XCUIElement
+        if closeSidebarByID.waitForExistence(timeout: 4.0) {
+            closeSidebarButton = closeSidebarByID
+        } else {
+            XCTAssertTrue(closeSidebarByLabel.waitForExistence(timeout: 4.0),
+                          "overlay contract: explicit close affordance should exist in overlay")
+            closeSidebarButton = closeSidebarByLabel
+        }
 
         tapByNormalizedCenter(closeSidebarButton)
 
