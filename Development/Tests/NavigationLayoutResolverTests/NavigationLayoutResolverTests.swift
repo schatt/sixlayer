@@ -244,15 +244,15 @@ struct NavigationLayoutResolverTests {
     func layer4CompactPresentationForTransition_isIdempotent_forSameWidthAndPrevious() {
         let width: CGFloat = 900
         let previous = NavigationLayoutCompactPresentation.overlayOuterSidebar
-        let once = NavigationLayoutResolver.layer4CompactPresentationForTransition(
+        let first = NavigationLayoutResolver.layer4CompactPresentationForTransition(
             availableWidth: width,
             previousPresentation: previous
         )
-        let twice = NavigationLayoutResolver.layer4CompactPresentationForTransition(
+        let second = NavigationLayoutResolver.layer4CompactPresentationForTransition(
             availableWidth: width,
-            previousPresentation: once
+            previousPresentation: previous
         )
-        #expect(once == twice)
+        #expect(first == second)
     }
 
     @Test
