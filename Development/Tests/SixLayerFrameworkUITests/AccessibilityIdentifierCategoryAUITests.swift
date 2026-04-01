@@ -60,11 +60,21 @@ final class AccessibilityIdentifierCategoryAUITests: XCTestCase {
         )
     }
 
+    /// Prefer table (Form) when present; otherwise the **last** scroll view — `firstMatch` is often not the main content scroller (nested scroll views).
+    private func scrollContainerForSwipe() -> XCUIElement {
+        if app.tables.firstMatch.exists { return app.tables.firstMatch }
+        let scrollViews = app.scrollViews
+        if scrollViews.count > 0 {
+            return scrollViews.element(boundBy: scrollViews.count - 1)
+        }
+        return app.windows.firstMatch
+    }
+
     private func scrollUntil(matching pred: NSPredicate, maxSwipes: Int) -> Bool {
         if app.descendants(matching: .any).matching(pred).firstMatch.waitForExistence(timeout: 1.0) {
             return true
         }
-        let scroll = app.scrollViews.firstMatch
+        let scroll = scrollContainerForSwipe()
         guard scroll.exists else { return false }
         for _ in 0..<maxSwipes {
             scroll.swipeUp()
