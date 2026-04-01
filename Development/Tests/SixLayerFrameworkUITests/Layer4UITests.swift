@@ -662,9 +662,15 @@ final class Layer4UITests: XCTestCase {
             printButton = printByLabel
         }
         tapByNormalizedCenter(printButton)
-        // Behavior: print sheet appears (iOS) or print panel (macOS); dismiss if present so suite can continue
+        // Host skips real UIPrintInteractionController under -UITesting; if a system print UI still appears, dismiss it.
         let cancelPrint = app.buttons["Cancel"].firstMatch
-        if cancelPrint.waitForExistence(timeout: 2.0) { cancelPrint.tap() }
+        if cancelPrint.waitForExistence(timeout: 1.0) { cancelPrint.tap() }
+        let closePrint = app.navigationBars.buttons["Close"].firstMatch
+        if closePrint.waitForExistence(timeout: 0.5) { closePrint.tap() }
+        XCTAssertTrue(
+            app.navigationBars["Layer 4 Examples"].waitForExistence(timeout: 6.0),
+            "platformPrint_L4: contract screen must be reachable after print (no stuck modal blocking the suite)"
+        )
     }
 
     @MainActor
