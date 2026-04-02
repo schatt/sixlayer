@@ -32,13 +32,12 @@ struct AccessibilityIdentifierCategoryAUDITView: View {
                 .accessibilityLabel("Category A — identifier audit (#197)")
                 .accessibilityIdentifier(Self.auditTitleUITestID)
 
-                // Explicit manual id on wrapper (inner `basicAutomaticCompliance` + outer `ignore` did not surface
-                // `CatAManualWinsOnOuter` to XCUITest on iOS; row documents manual-only wrapper id — Issue #197).
+                // `children: .combine` surfaces one element with explicit identifier for XCUITest (Issue #197).
                 sectionCaption("Manual id on outer Group (wrapper)")
-                Group {
+                VStack(alignment: .leading, spacing: 2) {
                     Text("Manual wins on wrapper")
                 }
-                .accessibilityElement(children: .ignore)
+                .accessibilityElement(children: .combine)
                 .accessibilityLabel("Manual wins on wrapper")
                 .accessibilityIdentifier("CatAManualWinsOnOuter")
 
