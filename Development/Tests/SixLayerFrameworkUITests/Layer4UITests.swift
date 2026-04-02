@@ -76,12 +76,18 @@ final class Layer4UITests: XCTestCase {
         if element(matchingIdentifier: label).waitForExistence(timeout: 1.0) { return }
         let scrollable = primaryScrollHost()
         guard scrollable.exists else { return }
-        for _ in 0..<5 {
+        for _ in 0..<14 {
             scrollable.swipeUp()
-            if app.staticTexts[label].waitForExistence(timeout: 1.0) { return }
-            if app.buttons[label].waitForExistence(timeout: 1.0) { return }
-            if element(matchingIdentifier: label).waitForExistence(timeout: 0.5) { return }
+            if app.staticTexts[label].waitForExistence(timeout: 0.6) { return }
+            if app.buttons[label].waitForExistence(timeout: 0.6) { return }
+            if element(matchingIdentifier: label).waitForExistence(timeout: 0.4) { return }
         }
+    }
+
+    /// `Form` rows for L4 Controls sit mid-scroll; anchor on the section header before field/button contract checks.
+    @MainActor
+    private func scrollToL4ControlsSection() {
+        scrollToElement(label: "L4 Controls")
     }
 
     /// Element with the given accessibility identifier (any type).
@@ -98,6 +104,19 @@ final class Layer4UITests: XCTestCase {
         } else {
             element.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
         }
+    }
+
+    /// Toolbar uses `accessibilityLabel` "Show sidebar"; XCTest may type it as button or other.
+    @MainActor
+    private func l4OverlayExpandSidebarElement() -> XCUIElement {
+        let byId = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "identifier == %@", "L4OverlayShowSidebar"))
+            .firstMatch
+        if byId.waitForExistence(timeout: 2.0) { return byId }
+        if app.buttons["Show sidebar"].waitForExistence(timeout: 1.0) {
+            return app.buttons["Show sidebar"].firstMatch
+        }
+        return app.buttons["L4OverlayShowSidebar"].firstMatch
     }
 
     @MainActor
@@ -227,6 +246,7 @@ final class Layer4UITests: XCTestCase {
     @MainActor
     func testL4_platformButton() throws {
         ensureContractRoot()
+        scrollToL4ControlsSection()
         assertElementHasIdentifierFromComponent(
             label: "L4ContractButton",
             type: .button,
@@ -239,6 +259,7 @@ final class Layer4UITests: XCTestCase {
     @MainActor
     func testL4_platformTextField() throws {
         ensureContractRoot()
+        scrollToL4ControlsSection()
         assertElementHasIdentifierFromComponent(
             label: "L4ContractTextField",
             type: .textField,
@@ -271,6 +292,7 @@ final class Layer4UITests: XCTestCase {
     @MainActor
     func testL4_platformSecureField() throws {
         ensureContractRoot()
+        scrollToL4ControlsSection()
         assertElementHasIdentifierFromComponent(
             label: "L4ContractSecureField",
             type: .secureTextField,
@@ -283,6 +305,7 @@ final class Layer4UITests: XCTestCase {
     @MainActor
     func testL4_platformToggle() throws {
         ensureContractRoot()
+        scrollToL4ControlsSection()
         assertElementHasIdentifierFromComponent(
             label: "L4ContractToggle",
             type: .switch,
@@ -295,6 +318,7 @@ final class Layer4UITests: XCTestCase {
     @MainActor
     func testL4_platformTextEditor() throws {
         ensureContractRoot()
+        scrollToL4ControlsSection()
         assertElementHasIdentifierFromComponent(
             label: "L4ContractTextEditor",
             type: .textView,
@@ -307,6 +331,7 @@ final class Layer4UITests: XCTestCase {
     @MainActor
     func testL4_platformDatePicker() throws {
         ensureContractRoot()
+        scrollToL4ControlsSection()
         scrollToElement(label: "L4ContractDatePicker")
         let hasLabel = app.staticTexts["L4ContractDatePicker"].waitForExistence(timeout: 3.0)
             || app.descendants(matching: .any).matching(NSPredicate(format: "label == %@", "L4ContractDatePicker")).firstMatch.waitForExistence(timeout: 2.0)
@@ -399,11 +424,12 @@ final class Layer4UITests: XCTestCase {
     @MainActor
     func testL4_platformSheet_L4() throws {
         ensureContractRoot()
+        scrollToElement(label: "L4 Presentation")
         scrollToElement(label: "L4ContractSheet")
         // Do not scroll to L4ContractSheet (can swipe and hide top); find by id after section is in view.
         // TestApp sets .accessibilityIdentifier("L4ContractSheet") on the button; prefer that then contract id.
-        let sheetButton = app.findElement(byIdentifier: "L4ContractSheet", primaryType: .button, secondaryTypes: [.staticText, .other, .any], timeout: 5.0)
-            ?? app.findElement(byIdentifier: Self.l4ContractIdentifier(sanitizedName: "l4contractsheet", elementType: "Button"), primaryType: .button, secondaryTypes: [.staticText, .other, .any], timeout: 2.0)
+        let sheetButton = app.findElement(byIdentifier: "L4ContractSheet", primaryType: .button, secondaryTypes: [.cell, .staticText, .other, .any], timeout: 5.0)
+            ?? app.findElement(byIdentifier: Self.l4ContractIdentifier(sanitizedName: "l4contractsheet", elementType: "Button"), primaryType: .button, secondaryTypes: [.cell, .staticText, .other, .any], timeout: 2.0)
             ?? app.buttons["L4ContractSheet"].firstMatch
         XCTAssertTrue(sheetButton.waitForExistence(timeout: 5.0), "Sheet button should exist")
         tapByNormalizedCenter(sheetButton)
@@ -417,11 +443,12 @@ final class Layer4UITests: XCTestCase {
     @MainActor
     func testL4_platformPopover_L4() throws {
         ensureContractRoot()
+        scrollToElement(label: "L4 Presentation")
         scrollToElement(label: "L4ContractPopover")
         // Do not scroll to L4ContractPopover (can swipe and hide top); find by id after section is in view.
         // TestApp sets .accessibilityIdentifier("L4ContractPopover") on the button; prefer that then contract id.
-        let popoverButton = app.findElement(byIdentifier: "L4ContractPopover", primaryType: .button, secondaryTypes: [.staticText, .other, .any], timeout: 5.0)
-            ?? app.findElement(byIdentifier: Self.l4ContractIdentifier(sanitizedName: "l4contractpopover", elementType: "Button"), primaryType: .button, secondaryTypes: [.staticText, .other, .any], timeout: 2.0)
+        let popoverButton = app.findElement(byIdentifier: "L4ContractPopover", primaryType: .button, secondaryTypes: [.cell, .staticText, .other, .any], timeout: 5.0)
+            ?? app.findElement(byIdentifier: Self.l4ContractIdentifier(sanitizedName: "l4contractpopover", elementType: "Button"), primaryType: .button, secondaryTypes: [.cell, .staticText, .other, .any], timeout: 2.0)
             ?? app.buttons["L4ContractPopover"].firstMatch
         XCTAssertTrue(popoverButton.waitForExistence(timeout: 5.0), "Popover button should exist")
         tapByNormalizedCenter(popoverButton)
@@ -447,6 +474,8 @@ final class Layer4UITests: XCTestCase {
             app.links["L4NavLinkContract"].firstMatch.tap()
         } else if app.staticTexts["L4NavLinkContract"].waitForExistence(timeout: 3.0) {
             tapByNormalizedCenter(app.staticTexts["L4NavLinkContract"].firstMatch)
+        } else if app.cells.containing(NSPredicate(format: "label == %@", "L4NavLinkContract")).firstMatch.waitForExistence(timeout: 3.0) {
+            tapByNormalizedCenter(app.cells.containing(NSPredicate(format: "label == %@", "L4NavLinkContract")).firstMatch)
         } else {
             let byId = app.findElement(byIdentifier: "L4NavLinkContract", primaryType: .button, secondaryTypes: [.cell, .staticText, .other, .any], timeout: 5.0)
             let byPred = element(matchingIdentifier: "L4NavLinkContract")
@@ -476,6 +505,8 @@ final class Layer4UITests: XCTestCase {
             app.links["L4NavLinkContract"].firstMatch.tap()
         } else if app.staticTexts["L4NavLinkContract"].waitForExistence(timeout: 3.0) {
             tapByNormalizedCenter(app.staticTexts["L4NavLinkContract"].firstMatch)
+        } else if app.cells.containing(NSPredicate(format: "label == %@", "L4NavLinkContract")).firstMatch.waitForExistence(timeout: 3.0) {
+            tapByNormalizedCenter(app.cells.containing(NSPredicate(format: "label == %@", "L4NavLinkContract")).firstMatch)
         } else {
             let byId = app.findElement(byIdentifier: "L4NavLinkContract", primaryType: .button, secondaryTypes: [.cell, .staticText, .other, .any], timeout: 5.0)
             let byPred = element(matchingIdentifier: "L4NavLinkContract")
@@ -499,7 +530,7 @@ final class Layer4UITests: XCTestCase {
         ensureContractRoot()
         scrollToElement(label: "L4 Overlay Accessibility")
 
-        let showSidebarButton = app.buttons["L4OverlayShowSidebar"].firstMatch
+        let showSidebarButton = l4OverlayExpandSidebarElement()
         XCTAssertTrue(showSidebarButton.waitForExistence(timeout: 6.0),
                       "overlay contract: explicit expand affordance button should exist")
 
@@ -520,7 +551,7 @@ final class Layer4UITests: XCTestCase {
         ensureContractRoot()
         scrollToElement(label: "L4 Overlay Accessibility")
 
-        let showSidebarButton = app.buttons["L4OverlayShowSidebar"].firstMatch
+        let showSidebarButton = l4OverlayExpandSidebarElement()
         XCTAssertTrue(showSidebarButton.waitForExistence(timeout: 6.0),
                       "overlay contract: explicit expand affordance button should exist")
 
@@ -553,7 +584,7 @@ final class Layer4UITests: XCTestCase {
         ensureContractRoot()
         scrollToElement(label: "L4 Overlay Accessibility")
 
-        let showSidebarButton = app.buttons["L4OverlayShowSidebar"].firstMatch
+        let showSidebarButton = l4OverlayExpandSidebarElement()
         XCTAssertTrue(showSidebarButton.waitForExistence(timeout: 6.0),
                       "overlay contract: explicit expand affordance button should exist")
         tapByNormalizedCenter(showSidebarButton)
@@ -568,7 +599,7 @@ final class Layer4UITests: XCTestCase {
         ensureContractRoot()
         scrollToElement(label: "L4 Overlay Accessibility")
 
-        let showSidebarButton = app.buttons["L4OverlayShowSidebar"].firstMatch
+        let showSidebarButton = l4OverlayExpandSidebarElement()
         XCTAssertTrue(showSidebarButton.waitForExistence(timeout: 6.0),
                       "overlay contract: explicit expand affordance button should exist")
         tapByNormalizedCenter(showSidebarButton)
@@ -589,7 +620,7 @@ final class Layer4UITests: XCTestCase {
         ensureContractRoot()
         scrollToElement(label: "L4 Overlay Accessibility")
 
-        let showSidebarButton = app.buttons["L4OverlayShowSidebar"].firstMatch
+        let showSidebarButton = l4OverlayExpandSidebarElement()
         XCTAssertTrue(showSidebarButton.waitForExistence(timeout: 6.0),
                       "overlay contract: explicit expand affordance button should exist")
         tapByNormalizedCenter(showSidebarButton)
@@ -676,12 +707,18 @@ final class Layer4UITests: XCTestCase {
     @MainActor
     func testL4_platformCloudKitSyncStatus_L4() throws {
         ensureContractRoot()
+        scrollToElement(label: "L4 System")
         scrollToElement(label: "CloudKit Sync Status")
         XCTAssertTrue(app.staticTexts["CloudKit Sync: Idle"].waitForExistence(timeout: 5.0),
                       "platformCloudKitSyncStatus_L4: status text must be visible (contract structure)")
-        let withId = app.descendants(matching: .any).matching(NSPredicate(format: "identifier CONTAINS[c] %@", "platformCloudKitSyncStatus")).firstMatch
-        XCTAssertTrue(withId.waitForExistence(timeout: 10.0),
-                      "platformCloudKitSyncStatus_L4: view must have a11y identifier (contract a11y)")
+        let exactId = element(matchingIdentifier: "platformCloudKitSyncStatus_L4")
+        let containsId = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "identifier CONTAINS[c] %@", "platformCloudKitSyncStatus"))
+            .firstMatch
+        XCTAssertTrue(
+            exactId.waitForExistence(timeout: 4.0) || containsId.waitForExistence(timeout: 8.0),
+            "platformCloudKitSyncStatus_L4: view must have a11y identifier (contract a11y)"
+        )
     }
 
     @MainActor
