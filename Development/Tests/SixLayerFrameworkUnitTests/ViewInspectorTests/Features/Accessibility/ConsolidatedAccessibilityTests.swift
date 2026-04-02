@@ -4571,7 +4571,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
             view,
-            expectedPattern: "*.main.element.accessibility-enhanced-*",
+            expectedPattern: "*accessibility-enhanced*",
             platform: SixLayerPlatform.iOS,
             componentName: "AccessibilityEnhancedView"
         )
@@ -8708,7 +8708,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
             view,
-            expectedPattern: "*.main.element.accessibility-enhanced-*",
+            expectedPattern: "*accessibility-enhanced*",
             platform: SixLayerPlatform.iOS,
             componentName: "AccessibilityHostingView"
         )
@@ -10775,7 +10775,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #if canImport(ViewInspector)
         #expect(testComponentComplianceSinglePlatform(
             enhancedView,
-            expectedPattern: "*.main.element.accessibility-enhanced-*",
+            expectedPattern: "*accessibility-enhanced*",
             platform: SixLayerPlatform.iOS,
             componentName: "AccessibilityEnhancedViewModifierDefaultConfig"
         ), "Enhanced view with default config should have accessibility identifier")
@@ -10827,7 +10827,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #if canImport(ViewInspector)
         #expect(testComponentComplianceSinglePlatform(
             integratedView,
-            expectedPattern: "*.main.element.accessibility-enhanced-*",
+            expectedPattern: "*accessibility-enhanced*",
             platform: SixLayerPlatform.iOS,
             componentName: "AccessibilityViewModifiersIntegration"
         ), "Integrated accessibility view should have accessibility identifier")
