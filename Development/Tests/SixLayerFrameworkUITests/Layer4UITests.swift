@@ -66,21 +66,30 @@ final class Layer4UITests: XCTestCase {
         return app.windows.firstMatch
     }
 
+    /// True when any a11y node exposes `label` (Form section headers are often not `XCUIElementType.staticText`).
+    @MainActor
+    private func anyDescendantHasLabel(equalTo label: String, timeout: TimeInterval) -> Bool {
+        let pred = NSPredicate(format: "label == %@", label)
+        return app.descendants(matching: .any).matching(pred).firstMatch.waitForExistence(timeout: timeout)
+    }
+
     /// Scroll so the element with the given label is visible (content may be below fold).
     /// Uses longer initial wait for buttons so top-of-screen elements (e.g. L4 Presentation) are not skipped.
     @MainActor
     private func scrollToElement(label: String) {
         if app.staticTexts[label].waitForExistence(timeout: 1.0) { return }
+        if anyDescendantHasLabel(equalTo: label, timeout: 0.5) { return }
         if app.buttons[label].waitForExistence(timeout: 2.0) { return }
         if app.links[label].waitForExistence(timeout: 1.0) { return }
         if element(matchingIdentifier: label).waitForExistence(timeout: 1.0) { return }
         let scrollable = primaryScrollHost()
         guard scrollable.exists else { return }
-        for _ in 0..<14 {
+        for _ in 0..<22 {
             scrollable.swipeUp()
-            if app.staticTexts[label].waitForExistence(timeout: 0.6) { return }
-            if app.buttons[label].waitForExistence(timeout: 0.6) { return }
-            if element(matchingIdentifier: label).waitForExistence(timeout: 0.4) { return }
+            if app.staticTexts[label].waitForExistence(timeout: 0.5) { return }
+            if anyDescendantHasLabel(equalTo: label, timeout: 0.35) { return }
+            if app.buttons[label].waitForExistence(timeout: 0.5) { return }
+            if element(matchingIdentifier: label).waitForExistence(timeout: 0.35) { return }
         }
     }
 
@@ -112,9 +121,12 @@ final class Layer4UITests: XCTestCase {
         let byId = app.descendants(matching: .any)
             .matching(NSPredicate(format: "identifier == %@", "L4OverlayShowSidebar"))
             .firstMatch
-        if byId.waitForExistence(timeout: 2.0) { return byId }
-        if app.buttons["Show sidebar"].waitForExistence(timeout: 1.0) {
+        if byId.waitForExistence(timeout: 4.0) { return byId }
+        if app.buttons["Show sidebar"].waitForExistence(timeout: 2.0) {
             return app.buttons["Show sidebar"].firstMatch
+        }
+        if app.otherElements["Show sidebar"].waitForExistence(timeout: 1.0) {
+            return app.otherElements["Show sidebar"].firstMatch
         }
         return app.buttons["L4OverlayShowSidebar"].firstMatch
     }
@@ -175,7 +187,9 @@ final class Layer4UITests: XCTestCase {
                       "Contract root: Layer 4 Examples nav bar should exist")
         func contractTopVisible() -> Bool {
             if app.staticTexts["L4 Presentation"].waitForExistence(timeout: 0.3) { return true }
+            if anyDescendantHasLabel(equalTo: "L4 Presentation", timeout: 0.25) { return true }
             if app.staticTexts["L4 System"].waitForExistence(timeout: 0.3) { return true }
+            if anyDescendantHasLabel(equalTo: "L4 System", timeout: 0.25) { return true }
             // iOS root `Form`: section titles are not always `staticTexts`; sheet button is a stable top anchor (Issue #193).
             if app.buttons["L4ContractSheet"].waitForExistence(timeout: 0.3) { return true }
             if element(matchingIdentifier: "L4ContractSheet").waitForExistence(timeout: 0.3) { return true }
@@ -184,14 +198,16 @@ final class Layer4UITests: XCTestCase {
         if contractTopVisible() { return }
         let scrollHost = primaryScrollHost()
         if scrollHost.exists {
-            for _ in 0..<8 {
+            for _ in 0..<18 {
                 scrollHost.swipeDown()
                 if contractTopVisible() { return }
             }
         }
         XCTAssertTrue(
             app.staticTexts["L4 Presentation"].waitForExistence(timeout: 3.0)
+                || anyDescendantHasLabel(equalTo: "L4 Presentation", timeout: 1.0)
                 || app.staticTexts["L4 System"].waitForExistence(timeout: 0.5)
+                || anyDescendantHasLabel(equalTo: "L4 System", timeout: 0.5)
                 || app.buttons["L4ContractSheet"].waitForExistence(timeout: 3.0)
                 || element(matchingIdentifier: "L4ContractSheet").waitForExistence(timeout: 2.0),
             "Contract root (L4 Presentation, L4 System, or L4 sheet trigger) should be visible after scroll to top"
@@ -426,12 +442,14 @@ final class Layer4UITests: XCTestCase {
         ensureContractRoot()
         scrollToElement(label: "L4 Presentation")
         scrollToElement(label: "L4ContractSheet")
-        // Do not scroll to L4ContractSheet (can swipe and hide top); find by id after section is in view.
-        // TestApp sets .accessibilityIdentifier("L4ContractSheet") on the button; prefer that then contract id.
-        let sheetButton = app.findElement(byIdentifier: "L4ContractSheet", primaryType: .button, secondaryTypes: [.cell, .staticText, .other, .any], timeout: 5.0)
-            ?? app.findElement(byIdentifier: Self.l4ContractIdentifier(sanitizedName: "l4contractsheet", elementType: "Button"), primaryType: .button, secondaryTypes: [.cell, .staticText, .other, .any], timeout: 2.0)
-            ?? app.buttons["L4ContractSheet"].firstMatch
-        XCTAssertTrue(sheetButton.waitForExistence(timeout: 5.0), "Sheet button should exist")
+        let sheetMatch = NSPredicate(format: "identifier == %@ OR label == %@", "L4ContractSheet", "L4ContractSheet")
+        let sheetByLabelOrId = app.descendants(matching: .any).matching(sheetMatch).firstMatch
+        let sheetButton = sheetByLabelOrId.waitForExistence(timeout: 2.0)
+            ? sheetByLabelOrId
+            : (app.findElement(byIdentifier: "L4ContractSheet", primaryType: .button, secondaryTypes: [.cell, .staticText, .other, .any], timeout: 5.0)
+                ?? app.findElement(byIdentifier: Self.l4ContractIdentifier(sanitizedName: "l4contractsheet", elementType: "Button"), primaryType: .button, secondaryTypes: [.cell, .staticText, .other, .any], timeout: 2.0)
+                ?? app.buttons["L4ContractSheet"].firstMatch)
+        XCTAssertTrue(sheetButton.waitForExistence(timeout: 8.0), "Sheet button should exist")
         tapByNormalizedCenter(sheetButton)
         XCTAssertTrue(waitForStaticTextInForeground("L4SheetContentContract", timeout: 8.0),
                       "platformSheet_L4: sheet content must be visible when presented (contract behavior)")
@@ -445,12 +463,14 @@ final class Layer4UITests: XCTestCase {
         ensureContractRoot()
         scrollToElement(label: "L4 Presentation")
         scrollToElement(label: "L4ContractPopover")
-        // Do not scroll to L4ContractPopover (can swipe and hide top); find by id after section is in view.
-        // TestApp sets .accessibilityIdentifier("L4ContractPopover") on the button; prefer that then contract id.
-        let popoverButton = app.findElement(byIdentifier: "L4ContractPopover", primaryType: .button, secondaryTypes: [.cell, .staticText, .other, .any], timeout: 5.0)
-            ?? app.findElement(byIdentifier: Self.l4ContractIdentifier(sanitizedName: "l4contractpopover", elementType: "Button"), primaryType: .button, secondaryTypes: [.cell, .staticText, .other, .any], timeout: 2.0)
-            ?? app.buttons["L4ContractPopover"].firstMatch
-        XCTAssertTrue(popoverButton.waitForExistence(timeout: 5.0), "Popover button should exist")
+        let popMatch = NSPredicate(format: "identifier == %@ OR label == %@", "L4ContractPopover", "L4ContractPopover")
+        let popByLabelOrId = app.descendants(matching: .any).matching(popMatch).firstMatch
+        let popoverButton = popByLabelOrId.waitForExistence(timeout: 2.0)
+            ? popByLabelOrId
+            : (app.findElement(byIdentifier: "L4ContractPopover", primaryType: .button, secondaryTypes: [.cell, .staticText, .other, .any], timeout: 5.0)
+                ?? app.findElement(byIdentifier: Self.l4ContractIdentifier(sanitizedName: "l4contractpopover", elementType: "Button"), primaryType: .button, secondaryTypes: [.cell, .staticText, .other, .any], timeout: 2.0)
+                ?? app.buttons["L4ContractPopover"].firstMatch)
+        XCTAssertTrue(popoverButton.waitForExistence(timeout: 8.0), "Popover button should exist")
         tapByNormalizedCenter(popoverButton)
         XCTAssertTrue(waitForStaticTextInForeground("L4PopoverContentContract", timeout: 8.0),
                       "platformPopover_L4: popover content must be visible when presented (contract behavior)")
@@ -467,21 +487,35 @@ final class Layer4UITests: XCTestCase {
         }
         scrollToElement(label: "L4 Navigation")
         scrollToElement(label: "L4NavLinkContract")
-        let navById = element(matchingIdentifier: "L4NavLinkContract")
-        if navById.waitForExistence(timeout: 3.0) {
-            tapByNormalizedCenter(navById)
-        } else if app.links["L4NavLinkContract"].waitForExistence(timeout: 2.0) {
+        let navLinkPred = NSPredicate(format: "identifier == %@ OR label == %@", "L4NavLinkContract", "L4NavLinkContract")
+        let navAny = app.descendants(matching: .any).matching(navLinkPred).firstMatch
+        if navAny.waitForExistence(timeout: 3.0) {
+            tapByNormalizedCenter(navAny)
+        } else if element(matchingIdentifier: "L4NavLinkContract").waitForExistence(timeout: 1.0) {
+            tapByNormalizedCenter(element(matchingIdentifier: "L4NavLinkContract"))
+        } else if app.links["L4NavLinkContract"].waitForExistence(timeout: 1.0) {
             app.links["L4NavLinkContract"].firstMatch.tap()
-        } else if app.staticTexts["L4NavLinkContract"].waitForExistence(timeout: 3.0) {
+        } else if app.staticTexts["L4NavLinkContract"].waitForExistence(timeout: 1.0) {
             tapByNormalizedCenter(app.staticTexts["L4NavLinkContract"].firstMatch)
-        } else if app.cells.containing(NSPredicate(format: "label == %@", "L4NavLinkContract")).firstMatch.waitForExistence(timeout: 3.0) {
+        } else if app.cells.containing(NSPredicate(format: "label == %@", "L4NavLinkContract")).firstMatch.waitForExistence(timeout: 2.0) {
             tapByNormalizedCenter(app.cells.containing(NSPredicate(format: "label == %@", "L4NavLinkContract")).firstMatch)
         } else {
-            let byId = app.findElement(byIdentifier: "L4NavLinkContract", primaryType: .button, secondaryTypes: [.cell, .staticText, .other, .any], timeout: 5.0)
-            let byPred = element(matchingIdentifier: "L4NavLinkContract")
-            let tapTarget: XCUIElement? = byId ?? (byPred.waitForExistence(timeout: 2.0) ? byPred : nil)
-            XCTAssertNotNil(tapTarget, "Nav link with identifier L4NavLinkContract should exist")
-            tapByNormalizedCenter(tapTarget!)
+            let navById = element(matchingIdentifier: "L4NavLinkContract")
+            if navById.waitForExistence(timeout: 0.5) {
+                tapByNormalizedCenter(navById)
+            } else if app.links["L4NavLinkContract"].waitForExistence(timeout: 0.5) {
+                app.links["L4NavLinkContract"].firstMatch.tap()
+            } else if app.staticTexts["L4NavLinkContract"].waitForExistence(timeout: 0.5) {
+                tapByNormalizedCenter(app.staticTexts["L4NavLinkContract"].firstMatch)
+            } else if app.cells.containing(NSPredicate(format: "label == %@", "L4NavLinkContract")).firstMatch.waitForExistence(timeout: 0.5) {
+                tapByNormalizedCenter(app.cells.containing(NSPredicate(format: "label == %@", "L4NavLinkContract")).firstMatch)
+            } else {
+                let byId = app.findElement(byIdentifier: "L4NavLinkContract", primaryType: .button, secondaryTypes: [.cell, .staticText, .other, .any], timeout: 5.0)
+                let byPred = element(matchingIdentifier: "L4NavLinkContract")
+                let tapTarget: XCUIElement? = byId ?? (byPred.waitForExistence(timeout: 2.0) ? byPred : nil)
+                XCTAssertNotNil(tapTarget, "Nav link with identifier L4NavLinkContract should exist")
+                tapByNormalizedCenter(tapTarget!)
+            }
         }
         XCTAssertTrue(app.navigationBars["L4NavTitleContract"].waitForExistence(timeout: 3.0),
                       "platformNavigationTitle_L4: destination title must appear in nav bar (contract structure)")
@@ -498,14 +532,17 @@ final class Layer4UITests: XCTestCase {
         }
         scrollToElement(label: "L4 Navigation")
         scrollToElement(label: "L4NavLinkContract")
-        let navByIdLink = element(matchingIdentifier: "L4NavLinkContract")
-        if navByIdLink.waitForExistence(timeout: 3.0) {
-            tapByNormalizedCenter(navByIdLink)
-        } else if app.links["L4NavLinkContract"].waitForExistence(timeout: 2.0) {
+        let navLinkPredLink = NSPredicate(format: "identifier == %@ OR label == %@", "L4NavLinkContract", "L4NavLinkContract")
+        let navAnyLink = app.descendants(matching: .any).matching(navLinkPredLink).firstMatch
+        if navAnyLink.waitForExistence(timeout: 3.0) {
+            tapByNormalizedCenter(navAnyLink)
+        } else if element(matchingIdentifier: "L4NavLinkContract").waitForExistence(timeout: 1.0) {
+            tapByNormalizedCenter(element(matchingIdentifier: "L4NavLinkContract"))
+        } else if app.links["L4NavLinkContract"].waitForExistence(timeout: 1.0) {
             app.links["L4NavLinkContract"].firstMatch.tap()
-        } else if app.staticTexts["L4NavLinkContract"].waitForExistence(timeout: 3.0) {
+        } else if app.staticTexts["L4NavLinkContract"].waitForExistence(timeout: 1.0) {
             tapByNormalizedCenter(app.staticTexts["L4NavLinkContract"].firstMatch)
-        } else if app.cells.containing(NSPredicate(format: "label == %@", "L4NavLinkContract")).firstMatch.waitForExistence(timeout: 3.0) {
+        } else if app.cells.containing(NSPredicate(format: "label == %@", "L4NavLinkContract")).firstMatch.waitForExistence(timeout: 2.0) {
             tapByNormalizedCenter(app.cells.containing(NSPredicate(format: "label == %@", "L4NavLinkContract")).firstMatch)
         } else {
             let byId = app.findElement(byIdentifier: "L4NavLinkContract", primaryType: .button, secondaryTypes: [.cell, .staticText, .other, .any], timeout: 5.0)
