@@ -902,8 +902,11 @@ struct Layer4ContractOnlyView: View {
                 } header: {
                     contractSectionHeader("L4 Navigation")
                 }
+                // Cap width so `NavigationLayoutResolver` stays in compact/overlay mode (not fullSplit).
+                // Full device width in a Form row selects fullSplit and omits L4OverlayShowSidebar (Issue #193).
                 Section {
                     contractOverlayAccessibilityContent
+                        .frame(maxWidth: 380)
                 } header: {
                     contractSectionHeader("L4 Overlay Accessibility")
                 }
