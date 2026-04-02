@@ -69,8 +69,24 @@ final class Layer4UITests: XCTestCase {
     /// True when any a11y node exposes `label` (Form section headers are often not `XCUIElementType.staticText`).
     @MainActor
     private func anyDescendantHasLabel(equalTo label: String, timeout: TimeInterval) -> Bool {
-        let pred = NSPredicate(format: "label == %@", label)
+        let pred = NSPredicate(format: "label == %@ OR label CONTAINS[c] %@", label, label)
         return app.descendants(matching: .any).matching(pred).firstMatch.waitForExistence(timeout: timeout)
+    }
+
+    /// When a nested `Table` exists (e.g. split shell), swiping only one may not move the root `Form`.
+    @MainActor
+    private func swipeScrollHostsUp() {
+        let tables = app.tables
+        if tables.count > 1 {
+            tables.element(boundBy: tables.count - 1).swipeUp()
+            tables.element(boundBy: 0).swipeUp()
+        } else if tables.firstMatch.exists {
+            tables.firstMatch.swipeUp()
+        } else if app.scrollViews.firstMatch.exists {
+            app.scrollViews.firstMatch.swipeUp()
+        } else {
+            app.windows.firstMatch.swipeUp()
+        }
     }
 
     /// Scroll so the element with the given label is visible (content may be below fold).
@@ -82,10 +98,9 @@ final class Layer4UITests: XCTestCase {
         if app.buttons[label].waitForExistence(timeout: 2.0) { return }
         if app.links[label].waitForExistence(timeout: 1.0) { return }
         if element(matchingIdentifier: label).waitForExistence(timeout: 1.0) { return }
-        let scrollable = primaryScrollHost()
-        guard scrollable.exists else { return }
+        if !primaryScrollHost().exists, !app.tables.firstMatch.exists, !app.scrollViews.firstMatch.exists { return }
         for _ in 0..<22 {
-            scrollable.swipeUp()
+            swipeScrollHostsUp()
             if app.staticTexts[label].waitForExistence(timeout: 0.5) { return }
             if anyDescendantHasLabel(equalTo: label, timeout: 0.35) { return }
             if app.buttons[label].waitForExistence(timeout: 0.5) { return }
