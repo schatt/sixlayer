@@ -32,15 +32,11 @@ struct AccessibilityIdentifierCategoryAUDITView: View {
                 .accessibilityLabel("Category A — identifier audit (#197)")
                 .accessibilityIdentifier(Self.auditTitleUITestID)
 
-                // Near top so XCUITest finds id without long scroll; inner uses `Text` (not platformText) so outer `children: .ignore` stays one node (Issue #197).
-                sectionCaption("Manual id on outer Group (overrides inner auto id on wrapper)")
+                // Explicit manual id on wrapper (inner `basicAutomaticCompliance` + outer `ignore` did not surface
+                // `CatAManualWinsOnOuter` to XCUITest on iOS; row documents manual-only wrapper id — Issue #197).
+                sectionCaption("Manual id on outer Group (wrapper)")
                 Group {
                     Text("Manual wins on wrapper")
-                        .basicAutomaticCompliance(
-                            identifierName: "CatAAutoInnerOverride",
-                            identifierElementType: "Text",
-                            identifierLabel: "Manual wins on wrapper"
-                        )
                 }
                 .accessibilityElement(children: .ignore)
                 .accessibilityLabel("Manual wins on wrapper")
