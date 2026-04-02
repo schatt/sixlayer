@@ -256,7 +256,9 @@ public struct AccessibilityEnhancedView<Content: View>: View {
                         voiceOverManager.announce("View loaded", priority: .normal)
                     }
                 }
-                .automaticCompliance() // Apply accessibility identifiers to the entire view
+                // Stable component name so hosted + debug-log compliance checks find
+                // `accessibility-enhanced` (matches `*accessibility-enhanced*` in tests; legacy macOS used `.main.element.accessibility-enhanced-*`).
+                .automaticCompliance(identifierName: "accessibility-enhanced", identifierElementType: "View")
         }
     }
 }
@@ -390,7 +392,8 @@ struct AccessibilityHostingControllerWrapper<Content: View>: NSViewControllerRep
             let _ = config.currentViewHierarchy.isEmpty ? "ui" : config.currentViewHierarchy.joined(separator: ".")
             let screenContext = config.currentScreenContext ?? "main"
             let role = "element"
-            let objectID = "accessibility-enhanced-\(Int.random(in: 1000...9999))"
+            // Deterministic suffix for UI tests and compliance harness (avoid flaky random IDs).
+            let objectID = "accessibility-enhanced-layer5"
             
             let generatedID = "\(namespace).\(screenContext).\(role).\(objectID)"
             view.setAccessibilityIdentifier(generatedID)
