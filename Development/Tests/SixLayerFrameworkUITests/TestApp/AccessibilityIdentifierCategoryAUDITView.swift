@@ -32,6 +32,20 @@ struct AccessibilityIdentifierCategoryAUDITView: View {
                 .accessibilityLabel("Category A — identifier audit (#197)")
                 .accessibilityIdentifier(Self.auditTitleUITestID)
 
+                // Near top so XCUITest finds id without long scroll; inner uses `Text` (not platformText) so outer `children: .ignore` stays one node (Issue #197).
+                sectionCaption("Manual id on outer Group (overrides inner auto id on wrapper)")
+                Group {
+                    Text("Manual wins on wrapper")
+                        .basicAutomaticCompliance(
+                            identifierName: "CatAAutoInnerOverride",
+                            identifierElementType: "Text",
+                            identifierLabel: "Manual wins on wrapper"
+                        )
+                }
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel("Manual wins on wrapper")
+                .accessibilityIdentifier("CatAManualWinsOnOuter")
+
                 sectionCaption("Unicode + label")
                 platformText("café 日本語")
                     .basicAutomaticCompliance(
@@ -96,19 +110,6 @@ struct AccessibilityIdentifierCategoryAUDITView: View {
                         identifierLabel: "Visible",
                         accessibilityLabel: "VoiceOver Cat A Label"
                     )
-
-                // Manual identifier on outer Group after inner basicAutomaticCompliance (override contract).
-                sectionCaption("Manual id on outer Group (overrides inner auto id on wrapper)")
-                Group {
-                    platformText("Manual wins on wrapper")
-                        .basicAutomaticCompliance(
-                            identifierName: "CatAAutoInnerOverride",
-                            identifierElementType: "Text"
-                        )
-                }
-                .accessibilityElement(children: .ignore)
-                .accessibilityLabel("Manual wins on wrapper")
-                .accessibilityIdentifier("CatAManualWinsOnOuter")
 
                 // Empty identifierName: generator falls back to "element" and includes sanitized label (audit empty string).
                 sectionCaption("Empty identifier name (sanitized label segment)")
