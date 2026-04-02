@@ -23,7 +23,8 @@ import AppKit
 /// - Parameter status: The current sync status
 /// - Returns: A view showing the sync status
 public func platformCloudKitSyncStatus_L4(status: CloudKitSyncStatus) -> some View {
-    Group {
+    let summaryLabel = cloudKitSyncStatusAccessibilitySummary(status)
+    return Group {
         switch status {
         case .idle:
             Label("CloudKit Sync: Idle", systemImage: "icloud")
@@ -44,8 +45,20 @@ public func platformCloudKitSyncStatus_L4(status: CloudKitSyncStatus) -> some Vi
         }
     }
     .automaticCompliance(named: "platformCloudKitSyncStatus_L4")
+    .accessibilityElement(children: .ignore)
+    .accessibilityLabel(summaryLabel)
     // Stable id for UI tests (Issue #193); must contain substring "platformCloudKitSyncStatus".
     .accessibilityIdentifier("platformCloudKitSyncStatus_L4")
+}
+
+private func cloudKitSyncStatusAccessibilitySummary(_ status: CloudKitSyncStatus) -> String {
+    switch status {
+    case .idle: return "CloudKit Sync: Idle"
+    case .syncing: return "CloudKit Sync: Syncing..."
+    case .paused: return "CloudKit Sync: Paused"
+    case .complete: return "CloudKit Sync: Complete"
+    case .error: return "CloudKit Sync: Error"
+    }
 }
 
 // MARK: - CloudKit Progress Display
