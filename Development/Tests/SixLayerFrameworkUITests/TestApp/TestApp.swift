@@ -12,8 +12,9 @@ import SixLayerFramework
 @main
 struct TestApp: App {
     init() {
-        // Set accessibility config before any view body runs so L4/L5/L6 contract identifiers are applied.
+        // Clear in-memory + avoid stale UserDefaults (e.g. enableUITestIntegration false) poisoning XCUITest IDs.
         let config = AccessibilityIdentifierConfig.shared
+        config.resetToDefaults()
         config.namespace = "SixLayer"
         config.mode = .automatic
         config.enableAutoIDs = true
