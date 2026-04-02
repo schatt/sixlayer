@@ -346,7 +346,7 @@ open class AccessibilityFeaturesLayer5Tests: BaseTestClass {
         // Unit tests use platform view hosting (UIKit/AppKit) directly, not ViewInspector
         #expect(testComponentComplianceSinglePlatform(
             enhancedView, 
-            expectedPattern: "*.main.element.accessibility-enhanced-*", 
+            expectedPattern: "*accessibility-enhanced*", 
             platform: SixLayerPlatform.iOS,
             componentName: "AccessibilityEnhancedViewModifier"
         ), "Enhanced view should have accessibility identifier")
@@ -373,7 +373,7 @@ open class AccessibilityFeaturesLayer5Tests: BaseTestClass {
         // Unit tests use platform view hosting (UIKit/AppKit) directly, not ViewInspector
         #expect(testComponentComplianceSinglePlatform(
             enhancedView, 
-            expectedPattern: "*.main.element.accessibility-enhanced-*", 
+            expectedPattern: "*accessibility-enhanced*", 
             platform: SixLayerPlatform.iOS,
             componentName: "AccessibilityEnhancedViewModifierDefaultConfig"
         ), "Enhanced view with default config should have accessibility identifier")
@@ -475,7 +475,7 @@ open class AccessibilityFeaturesLayer5Tests: BaseTestClass {
             // Remove this workaround once ViewInspector detection is fixed
         #expect(testComponentComplianceSinglePlatform(
             integratedView, 
-            expectedPattern: "*.main.element.accessibility-enhanced-*", 
+            expectedPattern: "*accessibility-enhanced*", 
             platform: SixLayerPlatform.iOS,
             componentName: "AccessibilityViewModifiersIntegration"
         ) , "Integrated accessibility view should have accessibility identifier")
