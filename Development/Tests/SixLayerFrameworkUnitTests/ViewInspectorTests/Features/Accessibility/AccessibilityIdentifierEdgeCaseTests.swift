@@ -120,7 +120,10 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
             .accessibilityIdentifier("manual-override")  // ← Manual override (outermost wins)
             
             let root = Self.hostRootPlatformView(view, forceLayout: true, exposeContentAccessibility: true)
-            let buttonID = getAccessibilityIdentifierForTest(view: view, hostedRoot: root)
+            // Prefer full platform collection: DFS "first" ID can be the inner auto Button id before the outer manual wrapper.
+            let platformIDs = findAllAccessibilityIdentifiersFromPlatformView(root)
+            let buttonID = platformIDs.first { $0 == "manual-override" }
+                ?? getAccessibilityIdentifierForTest(view: view, hostedRoot: root)
             
             if buttonID == nil {
                 Issue.record("Inspection unavailable: could not obtain accessibility identifier")
