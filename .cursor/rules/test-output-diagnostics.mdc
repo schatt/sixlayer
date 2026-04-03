@@ -1,5 +1,5 @@
 ---
-description: Do not truncate test or build logs when diagnosing; prefer xcode-tools MCP or full logs.
+description: MCP-first test runs; never truncate diagnostic logs; full logs or Read on files.
 alwaysApply: true
 ---
 
@@ -12,9 +12,9 @@ alwaysApply: true
 
 ## **REQUIRED BEHAVIOR**
 
-1. **Preferred:** Run tests via **xcode-tools** MCP (**RunAllTests**, **RunSomeTests**) with **`tabIdentifier`** from **XcodeListWindows**, after setting the scheme with **`Development/scripts/set_xcode_scheme.applescript`** when needed. See **`.cursor/rules/test-target-default.mdc`**.
-2. **Fallback (CLI):** Run **`dbs-build`**, **`xcodebuild`**, or **`swift test`** **without** truncating stdout/stderr in the shell pipeline.
-3. **Large logs:** Redirect to a **file** (e.g. **`tee`** or **`> build.log 2>&1`**) and use the **Read** tool with offsets or search to inspect sections—**do not** use **`tail`** or **`head`** in the pipeline as the primary way to “see” output for diagnosis.
+1. **MANDATORY for test runs:** Use **xcode-tools** MCP (**RunAllTests**, **RunSomeTests**) with **`tabIdentifier`** from **XcodeListWindows**, after setting the scheme with **`Development/scripts/set_xcode_scheme.applescript`** when needed. **Do not** default to CLI for tests when MCP is available. See **`.cursor/rules/test-target-default.mdc`**.
+2. **CLI (exception only):** Use **`dbs-build`**, **`xcodebuild`**, or **`swift test`** **only** when MCP is unavailable after retry / Xcode tab resolution per **test-target-default**—and **without** truncating stdout/stderr in the shell pipeline.
+3. **Large logs:** Redirect to a **file** (e.g. **`tee`** or **`> build.log 2>&1`**) and use the **Read** tool with offsets or search to inspect sections—**do not** use **`tail`** or **`head`** in the pipeline as the primary way to “see” output for diagnosis. Prefer MCP **`fullSummaryPath`** / **`fullConsoleLogsPath`** when present.
 
 ## **RATIONALE**
 
