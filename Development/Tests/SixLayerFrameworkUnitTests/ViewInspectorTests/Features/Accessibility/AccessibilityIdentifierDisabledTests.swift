@@ -62,14 +62,16 @@ open class AccessibilityIdentifierDisabledTests: BaseTestClass {
             }
             .accessibilityIdentifier("manual-test-button")
             
-            // Using helper - when ViewInspector works on this platform, verify
+            // Using helper — require a non-nil inspect result so we do not pass vacuously when ViewInspector omits the id.
             #if canImport(ViewInspector)
-            if let buttonID = AccessibilityTestUtilities.inspectButtonAccessibilityIdentifier(
+            guard let buttonID = AccessibilityTestUtilities.inspectButtonAccessibilityIdentifier(
                 view,
                 issuePrefix: "Failed to inspect view for manual accessibility identifier"
-            ) {
-                #expect(buttonID == "manual-test-button", "Manual accessibility identifier should work when automatic is disabled")
+            ) else {
+                Issue.record("Inspection unavailable: expected manual-test-button on hosted button")
+                return
             }
+            #expect(buttonID == "manual-test-button", "Manual accessibility identifier should work when automatic is disabled")
             #else
             // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
             #endif
