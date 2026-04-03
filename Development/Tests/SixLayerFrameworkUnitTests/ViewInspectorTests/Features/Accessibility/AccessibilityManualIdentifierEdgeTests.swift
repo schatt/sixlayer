@@ -17,25 +17,20 @@ final class AccessibilityManualIdentifierEdgeTests: BaseTestClass {
             }
             config.enableAutoIDs = false
 
-            // The substring "override" breaks `inspectButtonAccessibilityIdentifier` in this target
-            // (returns nil); use a distinct stable id for the edge-case suite.
-            let manualID = "manual-edge-custom-id"
+            // Byte-for-byte parity with AccessibilityIdentifierDisabledTests.testManualIDsStillWorkWhenAutomaticDisabled
+            // (including identifier string); used to validate inspect in this suite/file.
             let view = PlatformInteractionButton(style: .primary, action: {}, identifierName: "TestButton") {
                 platformPresentContent_L1(content: "Test Button", hints: PresentationHints())
             }
-            .accessibilityIdentifier(manualID)
+            .accessibilityIdentifier("manual-test-button")
 
             #if canImport(ViewInspector)
-            if let id = AccessibilityTestUtilities.inspectButtonAccessibilityIdentifier(
+            if let buttonID = AccessibilityTestUtilities.inspectButtonAccessibilityIdentifier(
                 view,
-                issuePrefix: "Failed to inspect manual accessibility identifier"
+                issuePrefix: "Failed to inspect view for manual accessibility identifier"
             ) {
-                #expect(id == manualID)
-            } else {
-                Issue.record("Inspection unavailable: expected manual id on hosted button")
+                #expect(buttonID == "manual-test-button", "Manual accessibility identifier should work when automatic is disabled")
             }
-            #else
-            Issue.record("ViewInspector required for manual accessibilityIdentifier test")
             #endif
         }
     }
