@@ -81,7 +81,7 @@ public enum TestSetupUtilities {
     ///   - view: The SwiftUI view to host.
     ///   - forceLayout: When true, call layoutIfNeeded() so SwiftUI applies accessibility identifiers to the UIView hierarchy. Use only for simple views (e.g. Text, Button); complex views (NavigationStack, platformPresentContent_L1) can hang.
     ///   - exposeContentAccessibility: When true, leave the hosting root as a container (isAccessibilityElement = false) so the SwiftUI content's accessibility tree is exposed for verification (e.g. single tappable element with label + button trait). Use for tests that traverse the hierarchy to assert on content a11y (Issue #191).
-    ///   - accessibilityIdentifierConfig: When set, injects `\.accessibilityIdentifierConfig` so SwiftUI bodies resolve the same instance as test harness when `@TaskLocal` is not visible (e.g. some async test runners).
+    ///   - accessibilityIdentifierConfig: When set, injects `\.accessibilityIdentifierConfig` so SwiftUI bodies resolve the same instance as test harness when `@TaskLocal` is not visible (e.g. deferred UIHostingController layout). When nil, the current task-local config (if any) is injected automatically so hosting matches `runWithTaskLocalConfig` without repeating every callsite.
     @MainActor
     public static func hostRootPlatformView<V: View>(
         _ view: V,
@@ -89,9 +89,10 @@ public enum TestSetupUtilities {
         exposeContentAccessibility: Bool = false,
         accessibilityIdentifierConfig: AccessibilityIdentifierConfig? = nil
     ) -> Any? {
+        let injectedConfig = accessibilityIdentifierConfig ?? AccessibilityIdentifierConfig.currentTaskLocalConfig
         #if canImport(UIKit)
         let rootView: AnyView = {
-            if let cfg = accessibilityIdentifierConfig {
+            if let cfg = injectedConfig {
                 return AnyView(view.environment(\.accessibilityIdentifierConfig, cfg))
             }
             return AnyView(view)
@@ -130,7 +131,7 @@ public enum TestSetupUtilities {
         return root
         #elseif canImport(AppKit)
         let rootView: AnyView = {
-            if let cfg = accessibilityIdentifierConfig {
+            if let cfg = injectedConfig {
                 return AnyView(view.environment(\.accessibilityIdentifierConfig, cfg))
             }
             return AnyView(view)
