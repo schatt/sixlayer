@@ -3,7 +3,9 @@
 //  SixLayerFrameworkUITests
 //
 //  Test view for accessibility identifier edge cases (issue #178).
-//  Covers scenarios ViewInspector cannot assert on iOS; UI tests assert via XCUIElement.
+//  Runtime contract for manual `platformButton(..., id:)` identifiers:
+//  `ManualAccessibilityIdentifierHarnessUITests` (XCUITest). ViewInspector / in-process UIKit collection
+//  in unit tests are not reliable for these (see file comment there).
 //
 
 import SwiftUI
