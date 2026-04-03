@@ -574,6 +574,29 @@ public struct NamedAutomaticComplianceModifier: ViewModifier {
     }
 }
 
+// MARK: - Test harness debug log mirroring
+
+/// When UIHostingController lays out, modifier bodies can run outside the Swift task that wrapped the test in `AccessibilityIdentifierConfig.$taskLocalConfig`, so `resolvedForIdentifierGeneration` may yield `.shared` (debug off) while the isolated test config on `taskLocalConfig` still has `enableDebugLogging == true`. Mirror parseable lines to every sink that opted into debug so `getDebugLog()` on the test instance stays useful.
+@MainActor
+private func appendAccessibilityIdentifierDebugLog(
+    resolvedConfig: AccessibilityIdentifierConfig,
+    resolvedDebugEnabled: Bool,
+    entries: [String]
+) {
+    let tl = AccessibilityIdentifierConfig.taskLocalConfig
+    var sinks: [AccessibilityIdentifierConfig] = []
+    if let tl, tl.enableDebugLogging { sinks.append(tl) }
+    if resolvedDebugEnabled, !sinks.contains(where: { $0 === resolvedConfig }) {
+        sinks.append(resolvedConfig)
+    }
+    guard !sinks.isEmpty else { return }
+    for sink in sinks {
+        for entry in entries {
+            sink.addDebugLogEntry(entry, enabled: true)
+        }
+    }
+}
+
 // MARK: - Named Component Modifier
 
 /// Modifier that allows components to be named for more specific accessibility identifiers
@@ -660,12 +683,16 @@ public struct NamedModifier: ViewModifier {
         let identifier = identifierComponents.joined(separator: ".")
         
         // Debug logging (addDebugLogEntry so test harnesses can parse identifiers like generateAccessibilityIdentifier)
+        let detailMsg = "🔍 NAMED MODIFIER DEBUG: Generated identifier '\(identifier)' for name '\(name)'"
+        let parseableLine = "Generated identifier '\(identifier)' for named: '\(name)'"
         if capturedEnableDebugLogging {
-            let msg = "🔍 NAMED MODIFIER DEBUG: Generated identifier '\(identifier)' for name '\(name)'"
-            print(msg)
-            config.addDebugLogEntry(msg, enabled: capturedEnableDebugLogging)
-            config.addDebugLogEntry("Generated identifier '\(identifier)' for named: '\(name)'", enabled: capturedEnableDebugLogging)
+            print(detailMsg)
         }
+        appendAccessibilityIdentifierDebugLog(
+            resolvedConfig: config,
+            resolvedDebugEnabled: capturedEnableDebugLogging,
+            entries: [detailMsg, parseableLine]
+        )
         
         return identifier
     }
@@ -705,14 +732,17 @@ public struct ExactNamedModifier: ViewModifier {
         // GREEN PHASE: Return ONLY the exact name - no framework additions
         let exactIdentifier = name
         
-        // Debug logging
-        // CRITICAL: Use captured value instead of accessing @Published property directly
+        // Debug logging (mirror to task-local test config when hosting evaluates outside that task; see appendAccessibilityIdentifierDebugLog).
+        let msg = "🔍 EXACT NAMED MODIFIER DEBUG: Generated exact identifier '\(exactIdentifier)' for name '\(name)'"
+        let parseableLine = "Generated identifier '\(exactIdentifier)' for exactNamed: '\(name)'"
         if capturedEnableDebugLogging {
-            let msg = "🔍 EXACT NAMED MODIFIER DEBUG: Generated exact identifier '\(exactIdentifier)' for name '\(name)'"
             print(msg)
-            config.addDebugLogEntry(msg, enabled: capturedEnableDebugLogging)
-            config.addDebugLogEntry("Generated identifier '\(exactIdentifier)' for exactNamed: '\(name)'", enabled: capturedEnableDebugLogging)
         }
+        appendAccessibilityIdentifierDebugLog(
+            resolvedConfig: config,
+            resolvedDebugEnabled: capturedEnableDebugLogging,
+            entries: [msg, parseableLine]
+        )
         
         return exactIdentifier
     }
