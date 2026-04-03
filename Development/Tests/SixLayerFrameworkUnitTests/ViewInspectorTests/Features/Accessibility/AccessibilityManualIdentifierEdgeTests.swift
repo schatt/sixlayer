@@ -11,7 +11,7 @@ struct AccessibilityManualIdentifierEdgeTests {
         let config = TestSetupUtilities.makeIsolatedAccessibilityIdentifierConfig()
         config.enableAutoIDs = false
 
-        let manualID = "edge-manual-identifier"
+        let manualID = "manual-test-button"
         // Build the view inside `withValue` so modifier bodies see the same @TaskLocal config as
         // `runWithTaskLocalConfig` in AccessibilityIdentifierDisabledTests (not `.shared` alone).
         AccessibilityIdentifierConfig.$taskLocalConfig.withValue(config) {
