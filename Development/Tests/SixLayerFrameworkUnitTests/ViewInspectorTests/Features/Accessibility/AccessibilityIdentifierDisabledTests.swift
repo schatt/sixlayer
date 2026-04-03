@@ -76,6 +76,37 @@ open class AccessibilityIdentifierDisabledTests: BaseTestClass {
         }
     }
     
+    /// Same hosting path as `testManualIDsStillWorkWhenAutomaticDisabled` with a distinct manual id string.
+    /// Declared here because `inspectButtonAccessibilityIdentifier` returns nil for an equivalent view
+    /// when the `@Test` lives in `AccessibilityIdentifierEdgeCaseTests` (Swift Testing / ViewInspector suite quirk).
+    @Test @MainActor func testManualAccessibilityIdentifierCustomString() {
+        initializeTestConfig()
+        runWithTaskLocalConfig {
+            guard let config = testConfig else {
+                Issue.record("testConfig is nil")
+                return
+            }
+            config.enableAutoIDs = false
+            
+            let manualID = "manual-override"
+            let view = PlatformInteractionButton(style: .primary, action: {}, identifierName: "TestButton") {
+                platformPresentContent_L1(content: "Test Button", hints: PresentationHints())
+            }
+            .accessibilityIdentifier(manualID)
+            
+            #if canImport(ViewInspector)
+            if let buttonID = AccessibilityTestUtilities.inspectButtonAccessibilityIdentifier(
+                view,
+                issuePrefix: "Failed to inspect view for manual accessibility identifier"
+            ) {
+                #expect(buttonID == manualID)
+            } else {
+                Issue.record("Inspection unavailable: expected manual id on hosted button")
+            }
+            #endif
+        }
+    }
+    
     @Test @MainActor func testBreadcrumbModifiersStillWorkWhenAutomaticDisabled() {
             initializeTestConfig()
         // Test: Named modifiers should still work for tracking
