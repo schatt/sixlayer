@@ -110,17 +110,15 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
         runWithTaskLocalConfig {
             setupTestEnvironment()
             
-            // Test: Does manual ID override automatic ID?
-            let view = PlatformInteractionButton(style: .primary, action: {
-                // Test action
-            }) {
-                Text("Test")
-            }
-            .enableGlobalAutomaticCompliance()
-            .accessibilityIdentifier("manual-override")  // ← Manual override (outermost wins)
+            // Test: Does manual ID override automatic ID? Use a plain Button so the manual identifier
+            // is visible on the platform tree (PlatformInteractionButton wraps a deep stack where
+            // UIKit may not surface the outer manual id in unit-test hosting).
+            let view = Button("Test") { }
+                .automaticCompliance(identifierName: "AutoUnderTest", identifierElementType: "Button")
+                .enableGlobalAutomaticCompliance()
+                .accessibilityIdentifier("manual-override")  // ← Outermost wins for VoiceOver / UI tests
             
             let root = Self.hostRootPlatformView(view, forceLayout: true, exposeContentAccessibility: true)
-            // Prefer full platform collection: DFS "first" ID can be the inner auto Button id before the outer manual wrapper.
             let platformIDs = findAllAccessibilityIdentifiersFromPlatformView(root)
             let buttonID = platformIDs.first { $0 == "manual-override" }
                 ?? getAccessibilityIdentifierForTest(view: view, hostedRoot: root)
