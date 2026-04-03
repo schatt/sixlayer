@@ -214,6 +214,29 @@ private func firstAccessibilityIdentifierFromElements(_ elements: [Any]?) -> Str
     return nil
 }
 
+/// First non-empty identifier from the UIAccessibilityContainer-style API (`accessibilityElementCount` / `accessibilityElement(at:)`).
+/// SwiftUI hosting views often expose child elements here instead of `accessibilityElements` or `subviews` (aligned with `findAllAccessibilityIdentifiersFromPlatformView`).
+@MainActor
+private func firstAccessibilityIdentifierFromAccessibilityContainer(_ view: UIView) -> String? {
+    let countSel = NSSelectorFromString("accessibilityElementCount")
+    let atSel = NSSelectorFromString("accessibilityElementAtIndex:")
+    guard view.responds(to: countSel), view.responds(to: atSel),
+          let countResult = view.perform(countSel) else {
+        return nil
+    }
+    let n = countResult.takeUnretainedValue() as? Int ?? 0
+    guard n > 0 else { return nil }
+    for i in 0 ..< n {
+        let atResult = view.perform(atSel, with: i)
+        if let el = atResult?.takeUnretainedValue() as? UIAccessibilityElement,
+           let id = el.accessibilityIdentifier,
+           !id.isEmpty {
+            return id
+        }
+    }
+    return nil
+}
+
 /// Collect all non-empty accessibility identifiers from a view's accessibilityElements.
 @MainActor
 private func allAccessibilityIdentifiersFromElements(_ elements: [Any]?) -> [String] {
@@ -241,7 +264,7 @@ private func firstAccessibilityLabelFromElements(_ elements: [Any]?) -> String? 
 #endif
 
 /// Depth-first search for the first non-empty accessibility identifier in the platform view hierarchy.
-/// Traverses up to 40 levels deep; also checks each view's accessibilityElements (SwiftUI may expose IDs there).
+/// Traverses up to 40 levels deep; checks `accessibilityElements`, the UIAccessibilityContainer-style API, and subviews (SwiftUI / Issue 178 / Issue #193).
 @MainActor
 public func firstAccessibilityIdentifier(inHosted root: Any?) -> String? {
     #if canImport(UIKit)
@@ -254,6 +277,9 @@ public func firstAccessibilityIdentifier(inHosted root: Any?) -> String? {
     }
     // SwiftUI-hosted content may expose identifiers via accessibilityElements (Issue 178)
     if let id = firstAccessibilityIdentifierFromElements(rootView.accessibilityElements) {
+        return id
+    }
+    if let id = firstAccessibilityIdentifierFromAccessibilityContainer(rootView) {
         return id
     }
     
@@ -270,6 +296,9 @@ public func firstAccessibilityIdentifier(inHosted root: Any?) -> String? {
             return id
         }
         if let id = firstAccessibilityIdentifierFromElements(next.accessibilityElements) {
+            return id
+        }
+        if let id = firstAccessibilityIdentifierFromAccessibilityContainer(next) {
             return id
         }
         if depth < maxDepth {
