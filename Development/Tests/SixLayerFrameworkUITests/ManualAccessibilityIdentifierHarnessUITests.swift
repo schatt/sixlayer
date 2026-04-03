@@ -36,8 +36,10 @@ final class ManualAccessibilityIdentifierHarnessUITests: XCTestCase {
             localApp.launchArguments.append("-OpenLayer4ComponentExamples")
             localApp.launch()
             instance.app = localApp
-            let onLayer4 = localApp.navigationBars["Layer 4 Examples"].waitForExistence(timeout: 8.0)
+            // Large-title layouts may not expose "Layer 4 Examples" on NavigationBar immediately; section title is stable.
+            let onLayer4 = localApp.navigationBars["Layer 4 Examples"].waitForExistence(timeout: 5.0)
                 || localApp.staticTexts["Layer 4 Examples"].waitForExistence(timeout: 2.0)
+                || localApp.staticTexts["Component test views"].waitForExistence(timeout: 8.0)
             XCTAssertTrue(onLayer4, "Test app should open Layer 4 Examples (-OpenLayer4ComponentExamples)")
         }
     }
