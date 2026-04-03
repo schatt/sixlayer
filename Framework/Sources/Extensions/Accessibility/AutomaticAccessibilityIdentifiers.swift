@@ -662,9 +662,11 @@ public struct NamedModifier: ViewModifier {
         // Debug logging (addDebugLogEntry so test harnesses can parse identifiers like generateAccessibilityIdentifier)
         let detailMsg = "🔍 NAMED MODIFIER DEBUG: Generated identifier '\(identifier)' for name '\(name)'"
         let parseableLine = "Generated identifier '\(identifier)' for named: '\(name)'"
-        // Always record parseable lines on the resolved config (tests often read `.shared` when @TaskLocal is not visible during layout).
-        config.addDebugLogEntry(detailMsg, enabled: true)
-        config.addDebugLogEntry(parseableLine, enabled: true)
+        let shouldMirrorLog = capturedEnableDebugLogging || AccessibilityIdentifierConfig.taskLocalConfig != nil
+        if shouldMirrorLog {
+            config.addDebugLogEntry(detailMsg, enabled: true)
+            config.addDebugLogEntry(parseableLine, enabled: true)
+        }
         if let tl = AccessibilityIdentifierConfig.taskLocalConfig, tl !== config {
             tl.addDebugLogEntry(detailMsg, enabled: true)
             tl.addDebugLogEntry(parseableLine, enabled: true)
@@ -711,11 +713,13 @@ public struct ExactNamedModifier: ViewModifier {
         // GREEN PHASE: Return ONLY the exact name - no framework additions
         let exactIdentifier = name
         
-        // Debug logging: always append parseable lines so unit tests can read `getDebugLog()` even when only `.shared` is resolved during layout.
         let msg = "🔍 EXACT NAMED MODIFIER DEBUG: Generated exact identifier '\(exactIdentifier)' for name '\(name)'"
         let parseableLine = "Generated identifier '\(exactIdentifier)' for exactNamed: '\(name)'"
-        config.addDebugLogEntry(msg, enabled: true)
-        config.addDebugLogEntry(parseableLine, enabled: true)
+        let shouldMirrorLog = capturedEnableDebugLogging || AccessibilityIdentifierConfig.taskLocalConfig != nil
+        if shouldMirrorLog {
+            config.addDebugLogEntry(msg, enabled: true)
+            config.addDebugLogEntry(parseableLine, enabled: true)
+        }
         if let tl = AccessibilityIdentifierConfig.taskLocalConfig, tl !== config {
             tl.addDebugLogEntry(msg, enabled: true)
             tl.addDebugLogEntry(parseableLine, enabled: true)
@@ -732,6 +736,35 @@ public struct ExactNamedModifier: ViewModifier {
     // This fixes Issue #159 - identifier now applies directly to the Button
     // The exactId is returned from generateExactNamedAccessibilityIdentifier above
     // and applied in the body method
+}
+
+// MARK: - Test-only (same algorithms as modifiers; UIHosting/ViewInspector often skip modifier bodies in unit tests)
+
+extension ExactNamedModifier {
+    /// Runs the same string logic as `.exactNamed` without requiring SwiftUI to render the modifier chain.
+    internal static func testingGeneratedIdentifier(name: String, config: AccessibilityIdentifierConfig) -> String {
+        generateExactNamedAccessibilityIdentifier(
+            config: config,
+            name: name,
+            capturedEnableDebugLogging: config.enableDebugLogging
+        )
+    }
+}
+
+extension NamedModifier {
+    /// Runs the same string logic as `.named` without requiring SwiftUI to render the modifier chain.
+    internal static func testingGeneratedIdentifier(name: String, config: AccessibilityIdentifierConfig) -> String {
+        generateNamedAccessibilityIdentifier(
+            config: config,
+            name: name,
+            capturedScreenContext: config.currentScreenContext,
+            capturedViewHierarchy: config.currentViewHierarchy,
+            capturedEnableUITestIntegration: config.enableUITestIntegration,
+            capturedEnableDebugLogging: config.enableDebugLogging,
+            capturedNamespace: config.namespace,
+            capturedGlobalPrefix: config.globalPrefix
+        )
+    }
 }
 
 // MARK: - Forced Automatic Accessibility Identifier Modifier
