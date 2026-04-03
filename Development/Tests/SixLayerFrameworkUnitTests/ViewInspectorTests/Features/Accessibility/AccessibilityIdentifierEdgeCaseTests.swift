@@ -100,8 +100,8 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
     }
     
     // MARK: - Edge Case 4: Manual ID Override
-    // Implemented in `AccessibilityManualIdentifierEdgeTests` (struct `Suite`): the same inspect path
-    // returns nil when this `@Test` lived on this open class.
+    // See `AccessibilityIdentifierDisabledTests.testManualIDsStillWorkWhenAutomaticDisabled` (strict
+    // guard + `#expect`); manual identifiers when automatic generation is off are not re-tested here.
     
     // MARK: - Edge Case 5: Disable/Enable Mid-Hierarchy
     
