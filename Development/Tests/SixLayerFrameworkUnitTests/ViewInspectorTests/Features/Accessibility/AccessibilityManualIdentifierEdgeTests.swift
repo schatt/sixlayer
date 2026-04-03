@@ -2,19 +2,22 @@ import Testing
 import SwiftUI
 @testable import SixLayerFramework
 
-/// Manual accessibility identifier checks isolated from `AccessibilityIdentifierEdgeCaseTests`.
-/// `inspectButtonAccessibilityIdentifier` returns nil for the same view when the `@Test` is declared
-/// on that open class (Swift Testing / ViewInspector interaction); a struct `Suite` avoids the failure.
+/// Manual `.accessibilityIdentifier` on `PlatformInteractionButton` (edge-case doc lives next to
+/// `AccessibilityIdentifierEdgeCaseTests`). Uses `BaseTestClass` + `runWithTaskLocalConfig` like
+/// `AccessibilityIdentifierDisabledTests`; a bare `struct` + `withValue` did not reproduce the same
+/// ViewInspector outcome in this target.
 @Suite("Accessibility Manual Identifier Edge")
-struct AccessibilityManualIdentifierEdgeTests {
+final class AccessibilityManualIdentifierEdgeTests: BaseTestClass {
     @Test @MainActor func testManualIDOverride() {
-        let config = TestSetupUtilities.makeIsolatedAccessibilityIdentifierConfig()
-        config.enableAutoIDs = false
+        initializeTestConfig()
+        runWithTaskLocalConfig {
+            guard let config = testConfig else {
+                Issue.record("testConfig is nil")
+                return
+            }
+            config.enableAutoIDs = false
 
-        let manualID = "manual-test-button"
-        // Build the view inside `withValue` so modifier bodies see the same @TaskLocal config as
-        // `runWithTaskLocalConfig` in AccessibilityIdentifierDisabledTests (not `.shared` alone).
-        AccessibilityIdentifierConfig.$taskLocalConfig.withValue(config) {
+            let manualID = "manual-override"
             let view = PlatformInteractionButton(style: .primary, action: {}, identifierName: "TestButton") {
                 platformPresentContent_L1(content: "Test Button", hints: PresentationHints())
             }
