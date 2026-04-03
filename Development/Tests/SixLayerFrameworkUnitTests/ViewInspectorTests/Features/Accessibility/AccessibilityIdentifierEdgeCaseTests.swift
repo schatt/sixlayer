@@ -104,7 +104,9 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
     @Test @MainActor func testManualIDOverride() {
         initializeTestConfig()
         runWithTaskLocalConfig {
-            setupTestEnvironment()
+            // Do not call setupTestEnvironment() — matches AccessibilityIdentifierDisabledTests and
+            // avoids RuntimeCapabilityDetection state that prevents inspectButtonAccessibilityIdentifier
+            // from resolving the manual id in this suite.
             guard let config = testConfig else {
                 Issue.record("testConfig is nil")
                 return
