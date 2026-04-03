@@ -108,6 +108,9 @@ public enum TestSetupUtilities {
             let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 400, height: 400))
             window.rootViewController = hosting
             window.makeKeyAndVisible()
+            // Drive appearance so SwiftUI/UIKit commit the view hierarchy (identifiers often stay empty without this in unit tests).
+            hosting.beginAppearanceTransition(true, animated: false)
+            hosting.endAppearanceTransition()
             // Allow run loop so UIKit/SwiftUI can apply accessibility traits to the hierarchy (0.1s on iOS for identifier propagation)
             RunLoop.current.run(until: Date().addingTimeInterval(0.1))
             // Optionally force layout so identifiers are applied to the UIView tree (Option A for a11y tests).
