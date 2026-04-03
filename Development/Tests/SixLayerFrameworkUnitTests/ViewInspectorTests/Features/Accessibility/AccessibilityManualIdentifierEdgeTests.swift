@@ -17,20 +17,23 @@ final class AccessibilityManualIdentifierEdgeTests: BaseTestClass {
             }
             config.enableAutoIDs = false
 
-            // Byte-for-byte parity with AccessibilityIdentifierDisabledTests.testManualIDsStillWorkWhenAutomaticDisabled
-            // (including identifier string); used to validate inspect in this suite/file.
+            let manualID = "manual-edge-ok"
             let view = PlatformInteractionButton(style: .primary, action: {}, identifierName: "TestButton") {
                 platformPresentContent_L1(content: "Test Button", hints: PresentationHints())
             }
-            .accessibilityIdentifier("manual-test-button")
+            .accessibilityIdentifier(manualID)
 
             #if canImport(ViewInspector)
             if let buttonID = AccessibilityTestUtilities.inspectButtonAccessibilityIdentifier(
                 view,
                 issuePrefix: "Failed to inspect view for manual accessibility identifier"
             ) {
-                #expect(buttonID == "manual-test-button", "Manual accessibility identifier should work when automatic is disabled")
+                #expect(buttonID == manualID)
+            } else {
+                Issue.record("Inspection unavailable: expected manual id on hosted button")
             }
+            #else
+            Issue.record("ViewInspector required for manual accessibilityIdentifier test")
             #endif
         }
     }
