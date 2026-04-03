@@ -150,6 +150,13 @@ public func getAccessibilityIdentifierForTest<V: View>(view: V, hostedRoot: Any?
     if let root = hostedRoot, let id = firstAccessibilityIdentifier(inHosted: root), !id.isEmpty {
         return id
     }
+    // Generator debug log (isolated test configs enable debug logging): UIKit may not mirror IDs in unit-test hosting.
+    if let cfg = AccessibilityIdentifierConfig.currentTaskLocalConfig {
+        let fromLog = AccessibilityTestUtilities.parsedIdentifiersFromConfigDebugLog(config: cfg)
+        if let id = fromLog.reversed().first(where: { !$0.isEmpty }) {
+            return id
+        }
+    }
     if let inspected = try? AnyView(view).inspect() {
         if let id = firstAccessibilityIdentifierInInspected(inspected) { return id }
         if let inner = try? inspected.anyView() {
@@ -764,6 +771,12 @@ public enum AccessibilityTestUtilities {
     @MainActor
     public static func identifierMatchesExpectedPattern(_ identifier: String, expectedPattern: String) -> Bool {
         matchesExpectedPattern(identifier, expectedPattern: expectedPattern)
+    }
+    
+    /// Parsed identifier strings from `AccessibilityIdentifierConfig` debug log entries (requires debug logging enabled on that config during view build).
+    @MainActor
+    public static func parsedIdentifiersFromConfigDebugLog(config: AccessibilityIdentifierConfig) -> [String] {
+        parseGeneratedIdentifiers(from: config.getDebugLog())
     }
     
     @MainActor
