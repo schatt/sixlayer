@@ -100,10 +100,40 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
     }
     
     // MARK: - Edge Case 4: Manual ID Override
-    // Manual `.accessibilityIdentifier` on PlatformInteractionButton is covered by
-    // `AccessibilityIdentifierDisabledTests` (including `testManualAccessibilityIdentifierCustomString`
-    // for the "manual-override" string). The same inspect path returns nil when the `@Test` is declared
-    // in this suite; keep coverage in the disabled suite until that ViewInspector quirk is understood.
+    
+    @Test @MainActor func testManualIDOverride() {
+        initializeTestConfig()
+        runWithTaskLocalConfig {
+            setupTestEnvironment()
+            guard let config = testConfig else {
+                Issue.record("testConfig is nil")
+                return
+            }
+            config.enableAutoIDs = false
+            
+            // Avoid the literal substring "override" in the identifier: with `manual-override`,
+            // `inspectButtonAccessibilityIdentifier` consistently returns nil in this target (SwiftUI /
+            // ViewInspector), while `manual-test-button` works (see AccessibilityIdentifierDisabledTests).
+            let manualID = "edge-manual-identifier"
+            let view = PlatformInteractionButton(style: .primary, action: {}, identifierName: "TestButton") {
+                platformPresentContent_L1(content: "Test Button", hints: PresentationHints())
+            }
+            .accessibilityIdentifier(manualID)
+            
+            #if canImport(ViewInspector)
+            if let id = AccessibilityTestUtilities.inspectButtonAccessibilityIdentifier(
+                view,
+                issuePrefix: "Failed to inspect manual accessibility identifier"
+            ) {
+                #expect(id == manualID)
+            } else {
+                Issue.record("Inspection unavailable: expected manual id on hosted button")
+            }
+            #else
+            Issue.record("ViewInspector required for manual accessibilityIdentifier test")
+            #endif
+        }
+    }
     
     // MARK: - Edge Case 5: Disable/Enable Mid-Hierarchy
     
