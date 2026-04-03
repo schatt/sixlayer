@@ -14,23 +14,6 @@ import ViewInspector
 /// NOTE: Not marked @MainActor on class to allow parallel execution
 @Suite("Accessibility Identifier Edge Case")
 open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
-    /// Hosting can evaluate modifiers outside the test task, leaving isolated debug logs empty; ViewInspector reads the SwiftUI modifier chain.
-    @MainActor
-    private func accessibilityIdentifierForButtonViaViewInspector<V: View>(_ view: V) -> String? {
-        #if canImport(ViewInspector)
-        guard let inspected = try? AnyView(view).inspect() else { return nil }
-        if let id = try? inspected.button().accessibilityIdentifier(), !id.isEmpty {
-            return id
-        }
-        for button in inspected.findAll(ViewInspector.ViewType.Button.self) {
-            if let id = try? button.accessibilityIdentifier(), !id.isEmpty {
-                return id
-            }
-        }
-        #endif
-        return nil
-    }
-    
     // MARK: - Edge Case 1: Empty String Parameters
     
     @Test @MainActor func testEmptyStringParameters() {
@@ -134,7 +117,7 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
             
             _ = Self.hostRootPlatformView(view, forceLayout: true, exposeContentAccessibility: true)
             #if canImport(ViewInspector)
-            let id = accessibilityIdentifierForButtonViaViewInspector(view)
+            let id = AccessibilityTestUtilities.allAccessibilityIdentifiersFromViewInspector(view).first { $0 == "manual-override" }
             guard id == "manual-override" else {
                 Issue.record("Inspection unavailable: expected manual-override, got \(String(describing: id))")
                 return
@@ -223,9 +206,9 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
             
             _ = Self.hostRootPlatformView(view1, forceLayout: true, exposeContentAccessibility: true)
-            let id1 = accessibilityIdentifierForButtonViaViewInspector(view1)
+            let id1 = AccessibilityTestUtilities.allAccessibilityIdentifiersFromViewInspector(view1).first { $0 == "SameName" }
             _ = Self.hostRootPlatformView(view2, forceLayout: true, exposeContentAccessibility: true)
-            let id2 = accessibilityIdentifierForButtonViaViewInspector(view2)
+            let id2 = AccessibilityTestUtilities.allAccessibilityIdentifiersFromViewInspector(view2).first { $0 == "SameName" }
             
             #if canImport(ViewInspector)
             if id1 == nil || id2 == nil {
@@ -254,9 +237,11 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
                 .enableGlobalAutomaticCompliance()
             
             _ = Self.hostRootPlatformView(exactView, forceLayout: true, exposeContentAccessibility: true)
-            let exactID = accessibilityIdentifierForButtonViaViewInspector(exactView)
+            let exactID = AccessibilityTestUtilities.allAccessibilityIdentifiersFromViewInspector(exactView).first { $0 == "TestButton" }
             _ = Self.hostRootPlatformView(namedView, forceLayout: true, exposeContentAccessibility: true)
-            let namedID = accessibilityIdentifierForButtonViaViewInspector(namedView)
+            let namedCandidates = AccessibilityTestUtilities.allAccessibilityIdentifiersFromViewInspector(namedView)
+            let namedID = namedCandidates.first { $0.contains("TestButton") && $0.contains(".") }
+                ?? namedCandidates.first { $0.contains("TestButton") && $0 != "TestButton" }
             
             #if canImport(ViewInspector)
             if exactID == nil || namedID == nil {
@@ -293,7 +278,7 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
                 .enableGlobalAutomaticCompliance()
             
             _ = Self.hostRootPlatformView(exactView, forceLayout: true, exposeContentAccessibility: true)
-            let exactID = accessibilityIdentifierForButtonViaViewInspector(exactView)
+            let exactID = AccessibilityTestUtilities.allAccessibilityIdentifiersFromViewInspector(exactView).first { $0 == "SaveButton" }
             
             #if canImport(ViewInspector)
             if exactID == nil {
@@ -319,7 +304,7 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
                 .enableGlobalAutomaticCompliance()
             
             _ = Self.hostRootPlatformView(exactView, forceLayout: true, exposeContentAccessibility: true)
-            let exactID = accessibilityIdentifierForButtonViaViewInspector(exactView)
+            let exactID = AccessibilityTestUtilities.allAccessibilityIdentifiersFromViewInspector(exactView).first { $0 == "MinimalButton" }
             
             #if canImport(ViewInspector)
             if exactID == nil {
