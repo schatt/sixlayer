@@ -245,9 +245,44 @@ extension XCUIApplication {
     ///   - linkLabel: Optional visible label to tap if identifier lookup fails (e.g. "Layer 4 Component Examples").
     /// - Returns: true if navigation succeeded (nav bar and list content visible).
     func navigateToLayerExamples(linkIdentifier: String, navigationBarTitle: String, linkLabel: String? = nil) -> Bool {
+        func layerExamplesDestinationReached() -> Bool {
+            let navBarExists = navigationBars[navigationBarTitle].waitForExistence(timeout: 8.0)
+            let contentExists = buttons.firstMatch.waitForExistence(timeout: 2.0) || staticTexts.firstMatch.waitForExistence(timeout: 2.0) || cells.firstMatch.waitForExistence(timeout: 1.0)
+            if navBarExists && contentExists { return true }
+            if staticTexts[navigationBarTitle].waitForExistence(timeout: 1.0) && contentExists { return true }
+            return false
+        }
+
+        /// Launch-page `NavigationLink` rows use `Group` + `accessibilityElement(children: .combine)` with a row id.
+        /// XCTest often reports that as a **Button** with the row identifier; tapping it does not push the stack.
+        /// Tapping `links[visibleTitle]` targets the real link and navigates reliably.
+        let navigationLinkTitle: String? = linkLabel ?? {
+            switch linkIdentifier {
+            case "layer2-examples-link": return "Layer 2 Layout Examples"
+            case "layer3-examples-link": return "Layer 3 Strategy Examples"
+            case "layer4-examples-link": return "Layer 4 Component Examples"
+            case "layer5-examples-link": return "Layer 5 Optimization Examples"
+            case "layer6-examples-link": return "Layer 6 System Examples"
+            default: return nil
+            }
+        }()
+
         _ = navigateBackToLaunch(timeout: 5.0)
         guard waitForReady(timeout: 5.0) else { return false }
-        // Layer 4+ links are below the fold; scroll down so they become visible and tappable
+
+        if let title = navigationLinkTitle {
+            let scrollHost = scrollViews.firstMatch
+            for _ in 0..<14 {
+                let rowLink = links[title].firstMatch
+                if rowLink.waitForExistence(timeout: 0.6) && rowLink.isHittable {
+                    rowLink.tap()
+                    return layerExamplesDestinationReached()
+                }
+                if scrollHost.exists { scrollHost.swipeUp() }
+            }
+        }
+
+        // Fallback: identifier-based (callers on unusual rows or when link query fails)
         if linkIdentifier.contains("layer4") || linkIdentifier.contains("layer5") || linkIdentifier.contains("layer6") {
             let scrollView = scrollViews.firstMatch
             if scrollView.exists {
@@ -259,7 +294,7 @@ extension XCUIApplication {
             }
         }
         var link = findLaunchPageEntry(identifier: linkIdentifier)
-        if !link.waitForExistence(timeout: 2.0), let label = linkLabel {
+        if !link.waitForExistence(timeout: 2.0), let label = navigationLinkTitle {
             link = links[label].firstMatch
             if !link.exists { link = buttons[label].firstMatch }
             if !link.exists { link = staticTexts[label].firstMatch }
@@ -270,7 +305,7 @@ extension XCUIApplication {
             if scrollViews.firstMatch.exists { scrollViews.firstMatch.swipeUp() }
             attempts += 1
             link = findLaunchPageEntry(identifier: linkIdentifier)
-            if !link.waitForExistence(timeout: 1.0), let label = linkLabel {
+            if !link.waitForExistence(timeout: 1.0), let label = navigationLinkTitle {
                 link = links[label].firstMatch
                 if !link.exists { link = buttons[label].firstMatch }
                 if !link.exists { link = staticTexts[label].firstMatch }
@@ -279,11 +314,7 @@ extension XCUIApplication {
         }
         guard link.waitForExistence(timeout: 5.0) else { return false }
         link.tap()
-        let navBarExists = navigationBars[navigationBarTitle].waitForExistence(timeout: 8.0)
-        let contentExists = buttons.firstMatch.waitForExistence(timeout: 2.0) || staticTexts.firstMatch.waitForExistence(timeout: 2.0) || cells.firstMatch.waitForExistence(timeout: 1.0)
-        if navBarExists && contentExists { return true }
-        if staticTexts[navigationBarTitle].waitForExistence(timeout: 1.0) && contentExists { return true }
-        return false
+        return layerExamplesDestinationReached()
     }
 
 }
