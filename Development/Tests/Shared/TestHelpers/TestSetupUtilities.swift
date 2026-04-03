@@ -248,6 +248,8 @@ public enum TestSetupUtilities {
         config.resetToDefaults()
         config.enableAutoIDs = true
         config.globalAutomaticAccessibilityIdentifiers = true
+        // Populate debug log during view build so helpers can fall back when UIKit does not expose identifiers (ViewInspector harness).
+        config.enableDebugLogging = true
         config.namespace = "SixLayer"
         config.mode = .automatic
         config.enableUITestIntegration = true
