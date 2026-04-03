@@ -574,29 +574,6 @@ public struct NamedAutomaticComplianceModifier: ViewModifier {
     }
 }
 
-// MARK: - Test harness debug log mirroring
-
-/// When UIHostingController lays out, modifier bodies can run outside the Swift task that wrapped the test in `AccessibilityIdentifierConfig.$taskLocalConfig`, so `resolvedForIdentifierGeneration` may yield `.shared` (debug off) while the isolated test config on `taskLocalConfig` still has `enableDebugLogging == true`. Mirror parseable lines to every sink that opted into debug so `getDebugLog()` on the test instance stays useful.
-@MainActor
-private func appendAccessibilityIdentifierDebugLog(
-    resolvedConfig: AccessibilityIdentifierConfig,
-    resolvedDebugEnabled: Bool,
-    entries: [String]
-) {
-    let tl = AccessibilityIdentifierConfig.taskLocalConfig
-    var sinks: [AccessibilityIdentifierConfig] = []
-    if let tl, tl.enableDebugLogging { sinks.append(tl) }
-    if resolvedDebugEnabled, !sinks.contains(where: { $0 === resolvedConfig }) {
-        sinks.append(resolvedConfig)
-    }
-    guard !sinks.isEmpty else { return }
-    for sink in sinks {
-        for entry in entries {
-            sink.addDebugLogEntry(entry, enabled: true)
-        }
-    }
-}
-
 // MARK: - Named Component Modifier
 
 /// Modifier that allows components to be named for more specific accessibility identifiers
@@ -685,19 +662,15 @@ public struct NamedModifier: ViewModifier {
         // Debug logging (addDebugLogEntry so test harnesses can parse identifiers like generateAccessibilityIdentifier)
         let detailMsg = "🔍 NAMED MODIFIER DEBUG: Generated identifier '\(identifier)' for name '\(name)'"
         let parseableLine = "Generated identifier '\(identifier)' for named: '\(name)'"
-        if let tl = AccessibilityIdentifierConfig.taskLocalConfig {
-            // Tests: @Environment injection may be nil during layout; task-local config still isolates debug log reads.
+        // Always record parseable lines on the resolved config (tests often read `.shared` when @TaskLocal is not visible during layout).
+        config.addDebugLogEntry(detailMsg, enabled: true)
+        config.addDebugLogEntry(parseableLine, enabled: true)
+        if let tl = AccessibilityIdentifierConfig.taskLocalConfig, tl !== config {
             tl.addDebugLogEntry(detailMsg, enabled: true)
             tl.addDebugLogEntry(parseableLine, enabled: true)
-        } else {
-            if capturedEnableDebugLogging {
-                print(detailMsg)
-            }
-            appendAccessibilityIdentifierDebugLog(
-                resolvedConfig: config,
-                resolvedDebugEnabled: capturedEnableDebugLogging,
-                entries: [detailMsg, parseableLine]
-            )
+        }
+        if capturedEnableDebugLogging {
+            print(detailMsg)
         }
         
         return identifier
@@ -738,21 +711,17 @@ public struct ExactNamedModifier: ViewModifier {
         // GREEN PHASE: Return ONLY the exact name - no framework additions
         let exactIdentifier = name
         
-        // Debug logging (mirror to task-local test config when hosting evaluates outside that task; see appendAccessibilityIdentifierDebugLog).
+        // Debug logging: always append parseable lines so unit tests can read `getDebugLog()` even when only `.shared` is resolved during layout.
         let msg = "🔍 EXACT NAMED MODIFIER DEBUG: Generated exact identifier '\(exactIdentifier)' for name '\(name)'"
         let parseableLine = "Generated identifier '\(exactIdentifier)' for exactNamed: '\(name)'"
-        if let tl = AccessibilityIdentifierConfig.taskLocalConfig {
+        config.addDebugLogEntry(msg, enabled: true)
+        config.addDebugLogEntry(parseableLine, enabled: true)
+        if let tl = AccessibilityIdentifierConfig.taskLocalConfig, tl !== config {
             tl.addDebugLogEntry(msg, enabled: true)
             tl.addDebugLogEntry(parseableLine, enabled: true)
-        } else {
-            if capturedEnableDebugLogging {
-                print(msg)
-            }
-            appendAccessibilityIdentifierDebugLog(
-                resolvedConfig: config,
-                resolvedDebugEnabled: capturedEnableDebugLogging,
-                entries: [msg, parseableLine]
-            )
+        }
+        if capturedEnableDebugLogging {
+            print(msg)
         }
         
         return exactIdentifier
