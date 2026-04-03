@@ -2,10 +2,9 @@ import Testing
 import SwiftUI
 @testable import SixLayerFramework
 
-/// Manual `.accessibilityIdentifier` on `PlatformInteractionButton` (edge-case doc lives next to
-/// `AccessibilityIdentifierEdgeCaseTests`). Uses `BaseTestClass` + `runWithTaskLocalConfig` like
-/// `AccessibilityIdentifierDisabledTests`; a bare `struct` + `withValue` did not reproduce the same
-/// ViewInspector outcome in this target.
+/// Manual `.accessibilityIdentifier` on `PlatformInteractionButton` when automatic IDs are off.
+/// `AccessibilityIdentifierDisabledTests` only asserts inside `if let` (nil inspect passes vacuously);
+/// this test requires evidence from the hosted UIKit tree and falls back to ViewInspector.
 @Suite("Accessibility Manual Identifier Edge")
 final class AccessibilityManualIdentifierEdgeTests: BaseTestClass {
     @Test @MainActor func testManualIDOverride() {
@@ -17,11 +16,23 @@ final class AccessibilityManualIdentifierEdgeTests: BaseTestClass {
             }
             config.enableAutoIDs = false
 
-            let manualID = "manual-test-button"
+            let manualID = "manual-override"
             let view = PlatformInteractionButton(style: .primary, action: {}, identifierName: "TestButton") {
                 platformPresentContent_L1(content: "Test Button", hints: PresentationHints())
             }
             .accessibilityIdentifier(manualID)
+
+            let root = Self.hostRootPlatformView(
+                view,
+                forceLayout: true,
+                exposeContentAccessibility: true,
+                accessibilityIdentifierConfig: config
+            )
+            let platformIDs = findAllAccessibilityIdentifiersFromPlatformView(root)
+            if platformIDs.contains(manualID) {
+                #expect(platformIDs.contains(manualID))
+                return
+            }
 
             #if canImport(ViewInspector)
             if let buttonID = AccessibilityTestUtilities.inspectButtonAccessibilityIdentifier(
@@ -29,12 +40,13 @@ final class AccessibilityManualIdentifierEdgeTests: BaseTestClass {
                 issuePrefix: "Failed to inspect view for manual accessibility identifier"
             ) {
                 #expect(buttonID == manualID)
-            } else {
-                Issue.record("Inspection unavailable: expected manual id on hosted button")
+                return
             }
-            #else
-            Issue.record("ViewInspector required for manual accessibilityIdentifier test")
             #endif
+
+            Issue.record(
+                "Could not verify manual id '\(manualID)'; platform collected \(platformIDs.count) ids: \(platformIDs)"
+            )
         }
     }
 }
