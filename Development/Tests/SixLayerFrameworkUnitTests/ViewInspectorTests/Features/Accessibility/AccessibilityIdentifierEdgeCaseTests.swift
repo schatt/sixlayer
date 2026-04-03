@@ -100,8 +100,8 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
     }
     
     // MARK: - Edge Case 4: Manual ID Override
-    // See `AccessibilityIdentifierDisabledTests.testManualIDsStillWorkWhenAutomaticDisabled` (strict
-    // guard + `#expect`); manual identifiers when automatic generation is off are not re-tested here.
+    // See `AccessibilityIdentifierDisabledTests.testManualIDsStillWorkWhenAutomaticDisabled`; ViewInspector
+    // may omit the id in unit-test hosting (`if let` only). Prefer UI tests for hard guarantees.
     
     // MARK: - Edge Case 5: Disable/Enable Mid-Hierarchy
     
