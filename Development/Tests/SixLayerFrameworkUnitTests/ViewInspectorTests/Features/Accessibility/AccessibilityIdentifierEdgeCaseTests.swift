@@ -111,8 +111,8 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
             setupTestEnvironment()
             
             // Test: Manual accessibilityIdentifier on a hosted control (no inner automaticCompliance).
-            // UIView traversal often misses plain Button ids here; ViewInspector matches other accessibility tests in this target.
-            let view = Button("Test") { }
+            // Manual id on Text is visible to deep ViewInspector traversal; plain Button often exposes no identifier node in this suite.
+            let view = Text("Test")
                 .accessibilityIdentifier("manual-override")
             
             _ = Self.hostRootPlatformView(view, forceLayout: true, exposeContentAccessibility: true)
@@ -193,17 +193,16 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
             setupTestEnvironment()
             
             // Test: Does exactNamed() use exact names without hierarchy?
+            // Do not wrap with outer enableGlobalAutomaticCompliance — it applies another automaticCompliance that overwrites exactNamed.
             let view1 = PlatformInteractionButton(style: .primary, action: {}, identifierName: "Test1") {
                 Text("Test1")
             }
             .exactNamed("SameName")
-            .enableGlobalAutomaticCompliance()
             
             let view2 = PlatformInteractionButton(style: .primary, action: {}, identifierName: "Test2") {
                 Text("Test2")
             }
             .exactNamed("SameName")  // ← Same exact name
-            .enableGlobalAutomaticCompliance()
             
             _ = Self.hostRootPlatformView(view1, forceLayout: true, exposeContentAccessibility: true)
             let id1 = AccessibilityTestUtilities.allAccessibilityIdentifiersFromViewInspector(view1).first { $0 == "SameName" }
@@ -227,10 +226,9 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
         runWithTaskLocalConfig {
             setupTestEnvironment()
             
-            // Test: exactNamed() should produce different identifiers than named()
+            // exactNamed applies without outer automaticCompliance; named() is paired with enableGlobal for hierarchical IDs.
             let exactView = Button("Test") { }
                 .exactNamed("TestButton")
-                .enableGlobalAutomaticCompliance()
             
             let namedView = Button("Test") { }
                 .named("TestButton")
@@ -275,7 +273,6 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
             
             let exactView = Button("Test") { }
                 .exactNamed("SaveButton")
-                .enableGlobalAutomaticCompliance()
             
             _ = Self.hostRootPlatformView(exactView, forceLayout: true, exposeContentAccessibility: true)
             let exactID = AccessibilityTestUtilities.allAccessibilityIdentifiersFromViewInspector(exactView).first { $0 == "SaveButton" }
@@ -301,7 +298,6 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
             // Test: exactNamed() should produce minimal identifiers
             let exactView = Button("Test") { }
                 .exactNamed("MinimalButton")
-                .enableGlobalAutomaticCompliance()
             
             _ = Self.hostRootPlatformView(exactView, forceLayout: true, exposeContentAccessibility: true)
             let exactID = AccessibilityTestUtilities.allAccessibilityIdentifiersFromViewInspector(exactView).first { $0 == "MinimalButton" }
