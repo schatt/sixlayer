@@ -117,9 +117,11 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
             }
             cfg.enableAutoIDs = false
             
+            // Match AccessibilityIdentifierDisabledTests view shape exactly (identifierName + label text);
+            // shorter labels can change how PlatformInteractionButton wraps content for ViewInspector.
             let manualID = "manual-override"
-            let view = PlatformInteractionButton(style: .primary, action: {}, identifierName: "Test") {
-                platformPresentContent_L1(content: "Test", hints: PresentationHints())
+            let view = PlatformInteractionButton(style: .primary, action: {}, identifierName: "TestButton") {
+                platformPresentContent_L1(content: "Test Button", hints: PresentationHints())
             }
             .accessibilityIdentifier(manualID)
             
