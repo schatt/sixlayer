@@ -326,7 +326,7 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
             let exactView = Button("Test") { }
                 .exactNamed("SaveButton")
             
-            cfg.clearDebugLog()
+            config.clearDebugLog()
             let root = Self.hostRootPlatformView(exactView, forceLayout: true, exposeContentAccessibility: true)
             let exactID = resolveExactAccessibilityIdentifier("SaveButton", view: exactView, hostedRoot: root, config: config)
             
