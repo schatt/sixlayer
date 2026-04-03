@@ -102,23 +102,14 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
     // MARK: - Edge Case 4: Manual ID Override
     
     @Test @MainActor func testManualIDOverride() {
-        initializeTestConfig()
-        runWithTaskLocalConfig {
-            // Intentionally skip setupTestEnvironment() — same as AccessibilityIdentifierDisabledTests
-            // so RuntimeCapabilityDetection overrides cannot interfere with ViewInspector button inspection.
-            
-            // With default isolated config (`enableAutoIDs` + global automatic on), UIHosting/ViewInspector
-            // often fail to surface manual `.accessibilityIdentifier` on hosted controls — same class of
-            // limitation as AccessibilityIdentifierDisabledTests. Turn automatic generation off here so the
-            // manual id is inspectable; "manual beats automatic when both apply" belongs in UI tests.
-            guard let cfg = testConfig else {
-                Issue.record("testConfig is nil")
-                return
-            }
-            cfg.enableAutoIDs = false
-            
-            // Match AccessibilityIdentifierDisabledTests view shape exactly (identifierName + label text);
-            // shorter labels can change how PlatformInteractionButton wraps content for ViewInspector.
+        // Use a fresh config in a local withValue scope only. Swift Testing may run suite tests in parallel
+        // on one class instance; sharing `testConfig` with other @Tests can race and break ViewInspector.
+        let cfg = TestSetupUtilities.makeIsolatedAccessibilityIdentifierConfig()
+        cfg.enableAutoIDs = false
+        
+        AccessibilityIdentifierConfig.$taskLocalConfig.withValue(cfg) {
+            // With automatic generation off, manual `.accessibilityIdentifier` matches
+            // AccessibilityIdentifierDisabledTests inspection behavior.
             let manualID = "manual-override"
             let view = PlatformInteractionButton(style: .primary, action: {}, identifierName: "TestButton") {
                 platformPresentContent_L1(content: "Test Button", hints: PresentationHints())
