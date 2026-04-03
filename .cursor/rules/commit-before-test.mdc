@@ -7,7 +7,7 @@ alwaysApply: true
 
 ## **MANDATORY — BLOCKING**
 
-- **Do not run any test command** (e.g. xcode-tools **RunAllTests**/**RunSomeTests**, `dbs-build --target iOS_tests`, `dbs-build --target test`, `xcodebuild test`, or any `run_terminal_cmd` that runs tests) **until all current work is committed.** Default for day-to-day is `dbs-build --target iOS_tests` (see test-target-default.mdc).
+- **Do not run any test command** (e.g. xcode-tools **RunAllTests**/**RunSomeTests**, `dbs-build --target iOS_tests`, `dbs-build --target test`, `xcodebuild test`, or any `run_terminal_cmd` that runs tests) **until all current work is committed.** Default for day-to-day is **xcode-tools MCP** with the iOS scheme (see **test-target-default.mdc**); CLI only when MCP cannot run.
 
 ## **REQUIRED SEQUENCE**
 
