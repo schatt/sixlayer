@@ -12,12 +12,14 @@ struct AccessibilityManualIdentifierEdgeTests {
         config.enableAutoIDs = false
 
         let manualID = "edge-manual-identifier"
-        let view = PlatformInteractionButton(style: .primary, action: {}, identifierName: "TestButton") {
-            platformPresentContent_L1(content: "Test Button", hints: PresentationHints())
-        }
-        .accessibilityIdentifier(manualID)
-
+        // Build the view inside `withValue` so modifier bodies see the same @TaskLocal config as
+        // `runWithTaskLocalConfig` in AccessibilityIdentifierDisabledTests (not `.shared` alone).
         AccessibilityIdentifierConfig.$taskLocalConfig.withValue(config) {
+            let view = PlatformInteractionButton(style: .primary, action: {}, identifierName: "TestButton") {
+                platformPresentContent_L1(content: "Test Button", hints: PresentationHints())
+            }
+            .accessibilityIdentifier(manualID)
+
             #if canImport(ViewInspector)
             if let id = AccessibilityTestUtilities.inspectButtonAccessibilityIdentifier(
                 view,
