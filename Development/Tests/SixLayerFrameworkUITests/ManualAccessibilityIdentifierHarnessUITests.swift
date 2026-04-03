@@ -31,9 +31,14 @@ final class ManualAccessibilityIdentifierHarnessUITests: XCTestCase {
         nonisolated(unsafe) let instance = self
         MainActor.assumeIsolated {
             let localApp = XCUIApplication()
-            localApp.launchWithOptimizations()
+            localApp.configureForFastTesting()
+            // Deep-link full Layer 4 component list (Identifier Edge Case lives here). Avoids launch-page scroll / combined-a11y flakiness.
+            localApp.launchArguments.append("-OpenLayer4ComponentExamples")
+            localApp.launch()
             instance.app = localApp
-            XCTAssertTrue(localApp.waitForReady(timeout: 5.0), "Test app should show launch page")
+            let onLayer4 = localApp.navigationBars["Layer 4 Examples"].waitForExistence(timeout: 8.0)
+                || localApp.staticTexts["Layer 4 Examples"].waitForExistence(timeout: 2.0)
+            XCTAssertTrue(onLayer4, "Test app should open Layer 4 Examples (-OpenLayer4ComponentExamples)")
         }
     }
 
@@ -55,17 +60,8 @@ final class ManualAccessibilityIdentifierHarnessUITests: XCTestCase {
         )
     }
 
-    /// Navigate: Launch → Layer 4 Examples → Identifier Edge Case; assert manual ids are queryable.
+    /// SetUp opens Layer 4 Examples via `-OpenLayer4ComponentExamples`. Navigate: Identifier Edge Case → assert manual ids queryable.
     func testManualPlatformButtonIds_queryableViaXCUITest() throws {
-        XCTAssertTrue(
-            app.navigateToLayerExamples(
-                linkIdentifier: "layer4-examples-link",
-                navigationBarTitle: "Layer 4 Examples",
-                linkLabel: "Layer 4 Component Examples"
-            ),
-            "Should reach Layer 4 Examples from launch"
-        )
-
         let edgeLink = app.findLaunchPageEntry(identifier: "test-view-Identifier Edge Case")
         XCTAssertTrue(edgeLink.waitForExistence(timeout: 8.0), "Identifier Edge Case link should exist")
         edgeLink.tap()
