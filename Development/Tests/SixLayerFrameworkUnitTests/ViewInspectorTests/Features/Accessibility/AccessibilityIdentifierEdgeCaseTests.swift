@@ -100,8 +100,9 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
     }
     
     // MARK: - Edge Case 4: Manual ID Override
-    // See `AccessibilityIdentifierDisabledTests.testManualIDsStillWorkWhenAutomaticDisabled`; ViewInspector
-    // may omit the id in unit-test hosting (`if let` only). Prefer UI tests for hard guarantees.
+    // See `AccessibilityIdentifierDisabledTests.testManualIDsStillWorkWhenAutomaticDisabled` and
+    // `ManualAccessibilityIdentifierHarnessUITests` (XCUITest). ViewInspector / hosted UIKit collection
+    // often omit manual ids in unit tests; XCUIApplication is the reliable check.
     
     // MARK: - Edge Case 5: Disable/Enable Mid-Hierarchy
     
