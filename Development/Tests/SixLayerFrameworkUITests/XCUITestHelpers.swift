@@ -210,7 +210,7 @@ extension XCUIApplication {
     func findLaunchPageEntry(identifier: String) -> XCUIElement {
         findElement(byIdentifier: identifier,
                     primaryType: .button,
-                    secondaryTypes: [.cell, .staticText, .other, .any])
+                    secondaryTypes: [.link, .cell, .staticText, .other, .any])
             ?? buttons[identifier]
     }
 
@@ -260,7 +260,8 @@ extension XCUIApplication {
         }
         var link = findLaunchPageEntry(identifier: linkIdentifier)
         if !link.waitForExistence(timeout: 2.0), let label = linkLabel {
-            link = buttons[label].firstMatch
+            link = links[label].firstMatch
+            if !link.exists { link = buttons[label].firstMatch }
             if !link.exists { link = staticTexts[label].firstMatch }
             if !link.exists { link = cells[label].firstMatch }
         }
@@ -270,7 +271,8 @@ extension XCUIApplication {
             attempts += 1
             link = findLaunchPageEntry(identifier: linkIdentifier)
             if !link.waitForExistence(timeout: 1.0), let label = linkLabel {
-                link = buttons[label].firstMatch
+                link = links[label].firstMatch
+                if !link.exists { link = buttons[label].firstMatch }
                 if !link.exists { link = staticTexts[label].firstMatch }
                 if !link.exists { link = cells[label].firstMatch }
             }
