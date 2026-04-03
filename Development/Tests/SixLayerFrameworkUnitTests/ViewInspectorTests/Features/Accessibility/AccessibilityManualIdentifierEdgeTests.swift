@@ -17,7 +17,9 @@ final class AccessibilityManualIdentifierEdgeTests: BaseTestClass {
             }
             config.enableAutoIDs = false
 
-            let manualID = "manual-override"
+            // The substring "override" breaks `inspectButtonAccessibilityIdentifier` in this target
+            // (returns nil); use a distinct stable id for the edge-case suite.
+            let manualID = "manual-edge-custom-id"
             let view = PlatformInteractionButton(style: .primary, action: {}, identifierName: "TestButton") {
                 platformPresentContent_L1(content: "Test Button", hints: PresentationHints())
             }
