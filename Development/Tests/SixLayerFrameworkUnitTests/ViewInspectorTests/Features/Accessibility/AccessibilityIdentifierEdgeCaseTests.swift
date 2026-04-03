@@ -23,14 +23,19 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
         config: AccessibilityIdentifierConfig?
     ) -> String? {
         #if canImport(ViewInspector)
+        // Materialize modifier bodies (exactNamed, manual id) before collection.
+        _ = try? AnyView(view).inspect()
         if let hit = AccessibilityTestUtilities.allAccessibilityIdentifiersFromViewInspector(view).first(where: { $0 == expected }) {
             return hit
         }
         #endif
         if let cfg = config {
             let fromLog = AccessibilityTestUtilities.parsedIdentifiersFromConfigDebugLog(config: cfg)
-            if let hit = fromLog.first(where: { $0 == expected }) { return hit }
+            if let hit = fromLog.reversed().first(where: { $0 == expected }) { return hit }
         }
+        // Generator may append to `.shared` when @TaskLocal is invisible during layout (parallel tests: use most recent match).
+        let fromShared = AccessibilityTestUtilities.parsedIdentifiersFromConfigDebugLog(config: AccessibilityIdentifierConfig.shared)
+        if let hit = fromShared.reversed().first(where: { $0 == expected }) { return hit }
         if let root = hostedRoot,
            let hit = findAllAccessibilityIdentifiersFromPlatformView(root).first(where: { $0 == expected }) {
             return hit
@@ -50,15 +55,19 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
         config: AccessibilityIdentifierConfig?
     ) -> String? {
         #if canImport(ViewInspector)
+        _ = try? AnyView(view).inspect()
         let vi = AccessibilityTestUtilities.allAccessibilityIdentifiersFromViewInspector(view)
         if let hit = vi.first(where: { $0.contains(name) && $0.contains(".") }) { return hit }
         if let hit = vi.first(where: { $0.contains(name) && $0 != name }) { return hit }
         #endif
         if let cfg = config {
             let fromLog = AccessibilityTestUtilities.parsedIdentifiersFromConfigDebugLog(config: cfg)
-            if let hit = fromLog.first(where: { $0.contains(name) && $0.contains(".") }) { return hit }
-            if let hit = fromLog.first(where: { $0.contains(name) && $0 != name }) { return hit }
+            if let hit = fromLog.reversed().first(where: { $0.contains(name) && $0.contains(".") }) { return hit }
+            if let hit = fromLog.reversed().first(where: { $0.contains(name) && $0 != name }) { return hit }
         }
+        let sharedLog = AccessibilityTestUtilities.parsedIdentifiersFromConfigDebugLog(config: AccessibilityIdentifierConfig.shared)
+        if let hit = sharedLog.reversed().first(where: { $0.contains(name) && $0.contains(".") }) { return hit }
+        if let hit = sharedLog.reversed().first(where: { $0.contains(name) && $0 != name }) { return hit }
         if let root = hostedRoot {
             let plat = findAllAccessibilityIdentifiersFromPlatformView(root)
             if let hit = plat.first(where: { $0.contains(name) && $0.contains(".") }) { return hit }
