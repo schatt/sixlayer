@@ -104,7 +104,8 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
     @Test @MainActor func testManualIDOverride() {
         initializeTestConfig()
         runWithTaskLocalConfig {
-            setupTestEnvironment()
+            // Intentionally skip setupTestEnvironment() — same as AccessibilityIdentifierDisabledTests
+            // so RuntimeCapabilityDetection overrides cannot interfere with ViewInspector button inspection.
             
             // With default isolated config (`enableAutoIDs` + global automatic on), UIHosting/ViewInspector
             // often fail to surface manual `.accessibilityIdentifier` on hosted controls — same class of
