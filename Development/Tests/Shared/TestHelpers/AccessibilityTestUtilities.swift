@@ -153,6 +153,10 @@ public func getAccessibilityIdentifierForTest<V: View>(view: V, hostedRoot: Any?
     // Generator debug log (isolated test configs enable debug logging): UIKit may not mirror IDs in unit-test hosting.
     if let cfg = AccessibilityIdentifierConfig.currentTaskLocalConfig {
         let fromLog = AccessibilityTestUtilities.parsedIdentifiersFromConfigDebugLog(config: cfg)
+        // Prefer single-segment ids (exactNamed, short names) over long automaticCompliance shells.
+        if let id = fromLog.reversed().first(where: { !$0.isEmpty && $0.split(separator: ".").count == 1 }) {
+            return id
+        }
         if let id = fromLog.reversed().first(where: { !$0.isEmpty }) {
             return id
         }
