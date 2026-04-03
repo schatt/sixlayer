@@ -202,6 +202,27 @@ public func getAccessibilityLabelForTest<V: View>(view: V, hostedRoot: Any? = ni
 }
 
 #if canImport(UIKit)
+/// Integer from ObjC `perform` return value (`NSNumber` is typical for `accessibilityElementCount`).
+@MainActor
+private func intFromObjCPerformResult(_ object: Any?) -> Int {
+    switch object {
+    case let n as NSNumber:
+        return n.intValue
+    case let i as Int:
+        return i
+    default:
+        return 0
+    }
+}
+
+/// Identifier from a child returned by `accessibilityElement(at:)` (may be `UIAccessibilityElement` or `UIView`).
+@MainActor
+private func accessibilityIdentifierFromAccessibilityContainerChild(_ raw: Any?) -> String? {
+    if let el = raw as? UIAccessibilityElement, let id = el.accessibilityIdentifier, !id.isEmpty { return id }
+    if let v = raw as? UIView, let id = v.accessibilityIdentifier, !id.isEmpty { return id }
+    return nil
+}
+
 /// Return the first non-empty accessibility identifier from a view's accessibilityElements (SwiftUI may expose IDs there).
 @MainActor
 private func firstAccessibilityIdentifierFromElements(_ elements: [Any]?) -> String? {
@@ -224,13 +245,11 @@ private func firstAccessibilityIdentifierFromAccessibilityContainer(_ view: UIVi
           let countResult = view.perform(countSel) else {
         return nil
     }
-    let n = countResult.takeUnretainedValue() as? Int ?? 0
+    let n = intFromObjCPerformResult(countResult.takeUnretainedValue())
     guard n > 0 else { return nil }
     for i in 0 ..< n {
         let atResult = view.perform(atSel, with: i)
-        if let el = atResult?.takeUnretainedValue() as? UIAccessibilityElement,
-           let id = el.accessibilityIdentifier,
-           !id.isEmpty {
+        if let id = accessibilityIdentifierFromAccessibilityContainerChild(atResult?.takeUnretainedValue()) {
             return id
         }
     }
@@ -435,10 +454,15 @@ public func hostedViewHasAccessibilityElementWithLabelAndButtonTrait(root: Any?,
         let atSel = NSSelectorFromString("accessibilityElementAtIndex:")
         if view.responds(to: countSel), view.responds(to: atSel),
            let countResult = view.perform(countSel) {
-            let n = countResult.takeUnretainedValue() as? Int ?? 0
+            let n = intFromObjCPerformResult(countResult.takeUnretainedValue())
             for i in 0 ..< n {
                 let atResult = view.perform(atSel, with: i)
-                if let el = atResult?.takeUnretainedValue() as? UIAccessibilityElement, checkElement(el) {
+                let raw = atResult?.takeUnretainedValue()
+                if let el = raw as? UIAccessibilityElement, checkElement(el) {
+                    return true
+                }
+                if let v = raw as? UIView, let label = v.accessibilityLabel, label.contains(expectedLabel),
+                   v.accessibilityTraits.contains(.button) {
                     return true
                 }
             }
@@ -483,13 +507,11 @@ public func findAllAccessibilityIdentifiersFromPlatformView(_ root: Any?) -> [St
         let atSel = NSSelectorFromString("accessibilityElementAtIndex:")
         if view.responds(to: countSel), view.responds(to: atSel),
            let countResult = view.perform(countSel) {
-            let n = countResult.takeUnretainedValue() as? Int ?? 0
+            let n = intFromObjCPerformResult(countResult.takeUnretainedValue())
             if n > 0 {
                 for i in 0 ..< n {
                     let atResult = view.perform(atSel, with: i)
-                    if let el = atResult?.takeUnretainedValue() as? UIAccessibilityElement,
-                       let id = el.accessibilityIdentifier,
-                       !id.isEmpty {
+                    if let id = accessibilityIdentifierFromAccessibilityContainerChild(atResult?.takeUnretainedValue()) {
                         identifiers.insert(id)
                     }
                 }
