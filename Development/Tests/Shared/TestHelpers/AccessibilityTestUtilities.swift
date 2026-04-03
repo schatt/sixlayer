@@ -95,6 +95,7 @@ private func allAccessibilityIdentifiersInInspectedRecursive(
         for v in inner.findAll(ViewInspector.ViewType.HStack.self) { collect(try? v.accessibilityIdentifier()) }
         for v in inner.findAll(ViewInspector.ViewType.ZStack.self) { collect(try? v.accessibilityIdentifier()) }
         for v in inner.findAll(ViewInspector.ViewType.Button.self) { collect(try? v.accessibilityIdentifier()) }
+        for v in inner.findAll(ViewInspector.ViewType.Text.self) { collect(try? v.accessibilityIdentifier()) }
     }
     for av in inspected.findAll(ViewInspector.ViewType.AnyView.self) {
         collect(try? av.accessibilityIdentifier())
@@ -109,6 +110,9 @@ private func allAccessibilityIdentifiersInInspectedRecursive(
         collect(try? v.accessibilityIdentifier())
     }
     for v in inspected.findAll(ViewInspector.ViewType.Button.self) {
+        collect(try? v.accessibilityIdentifier())
+    }
+    for v in inspected.findAll(ViewInspector.ViewType.Text.self) {
         collect(try? v.accessibilityIdentifier())
     }
     // ClassifiedView is the generic "any" view type; the modifier may be on a node that only appears as ClassifiedView.
