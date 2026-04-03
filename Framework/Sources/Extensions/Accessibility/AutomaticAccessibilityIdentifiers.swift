@@ -659,10 +659,12 @@ public struct NamedModifier: ViewModifier {
         
         let identifier = identifierComponents.joined(separator: ".")
         
-        // Debug logging
-        // CRITICAL: Use captured value instead of accessing @Published property directly
+        // Debug logging (addDebugLogEntry so test harnesses can parse identifiers like generateAccessibilityIdentifier)
         if capturedEnableDebugLogging {
-            print("🔍 NAMED MODIFIER DEBUG: Generated identifier '\(identifier)' for name '\(name)'")
+            let msg = "🔍 NAMED MODIFIER DEBUG: Generated identifier '\(identifier)' for name '\(name)'"
+            print(msg)
+            config.addDebugLogEntry(msg, enabled: capturedEnableDebugLogging)
+            config.addDebugLogEntry("Generated identifier '\(identifier)' for named: '\(name)'", enabled: capturedEnableDebugLogging)
         }
         
         return identifier
