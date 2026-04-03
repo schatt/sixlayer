@@ -783,6 +783,16 @@ public enum AccessibilityTestUtilities {
         parseGeneratedIdentifiers(from: config.getDebugLog())
     }
     
+    #if canImport(ViewInspector)
+    /// Non-empty accessibility identifiers from a deep ViewInspector walk (ClassifiedView, AnyView, stacks, buttons).
+    /// Shallow `inspect().button()` often misses `exactNamed` / manual `.accessibilityIdentifier` on modified content.
+    @MainActor
+    public static func allAccessibilityIdentifiersFromViewInspector<V: View>(_ view: V) -> [String] {
+        guard let inspected = try? AnyView(view).inspect() else { return [] }
+        return allAccessibilityIdentifiersInInspectedRecursive(inspected)
+    }
+    #endif
+    
     @MainActor
     private static func matchesExpectedPattern(_ identifier: String, expectedPattern: String) -> Bool {
         guard !expectedPattern.isEmpty else { return false }
