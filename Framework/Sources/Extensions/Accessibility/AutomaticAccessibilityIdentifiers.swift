@@ -706,7 +706,10 @@ public struct ExactNamedModifier: ViewModifier {
         // Debug logging
         // CRITICAL: Use captured value instead of accessing @Published property directly
         if capturedEnableDebugLogging {
-            print("🔍 EXACT NAMED MODIFIER DEBUG: Generated exact identifier '\(exactIdentifier)' for name '\(name)'")
+            let msg = "🔍 EXACT NAMED MODIFIER DEBUG: Generated exact identifier '\(exactIdentifier)' for name '\(name)'"
+            print(msg)
+            config.addDebugLogEntry(msg, enabled: capturedEnableDebugLogging)
+            config.addDebugLogEntry("Generated identifier '\(exactIdentifier)' for exactNamed: '\(name)'", enabled: capturedEnableDebugLogging)
         }
         
         return exactIdentifier
