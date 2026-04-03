@@ -35,6 +35,9 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
            let hit = findAllAccessibilityIdentifiersFromPlatformView(root).first(where: { $0 == expected }) {
             return hit
         }
+        if let root = hostedRoot, let first = firstAccessibilityIdentifier(inHosted: root), first == expected {
+            return first
+        }
         return nil
     }
     
