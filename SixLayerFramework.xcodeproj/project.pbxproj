@@ -5543,7 +5543,7 @@
 			path = API;
 			sourceTree = "<group>";
 		};
-		"TEMP_2FF99009-9EE7-4B40-B0CC-11C4D5B85702" /* Utilities */ = {
+		"TEMP_A83DBB8D-6117-4917-8099-415114E8EC56" /* Utilities */ = {
 			isa = PBXGroup;
 			children = (
 			);
@@ -6055,7 +6055,7 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
-				LastUpgradeCheck = 1610;
+				LastUpgradeCheck = 2640;
 				TargetAttributes = {
 					00F2F339FB87EE78B96E537C = {
 						ProvisioningStyle = Automatic;
@@ -9389,6 +9389,7 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
+				DEAD_CODE_STRIPPING = YES;
 				ENABLE_TESTING_SEARCH_PATHS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -10429,6 +10430,7 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
+				DEAD_CODE_STRIPPING = YES;
 				ENABLE_TESTING_SEARCH_PATHS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (

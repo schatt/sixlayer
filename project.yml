@@ -7,7 +7,7 @@ options:
     tvOS: "17.0"
     watchOS: "10.0"
     visionOS: "1.0"
-  xcodeVersion: "16.1"
+  xcodeVersion: "26.4"
   swiftVersion: "6.0"
   SWIFT_STRICT_CONCURRENCY: disabled
   CODE_SIGN_STYLE: Automatic
@@ -263,6 +263,7 @@ targets:
       GENERATE_INFOPLIST_FILE: YES
       CODE_SIGN_STYLE: Automatic
       ENABLE_TESTING_SEARCH_PATHS: YES
+      DEAD_CODE_STRIPPING: YES
       TEST_TARGET_NAME: SixLayerFrameworkTestApp_iOS
     dependencies:
       - target: SixLayerFramework_iOS
