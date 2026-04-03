@@ -125,6 +125,8 @@ public enum TestSetupUtilities {
             }
             // Store both so window and controller stay alive; keyed by root for cleanup
             HostingControllerStorage.store((controller: hosting, window: window), for: root)
+            // Deferred SwiftUI updates may run after layoutIfNeeded; drain so accessibility + debug log entries settle before tests read them.
+            RunLoop.current.run(until: Date().addingTimeInterval(0.15))
         }
         
         // When exposeContentAccessibility is true, keep root as a container so content's a11y (e.g. combined card element) is visible to traversal. Otherwise mark root as element for other tests.
