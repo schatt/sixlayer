@@ -38,10 +38,6 @@ final class ManualAccessibilityIdentifierHarnessUITests: XCTestCase {
     }
 
     nonisolated override func tearDownWithError() throws {
-        nonisolated(unsafe) let instance = self
-        MainActor.assumeIsolated {
-            instance.app = nil
-        }
         try super.tearDownWithError()
     }
 
