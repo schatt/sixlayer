@@ -4,6 +4,10 @@ import Testing
 import SwiftUI
 @testable import SixLayerFramework
 
+#if canImport(ViewInspector)
+import ViewInspector
+#endif
+
 // Using ViewInspectorWrapper for cross-platform compatibility
 /// Edge case tests for accessibility identifier generation bug fix
 /// These tests ensure our fix handles all edge cases properly
@@ -106,21 +110,20 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
         runWithTaskLocalConfig {
             setupTestEnvironment()
             
-            // Plain Text + inspect() often omits manual identifiers; use the same button-based
-            // inspection path as AccessibilityIdentifierDisabledTests (PlatformInteractionButton).
-            let view = PlatformInteractionButton(style: .primary, action: {}, identifierName: "Test") {
-                platformPresentContent_L1(content: "Test", hints: PresentationHints())
-            }
-            .accessibilityIdentifier("manual-override")
+            // Same shape as AccessibilityIdentifierGenerationVerificationTests.testManualIdentifiersOverrideAutomaticGeneration:
+            // manual `.accessibilityIdentifier` + `.automaticCompliance()` exposes the id on Text via ViewInspector.
+            let manualID = "manual-override"
+            let view = platformPresentContent_L1(content: "Test", hints: PresentationHints())
+                .accessibilityIdentifier(manualID)
+                .automaticCompliance()
             
             #if canImport(ViewInspector)
-            if let id = AccessibilityTestUtilities.inspectButtonAccessibilityIdentifier(
-                view,
-                issuePrefix: "Failed to inspect manual accessibility identifier"
-            ) {
-                #expect(id == "manual-override")
+            if let inspected = try? AnyView(view).inspect(),
+               let text = inspected.findAll(ViewInspector.ViewType.Text.self).first,
+               let id = try? text.accessibilityIdentifier() {
+                #expect(id == manualID)
             } else {
-                Issue.record("Inspection unavailable: expected manual-override on hosted button")
+                Issue.record("Failed to inspect manual accessibility identifier on presented content")
             }
             #else
             Issue.record("ViewInspector required for manual accessibilityIdentifier test")
