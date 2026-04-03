@@ -44,6 +44,8 @@ struct TestAppContentView: View {
     @State private var isConfigured = false
     /// When true, app opens to Category A accessibility identifier audit (launch arg -OpenCategoryAAccessibility). Issue #197.
     private let openCategoryAAccessibility = ProcessInfo.processInfo.arguments.contains("-OpenCategoryAAccessibility")
+    /// When true, app opens to full `Layer4ExamplesView` (component list incl. Identifier Edge Case). UITest: `-OpenLayer4ComponentExamples`.
+    private let openLayer4ComponentExamples = ProcessInfo.processInfo.arguments.contains("-OpenLayer4ComponentExamples")
     /// When true, app opens directly to Layer 4 contract section (launch arg -OpenLayer4Examples).
     private let openLayer4Examples = ProcessInfo.processInfo.arguments.contains("-OpenLayer4Examples")
     /// When true, app opens directly to Layer 5 Accessibility section (launch arg -OpenLayer5Accessibility).
@@ -88,6 +90,10 @@ struct TestAppContentView: View {
             } else if openCategoryAAccessibility {
                 NavigationStack {
                     AccessibilityIdentifierCategoryAUDITView()
+                }
+            } else if openLayer4ComponentExamples {
+                NavigationStack {
+                    Layer4ExamplesView()
                 }
             } else if openLayer4Examples {
                 NavigationStack {
@@ -148,31 +154,22 @@ struct TestAppContentView: View {
                 }
                 
                 sectionHeader("Layer 2 Examples (Issue #165)")
-                Group {
-                    NavigationLink("Layer 2 Layout Examples") {
-                        Layer2ExamplesView()
-                    }
+                NavigationLink("Layer 2 Layout Examples") {
+                    Layer2ExamplesView()
                 }
                 .accessibilityIdentifier("layer2-examples-link")
-                .accessibilityElement(children: .combine)
                 
                 sectionHeader("Layer 3 Examples (Issue #165)")
-                Group {
-                    NavigationLink("Layer 3 Strategy Examples") {
-                        Layer3ExamplesView()
-                    }
+                NavigationLink("Layer 3 Strategy Examples") {
+                    Layer3ExamplesView()
                 }
                 .accessibilityIdentifier("layer3-examples-link")
-                .accessibilityElement(children: .combine)
                 
                 sectionHeader("Layer 4 Examples (Issue #165)")
-                Group {
-                    NavigationLink("Layer 4 Component Examples") {
-                        Layer4ExamplesView()
-                    }
+                NavigationLink("Layer 4 Component Examples") {
+                    Layer4ExamplesView()
                 }
                 .accessibilityIdentifier("layer4-examples-link")
-                .accessibilityElement(children: .combine)
                 
                 sectionHeader("Layer 5 Examples (Issue #165)")
                 NavigationLink("Layer 5 Optimization Examples") {
