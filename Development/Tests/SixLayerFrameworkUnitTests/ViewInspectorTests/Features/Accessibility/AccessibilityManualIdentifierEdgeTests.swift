@@ -16,7 +16,7 @@ final class AccessibilityManualIdentifierEdgeTests: BaseTestClass {
             }
             config.enableAutoIDs = false
 
-            let manualID = "manual-override"
+            let manualID = "manual-test-button"
             let view = PlatformInteractionButton(style: .primary, action: {}, identifierName: "TestButton") {
                 platformPresentContent_L1(content: "Test Button", hints: PresentationHints())
             }
