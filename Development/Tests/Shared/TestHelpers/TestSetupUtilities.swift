@@ -91,44 +91,56 @@ public enum TestSetupUtilities {
     ) -> Any? {
         let injectedConfig = accessibilityIdentifierConfig ?? AccessibilityIdentifierConfig.currentTaskLocalConfig
         #if canImport(UIKit)
-        let rootView: AnyView = {
-            if let cfg = injectedConfig {
-                return AnyView(view.environment(\.accessibilityIdentifierConfig, cfg))
+        // Re-bind task-local config for the whole hosting + layout window so SwiftUI modifier bodies that run
+        // synchronously during layout still see the isolated test config (and debug log), not only `.shared`.
+        let hostUIKitSubtree: () -> UIView? = {
+            let rootView: AnyView = {
+                if let cfg = injectedConfig {
+                    return AnyView(view.environment(\.accessibilityIdentifierConfig, cfg))
+                }
+                return AnyView(view)
+            }()
+            let hosting = UIHostingController(rootView: rootView)
+            // CRITICAL: Accessing hosting.view can hang on complex views in test environments.
+            // This is a synchronous UIKit call that cannot be timed out or cancelled.
+            // If this hangs, the test will hang indefinitely.
+            let root = hosting.view
+            // Add hosting view to a window so SwiftUI propagates accessibilityIdentifier to the UIView hierarchy.
+            // Without a window, identifiers may not be set on platform views (iOS behavior).
+            if let root = root {
+                let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 400, height: 400))
+                window.rootViewController = hosting
+                window.makeKeyAndVisible()
+                // Drive appearance so SwiftUI/UIKit commit the view hierarchy (identifiers often stay empty without this in unit tests).
+                hosting.beginAppearanceTransition(true, animated: false)
+                hosting.endAppearanceTransition()
+                // Allow run loop so UIKit/SwiftUI can apply accessibility traits to the hierarchy (0.1s on iOS for identifier propagation)
+                RunLoop.current.run(until: Date().addingTimeInterval(0.1))
+                // Optionally force layout so identifiers are applied to the UIView tree (Option A for a11y tests).
+                // Only use for simple views; complex views can hang (NavigationStack, platformPresentContent_L1).
+                if forceLayout {
+                    root.setNeedsLayout()
+                    root.layoutIfNeeded()
+                    // Second run loop on iOS so SwiftUI can propagate accessibilityIdentifier to nested views
+                    RunLoop.current.run(until: Date().addingTimeInterval(0.02))
+                    root.setNeedsLayout()
+                    root.layoutIfNeeded()
+                }
+                // Store both so window and controller stay alive; keyed by root for cleanup
+                HostingControllerStorage.store((controller: hosting, window: window), for: root)
+                // Deferred SwiftUI updates may run after layoutIfNeeded; drain so accessibility + debug log entries settle before tests read them.
+                RunLoop.current.run(until: Date().addingTimeInterval(0.15))
             }
-            return AnyView(view)
-        }()
-        let hosting = UIHostingController(rootView: rootView)
-        // CRITICAL: Accessing hosting.view can hang on complex views in test environments.
-        // This is a synchronous UIKit call that cannot be timed out or cancelled.
-        // If this hangs, the test will hang indefinitely.
-        let root = hosting.view
-        // Add hosting view to a window so SwiftUI propagates accessibilityIdentifier to the UIView hierarchy.
-        // Without a window, identifiers may not be set on platform views (iOS behavior).
-        if let root = root {
-            let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 400, height: 400))
-            window.rootViewController = hosting
-            window.makeKeyAndVisible()
-            // Drive appearance so SwiftUI/UIKit commit the view hierarchy (identifiers often stay empty without this in unit tests).
-            hosting.beginAppearanceTransition(true, animated: false)
-            hosting.endAppearanceTransition()
-            // Allow run loop so UIKit/SwiftUI can apply accessibility traits to the hierarchy (0.1s on iOS for identifier propagation)
-            RunLoop.current.run(until: Date().addingTimeInterval(0.1))
-            // Optionally force layout so identifiers are applied to the UIView tree (Option A for a11y tests).
-            // Only use for simple views; complex views can hang (NavigationStack, platformPresentContent_L1).
-            if forceLayout {
-                root.setNeedsLayout()
-                root.layoutIfNeeded()
-                // Second run loop on iOS so SwiftUI can propagate accessibilityIdentifier to nested views
-                RunLoop.current.run(until: Date().addingTimeInterval(0.02))
-                root.setNeedsLayout()
-                root.layoutIfNeeded()
-            }
-            // Store both so window and controller stay alive; keyed by root for cleanup
-            HostingControllerStorage.store((controller: hosting, window: window), for: root)
-            // Deferred SwiftUI updates may run after layoutIfNeeded; drain so accessibility + debug log entries settle before tests read them.
-            RunLoop.current.run(until: Date().addingTimeInterval(0.15))
+            return root
         }
-        
+        let root: UIView?
+        if let cfg = injectedConfig {
+            root = AccessibilityIdentifierConfig.$taskLocalConfig.withValue(cfg) {
+                hostUIKitSubtree()
+            }
+        } else {
+            root = hostUIKitSubtree()
+        }
         // When exposeContentAccessibility is true, keep root as a container so content's a11y (e.g. combined card element) is visible to traversal. Otherwise mark root as element for other tests.
         root?.accessibilityElementsHidden = false
         root?.isAccessibilityElement = !exposeContentAccessibility
