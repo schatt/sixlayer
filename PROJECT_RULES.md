@@ -112,6 +112,48 @@ This script will:
 - **No false positives**: `swift test` passing does not guarantee SwiftUI rendering works
 - **Real UI testing**: `xcodebuild test` provides the same testing as Xcode GUI testing
 
+### Test layer priority (unit → ViewInspector → XCUITest)
+**MANDATORY ordering for where a test belongs**: Prefer the cheapest layer that can truthfully assert what you need. Escalate only when a lower layer cannot observe the behavior.
+
+#### 1. Unit tests (no UI hosting)
+**Use for**: Pure logic, data transforms, configuration, and any contract expressible without SwiftUI lifecycle or platform view trees.
+
+**Examples**: Accessibility identifier generation and formatting; `AccessibilityIdentifierConfig` resolution; glob/pattern helpers; any “given inputs → expected string or state” behavior.
+
+**Rule**: If the assertion does not require a rendered view or the system accessibility tree, keep it here.
+
+#### 2. Hosted SwiftUI + ViewInspector (and shared test helpers)
+**Use for**: Behavior that depends on SwiftUI building a view tree—modifiers, environment, and (with a correct harness) what gets applied to platform views in `UIHostingController` / `NSHostingController`.
+
+**Examples**: “This modifier runs and applies an identifier or label”; hierarchy checks via ViewInspector when traversal is reliable.
+
+**Rule**: If you can get a **stable, repeatable** observation through hosting plus ViewInspector or the shared platform helpers (`TestSetupUtilities.hostRootPlatformView`, `AccessibilityTestUtilities`, etc.), the test stays at this layer.
+
+**Harness first**: Widespread failures with the same symptom (e.g. no identifier found on the hosted root) often indicate a **shared helper or hosting** gap (environment injection, run loop, traversal via `accessibilityElementCount` / `accessibilityElement(at:)` vs only `subviews`). Fix or align **one** harness path and re-run before rewriting hundreds of tests or moving them to XCUITest.
+
+#### 3. XCUITest
+**Use for**: What only the **running app** and **system** can validate: real navigation, sheets, multi-window flows, permissions, persistence across launches, and “does XCUI actually see this element?”
+
+**Rule**: Add **targeted** UI tests (sentinels per major surface or pattern), not a 1:1 port of every ViewInspector test. XCUITest is slower and more sensitive to flakiness; use it where lower layers genuinely cannot supply the signal.
+
+#### Legacy ViewInspector debt
+Many ViewInspector tests were added without a green run at write time. **Failing tests are not automatically the product spec.**
+
+When triaging failures, classify each case:
+
+| Category | Action |
+|----------|--------|
+| **Harness limitation** | Fix shared hosting or traversal helpers; re-measure failure count. |
+| **Wrong or outdated expectation** | Update or remove the test to match the real framework contract; prefer locking the contract in unit tests where possible. |
+| **True end-to-end / system behavior** | Keep a thin assertion here if still valuable; add or move the critical check to XCUITest. |
+
+**Do not** default to moving the whole suite to XCUITest to avoid fixing helpers.
+
+#### Accessibility testing specifically
+- **Generator and naming rules**: unit tests.
+- **Modifier applies identifier/label in a hosted tree**: hosted SwiftUI + ViewInspector / platform helpers, after harness matches how SwiftUI exposes elements on each platform.
+- **Automation-visible behavior in the real app**: a small set of XCUITest checks.
+
 ### Code Quality
 - All new code must include appropriate tests (redundant with TDD requirement above)
 - Deprecated APIs should be properly marked and documented
