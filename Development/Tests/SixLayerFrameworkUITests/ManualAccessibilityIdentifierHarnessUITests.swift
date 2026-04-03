@@ -20,32 +20,28 @@ import XCTest
 
 @MainActor
 final class ManualAccessibilityIdentifierHarnessUITests: XCTestCase {
-    private static var sharedApp: XCUIApplication?
-    private var app: XCUIApplication! { Self.sharedApp! }
+    /// Fresh app per test (same lifecycle as `Layer1AccessibilityUITests`) avoids shared static app + class
+    /// `tearDown` races that can destabilize the runner (exit -1) under XCTest isolation.
+    var app: XCUIApplication!
 
     nonisolated override func setUpWithError() throws {
         continueAfterFailure = false
         addDefaultUIInterruptionMonitor()
 
+        nonisolated(unsafe) let instance = self
         MainActor.assumeIsolated {
-            guard Self.sharedApp == nil else { return }
             let localApp = XCUIApplication()
             localApp.launchWithOptimizations()
-            localApp.launch()
-            Self.sharedApp = localApp
+            instance.app = localApp
             XCTAssertTrue(localApp.waitForReady(timeout: 5.0), "Test app should show launch page")
         }
     }
 
     nonisolated override func tearDownWithError() throws {
-        try super.tearDownWithError()
-    }
-
-    override class func tearDown() {
+        nonisolated(unsafe) let instance = self
         MainActor.assumeIsolated {
-            sharedApp = nil
+            instance.app = nil
         }
-        super.tearDown()
     }
 
     /// After UITest integration naming, explicit `platformButton(..., id:)` ids appear as
