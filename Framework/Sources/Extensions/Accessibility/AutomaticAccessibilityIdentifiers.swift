@@ -685,14 +685,20 @@ public struct NamedModifier: ViewModifier {
         // Debug logging (addDebugLogEntry so test harnesses can parse identifiers like generateAccessibilityIdentifier)
         let detailMsg = "🔍 NAMED MODIFIER DEBUG: Generated identifier '\(identifier)' for name '\(name)'"
         let parseableLine = "Generated identifier '\(identifier)' for named: '\(name)'"
-        if capturedEnableDebugLogging {
-            print(detailMsg)
+        if let tl = AccessibilityIdentifierConfig.taskLocalConfig {
+            // Tests: @Environment injection may be nil during layout; task-local config still isolates debug log reads.
+            tl.addDebugLogEntry(detailMsg, enabled: true)
+            tl.addDebugLogEntry(parseableLine, enabled: true)
+        } else {
+            if capturedEnableDebugLogging {
+                print(detailMsg)
+            }
+            appendAccessibilityIdentifierDebugLog(
+                resolvedConfig: config,
+                resolvedDebugEnabled: capturedEnableDebugLogging,
+                entries: [detailMsg, parseableLine]
+            )
         }
-        appendAccessibilityIdentifierDebugLog(
-            resolvedConfig: config,
-            resolvedDebugEnabled: capturedEnableDebugLogging,
-            entries: [detailMsg, parseableLine]
-        )
         
         return identifier
     }
@@ -735,14 +741,19 @@ public struct ExactNamedModifier: ViewModifier {
         // Debug logging (mirror to task-local test config when hosting evaluates outside that task; see appendAccessibilityIdentifierDebugLog).
         let msg = "🔍 EXACT NAMED MODIFIER DEBUG: Generated exact identifier '\(exactIdentifier)' for name '\(name)'"
         let parseableLine = "Generated identifier '\(exactIdentifier)' for exactNamed: '\(name)'"
-        if capturedEnableDebugLogging {
-            print(msg)
+        if let tl = AccessibilityIdentifierConfig.taskLocalConfig {
+            tl.addDebugLogEntry(msg, enabled: true)
+            tl.addDebugLogEntry(parseableLine, enabled: true)
+        } else {
+            if capturedEnableDebugLogging {
+                print(msg)
+            }
+            appendAccessibilityIdentifierDebugLog(
+                resolvedConfig: config,
+                resolvedDebugEnabled: capturedEnableDebugLogging,
+                entries: [msg, parseableLine]
+            )
         }
-        appendAccessibilityIdentifierDebugLog(
-            resolvedConfig: config,
-            resolvedDebugEnabled: capturedEnableDebugLogging,
-            entries: [msg, parseableLine]
-        )
         
         return exactIdentifier
     }
