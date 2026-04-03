@@ -14,6 +14,56 @@ import ViewInspector
 /// NOTE: Not marked @MainActor on class to allow parallel execution
 @Suite("Accessibility Identifier Edge Case")
 open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
+    /// ViewInspector often omits `exactNamed` / manual `.accessibilityIdentifier` on modified chains; fall back to generator debug log and platform traversal.
+    @MainActor
+    private func resolveExactAccessibilityIdentifier(
+        _ expected: String,
+        view: some View,
+        hostedRoot: Any?,
+        config: AccessibilityIdentifierConfig?
+    ) -> String? {
+        #if canImport(ViewInspector)
+        if let hit = AccessibilityTestUtilities.allAccessibilityIdentifiersFromViewInspector(view).first(where: { $0 == expected }) {
+            return hit
+        }
+        #endif
+        if let cfg = config {
+            let fromLog = AccessibilityTestUtilities.parsedIdentifiersFromConfigDebugLog(config: cfg)
+            if let hit = fromLog.first(where: { $0 == expected }) { return hit }
+        }
+        if let root = hostedRoot,
+           let hit = findAllAccessibilityIdentifiersFromPlatformView(root).first(where: { $0 == expected }) {
+            return hit
+        }
+        return nil
+    }
+    
+    /// Hierarchical `named()` IDs: prefer dotted strings containing the name (ViewInspector, then debug log, then platform).
+    @MainActor
+    private func resolveNamedHierarchicalIdentifier(
+        containing name: String,
+        view: some View,
+        hostedRoot: Any?,
+        config: AccessibilityIdentifierConfig?
+    ) -> String? {
+        #if canImport(ViewInspector)
+        let vi = AccessibilityTestUtilities.allAccessibilityIdentifiersFromViewInspector(view)
+        if let hit = vi.first(where: { $0.contains(name) && $0.contains(".") }) { return hit }
+        if let hit = vi.first(where: { $0.contains(name) && $0 != name }) { return hit }
+        #endif
+        if let cfg = config {
+            let fromLog = AccessibilityTestUtilities.parsedIdentifiersFromConfigDebugLog(config: cfg)
+            if let hit = fromLog.first(where: { $0.contains(name) && $0.contains(".") }) { return hit }
+            if let hit = fromLog.first(where: { $0.contains(name) && $0 != name }) { return hit }
+        }
+        if let root = hostedRoot {
+            let plat = findAllAccessibilityIdentifiersFromPlatformView(root)
+            if let hit = plat.first(where: { $0.contains(name) && $0.contains(".") }) { return hit }
+            if let hit = plat.first(where: { $0.contains(name) }) { return hit }
+        }
+        return nil
+    }
+    
     // MARK: - Edge Case 1: Empty String Parameters
     
     @Test @MainActor func testEmptyStringParameters() {
@@ -115,17 +165,17 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
             let view = Text("Test")
                 .accessibilityIdentifier("manual-override")
             
-            _ = Self.hostRootPlatformView(view, forceLayout: true, exposeContentAccessibility: true)
-            #if canImport(ViewInspector)
-            let id = AccessibilityTestUtilities.allAccessibilityIdentifiersFromViewInspector(view).first { $0 == "manual-override" }
+            guard let cfg = testConfig else {
+                Issue.record("testConfig is nil")
+                return
+            }
+            let root = Self.hostRootPlatformView(view, forceLayout: true, exposeContentAccessibility: true)
+            let id = resolveExactAccessibilityIdentifier("manual-override", view: view, hostedRoot: root, config: cfg)
             guard id == "manual-override" else {
                 Issue.record("Inspection unavailable: expected manual-override, got \(String(describing: id))")
                 return
             }
             #expect(id == "manual-override")
-            #else
-            Issue.record("ViewInspector required for manual Button accessibilityIdentifier assertion")
-            #endif
         }
     }
     
@@ -204,20 +254,22 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
             }
             .exactNamed("SameName")  // ← Same exact name
             
-            _ = Self.hostRootPlatformView(view1, forceLayout: true, exposeContentAccessibility: true)
-            let id1 = AccessibilityTestUtilities.allAccessibilityIdentifiersFromViewInspector(view1).first { $0 == "SameName" }
-            _ = Self.hostRootPlatformView(view2, forceLayout: true, exposeContentAccessibility: true)
-            let id2 = AccessibilityTestUtilities.allAccessibilityIdentifiersFromViewInspector(view2).first { $0 == "SameName" }
+            guard let cfg = testConfig else {
+                Issue.record("testConfig is nil")
+                return
+            }
+            cfg.clearDebugLog()
+            let root1 = Self.hostRootPlatformView(view1, forceLayout: true, exposeContentAccessibility: true)
+            let id1 = resolveExactAccessibilityIdentifier("SameName", view: view1, hostedRoot: root1, config: cfg)
+            cfg.clearDebugLog()
+            let root2 = Self.hostRootPlatformView(view2, forceLayout: true, exposeContentAccessibility: true)
+            let id2 = resolveExactAccessibilityIdentifier("SameName", view: view2, hostedRoot: root2, config: cfg)
             
-            #if canImport(ViewInspector)
             if id1 == nil || id2 == nil {
-                Issue.record("Inspection unavailable: could not read exactNamed identifier via ViewInspector")
+                Issue.record("Inspection unavailable: could not resolve exactNamed identifier 'SameName'")
             }
             if let i1 = id1 { #expect(i1 == "SameName", "exactNamed() should produce exact identifier 'SameName', got '\(i1)'") }
             if let i2 = id2 { #expect(i2 == "SameName", "exactNamed() should produce exact identifier 'SameName', got '\(i2)'") }
-            #else
-            Issue.record("ViewInspector required for exactNamed PlatformInteractionButton assertion")
-            #endif
         }
     }
     
@@ -234,16 +286,19 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
                 .named("TestButton")
                 .enableGlobalAutomaticCompliance()
             
-            _ = Self.hostRootPlatformView(exactView, forceLayout: true, exposeContentAccessibility: true)
-            let exactID = AccessibilityTestUtilities.allAccessibilityIdentifiersFromViewInspector(exactView).first { $0 == "TestButton" }
-            _ = Self.hostRootPlatformView(namedView, forceLayout: true, exposeContentAccessibility: true)
-            let namedCandidates = AccessibilityTestUtilities.allAccessibilityIdentifiersFromViewInspector(namedView)
-            let namedID = namedCandidates.first { $0.contains("TestButton") && $0.contains(".") }
-                ?? namedCandidates.first { $0.contains("TestButton") && $0 != "TestButton" }
+            guard let cfg = testConfig else {
+                Issue.record("testConfig is nil")
+                return
+            }
+            cfg.clearDebugLog()
+            let rootE = Self.hostRootPlatformView(exactView, forceLayout: true, exposeContentAccessibility: true)
+            let exactID = resolveExactAccessibilityIdentifier("TestButton", view: exactView, hostedRoot: rootE, config: cfg)
+            cfg.clearDebugLog()
+            let rootN = Self.hostRootPlatformView(namedView, forceLayout: true, exposeContentAccessibility: true)
+            let namedID = resolveNamedHierarchicalIdentifier(containing: "TestButton", view: namedView, hostedRoot: rootN, config: cfg)
             
-            #if canImport(ViewInspector)
             if exactID == nil || namedID == nil {
-                Issue.record("Inspection unavailable: could not read identifiers via ViewInspector")
+                Issue.record("Inspection unavailable: could not resolve exactNamed vs named identifiers")
             }
             if let e = exactID, let n = namedID {
                 #expect(e != n, "exactNamed() should produce different identifiers than named()")
@@ -251,9 +306,6 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
                 #expect(n.contains("TestButton"), "named() should contain the name")
                 #expect(e == "TestButton", "exactNamed() should produce exact identifier 'TestButton', got '\(e)'")
             }
-            #else
-            Issue.record("ViewInspector required for exactNamed vs named comparison")
-            #endif
         }
     }
     
@@ -274,19 +326,16 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
             let exactView = Button("Test") { }
                 .exactNamed("SaveButton")
             
-            _ = Self.hostRootPlatformView(exactView, forceLayout: true, exposeContentAccessibility: true)
-            let exactID = AccessibilityTestUtilities.allAccessibilityIdentifiersFromViewInspector(exactView).first { $0 == "SaveButton" }
+            cfg.clearDebugLog()
+            let root = Self.hostRootPlatformView(exactView, forceLayout: true, exposeContentAccessibility: true)
+            let exactID = resolveExactAccessibilityIdentifier("SaveButton", view: exactView, hostedRoot: root, config: config)
             
-            #if canImport(ViewInspector)
             if exactID == nil {
-                Issue.record("Inspection unavailable: could not read exactNamed identifier via ViewInspector")
+                Issue.record("Inspection unavailable: could not resolve exactNamed identifier")
             }
             if let id = exactID {
                 #expect(id == "SaveButton", "exactNamed() should produce exact identifier 'SaveButton', got '\(id)'")
             }
-            #else
-            Issue.record("ViewInspector required for exactNamed hierarchy assertion")
-            #endif
         }
     }
     
@@ -299,20 +348,21 @@ open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
             let exactView = Button("Test") { }
                 .exactNamed("MinimalButton")
             
-            _ = Self.hostRootPlatformView(exactView, forceLayout: true, exposeContentAccessibility: true)
-            let exactID = AccessibilityTestUtilities.allAccessibilityIdentifiersFromViewInspector(exactView).first { $0 == "MinimalButton" }
+            guard let cfg = testConfig else {
+                Issue.record("testConfig is nil")
+                return
+            }
+            cfg.clearDebugLog()
+            let root = Self.hostRootPlatformView(exactView, forceLayout: true, exposeContentAccessibility: true)
+            let exactID = resolveExactAccessibilityIdentifier("MinimalButton", view: exactView, hostedRoot: root, config: cfg)
             
-            #if canImport(ViewInspector)
             if exactID == nil {
-                Issue.record("Inspection unavailable: could not read exactNamed identifier via ViewInspector")
+                Issue.record("Inspection unavailable: could not resolve exactNamed identifier")
             }
             let expectedMinimalPattern = "MinimalButton"
             if let id = exactID {
                 #expect(id == expectedMinimalPattern, "exactNamed() should produce exact identifier '\(expectedMinimalPattern)', got '\(id)'")
             }
-            #else
-            Issue.record("ViewInspector required for exactNamed minimal identifier assertion")
-            #endif
         }
     }
     
