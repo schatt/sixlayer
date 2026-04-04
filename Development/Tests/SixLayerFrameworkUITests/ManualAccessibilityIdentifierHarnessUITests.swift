@@ -64,8 +64,18 @@ final class ManualAccessibilityIdentifierHarnessUITests: XCTestCase {
 
     /// SetUp opens Layer 4 Examples via `-OpenLayer4ComponentExamples`. Navigate: Identifier Edge Case → assert manual ids queryable.
     func testManualPlatformButtonIds_queryableViaXCUITest() throws {
-        let edgeLink = app.findLaunchPageEntry(identifier: "test-view-Identifier Edge Case")
-        XCTAssertTrue(edgeLink.waitForExistence(timeout: 8.0), "Identifier Edge Case link should exist")
+        let edgeId = "test-view-Identifier Edge Case"
+        let scrollHost = app.scrollViews.firstMatch
+        var edgeLink = app.findLaunchPageEntry(identifier: edgeId)
+        for _ in 0..<16 {
+            if edgeLink.waitForExistence(timeout: 0.5), edgeLink.isHittable { break }
+            if scrollHost.exists { scrollHost.swipeUp() }
+            edgeLink = app.findLaunchPageEntry(identifier: edgeId)
+        }
+        if !edgeLink.waitForExistence(timeout: 1.0) || !edgeLink.isHittable {
+            edgeLink = app.links["Identifier Edge Case"].firstMatch
+        }
+        XCTAssertTrue(edgeLink.waitForExistence(timeout: 6.0) && edgeLink.isHittable, "Identifier Edge Case link should exist")
         edgeLink.tap()
 
         XCTAssertTrue(
