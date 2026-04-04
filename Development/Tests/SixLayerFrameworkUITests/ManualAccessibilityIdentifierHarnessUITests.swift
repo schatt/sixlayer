@@ -51,6 +51,18 @@ final class ManualAccessibilityIdentifierHarnessUITests: XCTestCase {
         }
     }
 
+    /// `Layer4ExamplesView` can host multiple `ScrollView`s (e.g. navigation chrome). Prefer the outer list host like `Layer4UITests.primaryScrollHost()`.
+    private func swipeLayer4ExamplesListUp() {
+        let svs = app.scrollViews
+        let n = svs.count
+        guard n > 0 else {
+            app.swipeUp()
+            return
+        }
+        let idx = n > 1 ? n - 1 : 0
+        svs.element(boundBy: idx).swipeUp()
+    }
+
     /// After UITest integration naming, explicit `platformButton(..., id:)` ids appear as
     /// `SixLayer.main.ui.<id>.Button` (see `Layer4UITests` / `ButtonTestView` comments).
     private func assertAccessibilityIdentifierContains(_ substring: String, timeout: TimeInterval = 12.0) {
@@ -65,15 +77,22 @@ final class ManualAccessibilityIdentifierHarnessUITests: XCTestCase {
     /// SetUp opens Layer 4 Examples via `-OpenLayer4ComponentExamples`. Navigate: Identifier Edge Case → assert manual ids queryable.
     func testManualPlatformButtonIds_queryableViaXCUITest() throws {
         let edgeId = "test-view-Identifier Edge Case"
-        let scrollHost = app.scrollViews.firstMatch
-        var edgeLink = app.findLaunchPageEntry(identifier: edgeId)
-        for _ in 0..<16 {
-            if edgeLink.waitForExistence(timeout: 0.5), edgeLink.isHittable { break }
-            if scrollHost.exists { scrollHost.swipeUp() }
-            edgeLink = app.findLaunchPageEntry(identifier: edgeId)
+        let idQuery = app.descendants(matching: .any).matching(NSPredicate(format: "identifier == %@", edgeId)).firstMatch
+        let labelQuery = app.descendants(matching: .any).matching(NSPredicate(format: "label == %@", "Identifier Edge Case")).firstMatch
+
+        func resolveEdgeRow() -> XCUIElement {
+            if idQuery.waitForExistence(timeout: 0.4), idQuery.isHittable { return idQuery }
+            if labelQuery.waitForExistence(timeout: 0.4), labelQuery.isHittable { return labelQuery }
+            let fallback = app.findLaunchPageEntry(identifier: edgeId)
+            if fallback.waitForExistence(timeout: 0.3), fallback.isHittable { return fallback }
+            return app.links["Identifier Edge Case"].firstMatch
         }
-        if !edgeLink.waitForExistence(timeout: 1.0) || !edgeLink.isHittable {
-            edgeLink = app.links["Identifier Edge Case"].firstMatch
+
+        var edgeLink = resolveEdgeRow()
+        for _ in 0..<20 {
+            if edgeLink.waitForExistence(timeout: 0.4), edgeLink.isHittable { break }
+            swipeLayer4ExamplesListUp()
+            edgeLink = resolveEdgeRow()
         }
         XCTAssertTrue(edgeLink.waitForExistence(timeout: 6.0) && edgeLink.isHittable, "Identifier Edge Case link should exist")
         edgeLink.tap()
