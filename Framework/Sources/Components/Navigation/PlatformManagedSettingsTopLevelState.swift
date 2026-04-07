@@ -17,14 +17,18 @@ import Foundation
 public struct PlatformManagedSettingsTopLevelState<ID: Hashable & Sendable>: Sendable {
     public private(set) var selectedTopLevel: ID?
 
-    /// RED (TDD): ignores flow logic — wrong initial selection.
     public init(orderedTopLevelPaneIDs: [ID], deviceType: DeviceType) {
-        self.selectedTopLevel = orderedTopLevelPaneIDs.last
+        self.selectedTopLevel = PlatformManagedSettingsFlowLogic.recommendedInitialTopSelection(
+            panes: orderedTopLevelPaneIDs,
+            deviceType: deviceType
+        )
     }
 
-    /// RED: no-op
-    public mutating func selectTopLevel(_ id: ID) {}
+    public mutating func selectTopLevel(_ id: ID) {
+        selectedTopLevel = id
+    }
 
-    /// RED: no-op
-    public mutating func clearTopLevelSelection() {}
+    public mutating func clearTopLevelSelection() {
+        selectedTopLevel = nil
+    }
 }
