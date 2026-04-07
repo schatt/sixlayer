@@ -234,6 +234,14 @@ public enum NavigationLayoutResolver {
         )
     }
 
+    /// Same contract as ``resolveSettingsContainer(availableWidth:stressMetrics:)`` for app navigation shell parity (#205 / #208).
+    public static func resolveAppNavigationShell(
+        availableWidth: CGFloat,
+        stressMetrics: NavigationLayoutStressMetrics
+    ) -> NavigationLayoutResolution {
+        resolveSettingsContainer(availableWidth: availableWidth, stressMetrics: stressMetrics)
+    }
+
     /// Same as ``resolveSettingsContainer(availableWidth:)`` but with **stress metrics** folded into the effective minimum detail width (#208).
     public static func resolveSettingsContainer(
         availableWidth: CGFloat,
