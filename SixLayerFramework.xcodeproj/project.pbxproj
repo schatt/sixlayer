@@ -1496,6 +1496,7 @@
 		8764820566CCC53EAB99A009 /* AdaptiveDetailStrategyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2EED4A2C8A709CE39E5B0668 /* AdaptiveDetailStrategyTests.swift */; };
 		877105D009D49B2E7A029F1E /* HIGPlatformSpecificCategoriesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC03DC263BD5CBD078307C12 /* HIGPlatformSpecificCategoriesTests.swift */; };
 		877564CC6E3C7322CFF68205 /* ItemBadge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2158541D13E0B38AF1084A8E /* ItemBadge.swift */; };
+		8783C1C3402913AA442FD901 /* PlatformManagedSettingsTopLevelState+AnyHashableBinding.swift in Sources */ = {isa = PBXBuildFile; fileRef = B493B95E1E817A048B35B1BF /* PlatformManagedSettingsTopLevelState+AnyHashableBinding.swift */; };
 		8789291ED75D597E5340C548 /* AccessibilityTestUtilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F5B3BCC307862753823EAA9 /* AccessibilityTestUtilities.swift */; };
 		87A99D54192B0DD83A220A4D /* CrossPlatformWorkflowParityRenderingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19E72C2E0A98B1949B63F24C /* CrossPlatformWorkflowParityRenderingTests.swift */; };
 		87AB1BEC960A8ABFF34EE6CC /* FormProcessingWorkflowTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD7AFE58993D8F6D3337C6FE /* FormProcessingWorkflowTests.swift */; };
@@ -2171,6 +2172,7 @@
 		C79DB42DFBB242B830633806 /* DynamicFormTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D0A71DD0F37AC75233997D9 /* DynamicFormTypes.swift */; };
 		C79E3CD35FCC390576BE37E4 /* AccessibilityManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A51C4DF6BC7BD68651FAC5 /* AccessibilityManager.swift */; };
 		C7BBA014D31D2D05FEEF5EA9 /* LocalEnableOverrideTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCD43E32885B743BCA9EAA46 /* LocalEnableOverrideTests.swift */; };
+		C7C0C50D77D7E734659B79E5 /* PlatformManagedSettingsTopLevelState+AnyHashableBinding.swift in Sources */ = {isa = PBXBuildFile; fileRef = B493B95E1E817A048B35B1BF /* PlatformManagedSettingsTopLevelState+AnyHashableBinding.swift */; };
 		C7C373CF94CCD058219716B9 /* UIGenerationVerificationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74072A0F7C82E716D7218B4B /* UIGenerationVerificationTests.swift */; };
 		C7CF7C1F04985650DC2B3D9A /* PlatformButtonsLayer4.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7B59566E18D2E4094FCA2B7 /* PlatformButtonsLayer4.swift */; };
 		C7D34BA0E77B9FDD63B3FD34 /* GlobalDisableLocalEnableTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC55A9B1CA024C645AF0ED9B /* GlobalDisableLocalEnableTests.swift */; };
@@ -2196,6 +2198,7 @@
 		C930FEF182CFEE6B6BC6BBAF /* DesignSystemTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0C72ABE5166316267FBC4D8 /* DesignSystemTests.swift */; };
 		C979EBDE9D145F476567AD94 /* FormDraftTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FB366419811B5BB8151A5C8 /* FormDraftTypes.swift */; };
 		CA4B93AEF9D11C437C22789F /* MaterialAccessibilityManagerAccessibilityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4ADD0D27320031DEFDD3A892 /* MaterialAccessibilityManagerAccessibilityTests.swift */; };
+		CA653D387206E8543E935DF4 /* PlatformManagedSettingsTopLevelState+AnyHashableBinding.swift in Sources */ = {isa = PBXBuildFile; fileRef = B493B95E1E817A048B35B1BF /* PlatformManagedSettingsTopLevelState+AnyHashableBinding.swift */; };
 		CA83CF37DD63862F55F25D95 /* InputHandlingInteractions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 044B57EF20751BFE08140572 /* InputHandlingInteractions.swift */; };
 		CA8D1B393DC8E15658FBBBA1 /* PlatformSemanticLayer1.swift in Sources */ = {isa = PBXBuildFile; fileRef = B808713B8169C802671D8EA5 /* PlatformSemanticLayer1.swift */; };
 		CADA2774A486DD090F3EE1E0 /* PresentationHintsColorConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A2E1F31DF09981E263DD46E /* PresentationHintsColorConfigurationTests.swift */; };
@@ -2598,6 +2601,7 @@
 		F075C4518C37F25AC5E6CB1E /* PlatformSemanticLayer1.swift in Sources */ = {isa = PBXBuildFile; fileRef = B808713B8169C802671D8EA5 /* PlatformSemanticLayer1.swift */; };
 		F090C25AC0C69D0754AD8A44 /* NavigationStackLayer2Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 706465D4107006975FD4F694 /* NavigationStackLayer2Tests.swift */; };
 		F0A6665236D1606F65A17E3E /* FormWizardTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E4DD6E1E4B678C9B1B518A6 /* FormWizardTypes.swift */; };
+		F0BDFD62927FFAA71CF11BDB /* PlatformManagedSettingsTopLevelState+AnyHashableBinding.swift in Sources */ = {isa = PBXBuildFile; fileRef = B493B95E1E817A048B35B1BF /* PlatformManagedSettingsTopLevelState+AnyHashableBinding.swift */; };
 		F0BF592FBC6BDC98F6AB1006 /* macOSWindowDetection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B44380C0DAB8A16595F84F8 /* macOSWindowDetection.swift */; };
 		F103841BF1C197684D3383D7 /* SixLayerFramework.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = BD6A23819A82A61C2C487623 /* SixLayerFramework.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		F1691E5A0FD9D2F3B871F9F2 /* macOSWindowDetection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B44380C0DAB8A16595F84F8 /* macOSWindowDetection.swift */; };
@@ -2733,6 +2737,7 @@
 		FE698DAEC9AC80FE921D66B7 /* NavigationStackLayer1Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA5E27F688FC14A8DFA1A0F5 /* NavigationStackLayer1Tests.swift */; };
 		FE6F9DFCBA28E32445B22025 /* NotificationExamplesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCF034DFEEC7DCE003FC4DBB /* NotificationExamplesView.swift */; };
 		FE7931044291FF110EBC73DC /* ViewInspectorWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02F45A8DE3F47F9710880580 /* ViewInspectorWrapper.swift */; };
+		FECB28A4BB1B015880F972C3 /* PlatformManagedSettingsTopLevelState+AnyHashableBinding.swift in Sources */ = {isa = PBXBuildFile; fileRef = B493B95E1E817A048B35B1BF /* PlatformManagedSettingsTopLevelState+AnyHashableBinding.swift */; };
 		FEE29483A182803E5ACA69A4 /* PlatformNotificationLayer5.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A0C5C474F53D4A7CDFFE0D9 /* PlatformNotificationLayer5.swift */; };
 		FF0468DB78313E54D25A558E /* PhotoExamplesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 442ED3D59C862EF5F15FADFE /* PhotoExamplesView.swift */; };
 		FF0D8D34F03686F84D87263E /* OCRViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D9F6872074417814B58AC5F /* OCRViewTests.swift */; };
@@ -3548,6 +3553,7 @@
 		B4243B08CE0181F4171060B1 /* ComprehensiveCapabilityTestRunner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComprehensiveCapabilityTestRunner.swift; sourceTree = "<group>"; };
 		B44FAB91A54EB3C69FA1A6EA /* OCRServiceAutomaticHintsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OCRServiceAutomaticHintsTests.swift; sourceTree = "<group>"; };
 		B46CAD41172739F2580A1FB8 /* PlatformIOSNavigationStackEnhancementsLayer6.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformIOSNavigationStackEnhancementsLayer6.swift; sourceTree = "<group>"; };
+		B493B95E1E817A048B35B1BF /* PlatformManagedSettingsTopLevelState+AnyHashableBinding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PlatformManagedSettingsTopLevelState+AnyHashableBinding.swift"; sourceTree = "<group>"; };
 		B4997C4B8B2B91842152A542 /* AccessibilityStateSimulationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessibilityStateSimulationTests.swift; sourceTree = "<group>"; };
 		B5388A0E77743FDE42284654 /* Layer5UITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Layer5UITests.swift; sourceTree = "<group>"; };
 		B54F7A2B773A99A131AC785E /* PlatformPhotoStrategySelectionLayer3.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformPhotoStrategySelectionLayer3.swift; sourceTree = "<group>"; };
@@ -4746,6 +4752,7 @@
 				E68FB3769A200C2DC3759196 /* NavigationLayoutResolver.swift */,
 				81AE3C41DE9DA88FC64BFBF5 /* PlatformManagedSettingsFlowLogic.swift */,
 				F203009FDCD29DADD0C273D2 /* PlatformManagedSettingsTopLevelState.swift */,
+				B493B95E1E817A048B35B1BF /* PlatformManagedSettingsTopLevelState+AnyHashableBinding.swift */,
 				9700602A3EE7C0D38C55BABA /* PlatformNavigationHelpers.swift */,
 				A091847EEB0BCF8A6DF1DB7E /* PlatformSidebarHelpers.swift */,
 				90DFF357E6006CA31E9B8C83 /* PlatformTabStrip.swift */,
@@ -5578,14 +5585,14 @@
 			path = API;
 			sourceTree = "<group>";
 		};
-		"TEMP_50442813-3B13-4FD3-9730-30EBD8D93621" /* Shared */ = {
+		"TEMP_BF77996B-9609-46C7-954B-FAA633C09088" /* Shared */ = {
 			isa = PBXGroup;
 			children = (
 			);
 			path = Shared;
 			sourceTree = "<group>";
 		};
-		"TEMP_E0CCBA09-9B2E-466B-89C8-80E5FFAF999D" /* Utilities */ = {
+		"TEMP_D26B7EC6-45B2-453D-843C-CEBE2D3864E0" /* Utilities */ = {
 			isa = PBXGroup;
 			children = (
 			);
@@ -6778,6 +6785,7 @@
 				4C5659CD7643FF31F4D56361 /* PlatformMacOSOptimizationsLayer5.swift in Sources */,
 				4761348036E7EA28B77EDF99 /* PlatformMaintenanceLayer5.swift in Sources */,
 				03F781BBB097D67B7337EF8D /* PlatformManagedSettingsFlowLogic.swift in Sources */,
+				CA653D387206E8543E935DF4 /* PlatformManagedSettingsTopLevelState+AnyHashableBinding.swift in Sources */,
 				154476F9D644A6B197508353 /* PlatformManagedSettingsTopLevelState.swift in Sources */,
 				E8106AEB2917304E16AA45AC /* PlatformMapComponentsLayer4.swift in Sources */,
 				4C37D3C90B52E6925D8E6F58 /* PlatformMenuSystemExtensions.swift in Sources */,
@@ -7046,6 +7054,7 @@
 				005AC1A8705B84FC67C71F46 /* PlatformMacOSOptimizationsLayer5.swift in Sources */,
 				31CA5486FD102605470D0FC4 /* PlatformMaintenanceLayer5.swift in Sources */,
 				FD239B4EE656553215FFF9C9 /* PlatformManagedSettingsFlowLogic.swift in Sources */,
+				F0BDFD62927FFAA71CF11BDB /* PlatformManagedSettingsTopLevelState+AnyHashableBinding.swift in Sources */,
 				B21F55FA1664DA0887FB238B /* PlatformManagedSettingsTopLevelState.swift in Sources */,
 				CE92CD36CC943421A40C2CE9 /* PlatformMapComponentsLayer4.swift in Sources */,
 				BB3947798585EEB99774B2ED /* PlatformMenuSystemExtensions.swift in Sources */,
@@ -7539,6 +7548,7 @@
 				3D06B2AB282D684AC1B59779 /* PlatformMacOSOptimizationsLayer5.swift in Sources */,
 				41BB3D8F58EC8ECE4572B94F /* PlatformMaintenanceLayer5.swift in Sources */,
 				763FF05ED185DD3BB6E1F68F /* PlatformManagedSettingsFlowLogic.swift in Sources */,
+				C7C0C50D77D7E734659B79E5 /* PlatformManagedSettingsTopLevelState+AnyHashableBinding.swift in Sources */,
 				158BC3C45A9CA5F5E1FC3BA4 /* PlatformManagedSettingsTopLevelState.swift in Sources */,
 				1F27E6D4279DDDC68B992D81 /* PlatformMapComponentsLayer4.swift in Sources */,
 				611174945D37A8305B9768CB /* PlatformMenuSystemExtensions.swift in Sources */,
@@ -8438,6 +8448,7 @@
 				653AF05CFB07D5EDEA8046B0 /* PlatformMacOSOptimizationsLayer5.swift in Sources */,
 				7E2AE89AB7DC097179208B54 /* PlatformMaintenanceLayer5.swift in Sources */,
 				405928C535637E15D4F017BC /* PlatformManagedSettingsFlowLogic.swift in Sources */,
+				8783C1C3402913AA442FD901 /* PlatformManagedSettingsTopLevelState+AnyHashableBinding.swift in Sources */,
 				1195F26413FC8160D8AD3DB2 /* PlatformManagedSettingsTopLevelState.swift in Sources */,
 				E5CB3F8B84684CF960EF59DA /* PlatformMapComponentsLayer4.swift in Sources */,
 				A6AFDFF428EF845FB02A0BBC /* PlatformMenuSystemExtensions.swift in Sources */,
@@ -8928,6 +8939,7 @@
 				4366FD73428D90DFEC4EA903 /* PlatformMacOSOptimizationsLayer5.swift in Sources */,
 				13D64095022B60836A1ECBE8 /* PlatformMaintenanceLayer5.swift in Sources */,
 				40E37F55359294D7E956CA50 /* PlatformManagedSettingsFlowLogic.swift in Sources */,
+				FECB28A4BB1B015880F972C3 /* PlatformManagedSettingsTopLevelState+AnyHashableBinding.swift in Sources */,
 				CE7D4188CA56212803E8507F /* PlatformManagedSettingsTopLevelState.swift in Sources */,
 				C0705A1508A13BF74369716D /* PlatformMapComponentsLayer4.swift in Sources */,
 				F5EAB357CC2C4CFCAB5742A8 /* PlatformMenuSystemExtensions.swift in Sources */,
