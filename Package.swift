@@ -73,5 +73,15 @@ let package = Package(
             path: "Development/Tests/NavigationLayoutResolverTests"
         ),
 
+        /// Pure routing policy for managed settings flow (#209); no ViewInspector / BaseTestClass.
+        .testTarget(
+            name: "PlatformManagedSettingsFlowLogicTests",
+            dependencies: [
+                "SixLayerFramework"
+            ],
+            path: "Development/Tests/SixLayerFrameworkUnitTests/Features/Navigation",
+            sources: ["PlatformManagedSettingsFlowLogicTests.swift"]
+        ),
+
     ]
 )
