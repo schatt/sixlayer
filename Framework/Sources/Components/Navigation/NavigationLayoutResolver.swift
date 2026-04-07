@@ -92,15 +92,38 @@ public extension NavigationLayoutCompactPresentation {
     }
 }
 
+// MARK: - Issue #208 stress matrix (Dynamic Type / long-form / persistence helpers)
+
+/// Optional inputs that fold **Dynamic Type** and **long-form copy** into nested-split minimum detail width.
+///
+/// Hosts should pass **layout-direction-aware** leading/trailing insets when computing `availableWidth`
+/// for ``NavigationLayoutResolver/resolveSettingsContainer(availableWidth:)``; see
+/// ``NavigationLayoutResolver/effectiveContentWidthForSplitAxis(containerWidth:leadingInset:trailingInset:)``.
+public struct NavigationLayoutStressMetrics: Sendable, Equatable {
+    /// Multiplier applied to the base nested-split minimum detail width (1.0 = default).
+    public let dynamicTypeScale: CGFloat
+    /// Estimated extra characters vs baseline copy (e.g. German vs English); boosts minimum detail width.
+    public let estimatedLongFormExtraCharacters: Int
+
+    public init(dynamicTypeScale: CGFloat = 1, estimatedLongFormExtraCharacters: Int = 0) {
+        self.dynamicTypeScale = dynamicTypeScale
+        self.estimatedLongFormExtraCharacters = estimatedLongFormExtraCharacters
+    }
+
+    public static let `default` = NavigationLayoutStressMetrics()
+}
+
+extension NavigationLayoutCompactPresentation: Codable {}
+
 // MARK: - Core resolution
 
 /// Width-driven layout resolution for nested sidebars and Layer 4 shells.
 ///
-/// Callers pass an **available width in points** along the split axis. The resolver does **not** read
-/// locale, layout direction (LTR/RTL), Dynamic Type, or string metrics (issue #208 stress matrix).
-/// Long labels and accessibility scaling affect SwiftUI typography in the host; if the host needs
-/// those to influence column budgets, it should fold that into the `availableWidth` (or profiles)
-/// before calling these APIs.
+/// Callers pass an **available width in points** along the split axis. For **Dynamic Type**, **long-form
+/// localization**, or **RTL margin** effects on the budget, use ``NavigationLayoutStressMetrics`` with
+/// ``NavigationLayoutResolver/resolveSettingsContainer(availableWidth:stressMetrics:)`` and/or fold insets into
+/// ``NavigationLayoutResolver/effectiveContentWidthForSplitAxis(containerWidth:leadingInset:trailingInset:)``
+/// before resolving (issue #208).
 public enum NavigationLayoutResolver {
     public static func resolve(
         availableWidth: CGFloat,
@@ -182,27 +205,74 @@ public enum NavigationLayoutResolver {
     // MARK: Layer 4 nested split presets (settings + app navigation)
 
     /// Minimum width reserved for the detail pane when resolving Layer 4 nested split shells (host + inner + detail).
-    private static let layer4NestedSplitShellMinimumDetailWidth: CGFloat = 480
+    public static let layer4NestedSplitShellMinimumDetailWidth: CGFloat = 480
 
     /// Shared preset for nested split columns: host `compactList` plus inner `textSidebar`. When the width budget fails, `.automatic` yields `.compactCollapsedOuter` (collapse outer first; overlay expansion in Layer 4). Issue #206.
-    private static func resolveLayer4NestedSplitShell(availableWidth: CGFloat) -> NavigationLayoutResolution {
+    private static func resolveLayer4NestedSplitShell(availableWidth: CGFloat, minimumDetailWidth: CGFloat) -> NavigationLayoutResolution {
         resolve(
             availableWidth: availableWidth,
             outerProfile: .compactList,
             innerProfile: .textSidebar,
-            minimumDetailWidth: layer4NestedSplitShellMinimumDetailWidth,
+            minimumDetailWidth: minimumDetailWidth,
             policy: .automatic
         )
     }
 
     /// Preset resolution for the Layer 4 settings container.
     public static func resolveSettingsContainer(availableWidth: CGFloat) -> NavigationLayoutResolution {
-        resolveLayer4NestedSplitShell(availableWidth: availableWidth)
+        resolveLayer4NestedSplitShell(
+            availableWidth: availableWidth,
+            minimumDetailWidth: layer4NestedSplitShellMinimumDetailWidth
+        )
     }
 
     /// Preset resolution for the Layer 4 app navigation split shell (same contract as `resolveSettingsContainer`).
     public static func resolveAppNavigationShell(availableWidth: CGFloat) -> NavigationLayoutResolution {
-        resolveLayer4NestedSplitShell(availableWidth: availableWidth)
+        resolveLayer4NestedSplitShell(
+            availableWidth: availableWidth,
+            minimumDetailWidth: layer4NestedSplitShellMinimumDetailWidth
+        )
+    }
+
+    /// Same as ``resolveSettingsContainer(availableWidth:)`` but with **stress metrics** folded into the effective minimum detail width (#208).
+    public static func resolveSettingsContainer(
+        availableWidth: CGFloat,
+        stressMetrics: NavigationLayoutStressMetrics
+    ) -> NavigationLayoutResolution {
+        // RED phase (TDD): ignore stress — tests expect effective minimum to change.
+        resolveLayer4NestedSplitShell(
+            availableWidth: availableWidth,
+            minimumDetailWidth: layer4NestedSplitShellMinimumDetailWidth
+        )
+    }
+
+    /// Scales the nested-split minimum detail width by a Dynamic Type–style multiplier (clamped).
+    public static func scaledMinimumDetailWidthForNestedSplit(base: CGFloat, dynamicTypeScale: CGFloat) -> CGFloat {
+        // RED: ignore scale
+        max(0, base)
+    }
+
+    /// Additional minimum detail width for long-form / localized copy (capped).
+    public static func additionalDetailWidthForLongFormContent(estimatedExtraCharacters: Int) -> CGFloat {
+        // RED: no boost
+        0
+    }
+
+    /// Effective minimum detail width for the nested split shell given stress metrics (#208).
+    public static func effectiveDetailMinimumWidthForNestedSplit(stressMetrics: NavigationLayoutStressMetrics) -> CGFloat {
+        scaledMinimumDetailWidthForNestedSplit(
+            base: layer4NestedSplitShellMinimumDetailWidth,
+            dynamicTypeScale: stressMetrics.dynamicTypeScale
+        ) + additionalDetailWidthForLongFormContent(estimatedExtraCharacters: stressMetrics.estimatedLongFormExtraCharacters)
+    }
+
+    /// Semantic content width along the split axis after **leading** and **trailing** insets (layout-direction aware at call site).
+    public static func effectiveContentWidthForSplitAxis(
+        containerWidth: CGFloat,
+        leadingInset: CGFloat,
+        trailingInset: CGFloat
+    ) -> CGFloat {
+        max(0, containerWidth - max(0, leadingInset) - max(0, trailingInset))
     }
 
     /// Canonical Layer 4 UI presentation for `availableWidth` (issue #206).
