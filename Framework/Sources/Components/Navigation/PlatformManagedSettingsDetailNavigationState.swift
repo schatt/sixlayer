@@ -41,4 +41,9 @@ public struct PlatformManagedSettingsDetailNavigationState<SubID: Hashable & Sen
     public mutating func popToRoot() {
         path.removeAll()
     }
+
+    /// Replaces the path (used when syncing from SwiftUI ``NavigationStack`` / system back).
+    public mutating func setPath(_ newPath: [SubID]) {
+        path = newPath
+    }
 }
