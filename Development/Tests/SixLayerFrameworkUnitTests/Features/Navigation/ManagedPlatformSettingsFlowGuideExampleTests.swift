@@ -41,12 +41,11 @@ private struct ManagedSettingsGuideExampleView: View {
     @ViewBuilder private var sidebar: some View {
         List(ManagedGuideTopPane.allCases, id: \.self) { pane in
             Button(pane.rawValue.capitalized) {
-                var s = topLevel
-                s.selectTopLevel(pane)
-                topLevel = s
-                var d = detailNav
-                d.popToRoot()
-                detailNav = d
+                PlatformManagedSettingsFlowLogic.selectTopLevelPane(
+                    pane,
+                    topLevel: &topLevel,
+                    detailNavigation: &detailNav
+                )
             }
         }
         .navigationTitle("Settings")
