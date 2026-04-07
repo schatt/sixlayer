@@ -5,6 +5,7 @@
 //  TDD for Issue #209: managed platform settings flow (routing policy).
 //
 
+import SwiftUI
 import Testing
 @testable import SixLayerFramework
 
@@ -75,5 +76,41 @@ struct PlatformManagedSettingsFlowLogicTests {
 
     @Test func subPaneUsesSystemStack_macOS_true() {
         #expect(PlatformManagedSettingsFlowLogic.subPaneNavigationUsesSystemStack(deviceType: .mac))
+    }
+
+    // MARK: - iPhoneTopLevelDetailNavigationIsPresented (#209 stack semantics)
+
+    @Test func iPhoneTopLevelDetailNavigationIsPresented_nilBinding_returnsNil() {
+        #expect(PlatformManagedSettingsFlowLogic.iPhoneTopLevelDetailNavigationIsPresented(selectedCategory: nil) == nil)
+    }
+
+    @Test func iPhoneTopLevelDetailNavigationIsPresented_selectionNil_getFalse_setFalse_noOp() {
+        var value: AnyHashable? = nil
+        let binding = Binding<AnyHashable?>(
+            get: { value },
+            set: { value = $0 }
+        )
+        guard let presented = PlatformManagedSettingsFlowLogic.iPhoneTopLevelDetailNavigationIsPresented(selectedCategory: binding) else {
+            Issue.record("Expected binding when selectedCategory is non-nil")
+            return
+        }
+        #expect(presented.wrappedValue == false)
+        presented.wrappedValue = false
+        #expect(value == nil)
+    }
+
+    @Test func iPhoneTopLevelDetailNavigationIsPresented_selectionSet_getTrue_setFalse_clears() {
+        var value: AnyHashable? = AnyHashable("general")
+        let binding = Binding<AnyHashable?>(
+            get: { value },
+            set: { value = $0 }
+        )
+        guard let presented = PlatformManagedSettingsFlowLogic.iPhoneTopLevelDetailNavigationIsPresented(selectedCategory: binding) else {
+            Issue.record("Expected binding when selectedCategory is non-nil")
+            return
+        }
+        #expect(presented.wrappedValue == true)
+        presented.wrappedValue = false
+        #expect(value == nil)
     }
 }
