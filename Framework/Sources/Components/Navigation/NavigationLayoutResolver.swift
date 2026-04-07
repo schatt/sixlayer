@@ -247,23 +247,23 @@ public enum NavigationLayoutResolver {
         availableWidth: CGFloat,
         stressMetrics: NavigationLayoutStressMetrics
     ) -> NavigationLayoutResolution {
-        // RED phase (TDD): ignore stress — tests expect effective minimum to change.
-        resolveLayer4NestedSplitShell(
+        let minDetail = effectiveDetailMinimumWidthForNestedSplit(stressMetrics: stressMetrics)
+        return resolveLayer4NestedSplitShell(
             availableWidth: availableWidth,
-            minimumDetailWidth: layer4NestedSplitShellMinimumDetailWidth
+            minimumDetailWidth: minDetail
         )
     }
 
     /// Scales the nested-split minimum detail width by a Dynamic Type–style multiplier (clamped).
     public static func scaledMinimumDetailWidthForNestedSplit(base: CGFloat, dynamicTypeScale: CGFloat) -> CGFloat {
-        // RED: ignore scale
-        max(0, base)
+        let s = max(0.5, min(dynamicTypeScale, 3.0))
+        return max(0, base * s)
     }
 
     /// Additional minimum detail width for long-form / localized copy (capped).
     public static func additionalDetailWidthForLongFormContent(estimatedExtraCharacters: Int) -> CGFloat {
-        // RED: no boost
-        0
+        let n = max(0, estimatedExtraCharacters)
+        return min(160, CGFloat(n) * 0.15)
     }
 
     /// Effective minimum detail width for the nested split shell given stress metrics (#208).
