@@ -82,7 +82,8 @@ let package = Package(
             path: "Development/Tests/SixLayerFrameworkUnitTests/Features/Navigation",
             sources: [
                 "PlatformManagedSettingsFlowLogicTests.swift",
-                "PlatformManagedSettingsTopLevelStateTests.swift"
+                "PlatformManagedSettingsTopLevelStateTests.swift",
+                "PlatformManagedSettingsFlowLayer4Tests.swift"
             ]
         ),
 
