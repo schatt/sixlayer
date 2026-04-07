@@ -5,6 +5,8 @@
 //  Example usage of platformSettingsContainer_L4
 //  Demonstrates device-aware settings container that adapts to iPad, iPhone, and macOS
 //  Implements Issue #58: Add platformSettingsContainer_L4 for Settings Views (Layer 4)
+//  For the managed flow (Issue #209), see Framework/docs/ManagedPlatformSettingsFlowGuide.md
+//  and ManagedPlatformSettingsFlowGuideExampleTests.swift.
 //
 
 import SwiftUI
