@@ -71,4 +71,16 @@ public enum PlatformManagedSettingsFlowLogic: Sendable {
             }
         )
     }
+
+    /// Selects a top-level settings pane and clears sub-pane depth so pushed routes do not carry across categories.
+    ///
+    /// Call from sidebar row actions when using ``PlatformManagedSettingsDetailNavigationState`` in the detail column.
+    public static func selectTopLevelPane<ID: Hashable & Sendable, SubID: Hashable & Sendable>(
+        _ id: ID,
+        topLevel: inout PlatformManagedSettingsTopLevelState<ID>,
+        detailNavigation: inout PlatformManagedSettingsDetailNavigationState<SubID>
+    ) {
+        topLevel.selectTopLevel(id)
+        detailNavigation.popToRoot()
+    }
 }
