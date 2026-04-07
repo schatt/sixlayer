@@ -85,7 +85,8 @@ let package = Package(
                 "PlatformManagedSettingsTopLevelStateTests.swift",
                 "PlatformManagedSettingsFlowLayer4Tests.swift",
                 "PlatformManagedSettingsDetailNavigationStateTests.swift",
-                "PlatformManagedSettingsDetailNavigationLayer4Tests.swift"
+                "PlatformManagedSettingsDetailNavigationLayer4Tests.swift",
+                "ManagedPlatformSettingsFlowGuideExampleTests.swift"
             ]
         ),
 
