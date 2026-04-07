@@ -83,7 +83,8 @@ let package = Package(
             sources: [
                 "PlatformManagedSettingsFlowLogicTests.swift",
                 "PlatformManagedSettingsTopLevelStateTests.swift",
-                "PlatformManagedSettingsFlowLayer4Tests.swift"
+                "PlatformManagedSettingsFlowLayer4Tests.swift",
+                "PlatformManagedSettingsDetailNavigationStateTests.swift"
             ]
         ),
 
