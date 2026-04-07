@@ -210,6 +210,11 @@ See the [Platform-Specific Patterns Guide](docs/platform-specific-patterns.md#pl
 - **Intelligent selection**: iPad/macOS use split view, iPhone uses NavigationStack with conditional detail
 - **State management**: Handles column visibility and category selection automatically
 
+### Managed platform settings flow (Issue #209)
+- **Default path**: `platformManagedSettingsTopLevel_L4` with `PlatformManagedSettingsTopLevelState` (optional `CaseIterable` pane enum), iPhone stack integration, and sub-pane depth via `platformManagedSettingsDetailNavigationStack_L4` + `PlatformManagedSettingsDetailNavigationState`
+- **Coordination**: `PlatformManagedSettingsFlowLogic.selectTopLevelPane` updates top-level selection and clears the detail navigation stack when switching categories
+- **Documentation**: [ManagedPlatformSettingsFlowGuide.md](docs/ManagedPlatformSettingsFlowGuide.md) (migration from manual `selectedCategory`, compile-checked example test)
+
 ### Cross-Platform File System Utilities
 - **Home directory access**: `platformHomeDirectory()` for cross-platform home directory
 - **Application Support**: `platformApplicationSupportDirectory(createIfNeeded:)` with optional directory creation
