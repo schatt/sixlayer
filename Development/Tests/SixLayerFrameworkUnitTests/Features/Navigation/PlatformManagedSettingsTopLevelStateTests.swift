@@ -20,8 +20,34 @@ private final class TopLevelStateHolder<ID: Hashable & Sendable>: @unchecked Sen
     }
 }
 
+/// Enum pane IDs (declaration order defines sidebar order) for compile-time init tests.
+private enum CompileTimeTestPane: String, CaseIterable, Sendable {
+    case general
+    case privacy
+}
+
 @Suite("PlatformManagedSettingsTopLevelState (#209)")
 struct PlatformManagedSettingsTopLevelStateTests {
+
+    // MARK: - CaseIterable (compile-time pane set, #209)
+
+    @Test
+    func init_caseIterable_iPad_selectsFirstDeclaredCase() {
+        let state = PlatformManagedSettingsTopLevelState<CompileTimeTestPane>(deviceType: .pad)
+        #expect(state.selectedTopLevel == .general)
+    }
+
+    @Test
+    func init_caseIterable_macOS_selectsFirstDeclaredCase() {
+        let state = PlatformManagedSettingsTopLevelState<CompileTimeTestPane>(deviceType: .mac)
+        #expect(state.selectedTopLevel == .general)
+    }
+
+    @Test
+    func init_caseIterable_iPhone_startsWithNilSelection() {
+        let state = PlatformManagedSettingsTopLevelState<CompileTimeTestPane>(deviceType: .phone)
+        #expect(state.selectedTopLevel == nil)
+    }
 
     @Test
     func init_iPad_nonEmpty_selectsFirstPane() {
