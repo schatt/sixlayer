@@ -16,8 +16,7 @@
 - [x] Fix `ModalContainerTests.swift` missing closing brace (build error)
 - [x] Fix Swift 6 actor-isolation errors in `DynamicFormTests.swift`
 - [x] Fix Swift 6 actor-isolation errors in `LabeledContentDisplayFieldTests.swift`
-- [x] **#202** Review issue details for nested sidebar overlap in host settings split UI
-- [ ] **#202** Parent umbrella: verify nested sidebar coordination complete across slices; close when acceptance met
+- [x] **#202** Nested sidebar overlap / resolver slices (#203–#208); closed via `gh` (branch `b7.6.0`, merge to `main` pending)
 - [x] **#203** TDD: Add navigation layout resolver core with profile/policy types
 - [x] **#204** TDD: Integrate resolver into `platformSettingsContainer_L4`
 - [x] **#205** TDD: Resolver in `platformAppNavigation_L4` + parity with settings (`resolveAppNavigationShell`)
