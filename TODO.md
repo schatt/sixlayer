@@ -8,7 +8,7 @@
 - [x] Fix Swift concurrency data-race warning in `AdvancedFieldTypes.handleDrop` (`newFiles` capture)
 - [x] **#191** Make `ExpandableCardComponent` a single tappable accessibility button with explicit card label
 - [x] **#192** Make accessibility identifier compliance tests robust via platform traversal + debug-log fallback
-- [ ] **#209** Managed settings flow — done: flow logic, top-level state (`CaseIterable` compile-time init), `anyHashableBinding`, `platformManagedSettingsTopLevel_L4`, iPhone stack helper + `createSettingsContainerForiPhone`; pending: sub-pane stack API, result-builder or richer pane tree, example/docs, full acceptance
+- [ ] **#209** Managed settings flow — done: flow logic, top-level state (`CaseIterable` init), `anyHashableBinding`, `platformManagedSettingsTopLevel_L4`, iPhone stack helper, `PlatformManagedSettingsDetailNavigationState` (sub-pane path); pending: wire sub-pane into Layer 4 / `NavigationStack(path:)`, result-builder or richer pane tree, example/docs, full acceptance
 - [ ] **#177** Fix remaining iOS ViewInspector/accessibility test failures — `AccessibilityIdentifierEdgeCaseTests` exactNamed paths green via `testingGeneratedIdentifier`; manual ID remains soft `if let` in disabled suite (harness nil)
 - [ ] **#193** L4 UITests: table-first scroll + nav identifier tap (Form/table); re-run SLF-iOS-UITests to confirm green
 - [x] **#197** (slice) Category A UI backfill: exactNamed, accessibilityLabel row, outer manual Group id + tests (commit/push; issue commented)
