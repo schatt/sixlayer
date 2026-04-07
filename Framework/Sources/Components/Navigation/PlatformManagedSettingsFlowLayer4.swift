@@ -24,7 +24,11 @@ extension View {
         @ViewBuilder sidebar: @escaping () -> Sidebar,
         @ViewBuilder detail: @escaping () -> Detail
     ) -> some View {
-        // RED (TDD): not wired to platformSettingsContainer_L4 yet
-        EmptyView()
+        self.platformSettingsContainer_L4(
+            columnVisibility: columnVisibility,
+            selectedCategory: PlatformManagedSettingsTopLevelState.anyHashableBinding(state),
+            sidebar: sidebar,
+            detail: detail
+        )
     }
 }
