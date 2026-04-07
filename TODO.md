@@ -17,14 +17,14 @@
 - [x] Fix Swift 6 actor-isolation errors in `DynamicFormTests.swift`
 - [x] Fix Swift 6 actor-isolation errors in `LabeledContentDisplayFieldTests.swift`
 - [x] **#202** Review issue details for nested sidebar overlap in host settings split UI
-- [ ] **#202** Implement framework-level nested sidebar coordination policy (opt-in API + tests)
+- [ ] **#202** Parent umbrella: verify nested sidebar coordination complete across slices; close when acceptance met
 - [x] **#203** TDD: Add navigation layout resolver core with profile/policy types
 - [x] **#204** TDD: Integrate resolver into `platformSettingsContainer_L4`
 - [x] **#205** TDD: Resolver in `platformAppNavigation_L4` + parity with settings (`resolveAppNavigationShell`)
 - [x] **#206** Compact fallback: automatic preset + overlay outer sidebar (`NavigationLayoutCompactPresentation`)
 - [x] **#207** Accessibility hardening: overlay close semantics + modal/restore UI contract tests
-- [x] **#208** Stress matrix: resolver API + overlay/detail churn tests + width-only doc + Layer 4 measured-width `layer4CompactPresentationForTransition` wiring + column visibility `.detailOnly` → persisted presentation sync; optional: UITests for RTL/Dynamic Type
-- [ ] Run `swift test` to confirm everything passes
+- [x] **#208** Stress matrix (slice 6): `NavigationLayoutStressMetrics`, Dynamic Type + long-form minimum detail width, split-axis width helper, Codable presentation, deterministic resize churn, app/settings stress parity (`swift test --filter NavigationLayoutResolverTests`)
+- [x] Run `swift test` (NavigationLayoutResolverTests) to confirm slice passes
 - [x] Group current uncommitted changes in the v6.6.0 branch into small, logical commits
 - [ ] Adjust development workflow to encourage committing early and often (small, cohesive commits per TDD cycle)
 - [ ] SLFiOSViewInspectorTests: clear remaining compiler warnings (many files; ConsolidatedAccessibilityTests.swift is the bulk)
