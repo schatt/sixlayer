@@ -24,20 +24,32 @@ public enum PlatformManagedSettingsFlowLogic: Sendable {
         panes: [ID],
         deviceType: DeviceType
     ) -> ID? {
-        // RED phase: deliberately incorrect — uses last pane and ignores device (tests expect first-or-nil-by-platform).
-        guard let last = panes.last else { return nil }
-        return last
+        guard let first = panes.first else { return nil }
+        switch deviceType {
+        case .pad, .mac:
+            return first
+        case .phone, .tv, .watch, .car, .vision:
+            return nil
+        }
     }
 
     /// Whether the top-level settings shell behaves like split view (sidebar + detail visible together).
     public static func usesSplitStyleTopLevelSettingsShell(deviceType: DeviceType) -> Bool {
-        // RED phase: always false (split platforms should be true).
-        false
+        switch deviceType {
+        case .pad, .mac:
+            return true
+        case .phone, .tv, .watch, .car, .vision:
+            return false
+        }
     }
 
     /// Whether hierarchical sub-panes inside the detail context should use a system stack (push / pop).
     public static func subPaneNavigationUsesSystemStack(deviceType: DeviceType) -> Bool {
-        // RED phase: always false (primary settings platforms should use stack for sub-panes).
-        false
+        switch deviceType {
+        case .phone, .pad, .mac:
+            return true
+        case .tv, .watch, .car, .vision:
+            return false
+        }
     }
 }
