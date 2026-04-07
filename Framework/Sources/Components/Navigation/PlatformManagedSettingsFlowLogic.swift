@@ -1,0 +1,43 @@
+//
+//  PlatformManagedSettingsFlowLogic.swift
+//  SixLayerFramework
+//
+//  Cross-platform settings flow routing rules (testable without SwiftUI).
+//  Issue #209: managed platform settings flow — unified routing / sub-panes.
+//
+
+import Foundation
+
+// MARK: - PlatformManagedSettingsFlowLogic
+
+/// Routing policy helpers for the default settings (master–detail) experience.
+///
+/// Higher-level views (e.g. Layer 4) compose these rules with `platformSettingsContainer_L4`.
+/// Issue: https://github.com/schatt/sixlayer/issues/209
+public enum PlatformManagedSettingsFlowLogic: Sendable {
+
+    /// Recommended top-level selection when the settings UI first appears.
+    ///
+    /// - **Split-style** (e.g. iPad, macOS): first pane when the list is non-empty so the detail column is not blank.
+    /// - **Phone**: `nil` so the user starts on the category list (push/stack applies after a choice).
+    public static func recommendedInitialTopSelection<ID: Hashable & Sendable>(
+        panes: [ID],
+        deviceType: DeviceType
+    ) -> ID? {
+        // RED phase: deliberately incorrect — uses last pane and ignores device (tests expect first-or-nil-by-platform).
+        guard let last = panes.last else { return nil }
+        return last
+    }
+
+    /// Whether the top-level settings shell behaves like split view (sidebar + detail visible together).
+    public static func usesSplitStyleTopLevelSettingsShell(deviceType: DeviceType) -> Bool {
+        // RED phase: always false (split platforms should be true).
+        false
+    }
+
+    /// Whether hierarchical sub-panes inside the detail context should use a system stack (push / pop).
+    public static func subPaneNavigationUsesSystemStack(deviceType: DeviceType) -> Bool {
+        // RED phase: always false (primary settings platforms should use stack for sub-panes).
+        false
+    }
+}
