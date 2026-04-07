@@ -50,6 +50,10 @@ Create the actual UI components with platform-adaptive behavior, implementing th
 #### **Settings Container**
 - `platformSettingsContainer_L4(columnVisibility:selectedCategory:sidebar:detail:)` - Device-aware settings container (iPad: NavigationSplitView, iPhone: NavigationStack, macOS: NavigationSplitView)
 
+#### **Managed settings flow (Issue #209)**
+- `platformManagedSettingsTopLevel_L4` — wires `PlatformManagedSettingsTopLevelState` into the settings shell; optional `platformManagedSettingsDetailNavigationStack_L4` for sub-pane stacks inside the detail column.
+- See [ManagedPlatformSettingsFlowGuide.md](./ManagedPlatformSettingsFlowGuide.md) for the full API, migration from manual `selectedCategory`, and a compile-checked example (unit test).
+
 ### **Button Components**
 
 #### **Button Styles**
