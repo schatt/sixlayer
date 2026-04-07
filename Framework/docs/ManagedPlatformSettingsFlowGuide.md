@@ -39,7 +39,7 @@ Use `PlatformManagedSettingsTopLevelState.anyHashableBinding($topLevel)` only if
 ## Sub-panes (detail stack)
 
 1. Hold stack state: `@State private var detailNav = PlatformManagedSettingsDetailNavigationState<SubPaneID>()`.
-2. When the user picks a **different top-level** pane, call `detailNav.popToRoot()` (or replace state) so sub-routes do not carry across categories.
+2. When the user picks a **different top-level** pane, clear sub-pane depth so routes do not carry across categories. Prefer `PlatformManagedSettingsFlowLogic.selectTopLevelPane(_:topLevel:detailNavigation:)` from sidebar actions (updates top-level selection and calls `popToRoot()` on the detail stack).
 3. Wrap the **root** of the detail column:
 
 ```swift
