@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import SwiftUI
 
 // MARK: - PlatformManagedSettingsFlowLogic
 
@@ -51,5 +52,23 @@ public enum PlatformManagedSettingsFlowLogic: Sendable {
         case .tv, .watch, .car, .vision:
             return false
         }
+    }
+
+    /// Binding for ``View/navigationDestination(isPresented:content:)`` on iPhone settings so **system back**
+    /// clears `selectedCategory` instead of swapping root views without a navigation pop.
+    ///
+    /// - Returns: `nil` when `selectedCategory` is absent (caller shows sidebar only).
+    public static func iPhoneTopLevelDetailNavigationIsPresented(
+        selectedCategory: Binding<AnyHashable?>?
+    ) -> Binding<Bool>? {
+        guard let selectedCategory else { return nil }
+        return Binding(
+            get: { selectedCategory.wrappedValue != nil },
+            set: { isPresented in
+                if !isPresented {
+                    selectedCategory.wrappedValue = nil
+                }
+            }
+        )
     }
 }
