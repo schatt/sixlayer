@@ -113,4 +113,26 @@ struct PlatformManagedSettingsFlowLogicTests {
         presented.wrappedValue = false
         #expect(value == nil)
     }
+
+    // MARK: - selectTopLevelPane (top-level + detail coordination, #209)
+
+    private enum CoordSubPane: Hashable, Sendable {
+        case deep
+    }
+
+    @Test func selectTopLevelPane_updatesTopAndClearsDetailPath() {
+        var top = PlatformManagedSettingsTopLevelState<String>(
+            orderedTopLevelPaneIDs: ["a", "b"],
+            deviceType: .pad
+        )
+        var detail = PlatformManagedSettingsDetailNavigationState<CoordSubPane>()
+        detail.push(.deep)
+        PlatformManagedSettingsFlowLogic.selectTopLevelPane(
+            "b",
+            topLevel: &top,
+            detailNavigation: &detail
+        )
+        #expect(top.selectedTopLevel == "b")
+        #expect(detail.path.isEmpty)
+    }
 }
