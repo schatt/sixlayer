@@ -941,7 +941,7 @@ public extension View {
         }
     }
     
-    /// Helper to create settings container for iPhone (NavigationStack with conditional display)
+    /// Helper to create settings container for iPhone (NavigationStack with push/pop semantics on iOS 16+)
     /// - Parameters:
     ///   - selectedCategory: Binding to track category selection (controls detail display)
     ///   - sidebar: View builder for sidebar content
@@ -955,17 +955,20 @@ public extension View {
     ) -> some View {
         if #available(iOS 16.0, *) {
             NavigationStack {
-                if let selectedCategory = selectedCategory, selectedCategory.wrappedValue != nil {
-                    // Show detail when category is selected
-                    detail()
+                if let isPresented = PlatformManagedSettingsFlowLogic.iPhoneTopLevelDetailNavigationIsPresented(
+                    selectedCategory: selectedCategory
+                ) {
+                    sidebar()
+                        .navigationDestination(isPresented: isPresented) {
+                            detail()
+                        }
                 } else {
-                    // Show sidebar when no category is selected
                     sidebar()
                 }
             }
             .automaticCompliance(named: "platformSettingsContainer_L4")
         } else {
-            // iOS 15 fallback: Use NavigationView
+            // iOS 15: legacy root swap (no unified stack back semantics)
             NavigationView {
                 if let selectedCategory = selectedCategory, selectedCategory.wrappedValue != nil {
                     detail()
