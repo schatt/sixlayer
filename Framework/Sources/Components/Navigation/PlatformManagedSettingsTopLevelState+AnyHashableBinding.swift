@@ -12,10 +12,20 @@ extension PlatformManagedSettingsTopLevelState {
     ///
     /// `set` ignores values whose underlying type does not match `ID` (e.g. wrong `AnyHashable` box).
     public static func anyHashableBinding(_ state: Binding<Self>) -> Binding<AnyHashable?> {
-        // RED (TDD): disconnected from state
         Binding(
-            get: { nil },
-            set: { _ in }
+            get: { state.wrappedValue.selectedTopLevel.map { AnyHashable($0) } },
+            set: { newValue in
+                if let newValue {
+                    guard let id = newValue.base as? ID else { return }
+                    var s = state.wrappedValue
+                    s.selectTopLevel(id)
+                    state.wrappedValue = s
+                } else {
+                    var s = state.wrappedValue
+                    s.clearTopLevelSelection()
+                    state.wrappedValue = s
+                }
+            }
         )
     }
 }
