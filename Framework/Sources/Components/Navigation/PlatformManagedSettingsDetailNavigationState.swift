@@ -11,9 +11,10 @@ import Foundation
 
 /// Holds a **stack** of sub-route identifiers for hierarchical settings **inside** a top-level pane.
 ///
-/// Pair with SwiftUI `NavigationStack(path:)` using `path` as `Binding<[SubID]>` from app state
-/// (typically `@State` or a store). Call ``popToRoot()`` when the user switches top-level
-/// categories so sub-panes do not leak across panes.
+/// Pair with SwiftUI ``SwiftUI/NavigationStack`` using
+/// ``PlatformManagedSettingsDetailNavigationState/navigationPathBinding(_:)`` for `path`, or build a
+/// `Binding<[SubID]>` yourself. Call ``popToRoot()`` when the user switches top-level categories so
+/// sub-panes do not leak across panes.
 ///
 /// Top-level selection remains ``PlatformManagedSettingsTopLevelState``; this type models **depth**
 /// within the detail column / pushed stack on phone.
