@@ -159,16 +159,17 @@ final class AccessibilityIdentifierCategoryAUITests: XCTestCase {
         )
     }
 
-    /// Mirrors ViewInspector `testDisableEnableMidHierarchy`: sibling with global auto on container
-    /// still gets a named auto identifier; opt-out branch keeps an explicit manual identifier findable.
+    /// Category A audit: `basicAutomaticCompliance` name + sibling with explicit `platformButton` id (Issue #197).
+    /// TestApp already enables global automatic IDs; avoid `enableGlobalAutomaticCompliance` in the audit view —
+    /// it mutates shared config and can break sibling identifiers when rows scroll off-screen.
     func testCategoryA_midHierarchy_autoSiblingAndOptOut_identifiersPresent() throws {
         XCTAssertTrue(
             scrollUntilIdentifierContains("CatAMidAutoSibling"),
-            "Auto-enabled sibling inside enableGlobalAutomaticCompliance stack should expose identifier"
+            "Named basicAutomaticCompliance row should expose identifier substring (scroll if below fold)"
         )
         XCTAssertTrue(
             scrollUntilIdentifierContains("CatAMid_LocalOptOut_Static"),
-            "Manual id on opt-out branch is below the fold on the audit scroll view"
+            "Explicit platformButton id should match manual-only row pattern on the audit scroll view"
         )
     }
 }
