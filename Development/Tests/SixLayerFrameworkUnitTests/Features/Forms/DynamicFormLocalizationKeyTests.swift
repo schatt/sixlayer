@@ -256,7 +256,7 @@ struct DynamicFormLocalizationKeyTests {
             contentType: .text,
             label: "Plain"
         )
-        let resolver: (String) -> String = { key in
+        let resolver = DynamicFormFieldLocalizationResolver { key in
             key == "Screen.plain.label" ? "Étiquette" : key
         }
         let out = field.resolvedLocalizedDisplayString(
