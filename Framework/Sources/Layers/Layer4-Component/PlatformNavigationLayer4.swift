@@ -64,7 +64,8 @@ private struct Layer4OuterSidebarOverlayHost<SidebarSheet: View, Detail: View>: 
         }
         .accessibilityHidden(accessibilityState.isUnderlyingContentAccessibilityHidden)
         .toolbar {
-            ToolbarItem(placement: .primaryAction) {
+            // `.primaryAction` can fold into overflow on compact widths, hiding the control from XCUITest (#207).
+            ToolbarItem(placement: .navigationBarTrailing) {
                 Button {
                     isOuterSidebarPresented = true
                 } label: {
