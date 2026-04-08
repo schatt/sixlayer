@@ -23,10 +23,22 @@ public extension EnvironmentValues {
 
 // MARK: - Dynamic form localization (Issue #194)
 
-/// Optional host-provided resolver: maps localization keys to display strings.
-/// When `nil`, dynamic form fields use raw `DynamicFormField` label/placeholder text (existing behavior).
+/// Host-provided localization lookup for dynamic form fields (Issue #194).
+///
+/// Wrapped in a class so it can be stored in `EnvironmentKey` without requiring `@Sendable` closures.
+/// Hosts should implement **thread-safe** lookup if the resolver may run off the main actor; typical use is
+/// `Bundle.main.localizedString` from the main thread only.
+public final class DynamicFormFieldLocalizationResolver: @unchecked Sendable {
+    public let lookup: (String) -> String
+
+    public init(_ lookup: @escaping (String) -> String) {
+        self.lookup = lookup
+    }
+}
+
+/// Optional resolver: when `nil`, fields use raw `DynamicFormField` label/placeholder (existing behavior).
 public struct DynamicFormFieldLocalizationResolverKey: EnvironmentKey {
-    public static let defaultValue: (@Sendable (String) -> String)? = nil
+    public static let defaultValue: DynamicFormFieldLocalizationResolver? = nil
 }
 
 /// Optional namespace prepended to field localization keys (e.g. screen or model name).
@@ -40,8 +52,8 @@ public struct DynamicFormFieldResolvedDisplayLabelKey: EnvironmentKey {
 }
 
 public extension EnvironmentValues {
-    /// Maps localization keys to strings; default `nil` means no key-based localization.
-    var dynamicFormFieldLocalizationResolver: (@Sendable (String) -> String)? {
+    /// Localization lookup for field keys; default `nil` means no key-based localization.
+    var dynamicFormFieldLocalizationResolver: DynamicFormFieldLocalizationResolver? {
         get { self[DynamicFormFieldLocalizationResolverKey.self] }
         set { self[DynamicFormFieldLocalizationResolverKey.self] = newValue }
     }
