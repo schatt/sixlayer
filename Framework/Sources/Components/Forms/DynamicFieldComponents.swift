@@ -213,7 +213,7 @@ extension DynamicFormField {
     ///   - componentName: The name for automatic compliance
     /// - Returns: A view with standard field styling applied
     func fieldContainer<Content: View>(
-        @ViewBuilder content: () -> Content,
+        @ViewBuilder content: @escaping () -> Content,
         componentName: String
     ) -> some View {
         DynamicFormFieldStandardContainer(field: self, componentName: componentName, content: content)
@@ -278,8 +278,14 @@ extension DynamicFormField {
 private struct DynamicFormFieldStandardContainer<Content: View>: View {
     let field: DynamicFormField
     let componentName: String
-    @ViewBuilder let content: () -> Content
+    private let content: () -> Content
     @Environment(\.dynamicFormFieldResolvedDisplayLabel) private var resolvedDisplayLabel
+
+    init(field: DynamicFormField, componentName: String, @ViewBuilder content: @escaping () -> Content) {
+        self.field = field
+        self.componentName = componentName
+        self.content = content
+    }
 
     var body: some View {
         platformVStackContainer(alignment: .leading, spacing: 4) {
