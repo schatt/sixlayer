@@ -122,9 +122,13 @@ struct AccessibilityIdentifierCategoryAUDITView: View {
                             identifierName: "CatAMidAutoSibling",
                             identifierLabel: "CatA mid auto"
                         )
-                    platformText("CatA mid opt-out label")
-                        .disableAutomaticAccessibilityIdentifiers()
-                        .accessibilityIdentifier("CatAMid_LocalOptOut_Static")
+                    Group {
+                        platformText("CatA mid opt-out label")
+                            .disableAutomaticAccessibilityIdentifiers()
+                    }
+                    .accessibilityElement(children: .combine)
+                    .accessibilityLabel("CatA mid opt-out label")
+                    .accessibilityIdentifier("CatAMid_LocalOptOut_Static")
                 }
                 .enableGlobalAutomaticCompliance()
             }
