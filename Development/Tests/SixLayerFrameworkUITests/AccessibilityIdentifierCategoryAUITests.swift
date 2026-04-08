@@ -163,4 +163,17 @@ final class AccessibilityIdentifierCategoryAUITests: XCTestCase {
             "Empty identifierName should still include sanitized identifierLabel in generated identifier"
         )
     }
+
+    /// Mirrors ViewInspector `testDisableEnableMidHierarchy`: sibling with global auto on container
+    /// still gets a named auto identifier; opt-out branch keeps an explicit manual identifier findable.
+    func testCategoryA_midHierarchy_autoSiblingAndOptOut_identifiersPresent() throws {
+        XCTAssertTrue(
+            scrollUntilIdentifierContains("CatAMidAutoSibling"),
+            "Auto-enabled sibling inside enableGlobalAutomaticCompliance stack should expose identifier"
+        )
+        XCTAssertTrue(
+            scrollUntilIdentifierContains("CatAMid_LocalOptOut_Static"),
+            "Sibling with disableAutomaticAccessibilityIdentifiers should still expose manual accessibilityIdentifier"
+        )
+    }
 }
