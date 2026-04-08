@@ -781,8 +781,8 @@ struct Layer4ContractOnlyView: View {
                     .padding()
                 }
             )
-            // Tall enough for NavigationStack + toolbar (Show sidebar) inside Form row; 180pt clipped L4OverlayShowSidebar in UITest.
-            .frame(height: 320)
+            // Do not cap height: a fixed height clips the nested NavigationStack toolbar so L4OverlayShowSidebar never appears in XCUITest.
+            .fixedSize(horizontal: false, vertical: true)
     }
 
     @ViewBuilder
