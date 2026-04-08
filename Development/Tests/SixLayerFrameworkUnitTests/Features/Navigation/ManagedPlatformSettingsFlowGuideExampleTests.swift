@@ -18,6 +18,8 @@ private enum ManagedGuideTopPane: String, CaseIterable, Hashable, Sendable {
 
 private enum ManagedGuideSubPane: Hashable, Sendable {
     case cleanup
+    /// Second push under **Data** (three-level: top-level → cleanup → confirm).
+    case cleanupConfirm
 }
 
 /// Mirrors the migration guide: managed top-level + detail `NavigationStack` for sub-panes.
@@ -71,9 +73,19 @@ private struct ManagedSettingsGuideExampleView: View {
                             }
                         }
                         .navigationTitle("Data")
-                        .navigationDestination(for: ManagedGuideSubPane.self) { _ in
-                            Text("Cleanup detail")
+                        .navigationDestination(for: ManagedGuideSubPane.self) { route in
+                            switch route {
+                            case .cleanup:
+                                List {
+                                    NavigationLink(value: ManagedGuideSubPane.cleanupConfirm) {
+                                        Text("Confirm cleanup")
+                                    }
+                                }
                                 .navigationTitle("Cleanup")
+                            case .cleanupConfirm:
+                                Text("Cleanup confirmation")
+                                    .navigationTitle("Confirm")
+                            }
                         }
                     }
             }
