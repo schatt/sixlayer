@@ -781,7 +781,8 @@ struct Layer4ContractOnlyView: View {
                     .padding()
                 }
             )
-            .frame(height: 180)
+            // Tall enough for NavigationStack + toolbar (Show sidebar) inside Form row; 180pt clipped L4OverlayShowSidebar in UITest.
+            .frame(height: 320)
     }
 
     @ViewBuilder
