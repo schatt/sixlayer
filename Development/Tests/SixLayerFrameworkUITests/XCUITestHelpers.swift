@@ -36,6 +36,43 @@ extension XCUIApplication {
         configureForFastTesting()
         launch()
     }
+
+    // MARK: - Issue #193 — Form / table scroll hosts
+
+    /// iOS `Form` is backed by a table; swiping the first `scrollView` often does not scroll form rows.
+    /// When multiple `tables` exist, `firstMatch` is often a nested list (e.g. L4 overlay split), not the root `Form` — use the last table.
+    /// When multiple `scrollViews` exist (e.g. navigation chrome + content), prefer the last scroll view for the main list.
+    func xcuiPrimaryScrollHost() -> XCUIElement {
+        let tbls = tables
+        if tbls.count > 1 {
+            return tbls.element(boundBy: tbls.count - 1)
+        }
+        if tbls.firstMatch.exists { return tbls.firstMatch }
+        let svs = scrollViews
+        if svs.count > 1 {
+            return svs.element(boundBy: svs.count - 1)
+        }
+        if svs.firstMatch.exists { return svs.firstMatch }
+        return windows.firstMatch
+    }
+
+    /// Scroll the primary content up: prefers table(s); when two tables exist, swipes both outer and inner; otherwise swipes `xcuiPrimaryScrollHost()`.
+    func xcuiSwipeScrollHostsUp() {
+        let tbls = tables
+        if tbls.count > 1 {
+            tbls.element(boundBy: tbls.count - 1).swipeUp()
+            tbls.element(boundBy: 0).swipeUp()
+        } else if tbls.firstMatch.exists {
+            tbls.firstMatch.swipeUp()
+        } else {
+            let host = xcuiPrimaryScrollHost()
+            if host.exists {
+                host.swipeUp()
+            } else {
+                windows.firstMatch.swipeUp()
+            }
+        }
+    }
 }
 
 // MARK: - XCUIElement Extensions
@@ -253,9 +290,8 @@ extension XCUIApplication {
             return false
         }
 
-        /// Launch-page `NavigationLink` rows use `Group` + `accessibilityElement(children: .combine)` with a row id.
-        /// XCTest often reports that as a **Button** with the row identifier; tapping it does not push the stack.
-        /// Tapping `links[visibleTitle]` targets the real link and navigates reliably.
+        /// Prefer `links[visibleTitle]` for reliable navigation; row nodes may be `.cell` / `.button` by OS.
+        /// Scroll with `xcuiSwipeScrollHostsUp()` so root `Form` / list tables move (Issue #193).
         let navigationLinkTitle: String? = linkLabel ?? {
             switch linkIdentifier {
             case "layer2-examples-link": return "Layer 2 Layout Examples"
@@ -271,26 +307,22 @@ extension XCUIApplication {
         guard waitForReady(timeout: 5.0) else { return false }
 
         if let title = navigationLinkTitle {
-            let scrollHost = scrollViews.firstMatch
             for _ in 0..<14 {
                 let rowLink = links[title].firstMatch
                 if rowLink.waitForExistence(timeout: 0.6) && rowLink.isHittable {
                     rowLink.tap()
                     return layerExamplesDestinationReached()
                 }
-                if scrollHost.exists { scrollHost.swipeUp() }
+                xcuiSwipeScrollHostsUp()
             }
         }
 
         // Fallback: identifier-based (callers on unusual rows or when link query fails)
         if linkIdentifier.contains("layer4") || linkIdentifier.contains("layer5") || linkIdentifier.contains("layer6") {
-            let scrollView = scrollViews.firstMatch
-            if scrollView.exists {
-                for _ in 0..<5 {
-                    scrollView.swipeUp()
-                    let found = findLaunchPageEntry(identifier: linkIdentifier)
-                    if found.waitForExistence(timeout: 0.8) && found.isHittable { break }
-                }
+            for _ in 0..<5 {
+                xcuiSwipeScrollHostsUp()
+                let found = findLaunchPageEntry(identifier: linkIdentifier)
+                if found.waitForExistence(timeout: 0.8) && found.isHittable { break }
             }
         }
         var link = findLaunchPageEntry(identifier: linkIdentifier)
@@ -302,7 +334,7 @@ extension XCUIApplication {
         }
         var attempts = 0
         while !link.waitForExistence(timeout: 1.0), attempts < 3 {
-            if scrollViews.firstMatch.exists { scrollViews.firstMatch.swipeUp() }
+            xcuiSwipeScrollHostsUp()
             attempts += 1
             link = findLaunchPageEntry(identifier: linkIdentifier)
             if !link.waitForExistence(timeout: 1.0), let label = navigationLinkTitle {
