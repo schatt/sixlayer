@@ -80,11 +80,11 @@ struct PlatformManagedSettingsFlowLogicTests {
 
     // MARK: - iPhoneTopLevelDetailNavigationIsPresented (#209 stack semantics)
 
-    @Test func iPhoneTopLevelDetailNavigationIsPresented_nilBinding_returnsNil() {
+    @Test @MainActor func iPhoneTopLevelDetailNavigationIsPresented_nilBinding_returnsNil() {
         #expect(PlatformManagedSettingsFlowLogic.iPhoneTopLevelDetailNavigationIsPresented(selectedCategory: nil) == nil)
     }
 
-    @Test func iPhoneTopLevelDetailNavigationIsPresented_selectionNil_getFalse_setFalse_noOp() {
+    @Test @MainActor func iPhoneTopLevelDetailNavigationIsPresented_selectionNil_getFalse_setFalse_noOp() {
         var value: AnyHashable? = nil
         let binding = Binding<AnyHashable?>(
             get: { value },
@@ -99,7 +99,7 @@ struct PlatformManagedSettingsFlowLogicTests {
         #expect(value == nil)
     }
 
-    @Test func iPhoneTopLevelDetailNavigationIsPresented_selectionSet_getTrue_setFalse_clears() {
+    @Test @MainActor func iPhoneTopLevelDetailNavigationIsPresented_selectionSet_getTrue_setFalse_clears() {
         var value: AnyHashable? = AnyHashable("general")
         let binding = Binding<AnyHashable?>(
             get: { value },
