@@ -21,6 +21,67 @@ public extension EnvironmentValues {
     }
 }
 
+// MARK: - Dynamic form localization (Issue #194)
+
+/// Optional host-provided resolver: maps localization keys to display strings.
+/// When `nil`, dynamic form fields use raw `DynamicFormField` label/placeholder text (existing behavior).
+public struct DynamicFormFieldLocalizationResolverKey: EnvironmentKey {
+    public static let defaultValue: ((String) -> String)? = nil
+}
+
+/// Optional namespace prepended to field localization keys (e.g. screen or model name).
+public struct DynamicFormLocalizationNamespaceKey: EnvironmentKey {
+    public static let defaultValue: String? = nil
+}
+
+/// Resolved display label for the current field row (set by `DynamicFormFieldView` when a localization resolver is active).
+public struct DynamicFormFieldResolvedDisplayLabelKey: EnvironmentKey {
+    public static let defaultValue: String? = nil
+}
+
+public extension EnvironmentValues {
+    /// Maps localization keys to strings; default `nil` means no key-based localization.
+    var dynamicFormFieldLocalizationResolver: ((String) -> String)? {
+        get { self[DynamicFormFieldLocalizationResolverKey.self] }
+        set { self[DynamicFormFieldLocalizationResolverKey.self] = newValue }
+    }
+
+    /// Namespace prefix for `DynamicFormField` localization keys (e.g. from `DynamicFormConfiguration.metadata["localizationNamespace"]`).
+    var dynamicFormLocalizationNamespace: String? {
+        get { self[DynamicFormLocalizationNamespaceKey.self] }
+        set { self[DynamicFormLocalizationNamespaceKey.self] = newValue }
+    }
+
+    /// Localized (or fallback) label for the active field; used for accessibility identifier label environment.
+    var dynamicFormFieldResolvedDisplayLabel: String? {
+        get { self[DynamicFormFieldResolvedDisplayLabelKey.self] }
+        set { self[DynamicFormFieldResolvedDisplayLabelKey.self] = newValue }
+    }
+}
+
+/// Applies `accessibilityIdentifierLabel` using the resolved field label from environment when present (Issue #194).
+public struct DynamicFormFieldAccessibilityLabelApplier<Content: View>: View {
+    let field: DynamicFormField
+    let content: Content
+    @Environment(\.dynamicFormFieldResolvedDisplayLabel) private var resolvedDisplayLabel
+
+    public init(field: DynamicFormField, @ViewBuilder content: () -> Content) {
+        self.field = field
+        self.content = content()
+    }
+
+    public var body: some View {
+        content.environment(\.accessibilityIdentifierLabel, resolvedDisplayLabel ?? field.label)
+    }
+}
+
+public extension View {
+    /// Uses the resolved dynamic form field label for accessibility identifier label environment when available.
+    func dynamicFormFieldAccessibilityLabel(_ field: DynamicFormField) -> some View {
+        DynamicFormFieldAccessibilityLabelApplier(field: field) { self }
+    }
+}
+
 // MARK: - Dynamic Form View
 
 /// Main dynamic form view component
