@@ -58,6 +58,7 @@ public enum PlatformManagedSettingsFlowLogic: Sendable {
     /// clears `selectedCategory` instead of swapping root views without a navigation pop.
     ///
     /// - Returns: `nil` when `selectedCategory` is absent (caller shows sidebar only).
+    @MainActor
     public static func iPhoneTopLevelDetailNavigationIsPresented(
         selectedCategory: Binding<AnyHashable?>?
     ) -> Binding<Bool>? {
