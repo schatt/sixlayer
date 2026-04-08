@@ -127,10 +127,10 @@ struct AccessibilityIdentifierCategoryAUDITView: View {
                         )
                 }
                 .enableGlobalAutomaticCompliance()
-                VStack(alignment: .leading, spacing: 2) {
+                Group {
                     Text("CatA mid opt-out label")
                 }
-                .accessibilityElement(children: .combine)
+                .accessibilityElement(children: .ignore)
                 .accessibilityLabel("CatA mid opt-out label")
                 .accessibilityIdentifier("CatAMid_LocalOptOut_Static")
             }
