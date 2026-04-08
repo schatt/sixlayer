@@ -64,17 +64,12 @@ final class AccessibilityIdentifierCategoryAUITests: XCTestCase {
         if app.descendants(matching: .any).matching(pred).firstMatch.waitForExistence(timeout: 1.0) {
             return true
         }
-        let scrollViews = app.scrollViews
-        if scrollViews.firstMatch.exists {
-            let scroll = scrollViews.firstMatch
-            for _ in 0..<maxSwipes {
-                scroll.swipeUp()
-                if app.descendants(matching: .any).matching(pred).firstMatch.waitForExistence(timeout: 0.5) {
-                    return true
-                }
+        for _ in 0..<maxSwipes {
+            app.xcuiSwipeScrollHostsUp()
+            if app.descendants(matching: .any).matching(pred).firstMatch.waitForExistence(timeout: 0.5) {
+                return true
             }
         }
-        // Nested scrollViews sometimes do not move long audit content; window swipe reaches below-the-fold rows.
         let window = app.windows.firstMatch
         guard window.exists else { return false }
         for _ in 0..<maxSwipes {
@@ -173,7 +168,7 @@ final class AccessibilityIdentifierCategoryAUITests: XCTestCase {
         )
         XCTAssertTrue(
             scrollUntilIdentifierContains("CatAMid_LocalOptOut_Static"),
-            "Sibling with disableAutomaticAccessibilityIdentifiers should still expose manual accessibilityIdentifier"
+            "Manual id on opt-out branch is below the fold on the audit scroll view"
         )
     }
 }
