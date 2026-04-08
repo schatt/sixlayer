@@ -719,7 +719,6 @@ struct Layer4ContractOnlyView: View {
     @State private var l4ShowPopover = false
     @State private var l4ContractCopySource = "L4CopyContractText"
     @State private var l4ShowPrint = false
-    @State private var l4OverlayColumnVisibility = NavigationSplitViewVisibility.automatic
     @State private var l4OverlayNavigationSheet = false
     private let l4OverlayStrategy = AppNavigationStrategy(
         implementation: .splitView,
@@ -760,7 +759,9 @@ struct Layer4ContractOnlyView: View {
     private var contractOverlayAccessibilityContent: some View {
         EmptyView()
             .platformAppNavigation_L4(
-                columnVisibility: $l4OverlayColumnVisibility,
+                // Nil binding: a two-way `NavigationSplitViewVisibility` binding can be forced to `.detailOnly`
+                // in narrow Form rows; framework then pins detail-only shell and L4OverlayShowSidebar never appears (#207).
+                columnVisibility: nil,
                 showingNavigationSheet: $l4OverlayNavigationSheet,
                 strategy: l4OverlayStrategy,
                 sidebar: {
