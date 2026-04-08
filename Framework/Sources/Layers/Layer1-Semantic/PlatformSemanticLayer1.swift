@@ -1314,7 +1314,7 @@ private func createSimpleFieldView(for field: DynamicFormField, hints: Presentat
             case .stepper:
                 Stepper(field.label, value: .constant(0.0), in: 0...100, step: 1.0)
                     .automaticCompliance(
-                        identifierName: sanitizeLabelText(field.label),  // Auto-generate identifierName from field label
+                        identifierName: field.effectiveAccessibilityIdentifierSegment,  // Issue #194: align with localization base
                         identifierElementType: "Stepper",
                         accessibilityLabel: field.label  // Issue #156: Parameter-based approach
                     )
@@ -1333,7 +1333,7 @@ private func createSimpleFieldView(for field: DynamicFormField, hints: Presentat
             case .toggle, .boolean:
                 Toggle(field.label, isOn: .constant(false))
                     .automaticCompliance(
-                        identifierName: sanitizeLabelText(field.label),  // Auto-generate identifierName from field label
+                        identifierName: field.effectiveAccessibilityIdentifierSegment,  // Issue #194: align with localization base
                         identifierElementType: "Toggle",
                         accessibilityLabel: field.label  // Issue #156: Parameter-based approach
                     )
@@ -1362,7 +1362,7 @@ private func createSimpleFieldView(for field: DynamicFormField, hints: Presentat
                     .datePickerStyle(.compact)
                     .selfLabelingControl(label: field.placeholder ?? i18n.placeholderSelectDate())
                     .automaticCompliance(
-                        identifierName: sanitizeLabelText(field.label),  // Auto-generate identifierName from field label
+                        identifierName: field.effectiveAccessibilityIdentifierSegment,  // Issue #194: align with localization base
                         identifierElementType: "DatePicker",
                         accessibilityLabel: field.label  // Issue #156: Parameter-based approach
                     )
@@ -1373,7 +1373,7 @@ private func createSimpleFieldView(for field: DynamicFormField, hints: Presentat
                     .datePickerStyle(.compact)
                     .selfLabelingControl(label: field.placeholder ?? i18n.placeholderSelectDates())
                     .automaticCompliance(
-                        identifierName: sanitizeLabelText(field.label),  // Auto-generate identifierName from field label
+                        identifierName: field.effectiveAccessibilityIdentifierSegment,  // Issue #194: align with localization base
                         identifierElementType: "DatePicker",
                         accessibilityLabel: field.label  // Issue #156: Parameter-based approach
                     )
@@ -1383,7 +1383,7 @@ private func createSimpleFieldView(for field: DynamicFormField, hints: Presentat
                     .datePickerStyle(.compact)
                     .selfLabelingControl(label: field.placeholder ?? i18n.placeholderSelectTime())
                     .automaticCompliance(
-                        identifierName: sanitizeLabelText(field.label),  // Auto-generate identifierName from field label
+                        identifierName: field.effectiveAccessibilityIdentifierSegment,  // Issue #194: align with localization base
                         identifierElementType: "DatePicker",
                         accessibilityLabel: field.label  // Issue #156: Parameter-based approach
                     )
@@ -1391,14 +1391,14 @@ private func createSimpleFieldView(for field: DynamicFormField, hints: Presentat
                 ColorPicker("", selection: .constant(.blue))
                     .selfLabelingControl(label: field.label)
                     .automaticCompliance(
-                        identifierName: sanitizeLabelText(field.label),  // Auto-generate identifierName from field label
+                        identifierName: field.effectiveAccessibilityIdentifierSegment,  // Issue #194: align with localization base
                         identifierElementType: "ColorPicker",
                         accessibilityLabel: field.label  // Issue #156: Parameter-based approach
                     )
             case .range:
                 Slider(value: .constant(0.5), in: 0...1)
                     .automaticCompliance(
-                        identifierName: sanitizeLabelText(field.label),  // Auto-generate identifierName from field label
+                        identifierName: field.effectiveAccessibilityIdentifierSegment,  // Issue #194: align with localization base
                         identifierElementType: "Slider",
                         accessibilityLabel: field.label  // Issue #156: Parameter-based approach
                     )
