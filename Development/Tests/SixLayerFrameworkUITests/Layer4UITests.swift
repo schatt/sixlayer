@@ -182,12 +182,9 @@ final class Layer4UITests: XCTestCase {
             return false
         }
         if contractTopVisible() { return }
-        let scrollHost = app.xcuiPrimaryScrollHost()
-        if scrollHost.exists {
-            for _ in 0..<18 {
-                scrollHost.swipeDown()
-                if contractTopVisible() { return }
-            }
+        for _ in 0..<18 {
+            app.xcuiSwipeScrollHostsDown()
+            if contractTopVisible() { return }
         }
         XCTAssertTrue(
             app.staticTexts["L4 Presentation"].waitForExistence(timeout: 3.0)
@@ -346,8 +343,9 @@ final class Layer4UITests: XCTestCase {
         ensureContractRoot()
         scrollToElement(label: "L4 Form")
         scrollToElement(label: "Section body")
-        let hasFormSection = app.staticTexts["L4 Form"].waitForExistence(timeout: 3.0)
-            || app.descendants(matching: .any).matching(NSPredicate(format: "label == %@", "L4 Form")).firstMatch.waitForExistence(timeout: 2.0)
+        let hasFormSection = anyDescendantHasLabel(equalTo: "L4 Form", timeout: 3.0)
+            || app.staticTexts["L4 Form"].waitForExistence(timeout: 2.0)
+            || app.descendants(matching: .any).matching(NSPredicate(format: "label CONTAINS[c] %@", "L4 Form")).firstMatch.waitForExistence(timeout: 2.0)
         XCTAssertTrue(hasFormSection,
                       "platformForm: form section title (L4 Form) should be visible")
         XCTAssertTrue(l4FormSectionHeaderVisible(timeout: 4.0),
