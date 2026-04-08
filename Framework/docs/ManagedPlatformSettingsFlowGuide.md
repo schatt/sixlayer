@@ -12,6 +12,15 @@ This guide describes the **default managed settings** API built on `platformSett
 
 Managed APIs **compose with** the navigation layout resolver work (#204 / #206): they delegate to `platformSettingsContainer_L4` for the outer shell; they do not replace resolver-driven split/compact behavior.
 
+### Resolver behavior by platform (outer shell)
+
+| Context | Outer shell | Resolver (#204 / #206) |
+|--------|-------------|-------------------------|
+| **iPad / macOS** | `platformSettingsContainer_L4` uses `Layer4NestedSplitShellPresentationHost` | **Yes** — width-driven `NavigationLayoutCompactPresentation` (full split, detail-only inner collapse, overlay outer sidebar) matches settings and app navigation contracts. |
+| **iPhone** | `NavigationStack` + selection-driven detail (`navigationDestination(isPresented:)` when using managed bindings) | **N/A for nested split** — there is no inner/outer dual-sidebar squeeze; stack semantics are always the correct model. Managed flow still uses the same `selectedCategory` wiring as manual `platformSettingsContainer_L4`. |
+
+Sub-pane stacks (`platformManagedSettingsDetailNavigationStack_L4`) sit **inside** the detail column (or inside the iPhone pushed detail); they do not bypass resolver output on iPad/macOS.
+
 ## Compile-time top-level panes
 
 Define a `Hashable` enum (`CaseIterable` for a static list in source order) and use:
@@ -66,11 +75,20 @@ Path updates sync through `navigationPathBinding`; the Layer 4 modifier wires `N
 
 ## Compile-checked sample
 
-The unit test suite includes a **full** example that must compile:
+The unit test suite includes a **full** example that must compile, including **three levels** of navigation on the Data pane (top-level category → cleanup list → confirmation):
 
 `Development/Tests/SixLayerFrameworkUnitTests/Features/Navigation/ManagedPlatformSettingsFlowGuideExampleTests.swift`
 
 Run: `swift test --filter 'PlatformManagedSettings'`.
+
+## Acceptance criteria (#209) — where this is covered
+
+- **Unified routing / no adopter branching for the default path:** Adopters use `PlatformManagedSettingsTopLevelState` + optional `PlatformManagedSettingsDetailNavigationState`; split vs stack is implemented inside `platformSettingsContainer_L4` and `PlatformManagedSettingsFlowLogic`.
+- **Sub-panes:** Detail `NavigationStack` + `navigationDestination(for:)`; switching top-level panes should use `PlatformManagedSettingsFlowLogic.selectTopLevelPane` so depth resets.
+- **Compose with #202 / #204–#208:** Managed entry points call `platformSettingsContainer_L4` only; iPad/macOS inherit resolver-driven presentation from that API.
+- **Compile-time pane structure:** Prefer a `Hashable` enum with `CaseIterable` (or fixed `orderedTopLevelPaneIDs`); see ``PlatformManagedSettingsTopLevelState``.
+- **Escape hatch:** Use `platformSettingsContainer_L4` directly (see table at top of this guide).
+- **Tests:** `swift test --filter 'PlatformManagedSettings'` (routing policy + Layer 4 smoke + this compile-checked example).
 
 ## Related
 
