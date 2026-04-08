@@ -80,6 +80,27 @@ public extension View {
     func dynamicFormFieldAccessibilityLabel(_ field: DynamicFormField) -> some View {
         DynamicFormFieldAccessibilityLabelApplier(field: field) { self }
     }
+
+    /// VoiceOver label from resolved field display text when the host injects localization (Issue #194).
+    func dynamicFormFieldVoiceOverLabel(_ field: DynamicFormField) -> some View {
+        DynamicFormFieldVoiceOverLabelApplier(field: field, content: self)
+    }
+}
+
+/// Applies `.accessibilityLabel` using resolved display label from environment when set.
+public struct DynamicFormFieldVoiceOverLabelApplier<Content: View>: View {
+    let field: DynamicFormField
+    let content: Content
+    @Environment(\.dynamicFormFieldResolvedDisplayLabel) private var resolvedDisplayLabel
+
+    public init(field: DynamicFormField, content: Content) {
+        self.field = field
+        self.content = content
+    }
+
+    public var body: some View {
+        content.accessibilityLabel(resolvedDisplayLabel ?? field.label)
+    }
 }
 
 // MARK: - Dynamic Form View
@@ -187,6 +208,13 @@ struct DynamicFormViewInner: View {
 
     /// Pending target/scope for the current batch OCR run (set when host triggers via batchOCRRequest or nil for single button).
     @State private var pendingBatchOCRTarget: BatchOCRRequest?
+
+    /// Optional namespace for field localization keys from `configuration.metadata["localizationNamespace"]` (Issue #194).
+    private var formLocalizationNamespace: String? {
+        guard let raw = configuration.metadata?["localizationNamespace"] else { return nil }
+        let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty ? nil : trimmed
+    }
 
     #if canImport(CoreData)
     @Environment(\.managedObjectContext) private var managedObjectContext
@@ -307,6 +335,7 @@ struct DynamicFormViewInner: View {
                     accessibilitySortPriority: 1.0  // Issue #165: Primary action has highest priority
                 )
             }
+            .environment(\.dynamicFormLocalizationNamespace, formLocalizationNamespace)
             .padding()
             .environment(\.accessibilityIdentifierLabel, configuration.title) // TDD GREEN: Pass label to identifier generation
             .automaticCompliance(
@@ -708,18 +737,30 @@ public struct DynamicFormFieldView: View {
     @ObservedObject var formState: DynamicFormState
     @State private var showHelpPopover = false
     let sortPriority: Double?  // Issue #165: Sort priority for accessibility reading order
+    @Environment(\.dynamicFormFieldLocalizationResolver) private var localizationResolver
+    @Environment(\.dynamicFormLocalizationNamespace) private var localizationNamespace
     
     public init(field: DynamicFormField, formState: DynamicFormState, sortPriority: Double? = nil) {
         self.field = field
         self.formState = formState
         self.sortPriority = sortPriority
     }
+
+    /// Localized or fallback label for the field row (Issue #194).
+    private var displayFieldLabel: String {
+        field.resolvedLocalizedDisplayString(
+            role: .label,
+            resolver: localizationResolver,
+            namespace: localizationNamespace,
+            fallback: field.label
+        )
+    }
     
     public var body: some View {
         platformVStackContainer(alignment: .leading, spacing: 8) {
             // Field label with required indicator and info button
             platformHStackContainer(spacing: 4) {
-                Text(field.label)
+                Text(displayFieldLabel)
                     .font(.subheadline)
                     .bold()
                 if field.isRequired {
@@ -737,7 +778,7 @@ public struct DynamicFormFieldView: View {
                             .font(.caption)
                     }
                     .buttonStyle(.plain)
-                    .accessibilityLabel("Help for \(field.label)")
+                    .accessibilityLabel("Help for \(displayFieldLabel)")
                     .accessibilityHint(description)
                     #if os(macOS)
                     .help(description) // macOS native tooltip on hover
@@ -758,7 +799,7 @@ public struct DynamicFormFieldView: View {
                 }
             }
             .automaticCompliance(named: "FieldLabel")
-            .accessibilityLabel(field.isRequired ? "\(field.label), required" : field.label)
+            .accessibilityLabel(field.isRequired ? "\(displayFieldLabel), required" : displayFieldLabel)
 
             // Field description is now shown in popover/tooltip, not as plain text (Issue #79)
             // This saves vertical space and reduces form clutter
@@ -778,9 +819,10 @@ public struct DynamicFormFieldView: View {
             }
         }
         .id(field.id) // Add ID for ScrollViewReader scrolling
-        .environment(\.accessibilityIdentifierLabel, field.label) // TDD GREEN: Pass label to identifier generation
+        .environment(\.dynamicFormFieldResolvedDisplayLabel, displayFieldLabel)
+        .environment(\.accessibilityIdentifierLabel, displayFieldLabel)
         .automaticCompliance(
-            identifierName: sanitizeLabelText(field.label),  // Auto-generate identifierName from field label
+            identifierName: field.effectiveAccessibilityIdentifierSegment,
             accessibilitySortPriority: sortPriority  // Issue #165: Sort priority for reading order
         )
     }
