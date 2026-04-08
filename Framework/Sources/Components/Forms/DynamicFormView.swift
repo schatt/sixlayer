@@ -26,7 +26,7 @@ public extension EnvironmentValues {
 /// Optional host-provided resolver: maps localization keys to display strings.
 /// When `nil`, dynamic form fields use raw `DynamicFormField` label/placeholder text (existing behavior).
 public struct DynamicFormFieldLocalizationResolverKey: EnvironmentKey {
-    public static let defaultValue: ((String) -> String)? = nil
+    public static let defaultValue: (@Sendable (String) -> String)? = nil
 }
 
 /// Optional namespace prepended to field localization keys (e.g. screen or model name).
@@ -41,7 +41,7 @@ public struct DynamicFormFieldResolvedDisplayLabelKey: EnvironmentKey {
 
 public extension EnvironmentValues {
     /// Maps localization keys to strings; default `nil` means no key-based localization.
-    var dynamicFormFieldLocalizationResolver: ((String) -> String)? {
+    var dynamicFormFieldLocalizationResolver: (@Sendable (String) -> String)? {
         get { self[DynamicFormFieldLocalizationResolverKey.self] }
         set { self[DynamicFormFieldLocalizationResolverKey.self] = newValue }
     }
