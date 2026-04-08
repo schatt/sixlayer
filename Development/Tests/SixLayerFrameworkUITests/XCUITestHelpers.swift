@@ -73,6 +73,24 @@ extension XCUIApplication {
             }
         }
     }
+
+    /// Mirror of ``xcuiSwipeScrollHostsUp()`` for scrolling toward the top of Form/table content (e.g. `ensureContractRoot`).
+    func xcuiSwipeScrollHostsDown() {
+        let tbls = tables
+        if tbls.count > 1 {
+            tbls.element(boundBy: tbls.count - 1).swipeDown()
+            tbls.element(boundBy: 0).swipeDown()
+        } else if tbls.firstMatch.exists {
+            tbls.firstMatch.swipeDown()
+        } else {
+            let host = xcuiPrimaryScrollHost()
+            if host.exists {
+                host.swipeDown()
+            } else {
+                windows.firstMatch.swipeDown()
+            }
+        }
+    }
 }
 
 // MARK: - XCUIElement Extensions
