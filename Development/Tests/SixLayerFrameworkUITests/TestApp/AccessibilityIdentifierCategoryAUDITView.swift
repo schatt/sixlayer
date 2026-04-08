@@ -114,14 +114,18 @@ struct AccessibilityIdentifierCategoryAUDITView: View {
                         identifierLabel: "Empty name row"
                     )
 
-                // Mid-hierarchy: global auto on container; one named sibling + one branch with automatic IDs disabled (VI: testDisableEnableMidHierarchy).
-                sectionCaption("Mid-hierarchy: auto sibling + local opt-out")
+                // Mid-hierarchy: `enableGlobalAutomaticCompliance` on a sub-stack (auto row only). Sibling uses explicit
+                // combined element + manual id (framework `disableAutomaticAccessibilityIdentifiers` is currently a no-op stub).
+                sectionCaption("Mid-hierarchy: auto sibling + manual sibling")
                 platformVStack(alignment: .leading, spacing: 8) {
-                    platformText("CatA mid auto")
-                        .basicAutomaticCompliance(
-                            identifierName: "CatAMidAutoSibling",
-                            identifierLabel: "CatA mid auto"
-                        )
+                    platformVStack(alignment: .leading, spacing: 8) {
+                        platformText("CatA mid auto")
+                            .basicAutomaticCompliance(
+                                identifierName: "CatAMidAutoSibling",
+                                identifierLabel: "CatA mid auto"
+                            )
+                    }
+                    .enableGlobalAutomaticCompliance()
                     Group {
                         platformText("CatA mid opt-out label")
                             .disableAutomaticAccessibilityIdentifiers()
@@ -130,7 +134,6 @@ struct AccessibilityIdentifierCategoryAUDITView: View {
                     .accessibilityLabel("CatA mid opt-out label")
                     .accessibilityIdentifier("CatAMid_LocalOptOut_Static")
                 }
-                .enableGlobalAutomaticCompliance()
             }
             .padding()
         }
