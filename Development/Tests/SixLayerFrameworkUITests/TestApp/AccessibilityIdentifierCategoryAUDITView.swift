@@ -114,8 +114,8 @@ struct AccessibilityIdentifierCategoryAUDITView: View {
                         identifierLabel: "Empty name row"
                     )
 
-                // Mid-hierarchy: `enableGlobalAutomaticCompliance` on a sub-stack (auto row only). Sibling uses explicit
-                // combined element + manual id (framework `disableAutomaticAccessibilityIdentifiers` is currently a no-op stub).
+                // Mid-hierarchy: `enableGlobalAutomaticCompliance` on a sub-stack (auto row only). Sibling is a manual
+                // combined wrapper (VStack + Text) so the identifier matches XCUITest, same as "Manual wins on wrapper".
                 sectionCaption("Mid-hierarchy: auto sibling + manual sibling")
                 platformVStack(alignment: .leading, spacing: 8) {
                     platformVStack(alignment: .leading, spacing: 8) {
@@ -126,9 +126,10 @@ struct AccessibilityIdentifierCategoryAUDITView: View {
                             )
                     }
                     .enableGlobalAutomaticCompliance()
-                    Group {
-                        platformText("CatA mid opt-out label")
-                            .disableAutomaticAccessibilityIdentifiers()
+                    // Same shape as "Manual wins on wrapper" — `platformText` inside `.combine` did not surface
+                    // the wrapper identifier to XCUITest on iOS (Issue #197 mid-hierarchy row).
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("CatA mid opt-out label")
                     }
                     .accessibilityElement(children: .combine)
                     .accessibilityLabel("CatA mid opt-out label")
