@@ -12,10 +12,11 @@ import SwiftUI
 //  base for localization keys, with an explicit override when needed.
 //
 //  TESTING SCOPE:
-//  - Base key resolution priority (override > accessibilityId > id)
+//  - Base key resolution (override > metadata > accessibility segment aligned with a11y ID > id)
 //  - Namespace prefixing
 //  - Role-specific key construction (label, placeholder, accessibilityLabel)
 //  - Fallback behavior when resolver returns the key unchanged
+//  - Issue #194: default base matches effective accessibility identifier segment
 //
 
 @Suite("Dynamic Form Localization Keys")
@@ -70,12 +71,12 @@ struct DynamicFormLocalizationKeyTests {
     }
     
     @Test
-    func testLocalizationBaseKey_FallsBackToFieldIdWhenNoOverrideOrAccessibilityId() {
-        // Given
+    func testLocalizationBaseKey_UsesSanitizedLabelSegmentWhenNoOverrideOrExplicitAccessibilityId() {
+        // Given — Issue #194: default localization base matches accessibility identifier segment (sanitizeLabelText)
         let field = DynamicFormField(
             id: "fieldId",
             contentType: .text,
-            label: "Label"
+            label: "Email Address"
         )
         
         // When
@@ -86,6 +87,26 @@ struct DynamicFormLocalizationKeyTests {
         )
         
         // Then
+        #expect(base == "email-address")
+    }
+    
+    @Test
+    func testLocalizationBaseKey_FallsBackToFieldIdWhenLabelSanitizesToEmpty() {
+        // Given
+        let field = DynamicFormField(
+            id: "fieldId",
+            contentType: .text,
+            label: "@@@"
+        )
+        
+        // When
+        let base = field.localizationBaseKey(
+            namespace: nil,
+            localizationKeyBaseOverride: nil,
+            accessibilityId: nil
+        )
+        
+        // Then — segment empty after sanitize → use field id
         #expect(base == "fieldId")
     }
     
@@ -107,6 +128,39 @@ struct DynamicFormLocalizationKeyTests {
         
         // Then
         #expect(base == "MyScreen.accessibility.id")
+    }
+    
+    @Test
+    func testLocalizationBaseKey_PrefersMetadataLocalizationKeyBaseOverSegment() {
+        let field = DynamicFormField(
+            id: "id1",
+            contentType: .text,
+            label: "Name",
+            metadata: ["localizationKeyBase": "profile.fullName"]
+        )
+        let base = field.localizationBaseKey(
+            namespace: nil,
+            localizationKeyBaseOverride: nil,
+            accessibilityId: nil
+        )
+        #expect(base == "profile.fullName")
+    }
+    
+    @Test
+    func testEffectiveAccessibilityIdentifierSegment_UsesMetadataOverride() {
+        let field = DynamicFormField(
+            id: "id1",
+            contentType: .text,
+            label: "Ignore Me",
+            metadata: ["accessibilityIdentifierName": "user_email_field"]
+        )
+        #expect(field.effectiveAccessibilityIdentifierSegment == "user_email_field")
+        let base = field.localizationBaseKey(
+            namespace: "Form",
+            localizationKeyBaseOverride: nil,
+            accessibilityId: nil
+        )
+        #expect(base == "Form.user_email_field")
     }
     
     // MARK: - Role-specific Keys
@@ -193,6 +247,41 @@ struct DynamicFormLocalizationKeyTests {
         
         // Then
         #expect(result == "Username")
+    }
+    
+    @Test
+    func testResolvedLocalizedDisplayString_UsesResolverWhenProvided() {
+        let field = DynamicFormField(
+            id: "x",
+            contentType: .text,
+            label: "Plain"
+        )
+        let resolver: (String) -> String = { key in
+            key == "Screen.plain.label" ? "Étiquette" : key
+        }
+        let out = field.resolvedLocalizedDisplayString(
+            role: .label,
+            resolver: resolver,
+            namespace: "Screen",
+            fallback: "Plain"
+        )
+        #expect(out == "Étiquette")
+    }
+    
+    @Test
+    func testResolvedLocalizedDisplayString_SkipsResolverWhenNil() {
+        let field = DynamicFormField(
+            id: "x",
+            contentType: .text,
+            label: "Plain"
+        )
+        let out = field.resolvedLocalizedDisplayString(
+            role: .label,
+            resolver: nil,
+            namespace: "Screen",
+            fallback: "Plain"
+        )
+        #expect(out == "Plain")
     }
 }
 
