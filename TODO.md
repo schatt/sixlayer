@@ -4,6 +4,7 @@
 
 ## Current
 
+- [x] **#194** Default dynamic form localization keys from accessibility identifier segment + env resolver (`DynamicFormFieldLocalizationResolver`), metadata `localizationKeyBase` / `accessibilityIdentifierName` / form `localizationNamespace`
 - [x] Verify Xcode MCP (`mcpbridge-wrapper`) after restart: `GetTestList` + `tabIdentifier` works for sixlayer `windowtab1`
 - [x] Fix Swift concurrency data-race warning in `AdvancedFieldTypes.handleDrop` (`newFiles` capture)
 - [x] **#191** Make `ExpandableCardComponent` a single tappable accessibility button with explicit card label
