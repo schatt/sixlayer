@@ -51,18 +51,6 @@ final class ManualAccessibilityIdentifierHarnessUITests: XCTestCase {
         }
     }
 
-    /// `Layer4ExamplesView` can host multiple `ScrollView`s (e.g. navigation chrome). Prefer the outer list host like `Layer4UITests.primaryScrollHost()`.
-    private func swipeLayer4ExamplesListUp() {
-        let svs = app.scrollViews
-        let n = svs.count
-        guard n > 0 else {
-            app.swipeUp()
-            return
-        }
-        let idx = n > 1 ? n - 1 : 0
-        svs.element(boundBy: idx).swipeUp()
-    }
-
     /// After UITest integration naming, explicit `platformButton(..., id:)` ids appear as
     /// `SixLayer.main.ui.<id>.Button` (see `Layer4UITests` / `ButtonTestView` comments).
     private func assertAccessibilityIdentifierContains(_ substring: String, timeout: TimeInterval = 12.0) {
@@ -91,7 +79,7 @@ final class ManualAccessibilityIdentifierHarnessUITests: XCTestCase {
         var edgeLink = resolveEdgeRow()
         for _ in 0..<20 {
             if edgeLink.waitForExistence(timeout: 0.4), edgeLink.isHittable { break }
-            swipeLayer4ExamplesListUp()
+            app.xcuiSwipeScrollHostsUp()
             edgeLink = resolveEdgeRow()
         }
         XCTAssertTrue(edgeLink.waitForExistence(timeout: 6.0) && edgeLink.isHittable, "Identifier Edge Case link should exist")
@@ -102,9 +90,7 @@ final class ManualAccessibilityIdentifierHarnessUITests: XCTestCase {
             "Should land on Identifier Edge Case screen"
         )
 
-        if app.scrollViews.firstMatch.exists {
-            app.scrollViews.firstMatch.swipeUp()
-        }
+        app.xcuiSwipeScrollHostsUp()
 
         assertAccessibilityIdentifierContains("manual-override-id")
         assertAccessibilityIdentifierContains("manual-cancel-id")
