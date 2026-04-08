@@ -781,8 +781,8 @@ struct Layer4ContractOnlyView: View {
                     .padding()
                 }
             )
-            // Do not cap height: a fixed height clips the nested NavigationStack toolbar so L4OverlayShowSidebar never appears in XCUITest.
-            .fixedSize(horizontal: false, vertical: true)
+            // Min height so nested NavigationStack + toolbar fit inside the Form row (XCUITest); avoid unbounded intrinsic height.
+            .frame(minHeight: 400)
     }
 
     @ViewBuilder
