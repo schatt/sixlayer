@@ -118,7 +118,10 @@ struct AccessibilityIdentifierCategoryAUDITView: View {
                 sectionCaption("Mid-hierarchy: auto sibling + local opt-out")
                 platformVStack(alignment: .leading, spacing: 8) {
                     platformText("CatA mid auto")
-                        .named("CatAMidAutoSibling")
+                        .basicAutomaticCompliance(
+                            identifierName: "CatAMidAutoSibling",
+                            identifierLabel: "CatA mid auto"
+                        )
                     platformText("CatA mid opt-out label")
                         .disableAutomaticAccessibilityIdentifiers()
                         .accessibilityIdentifier("CatAMid_LocalOptOut_Static")
