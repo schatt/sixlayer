@@ -117,24 +117,22 @@ struct AccessibilityIdentifierCategoryAUDITView: View {
                 // Mid-hierarchy: `enableGlobalAutomaticCompliance` on a sub-stack (auto row only). Sibling is a manual
                 // combined wrapper (VStack + Text) so the identifier matches XCUITest, same as "Manual wins on wrapper".
                 sectionCaption("Mid-hierarchy: auto sibling + manual sibling")
+                // Keep siblings as direct children of the audit stack — an extra wrapping `platformVStack` around
+                // both rows prevented the manual `accessibilityIdentifier` from appearing in XCUITest (#197).
                 platformVStack(alignment: .leading, spacing: 8) {
-                    platformVStack(alignment: .leading, spacing: 8) {
-                        platformText("CatA mid auto")
-                            .basicAutomaticCompliance(
-                                identifierName: "CatAMidAutoSibling",
-                                identifierLabel: "CatA mid auto"
-                            )
-                    }
-                    .enableGlobalAutomaticCompliance()
-                    // Same shape as "Manual wins on wrapper" — `platformText` inside `.combine` did not surface
-                    // the wrapper identifier to XCUITest on iOS (Issue #197 mid-hierarchy row).
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("CatA mid opt-out label")
-                    }
-                    .accessibilityElement(children: .combine)
-                    .accessibilityLabel("CatA mid opt-out label")
-                    .accessibilityIdentifier("CatAMid_LocalOptOut_Static")
+                    platformText("CatA mid auto")
+                        .basicAutomaticCompliance(
+                            identifierName: "CatAMidAutoSibling",
+                            identifierLabel: "CatA mid auto"
+                        )
                 }
+                .enableGlobalAutomaticCompliance()
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("CatA mid opt-out label")
+                }
+                .accessibilityElement(children: .combine)
+                .accessibilityLabel("CatA mid opt-out label")
+                .accessibilityIdentifier("CatAMid_LocalOptOut_Static")
             }
             .padding()
         }
