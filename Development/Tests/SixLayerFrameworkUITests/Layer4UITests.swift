@@ -53,40 +53,11 @@ final class Layer4UITests: XCTestCase {
         "SixLayer.main.ui.\(sanitizedName).\(elementType)"
     }
 
-    /// iOS `Form` is backed by a table; swiping the first `scrollView` often does not scroll form rows (Issue #193).
-    /// When multiple `tables` exist, `firstMatch` is often a nested list (e.g. L4 overlay split), not the root `Form` — use the last table.
-    @MainActor
-    private func primaryScrollHost() -> XCUIElement {
-        let tables = app.tables
-        if tables.count > 1 {
-            return tables.element(boundBy: tables.count - 1)
-        }
-        if tables.firstMatch.exists { return tables.firstMatch }
-        if app.scrollViews.firstMatch.exists { return app.scrollViews.firstMatch }
-        return app.windows.firstMatch
-    }
-
     /// True when any a11y node exposes `label` (Form section headers are often not `XCUIElementType.staticText`).
     @MainActor
     private func anyDescendantHasLabel(equalTo label: String, timeout: TimeInterval) -> Bool {
         let pred = NSPredicate(format: "label == %@ OR label CONTAINS[c] %@", label, label)
         return app.descendants(matching: .any).matching(pred).firstMatch.waitForExistence(timeout: timeout)
-    }
-
-    /// When a nested `Table` exists (e.g. split shell), swiping only one may not move the root `Form`.
-    @MainActor
-    private func swipeScrollHostsUp() {
-        let tables = app.tables
-        if tables.count > 1 {
-            tables.element(boundBy: tables.count - 1).swipeUp()
-            tables.element(boundBy: 0).swipeUp()
-        } else if tables.firstMatch.exists {
-            tables.firstMatch.swipeUp()
-        } else if app.scrollViews.firstMatch.exists {
-            app.scrollViews.firstMatch.swipeUp()
-        } else {
-            app.windows.firstMatch.swipeUp()
-        }
     }
 
     /// Scroll so the element with the given label is visible (content may be below fold).
@@ -98,9 +69,9 @@ final class Layer4UITests: XCTestCase {
         if app.buttons[label].waitForExistence(timeout: 2.0) { return }
         if app.links[label].waitForExistence(timeout: 1.0) { return }
         if element(matchingIdentifier: label).waitForExistence(timeout: 1.0) { return }
-        if !primaryScrollHost().exists, !app.tables.firstMatch.exists, !app.scrollViews.firstMatch.exists { return }
+        if !app.xcuiPrimaryScrollHost().exists, !app.tables.firstMatch.exists, !app.scrollViews.firstMatch.exists { return }
         for _ in 0..<22 {
-            swipeScrollHostsUp()
+            app.xcuiSwipeScrollHostsUp()
             if app.staticTexts[label].waitForExistence(timeout: 0.5) { return }
             if anyDescendantHasLabel(equalTo: label, timeout: 0.35) { return }
             if app.buttons[label].waitForExistence(timeout: 0.5) { return }
@@ -211,7 +182,7 @@ final class Layer4UITests: XCTestCase {
             return false
         }
         if contractTopVisible() { return }
-        let scrollHost = primaryScrollHost()
+        let scrollHost = app.xcuiPrimaryScrollHost()
         if scrollHost.exists {
             for _ in 0..<18 {
                 scrollHost.swipeDown()
