@@ -392,7 +392,7 @@ extension DynamicFormField {
     /// - Returns: Localized string, or `fallback` when no translation is found.
     public func resolveLocalizedString(
         role: FieldLocalizationRole,
-        resolver: (String) -> String,
+        resolver: @Sendable (String) -> String,
         namespace: String? = nil,
         localizationKeyBaseOverride: String? = nil,
         accessibilityId: String? = nil,
@@ -417,7 +417,7 @@ extension DynamicFormField {
     /// When `resolver` is `nil`, returns `fallback` so existing forms behave unchanged.
     public func resolvedLocalizedDisplayString(
         role: FieldLocalizationRole,
-        resolver: ((String) -> String)?,
+        resolver: (@Sendable (String) -> String)?,
         namespace: String?,
         fallback: String
     ) -> String {
@@ -435,7 +435,7 @@ extension DynamicFormField {
     /// Placeholder text with optional key-based localization (`base.placeholder`).
     public func resolvedPlaceholderDisplay(
         frameworkDefault: String,
-        resolver: ((String) -> String)?,
+        resolver: (@Sendable (String) -> String)?,
         namespace: String?
     ) -> String {
         let fallback = placeholder ?? frameworkDefault
