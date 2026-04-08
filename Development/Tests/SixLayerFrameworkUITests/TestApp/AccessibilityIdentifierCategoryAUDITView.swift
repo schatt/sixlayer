@@ -113,6 +113,17 @@ struct AccessibilityIdentifierCategoryAUDITView: View {
                         identifierName: "",
                         identifierLabel: "Empty name row"
                     )
+
+                // Mid-hierarchy: global auto on container; one named sibling + one branch with automatic IDs disabled (VI: testDisableEnableMidHierarchy).
+                sectionCaption("Mid-hierarchy: auto sibling + local opt-out")
+                platformVStack(alignment: .leading, spacing: 8) {
+                    platformButton(label: "CatA mid auto", id: nil) { }
+                        .named("CatAMidAutoSibling")
+                    platformText("CatA mid opt-out label")
+                        .disableAutomaticAccessibilityIdentifiers()
+                        .accessibilityIdentifier("CatAMid_LocalOptOut_Static")
+                }
+                .enableGlobalAutomaticCompliance()
             }
             .padding()
         }
