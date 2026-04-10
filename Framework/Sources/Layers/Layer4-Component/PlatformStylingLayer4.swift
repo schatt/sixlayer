@@ -326,7 +326,7 @@ public extension View {
         #if os(iOS) || os(watchOS) || os(tvOS) || os(visionOS)
         // Mobile platforms: Apply max constraints for safety
         let maxSize = PlatformFrameHelpers.getMaxFrameSize()
-        return self.frame(maxWidth: maxSize.width, maxHeight: maxSize.height)
+        return self.frame(maxWidth: maxSize.width, maxHeight: maxSize.height, alignment: .topLeading)
             .automaticCompliance(named: "platformAdaptiveFrame")
         #elseif os(macOS)
         // Clamp all values to screen bounds
