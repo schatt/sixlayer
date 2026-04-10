@@ -62,9 +62,28 @@ final class PlatformToolbarAccessibilityUITests: XCTestCase {
     }
 
     private func popDetailNavigation() {
+        #if os(macOS)
+        // macOS SwiftUI: back is often labeled with the hub title, not a bare chevron in `navigationBars.buttons.firstMatch`.
+        let candidates: [XCUIElement] = [
+            app.navigationBars.buttons["Toolbar Issue 221"].firstMatch,
+            app.navigationBars.buttons.firstMatch,
+            app.buttons["Toolbar Issue 221"].firstMatch,
+            app.links["Toolbar Issue 221"].firstMatch,
+        ]
+        var tapped = false
+        for element in candidates {
+            if element.waitForExistence(timeout: 2.0), element.isHittable {
+                element.tap()
+                tapped = true
+                break
+            }
+        }
+        XCTAssertTrue(tapped, "Expected macOS back control to return to hub (try hub title label)")
+        #else
         let back = app.navigationBars.buttons.firstMatch
         XCTAssertTrue(back.waitForExistence(timeout: 3.0), "Expected navigation bar back control")
         back.tap()
+        #endif
         XCTAssertTrue(
             app.staticTexts["Toolbar Issue 221"].waitForExistence(timeout: 3.0)
                 || app.navigationBars["Toolbar Issue 221"].waitForExistence(timeout: 2.0),
