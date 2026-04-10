@@ -582,7 +582,20 @@ public func findAllAccessibilityIdentifiersFromPlatformView(_ root: Any?) -> [St
     // Same tree-depth fix as UIKit: do not treat visit count as "depth" (was capping at ~20 views total).
     // 6LAYER_ALLOW: test utilities must traverse platform-specific view hierarchies for accessibility testing
     let maxTreeDepth = 40
-    var stack: [(NSView, Int)] = rootView.subviews.map { ($0, 1) }
+    var stack: [(NSView, Int)] = []
+    if let axRootChildren = rootView.accessibilityChildren() {
+        for child in axRootChildren.prefix(50) {
+            if let childView = child as? NSView {
+                stack.append((childView, 1))
+            } else if let el = child as? NSAccessibilityElement {
+                let sid = el.accessibilityIdentifier
+                if !sid.isEmpty {
+                    identifiers.insert(sid)
+                }
+            }
+        }
+    }
+    stack.append(contentsOf: rootView.subviews.map { ($0, 1) })
     var checkedViews: Set<ObjectIdentifier> = []
     var viewCount = 0
     let maxViews = 500
@@ -604,9 +617,21 @@ public func findAllAccessibilityIdentifiersFromPlatformView(_ root: Any?) -> [St
         }
         
         guard treeDepth < maxTreeDepth else { continue }
+        let childDepth = treeDepth + 1
+        if let axChildren = next.accessibilityChildren() {
+            for child in axChildren.prefix(50) {
+                if let childView = child as? NSView {
+                    stack.append((childView, childDepth))
+                } else if let el = child as? NSAccessibilityElement {
+                    let sid = el.accessibilityIdentifier
+                    if !sid.isEmpty {
+                        identifiers.insert(sid)
+                    }
+                }
+            }
+        }
         let subviews = next.subviews
         let children: ArraySlice<NSView> = subviews.count > 20 ? subviews.prefix(20) : subviews[...]
-        let childDepth = treeDepth + 1
         for sub in children {
             stack.append((sub, childDepth))
         }
