@@ -54,6 +54,9 @@ struct TestAppContentView: View {
     private let openLayer6Examples = ProcessInfo.processInfo.arguments.contains("-OpenLayer6Examples")
     /// When true, app opens to Issue #221 platform toolbar identifier hub (launch arg -OpenPlatformToolbarIssue221).
     private let openPlatformToolbarIssue221 = ProcessInfo.processInfo.arguments.contains("-OpenPlatformToolbarIssue221")
+    /// Deep links for XCUITest (macOS back navigation is unreliable); `-OpenPlatformToolbarIssue221Form` / `Detail`.
+    private let openPlatformToolbarIssue221Form = ProcessInfo.processInfo.arguments.contains("-OpenPlatformToolbarIssue221Form")
+    private let openPlatformToolbarIssue221Detail = ProcessInfo.processInfo.arguments.contains("-OpenPlatformToolbarIssue221Detail")
     
     enum TestView: String, CaseIterable, Identifiable {
         case control = "Control Test"
@@ -109,6 +112,14 @@ struct TestAppContentView: View {
             } else if openLayer6Examples {
                 NavigationStack {
                     Layer6CrossPlatformOnlyView()
+                }
+            } else if openPlatformToolbarIssue221Form {
+                NavigationStack {
+                    PlatformToolbarIssue221FormHostView()
+                }
+            } else if openPlatformToolbarIssue221Detail {
+                NavigationStack {
+                    PlatformToolbarIssue221DetailHostView()
                 }
             } else if openPlatformToolbarIssue221 {
                 NavigationStack {
