@@ -123,6 +123,51 @@ open class BasicAutomaticComplianceTests: BaseTestClass {
         }
     }
     
+    /// BUSINESS PURPOSE: `disableAutomaticAccessibilityIdentifiers()` suppresses `basicAutomaticCompliance` in subtree
+    /// TESTING SCOPE: Local opt-out vs automatic identifier generation (issue #197 / Category A)
+    /// METHODOLOGY: Hosted readback when available; XCUITest covers runtime contract on Category A audit
+    @Test @MainActor func testBasicAutomaticCompliance_LocalDisableSkipsGeneratedIdentifier() {
+        initializeTestConfig()
+        runWithTaskLocalConfig {
+            setupTestEnvironment()
+            let suppressed = Text("SuppressedRow")
+                .basicAutomaticCompliance(
+                    identifierName: "CatALocalDisableSuppressed",
+                    identifierLabel: "SuppressedRow"
+                )
+                .disableAutomaticAccessibilityIdentifiers()
+            let active = Text("ActiveRow")
+                .basicAutomaticCompliance(
+                    identifierName: "CatALocalDisableActive",
+                    identifierLabel: "ActiveRow"
+                )
+            #if canImport(ViewInspector)
+            let rootSuppressed = Self.hostRootPlatformView(AnyView(suppressed), forceLayout: true, exposeContentAccessibility: true)
+            let rootActive = Self.hostRootPlatformView(AnyView(active), forceLayout: true, exposeContentAccessibility: true)
+            let idSuppressed = getAccessibilityIdentifierForTest(view: suppressed, hostedRoot: rootSuppressed)
+            let idActive = getAccessibilityIdentifierForTest(view: active, hostedRoot: rootActive)
+            if let s = idSuppressed, !s.isEmpty {
+                #expect(
+                    !s.contains("CatALocalDisableSuppressed"),
+                    "Local disable should suppress automatic identifier substring"
+                )
+            }
+            if let a = idActive, !a.isEmpty {
+                #expect(
+                    a.contains("CatALocalDisableActive"),
+                    "Row without local disable should still expose automatic identifier substring"
+                )
+            }
+            if idActive == nil || idActive?.isEmpty == true {
+                Issue.record("Inspection unavailable: could not verify active row identifier (harness)")
+            }
+            #else
+            _ = suppressed
+            _ = active
+            #endif
+        }
+    }
+    
     /// BUSINESS PURPOSE: .basicAutomaticCompliance() label localization should match .automaticCompliance()
     /// TESTING SCOPE: Label localization logic
     /// METHODOLOGY: Compare labels from basic and full compliance with same parameters
