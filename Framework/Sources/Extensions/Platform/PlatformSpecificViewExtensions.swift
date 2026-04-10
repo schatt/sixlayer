@@ -82,8 +82,9 @@ public extension View {
         #if os(iOS)
         // iOS: Apply maximum constraints to prevent overflow
         // Uses actual window size to handle Split View, Stage Manager, etc.
+        // topLeading: default .center can shift content horizontally inside NavigationStack and clip the leading edge (UITest Layer 1 examples).
         let maxSize = PlatformFrameHelpers.getMaxFrameSize()
-        return self.frame(maxWidth: maxSize.width, maxHeight: maxSize.height)
+        return self.frame(maxWidth: maxSize.width, maxHeight: maxSize.height, alignment: .topLeading)
         #elseif os(macOS)
         let clampedWidth = PlatformFrameHelpers.clampFrameSize(600, dimension: .width)
         let clampedHeight = PlatformFrameHelpers.clampFrameSize(800, dimension: .height)
@@ -91,7 +92,7 @@ public extension View {
         #elseif os(watchOS) || os(tvOS) || os(visionOS)
         // watchOS, tvOS, visionOS: Apply maximum constraints to prevent overflow
         let maxSize = PlatformFrameHelpers.getMaxFrameSize()
-        return self.frame(maxWidth: maxSize.width, maxHeight: maxSize.height)
+        return self.frame(maxWidth: maxSize.width, maxHeight: maxSize.height, alignment: .topLeading)
         #else
         return self
         #endif
