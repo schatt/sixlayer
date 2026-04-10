@@ -128,7 +128,7 @@ struct PlatformManagedSettingsTopLevelStateTests {
                 deviceType: .pad
             )
         )
-        var anyBinding = PlatformManagedSettingsTopLevelState.anyHashableBinding(holder.binding)
+        let anyBinding = PlatformManagedSettingsTopLevelState.anyHashableBinding(holder.binding)
         anyBinding.wrappedValue = AnyHashable("b")
         #expect(holder.state.selectedTopLevel == "b")
     }
@@ -141,7 +141,7 @@ struct PlatformManagedSettingsTopLevelStateTests {
                 deviceType: .pad
             )
         )
-        var anyBinding = PlatformManagedSettingsTopLevelState.anyHashableBinding(holder.binding)
+        let anyBinding = PlatformManagedSettingsTopLevelState.anyHashableBinding(holder.binding)
         anyBinding.wrappedValue = nil
         #expect(holder.state.selectedTopLevel == nil)
     }
@@ -154,7 +154,7 @@ struct PlatformManagedSettingsTopLevelStateTests {
                 deviceType: .pad
             )
         )
-        var anyBinding = PlatformManagedSettingsTopLevelState.anyHashableBinding(holder.binding)
+        let anyBinding = PlatformManagedSettingsTopLevelState.anyHashableBinding(holder.binding)
         anyBinding.wrappedValue = AnyHashable(42)
         #expect(holder.state.selectedTopLevel == "a")
     }
