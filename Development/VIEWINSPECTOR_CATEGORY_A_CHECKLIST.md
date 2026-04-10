@@ -14,8 +14,8 @@
    - **`Dedup:<Suite>/<testName>`** — satisfied solely because it is the same scenario as another row (document the canonical row).
    - **`Excluded:<short reason> | Owner:<github handle>`** — intentionally not covered by UI/VI (e.g. macOS-only, non-runtime contract). **Owner is mandatory.**
 
-2. **`ConsolidatedAccessibilityTests.swift`:** Every `@Test` in that file MUST appear in the [Consolidated deduplication](#consolidatedaccessibilitytests-deduplication) section with one of:
-   - **`Dedup`** → a canonical row below, **or**
+2. **`ConsolidatedAccessibilityTests.swift`:** Every `@Test` in that file MUST appear in the [Consolidated deduplication](#consolidatedaccessibilitytests-deduplication) inventory ([`VIEWINSPECTOR_CATEGORY_A_CONSOLIDATED_DEDUP.md`](VIEWINSPECTOR_CATEGORY_A_CONSOLIDATED_DEDUP.md)) with one of:
+   - **`Dedup`** → a canonical row below (or another ViewInspector source named in the generated table), **or**
    - its **own** `UI` / `VI-iOS` / `Excluded` line (same rules as (1)).
 
 3. **No waiver language:** Phrases like “where feasible” do **not** apply. If a test is in the inventory, it gets one of the four resolutions above.
@@ -44,139 +44,139 @@ Source files under `Development/Tests/SixLayerFrameworkUnitTests/ViewInspectorTe
 
 | Test | Resolution |
 |------|------------|
-| `testEmptyStringParameters` | |
-| `testSpecialCharactersInNames` | |
-| `testVeryLongNames` | |
-| `testDisableEnableMidHierarchy` | |
-| `testMultipleScreenContexts` | |
-| `testExactNamedBehavior` | |
-| `testExactNamedVsNamedDifference` | |
-| `testExactNamedIgnoresHierarchy` | |
-| `testExactNamedMinimalIdentifier` | |
-| `testConfigurationChangesMidTest` | |
-| `testNestedNamedCalls` | |
-| `testUnicodeCharacters` | |
+| `testEmptyStringParameters` | `UI:AccessibilityIdentifierCategoryAUITests/testCategoryA_emptyIdentifierName_sanitizedLabelInIdentifier` |
+| `testSpecialCharactersInNames` | `UI:AccessibilityIdentifierCategoryAUITests/testCategoryA_specialCharsInLabel_hasIdentifier` |
+| `testVeryLongNames` | `UI:AccessibilityIdentifierCategoryAUITests/testCategoryA_longIdentifierName_hasStablePrefixInIdentifier` |
+| `testDisableEnableMidHierarchy` | `Excluded: local enable/disable mid-hierarchy; not reproduced on Category A XCUI audit — Owner:@schatt` |
+| `testMultipleScreenContexts` | `Excluded: hosted stack / screen context; no Category A runtime row — Owner:@schatt` |
+| `testExactNamedBehavior` | Excluded: asserts ExactNamedModifier.testingGeneratedIdentifier only — Owner:@schatt |
+| `testExactNamedVsNamedDifference` | `Excluded: generator comparison only — Owner:@schatt` |
+| `testExactNamedIgnoresHierarchy` | `Excluded: generator with mock hierarchy only — Owner:@schatt` |
+| `testExactNamedMinimalIdentifier` | `UI:AccessibilityIdentifierCategoryAUITests/testCategoryA_exactNamed_minimalIdentifier` |
+| `testConfigurationChangesMidTest` | `Excluded: mutates shared config after view build — Owner:@schatt` |
+| `testNestedNamedCalls` | `UI:AccessibilityIdentifierCategoryAUITests/testCategoryA_nestedNamed_outerAndInner_haveIdentifiers` |
+| `testUnicodeCharacters` | `UI:AccessibilityIdentifierCategoryAUITests/testCategoryA_unicodeText_hasAccessibilityIdentifier` |
 
 ### `Features/Accessibility/AccessibilityIdentifierPersistenceTests.swift`
 
 | Test | Resolution |
 |------|------------|
-| `testAccessibilityIdentifiersArePersistentAcrossSessions` | |
-| `testAccessibilityIdentifiersAreDeterministicForSameView` | |
-| `testAccessibilityIdentifiersDontContainTimestamps` | |
-| `testAccessibilityIdentifiersAreStableForUITesting` | |
-| `testAccessibilityIdentifiersAreBasedOnViewStructure` | |
-| `testAccessibilityIdentifiersAreTrulyPersistentForIdenticalViews` | |
-| `testAccessibilityIdentifiersPersistAcrossConfigResets` | |
+| `testAccessibilityIdentifiersArePersistentAcrossSessions` | `Excluded: persistence/determinism via unit harness; not XCUI identifier queries — Owner:@schatt` |
+| `testAccessibilityIdentifiersAreDeterministicForSameView` | `Excluded: persistence/determinism via unit harness; not XCUI identifier queries — Owner:@schatt` |
+| `testAccessibilityIdentifiersDontContainTimestamps` | `Excluded: persistence/determinism via unit harness; not XCUI identifier queries — Owner:@schatt` |
+| `testAccessibilityIdentifiersAreStableForUITesting` | `Excluded: persistence/determinism via unit harness; not XCUI identifier queries — Owner:@schatt` |
+| `testAccessibilityIdentifiersAreBasedOnViewStructure` | `Excluded: persistence/determinism via unit harness; not XCUI identifier queries — Owner:@schatt` |
+| `testAccessibilityIdentifiersAreTrulyPersistentForIdenticalViews` | `Excluded: persistence/determinism via unit harness; not XCUI identifier queries — Owner:@schatt` |
+| `testAccessibilityIdentifiersPersistAcrossConfigResets` | `Excluded: persistence/determinism via unit harness; not XCUI identifier queries — Owner:@schatt` |
 
 ### `Features/Accessibility/AccessibilityIdentifierGenerationVerificationTests.swift`
 
 | Test | Resolution |
 |------|------------|
-| `testAutomaticAccessibilityIdentifiersActuallyGenerateIDs` | |
-| `testNamedActuallyGeneratesIdentifiers` | |
-| `testAutomaticAccessibilityIdentifiersActuallyGenerateIdentifiers` | |
-| `testManualIdentifiersOverrideAutomaticGeneration` | |
-| `testGlobalConfigActuallyControlsIdentifierGeneration` | |
+| `testAutomaticAccessibilityIdentifiersActuallyGenerateIDs` | `UI:AccessibilityIdentifierCategoryAUITests/testCategoryA_auditTitle_namedComponent` |
+| `testNamedActuallyGeneratesIdentifiers` | `Dedup:UI:AccessibilityIdentifierCategoryAUITests/testCategoryA_auditTitle_namedComponent` |
+| `testAutomaticAccessibilityIdentifiersActuallyGenerateIdentifiers` | `UI:AccessibilityIdentifierCategoryAUITests/testCategoryA_midHierarchy_autoSiblingAndOptOut_identifiersPresent` |
+| `testManualIdentifiersOverrideAutomaticGeneration` | `UI:AccessibilityIdentifierCategoryAUITests/testCategoryA_manualOnOuterGroup_overridesWrapper` |
+| `testGlobalConfigActuallyControlsIdentifierGeneration` | `UI:AccessibilityIdentifierCategoryAGlobalOffUITests/testCategoryAGlobalOff_basicAutomaticCompliance_doesNotEmitSuppressedName` |
 
 ### `Features/Accessibility/AutomaticAccessibilityIdentifierTests.swift`
 
 | Test | Resolution |
 |------|------------|
-| `testGlobalConfigControlsAutomaticIdentifiers` | |
-| `testGlobalConfigSupportsCustomNamespace` | |
-| `testGlobalConfigSupportsGenerationModes` | |
-| `testAutomaticIDGeneratorCreatesStableIdentifiers` | |
-| `testAutomaticIDGeneratorHandlesDifferentRolesAndContexts` | |
-| `testAutomaticIDGeneratorHandlesNonIdentifiableObjects` | |
-| `testManualAccessibilityIdentifiersOverrideAutomatic` | |
-| `testViewLevelOptOutDisablesAutomaticIDs` | |
-| `testAutomaticIdentifiersIntegrateWithHIGCompliance` | |
-| `testLayer1FunctionsIncludeAutomaticIdentifiers` | |
-| `testCollisionDetectionIdentifiesConflicts` | |
-| `testDebugLoggingCapturesGeneratedIDs` | |
-| `testDebugLoggingDisabledWhenTurnedOff` | |
-| `testDebugLogFormatting` | |
-| `testDebugLogClearing` | |
-| `testViewHierarchyTracking` | |
-| `testUITestCodeGeneration` | |
-| `testUITestHelpers` | |
-| `testUITestCodeFileGeneration` | |
-| `testUITestCodeClipboardGeneration` | |
-| `testTrackViewHierarchyAutomaticallyAppliesAccessibilityIdentifiers` | |
-| `testGlobalAutomaticAccessibilityIdentifiersWork` | |
-| `testIDGenerationUsesActualViewContext` | |
-| `testAutomaticAccessibilityIdentifiersWithNamedComponent` | |
+| `testGlobalConfigControlsAutomaticIdentifiers` | `Dedup:UI:AccessibilityIdentifierCategoryAGlobalOffUITests/testCategoryAGlobalOff_basicAutomaticCompliance_doesNotEmitSuppressedName` |
+| `testGlobalConfigSupportsCustomNamespace` | `Excluded: namespace/mode strings; not asserted on Category A audit — Owner:@schatt` |
+| `testGlobalConfigSupportsGenerationModes` | `Excluded: namespace/mode strings; not asserted on Category A audit — Owner:@schatt` |
+| `testAutomaticIDGeneratorCreatesStableIdentifiers` | `Excluded: generator API unit coverage — Owner:@schatt` |
+| `testAutomaticIDGeneratorHandlesDifferentRolesAndContexts` | `Excluded: generator API unit coverage — Owner:@schatt` |
+| `testAutomaticIDGeneratorHandlesNonIdentifiableObjects` | `Excluded: generator API unit coverage — Owner:@schatt` |
+| `testManualAccessibilityIdentifiersOverrideAutomatic` | `Dedup:UI:AccessibilityIdentifierCategoryAUITests/testCategoryA_manualOnOuterGroup_overridesWrapper` |
+| `testViewLevelOptOutDisablesAutomaticIDs` | `Excluded: view-level opt-out; no dedicated Category A XCUI row — Owner:@schatt` |
+| `testAutomaticIdentifiersIntegrateWithHIGCompliance` | `Excluded: HIG styling integration; VI/unit scope — Owner:@schatt` |
+| `testLayer1FunctionsIncludeAutomaticIdentifiers` | `Excluded: L1 API smoke; not Category A XCUI — Owner:@schatt` |
+| `testCollisionDetectionIdentifiesConflicts` | `Excluded: collision/debug unit — Owner:@schatt` |
+| `testDebugLoggingCapturesGeneratedIDs` | `Excluded: debug logging contracts; not XCUI — Owner:@schatt` |
+| `testDebugLoggingDisabledWhenTurnedOff` | `Excluded: debug logging contracts; not XCUI — Owner:@schatt` |
+| `testDebugLogFormatting` | `Excluded: debug logging contracts; not XCUI — Owner:@schatt` |
+| `testDebugLogClearing` | `Excluded: debug logging contracts; not XCUI — Owner:@schatt` |
+| `testViewHierarchyTracking` | `Excluded: hierarchy tracking unit — Owner:@schatt` |
+| `testUITestCodeGeneration` | `Excluded: UITest codegen helpers — Owner:@schatt` |
+| `testUITestHelpers` | `Excluded: UITest codegen helpers — Owner:@schatt` |
+| `testUITestCodeFileGeneration` | `Excluded: UITest codegen helpers — Owner:@schatt` |
+| `testUITestCodeClipboardGeneration` | `Excluded: UITest codegen helpers — Owner:@schatt` |
+| `testTrackViewHierarchyAutomaticallyAppliesAccessibilityIdentifiers` | `Excluded: hierarchy tracking unit — Owner:@schatt` |
+| `testGlobalAutomaticAccessibilityIdentifiersWork` | `Dedup:UI:AccessibilityIdentifierCategoryAUITests/testCategoryA_midHierarchy_autoSiblingAndOptOut_identifiersPresent` |
+| `testIDGenerationUsesActualViewContext` | `Excluded: view-context stack unit — Owner:@schatt` |
+| `testAutomaticAccessibilityIdentifiersWithNamedComponent` | `Dedup:UI:AccessibilityIdentifierCategoryAUITests/testCategoryA_auditTitle_namedComponent` |
 
 ### `Core/Architecture/GlobalDisableLocalEnableTests.swift`
 
 | Test | Resolution |
 |------|------------|
-| `testFrameworkComponentGlobalDisableLocalEnableGeneratesID` | |
-| `testGlobalEnableLocalDisableDoesNotGenerateID` | |
-| `testFrameworkComponentsRespectGlobalConfig` | |
-| `testPlainSwiftUIRequiresExplicitEnable` | |
+| `testFrameworkComponentGlobalDisableLocalEnableGeneratesID` | `Excluded: task-local enable/disable; VI harness — Owner:@schatt` |
+| `testGlobalEnableLocalDisableDoesNotGenerateID` | `Excluded: task-local enable/disable; VI harness — Owner:@schatt` |
+| `testFrameworkComponentsRespectGlobalConfig` | `Dedup:UI:AccessibilityIdentifierCategoryAGlobalOffUITests/testCategoryAGlobalOff_named_stillSurfacesIdentifier` |
+| `testPlainSwiftUIRequiresExplicitEnable` | `Excluded: explicit-enable contract; unit/VI — Owner:@schatt` |
 
 ### `Layers/LocalEnableOverrideTests.swift`
 
 | Test | Resolution |
 |------|------------|
-| `testGlobalDisableLocalEnable` | |
-| `testNamedModifierAlwaysWorksRegardlessOfGlobalSettings` | |
-| `testNamedModifierAlwaysWorksEvenWhenGlobalConfigDisabled` | |
+| `testGlobalDisableLocalEnable` | `Excluded: task-local enable; VI harness — Owner:@schatt` |
+| `testNamedModifierAlwaysWorksRegardlessOfGlobalSettings` | `UI:AccessibilityIdentifierCategoryAGlobalOffUITests/testCategoryAGlobalOff_named_stillSurfacesIdentifier` |
+| `testNamedModifierAlwaysWorksEvenWhenGlobalConfigDisabled` | `Dedup:UI:AccessibilityIdentifierCategoryAGlobalOffUITests/testCategoryAGlobalOff_named_stillSurfacesIdentifier` |
 
 ### `Features/Accessibility/AutomaticAccessibilityLabelViewInspectorTests.swift`
 
 | Test | Resolution |
 |------|------------|
-| `testAutomaticCompliance_AppliesAccessibilityLabel_WhenProvided` | |
-| `testAutomaticCompliance_WorksWithoutAccessibilityLabel` | |
-| `testAutomaticComplianceNamed_AppliesAccessibilityLabel_WhenProvided` | |
-| `testAutomaticComplianceNamed_WorksWithoutAccessibilityLabel` | |
-| `testPlatformButton_AppliesAccessibilityLabel` | |
-| `testPlatformButton_AutoExtractsLabelFromParameter` | |
-| `testLabelFormatting_ThroughViewInspector` | |
-| `testAutomaticCompliance_DoesNotApplyEmptyLabel` | |
-| `testAutomaticCompliance_HandlesNilLabel` | |
+| `testAutomaticCompliance_AppliesAccessibilityLabel_WhenProvided` | `UI:AccessibilityIdentifierCategoryAUITests/testCategoryA_accessibilityLabel_parameter_surfacesInLabel` |
+| `testAutomaticCompliance_WorksWithoutAccessibilityLabel` | `Excluded: nil-label branch; no Category A XCUI row — Owner:@schatt` |
+| `testAutomaticComplianceNamed_AppliesAccessibilityLabel_WhenProvided` | `Dedup:UI:AccessibilityIdentifierCategoryAUITests/testCategoryA_accessibilityLabel_parameter_surfacesInLabel` |
+| `testAutomaticComplianceNamed_WorksWithoutAccessibilityLabel` | `Excluded: nil-label branch; no Category A XCUI row — Owner:@schatt` |
+| `testPlatformButton_AppliesAccessibilityLabel` | `Excluded: platformButton label; Layer 4 harness / VI — Owner:@schatt` |
+| `testPlatformButton_AutoExtractsLabelFromParameter` | `Excluded: platformButton label extraction; VI — Owner:@schatt` |
+| `testLabelFormatting_ThroughViewInspector` | `Excluded: localization/formatting; not XCUI identifier — Owner:@schatt` |
+| `testAutomaticCompliance_DoesNotApplyEmptyLabel` | `Excluded: empty-label branch; VI — Owner:@schatt` |
+| `testAutomaticCompliance_HandlesNilLabel` | `Excluded: nil-label branch; VI — Owner:@schatt` |
 
 ### `Features/Accessibility/AccessibilityIdentifierDisabledTests.swift`
 
 | Test | Resolution |
 |------|------------|
-| `testAutomaticIDsDisabled_NoIdentifiersGenerated` | |
-| `testManualIDsStillWorkWhenAutomaticDisabled` | |
-| `testBreadcrumbModifiersStillWorkWhenAutomaticDisabled` | |
+| `testAutomaticIDsDisabled_NoIdentifiersGenerated` | `Dedup:UI:AccessibilityIdentifierCategoryAGlobalOffUITests/testCategoryAGlobalOff_basicAutomaticCompliance_doesNotEmitSuppressedName` |
+| `testManualIDsStillWorkWhenAutomaticDisabled` | `UI:ManualAccessibilityIdentifierHarnessUITests/testManualPlatformButtonIds_queryableViaXCUITest` |
+| `testBreadcrumbModifiersStillWorkWhenAutomaticDisabled` | `Excluded: breadcrumb modifiers; VI — Owner:@schatt` |
 
 ### `Features/Accessibility/AccessibilityIdentifierGenerationTests.swift`
 
 | Test | Resolution |
 |------|------------|
-| `testAccessibilityIdentifiersAreReasonableLength` | |
-| `testAccessibilityIdentifiersDontDuplicateHierarchy` | |
-| `testAccessibilityIdentifiersAreSemantic` | |
-| `testAccessibilityIdentifiersWorkInComplexHierarchy` | |
-| `testAccessibilityIdentifiersIncludeLabelTextForStringLabels` | |
-| `testAccessibilityIdentifiersSanitizeLabelText` | |
+| `testAccessibilityIdentifiersAreReasonableLength` | `Excluded: length/shape heuristics; VI/unit — Owner:@schatt` |
+| `testAccessibilityIdentifiersDontDuplicateHierarchy` | `Excluded: hierarchy shape heuristics; VI/unit — Owner:@schatt` |
+| `testAccessibilityIdentifiersAreSemantic` | `Excluded: semantic heuristics; VI/unit — Owner:@schatt` |
+| `testAccessibilityIdentifiersWorkInComplexHierarchy` | `Excluded: complex hierarchy; VI/unit — Owner:@schatt` |
+| `testAccessibilityIdentifiersIncludeLabelTextForStringLabels` | `Dedup:UI:AccessibilityIdentifierCategoryAUITests/testCategoryA_specialCharsInLabel_hasIdentifier` |
+| `testAccessibilityIdentifiersSanitizeLabelText` | `Dedup:UI:AccessibilityIdentifierCategoryAUITests/testCategoryA_emptyIdentifierName_sanitizedLabelInIdentifier` |
 
 ### `Features/Accessibility/AccessibilityIdentifiersDebugTests.swift`
 
 | Test | Resolution |
 |------|------------|
-| `testDirectAutomaticAccessibilityIdentifiersWorks` | |
-| `testNamedModifierWorks` | |
-| `testAutomaticAccessibilityModifierWorks` | |
-| `testAutomaticAccessibilityExtensionWorks` | |
+| `testDirectAutomaticAccessibilityIdentifiersWorks` | `Excluded: modifier smoke; VI — Owner:@schatt` |
+| `testNamedModifierWorks` | `Excluded: modifier smoke; VI — Owner:@schatt` |
+| `testAutomaticAccessibilityModifierWorks` | `Excluded: modifier smoke; VI — Owner:@schatt` |
+| `testAutomaticAccessibilityExtensionWorks` | `Excluded: modifier smoke; VI — Owner:@schatt` |
 
 ### `Features/Accessibility/AccessibilityIdentifierConfigUserDefaultsTests.swift`
 
 | Test | Resolution |
 |------|------------|
-| `testSaveToUserDefaultsSavesConfiguration` | |
-| `testLoadFromUserDefaultsLoadsConfiguration` | |
-| `testLoadFromUserDefaultsRespectsDefaultsWhenNoSavedConfig` | |
-| `testConfigurationPersistenceAcrossAppLaunches` | |
-| `testSaveToUserDefaultsSavesAllProperties` | |
-| `testLoadFromUserDefaultsOnlyLoadsIfKeyExists` | |
+| `testSaveToUserDefaultsSavesConfiguration` | `Excluded: UserDefaults API; not XCUI tree — Owner:@schatt` |
+| `testLoadFromUserDefaultsLoadsConfiguration` | `Excluded: UserDefaults API; not XCUI tree — Owner:@schatt` |
+| `testLoadFromUserDefaultsRespectsDefaultsWhenNoSavedConfig` | `Excluded: UserDefaults API; not XCUI tree — Owner:@schatt` |
+| `testConfigurationPersistenceAcrossAppLaunches` | `Excluded: UserDefaults API; not XCUI tree — Owner:@schatt` |
+| `testSaveToUserDefaultsSavesAllProperties` | `Excluded: UserDefaults API; not XCUI tree — Owner:@schatt` |
+| `testLoadFromUserDefaultsOnlyLoadsIfKeyExists` | `Excluded: UserDefaults API; not XCUI tree — Owner:@schatt` |
 
 **Total canonical `@Test` rows:** 83
 
@@ -184,18 +184,16 @@ Source files under `Development/Tests/SixLayerFrameworkUnitTests/ViewInspectorTe
 
 ## `ConsolidatedAccessibilityTests.swift` deduplication
 
-This file aggregates many scenarios; several duplicate the suites above.
+This file aggregates **662** `@Test` methods (full table, not inlined here).
 
-**Rule:** For each `@Test` method in `ConsolidatedAccessibilityTests.swift`, add a row here OR mark `Dedup` to a canonical test above.
+**Authoritative table:** [`Development/VIEWINSPECTOR_CATEGORY_A_CONSOLIDATED_DEDUP.md`](VIEWINSPECTOR_CATEGORY_A_CONSOLIDATED_DEDUP.md)
 
-| Consolidated test | Resolution |
-|-------------------|------------|
-| *(add rows as dedup work proceeds; optional: generate with `rg '@Test.*func test' ConsolidatedAccessibilityTests.swift`)* | |
+**Rule:** Each consolidated test either **Dedup**s to the first matching ViewInspector source (same method name under `ViewInspectorTests/`, excluding the consolidated file) or is **Excluded** when the name exists only in the aggregate file.
 
-**Mechanical export (for paste into this table):**
+**Regenerate after adding or renaming consolidated tests:**
 
 ```bash
-rg "@Test.*func (test\\w+)" Development/Tests/SixLayerFrameworkUnitTests/ViewInspectorTests/Features/Accessibility/ConsolidatedAccessibilityTests.swift -o --replace '$1' | sort -u
+python3 Development/scripts/generate_category_a_consolidated_dedup.py
 ```
 
 ---
@@ -209,4 +207,4 @@ rg "@Test.*func (test\\w+)" Development/Tests/SixLayerFrameworkUnitTests/ViewIns
 
 ## Related UI test files (existing partial coverage)
 
-Examples: `AccessibilityIdentifierCategoryAUITests.swift`, `AccessibilityIdentifierCategoryAGlobalOffUITests.swift`, `ManualAccessibilityIdentifierHarnessUITests.swift`, `BasicAutomaticComplianceUITests.swift`. Reference these in `UI:…` cells when they cover a canonical row.
+Examples: `AccessibilityIdentifierCategoryAUITests.swift`, `AccessibilityIdentifierCategoryAGlobalOffUITests.swift`, `ManualAccessibilityIdentifierHarnessUITests.swift`. Reference these in `UI:…` cells when they cover a canonical row.
