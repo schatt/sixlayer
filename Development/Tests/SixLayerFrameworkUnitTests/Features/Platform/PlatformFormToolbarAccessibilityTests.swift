@@ -34,19 +34,20 @@ struct PlatformFormToolbarAccessibilityTests {
 
         let toolbar = try view.inspect().toolbar()
 
-        let cancelAID = try toolbar.item(0).button().accessibilityIdentifier()
+        // `.accessibilityIdentifier` is applied outside `Button`; read from toolbar item root, not `.button()`.
+        let cancelAID = try toolbar.item(0).accessibilityIdentifier()
         #expect(cancelAID == cancelID)
 
         #if os(iOS)
-        let saveAID = try toolbar.item(1).button().accessibilityIdentifier()
+        let saveAID = try toolbar.item(1).accessibilityIdentifier()
         #expect(saveAID == saveID)
         #elseif os(macOS)
-        let buttons = try toolbar.item(1).findAll(ViewType.Button.self)
-        #expect(buttons.count == 2)
-        let selectAID = try buttons[0].accessibilityIdentifier()
-        let saveAID = try buttons[1].accessibilityIdentifier()
-        #expect(selectAID == selectID)
-        #expect(saveAID == saveID)
+        let idsInPrimary = try toolbar.item(1).findAll(ViewType.ClassifiedView.self, where: { _ in true }).compactMap { node -> String? in
+            guard let id = try? node.accessibilityIdentifier(), !id.isEmpty else { return nil }
+            return id
+        }
+        #expect(idsInPrimary.contains(selectID))
+        #expect(idsInPrimary.contains(saveID))
         #else
         Issue.record("Toolbar accessibility tests require iOS or macOS + ViewInspector")
         #endif
@@ -68,19 +69,18 @@ struct PlatformFormToolbarAccessibilityTests {
             )
 
         let toolbar = try view.inspect().toolbar()
-        let cancelAID = try toolbar.item(0).button().accessibilityIdentifier()
+        let cancelAID = try toolbar.item(0).accessibilityIdentifier()
         #expect(cancelAID.isEmpty)
 
         #if os(iOS)
-        let saveAID = try toolbar.item(1).button().accessibilityIdentifier()
+        let saveAID = try toolbar.item(1).accessibilityIdentifier()
         #expect(saveAID.isEmpty)
         #elseif os(macOS)
-        let buttons = try toolbar.item(1).findAll(ViewType.Button.self)
-        #expect(buttons.count == 2)
-        let selectAID = try buttons[0].accessibilityIdentifier()
-        let saveAID = try buttons[1].accessibilityIdentifier()
-        #expect(selectAID.isEmpty)
-        #expect(saveAID.isEmpty)
+        let idsInPrimary = try toolbar.item(1).findAll(ViewType.ClassifiedView.self, where: { _ in true }).compactMap { node -> String? in
+            guard let id = try? node.accessibilityIdentifier(), !id.isEmpty else { return nil }
+            return id
+        }
+        #expect(idsInPrimary.isEmpty)
         #endif
         #else
         Issue.record("ViewInspector required for Issue #221 toolbar identifier tests")
@@ -100,8 +100,8 @@ struct PlatformFormToolbarAccessibilityTests {
             )
 
         let toolbar = try view.inspect().toolbar()
-        let cancelAID = try toolbar.item(0).button().accessibilityIdentifier()
-        let saveAID = try toolbar.item(1).button().accessibilityIdentifier()
+        let cancelAID = try toolbar.item(0).accessibilityIdentifier()
+        let saveAID = try toolbar.item(1).accessibilityIdentifier()
         #expect(cancelAID == detailCancelID)
         #expect(saveAID == detailSaveID)
         #else
