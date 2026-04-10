@@ -16,14 +16,15 @@ alwaysApply: true
 
 ## **REQUIRED BEHAVIOR**
 
-1. **MANDATORY for test runs:** Use **xcode-tools** MCP (**RunAllTests**, **RunSomeTests**) with **`tabIdentifier`** from **XcodeListWindows**, after setting the scheme with **`Development/scripts/set_xcode_scheme.applescript`** when needed. **Do not** default to CLI for tests when MCP is available. See **`.cursor/rules/test-target-default.mdc`**.
+1. **MANDATORY for test runs:** Use **xcode-tools** MCP (**RunAllTests**, **RunSomeTests**) with **`tabIdentifier`** from **XcodeListWindows**, after setting the scheme with **`Development/scripts/set_xcode_scheme.applescript`** when needed. **Do not** default to CLI for tests when MCP is available. See **`.cursor/rules/test-target-default.mdc`**. Those runs are **first-class Xcode test sessions**: output lives in **Xcode** (e.g. Report navigator / test activity) and in **`*.xcresult`** on disk, alongside MCP fields like **`fullSummaryPath`** and **`fullConsoleLogsPath`**.
 2. **CLI (exception only):** Use **`dbs-build`**, **`xcodebuild`**, or **`swift test`** **only** when MCP is unavailable after retry / Xcode tab resolution per **test-target-default**. Ensure a **complete** log is retained (file, MCP artifact path, or **`xcresult`**) so nothing important exists only in a truncated pipe.
 3. **Large logs:** Redirect to a **file** (e.g. **`tee`** or **`> build.log 2>&1`**) and use the **Read** tool with offsets or search to inspect sections—**do not** use **`tail`** or **`head`** as the **only** record you rely on for diagnosis. Prefer MCP **`fullSummaryPath`** / **`fullConsoleLogsPath`** when present.
 
 ## **RATIONALE**
 
 - Failures and hangs often appear **once** at a specific point; if the truncated pipe was the only output, you **re-run the whole suite** to learn what failed—wasteful and slow.
-- MCP test runs surface structured results in Xcode; full CLI logs (or **`tee`** targets) preserve order and completeness for post-hoc inspection.
+- **MCP test runs** align with **Xcode’s own retention model**: logs and structured results in the **Xcode UI** plus **`xcresult`** bundles—so you can triage like a local **Product → Test** run without depending on a fragile terminal-only transcript.
+- **CLI** (`xcodebuild`, **`tee`** to a file, etc.) remains valid when MCP is unavailable; keep a **complete** file or **`xcresult`** path for the same “no rerun to rediscover” guarantee.
 
 ## **EXCEPTION**
 
