@@ -79,10 +79,36 @@ final class Layer4UITests: XCTestCase {
         }
     }
 
+    /// Stable id on `contractSectionHeader` in the Layer 4 examples `Form` (Issue #193).
+    private static func l4ContractSectionHeaderIdentifier(sectionTitle: String) -> String {
+        "L4ContractSection_\(sectionTitle.replacingOccurrences(of: " ", with: ""))"
+    }
+
+    /// `Form` section titles are often not `staticText` in XCUITest; avoid long button/link waits before scrolling.
+    @MainActor
+    private func scrollToFormSectionHeader(title: String) {
+        let headerId = Self.l4ContractSectionHeaderIdentifier(sectionTitle: title)
+        if element(matchingIdentifier: headerId).waitForExistence(timeout: 1.5) { return }
+        if app.staticTexts[title].waitForExistence(timeout: 0.75) { return }
+        if anyDescendantHasLabel(equalTo: title, timeout: 2.0) { return }
+        if app.buttons[title].waitForExistence(timeout: 0.25) { return }
+        if app.links[title].waitForExistence(timeout: 0.25) { return }
+        if element(matchingIdentifier: title).waitForExistence(timeout: 0.5) { return }
+        if !app.xcuiPrimaryScrollHost().exists, app.tables.count < 1, !app.scrollViews.firstMatch.exists { return }
+        for _ in 0..<22 {
+            app.xcuiSwipeScrollHostsUp()
+            if element(matchingIdentifier: headerId).waitForExistence(timeout: 0.35) { return }
+            if app.staticTexts[title].waitForExistence(timeout: 0.35) { return }
+            if anyDescendantHasLabel(equalTo: title, timeout: 0.45) { return }
+            if app.buttons[title].waitForExistence(timeout: 0.2) { return }
+            if element(matchingIdentifier: title).waitForExistence(timeout: 0.25) { return }
+        }
+    }
+
     /// `Form` rows for L4 Controls sit mid-scroll; anchor on the section header before field/button contract checks.
     @MainActor
     private func scrollToL4ControlsSection() {
-        scrollToElement(label: "L4 Controls")
+        scrollToFormSectionHeader(title: "L4 Controls")
     }
 
     /// Element with the given accessibility identifier (any type).
@@ -271,7 +297,7 @@ final class Layer4UITests: XCTestCase {
     @MainActor
     func testL4_platformPicker() throws {
         ensureContractRoot()
-        scrollToElement(label: "L4 Controls")
+        scrollToL4ControlsSection()
         scrollToElement(label: "L4ContractPicker")
         // platformPicker contract: picker or an option has identifier.
         let pred = NSPredicate(format: "identifier CONTAINS[c] %@", "picker")
