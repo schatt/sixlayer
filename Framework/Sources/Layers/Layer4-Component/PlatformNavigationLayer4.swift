@@ -90,6 +90,10 @@ internal enum Layer4MeasuredSplitPresentationSync {
     static func seededPresentation(isDetailOnlyColumn: Bool) -> NavigationLayoutCompactPresentation? {
         isDetailOnlyColumn ? .detailOnlyCollapsedInner : nil
     }
+
+    static func seededPresentation(columnVisibility: Binding<NavigationSplitViewVisibility>?) -> NavigationLayoutCompactPresentation? {
+        seededPresentation(isDetailOnlyColumn: columnVisibility.map { $0.wrappedValue == .detailOnly } ?? false)
+    }
 }
 
 /// Hosts nested split shells with **container width** from `GeometryReader` and
@@ -124,9 +128,7 @@ private struct Layer4NestedSplitShellPresentationHost<Sidebar: View, Detail: Vie
         GeometryReader { geo in
             let width = max(0, geo.size.width)
             let fresh = NavigationLayoutResolver.layer4CompactPresentation(forAvailableWidth: width)
-            let columnSeeded = Layer4MeasuredSplitPresentationSync.seededPresentation(
-                isDetailOnlyColumn: columnVisibility.map { $0.wrappedValue == .detailOnly } ?? false
-            )
+            let columnSeeded = columnSeededPresentation()
             let prev = persistedPresentation ?? columnSeeded ?? fresh
             let presentation = NavigationLayoutResolver.layer4CompactPresentationForTransition(
                 availableWidth: width,
@@ -134,26 +136,36 @@ private struct Layer4NestedSplitShellPresentationHost<Sidebar: View, Detail: Vie
             )
             shellContent(presentation: presentation)
                 .task(id: widthTaskID(width)) {
-                    let f = NavigationLayoutResolver.layer4CompactPresentation(forAvailableWidth: width)
-                    let seeded = Layer4MeasuredSplitPresentationSync.seededPresentation(
-                        isDetailOnlyColumn: columnVisibility.map { $0.wrappedValue == .detailOnly } ?? false
-                    )
-                    let p = persistedPresentation ?? seeded ?? f
-                    persistedPresentation = NavigationLayoutResolver.layer4CompactPresentationForTransition(
-                        availableWidth: width,
-                        previousPresentation: p
-                    )
+                    syncPersistedPresentationForWidth(width)
                 }
                 .onChange(of: columnVisibility.map { $0.wrappedValue }) { _, visibility in
-                    guard let visibility else { return }
-                    if visibility == .detailOnly {
-                        persistedPresentation = .detailOnlyCollapsedInner
-                    } else if persistedPresentation == .detailOnlyCollapsedInner {
-                        persistedPresentation = nil
-                    }
+                    applyColumnVisibilityToPersistedPresentation(visibility)
                 }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    private func columnSeededPresentation() -> NavigationLayoutCompactPresentation? {
+        Layer4MeasuredSplitPresentationSync.seededPresentation(columnVisibility: columnVisibility)
+    }
+
+    private func syncPersistedPresentationForWidth(_ width: CGFloat) {
+        let fresh = NavigationLayoutResolver.layer4CompactPresentation(forAvailableWidth: width)
+        let seeded = columnSeededPresentation()
+        let previous = persistedPresentation ?? seeded ?? fresh
+        persistedPresentation = NavigationLayoutResolver.layer4CompactPresentationForTransition(
+            availableWidth: width,
+            previousPresentation: previous
+        )
+    }
+
+    private func applyColumnVisibilityToPersistedPresentation(_ visibility: NavigationSplitViewVisibility?) {
+        guard let visibility else { return }
+        if visibility == .detailOnly {
+            persistedPresentation = .detailOnlyCollapsedInner
+        } else if persistedPresentation == .detailOnlyCollapsedInner {
+            persistedPresentation = nil
+        }
     }
 
     private func widthTaskID(_ w: CGFloat) -> Int {
