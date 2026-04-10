@@ -5,6 +5,8 @@ alwaysApply: true
 
 # Strict TDD Definition
 
+**TDD is not complete until the refactor step has been run.** Stopping after green (passing tests) is incomplete TDD. The refactor phase and the post-refactor test run are part of the definition of done for the cycle, not optional polish afterward.
+
 Follow this sequence exactly for all feature and bug-fix work:
 
 1. Define expected behavior and test scope.
@@ -14,7 +16,7 @@ Follow this sequence exactly for all feature and bug-fix work:
    - Re-run until tests execute and fail for the intended reason (no false positives).
 4. Green phase: implement behavior to the best of ability.
 5. Run tests and verify green.
-6. Refactor for clarity/maintainability without changing behavior.
+6. **Refactor** for clarity/maintainability without changing behavior. (You may conclude no structural change is needed, but you must still complete this step as a deliberate pass over the code.)
 7. Run tests again and verify green after refactor.
 
 ## Required Evidence
@@ -27,4 +29,5 @@ Follow this sequence exactly for all feature and bug-fix work:
 
 - Do not skip red phase.
 - Do not treat compile-only failure as complete red phase when runtime-failing tests are possible.
+- Do not treat **green-only** as complete TDD; skipping refactor or the post-refactor test run is non-compliant.
 - Do not merge or close work with failing tests.
