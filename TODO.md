@@ -5,6 +5,7 @@
 ## Current
 
 - [x] **#218** `platformFormContainer` owns `Form` on macOS (parity with iOS; avoid nested `Form`)
+- [x] **#220** No-header `platformSectionContainer` → `Section`; inset chrome → `platformGroupedInsetContainer` (milestone v7.5.12)
 - [x] **#194** Default dynamic form localization keys from accessibility identifier segment + env resolver (`DynamicFormFieldLocalizationResolver`), metadata `localizationKeyBase` / `accessibilityIdentifierName` / form `localizationNamespace`
 - [x] Verify Xcode MCP (`mcpbridge-wrapper`) after restart: `GetTestList` + `tabIdentifier` works for sixlayer `windowtab1`
 - [x] Fix Swift concurrency data-race warning in `AdvancedFieldTypes.handleDrop` (`newFiles` capture)
