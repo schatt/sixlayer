@@ -6,8 +6,48 @@
 # Branch and Tag Naming Convention:
 # - Branches: b7.0.0 format (e.g., b7.0.0, b7.0.1) - used for pre-release work
 # - Tags: v7.0.0 format (e.g., v7.0.0, v7.0.1) - used for releases on main
+#
+# Flags:
+#   --release  Non-interactive release: auto-accept suggested version (when prompted),
+#              proceed with tag/push or merge+release, skip branch delete (keeps branch,
+#              switches back when not on main). Does not auto-resolve a diverged main.
 
 set -e
+
+AUTO_RELEASE=0
+POSITIONAL=()
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --release)
+            AUTO_RELEASE=1
+            shift
+            ;;
+        -h|--help)
+            echo "Usage: $0 [--release] [release_type|version] [version|release_type]"
+            echo ""
+            echo "  --release  Run without prompts: confirm tag/push or merge+release, keep release branch."
+            echo "             Auto-accepts suggested version when version is inferred from the repo."
+            echo ""
+            echo "Examples:"
+            echo "  $0 minor"
+            echo "  $0 --release patch"
+            echo "  $0 --release 7.2.0 minor"
+            exit 0
+            ;;
+        -*)
+            echo "❌ Unknown option: $1" >&2
+            echo "Usage: $0 [--release] [release_type] [version]  (see --help)" >&2
+            exit 1
+            ;;
+        *)
+            POSITIONAL+=("$1")
+            shift
+            ;;
+    esac
+done
+
+ARG1=${POSITIONAL[0]:-}
+ARG2=${POSITIONAL[1]:-}
 
 # Function to extract current version from Package.swift
 extract_version_from_package() {
@@ -87,12 +127,10 @@ is_version_number() {
     [[ "$1" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
 }
 
-# Parse arguments with smart detection
+# Parse positional arguments with smart detection
 # Order: [release_type] [version]
-# If first arg looks like a version (X.Y.Z), treat it as version
+# If first positional looks like a version (X.Y.Z), treat it as version
 # Otherwise, treat it as release_type
-ARG1=$1
-ARG2=$2
 
 if [ -z "$ARG1" ]; then
     # No arguments: auto-detect version, use patch default
@@ -111,13 +149,14 @@ fi
 # Validate release type early
 if [[ ! "$RELEASE_TYPE" =~ ^(major|minor|patch)$ ]]; then
     echo "❌ Error: Invalid release type '$RELEASE_TYPE'. Must be 'major', 'minor', or 'patch'"
-    echo "Usage: $0 [release_type] [version]"
-    echo "       $0 [version] [release_type]"
+    echo "Usage: $0 [--release] [release_type] [version]"
+    echo "       $0 [--release] [version] [release_type]"
     echo "Examples:"
     echo "  $0 minor              # Auto-detect version, minor release"
     echo "  $0 5.8.0              # Explicit version, patch release (default)"
     echo "  $0 minor 5.8.0        # Explicit type and version"
     echo "  $0 5.8.0 minor        # Version first, then type (also works)"
+    echo "  $0 --release patch    # Non-interactive patch release (see header comment)"
     exit 1
 fi
 
@@ -130,30 +169,35 @@ if [ -z "$VERSION" ]; then
             echo "📋 Current version detected: v$CURRENT_VERSION"
             echo "💡 Suggested next version (${RELEASE_TYPE}): v$SUGGESTED_VERSION"
             echo ""
-            read -p "Use suggested version v$SUGGESTED_VERSION? (Y/n): " -n 1 -r
-            echo
-            if [[ $REPLY =~ ^[Nn]$ ]]; then
-                echo "❌ Error: Version required"
-                echo "Usage: $0 [release_type] [version]"
-                echo "       $0 [version] [release_type]"
-                echo "Examples:"
-                echo "  $0 minor 5.8.0        # Explicit type and version"
-                echo "  $0 5.8.0 minor        # Version first, then type"
-                exit 1
-            else
+            if [ "$AUTO_RELEASE" -eq 1 ]; then
                 VERSION=$SUGGESTED_VERSION
-                echo "✅ Using suggested version: v$VERSION"
+                echo "✅ Using suggested version: v$VERSION (--release)"
+            else
+                read -p "Use suggested version v$SUGGESTED_VERSION? (Y/n): " -n 1 -r
+                echo
+                if [[ $REPLY =~ ^[Nn]$ ]]; then
+                    echo "❌ Error: Version required"
+                    echo "Usage: $0 [--release] [release_type] [version]"
+                    echo "       $0 [--release] [version] [release_type]"
+                    echo "Examples:"
+                    echo "  $0 minor 5.8.0        # Explicit type and version"
+                    echo "  $0 5.8.0 minor        # Version first, then type"
+                    exit 1
+                else
+                    VERSION=$SUGGESTED_VERSION
+                    echo "✅ Using suggested version: v$VERSION"
+                fi
             fi
         else
             echo "❌ Error: Failed to calculate suggested version"
-            echo "Usage: $0 [release_type] [version]"
-            echo "       $0 [version] [release_type]"
+            echo "Usage: $0 [--release] [release_type] [version]"
+            echo "       $0 [--release] [version] [release_type]"
             exit 1
         fi
     else
         echo "❌ Error: Version required and could not detect current version"
-        echo "Usage: $0 [release_type] [version]"
-        echo "       $0 [version] [release_type]"
+        echo "Usage: $0 [--release] [release_type] [version]"
+        echo "       $0 [--release] [version] [release_type]"
         echo ""
         echo "Could not find version in Package.swift or README.md"
         exit 1
@@ -924,8 +968,13 @@ echo "🚀 All checks passed! Ready for tagging and release."
 # After tag + main push, create_github_release_for_version runs when gh is installed and authenticated.
 if [ "$CURRENT_BRANCH" = "main" ]; then
     # On main: use direct tag/push workflow
-    read -p "🚀 Auto-tag and push v$VERSION to all remotes? (y/N): " -n 1 -r
-    echo
+    if [ "$AUTO_RELEASE" -eq 1 ]; then
+        echo "🚀 Auto-tag and push v$VERSION (--release)"
+        REPLY=y
+    else
+        read -p "🚀 Auto-tag and push v$VERSION to all remotes? (y/N): " -n 1 -r
+        echo
+    fi
     if [[ $REPLY =~ ^[Yy]$ ]]; then
         echo "🏷️  Creating and pushing tag v$VERSION..."
 
@@ -967,8 +1016,13 @@ else
     echo "   5. Push main to all remotes"
     echo "   6. Create GitHub Release from Development/RELEASE_v$VERSION.md (if gh is installed and authenticated)"
     echo ""
-    read -p "🚀 Proceed with merge and release? (y/N): " -n 1 -r
-    echo
+    if [ "$AUTO_RELEASE" -eq 1 ]; then
+        echo "🚀 Proceed with merge and release (--release)"
+        REPLY=y
+    else
+        read -p "🚀 Proceed with merge and release? (y/N): " -n 1 -r
+        echo
+    fi
     if [[ $REPLY =~ ^[Yy]$ ]]; then
         # Publish release branch first so remotes match what we merge into main
         echo "📤 Pushing branch $CURRENT_BRANCH to all remotes..."
@@ -1028,31 +1082,42 @@ else
         echo "🌐 Pushed to all remotes (GitHub, Codeberg, GitLab)"
         echo ""
         
-        # Optionally delete the release branch
-        read -p "🗑️  Delete branch $CURRENT_BRANCH (local and remote)? (y/N): " -n 1 -r
-        echo
-        if [[ $REPLY =~ ^[Yy]$ ]]; then
-            echo "🗑️  Deleting branch $CURRENT_BRANCH..."
-            
-            # Delete remote branches (try all remotes, ignore errors if branch doesn't exist)
-            echo "📤 Deleting remote branch from all remotes..."
-            git push all --delete "$CURRENT_BRANCH" 2>/dev/null || true
-            
-            # Delete local branch (only if we're not on it, which we're not since we switched to main)
-            if git show-ref --verify --quiet refs/heads/"$CURRENT_BRANCH"; then
-                git branch -d "$CURRENT_BRANCH" 2>/dev/null || git branch -D "$CURRENT_BRANCH" 2>/dev/null || true
-                echo "✅ Local branch deleted"
-            fi
-            
-            echo "✅ Branch $CURRENT_BRANCH deleted from all remotes"
-        else
-            echo "💡 Branch $CURRENT_BRANCH kept for reference"
+        # Optionally delete the release branch (--release keeps branch without prompting)
+        if [ "$AUTO_RELEASE" -eq 1 ]; then
+            echo "💡 Keeping branch $CURRENT_BRANCH (--release)"
             if git show-ref --verify --quiet refs/heads/"$CURRENT_BRANCH"; then
                 echo "🔄 Switching back to $CURRENT_BRANCH..."
                 git checkout "$CURRENT_BRANCH"
                 echo "✅ Now on branch $CURRENT_BRANCH"
             else
                 echo "⚠️  Local branch $CURRENT_BRANCH not found; staying on main"
+            fi
+        else
+            read -p "🗑️  Delete branch $CURRENT_BRANCH (local and remote)? (y/N): " -n 1 -r
+            echo
+            if [[ $REPLY =~ ^[Yy]$ ]]; then
+                echo "🗑️  Deleting branch $CURRENT_BRANCH..."
+                
+                # Delete remote branches (try all remotes, ignore errors if branch doesn't exist)
+                echo "📤 Deleting remote branch from all remotes..."
+                git push all --delete "$CURRENT_BRANCH" 2>/dev/null || true
+                
+                # Delete local branch (only if we're not on it, which we're not since we switched to main)
+                if git show-ref --verify --quiet refs/heads/"$CURRENT_BRANCH"; then
+                    git branch -d "$CURRENT_BRANCH" 2>/dev/null || git branch -D "$CURRENT_BRANCH" 2>/dev/null || true
+                    echo "✅ Local branch deleted"
+                fi
+                
+                echo "✅ Branch $CURRENT_BRANCH deleted from all remotes"
+            else
+                echo "💡 Branch $CURRENT_BRANCH kept for reference"
+                if git show-ref --verify --quiet refs/heads/"$CURRENT_BRANCH"; then
+                    echo "🔄 Switching back to $CURRENT_BRANCH..."
+                    git checkout "$CURRENT_BRANCH"
+                    echo "✅ Now on branch $CURRENT_BRANCH"
+                else
+                    echo "⚠️  Local branch $CURRENT_BRANCH not found; staying on main"
+                fi
             fi
         fi
     else
