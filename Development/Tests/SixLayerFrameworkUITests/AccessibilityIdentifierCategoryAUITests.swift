@@ -18,16 +18,34 @@ final class AccessibilityIdentifierCategoryAUITests: XCTestCase {
         addDefaultUIInterruptionMonitor()
 
         MainActor.assumeIsolated {
-            guard Self.sharedApp == nil else { return }
-            let localApp = XCUIApplication()
-            localApp.configureForFastTesting()
-            localApp.launchArguments.append("-OpenCategoryAAccessibility")
-            localApp.launch()
-            Self.sharedApp = localApp
-            XCTAssertTrue(
-                localApp.navigationBars["Category A Audit"].waitForExistence(timeout: 8.0),
-                "App should open on Category A Audit (launch arg -OpenCategoryAAccessibility)"
-            )
+            if Self.sharedApp == nil {
+                let localApp = XCUIApplication()
+                localApp.configureForFastTesting()
+                localApp.launchArguments.append("-OpenCategoryAAccessibility")
+                localApp.launch()
+                Self.sharedApp = localApp
+                XCTAssertTrue(
+                    localApp.navigationBars["Category A Audit"].waitForExistence(timeout: 8.0),
+                    "App should open on Category A Audit (launch arg -OpenCategoryAAccessibility)"
+                )
+            }
+            guard let app = Self.sharedApp else { return }
+            // Shared app + alphabetical test order: a test that scrolls down (e.g. exactNamed) leaves the next test
+            // with top content off-screen and often missing from the a11y tree. Reset once per test instead of ad-hoc swipes.
+            Self.resetCategoryAAuditScrollToTop(app: app)
+        }
+    }
+
+    /// Swipe down on the scroll host until top audit anchors appear. No-op when already at top.
+    private static func resetCategoryAAuditScrollToTop(app: XCUIApplication, maxSwipes: Int = 24) {
+        let manualPred = NSPredicate(format: "identifier CONTAINS[c] %@", "CatAManualWinsOnOuter")
+        let titlePred = NSPredicate(format: "identifier CONTAINS[c] %@", "CatAAuditTitle")
+        if app.descendants(matching: .any).matching(manualPred).firstMatch.waitForExistence(timeout: 0.5) { return }
+        if app.descendants(matching: .any).matching(titlePred).firstMatch.waitForExistence(timeout: 0.5) { return }
+        for _ in 0..<maxSwipes {
+            app.xcuiSwipeScrollHostsDown()
+            if app.descendants(matching: .any).matching(manualPred).firstMatch.waitForExistence(timeout: 0.35) { return }
+            if app.descendants(matching: .any).matching(titlePred).firstMatch.waitForExistence(timeout: 0.35) { return }
         }
     }
 
@@ -79,21 +97,6 @@ final class AccessibilityIdentifierCategoryAUITests: XCTestCase {
             }
         }
         return false
-    }
-
-    /// Alphabetical test order runs `testCategoryA_exactNamed_minimalIdentifier` before this suite member; it only swipes **up**,
-    /// leaving the audit scroll view at the bottom. Top rows (manual wrapper, audit title) may be off-screen and absent from the
-    /// accessibility tree until we swipe **down** on the scroll host (same pattern as `Layer4UITests.ensureContractRoot`).
-    private func scrollCategoryAAuditTowardTop(maxSwipes: Int = 24) {
-        let manualPred = NSPredicate(format: "identifier CONTAINS[c] %@", "CatAManualWinsOnOuter")
-        let titlePred = NSPredicate(format: "identifier CONTAINS[c] %@", "CatAAuditTitle")
-        if app.descendants(matching: .any).matching(manualPred).firstMatch.waitForExistence(timeout: 0.5) { return }
-        if app.descendants(matching: .any).matching(titlePred).firstMatch.waitForExistence(timeout: 0.5) { return }
-        for _ in 0..<maxSwipes {
-            app.xcuiSwipeScrollHostsDown()
-            if app.descendants(matching: .any).matching(manualPred).firstMatch.waitForExistence(timeout: 0.35) { return }
-            if app.descendants(matching: .any).matching(titlePred).firstMatch.waitForExistence(timeout: 0.35) { return }
-        }
     }
 
     func testCategoryA_unicodeText_hasAccessibilityIdentifier() throws {
@@ -161,7 +164,6 @@ final class AccessibilityIdentifierCategoryAUITests: XCTestCase {
     }
 
     func testCategoryA_manualOnOuterGroup_overridesWrapper() throws {
-        scrollCategoryAAuditTowardTop()
         XCTAssertTrue(
             anyElement(identifierContains: "CatAManualWinsOnOuter").waitForExistence(timeout: 10.0),
             "outer Group accessibilityIdentifier should be findable (manual override on wrapper)"
