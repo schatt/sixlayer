@@ -99,6 +99,34 @@ final class AccessibilityIdentifierCategoryAUITests: XCTestCase {
         return false
     }
 
+    /// Asserts no descendant has an accessibility identifier containing `substring` (scrolls to search).
+    private func assertNoIdentifierContaining(_ substring: String, maxSwipes: Int = 20, file: StaticString = #filePath, line: UInt = #line) {
+        let pred = NSPredicate(format: "identifier CONTAINS[c] %@", substring)
+        let first = app.descendants(matching: .any).matching(pred).firstMatch
+        if first.waitForExistence(timeout: 1.0) {
+            XCTFail("Unexpected element with identifier containing \(substring)", file: file, line: line)
+            return
+        }
+        for _ in 0..<maxSwipes {
+            app.xcuiSwipeScrollHostsUp()
+            let el = app.descendants(matching: .any).matching(pred).firstMatch
+            if el.waitForExistence(timeout: 0.5) {
+                XCTFail("Unexpected identifier containing \(substring) after scroll", file: file, line: line)
+                return
+            }
+        }
+        let window = app.windows.firstMatch
+        guard window.exists else { return }
+        for _ in 0..<maxSwipes {
+            window.swipeUp()
+            let el = app.descendants(matching: .any).matching(pred).firstMatch
+            if el.waitForExistence(timeout: 0.5) {
+                XCTFail("Unexpected identifier containing \(substring) after window swipe", file: file, line: line)
+                return
+            }
+        }
+    }
+
     func testCategoryA_unicodeText_hasAccessibilityIdentifier() throws {
         XCTAssertTrue(
             anyElement(identifierContains: "CatAUnicodeText").waitForExistence(timeout: 12.0),
@@ -189,5 +217,14 @@ final class AccessibilityIdentifierCategoryAUITests: XCTestCase {
             scrollUntilIdentifierContains("CatAMid_LocalOptOut_Static"),
             "Explicit platformButton id should match manual-only row pattern on the audit scroll view"
         )
+    }
+
+    /// `disableAutomaticAccessibilityIdentifiers()` must suppress `basicAutomaticCompliance` in that subtree (#197).
+    func testCategoryA_disableAutomatic_localSubtree_skipsBasicAutomaticIdentifier() throws {
+        XCTAssertTrue(
+            scrollUntilIdentifierContains("CatADisableMid_AutoPresent"),
+            "Row outside disable wrapper should still expose basicAutomaticCompliance identifier"
+        )
+        assertNoIdentifierContaining("CatADisableMid_LocalAutoOff")
     }
 }
