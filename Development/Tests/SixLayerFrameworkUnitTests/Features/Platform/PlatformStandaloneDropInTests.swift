@@ -292,17 +292,17 @@ struct PlatformStandaloneDropInTests {
 
     // MARK: - platformFormContainer ownership (Issue #218)
 
-    /// `platformFormContainer` must host exactly one Form on iOS and macOS so consumers do not nest Form.
+    /// `platformFormContainer` must host a `Form` on every platform (no nested `Form` in app code).
     @Test @MainActor
-    func testPlatformFormContainer_OwnsForm_OnIOSAndMacOS() {
-        #if canImport(ViewInspector) && (os(iOS) || os(macOS))
+    func testPlatformFormContainer_OwnsForm() {
+        #if canImport(ViewInspector)
         let view = EmptyView().platformFormContainer {
             Text("FormOwnedMarker")
         }
         let hasForm = withInspectedView(AnyView(view)) { inspected in
             inspected.findAll(ViewType.Form.self).isEmpty ? nil : true
         }
-        #expect(hasForm == true, "platformFormContainer should wrap content in Form on iOS and macOS")
+        #expect(hasForm == true, "platformFormContainer should wrap content in Form")
         #else
         #expect(true)
         #endif
