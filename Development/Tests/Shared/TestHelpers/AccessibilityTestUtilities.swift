@@ -588,8 +588,7 @@ public func findAllAccessibilityIdentifiersFromPlatformView(_ root: Any?) -> [St
             if let childView = child as? NSView {
                 stack.append((childView, 1))
             } else if let el = child as? NSAccessibilityElement {
-                let sid = el.accessibilityIdentifier
-                if !sid.isEmpty {
+                if let sid = el.accessibilityIdentifier(), !sid.isEmpty {
                     identifiers.insert(sid)
                 }
             }
@@ -623,8 +622,7 @@ public func findAllAccessibilityIdentifiersFromPlatformView(_ root: Any?) -> [St
                 if let childView = child as? NSView {
                     stack.append((childView, childDepth))
                 } else if let el = child as? NSAccessibilityElement {
-                    let sid = el.accessibilityIdentifier
-                    if !sid.isEmpty {
+                    if let sid = el.accessibilityIdentifier(), !sid.isEmpty {
                         identifiers.insert(sid)
                     }
                 }
