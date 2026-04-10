@@ -731,6 +731,7 @@ struct Layer4ContractOnlyView: View {
         Text(title)
             .font(.title2)
             .bold()
+            .accessibilityIdentifier("L4ContractSection_\(title.replacingOccurrences(of: " ", with: ""))")
     }
 
     @ViewBuilder
