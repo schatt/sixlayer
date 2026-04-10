@@ -167,7 +167,7 @@ public enum TestSetupUtilities {
             window.contentViewController = hosting
             window.setFrame(frame, display: false)
             window.orderFrontRegardless()
-            guard let root = hosting.view else { return nil }
+            let root = hosting.view
             // Retain window + controller like UIKit path so layout and a11y stay alive for traversal.
             HostingControllerStorage.store((controller: hosting, window: window), for: root)
             RunLoop.current.run(until: Date().addingTimeInterval(0.12))
