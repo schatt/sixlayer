@@ -34,10 +34,12 @@ struct AccessibilityIdentifierCategoryAUDITView: View {
 
                 // `children: .combine` surfaces one element with explicit identifier for XCUITest (Issue #197).
                 sectionCaption("Manual id on outer Group (wrapper)")
-                VStack(alignment: .leading, spacing: 2) {
+                // Group + children: .ignore matches CatAAuditTitle / CatAExactNamed: XCTest reliably sees the
+                // manual identifier; VStack + .combine nested under platform* automaticCompliance can drop it.
+                Group {
                     Text("Manual wins on wrapper")
                 }
-                .accessibilityElement(children: .combine)
+                .accessibilityElement(children: .ignore)
                 .accessibilityLabel("Manual wins on wrapper")
                 .accessibilityIdentifier("CatAManualWinsOnOuter")
 
