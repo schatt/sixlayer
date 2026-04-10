@@ -2,7 +2,13 @@ import SwiftUI
 import Testing
 @testable import SixLayerFramework
 
-/// Issue #221: optional `accessibilityIdentifier` on platform form/detail toolbars (hosted tree; avoids NavigationStack inspect hangs).
+#if canImport(ViewInspector)
+import ViewInspector
+#endif
+
+/// Issue #221: optional `accessibilityIdentifier` on platform form/detail toolbars.
+/// Asserts via ViewInspector `.toolbar()` extraction (platform hosted-tree traversal does not reliably
+/// surface SwiftUI toolbar control identifiers in unit-test hosting).
 @Suite("Platform form and detail toolbar accessibility identifiers")
 struct PlatformFormToolbarAccessibilityTests {
 
@@ -12,14 +18,9 @@ struct PlatformFormToolbarAccessibilityTests {
     private let detailSaveID = "SixLayer.tests.platformDetailToolbar.save.221"
     private let detailCancelID = "SixLayer.tests.platformDetailToolbar.cancel.221"
 
-    @MainActor
-    private func hostedToolbarIdentifiers<V: View>(for view: V) -> [String] {
-        guard let root = TestSetupUtilities.hostRootPlatformView(view) else { return [] }
-        return findAllAccessibilityIdentifiersFromPlatformView(root)
-    }
-
     @Test @MainActor
-    func platformFormToolbar_appliesOptionalAccessibilityIdentifiers() {
+    func platformFormToolbar_appliesOptionalAccessibilityIdentifiers() throws {
+        #if canImport(ViewInspector)
         let view = Text("ToolbarHost")
             .platformFormToolbar(
                 onCancel: {},
@@ -31,21 +32,32 @@ struct PlatformFormToolbarAccessibilityTests {
                 selectButtonAccessibilityIdentifier: selectID
             )
 
-        let ids = Set(hostedToolbarIdentifiers(for: view))
+        let toolbar = try AnyView(view).inspect().toolbar()
 
-        #expect(ids.contains(saveID), "Save button should expose the provided accessibility identifier")
-        #expect(ids.contains(cancelID), "Cancel button should expose the provided accessibility identifier")
+        let cancelAID = try toolbar.item(0).button().accessibilityIdentifier()
+        #expect(cancelAID == cancelID)
 
-        #if os(macOS)
-        #expect(ids.contains(selectID), "macOS Select control should expose selectButtonAccessibilityIdentifier when provided")
+        #if os(iOS)
+        let saveAID = try toolbar.item(1).button().accessibilityIdentifier()
+        #expect(saveAID == saveID)
+        #elseif os(macOS)
+        let buttons = try toolbar.item(1).findAll(ViewType.Button.self)
+        #expect(buttons.count == 2)
+        let selectAID = try buttons[0].accessibilityIdentifier()
+        let saveAID = try buttons[1].accessibilityIdentifier()
+        #expect(selectAID == selectID)
+        #expect(saveAID == saveID)
         #else
-        #expect(!ids.contains(selectID), "selectButtonAccessibilityIdentifier must not create an extra id on platforms without Select")
+        Issue.record("Toolbar accessibility tests require iOS or macOS + ViewInspector")
+        #endif
+        #else
+        Issue.record("ViewInspector required for Issue #221 toolbar identifier tests")
         #endif
     }
 
     @Test @MainActor
-    func platformFormToolbar_nilIdentifiers_doNotRequireProvidedStrings() {
-        let sentinel = "SixLayer.tests.platformFormToolbar.shouldNotAppear"
+    func platformFormToolbar_nilIdentifiers_doNotRequireProvidedStrings() throws {
+        #if canImport(ViewInspector)
         let view = Text("ToolbarHostNil")
             .platformFormToolbar(
                 onCancel: {},
@@ -55,13 +67,29 @@ struct PlatformFormToolbarAccessibilityTests {
                 selectButtonAccessibilityIdentifier: nil
             )
 
-        let ids = hostedToolbarIdentifiers(for: view)
-        #expect(!ids.contains(sentinel))
-        #expect(!ids.contains(saveID))
+        let toolbar = try AnyView(view).inspect().toolbar()
+        let cancelAID = try toolbar.item(0).button().accessibilityIdentifier()
+        #expect(cancelAID.isEmpty)
+
+        #if os(iOS)
+        let saveAID = try toolbar.item(1).button().accessibilityIdentifier()
+        #expect(saveAID.isEmpty)
+        #elseif os(macOS)
+        let buttons = try toolbar.item(1).findAll(ViewType.Button.self)
+        #expect(buttons.count == 2)
+        let selectAID = try buttons[0].accessibilityIdentifier()
+        let saveAID = try buttons[1].accessibilityIdentifier()
+        #expect(selectAID.isEmpty)
+        #expect(saveAID.isEmpty)
+        #endif
+        #else
+        Issue.record("ViewInspector required for Issue #221 toolbar identifier tests")
+        #endif
     }
 
     @Test @MainActor
-    func platformDetailToolbar_appliesOptionalAccessibilityIdentifiers() {
+    func platformDetailToolbar_appliesOptionalAccessibilityIdentifiers() throws {
+        #if canImport(ViewInspector)
         let view = Text("DetailToolbarHost")
             .platformDetailToolbar(
                 onCancel: {},
@@ -71,8 +99,13 @@ struct PlatformFormToolbarAccessibilityTests {
                 cancelButtonAccessibilityIdentifier: detailCancelID
             )
 
-        let ids = Set(hostedToolbarIdentifiers(for: view))
-        #expect(ids.contains(detailSaveID))
-        #expect(ids.contains(detailCancelID))
+        let toolbar = try AnyView(view).inspect().toolbar()
+        let cancelAID = try toolbar.item(0).button().accessibilityIdentifier()
+        let saveAID = try toolbar.item(1).button().accessibilityIdentifier()
+        #expect(cancelAID == detailCancelID)
+        #expect(saveAID == detailSaveID)
+        #else
+        Issue.record("ViewInspector required for Issue #221 toolbar identifier tests")
+        #endif
     }
 }
