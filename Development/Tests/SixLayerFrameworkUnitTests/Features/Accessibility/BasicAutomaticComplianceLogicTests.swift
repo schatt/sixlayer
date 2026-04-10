@@ -507,8 +507,50 @@ open class BasicAutomaticComplianceLogicTests: BaseTestClass {
                "Modifier should store identifierName parameter. Expected: '\(identifierName)', Got: '\(modifier.identifierName ?? "nil")'")
     }
 
-    /// Issue #221: `SLFAutomaticComplianceLayoutGroup` marks layout stacks so wrapper identifiers are not generated.
-    @Test @MainActor func testSLFLayoutGroup_elementType_isStableContract() {
-        #expect(SLFAutomaticComplianceLayoutGroup.elementType == "SLFLayoutGroup")
+    // MARK: - Anonymous wrapper suppression (#222)
+
+    @Test @MainActor func testAnonymousAutomaticCompliance_suppressesWhenFullyAnonymous() {
+        #expect(
+            slfSuppressAnonymousAutomaticComplianceWrapperIdentifier(
+                identifierName: nil,
+                identifierElementType: nil,
+                identifierLabel: nil,
+                accessibilityLabel: nil,
+                accessibilityHint: nil,
+                accessibilityTraits: nil,
+                accessibilityValue: nil,
+                accessibilitySortPriority: nil
+            )
+        )
+    }
+
+    @Test @MainActor func testAnonymousAutomaticCompliance_doesNotSuppressWhenElementTypeProvided() {
+        #expect(
+            !slfSuppressAnonymousAutomaticComplianceWrapperIdentifier(
+                identifierName: nil,
+                identifierElementType: "Button",
+                identifierLabel: nil,
+                accessibilityLabel: nil,
+                accessibilityHint: nil,
+                accessibilityTraits: nil,
+                accessibilityValue: nil,
+                accessibilitySortPriority: nil
+            )
+        )
+    }
+
+    @Test @MainActor func testAnonymousAutomaticCompliance_doesNotSuppressWhenIdentifierNameProvided() {
+        #expect(
+            !slfSuppressAnonymousAutomaticComplianceWrapperIdentifier(
+                identifierName: "NamedRow",
+                identifierElementType: nil,
+                identifierLabel: nil,
+                accessibilityLabel: nil,
+                accessibilityHint: nil,
+                accessibilityTraits: nil,
+                accessibilityValue: nil,
+                accessibilitySortPriority: nil
+            )
+        )
     }
 }
