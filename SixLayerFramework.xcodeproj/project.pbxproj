@@ -5659,7 +5659,7 @@
 			path = API;
 			sourceTree = "<group>";
 		};
-		"TEMP_955F38ED-7F48-4B7A-88E3-464089C1ED34" /* Utilities */ = {
+		"TEMP_306430F4-C3CD-4717-BE5B-A2CB0EC1ABA2" /* Utilities */ = {
 			isa = PBXGroup;
 			children = (
 			);
@@ -6174,77 +6174,101 @@
 				LastUpgradeCheck = 2640;
 				TargetAttributes = {
 					00F2F339FB87EE78B96E537C = {
+						DevelopmentTeam = Y53G7YPJSZ;
 						ProvisioningStyle = Automatic;
 					};
 					0ADA93DEBBDDEFADE109B459 = {
+						DevelopmentTeam = Y53G7YPJSZ;
 						ProvisioningStyle = Automatic;
 					};
 					12DE7C62AF83961E28065CD1 = {
+						DevelopmentTeam = Y53G7YPJSZ;
 						ProvisioningStyle = Automatic;
 					};
 					137ACC122FFC347C79FD3EAC = {
+						DevelopmentTeam = Y53G7YPJSZ;
 						ProvisioningStyle = Automatic;
 					};
 					1DF0E8BA49092C22FD760132 = {
+						DevelopmentTeam = Y53G7YPJSZ;
 						ProvisioningStyle = Automatic;
 					};
 					257257DB7C1F4BC76621E0F2 = {
+						DevelopmentTeam = Y53G7YPJSZ;
 						ProvisioningStyle = Automatic;
 					};
 					2E103CCC86F203033642BFDC = {
+						DevelopmentTeam = Y53G7YPJSZ;
 						ProvisioningStyle = Automatic;
 					};
 					45DA6782648DC7699205940C = {
+						DevelopmentTeam = Y53G7YPJSZ;
 						ProvisioningStyle = Automatic;
 					};
 					6C9062455876D118D544087A = {
+						DevelopmentTeam = Y53G7YPJSZ;
 						ProvisioningStyle = Automatic;
 					};
 					70F3E0477C5FD3EF1FBC7352 = {
+						DevelopmentTeam = Y53G7YPJSZ;
 						ProvisioningStyle = Automatic;
 					};
 					7938C35CFF0CD91E1D085AF3 = {
+						DevelopmentTeam = Y53G7YPJSZ;
 						ProvisioningStyle = Automatic;
 					};
 					7A78E091DD776FDB4D585F97 = {
+						DevelopmentTeam = Y53G7YPJSZ;
 						ProvisioningStyle = Automatic;
 					};
 					8BE142B2785E0C64142DC201 = {
+						DevelopmentTeam = Y53G7YPJSZ;
 						ProvisioningStyle = Automatic;
 					};
 					9C1F797A0B1D774C13CD0C14 = {
+						DevelopmentTeam = Y53G7YPJSZ;
 						ProvisioningStyle = Automatic;
 						TestTargetID = 12DE7C62AF83961E28065CD1;
 					};
 					AB21586E5B6F5E26D37757AE = {
+						DevelopmentTeam = Y53G7YPJSZ;
 						ProvisioningStyle = Automatic;
 					};
 					B66C6368DD6DB3EFA18474C3 = {
+						DevelopmentTeam = Y53G7YPJSZ;
 						ProvisioningStyle = Automatic;
 					};
 					B6D28D39EB5B2B5FDA6466FB = {
+						DevelopmentTeam = Y53G7YPJSZ;
 						ProvisioningStyle = Automatic;
 					};
 					BC321487B78EB385BE711076 = {
+						DevelopmentTeam = Y53G7YPJSZ;
 						ProvisioningStyle = Automatic;
 						TestTargetID = 8BE142B2785E0C64142DC201;
 					};
 					D16D10F9C91D322A0A4959E7 = {
+						DevelopmentTeam = Y53G7YPJSZ;
 						ProvisioningStyle = Automatic;
 					};
 					D6C0DC22A61DCC79BE816615 = {
+						DevelopmentTeam = Y53G7YPJSZ;
 						ProvisioningStyle = Automatic;
 					};
 					DADE4FB886D36D9D457B0F17 = {
+						DevelopmentTeam = Y53G7YPJSZ;
 						ProvisioningStyle = Automatic;
 					};
 					DB08E599D5D1C3B17A49EADA = {
+						DevelopmentTeam = Y53G7YPJSZ;
 						ProvisioningStyle = Automatic;
 					};
 					F649C5D34D47DF8A30F6477A = {
+						DevelopmentTeam = Y53G7YPJSZ;
 						ProvisioningStyle = Automatic;
 					};
 					FE2D3D438B9D5E433A37967D = {
+						DevelopmentTeam = Y53G7YPJSZ;
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -9607,8 +9631,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = Y53G7YPJSZ;
 				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -9909,8 +9935,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = Y53G7YPJSZ;
 				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -9999,9 +10027,13 @@
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
 				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = Y53G7YPJSZ;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -10347,9 +10379,11 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEAD_CODE_STRIPPING = YES;
+				DEVELOPMENT_TEAM = Y53G7YPJSZ;
 				ENABLE_TESTING_SEARCH_PATHS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -10554,9 +10588,13 @@
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
 				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = Y53G7YPJSZ;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -10606,9 +10644,11 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEAD_CODE_STRIPPING = YES;
+				DEVELOPMENT_TEAM = Y53G7YPJSZ;
 				ENABLE_TESTING_SEARCH_PATHS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
