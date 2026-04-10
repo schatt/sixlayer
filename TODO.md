@@ -14,6 +14,7 @@
 - [ ] **#193** L4 UITests: table-first scroll + nav identifier tap (Form/table); re-run SLF-iOS-UITests to confirm green
 - [x] **#197** (slice) Category A UI backfill: exactNamed, accessibilityLabel row, outer manual Group id + tests (commit/push; issue commented)
 - [x] **#197** (slice) Global-off audit (`-CategoryAGlobalAutoOff`), empty identifierName row + UI tests
+- [x] **#197** Checklist: canonical 83 resolutions filled; 662-row Consolidated dedup in VIEWINSPECTOR_CATEGORY_A_CONSOLIDATED_DEDUP.md + generator script (close #197 on branch when ready)
 - [x] Fix `ModalContainerTests.swift` missing closing brace (build error)
 - [x] Fix Swift 6 actor-isolation errors in `DynamicFormTests.swift`
 - [x] Fix Swift 6 actor-isolation errors in `LabeledContentDisplayFieldTests.swift`
