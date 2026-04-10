@@ -129,8 +129,8 @@ public extension View {
         VStack(alignment: alignment, spacing: spacing) {
             content()
         }
-        .automaticCompliance(identifierElementType: SLFAutomaticComplianceLayoutGroup.elementType)
-        // CRITICAL: Use SLFLayoutGroup so HIG applies without a wrapper accessibilityIdentifier (#221).
+        .automaticCompliance()
+        // CRITICAL: Anonymous automatic compliance applies HIG without a wrapper accessibilityIdentifier (#222).
     }
     
     /// Platform-specific HStack container with consistent styling and automatic accessibility
@@ -160,7 +160,7 @@ public extension View {
         HStack(alignment: alignment, spacing: spacing) {
             content()
         }
-        .automaticCompliance(identifierElementType: SLFAutomaticComplianceLayoutGroup.elementType)
+        .automaticCompliance()
     }
     
     /// Platform-specific ZStack container with consistent styling and automatic accessibility
@@ -187,7 +187,7 @@ public extension View {
         ZStack(alignment: alignment) {
             content()
         }
-        .automaticCompliance(identifierElementType: SLFAutomaticComplianceLayoutGroup.elementType)
+        .automaticCompliance()
     }
     
     /// Platform-specific LazyVStack container with consistent styling
@@ -218,7 +218,7 @@ public extension View {
         LazyVStack(alignment: alignment, spacing: spacing, pinnedViews: pinnedViews) {
             content()
         }
-        .automaticCompliance(identifierElementType: SLFAutomaticComplianceLayoutGroup.elementType)
+        .automaticCompliance()
     }
     
     /// Platform-specific LazyHStack container with consistent styling
@@ -249,7 +249,7 @@ public extension View {
         LazyHStack(alignment: alignment, spacing: spacing, pinnedViews: pinnedViews) {
             content()
         }
-        .automaticCompliance(identifierElementType: SLFAutomaticComplianceLayoutGroup.elementType)
+        .automaticCompliance()
     }
     
     /// Platform-specific ScrollView container with consistent styling
