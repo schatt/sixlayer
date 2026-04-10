@@ -17,6 +17,7 @@ TDD. DTRT. DRY. Epistemology
 ## **TDD (Test-Driven Development)**
 - **MANDATORY**: Write tests BEFORE implementing features
 - **MANDATORY**: Follow Red-Green-Refactor cycle
+- **MANDATORY**: **TDD is not complete until the refactor step has been run** (deliberate refactor pass, then tests green again). Green-only is incomplete TDD.
 - **MANDATORY**: Red phase ends when tests COMPILE (and fail) - stubs may be required
 - **MANDATORY**: Green phase begins when tests compile (and fail)
 - **MANDATORY**: No feature implementation without tests first
