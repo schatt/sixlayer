@@ -30,6 +30,10 @@ Patch release following **v7.5.9**. Cross-platform correctness and test-harness 
 - **`TestSetupUtilities.hostRootPlatformView` (AppKit)**: Hosts SwiftUI in an `NSWindow`, orders front, drains the run loop, retains controller and window, and rebinds `AccessibilityIdentifierConfig` task-local during host—mirroring the UIKit path so `automaticCompliance` and platform a11y IDs are observable in unit tests.
 - **`findAllAccessibilityIdentifiersFromPlatformView` (AppKit)**: Traverses `accessibilityChildren()` and reads `NSAccessibilityElement.accessibilityIdentifier()` where present.
 
+### **Accessibility: container compliance vs nested manual IDs (Resolves Issue #217)**
+
+- **`BasicAutomaticComplianceModifier` / `OptionalAccessibilityContainModifier`**: Container-style `automaticCompliance` only applies `accessibilityElement(children: .contain)` when needed so XCTest can still see nested manual identifiers under container automatic compliance (Category A audit #197). See [Issue #217](https://github.com/schatt/6layer/issues/217).
+
 ### **Miscellaneous test fixes**
 
 - **`PlatformManagedSettingsTopLevelStateTests`**: Use `let` for bindings where the compiler indicated no `var` mutation.
