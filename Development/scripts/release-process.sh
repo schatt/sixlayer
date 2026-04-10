@@ -960,15 +960,24 @@ else
     # Tags use v$VERSION (e.g., v7.0.0) format
     echo "📋 Current branch: $CURRENT_BRANCH"
     echo "📋 This will:"
-    echo "   1. Switch to main branch"
-    echo "   2. Merge $CURRENT_BRANCH into main"
-    echo "   3. Create and push tag v$VERSION (tags use v$VERSION format)"
-    echo "   4. Push to all remotes"
-    echo "   5. Create GitHub Release from Development/RELEASE_v$VERSION.md (if gh is installed and authenticated)"
+    echo "   1. Push $CURRENT_BRANCH to all remotes"
+    echo "   2. Switch to main branch"
+    echo "   3. Merge $CURRENT_BRANCH into main"
+    echo "   4. Create and push tag v$VERSION (tags use v$VERSION format)"
+    echo "   5. Push main to all remotes"
+    echo "   6. Create GitHub Release from Development/RELEASE_v$VERSION.md (if gh is installed and authenticated)"
     echo ""
     read -p "🚀 Proceed with merge and release? (y/N): " -n 1 -r
     echo
     if [[ $REPLY =~ ^[Yy]$ ]]; then
+        # Publish release branch first so remotes match what we merge into main
+        echo "📤 Pushing branch $CURRENT_BRANCH to all remotes..."
+        if ! git push all "$CURRENT_BRANCH"; then
+            echo "❌ Failed to push $CURRENT_BRANCH. Fix the error and run the release script again."
+            exit 1
+        fi
+        echo "✅ Branch $CURRENT_BRANCH pushed to all remotes"
+
         # Switch to main
         echo "🔄 Switching to main branch..."
         git checkout main
@@ -1007,8 +1016,8 @@ else
         echo "📤 Pushing tag to all remotes..."
         git push all --tags
         
-        # Push commits to all remotes
-        echo "📤 Pushing commits to all remotes..."
+        # Push main to all remotes
+        echo "📤 Pushing main to all remotes..."
         git push all main
 
         create_github_release_for_version "$VERSION"
@@ -1050,12 +1059,13 @@ else
         echo "🚀 Ready to merge and create release tag v$VERSION"
         echo ""
         echo "Manual steps:"
-        echo "1. git checkout main"
-        echo "2. git merge $CURRENT_BRANCH --no-ff -m \"Merge $CURRENT_BRANCH for release v$VERSION\""
-        echo "3. git tag -a v$VERSION -m \"Release v$VERSION\"  # Tags use v$VERSION format"
-        echo "4. git push all --tags"
-        echo "5. git push all main"
-        echo "6. gh release create v$VERSION --title \"SixLayer Framework v$VERSION\" --notes-file Development/RELEASE_v$VERSION.md"
+        echo "1. git push all $CURRENT_BRANCH"
+        echo "2. git checkout main"
+        echo "3. git merge $CURRENT_BRANCH --no-ff -m \"Merge $CURRENT_BRANCH for release v$VERSION\""
+        echo "4. git tag -a v$VERSION -m \"Release v$VERSION\"  # Tags use v$VERSION format"
+        echo "5. git push all --tags"
+        echo "6. git push all main"
+        echo "7. gh release create v$VERSION --title \"SixLayer Framework v$VERSION\" --notes-file Development/RELEASE_v$VERSION.md"
     fi
 fi
 
