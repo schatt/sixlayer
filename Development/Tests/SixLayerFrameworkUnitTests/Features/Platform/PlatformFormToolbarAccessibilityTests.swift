@@ -32,7 +32,7 @@ struct PlatformFormToolbarAccessibilityTests {
                 selectButtonAccessibilityIdentifier: selectID
             )
 
-        let toolbar = try AnyView(view).inspect().toolbar()
+        let toolbar = try view.inspect().toolbar()
 
         let cancelAID = try toolbar.item(0).button().accessibilityIdentifier()
         #expect(cancelAID == cancelID)
@@ -67,7 +67,7 @@ struct PlatformFormToolbarAccessibilityTests {
                 selectButtonAccessibilityIdentifier: nil
             )
 
-        let toolbar = try AnyView(view).inspect().toolbar()
+        let toolbar = try view.inspect().toolbar()
         let cancelAID = try toolbar.item(0).button().accessibilityIdentifier()
         #expect(cancelAID.isEmpty)
 
@@ -99,7 +99,7 @@ struct PlatformFormToolbarAccessibilityTests {
                 cancelButtonAccessibilityIdentifier: detailCancelID
             )
 
-        let toolbar = try AnyView(view).inspect().toolbar()
+        let toolbar = try view.inspect().toolbar()
         let cancelAID = try toolbar.item(0).button().accessibilityIdentifier()
         let saveAID = try toolbar.item(1).button().accessibilityIdentifier()
         #expect(cancelAID == detailCancelID)
