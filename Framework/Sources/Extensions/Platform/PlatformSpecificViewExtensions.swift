@@ -378,39 +378,34 @@ public extension View {
         #if os(iOS)
         return self.toolbar {
             ToolbarItem(placement: .cancellationAction) {
-                Button(cancelButtonTitle) {
-                    onCancel()
+                Button(action: onCancel) {
+                    slfToolbarTitleText(cancelButtonTitle, accessibilityIdentifier: cancelButtonAccessibilityIdentifier)
                 }
-                .slfOptionalAccessibilityIdentifier(cancelButtonAccessibilityIdentifier)
             }
             ToolbarItem(placement: .confirmationAction) {
-                Button(saveButtonTitle) {
-                    onSave()
+                Button(action: onSave) {
+                    slfToolbarTitleText(saveButtonTitle, accessibilityIdentifier: saveButtonAccessibilityIdentifier)
                 }
-                .slfOptionalAccessibilityIdentifier(saveButtonAccessibilityIdentifier)
             }
         }
         #elseif os(macOS)
         return self.toolbar {
             ToolbarItem(placement: .cancellationAction) {
-                Button(cancelButtonTitle) {
-                    onCancel()
+                Button(action: onCancel) {
+                    slfToolbarTitleText(cancelButtonTitle, accessibilityIdentifier: cancelButtonAccessibilityIdentifier)
                 }
-                .slfOptionalAccessibilityIdentifier(cancelButtonAccessibilityIdentifier)
             }
             ToolbarItem(placement: .primaryAction) {
                 platformHStackContainer(spacing: 12) {
-                    Button("Select") {
-                        onSave()
+                    Button(action: onSave) {
+                        slfToolbarTitleText("Select", accessibilityIdentifier: selectButtonAccessibilityIdentifier)
                     }
                     .buttonStyle(.borderedProminent)
-                    .slfOptionalAccessibilityIdentifier(selectButtonAccessibilityIdentifier)
 
-                    Button(saveButtonTitle) {
-                        onSave()
+                    Button(action: onSave) {
+                        slfToolbarTitleText(saveButtonTitle, accessibilityIdentifier: saveButtonAccessibilityIdentifier)
                     }
                     .buttonStyle(.bordered)
-                    .slfOptionalAccessibilityIdentifier(saveButtonAccessibilityIdentifier)
                 }
             }
         }
@@ -439,32 +434,28 @@ public extension View {
         #if os(iOS)
         return self.toolbar {
             ToolbarItem(placement: .cancellationAction) {
-                Button("Cancel") {
-                    onCancel()
+                Button(action: onCancel) {
+                    slfToolbarTitleText("Cancel", accessibilityIdentifier: cancelButtonAccessibilityIdentifier)
                 }
-                .slfOptionalAccessibilityIdentifier(cancelButtonAccessibilityIdentifier)
             }
             ToolbarItem(placement: .confirmationAction) {
-                Button(saveButtonTitle) {
-                    onSave()
+                Button(action: onSave) {
+                    slfToolbarTitleText(saveButtonTitle, accessibilityIdentifier: saveButtonAccessibilityIdentifier)
                 }
-                .slfOptionalAccessibilityIdentifier(saveButtonAccessibilityIdentifier)
             }
         }
         #elseif os(macOS)
         return self.toolbar {
             ToolbarItem(placement: .cancellationAction) {
-                Button("Cancel") {
-                    onCancel()
+                Button(action: onCancel) {
+                    slfToolbarTitleText("Cancel", accessibilityIdentifier: cancelButtonAccessibilityIdentifier)
                 }
-                .slfOptionalAccessibilityIdentifier(cancelButtonAccessibilityIdentifier)
             }
             ToolbarItem(placement: .primaryAction) {
-                Button(saveButtonTitle) {
-                    onSave()
+                Button(action: onSave) {
+                    slfToolbarTitleText(saveButtonTitle, accessibilityIdentifier: saveButtonAccessibilityIdentifier)
                 }
                 .buttonStyle(.borderedProminent)
-                .slfOptionalAccessibilityIdentifier(saveButtonAccessibilityIdentifier)
             }
         }
         #else
@@ -2605,15 +2596,13 @@ public extension View {
     }
 }
 
-/// Applies `.accessibilityIdentifier` when `identifier` is non-nil; used by platform toolbar helpers (Issue #221).
-fileprivate extension View {
-    @ViewBuilder
-    func slfOptionalAccessibilityIdentifier(_ identifier: String?) -> some View {
-        if let identifier {
-            self.accessibilityIdentifier(identifier)
-        } else {
-            self
-        }
+/// Toolbar button label with optional `Text` accessibility identifier (Issue #221; ViewInspector sees label modifiers reliably).
+@ViewBuilder
+fileprivate func slfToolbarTitleText(_ title: String, accessibilityIdentifier: String?) -> some View {
+    if let accessibilityIdentifier {
+        Text(title).accessibilityIdentifier(accessibilityIdentifier)
+    } else {
+        Text(title)
     }
 }
 
