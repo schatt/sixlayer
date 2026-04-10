@@ -2,6 +2,10 @@ import Testing
 import SwiftUI
 @testable import SixLayerFramework
 
+#if canImport(ViewInspector)
+import ViewInspector
+#endif
+
 /// Tests for standalone drop-in replacement functions
 /// These functions provide SwiftUI API-compatible alternatives with automatic accessibility compliance
 @Suite("Platform Standalone Drop-In Functions")
@@ -284,6 +288,24 @@ struct PlatformStandaloneDropInTests {
         _ = form
         _ = editor
         #expect(true)
+    }
+
+    // MARK: - platformFormContainer ownership (Issue #218)
+
+    /// `platformFormContainer` must host a `Form` on every platform (no nested `Form` in app code).
+    @Test @MainActor
+    func testPlatformFormContainer_OwnsForm() {
+        #if canImport(ViewInspector)
+        let view = EmptyView().platformFormContainer {
+            Text("FormOwnedMarker")
+        }
+        let hasForm = withInspectedView(AnyView(view)) { inspected in
+            inspected.findAll(ViewType.Form.self).isEmpty ? nil : true
+        }
+        #expect(hasForm == true, "platformFormContainer should wrap content in Form")
+        #else
+        #expect(true)
+        #endif
     }
     
     // MARK: - Label Parameter Tests (Issue #155)

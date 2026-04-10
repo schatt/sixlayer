@@ -1038,6 +1038,13 @@ else
             echo "✅ Branch $CURRENT_BRANCH deleted from all remotes"
         else
             echo "💡 Branch $CURRENT_BRANCH kept for reference"
+            if git show-ref --verify --quiet refs/heads/"$CURRENT_BRANCH"; then
+                echo "🔄 Switching back to $CURRENT_BRANCH..."
+                git checkout "$CURRENT_BRANCH"
+                echo "✅ Now on branch $CURRENT_BRANCH"
+            else
+                echo "⚠️  Local branch $CURRENT_BRANCH not found; staying on main"
+            fi
         fi
     else
         echo "🚀 Ready to merge and create release tag v$VERSION"

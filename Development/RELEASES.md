@@ -1,12 +1,21 @@
 # 🚀 Six-Layer Framework Release History
 
-## 📍 **Current Release: v7.5.10** 🎯
+## 📍 **Current Release: v7.5.11** 🎯
 
 **Release Date**: April 2026
 **Status**: In preparation
-**Previous Release**: v7.5.9 - Patch release
-**Note**: Patch release. Layer 4 macOS toolbar placement; CLAuthorizationStatus platform mapping; macOS a11y test hosting and traversal fixes.
+**Previous Release**: v7.5.10 - Patch release
+**Note**: Patch release. `platformFormContainer` owns SwiftUI `Form` on all platforms (Issue #218); removes need for macOS-only inner `Form` that nested on iOS.
 **Next Release**: TBD
+
+---
+
+## 🎯 **v7.5.11 - platformFormContainer owns Form on all platforms** (April 2026)
+
+### **What's in v7.5.11:**
+- Patch release. See [RELEASE_v7.5.11.md](RELEASE_v7.5.11.md) for details.
+
+**See [RELEASE_v7.5.11.md](RELEASE_v7.5.11.md) for complete release notes.**
 
 ---
 
