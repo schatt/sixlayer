@@ -48,7 +48,7 @@ struct PlatformToolbarIssue221TestView: View {
     }
 }
 
-private struct PlatformToolbarIssue221FormHostView: View {
+struct PlatformToolbarIssue221FormHostView: View {
     var body: some View {
         Text("Form toolbar host")
             .accessibilityIdentifier("uitest-221-form-host-content")
@@ -65,7 +65,7 @@ private struct PlatformToolbarIssue221FormHostView: View {
     }
 }
 
-private struct PlatformToolbarIssue221DetailHostView: View {
+struct PlatformToolbarIssue221DetailHostView: View {
     var body: some View {
         Text("Detail toolbar host")
             .accessibilityIdentifier("uitest-221-detail-host-content")
