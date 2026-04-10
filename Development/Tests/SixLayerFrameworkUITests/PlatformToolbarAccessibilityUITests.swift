@@ -5,6 +5,9 @@
 //  Issue #221: optional accessibilityIdentifier on platformFormToolbar / platformDetailToolbar.
 //  XCUITest is the authoritative layer — ViewInspector does not reliably expose these toolbar IDs on macOS.
 //
+//  Form and detail use separate launch arguments so macOS does not depend on popping NavigationLink
+//  (back affordance is inconsistent under XCUI).
+//
 
 import XCTest
 
@@ -24,17 +27,33 @@ final class PlatformToolbarAccessibilityUITests: XCTestCase {
         continueAfterFailure = false
         addDefaultUIInterruptionMonitor()
 
+        let testName = name
         nonisolated(unsafe) let instance = self
         MainActor.assumeIsolated {
             let localApp = XCUIApplication()
             localApp.configureForFastTesting()
-            localApp.launchArguments.append("-OpenPlatformToolbarIssue221")
+            if testName.contains("testIssue221_platformFormToolbar") {
+                localApp.launchArguments.append("-OpenPlatformToolbarIssue221Form")
+            } else if testName.contains("testIssue221_platformDetailToolbar") {
+                localApp.launchArguments.append("-OpenPlatformToolbarIssue221Detail")
+            } else {
+                XCTFail("Add launch arg mapping for \(testName)")
+                return
+            }
             localApp.launch()
             instance.app = localApp
 
-            let hubVisible = localApp.staticTexts["Toolbar Issue 221"].waitForExistence(timeout: 5.0)
-                || localApp.navigationBars["Toolbar Issue 221"].waitForExistence(timeout: 2.0)
-            XCTAssertTrue(hubVisible, "Hub should appear (-OpenPlatformToolbarIssue221)")
+            if testName.contains("testIssue221_platformFormToolbar") {
+                XCTAssertTrue(
+                    localApp.staticTexts["Form toolbar host"].waitForExistence(timeout: 5.0),
+                    "Form host should appear (-OpenPlatformToolbarIssue221Form)"
+                )
+            } else {
+                XCTAssertTrue(
+                    localApp.staticTexts["Detail toolbar host"].waitForExistence(timeout: 5.0),
+                    "Detail host should appear (-OpenPlatformToolbarIssue221Detail)"
+                )
+            }
         }
     }
 
@@ -43,53 +62,6 @@ final class PlatformToolbarAccessibilityUITests: XCTestCase {
         MainActor.assumeIsolated {
             instance.app = nil
         }
-    }
-
-    /// Taps a hub row exposed as link, button, or static text (SwiftUI List variance across platforms).
-    private func tapHubRow(labeled title: String) {
-        let candidates: [XCUIElement] = [
-            app.links[title].firstMatch,
-            app.buttons[title].firstMatch,
-            app.staticTexts[title].firstMatch,
-        ]
-        for element in candidates {
-            if element.waitForExistence(timeout: 1.2), element.isHittable {
-                element.tap()
-                return
-            }
-        }
-        XCTFail("Could not tap hub row titled '\(title)'")
-    }
-
-    private func popDetailNavigation() {
-        #if os(macOS)
-        // macOS SwiftUI: back affordance varies (hub title, chevron, or keyboard only).
-        let candidates: [XCUIElement] = [
-            app.navigationBars.buttons["Toolbar Issue 221"].firstMatch,
-            app.navigationBars.buttons.firstMatch,
-            app.buttons["Toolbar Issue 221"].firstMatch,
-            app.links["Toolbar Issue 221"].firstMatch,
-        ]
-        for element in candidates {
-            if element.waitForExistence(timeout: 1.5), element.isHittable {
-                element.tap()
-                break
-            }
-        }
-        if !(app.staticTexts["Toolbar Issue 221"].waitForExistence(timeout: 0.8)
-            || app.navigationBars["Toolbar Issue 221"].waitForExistence(timeout: 0.8)) {
-            app.typeKey("[", modifierFlags: .command)
-        }
-        #else
-        let back = app.navigationBars.buttons.firstMatch
-        XCTAssertTrue(back.waitForExistence(timeout: 3.0), "Expected navigation bar back control")
-        back.tap()
-        #endif
-        XCTAssertTrue(
-            app.staticTexts["Toolbar Issue 221"].waitForExistence(timeout: 4.0)
-                || app.navigationBars["Toolbar Issue 221"].waitForExistence(timeout: 3.0),
-            "Expected return to hub after pop"
-        )
     }
 
     private func assertIdentifierQueryable(
@@ -111,28 +83,20 @@ final class PlatformToolbarAccessibilityUITests: XCTestCase {
         )
     }
 
-    func testIssue221_platformFormAndDetailToolbar_optionalIds_queryableViaXCUITest() throws {
+    func testIssue221_platformFormToolbar_optionalIds_queryableViaXCUITest() throws {
         #if os(iOS) || os(macOS)
-        tapHubRow(labeled: "Form toolbar")
-        XCTAssertTrue(
-            app.staticTexts["Form toolbar host"].waitForExistence(timeout: 5.0),
-            "Form host content should appear"
-        )
-
         assertIdentifierQueryable(IDs.formCancel)
         assertIdentifierQueryable(IDs.formSave)
         #if os(macOS)
         assertIdentifierQueryable(IDs.formSelect)
         #endif
+        #else
+        throw XCTSkip("Issue #221 toolbar UI tests require iOS or macOS TestApp")
+        #endif
+    }
 
-        popDetailNavigation()
-
-        tapHubRow(labeled: "Detail toolbar")
-        XCTAssertTrue(
-            app.staticTexts["Detail toolbar host"].waitForExistence(timeout: 5.0),
-            "Detail host content should appear"
-        )
-
+    func testIssue221_platformDetailToolbar_optionalIds_queryableViaXCUITest() throws {
+        #if os(iOS) || os(macOS)
         assertIdentifierQueryable(IDs.detailCancel)
         assertIdentifierQueryable(IDs.detailSave)
         #else
