@@ -131,6 +131,24 @@ struct AccessibilityIdentifierCategoryAUDITView: View {
                 }
                 // Same pattern as “Manual-only identifier” — `platformButton` + `id:` surfaces a stable substring.
                 platformButton(label: "CatA mid opt-out label", id: "CatAMid_LocalOptOut_Static") { }
+
+                // `disableAutomaticAccessibilityIdentifiers()` suppresses basicAutomaticCompliance in subtree (#197).
+                sectionCaption("Mid-hierarchy: disableAutomatic + basicAutomaticCompliance")
+                platformVStack(alignment: .leading, spacing: 8) {
+                    platformText("CatA disable mid auto")
+                        .basicAutomaticCompliance(
+                            identifierName: "CatADisableMid_AutoPresent",
+                            identifierLabel: "CatA disable mid auto"
+                        )
+                    Group {
+                        platformText("CatA disable mid suppressed")
+                            .basicAutomaticCompliance(
+                                identifierName: "CatADisableMid_LocalAutoOff",
+                                identifierLabel: "CatA disable mid suppressed"
+                            )
+                    }
+                    .disableAutomaticAccessibilityIdentifiers()
+                }
             }
             .padding()
         }
