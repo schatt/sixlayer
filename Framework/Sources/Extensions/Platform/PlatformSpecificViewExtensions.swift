@@ -362,12 +362,18 @@ public extension View {
     ///   - onSave: Action to perform when save is tapped
     ///   - saveButtonTitle: Title for the save button (default: "Save")
     ///   - cancelButtonTitle: Title for the cancel button (default: "Cancel")
+    ///   - saveButtonAccessibilityIdentifier: Optional stable identifier for the titled save button (UI tests / automation)
+    ///   - cancelButtonAccessibilityIdentifier: Optional stable identifier for the cancel button
+    ///   - selectButtonAccessibilityIdentifier: Optional identifier for the macOS-only **Select** control (same `onSave` as the titled save button); ignored on iOS
     /// - Returns: A view with platform-specific toolbar
     func platformFormToolbar(
         onCancel: @escaping () -> Void,
         onSave: @escaping () -> Void,
         saveButtonTitle: String = "Save",
-        cancelButtonTitle: String = "Cancel"
+        cancelButtonTitle: String = "Cancel",
+        saveButtonAccessibilityIdentifier: String? = nil,
+        cancelButtonAccessibilityIdentifier: String? = nil,
+        selectButtonAccessibilityIdentifier: String? = nil
     ) -> some View {
         #if os(iOS)
         return self.toolbar {
@@ -375,11 +381,13 @@ public extension View {
                 Button(cancelButtonTitle) {
                     onCancel()
                 }
+                .slfOptionalAccessibilityIdentifier(cancelButtonAccessibilityIdentifier)
             }
             ToolbarItem(placement: .confirmationAction) {
                 Button(saveButtonTitle) {
                     onSave()
                 }
+                .slfOptionalAccessibilityIdentifier(saveButtonAccessibilityIdentifier)
             }
         }
         #elseif os(macOS)
@@ -388,6 +396,7 @@ public extension View {
                 Button(cancelButtonTitle) {
                     onCancel()
                 }
+                .slfOptionalAccessibilityIdentifier(cancelButtonAccessibilityIdentifier)
             }
             ToolbarItem(placement: .primaryAction) {
                 platformHStackContainer(spacing: 12) {
@@ -395,11 +404,13 @@ public extension View {
                         onSave()
                     }
                     .buttonStyle(.borderedProminent)
+                    .slfOptionalAccessibilityIdentifier(selectButtonAccessibilityIdentifier)
 
                     Button(saveButtonTitle) {
                         onSave()
                     }
                     .buttonStyle(.bordered)
+                    .slfOptionalAccessibilityIdentifier(saveButtonAccessibilityIdentifier)
                 }
             }
         }
@@ -415,11 +426,15 @@ public extension View {
     ///   - onCancel: Action to perform when cancel is tapped
     ///   - onSave: Action to perform when save is tapped
     ///   - saveButtonTitle: Title for the save button (default: "Save")
+    ///   - saveButtonAccessibilityIdentifier: Optional stable identifier for the save button
+    ///   - cancelButtonAccessibilityIdentifier: Optional stable identifier for the cancel button
     /// - Returns: A view with platform-specific toolbar
     func platformDetailToolbar(
         onCancel: @escaping () -> Void,
         onSave: @escaping () -> Void,
-        saveButtonTitle: String = "Save"
+        saveButtonTitle: String = "Save",
+        saveButtonAccessibilityIdentifier: String? = nil,
+        cancelButtonAccessibilityIdentifier: String? = nil
     ) -> some View {
         #if os(iOS)
         return self.toolbar {
@@ -427,11 +442,13 @@ public extension View {
                 Button("Cancel") {
                     onCancel()
                 }
+                .slfOptionalAccessibilityIdentifier(cancelButtonAccessibilityIdentifier)
             }
             ToolbarItem(placement: .confirmationAction) {
                 Button(saveButtonTitle) {
                     onSave()
                 }
+                .slfOptionalAccessibilityIdentifier(saveButtonAccessibilityIdentifier)
             }
         }
         #elseif os(macOS)
@@ -440,12 +457,14 @@ public extension View {
                 Button("Cancel") {
                     onCancel()
                 }
+                .slfOptionalAccessibilityIdentifier(cancelButtonAccessibilityIdentifier)
             }
             ToolbarItem(placement: .primaryAction) {
                 Button(saveButtonTitle) {
                     onSave()
                 }
                 .buttonStyle(.borderedProminent)
+                .slfOptionalAccessibilityIdentifier(saveButtonAccessibilityIdentifier)
             }
         }
         #else
@@ -2583,6 +2602,18 @@ public extension View {
         #else
         self
         #endif
+    }
+}
+
+/// Applies `.accessibilityIdentifier` when `identifier` is non-nil; used by platform toolbar helpers (Issue #221).
+fileprivate extension View {
+    @ViewBuilder
+    func slfOptionalAccessibilityIdentifier(_ identifier: String?) -> some View {
+        if let identifier {
+            self.accessibilityIdentifier(identifier)
+        } else {
+            self
+        }
     }
 }
 
