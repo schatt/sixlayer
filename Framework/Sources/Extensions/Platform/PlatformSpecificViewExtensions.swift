@@ -571,12 +571,15 @@ public extension View {
         #endif
     }
 
-    /// Platform-specific section container
-    /// Provides consistent section styling for form groups and content sections
+    /// Grouped inset block (padded `VStack` + background + corner radius).
     ///
-    /// - Parameter content: The section content to be contained
-    /// - Returns: A view with platform-specific section container
-    func platformSectionContainer<Content: View>(@ViewBuilder content: () -> Content) -> some View {
+    /// Use for **card-style** grouped chrome **outside** a SwiftUI `Form` row model. For content
+    /// inside `platformFormContainer`, use **`platformSectionContainer`** (including the no-header
+    /// overload), which is backed by `Section` for correct `Form` composition (Issue #220).
+    ///
+    /// - Parameter content: Views to lay out in the inset group.
+    /// - Returns: A platform-styled inset container.
+    func platformGroupedInsetContainer<Content: View>(@ViewBuilder content: () -> Content) -> some View {
         #if os(iOS)
         return VStack {
             content()
