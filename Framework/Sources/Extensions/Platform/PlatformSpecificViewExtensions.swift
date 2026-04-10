@@ -480,8 +480,7 @@ public extension View {
     /// }
     /// ```
     // Duplicate platformFormContainer removed to avoid ambiguity; see the later
-    // single-source-of-truth implementation that returns Form on iOS and a
-    // styled VStack on macOS.
+    // single-source-of-truth implementation that returns Form on iOS and macOS.
 
 
 
@@ -1707,16 +1706,22 @@ public extension View {
 
 
 
-    /// Platform-specific form container
-    /// Provides consistent form styling across platforms
+    /// Platform-specific form container that **owns** the SwiftUI `Form` on iOS and macOS.
     ///
-    /// - Parameter content: The form content
-    /// - Returns: A platform-specific form container
+    /// Do not wrap `content` in another `Form` on those platforms; use `Section` and fields inside
+    /// this container only. Other Apple platforms keep a padded vertical stack until aligned.
+    ///
+    /// - Parameter content: Form body (sections and controls), not an outer `Form`.
+    /// - Returns: A platform-appropriate form host.
     nonisolated func platformFormContainer<Content: View>(
         @ViewBuilder content: () -> Content
     ) -> some View {
         #if os(iOS)
         return Form(content: content)
+        #elseif os(macOS)
+        return Form(content: content)
+            .formStyle(.grouped)
+            .padding(PlatformSpacing.padding)
         #else
         return platformVStackContainer(spacing: PlatformSpacing.large) {
             content()
