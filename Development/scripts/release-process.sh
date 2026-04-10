@@ -289,14 +289,6 @@ echo "✅ macOS unit tests passed"
 # Run iOS unit tests on Simulator
 echo "🧪 Running iOS unit tests on Simulator (SLF-iOS-UnitTests)..."
 
-# Ensure an iOS Simulator is booted (non-fatal if already booted or missing)
-if command -v xcrun &> /dev/null; then
-    echo "📱 Ensuring iOS Simulator is booted (iPhone 17 Pro Max)..."
-    xcrun simctl boot "iPhone 17 Pro Max" 2>/dev/null || echo "ℹ️  Simulator already booted or not available; continuing..."
-else
-    echo "⚠️  xcrun not available; attempting to run iOS tests without explicit simulator boot"
-fi
-
 if ! xcodebuild test -project SixLayerFramework.xcodeproj -scheme SLF-iOS-UnitTests -quiet -destination "platform=iOS Simulator,name=iPhone 17 Pro Max"; then
     log_error "iOS unit tests failed! Cannot proceed with release."
     exit 1
