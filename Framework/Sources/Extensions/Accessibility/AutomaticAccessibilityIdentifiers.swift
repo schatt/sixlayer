@@ -339,6 +339,15 @@ internal func generateAccessibilityIdentifier(
     return identifier
 }
 
+// MARK: - Layout stack compliance (Issue #221)
+
+/// Pass to ``View/automaticCompliance(identifierElementType:)`` for layout-only stacks (e.g. ``platformHStackContainer``).
+/// ``BasicAutomaticComplianceModifier`` suppresses the generated **wrapper** accessibility identifier while still
+/// applying HIG modifiers, so nested views with explicit `accessibilityIdentifier` remain visible to XCUI on macOS.
+public enum SLFAutomaticComplianceLayoutGroup {
+    public static let elementType = "SLFLayoutGroup"
+}
+
 // MARK: - Automatic Accessibility Identifier Modifier
 
 /// Modifier that automatically generates accessibility identifiers for views
@@ -1269,22 +1278,34 @@ public struct BasicAutomaticComplianceModifier: ViewModifier {
             os_log("%{public}@", log: .default, type: .debug, detailedMsg)
             fflush(stdout)
         }
-        let identifier: String? = shouldApplyIdentifier ? generateAccessibilityIdentifier(
-            config: config,
-            identifierName: storedIdentifierName,  // Use stored value to ensure it's preserved
-            identifierElementType: self.identifierElementType,  // Also use stored values for consistency
-            identifierLabel: self.identifierLabel,
-            capturedScreenContext: capturedScreenContext,
-            capturedViewHierarchy: capturedViewHierarchy,
-            capturedEnableUITestIntegration: capturedEnableUITestIntegration,
-            capturedIncludeComponentNames: capturedIncludeComponentNames,
-            capturedIncludeElementTypes: capturedIncludeElementTypes,
-            capturedEnableDebugLogging: capturedEnableDebugLogging,
-            capturedNamespace: capturedNamespace,
-            capturedGlobalPrefix: capturedGlobalPrefix,
-            defaultElementType: "View",  // Explicitly match automaticCompliance() behavior
-            emptyFallback: "main.ui.element"  // Explicitly match automaticCompliance() behavior
-        ) : nil
+        // Layout-only stacks: HIG without a wrapper identifier so children with manual IDs stay queryable (#221).
+        let suppressWrapperAccessibilityIdentifier = shouldApplyIdentifier
+            && self.identifierElementType == SLFAutomaticComplianceLayoutGroup.elementType
+            && storedIdentifierName == nil
+            && self.identifierLabel == nil
+
+        let identifier: String? = if suppressWrapperAccessibilityIdentifier {
+            nil
+        } else if shouldApplyIdentifier {
+            generateAccessibilityIdentifier(
+                config: config,
+                identifierName: storedIdentifierName,  // Use stored value to ensure it's preserved
+                identifierElementType: self.identifierElementType,  // Also use stored values for consistency
+                identifierLabel: self.identifierLabel,
+                capturedScreenContext: capturedScreenContext,
+                capturedViewHierarchy: capturedViewHierarchy,
+                capturedEnableUITestIntegration: capturedEnableUITestIntegration,
+                capturedIncludeComponentNames: capturedIncludeComponentNames,
+                capturedIncludeElementTypes: capturedIncludeElementTypes,
+                capturedEnableDebugLogging: capturedEnableDebugLogging,
+                capturedNamespace: capturedNamespace,
+                capturedGlobalPrefix: capturedGlobalPrefix,
+                defaultElementType: "View",  // Explicitly match automaticCompliance() behavior
+                emptyFallback: "main.ui.element"  // Explicitly match automaticCompliance() behavior
+            )
+        } else {
+            nil
+        }
         
         // DEBUG: Log what identifier was generated
         if capturedEnableDebugLogging, let finalIdentifier = identifier {
