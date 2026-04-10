@@ -24,3 +24,4 @@ alwaysApply: true
 ## **EXCEPTION**
 
 - Only when the **user explicitly** asks for a **bounded excerpt** (e.g. “last 20 lines”) may the agent use truncation—and even then, prefer reading a saved full log file when debugging is the purpose.
+- **`tee` + `tail`:** Piping **`tee /path/to/full.log | tail -n N`** is acceptable: the **full** output is still written to **`full.log`** for diagnosis with **Read** / search; **`tail`** only bounds what appears on the terminal copy of the stream and does not replace the saved log.
