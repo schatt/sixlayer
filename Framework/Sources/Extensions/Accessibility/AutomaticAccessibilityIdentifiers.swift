@@ -339,15 +339,6 @@ internal func generateAccessibilityIdentifier(
     return identifier
 }
 
-// MARK: - Layout stack compliance (Issue #221)
-
-/// Pass to ``View/automaticCompliance(identifierElementType:)`` for layout-only stacks (e.g. ``platformHStackContainer``).
-/// ``BasicAutomaticComplianceModifier`` suppresses the generated **wrapper** accessibility identifier while still
-/// applying HIG modifiers, so nested views with explicit `accessibilityIdentifier` remain visible to XCUI on macOS.
-public enum SLFAutomaticComplianceLayoutGroup {
-    public static let elementType = "SLFLayoutGroup"
-}
-
 // MARK: - Automatic Accessibility Identifier Modifier
 
 /// Modifier that automatically generates accessibility identifiers for views
@@ -1180,6 +1171,34 @@ private struct OptionalAccessibilityContainModifier: ViewModifier {
 
 // MARK: - Basic Automatic Compliance (Issue #172)
 
+/// When true, ``BasicAutomaticComplianceModifier`` does not call ``generateAccessibilityIdentifier`` for the outer wrapper (#222).
+/// Fully anonymous modifiers (layout shells) skip wrapper IDs; controls pass type/label/name and still get IDs.
+internal func slfSuppressAnonymousAutomaticComplianceWrapperIdentifier(
+    identifierName: String?,
+    identifierElementType: String?,
+    identifierLabel: String?,
+    accessibilityLabel: String?,
+    accessibilityHint: String?,
+    accessibilityTraits: AccessibilityTraits?,
+    accessibilityValue: String?,
+    accessibilitySortPriority: Double?
+) -> Bool {
+    let hintNonEmpty = accessibilityHint.map { !$0.isEmpty } ?? false
+    let valueNonEmpty = accessibilityValue.map { !$0.isEmpty } ?? false
+    let traitsNonEmpty: Bool = {
+        guard let traits = accessibilityTraits else { return false }
+        return !traits.isEmpty
+    }()
+    return identifierName == nil
+        && identifierElementType == nil
+        && identifierLabel == nil
+        && accessibilityLabel == nil
+        && !hintNonEmpty
+        && !traitsNonEmpty
+        && !valueNonEmpty
+        && accessibilitySortPriority == nil
+}
+
 /// Basic automatic compliance modifier - applies only identifier and label, no HIG features
 /// TDD GREEN PHASE: Implementation complete
 public struct BasicAutomaticComplianceModifier: ViewModifier {
@@ -1253,12 +1272,13 @@ public struct BasicAutomaticComplianceModifier: ViewModifier {
             && capturedGlobalAutomaticAccessibilityIdentifiers
             && !envAutomaticAccessibilityLocallyDisabled
         
-        // Apply identifier whenever automatic IDs are enabled. When no identifierName
-        // is provided, generate a generic identifier using the default component name.
-        // This matches existing tests that expect .automaticCompliance() to generate
-        // identifiers even without an explicit name.
+        // Apply identifier when automatic IDs are enabled, except for **fully anonymous** modifiers:
+        // no name, type, label, or other a11y parameters. Those are structural/layout wrappers; stamping
+        // `SixLayer.main.ui`-style IDs on the outer `Group` conflicts with HIG-style practice and can block
+        // XCUI from seeing child `accessibilityIdentifier` values (#221, #222). Controls still pass
+        // `identifierElementType` / `identifierLabel` / `identifierName` and keep generated IDs.
         let shouldApplyIdentifier = shouldApply
-        
+
         // Generate identifier if needed
         // Call internal generateAccessibilityIdentifier directly (same as AutomaticComplianceModifier.generateIdentifier does)
         // DEBUG: Log only when debug logging is enabled
@@ -1278,13 +1298,20 @@ public struct BasicAutomaticComplianceModifier: ViewModifier {
             os_log("%{public}@", log: .default, type: .debug, detailedMsg)
             fflush(stdout)
         }
-        // Layout-only stacks: HIG without a wrapper identifier so children with manual IDs stay queryable (#221).
-        let suppressWrapperAccessibilityIdentifier = shouldApplyIdentifier
-            && self.identifierElementType == SLFAutomaticComplianceLayoutGroup.elementType
-            && storedIdentifierName == nil
-            && self.identifierLabel == nil
 
-        let identifier: String? = if suppressWrapperAccessibilityIdentifier {
+        let suppressAnonymousWrapperAccessibilityIdentifier = shouldApplyIdentifier
+            && slfSuppressAnonymousAutomaticComplianceWrapperIdentifier(
+                identifierName: storedIdentifierName,
+                identifierElementType: self.identifierElementType,
+                identifierLabel: self.identifierLabel,
+                accessibilityLabel: self.accessibilityLabel,
+                accessibilityHint: self.accessibilityHint,
+                accessibilityTraits: self.accessibilityTraits,
+                accessibilityValue: self.accessibilityValue,
+                accessibilitySortPriority: self.accessibilitySortPriority
+            )
+
+        let identifier: String? = if suppressAnonymousWrapperAccessibilityIdentifier {
             nil
         } else if shouldApplyIdentifier {
             generateAccessibilityIdentifier(
