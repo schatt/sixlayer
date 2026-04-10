@@ -399,6 +399,20 @@ public extension View {
         }
         .automaticCompliance()
     }
+
+    /// Platform-specific `Section` with no header/footer text.
+    ///
+    /// Use inside `platformFormContainer` / lists for row grouping. For a padded block with its
+    /// own grouped background (outside the `Form` section model), use `platformGroupedInsetContainer`.
+    @ViewBuilder
+    func platformSectionContainer<Content: View>(
+        @ViewBuilder content: () -> Content
+    ) -> some View {
+        Section {
+            content()
+        }
+        .automaticCompliance()
+    }
     
     /// Platform-specific List container with consistent styling
     /// iOS: Uses List with iOS-appropriate styling; macOS: Uses List with macOS-appropriate styling
@@ -579,6 +593,24 @@ func platformSectionContainer<Content: View>(
     @ViewBuilder content: () -> Content
 ) -> some View {
     EmptyView().platformSectionContainer(header: header, content: content)
+}
+
+/// Global function wrapper for no-header `platformSectionContainer` (SwiftUI `Section`)
+@MainActor
+@ViewBuilder
+func platformSectionContainer<Content: View>(
+    @ViewBuilder content: () -> Content
+) -> some View {
+    EmptyView().platformSectionContainer(content: content)
+}
+
+/// Global function wrapper for `platformGroupedInsetContainer`
+@MainActor
+@ViewBuilder
+func platformGroupedInsetContainer<Content: View>(
+    @ViewBuilder content: () -> Content
+) -> some View {
+    EmptyView().platformGroupedInsetContainer(content: content)
 }
 
 /// Global function wrapper for platformListContainer
