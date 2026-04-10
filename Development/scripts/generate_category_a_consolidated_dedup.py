@@ -57,9 +57,10 @@ def main() -> None:
         if name in mapping:
             res = f"Dedup:{mapping[name]}/{name}"
         else:
+            # Avoid raw `|` in table cells (breaks Markdown columns).
             res = (
                 "Excluded: ConsolidatedAccessibilityTests-only aggregate; "
-                "no matching canonical ViewInspector test name | Owner:@schatt"
+                "no matching canonical ViewInspector test name — Owner:@schatt"
             )
         lines.append(f"| `{name}` | {res} |")
 
