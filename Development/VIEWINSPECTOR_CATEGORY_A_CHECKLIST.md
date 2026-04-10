@@ -47,7 +47,7 @@ Source files under `Development/Tests/SixLayerFrameworkUnitTests/ViewInspectorTe
 | `testEmptyStringParameters` | `UI:AccessibilityIdentifierCategoryAUITests/testCategoryA_emptyIdentifierName_sanitizedLabelInIdentifier` |
 | `testSpecialCharactersInNames` | `UI:AccessibilityIdentifierCategoryAUITests/testCategoryA_specialCharsInLabel_hasIdentifier` |
 | `testVeryLongNames` | `UI:AccessibilityIdentifierCategoryAUITests/testCategoryA_longIdentifierName_hasStablePrefixInIdentifier` |
-| `testDisableEnableMidHierarchy` | `Excluded: local enable/disable mid-hierarchy; not reproduced on Category A XCUI audit — Owner:@schatt` |
+| `testDisableEnableMidHierarchy` | `UI:AccessibilityIdentifierCategoryAUITests/testCategoryA_disableAutomatic_localSubtree_skipsBasicAutomaticIdentifier` |
 | `testMultipleScreenContexts` | `Excluded: hosted stack / screen context; no Category A runtime row — Owner:@schatt` |
 | `testExactNamedBehavior` | Excluded: asserts ExactNamedModifier.testingGeneratedIdentifier only — Owner:@schatt |
 | `testExactNamedVsNamedDifference` | `Excluded: generator comparison only — Owner:@schatt` |
