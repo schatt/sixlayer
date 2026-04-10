@@ -152,7 +152,7 @@ open class PlatformFrameSafetyTests: BaseTestClass {
         #expect(maxSize.width == expectedSize.width, "Max width should match screen/window width")
         #expect(maxSize.height == expectedSize.height, "Max height should match screen/window height")
         
-        // Verify the view modifier renders successfully
+        // Verify the view modifier renders successfully (iOS uses max frame + topLeading alignment; see PlatformSpecificViewExtensions.platformFrame)
         let view = Text("Test")
             .platformFrame()
         let hostedView = hostRootPlatformView(view)
