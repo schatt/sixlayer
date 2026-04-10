@@ -399,7 +399,9 @@ public extension View {
                 .slfToolbarOptionalAccessibilityIdentifier(cancelButtonAccessibilityIdentifier)
             }
             ToolbarItem(placement: .primaryAction) {
-                platformHStackContainer(spacing: 12) {
+                // Plain `HStack`: `platformHStackContainer` applies `.automaticCompliance()` to the stack and
+                // can prevent child toolbar buttons’ explicit identifiers from surfacing in XCUI (Issue #221).
+                HStack(spacing: 12) {
                     Button(action: onSave) {
                         Text("Select")
                     }
