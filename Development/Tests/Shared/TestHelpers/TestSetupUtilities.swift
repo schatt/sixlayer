@@ -147,22 +147,47 @@ public enum TestSetupUtilities {
         
         return root
         #elseif canImport(AppKit)
-        let rootView: AnyView = {
-            if let cfg = injectedConfig {
-                return AnyView(view.environment(\.accessibilityIdentifierConfig, cfg))
+        // Mirror UIKit hosting: without a visible window + run loop, SwiftUI on macOS often never
+        // evaluates modifier bodies, so automaticCompliance / debug logs stay empty (Layer 4 a11y tests).
+        let hostAppKitSubtree: () -> NSView? = {
+            let rootView: AnyView = {
+                if let cfg = injectedConfig {
+                    return AnyView(view.environment(\.accessibilityIdentifierConfig, cfg))
+                }
+                return AnyView(view)
+            }()
+            let hosting = NSHostingController(rootView: rootView)
+            let frame = NSRect(x: 0, y: 0, width: 480, height: 640)
+            let window = NSWindow(
+                contentRect: frame,
+                styleMask: [.titled, .closable, .miniaturizable, .resizable],
+                backing: .buffered,
+                defer: false
+            )
+            window.contentViewController = hosting
+            window.setFrame(frame, display: false)
+            window.orderFrontRegardless()
+            guard let root = hosting.view else { return nil }
+            // Retain window + controller like UIKit path so layout and a11y stay alive for traversal.
+            HostingControllerStorage.store((controller: hosting, window: window), for: root)
+            RunLoop.current.run(until: Date().addingTimeInterval(0.12))
+            if forceLayout {
+                root.needsLayout = true
+                root.layoutSubtreeIfNeeded()
+                RunLoop.current.run(until: Date().addingTimeInterval(0.05))
             }
-            return AnyView(view)
-        }()
-        let hosting = NSHostingController(rootView: rootView)
-        // CRITICAL: Accessing hosting.view can hang on complex views in test environments.
-        let root = hosting.view
-        // CRITICAL: Store the hosting controller to prevent deallocation
-        HostingControllerStorage.store(hosting, for: root)
-        if forceLayout {
-            root.needsLayout = true
-            root.layoutSubtreeIfNeeded()
+            RunLoop.current.run(until: Date().addingTimeInterval(0.15))
+            root.setAccessibilityElement(!exposeContentAccessibility)
+            return root
         }
-        root.setAccessibilityElement(!exposeContentAccessibility)
+        let root: NSView?
+        if let cfg = injectedConfig {
+            root = AccessibilityIdentifierConfig.$taskLocalConfig.withValue(cfg) {
+                hostAppKitSubtree()
+            }
+        } else {
+            root = hostAppKitSubtree()
+        }
         return root
         #else
         return nil
