@@ -1739,12 +1739,20 @@ public extension View {
         @ViewBuilder content: @escaping () -> Content
     ) -> some View {
         #if os(iOS)
-        return Section(header: header(), footer: footer(), content: content)
+        return Section {
+            content()
+        } header: {
+            header()
+                .accessibilityAddTraits(.isHeader)
+        } footer: {
+            footer()
+        }
         #else
         return platformVStackContainer(alignment: .leading, spacing: PlatformSpacing.medium) {
             header()
                 .font(.headline)
                 .foregroundColor(.platformSecondaryLabel)
+                .accessibilityAddTraits(.isHeader)
             content()
             footer()
                 .font(.caption)
@@ -1766,12 +1774,18 @@ public extension View {
         @ViewBuilder content: @escaping () -> Content
     ) -> some View {
         #if os(iOS)
-        return Section(header: header(), content: content)
+        return Section {
+            content()
+        } header: {
+            header()
+                .accessibilityAddTraits(.isHeader)
+        }
         #else
         return platformVStackContainer(alignment: .leading, spacing: PlatformSpacing.medium) {
             header()
                 .font(.headline)
                 .foregroundColor(.platformSecondaryLabel)
+                .accessibilityAddTraits(.isHeader)
             content()
         }
         .padding(.vertical, PlatformSpacing.medium)

@@ -42,6 +42,37 @@ import SwiftUI
 /// **Note**: On iPhone, popovers are automatically converted to sheets by SwiftUI. The unified API
 /// handles this automatically, so you can use `platformPopover_L4()` on all devices and it will
 /// behave appropriately for each platform.
+///
+/// ## Nested Sheets (Sheet Presented From Another Sheet)
+///
+/// To prevent the inner sheet's dismissal from propagating up and dismissing the outer sheet:
+///
+/// 1. **Use separate state per sheet** – The outer sheet has its own `@State var showOuter`; the
+///    inner sheet (presented from content inside the outer sheet) has its own `@State var showInner`.
+///    Never bind the inner sheet to the outer sheet's binding.
+///
+/// 2. **Inner sheet's onDismiss must not affect the parent** – The `onDismiss` of the modifier
+///    that presents the *inner* sheet runs when the inner sheet is dismissed. In that closure, do
+///    only local cleanup (e.g. clear selection). Do **not** set the outer sheet's binding to
+///    `false` or call any dismiss that would close the parent.
+///
+/// 3. **Dismiss only the current sheet from inside** – In the inner sheet's content, use
+///    `@Environment(\.dismiss)` and call `dismiss()` once; that dismisses only the inner sheet.
+///    Avoid passing the parent's binding or dismiss action into the child.
+///
+/// Example:
+/// ```swift
+/// @State private var showParent = false
+/// @State private var showChild = false  // separate state for inner sheet
+///
+/// .sheet(isPresented: $showParent, onDismiss: { /* runs only when parent sheet dismisses */ }) {
+///     ParentContent(showChild: $showChild)
+/// }
+/// // ParentContent presents:
+/// .sheet(isPresented: $showChild, onDismiss: { /* only local cleanup */ }) {
+///     ChildContent()  // uses dismiss() to close only itself
+/// }
+/// ```
 public extension View {
     
     /// Unified popover presentation helper
@@ -109,7 +140,7 @@ public extension View {
     ///
     /// - Parameters:
     ///   - isPresented: Binding to control sheet presentation
-    ///   - onDismiss: Optional callback when sheet is dismissed
+    ///   - onDismiss: Optional callback when this sheet is dismissed. For nested sheets, do only local cleanup here so it does not propagate to the parent (see file-level "Nested Sheets" docs).
     ///   - detents: Presentation detents for iOS (default: [.large]). Ignored on macOS.
     ///   - dragIndicator: Whether to show drag indicator (iOS only, ignored on macOS)
     ///   - content: View builder for sheet content
@@ -149,7 +180,7 @@ public extension View {
     /// Unified sheet presentation with item-based binding
     /// - Parameters:
     ///   - item: Optional item binding for sheet presentation
-    ///   - onDismiss: Optional callback when sheet is dismissed
+    ///   - onDismiss: Optional callback when this sheet is dismissed. For nested sheets, do only local cleanup here so it does not propagate to the parent.
     ///   - detents: Presentation detents for iOS (default: [.large])
     ///   - dragIndicator: Whether to show drag indicator (iOS only)
     ///   - content: View builder for sheet content

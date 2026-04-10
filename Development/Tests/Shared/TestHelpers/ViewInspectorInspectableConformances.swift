@@ -42,4 +42,23 @@ extension PlatformMaintenanceLayer5: ViewInspector.Inspectable {}
 // MARK: - Layer 6 (performance)
 
 extension PlatformPerformanceLayer6: ViewInspector.Inspectable {}
+
+// MARK: - Card expansion components (direct inspection, avoid AnyView — Issue 178)
+
+extension ExpandableCardCollectionView: ViewInspector.Inspectable where Item: Identifiable {}
+extension ExpandableCardComponent: ViewInspector.Inspectable where Item: Identifiable {}
+extension CoverFlowCollectionView: ViewInspector.Inspectable where Item: Identifiable {}
+extension CoverFlowCardComponent: ViewInspector.Inspectable where Item: Identifiable {}
+extension GridCollectionView: ViewInspector.Inspectable where Item: Identifiable {}
+extension ListCollectionView: ViewInspector.Inspectable where Item: Identifiable {}
+extension MasonryCollectionView: ViewInspector.Inspectable where Item: Identifiable {}
+extension AdaptiveCollectionView: ViewInspector.Inspectable where Item: Identifiable {}
+extension SimpleCardComponent: ViewInspector.Inspectable where Item: Identifiable {}
+extension ListCardComponent: ViewInspector.Inspectable where Item: Identifiable {}
+extension MasonryCardComponent: ViewInspector.Inspectable where Item: Identifiable {}
+extension NativeExpandableCardView: ViewInspector.Inspectable where Item: Identifiable {}
+extension iOSExpandableCardView: ViewInspector.Inspectable where Item: Identifiable {}
+extension macOSExpandableCardView: ViewInspector.Inspectable where Item: Identifiable {}
+extension visionOSExpandableCardView: ViewInspector.Inspectable where Item: Identifiable {}
+extension PlatformAwareExpandableCardView: ViewInspector.Inspectable where Item: Identifiable {}
 #endif

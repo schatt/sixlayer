@@ -1,12 +1,21 @@
 # 🚀 Six-Layer Framework Release History
 
-## 📍 **Current Release: v7.5.9** 🎯
+## 📍 **Current Release: v7.5.10** 🎯
 
-**Release Date**: March 2026
+**Release Date**: April 2026
 **Status**: In preparation
-**Previous Release**: v7.5.8 - Patch release
-**Note**: Patch release. Advanced field drop concurrency (#196); accessibility test pattern glob (#192).
+**Previous Release**: v7.5.9 - Patch release
+**Note**: Patch release. Layer 4 macOS toolbar placement; CLAuthorizationStatus platform mapping; macOS a11y test hosting and traversal fixes.
 **Next Release**: TBD
+
+---
+
+## 🎯 **v7.5.10 - Cross-platform navigation, location mapping, macOS a11y test hosting** (April 2026)
+
+### **What's in v7.5.10:**
+- Patch release. See [RELEASE_v7.5.10.md](RELEASE_v7.5.10.md) for details.
+
+**See [RELEASE_v7.5.10.md](RELEASE_v7.5.10.md) for complete release notes.**
 
 ---
 

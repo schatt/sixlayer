@@ -43,14 +43,20 @@ simply restart it and it will resume from where it left off.
 """
 
 import argparse
+import concurrent.futures
 import json
 import os
 import sys
+import tempfile
 import time
 import shutil
+from contextlib import contextmanager
 from pathlib import Path
 from typing import Dict, Set, List, Optional, Tuple
 import re
+
+# Timeout for a single translation request (avoids hanging on throttled/stuck API)
+TRANSLATE_REQUEST_TIMEOUT_SECONDS = 30
 
 try:
     from deep_translator import GoogleTranslator, DeeplTranslator, MicrosoftTranslator, MyMemoryTranslator
@@ -102,14 +108,16 @@ class LocalizationTranslator:
         "sv": "Swedish",
     }
     
-    def __init__(self, base_dir: Path, provider: str = "google", dry_run: bool = False, 
-                 save_interval: int = 50, mark_as_translated: bool = False, create_backup: bool = False):
+    def __init__(self, base_dir: Path, provider: str = "google", dry_run: bool = False,
+                 save_interval: int = 50, mark_as_translated: bool = False, create_backup: bool = False,
+                 retry_needs_review: bool = False):
         self.base_dir = Path(base_dir)
         self.provider = provider
         self.dry_run = dry_run
         self.save_interval = save_interval  # Save every N translations
         self.mark_as_translated = mark_as_translated  # If True, mark translations as "translated" instead of "needs_review"
         self.create_backup = create_backup  # If True, create backups before saving
+        self.retry_needs_review = retry_needs_review  # If True, re-translate entries marked needs_review
         self.translator = None
         self.file_format = None  # 'xcstrings' or 'strings'
         self.source_language = "en"
@@ -255,46 +263,131 @@ class LocalizationTranslator:
         """Convert Xcode language code to translation API code."""
         return self.LANGUAGE_CODE_MAP.get(lang_code, lang_code.split("-")[0] if "-" in lang_code else lang_code)
     
+    @contextmanager
+    def _progress_tracker(self, total: int, unit: str = "str"):
+        """Context manager yielding a tick() callable for progress. Uses tqdm when available, else print every 10."""
+        if PROGRESS_AVAILABLE and total > 0:
+            pbar = tqdm(total=total, desc="Translating", unit=unit,
+                        bar_format='{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}]')
+            def tick():
+                pbar.update(1)
+                pbar.set_postfix(translated=self.stats["translated"], skipped=self.stats["skipped"], errors=self.stats["errors"])
+            try:
+                yield tick
+            finally:
+                pbar.close()
+        else:
+            if total > 0 and not PROGRESS_AVAILABLE:
+                print("Tip: Install 'tqdm' for progress bar: pip3 install tqdm\n")
+            processed = [0]
+            def tick():
+                processed[0] += 1
+                if processed[0] % 10 == 0:
+                    print(f"Progress: {processed[0]}/{total} ({processed[0] * 100 // total}%) - "
+                          f"Translated: {self.stats['translated']}, Errors: {self.stats['errors']}")
+            yield tick
+    
+    def _do_single_translate(self, text: str, target_code: str, source_code: str):
+        """Perform one API call (run in thread for timeout)."""
+        if self.provider == "google":
+            return GoogleTranslator(source=source_code, target=target_code).translate(text)
+        if self.provider == "deepl":
+            return DeeplTranslator(api_key=os.getenv("DEEPL_API_KEY"),
+                                   source=source_code, target=target_code).translate(text)
+        if self.provider == "microsoft":
+            return MicrosoftTranslator(api_key=os.getenv("MICROSOFT_TRANSLATOR_API_KEY"),
+                                      source=source_code, target=target_code).translate(text)
+        if self.provider == "mymemory":
+            return MyMemoryTranslator(source=source_code, target=target_code).translate(text)
+        return None
+
+    def _is_untranslatable(self, text: str) -> bool:
+        """True if the string should not be sent to the API (symbols, punctuation-only, etc.)."""
+        s = (text or "").strip()
+        if not s:
+            return True
+        # Format specifiers / placeholders
+        if s in ["", ":", "%@", "%d", "%f", "%.2f", "%.3f", "%.4f"]:
+            return True
+        # Single character that isn't a letter (e.g. "*", ".", "-")
+        if len(s) == 1 and not s.isalpha():
+            return True
+        # Very short punctuation/symbol sequence (e.g. "...", "**")
+        if len(s) <= 3 and all(not c.isalnum() for c in s):
+            return True
+        return False
+
     def _translate_string(self, text: str, target_lang: str) -> Optional[str]:
-        """Translate a single string to target language."""
+        """Translate a single string to target language. Tries primary provider, then MyMemory as fallback.
+        For untranslatable strings (e.g. '*', symbols), returns the source string so the catalog is filled with the same value.
+        """
         if not text or not text.strip():
             return None
-        
-        # Skip strings that are just format specifiers or placeholders
-        if text.strip() in ["", ":", "%@", "%d", "%f", "%.2f", "%.3f", "%.4f"]:
-            return None
-        
+
+        # Untranslatable: use source as "translation" so the slot is filled (e.g. "*" in all languages)
+        if self._is_untranslatable(text):
+            return text
+
         target_code = self._get_translation_code(target_lang)
         source_code = self._get_translation_code(self.source_language)
-        
-        try:
-            if self.provider == "google":
-                translated = GoogleTranslator(source=source_code, target=target_code).translate(text)
-            elif self.provider == "deepl":
-                translated = DeeplTranslator(api_key=os.getenv("DEEPL_API_KEY"), 
+
+        def try_translate(provider: str) -> Optional[str]:
+            if provider == "google":
+                return GoogleTranslator(source=source_code, target=target_code).translate(text)
+            if provider == "deepl":
+                return DeeplTranslator(api_key=os.getenv("DEEPL_API_KEY"),
+                                       source=source_code, target=target_code).translate(text)
+            if provider == "microsoft":
+                return MicrosoftTranslator(api_key=os.getenv("MICROSOFT_TRANSLATOR_API_KEY"),
                                           source=source_code, target=target_code).translate(text)
-            elif self.provider == "microsoft":
-                translated = MicrosoftTranslator(api_key=os.getenv("MICROSOFT_TRANSLATOR_API_KEY"),
-                                               source=source_code, target=target_code).translate(text)
-            elif self.provider == "mymemory":
-                translated = MyMemoryTranslator(source=source_code, target=target_code).translate(text)
-            else:
-                return None
-            
-            # Add small delay to respect rate limits
-            time.sleep(0.1)
-            return translated
-        except Exception as e:
-            print(f"  Error translating '{text[:50]}...' to {target_lang}: {e}")
-            self.stats["errors"] += 1
+            if provider == "mymemory":
+                return MyMemoryTranslator(source=source_code, target=target_code).translate(text)
             return None
+
+        primary_error = None
+        try:
+            with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+                future = executor.submit(try_translate, self.provider)
+                translated = future.result(timeout=TRANSLATE_REQUEST_TIMEOUT_SECONDS)
+            if translated:
+                time.sleep(0.1)
+                return translated
+        except concurrent.futures.TimeoutError:
+            primary_error = f"Timeout ({TRANSLATE_REQUEST_TIMEOUT_SECONDS}s)"
+        except Exception as e:
+            primary_error = str(e)
+
+        # Fallback: try MyMemory when primary fails (e.g. "No translation was found" for short/format strings)
+        if self.provider != "mymemory":
+            try:
+                with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+                    future = executor.submit(try_translate, "mymemory")
+                    translated = future.result(timeout=TRANSLATE_REQUEST_TIMEOUT_SECONDS)
+                if translated:
+                    time.sleep(0.1)
+                    print(f"  Fallback (MyMemory) for '{text[:40]}...' -> {target_lang}")
+                    return translated
+            except Exception:
+                pass
+
+        print(f"  Error translating '{text[:50]}...' to {target_lang}: {primary_error}")
+        self.stats["errors"] += 1
+        return None
     
-    def _extract_source_string(self, entry: Dict) -> Optional[str]:
-        """Extract the source string from a .xcstrings catalog entry."""
+    def _extract_source_string(self, entry: Dict, key: Optional[str] = None) -> Optional[str]:
+        """Extract the source string from a .xcstrings catalog entry.
+        If the entry has no source localization (e.g. empty entry like "(Current)": {}),
+        use the catalog key as the source so it can be translated.
+        """
         if "localizations" in entry:
             source_loc = entry["localizations"].get(self.source_language)
             if source_loc and "stringUnit" in source_loc:
-                return source_loc["stringUnit"].get("value")
+                value = source_loc["stringUnit"].get("value")
+                if value is not None:
+                    return value
+        # Use key as source when entry has no source localization (e.g. "(Current)": {})
+        if key and key.strip():
+            return key
         return None
     
     def translate_xcstrings(self, target_languages: Optional[List[str]] = None):
@@ -307,73 +400,103 @@ class LocalizationTranslator:
             return
         
         strings = self.catalog.get("strings", {})
-        total = len([k for k, v in strings.items() if self._extract_source_string(v) is not None])
+        total = len([k for k, v in strings.items() if self._extract_source_string(v, k) is not None])
         self.stats["total_strings"] = total
-        
-        # Count how many translations already exist (resume capability)
+        num_languages = len(self.target_languages)
+        total_translations = total * num_languages
+
+        # Count how many translations already exist (skip needs_review if retry_needs_review) and incomplete strings
         existing_count = 0
+        incomplete_string_count = 0
         for key, entry in strings.items():
-            source_text = self._extract_source_string(entry)
+            source_text = self._extract_source_string(entry, key)
             if not source_text:
                 continue
+            string_complete = True
             for target_lang in self.target_languages:
                 if target_lang in entry.get("localizations", {}):
-                    existing = entry["localizations"][target_lang].get("stringUnit", {}).get("value")
+                    su = entry["localizations"][target_lang].get("stringUnit", {})
+                    existing = su.get("value")
                     if existing and existing.strip():
-                        existing_count += 1
-        
-        print(f"\nTranslating {total} strings to {len(self.target_languages)} languages...")
+                        if self.retry_needs_review and su.get("state") == "needs_review":
+                            string_complete = False
+                        else:
+                            existing_count += 1
+                    else:
+                        string_complete = False
+                else:
+                    string_complete = False
+            if not string_complete:
+                incomplete_string_count += 1
+
+        translations_remaining = total_translations - existing_count
+        # When there's work left, at least one string is incomplete (avoid "0 strings incomplete")
+        if translations_remaining > 0 and incomplete_string_count == 0:
+            incomplete_string_count = 1
+
+        print(f"\nTranslating {total} strings to {num_languages} languages ({total_translations} total translations)")
         print(f"Provider: {self.provider}")
         print(f"Auto-saving every {self.save_interval} translations")
         if existing_count > 0:
-            print(f"Resuming: {existing_count} translations already exist (will be skipped)")
+            print(f"Resuming: {incomplete_string_count} strings incomplete; {existing_count} translations already done, {translations_remaining} remaining")
+        else:
+            print(f"Strings incomplete: {incomplete_string_count}; translations to do: {translations_remaining}")
         if self.dry_run:
             print("DRY RUN MODE - No changes will be saved\n")
-        
-        processed = 0
-        for key, entry in strings.items():
-            source_text = self._extract_source_string(entry)
-            if not source_text:
-                continue
-            
-            processed += 1
-            if processed % 10 == 0:
-                print(f"Progress: {processed}/{total} ({processed*100//total}%)")
-            
-            # Initialize localizations if needed
-            if "localizations" not in entry:
-                entry["localizations"] = {}
-            
-            # Translate to each target language
-            for target_lang in sorted(self.target_languages):
-                # Skip if translation already exists (resume capability)
-                if target_lang in entry["localizations"]:
-                    existing = entry["localizations"][target_lang].get("stringUnit", {}).get("value")
-                    if existing and existing.strip():
+
+        with self._progress_tracker(translations_remaining, unit="trans") as tick:
+            for key, entry in strings.items():
+                source_text = self._extract_source_string(entry, key)
+                if not source_text:
+                    continue
+
+                # Initialize localizations if needed
+                if "localizations" not in entry:
+                    entry["localizations"] = {}
+
+                # Translate to each target language
+                for target_lang in sorted(self.target_languages):
+                    # Skip if translation already exists (resume). With --retry-needs-review, re-translate needs_review.
+                    if target_lang in entry["localizations"]:
+                        su = entry["localizations"][target_lang].get("stringUnit", {})
+                        existing = su.get("value")
+                        if existing and existing.strip():
+                            if self.retry_needs_review and su.get("state") == "needs_review":
+                                pass  # Re-translate
+                            else:
+                                self.stats["skipped"] += 1
+                                continue
+
+                    # Translate (this is the work we're tracking)
+                    translated = self._translate_string(source_text, target_lang)
+                    tick()
+                    # Use source as fallback when translation fails so the slot is filled (no missing translation)
+                    if not translated:
+                        translated = source_text
+                        translation_state = "needs_review"
+                    else:
+                        translation_state = "translated" if self.mark_as_translated else "needs_review"
+                    if translated:
+                        # Create localization entry
+                        if target_lang not in entry["localizations"]:
+                            entry["localizations"][target_lang] = {}
+
+                        entry["localizations"][target_lang]["stringUnit"] = {
+                            "state": translation_state,
+                            "value": translated
+                        }
+                        self.stats["translated"] += 1
+
+                        # Periodic save
+                        if not self.dry_run and (self.stats["translated"] - self.last_save_count) >= self.save_interval:
+                            self._save_xcstrings_periodic()
+                            self.last_save_count = self.stats["translated"]
+                    else:
                         self.stats["skipped"] += 1
-                        continue
-                
-                # Translate
-                translated = self._translate_string(source_text, target_lang)
-                if translated:
-                    # Create localization entry
-                    if target_lang not in entry["localizations"]:
-                        entry["localizations"][target_lang] = {}
-                    
-                    # Set state based on flag: "translated" if mark_as_translated is True, otherwise "needs_review"
-                    translation_state = "translated" if self.mark_as_translated else "needs_review"
-                    entry["localizations"][target_lang]["stringUnit"] = {
-                        "state": translation_state,
-                        "value": translated
-                    }
-                    self.stats["translated"] += 1
-                    
-                    # Periodic save
-                    if not self.dry_run and (self.stats["translated"] - self.last_save_count) >= self.save_interval:
-                        self._save_xcstrings_periodic()
-                        self.last_save_count = self.stats["translated"]
-                else:
-                    self.stats["skipped"] += 1
+
+        # Final save: ensure any remaining translations are saved (e.g. when < save_interval done)
+        if not self.dry_run and self.stats["translated"] > self.last_save_count:
+            self._save_xcstrings_periodic()
     
     def translate_strings(self, target_languages: Optional[List[str]] = None):
         """Translate missing keys in .strings files (gap-filling approach)."""
@@ -423,19 +546,10 @@ class LocalizationTranslator:
         else:
             print(f"Estimated time: ~{estimated_seconds:.0f} seconds\n")
         
-        # Use progress bar if available
-        if PROGRESS_AVAILABLE and total_missing > 0:
-            pbar = tqdm(total=total_missing, desc="Translating", unit="trans", 
-                       bar_format='{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}]')
-        else:
-            pbar = None
-            if total_missing > 0:
-                print("Tip: Install 'tqdm' for progress bar: pip3 install tqdm\n")
-        
         if self.dry_run:
             print("DRY RUN MODE - No changes will be saved\n")
         
-        try:
+        with self._progress_tracker(total_missing, unit="trans") as tick:
             for lang_code, key in work_items:
                 if lang_code not in self.LANGUAGE_NAMES:
                     continue
@@ -454,15 +568,13 @@ class LocalizationTranslator:
                 # Skip if already translated
                 if key in lang_strings:
                     self.stats["skipped"] += 1
-                    if pbar:
-                        pbar.update(1)
+                    tick()
                     continue
                 
                 english_value = en_strings.get(key, '')
                 if not english_value:
                     self.stats["skipped"] += 1
-                    if pbar:
-                        pbar.update(1)
+                    tick()
                     continue
                 
                 # Translate
@@ -477,22 +589,13 @@ class LocalizationTranslator:
                         self.last_save_count = self.stats["translated"]
                 else:
                     self.stats["skipped"] += 1
-                
-                if pbar:
-                    pbar.update(1)
-                    pbar.set_postfix({
-                        'translated': self.stats["translated"],
-                        'skipped': self.stats["skipped"],
-                        'errors': self.stats["errors"]
-                    })
-                elif not PROGRESS_AVAILABLE and (self.stats["translated"] + self.stats["skipped"]) % 50 == 0:
-                    # Fallback progress update every 50 translations
-                    progress = self.stats["translated"] + self.stats["skipped"]
-                    print(f"Progress: {progress}/{total_missing} ({progress*100//total_missing}%) - "
-                          f"Translated: {self.stats['translated']}, Errors: {self.stats['errors']}")
-        finally:
-            if pbar:
-                pbar.close()
+                tick()
+
+        # Final save: ensure any remaining translations are saved (e.g. when < save_interval done)
+        if not self.dry_run and self.stats["translated"] > self.last_save_count:
+            for lang_code in sorted(languages_to_process):
+                if lang_code in self.catalog:
+                    self._save_strings_periodic(lang_code, self.catalog[lang_code])
     
     def translate(self, target_languages: Optional[List[str]] = None):
         """Translate based on file format."""
@@ -515,14 +618,25 @@ class LocalizationTranslator:
         return value.replace('\\', '\\\\').replace('"', '\\"').replace('\n', '\\n')
     
     def _save_xcstrings_periodic(self):
-        """Periodically save .xcstrings file during translation (no backup, just save)."""
-        output = self.catalog_path
+        """Periodically save .xcstrings file during translation. Uses atomic write + flush/fsync so progress persists on interrupt."""
+        output = Path(self.catalog_path)
         try:
-            with open(output, 'w', encoding='utf-8') as f:
-                json.dump(self.catalog, f, ensure_ascii=False, indent=2)
-            print(f"  💾 Auto-saved progress ({self.stats['translated']} translations so far)")
+            fd, tmp = tempfile.mkstemp(dir=output.parent, prefix=".xcstrings.", suffix=".tmp")
+            try:
+                with os.fdopen(fd, "w", encoding="utf-8") as f:
+                    json.dump(self.catalog, f, ensure_ascii=False, indent=2)
+                    f.flush()
+                    os.fsync(f.fileno())
+                os.replace(tmp, output)
+                print(f"  💾 Auto-saved progress ({self.stats['translated']} translations so far)", flush=True)
+            except Exception:
+                try:
+                    os.unlink(tmp)
+                except OSError:
+                    pass
+                raise
         except Exception as e:
-            print(f"  ⚠️  Warning: Failed to auto-save: {e}")
+            print(f"  ⚠️  Warning: Failed to auto-save: {e}", flush=True)
     
     def save_xcstrings(self, output_path: Optional[Path] = None):
         """Save the translated .xcstrings catalog to file."""
@@ -544,10 +658,11 @@ class LocalizationTranslator:
         else:
             print(f"\nFinal save to: {output}")
         
-        # Save with proper formatting
+        # Save with proper formatting (flush+fsync so it persists)
         with open(output, 'w', encoding='utf-8') as f:
             json.dump(self.catalog, f, ensure_ascii=False, indent=2)
-        
+            f.flush()
+            os.fsync(f.fileno())
         print("Catalog saved successfully!")
     
     def _save_strings_periodic(self, lang_code: str, lang_strings: Dict[str, str]):
@@ -729,7 +844,13 @@ Examples:
         action="store_true",
         help="Create backups of localization files before saving (default: False)"
     )
-    
+
+    parser.add_argument(
+        "--retry-needs-review",
+        action="store_true",
+        help="Re-translate entries marked needs_review (default: False). Use to retry machine translations that were flagged for review."
+    )
+
     args = parser.parse_args()
     
     # Base directory is required
@@ -746,7 +867,8 @@ Examples:
             dry_run=args.dry_run,
             save_interval=args.save_interval,
             mark_as_translated=args.mark_as_translated,
-            create_backup=args.backup
+            create_backup=args.backup,
+            retry_needs_review=args.retry_needs_review
         )
         
         translator.translate(target_languages=args.languages)

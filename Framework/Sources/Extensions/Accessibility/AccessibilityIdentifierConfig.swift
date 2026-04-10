@@ -43,6 +43,14 @@ public final class AccessibilityIdentifierConfig: @unchecked Sendable {
         return taskLocalConfig
     }
     
+    /// Resolves config for identifier generation: optional injected environment (tests), then task-local, then shared.
+    /// Environment injection is required when SwiftUI evaluates bodies outside the test task (e.g. some Swift Testing / async cases where `@TaskLocal` is not visible); tests pass `\.accessibilityIdentifierConfig` from the hosting root.
+    @MainActor
+    internal static func resolvedForIdentifierGeneration(environment: AccessibilityIdentifierConfig?) -> AccessibilityIdentifierConfig {
+        if let environment = environment { return environment }
+        return currentTaskLocalConfig ?? shared
+    }
+    
     /// Shared instance for global configuration (PRODUCTION ONLY)
     /// Tests use task-local config automatically via @TaskLocal - never use .shared in tests
     /// 
@@ -62,6 +70,15 @@ public final class AccessibilityIdentifierConfig: @unchecked Sendable {
 
     /// Key prefix for all persisted values (allows tests to use isolated namespaces)
     private let keyPrefix: String
+    
+    /// When non-nil, `UserDefaults` suite name used for `removePersistentDomain` in tests (Swift `UserDefaults` has no `suiteName`).
+    private let suiteNameForIsolation: String?
+    
+    /// Same `UserDefaults` instance used by `saveToUserDefaults()` / `loadFromUserDefaults()` (for unit test assertions).
+    internal var testingBackingUserDefaults: UserDefaults { userDefaults }
+    
+    /// Suite name for `removePersistentDomain` when using a named `UserDefaults` suite in tests.
+    internal var testingSuiteNameForPersistentDomain: String? { suiteNameForIsolation }
     
     /// Whether automatic accessibility identifiers are enabled
     /// This is the global setting that controls automatic ID generation
@@ -136,6 +153,18 @@ public final class AccessibilityIdentifierConfig: @unchecked Sendable {
     ) {
         self.userDefaults = userDefaults
         self.keyPrefix = keyPrefix
+        self.suiteNameForIsolation = nil
+    }
+    
+    /// Used by test helpers that need `removePersistentDomain(forName:)` (Swift exposes no `UserDefaults.suiteName`).
+    internal init(
+        userDefaults: UserDefaults,
+        keyPrefix: String,
+        suiteNameForIsolation: String
+    ) {
+        self.userDefaults = userDefaults
+        self.keyPrefix = keyPrefix
+        self.suiteNameForIsolation = suiteNameForIsolation
     }
     
     /// Private initializer for singleton pattern (production global config)
@@ -144,6 +173,7 @@ public final class AccessibilityIdentifierConfig: @unchecked Sendable {
         // UserDefaults and the production key prefix.
         self.userDefaults = .standard
         self.keyPrefix = "SixLayer.Accessibility."
+        self.suiteNameForIsolation = nil
         
         // Check environment variable to auto-enable debug logging
         let envValue = ProcessInfo.processInfo.environment["SIXLAYER_DEBUG_A11Y"]
@@ -166,6 +196,8 @@ public final class AccessibilityIdentifierConfig: @unchecked Sendable {
         currentScreenContext = nil
         enableDebugLogging = false
         mode = .automatic
+        enableUITestIntegration = false
+        enableViewHierarchyTracking = false
         // CRITICAL: Clear accumulating data stores to prevent test state leakage
         debugLogEntries.removeAll()  // Clear debug log accumulation
     }

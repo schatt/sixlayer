@@ -1,0 +1,47 @@
+[core]
+	repositoryformatversion = 0
+	filemode = true
+	bare = false
+	logallrefupdates = true
+	ignorecase = true
+	precomposeunicode = true
+[remote "origin"]
+	url = ssh://git@github.com/schatt/sixlayer.git
+	fetch = +refs/heads/*:refs/remotes/origin/*
+	pushurl = ssh://git@github.com/schatt/sixlayer.git
+[branch "main"]
+	remote = schatt
+	vscode-merge-base = origin/main
+	vscode-merge-base = origin/main
+	merge = refs/heads/main
+[remote "codeberg"]
+	url = ssh://git@codeberg.org/schatt/6layer.git
+	fetch = +refs/heads/*:refs/remotes/codeberg/*
+[remote "gitlab"]
+	url = git@gitlab.com:schatt/6layer.git
+	fetch = +refs/heads/*:refs/remotes/gitlab/*
+[remote "all"]
+	url = schatt@one.schatt.com:/src/git/sixlayer.git
+	fetch = +refs/heads/*:refs/remotes/all/*
+	pushurl = git@github.com:schatt/sixlayer.git
+	pushurl = ssh://git@codeberg.org/schatt/6layer.git
+	pushurl = git@gitlab.com:schatt/6layer.git
+	pushurl = schatt@one.schatt.com:/src/git/sixlayer.git
+[push]
+	default = current
+[remote]
+	pushdefault = all
+[submodule ".build-clean/checkouts/ViewInspector"]
+	active = true
+	url = https://github.com/nalexn/ViewInspector.git
+[remote "schatt"]
+	url = schatt@one.schatt.com:/src/git/sixlayer.git
+	fetch = +refs/heads/*:refs/remotes/schatt/*
+[branch "b7.6.0"]
+	vscode-merge-base = schatt/main
+	remote = origin
+	merge = refs/heads/b7.6.0
+[branch "b7.5.7"]
+	vscode-merge-base = all/b7.5.6
+[branch "b7.5.8"]
+	vscode-merge-base = origin/main

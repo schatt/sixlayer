@@ -25,9 +25,9 @@ open class BasicAutomaticComplianceLogicTests: BaseTestClass {
     /// BUSINESS PURPOSE: Test that AccessibilityIdentifierGenerator generates correct identifiers
     /// TESTING SCOPE: Identifier generation logic with various configurations
     /// METHODOLOGY: Test generateID() directly with different inputs
-    @Test @MainActor func testIdentifierGenerator_BasicGeneration() async {
+    @Test @MainActor func testIdentifierGenerator_BasicGeneration() {
         initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             guard let config = testConfig else {
                 Issue.record("testConfig is nil")
                 return
@@ -57,9 +57,9 @@ open class BasicAutomaticComplianceLogicTests: BaseTestClass {
     /// BUSINESS PURPOSE: Test identifier generation without component names
     /// TESTING SCOPE: Config option to exclude component names
     /// METHODOLOGY: Test generateID() with includeComponentNames = false
-    @Test @MainActor func testIdentifierGenerator_WithoutComponentNames() async {
+    @Test @MainActor func testIdentifierGenerator_WithoutComponentNames() {
         initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             guard let config = testConfig else {
                 Issue.record("testConfig is nil")
                 return
@@ -86,9 +86,9 @@ open class BasicAutomaticComplianceLogicTests: BaseTestClass {
     /// BUSINESS PURPOSE: Test identifier generation without element types
     /// TESTING SCOPE: Config option to exclude element types
     /// METHODOLOGY: Test generateID() with includeElementTypes = false
-    @Test @MainActor func testIdentifierGenerator_WithoutElementTypes() async {
+    @Test @MainActor func testIdentifierGenerator_WithoutElementTypes() {
         initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             guard let config = testConfig else {
                 Issue.record("testConfig is nil")
                 return
@@ -115,9 +115,9 @@ open class BasicAutomaticComplianceLogicTests: BaseTestClass {
     /// BUSINESS PURPOSE: Test identifier generation with view hierarchy
     /// TESTING SCOPE: View hierarchy tracking in identifier generation
     /// METHODOLOGY: Test generateID() with view hierarchy context
-    @Test @MainActor func testIdentifierGenerator_WithViewHierarchy() async {
+    @Test @MainActor func testIdentifierGenerator_WithViewHierarchy() {
         initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             guard let config = testConfig else {
                 Issue.record("testConfig is nil")
                 return
@@ -144,9 +144,9 @@ open class BasicAutomaticComplianceLogicTests: BaseTestClass {
     /// BUSINESS PURPOSE: Test identifier generation with global prefix
     /// TESTING SCOPE: Global prefix in identifier generation
     /// METHODOLOGY: Test generateID() with global prefix set
-    @Test @MainActor func testIdentifierGenerator_WithGlobalPrefix() async {
+    @Test @MainActor func testIdentifierGenerator_WithGlobalPrefix() {
         initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             guard let config = testConfig else {
                 Issue.record("testConfig is nil")
                 return
@@ -385,9 +385,9 @@ open class BasicAutomaticComplianceLogicTests: BaseTestClass {
     /// BUSINESS PURPOSE: Test that config options are respected in identifier generation
     /// TESTING SCOPE: Config option enableAutoIDs affects generator behavior
     /// METHODOLOGY: Test that generator respects config settings
-    @Test @MainActor func testConfigRespect_EnableAutoIDs() async {
+    @Test @MainActor func testConfigRespect_EnableAutoIDs() {
         initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             guard let config = testConfig else {
                 Issue.record("testConfig is nil")
                 return
@@ -413,9 +413,9 @@ open class BasicAutomaticComplianceLogicTests: BaseTestClass {
     /// BUSINESS PURPOSE: Test that AccessibilityIdentifierGenerator detects collisions
     /// TESTING SCOPE: Collision detection logic
     /// METHODOLOGY: Test checkForCollision() method
-    @Test @MainActor func testCollisionDetection_DetectsDuplicates() async {
+    @Test @MainActor func testCollisionDetection_DetectsDuplicates() {
         initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             guard let config = testConfig else {
                 Issue.record("testConfig is nil")
                 return
@@ -439,9 +439,9 @@ open class BasicAutomaticComplianceLogicTests: BaseTestClass {
     /// BUSINESS PURPOSE: Test that collision detection doesn't false positive
     /// TESTING SCOPE: Collision detection with different identifiers
     /// METHODOLOGY: Test checkForCollision() with different identifier
-    @Test @MainActor func testCollisionDetection_NoFalsePositives() async {
+    @Test @MainActor func testCollisionDetection_NoFalsePositives() {
         initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             guard let config = testConfig else {
                 Issue.record("testConfig is nil")
                 return
@@ -468,7 +468,7 @@ open class BasicAutomaticComplianceLogicTests: BaseTestClass {
     /// TESTING SCOPE: Stub behavior verification - this test FAILS in Red phase
     /// METHODOLOGY: Test that the stub modifier doesn't use its parameters to generate identifiers
     /// The stub should use its parameters to generate identifiers, but it doesn't
-    @Test func testBasicAutomaticComplianceModifier_StubDoesNotApplyLogic() {
+    @Test @MainActor func testBasicAutomaticComplianceModifier_StubDoesNotApplyLogic() {
         // Given: A modifier with parameters that SHOULD be used to generate identifiers
         let modifier = BasicAutomaticComplianceModifier(
             identifierName: "testView",
@@ -496,7 +496,7 @@ open class BasicAutomaticComplianceLogicTests: BaseTestClass {
     /// BUSINESS PURPOSE: Verify modifier stores identifierName parameter correctly
     /// TESTING SCOPE: Modifier initialization and property storage
     /// METHODOLOGY: Create modifier with identifierName, verify it's stored correctly
-    @Test func testBasicAutomaticComplianceModifier_StoresIdentifierName() {
+    @Test @MainActor func testBasicAutomaticComplianceModifier_StoresIdentifierName() {
         // Given: A modifier created with identifierName
         let identifierName = "testView"
         let modifier = BasicAutomaticComplianceModifier(identifierName: identifierName)

@@ -194,7 +194,7 @@ open class MetalRenderingCrashTDDTests: BaseTestClass {
             context: .dashboard
         )
         
-        let view = platformPresentItemCollection_L1(
+        let _ = platformPresentItemCollection_L1(
             items: mockItems,
             hints: hints
         )

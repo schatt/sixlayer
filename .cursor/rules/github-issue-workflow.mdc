@@ -15,6 +15,12 @@ alwaysApply: true
 
 When updating GitHub issues with comments that contain backticks, code blocks, or special characters, always use a temporary file to avoid shell interpretation issues.
 
+## **When to close issues (branch vs `main`)**
+
+- **Close when the work is done** on the branch where it was implemented (e.g. feature or release-prep branch). Do **not** wait for merge to `main` to close.
+- **Merge to `main`** is part of the **final release process**, not a prerequisite for closing the issue in normal workflow.
+- When commenting or closing, **name the branch** commits live on (e.g. “Implemented on `b7.6.0`, pushed”) so it is obvious where to find the work before release.
+
 ## **MANDATORY Workflow**
 
 ### **For Issue Comments:**

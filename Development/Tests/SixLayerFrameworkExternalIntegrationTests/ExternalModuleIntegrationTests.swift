@@ -84,8 +84,7 @@ struct ExternalModuleIntegrationTests {
         let uiImage = UIImage(systemName: "photo") ?? UIImage()
         let platformImage = PlatformImage(uiImage)
 
-        // Verify the conversion actually worked
-        #expect(platformImage.uiImage != nil, "PlatformImage should contain valid UIImage")
+        // Verify the conversion actually worked (uiImage is non-optional; validity is covered by size and equality below)
         #expect(platformImage.size.width > 0, "Converted image should have valid width")
         #expect(platformImage.size.height > 0, "Converted image should have valid height")
         #expect(platformImage.uiImage == uiImage, "Conversion should preserve original image data")

@@ -23,7 +23,8 @@ import AppKit
 /// - Parameter status: The current sync status
 /// - Returns: A view showing the sync status
 public func platformCloudKitSyncStatus_L4(status: CloudKitSyncStatus) -> some View {
-    Group {
+    let summaryLabel = cloudKitSyncStatusAccessibilitySummary(status)
+    return Group {
         switch status {
         case .idle:
             Label("CloudKit Sync: Idle", systemImage: "icloud")
@@ -42,6 +43,21 @@ public func platformCloudKitSyncStatus_L4(status: CloudKitSyncStatus) -> some Vi
                 .foregroundColor(.red)
                 .help(error.localizedDescription)
         }
+    }
+    .automaticCompliance(named: "platformCloudKitSyncStatus_L4")
+    .accessibilityElement(children: .ignore)
+    .accessibilityLabel(summaryLabel)
+    // Stable id for UI tests (Issue #193); must contain substring "platformCloudKitSyncStatus".
+    .accessibilityIdentifier("platformCloudKitSyncStatus_L4")
+}
+
+private func cloudKitSyncStatusAccessibilitySummary(_ status: CloudKitSyncStatus) -> String {
+    switch status {
+    case .idle: return "CloudKit Sync: Idle"
+    case .syncing: return "CloudKit Sync: Syncing..."
+    case .paused: return "CloudKit Sync: Paused"
+    case .complete: return "CloudKit Sync: Complete"
+    case .error: return "CloudKit Sync: Error"
     }
 }
 
@@ -68,6 +84,7 @@ public func platformCloudKitProgress_L4(
                 .foregroundColor(.secondary)
         }
     }
+    .automaticCompliance(named: "platformCloudKitProgress_L4")
 }
 
 // MARK: - CloudKit Account Status Display
@@ -98,6 +115,7 @@ public func platformCloudKitAccountStatus_L4(status: CKAccountStatus) -> some Vi
                 .foregroundColor(.secondary)
         }
     }
+    .automaticCompliance(named: "platformCloudKitAccountStatus_L4")
 }
 
 // MARK: - CloudKit Service Status View
@@ -148,6 +166,7 @@ public func platformCloudKitServiceStatus_L4(service: CloudKitService) -> some V
     .background(Color(.systemBackground))
     #endif
     .cornerRadius(8)
+    .automaticCompliance(named: "platformCloudKitServiceStatus_L4")
 }
 
 // MARK: - CloudKit Sync Button
@@ -174,6 +193,7 @@ public func platformCloudKitSyncButton_L4(
         Label(label, systemImage: "arrow.clockwise.icloud")
     }
     .disabled(service.syncStatus == .syncing || service.accountStatus != .available)
+    .automaticCompliance(named: "platformCloudKitSyncButton_L4")
 }
 
 // MARK: - CloudKit Compact Status Badge
@@ -203,4 +223,5 @@ public func platformCloudKitStatusBadge_L4(service: CloudKitService) -> some Vie
         }
     }
     .help(service.syncStatus == .syncing ? "Syncing..." : "CloudKit Status")
+    .automaticCompliance(named: "platformCloudKitStatusBadge_L4")
 }

@@ -36,6 +36,61 @@ extension XCUIApplication {
         configureForFastTesting()
         launch()
     }
+
+    // MARK: - Issue #193 — Form / table scroll hosts
+
+    /// iOS `Form` is backed by a table; swiping the first `scrollView` often does not scroll form rows.
+    /// When multiple `tables` exist, `firstMatch` is often a nested list (e.g. L4 overlay split), not the root `Form` — use the last table.
+    /// When multiple `scrollViews` exist (e.g. navigation chrome + content), prefer the last scroll view for the main list.
+    func xcuiPrimaryScrollHost() -> XCUIElement {
+        let tbls = tables
+        if tbls.count > 1 {
+            return tbls.element(boundBy: tbls.count - 1)
+        }
+        if tbls.firstMatch.exists { return tbls.firstMatch }
+        let svs = scrollViews
+        if svs.count > 1 {
+            return svs.element(boundBy: svs.count - 1)
+        }
+        if svs.firstMatch.exists { return svs.firstMatch }
+        return windows.firstMatch
+    }
+
+    /// Scroll the primary content up: prefers table(s); when two tables exist, swipes both outer and inner; otherwise swipes `xcuiPrimaryScrollHost()`.
+    func xcuiSwipeScrollHostsUp() {
+        let tbls = tables
+        if tbls.count > 1 {
+            tbls.element(boundBy: tbls.count - 1).swipeUp()
+            tbls.element(boundBy: 0).swipeUp()
+        } else if tbls.firstMatch.exists {
+            tbls.firstMatch.swipeUp()
+        } else {
+            let host = xcuiPrimaryScrollHost()
+            if host.exists {
+                host.swipeUp()
+            } else {
+                windows.firstMatch.swipeUp()
+            }
+        }
+    }
+
+    /// Mirror of ``xcuiSwipeScrollHostsUp()`` for scrolling toward the top of Form/table content (e.g. `ensureContractRoot`).
+    func xcuiSwipeScrollHostsDown() {
+        let tbls = tables
+        if tbls.count > 1 {
+            tbls.element(boundBy: tbls.count - 1).swipeDown()
+            tbls.element(boundBy: 0).swipeDown()
+        } else if tbls.firstMatch.exists {
+            tbls.firstMatch.swipeDown()
+        } else {
+            let host = xcuiPrimaryScrollHost()
+            if host.exists {
+                host.swipeDown()
+            } else {
+                windows.firstMatch.swipeDown()
+            }
+        }
+    }
 }
 
 // MARK: - XCUIElement Extensions
@@ -129,9 +184,7 @@ extension XCUIElement {
         switch type {
         case .button, .textField, .switch, .slider, .link:
             return true
-        case .image, .staticText, .other, .cell, .any:
-            return false
-        @unknown default:
+        default:
             return false
         }
     }
@@ -212,7 +265,7 @@ extension XCUIApplication {
     func findLaunchPageEntry(identifier: String) -> XCUIElement {
         findElement(byIdentifier: identifier,
                     primaryType: .button,
-                    secondaryTypes: [.cell, .staticText, .other, .any])
+                    secondaryTypes: [.link, .cell, .staticText, .other, .any])
             ?? buttons[identifier]
     }
 
@@ -244,15 +297,74 @@ extension XCUIApplication {
     /// - Parameters:
     ///   - linkIdentifier: Accessibility identifier of the launch-page link (e.g. "layer2-examples-link").
     ///   - navigationBarTitle: Title of the destination navigation bar (e.g. "Layer 2 Examples").
+    ///   - linkLabel: Optional visible label to tap if identifier lookup fails (e.g. "Layer 4 Component Examples").
     /// - Returns: true if navigation succeeded (nav bar and list content visible).
-    func navigateToLayerExamples(linkIdentifier: String, navigationBarTitle: String) -> Bool {
+    func navigateToLayerExamples(linkIdentifier: String, navigationBarTitle: String, linkLabel: String? = nil) -> Bool {
+        func layerExamplesDestinationReached() -> Bool {
+            let navBarExists = navigationBars[navigationBarTitle].waitForExistence(timeout: 8.0)
+            let contentExists = buttons.firstMatch.waitForExistence(timeout: 2.0) || staticTexts.firstMatch.waitForExistence(timeout: 2.0) || cells.firstMatch.waitForExistence(timeout: 1.0)
+            if navBarExists && contentExists { return true }
+            if staticTexts[navigationBarTitle].waitForExistence(timeout: 1.0) && contentExists { return true }
+            return false
+        }
+
+        /// Prefer `links[visibleTitle]` for reliable navigation; row nodes may be `.cell` / `.button` by OS.
+        /// Scroll with `xcuiSwipeScrollHostsUp()` so root `Form` / list tables move (Issue #193).
+        let navigationLinkTitle: String? = linkLabel ?? {
+            switch linkIdentifier {
+            case "layer2-examples-link": return "Layer 2 Layout Examples"
+            case "layer3-examples-link": return "Layer 3 Strategy Examples"
+            case "layer4-examples-link": return "Layer 4 Component Examples"
+            case "layer5-examples-link": return "Layer 5 Optimization Examples"
+            case "layer6-examples-link": return "Layer 6 System Examples"
+            default: return nil
+            }
+        }()
+
         _ = navigateBackToLaunch(timeout: 5.0)
         guard waitForReady(timeout: 5.0) else { return false }
-        let link = findLaunchPageEntry(identifier: linkIdentifier)
+
+        if let title = navigationLinkTitle {
+            for _ in 0..<14 {
+                let rowLink = links[title].firstMatch
+                if rowLink.waitForExistence(timeout: 0.6) && rowLink.isHittable {
+                    rowLink.tap()
+                    return layerExamplesDestinationReached()
+                }
+                xcuiSwipeScrollHostsUp()
+            }
+        }
+
+        // Fallback: identifier-based (callers on unusual rows or when link query fails)
+        if linkIdentifier.contains("layer4") || linkIdentifier.contains("layer5") || linkIdentifier.contains("layer6") {
+            for _ in 0..<5 {
+                xcuiSwipeScrollHostsUp()
+                let found = findLaunchPageEntry(identifier: linkIdentifier)
+                if found.waitForExistence(timeout: 0.8) && found.isHittable { break }
+            }
+        }
+        var link = findLaunchPageEntry(identifier: linkIdentifier)
+        if !link.waitForExistence(timeout: 2.0), let label = navigationLinkTitle {
+            link = links[label].firstMatch
+            if !link.exists { link = buttons[label].firstMatch }
+            if !link.exists { link = staticTexts[label].firstMatch }
+            if !link.exists { link = cells[label].firstMatch }
+        }
+        var attempts = 0
+        while !link.waitForExistence(timeout: 1.0), attempts < 3 {
+            xcuiSwipeScrollHostsUp()
+            attempts += 1
+            link = findLaunchPageEntry(identifier: linkIdentifier)
+            if !link.waitForExistence(timeout: 1.0), let label = navigationLinkTitle {
+                link = links[label].firstMatch
+                if !link.exists { link = buttons[label].firstMatch }
+                if !link.exists { link = staticTexts[label].firstMatch }
+                if !link.exists { link = cells[label].firstMatch }
+            }
+        }
         guard link.waitForExistence(timeout: 5.0) else { return false }
         link.tap()
-        guard navigationBars[navigationBarTitle].waitForExistence(timeout: 5.0) else { return false }
-        return buttons.firstMatch.waitForExistence(timeout: 2.0) || staticTexts.firstMatch.waitForExistence(timeout: 2.0) || cells.firstMatch.waitForExistence(timeout: 1.0)
+        return layerExamplesDestinationReached()
     }
 
 }
@@ -408,7 +520,9 @@ extension XCTestCase {
     func addDefaultUIInterruptionMonitor() {
         addUIInterruptionMonitor(withDescription: "System alerts and dialogs") { (alert) -> Bool in
             return MainActor.assumeIsolated {
-                let alertText = alert.staticTexts.firstMatch.label
+                // Avoid querying alert descendants here; on newer runtimes this can throw
+                // snapshot type-mismatch errors for SwiftUI accessibility nodes.
+                let alertText = alert.label
                 guard alertText.contains("Bluetooth") || alertText.contains("CPU") || alertText.contains("Activity Monitor") else {
                     return false
                 }

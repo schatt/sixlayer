@@ -83,7 +83,7 @@ public struct CustomFieldView: View {
             }
         }
         .automaticCompliance(
-            identifierName: sanitizeLabelText(field.label)  // Auto-generate identifierName from field label
+            identifierName: field.effectiveAccessibilityIdentifierSegment  // Auto-generate identifierName from field label
         )
     }
 }
@@ -185,6 +185,20 @@ extension DynamicFormField {
             set: { formState.setValue($0, for: id) }
         )
     }
+
+    /// Segment used for accessibility identifiers and as the default localization key base (Issue #194).
+    ///
+    /// Resolution: metadata `accessibilityIdentifierName` (non-empty) if set; otherwise `sanitizeLabelText(label)`;
+    /// if that is empty, `id`.
+    public var effectiveAccessibilityIdentifierSegment: String {
+        if let raw = metadata?["accessibilityIdentifierName"] {
+            let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !trimmed.isEmpty { return trimmed }
+        }
+        let sanitized = sanitizeLabelText(label)
+        if !sanitized.isEmpty { return sanitized }
+        return id
+    }
     
     /// Creates a placeholder for the field label when used inside field components.
     /// Parent (DynamicFormFieldView) owns the single visible label (Issue #189). Use this so a11y still gets label via environment/identifierName.
@@ -199,15 +213,10 @@ extension DynamicFormField {
     ///   - componentName: The name for automatic compliance
     /// - Returns: A view with standard field styling applied
     func fieldContainer<Content: View>(
-        @ViewBuilder content: () -> Content,
+        @ViewBuilder content: @escaping () -> Content,
         componentName: String
     ) -> some View {
-        platformVStackContainer(alignment: .leading, spacing: 4) {
-            content()
-        }
-        .padding()
-        .environment(\.accessibilityIdentifierLabel, label)
-        .automaticCompliance(named: componentName)
+        DynamicFormFieldStandardContainer(field: self, componentName: componentName, content: content)
     }
     
     /// Check if field should render as picker based on hints
@@ -263,6 +272,182 @@ extension DynamicFormField {
     }
 }
 
+// MARK: - Field container shell (Issue #194)
+
+@MainActor
+private struct DynamicFormFieldStandardContainer<Content: View>: View {
+    let field: DynamicFormField
+    let componentName: String
+    private let content: () -> Content
+    @Environment(\.dynamicFormFieldResolvedDisplayLabel) private var resolvedDisplayLabel
+
+    init(field: DynamicFormField, componentName: String, @ViewBuilder content: @escaping () -> Content) {
+        self.field = field
+        self.componentName = componentName
+        self.content = content
+    }
+
+    var body: some View {
+        platformVStackContainer(alignment: .leading, spacing: 4) {
+            content()
+        }
+        .padding()
+        .environment(\.accessibilityIdentifierLabel, resolvedDisplayLabel ?? field.label)
+        .automaticCompliance(named: componentName)
+    }
+}
+
+// MARK: - Localization Key Helpers
+
+/// Role for field-localized strings (label, placeholder, help text, etc.).
+public enum FieldLocalizationRole: String, Sendable {
+    case label
+    case placeholder
+    case help
+    case accessibilityLabel
+    case accessibilityHint
+}
+
+@MainActor
+extension DynamicFormField {
+    /// Resolve the base localization key for this field.
+    ///
+    /// Resolution priority (highest first):
+    /// 1. Explicit `localizationKeyBaseOverride` parameter (non-empty)
+    /// 2. Metadata `localizationKeyBase` (non-empty)
+    /// 3. Explicit `accessibilityId` parameter (non-empty), else `effectiveAccessibilityIdentifierSegment`
+    /// 4. `id` if the segment is empty
+    ///
+    /// An optional `namespace` (e.g. model or screen name) is prepended when provided.
+    public func localizationBaseKey(
+        namespace: String? = nil,
+        localizationKeyBaseOverride: String? = nil,
+        accessibilityId: String? = nil
+    ) -> String {
+        let metadataBase = metadata?["localizationKeyBase"]
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .flatMap { $0.isEmpty ? nil : $0 }
+
+        let passedOverride = localizationKeyBaseOverride
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .flatMap { $0.isEmpty ? nil : $0 }
+
+        let effectiveOverride = passedOverride ?? metadataBase
+
+        let segment: String
+        if let accessibilityId {
+            let trimmed = accessibilityId.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !trimmed.isEmpty {
+                segment = trimmed
+            } else {
+                segment = effectiveAccessibilityIdentifierSegment
+            }
+        } else {
+            segment = effectiveAccessibilityIdentifierSegment
+        }
+
+        let base: String
+        if let o = effectiveOverride, !o.isEmpty {
+            base = o
+        } else if !segment.isEmpty {
+            base = segment
+        } else {
+            base = id
+        }
+
+        if let namespace, !namespace.isEmpty {
+            let ns = namespace.trimmingCharacters(in: .whitespacesAndNewlines)
+            return ns.isEmpty ? base : "\(ns).\(base)"
+        } else {
+            return base
+        }
+    }
+    
+    /// Build a localization key for a specific role (label, placeholder, etc.).
+    ///
+    /// This is a pure helper and does not hit bundles; callers inject their own resolver.
+    public func localizationKey(
+        role: FieldLocalizationRole,
+        namespace: String? = nil,
+        localizationKeyBaseOverride: String? = nil,
+        accessibilityId: String? = nil
+    ) -> String {
+        let base = localizationBaseKey(
+            namespace: namespace,
+            localizationKeyBaseOverride: localizationKeyBaseOverride,
+            accessibilityId: accessibilityId
+        )
+        return "\(base).\(role.rawValue)"
+    }
+    
+    /// Resolve a localized string for this field and role using a provided resolver closure.
+    ///
+    /// - Parameters:
+    ///   - role: The logical role for the string (label, placeholder, etc.).
+    ///   - resolver: Function that maps a localization key to a localized string.
+    ///   - namespace: Optional namespace prefix (e.g. model or screen name).
+    ///   - localizationKeyBaseOverride: Optional explicit base key override.
+    ///   - accessibilityId: Optional accessibility identifier to use as default base key.
+    ///   - fallback: Fallback string to use when resolver returns the key unchanged.
+    /// - Returns: Localized string, or `fallback` when no translation is found.
+    public func resolveLocalizedString(
+        role: FieldLocalizationRole,
+        resolver: (String) -> String,
+        namespace: String? = nil,
+        localizationKeyBaseOverride: String? = nil,
+        accessibilityId: String? = nil,
+        fallback: String?
+    ) -> String? {
+        let key = localizationKey(
+            role: role,
+            namespace: namespace,
+            localizationKeyBaseOverride: localizationKeyBaseOverride,
+            accessibilityId: accessibilityId
+        )
+        let value = resolver(key)
+        // If resolver returns the key itself, treat it as "not localized" and fall back.
+        if value == key {
+            return fallback
+        }
+        return value
+    }
+
+    /// Resolved display string for SwiftUI when an optional resolver is injected (Issue #194).
+    ///
+    /// When `resolver` is `nil`, returns `fallback` so existing forms behave unchanged.
+    public func resolvedLocalizedDisplayString(
+        role: FieldLocalizationRole,
+        resolver: DynamicFormFieldLocalizationResolver?,
+        namespace: String?,
+        fallback: String
+    ) -> String {
+        guard let resolver else { return fallback }
+        return resolveLocalizedString(
+            role: role,
+            resolver: resolver.lookup,
+            namespace: namespace,
+            localizationKeyBaseOverride: nil,
+            accessibilityId: nil,
+            fallback: fallback
+        ) ?? fallback
+    }
+
+    /// Placeholder text with optional key-based localization (`base.placeholder`).
+    public func resolvedPlaceholderDisplay(
+        frameworkDefault: String,
+        resolver: DynamicFormFieldLocalizationResolver?,
+        namespace: String?
+    ) -> String {
+        let fallback = placeholder ?? frameworkDefault
+        return resolvedLocalizedDisplayString(
+            role: .placeholder,
+            resolver: resolver,
+            namespace: namespace,
+            fallback: fallback
+        )
+    }
+}
+
 // MARK: - Individual Field Components (TDD Red Phase Stubs)
 
 /// Text field component
@@ -274,6 +459,8 @@ public struct DynamicTextField: View {
     let field: DynamicFormField
     @ObservedObject var formState: DynamicFormState
     @FocusState private var isFocused: Bool
+    @Environment(\.dynamicFormFieldLocalizationResolver) private var localizationResolver
+    @Environment(\.dynamicFormLocalizationNamespace) private var localizationNamespace
 
     public init(field: DynamicFormField, formState: DynamicFormState) {
         self.field = field
@@ -318,13 +505,18 @@ public struct DynamicTextField: View {
     @ViewBuilder
     private var pickerContent: some View {
         let i18n = InternationalizationService()
-        
+        let pickerLabel = field.resolvedPlaceholderDisplay(
+            frameworkDefault: i18n.placeholderSelect(),
+            resolver: localizationResolver,
+            namespace: localizationNamespace
+        )
+
         // Prefer pickerOptions from displayHints (PickerOption type) for platformPicker (no AnyView — Issue 178)
         if let hints = field.displayHints,
            let pickerOptions = hints.pickerOptions,
            !pickerOptions.isEmpty {
             platformPicker(
-                label: field.placeholder ?? i18n.placeholderSelect(),
+                label: pickerLabel,
                 selection: field.textBinding(formState: formState),
                 options: pickerOptions,
                 pickerName: "DynamicSelectField"
@@ -333,7 +525,7 @@ public struct DynamicTextField: View {
             // Fallback to field.options (String array) - convert to PickerOption
             let pickerOptions = options.map { PickerOption(value: $0, label: $0) }
             platformPicker(
-                label: field.placeholder ?? i18n.placeholderSelect(),
+                label: pickerLabel,
                 selection: field.textBinding(formState: formState),
                 options: pickerOptions,
                 pickerName: "DynamicSelectField"
@@ -385,7 +577,12 @@ public struct DynamicTextField: View {
     @ViewBuilder
     private var singleLineTextFieldView: some View {
         let i18n = InternationalizationService()
-        TextField(field.placeholder ?? i18n.localizedString(for: "SixLayerFramework.form.placeholder.enterText"), text: field.textBinding(formState: formState))
+        let placeholderText = field.resolvedPlaceholderDisplay(
+            frameworkDefault: i18n.localizedString(for: "SixLayerFramework.form.placeholder.enterText"),
+            resolver: localizationResolver,
+            namespace: localizationNamespace
+        )
+        TextField(placeholderText, text: field.textBinding(formState: formState))
             .textFieldStyle(.roundedBorder)
             .focused($isFocused)
             .onSubmit {
@@ -430,8 +627,13 @@ public struct DynamicTextField: View {
     @ViewBuilder
     private var multiLineTextFieldWithAxis: some View {
         let i18n = InternationalizationService()
+        let placeholderText = field.resolvedPlaceholderDisplay(
+            frameworkDefault: i18n.localizedString(for: "SixLayerFramework.form.placeholder.enterText"),
+            resolver: localizationResolver,
+            namespace: localizationNamespace
+        )
         TextField(
-            field.placeholder ?? i18n.localizedString(for: "SixLayerFramework.form.placeholder.enterText"),
+            placeholderText,
             text: field.textBinding(formState: formState),
             axis: .vertical
         )
@@ -458,6 +660,8 @@ public struct DynamicEmailField: View {
     let field: DynamicFormField
     @ObservedObject var formState: DynamicFormState
     @FocusState private var isFocused: Bool
+    @Environment(\.dynamicFormFieldLocalizationResolver) private var localizationResolver
+    @Environment(\.dynamicFormLocalizationNamespace) private var localizationNamespace
 
     public init(field: DynamicFormField, formState: DynamicFormState) {
         self.field = field
@@ -466,10 +670,15 @@ public struct DynamicEmailField: View {
 
     public var body: some View {
         let i18n = InternationalizationService()
+        let placeholderText = field.resolvedPlaceholderDisplay(
+            frameworkDefault: i18n.localizedString(for: "SixLayerFramework.form.placeholder.enterEmail"),
+            resolver: localizationResolver,
+            namespace: localizationNamespace
+        )
         return field.fieldContainer(content: {
             field.fieldLabel()
 
-            TextField(field.placeholder ?? i18n.localizedString(for: "SixLayerFramework.form.placeholder.enterEmail"), text: field.textBinding(formState: formState))
+            TextField(placeholderText, text: field.textBinding(formState: formState))
                 .textFieldStyle(.roundedBorder)
                 #if os(iOS)
                 .keyboardType(UIKeyboardType.emailAddress)
@@ -505,6 +714,8 @@ public struct DynamicPasswordField: View {
     @ObservedObject var formState: DynamicFormState
     @FocusState private var isFocused: Bool
     @Environment(\.securityService) private var securityService
+    @Environment(\.dynamicFormFieldLocalizationResolver) private var localizationResolver
+    @Environment(\.dynamicFormLocalizationNamespace) private var localizationNamespace
 
     public init(field: DynamicFormField, formState: DynamicFormState) {
         self.field = field
@@ -513,10 +724,15 @@ public struct DynamicPasswordField: View {
 
     public var body: some View {
         let i18n = InternationalizationService()
+        let placeholderText = field.resolvedPlaceholderDisplay(
+            frameworkDefault: i18n.localizedString(for: "SixLayerFramework.form.placeholder.enterPassword"),
+            resolver: localizationResolver,
+            namespace: localizationNamespace
+        )
         return field.fieldContainer(content: {
             field.fieldLabel()
 
-            SecureField(field.placeholder ?? i18n.localizedString(for: "SixLayerFramework.form.placeholder.enterPassword"), text: field.textBinding(formState: formState))
+            SecureField(placeholderText, text: field.textBinding(formState: formState))
                 .textFieldStyle(.roundedBorder)
                 .focused($isFocused)
                 .onSubmit {
@@ -679,9 +895,9 @@ public struct DynamicNumberField: View {
             .automaticCompliance()
         }
         .padding()
-        .environment(\.accessibilityIdentifierLabel, field.label)
+        .dynamicFormFieldAccessibilityLabel(field)
         .automaticCompliance(
-            identifierName: sanitizeLabelText(field.label)  // Auto-generate identifierName from field label
+            identifierName: field.effectiveAccessibilityIdentifierSegment  // Auto-generate identifierName from field label
         )
     }
 }
@@ -712,9 +928,9 @@ public struct DynamicIntegerField: View {
             .automaticCompliance()
         }
         .padding()
-        .environment(\.accessibilityIdentifierLabel, field.label) // TDD GREEN: Pass label to identifier generation
+        .dynamicFormFieldAccessibilityLabel(field) // Issue #194: resolved label when localized
         .automaticCompliance(
-            identifierName: sanitizeLabelText(field.label)  // Auto-generate identifierName from field label
+            identifierName: field.effectiveAccessibilityIdentifierSegment  // Auto-generate identifierName from field label
         )
     }
 }
@@ -775,9 +991,9 @@ public struct DynamicStepperField: View {
                 in: range,
                 step: step
             )
-            .accessibilityLabel(field.label)
+            .dynamicFormFieldVoiceOverLabel(field)
             .automaticCompliance(
-                identifierName: sanitizeLabelText(field.label),  // Auto-generate identifierName from field label
+                identifierName: field.effectiveAccessibilityIdentifierSegment,  // Auto-generate identifierName from field label
                 identifierElementType: "Stepper",
                 accessibilityValue: step.truncatingRemainder(dividingBy: 1.0) == 0.0 
                     ? "\(Int(value.wrappedValue))" 
@@ -792,7 +1008,7 @@ public struct DynamicStepperField: View {
                 .foregroundColor(.secondary)
         }
         .padding()
-        .environment(\.accessibilityIdentifierLabel, field.label)
+        .dynamicFormFieldAccessibilityLabel(field)
         .automaticCompliance()  // Container view - no identifierName
     }
 }
@@ -820,11 +1036,11 @@ public struct DynamicDateField: View {
                       ),
                       displayedComponents: .date)
             .automaticCompliance(
-                identifierName: sanitizeLabelText(field.label)  // Auto-generate identifierName from field label
+                identifierName: field.effectiveAccessibilityIdentifierSegment  // Auto-generate identifierName from field label
             )
         }
         .padding()
-        .environment(\.accessibilityIdentifierLabel, field.label) // TDD GREEN: Pass label to identifier generation
+        .dynamicFormFieldAccessibilityLabel(field) // Issue #194: resolved label when localized
         .automaticCompliance()  // Container view - no identifierName
     }
 }
@@ -854,9 +1070,9 @@ public struct DynamicTimeField: View {
             .automaticCompliance()
         }
         .padding()
-        .environment(\.accessibilityIdentifierLabel, field.label) // TDD GREEN: Pass label to identifier generation
+        .dynamicFormFieldAccessibilityLabel(field) // Issue #194: resolved label when localized
         .automaticCompliance(
-            identifierName: sanitizeLabelText(field.label)  // Auto-generate identifierName from field label
+            identifierName: field.effectiveAccessibilityIdentifierSegment  // Auto-generate identifierName from field label
         )
     }
 }
@@ -885,9 +1101,9 @@ public struct DynamicDateTimeField: View {
             .automaticCompliance()
         }
         .padding()
-        .environment(\.accessibilityIdentifierLabel, field.label) // TDD GREEN: Pass label to identifier generation
+        .dynamicFormFieldAccessibilityLabel(field) // Issue #194: resolved label when localized
         .automaticCompliance(
-            identifierName: sanitizeLabelText(field.label)  // Auto-generate identifierName from field label
+            identifierName: field.effectiveAccessibilityIdentifierSegment  // Auto-generate identifierName from field label
         )
     }
 }
@@ -996,9 +1212,9 @@ public struct DynamicMultiDateField: View {
             #endif
         }
         .padding()
-        .environment(\.accessibilityIdentifierLabel, field.label)
+        .dynamicFormFieldAccessibilityLabel(field)
         .automaticCompliance(
-            identifierName: sanitizeLabelText(field.label)  // Auto-generate identifierName from field label
+            identifierName: field.effectiveAccessibilityIdentifierSegment  // Auto-generate identifierName from field label
         )
     }
 }
@@ -1043,9 +1259,9 @@ public struct DynamicMultiSelectField: View {
             }
         }
         .padding()
-        .environment(\.accessibilityIdentifierLabel, field.label) // TDD GREEN: Pass label to identifier generation
+        .dynamicFormFieldAccessibilityLabel(field) // Issue #194: resolved label when localized
         .automaticCompliance(
-            identifierName: sanitizeLabelText(field.label)  // Auto-generate identifierName from field label
+            identifierName: field.effectiveAccessibilityIdentifierSegment  // Auto-generate identifierName from field label
         )
     }
 }
@@ -1105,7 +1321,7 @@ public struct DynamicRadioField: View {
         }
         .padding()
         .automaticCompliance(
-            identifierName: sanitizeLabelText(field.label)  // Auto-generate identifierName from field label
+            identifierName: field.effectiveAccessibilityIdentifierSegment  // Auto-generate identifierName from field label
         )
     }
 }
@@ -1149,9 +1365,9 @@ public struct DynamicCheckboxField: View {
             }
         }
         .padding()
-        .environment(\.accessibilityIdentifierLabel, field.label) // TDD GREEN: Pass label to identifier generation
+        .dynamicFormFieldAccessibilityLabel(field) // Issue #194: resolved label when localized
         .automaticCompliance(
-            identifierName: sanitizeLabelText(field.label)  // Auto-generate identifierName from field label
+            identifierName: field.effectiveAccessibilityIdentifierSegment  // Auto-generate identifierName from field label
         )
     }
 }
@@ -1232,9 +1448,9 @@ public struct DynamicFileField: View {
             }
         }
         .padding()
-        .environment(\.accessibilityIdentifierLabel, field.label) // TDD GREEN: Pass label to identifier generation
+        .dynamicFormFieldAccessibilityLabel(field) // Issue #194: resolved label when localized
         .automaticCompliance(
-            identifierName: sanitizeLabelText(field.label)  // Auto-generate identifierName from field label
+            identifierName: field.effectiveAccessibilityIdentifierSegment  // Auto-generate identifierName from field label
         )
     }
 }
@@ -1314,9 +1530,9 @@ public struct DynamicRangeField: View {
                 )
         }
         .padding()
-        .environment(\.accessibilityIdentifierLabel, field.label) // TDD GREEN: Pass label to identifier generation
+        .dynamicFormFieldAccessibilityLabel(field) // Issue #194: resolved label when localized
         .automaticCompliance(
-            identifierName: sanitizeLabelText(field.label)  // Auto-generate identifierName from field label
+            identifierName: field.effectiveAccessibilityIdentifierSegment  // Auto-generate identifierName from field label
         )
     }
 }
@@ -1382,9 +1598,9 @@ public struct DynamicArrayField: View {
             .automaticCompliance(named: "AddItem")
         }
         .padding()
-        .environment(\.accessibilityIdentifierLabel, field.label) // TDD GREEN: Pass label to identifier generation
+        .dynamicFormFieldAccessibilityLabel(field) // Issue #194: resolved label when localized
         .automaticCompliance(
-            identifierName: sanitizeLabelText(field.label)  // Auto-generate identifierName from field label
+            identifierName: field.effectiveAccessibilityIdentifierSegment  // Auto-generate identifierName from field label
         )
     }
 }
@@ -1430,7 +1646,7 @@ public struct DynamicDataField: View {
         }
         .padding()
         .automaticCompliance(
-            identifierName: sanitizeLabelText(field.label)  // Auto-generate identifierName from field label
+            identifierName: field.effectiveAccessibilityIdentifierSegment  // Auto-generate identifierName from field label
         )
     }
 }
@@ -1496,7 +1712,7 @@ public struct DynamicAutocompleteField: View {
         }
         .padding()
         .automaticCompliance(
-            identifierName: sanitizeLabelText(field.label)  // Auto-generate identifierName from field label
+            identifierName: field.effectiveAccessibilityIdentifierSegment  // Auto-generate identifierName from field label
         )
     }
 }
@@ -1546,9 +1762,9 @@ public struct DynamicEnumField: View {
             }
         }
         .padding()
-        .environment(\.accessibilityIdentifierLabel, field.label) // TDD GREEN: Pass label to identifier generation
+        .dynamicFormFieldAccessibilityLabel(field) // Issue #194: resolved label when localized
         .automaticCompliance(
-            identifierName: sanitizeLabelText(field.label)  // Auto-generate identifierName from field label
+            identifierName: field.effectiveAccessibilityIdentifierSegment  // Auto-generate identifierName from field label
         )
     }
 }
@@ -1580,7 +1796,7 @@ public struct DynamicCustomField: View {
         }
         .padding()
         .automaticCompliance(
-            identifierName: sanitizeLabelText(field.label)  // Auto-generate identifierName from field label
+            identifierName: field.effectiveAccessibilityIdentifierSegment  // Auto-generate identifierName from field label
         )
     }
 }
@@ -1622,7 +1838,7 @@ public struct DynamicColorField: View {
         }
         .padding()
         .automaticCompliance(
-            identifierName: sanitizeLabelText(field.label)  // Auto-generate identifierName from field label
+            identifierName: field.effectiveAccessibilityIdentifierSegment  // Auto-generate identifierName from field label
         )
     }
 }
@@ -1660,17 +1876,17 @@ public struct DynamicToggleField: View {
     public var body: some View {
         platformVStackContainer(alignment: .leading) {
             Toggle("", isOn: isOn)
-                .accessibilityLabel(field.label)
+                .dynamicFormFieldVoiceOverLabel(field)
                 .automaticCompliance(
-                    identifierName: sanitizeLabelText(field.label),  // Auto-generate identifierName from field label
+                    identifierName: field.effectiveAccessibilityIdentifierSegment,  // Auto-generate identifierName from field label
                     identifierElementType: "Toggle",
                     accessibilityValue: generateAccessibilityValueForToggle(isOn: isOn.wrappedValue)  // Issue #165: Dynamic value
                 )
         }
         .padding()
-        .environment(\.accessibilityIdentifierLabel, field.label) // TDD GREEN: Pass label to identifier generation
+        .dynamicFormFieldAccessibilityLabel(field) // Issue #194: resolved label when localized
         .automaticCompliance(
-            identifierName: sanitizeLabelText(field.label)  // Auto-generate identifierName from field label
+            identifierName: field.effectiveAccessibilityIdentifierSegment  // Auto-generate identifierName from field label
         )
     }
 }
@@ -1746,9 +1962,9 @@ public struct DynamicDisplayField: View {
                         .foregroundColor(.secondary)
                 }
             }
-            .accessibilityLabel(field.label)
+            .dynamicFormFieldVoiceOverLabel(field)
             .automaticCompliance(
-                identifierName: sanitizeLabelText(field.label)  // Auto-generate identifierName from field label
+                identifierName: field.effectiveAccessibilityIdentifierSegment  // Auto-generate identifierName from field label
             )
         } else {
             // Fallback for older platforms
@@ -1762,9 +1978,9 @@ public struct DynamicDisplayField: View {
                 }
             }
             .padding()
-            .accessibilityLabel(field.label)
+            .dynamicFormFieldVoiceOverLabel(field)
             .automaticCompliance(
-                identifierName: sanitizeLabelText(field.label)  // Auto-generate identifierName from field label
+                identifierName: field.effectiveAccessibilityIdentifierSegment  // Auto-generate identifierName from field label
             )
         }
     }
@@ -1873,7 +2089,7 @@ public struct DynamicGaugeField: View {
         }
         .padding()
         .automaticCompliance(
-            identifierName: sanitizeLabelText(field.label)  // Auto-generate identifierName from field label
+            identifierName: field.effectiveAccessibilityIdentifierSegment  // Auto-generate identifierName from field label
         )
     }
 }

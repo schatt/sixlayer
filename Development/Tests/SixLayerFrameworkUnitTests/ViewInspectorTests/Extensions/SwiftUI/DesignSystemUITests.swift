@@ -195,11 +195,10 @@ class DesignSystemUITests: XCTestCase {
             callbackCalled = true
         }
 
-        // Trigger theme change
+        // Trigger theme change (callback is invoked synchronously from switchDesignSystem)
         visualDesignSystem.switchDesignSystem(HighContrastDesignSystem())
+        XCTAssertTrue(callbackCalled)
 
-        // Note: In a real test, we'd wait for the callback or use expectations
-        // For now, we just verify the design system changed
         XCTAssertEqual(visualDesignSystem.designSystem.name, "HighContrast")
     }
 

@@ -39,12 +39,10 @@ open class LocationServiceTests: BaseTestClass {
         // When: Checking authorization status
         let status = service.authorizationStatus
         
-        // Then: Should return a valid CLAuthorizationStatus
+        // Then: Should return a valid authorization status (via platform abstraction; avoids .authorizedWhenInUse on macOS)
         // Note: Initial status will be .notDetermined
-        #expect(status == .notDetermined || 
-                status == .denied || 
-                status == .restricted || 
-                status == .authorizedAlways)
+        let platformStatus = status.platformLocationAuthorizationStatus
+        #expect(PlatformLocationAuthorizationStatus.allCases.contains(platformStatus))
     }
     
     @Test @MainActor func testLocationServiceReportsLocationEnabledStatus() async {
@@ -124,11 +122,8 @@ open class LocationServiceTests: BaseTestClass {
         
         // Then: Service should work on all platforms
         // The service should handle platform differences internally
-        #expect(service.authorizationStatus == .notDetermined || 
-                service.authorizationStatus == .denied || 
-                service.authorizationStatus == .restricted || 
-                service.authorizationStatus == .authorized || 
-                service.authorizationStatus == .authorizedAlways)
+        let platformStatus = service.authorizationStatus.platformLocationAuthorizationStatus
+        #expect(PlatformLocationAuthorizationStatus.allCases.contains(platformStatus))
     }
     
     // MARK: - Actor Isolation Tests
@@ -143,7 +138,7 @@ open class LocationServiceTests: BaseTestClass {
         
         // Then: Should access successfully without actor isolation errors
         // This test verifies the @MainActor annotation works correctly
-        #expect(status == .notDetermined || status == .denied || status == .restricted || status == .authorized || status == .authorizedAlways)
+        #expect(PlatformLocationAuthorizationStatus.allCases.contains(status.platformLocationAuthorizationStatus))
         #expect(isEnabled == true || isEnabled == false)
     }
     
@@ -158,7 +153,7 @@ open class LocationServiceTests: BaseTestClass {
         
         // Then: Should access successfully without actor isolation errors
         // The protocol is now @MainActor, so properties can satisfy requirements
-        #expect(status == .notDetermined || status == .denied || status == .restricted || status == .authorized || status == .authorizedAlways)
+        #expect(PlatformLocationAuthorizationStatus.allCases.contains(status.platformLocationAuthorizationStatus))
         #expect(isEnabled == true || isEnabled == false)
         #expect(error == nil || error != nil)
     }
@@ -192,7 +187,7 @@ open class LocationServiceTests: BaseTestClass {
         let status = manager.authorizationStatus // Safe to access from nonisolated context
         
         // The delegate methods should handle the MainActor bridge correctly
-        #expect(status == .notDetermined || status == .denied || status == .restricted || status == .authorized || status == .authorizedAlways)
+        #expect(PlatformLocationAuthorizationStatus.allCases.contains(status.platformLocationAuthorizationStatus))
     }
     
     @Test @MainActor func testLocationServiceNoUncheckedSendableConflict() async {

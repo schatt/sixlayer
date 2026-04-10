@@ -61,6 +61,10 @@ struct Layer4ExamplesView: View {
                     MapExamples()
                 }
                 
+                ExampleSection(title: "Navigation Stack Components") {
+                    Layer4NavigationStackExamples()
+                }
+                
                 ExampleSection(title: "CloudKit Components") {
                     CloudKitExamples()
                 }
@@ -122,14 +126,6 @@ struct PhotoPickerExample: View {
                 showPicker = true
             }
             
-            if showPicker {
-                platformPhotoPicker_L4 { image in
-                    selectedImage = image
-                    showPicker = false
-                }
-                .frame(height: 200)
-            }
-            
             if selectedImage != nil {
                 Text("Photo selected")
                     .font(.caption)
@@ -139,6 +135,12 @@ struct PhotoPickerExample: View {
         .padding()
         .background(Color.platformSecondaryBackground)
         .cornerRadius(8)
+        .sheet(isPresented: $showPicker) {
+            platformPhotoPicker_L4 { image in
+                selectedImage = image
+                showPicker = false
+            }
+        }
     }
 }
 
@@ -268,23 +270,119 @@ struct MapViewExample: View {
 
 @available(iOS 17.0, macOS 14.0, *)
 struct MapWithLocationExample: View {
+    @State private var locationService: LocationService?
+
     var body: some View {
         platformVStack(alignment: .leading, spacing: 12) {
             Text("Map with current location (requires location permissions)")
                 .font(.caption)
                 .foregroundColor(.secondary)
-            
-            // Note: Would need actual LocationService instance
-            Text("Location service example")
+
+            if let locationService = locationService {
+                PlatformMapComponentsLayer4.platformMapViewWithCurrentLocation_L4(
+                    locationService: locationService,
+                    showCurrentLocation: true
+                )
+                .frame(height: 200)
+                .cornerRadius(8)
+            } else {
+                ProgressView("Initializing location…")
+                    .frame(height: 200)
+            }
+        }
+        .padding()
+        .background(Color.platformSecondaryBackground)
+        .cornerRadius(8)
+        .onAppear {
+            if locationService == nil {
+                locationService = LocationService()
+            }
+        }
+    }
+}
+#endif
+
+// MARK: - Navigation Stack Examples
+
+private struct NavStackDemoItem: Identifiable, Hashable {
+    let id: String
+    let name: String
+}
+
+struct Layer4NavigationStackExamples: View {
+    var body: some View {
+        platformVStack(alignment: .leading, spacing: 16) {
+            Text("Layer 4 navigation stack components implement stack or split navigation from Layer 3 strategy.")
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+
+            ExampleCard(title: "Navigation Stack", description: "platformImplementNavigationStack_L4") {
+                Layer4NavigationStackExample()
+            }
+
+            ExampleCard(title: "Navigation Stack with Items", description: "platformImplementNavigationStackItems_L4") {
+                Layer4NavigationStackItemsExample()
+            }
+        }
+    }
+}
+
+struct Layer4NavigationStackExample: View {
+    private let strategy = NavigationStackStrategy(implementation: .navigationStack, reasoning: nil)
+
+    var body: some View {
+        platformVStack(alignment: .leading, spacing: 12) {
+            Text("Stack with root and title")
                 .font(.caption)
                 .foregroundColor(.secondary)
+            platformImplementNavigationStack_L4(
+                content: Layer4NavigationStackExampleContent(),
+                title: "L4 Stack Demo",
+                strategy: strategy
+            )
+            .frame(minHeight: 120)
         }
         .padding()
         .background(Color.platformSecondaryBackground)
         .cornerRadius(8)
     }
 }
-#endif
+
+private struct Layer4NavigationStackExampleContent: View {
+    var body: some View {
+        Text("Root content")
+            .padding()
+    }
+}
+
+struct Layer4NavigationStackItemsExample: View {
+    private static let items: [NavStackDemoItem] = [
+        NavStackDemoItem(id: "a", name: "Item A"),
+        NavStackDemoItem(id: "b", name: "Item B"),
+        NavStackDemoItem(id: "c", name: "Item C")
+    ]
+    @State private var selectedItem: NavStackDemoItem?
+    private let strategy = NavigationStackStrategy(implementation: .navigationStack, reasoning: nil)
+
+    var body: some View {
+        platformVStack(alignment: .leading, spacing: 12) {
+            Text("List with detail navigation")
+                .font(.caption)
+                .foregroundColor(.secondary)
+            platformImplementNavigationStackItems_L4(
+                items: Self.items,
+                selectedItem: $selectedItem,
+                itemView: { item in Text(item.name) },
+                detailView: { item in Text("Detail: \(item.name)").padding() },
+                strategy: strategy
+            )
+            .frame(minHeight: 180)
+        }
+        .padding()
+        .background(Color.platformSecondaryBackground)
+        .cornerRadius(8)
+    }
+}
 
 // MARK: - CloudKit Examples
 
@@ -585,8 +683,14 @@ private struct ExampleCard<Content: View>: View {
 /// Destination for L4 navigation contract: uses platformNavigationTitle_L4.
 private struct L4NavDestinationView: View {
     var body: some View {
-        Text("L4NavDestinationContent")
-            .platformNavigationTitle_L4("L4NavTitleContract")
+        VStack(alignment: .leading, spacing: 12) {
+            Text("L4NavDestinationContent")
+                .accessibilityLabel("L4NavDestinationContent")
+                .accessibilityIdentifier("L4NavDestinationContent")
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .padding()
+        .platformNavigationTitle_L4("L4NavTitleContract")
     }
 }
 
@@ -596,6 +700,8 @@ private struct L4SheetContentContractView: View {
     var body: some View {
         VStack(spacing: 16) {
             Text("L4SheetContentContract")
+                .accessibilityLabel("L4SheetContentContract")
+                .accessibilityIdentifier("L4SheetContentContract")
             Button("Close") { dismiss() }
         }
         .padding()
@@ -611,80 +717,268 @@ struct Layer4ContractOnlyView: View {
     @State private var l4ContractDate = Date()
     @State private var l4ShowSheet = false
     @State private var l4ShowPopover = false
+    @State private var l4ContractCopySource = "L4CopyContractText"
+    @State private var l4ShowPrint = false
+    @State private var l4OverlayNavigationSheet = false
+    private let l4OverlayStrategy = AppNavigationStrategy(
+        implementation: .splitView,
+        reasoning: "L4 overlay accessibility contract"
+    )
+
+    /// Section title styling aligned with ExampleSection (scroll layout).
+    @ViewBuilder
+    private func contractSectionHeader(_ title: String) -> some View {
+        Text(title)
+            .font(.title2)
+            .bold()
+    }
+
+    @ViewBuilder
+    private var contractPresentationContent: some View {
+        platformVStack(alignment: .leading, spacing: 12) {
+            Button("L4ContractSheet") { l4ShowSheet = true }
+                .accessibilityIdentifier("L4ContractSheet")
+                .accessibilityLabel("L4ContractSheet")
+            Button("L4ContractPopover") { l4ShowPopover = true }
+                .accessibilityIdentifier("L4ContractPopover")
+                .accessibilityLabel("L4ContractPopover")
+        }
+    }
+
+    @ViewBuilder
+    private var contractNavigationContent: some View {
+        NavigationLink {
+            L4NavDestinationView()
+        } label: {
+            Text("L4NavLinkContract")
+        }
+        .accessibilityIdentifier("L4NavLinkContract")
+    }
+
+    @ViewBuilder
+    private var contractOverlayAccessibilityContent: some View {
+        EmptyView()
+            .platformAppNavigation_L4(
+                // Nil binding: a two-way `NavigationSplitViewVisibility` binding can be forced to `.detailOnly`
+                // in narrow Form rows; framework then pins detail-only shell and L4OverlayShowSidebar never appears (#207).
+                columnVisibility: nil,
+                showingNavigationSheet: $l4OverlayNavigationSheet,
+                strategy: l4OverlayStrategy,
+                sidebar: {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("L4OverlaySidebarContent")
+                            .accessibilityIdentifier("L4OverlaySidebarContent")
+                        Text("Overlay menu")
+                    }
+                    .padding()
+                },
+                detail: {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("L4OverlayDetailContent")
+                            .accessibilityIdentifier("L4OverlayDetailContent")
+                        Button("L4OverlayDetailAction") { }
+                            .accessibilityIdentifier("L4OverlayDetailAction")
+                    }
+                    .padding()
+                }
+            )
+            // Min height so nested NavigationStack + toolbar fit inside the Form row (XCUITest); avoid unbounded intrinsic height.
+            .frame(minHeight: 400)
+    }
+
+    @ViewBuilder
+    private var contractSystemContent: some View {
+        platformVStack(alignment: .leading, spacing: 12) {
+            Text("Copy to Clipboard (platformCopyToClipboard_L4)")
+                .font(.caption)
+                .foregroundColor(.secondary)
+            SixLayerFramework.platformTextField("L4ContractCopySource", text: $l4ContractCopySource)
+            Button("L4ContractCopy") {
+                _ = platformCopyToClipboard_L4(content: l4ContractCopySource)
+            }
+            .accessibilityIdentifier("L4ContractCopy")
+            .accessibilityLabel("L4ContractCopy")
+            Text("Print (platformPrint_L4)")
+                .font(.caption)
+                .foregroundColor(.secondary)
+            Button("L4ContractPrint") { l4ShowPrint = true }
+                .platformPrint_L4(isPresented: $l4ShowPrint, content: .text("L4 Print Contract"))
+                .accessibilityIdentifier("L4ContractPrint")
+                .accessibilityLabel("L4ContractPrint")
+            Text("CloudKit Sync Status")
+                .font(.caption)
+                .foregroundColor(.secondary)
+            platformCloudKitSyncStatus_L4(status: .idle)
+                .accessibilityIdentifier("platformCloudKitSyncStatus_L4")
+            Text("Photo Display")
+                .font(.caption)
+                .foregroundColor(.secondary)
+            PlatformPhotoComponentsLayer4.platformPhotoDisplay_L4(image: nil, style: .aspectFit)
+                .frame(height: 80)
+        }
+    }
+
+    @ViewBuilder
+    private var contractControlsContent: some View {
+        platformVStack(alignment: .leading, spacing: 16) {
+            platformButton("L4ContractButton") { }
+            SixLayerFramework.platformTextField("L4ContractTextField", text: $l4ContractText)
+            platformPicker(
+                label: "L4ContractPicker",
+                selection: $l4ContractPickerSelection,
+                options: ["A", "B", "C"]
+            )
+            platformSecureField("L4ContractSecureField", text: $l4ContractSecureText)
+            SixLayerFramework.platformToggle("L4ContractToggle", isOn: $l4ContractToggleOn)
+            SixLayerFramework.platformTextEditor("L4ContractTextEditor", text: $l4ContractEditorText)
+            EmptyView()
+                .platformDatePicker(selection: $l4ContractDate, displayedComponents: .date) { Text("L4ContractDatePicker") }
+        }
+    }
+
+    /// Form contract: on iOS use `platformFormSection` inside the root `Form` to avoid nested Forms
+    /// (ScrollView + Form breaks section headers and navigation; Issue #193).
+    @ViewBuilder
+    private var contractFormInnerContent: some View {
+        #if os(iOS)
+        EmptyView()
+            .platformFormSection(
+                header: {
+                    Text("L4FormSectionContract")
+                        .accessibilityLabel("L4FormSectionContract")
+                        .accessibilityIdentifier("L4FormSectionContract")
+                },
+                content: { Text("Section body") }
+            )
+        #else
+        SixLayerFramework.platformForm {
+            Color.clear
+                .frame(width: 1, height: 1)
+                .accessibilityHidden(true)
+                .platformFormSection(
+                    header: {
+                        Text("L4FormSectionContract")
+                            .accessibilityLabel("L4FormSectionContract")
+                            .accessibilityIdentifier("L4FormSectionContract")
+                    },
+                    content: { Text("Section body") }
+                )
+        }
+        #endif
+        platformVStack(alignment: .leading, spacing: 8) {
+            EmptyView()
+                .platformFormField(label: "L4FormFieldContract") { Text("Field content") }
+            EmptyView()
+                .platformFormFieldGroup(title: "L4FormFieldGroupContract") { Text("Group content") }
+            EmptyView()
+                .platformValidationMessage("L4ValidationMessageContract")
+        }
+    }
+
+    @ViewBuilder
+    private var contractListContent: some View {
+        platformVStack(alignment: .leading, spacing: 8) {
+            List {
+                EmptyView()
+                    .platformListRow(title: "L4ListRowContract")
+            }
+            .frame(height: 60)
+            EmptyView()
+                .platformListSectionHeader(title: "L4ListSectionHeaderContract")
+            EmptyView()
+                .platformListEmptyState(systemImage: "tray", title: "L4ListEmptyStateContract", message: "Empty")
+        }
+    }
 
     var body: some View {
-        ScrollView {
-            platformVStack(alignment: .leading, spacing: 24) {
-                ExampleSection(title: "L4 Presentation") {
-                    platformVStack(alignment: .leading, spacing: 12) {
-                        platformButton("L4ContractSheet") { l4ShowSheet = true }
-                            .accessibilityIdentifier("L4ContractSheet")
-                        platformButton("L4ContractPopover") { l4ShowPopover = true }
-                            .accessibilityIdentifier("L4ContractPopover")
+        Group {
+            #if os(iOS)
+            Form {
+                Section {
+                    contractPresentationContent
+                } header: {
+                    contractSectionHeader("L4 Presentation")
+                }
+                Section {
+                    contractNavigationContent
+                } header: {
+                    contractSectionHeader("L4 Navigation")
+                }
+                // Fixed width so nested split geometry stays narrow; `maxWidth` alone still received full Form width.
+                Section {
+                    HStack(alignment: .top, spacing: 0) {
+                        contractOverlayAccessibilityContent
+                            .frame(width: 300, alignment: .leading)
+                        Spacer(minLength: 0)
                     }
+                } header: {
+                    contractSectionHeader("L4 Overlay Accessibility")
                 }
-                .platformSheet_L4(isPresented: $l4ShowSheet) {
-                    L4SheetContentContractView()
+                Section {
+                    contractSystemContent
+                } header: {
+                    contractSectionHeader("L4 System")
                 }
-                .platformPopover_L4(isPresented: $l4ShowPopover) {
-                    Text("L4PopoverContentContract")
+                Section {
+                    contractControlsContent
+                } header: {
+                    contractSectionHeader("L4 Controls")
                 }
-                ExampleSection(title: "L4 Navigation") {
-                    NavigationLink("L4NavLinkContract") {
-                        L4NavDestinationView()
-                    }
-                    .accessibilityIdentifier("L4NavLinkContract")
-                }
-                ExampleSection(title: "L4 Controls") {
+                Section {
                     platformVStack(alignment: .leading, spacing: 16) {
-                        platformButton("L4ContractButton") { }
-                        SixLayerFramework.platformTextField("L4ContractTextField", text: $l4ContractText)
-                        platformPicker(
-                            label: "L4ContractPicker",
-                            selection: $l4ContractPickerSelection,
-                            options: ["A", "B", "C"]
-                        )
-                        platformSecureField("L4ContractSecureField", text: $l4ContractSecureText)
-                        SixLayerFramework.platformToggle("L4ContractToggle", isOn: $l4ContractToggleOn)
-                        SixLayerFramework.platformTextEditor("L4ContractTextEditor", text: $l4ContractEditorText)
-                        EmptyView()
-                            .platformDatePicker(selection: $l4ContractDate, displayedComponents: .date) { Text("L4ContractDatePicker") }
+                        contractFormInnerContent
                     }
+                } header: {
+                    contractSectionHeader("L4 Form")
                 }
-                ExampleSection(title: "L4 Form") {
-                    platformVStack(alignment: .leading, spacing: 16) {
-                        SixLayerFramework.platformForm {
-                            Group { Text("Form section body") }
-                                .platformFormSection(header: { Text("L4FormSectionContract") }, content: { Text("Section body") })
-                        }
-                        platformVStack(alignment: .leading, spacing: 8) {
-                            EmptyView()
-                                .platformFormField(label: "L4FormFieldContract") { Text("Field content") }
-                            EmptyView()
-                                .platformFormFieldGroup(title: "L4FormFieldGroupContract") { Text("Group content") }
-                            EmptyView()
-                                .platformValidationMessage("L4ValidationMessageContract")
-                        }
-                    }
-                }
-                ExampleSection(title: "L4 List") {
-                    platformVStack(alignment: .leading, spacing: 8) {
-                        List {
-                            EmptyView()
-                                .platformListRow(title: "L4ListRowContract")
-                        }
-                        .frame(height: 60)
-                        EmptyView()
-                            .platformListSectionHeader(title: "L4ListSectionHeaderContract")
-                        EmptyView()
-                            .platformListEmptyState(systemImage: "tray", title: "L4ListEmptyStateContract", message: "Empty")
-                    }
+                Section {
+                    contractListContent
+                } header: {
+                    contractSectionHeader("L4 List")
                 }
             }
-            .padding()
+            #else
+            ScrollView {
+                platformVStack(alignment: .leading, spacing: 24) {
+                    ExampleSection(title: "L4 Presentation") {
+                        contractPresentationContent
+                    }
+                    ExampleSection(title: "L4 Navigation") {
+                        contractNavigationContent
+                    }
+                    ExampleSection(title: "L4 Overlay Accessibility") {
+                        contractOverlayAccessibilityContent
+                    }
+                    ExampleSection(title: "L4 System") {
+                        contractSystemContent
+                    }
+                    ExampleSection(title: "L4 Controls") {
+                        contractControlsContent
+                    }
+                    ExampleSection(title: "L4 Form") {
+                        platformVStack(alignment: .leading, spacing: 16) {
+                            contractFormInnerContent
+                        }
+                    }
+                    ExampleSection(title: "L4 List") {
+                        contractListContent
+                    }
+                }
+                .padding()
+            }
+            #endif
         }
         .platformFrame()
         .navigationTitle("Layer 4 Examples")
-        .platformNavigationTitleDisplayMode_L4(.large)
+        // Inline title keeps the first contract sections in the visible safe area for XCUITest (Issue #193).
+        .platformNavigationTitleDisplayMode_L4(.inline)
+        .platformSheet_L4(isPresented: $l4ShowSheet) {
+            L4SheetContentContractView()
+        }
+        .platformPopover_L4(isPresented: $l4ShowPopover) {
+            Text("L4PopoverContentContract")
+                .accessibilityLabel("L4PopoverContentContract")
+                .accessibilityIdentifier("L4PopoverContentContract")
+        }
     }
 }

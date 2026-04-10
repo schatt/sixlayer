@@ -11,11 +11,12 @@ import CoreLocation
 
 // MARK: - Cross-Platform Location Extensions
 
-public extension CLLocationManager {
-    /// Cross-platform authorization status check
-    var platformAuthorizationStatus: PlatformLocationAuthorizationStatus {
+public extension CLAuthorizationStatus {
+    /// Maps `CLAuthorizationStatus` to `PlatformLocationAuthorizationStatus` without referencing
+    /// platform-only cases (e.g. `.authorizedWhenInUse` on iOS vs `.authorized` on macOS) at call sites.
+    var platformLocationAuthorizationStatus: PlatformLocationAuthorizationStatus {
         #if os(iOS)
-        switch authorizationStatus {
+        switch self {
         case .notDetermined:
             return .notDetermined
         case .denied:
@@ -30,7 +31,7 @@ public extension CLLocationManager {
             return .notDetermined
         }
         #elseif os(macOS)
-        switch authorizationStatus {
+        switch self {
         case .notDetermined:
             return .notDetermined
         case .denied:
@@ -47,5 +48,12 @@ public extension CLLocationManager {
         #else
         return .notDetermined
         #endif
+    }
+}
+
+public extension CLLocationManager {
+    /// Cross-platform authorization status check
+    var platformAuthorizationStatus: PlatformLocationAuthorizationStatus {
+        authorizationStatus.platformLocationAuthorizationStatus
     }
 }

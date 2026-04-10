@@ -1,0 +1,26 @@
+---
+description: MCP-first test runs; never truncate diagnostic logs; full logs or Read on files.
+alwaysApply: true
+---
+
+# Test and Build Output for Diagnosis
+
+## **MANDATORY — PRECEDENCE**
+
+- **Do not pipe test or build output through `head`, `tail`, or similar** when the goal is to **verify results, debug failures, find hangs, or capture warnings**. Truncation discards the failing test name, first error lines, and context at the start of the log.
+- **This rule takes precedence** over convenience shortcuts that would hide output from the agent or the user.
+
+## **REQUIRED BEHAVIOR**
+
+1. **MANDATORY for test runs:** Use **xcode-tools** MCP (**RunAllTests**, **RunSomeTests**) with **`tabIdentifier`** from **XcodeListWindows**, after setting the scheme with **`Development/scripts/set_xcode_scheme.applescript`** when needed. **Do not** default to CLI for tests when MCP is available. See **`.cursor/rules/test-target-default.mdc`**.
+2. **CLI (exception only):** Use **`dbs-build`**, **`xcodebuild`**, or **`swift test`** **only** when MCP is unavailable after retry / Xcode tab resolution per **test-target-default**—and **without** truncating stdout/stderr in the shell pipeline.
+3. **Large logs:** Redirect to a **file** (e.g. **`tee`** or **`> build.log 2>&1`**) and use the **Read** tool with offsets or search to inspect sections—**do not** use **`tail`** or **`head`** in the pipeline as the primary way to “see” output for diagnosis. Prefer MCP **`fullSummaryPath`** / **`fullConsoleLogsPath`** when present.
+
+## **RATIONALE**
+
+- Failures and hangs often appear **once** at a specific point; **`tail` hides everything before the last lines**, so the agent gets **no useful information** for root cause.
+- MCP test runs surface structured results in Xcode; full CLI logs preserve order and completeness.
+
+## **EXCEPTION**
+
+- Only when the **user explicitly** asks for a **bounded excerpt** (e.g. “last 20 lines”) may the agent use truncation—and even then, prefer reading a saved full log file when debugging is the purpose.

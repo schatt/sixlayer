@@ -1,5 +1,5 @@
 // swift-tools-version: 6.0
-// SixLayerFramework v7.5.9 - Patch release
+// SixLayerFramework v7.5.10 - Patch release
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
@@ -59,28 +59,34 @@ let package = Package(
             ]
         ),
 
-        // Unit tests - main test suite
+        // Full unit test suite is built and run via Xcode (see project.yml); SwiftPM does not include
+        // SixLayerFrameworkUnitTests because it depends on shared test helpers and ViewInspector wiring
+        // that are not fully represented here.
+
+        /// Isolated unit tests for pure layout resolver logic (no ViewInspector / BaseTestClass).
+        /// Enables `swift test` / `swift test --filter NavigationLayoutResolverTests` without building the full UI test suite.
         .testTarget(
-            name: "SixLayerFrameworkUnitTests",
+            name: "NavigationLayoutResolverTests",
             dependencies: [
-                "SixLayerFramework",
-                "SixLayerTestKit"
+                "SixLayerFramework"
             ],
-            path: "Development/Tests/SixLayerFrameworkUnitTests",
-            exclude: [
-                // Documentation and example files
-                "BugReports/PlatformTypes_v4.6.4/README.md",
-                "BugReports/README.md",
-                "BugReports/PlatformTypes_v4.6.6/README.md",
-                "BugReports/ButtonStyle_v4.6.3/README.md",
-                "BugReports/PlatformImage_v4.6.2/README.md",
-                "BugReports/PlatformPhotoPicker_v4.6.5/README.md",
-                "ViewInspectorTests/Utilities/TestHelpers/CoreDataTestingGuide.md",
-                "Utilities/TestHelpers/CoreDataTestingGuide.md"
+            path: "Development/Tests/NavigationLayoutResolverTests"
+        ),
+
+        /// Pure routing policy for managed settings flow (#209); no ViewInspector / BaseTestClass.
+        .testTarget(
+            name: "PlatformManagedSettingsFlowLogicTests",
+            dependencies: [
+                "SixLayerFramework"
             ],
-            swiftSettings: [
-                // Disable strict concurrency checking for tests to work around Swift 6 region-based isolation checker issues
-                .define("SWIFT_DISABLE_STRICT_CONCURRENCY_CHECKING")
+            path: "Development/Tests/SixLayerFrameworkUnitTests/Features/Navigation",
+            sources: [
+                "PlatformManagedSettingsFlowLogicTests.swift",
+                "PlatformManagedSettingsTopLevelStateTests.swift",
+                "PlatformManagedSettingsFlowLayer4Tests.swift",
+                "PlatformManagedSettingsDetailNavigationStateTests.swift",
+                "PlatformManagedSettingsDetailNavigationLayer4Tests.swift",
+                "ManagedPlatformSettingsFlowGuideExampleTests.swift"
             ]
         ),
 

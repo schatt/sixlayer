@@ -285,6 +285,445 @@ struct CreateUserView: View {
 
 **Key Insight**: Both views support entity creation. Choose based on how much control you want over layout, not based on entity creation capabilities.
 
+## Core Data Edit Sessions with Child Contexts
+
+Sometimes you want more control than automatic entity creation provides—especially for **edit flows** where you:
+
+- Need to pre‑populate a form from an existing entity
+- Want to isolate edits in a **child context** until the user taps Save
+- Prefer to keep **all Core Data specifics out of SixLayer** and in your own helpers
+
+This section shows a recommended pattern:
+
+- A small **edit‑session helper** that prepares a child context and entity
+- A SwiftUI **host view** that wires `Core Data ⇄ DynamicFormState ⇄ DynamicFormView`
+- Two identity variants:
+  - **Core Data–centric**: `NSManagedObjectID` only (shortest reopen code)
+  - **App‑level identity**: `UUID` property you can use outside Core Data
+
+### Variant A: NSManagedObjectID-Only Identity (Shortest Reopen Code)
+
+Use this when your feature is mostly Core Data–centric and you are happy to pass `NSManagedObjectID` around inside your app.
+
+**Edit-session helper**
+
+```swift
+import CoreData
+
+final class Expense: NSManagedObject {
+    @NSManaged var date: Date?
+    @NSManaged var amount: NSNumber?
+    @NSManaged var notes: String?
+}
+
+struct EditExpenseSession {
+    let context: NSManagedObjectContext
+    let expense: Expense
+}
+
+enum EditExpenseError: Error {
+    case notFound
+}
+
+@MainActor
+func makeEditExpenseSession(
+    parentContext: NSManagedObjectContext,
+    existingID: NSManagedObjectID?
+) throws -> EditExpenseSession {
+    let child = NSManagedObjectContext(concurrencyType: .mainQueueConcurrencyType)
+    child.parent = parentContext
+    child.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
+
+    if let existingID {
+        // Edit flow: fetch into child context
+        guard let existing = try child.existingObject(with: existingID) as? Expense else {
+            throw EditExpenseError.notFound
+        }
+        return EditExpenseSession(context: child, expense: existing)
+    } else {
+        // Add flow: create new entity in child context
+        let newExpense = Expense(context: child)
+        newExpense.date = Date()
+        return EditExpenseSession(context: child, expense: newExpense)
+    }
+}
+```
+
+**SwiftUI host view wiring Core Data ⇄ DynamicForm**
+
+```swift
+import SwiftUI
+import CoreData
+import SixLayerFramework
+
+struct EditExpenseHostView: View {
+    let parentContext: NSManagedObjectContext
+    let existingID: NSManagedObjectID?
+    let onFinished: () -> Void
+
+    @State private var session: EditExpenseSession?
+    @State private var errorMessage: String?
+    @State private var saveErrorMessage: String?
+
+    @StateObject private var formState: DynamicFormState
+
+    init(
+        parentContext: NSManagedObjectContext,
+        existingID: NSManagedObjectID?,
+        onFinished: @escaping () -> Void
+    ) {
+        self.parentContext = parentContext
+        self.existingID = existingID
+        self.onFinished = onFinished
+
+        let config = DynamicFormConfiguration(
+            id: "editExpense",
+            title: "Edit Expense",
+            sections: [
+                DynamicFormSection(
+                    id: "main",
+                    title: "",
+                    fields: [
+                        DynamicFormField(
+                            id: "date",
+                            contentType: .date,
+                            label: "Date",
+                            isRequired: true,
+                            supportsOCR: false
+                        ),
+                        DynamicFormField(
+                            id: "amount",
+                            contentType: .decimal,
+                            label: "Amount",
+                            isRequired: true,
+                            supportsOCR: true
+                        ),
+                        DynamicFormField(
+                            id: "notes",
+                            contentType: .text,
+                            label: "Notes",
+                            isRequired: false,
+                            supportsOCR: true
+                        )
+                    ]
+                )
+            ]
+        )
+        _formState = StateObject(wrappedValue: DynamicFormState(configuration: config))
+    }
+
+    var body: some View {
+        Group {
+            if let session {
+                DynamicFormView(formState: formState)
+                    .environment(\.managedObjectContext, session.context)
+                    .toolbar {
+                        ToolbarItem(placement: .cancellationAction) {
+                            Button("Cancel") {
+                                session.context.reset()
+                                onFinished()
+                            }
+                        }
+                        ToolbarItem(placement: .confirmationAction) {
+                            Button("Save") {
+                                Task { await save() }
+                            }
+                        }
+                    }
+                    .onAppear { populateForm(from: session.expense) }
+                    .alert("Error Saving", isPresented: .constant(saveErrorMessage != nil)) {
+                        Button("OK") { saveErrorMessage = nil }
+                    } message: {
+                        Text(saveErrorMessage ?? "")
+                    }
+            } else if let errorMessage {
+                Text(errorMessage)
+                    .multilineTextAlignment(.center)
+                    .padding()
+            } else {
+                ProgressView()
+                    .onAppear { startSession() }
+            }
+        }
+    }
+
+    @MainActor
+    private func startSession() {
+        do {
+            let newSession = try makeEditExpenseSession(
+                parentContext: parentContext,
+                existingID: existingID
+            )
+            session = newSession
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+}
+
+extension EditExpenseHostView {
+    private func populateForm(from expense: Expense) {
+        formState.setValue(expense.date ?? Date(), forFieldID: "date")
+
+        if let amount = expense.amount?.decimalValue {
+            formState.setValue(amount, forFieldID: "amount")
+        }
+
+        formState.setValue(expense.notes ?? "", forFieldID: "notes")
+    }
+
+    @MainActor
+    private func save() async {
+        guard let session else { return }
+        let context = session.context
+        let expense = session.expense
+
+        // Validate form using SixLayer’s validation API.
+        guard formState.validateAllFields() else {
+            return
+        }
+
+        // Read values from form.
+        let date = (formState.value(forFieldID: "date") as? Date) ?? Date()
+        let amount = formState.decimalValue(forFieldID: "amount") ?? 0
+        let notes = (formState.value(forFieldID: "notes") as? String) ?? ""
+
+        expense.date = date
+        expense.amount = NSDecimalNumber(decimal: amount)
+        expense.notes = notes
+
+        do {
+            // Save child, then parent so changes are visible to the rest of the app.
+            try context.save()
+            try parentContext.save()
+            onFinished()
+        } catch {
+            context.rollback()
+            saveErrorMessage = "We couldn’t save your changes. Please try again."
+        }
+    }
+}
+```
+
+### Variant B: UUID App-Level Identity (Lookup via Fetch)
+
+Use this when you want an **app‑level identifier** you can pass around outside Core Data (e.g. in URLs, deep links, syncing). The pattern is the same; only the identity changes.
+
+**Edit-session helper using UUID**
+
+```swift
+import CoreData
+
+final class Expense: NSManagedObject {
+    @NSManaged var id: UUID?
+    @NSManaged var date: Date?
+    @NSManaged var amount: NSNumber?
+    @NSManaged var notes: String?
+}
+
+struct EditExpenseSession {
+    let context: NSManagedObjectContext
+    let expense: Expense
+}
+
+enum EditExpenseError: Error {
+    case notFound
+}
+
+@MainActor
+func makeEditExpenseSession(
+    parentContext: NSManagedObjectContext,
+    existingID: UUID?
+) throws -> EditExpenseSession {
+    let child = NSManagedObjectContext(concurrencyType: .mainQueueConcurrencyType)
+    child.parent = parentContext
+    child.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
+
+    if let existingID {
+        // Edit flow: fetch by UUID into child context
+        let request = NSFetchRequest<Expense>(entityName: "Expense")
+        request.fetchLimit = 1
+        request.predicate = NSPredicate(format: "id == %@", existingID as CVarArg)
+
+        guard let existing = try child.fetch(request).first else {
+            throw EditExpenseError.notFound
+        }
+
+        return EditExpenseSession(context: child, expense: existing)
+    } else {
+        // Add flow: create new entity in child context
+        let newExpense = Expense(context: child)
+        newExpense.id = UUID()
+        newExpense.date = Date()
+        return EditExpenseSession(context: child, expense: newExpense)
+    }
+}
+```
+
+**Host view (same pattern, UUID identity)**
+
+```swift
+import SwiftUI
+import CoreData
+import SixLayerFramework
+
+struct EditExpenseHostView: View {
+    let parentContext: NSManagedObjectContext
+    let existingID: UUID?
+    let onFinished: () -> Void
+
+    @State private var session: EditExpenseSession?
+    @State private var errorMessage: String?
+    @State private var saveErrorMessage: String?
+
+    @StateObject private var formState: DynamicFormState
+
+    init(
+        parentContext: NSManagedObjectContext,
+        existingID: UUID?,
+        onFinished: @escaping () -> Void
+    ) {
+        self.parentContext = parentContext
+        self.existingID = existingID
+        self.onFinished = onFinished
+
+        let config = DynamicFormConfiguration(
+            id: "editExpense",
+            title: "Edit Expense",
+            sections: [
+                DynamicFormSection(
+                    id: "main",
+                    title: "",
+                    fields: [
+                        DynamicFormField(
+                            id: "date",
+                            contentType: .date,
+                            label: "Date",
+                            isRequired: true,
+                            supportsOCR: false
+                        ),
+                        DynamicFormField(
+                            id: "amount",
+                            contentType: .decimal,
+                            label: "Amount",
+                            isRequired: true,
+                            supportsOCR: true
+                        ),
+                        DynamicFormField(
+                            id: "notes",
+                            contentType: .text,
+                            label: "Notes",
+                            isRequired: false,
+                            supportsOCR: true
+                        )
+                    ]
+                )
+            ]
+        )
+        _formState = StateObject(wrappedValue: DynamicFormState(configuration: config))
+    }
+
+    var body: some View {
+        Group {
+            if let session {
+                DynamicFormView(formState: formState)
+                    .environment(\.managedObjectContext, session.context)
+                    .toolbar {
+                        ToolbarItem(placement: .cancellationAction) {
+                            Button("Cancel") {
+                                session.context.reset()
+                                onFinished()
+                            }
+                        }
+                        ToolbarItem(placement: .confirmationAction) {
+                            Button("Save") {
+                                Task { await save() }
+                            }
+                        }
+                    }
+                    .onAppear { populateForm(from: session.expense) }
+                    .alert("Error Saving", isPresented: .constant(saveErrorMessage != nil)) {
+                        Button("OK") { saveErrorMessage = nil }
+                    } message: {
+                        Text(saveErrorMessage ?? "")
+                    }
+            } else if let errorMessage {
+                Text(errorMessage)
+                    .multilineTextAlignment(.center)
+                    .padding()
+            } else {
+                ProgressView()
+                    .onAppear { startSession() }
+            }
+        }
+    }
+
+    @MainActor
+    private func startSession() {
+        do {
+            let newSession = try makeEditExpenseSession(
+                parentContext: parentContext,
+                existingID: existingID
+            )
+            session = newSession
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+}
+
+extension EditExpenseHostView {
+    private func populateForm(from expense: Expense) {
+        formState.setValue(expense.date ?? Date(), forFieldID: "date")
+
+        if let amount = expense.amount?.decimalValue {
+            formState.setValue(amount, forFieldID: "amount")
+        }
+
+        formState.setValue(expense.notes ?? "", forFieldID: "notes")
+    }
+
+    @MainActor
+    private func save() async {
+        guard let session else { return }
+        let context = session.context
+        let expense = session.expense
+
+        guard formState.validateAllFields() else {
+            return
+        }
+
+        let date = (formState.value(forFieldID: "date") as? Date) ?? Date()
+        let amount = formState.decimalValue(forFieldID: "amount") ?? 0
+        let notes = (formState.value(forFieldID: "notes") as? String) ?? ""
+
+        expense.date = date
+        expense.amount = NSDecimalNumber(decimal: amount)
+        expense.notes = notes
+
+        do {
+            try context.save()
+            try parentContext.save()
+            onFinished()
+        } catch {
+            context.rollback()
+            saveErrorMessage = "We couldn’t save your changes. Please try again."
+        }
+    }
+}
+```
+
+### Choosing an Identity Style
+
+- **Core Data–centric identity (NSManagedObjectID only)**:
+  - Shortest possible “reopen this object in a child context” code
+  - Great for features that live entirely inside Core Data and SwiftUI
+- **App‑level identity (UUID)**:
+  - Stable identifier you can pass through URLs, deep links, sync payloads, etc.
+  - One extra fetch to resolve `UUID → Expense` inside the child context
+
+The SixLayer pattern is the same in both cases: keep **Core Data helpers** like `makeEditExpenseSession` on your side of the app boundary, and use `DynamicFormState` + `DynamicFormView` purely for form layout, validation, and interaction.
+
 ## Related Documentation
 
 - [Field Hints Guide](FieldHintsGuide.md) - Creating hints files

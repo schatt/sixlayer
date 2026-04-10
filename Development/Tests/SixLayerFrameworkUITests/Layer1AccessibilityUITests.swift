@@ -173,6 +173,23 @@ final class Layer1AccessibilityUITests: XCTestCase {
         XCTAssertEqual(element.elementType, expectedType,
                       "\(functionName) should have correct accessibility trait. Expected: \(expectedType), Found: \(element.elementType)")
     }
+
+    /// Verify that a card with the given title is exposed as a single tappable accessibility element.
+    /// Contract: the card should present as a button with a non-empty label (single element per card title).
+    @MainActor
+    private func assertSingleTappableCard(title: String, elementName: String) {
+        var element = app.buttons[title]
+        if !element.waitForExistence(timeout: 2.0) {
+            element = app.cells[title]
+        }
+        XCTAssertTrue(element.waitForExistence(timeout: 3.0),
+                      "\(elementName) with title '\(title)' should exist as a tappable element")
+        element.verifyAccessibilityContract(
+            elementName: elementName,
+            expectedType: .button,
+            requireLabel: true
+        )
+    }
     
     // MARK: - One test: expand Layer 1 once, then all asserts for content under Layer 1
 
@@ -302,5 +319,38 @@ final class Layer1AccessibilityUITests: XCTestCase {
             }
             goBackFromLayer1Category()
         }
+    }
+
+    // MARK: - Card components: single-tappable element contract (Issue #191)
+
+    /// platformPresentItemCollection_L1 should surface each item card as a single tappable accessibility element (button with label).
+    @MainActor
+    func testItemCollectionCards_ExposeSingleTappableElements() throws {
+        expandLayer1ExamplesIfNeeded()
+        selectLayer1Category("Data Presentation")
+
+        let cardTitles = ["Item 1", "Item 2", "Item 3"]
+        for title in cardTitles {
+            assertSingleTappableCard(
+                title: title,
+                elementName: "platformPresentItemCollection_L1 card"
+            )
+        }
+
+        goBackFromLayer1Category()
+    }
+
+    /// platformResponsiveCard_L1 should expose the entire card as a single tappable accessibility element.
+    @MainActor
+    func testResponsiveCard_ExposesSingleTappableElement() throws {
+        expandLayer1ExamplesIfNeeded()
+        selectLayer1Category("Data Presentation")
+
+        assertSingleTappableCard(
+            title: "Card Title",
+            elementName: "platformResponsiveCard_L1 card"
+        )
+
+        goBackFromLayer1Category()
     }
 }

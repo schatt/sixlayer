@@ -417,7 +417,14 @@ public struct ResponsiveCardView: View {
         .cornerRadius(12)
         .shadow(radius: 2)
         .frame(height: 120)
-        .environment(\.accessibilityIdentifierLabel, data.title) // TDD GREEN: Pass label to identifier generation
+        // Issue #191 / UI tests: one tappable accessibility element with the card title as label (matches Layer1AccessibilityUITests).
+        .contentShape(Rectangle())
+        .onTapGesture { }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(data.title)
+        .accessibilityAddTraits(.isButton)
+        .accessibilityHint("Tap to view details")
+        .environment(\.accessibilityIdentifierLabel, data.title) // Pass label to identifier generation
         .automaticCompliance(
             identifierName: sanitizeLabelText(data.title)  // Auto-generate identifierName from card title
         )

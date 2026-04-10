@@ -45,6 +45,8 @@
 
 **Action:** Add UI test screens + tests that exercise the same scenarios (e.g. view with manual ID, view with opt-out, global disable + local enable) and assert via XCUIElement that identifiers are present/absent as required.
 
+**Concrete checklist & tight acceptance criteria (issue #197):** See [`Development/VIEWINSPECTOR_CATEGORY_A_CHECKLIST.md`](VIEWINSPECTOR_CATEGORY_A_CHECKLIST.md) — canonical list of **83** ViewInspector `@Test` methods across named suites, plus rules for `ConsolidatedAccessibilityTests.swift` deduplication.
+
 ---
 
 ### B. View hierarchy / no text elements (~20+ VI failures)

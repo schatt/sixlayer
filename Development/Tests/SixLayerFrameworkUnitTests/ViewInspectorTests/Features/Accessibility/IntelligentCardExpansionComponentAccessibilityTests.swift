@@ -12,11 +12,39 @@ import SwiftUI
 @testable import SixLayerFramework
 
 /// NOTE: Not marked @MainActor on class to allow parallel execution
+///
+/// Single-tappable element tests (Issue #191): The tests *ExposesSingleTappableElement assert the correct contract
+/// (one combined a11y element with label and button trait). The helper uses the view's UIAccessibilityContainer-style
+/// API (accessibilityElementCount / accessibilityElementAtIndex:) when present, so SwiftUI hosting views that expose
+/// elements that way are verified correctly.
 @Suite("Intelligent Card Expansion Component Accessibility")
 open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
-    
+
+    // MARK: - Sanity: minimal view with same compliance helper (diagnose 0 IDs)
+
+    /// Same setup as card tests but with a minimal view. In SLF-iOS-ViewInspectorTests this fails with 0 IDs
+    /// (as do PlatformInteractionButton + compliance helper); 0 IDs appear environment-wide for this scheme.
+    /// Identifiers are visible in UI tests (XCUITest); the 0-ID result is limited to this unit-test hosting/ViewInspector setup.
+    @Test @MainActor func testMinimalViewWithAutomaticComplianceGeneratesAccessibilityIdentifiers() async {
+        initializeTestConfig()
+        runWithTaskLocalConfig {
+            let view = Text("Minimal").automaticCompliance(named: "MinimalCardSanity")
+            var diagnostic: String? = nil
+            let hasAccessibilityID = testComponentComplianceSinglePlatform(
+                view,
+                expectedPattern: "SixLayer.main.ui.*",
+                platform: SixLayerPlatform.iOS,
+                componentName: "MinimalCardSanity",
+                diagnostic: &diagnostic,
+                exposeContentAccessibility: false
+            )
+            if !hasAccessibilityID, let d = diagnostic { Issue.record(DiagnosticMessage(message: d)) }
+            #expect(hasAccessibilityID, "Minimal view with .automaticCompliance(named:) should generate identifiers in same setup as card tests; diagnostic: \(diagnostic ?? "nil")")
+        }
+    }
+
     // MARK: - Layer 4 Components Tests
-    
+
     // MARK: - ExpandableCardCollectionView Tests
     
     @Test @MainActor func testExpandableCardCollectionViewGeneratesAccessibilityIdentifiers() async {
@@ -33,13 +61,17 @@ open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
             let view = ExpandableCardCollectionView(items: testItems, hints: hints)
             
             // Then: Should generate accessibility identifiers
+            var diagnostic: String? = nil
             let hasAccessibilityID = testComponentComplianceSinglePlatform(
                 view,
                 expectedPattern: "SixLayer.main.ui.*",
                 platform: SixLayerPlatform.iOS,
-                componentName: "ExpandableCardCollectionView"
+                componentName: "ExpandableCardCollectionView",
+                diagnostic: &diagnostic,
+                exposeContentAccessibility: false
             )
-            #expect(hasAccessibilityID, "ExpandableCardCollectionView should generate accessibility identifiers ")
+            if !hasAccessibilityID, let d = diagnostic { Issue.record(DiagnosticMessage(message: d)) }
+            #expect(hasAccessibilityID, "ExpandableCardCollectionView should generate accessibility identifiers")
         }
     }
     
@@ -80,51 +112,59 @@ open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
             )
             
             // Then: Should generate accessibility identifiers
+            var diagnostic: String? = nil
             let hasAccessibilityID = testComponentComplianceSinglePlatform(
                 view,
                 expectedPattern: "SixLayer.main.ui.*",
                 platform: SixLayerPlatform.iOS,
-                componentName: "ExpandableCardComponent"
+                componentName: "ExpandableCardComponent",
+                diagnostic: &diagnostic,
+                exposeContentAccessibility: false
             )
-            #expect(hasAccessibilityID, "ExpandableCardComponent should generate accessibility identifiers ")
+            if !hasAccessibilityID, let d = diagnostic { Issue.record(DiagnosticMessage(message: d)) }
+            #expect(hasAccessibilityID, "ExpandableCardComponent should generate accessibility identifiers")
         }
     }
     
-    @Test @MainActor func testExpandableCardComponentUsesSingleCardAccessibilityLabel() async {
-            initializeTestConfig()
-        runWithTaskLocalConfig {
-            let testItem = CardTestItem(id: "1", title: "Accessibility Card")
-            let hints = PresentationHints()
-            let view = ExpandableCardComponent(
-                item: testItem,
-                layoutDecision: IntelligentCardLayoutDecision(
-                    columns: 2,
-                    spacing: 16,
-                    cardWidth: 200,
-                    cardHeight: 150,
-                    padding: 16
-                ),
-                strategy: CardExpansionStrategy(
-                    supportedStrategies: [.hoverExpand],
-                    primaryStrategy: .hoverExpand,
-                    expansionScale: 1.15,
-                    animationDuration: 0.3
-                ),
-                hints: hints,
-                isExpanded: false,
-                isHovered: false,
-                onExpand: { },
-                onCollapse: { },
-                onHover: { _ in },
-                onItemSelected: { _ in },
-                onItemDeleted: { _ in },
-                onItemEdited: { _ in }
-            )
-            
-            let hostedRoot = TestSetupUtilities.hostRootPlatformView(view, forceLayout: true)
-            let accessibilityLabel = getAccessibilityLabelForTest(view: view, hostedRoot: hostedRoot)
-            #expect(accessibilityLabel == "Accessibility Card", "ExpandableCardComponent should expose one card label for the entire tappable card element")
-        }
+    /// Issue #191: ExpandableCardComponent must expose the card as a single tappable accessibility element
+    /// (one combined element with explicit label and button trait so VoiceOver and UI tests see one activatable control).
+    @Test @MainActor func testExpandableCardComponentExposesSingleTappableElement() async {
+        let cardTitle = "Vehicle One"
+        let testItem = CardTestItem(id: "1", title: cardTitle)
+        let hints = PresentationHints()
+        let view = ExpandableCardComponent(
+            item: testItem,
+            layoutDecision: IntelligentCardLayoutDecision(
+                columns: 2,
+                spacing: 16,
+                cardWidth: 200,
+                cardHeight: 150,
+                padding: 16
+            ),
+            strategy: CardExpansionStrategy(
+                supportedStrategies: [.hoverExpand],
+                primaryStrategy: .hoverExpand,
+                expansionScale: 1.15,
+                animationDuration: 0.3
+            ),
+            hints: hints,
+            isExpanded: false,
+            isHovered: false,
+            onExpand: { },
+            onCollapse: { },
+            onHover: { _ in },
+            onItemSelected: { _ in },
+            onItemDeleted: nil,
+            onItemEdited: nil
+        )
+        #if canImport(UIKit)
+        initializeTestConfig()
+        let root = runWithTaskLocalConfig { TestSetupUtilities.hostRootPlatformView(view, forceLayout: true, exposeContentAccessibility: true) }
+        let hasSingleTappable = hostedViewHasAccessibilityElementWithLabelAndButtonTrait(root: root, expectedLabel: cardTitle)
+        #expect(hasSingleTappable, "ExpandableCardComponent should expose one accessibility element with label '\(cardTitle)' and button trait (Issue #191)")
+        #else
+        #expect(Bool(true), "Single tappable element verification runs on iOS (UIKit) only")
+        #endif
     }
     
     // MARK: - CoverFlowCollectionView Tests
@@ -153,13 +193,36 @@ open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
                 view,
                 expectedPattern: "SixLayer.main.ui.*",
                 platform: SixLayerPlatform.iOS,
-                componentName: "CoverFlowCollectionView"
+                componentName: "CoverFlowCollectionView",
+                exposeContentAccessibility: false
             )
             #expect(hasAccessibilityID, "CoverFlowCollectionView should generate accessibility identifiers ")
         }
     }
     
     // MARK: - CoverFlowCardComponent Tests
+    
+    /// Issue #191: CoverFlowCardComponent must expose the card as a single tappable accessibility element.
+    @Test @MainActor func testCoverFlowCardComponentExposesSingleTappableElement() async {
+        let cardTitle = "CoverFlow Item"
+        let testItem = CardTestItem(id: "1", title: cardTitle)
+        let hints = PresentationHints()
+        let view = CoverFlowCardComponent(
+            item: testItem,
+            hints: hints,
+            onItemSelected: { _ in },
+            onItemDeleted: nil,
+            onItemEdited: nil
+        )
+        #if canImport(UIKit)
+        initializeTestConfig()
+        let root = runWithTaskLocalConfig { TestSetupUtilities.hostRootPlatformView(view, forceLayout: true, exposeContentAccessibility: true) }
+        let hasSingleTappable = hostedViewHasAccessibilityElementWithLabelAndButtonTrait(root: root, expectedLabel: cardTitle)
+        #expect(hasSingleTappable, "CoverFlowCardComponent should expose one accessibility element with label '\(cardTitle)' and button trait (Issue #191)")
+        #else
+        #expect(Bool(true), "Single tappable element verification runs on iOS (UIKit) only")
+        #endif
+    }
     
     @Test @MainActor func testCoverFlowCardComponentGeneratesAccessibilityIdentifiers() async {
             initializeTestConfig()
@@ -178,13 +241,17 @@ open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
             )
             
             // Then: Should generate accessibility identifiers
+            var diagnostic: String? = nil
             let hasAccessibilityID = testComponentComplianceSinglePlatform(
                 view,
                 expectedPattern: "SixLayer.main.ui.*",
                 platform: SixLayerPlatform.iOS,
-                componentName: "CoverFlowCardComponent"
+                componentName: "CoverFlowCardComponent",
+                diagnostic: &diagnostic,
+                exposeContentAccessibility: false
             )
-            #expect(hasAccessibilityID, "CoverFlowCardComponent should generate accessibility identifiers ")
+            if !hasAccessibilityID, let d = diagnostic { Issue.record(DiagnosticMessage(message: d)) }
+            #expect(hasAccessibilityID, "CoverFlowCardComponent should generate accessibility identifiers")
         }
     }
     
@@ -208,7 +275,8 @@ open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
                 view,
                 expectedPattern: "SixLayer.main.ui.*",
                 platform: SixLayerPlatform.iOS,
-                componentName: "GridCollectionView"
+                componentName: "GridCollectionView",
+                exposeContentAccessibility: false
             )
             #expect(hasAccessibilityID, "GridCollectionView should generate accessibility identifiers ")
         }
@@ -234,7 +302,8 @@ open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
                 view,
                 expectedPattern: "SixLayer.main.ui.*",
                 platform: SixLayerPlatform.iOS,
-                componentName: "ListCollectionView"
+                componentName: "ListCollectionView",
+                exposeContentAccessibility: false
             )
             #expect(hasAccessibilityID, "ListCollectionView should generate accessibility identifiers ")
         }
@@ -260,7 +329,8 @@ open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
                 view,
                 expectedPattern: "SixLayer.main.ui.*",
                 platform: SixLayerPlatform.iOS,
-                componentName: "MasonryCollectionView"
+                componentName: "MasonryCollectionView",
+                exposeContentAccessibility: false
             )
             #expect(hasAccessibilityID, "MasonryCollectionView should generate accessibility identifiers ")
         }
@@ -289,13 +359,43 @@ open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
                 view,
                 expectedPattern: "SixLayer.main.ui.*",
                 platform: SixLayerPlatform.iOS,
-                componentName: "AdaptiveCollectionView"
+                componentName: "AdaptiveCollectionView",
+                exposeContentAccessibility: false
             )
             #expect(hasAccessibilityID, "AdaptiveCollectionView should generate accessibility identifiers ")
         }
     }
     
     // MARK: - SimpleCardComponent Tests
+    
+    /// Issue #191: SimpleCardComponent must expose the card as a single tappable accessibility element.
+    @Test @MainActor func testSimpleCardComponentExposesSingleTappableElement() async {
+        let cardTitle = "Simple Card Item"
+        let testItem = CardTestItem(id: "1", title: cardTitle)
+        let hints = PresentationHints()
+        let view = SimpleCardComponent(
+            item: testItem,
+            layoutDecision: IntelligentCardLayoutDecision(
+                columns: 1,
+                spacing: 8,
+                cardWidth: 300,
+                cardHeight: 100,
+                padding: 16
+            ),
+            hints: hints,
+            onItemSelected: { _ in },
+            onItemDeleted: nil,
+            onItemEdited: nil
+        )
+        #if canImport(UIKit)
+        initializeTestConfig()
+        let root = runWithTaskLocalConfig { TestSetupUtilities.hostRootPlatformView(view, forceLayout: true, exposeContentAccessibility: true) }
+        let hasSingleTappable = hostedViewHasAccessibilityElementWithLabelAndButtonTrait(root: root, expectedLabel: cardTitle)
+        #expect(hasSingleTappable, "SimpleCardComponent should expose one accessibility element with label '\(cardTitle)' and button trait (Issue #191)")
+        #else
+        #expect(Bool(true), "Single tappable element verification runs on iOS (UIKit) only")
+        #endif
+    }
     
     @Test @MainActor func testSimpleCardComponentGeneratesAccessibilityIdentifiers() async {
             initializeTestConfig()
@@ -324,13 +424,36 @@ open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
                 view,
                 expectedPattern: "SixLayer.main.ui.*",
                 platform: SixLayerPlatform.iOS,
-                componentName: "SimpleCardComponent"
+                componentName: "SimpleCardComponent",
+                exposeContentAccessibility: false
             )
             #expect(hasAccessibilityID, "SimpleCardComponent should generate accessibility identifiers ")
         }
     }
     
     // MARK: - ListCardComponent Tests
+    
+    /// Issue #191: ListCardComponent must expose the card as a single tappable accessibility element.
+    @Test @MainActor func testListCardComponentExposesSingleTappableElement() async {
+        let cardTitle = "List Card Item"
+        let testItem = CardTestItem(id: "1", title: cardTitle)
+        let hints = PresentationHints()
+        let view = ListCardComponent(
+            item: testItem,
+            hints: hints,
+            onItemSelected: { _ in },
+            onItemDeleted: nil,
+            onItemEdited: nil
+        )
+        #if canImport(UIKit)
+        initializeTestConfig()
+        let root = runWithTaskLocalConfig { TestSetupUtilities.hostRootPlatformView(view, forceLayout: true, exposeContentAccessibility: true) }
+        let hasSingleTappable = hostedViewHasAccessibilityElementWithLabelAndButtonTrait(root: root, expectedLabel: cardTitle)
+        #expect(hasSingleTappable, "ListCardComponent should expose one accessibility element with label '\(cardTitle)' and button trait (Issue #191)")
+        #else
+        #expect(Bool(true), "Single tappable element verification runs on iOS (UIKit) only")
+        #endif
+    }
     
     @Test @MainActor func testListCardComponentGeneratesAccessibilityIdentifiers() async {
             initializeTestConfig()
@@ -342,13 +465,17 @@ open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
             let view = ListCardComponent(item: testItem, hints: PresentationHints())
             
             // Then: Should generate accessibility identifiers
+            var diagnostic: String? = nil
             let hasAccessibilityID = testComponentComplianceSinglePlatform(
                 view,
                 expectedPattern: "SixLayer.main.ui.*",
                 platform: SixLayerPlatform.iOS,
-                componentName: "ListCardComponent"
+                componentName: "ListCardComponent",
+                diagnostic: &diagnostic,
+                exposeContentAccessibility: false
             )
-            #expect(hasAccessibilityID, "ListCardComponent should generate accessibility identifiers ")
+            if !hasAccessibilityID, let d = diagnostic { Issue.record(DiagnosticMessage(message: d)) }
+            #expect(hasAccessibilityID, "ListCardComponent should generate accessibility identifiers")
         }
     }
     
@@ -364,13 +491,17 @@ open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
             let view = MasonryCardComponent(item: testItem, hints: PresentationHints())
             
             // Then: Should generate accessibility identifiers
+            var diagnostic: String? = nil
             let hasAccessibilityID = testComponentComplianceSinglePlatform(
                 view,
                 expectedPattern: "SixLayer.main.ui.*",
                 platform: SixLayerPlatform.iOS,
-                componentName: "MasonryCardComponent"
+                componentName: "MasonryCardComponent",
+                diagnostic: &diagnostic,
+                exposeContentAccessibility: false
             )
-            #expect(hasAccessibilityID, "MasonryCardComponent should generate accessibility identifiers ")
+            if !hasAccessibilityID, let d = diagnostic { Issue.record(DiagnosticMessage(message: d)) }
+            #expect(hasAccessibilityID, "MasonryCardComponent should generate accessibility identifiers")
         }
     }
     
@@ -392,13 +523,17 @@ open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
             )
             
             // Then: Should generate accessibility identifiers
+            var diagnostic: String? = nil
             let hasAccessibilityID = testComponentComplianceSinglePlatform(
                 view,
                 expectedPattern: "SixLayer.main.ui.*",
                 platform: SixLayerPlatform.iOS,
-                componentName: "NativeExpandableCardView"
+                componentName: "NativeExpandableCardView",
+                diagnostic: &diagnostic,
+                exposeContentAccessibility: false
             )
-            #expect(hasAccessibilityID, "NativeExpandableCardView should generate accessibility identifiers ")
+            if !hasAccessibilityID, let d = diagnostic { Issue.record(DiagnosticMessage(message: d)) }
+            #expect(hasAccessibilityID, "NativeExpandableCardView should generate accessibility identifiers")
         }
     }
     
@@ -422,7 +557,8 @@ open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
                 view,
                 expectedPattern: "SixLayer.main.ui.*",
                 platform: SixLayerPlatform.iOS,
-                componentName: "iOSExpandableCardView"
+                componentName: "iOSExpandableCardView",
+                exposeContentAccessibility: false
             )
             #expect(hasAccessibilityID, "iOSExpandableCardView should generate accessibility identifiers ")
         }
@@ -448,7 +584,8 @@ open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
                 view,
                 expectedPattern: "SixLayer.main.ui.*",
                 platform: SixLayerPlatform.iOS,
-                componentName: "macOSExpandableCardView"
+                componentName: "macOSExpandableCardView",
+                exposeContentAccessibility: false
             )
             #expect(hasAccessibilityID, "macOSExpandableCardView should generate accessibility identifiers ")
         }
@@ -474,7 +611,8 @@ open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
                 view,
                 expectedPattern: "SixLayer.main.ui.*",
                 platform: SixLayerPlatform.iOS,
-                componentName: "visionOSExpandableCardView"
+                componentName: "visionOSExpandableCardView",
+                exposeContentAccessibility: false
             )
             #expect(hasAccessibilityID, "visionOSExpandableCardView should generate accessibility identifiers ")
         }
@@ -496,18 +634,28 @@ open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
             )
             
             // Then: Should generate accessibility identifiers
+            var diagnostic: String? = nil
             let hasAccessibilityID = testComponentComplianceSinglePlatform(
                 view,
                 expectedPattern: "SixLayer.main.ui.*",
                 platform: SixLayerPlatform.iOS,
-                componentName: "PlatformAwareExpandableCardView"
+                componentName: "PlatformAwareExpandableCardView",
+                diagnostic: &diagnostic,
+                exposeContentAccessibility: false
             )
-            #expect(hasAccessibilityID, "PlatformAwareExpandableCardView should generate accessibility identifiers ")
+            if !hasAccessibilityID, let d = diagnostic { Issue.record(DiagnosticMessage(message: d)) }
+            #expect(hasAccessibilityID, "PlatformAwareExpandableCardView should generate accessibility identifiers")
         }
     }
 }
 
 // MARK: - Test Data Types
+
+/// Used to pass dynamic diagnostic strings to Issue.record (Swift Testing expects Error, not String).
+fileprivate struct DiagnosticMessage: Error, CustomStringConvertible {
+    let message: String
+    var description: String { message }
+}
 
 fileprivate struct CardTestItem: Identifiable {
     let id: String

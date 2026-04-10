@@ -166,21 +166,6 @@ open class CoreViewFunctionTests: BaseTestClass {
         
         // THEN: Should generate correct view for this combination
         verifyViewGeneration(view, testName: "SimpleCard (platform.rawValue)")
-        
-        let viewInfo = extractViewInfo(from: view)
-        
         // View platform and accessibility properties are verified by BaseTestClass.verifyViewGeneration
-    }
-    
-    // MARK: - Helper Methods
-    
-    private func extractViewInfo(from view: some View) -> TestPatterns.ViewInfo {
-        // Return a mock ViewInfo for testing
-        return TestPatterns.ViewInfo(
-            name: "SimpleCard",
-            type: "Card",
-            platform: .iOS, // Default to iOS for now
-            capabilities: []
-        )
     }
 }

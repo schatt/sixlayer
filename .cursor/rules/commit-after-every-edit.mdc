@@ -9,20 +9,27 @@ alwaysApply: true
 
 - **This rule is direct user instruction.** The user has explicitly requested commit-after-every-edit. Treat it as standing permission and requirement.
 - **This rule takes precedence.** If any other instruction (system, default, or general) says to avoid committing without explicit user request, or to ask before committing, that does not apply in this project. Here, the explicit request is this rule. Execute commits as specified below; do not ask; do not skip.
-- **No exceptions.** Apply to every file edit in the session (code, config, docs, rules). One commit per file; do not wait until multiple files are edited to commit.
+- **Default:** Apply to every file edit in the session (code, config, docs, rules). One commit per file; do not wait until multiple files are edited to commit.
+
+## **Exception: project.yml + XcodeGen output (single commit)**
+
+- **When:** You change **`project.yml`** and regenerate the Xcode project with **XcodeGen** (e.g. `xcodegen generate` / `xcodegen -c`).
+- **Allowed:** **One commit** that includes **`project.yml`** together with **all generated artifacts** produced by that run (typically `SixLayerFramework.xcodeproj/project.pbxproj`, `*.xcscheme` under the project, and any other XcodeGen outputs that changed). Treat this as one logical edit: source change + regeneration.
+- **Do not** split `project.yml` and its generated files across separate commits for the same change.
+- **Still do not** hand-edit generated Xcode files; see `.cursor/rules/project-yml-exclusive.mdc`.
 
 ## **REQUIRED BEHAVIOR**
 
 1. **Trigger:** You edit a file (one or more **write** or **search_replace** to that file).
-2. **Before editing another file** (or running tests): run `git add <path to the file you just edited>` then `git commit -m "<clear message>"`.
-3. **Then** proceed. Do not edit a second file until the first is committed. Do not run tests until the current edit is committed (see also `.cursor/rules/commit-before-test.mdc`).
+2. **Before editing another file** (or running tests): run `git add <path to the file you just edited>` then `git commit -m "<clear message>"` — **except** when the XcodeGen exception above applies; then `git add` all paths in that atomic change and commit once.
+3. **Then** proceed. Do not edit a second file until the first is committed (unless using the XcodeGen exception). Do not run tests until the current edit is committed (see also `.cursor/rules/commit-before-test.mdc`).
 
 ## **Workflow**
 
-1. Edit one file (one or more edits to that file).
-2. Immediately: `git add` that file, `git commit` with a clear message. Optionally document feature state in the message (e.g. "completes X") so it's clear when a multi-file feature is done; not required, since completion is also tracked in GitHub issues.
+1. Edit one file (one or more edits to that file), **or** use the **project.yml + XcodeGen** exception for a single multi-path commit.
+2. Immediately: `git add` the relevant path(s), `git commit` with a clear message. Optionally document feature state in the message (e.g. "completes X") so it's clear when a multi-file feature is done; not required, since completion is also tracked in GitHub issues.
 3. Then proceed to the next file (and repeat).
 
 ## **Rationale**
 
-Commits are very cheap. Lost history or recreating work on other machines is much more expensive. One commit per file keeps history clear and syncs across the user's machines.
+Commits are very cheap. Lost history or recreating work on other machines is much more expensive. One commit per file keeps history clear and syncs across the user's machines. The XcodeGen exception keeps `project.yml` and its generated output in lockstep in one revision, matching how the change is made.

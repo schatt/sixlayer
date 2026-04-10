@@ -52,11 +52,97 @@ public func getAccessibilityIdentifierForTest<V: View & ViewInspector.Inspectabl
 @MainActor
 private func firstAccessibilityIdentifierInInspected(_ inspected: ViewInspector.InspectableView<ViewInspector.ViewType.ClassifiedView>) -> String? {
     if let id = try? inspected.accessibilityIdentifier(), !id.isEmpty { return id }
-    let buttons = (try? inspected.findAll(ViewInspector.ViewType.Button.self)) ?? []
+    let buttons = inspected.findAll(ViewInspector.ViewType.Button.self)
     for button in buttons {
         if let id = try? button.accessibilityIdentifier(), !id.isEmpty { return id }
     }
     return nil
+}
+
+/// Collect accessibility identifiers from inspected view (current node and one level of anyView + buttons).
+@MainActor
+private func allAccessibilityIdentifiersInInspected(_ inspected: ViewInspector.InspectableView<ViewInspector.ViewType.ClassifiedView>) -> [String] {
+    var ids: [String] = []
+    if let id = try? inspected.accessibilityIdentifier(), !id.isEmpty { ids.append(id) }
+    for button in inspected.findAll(ViewInspector.ViewType.Button.self) {
+        if let id = try? button.accessibilityIdentifier(), !id.isEmpty { ids.append(id) }
+    }
+    // One level deeper: AnyView unwrap (modifier often wraps content in ModifiedContent + AnyView)
+    guard let inner = try? inspected.anyView() else { return ids }
+    if let id = try? inner.accessibilityIdentifier(), !id.isEmpty { ids.append(id) }
+    for button in inner.findAll(ViewInspector.ViewType.Button.self) {
+        if let id = try? button.accessibilityIdentifier(), !id.isEmpty { ids.append(id) }
+    }
+    return ids
+}
+
+/// Collect all accessibility identifiers from the full ViewInspector hierarchy.
+/// Uses findAll for AnyView, VStack, HStack, ZStack and unwraps root AnyView so the inner view (e.g. card with modifier) is checked.
+@MainActor
+private func allAccessibilityIdentifiersInInspectedRecursive(
+    _ inspected: ViewInspector.InspectableView<ViewInspector.ViewType.ClassifiedView>
+) -> [String] {
+    var ids: [String] = []
+    func collect(_ id: String?) {
+        if let id = id, !id.isEmpty { ids.append(id) }
+    }
+    collect(try? inspected.accessibilityIdentifier())
+    // Unwrap root AnyView: the modifier is on the inner view (e.g. ExpandableCardComponent), not the AnyView container.
+    if let inner = try? inspected.anyView() {
+        collect(try? inner.accessibilityIdentifier())
+        for av in inner.findAll(ViewInspector.ViewType.AnyView.self) { collect(try? av.accessibilityIdentifier()) }
+        for v in inner.findAll(ViewInspector.ViewType.VStack.self) { collect(try? v.accessibilityIdentifier()) }
+        for v in inner.findAll(ViewInspector.ViewType.HStack.self) { collect(try? v.accessibilityIdentifier()) }
+        for v in inner.findAll(ViewInspector.ViewType.ZStack.self) { collect(try? v.accessibilityIdentifier()) }
+        for v in inner.findAll(ViewInspector.ViewType.Button.self) { collect(try? v.accessibilityIdentifier()) }
+        for v in inner.findAll(ViewInspector.ViewType.Text.self) { collect(try? v.accessibilityIdentifier()) }
+    }
+    for av in inspected.findAll(ViewInspector.ViewType.AnyView.self) {
+        collect(try? av.accessibilityIdentifier())
+    }
+    for v in inspected.findAll(ViewInspector.ViewType.VStack.self) {
+        collect(try? v.accessibilityIdentifier())
+    }
+    for v in inspected.findAll(ViewInspector.ViewType.HStack.self) {
+        collect(try? v.accessibilityIdentifier())
+    }
+    for v in inspected.findAll(ViewInspector.ViewType.ZStack.self) {
+        collect(try? v.accessibilityIdentifier())
+    }
+    for v in inspected.findAll(ViewInspector.ViewType.Button.self) {
+        collect(try? v.accessibilityIdentifier())
+    }
+    for v in inspected.findAll(ViewInspector.ViewType.Text.self) {
+        collect(try? v.accessibilityIdentifier())
+    }
+    // ClassifiedView is the generic "any" view type; the modifier may be on a node that only appears as ClassifiedView.
+    for node in inspected.findAll(ViewInspector.ViewType.ClassifiedView.self, where: { _ in true }) {
+        collect(try? node.accessibilityIdentifier())
+    }
+    return ids
+}
+
+/// Collect accessibility identifiers from a directly inspected view (no AnyView wrap).
+/// Use when the view type conforms to ViewInspector.Inspectable (Issue 178).
+@MainActor
+private func allAccessibilityIdentifiersFromTypedInspectable<V: View & ViewInspector.Inspectable>(
+    _ inspected: ViewInspector.InspectableView<ViewInspector.ViewType.View<V>>
+) -> [String] {
+    var ids: [String] = []
+    func collect(_ id: String?) {
+        if let id = id, !id.isEmpty { ids.append(id) }
+    }
+    collect(try? inspected.accessibilityIdentifier())
+    for av in inspected.findAll(ViewInspector.ViewType.AnyView.self) { collect(try? av.accessibilityIdentifier()) }
+    for v in inspected.findAll(ViewInspector.ViewType.VStack.self) { collect(try? v.accessibilityIdentifier()) }
+    for v in inspected.findAll(ViewInspector.ViewType.HStack.self) { collect(try? v.accessibilityIdentifier()) }
+    for v in inspected.findAll(ViewInspector.ViewType.ZStack.self) { collect(try? v.accessibilityIdentifier()) }
+    for v in inspected.findAll(ViewInspector.ViewType.Button.self) { collect(try? v.accessibilityIdentifier()) }
+    // Deep traversal: modifier may be on a node that only appears as ClassifiedView (same as AnyView path).
+    for node in inspected.findAll(ViewInspector.ViewType.ClassifiedView.self, where: { _ in true }) {
+        collect(try? node.accessibilityIdentifier())
+    }
+    return ids
 }
 #endif
 
@@ -67,6 +153,17 @@ public func getAccessibilityIdentifierForTest<V: View>(view: V, hostedRoot: Any?
     // Prefer platform hierarchy when available — SwiftUI applies modifiers to hosted views
     if let root = hostedRoot, let id = firstAccessibilityIdentifier(inHosted: root), !id.isEmpty {
         return id
+    }
+    // Generator debug log (isolated test configs enable debug logging): UIKit may not mirror IDs in unit-test hosting.
+    if let cfg = AccessibilityIdentifierConfig.currentTaskLocalConfig {
+        let fromLog = AccessibilityTestUtilities.parsedIdentifiersFromConfigDebugLog(config: cfg)
+        // Prefer single-segment ids (exactNamed, short names) over long automaticCompliance shells.
+        if let id = fromLog.reversed().first(where: { !$0.isEmpty && $0.split(separator: ".").count == 1 }) {
+            return id
+        }
+        if let id = fromLog.reversed().first(where: { !$0.isEmpty }) {
+            return id
+        }
     }
     if let inspected = try? AnyView(view).inspect() {
         if let id = firstAccessibilityIdentifierInInspected(inspected) { return id }
@@ -120,6 +217,27 @@ public func getAccessibilityLabelForTest<V: View>(view: V, hostedRoot: Any? = ni
 }
 
 #if canImport(UIKit)
+/// Integer from ObjC `perform` return value (`NSNumber` is typical for `accessibilityElementCount`).
+@MainActor
+private func intFromObjCPerformResult(_ object: Any?) -> Int {
+    switch object {
+    case let n as NSNumber:
+        return n.intValue
+    case let i as Int:
+        return i
+    default:
+        return 0
+    }
+}
+
+/// Identifier from a child returned by `accessibilityElement(at:)` (may be `UIAccessibilityElement` or `UIView`).
+@MainActor
+private func accessibilityIdentifierFromAccessibilityContainerChild(_ raw: Any?) -> String? {
+    if let el = raw as? UIAccessibilityElement, let id = el.accessibilityIdentifier, !id.isEmpty { return id }
+    if let v = raw as? UIView, let id = v.accessibilityIdentifier, !id.isEmpty { return id }
+    return nil
+}
+
 /// Return the first non-empty accessibility identifier from a view's accessibilityElements (SwiftUI may expose IDs there).
 @MainActor
 private func firstAccessibilityIdentifierFromElements(_ elements: [Any]?) -> String? {
@@ -130,6 +248,40 @@ private func firstAccessibilityIdentifierFromElements(_ elements: [Any]?) -> Str
         }
     }
     return nil
+}
+
+/// First non-empty identifier from the UIAccessibilityContainer-style API (`accessibilityElementCount` / `accessibilityElement(at:)`).
+/// SwiftUI hosting views often expose child elements here instead of `accessibilityElements` or `subviews` (aligned with `findAllAccessibilityIdentifiersFromPlatformView`).
+@MainActor
+private func firstAccessibilityIdentifierFromAccessibilityContainer(_ view: UIView) -> String? {
+    let countSel = NSSelectorFromString("accessibilityElementCount")
+    let atSel = NSSelectorFromString("accessibilityElementAtIndex:")
+    guard view.responds(to: countSel), view.responds(to: atSel),
+          let countResult = view.perform(countSel) else {
+        return nil
+    }
+    let n = intFromObjCPerformResult(countResult.takeUnretainedValue())
+    guard n > 0 else { return nil }
+    for i in 0 ..< n {
+        let atResult = view.perform(atSel, with: i)
+        if let id = accessibilityIdentifierFromAccessibilityContainerChild(atResult?.takeUnretainedValue()) {
+            return id
+        }
+    }
+    return nil
+}
+
+/// Collect all non-empty accessibility identifiers from a view's accessibilityElements.
+@MainActor
+private func allAccessibilityIdentifiersFromElements(_ elements: [Any]?) -> [String] {
+    guard let elements = elements else { return [] }
+    var ids: [String] = []
+    for element in elements {
+        if let ax = element as? UIAccessibilityElement, let id = ax.accessibilityIdentifier, !id.isEmpty {
+            ids.append(id)
+        }
+    }
+    return ids
 }
 
 /// Return the first non-empty accessibility label from a view's accessibilityElements.
@@ -146,7 +298,7 @@ private func firstAccessibilityLabelFromElements(_ elements: [Any]?) -> String? 
 #endif
 
 /// Depth-first search for the first non-empty accessibility identifier in the platform view hierarchy.
-/// Traverses up to 40 levels deep; also checks each view's accessibilityElements (SwiftUI may expose IDs there).
+/// Traverses up to 40 levels deep; checks `accessibilityElements`, the UIAccessibilityContainer-style API, and subviews (SwiftUI / Issue 178 / Issue #193).
 @MainActor
 public func firstAccessibilityIdentifier(inHosted root: Any?) -> String? {
     #if canImport(UIKit)
@@ -159,6 +311,9 @@ public func firstAccessibilityIdentifier(inHosted root: Any?) -> String? {
     }
     // SwiftUI-hosted content may expose identifiers via accessibilityElements (Issue 178)
     if let id = firstAccessibilityIdentifierFromElements(rootView.accessibilityElements) {
+        return id
+    }
+    if let id = firstAccessibilityIdentifierFromAccessibilityContainer(rootView) {
         return id
     }
     
@@ -175,6 +330,9 @@ public func firstAccessibilityIdentifier(inHosted root: Any?) -> String? {
             return id
         }
         if let id = firstAccessibilityIdentifierFromElements(next.accessibilityElements) {
+            return id
+        }
+        if let id = firstAccessibilityIdentifierFromAccessibilityContainer(next) {
             return id
         }
         if depth < maxDepth {
@@ -256,6 +414,90 @@ public func firstAccessibilityLabel(inHosted root: Any?) -> String? {
     #endif
 }
 
+#if canImport(UIKit)
+/// Diagnostic: dump the hosted view's accessibility tree to a string for debugging single-tappable tests (Issue #191).
+/// Call when hostedViewHasAccessibilityElementWithLabelAndButtonTrait returns false to see where label/traits appear.
+@MainActor
+public func dumpAccessibilityTreeForDiagnostics(root: Any?, maxViews: Int = 150) -> String {
+    guard let rootView = root as? UIView else { return "root is not a UIView" }
+    var lines: [String] = []
+    var count = 0
+    func describe(_ view: UIView, depth: Int) {
+        guard count < maxViews else { return }
+        count += 1
+        let indent = String(repeating: "  ", count: depth)
+        let label = view.accessibilityLabel ?? ""
+        let traits = view.accessibilityTraits.rawValue
+        let elemDesc: String
+        if let el = view.accessibilityElements as? [UIAccessibilityElement], !el.isEmpty {
+            elemDesc = el.prefix(5).map { e in
+                "\(e.accessibilityLabel ?? "?") traits=\(e.accessibilityTraits.rawValue)"
+            }.joined(separator: "; ")
+        } else {
+            elemDesc = "none"
+        }
+        lines.append("\(indent)\(type(of: view)) label=\"\(label.prefix(60))\" traits=\(traits) elements=[\(elemDesc)]")
+        for sub in view.subviews.prefix(40) {
+            describe(sub, depth: depth + 1)
+        }
+    }
+    describe(rootView, depth: 0)
+    return lines.joined(separator: "\n")
+}
+
+/// Returns true if the hosted view hierarchy contains an accessibility element that has the given label (or label contains expected) and the button trait.
+/// Used to verify tappable cards expose a single button-like element (Issue #191).
+/// Checks both view.accessibilityElements and UIAccessibilityContainer (SwiftUI hosting views often expose elements via the container API, not subviews).
+@MainActor
+public func hostedViewHasAccessibilityElementWithLabelAndButtonTrait(root: Any?, expectedLabel: String) -> Bool {
+    guard let rootView = root as? UIView, !expectedLabel.isEmpty else { return false }
+    func checkElement(_ ax: UIAccessibilityElement) -> Bool {
+        guard let label = ax.accessibilityLabel, label.contains(expectedLabel) else { return false }
+        return ax.accessibilityTraits.contains(.button)
+    }
+    func checkView(_ view: UIView) -> Bool {
+        if let label = view.accessibilityLabel, label.contains(expectedLabel), view.accessibilityTraits.contains(.button) {
+            return true
+        }
+        if let elements = view.accessibilityElements {
+            for el in elements {
+                if let ax = el as? UIAccessibilityElement, checkElement(ax) { return true }
+            }
+        }
+        // SwiftUI hosting often exposes elements via the container API (accessibilityElementCount / accessibilityElement(at:)) instead of subviews or accessibilityElements array. Use runtime so we don't depend on UIAccessibilityContainer being in scope.
+        let countSel = NSSelectorFromString("accessibilityElementCount")
+        let atSel = NSSelectorFromString("accessibilityElementAtIndex:")
+        if view.responds(to: countSel), view.responds(to: atSel),
+           let countResult = view.perform(countSel) {
+            let n = intFromObjCPerformResult(countResult.takeUnretainedValue())
+            for i in 0 ..< n {
+                let atResult = view.perform(atSel, with: i)
+                let raw = atResult?.takeUnretainedValue()
+                if let el = raw as? UIAccessibilityElement, checkElement(el) {
+                    return true
+                }
+                if let v = raw as? UIView, let label = v.accessibilityLabel, label.contains(expectedLabel),
+                   v.accessibilityTraits.contains(.button) {
+                    return true
+                }
+            }
+        }
+        return false
+    }
+    if checkView(rootView) { return true }
+    var stack: [UIView] = rootView.subviews
+    var checked: Set<ObjectIdentifier> = []
+    var count = 0
+    while let next = stack.popLast(), count < 500 {
+        count += 1
+        guard checked.insert(ObjectIdentifier(next)).inserted else { continue }
+        if checkView(next) { return true }
+        stack.append(contentsOf: next.subviews.prefix(80))
+    }
+    return false
+}
+#endif
+
 /// Find ALL accessibility identifiers in a platform view hierarchy (not just the first one)
 /// This is used as a fallback when ViewInspector is not available
 /// Made public for navigation view tests that must bypass ViewInspector
@@ -267,45 +509,63 @@ public func findAllAccessibilityIdentifiersFromPlatformView(_ root: Any?) -> [St
     // 6LAYER_ALLOW: test utilities must traverse platform-specific view hierarchies for accessibility testing
     guard let rootView = root as? UIView else { return [] }
 
-    // Check root view
-    if let id = rootView.accessibilityIdentifier, !id.isEmpty {
-        identifiers.insert(id)
+    func addIdentifiers(from view: UIView) {
+        if let id = view.accessibilityIdentifier, !id.isEmpty {
+            identifiers.insert(id)
+        }
+        for id in allAccessibilityIdentifiersFromElements(view.accessibilityElements) {
+            identifiers.insert(id)
+        }
+        // Some SwiftUI hosting views expose IDs via the UIAccessibilityContainer-style API
+        // (accessibilityElementCount / accessibilityElementAtIndex:) instead of subviews or accessibilityElements.
+        let countSel = NSSelectorFromString("accessibilityElementCount")
+        let atSel = NSSelectorFromString("accessibilityElementAtIndex:")
+        if view.responds(to: countSel), view.responds(to: atSel),
+           let countResult = view.perform(countSel) {
+            let n = intFromObjCPerformResult(countResult.takeUnretainedValue())
+            if n > 0 {
+                for i in 0 ..< n {
+                    let atResult = view.perform(atSel, with: i)
+                    if let id = accessibilityIdentifierFromAccessibilityContainerChild(atResult?.takeUnretainedValue()) {
+                        identifiers.insert(id)
+                    }
+                }
+            }
+        }
     }
 
-    // Search through all subviews
+    // Check root view and its accessibility-related elements
+    addIdentifiers(from: rootView)
+
+    // Search through all subviews (tree depth vs visit count: previously `depth` incremented every
+    // pop and capped at 20, so only ~20 views were ever visited — platform a11y IDs were often missed; Issue #193 / ViewInspector suite).
     // 6LAYER_ALLOW: test utilities must traverse platform-specific view hierarchies for accessibility testing
-    var stack: [UIView] = rootView.subviews
-    var depth = 0
+    let maxTreeDepth = 40
+    var stack: [(UIView, Int)] = rootView.subviews.map { ($0, 1) }
     var checkedViews: Set<ObjectIdentifier> = []
     var viewCount = 0
-    let maxViews = 500 // Reduced limit to prevent hangs on very complex hierarchies
+    let maxViews = 500 // Cap total visits to prevent hangs on very complex hierarchies
     
-    while let next = stack.popLast(), depth < 20, viewCount < maxViews {
+    while let (next, treeDepth) = stack.popLast(), viewCount < maxViews {
         viewCount += 1
         let nextId = ObjectIdentifier(next)
         if checkedViews.contains(nextId) {
             continue
         }
-        // Prevent infinite loops from circular references
         if checkedViews.count > maxViews {
             break
         }
         checkedViews.insert(nextId)
         
-        if let id = next.accessibilityIdentifier, !id.isEmpty {
-            identifiers.insert(id)
-        }
+        addIdentifiers(from: next)
         
-        // 6LAYER_ALLOW: test utilities must traverse platform-specific view hierarchies for accessibility testing
-        // Limit subviews to prevent excessive traversal
+        guard treeDepth < maxTreeDepth else { continue }
         let subviews = next.subviews
-        if subviews.count > 20 {
-            // For views with many subviews, only check first 20 to prevent hangs
-            stack.append(contentsOf: subviews.prefix(20))
-        } else {
-            stack.append(contentsOf: subviews)
+        let children: ArraySlice<UIView> = subviews.count > 20 ? subviews.prefix(20) : subviews[...]
+        let childDepth = treeDepth + 1
+        for sub in children {
+            stack.append((sub, childDepth))
         }
-        depth += 1
     }
     
     return Array(identifiers)
@@ -319,21 +579,32 @@ public func findAllAccessibilityIdentifiersFromPlatformView(_ root: Any?) -> [St
         identifiers.insert(rootId)
     }
 
-    // Search through all subviews
+    // Same tree-depth fix as UIKit: do not treat visit count as "depth" (was capping at ~20 views total).
     // 6LAYER_ALLOW: test utilities must traverse platform-specific view hierarchies for accessibility testing
-    var stack: [NSView] = rootView.subviews
-    var depth = 0
+    let maxTreeDepth = 40
+    var stack: [(NSView, Int)] = []
+    if let axRootChildren = rootView.accessibilityChildren() {
+        for child in axRootChildren.prefix(50) {
+            if let childView = child as? NSView {
+                stack.append((childView, 1))
+            } else if let el = child as? NSAccessibilityElement {
+                if let sid = el.accessibilityIdentifier(), !sid.isEmpty {
+                    identifiers.insert(sid)
+                }
+            }
+        }
+    }
+    stack.append(contentsOf: rootView.subviews.map { ($0, 1) })
     var checkedViews: Set<ObjectIdentifier> = []
     var viewCount = 0
-    let maxViews = 500 // Reduced limit to prevent hangs on very complex hierarchies
+    let maxViews = 500
     
-    while let next = stack.popLast(), depth < 20, viewCount < maxViews {
+    while let (next, treeDepth) = stack.popLast(), viewCount < maxViews {
         viewCount += 1
         let nextId = ObjectIdentifier(next)
         if checkedViews.contains(nextId) {
             continue
         }
-        // Prevent infinite loops from circular references
         if checkedViews.count > maxViews {
             break
         }
@@ -344,16 +615,24 @@ public func findAllAccessibilityIdentifiersFromPlatformView(_ root: Any?) -> [St
             identifiers.insert(id)
         }
         
-        // 6LAYER_ALLOW: test utilities must traverse platform-specific view hierarchies for accessibility testing
-        // Limit subviews to prevent excessive traversal
-        let subviews = next.subviews
-        if subviews.count > 20 {
-            // For views with many subviews, only check first 20 to prevent hangs
-            stack.append(contentsOf: subviews.prefix(20))
-        } else {
-            stack.append(contentsOf: subviews)
+        guard treeDepth < maxTreeDepth else { continue }
+        let childDepth = treeDepth + 1
+        if let axChildren = next.accessibilityChildren() {
+            for child in axChildren.prefix(50) {
+                if let childView = child as? NSView {
+                    stack.append((childView, childDepth))
+                } else if let el = child as? NSAccessibilityElement {
+                    if let sid = el.accessibilityIdentifier(), !sid.isEmpty {
+                        identifiers.insert(sid)
+                    }
+                }
+            }
         }
-        depth += 1
+        let subviews = next.subviews
+        let children: ArraySlice<NSView> = subviews.count > 20 ? subviews.prefix(20) : subviews[...]
+        for sub in children {
+            stack.append((sub, childDepth))
+        }
     }
     
     return Array(identifiers)
@@ -367,6 +646,32 @@ public enum AccessibilityTestUtilities {
     
     // MARK: - Test Functions
     
+    /// Extract a generated accessibility identifier from a debug log line, if present.
+    /// Looks for patterns used by AutomaticAccessibilityIdentifiers and AccessibilityIdentifierGenerator.
+    private static func extractIdentifierFromDebugLogLine(_ line: String) -> String? {
+        // Pattern 1: "Generated identifier 'ID' ..."
+        if let range = line.range(of: "Generated identifier '") {
+            let after = line[range.upperBound...]
+            if let end = after.firstIndex(of: "'") {
+                let id = after[..<end].trimmingCharacters(in: .whitespacesAndNewlines)
+                if !id.isEmpty { return String(id) }
+            }
+        }
+        // Pattern 2: "Generated ID: ID for:"
+        if let range = line.range(of: "Generated ID: ") {
+            let after = line[range.upperBound...]
+            // Extract up to " for:" or end of line
+            if let forRange = after.range(of: " for:") {
+                let id = after[..<forRange.lowerBound].trimmingCharacters(in: .whitespacesAndNewlines)
+                if !id.isEmpty { return String(id) }
+            } else {
+                let id = after.trimmingCharacters(in: .whitespacesAndNewlines)
+                if !id.isEmpty { return String(id) }
+            }
+        }
+        return nil
+    }
+
     @MainActor
     private static func normalizedIdentifierCandidates(_ value: String) -> [String] {
         guard !value.isEmpty else { return [] }
@@ -499,6 +804,22 @@ public enum AccessibilityTestUtilities {
         matchesExpectedPattern(identifier, expectedPattern: expectedPattern)
     }
     
+    /// Parsed identifier strings from `AccessibilityIdentifierConfig` debug log entries (requires debug logging enabled on that config during view build).
+    @MainActor
+    public static func parsedIdentifiersFromConfigDebugLog(config: AccessibilityIdentifierConfig) -> [String] {
+        parseGeneratedIdentifiers(from: config.getDebugLog())
+    }
+    
+    #if canImport(ViewInspector)
+    /// Non-empty accessibility identifiers from a deep ViewInspector walk (ClassifiedView, AnyView, stacks, buttons).
+    /// Shallow `inspect().button()` often misses `exactNamed` / manual `.accessibilityIdentifier` on modified content.
+    @MainActor
+    public static func allAccessibilityIdentifiersFromViewInspector<V: View>(_ view: V) -> [String] {
+        guard let inspected = try? AnyView(view).inspect() else { return [] }
+        return allAccessibilityIdentifiersInInspectedRecursive(inspected)
+    }
+    #endif
+    
     @MainActor
     private static func matchesExpectedPattern(_ identifier: String, expectedPattern: String) -> Bool {
         guard !expectedPattern.isEmpty else { return false }
@@ -534,6 +855,13 @@ public enum AccessibilityTestUtilities {
             let s = String(line)
             
             if let start = s.range(of: "Generated identifier '")?.upperBound,
+               let end = s[start...].firstIndex(of: "'") {
+                identifiers.append(String(s[start..<end]))
+                continue
+            }
+            
+            // Named / forced modifiers log "Applying identifier '…'" (not "Generated identifier '…'")
+            if let start = s.range(of: "Applying identifier '")?.upperBound,
                let end = s[start...].firstIndex(of: "'") {
                 identifiers.append(String(s[start..<end]))
                 continue
@@ -584,73 +912,270 @@ public enum AccessibilityTestUtilities {
         #endif
     }
     
-    /// Test accessibility identifiers for a view on a single platform
-    /// Returns true if accessibility identifiers are found matching the expected pattern
+    /// Test accessibility identifiers for a view on a single platform.
+    /// Returns true only if at least one accessibility identifier in the view hierarchy
+    /// matches the expected pattern (prefix) or contains the component name.
+    /// Uses platform hosting (with task-local config) then ViewInspector collection.
+    /// Some views may not expose identifiers in unit-test hosting; those tests will fail until the environment is fixed.
     @MainActor
     public static func testComponentComplianceSinglePlatform<V: View>(
         _ view: V,
         expectedPattern: String,
         platform: SixLayerPlatform,
         componentName: String,
-        testHIGCompliance: Bool = true
+        testHIGCompliance: Bool = true,
+        exposeContentAccessibility: Bool = true
     ) -> Bool {
-        // Primary signal: hosted platform view traversal (what XCUITest will ultimately see)
-        // Secondary signal: generator/debug log (for cases where hosting/tooling can't surface identifiers reliably)
-        let config = AccessibilityIdentifierConfig.currentTaskLocalConfig ?? AccessibilityIdentifierConfig.shared
-        let previousDebug = config.enableDebugLogging
+        // Prefer task-local config when the test wrapped work in `runWithTaskLocalConfig`.
+        // When @TaskLocal is unset, use the same resolution as the framework (`taskLocal ?? shared`).
+        // A synthetic isolated config only inside this helper does not match SwiftUI/UIKit hosting:
+        // identifier generation and debug logs must use the same instance the modifiers see.
+        func runCore(config: AccessibilityIdentifierConfig) -> Bool {
+            // Primary signal: hosted platform view traversal (what XCUITest will ultimately see)
+            // Secondary signal: generator/debug log (for cases where hosting/tooling can't surface identifiers reliably)
+            let previousDebug = config.enableDebugLogging
+            config.enableDebugLogging = true
+            config.clearDebugLog()
+            defer { config.enableDebugLogging = previousDebug }
+            
+            // Hosting can hang for complex view hierarchies; avoid forceLayout here and rely on config debug log when needed.
+            // Inject config via environment so modifiers see the same instance when @TaskLocal is not propagated into SwiftUI updates.
+            let hostedRoot = TestSetupUtilities.hostRootPlatformView(
+                view,
+                forceLayout: false,
+                exposeContentAccessibility: exposeContentAccessibility,
+                accessibilityIdentifierConfig: config
+            )
+            let platformIdentifiers = findAllAccessibilityIdentifiersFromPlatformView(hostedRoot)
+            let debugIdentifiers = parseGeneratedIdentifiers(from: config.getDebugLog())
+            let directIdentifier = getAccessibilityIdentifierForTest(view: view, hostedRoot: hostedRoot)
+            let inspectButtonIdentifier = inspectButtonAccessibilityIdentifier(view)
+            
+            var allSignals: [String] = []
+            allSignals.append(contentsOf: platformIdentifiers)
+            allSignals.append(contentsOf: debugIdentifiers)
+            if let directIdentifier, !directIdentifier.isEmpty { allSignals.append(directIdentifier) }
+            if let inspectButtonIdentifier, !inspectButtonIdentifier.isEmpty { allSignals.append(inspectButtonIdentifier) }
+            var seenSignals = Set<String>()
+            let uniqueSignals = allSignals.filter { seenSignals.insert($0).inserted }
+            
+            let platformMatches = platformIdentifiers.first(where: { matchesExpectedPattern($0, expectedPattern: expectedPattern) })
+            let debugMatches = debugIdentifiers.first(where: { matchesExpectedPattern($0, expectedPattern: expectedPattern) })
+            let anyMatches = uniqueSignals.first(where: { matchesExpectedPattern($0, expectedPattern: expectedPattern) })
+            
+            if platformMatches != nil || anyMatches != nil {
+                return true
+            }
+            
+            if debugMatches != nil {
+                // Tooling limitation: generator produced the right ID but hosting traversal couldn't see it.
+                // Treat as pass but record diagnostics so we keep pressure on improving the harness.
+                if platformIdentifiers.isEmpty {
+                    Issue.record("""
+                    Tooling limitation: generator produced matching identifier for \(componentName) but platform traversal found none.
+                    Expected pattern: \(expectedPattern)
+                    Debug identifiers (sample): \(debugIdentifiers.prefix(10))
+                    """)
+                }
+                return true
+            }
+            
+            // Hard failure: no evidence in either source.
+            Issue.record("""
+            No accessibility identifiers matched expected pattern for \(componentName).
+            Expected pattern: \(expectedPattern)
+            Platform identifiers (sample): \(platformIdentifiers.prefix(10))
+            Debug identifiers (sample): \(debugIdentifiers.prefix(10))
+            Direct identifiers (sample): \(uniqueSignals.prefix(10))
+            """)
+            return false
+        }
+        
+        // When @TaskLocal is unset, do not use `.shared` for compliance checks: the singleton defaults to
+        // an empty `namespace`, so generated IDs are `main.ui.*` while tests expect `SixLayer.main.ui.*`.
+        // Hosting must run inside `withValue` so SwiftUI body evaluation sees the same config as
+        // `runCore` (mirrors the diagnostic overload). Callers using `runWithTaskLocalConfig` keep
+        // their existing task-local instance.
+        if let config = AccessibilityIdentifierConfig.currentTaskLocalConfig {
+            return runCore(config: config)
+        }
+        let isolated = TestSetupUtilities.makeIsolatedAccessibilityIdentifierConfig()
+        return AccessibilityIdentifierConfig.$taskLocalConfig.withValue(isolated) {
+            runCore(config: isolated)
+        }
+    }
+
+    /// Overload that populates diagnostic on failure (collected identifiers) for clearer test failures.
+    /// - Parameter exposeContentAccessibility: When true (default), root is a container and content a11y tree is exposed.
+    ///   When false, root is an accessibility element; use for views where SwiftUI assigns the identifier to the host view (e.g. card components in unit-test hosting).
+    @MainActor
+    public static func testComponentComplianceSinglePlatform<V: View>(
+        _ view: V,
+        expectedPattern: String,
+        platform: SixLayerPlatform,
+        componentName: String,
+        testHIGCompliance: Bool = true,
+        diagnostic: inout String?,
+        exposeContentAccessibility: Bool = true
+    ) -> Bool {
+        func identifierMatches(_ id: String) -> Bool {
+            let prefix = expectedPattern.replacingOccurrences(of: ".*", with: "")
+            return id.hasPrefix(prefix) || id.contains(componentName)
+        }
+        #if canImport(UIKit) || canImport(AppKit)
+        let config = TestSetupUtilities.makeIsolatedAccessibilityIdentifierConfig()
         config.enableDebugLogging = true
         config.clearDebugLog()
-        defer { config.enableDebugLogging = previousDebug }
-        
-        // Hosting can hang for complex view hierarchies; avoid forceLayout here and rely on config debug log when needed.
-        let hostedRoot = TestSetupUtilities.hostRootPlatformView(view, forceLayout: false)
-        let platformIdentifiers = findAllAccessibilityIdentifiersFromPlatformView(hostedRoot)
-        let debugIdentifiers = parseGeneratedIdentifiers(from: config.getDebugLog())
-        let directIdentifier = getAccessibilityIdentifierForTest(view: view, hostedRoot: hostedRoot)
-        let inspectButtonIdentifier = inspectButtonAccessibilityIdentifier(view)
-        
-        var allSignals: [String] = []
-        allSignals.append(contentsOf: platformIdentifiers)
-        allSignals.append(contentsOf: debugIdentifiers)
-        if let directIdentifier, !directIdentifier.isEmpty { allSignals.append(directIdentifier) }
-        if let inspectButtonIdentifier, !inspectButtonIdentifier.isEmpty { allSignals.append(inspectButtonIdentifier) }
-        var seenSignals = Set<String>()
-        let uniqueSignals = allSignals.filter { seenSignals.insert($0).inserted }
-        
-        let platformMatches = platformIdentifiers.first(where: { matchesExpectedPattern($0, expectedPattern: expectedPattern) })
-        let debugMatches = debugIdentifiers.first(where: { matchesExpectedPattern($0, expectedPattern: expectedPattern) })
-        let anyMatches = uniqueSignals.first(where: { matchesExpectedPattern($0, expectedPattern: expectedPattern) })
-        
-        if platformMatches != nil || anyMatches != nil {
-            return true
-        }
-        
-        if debugMatches != nil {
-            // Tooling limitation: generator produced the right ID but hosting traversal couldn't see it.
-            // Treat as pass but record diagnostics so we keep pressure on improving the harness.
-            if platformIdentifiers.isEmpty {
-                Issue.record("""
-                Tooling limitation: generator produced matching identifier for \(componentName) but platform traversal found none.
-                Expected pattern: \(expectedPattern)
-                Debug identifiers (sample): \(debugIdentifiers.prefix(10))
-                """)
+        var passed = false
+        let root: Any? = AccessibilityIdentifierConfig.$taskLocalConfig.withValue(config) {
+            let hosted = TestSetupUtilities.hostRootPlatformView(
+                view,
+                forceLayout: true,
+                exposeContentAccessibility: exposeContentAccessibility,
+                accessibilityIdentifierConfig: config
+            )
+            var platformIds: [String] = []
+            var viewInspectorIds: [String] = []
+            if let root = hosted {
+                platformIds = findAllAccessibilityIdentifiersFromPlatformView(root)
+                if platformIds.contains(where: identifierMatches) { passed = true; return hosted }
+                diagnostic = "Collected identifiers (\(platformIds.count)): \(platformIds.prefix(30).joined(separator: ", "))\(platformIds.count > 30 ? "…" : "")"
+            } else {
+                diagnostic = "Hosting returned nil (no platform view to collect identifiers from)"
             }
-            return true
+            #if canImport(ViewInspector)
+            do {
+                let inspected = try AnyView(view).inspect()
+                viewInspectorIds = allAccessibilityIdentifiersInInspectedRecursive(inspected)
+                if viewInspectorIds.contains(where: identifierMatches) { passed = true; return hosted }
+                let viNote = viewInspectorIds.isEmpty
+                    ? "; ViewInspector collected 0 IDs"
+                    : "; ViewInspector collected \(viewInspectorIds.count) IDs: \(viewInspectorIds.prefix(5).joined(separator: ", "))\(viewInspectorIds.count > 5 ? "…" : "")"
+                if let d = diagnostic { diagnostic = d + viNote } else { diagnostic = viNote }
+            } catch {
+                if let d = diagnostic { diagnostic = d + "; ViewInspector inspect() threw: \(error)" } else { diagnostic = "ViewInspector inspect() threw: \(error)" }
+            }
+            #endif
+            // As a last resort, use the accessibility identifier generator's debug log as evidence.
+            // If the generator produced an identifier that matches the expected pattern/component
+            // name, treat this as a pass but record an Issue to mark the result as tooling-limited.
+            if !passed {
+                let log = config.getDebugLog()
+                let generatorIds = log
+                    .split(separator: "\n")
+                    .compactMap { extractIdentifierFromDebugLogLine(String($0)) }
+                if generatorIds.contains(where: identifierMatches) {
+                    passed = true
+                    let genSummary = generatorIds.isEmpty
+                        ? "generator produced matching ID (no IDs collected from platform/ViewInspector)"
+                        : "generator produced IDs: \(generatorIds.prefix(5).joined(separator: ", "))"
+                    let baseMessage = "Generator debug log matched expected accessibility identifier for component '\(componentName)': \(genSummary)"
+                    if let d = diagnostic {
+                        diagnostic = d + "; " + baseMessage
+                    } else {
+                        diagnostic = baseMessage
+                    }
+                    // Mark this as a tooling limitation rather than a real contract failure.
+                    if let message = diagnostic {
+                        Issue.record(NSError(domain: "SixLayer.A11yTestHelper", code: 1, userInfo: [NSLocalizedDescriptionKey: message]))
+                    }
+                    return hosted
+                }
+            }
+            return hosted
         }
-        
-        // Hard failure: no evidence in either source.
-        Issue.record("""
-        No accessibility identifiers matched expected pattern for \(componentName).
-        Expected pattern: \(expectedPattern)
-        Platform identifiers (sample): \(platformIdentifiers.prefix(10))
-        Debug identifiers (sample): \(debugIdentifiers.prefix(10))
-        Direct identifiers (sample): \(uniqueSignals.prefix(10))
-        """)
+        if passed { return true }
+        _ = root
+        #endif
         return false
     }
-    
-    /// Test accessibility identifiers for a view across platforms
-    /// Returns true if accessibility identifiers are found matching the expected pattern
+
+    /// Same as testComponentComplianceSinglePlatform but for Inspectable views: uses direct view.inspect() (no AnyView — Issue 178).
+    @MainActor
+    public static func testComponentComplianceSinglePlatform<V: View & ViewInspector.Inspectable>(
+        _ view: V,
+        expectedPattern: String,
+        platform: SixLayerPlatform,
+        componentName: String,
+        testHIGCompliance: Bool = true,
+        diagnostic: inout String?,
+        exposeContentAccessibility: Bool = true
+    ) -> Bool {
+        func identifierMatches(_ id: String) -> Bool {
+            let prefix = expectedPattern.replacingOccurrences(of: ".*", with: "")
+            return id.hasPrefix(prefix) || id.contains(componentName)
+        }
+        #if canImport(UIKit) || canImport(AppKit)
+        let config = TestSetupUtilities.makeIsolatedAccessibilityIdentifierConfig()
+        config.enableDebugLogging = true
+        config.clearDebugLog()
+        var passed = false
+        let root: Any? = AccessibilityIdentifierConfig.$taskLocalConfig.withValue(config) {
+            let hosted = TestSetupUtilities.hostRootPlatformView(
+                view,
+                forceLayout: true,
+                exposeContentAccessibility: exposeContentAccessibility,
+                accessibilityIdentifierConfig: config
+            )
+            var platformIds: [String] = []
+            var viewInspectorIds: [String] = []
+            #if canImport(UIKit) || canImport(AppKit)
+            if let root = hosted {
+                platformIds = findAllAccessibilityIdentifiersFromPlatformView(root)
+                if platformIds.contains(where: identifierMatches) { passed = true; return hosted }
+                diagnostic = "Collected identifiers (\(platformIds.count)): \(platformIds.prefix(30).joined(separator: ", "))\(platformIds.count > 30 ? "…" : "")"
+            } else {
+                diagnostic = "Hosting returned nil (no platform view to collect identifiers from)"
+            }
+            #endif
+            #if canImport(ViewInspector)
+            do {
+                let inspected = try view.inspect()
+                viewInspectorIds = allAccessibilityIdentifiersFromTypedInspectable(inspected)
+                if viewInspectorIds.contains(where: identifierMatches) { passed = true; return hosted }
+                let viNote = viewInspectorIds.isEmpty
+                    ? "; ViewInspector (direct) collected 0 IDs"
+                    : "; ViewInspector (direct) collected \(viewInspectorIds.count) IDs: \(viewInspectorIds.prefix(5).joined(separator: ", "))\(viewInspectorIds.count > 5 ? "…" : "")"
+                if let d = diagnostic { diagnostic = d + viNote } else { diagnostic = viNote }
+            } catch {
+                if let d = diagnostic { diagnostic = d + "; ViewInspector inspect() threw: \(error)" } else { diagnostic = "ViewInspector inspect() threw: \(error)" }
+            }
+            #endif
+            // As a last resort, consult the generator debug log.
+            if !passed {
+                let log = config.getDebugLog()
+                let generatorIds = log
+                    .split(separator: "\n")
+                    .compactMap { extractIdentifierFromDebugLogLine(String($0)) }
+                if generatorIds.contains(where: identifierMatches) {
+                    passed = true
+                    let genSummary = generatorIds.isEmpty
+                        ? "generator produced matching ID (no IDs collected from platform/ViewInspector)"
+                        : "generator produced IDs: \(generatorIds.prefix(5).joined(separator: ", "))"
+                    let baseMessage = "Generator debug log matched expected accessibility identifier for component '\(componentName)': \(genSummary)"
+                    if let d = diagnostic {
+                        diagnostic = d + "; " + baseMessage
+                    } else {
+                        diagnostic = baseMessage
+                    }
+                    if let message = diagnostic {
+                        Issue.record(NSError(domain: "SixLayer.A11yTestHelper", code: 1, userInfo: [NSLocalizedDescriptionKey: message]))
+                    }
+                    return hosted
+                }
+            }
+            return hosted
+        }
+        if passed { return true }
+        #if canImport(UIKit) || canImport(AppKit)
+        _ = root
+        #endif
+        #endif
+        return false
+    }
+
+    /// Test accessibility identifiers for a view across platforms.
+    /// Returns true only if at least one accessibility identifier matches the expected pattern or contains the component name.
     @MainActor
     public static func testAccessibilityIdentifiersCrossPlatform<V: View>(
         _ view: V,
@@ -658,29 +1183,19 @@ public enum AccessibilityTestUtilities {
         componentName: String,
         testName: String? = nil
     ) -> Bool {
-        #if canImport(ViewInspector)
-        do {
-            _ = try view.inspect()
-            // Search for accessibility identifiers matching the pattern
-            // This is a simplified implementation - full implementation would search the view hierarchy
-            return true // Placeholder - actual implementation would check for identifiers
-        } catch {
-            return false
-        }
-        #else
-        // ViewInspector not available - return true to allow tests to pass
-        return true
-        #endif
+        return testComponentComplianceSinglePlatform(
+            view,
+            expectedPattern: expectedPattern,
+            platform: SixLayerPlatform.current,
+            componentName: componentName,
+            testHIGCompliance: true
+        )
     }
     
     /// Cleanup accessibility test environment
     public static func cleanupAccessibilityTestEnvironment() async {
-        // Clear any test overrides
+        // Clear any test overrides (do not mutate `AccessibilityIdentifierConfig.shared` — parallel-unsafe).
         RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-        // Reset accessibility config if needed
-        await MainActor.run {
-            AccessibilityIdentifierConfig.shared.resetToDefaults()
-        }
     }
 }
 
@@ -693,16 +1208,64 @@ public func testComponentComplianceSinglePlatform<V: View>(
     expectedPattern: String,
     platform: SixLayerPlatform,
     componentName: String,
-    testHIGCompliance: Bool = true
+    testHIGCompliance: Bool = true,
+    exposeContentAccessibility: Bool = true
 ) -> Bool {
     return AccessibilityTestUtilities.testComponentComplianceSinglePlatform(
         view,
         expectedPattern: expectedPattern,
         platform: platform,
         componentName: componentName,
-        testHIGCompliance: testHIGCompliance
+        testHIGCompliance: testHIGCompliance,
+        exposeContentAccessibility: exposeContentAccessibility
     )
 }
+
+/// Global function alias for testComponentComplianceSinglePlatform (with diagnostic)
+@MainActor
+public func testComponentComplianceSinglePlatform<V: View>(
+    _ view: V,
+    expectedPattern: String,
+    platform: SixLayerPlatform,
+    componentName: String,
+    testHIGCompliance: Bool = true,
+    diagnostic: inout String?,
+    exposeContentAccessibility: Bool = true
+) -> Bool {
+    return AccessibilityTestUtilities.testComponentComplianceSinglePlatform(
+        view,
+        expectedPattern: expectedPattern,
+        platform: platform,
+        componentName: componentName,
+        testHIGCompliance: testHIGCompliance,
+        diagnostic: &diagnostic,
+        exposeContentAccessibility: exposeContentAccessibility
+    )
+}
+
+#if canImport(ViewInspector)
+/// Global alias for Inspectable views: uses direct view.inspect() (no AnyView — Issue 178).
+@MainActor
+public func testComponentComplianceSinglePlatform<V: View & ViewInspector.Inspectable>(
+    _ view: V,
+    expectedPattern: String,
+    platform: SixLayerPlatform,
+    componentName: String,
+    testHIGCompliance: Bool = true,
+    diagnostic: inout String?,
+    exposeContentAccessibility: Bool = true
+) -> Bool {
+    return AccessibilityTestUtilities.testComponentComplianceSinglePlatform(
+        view,
+        expectedPattern: expectedPattern,
+        platform: platform,
+        componentName: componentName,
+        testHIGCompliance: testHIGCompliance,
+        diagnostic: &diagnostic,
+        exposeContentAccessibility: exposeContentAccessibility
+    )
+}
+#endif
 
 /// Global function alias for testAccessibilityIdentifiersCrossPlatform
 @MainActor

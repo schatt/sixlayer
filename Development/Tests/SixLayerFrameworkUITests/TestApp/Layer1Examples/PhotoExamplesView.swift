@@ -66,33 +66,32 @@ struct PhotoCaptureExamples: View {
 
 struct PhotoSelectionExamples: View {
     @Binding var selectedImage: PlatformImage?
-    
-    private var photoContext: PhotoContext {
-        PhotoContext(
-            screenSize: CGSize(width: 375, height: 667),
-            availableSpace: CGSize(width: 375, height: 667),
-            userPreferences: PhotoPreferences(),
-            deviceCapabilities: PhotoDeviceCapabilities()
-        )
-    }
+    @State private var showPicker = false
     
     var body: some View {
         platformVStack(alignment: .leading, spacing: 12) {
             Text("Photo Selection")
                 .font(.headline)
             
-            platformPhotoSelection_L1(
-                purpose: .general,
-                context: photoContext,
-                onImageSelected: { image in
-                    selectedImage = image
-                }
-            )
-            .frame(height: 200)
+            platformButton("Select Photo") {
+                showPicker = true
+            }
+            
+            if selectedImage != nil {
+                Text("Photo selected")
+                    .font(.caption)
+                    .foregroundColor(.green)
+            }
         }
         .padding()
         .background(Color.platformSecondaryBackground)
         .cornerRadius(8)
+        .sheet(isPresented: $showPicker) {
+            platformPhotoPicker_L4 { image in
+                selectedImage = image
+                showPicker = false
+            }
+        }
     }
 }
 

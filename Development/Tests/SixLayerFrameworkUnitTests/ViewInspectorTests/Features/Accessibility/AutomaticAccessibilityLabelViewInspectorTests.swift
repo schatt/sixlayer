@@ -26,16 +26,17 @@ import ViewInspector
 /// METHODOLOGY: Test each function, verify label is applied via ViewInspector
 @Suite("Automatic Accessibility Labels - ViewInspector")
 /// NOTE: Not marked @MainActor on class to allow parallel execution
-open class AutomaticAccessibilityLabelTests: BaseTestClass {
+/// Renamed from AutomaticAccessibilityLabelTests to avoid duplicate type name with Features/Accessibility/AutomaticAccessibilityLabelTests.swift in the same test target.
+open class AutomaticAccessibilityLabelViewInspectorTests: BaseTestClass {
     
     // MARK: - AutomaticComplianceModifier Accessibility Label Tests
     
     /// BUSINESS PURPOSE: automaticCompliance() should apply accessibility label when provided
     /// TESTING SCOPE: Tests that accessibilityLabel parameter applies .accessibilityLabel() modifier
     /// METHODOLOGY: Create view with accessibilityLabel parameter and verify label is applied
-    @Test @MainActor func testAutomaticCompliance_AppliesAccessibilityLabel_WhenProvided() async {
+    @Test @MainActor func testAutomaticCompliance_AppliesAccessibilityLabel_WhenProvided() {
         initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             // Given: A view with explicit accessibility label
             let testLabel = "Save document"
             let view = Text("Save")
@@ -52,9 +53,9 @@ open class AutomaticAccessibilityLabelTests: BaseTestClass {
     /// BUSINESS PURPOSE: automaticCompliance() should work without accessibility label
     /// TESTING SCOPE: Tests backward compatibility when no label is provided
     /// METHODOLOGY: Create view without accessibility label parameter
-    @Test @MainActor func testAutomaticCompliance_WorksWithoutAccessibilityLabel() async {
+    @Test @MainActor func testAutomaticCompliance_WorksWithoutAccessibilityLabel() {
         initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             // Given: A view without accessibility label parameter
             let view = Text("Content")
                 .automaticCompliance()
@@ -69,9 +70,9 @@ open class AutomaticAccessibilityLabelTests: BaseTestClass {
     /// BUSINESS PURPOSE: automaticCompliance(named:) should apply accessibility label when provided
     /// TESTING SCOPE: Tests that NamedAutomaticComplianceModifier applies accessibility labels
     /// METHODOLOGY: Create view with named component and accessibility label
-    @Test @MainActor func testAutomaticComplianceNamed_AppliesAccessibilityLabel_WhenProvided() async {
+    @Test @MainActor func testAutomaticComplianceNamed_AppliesAccessibilityLabel_WhenProvided() {
         initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             // Given: A named component with accessibility label
             let componentName = "TestComponent"
             let testLabel = "Test component label"
@@ -89,9 +90,9 @@ open class AutomaticAccessibilityLabelTests: BaseTestClass {
     /// BUSINESS PURPOSE: automaticCompliance(named:) should work without accessibility label
     /// TESTING SCOPE: Tests backward compatibility for named components
     /// METHODOLOGY: Create named component without accessibility label
-    @Test @MainActor func testAutomaticComplianceNamed_WorksWithoutAccessibilityLabel() async {
+    @Test @MainActor func testAutomaticComplianceNamed_WorksWithoutAccessibilityLabel() {
         initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             // Given: A named component without accessibility label
             let componentName = "TestComponent"
             let view = Text("Content")
@@ -108,15 +109,12 @@ open class AutomaticAccessibilityLabelTests: BaseTestClass {
     /// BUSINESS PURPOSE: platformButton should apply accessibility label when provided
     /// TESTING SCOPE: Tests that platformButton passes label to automaticCompliance
     /// METHODOLOGY: Create button with label parameter and verify label is applied
-    @Test @MainActor func testPlatformButton_AppliesAccessibilityLabel() async {
+    @Test @MainActor func testPlatformButton_AppliesAccessibilityLabel() {
         initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             // Given: A platform button with accessibility label
             let testLabel = "Save document"
-            var actionCalled = false
-            let view = platformButton(label: testLabel) {
-                actionCalled = true
-            }
+            let view = platformButton(label: testLabel) { }
             let root = Self.hostRootPlatformView(view, forceLayout: true)
             let labelText = getAccessibilityLabelForTest(view: view, hostedRoot: root)
             #expect(labelText != nil && !(labelText?.isEmpty ?? true), "Platform button with label should have label applied")
@@ -126,15 +124,12 @@ open class AutomaticAccessibilityLabelTests: BaseTestClass {
     /// BUSINESS PURPOSE: platformButton should auto-extract accessibility label from label parameter
     /// TESTING SCOPE: Tests that platformButton extracts label parameter as accessibility label
     /// METHODOLOGY: Create button with simple label overload, verify label is extracted
-    @Test @MainActor func testPlatformButton_AutoExtractsLabelFromParameter() async {
+    @Test @MainActor func testPlatformButton_AutoExtractsLabelFromParameter() {
         initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             // Given: A button with label (simple overload - Issue #157)
             let buttonLabel = "Save"
-            var actionCalled = false
-            let view = platformButton(buttonLabel) {
-                actionCalled = true
-            }
+            let view = platformButton(buttonLabel) { }
             let root = Self.hostRootPlatformView(view, forceLayout: true)
             let labelText = getAccessibilityLabelForTest(view: view, hostedRoot: root)
             #expect(labelText != nil && !(labelText?.isEmpty ?? true), "Button with auto-extracted label should have label applied")
@@ -146,9 +141,9 @@ open class AutomaticAccessibilityLabelTests: BaseTestClass {
     /// BUSINESS PURPOSE: Test that label formatting works through ViewInspector
     /// TESTING SCOPE: Label formatting through SwiftUI views
     /// METHODOLOGY: Test label formatting by checking results from modifier via ViewInspector
-    @Test @MainActor func testLabelFormatting_ThroughViewInspector() async {
+    @Test @MainActor func testLabelFormatting_ThroughViewInspector() {
         initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             // Given: Views with different label formats
             let viewWithPeriod = Text("Test")
                 .automaticCompliance(accessibilityLabel: "Test label.")
@@ -194,9 +189,9 @@ open class AutomaticAccessibilityLabelTests: BaseTestClass {
     /// BUSINESS PURPOSE: Empty accessibility label should not be applied
     /// TESTING SCOPE: Tests that empty strings are not applied as labels
     /// METHODOLOGY: Create view with empty label string
-    @Test @MainActor func testAutomaticCompliance_DoesNotApplyEmptyLabel() async {
+    @Test @MainActor func testAutomaticCompliance_DoesNotApplyEmptyLabel() {
         initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             // Given: A view with empty accessibility label
             let view = Text("Content")
                 .automaticCompliance(accessibilityLabel: "")
@@ -209,9 +204,9 @@ open class AutomaticAccessibilityLabelTests: BaseTestClass {
     /// BUSINESS PURPOSE: Nil accessibility label should not be applied
     /// TESTING SCOPE: Tests that nil labels are handled correctly
     /// METHODOLOGY: Create view with nil label (implicit)
-    @Test @MainActor func testAutomaticCompliance_HandlesNilLabel() async {
+    @Test @MainActor func testAutomaticCompliance_HandlesNilLabel() {
         initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             // Given: A view without accessibility label (nil)
             let view = Text("Content")
                 .automaticCompliance(accessibilityLabel: nil)

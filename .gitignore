@@ -1,5 +1,8 @@
 # Swift Package Manager
 #
+# Workspace state (recreated when opening in Xcode; ignore to avoid sync noise)
+.swiftpm/
+
 # Build artifacts
 .build/
 .build-clean/

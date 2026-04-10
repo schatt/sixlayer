@@ -12,11 +12,23 @@ import SixLayerFramework
 @main
 struct TestApp: App {
     init() {
-        // Configuration is now done in TestAppContentView.onAppear to avoid
-        // static initialization order issues that can cause dyld_start crashes.
-        // The framework must be fully loaded before accessing singletons.
+        // Clear in-memory + avoid stale UserDefaults (e.g. enableUITestIntegration false) poisoning XCUITest IDs.
+        let config = AccessibilityIdentifierConfig.shared
+        config.resetToDefaults()
+        config.namespace = "SixLayer"
+        config.mode = .automatic
+        config.enableAutoIDs = true
+        config.globalAutomaticAccessibilityIdentifiers = true
+        config.includeComponentNames = true
+        config.includeElementTypes = true
+        config.enableUITestIntegration = true
+        config.enableDebugLogging = false
+        // Category A global-off UI audit (issue #197): `-CategoryAGlobalAutoOff` with `-OpenCategoryAAccessibility`
+        if ProcessInfo.processInfo.arguments.contains("-CategoryAGlobalAutoOff") {
+            config.globalAutomaticAccessibilityIdentifiers = false
+        }
     }
-    
+
     var body: some Scene {
         WindowGroup {
             TestAppContentView()
@@ -30,6 +42,10 @@ struct TestAppContentView: View {
     @State private var selectedTest: TestView? = nil
     @State private var showLayer1Examples = false
     @State private var isConfigured = false
+    /// When true, app opens to Category A accessibility identifier audit (launch arg -OpenCategoryAAccessibility). Issue #197.
+    private let openCategoryAAccessibility = ProcessInfo.processInfo.arguments.contains("-OpenCategoryAAccessibility")
+    /// When true, app opens to full `Layer4ExamplesView` (component list incl. Identifier Edge Case). UITest: `-OpenLayer4ComponentExamples`.
+    private let openLayer4ComponentExamples = ProcessInfo.processInfo.arguments.contains("-OpenLayer4ComponentExamples")
     /// When true, app opens directly to Layer 4 contract section (launch arg -OpenLayer4Examples).
     private let openLayer4Examples = ProcessInfo.processInfo.arguments.contains("-OpenLayer4Examples")
     /// When true, app opens directly to Layer 5 Accessibility section (launch arg -OpenLayer5Accessibility).
@@ -63,29 +79,23 @@ struct TestAppContentView: View {
         var id: String { rawValue }
     }
     
-    // Configure accessibility identifier generation in initializer
-    // This ensures namespace is set before view body is evaluated
-    // Safe because we're not accessing during App.init() static initialization
-    init() {
-        // Configure accessibility identifier generation
-        // This is safe here because we're in a view initializer, not App.init()
-        let config = AccessibilityIdentifierConfig.shared
-        config.namespace = "SixLayer"
-        config.mode = .automatic
-        config.enableAutoIDs = true
-        config.globalAutomaticAccessibilityIdentifiers = true
-        config.includeComponentNames = true
-        config.includeElementTypes = true
-        config.enableUITestIntegration = true  // CRITICAL: Enables "main.ui" format for stable identifiers
-        
-        // Enable debug logging unconditionally for debugging identifierName issue
-        // TODO: Revert to conditional after fixing identifierName bug
-        config.enableDebugLogging = true
-    }
-    
+    init() {}
+
     var body: some View {
         Group {
-            if openLayer4Examples {
+            if openCategoryAAccessibility, ProcessInfo.processInfo.arguments.contains("-CategoryAGlobalAutoOff") {
+                NavigationStack {
+                    AccessibilityIdentifierCategoryAGlobalOffAUDITView()
+                }
+            } else if openCategoryAAccessibility {
+                NavigationStack {
+                    AccessibilityIdentifierCategoryAUDITView()
+                }
+            } else if openLayer4ComponentExamples {
+                NavigationStack {
+                    Layer4ExamplesView()
+                }
+            } else if openLayer4Examples {
                 NavigationStack {
                     Layer4ContractOnlyView()
                 }
@@ -144,22 +154,16 @@ struct TestAppContentView: View {
                 }
                 
                 sectionHeader("Layer 2 Examples (Issue #165)")
-                Group {
-                    NavigationLink("Layer 2 Layout Examples") {
-                        Layer2ExamplesView()
-                    }
+                NavigationLink("Layer 2 Layout Examples") {
+                    Layer2ExamplesView()
                 }
                 .accessibilityIdentifier("layer2-examples-link")
-                .accessibilityElement(children: .combine)
                 
                 sectionHeader("Layer 3 Examples (Issue #165)")
-                Group {
-                    NavigationLink("Layer 3 Strategy Examples") {
-                        Layer3ExamplesView()
-                    }
+                NavigationLink("Layer 3 Strategy Examples") {
+                    Layer3ExamplesView()
                 }
                 .accessibilityIdentifier("layer3-examples-link")
-                .accessibilityElement(children: .combine)
                 
                 sectionHeader("Layer 4 Examples (Issue #165)")
                 NavigationLink("Layer 4 Component Examples") {

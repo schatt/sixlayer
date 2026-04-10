@@ -19,9 +19,9 @@ open class AutomaticAccessibilityIdentifiersTests: BaseTestClass {
 
     // MARK: - Namespace Detection Tests
     
-    @Test @MainActor func testAutomaticNamespaceDetectionForTests() async {
+    @Test @MainActor func testAutomaticNamespaceDetectionForTests() {
             initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             // GIVEN: We're running in a test environment
             // WHEN: Using test config (isolated per test)
             // THEN: Should use configured namespace from BaseTestClass
@@ -34,9 +34,9 @@ open class AutomaticAccessibilityIdentifiersTests: BaseTestClass {
         }
     }
     
-    @Test @MainActor func testAutomaticNamespaceDetectionForRealApps() async {
+    @Test @MainActor func testAutomaticNamespaceDetectionForRealApps() {
             initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             // GIVEN: We're simulating a real app environment (not in tests)
             // WHEN: Using test config
             // THEN: Should use configured namespace
@@ -45,7 +45,6 @@ open class AutomaticAccessibilityIdentifiersTests: BaseTestClass {
                 return
             }
 
-            #expect(config.namespace != nil, "Should have a configured namespace")
             #expect(!config.namespace.isEmpty, "Namespace should not be empty")
             #expect(config.namespace == "SixLayer", "Should use configured SixLayer namespace")
         }
@@ -53,7 +52,7 @@ open class AutomaticAccessibilityIdentifiersTests: BaseTestClass {
     
     // MARK: - automaticAccessibilityIdentifiers() Modifier Tests
     
-    @Test @MainActor func testAutomaticAccessibilityIdentifiersModifierGeneratesIdentifiersOnIOS() async {
+    @Test @MainActor func testAutomaticAccessibilityIdentifiersModifierGeneratesIdentifiersOnIOS() {
         initializeTestConfig()
         let view = platformPresentContent_L1(
             content: "Test",
@@ -75,7 +74,7 @@ open class AutomaticAccessibilityIdentifiersTests: BaseTestClass {
         #endif
     }
     
-    @Test @MainActor func testAutomaticAccessibilityIdentifiersModifierGeneratesIdentifiersOnMacOS() async {
+    @Test @MainActor func testAutomaticAccessibilityIdentifiersModifierGeneratesIdentifiersOnMacOS() {
         initializeTestConfig()
         let view = platformPresentContent_L1(
             content: "Test",
@@ -99,7 +98,7 @@ open class AutomaticAccessibilityIdentifiersTests: BaseTestClass {
     
     // MARK: - named() Modifier Tests
     
-    @Test @MainActor func testNamedModifierGeneratesIdentifiersOnIOS() async {
+    @Test @MainActor func testNamedModifierGeneratesIdentifiersOnIOS() {
         let view = platformPresentContent_L1(
             content: "Test",
             hints: PresentationHints()
@@ -120,7 +119,7 @@ open class AutomaticAccessibilityIdentifiersTests: BaseTestClass {
         #endif
     }
     
-    @Test @MainActor func testNamedModifierGeneratesIdentifiersOnMacOS() async {
+    @Test @MainActor func testNamedModifierGeneratesIdentifiersOnMacOS() {
         initializeTestConfig()
         let view = platformPresentContent_L1(
             content: "Test",
@@ -147,9 +146,9 @@ open class AutomaticAccessibilityIdentifiersTests: BaseTestClass {
     /// Test that automaticAccessibilityIdentifiers() can be applied to root views
     /// without accessing environment values outside of view context
     /// This test verifies Issue #7: No SwiftUI warnings about environment access
-    @Test @MainActor func testAutomaticAccessibilityIdentifiersOnRootViewNoEnvironmentWarnings() async {
+    @Test @MainActor func testAutomaticAccessibilityIdentifiersOnRootViewNoEnvironmentWarnings() {
             initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             setupTestEnvironment()
             
             // Create a simple root view with the modifier applied
@@ -172,7 +171,7 @@ open class AutomaticAccessibilityIdentifiersTests: BaseTestClass {
             if let inspected = try? AnyView(rootView).inspect() {
                 // If we can inspect it, the environment was accessed correctly
                 // (ViewInspector requires the view to be properly installed)
-                let identifier = try? inspected.accessibilityIdentifier()
+                _ = try? inspected.accessibilityIdentifier()
                 // Modifier should work on root view
                 #expect(Bool(true), "Modifier should generate identifier on root view without environment warnings")  // identifier is non-optional
             } else {
@@ -188,9 +187,9 @@ open class AutomaticAccessibilityIdentifiersTests: BaseTestClass {
     
     /// Test that modifier defers environment access until view is installed
     /// This verifies the helper view pattern works correctly
-    @Test @MainActor func testModifierDefersEnvironmentAccessUntilViewInstalled() async {
+    @Test @MainActor func testModifierDefersEnvironmentAccessUntilViewInstalled() {
             initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             setupTestEnvironment()
             
             // Create a view with config values set (no environment dependencies)
@@ -227,9 +226,9 @@ open class AutomaticAccessibilityIdentifiersTests: BaseTestClass {
     /// Test that all modifier variants use helper view pattern
     /// This ensures NamedAutomaticAccessibilityIdentifiersModifier, ForcedAutomaticAccessibilityIdentifiersModifier, etc.
     /// all defer environment access correctly
-    @Test @MainActor func testAllModifierVariantsDeferEnvironmentAccess() async {
+    @Test @MainActor func testAllModifierVariantsDeferEnvironmentAccess() {
             initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             setupTestEnvironment()
             
             let testConfig = AccessibilityIdentifierConfig.shared
@@ -252,21 +251,21 @@ open class AutomaticAccessibilityIdentifiersTests: BaseTestClass {
             #if canImport(ViewInspector)
             // Handle each view separately to avoid Any type issues
             if let inspected1 = try? AnyView(view1).inspect() {
-                let identifier1 = try? inspected1.accessibilityIdentifier()
+                _ = try? inspected1.accessibilityIdentifier()
                 #expect(Bool(true), "Modifier variant 1 should generate identifier without warnings")  // identifier1 is non-optional
             } else {
                 Issue.record("Could not inspect view variant 1")
             }
             
             if let inspected2 = try? AnyView(view2).inspect() {
-                let identifier2 = try? inspected2.accessibilityIdentifier()
+                _ = try? inspected2.accessibilityIdentifier()
                 #expect(Bool(true), "Modifier variant 2 should generate identifier without warnings")  // identifier2 is non-optional
             } else {
                 Issue.record("Could not inspect view variant 2")
             }
             
             if let inspected3 = try? AnyView(view3).inspect() {
-                let identifier3 = try? inspected3.accessibilityIdentifier()
+                _ = try? inspected3.accessibilityIdentifier()
                 #expect(Bool(true), "Modifier variant 3 should generate identifier without warnings")  // identifier3 is non-optional
             } else {
                 Issue.record("Could not inspect view variant 3")

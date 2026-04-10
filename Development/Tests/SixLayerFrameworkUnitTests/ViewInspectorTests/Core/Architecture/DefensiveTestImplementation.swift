@@ -35,7 +35,8 @@ struct DefensiveTestImplementation {
 
         let view = TestPatterns.createSimpleCardComponent(item: item)
 
-        TestPatterns.verifyViewGeneration(view, testName: testName)
+        let verifier = BaseTestClass()
+        verifier.verifyViewGeneration(view, testName: testName)
     }
 }
 

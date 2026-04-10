@@ -16,7 +16,7 @@ struct PlatformSidebarHelpersTests {
     
     @Test @MainActor func testPlatformSidebarPullIndicatorExists() {
         // Test that the function exists and can be called
-        let indicator = platformSidebarPullIndicator(isVisible: true)
+        let _ = platformSidebarPullIndicator(isVisible: true)
         // Function should compile and return a view
         #expect(Bool(true), "Function should exist and be callable")
     }

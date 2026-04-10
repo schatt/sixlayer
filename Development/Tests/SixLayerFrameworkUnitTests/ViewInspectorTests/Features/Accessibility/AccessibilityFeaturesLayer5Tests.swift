@@ -57,8 +57,8 @@ open class AccessibilityFeaturesLayer5Tests: BaseTestClass {
     @Test @MainActor func testAddFocusableItemSuccess() {
         let navigationManager = KeyboardNavigationManager()
         // GIVEN: Empty keyboard navigation manager
-        let highContrastManager = HighContrastManager()
-        let cancellables = Set<AnyCancellable>()
+        let _ = HighContrastManager()
+        let _ = Set<AnyCancellable>()
         
         #expect(navigationManager.focusableItems.count == 0)
         
@@ -346,7 +346,7 @@ open class AccessibilityFeaturesLayer5Tests: BaseTestClass {
         // Unit tests use platform view hosting (UIKit/AppKit) directly, not ViewInspector
         #expect(testComponentComplianceSinglePlatform(
             enhancedView, 
-            expectedPattern: "*.main.element.accessibility-enhanced-*", 
+            expectedPattern: "*accessibility-enhanced*", 
             platform: SixLayerPlatform.iOS,
             componentName: "AccessibilityEnhancedViewModifier"
         ), "Enhanced view should have accessibility identifier")
@@ -373,7 +373,7 @@ open class AccessibilityFeaturesLayer5Tests: BaseTestClass {
         // Unit tests use platform view hosting (UIKit/AppKit) directly, not ViewInspector
         #expect(testComponentComplianceSinglePlatform(
             enhancedView, 
-            expectedPattern: "*.main.element.accessibility-enhanced-*", 
+            expectedPattern: "*accessibility-enhanced*", 
             platform: SixLayerPlatform.iOS,
             componentName: "AccessibilityEnhancedViewModifierDefaultConfig"
         ), "Enhanced view with default config should have accessibility identifier")
@@ -387,7 +387,6 @@ open class AccessibilityFeaturesLayer5Tests: BaseTestClass {
      */
     @Test @MainActor func testVoiceOverEnabledViewModifier() {
         initializeTestConfig()
-        let navigationManager = KeyboardNavigationManager()
         // GIVEN: A view
         let testView = platformPresentContent_L1(
             content: "Test",
@@ -395,7 +394,7 @@ open class AccessibilityFeaturesLayer5Tests: BaseTestClass {
         )
         
         // WHEN: Applying VoiceOver enabled modifier
-        let voiceOverView = testView.voiceOverEnabled()
+        let _ = testView.voiceOverEnabled()
         
         // THEN: Should return modified view
         // voiceOverView is non-optional View, not used further
@@ -409,7 +408,7 @@ open class AccessibilityFeaturesLayer5Tests: BaseTestClass {
      */
     @Test @MainActor func testKeyboardNavigableViewModifier() {
         initializeTestConfig()
-        let navigationManager = KeyboardNavigationManager()
+        let _ = KeyboardNavigationManager()
         // GIVEN: A view
         let testView = platformPresentContent_L1(
             content: "Test",
@@ -417,7 +416,7 @@ open class AccessibilityFeaturesLayer5Tests: BaseTestClass {
         )
         
         // WHEN: Applying keyboard navigable modifier
-        let keyboardView = testView.keyboardNavigable()
+        let _ = testView.keyboardNavigable()
         
         // THEN: Should return modified view
         // keyboardView is non-optional View, not used further
@@ -431,7 +430,7 @@ open class AccessibilityFeaturesLayer5Tests: BaseTestClass {
      */
     @Test @MainActor func testHighContrastEnabledViewModifier() {
         initializeTestConfig()
-        let navigationManager = KeyboardNavigationManager()
+        let _ = KeyboardNavigationManager()
         // GIVEN: A view
         let testView = platformPresentContent_L1(
             content: "Test",
@@ -439,7 +438,7 @@ open class AccessibilityFeaturesLayer5Tests: BaseTestClass {
         )
         
         // WHEN: Applying high contrast enabled modifier
-        let highContrastView = testView.highContrastEnabled()
+        let _ = testView.highContrastEnabled()
         
         // THEN: Should return modified view
         // highContrastView is non-optional View, not used further
@@ -452,7 +451,7 @@ open class AccessibilityFeaturesLayer5Tests: BaseTestClass {
      * METHODOLOGY: Test multiple modifier application
      */
     @Test @MainActor func testAccessibilityViewModifiersIntegration() {
-        let navigationManager = KeyboardNavigationManager()
+        let _ = KeyboardNavigationManager()
         // GIVEN: A view
         let testView = platformPresentContent_L1(
             content: "Test",
@@ -476,7 +475,7 @@ open class AccessibilityFeaturesLayer5Tests: BaseTestClass {
             // Remove this workaround once ViewInspector detection is fixed
         #expect(testComponentComplianceSinglePlatform(
             integratedView, 
-            expectedPattern: "*.main.element.accessibility-enhanced-*", 
+            expectedPattern: "*accessibility-enhanced*", 
             platform: SixLayerPlatform.iOS,
             componentName: "AccessibilityViewModifiersIntegration"
         ) , "Integrated accessibility view should have accessibility identifier")

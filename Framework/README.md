@@ -1,6 +1,6 @@
 # SixLayer Framework
 
-[![Version](https://img.shields.io/badge/version-v7.5.9-blue.svg)](https://github.com/schatt/sixlayer/releases/tag/v7.5.9)
+[![Version](https://img.shields.io/badge/version-v7.5.10-blue.svg)](https://github.com/schatt/sixlayer/releases/tag/v7.5.10)
 [![Platform](https://img.shields.io/badge/platform-iOS%2016%2B%20%7C%20macOS%2013%2B-lightgrey.svg)](https://github.com/schatt/6layer)
 [![Swift](https://img.shields.io/badge/Swift-5.9+-orange.svg)](https://swift.org)
 
@@ -209,6 +209,11 @@ See the [Platform-Specific Patterns Guide](docs/platform-specific-patterns.md#pl
 - **Device-aware settings views**: `platformSettingsContainer_L4()` automatically chooses optimal presentation pattern
 - **Intelligent selection**: iPad/macOS use split view, iPhone uses NavigationStack with conditional detail
 - **State management**: Handles column visibility and category selection automatically
+
+### Managed platform settings flow (Issue #209)
+- **Default path**: `platformManagedSettingsTopLevel_L4` with `PlatformManagedSettingsTopLevelState` (optional `CaseIterable` pane enum), iPhone stack integration, and sub-pane depth via `platformManagedSettingsDetailNavigationStack_L4` + `PlatformManagedSettingsDetailNavigationState`
+- **Coordination**: `PlatformManagedSettingsFlowLogic.selectTopLevelPane` updates top-level selection and clears the detail navigation stack when switching categories
+- **Documentation**: [ManagedPlatformSettingsFlowGuide.md](docs/ManagedPlatformSettingsFlowGuide.md) (migration from manual `selectedCategory`, compile-checked example test)
 
 ### Cross-Platform File System Utilities
 - **Home directory access**: `platformHomeDirectory()` for cross-platform home directory

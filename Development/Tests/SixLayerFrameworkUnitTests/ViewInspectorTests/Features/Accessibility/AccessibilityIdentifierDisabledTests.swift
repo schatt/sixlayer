@@ -62,7 +62,8 @@ open class AccessibilityIdentifierDisabledTests: BaseTestClass {
             }
             .accessibilityIdentifier("manual-test-button")
             
-            // Using helper - when ViewInspector works on this platform, verify
+            // Using helper — when ViewInspector exposes the id, assert it. Nil is a known harness limitation
+            // in some iOS unit-test environments; hard contract: `ManualAccessibilityIdentifierHarnessUITests`.
             #if canImport(ViewInspector)
             if let buttonID = AccessibilityTestUtilities.inspectButtonAccessibilityIdentifier(
                 view,

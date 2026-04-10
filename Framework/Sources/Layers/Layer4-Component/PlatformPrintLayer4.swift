@@ -216,18 +216,38 @@ private struct PrintSheet: UIViewControllerRepresentable {
     }
     
     private func presentPrintController(on viewController: UIViewController) {
+        // XCUITest launches the host app with -UITesting / XCUI_TESTING; XCTest is not linked into the app
+        // bundle, so `NSClassFromString("XCTest")` guards elsewhere never fire here. Presenting
+        // UIPrintInteractionController leaves a system modal that UITests often cannot dismiss reliably,
+        // which blocks the rest of the shared-app suite (Issue #193).
+        let skipRealPrintForUITest = ProcessInfo.processInfo.arguments.contains("-UITesting")
+            || ProcessInfo.processInfo.environment["XCUI_TESTING"] == "1"
+        if skipRealPrintForUITest {
+            DispatchQueue.main.async {
+                self.onComplete?(true)
+                viewController.dismiss(animated: false, completion: nil)
+            }
+            return
+        }
+
         // Check if printing is available
         guard UIPrintInteractionController.canPrint(content: content) else {
             print("[SixLayer] Print error: Cannot print content type")
-            onComplete?(false)
+            DispatchQueue.main.async {
+                self.onComplete?(false)
+                viewController.dismiss(animated: false, completion: nil)
+            }
             return
         }
-        
+
         // Check if printer is available (iOS 9.0+)
         if #available(iOS 9.0, *) {
             guard UIPrintInteractionController.isPrintingAvailable else {
                 print("[SixLayer] Print error: No printer available")
-                onComplete?(false)
+                DispatchQueue.main.async {
+                    self.onComplete?(false)
+                    viewController.dismiss(animated: false, completion: nil)
+                }
                 return
             }
         }
@@ -281,7 +301,10 @@ private struct PrintSheet: UIViewControllerRepresentable {
                 if let uiImage = renderer.uiImage {
                     printController.printingItem = uiImage
                 } else {
-                    onComplete?(false)
+                    DispatchQueue.main.async {
+                        self.onComplete?(false)
+                        viewController.dismiss(animated: false, completion: nil)
+                    }
                     return
                 }
             } else {
@@ -326,14 +349,17 @@ private func platformPrintiOS(
     content: PrintContent,
     options: PrintOptions?
 ) -> Bool {
-    // Don't actually print during unit tests
+    // Don't actually print during unit tests (in-process XCTest) or XCUITest host (-UITesting / env).
     #if DEBUG
     if NSClassFromString("XCTest") != nil {
-        // Running in test environment - return success without printing
         return true
     }
     #endif
-    
+    if ProcessInfo.processInfo.arguments.contains("-UITesting")
+        || ProcessInfo.processInfo.environment["XCUI_TESTING"] == "1" {
+        return true
+    }
+
     // Check if printing is available
     guard UIPrintInteractionController.canPrint(content: content) else {
         print("[SixLayer] Print error: Cannot print content type")

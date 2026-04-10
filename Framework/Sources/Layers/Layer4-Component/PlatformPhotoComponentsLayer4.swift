@@ -50,14 +50,14 @@ public enum PlatformPhotoComponentsLayer4 {
     ) -> some View {
         #if os(iOS)
         CameraView(onImageCaptured: onImageCaptured, onCameraAuthorizationState: onCameraAuthorizationState)
-            .automaticCompliance()
+            .automaticCompliance(named: "platformCameraInterface_L4")
         #elseif os(macOS)
         MacCameraView(onImageCaptured: onImageCaptured)
-            .automaticCompliance()
+            .automaticCompliance(named: "platformCameraInterface_L4")
         #else
         let i18n = InternationalizationService()
         Text(i18n.localizedString(for: "SixLayerFramework.camera.notAvailable"))
-            .automaticCompliance()
+            .automaticCompliance(named: "platformCameraInterface_L4")
         #endif
     }
     
@@ -70,7 +70,7 @@ public enum PlatformPhotoComponentsLayer4 {
     @MainActor
     public static func platformPhotoPicker_L4(onImageSelected: @escaping (PlatformImage) -> Void) -> some View {
         UnifiedImagePicker(onImageSelected: onImageSelected)
-            .automaticCompliance()
+            .automaticCompliance(named: "platformPhotoPicker_L4")
     }
     
     // MARK: - Photo Display Components
@@ -91,7 +91,9 @@ public enum PlatformPhotoComponentsLayer4 {
                 PlaceholderPhotoView(style: style, onCaptureRequested: onCaptureRequested)
             }
         }
+        .accessibilityElement(children: .ignore)
         .automaticCompliance(named: "platformPhotoDisplay_L4")
+        .accessibilityIdentifier("platformPhotoDisplay_L4")
     }
     
     // MARK: - Camera Preview Components
@@ -621,6 +623,7 @@ struct PlaceholderPhotoView: View {
             .clipShape(clipShapeForStyle(style))
         }
         .automaticCompliance(named: "PlaceholderPhotoView")
+        .accessibilityIdentifier("platformPhotoDisplay_L4")
     }
     
     private func sizeForStyle(_ style: PhotoDisplayStyle) -> CGSize {
