@@ -67,6 +67,12 @@ public struct ExplicitAccessibilityIdentifierSetKey: EnvironmentKey {
     public static let defaultValue: Bool = false
 }
 
+/// When true, automatic identifier generation from `basicAutomaticCompliance` / `automaticCompliance`
+/// is skipped for this subtree. Explicit `.named()` / `.exactNamed()` / manual `accessibilityIdentifier` still apply.
+public struct AutomaticAccessibilityIdentifiersLocallyDisabledKey: EnvironmentKey {
+    public static let defaultValue: Bool = false
+}
+
 /// Environment key for passing accessibility label text (for VoiceOver)
 /// Separate from accessibilityIdentifierLabel which is used for identifier generation
 /// This is used for actual accessibility labels that VoiceOver reads
@@ -110,6 +116,11 @@ public extension EnvironmentValues {
     var explicitAccessibilityIdentifierSet: Bool {
         get { self[ExplicitAccessibilityIdentifierSetKey.self] }
         set { self[ExplicitAccessibilityIdentifierSetKey.self] = newValue }
+    }
+    
+    var automaticAccessibilityIdentifiersLocallyDisabled: Bool {
+        get { self[AutomaticAccessibilityIdentifiersLocallyDisabledKey.self] }
+        set { self[AutomaticAccessibilityIdentifiersLocallyDisabledKey.self] = newValue }
     }
     
     var accessibilityLabelText: String? {
@@ -851,13 +862,11 @@ public struct ForcedAutomaticAccessibilityIdentifiersModifier: ViewModifier {
 
 // MARK: - Disable Automatic Accessibility Identifier Modifier
 
-/// Modifier that prevents automatic accessibility identifiers from being applied
-/// Used for local disable scenarios
+/// Modifier that prevents automatic accessibility identifiers from being applied in this subtree
+/// (`basicAutomaticCompliance` / `automaticCompliance` identifier generation). Explicit `.named()` / `.exactNamed()` unchanged.
 public struct DisableAutomaticAccessibilityIdentifiersModifier: ViewModifier {
     public func body(content: Content) -> some View {
-        // This modifier doesn't apply any accessibility identifier
-        // It just passes through the content unchanged
-        content
+        content.environment(\.automaticAccessibilityIdentifiersLocallyDisabled, true)
     }
 }
 
@@ -1174,6 +1183,7 @@ public struct BasicAutomaticComplianceModifier: ViewModifier {
     let accessibilityValue: String?  // NEW: Accessibility value for stateful elements (Issue #165)
     let accessibilitySortPriority: Double?  // NEW: Accessibility sort priority for reading order (Issue #165)
     @Environment(\.accessibilityIdentifierConfig) private var envAccessibilityIdentifierConfig
+    @Environment(\.automaticAccessibilityIdentifiersLocallyDisabled) private var envAutomaticAccessibilityLocallyDisabled
     
     nonisolated public init(
         identifierName: String? = nil,
@@ -1229,8 +1239,10 @@ public struct BasicAutomaticComplianceModifier: ViewModifier {
         let capturedNamespace = config.namespace
         let capturedGlobalPrefix = config.globalPrefix
         
-        // Logic: Both enableAutoIDs and globalAutomaticAccessibilityIdentifiers must be true
-        let shouldApply = capturedEnableAutoIDs && capturedGlobalAutomaticAccessibilityIdentifiers
+        // Logic: enableAutoIDs, global flag, and no local subtree opt-out (disableAutomaticAccessibilityIdentifiers)
+        let shouldApply = capturedEnableAutoIDs
+            && capturedGlobalAutomaticAccessibilityIdentifiers
+            && !envAutomaticAccessibilityLocallyDisabled
         
         // Apply identifier whenever automatic IDs are enabled. When no identifierName
         // is provided, generate a generic identifier using the default component name.
