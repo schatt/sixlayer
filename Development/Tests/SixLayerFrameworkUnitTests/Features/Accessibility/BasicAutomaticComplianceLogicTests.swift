@@ -506,4 +506,9 @@ open class BasicAutomaticComplianceLogicTests: BaseTestClass {
         #expect(modifier.identifierName == identifierName, 
                "Modifier should store identifierName parameter. Expected: '\(identifierName)', Got: '\(modifier.identifierName ?? "nil")'")
     }
+
+    /// Issue #221: `SLFAutomaticComplianceLayoutGroup` marks layout stacks so wrapper identifiers are not generated.
+    @Test @MainActor func testSLFLayoutGroup_elementType_isStableContract() {
+        #expect(SLFAutomaticComplianceLayoutGroup.elementType == "SLFLayoutGroup")
+    }
 }
