@@ -59,11 +59,14 @@ extension XCUIApplication {
     /// Scroll the primary content up: prefers table(s); when two tables exist, swipes both outer and inner; otherwise swipes `xcuiPrimaryScrollHost()`.
     func xcuiSwipeScrollHostsUp() {
         let tbls = tables
-        if tbls.count > 1 {
-            tbls.element(boundBy: tbls.count - 1).swipeUp()
+        let tableCount = tbls.count
+        // Prefer `count` + `boundBy` over `firstMatch.exists`; on some iOS/SwiftUI Form runs the
+        // table is present in the snapshot while `firstMatch` does not resolve (window swipe fallback).
+        if tableCount > 1 {
+            tbls.element(boundBy: tableCount - 1).swipeUp()
             tbls.element(boundBy: 0).swipeUp()
-        } else if tbls.firstMatch.exists {
-            tbls.firstMatch.swipeUp()
+        } else if tableCount == 1 {
+            tbls.element(boundBy: 0).swipeUp()
         } else {
             let host = xcuiPrimaryScrollHost()
             if host.exists {
@@ -77,11 +80,12 @@ extension XCUIApplication {
     /// Mirror of ``xcuiSwipeScrollHostsUp()`` for scrolling toward the top of Form/table content (e.g. `ensureContractRoot`).
     func xcuiSwipeScrollHostsDown() {
         let tbls = tables
-        if tbls.count > 1 {
-            tbls.element(boundBy: tbls.count - 1).swipeDown()
+        let tableCount = tbls.count
+        if tableCount > 1 {
+            tbls.element(boundBy: tableCount - 1).swipeDown()
             tbls.element(boundBy: 0).swipeDown()
-        } else if tbls.firstMatch.exists {
-            tbls.firstMatch.swipeDown()
+        } else if tableCount == 1 {
+            tbls.element(boundBy: 0).swipeDown()
         } else {
             let host = xcuiPrimaryScrollHost()
             if host.exists {
