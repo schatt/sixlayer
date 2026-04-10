@@ -833,8 +833,8 @@ public struct DynamicFormFieldView: View {
         .id(field.id) // Add ID for ScrollViewReader scrolling
         .environment(\.dynamicFormFieldResolvedDisplayLabel, displayFieldLabel)
         .environment(\.accessibilityIdentifierLabel, displayFieldLabel)
-        .automaticCompliance(
-            identifierName: field.effectiveAccessibilityIdentifierSegment,
+        .automaticComplianceForDynamicFormField(
+            field,
             accessibilitySortPriority: sortPriority  // Issue #165: Sort priority for reading order
         )
     }
