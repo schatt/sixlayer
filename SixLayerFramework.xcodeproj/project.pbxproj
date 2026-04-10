@@ -5641,14 +5641,7 @@
 			path = API;
 			sourceTree = "<group>";
 		};
-		"TEMP_32C1860E-6EEB-4ED9-9157-A1148E6AA37B" /* Shared */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Shared;
-			sourceTree = "<group>";
-		};
-		"TEMP_F5427D73-8304-4CF0-A2DD-12E6400F51C9" /* Utilities */ = {
+		"TEMP_FF416895-B6B6-44BA-B0CB-6E3D47F7B544" /* Utilities */ = {
 			isa = PBXGroup;
 			children = (
 			);
@@ -6239,7 +6232,6 @@
 				};
 			};
 			buildConfigurationList = D9A60249BC74A8A6B5C35F55 /* Build configuration list for PBXProject "SixLayerFramework" */;
-			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -6265,6 +6257,7 @@
 				12F9FBE68F97E78F15D3EBF5 /* XCRemoteSwiftPackageReference "ViewInspector" */,
 			);
 			preferredProjectObjectVersion = 77;
+			productRefGroup = 24B581D7E12CAA2F107B5C4E /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
