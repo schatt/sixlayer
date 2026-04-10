@@ -1146,6 +1146,20 @@ private struct OptionalIdentifierModifier: ViewModifier {
     }
 }
 
+/// Applies `accessibilityElement(children: .contain)` only when needed so XCTest can still see nested
+/// manual identifiers under container `automaticCompliance()` (nil `identifierName`) — Category A audit (#197).
+private struct OptionalAccessibilityContainModifier: ViewModifier {
+    let applyContain: Bool
+
+    func body(content: Content) -> some View {
+        if applyContain {
+            content.accessibilityElement(children: .contain)
+        } else {
+            content
+        }
+    }
+}
+
 // MARK: - Basic Automatic Compliance (Issue #172)
 
 /// Basic automatic compliance modifier - applies only identifier and label, no HIG features
@@ -1371,8 +1385,10 @@ public struct BasicAutomaticComplianceModifier: ViewModifier {
         // puts our identifier on the Group; when the caller adds .accessibilityIdentifier(manual), it
         // applies to the Group and wins (last modifier wins). We do not use .accessibilityElement(children: .combine)
         // so that child content (e.g. Detail view title/subtitle) remains exposed as separate elements.
-        // Use .accessibilityElement(children: .contain) so the Group is an explicit accessibility element
-        // on iOS and retains the identifier (SwiftUI may otherwise flatten Group and drop the identifier).
+        // Use .accessibilityElement(children: .contain) when `identifierName` is non-nil so named rows
+        // keep a stable Group identifier on iOS (SwiftUI may flatten bare Groups).
+        // For container-only `.automaticCompliance()` (nil name), skip `.contain` so nested manual
+        // `.accessibilityIdentifier` values remain visible to `XCUIApplication.descendants` (#197).
         let contentWithLabel = applyAccessibilityLabelIfNeeded(to: content)
         let contentWithHint = applyAccessibilityHintIfNeeded(to: contentWithLabel)
         let contentWithTraits = applyAccessibilityTraitsIfNeeded(to: contentWithHint)
@@ -1380,7 +1396,7 @@ public struct BasicAutomaticComplianceModifier: ViewModifier {
         let contentWithSortPriority = applyAccessibilitySortPriorityIfNeeded(to: contentWithValue)
         return Group { contentWithSortPriority }
             .modifier(OptionalIdentifierModifier(identifier: identifier))
-            .accessibilityElement(children: .contain)
+            .modifier(OptionalAccessibilityContainModifier(applyContain: storedIdentifierName != nil))
     }
 }
 
