@@ -204,6 +204,11 @@ if [ -z "$VERSION" ]; then
     fi
 fi
 
+# Allow explicit version with or without a leading "v" (e.g. 7.5.12 or v7.5.12)
+if [[ -n "$VERSION" ]] && [[ "$VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+    VERSION="${VERSION#v}"
+fi
+
 # Initialize error tracking
 ERRORS_FOUND=0
 ERROR_MESSAGES=""
