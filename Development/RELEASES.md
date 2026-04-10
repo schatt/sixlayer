@@ -1,12 +1,21 @@
 # 🚀 Six-Layer Framework Release History
 
-## 📍 **Current Release: v7.5.11** 🎯
+## 📍 **Current Release: v7.5.12** 🎯
 
 **Release Date**: April 2026
 **Status**: In preparation
-**Previous Release**: v7.5.10 - Patch release
-**Note**: Patch release. `platformFormContainer` owns SwiftUI `Form` on all platforms (Issue #218); removes need for macOS-only inner `Form` that nested on iOS.
+**Previous Release**: v7.5.11 - Patch release
+**Note**: Patch release. `platformSectionContainer` no-header uses `Section` inside `Form`; inset chrome is `platformGroupedInsetContainer` (Issue #220).
 **Next Release**: TBD
+
+---
+
+## 🎯 **v7.5.12 - Form-safe platformSectionContainer; platformGroupedInsetContainer** (April 2026)
+
+### **What's in v7.5.12:**
+- Patch release. See [RELEASE_v7.5.12.md](RELEASE_v7.5.12.md) for details.
+
+**See [RELEASE_v7.5.12.md](RELEASE_v7.5.12.md) for complete release notes.**
 
 ---
 
