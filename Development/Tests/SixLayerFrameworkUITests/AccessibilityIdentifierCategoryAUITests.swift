@@ -81,6 +81,21 @@ final class AccessibilityIdentifierCategoryAUITests: XCTestCase {
         return false
     }
 
+    /// Alphabetical test order runs `testCategoryA_exactNamed_minimalIdentifier` before this suite member; it only swipes **up**,
+    /// leaving the audit scroll view at the bottom. Top rows (manual wrapper, audit title) may be off-screen and absent from the
+    /// accessibility tree until we swipe **down** on the scroll host (same pattern as `Layer4UITests.ensureContractRoot`).
+    private func scrollCategoryAAuditTowardTop(maxSwipes: Int = 24) {
+        let manualPred = NSPredicate(format: "identifier CONTAINS[c] %@", "CatAManualWinsOnOuter")
+        let titlePred = NSPredicate(format: "identifier CONTAINS[c] %@", "CatAAuditTitle")
+        if app.descendants(matching: .any).matching(manualPred).firstMatch.waitForExistence(timeout: 0.5) { return }
+        if app.descendants(matching: .any).matching(titlePred).firstMatch.waitForExistence(timeout: 0.5) { return }
+        for _ in 0..<maxSwipes {
+            app.xcuiSwipeScrollHostsDown()
+            if app.descendants(matching: .any).matching(manualPred).firstMatch.waitForExistence(timeout: 0.35) { return }
+            if app.descendants(matching: .any).matching(titlePred).firstMatch.waitForExistence(timeout: 0.35) { return }
+        }
+    }
+
     func testCategoryA_unicodeText_hasAccessibilityIdentifier() throws {
         XCTAssertTrue(
             anyElement(identifierContains: "CatAUnicodeText").waitForExistence(timeout: 12.0),
@@ -146,8 +161,9 @@ final class AccessibilityIdentifierCategoryAUITests: XCTestCase {
     }
 
     func testCategoryA_manualOnOuterGroup_overridesWrapper() throws {
+        scrollCategoryAAuditTowardTop()
         XCTAssertTrue(
-            scrollUntilIdentifierContains("CatAManualWinsOnOuter"),
+            anyElement(identifierContains: "CatAManualWinsOnOuter").waitForExistence(timeout: 10.0),
             "outer Group accessibilityIdentifier should be findable (manual override on wrapper)"
         )
     }
