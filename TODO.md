@@ -4,6 +4,7 @@
 
 ## Current
 
+- [x] UITest app Layer 1 Data Presentation: fix leading text clipping (`platformFrame` topLeading + `ScrollView` on examples)
 - [x] **#218** `platformFormContainer` owns `Form` on macOS (parity with iOS; avoid nested `Form`)
 - [x] **#220** No-header `platformSectionContainer` → `Section`; inset chrome → `platformGroupedInsetContainer` (milestone v7.5.12)
 - [x] **#194** Default dynamic form localization keys from accessibility identifier segment + env resolver (`DynamicFormFieldLocalizationResolver`), metadata `localizationKeyBase` / `accessibilityIdentifierName` / form `localizationNamespace`
