@@ -651,6 +651,54 @@ platformPresentFormData_L1(
 )
 ```
 
+### Dynamic form localization (Issue #194)
+
+Dynamic form fields can use **the same string segment as automatic accessibility identifiers** as the default **base** for localization keys (e.g. `email-address.label`, `email-address.placeholder`). That keeps bundles aligned with identifiers without duplicating naming rules.
+
+**Default base segment** (`DynamicFormField.effectiveAccessibilityIdentifierSegment`), highest priority first:
+
+1. Field metadata `accessibilityIdentifierName` (non-empty after trim)
+2. Otherwise `sanitizeLabelText(label)`; if empty, the field `id`
+
+**Optional base overrides** (see `localizationBaseKey` / `localizationKey` on `DynamicFormField`):
+
+- `localizationKeyBaseOverride` argument (Swift API)
+- Field metadata `localizationKeyBase`
+- Explicit `accessibilityId` argument to `localizationBaseKey` / `localizationKey`
+
+**Role suffixes** (`FieldLocalizationRole`): `.label`, `.placeholder`, `.help`, `.accessibilityLabel`, `.accessibilityHint` → keys like `\(base).label`.
+
+**Namespace:** Optional prefix for every key. `DynamicFormView` reads `DynamicFormConfiguration.metadata["localizationNamespace"]` and injects `\.dynamicFormLocalizationNamespace` for child fields (e.g. `Settings.email-address.label`).
+
+**Resolver:** Provide a lookup closure wrapped in `DynamicFormFieldLocalizationResolver`. If the environment value is `nil`, **labels and placeholders stay the raw values** from `DynamicFormField` (backward compatible). If the resolver returns the **same string as the key**, the field treats that as “missing” and uses the **fallback** (e.g. original label).
+
+**SwiftUI environment** (from `DynamicFormView.swift`):
+
+- `\.dynamicFormFieldLocalizationResolver` — `DynamicFormFieldLocalizationResolver?`
+- `\.dynamicFormLocalizationNamespace` — `String?` (usually set by the form from configuration metadata)
+- `\.dynamicFormFieldResolvedDisplayLabel` — set on each field row for accessibility / VoiceOver helpers when localized
+
+**Example:** wrap your form host so keys resolve through `Bundle` (or any table):
+
+```swift
+let resolver = DynamicFormFieldLocalizationResolver { key in
+    NSLocalizedString(key, comment: "")
+}
+
+DynamicFormView(configuration: config, onSubmit: handleSubmit)
+    .environment(\.dynamicFormFieldLocalizationResolver, resolver)
+```
+
+Form-level namespace in configuration metadata:
+
+```json
+"metadata": {
+  "localizationNamespace": "VehicleEdit"
+}
+```
+
+**Tests:** `DynamicFormLocalizationKeyTests` (SixLayerFramework unit tests) cover base resolution, namespace, roles, and resolver fallback behavior.
+
 ### Layout Decision Reasoning
 
 The framework provides transparent decision-making with detailed reasoning for debugging and analytics:
@@ -994,6 +1042,7 @@ xcodebuild test -scheme SixLayerFramework -destination 'platform=iOS Simulator,n
 - **NEW in v4.8.0**: [Field-Level Display Hints](docs/FieldHintsCompleteGuide.md) - Declarative data presentation system
 
 ### 📖 **Developer Documentation**
+- **Dynamic form localization (#194)** — convention, metadata, environment keys: [Usage → Dynamic form localization](#dynamic-form-localization-issue-194)
 - [Six-Layer Architecture Overview](docs/six-layer-architecture-current-status.md)
 - [Implementation Plan](docs/six-layer-architecture-implementation-plan.md)
 - [API Reference](docs/6layerapi.txt)
