@@ -48,6 +48,7 @@
    - May require stubbing methods/interfaces so tests can compile
    - **Red phase ends when tests compile and fail at runtime on the intended assertion(s)**
    - **Deliberately red**: You must prove the test *would* catch regressions—a test that never fails when behavior is wrong is **worse than useless** (false confidence). Prefer failing against a stub/wrong implementation or a **local-only** broken expectation captured in logs, then revert before commit; do not ship inverted expectations as the “test.”
+   - **GitHub issue red log**: When the change maps to a GitHub issue, post the **red** (failing) test run to that issue with **timestamp**, **how tests were run**, and **verbatim failure excerpt**, using `gh issue comment <N> --body-file` (see `.cursor/rules/strict-tdd-definition.mdc` and `.cursor/rules/github-issue-workflow.mdc`). Omit only when no issue applies.
    
 2. **GREEN**: Implement minimum code to pass tests
    - **Green phase begins when tests compile (and fail)**
