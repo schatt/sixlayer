@@ -1390,13 +1390,18 @@ public struct BasicAutomaticComplianceModifier: ViewModifier {
             }
         }
         
+        // Navigation titles use identifierElementType "Header" on the whole destination view (see platformNavigationTitle_L4).
+        // Do not stamp label / header traits / hint / value / sort priority onto that container: it flattens the subtree
+        // and XCTest then misses child contract nodes while the system nav bar title still appears (#193).
+        let isNavigationHeaderCompliance = identifierElementType?.lowercased() == "header"
+
         // Helper to conditionally apply accessibility label
         // Use accessibilityLabel when provided; otherwise fall back to identifierLabel (same text, used for both identifier and VoiceOver).
         // Only apply if we have a non-empty label AND an identifier is present.
         @ViewBuilder
         func applyAccessibilityLabelIfNeeded<V: View>(to view: V) -> some View {
             let effectiveLabel = accessibilityLabel ?? identifierLabel
-            if let label = effectiveLabel, !label.isEmpty, identifier != nil {
+            if let label = effectiveLabel, !label.isEmpty, identifier != nil, !isNavigationHeaderCompliance {
                 // Localize and format label according to Apple HIG guidelines
                 let localizedLabel = localizeAccessibilityLabel(
                     label,
@@ -1413,7 +1418,7 @@ public struct BasicAutomaticComplianceModifier: ViewModifier {
         // Only apply if explicitly provided via parameter AND an identifier is present
         @ViewBuilder
         func applyAccessibilityHintIfNeeded<V: View>(to view: V) -> some View {
-            if let hint = accessibilityHint, !hint.isEmpty, identifier != nil {
+            if let hint = accessibilityHint, !hint.isEmpty, identifier != nil, !isNavigationHeaderCompliance {
                 view.accessibilityHint(hint)
             } else {
                 view
@@ -1424,7 +1429,7 @@ public struct BasicAutomaticComplianceModifier: ViewModifier {
         // Only apply if explicitly provided via parameter AND an identifier is present
         @ViewBuilder
         func applyAccessibilityTraitsIfNeeded<V: View>(to view: V) -> some View {
-            if let traits = accessibilityTraits, !traits.isEmpty, identifier != nil {
+            if let traits = accessibilityTraits, !traits.isEmpty, identifier != nil, !isNavigationHeaderCompliance {
                 view.accessibilityAddTraits(traits)
             } else {
                 view
@@ -1435,7 +1440,7 @@ public struct BasicAutomaticComplianceModifier: ViewModifier {
         // Only apply if explicitly provided via parameter AND an identifier is present
         @ViewBuilder
         func applyAccessibilityValueIfNeeded<V: View>(to view: V) -> some View {
-            if let value = accessibilityValue, !value.isEmpty, identifier != nil {
+            if let value = accessibilityValue, !value.isEmpty, identifier != nil, !isNavigationHeaderCompliance {
                 view.accessibilityValue(value)
             } else {
                 view
@@ -1446,7 +1451,7 @@ public struct BasicAutomaticComplianceModifier: ViewModifier {
         // Only apply if explicitly provided via parameter AND an identifier is present
         @ViewBuilder
         func applyAccessibilitySortPriorityIfNeeded<V: View>(to view: V) -> some View {
-            if let priority = accessibilitySortPriority, identifier != nil {
+            if let priority = accessibilitySortPriority, identifier != nil, !isNavigationHeaderCompliance {
                 view.accessibilitySortPriority(priority)
             } else {
                 view
