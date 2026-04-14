@@ -155,25 +155,32 @@ public extension View {
     ) -> some View {
         #if os(iOS)
         if #available(iOS 16.0, *) {
+            // Stamp compliance on sheet *content*, not the presenter. An identifier on the outer
+            // `sheet` return can flatten the presented subtree for XCUITest on iOS 26 (sheet exists,
+            // children missing; Issue #193).
             self.sheet(isPresented: isPresented, onDismiss: onDismiss) {
                 content()
                     .presentationDetents(detents)
                     .presentationDragIndicator(dragIndicator)
+                    .automaticCompliance(named: "platformSheet_L4")
             }
-            .automaticCompliance(named: "platformSheet_L4")
         } else {
-            self.sheet(isPresented: isPresented, onDismiss: onDismiss, content: content)
-                .automaticCompliance(named: "platformSheet_L4")
+            self.sheet(isPresented: isPresented, onDismiss: onDismiss) {
+                content()
+                    .automaticCompliance(named: "platformSheet_L4")
+            }
         }
         #elseif os(macOS)
         self.sheet(isPresented: isPresented, onDismiss: onDismiss) {
             content()
                 .frame(minWidth: 400, minHeight: 300)
+                .automaticCompliance(named: "platformSheet_L4")
         }
-        .automaticCompliance(named: "platformSheet_L4")
         #else
-        self.sheet(isPresented: isPresented, onDismiss: onDismiss, content: content)
-            .automaticCompliance(named: "platformSheet_L4")
+        self.sheet(isPresented: isPresented, onDismiss: onDismiss) {
+            content()
+                .automaticCompliance(named: "platformSheet_L4")
+        }
         #endif
     }
     
@@ -199,21 +206,25 @@ public extension View {
                 content(item)
                     .presentationDetents(detents)
                     .presentationDragIndicator(dragIndicator)
+                    .automaticCompliance(named: "platformSheet_L4")
             }
-            .automaticCompliance(named: "platformSheet_L4")
         } else {
-            self.sheet(item: item, onDismiss: onDismiss, content: content)
-                .automaticCompliance(named: "platformSheet_L4")
+            self.sheet(item: item, onDismiss: onDismiss) { item in
+                content(item)
+                    .automaticCompliance(named: "platformSheet_L4")
+            }
         }
         #elseif os(macOS)
         self.sheet(item: item, onDismiss: onDismiss) { item in
             content(item)
                 .frame(minWidth: 400, minHeight: 300)
+                .automaticCompliance(named: "platformSheet_L4")
         }
-        .automaticCompliance(named: "platformSheet_L4")
         #else
-        self.sheet(item: item, onDismiss: onDismiss, content: content)
-            .automaticCompliance(named: "platformSheet_L4")
+        self.sheet(item: item, onDismiss: onDismiss) { item in
+            content(item)
+                .automaticCompliance(named: "platformSheet_L4")
+        }
         #endif
     }
 }
