@@ -941,8 +941,11 @@ struct Layer4ContractOnlyView: View {
                     contractSectionHeader("L4 List")
                 }
             }
-            .platformSheet_L4(isPresented: $l4ShowSheet) {
+            // Native `.sheet` mirrors `platformSheet_L4` iOS 16+ path; isolates UITest empty-body issue (#193).
+            .sheet(isPresented: $l4ShowSheet) {
                 L4SheetContentContractView()
+                    .presentationDetents([.large])
+                    .presentationDragIndicator(.automatic)
             }
             #else
             ScrollView {
@@ -973,7 +976,7 @@ struct Layer4ContractOnlyView: View {
                 }
                 .padding()
             }
-            .platformSheet_L4(isPresented: $l4ShowSheet) {
+            .sheet(isPresented: $l4ShowSheet) {
                 L4SheetContentContractView()
             }
             #endif
