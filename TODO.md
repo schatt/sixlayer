@@ -17,7 +17,7 @@
 - [x] **#192** Make accessibility identifier compliance tests robust via platform traversal + debug-log fallback
 - [x] **#209** Managed settings flow — closed on GitHub (acceptance criteria checked); optional follow-up: result-builder / richer pane tree
 - [ ] **#177** Fix remaining iOS ViewInspector/accessibility test failures — `AccessibilityIdentifierEdgeCaseTests` exactNamed paths green via `testingGeneratedIdentifier`; manual ID remains soft `if let` in disabled suite (harness nil)
-- [ ] **#193** L4 UITests: table-first scroll + nav identifier tap (Form/table); re-run SLF-iOS-UITests to confirm green
+- [ ] **#193** L4 UITests: `testL4_platformSheet_L4` green (sheet on `L4ContractSheetTrigger` + dismiss query under `app.sheets`); re-run full SLF-iOS-UITests for remaining L4 cases
 - [x] **#197** (slice) Category A UI backfill: exactNamed, accessibilityLabel row, outer manual Group id + tests (commit/push; issue commented)
 - [x] **#197** (slice) Global-off audit (`-CategoryAGlobalAutoOff`), empty identifierName row + UI tests
 - [x] **#197** Checklist: canonical 83 resolutions filled; 662-row Consolidated dedup in VIEWINSPECTOR_CATEGORY_A_CONSOLIDATED_DEDUP.md + generator script (close #197 on branch when ready)
