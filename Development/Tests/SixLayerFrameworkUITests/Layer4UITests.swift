@@ -199,6 +199,41 @@ final class Layer4UITests: XCTestCase {
         return false
     }
 
+    /// Dismiss control for `L4SheetContentContractView`: on recent iOS it is often under `app.sheets`, not root `app.descendants` (Issue #193).
+    @MainActor
+    private func waitForL4SheetDismissControl(timeout: TimeInterval) -> XCUIElement? {
+        let closePred = NSPredicate(format: "identifier == %@ OR label == %@", "L4SheetClose", "Close")
+        let deadline = Date().addingTimeInterval(timeout)
+        while Date() < deadline {
+            let slice = max(0.05, min(0.5, deadline.timeIntervalSinceNow))
+            if slice <= 0 { break }
+            let sheetCount = app.sheets.count
+            if sheetCount > 0 {
+                for s in 0..<min(sheetCount, 4) {
+                    let sheet = app.sheets.element(boundBy: s)
+                    guard sheet.exists else { continue }
+                    let inSheet = sheet.descendants(matching: .any).matching(closePred).firstMatch
+                    if inSheet.waitForExistence(timeout: min(slice, 0.35)) { return inSheet }
+                    if sheet.buttons["Close"].waitForExistence(timeout: min(slice, 0.25)) {
+                        return sheet.buttons["Close"].firstMatch
+                    }
+                }
+            }
+            let rootMatch = app.descendants(matching: .any).matching(closePred).firstMatch
+            if rootMatch.waitForExistence(timeout: slice) { return rootMatch }
+            if app.buttons["Close"].waitForExistence(timeout: min(slice, 0.25)) {
+                return app.buttons["Close"].firstMatch
+            }
+            let winCount = app.windows.count
+            for w in 0..<min(winCount, 8) {
+                let window = app.windows.element(boundBy: w)
+                let wMatch = window.descendants(matching: .any).matching(closePred).firstMatch
+                if wMatch.waitForExistence(timeout: min(slice, 0.12)) { return wMatch }
+            }
+        }
+        return nil
+    }
+
     @MainActor
     private func waitForDestinationContent(timeout: TimeInterval) -> Bool {
         let matchAny = NSPredicate(
@@ -491,13 +526,13 @@ final class Layer4UITests: XCTestCase {
                 ?? app.buttons["L4ContractSheet"].firstMatch)
         XCTAssertTrue(sheetButton.waitForExistence(timeout: 8.0), "Sheet button should exist")
         tapByNormalizedCenter(sheetButton)
-        let closePred = NSPredicate(format: "identifier == %@ OR label == %@", "L4SheetClose", "Close")
-        let closeControl = app.descendants(matching: .any).matching(closePred).firstMatch
-        XCTAssertTrue(closeControl.waitForExistence(timeout: 15.0),
-                      "platformSheet_L4: sheet host should expose dismiss control (contract structure)")
+        let closeControl = waitForL4SheetDismissControl(timeout: 15.0)
+        XCTAssertNotNil(closeControl,
+                        "platformSheet_L4: sheet host should expose dismiss control (contract structure)")
+        guard let close = closeControl else { return }
         XCTAssertTrue(waitForStaticTextInForeground("L4SheetContentContract", timeout: 12.0),
                       "platformSheet_L4: sheet content must be visible when presented (contract behavior)")
-        tapByNormalizedCenter(closeControl)
+        tapByNormalizedCenter(close)
     }
 
     @MainActor
