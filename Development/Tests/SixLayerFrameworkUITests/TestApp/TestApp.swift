@@ -102,7 +102,9 @@ struct TestAppContentView: View {
                     Layer4ExamplesView()
                 }
             } else if openLayer4Examples {
-                Layer4ContractOnlyHostView()
+                NavigationStack {
+                    Layer4ContractOnlyView()
+                }
             } else if openLayer5Accessibility {
                 NavigationStack {
                     Layer5AccessibilityOnlyView()
