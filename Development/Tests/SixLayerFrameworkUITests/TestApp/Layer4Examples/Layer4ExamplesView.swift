@@ -944,9 +944,6 @@ struct Layer4ContractOnlyView: View {
                     }
                 }
             }
-            .platformSheet_L4(isPresented: $l4ShowSheet) {
-                L4SheetContentContractView()
-            }
             #else
             ScrollView {
                 platformVStack(alignment: .leading, spacing: 24) {
@@ -976,15 +973,16 @@ struct Layer4ContractOnlyView: View {
                 }
                 .padding()
             }
-            .platformSheet_L4(isPresented: $l4ShowSheet) {
-                L4SheetContentContractView()
-            }
             #endif
         }
         .platformFrame()
         .navigationTitle("Layer 4 Examples")
         // Inline title keeps the first contract sections in the visible safe area for XCUITest (Issue #193).
         .platformNavigationTitleDisplayMode_L4(.inline)
+        // Present from the framed root, not inner `Form`/`VStack`, so the sheet subtree is attached for XCUITest (Issue #193).
+        .platformSheet_L4(isPresented: $l4ShowSheet) {
+            L4SheetContentContractView()
+        }
         .platformPopover_L4(isPresented: $l4ShowPopover) {
             Text("L4PopoverContentContract")
                 .accessibilityLabel("L4PopoverContentContract")
