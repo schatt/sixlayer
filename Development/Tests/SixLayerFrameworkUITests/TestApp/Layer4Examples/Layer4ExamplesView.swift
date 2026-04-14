@@ -712,14 +712,13 @@ private struct L4SheetContentContractView: View {
 }
 
 struct Layer4ContractOnlyView: View {
-    /// Owned by `Layer4ContractOnlyHostView` so the sheet attaches to `NavigationStack`, not `Form` (XCUITest + presentation).
-    @Binding var isContractSheetPresented: Bool
     @State private var l4ContractText = ""
     @State private var l4ContractSecureText = ""
     @State private var l4ContractPickerSelection = "A"
     @State private var l4ContractToggleOn = false
     @State private var l4ContractEditorText = ""
     @State private var l4ContractDate = Date()
+    @State private var l4ShowSheet = false
     @State private var l4ShowPopover = false
     @State private var l4ContractCopySource = "L4CopyContractText"
     @State private var l4ShowPrint = false
@@ -741,7 +740,7 @@ struct Layer4ContractOnlyView: View {
     @ViewBuilder
     private var contractPresentationContent: some View {
         platformVStack(alignment: .leading, spacing: 12) {
-            Button("L4ContractSheet") { isContractSheetPresented = true }
+            Button("L4ContractSheet") { l4ShowSheet = true }
                 .accessibilityIdentifier("L4ContractSheet")
                 .accessibilityLabel("L4ContractSheet")
             Button("L4ContractPopover") { l4ShowPopover = true }
@@ -898,49 +897,55 @@ struct Layer4ContractOnlyView: View {
     var body: some View {
         Group {
             #if os(iOS)
-            Form {
-                Section {
-                    contractPresentationContent
-                } header: {
-                    contractSectionHeader("L4 Presentation")
-                }
-                Section {
-                    contractNavigationContent
-                } header: {
-                    contractSectionHeader("L4 Navigation")
-                }
-                // Fixed width so nested split geometry stays narrow; `maxWidth` alone still received full Form width.
-                Section {
-                    HStack(alignment: .top, spacing: 0) {
-                        contractOverlayAccessibilityContent
-                            .frame(width: 300, alignment: .leading)
-                        Spacer(minLength: 0)
+            // Sheet on `Form` breaks presentation / a11y exposure for XCUITest on iOS 26 (Issue #193); host on outer stack.
+            VStack(spacing: 0) {
+                Form {
+                    Section {
+                        contractPresentationContent
+                    } header: {
+                        contractSectionHeader("L4 Presentation")
                     }
-                } header: {
-                    contractSectionHeader("L4 Overlay Accessibility")
-                }
-                Section {
-                    contractSystemContent
-                } header: {
-                    contractSectionHeader("L4 System")
-                }
-                Section {
-                    contractControlsContent
-                } header: {
-                    contractSectionHeader("L4 Controls")
-                }
-                Section {
-                    platformVStack(alignment: .leading, spacing: 16) {
-                        contractFormInnerContent
+                    Section {
+                        contractNavigationContent
+                    } header: {
+                        contractSectionHeader("L4 Navigation")
                     }
-                } header: {
-                    contractSectionHeader("L4 Form")
+                    // Fixed width so nested split geometry stays narrow; `maxWidth` alone still received full Form width.
+                    Section {
+                        HStack(alignment: .top, spacing: 0) {
+                            contractOverlayAccessibilityContent
+                                .frame(width: 300, alignment: .leading)
+                            Spacer(minLength: 0)
+                        }
+                    } header: {
+                        contractSectionHeader("L4 Overlay Accessibility")
+                    }
+                    Section {
+                        contractSystemContent
+                    } header: {
+                        contractSectionHeader("L4 System")
+                    }
+                    Section {
+                        contractControlsContent
+                    } header: {
+                        contractSectionHeader("L4 Controls")
+                    }
+                    Section {
+                        platformVStack(alignment: .leading, spacing: 16) {
+                            contractFormInnerContent
+                        }
+                    } header: {
+                        contractSectionHeader("L4 Form")
+                    }
+                    Section {
+                        contractListContent
+                    } header: {
+                        contractSectionHeader("L4 List")
+                    }
                 }
-                Section {
-                    contractListContent
-                } header: {
-                    contractSectionHeader("L4 List")
-                }
+            }
+            .platformSheet_L4(isPresented: $l4ShowSheet) {
+                L4SheetContentContractView()
             }
             #else
             ScrollView {
@@ -971,6 +976,9 @@ struct Layer4ContractOnlyView: View {
                 }
                 .padding()
             }
+            .platformSheet_L4(isPresented: $l4ShowSheet) {
+                L4SheetContentContractView()
+            }
             #endif
         }
         .platformFrame()
@@ -981,19 +989,6 @@ struct Layer4ContractOnlyView: View {
             Text("L4PopoverContentContract")
                 .accessibilityLabel("L4PopoverContentContract")
                 .accessibilityIdentifier("L4PopoverContentContract")
-        }
-    }
-}
-
-/// TestApp entry for `-OpenLayer4Examples`: sheet attaches to `NavigationStack`, not `Form`, so XCUITest sees dismiss control and content (#193).
-struct Layer4ContractOnlyHostView: View {
-    @State private var isContractSheetPresented = false
-    var body: some View {
-        NavigationStack {
-            Layer4ContractOnlyView(isContractSheetPresented: $isContractSheetPresented)
-        }
-        .platformSheet_L4(isPresented: $isContractSheetPresented) {
-            L4SheetContentContractView()
         }
     }
 }
