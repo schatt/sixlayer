@@ -1157,6 +1157,7 @@ private struct OptionalIdentifierModifier: ViewModifier {
 
 /// Applies `accessibilityElement(children: .contain)` only when needed so XCTest can still see nested
 /// manual identifiers under container `automaticCompliance()` (nil `identifierName`) — Category A audit (#197).
+/// Skips **Header** wrappers so navigation destinations keep discoverable child nodes (#193).
 private struct OptionalAccessibilityContainModifier: ViewModifier {
     let applyContain: Bool
 
@@ -1197,6 +1198,21 @@ internal func slfSuppressAnonymousAutomaticComplianceWrapperIdentifier(
         && !traitsNonEmpty
         && !valueNonEmpty
         && accessibilitySortPriority == nil
+}
+
+/// Whether ``BasicAutomaticComplianceModifier`` should apply ``accessibilityElement(children: .contain)`` on its wrapper.
+/// Named rows use ``.contain`` so the Group keeps a stable identifier on iOS (#172). Navigation **Header** compliance
+/// is applied to full destination roots (``platformNavigationTitle_L4``); wrapping that subtree in ``.contain`` can
+/// prevent XCTest from seeing inner contract ``staticText`` while the nav bar title still appears (L4 UITests, #193).
+internal func slfShouldApplyAccessibilityContainForBasicCompliance(
+    identifierName: String?,
+    identifierElementType: String?
+) -> Bool {
+    guard identifierName != nil else { return false }
+    if identifierElementType?.lowercased() == "header" {
+        return false
+    }
+    return true
 }
 
 /// Basic automatic compliance modifier - applies only identifier and label, no HIG features
@@ -1456,7 +1472,12 @@ public struct BasicAutomaticComplianceModifier: ViewModifier {
         let contentWithSortPriority = applyAccessibilitySortPriorityIfNeeded(to: contentWithValue)
         return Group { contentWithSortPriority }
             .modifier(OptionalIdentifierModifier(identifier: identifier))
-            .modifier(OptionalAccessibilityContainModifier(applyContain: storedIdentifierName != nil))
+            .modifier(OptionalAccessibilityContainModifier(
+                applyContain: slfShouldApplyAccessibilityContainForBasicCompliance(
+                    identifierName: storedIdentifierName,
+                    identifierElementType: self.identifierElementType
+                )
+            ))
     }
 }
 
