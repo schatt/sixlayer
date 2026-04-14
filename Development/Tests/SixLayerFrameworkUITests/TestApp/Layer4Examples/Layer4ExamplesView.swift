@@ -7,9 +7,6 @@
 //
 
 import SwiftUI
-#if os(iOS)
-import UIKit
-#endif
 import SixLayerFramework
 import AVFoundation
 import CloudKit
@@ -697,39 +694,18 @@ private struct L4NavDestinationView: View {
     }
 }
 
-#if os(iOS)
-/// UIKit-backed label so XCUITest sees `XCUIElementTypeStaticText` inside `.sheet` on iOS 26 / SwiftUI
-/// (SwiftUI-only `Text` was missing from the sheet accessibility tree while `Sheet` existed; Issue #193).
-private struct L4SheetContractUILabel: UIViewRepresentable {
-    func makeUIView(context: Context) -> UILabel {
-        let label = UILabel()
-        label.text = "L4SheetContentContract"
-        label.font = UIFont.preferredFont(forTextStyle: .title1)
-        label.numberOfLines = 0
-        label.accessibilityLabel = "L4SheetContentContract"
-        label.accessibilityIdentifier = "L4SheetContentContract"
-        label.isAccessibilityElement = true
-        return label
-    }
-
-    func updateUIView(_ uiView: UILabel, context: Context) {}
-}
-#endif
-
 /// Sheet content for L4 platformSheet_L4 contract; provides Close so tests can dismiss.
 private struct L4SheetContentContractView: View {
     @Environment(\.dismiss) private var dismiss
     var body: some View {
         VStack(spacing: 16) {
-            #if os(iOS)
-            L4SheetContractUILabel()
-                .frame(maxWidth: .infinity, alignment: .leading)
-            #else
             Text("L4SheetContentContract")
+                .font(.title)
                 .accessibilityLabel("L4SheetContentContract")
                 .accessibilityIdentifier("L4SheetContentContract")
-            #endif
             Button("Close") { dismiss() }
+                .accessibilityIdentifier("L4SheetClose")
+                .accessibilityLabel("Close")
         }
         .padding()
     }
