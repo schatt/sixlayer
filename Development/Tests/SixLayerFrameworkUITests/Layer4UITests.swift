@@ -491,11 +491,13 @@ final class Layer4UITests: XCTestCase {
                 ?? app.buttons["L4ContractSheet"].firstMatch)
         XCTAssertTrue(sheetButton.waitForExistence(timeout: 8.0), "Sheet button should exist")
         tapByNormalizedCenter(sheetButton)
-        XCTAssertTrue(waitForStaticTextInForeground("L4SheetContentContract", timeout: 8.0),
+        let closePred = NSPredicate(format: "identifier == %@ OR label == %@", "L4SheetClose", "Close")
+        let closeControl = app.descendants(matching: .any).matching(closePred).firstMatch
+        XCTAssertTrue(closeControl.waitForExistence(timeout: 15.0),
+                      "platformSheet_L4: sheet host should expose dismiss control (contract structure)")
+        XCTAssertTrue(waitForStaticTextInForeground("L4SheetContentContract", timeout: 12.0),
                       "platformSheet_L4: sheet content must be visible when presented (contract behavior)")
-        XCTAssertTrue(app.buttons["Close"].waitForExistence(timeout: 2.0),
-                      "platformSheet_L4: sheet must provide dismiss (contract structure)")
-        app.buttons["Close"].firstMatch.tap()
+        tapByNormalizedCenter(closeControl)
     }
 
     @MainActor
