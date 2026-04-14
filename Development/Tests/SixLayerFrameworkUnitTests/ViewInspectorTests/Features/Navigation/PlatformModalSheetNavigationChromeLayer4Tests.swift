@@ -12,12 +12,11 @@ import UIKit
 
 /// Behavioral tests for ``platformModalSheetNavigationChrome_L4`` (issue #223).
 @Suite(.serialized)
-@MainActor
 open class PlatformModalSheetNavigationChromeLayer4Tests: BaseTestClass {
 
     // MARK: - API surface
 
-    @Test func testPlatformModalSheetNavigationChrome_L4_APISignature() {
+    @Test @MainActor func testPlatformModalSheetNavigationChrome_L4_APISignature() {
         let _ = EmptyView().platformModalSheetNavigationChrome_L4(
             title: "Filters",
             titleDisplayMode: .large,
@@ -28,7 +27,7 @@ open class PlatformModalSheetNavigationChromeLayer4Tests: BaseTestClass {
         #expect(Bool(true), "Simple overload should compile and build")
     }
 
-    @Test func testPlatformModalSheetNavigationChrome_L4_WithLeading_APISignature() {
+    @Test @MainActor func testPlatformModalSheetNavigationChrome_L4_WithLeading_APISignature() {
         let _ = EmptyView().platformModalSheetNavigationChrome_L4(
             title: "Sort",
             titleDisplayMode: .automatic,
@@ -68,7 +67,7 @@ open class PlatformModalSheetNavigationChromeLayer4Tests: BaseTestClass {
         #endif
     }
 
-    @Test func testPlatformModalSheetNavigationChrome_L4_WithLeading_ExposesBothToolbarButtons() {
+    @Test @MainActor func testPlatformModalSheetNavigationChrome_L4_WithLeading_ExposesBothToolbarButtons() {
         let chrome = EmptyView().platformModalSheetNavigationChrome_L4(
             title: "Sort",
             titleDisplayMode: .inline,
@@ -94,7 +93,7 @@ open class PlatformModalSheetNavigationChromeLayer4Tests: BaseTestClass {
         #endif
     }
 
-    @Test func testPlatformModalSheetNavigationChrome_L4_OutermostComplianceHook() {
+    @Test @MainActor func testPlatformModalSheetNavigationChrome_L4_OutermostComplianceHook() {
         let chrome = EmptyView().platformModalSheetNavigationChrome_L4(
             title: "T",
             confirmationTitle: "Go",
@@ -116,7 +115,7 @@ open class PlatformModalSheetNavigationChromeLayer4Tests: BaseTestClass {
 
     // MARK: - Callback
 
-    @Test func testPlatformModalSheetNavigationChrome_L4_ConfirmationCallbackInvoked() throws {
+    @Test @MainActor func testPlatformModalSheetNavigationChrome_L4_ConfirmationCallbackInvoked() throws {
         // NavigationStack roots hang or resist full inspection on iOS in this suite; macOS uses a plain stack.
         #if os(macOS) && canImport(ViewInspector)
         var invoked = false
