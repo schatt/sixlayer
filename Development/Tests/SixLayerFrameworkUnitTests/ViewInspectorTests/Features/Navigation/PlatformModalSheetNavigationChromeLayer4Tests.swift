@@ -41,7 +41,7 @@ open class PlatformModalSheetNavigationChromeLayer4Tests: BaseTestClass {
 
     // MARK: - Toolbar presence (stub must fail; full implementation must pass)
 
-    @Test func testPlatformModalSheetNavigationChrome_L4_ExposesConfirmationButton() {
+    @Test @MainActor func testPlatformModalSheetNavigationChrome_L4_ExposesConfirmationButton() {
         let chrome = EmptyView().platformModalSheetNavigationChrome_L4(
             title: "Filters",
             titleDisplayMode: .inline,
