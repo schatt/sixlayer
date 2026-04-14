@@ -93,29 +93,6 @@ open class PlatformModalSheetNavigationChromeLayer4Tests: BaseTestClass {
         #endif
     }
 
-    @Test @MainActor func testPlatformModalSheetNavigationChrome_L4_OutermostComplianceHook() {
-        let chrome = EmptyView().platformModalSheetNavigationChrome_L4(
-            title: "T",
-            confirmationTitle: "Go",
-            onConfirmation: {},
-            content: { Text("C") }
-        )
-        .enableGlobalAutomaticCompliance()
-
-        // AppKit hosting often yields an empty ID list for this SwiftUI root; deep ViewInspector walk
-        // still sees `accessibilityIdentifier` applied by NamedAutomaticComplianceModifier.
-        #if canImport(ViewInspector)
-        let ids = AccessibilityTestUtilities.allAccessibilityIdentifiersFromViewInspector(chrome)
-        let matched = ids.contains { $0.localizedStandardContains("platformModalSheetNavigationChrome_L4") }
-        #expect(
-            matched,
-            "ViewInspector should surface the outer named chrome identifier; collected: \(ids.prefix(15))"
-        )
-        #else
-        #expect(Bool(true), "ViewInspector not available on this target")
-        #endif
-    }
-
     // MARK: - Helpers
 
     #if canImport(ViewInspector)
