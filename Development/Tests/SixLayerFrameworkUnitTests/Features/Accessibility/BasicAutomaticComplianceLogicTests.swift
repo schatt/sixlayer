@@ -553,4 +553,48 @@ open class BasicAutomaticComplianceLogicTests: BaseTestClass {
             )
         )
     }
+
+    // MARK: - Accessibility contain wrapper (#193 / navigation destinations)
+
+    @Test @MainActor func testAccessibilityContain_skipsWhenIdentifierElementTypeIsHeader() {
+        #expect(
+            !slfShouldApplyAccessibilityContainForBasicCompliance(
+                identifierName: "L4NavTitleContract",
+                identifierElementType: "Header"
+            )
+        )
+        #expect(
+            !slfShouldApplyAccessibilityContainForBasicCompliance(
+                identifierName: "title",
+                identifierElementType: "HEADER"
+            )
+        )
+    }
+
+    @Test @MainActor func testAccessibilityContain_appliesWhenNamedNonHeader() {
+        #expect(
+            slfShouldApplyAccessibilityContainForBasicCompliance(
+                identifierName: "NamedRow",
+                identifierElementType: "Button"
+            )
+        )
+    }
+
+    @Test @MainActor func testAccessibilityContain_appliesWhenNamePresentWithoutElementType() {
+        #expect(
+            slfShouldApplyAccessibilityContainForBasicCompliance(
+                identifierName: "NamedRow",
+                identifierElementType: nil
+            )
+        )
+    }
+
+    @Test @MainActor func testAccessibilityContain_falseWhenIdentifierNameNil() {
+        #expect(
+            !slfShouldApplyAccessibilityContainForBasicCompliance(
+                identifierName: nil,
+                identifierElementType: "Button"
+            )
+        )
+    }
 }
