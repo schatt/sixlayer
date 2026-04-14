@@ -23,8 +23,16 @@ public extension View {
         onConfirmation: @escaping () -> Void,
         @ViewBuilder content: @escaping () -> Content
     ) -> some View {
-        // TDD red phase: wrong implementation (no nav / toolbar). Replace with real chrome in green phase.
-        content()
+        platformNavigation_L4 {
+            content()
+                .platformNavigationTitle_L4(title)
+                .platformNavigationTitleDisplayMode_L4(titleDisplayMode)
+                .platformToolbarWithConfirmationAction(
+                    confirmationAction: onConfirmation,
+                    confirmationTitle: confirmationTitle
+                )
+        }
+        .automaticCompliance(named: "platformModalSheetNavigationChrome_L4")
     }
 
     /// Like ``platformModalSheetNavigationChrome_L4(title:titleDisplayMode:confirmationTitle:onConfirmation:content:)``
@@ -38,6 +46,16 @@ public extension View {
         @ViewBuilder leadingToolbar: @escaping () -> Leading,
         @ViewBuilder content: @escaping () -> Content
     ) -> some View {
-        content()
+        platformNavigation_L4 {
+            content()
+                .platformNavigationTitle_L4(title)
+                .platformNavigationTitleDisplayMode_L4(titleDisplayMode)
+                .platformToolbarWithLeadingActions { leadingToolbar() }
+                .platformToolbarWithConfirmationAction(
+                    confirmationAction: onConfirmation,
+                    confirmationTitle: confirmationTitle
+                )
+        }
+        .automaticCompliance(named: "platformModalSheetNavigationChrome_L4")
     }
 }
