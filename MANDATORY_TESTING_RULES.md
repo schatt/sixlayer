@@ -42,11 +42,12 @@
 
 **MANDATORY**: Follow Red-Green-Refactor cycle for all implementation:
 
-1. **RED**: Write tests that **COMPILE** (and fail)
+1. **RED**: Write tests that **COMPILE** (and fail **deliberately**)
    - Tests must compile successfully
-   - Tests must fail (assertions fail, not compilation errors)
+   - Tests must fail because **assertions detect wrong or missing behavior** (not only because unrelated code fails to compile)
    - May require stubbing methods/interfaces so tests can compile
-   - **Red phase ends when tests compile and fail**
+   - **Red phase ends when tests compile and fail at runtime on the intended assertion(s)**
+   - **Deliberately red**: You must prove the test *would* catch regressions—a test that never fails when behavior is wrong is **worse than useless** (false confidence). Prefer failing against a stub/wrong implementation or a **local-only** broken expectation captured in logs, then revert before commit; do not ship inverted expectations as the “test.”
    
 2. **GREEN**: Implement minimum code to pass tests
    - **Green phase begins when tests compile (and fail)**
