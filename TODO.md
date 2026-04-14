@@ -4,6 +4,7 @@
 
 ## Current
 
+- [x] **#224** Dynamic form inline header: `DynamicFormHeaderVisibility` + strict TDD (unit + ViewInspector); branch `b7.5.13` (issue commented)
 - [x] Tart VM scripts (CarManager-style) in `Development/scripts/vm/` for macOS UI tests off-host (`vm_test.sh test-ui-macos`)
 
 - [x] UITest app Layer 1 Data Presentation: fix leading text clipping (`platformFrame` topLeading + `ScrollView` on examples)
