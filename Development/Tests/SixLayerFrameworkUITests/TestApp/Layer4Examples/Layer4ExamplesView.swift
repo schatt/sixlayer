@@ -974,7 +974,11 @@ struct Layer4ContractOnlyView: View {
         // Inline title keeps the first contract sections in the visible safe area for XCUITest (Issue #193).
         .platformNavigationTitleDisplayMode_L4(.inline)
         .platformSheet_L4(isPresented: $l4ShowSheet) {
-            L4SheetContentContractView()
+            // iOS 26 / SwiftUI: sheet content sometimes omits child a11y nodes without a navigation shell;
+            // XCTest then sees Sheet but not contract static text (Issue #193).
+            NavigationStack {
+                L4SheetContentContractView()
+            }
         }
         .platformPopover_L4(isPresented: $l4ShowPopover) {
             Text("L4PopoverContentContract")
