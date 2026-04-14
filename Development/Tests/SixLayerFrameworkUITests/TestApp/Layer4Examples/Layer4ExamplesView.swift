@@ -712,13 +712,14 @@ private struct L4SheetContentContractView: View {
 }
 
 struct Layer4ContractOnlyView: View {
+    /// Owned by `Layer4ContractOnlyHostView` so the sheet attaches to `NavigationStack`, not `Form` (XCUITest + presentation).
+    @Binding var isContractSheetPresented: Bool
     @State private var l4ContractText = ""
     @State private var l4ContractSecureText = ""
     @State private var l4ContractPickerSelection = "A"
     @State private var l4ContractToggleOn = false
     @State private var l4ContractEditorText = ""
     @State private var l4ContractDate = Date()
-    @State private var l4ShowSheet = false
     @State private var l4ShowPopover = false
     @State private var l4ContractCopySource = "L4CopyContractText"
     @State private var l4ShowPrint = false
@@ -740,7 +741,7 @@ struct Layer4ContractOnlyView: View {
     @ViewBuilder
     private var contractPresentationContent: some View {
         platformVStack(alignment: .leading, spacing: 12) {
-            Button("L4ContractSheet") { l4ShowSheet = true }
+            Button("L4ContractSheet") { isContractSheetPresented = true }
                 .accessibilityIdentifier("L4ContractSheet")
                 .accessibilityLabel("L4ContractSheet")
             Button("L4ContractPopover") { l4ShowPopover = true }
@@ -941,12 +942,6 @@ struct Layer4ContractOnlyView: View {
                     contractSectionHeader("L4 List")
                 }
             }
-            // Native `.sheet` mirrors `platformSheet_L4` iOS 16+ path; isolates UITest empty-body issue (#193).
-            .sheet(isPresented: $l4ShowSheet) {
-                L4SheetContentContractView()
-                    .presentationDetents([.large])
-                    .presentationDragIndicator(.automatic)
-            }
             #else
             ScrollView {
                 platformVStack(alignment: .leading, spacing: 24) {
@@ -976,9 +971,6 @@ struct Layer4ContractOnlyView: View {
                 }
                 .padding()
             }
-            .sheet(isPresented: $l4ShowSheet) {
-                L4SheetContentContractView()
-            }
             #endif
         }
         .platformFrame()
@@ -989,6 +981,19 @@ struct Layer4ContractOnlyView: View {
             Text("L4PopoverContentContract")
                 .accessibilityLabel("L4PopoverContentContract")
                 .accessibilityIdentifier("L4PopoverContentContract")
+        }
+    }
+}
+
+/// TestApp entry for `-OpenLayer4Examples`: sheet attaches to `NavigationStack`, not `Form`, so XCUITest sees dismiss control and content (#193).
+struct Layer4ContractOnlyHostView: View {
+    @State private var isContractSheetPresented = false
+    var body: some View {
+        NavigationStack {
+            Layer4ContractOnlyView(isContractSheetPresented: $isContractSheetPresented)
+        }
+        .platformSheet_L4(isPresented: $isContractSheetPresented) {
+            L4SheetContentContractView()
         }
     }
 }
