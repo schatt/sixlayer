@@ -155,14 +155,15 @@ public extension View {
     ) -> some View {
         #if os(iOS)
         if #available(iOS 16.0, *) {
-            // Compliance must not chain on `content()` — NamedAutomaticCompliance stamps the identifier
-            // on that whole subtree and XCUITest then sees `Sheet` with no contract children (#193).
+            // Named compliance lives on a ZStack pin, not on `content()` (#193). Detents must apply
+            // to the sheet root (this ZStack); attaching them only inside the stack broke the presented
+            // body on iOS 26 (sheet chrome without contract subtree).
             self.sheet(isPresented: isPresented, onDismiss: onDismiss) {
                 slfPlatformSheetL4PresentedRoot {
                     content()
-                        .presentationDetents(detents)
-                        .presentationDragIndicator(dragIndicator)
                 }
+                .presentationDetents(detents)
+                .presentationDragIndicator(dragIndicator)
             }
         } else {
             self.sheet(isPresented: isPresented, onDismiss: onDismiss) {
@@ -208,9 +209,9 @@ public extension View {
             self.sheet(item: item, onDismiss: onDismiss) { item in
                 slfPlatformSheetL4PresentedRoot {
                     content(item)
-                        .presentationDetents(detents)
-                        .presentationDragIndicator(dragIndicator)
                 }
+                .presentationDetents(detents)
+                .presentationDragIndicator(dragIndicator)
             }
         } else {
             self.sheet(item: item, onDismiss: onDismiss) { item in
