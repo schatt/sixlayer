@@ -1157,6 +1157,7 @@ private struct OptionalIdentifierModifier: ViewModifier {
 
 /// Applies `accessibilityElement(children: .contain)` only when needed so XCTest can still see nested
 /// manual identifiers under container `automaticCompliance()` (nil `identifierName`) — Category A audit (#197).
+/// Skips **Header** wrappers so navigation destinations keep discoverable child nodes (#193).
 private struct OptionalAccessibilityContainModifier: ViewModifier {
     let applyContain: Bool
 
@@ -1170,6 +1171,49 @@ private struct OptionalAccessibilityContainModifier: ViewModifier {
 }
 
 // MARK: - Basic Automatic Compliance (Issue #172)
+
+/// When true, ``BasicAutomaticComplianceModifier`` does not call ``generateAccessibilityIdentifier`` for the outer wrapper (#222).
+/// Fully anonymous modifiers (layout shells) skip wrapper IDs; controls pass type/label/name and still get IDs.
+internal func slfSuppressAnonymousAutomaticComplianceWrapperIdentifier(
+    identifierName: String?,
+    identifierElementType: String?,
+    identifierLabel: String?,
+    accessibilityLabel: String?,
+    accessibilityHint: String?,
+    accessibilityTraits: AccessibilityTraits?,
+    accessibilityValue: String?,
+    accessibilitySortPriority: Double?
+) -> Bool {
+    let hintNonEmpty = accessibilityHint.map { !$0.isEmpty } ?? false
+    let valueNonEmpty = accessibilityValue.map { !$0.isEmpty } ?? false
+    let traitsNonEmpty: Bool = {
+        guard let traits = accessibilityTraits else { return false }
+        return !traits.isEmpty
+    }()
+    return identifierName == nil
+        && identifierElementType == nil
+        && identifierLabel == nil
+        && accessibilityLabel == nil
+        && !hintNonEmpty
+        && !traitsNonEmpty
+        && !valueNonEmpty
+        && accessibilitySortPriority == nil
+}
+
+/// Whether ``BasicAutomaticComplianceModifier`` should apply ``accessibilityElement(children: .contain)`` on its wrapper.
+/// Named rows use ``.contain`` so the Group keeps a stable identifier on iOS (#172). Navigation **Header** compliance
+/// is applied to full destination roots (``platformNavigationTitle_L4``); wrapping that subtree in ``.contain`` can
+/// prevent XCTest from seeing inner contract ``staticText`` while the nav bar title still appears (L4 UITests, #193).
+internal func slfShouldApplyAccessibilityContainForBasicCompliance(
+    identifierName: String?,
+    identifierElementType: String?
+) -> Bool {
+    guard identifierName != nil else { return false }
+    if identifierElementType?.lowercased() == "header" {
+        return false
+    }
+    return true
+}
 
 /// Basic automatic compliance modifier - applies only identifier and label, no HIG features
 /// TDD GREEN PHASE: Implementation complete
@@ -1244,12 +1288,13 @@ public struct BasicAutomaticComplianceModifier: ViewModifier {
             && capturedGlobalAutomaticAccessibilityIdentifiers
             && !envAutomaticAccessibilityLocallyDisabled
         
-        // Apply identifier whenever automatic IDs are enabled. When no identifierName
-        // is provided, generate a generic identifier using the default component name.
-        // This matches existing tests that expect .automaticCompliance() to generate
-        // identifiers even without an explicit name.
+        // Apply identifier when automatic IDs are enabled, except for **fully anonymous** modifiers:
+        // no name, type, label, or other a11y parameters. Those are structural/layout wrappers; stamping
+        // `SixLayer.main.ui`-style IDs on the outer `Group` conflicts with HIG-style practice and can block
+        // XCUI from seeing child `accessibilityIdentifier` values (#221, #222). Controls still pass
+        // `identifierElementType` / `identifierLabel` / `identifierName` and keep generated IDs.
         let shouldApplyIdentifier = shouldApply
-        
+
         // Generate identifier if needed
         // Call internal generateAccessibilityIdentifier directly (same as AutomaticComplianceModifier.generateIdentifier does)
         // DEBUG: Log only when debug logging is enabled
@@ -1269,22 +1314,41 @@ public struct BasicAutomaticComplianceModifier: ViewModifier {
             os_log("%{public}@", log: .default, type: .debug, detailedMsg)
             fflush(stdout)
         }
-        let identifier: String? = shouldApplyIdentifier ? generateAccessibilityIdentifier(
-            config: config,
-            identifierName: storedIdentifierName,  // Use stored value to ensure it's preserved
-            identifierElementType: self.identifierElementType,  // Also use stored values for consistency
-            identifierLabel: self.identifierLabel,
-            capturedScreenContext: capturedScreenContext,
-            capturedViewHierarchy: capturedViewHierarchy,
-            capturedEnableUITestIntegration: capturedEnableUITestIntegration,
-            capturedIncludeComponentNames: capturedIncludeComponentNames,
-            capturedIncludeElementTypes: capturedIncludeElementTypes,
-            capturedEnableDebugLogging: capturedEnableDebugLogging,
-            capturedNamespace: capturedNamespace,
-            capturedGlobalPrefix: capturedGlobalPrefix,
-            defaultElementType: "View",  // Explicitly match automaticCompliance() behavior
-            emptyFallback: "main.ui.element"  // Explicitly match automaticCompliance() behavior
-        ) : nil
+
+        let suppressAnonymousWrapperAccessibilityIdentifier = shouldApplyIdentifier
+            && slfSuppressAnonymousAutomaticComplianceWrapperIdentifier(
+                identifierName: storedIdentifierName,
+                identifierElementType: self.identifierElementType,
+                identifierLabel: self.identifierLabel,
+                accessibilityLabel: self.accessibilityLabel,
+                accessibilityHint: self.accessibilityHint,
+                accessibilityTraits: self.accessibilityTraits,
+                accessibilityValue: self.accessibilityValue,
+                accessibilitySortPriority: self.accessibilitySortPriority
+            )
+
+        let identifier: String? = if suppressAnonymousWrapperAccessibilityIdentifier {
+            nil
+        } else if shouldApplyIdentifier {
+            generateAccessibilityIdentifier(
+                config: config,
+                identifierName: storedIdentifierName,  // Use stored value to ensure it's preserved
+                identifierElementType: self.identifierElementType,  // Also use stored values for consistency
+                identifierLabel: self.identifierLabel,
+                capturedScreenContext: capturedScreenContext,
+                capturedViewHierarchy: capturedViewHierarchy,
+                capturedEnableUITestIntegration: capturedEnableUITestIntegration,
+                capturedIncludeComponentNames: capturedIncludeComponentNames,
+                capturedIncludeElementTypes: capturedIncludeElementTypes,
+                capturedEnableDebugLogging: capturedEnableDebugLogging,
+                capturedNamespace: capturedNamespace,
+                capturedGlobalPrefix: capturedGlobalPrefix,
+                defaultElementType: "View",  // Explicitly match automaticCompliance() behavior
+                emptyFallback: "main.ui.element"  // Explicitly match automaticCompliance() behavior
+            )
+        } else {
+            nil
+        }
         
         // DEBUG: Log what identifier was generated
         if capturedEnableDebugLogging, let finalIdentifier = identifier {
@@ -1326,13 +1390,18 @@ public struct BasicAutomaticComplianceModifier: ViewModifier {
             }
         }
         
+        // Navigation titles use identifierElementType "Header" on the whole destination view (see platformNavigationTitle_L4).
+        // Do not stamp label / header traits / hint / value / sort priority onto that container: it flattens the subtree
+        // and XCTest then misses child contract nodes while the system nav bar title still appears (#193).
+        let isNavigationHeaderCompliance = identifierElementType?.lowercased() == "header"
+
         // Helper to conditionally apply accessibility label
         // Use accessibilityLabel when provided; otherwise fall back to identifierLabel (same text, used for both identifier and VoiceOver).
         // Only apply if we have a non-empty label AND an identifier is present.
         @ViewBuilder
         func applyAccessibilityLabelIfNeeded<V: View>(to view: V) -> some View {
             let effectiveLabel = accessibilityLabel ?? identifierLabel
-            if let label = effectiveLabel, !label.isEmpty, identifier != nil {
+            if let label = effectiveLabel, !label.isEmpty, identifier != nil, !isNavigationHeaderCompliance {
                 // Localize and format label according to Apple HIG guidelines
                 let localizedLabel = localizeAccessibilityLabel(
                     label,
@@ -1349,7 +1418,7 @@ public struct BasicAutomaticComplianceModifier: ViewModifier {
         // Only apply if explicitly provided via parameter AND an identifier is present
         @ViewBuilder
         func applyAccessibilityHintIfNeeded<V: View>(to view: V) -> some View {
-            if let hint = accessibilityHint, !hint.isEmpty, identifier != nil {
+            if let hint = accessibilityHint, !hint.isEmpty, identifier != nil, !isNavigationHeaderCompliance {
                 view.accessibilityHint(hint)
             } else {
                 view
@@ -1360,7 +1429,7 @@ public struct BasicAutomaticComplianceModifier: ViewModifier {
         // Only apply if explicitly provided via parameter AND an identifier is present
         @ViewBuilder
         func applyAccessibilityTraitsIfNeeded<V: View>(to view: V) -> some View {
-            if let traits = accessibilityTraits, !traits.isEmpty, identifier != nil {
+            if let traits = accessibilityTraits, !traits.isEmpty, identifier != nil, !isNavigationHeaderCompliance {
                 view.accessibilityAddTraits(traits)
             } else {
                 view
@@ -1371,7 +1440,7 @@ public struct BasicAutomaticComplianceModifier: ViewModifier {
         // Only apply if explicitly provided via parameter AND an identifier is present
         @ViewBuilder
         func applyAccessibilityValueIfNeeded<V: View>(to view: V) -> some View {
-            if let value = accessibilityValue, !value.isEmpty, identifier != nil {
+            if let value = accessibilityValue, !value.isEmpty, identifier != nil, !isNavigationHeaderCompliance {
                 view.accessibilityValue(value)
             } else {
                 view
@@ -1382,7 +1451,7 @@ public struct BasicAutomaticComplianceModifier: ViewModifier {
         // Only apply if explicitly provided via parameter AND an identifier is present
         @ViewBuilder
         func applyAccessibilitySortPriorityIfNeeded<V: View>(to view: V) -> some View {
-            if let priority = accessibilitySortPriority, identifier != nil {
+            if let priority = accessibilitySortPriority, identifier != nil, !isNavigationHeaderCompliance {
                 view.accessibilitySortPriority(priority)
             } else {
                 view
@@ -1408,7 +1477,12 @@ public struct BasicAutomaticComplianceModifier: ViewModifier {
         let contentWithSortPriority = applyAccessibilitySortPriorityIfNeeded(to: contentWithValue)
         return Group { contentWithSortPriority }
             .modifier(OptionalIdentifierModifier(identifier: identifier))
-            .modifier(OptionalAccessibilityContainModifier(applyContain: storedIdentifierName != nil))
+            .modifier(OptionalAccessibilityContainModifier(
+                applyContain: slfShouldApplyAccessibilityContainForBasicCompliance(
+                    identifierName: storedIdentifierName,
+                    identifierElementType: self.identifierElementType
+                )
+            ))
     }
 }
 

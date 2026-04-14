@@ -12,58 +12,60 @@ import SixLayerFramework
 /// Examples of data presentation functions for Layer 1
 struct Layer1DataPresentationExamples: View {
     var body: some View {
-        platformVStack(alignment: .leading, spacing: 24) {
-            // Item Collection Examples
-            ExampleSection(title: "Item Collection") {
-                ItemCollectionExamples()
+        ScrollView {
+            platformVStack(alignment: .leading, spacing: 24) {
+                // Item Collection Examples
+                ExampleSection(title: "Item Collection") {
+                    ItemCollectionExamples()
+                }
+                
+                // Numeric Data Examples
+                ExampleSection(title: "Numeric Data") {
+                    NumericDataExamples()
+                }
+                
+                // Form Data Examples
+                ExampleSection(title: "Form Data") {
+                    FormDataExamples()
+                }
+                
+                // Modal Form Examples
+                ExampleSection(title: "Modal Form") {
+                    ModalFormExamples()
+                }
+                
+                // Media Data Examples
+                ExampleSection(title: "Media Data") {
+                    MediaDataExamples()
+                }
+                
+                // Hierarchical Data Examples
+                ExampleSection(title: "Hierarchical Data") {
+                    HierarchicalDataExamples()
+                }
+                
+                // Temporal Data Examples
+                ExampleSection(title: "Temporal Data") {
+                    TemporalDataExamples()
+                }
+                
+                // Content Examples
+                ExampleSection(title: "Content & Basic Values") {
+                    ContentExamples()
+                }
+                
+                // Settings Examples
+                ExampleSection(title: "Settings") {
+                    SettingsExamples()
+                }
+                
+                // Responsive Card Examples
+                ExampleSection(title: "Responsive Card") {
+                    ResponsiveCardExamples()
+                }
             }
-            
-            // Numeric Data Examples
-            ExampleSection(title: "Numeric Data") {
-                NumericDataExamples()
-            }
-            
-            // Form Data Examples
-            ExampleSection(title: "Form Data") {
-                FormDataExamples()
-            }
-            
-            // Modal Form Examples
-            ExampleSection(title: "Modal Form") {
-                ModalFormExamples()
-            }
-            
-            // Media Data Examples
-            ExampleSection(title: "Media Data") {
-                MediaDataExamples()
-            }
-            
-            // Hierarchical Data Examples
-            ExampleSection(title: "Hierarchical Data") {
-                HierarchicalDataExamples()
-            }
-            
-            // Temporal Data Examples
-            ExampleSection(title: "Temporal Data") {
-                TemporalDataExamples()
-            }
-            
-            // Content Examples
-            ExampleSection(title: "Content & Basic Values") {
-                ContentExamples()
-            }
-            
-            // Settings Examples
-            ExampleSection(title: "Settings") {
-                SettingsExamples()
-            }
-            
-            // Responsive Card Examples
-            ExampleSection(title: "Responsive Card") {
-                ResponsiveCardExamples()
-            }
+            .padding()
         }
-        .padding()
         .platformFrame()
     }
 }

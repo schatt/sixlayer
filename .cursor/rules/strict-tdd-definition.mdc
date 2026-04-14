@@ -5,26 +5,51 @@ alwaysApply: true
 
 # Strict TDD Definition
 
+**TDD is not complete until the refactor step has been run.** Stopping after green (passing tests) is incomplete TDD. The refactor phase and the post-refactor test run are part of the definition of done for the cycle, not optional polish afterward.
+
 Follow this sequence exactly for all feature and bug-fix work:
 
 1. Define expected behavior and test scope.
 2. Write tests first.
-3. Run tests for a red phase.
+3. Run tests for a red phase (**deliberately red** — see below).
    - If tests do not compile, add minimal stubs only to make tests compile and run.
    - Re-run until tests execute and fail for the intended reason (no false positives).
 4. Green phase: implement behavior to the best of ability.
 5. Run tests and verify green.
-6. Refactor for clarity/maintainability without changing behavior.
+6. **Refactor** for clarity/maintainability without changing behavior. (You may conclude no structural change is needed, but you must still complete this step as a deliberate pass over the code.)
 7. Run tests again and verify green after refactor.
+
+## Deliberately red (test effectiveness)
+
+**MANDATORY**: Red is not “the build broke somewhere.” Red must show that the **new or changed test(s) execute and fail for the right reason** when behavior is wrong or absent.
+
+A test that **never** failed in that scenario—because production was already correct, the assertion is tautological, or the test does not observe what it claims—is **worse than useless**: it creates false confidence and can hide regressions.
+
+**Acceptable deliberate red** (document in commit/PR when non-obvious):
+
+- Run against a **stub, wrong branch, or intentionally incorrect implementation** until the assertion fails as expected; then implement green.
+- Or a **local-only** wrong expectation / broken line to capture one failing run, then revert before commit. **Do not** leave inverted or fake expectations in the tree as the “test.”
+
+**Not sufficient as the only red evidence**:
+
+- Compile errors in unrelated code, or “red” that never exercises the new test’s assertions.
+- Green on the first run with no proof that wrong production would trip the test.
 
 ## Required Evidence
 
-- Show/record at least one failing test run in red phase.
-- Show/record a passing run after green implementation.
-- Show/record a passing run after refactor.
+- **Red:** Record at least one run where the **relevant** test(s) **fail at runtime** (assertion / `#expect` / XCTest failure) because behavior is wrong or missing—not only a failed compile or unrelated suite failure.
+- **GitHub issue — red log (MANDATORY when work maps to a GitHub issue):** Post that **red** (failing) test evidence to the **same issue** as part of issue work—before leaving red for green is ideal; it must exist **before** the issue is treated as TDD-complete for merge/close. The comment **must** include:
+  - **Timestamp** (use UTC ISO 8601, e.g. `date -u +%Y-%m-%dT%H:%M:%SZ`, embedded in the comment body)
+  - **How tests were run** (scheme/target, `dbs-build` / `xcodebuild` / `swift test`, destination/simulator if relevant, or MCP run identifier if applicable)
+  - **Failing test name(s)** (or Swift Testing / XCTest identifiers) plus a **short verbatim excerpt** of the failure only—the lines needed to show **which** test failed and **why** (assertion message, file:line, one screenful at most). **Do not** paste a full test run, full `xcodebuild` transcript, or entire `.xcresult` logs; link or name a local log path if someone needs the full artifact.
+  Post with `gh issue comment <N> --body-file <path>` per `.cursor/rules/github-issue-workflow.mdc` (**never** inline `gh issue comment --body`). If multiple issues apply, post on the **primary** issue or split clearly per issue.
+  **Scope:** Applies when the change is tied to a numbered GitHub issue (footer `Fixes #N`, branch/issue tracking, or explicit issue in scope). Pure chores/docs with **no** issue may omit the GitHub post; red evidence in commit/PR narrative still recommended.
+- **Green:** Record a passing run after implementation (issue comment optional but useful).
+- **Refactor:** Record a passing run after the refactor pass (issue comment optional).
 
 ## Guardrails
 
 - Do not skip red phase.
 - Do not treat compile-only failure as complete red phase when runtime-failing tests are possible.
+- Do not treat **green-only** as complete TDD; skipping refactor or the post-refactor test run is non-compliant.
 - Do not merge or close work with failing tests.

@@ -36,6 +36,9 @@ final class Layer4UITests: XCTestCase {
             guard Self.sharedApp == nil else { return }
             let localApp = XCUIApplication()
             localApp.configureForFastTesting()
+            // `-SkipAnimations` can leave `.sheet` presented without a populated a11y subtree on iOS 26
+            // (Sheet exists; contract static text never appears — Issue #193).
+            localApp.launchArguments.removeAll(where: { $0 == "-SkipAnimations" })
             localApp.launchArguments.append("-OpenLayer4Examples")
             localApp.launch()
             Self.sharedApp = localApp
@@ -158,15 +161,77 @@ final class Layer4UITests: XCTestCase {
     @MainActor
     private func waitForStaticTextInForeground(_ text: String, timeout: TimeInterval) -> Bool {
         let deadline = Date().addingTimeInterval(timeout)
+        let labelOrId = NSPredicate(format: "label == %@ OR identifier == %@ OR value == %@", text, text, text)
         while Date() < deadline {
-            let slice = min(0.5, deadline.timeIntervalSinceNow)
+            let slice = max(0.05, min(0.5, deadline.timeIntervalSinceNow))
             if slice <= 0 { break }
-            if app.sheets.firstMatch.exists,
-               app.sheets.firstMatch.staticTexts[text].waitForExistence(timeout: slice) { return true }
+            let sheetCount = app.sheets.count
+            if sheetCount > 0 {
+                for s in 0..<min(sheetCount, 4) {
+                    let sheet = app.sheets.element(boundBy: s)
+                    if !sheet.exists { continue }
+                    if sheet.staticTexts[text].waitForExistence(timeout: min(slice, 0.35)) { return true }
+                    if sheet.descendants(matching: .staticText).matching(labelOrId).firstMatch.waitForExistence(timeout: min(slice, 0.35)) {
+                        return true
+                    }
+                    if sheet.descendants(matching: .any).matching(labelOrId).firstMatch.waitForExistence(timeout: min(slice, 0.35)) {
+                        return true
+                    }
+                }
+            }
             if app.staticTexts[text].waitForExistence(timeout: slice) { return true }
-            if app.otherElements[text].waitForExistence(timeout: min(slice, 0.25)) { return true }
+            if app.descendants(matching: .staticText).matching(labelOrId).firstMatch.waitForExistence(timeout: slice) {
+                return true
+            }
+            if app.otherElements[text].waitForExistence(timeout: min(slice, 0.35)) { return true }
+            if app.descendants(matching: .any).matching(labelOrId).firstMatch.waitForExistence(timeout: min(slice, 0.35)) {
+                return true
+            }
+            let winCount = app.windows.count
+            for w in 0..<min(winCount, 8) {
+                let window = app.windows.element(boundBy: w)
+                if window.staticTexts[text].waitForExistence(timeout: min(slice, 0.12)) { return true }
+                if window.descendants(matching: .staticText).matching(labelOrId).firstMatch.waitForExistence(timeout: min(slice, 0.12)) {
+                    return true
+                }
+            }
         }
         return false
+    }
+
+    /// Dismiss control for `L4SheetContentContractView`: on recent iOS it is often under `app.sheets`, not root `app.descendants` (Issue #193).
+    @MainActor
+    private func waitForL4SheetDismissControl(timeout: TimeInterval) -> XCUIElement? {
+        let closePred = NSPredicate(format: "identifier == %@ OR label == %@", "L4SheetClose", "Close")
+        let deadline = Date().addingTimeInterval(timeout)
+        while Date() < deadline {
+            let slice = max(0.05, min(0.5, deadline.timeIntervalSinceNow))
+            if slice <= 0 { break }
+            let sheetCount = app.sheets.count
+            if sheetCount > 0 {
+                for s in 0..<min(sheetCount, 4) {
+                    let sheet = app.sheets.element(boundBy: s)
+                    guard sheet.exists else { continue }
+                    let inSheet = sheet.descendants(matching: .any).matching(closePred).firstMatch
+                    if inSheet.waitForExistence(timeout: min(slice, 0.35)) { return inSheet }
+                    if sheet.buttons["Close"].waitForExistence(timeout: min(slice, 0.25)) {
+                        return sheet.buttons["Close"].firstMatch
+                    }
+                }
+            }
+            let rootMatch = app.descendants(matching: .any).matching(closePred).firstMatch
+            if rootMatch.waitForExistence(timeout: slice) { return rootMatch }
+            if app.buttons["Close"].waitForExistence(timeout: min(slice, 0.25)) {
+                return app.buttons["Close"].firstMatch
+            }
+            let winCount = app.windows.count
+            for w in 0..<min(winCount, 8) {
+                let window = app.windows.element(boundBy: w)
+                let wMatch = window.descendants(matching: .any).matching(closePred).firstMatch
+                if wMatch.waitForExistence(timeout: min(slice, 0.12)) { return wMatch }
+            }
+        }
+        return nil
     }
 
     @MainActor
@@ -461,11 +526,13 @@ final class Layer4UITests: XCTestCase {
                 ?? app.buttons["L4ContractSheet"].firstMatch)
         XCTAssertTrue(sheetButton.waitForExistence(timeout: 8.0), "Sheet button should exist")
         tapByNormalizedCenter(sheetButton)
-        XCTAssertTrue(waitForStaticTextInForeground("L4SheetContentContract", timeout: 8.0),
+        let closeControl = waitForL4SheetDismissControl(timeout: 15.0)
+        XCTAssertNotNil(closeControl,
+                        "platformSheet_L4: sheet host should expose dismiss control (contract structure)")
+        guard let close = closeControl else { return }
+        XCTAssertTrue(waitForStaticTextInForeground("L4SheetContentContract", timeout: 12.0),
                       "platformSheet_L4: sheet content must be visible when presented (contract behavior)")
-        XCTAssertTrue(app.buttons["Close"].waitForExistence(timeout: 2.0),
-                      "platformSheet_L4: sheet must provide dismiss (contract structure)")
-        app.buttons["Close"].firstMatch.tap()
+        tapByNormalizedCenter(close)
     }
 
     @MainActor

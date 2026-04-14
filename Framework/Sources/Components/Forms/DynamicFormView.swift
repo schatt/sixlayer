@@ -237,25 +237,37 @@ struct DynamicFormViewInner: View {
     @Environment(\.modelContext) private var modelContext: ModelContext
     #endif
 
+    /// Top-of-form title and subtitle when ``DynamicFormConfiguration/formHeaderVisibility`` is ``DynamicFormHeaderVisibility/visible`` and text resolves non-empty (Issue #224).
+    @ViewBuilder
+    private var dynamicFormInlineHeader: some View {
+        let headerTexts = DynamicFormHeaderVisibility.resolvedInlineHeaderTexts(
+            visibility: configuration.formHeaderVisibility,
+            title: configuration.title,
+            description: configuration.description
+        )
+        if headerTexts.title != nil || headerTexts.description != nil {
+            if let titleText = headerTexts.title {
+                Text(titleText)
+                    .font(.headline)
+                    .automaticCompliance(
+                        identifierName: sanitizeLabelText(titleText)
+                    )
+            }
+            if let descriptionText = headerTexts.description {
+                Text(descriptionText)
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                    .automaticCompliance(named: "FormDescription")
+            }
+        }
+    }
+
     var body: some View {
         // Outer VStack so ViewInspector can find structure (ScrollViewReader blocks traversal — Issue 178)
         VStack(spacing: 0) {
         ScrollViewReader { proxy in
             platformVStackContainer(spacing: 20) {
-                // Form title
-                Text(configuration.title)
-                    .font(.headline)
-                    .automaticCompliance(
-                        identifierName: sanitizeLabelText(configuration.title)  // Auto-generate identifierName from form title
-                    )
-
-                // Form description if present
-                if let description = configuration.description {
-                    Text(description)
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                        .automaticCompliance(named: "FormDescription")
-                }
+                dynamicFormInlineHeader
 
                 // Progress indicator (Issue #82)
                 if configuration.showProgress {
@@ -833,8 +845,8 @@ public struct DynamicFormFieldView: View {
         .id(field.id) // Add ID for ScrollViewReader scrolling
         .environment(\.dynamicFormFieldResolvedDisplayLabel, displayFieldLabel)
         .environment(\.accessibilityIdentifierLabel, displayFieldLabel)
-        .automaticCompliance(
-            identifierName: field.effectiveAccessibilityIdentifierSegment,
+        .automaticComplianceForDynamicFormField(
+            field,
             accessibilitySortPriority: sortPriority  // Issue #165: Sort priority for reading order
         )
     }

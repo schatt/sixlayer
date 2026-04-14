@@ -82,6 +82,41 @@ open class DynamicFormViewTests: BaseTestClass {
         #endif
     }
 
+    /// Issue #224: `formHeaderVisibility: .hidden` must not render configuration title/description as inline header (strict TDD hosted layer).
+    @Test @MainActor func testDynamicFormViewOmitsInlineHeaderWhenFormHeaderVisibilityHidden() async {
+        initializeTestConfig()
+        let uniqueFormTitle = "SixLayer_Issue224_FormHeader_Unique"
+        let uniqueFormDesc = "SixLayer_Issue224_FormDesc_Unique"
+        let sectionTitle = "SixLayer_Issue224_Section_Only"
+        let section = DynamicFormSection(
+            id: "s224",
+            title: sectionTitle,
+            fields: [
+                DynamicFormField(id: "f224", contentType: .text, label: "Field Label 224")
+            ]
+        )
+        let configuration = DynamicFormConfiguration(
+            id: "form224",
+            title: uniqueFormTitle,
+            description: uniqueFormDesc,
+            formHeaderVisibility: .hidden,
+            sections: [section],
+            submitButtonText: "Submit224"
+        )
+        let view = DynamicFormView(configuration: configuration, onSubmit: { _ in })
+        #if canImport(ViewInspector)
+        withInspectedView(view) { inspected in
+            let allTexts = inspected.findAll(ViewInspector.ViewType.Text.self)
+            let strings = allTexts.compactMap { try? $0.string() }
+            #expect(strings.contains(sectionTitle), "Section title should still appear when inline header is hidden")
+            #expect(!strings.contains(uniqueFormTitle), "Form configuration title must not appear when formHeaderVisibility is .hidden")
+            #expect(!strings.contains(uniqueFormDesc), "Form configuration description must not appear when formHeaderVisibility is .hidden")
+        }
+        #else
+        #expect(Bool(true), "View created (ViewInspector not available)")
+        #endif
+    }
+
     @Test @MainActor func testDynamicFormSectionViewRendersSectionTitleAndFields() async {
         initializeTestConfig()
         // TDD: DynamicFormSectionView should render:

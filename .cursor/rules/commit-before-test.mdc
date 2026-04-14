@@ -12,10 +12,16 @@ alwaysApply: true
 ## **REQUIRED SEQUENCE**
 
 1. **Before** invoking a test run: run `git status`.
-2. **If** there are uncommitted changes: run `git add` for the relevant path(s), then `git commit -m "<message>"`.
+2. **If** there are uncommitted changes: run `git add -A` (or add **all** changed paths), then `git commit -m "<message>"` so the **entire** working tree is committed—**multi-agent included**. Do **not** stash.
 3. **Only then** run the test command.
 
 ## **NO EXCEPTIONS**
 
 - Running tests with uncommitted changes violates this rule.
 - "I'll commit after the test" is not allowed. Commit first, then test.
+
+## **Multi-agent / how to get a clean tree**
+
+- **Meaning of clean:** A clean `git status` means **everything in the working tree is committed**—all pending edits from every agent/session are captured in commits before you run tests or declare done.
+- **If you need a clean tree before tests:** **Commit everything** (`git add -A`, then `git commit` with a message that reflects the combined change, or split into logical commits if you are following one-commit-per-file elsewhere in the same session). Do **not** use `git stash`, `git restore`, or other tricks to hide work.
+- **Do not** stash, revert, restore, reset, clean, or delete **work you did not make**—see **multi-agent-git-boundaries.mdc**.

@@ -1,12 +1,21 @@
 # 🚀 Six-Layer Framework Release History
 
-## 📍 **Current Release: v7.5.12** 🎯
+## 📍 **Current Release: v7.5.13** 🎯
 
 **Release Date**: April 2026
 **Status**: In preparation
-**Previous Release**: v7.5.11 - Patch release
-**Note**: Patch release. `platformSectionContainer` no-header uses `Section` inside `Form`; inset chrome is `platformGroupedInsetContainer` (Issue #220).
+**Previous Release**: v7.5.12 - Patch release
+**Note**: Patch release. Layer 4 `platformModalSheetNavigationChrome_L4` (Issue #223), `DynamicFormHeaderVisibility` / inline header resolution (Issue #224), optional `platformFormToolbar` accessibility identifiers (Issue #221). Stricter TDD / red-issue logging rules in repo docs.
 **Next Release**: TBD
+
+---
+
+## 🎯 **v7.5.13 - Modal sheet chrome; DynamicForm header visibility; form toolbar a11y** (April 2026)
+
+### **What's in v7.5.13:**
+- Patch release. See [RELEASE_v7.5.13.md](RELEASE_v7.5.13.md) for details.
+
+**See [RELEASE_v7.5.13.md](RELEASE_v7.5.13.md) for complete release notes.**
 
 ---
 

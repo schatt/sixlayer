@@ -155,25 +155,24 @@ public extension View {
     ) -> some View {
         #if os(iOS)
         if #available(iOS 16.0, *) {
+            // Plain `sheet` + detents on the presented root. ZStack/compliance pins correlated with
+            // XCUITest seeing `Sheet` but no child nodes on iOS 26 (#193). Named sheet compliance was
+            // flattening when chained on the same root as real content; omit until a non-invasive anchor exists.
             self.sheet(isPresented: isPresented, onDismiss: onDismiss) {
                 content()
                     .presentationDetents(detents)
                     .presentationDragIndicator(dragIndicator)
             }
-            .automaticCompliance(named: "platformSheet_L4")
         } else {
             self.sheet(isPresented: isPresented, onDismiss: onDismiss, content: content)
-                .automaticCompliance(named: "platformSheet_L4")
         }
         #elseif os(macOS)
         self.sheet(isPresented: isPresented, onDismiss: onDismiss) {
             content()
                 .frame(minWidth: 400, minHeight: 300)
         }
-        .automaticCompliance(named: "platformSheet_L4")
         #else
         self.sheet(isPresented: isPresented, onDismiss: onDismiss, content: content)
-            .automaticCompliance(named: "platformSheet_L4")
         #endif
     }
     
@@ -200,20 +199,16 @@ public extension View {
                     .presentationDetents(detents)
                     .presentationDragIndicator(dragIndicator)
             }
-            .automaticCompliance(named: "platformSheet_L4")
         } else {
             self.sheet(item: item, onDismiss: onDismiss, content: content)
-                .automaticCompliance(named: "platformSheet_L4")
         }
         #elseif os(macOS)
         self.sheet(item: item, onDismiss: onDismiss) { item in
             content(item)
                 .frame(minWidth: 400, minHeight: 300)
         }
-        .automaticCompliance(named: "platformSheet_L4")
         #else
         self.sheet(item: item, onDismiss: onDismiss, content: content)
-            .automaticCompliance(named: "platformSheet_L4")
         #endif
     }
 }

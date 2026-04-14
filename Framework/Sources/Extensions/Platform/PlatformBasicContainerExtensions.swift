@@ -130,9 +130,7 @@ public extension View {
             content()
         }
         .automaticCompliance()
-        // CRITICAL: Container views apply .automaticCompliance() without identifierName
-        // This applies HIG compliance features but skips identifier generation,
-        // ensuring child identifiers take precedence over parent identifiers
+        // CRITICAL: Anonymous automatic compliance applies HIG without a wrapper accessibilityIdentifier (#222).
     }
     
     /// Platform-specific HStack container with consistent styling and automatic accessibility

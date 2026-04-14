@@ -1,0 +1,16 @@
+---
+description: Multi-agent git safety—no stash/revert/delete of work you did not create.
+alwaysApply: true
+---
+
+# Multi-agent Git Boundaries
+
+## **MANDATORY**
+
+- **Do not** use **`git stash`**, **`git revert`** (to undo commits you did not make), **`git restore`** / **`git checkout --`** (to discard uncommitted edits you did not make), **`git reset --hard`**, **`git clean`**, or **delete files** to remove or hide work **you did not create** (including another session’s uncommitted changes or untracked files they added).
+- **Allowed:** **Commit** the current working tree when you need everything recorded (see **commit-before-test.mdc**). That preserves history; it is not the same as discarding someone else’s work without recording it.
+- **If** you need the tree changed in a way that would discard others’ edits: **stop** and ask the user—do not assume.
+
+## **Rationale**
+
+Several agents may share the same clone. Destructive git operations on “not mine” work cause silent loss or cross-session conflict.

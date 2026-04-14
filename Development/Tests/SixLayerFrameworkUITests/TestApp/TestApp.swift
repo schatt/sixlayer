@@ -52,6 +52,11 @@ struct TestAppContentView: View {
     private let openLayer5Accessibility = ProcessInfo.processInfo.arguments.contains("-OpenLayer5Accessibility")
     /// When true, app opens directly to Layer 6 Cross-Platform section (launch arg -OpenLayer6Examples).
     private let openLayer6Examples = ProcessInfo.processInfo.arguments.contains("-OpenLayer6Examples")
+    /// When true, app opens to Issue #221 platform toolbar identifier hub (launch arg -OpenPlatformToolbarIssue221).
+    private let openPlatformToolbarIssue221 = ProcessInfo.processInfo.arguments.contains("-OpenPlatformToolbarIssue221")
+    /// Deep links for XCUITest (macOS back navigation is unreliable); `-OpenPlatformToolbarIssue221Form` / `Detail`.
+    private let openPlatformToolbarIssue221Form = ProcessInfo.processInfo.arguments.contains("-OpenPlatformToolbarIssue221Form")
+    private let openPlatformToolbarIssue221Detail = ProcessInfo.processInfo.arguments.contains("-OpenPlatformToolbarIssue221Detail")
     
     enum TestView: String, CaseIterable, Identifiable {
         case control = "Control Test"
@@ -61,6 +66,7 @@ struct TestAppContentView: View {
         case basicCompliance = "Basic Compliance Test"
         case identifierEdgeCase = "Identifier Edge Case"
         case detailView = "Detail View Test"
+        case platformToolbarIssue221 = "Platform Toolbar Issue 221"
         
         var id: String { rawValue }
     }
@@ -107,6 +113,18 @@ struct TestAppContentView: View {
                 NavigationStack {
                     Layer6CrossPlatformOnlyView()
                 }
+            } else if openPlatformToolbarIssue221Form {
+                NavigationStack {
+                    PlatformToolbarIssue221FormHostView()
+                }
+            } else if openPlatformToolbarIssue221Detail {
+                NavigationStack {
+                    PlatformToolbarIssue221DetailHostView()
+                }
+            } else if openPlatformToolbarIssue221 {
+                NavigationStack {
+                    PlatformToolbarIssue221HubView(onBackToMain: nil)
+                }
             } else {
                 NavigationStack {
                     if let selected = selectedTest {
@@ -138,6 +156,14 @@ struct TestAppContentView: View {
                     }
                 }
                 .accessibilityIdentifier("test-view-\(TestView.control.id)")
+                .accessibilityElement(children: .combine)
+
+                Group {
+                    Button(TestView.platformToolbarIssue221.rawValue) {
+                        selectedTest = .platformToolbarIssue221
+                    }
+                }
+                .accessibilityIdentifier("test-view-\(TestView.platformToolbarIssue221.id)")
                 .accessibilityElement(children: .combine)
                 
                 sectionHeader("Layer 1 Examples (Issue #166)")
@@ -216,6 +242,8 @@ struct TestAppContentView: View {
             IdentifierEdgeCaseTestView(onBackToMain: { selectedTest = nil })
         case .detailView:
             DetailViewTestView(onBackToMain: { selectedTest = nil })
+        case .platformToolbarIssue221:
+            PlatformToolbarIssue221TestView(onBackToMain: { selectedTest = nil })
         }
     }
     

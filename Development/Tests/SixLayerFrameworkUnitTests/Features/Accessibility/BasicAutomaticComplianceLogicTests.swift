@@ -506,4 +506,95 @@ open class BasicAutomaticComplianceLogicTests: BaseTestClass {
         #expect(modifier.identifierName == identifierName, 
                "Modifier should store identifierName parameter. Expected: '\(identifierName)', Got: '\(modifier.identifierName ?? "nil")'")
     }
+
+    // MARK: - Anonymous wrapper suppression (#222)
+
+    @Test @MainActor func testAnonymousAutomaticCompliance_suppressesWhenFullyAnonymous() {
+        #expect(
+            slfSuppressAnonymousAutomaticComplianceWrapperIdentifier(
+                identifierName: nil,
+                identifierElementType: nil,
+                identifierLabel: nil,
+                accessibilityLabel: nil,
+                accessibilityHint: nil,
+                accessibilityTraits: nil,
+                accessibilityValue: nil,
+                accessibilitySortPriority: nil
+            )
+        )
+    }
+
+    @Test @MainActor func testAnonymousAutomaticCompliance_doesNotSuppressWhenElementTypeProvided() {
+        #expect(
+            !slfSuppressAnonymousAutomaticComplianceWrapperIdentifier(
+                identifierName: nil,
+                identifierElementType: "Button",
+                identifierLabel: nil,
+                accessibilityLabel: nil,
+                accessibilityHint: nil,
+                accessibilityTraits: nil,
+                accessibilityValue: nil,
+                accessibilitySortPriority: nil
+            )
+        )
+    }
+
+    @Test @MainActor func testAnonymousAutomaticCompliance_doesNotSuppressWhenIdentifierNameProvided() {
+        #expect(
+            !slfSuppressAnonymousAutomaticComplianceWrapperIdentifier(
+                identifierName: "NamedRow",
+                identifierElementType: nil,
+                identifierLabel: nil,
+                accessibilityLabel: nil,
+                accessibilityHint: nil,
+                accessibilityTraits: nil,
+                accessibilityValue: nil,
+                accessibilitySortPriority: nil
+            )
+        )
+    }
+
+    // MARK: - Accessibility contain wrapper (#193 / navigation destinations)
+
+    @Test @MainActor func testAccessibilityContain_skipsWhenIdentifierElementTypeIsHeader() {
+        #expect(
+            !slfShouldApplyAccessibilityContainForBasicCompliance(
+                identifierName: "L4NavTitleContract",
+                identifierElementType: "Header"
+            )
+        )
+        #expect(
+            !slfShouldApplyAccessibilityContainForBasicCompliance(
+                identifierName: "title",
+                identifierElementType: "HEADER"
+            )
+        )
+    }
+
+    @Test @MainActor func testAccessibilityContain_appliesWhenNamedNonHeader() {
+        #expect(
+            slfShouldApplyAccessibilityContainForBasicCompliance(
+                identifierName: "NamedRow",
+                identifierElementType: "Button"
+            )
+        )
+    }
+
+    @Test @MainActor func testAccessibilityContain_appliesWhenNamePresentWithoutElementType() {
+        #expect(
+            slfShouldApplyAccessibilityContainForBasicCompliance(
+                identifierName: "NamedRow",
+                identifierElementType: nil
+            )
+        )
+    }
+
+    @Test @MainActor func testAccessibilityContain_falseWhenIdentifierNameNil() {
+        #expect(
+            !slfShouldApplyAccessibilityContainForBasicCompliance(
+                identifierName: nil,
+                identifierElementType: "Button"
+            )
+        )
+    }
 }

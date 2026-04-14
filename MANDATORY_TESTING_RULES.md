@@ -42,11 +42,13 @@
 
 **MANDATORY**: Follow Red-Green-Refactor cycle for all implementation:
 
-1. **RED**: Write tests that **COMPILE** (and fail)
+1. **RED**: Write tests that **COMPILE** (and fail **deliberately**)
    - Tests must compile successfully
-   - Tests must fail (assertions fail, not compilation errors)
+   - Tests must fail because **assertions detect wrong or missing behavior** (not only because unrelated code fails to compile)
    - May require stubbing methods/interfaces so tests can compile
-   - **Red phase ends when tests compile and fail**
+   - **Red phase ends when tests compile and fail at runtime on the intended assertion(s)**
+   - **Deliberately red**: You must prove the test *would* catch regressions—a test that never fails when behavior is wrong is **worse than useless** (false confidence). Prefer failing against a stub/wrong implementation or a **local-only** broken expectation captured in logs, then revert before commit; do not ship inverted expectations as the “test.”
+   - **GitHub issue red log**: When the change maps to a GitHub issue, post the **red** (failing) evidence to that issue with **timestamp**, **how tests were run**, and a **short relevant excerpt** of the failure (not a full test run log), using `gh issue comment <N> --body-file` (see `.cursor/rules/strict-tdd-definition.mdc` and `.cursor/rules/github-issue-workflow.mdc`). Omit only when no issue applies.
    
 2. **GREEN**: Implement minimum code to pass tests
    - **Green phase begins when tests compile (and fail)**
@@ -57,6 +59,9 @@
    - All tests must remain passing
    - Improve code quality, eliminate duplication
    - Extract shared logic, improve naming, etc.
+   - Run the full test suite again after refactor and confirm all green (same requirement as `.cursor/rules/strict-tdd-definition.mdc`)
+
+**TDD completion**: A TDD cycle is **not** complete when tests first pass (green). It is complete only after the **refactor** step has been executed (including a deliberate review that may conclude no structural change is needed) **and** tests have been run again with everything still passing. Treating green as the finish line is incomplete TDD.
 
 **Critical Rule**: Red phase is NOT complete until tests compile. If tests don't compile, create stub implementations (empty methods, return default values, etc.) so tests can compile and fail on assertions, not compilation errors.
 
@@ -121,6 +126,7 @@ func Foo(newParam: String) -> some View {
 - **MANDATORY**: No feature implementation without tests first
 - **MANDATORY**: No code changes without corresponding test changes
 - **MANDATORY**: Tests must be written for every function before implementation
+- **MANDATORY**: TDD is not complete until the refactor step and post-refactor green test run are done (not optional after “first green”)
 - **MANDATORY**: All tests must pass before any release
 - **MANDATORY**: Tests must compile before implementation begins (Red phase requirement)
 

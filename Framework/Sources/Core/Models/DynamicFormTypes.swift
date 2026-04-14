@@ -722,11 +722,39 @@ public struct BatchOCRRequest: Sendable, Equatable {
 
 // MARK: - Dynamic Form Configuration
 
+/// Controls whether `DynamicFormView` renders the top-of-form title and description block (Issue #224).
+///
+/// Use ``hidden`` when the host screen already provides a primary headline (for example
+/// `navigationTitle` in a `NavigationStack`) so the form does not duplicate it.
+public enum DynamicFormHeaderVisibility: Sendable, Equatable {
+    /// Show the configured title and description when they resolve to non-empty trimmed text.
+    case visible
+    /// Do not render the form header; title and description in configuration remain available for metadata and migration.
+    case hidden
+
+    /// Resolved strings for the optional inline header after trimming; both `nil` when ``hidden``.
+    public static func resolvedInlineHeaderTexts(
+        visibility: DynamicFormHeaderVisibility,
+        title: String,
+        description: String?
+    ) -> (title: String?, description: String?) {
+        guard visibility == .visible else { return (nil, nil) }
+        let trimmedTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        let titleOut = trimmedTitle.isEmpty ? nil : trimmedTitle
+        guard let raw = description else { return (titleOut, nil) }
+        let trimmedDesc = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        let descOut = trimmedDesc.isEmpty ? nil : trimmedDesc
+        return (titleOut, descOut)
+    }
+}
+
 /// Complete configuration for a dynamic form
 public struct DynamicFormConfiguration: Identifiable {
     public let id: String
     public let title: String
     public let description: String?
+    /// When ``DynamicFormHeaderVisibility/hidden``, `DynamicFormView` omits the top title/description block; prefer ``DynamicFormHeaderVisibility/visible`` with `description: nil` (not `""`) for “no subtitle” when the header is shown.
+    public let formHeaderVisibility: DynamicFormHeaderVisibility
     public let sections: [DynamicFormSection]
     public let submitButtonText: String
     public let cancelButtonText: String?
@@ -744,6 +772,7 @@ public struct DynamicFormConfiguration: Identifiable {
         id: String,
         title: String,
         description: String? = nil,
+        formHeaderVisibility: DynamicFormHeaderVisibility = .visible,
         sections: [DynamicFormSection] = [],
         submitButtonText: String = "Submit",
         cancelButtonText: String? = "Cancel",
@@ -755,6 +784,7 @@ public struct DynamicFormConfiguration: Identifiable {
         self.id = id
         self.title = title
         self.description = description
+        self.formHeaderVisibility = formHeaderVisibility
         self.sections = sections
         self.submitButtonText = submitButtonText
         self.cancelButtonText = cancelButtonText
@@ -853,6 +883,7 @@ public struct DynamicFormConfiguration: Identifiable {
             id: id,
             title: title,
             description: description,
+            formHeaderVisibility: formHeaderVisibility,
             sections: sectionsWithHints,
             submitButtonText: submitButtonText,
             cancelButtonText: cancelButtonText,
@@ -1708,6 +1739,7 @@ public struct DynamicFormBuilder {
         id: String,
         title: String,
         description: String? = nil,
+        formHeaderVisibility: DynamicFormHeaderVisibility = .visible,
         submitButtonText: String = "Submit",
         cancelButtonText: String? = "Cancel"
     ) -> DynamicFormConfiguration {
@@ -1720,6 +1752,7 @@ public struct DynamicFormBuilder {
             id: id,
             title: title,
             description: description,
+            formHeaderVisibility: formHeaderVisibility,
             sections: sections,
             submitButtonText: submitButtonText,
             cancelButtonText: cancelButtonText

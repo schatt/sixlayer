@@ -8,6 +8,7 @@
 .build-clean/
 DerivedData/
 build/
+artifacts/
 
 # Compiled objects and binaries
 *.o

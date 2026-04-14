@@ -700,9 +700,12 @@ private struct L4SheetContentContractView: View {
     var body: some View {
         VStack(spacing: 16) {
             Text("L4SheetContentContract")
+                .font(.title)
                 .accessibilityLabel("L4SheetContentContract")
                 .accessibilityIdentifier("L4SheetContentContract")
             Button("Close") { dismiss() }
+                .accessibilityIdentifier("L4SheetClose")
+                .accessibilityLabel("Close")
         }
         .padding()
     }
@@ -894,48 +897,51 @@ struct Layer4ContractOnlyView: View {
     var body: some View {
         Group {
             #if os(iOS)
-            Form {
-                Section {
-                    contractPresentationContent
-                } header: {
-                    contractSectionHeader("L4 Presentation")
-                }
-                Section {
-                    contractNavigationContent
-                } header: {
-                    contractSectionHeader("L4 Navigation")
-                }
-                // Fixed width so nested split geometry stays narrow; `maxWidth` alone still received full Form width.
-                Section {
-                    HStack(alignment: .top, spacing: 0) {
-                        contractOverlayAccessibilityContent
-                            .frame(width: 300, alignment: .leading)
-                        Spacer(minLength: 0)
+            // Sheet on `Form` breaks presentation / a11y exposure for XCUITest on iOS 26 (Issue #193); host on outer stack.
+            VStack(spacing: 0) {
+                Form {
+                    Section {
+                        contractPresentationContent
+                    } header: {
+                        contractSectionHeader("L4 Presentation")
                     }
-                } header: {
-                    contractSectionHeader("L4 Overlay Accessibility")
-                }
-                Section {
-                    contractSystemContent
-                } header: {
-                    contractSectionHeader("L4 System")
-                }
-                Section {
-                    contractControlsContent
-                } header: {
-                    contractSectionHeader("L4 Controls")
-                }
-                Section {
-                    platformVStack(alignment: .leading, spacing: 16) {
-                        contractFormInnerContent
+                    Section {
+                        contractNavigationContent
+                    } header: {
+                        contractSectionHeader("L4 Navigation")
                     }
-                } header: {
-                    contractSectionHeader("L4 Form")
-                }
-                Section {
-                    contractListContent
-                } header: {
-                    contractSectionHeader("L4 List")
+                    // Fixed width so nested split geometry stays narrow; `maxWidth` alone still received full Form width.
+                    Section {
+                        HStack(alignment: .top, spacing: 0) {
+                            contractOverlayAccessibilityContent
+                                .frame(width: 300, alignment: .leading)
+                            Spacer(minLength: 0)
+                        }
+                    } header: {
+                        contractSectionHeader("L4 Overlay Accessibility")
+                    }
+                    Section {
+                        contractSystemContent
+                    } header: {
+                        contractSectionHeader("L4 System")
+                    }
+                    Section {
+                        contractControlsContent
+                    } header: {
+                        contractSectionHeader("L4 Controls")
+                    }
+                    Section {
+                        platformVStack(alignment: .leading, spacing: 16) {
+                            contractFormInnerContent
+                        }
+                    } header: {
+                        contractSectionHeader("L4 Form")
+                    }
+                    Section {
+                        contractListContent
+                    } header: {
+                        contractSectionHeader("L4 List")
+                    }
                 }
             }
             #else
@@ -973,6 +979,7 @@ struct Layer4ContractOnlyView: View {
         .navigationTitle("Layer 4 Examples")
         // Inline title keeps the first contract sections in the visible safe area for XCUITest (Issue #193).
         .platformNavigationTitleDisplayMode_L4(.inline)
+        // Present from the framed root, not inner `Form`/`VStack`, so the sheet subtree is attached for XCUITest (Issue #193).
         .platformSheet_L4(isPresented: $l4ShowSheet) {
             L4SheetContentContractView()
         }

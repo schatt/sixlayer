@@ -82,9 +82,7 @@ public struct CustomFieldView: View {
                 DynamicCustomField(field: field, formState: formState)
             }
         }
-        .automaticCompliance(
-            identifierName: field.effectiveAccessibilityIdentifierSegment  // Auto-generate identifierName from field label
-        )
+        .automaticComplianceForDynamicFormField(field)
     }
 }
 
@@ -294,6 +292,34 @@ private struct DynamicFormFieldStandardContainer<Content: View>: View {
         .padding()
         .environment(\.accessibilityIdentifierLabel, resolvedDisplayLabel ?? field.label)
         .automaticCompliance(named: componentName)
+    }
+}
+
+// MARK: - Dynamic form field automatic compliance (#194)
+
+@MainActor
+extension View {
+    /// Applies `automaticCompliance` using the field’s accessibility / localization segment as `identifierName` (Issue #194).
+    func automaticComplianceForDynamicFormField(
+        _ field: DynamicFormField,
+        identifierElementType: String? = nil,
+        identifierLabel: String? = nil,
+        accessibilityLabel: String? = nil,
+        accessibilityHint: String? = nil,
+        accessibilityTraits: AccessibilityTraits? = nil,
+        accessibilityValue: String? = nil,
+        accessibilitySortPriority: Double? = nil
+    ) -> some View {
+        automaticCompliance(
+            identifierName: field.effectiveAccessibilityIdentifierSegment,
+            identifierElementType: identifierElementType,
+            identifierLabel: identifierLabel,
+            accessibilityLabel: accessibilityLabel,
+            accessibilityHint: accessibilityHint,
+            accessibilityTraits: accessibilityTraits,
+            accessibilityValue: accessibilityValue,
+            accessibilitySortPriority: accessibilitySortPriority
+        )
     }
 }
 
@@ -896,9 +922,7 @@ public struct DynamicNumberField: View {
         }
         .padding()
         .dynamicFormFieldAccessibilityLabel(field)
-        .automaticCompliance(
-            identifierName: field.effectiveAccessibilityIdentifierSegment  // Auto-generate identifierName from field label
-        )
+        .automaticComplianceForDynamicFormField(field)
     }
 }
 
@@ -929,9 +953,7 @@ public struct DynamicIntegerField: View {
         }
         .padding()
         .dynamicFormFieldAccessibilityLabel(field) // Issue #194: resolved label when localized
-        .automaticCompliance(
-            identifierName: field.effectiveAccessibilityIdentifierSegment  // Auto-generate identifierName from field label
-        )
+        .automaticComplianceForDynamicFormField(field)
     }
 }
 
@@ -992,11 +1014,11 @@ public struct DynamicStepperField: View {
                 step: step
             )
             .dynamicFormFieldVoiceOverLabel(field)
-            .automaticCompliance(
-                identifierName: field.effectiveAccessibilityIdentifierSegment,  // Auto-generate identifierName from field label
+            .automaticComplianceForDynamicFormField(
+                field,
                 identifierElementType: "Stepper",
-                accessibilityValue: step.truncatingRemainder(dividingBy: 1.0) == 0.0 
-                    ? "\(Int(value.wrappedValue))" 
+                accessibilityValue: step.truncatingRemainder(dividingBy: 1.0) == 0.0
+                    ? "\(Int(value.wrappedValue))"
                     : String(format: "%.2f", value.wrappedValue)  // Issue #165: Current value
             )
 
@@ -1035,9 +1057,7 @@ public struct DynamicDateField: View {
                           set: { _ in } // TODO: Store in formState
                       ),
                       displayedComponents: .date)
-            .automaticCompliance(
-                identifierName: field.effectiveAccessibilityIdentifierSegment  // Auto-generate identifierName from field label
-            )
+            .automaticComplianceForDynamicFormField(field)
         }
         .padding()
         .dynamicFormFieldAccessibilityLabel(field) // Issue #194: resolved label when localized
@@ -1071,9 +1091,7 @@ public struct DynamicTimeField: View {
         }
         .padding()
         .dynamicFormFieldAccessibilityLabel(field) // Issue #194: resolved label when localized
-        .automaticCompliance(
-            identifierName: field.effectiveAccessibilityIdentifierSegment  // Auto-generate identifierName from field label
-        )
+        .automaticComplianceForDynamicFormField(field)
     }
 }
 
@@ -1102,9 +1120,7 @@ public struct DynamicDateTimeField: View {
         }
         .padding()
         .dynamicFormFieldAccessibilityLabel(field) // Issue #194: resolved label when localized
-        .automaticCompliance(
-            identifierName: field.effectiveAccessibilityIdentifierSegment  // Auto-generate identifierName from field label
-        )
+        .automaticComplianceForDynamicFormField(field)
     }
 }
 
@@ -1213,9 +1229,7 @@ public struct DynamicMultiDateField: View {
         }
         .padding()
         .dynamicFormFieldAccessibilityLabel(field)
-        .automaticCompliance(
-            identifierName: field.effectiveAccessibilityIdentifierSegment  // Auto-generate identifierName from field label
-        )
+        .automaticComplianceForDynamicFormField(field)
     }
 }
 
@@ -1260,9 +1274,7 @@ public struct DynamicMultiSelectField: View {
         }
         .padding()
         .dynamicFormFieldAccessibilityLabel(field) // Issue #194: resolved label when localized
-        .automaticCompliance(
-            identifierName: field.effectiveAccessibilityIdentifierSegment  // Auto-generate identifierName from field label
-        )
+        .automaticComplianceForDynamicFormField(field)
     }
 }
 
@@ -1320,9 +1332,7 @@ public struct DynamicRadioField: View {
             }
         }
         .padding()
-        .automaticCompliance(
-            identifierName: field.effectiveAccessibilityIdentifierSegment  // Auto-generate identifierName from field label
-        )
+        .automaticComplianceForDynamicFormField(field)
     }
 }
 
@@ -1366,9 +1376,7 @@ public struct DynamicCheckboxField: View {
         }
         .padding()
         .dynamicFormFieldAccessibilityLabel(field) // Issue #194: resolved label when localized
-        .automaticCompliance(
-            identifierName: field.effectiveAccessibilityIdentifierSegment  // Auto-generate identifierName from field label
-        )
+        .automaticComplianceForDynamicFormField(field)
     }
 }
 
@@ -1449,9 +1457,7 @@ public struct DynamicFileField: View {
         }
         .padding()
         .dynamicFormFieldAccessibilityLabel(field) // Issue #194: resolved label when localized
-        .automaticCompliance(
-            identifierName: field.effectiveAccessibilityIdentifierSegment  // Auto-generate identifierName from field label
-        )
+        .automaticComplianceForDynamicFormField(field)
     }
 }
 
@@ -1531,9 +1537,7 @@ public struct DynamicRangeField: View {
         }
         .padding()
         .dynamicFormFieldAccessibilityLabel(field) // Issue #194: resolved label when localized
-        .automaticCompliance(
-            identifierName: field.effectiveAccessibilityIdentifierSegment  // Auto-generate identifierName from field label
-        )
+        .automaticComplianceForDynamicFormField(field)
     }
 }
 
@@ -1599,9 +1603,7 @@ public struct DynamicArrayField: View {
         }
         .padding()
         .dynamicFormFieldAccessibilityLabel(field) // Issue #194: resolved label when localized
-        .automaticCompliance(
-            identifierName: field.effectiveAccessibilityIdentifierSegment  // Auto-generate identifierName from field label
-        )
+        .automaticComplianceForDynamicFormField(field)
     }
 }
 
@@ -1645,9 +1647,7 @@ public struct DynamicDataField: View {
             }
         }
         .padding()
-        .automaticCompliance(
-            identifierName: field.effectiveAccessibilityIdentifierSegment  // Auto-generate identifierName from field label
-        )
+        .automaticComplianceForDynamicFormField(field)
     }
 }
 
@@ -1711,9 +1711,7 @@ public struct DynamicAutocompleteField: View {
             }
         }
         .padding()
-        .automaticCompliance(
-            identifierName: field.effectiveAccessibilityIdentifierSegment  // Auto-generate identifierName from field label
-        )
+        .automaticComplianceForDynamicFormField(field)
     }
 }
 
@@ -1763,9 +1761,7 @@ public struct DynamicEnumField: View {
         }
         .padding()
         .dynamicFormFieldAccessibilityLabel(field) // Issue #194: resolved label when localized
-        .automaticCompliance(
-            identifierName: field.effectiveAccessibilityIdentifierSegment  // Auto-generate identifierName from field label
-        )
+        .automaticComplianceForDynamicFormField(field)
     }
 }
 
@@ -1795,9 +1791,7 @@ public struct DynamicCustomField: View {
             }
         }
         .padding()
-        .automaticCompliance(
-            identifierName: field.effectiveAccessibilityIdentifierSegment  // Auto-generate identifierName from field label
-        )
+        .automaticComplianceForDynamicFormField(field)
     }
 }
 
@@ -1837,9 +1831,7 @@ public struct DynamicColorField: View {
                 .automaticCompliance(named: "ColorPreview")
         }
         .padding()
-        .automaticCompliance(
-            identifierName: field.effectiveAccessibilityIdentifierSegment  // Auto-generate identifierName from field label
-        )
+        .automaticComplianceForDynamicFormField(field)
     }
 }
 
@@ -1877,17 +1869,15 @@ public struct DynamicToggleField: View {
         platformVStackContainer(alignment: .leading) {
             Toggle("", isOn: isOn)
                 .dynamicFormFieldVoiceOverLabel(field)
-                .automaticCompliance(
-                    identifierName: field.effectiveAccessibilityIdentifierSegment,  // Auto-generate identifierName from field label
+                .automaticComplianceForDynamicFormField(
+                    field,
                     identifierElementType: "Toggle",
                     accessibilityValue: generateAccessibilityValueForToggle(isOn: isOn.wrappedValue)  // Issue #165: Dynamic value
                 )
         }
         .padding()
         .dynamicFormFieldAccessibilityLabel(field) // Issue #194: resolved label when localized
-        .automaticCompliance(
-            identifierName: field.effectiveAccessibilityIdentifierSegment  // Auto-generate identifierName from field label
-        )
+        .automaticComplianceForDynamicFormField(field)
     }
 }
 
@@ -1963,9 +1953,7 @@ public struct DynamicDisplayField: View {
                 }
             }
             .dynamicFormFieldVoiceOverLabel(field)
-            .automaticCompliance(
-                identifierName: field.effectiveAccessibilityIdentifierSegment  // Auto-generate identifierName from field label
-            )
+            .automaticComplianceForDynamicFormField(field)
         } else {
             // Fallback for older platforms
             HStack {
@@ -1979,9 +1967,7 @@ public struct DynamicDisplayField: View {
             }
             .padding()
             .dynamicFormFieldVoiceOverLabel(field)
-            .automaticCompliance(
-                identifierName: field.effectiveAccessibilityIdentifierSegment  // Auto-generate identifierName from field label
-            )
+            .automaticComplianceForDynamicFormField(field)
         }
     }
 }
@@ -2088,8 +2074,6 @@ public struct DynamicGaugeField: View {
             }
         }
         .padding()
-        .automaticCompliance(
-            identifierName: field.effectiveAccessibilityIdentifierSegment  // Auto-generate identifierName from field label
-        )
+        .automaticComplianceForDynamicFormField(field)
     }
 }

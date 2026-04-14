@@ -305,6 +305,9 @@
     "Buttons with Icons" : {
 
     },
+    "Cancel" : {
+
+    },
     "Capability Status" : {
 
     },
@@ -718,6 +721,9 @@
 
     },
     "Secondary Label" : {
+
+    },
+    "Select" : {
 
     },
     "Select an item" : {

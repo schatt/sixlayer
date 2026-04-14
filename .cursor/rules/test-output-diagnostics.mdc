@@ -1,26 +1,34 @@
 ---
-description: MCP-first test runs; never truncate diagnostic logs; full logs or Read on files.
+description: MCP-first test runs; full durable logs; agent CLI may tee+log and tail/head to limit token use; Read files to diagnose.
 alwaysApply: true
 ---
 
 # Test and Build Output for Diagnosis
 
+## **Core intent**
+
+- **Do not lose information that would require re-running tests or builds** to recover (failing test names, first errors, hang site, warnings). The agent and the user must be able to diagnose from **what was captured**, not from a second full run.
+
 ## **MANDATORY — PRECEDENCE**
 
-- **Do not pipe test or build output through `head`, `tail`, or similar** when the goal is to **verify results, debug failures, find hangs, or capture warnings**. Truncation discards the failing test name, first error lines, and context at the start of the log.
+- **Do not pipe test or build output through `head`, `tail`, or similar** in a way that leaves **no complete durable log** when the goal is to **verify results, debug failures, find hangs, or capture warnings**. Truncation of the *only* copy discards the failing test name, first error lines, and context at the start of the log.
 - **This rule takes precedence** over convenience shortcuts that would hide output from the agent or the user.
 
 ## **REQUIRED BEHAVIOR**
 
-1. **MANDATORY for test runs:** Use **xcode-tools** MCP (**RunAllTests**, **RunSomeTests**) with **`tabIdentifier`** from **XcodeListWindows**, after setting the scheme with **`Development/scripts/set_xcode_scheme.applescript`** when needed. **Do not** default to CLI for tests when MCP is available. See **`.cursor/rules/test-target-default.mdc`**.
-2. **CLI (exception only):** Use **`dbs-build`**, **`xcodebuild`**, or **`swift test`** **only** when MCP is unavailable after retry / Xcode tab resolution per **test-target-default**—and **without** truncating stdout/stderr in the shell pipeline.
-3. **Large logs:** Redirect to a **file** (e.g. **`tee`** or **`> build.log 2>&1`**) and use the **Read** tool with offsets or search to inspect sections—**do not** use **`tail`** or **`head`** in the pipeline as the primary way to “see” output for diagnosis. Prefer MCP **`fullSummaryPath`** / **`fullConsoleLogsPath`** when present.
+1. **MANDATORY for test runs:** Use **xcode-tools** MCP (**RunAllTests**, **RunSomeTests**) with **`tabIdentifier`** from **XcodeListWindows**, after setting the scheme with **`Development/scripts/set_xcode_scheme.applescript`** when needed. **Do not** default to CLI for tests when MCP is available. See **`.cursor/rules/test-target-default.mdc`**. Those runs are **first-class Xcode test sessions**: output lives in **Xcode** (e.g. Report navigator / test activity) and in **`*.xcresult`** on disk, alongside MCP fields like **`fullSummaryPath`** and **`fullConsoleLogsPath`**.
+2. **CLI (exception only):** Use **`dbs-build`**, **`xcodebuild`**, or **`swift test`** **only** when MCP is unavailable after retry / Xcode tab resolution per **test-target-default**. Ensure a **complete** log is retained (file, MCP artifact path, or **`xcresult`**) so nothing important exists only in a truncated pipe.
+3. **Large logs (CLI):** Keep a **complete** file (**`tee`** or redirect). Use the **Read** tool with offsets or search on that file (or **`xcresult`**) for diagnosis—**do not** rely on **`tail`** / **`head`** as the **only** saved record.
+4. **Cursor agent / terminal tool:** When **Cursor runs** long **`xcodebuild`**, **`dbs-build`**, or similar, **prefer** piping through **`tee /path/to/full.log | tail -n N`** or **`| head -n N`** so the **full** log is on disk while the **tool output** (what inflates **token** use) stays bounded. Inspect **`full.log`** with **Read** when the preview is not enough.
 
 ## **RATIONALE**
 
-- Failures and hangs often appear **once** at a specific point; **`tail` hides everything before the last lines**, so the agent gets **no useful information** for root cause.
-- MCP test runs surface structured results in Xcode; full CLI logs preserve order and completeness.
+- Failures and hangs often appear **once** at a specific point; if the truncated pipe was the only output, you **re-run the whole suite** to learn what failed—wasteful and slow.
+- **MCP test runs** align with **Xcode’s own retention model**: logs and structured results in the **Xcode UI** plus **`xcresult`** bundles—so you can triage like a local **Product → Test** run without depending on a fragile terminal-only transcript.
+- **CLI** (`xcodebuild`, **`tee`** to a file, etc.) remains valid when MCP is unavailable; keep a **complete** file or **`xcresult`** path for the same “no rerun to rediscover” guarantee.
 
 ## **EXCEPTION**
 
-- Only when the **user explicitly** asks for a **bounded excerpt** (e.g. “last 20 lines”) may the agent use truncation—and even then, prefer reading a saved full log file when debugging is the purpose.
+- **`tee` + `tail` / `head`:** Piping **`… | tee /path/to/full.log | tail -n N`** or **`… | tee /path/to/full.log | head -n N`** is **recommended** for **agent-driven** CLI runs: **`full.log`** stays **complete** (no rerun to rediscover), while **`tail`/`head`** limits what lands in the **terminal tool transcript** (token/context cost). Use **Read** on **`full.log`** for deeper diagnosis.
+- **Truncation without `tee`:** Do **not** use **`head`/`tail` as the only sink** for verify-or-debug goals—you lose the durable record and may **force a rerun**.
+- **User-requested excerpt only:** If the user asks for a **bounded snippet** and no full log was captured, truncation is acceptable; for anything ambiguous, capture a **full** log first, then excerpt.
