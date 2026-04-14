@@ -242,19 +242,25 @@ struct DynamicFormViewInner: View {
         VStack(spacing: 0) {
         ScrollViewReader { proxy in
             platformVStackContainer(spacing: 20) {
-                // Form title
-                Text(configuration.title)
-                    .font(.headline)
-                    .automaticCompliance(
-                        identifierName: sanitizeLabelText(configuration.title)  // Auto-generate identifierName from form title
-                    )
-
-                // Form description if present
-                if let description = configuration.description {
-                    Text(description)
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                        .automaticCompliance(named: "FormDescription")
+                let headerTexts = DynamicFormHeaderVisibility.resolvedInlineHeaderTexts(
+                    visibility: configuration.formHeaderVisibility,
+                    title: configuration.title,
+                    description: configuration.description
+                )
+                if headerTexts.title != nil || headerTexts.description != nil {
+                    if let titleText = headerTexts.title {
+                        Text(titleText)
+                            .font(.headline)
+                            .automaticCompliance(
+                                identifierName: sanitizeLabelText(titleText)
+                            )
+                    }
+                    if let descriptionText = headerTexts.description {
+                        Text(descriptionText)
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                            .automaticCompliance(named: "FormDescription")
+                    }
                 }
 
                 // Progress indicator (Issue #82)
