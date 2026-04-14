@@ -38,8 +38,14 @@ A test that **never** failed in that scenario—because production was already c
 ## Required Evidence
 
 - **Red:** Record at least one run where the **relevant** test(s) **fail at runtime** (assertion / `#expect` / XCTest failure) because behavior is wrong or missing—not only a failed compile or unrelated suite failure.
-- **Green:** Record a passing run after implementation.
-- **Refactor:** Record a passing run after the refactor pass.
+- **GitHub issue — red log (MANDATORY when work maps to a GitHub issue):** Post that **red** (failing) test evidence to the **same issue** as part of issue work—before leaving red for green is ideal; it must exist **before** the issue is treated as TDD-complete for merge/close. The comment **must** include:
+  - **Timestamp** (use UTC ISO 8601, e.g. `date -u +%Y-%m-%dT%H:%M:%SZ`, embedded in the comment body)
+  - **How tests were run** (scheme/target, `dbs-build` / `xcodebuild` / `swift test`, destination/simulator if relevant, or MCP run identifier if applicable)
+  - **Failing test name(s)** (or Swift Testing / XCTest identifiers) plus a **verbatim excerpt** of the failure (assertion message, file:line, enough to prove the right test failed—not only “exit code 1”).
+  Post with `gh issue comment <N> --body-file <path>` per `.cursor/rules/github-issue-workflow.mdc` (**never** inline `gh issue comment --body`). If multiple issues apply, post on the **primary** issue or split clearly per issue.
+  **Scope:** Applies when the change is tied to a numbered GitHub issue (footer `Fixes #N`, branch/issue tracking, or explicit issue in scope). Pure chores/docs with **no** issue may omit the GitHub post; red evidence in commit/PR narrative still recommended.
+- **Green:** Record a passing run after implementation (issue comment optional but useful).
+- **Refactor:** Record a passing run after the refactor pass (issue comment optional).
 
 ## Guardrails
 
