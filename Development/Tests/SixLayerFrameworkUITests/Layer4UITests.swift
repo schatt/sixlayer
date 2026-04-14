@@ -36,6 +36,9 @@ final class Layer4UITests: XCTestCase {
             guard Self.sharedApp == nil else { return }
             let localApp = XCUIApplication()
             localApp.configureForFastTesting()
+            // `-SkipAnimations` can leave `.sheet` presented without a populated a11y subtree on iOS 26
+            // (Sheet exists; contract static text never appears — Issue #193).
+            localApp.launchArguments.removeAll(where: { $0 == "-SkipAnimations" })
             localApp.launchArguments.append("-OpenLayer4Examples")
             localApp.launch()
             Self.sharedApp = localApp
@@ -158,18 +161,22 @@ final class Layer4UITests: XCTestCase {
     @MainActor
     private func waitForStaticTextInForeground(_ text: String, timeout: TimeInterval) -> Bool {
         let deadline = Date().addingTimeInterval(timeout)
-        let labelOrId = NSPredicate(format: "label == %@ OR identifier == %@", text, text)
+        let labelOrId = NSPredicate(format: "label == %@ OR identifier == %@ OR value == %@", text, text, text)
         while Date() < deadline {
             let slice = max(0.05, min(0.5, deadline.timeIntervalSinceNow))
             if slice <= 0 { break }
-            if app.sheets.firstMatch.exists {
-                let sheet = app.sheets.firstMatch
-                if sheet.staticTexts[text].waitForExistence(timeout: slice) { return true }
-                if sheet.descendants(matching: .staticText).matching(labelOrId).firstMatch.waitForExistence(timeout: slice) {
-                    return true
-                }
-                if sheet.descendants(matching: .any).matching(labelOrId).firstMatch.waitForExistence(timeout: slice) {
-                    return true
+            let sheetCount = app.sheets.count
+            if sheetCount > 0 {
+                for s in 0..<min(sheetCount, 4) {
+                    let sheet = app.sheets.element(boundBy: s)
+                    if !sheet.exists { continue }
+                    if sheet.staticTexts[text].waitForExistence(timeout: min(slice, 0.35)) { return true }
+                    if sheet.descendants(matching: .staticText).matching(labelOrId).firstMatch.waitForExistence(timeout: min(slice, 0.35)) {
+                        return true
+                    }
+                    if sheet.descendants(matching: .any).matching(labelOrId).firstMatch.waitForExistence(timeout: min(slice, 0.35)) {
+                        return true
+                    }
                 }
             }
             if app.staticTexts[text].waitForExistence(timeout: slice) { return true }
@@ -179,6 +186,14 @@ final class Layer4UITests: XCTestCase {
             if app.otherElements[text].waitForExistence(timeout: min(slice, 0.35)) { return true }
             if app.descendants(matching: .any).matching(labelOrId).firstMatch.waitForExistence(timeout: min(slice, 0.35)) {
                 return true
+            }
+            let winCount = app.windows.count
+            for w in 0..<min(winCount, 8) {
+                let window = app.windows.element(boundBy: w)
+                if window.staticTexts[text].waitForExistence(timeout: min(slice, 0.12)) { return true }
+                if window.descendants(matching: .staticText).matching(labelOrId).firstMatch.waitForExistence(timeout: min(slice, 0.12)) {
+                    return true
+                }
             }
         }
         return false
