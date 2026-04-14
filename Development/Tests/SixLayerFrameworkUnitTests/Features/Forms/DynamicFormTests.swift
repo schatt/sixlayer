@@ -296,6 +296,69 @@ open class DynamicFormTests: BaseTestClass {
         #expect(config.submitButtonText == "Submit Form")
         #expect(config.cancelButtonText == "Cancel")
         #expect(config.metadata?["version"] == "1.0")
+        #expect(config.formHeaderVisibility == .visible)
+    }
+
+    // MARK: - Form header visibility (Issue #224)
+
+    @Test func testFormHeaderVisibilityHiddenYieldsNoInlineTexts() {
+        let r = DynamicFormHeaderVisibility.resolvedInlineHeaderTexts(
+            visibility: .hidden,
+            title: "Title",
+            description: "Desc"
+        )
+        #expect(r.title == nil)
+        #expect(r.description == nil)
+    }
+
+    @Test func testFormHeaderVisibilityVisibleTrimsTitleAndDescription() {
+        let r = DynamicFormHeaderVisibility.resolvedInlineHeaderTexts(
+            visibility: .visible,
+            title: "  Hello ",
+            description: "  Sub  "
+        )
+        #expect(r.title == "Hello")
+        #expect(r.description == "Sub")
+    }
+
+    @Test func testFormHeaderVisibilityVisibleEmptyDescriptionStringYieldsNoSubtitle() {
+        let r = DynamicFormHeaderVisibility.resolvedInlineHeaderTexts(
+            visibility: .visible,
+            title: "T",
+            description: ""
+        )
+        #expect(r.title == "T")
+        #expect(r.description == nil)
+    }
+
+    @Test func testFormHeaderVisibilityVisibleWhitespaceDescriptionYieldsNoSubtitle() {
+        let r = DynamicFormHeaderVisibility.resolvedInlineHeaderTexts(
+            visibility: .visible,
+            title: "T",
+            description: " \n\t "
+        )
+        #expect(r.title == "T")
+        #expect(r.description == nil)
+    }
+
+    @Test func testFormHeaderVisibilityVisibleWhitespaceOnlyTitleYieldsNoTitle() {
+        let r = DynamicFormHeaderVisibility.resolvedInlineHeaderTexts(
+            visibility: .visible,
+            title: "   ",
+            description: "D"
+        )
+        #expect(r.title == nil)
+        #expect(r.description == "D")
+    }
+
+    @Test func testDynamicFormConfigurationFormHeaderVisibilityRoundTrip() {
+        let hidden = DynamicFormConfiguration(
+            id: "f",
+            title: "T",
+            formHeaderVisibility: .hidden,
+            sections: []
+        )
+        #expect(hidden.formHeaderVisibility == .hidden)
     }
     
     /// BUSINESS PURPOSE: Validate DynamicFormConfiguration helper functionality
