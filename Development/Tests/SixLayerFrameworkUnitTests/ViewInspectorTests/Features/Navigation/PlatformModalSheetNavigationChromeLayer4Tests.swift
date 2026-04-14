@@ -144,6 +144,7 @@ open class PlatformModalSheetNavigationChromeLayer4Tests: BaseTestClass {
     // MARK: - Helpers
 
     #if canImport(ViewInspector)
+    @MainActor
     private static func inspectionHasButtonLabel(
         _ inspected: ViewInspector.InspectableView<ViewInspector.ViewType.ClassifiedView>,
         label: String
@@ -154,6 +155,7 @@ open class PlatformModalSheetNavigationChromeLayer4Tests: BaseTestClass {
         return false
     }
 
+    @MainActor
     private static func buttonMatchesLabel(
         _ button: ViewInspector.InspectableView<ViewInspector.ViewType.Button>,
         label: String
