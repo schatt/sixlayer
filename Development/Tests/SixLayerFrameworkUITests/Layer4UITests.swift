@@ -158,13 +158,28 @@ final class Layer4UITests: XCTestCase {
     @MainActor
     private func waitForStaticTextInForeground(_ text: String, timeout: TimeInterval) -> Bool {
         let deadline = Date().addingTimeInterval(timeout)
+        let labelOrId = NSPredicate(format: "label == %@ OR identifier == %@", text, text)
         while Date() < deadline {
-            let slice = min(0.5, deadline.timeIntervalSinceNow)
+            let slice = max(0.05, min(0.5, deadline.timeIntervalSinceNow))
             if slice <= 0 { break }
-            if app.sheets.firstMatch.exists,
-               app.sheets.firstMatch.staticTexts[text].waitForExistence(timeout: slice) { return true }
+            if app.sheets.firstMatch.exists {
+                let sheet = app.sheets.firstMatch
+                if sheet.staticTexts[text].waitForExistence(timeout: slice) { return true }
+                if sheet.descendants(matching: .staticText).matching(labelOrId).firstMatch.waitForExistence(timeout: slice) {
+                    return true
+                }
+                if sheet.descendants(matching: .any).matching(labelOrId).firstMatch.waitForExistence(timeout: slice) {
+                    return true
+                }
+            }
             if app.staticTexts[text].waitForExistence(timeout: slice) { return true }
-            if app.otherElements[text].waitForExistence(timeout: min(slice, 0.25)) { return true }
+            if app.descendants(matching: .staticText).matching(labelOrId).firstMatch.waitForExistence(timeout: slice) {
+                return true
+            }
+            if app.otherElements[text].waitForExistence(timeout: min(slice, 0.35)) { return true }
+            if app.descendants(matching: .any).matching(labelOrId).firstMatch.waitForExistence(timeout: min(slice, 0.35)) {
+                return true
+            }
         }
         return false
     }
