@@ -11,7 +11,7 @@ Follow this sequence exactly for all feature and bug-fix work:
 
 1. Define expected behavior and test scope.
 2. Write tests first.
-3. Run tests for a red phase.
+3. Run tests for a red phase (**deliberately red** — see below).
    - If tests do not compile, add minimal stubs only to make tests compile and run.
    - Re-run until tests execute and fail for the intended reason (no false positives).
 4. Green phase: implement behavior to the best of ability.
@@ -19,11 +19,27 @@ Follow this sequence exactly for all feature and bug-fix work:
 6. **Refactor** for clarity/maintainability without changing behavior. (You may conclude no structural change is needed, but you must still complete this step as a deliberate pass over the code.)
 7. Run tests again and verify green after refactor.
 
+## Deliberately red (test effectiveness)
+
+**MANDATORY**: Red is not “the build broke somewhere.” Red must show that the **new or changed test(s) execute and fail for the right reason** when behavior is wrong or absent.
+
+A test that **never** failed in that scenario—because production was already correct, the assertion is tautological, or the test does not observe what it claims—is **worse than useless**: it creates false confidence and can hide regressions.
+
+**Acceptable deliberate red** (document in commit/PR when non-obvious):
+
+- Run against a **stub, wrong branch, or intentionally incorrect implementation** until the assertion fails as expected; then implement green.
+- Or a **local-only** wrong expectation / broken line to capture one failing run, then revert before commit. **Do not** leave inverted or fake expectations in the tree as the “test.”
+
+**Not sufficient as the only red evidence**:
+
+- Compile errors in unrelated code, or “red” that never exercises the new test’s assertions.
+- Green on the first run with no proof that wrong production would trip the test.
+
 ## Required Evidence
 
-- Show/record at least one failing test run in red phase.
-- Show/record a passing run after green implementation.
-- Show/record a passing run after refactor.
+- **Red:** Record at least one run where the **relevant** test(s) **fail at runtime** (assertion / `#expect` / XCTest failure) because behavior is wrong or missing—not only a failed compile or unrelated suite failure.
+- **Green:** Record a passing run after implementation.
+- **Refactor:** Record a passing run after the refactor pass.
 
 ## Guardrails
 
