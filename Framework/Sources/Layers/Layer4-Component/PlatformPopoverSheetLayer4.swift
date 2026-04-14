@@ -155,36 +155,24 @@ public extension View {
     ) -> some View {
         #if os(iOS)
         if #available(iOS 16.0, *) {
-            // Named compliance lives on a ZStack pin, not on `content()` (#193). Detents must apply
-            // to the sheet root (this ZStack); attaching them only inside the stack broke the presented
-            // body on iOS 26 (sheet chrome without contract subtree).
+            // Plain `sheet` + detents on the presented root. ZStack/compliance pins correlated with
+            // XCUITest seeing `Sheet` but no child nodes on iOS 26 (#193). Named sheet compliance was
+            // flattening when chained on the same root as real content; omit until a non-invasive anchor exists.
             self.sheet(isPresented: isPresented, onDismiss: onDismiss) {
-                slfPlatformSheetL4PresentedRoot {
-                    content()
-                }
-                .presentationDetents(detents)
-                .presentationDragIndicator(dragIndicator)
+                content()
+                    .presentationDetents(detents)
+                    .presentationDragIndicator(dragIndicator)
             }
         } else {
-            self.sheet(isPresented: isPresented, onDismiss: onDismiss) {
-                slfPlatformSheetL4PresentedRoot {
-                    content()
-                }
-            }
+            self.sheet(isPresented: isPresented, onDismiss: onDismiss, content: content)
         }
         #elseif os(macOS)
         self.sheet(isPresented: isPresented, onDismiss: onDismiss) {
-            slfPlatformSheetL4PresentedRoot {
-                content()
-                    .frame(minWidth: 400, minHeight: 300)
-            }
+            content()
+                .frame(minWidth: 400, minHeight: 300)
         }
         #else
-        self.sheet(isPresented: isPresented, onDismiss: onDismiss) {
-            slfPlatformSheetL4PresentedRoot {
-                content()
-            }
-        }
+        self.sheet(isPresented: isPresented, onDismiss: onDismiss, content: content)
         #endif
     }
     
@@ -207,50 +195,21 @@ public extension View {
         #if os(iOS)
         if #available(iOS 16.0, *) {
             self.sheet(item: item, onDismiss: onDismiss) { item in
-                slfPlatformSheetL4PresentedRoot {
-                    content(item)
-                }
-                .presentationDetents(detents)
-                .presentationDragIndicator(dragIndicator)
+                content(item)
+                    .presentationDetents(detents)
+                    .presentationDragIndicator(dragIndicator)
             }
         } else {
-            self.sheet(item: item, onDismiss: onDismiss) { item in
-                slfPlatformSheetL4PresentedRoot {
-                    content(item)
-                }
-            }
+            self.sheet(item: item, onDismiss: onDismiss, content: content)
         }
         #elseif os(macOS)
         self.sheet(item: item, onDismiss: onDismiss) { item in
-            slfPlatformSheetL4PresentedRoot {
-                content(item)
-                    .frame(minWidth: 400, minHeight: 300)
-            }
+            content(item)
+                .frame(minWidth: 400, minHeight: 300)
         }
         #else
-        self.sheet(item: item, onDismiss: onDismiss) { item in
-            slfPlatformSheetL4PresentedRoot {
-                content(item)
-            }
-        }
+        self.sheet(item: item, onDismiss: onDismiss, content: content)
         #endif
-    }
-}
-
-// MARK: - Sheet presentation root (Issue #193)
-
-/// Puts `automaticCompliance(named: "platformSheet_L4")` on a sibling pin view so caller `content()`
-/// keeps a normal accessibility subtree under the presented sheet.
-@ViewBuilder
-fileprivate func slfPlatformSheetL4PresentedRoot<Content: View>(
-    @ViewBuilder content: () -> Content
-) -> some View {
-    ZStack(alignment: .topLeading) {
-        Color.clear
-            .frame(width: 1, height: 1)
-            .allowsHitTesting(false)
-            .automaticCompliance(named: "platformSheet_L4")
-        content()
     }
 }
 
