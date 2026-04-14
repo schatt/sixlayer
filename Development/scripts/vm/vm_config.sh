@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Shared configuration for SixLayer VM scripts (adapted from CarManager).
 # Source this file; do not execute it directly.
+# To reuse a CarManager VM disk instead of vm_setup.sh + OCI image, use vm_setup_clone.sh.
 
 VM_NAME="${SIXLAYER_VM_NAME:-sixlayer-dev}"
 VM_IMAGE="${SIXLAYER_VM_IMAGE:-ghcr.io/cirruslabs/macos-tahoe-xcode:latest}"
