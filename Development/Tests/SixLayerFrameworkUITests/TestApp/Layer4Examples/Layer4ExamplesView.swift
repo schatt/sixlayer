@@ -7,6 +7,9 @@
 //
 
 import SwiftUI
+#if os(iOS)
+import UIKit
+#endif
 import SixLayerFramework
 import AVFoundation
 import CloudKit
@@ -694,14 +697,38 @@ private struct L4NavDestinationView: View {
     }
 }
 
+#if os(iOS)
+/// UIKit-backed label so XCUITest sees `XCUIElementTypeStaticText` inside `.sheet` on iOS 26 / SwiftUI
+/// (SwiftUI-only `Text` was missing from the sheet accessibility tree while `Sheet` existed; Issue #193).
+private struct L4SheetContractUILabel: UIViewRepresentable {
+    func makeUIView(context: Context) -> UILabel {
+        let label = UILabel()
+        label.text = "L4SheetContentContract"
+        label.font = UIFont.preferredFont(forTextStyle: .title1)
+        label.numberOfLines = 0
+        label.accessibilityLabel = "L4SheetContentContract"
+        label.accessibilityIdentifier = "L4SheetContentContract"
+        label.isAccessibilityElement = true
+        return label
+    }
+
+    func updateUIView(_ uiView: UILabel, context: Context) {}
+}
+#endif
+
 /// Sheet content for L4 platformSheet_L4 contract; provides Close so tests can dismiss.
 private struct L4SheetContentContractView: View {
     @Environment(\.dismiss) private var dismiss
     var body: some View {
         VStack(spacing: 16) {
+            #if os(iOS)
+            L4SheetContractUILabel()
+                .frame(maxWidth: .infinity, alignment: .leading)
+            #else
             Text("L4SheetContentContract")
                 .accessibilityLabel("L4SheetContentContract")
                 .accessibilityIdentifier("L4SheetContentContract")
+            #endif
             Button("Close") { dismiss() }
         }
         .padding()
@@ -974,11 +1001,7 @@ struct Layer4ContractOnlyView: View {
         // Inline title keeps the first contract sections in the visible safe area for XCUITest (Issue #193).
         .platformNavigationTitleDisplayMode_L4(.inline)
         .platformSheet_L4(isPresented: $l4ShowSheet) {
-            // iOS 26 / SwiftUI: sheet content sometimes omits child a11y nodes without a navigation shell;
-            // XCTest then sees Sheet but not contract static text (Issue #193).
-            NavigationStack {
-                L4SheetContentContractView()
-            }
+            L4SheetContentContractView()
         }
         .platformPopover_L4(isPresented: $l4ShowPopover) {
             Text("L4PopoverContentContract")
