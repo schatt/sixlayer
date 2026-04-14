@@ -2,6 +2,9 @@
 # One-time setup: Tart + sshpass on host, clone SixLayer dev VM from Cirrus macOS/Xcode
 # image, provision guest, baseline snapshot.
 #
+# If you already have a CarManager dev VM, you can clone it instead of re-pulling the OCI image:
+#   ./Development/scripts/vm/vm_setup_clone.sh
+#
 # Usage:
 #   ./Development/scripts/vm/vm_setup.sh
 #
