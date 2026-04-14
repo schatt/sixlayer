@@ -155,31 +155,34 @@ public extension View {
     ) -> some View {
         #if os(iOS)
         if #available(iOS 16.0, *) {
-            // Stamp compliance on sheet *content*, not the presenter. An identifier on the outer
-            // `sheet` return can flatten the presented subtree for XCUITest on iOS 26 (sheet exists,
-            // children missing; Issue #193).
+            // Compliance must not chain on `content()` — NamedAutomaticCompliance stamps the identifier
+            // on that whole subtree and XCUITest then sees `Sheet` with no contract children (#193).
             self.sheet(isPresented: isPresented, onDismiss: onDismiss) {
-                content()
-                    .presentationDetents(detents)
-                    .presentationDragIndicator(dragIndicator)
-                    .automaticCompliance(named: "platformSheet_L4")
+                slfPlatformSheetL4PresentedRoot {
+                    content()
+                        .presentationDetents(detents)
+                        .presentationDragIndicator(dragIndicator)
+                }
             }
         } else {
             self.sheet(isPresented: isPresented, onDismiss: onDismiss) {
-                content()
-                    .automaticCompliance(named: "platformSheet_L4")
+                slfPlatformSheetL4PresentedRoot {
+                    content()
+                }
             }
         }
         #elseif os(macOS)
         self.sheet(isPresented: isPresented, onDismiss: onDismiss) {
-            content()
-                .frame(minWidth: 400, minHeight: 300)
-                .automaticCompliance(named: "platformSheet_L4")
+            slfPlatformSheetL4PresentedRoot {
+                content()
+                    .frame(minWidth: 400, minHeight: 300)
+            }
         }
         #else
         self.sheet(isPresented: isPresented, onDismiss: onDismiss) {
-            content()
-                .automaticCompliance(named: "platformSheet_L4")
+            slfPlatformSheetL4PresentedRoot {
+                content()
+            }
         }
         #endif
     }
@@ -203,29 +206,50 @@ public extension View {
         #if os(iOS)
         if #available(iOS 16.0, *) {
             self.sheet(item: item, onDismiss: onDismiss) { item in
-                content(item)
-                    .presentationDetents(detents)
-                    .presentationDragIndicator(dragIndicator)
-                    .automaticCompliance(named: "platformSheet_L4")
+                slfPlatformSheetL4PresentedRoot {
+                    content(item)
+                        .presentationDetents(detents)
+                        .presentationDragIndicator(dragIndicator)
+                }
             }
         } else {
             self.sheet(item: item, onDismiss: onDismiss) { item in
-                content(item)
-                    .automaticCompliance(named: "platformSheet_L4")
+                slfPlatformSheetL4PresentedRoot {
+                    content(item)
+                }
             }
         }
         #elseif os(macOS)
         self.sheet(item: item, onDismiss: onDismiss) { item in
-            content(item)
-                .frame(minWidth: 400, minHeight: 300)
-                .automaticCompliance(named: "platformSheet_L4")
+            slfPlatformSheetL4PresentedRoot {
+                content(item)
+                    .frame(minWidth: 400, minHeight: 300)
+            }
         }
         #else
         self.sheet(item: item, onDismiss: onDismiss) { item in
-            content(item)
-                .automaticCompliance(named: "platformSheet_L4")
+            slfPlatformSheetL4PresentedRoot {
+                content(item)
+            }
         }
         #endif
+    }
+}
+
+// MARK: - Sheet presentation root (Issue #193)
+
+/// Puts `automaticCompliance(named: "platformSheet_L4")` on a sibling pin view so caller `content()`
+/// keeps a normal accessibility subtree under the presented sheet.
+@ViewBuilder
+fileprivate func slfPlatformSheetL4PresentedRoot<Content: View>(
+    @ViewBuilder content: () -> Content
+) -> some View {
+    ZStack(alignment: .topLeading) {
+        Color.clear
+            .frame(width: 1, height: 1)
+            .allowsHitTesting(false)
+            .automaticCompliance(named: "platformSheet_L4")
+        content()
     }
 }
 
