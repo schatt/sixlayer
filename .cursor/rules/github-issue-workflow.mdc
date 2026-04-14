@@ -23,7 +23,7 @@ When work maps to a GitHub issue, **strict TDD** requires posting **deliberately
 
 1. Build the comment in a **temp file** (failure excerpts almost always contain `` ` ``, `$`, or paths—unsafe for inline `gh` `--body`).
 2. Run `gh issue comment <N> --body-file <path>` then **delete** the temp file.
-3. The comment body **must** include a **timestamp** (UTC ISO 8601 in the text), **how tests were run**, and **failing test id(s) + verbatim failure excerpt**.
+3. The comment body **must** include a **timestamp** (UTC ISO 8601 in the text), **how tests were run**, and **failing test id(s) + a short verbatim excerpt** of the failure (minimal lines: which test, which assertion/message). **Do not** attach or paste a **complete** test run or full build transcript—**relevant excerpt only**; point to a local/CI log path if the full run matters.
 
 This gives a durable, timestamped audit that tests **ran and failed for the right reason**, not only that they eventually passed.
 
