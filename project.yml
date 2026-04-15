@@ -491,11 +491,10 @@ targets:
 # xcodebuild -parallel-testing-enabled in buildconfig.yml). UITest targets included — revisit if
 # parallel UI classes expose ordering or shared-state flakes.
 #
-# XcodeGen emits *.xcscheme XML that Xcode may rewrite to a leaner form on save (e.g. Scheme
-# `version` 1.7 vs 1.3, `runPostActionsOnFailure`, `onlyGenerateCoverageForSpecifiedTargets`,
-# empty `CommandLineArguments`). Those attributes are not configured below; there are no
-# `project.yml` keys to remove to suppress them—serialization comes from XcodeGen/XcodeProj.
-# Re-save in Xcode after `xcodegen generate` when you want the normalized shape committed.
+# XcodeGen emits verbose *.xcscheme XML; Xcode on open/save often aligns that XML with the same
+# scheme intent you declare here (leaner attributes, different Scheme `version`, etc.). Those
+# details are not configured line-by-line below—serialization differs by tool. Commit Xcode’s
+# scheme output when Xcode updates it; see `.cursor/rules/project-yml-exclusive.mdc`.
 schemes:
   SLF-iOS-Framework:
     build:
