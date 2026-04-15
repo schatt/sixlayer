@@ -4,6 +4,7 @@
 
 ## Current
 
+- [ ] **#211** DeviceType settings shell policy: matrix tests + watch sub-pane stack policy + guide table on `b7.6.0`; remaining: audit `platformSettingsContainer_L4` managed-flow `default` branches per issue scope
 - [x] **#224** Dynamic form inline header: `DynamicFormHeaderVisibility` + strict TDD (unit + ViewInspector); branch `b7.5.13` (issue commented)
 - [x] Tart VM scripts (CarManager-style) in `Development/scripts/vm/` for macOS UI tests off-host (`vm_test.sh test-ui-macos`)
 
