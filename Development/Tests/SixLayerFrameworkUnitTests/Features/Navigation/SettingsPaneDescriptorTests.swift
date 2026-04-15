@@ -90,15 +90,25 @@ struct SettingsPaneDescriptorTests {
             unsectionedTitle: "Other"
         )
 
-        #expect(sections.count == 2)
-        #expect(sections[0].title == "Main")
-        #expect(sections[0].items.count == 1)
-        #expect(sections[0].items[0].key == "general")
-        #expect(sections[0].items[0].title == "settings.general")
-        #expect(sections[0].items[0].description == "settings.general.subtitle")
-        #expect(sections[0].items[0].type == .button)
-        #expect(sections[1].title == "Other")
-        #expect(sections[1].items[0].key == "about")
-        #expect(sections[1].items[0].title == "settings.about")
+        let byTitle = Dictionary(uniqueKeysWithValues: sections.map { ($0.title, $0) })
+        #expect(byTitle.count == 2)
+
+        guard let main = byTitle["Main"] else {
+            Issue.record("Expected Main section")
+            return
+        }
+        #expect(main.items.count == 1)
+        #expect(main.items[0].key == "general")
+        #expect(main.items[0].title == "settings.general")
+        #expect(main.items[0].description == "settings.general.subtitle")
+        #expect(main.items[0].type == .button)
+
+        guard let other = byTitle["Other"] else {
+            Issue.record("Expected Other section")
+            return
+        }
+        #expect(other.items.count == 1)
+        #expect(other.items[0].key == "about")
+        #expect(other.items[0].title == "settings.about")
     }
 }
