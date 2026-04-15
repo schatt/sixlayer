@@ -4,7 +4,8 @@
 
 ## Current
 
-- [ ] **#232** `b7.6.0` release: verify iOS ViewInspector modal sheet chrome tests after capping `accessibilityElementCount` enumeration in `AccessibilityTestUtilities.swift` (avoids main-thread hang in `hostedViewHasAccessibilityElementWithLabelAndButtonTrait`)
+- [x] **#232** `b7.6.0` release: verify iOS ViewInspector modal sheet chrome test no longer hangs after capping `accessibilityElementCount` enumeration in `AccessibilityTestUtilities.swift`
+- [ ] **#232** Follow-up: fix failing confirmation-control expectation in `PlatformModalSheetNavigationChromeLayer4Tests.testPlatformModalSheetNavigationChrome_L4_ExposesConfirmationButton()` (assertion still fails with expected label `"Apply"`)
 - [ ] **#233** Epic: Run full test suite for every platform (unit/view/ui)
   - [ ] Build platform x layer matrix from existing schemes/targets (macOS, iOS, watchOS, tvOS, visionOS)
   - [ ] macOS: run Unit tests
