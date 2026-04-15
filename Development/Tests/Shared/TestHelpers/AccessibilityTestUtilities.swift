@@ -217,6 +217,17 @@ public func getAccessibilityLabelForTest<V: View>(view: V, hostedRoot: Any? = ni
 }
 
 #if canImport(UIKit)
+/// Upper bound for `accessibilityElementCount` before enumerating via `accessibilityElementAtIndex:`.
+/// Some SwiftUI/UIKit hosting views report counts that make naive enumeration effectively hang
+/// (main-thread retain churn in test helpers; e.g. modal sheet chrome ViewInspector tests).
+private let maxAccessibilityContainerEnumerationCount = 256
+
+@MainActor
+private func boundedAccessibilityElementCount(_ raw: Int) -> Int {
+    guard raw > 0 else { return 0 }
+    return min(raw, maxAccessibilityContainerEnumerationCount)
+}
+
 /// Integer from ObjC `perform` return value (`NSNumber` is typical for `accessibilityElementCount`).
 @MainActor
 private func intFromObjCPerformResult(_ object: Any?) -> Int {
@@ -260,7 +271,7 @@ private func firstAccessibilityIdentifierFromAccessibilityContainer(_ view: UIVi
           let countResult = view.perform(countSel) else {
         return nil
     }
-    let n = intFromObjCPerformResult(countResult.takeUnretainedValue())
+    let n = boundedAccessibilityElementCount(intFromObjCPerformResult(countResult.takeUnretainedValue()))
     guard n > 0 else { return nil }
     for i in 0 ..< n {
         let atResult = view.perform(atSel, with: i)
@@ -469,7 +480,7 @@ public func hostedViewHasAccessibilityElementWithLabelAndButtonTrait(root: Any?,
         let atSel = NSSelectorFromString("accessibilityElementAtIndex:")
         if view.responds(to: countSel), view.responds(to: atSel),
            let countResult = view.perform(countSel) {
-            let n = intFromObjCPerformResult(countResult.takeUnretainedValue())
+            let n = boundedAccessibilityElementCount(intFromObjCPerformResult(countResult.takeUnretainedValue()))
             for i in 0 ..< n {
                 let atResult = view.perform(atSel, with: i)
                 let raw = atResult?.takeUnretainedValue()
@@ -522,7 +533,7 @@ public func findAllAccessibilityIdentifiersFromPlatformView(_ root: Any?) -> [St
         let atSel = NSSelectorFromString("accessibilityElementAtIndex:")
         if view.responds(to: countSel), view.responds(to: atSel),
            let countResult = view.perform(countSel) {
-            let n = intFromObjCPerformResult(countResult.takeUnretainedValue())
+            let n = boundedAccessibilityElementCount(intFromObjCPerformResult(countResult.takeUnretainedValue()))
             if n > 0 {
                 for i in 0 ..< n {
                     let atResult = view.perform(atSel, with: i)
