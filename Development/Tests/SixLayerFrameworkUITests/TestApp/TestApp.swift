@@ -52,6 +52,8 @@ struct TestAppContentView: View {
     private let openLayer5Accessibility = ProcessInfo.processInfo.arguments.contains("-OpenLayer5Accessibility")
     /// When true, app opens directly to Layer 6 Cross-Platform section (launch arg -OpenLayer6Examples).
     private let openLayer6Examples = ProcessInfo.processInfo.arguments.contains("-OpenLayer6Examples")
+    /// When true, app opens to Category D OCR backfill host (launch arg -OpenOCRCategoryD).
+    private let openOCRCategoryD = ProcessInfo.processInfo.arguments.contains("-OpenOCRCategoryD")
     /// When true, app opens to Issue #221 platform toolbar identifier hub (launch arg -OpenPlatformToolbarIssue221).
     private let openPlatformToolbarIssue221 = ProcessInfo.processInfo.arguments.contains("-OpenPlatformToolbarIssue221")
     /// Deep links for XCUITest (macOS back navigation is unreliable); `-OpenPlatformToolbarIssue221Form` / `Detail`.
@@ -112,6 +114,10 @@ struct TestAppContentView: View {
             } else if openLayer6Examples {
                 NavigationStack {
                     Layer6CrossPlatformOnlyView()
+                }
+            } else if openOCRCategoryD {
+                NavigationStack {
+                    OCRCategoryDAuditView()
                 }
             } else if openPlatformToolbarIssue221Form {
                 NavigationStack {
