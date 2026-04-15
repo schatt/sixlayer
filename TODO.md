@@ -4,7 +4,7 @@
 
 ## Current
 
-- [ ] **#233** Run full test suite for every platform (unit/view/ui)
+- [ ] **#233** Epic: Run full test suite for every platform (unit/view/ui)
   - [ ] Build platform x layer matrix from existing schemes/targets (macOS, iOS, watchOS, tvOS, visionOS)
   - [ ] macOS: run Unit tests
   - [ ] macOS: run ViewInspector tests
@@ -15,6 +15,7 @@
   - [ ] watchOS: run existing Unit/ViewInspector/UI targets (or create follow-up issues for missing targets)
   - [ ] tvOS: run existing Unit/ViewInspector/UI targets (or create follow-up issues for missing targets)
   - [ ] visionOS: run existing Unit/ViewInspector/UI targets (or create follow-up issues for missing targets)
+  - [ ] For each distinct failure, create and link a GitHub issue under epic #233
   - [ ] Post consolidated pass/fail/missing matrix and log/xcresult evidence on #233
 
 - [ ] **#226** Consumer-facing `SixLayerUITestNavigator` contract (stable screen selectors + reusable navigation helpers in `SixLayerTestKit`)
