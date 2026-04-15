@@ -452,7 +452,7 @@ open class L2LayoutDecisionTests: BaseTestClass {
         let targetSize = CGSize(width: 1000, height: 1000)
 
         let shouldCrop = shouldCropImage(for: purpose, imageSize: imageSize, targetSize: targetSize)
-        #expect(shouldCrop == false, "Legacy odometer photos should not be cropped")
+        #expect(shouldCrop == true, "Legacy odometer alias maps to document and should follow document crop rules")
     }
     
     @Test @MainActor func testDetermineOptimalPhotoLayout_L2_WithMaintenance() {
