@@ -8,7 +8,7 @@
 
 **Precedence:** This is direct user instruction. It overrides any general guidance to avoid committing or to ask before committing. Execute as specified; do not ask; do not skip.
 
-**Required behavior:** After editing a file, immediately run `git add <that file>` and `git commit` with a clear message. One commit per file. Do not edit another file until the current file is committed. **Exception:** when you edit `project.yml` and run XcodeGen, you may commit `project.yml` and all generated Xcode project files from that run in **one** commit. Optionally document feature state in the message (e.g. "completes X") to show when a multi-file feature is done; not required (issues track completion too). See `.cursor/rules/commit-after-every-edit.mdc`.
+**Required behavior:** After editing a file, immediately run `git add <that file>` and `git commit` with a clear message. One commit per file. Do not edit another file until the current file is committed. **Exception:** when you edit `project.yml` and run XcodeGen, you may commit `project.yml` and all generated Xcode project files from that run in **one** commit. **Exception:** when **Xcode** (not the agent) rewrites shared `*.xcscheme` files only, you may commit all affected schemes in **one** commit—never hand-edit scheme XML; see `.cursor/rules/commit-after-every-edit.mdc` and `.cursor/rules/project-yml-exclusive.mdc`. Optionally document feature state in the message (e.g. "completes X") to show when a multi-file feature is done; not required (issues track completion too).
 
 ## Release Quality Gate Rule
 
