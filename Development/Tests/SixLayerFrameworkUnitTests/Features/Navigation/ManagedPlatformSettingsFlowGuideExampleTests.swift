@@ -30,14 +30,26 @@ private enum ManagedGuideEscapeHatchPattern: String, CaseIterable, Hashable, Sen
 
 /// Example adapter for wiring a Layer 1 settings sidebar to managed top-level state.
 private enum ManagedGuideL1SidebarSelectionAdapter {
+    private static let paneKeyPrefix = "pane."
+
     static func selectFromSidebarSettingKey(
         _ key: String,
         topLevel: inout PlatformManagedSettingsTopLevelState<ManagedGuideTopPane>,
         detailNavigation: inout PlatformManagedSettingsDetailNavigationState<ManagedGuideSubPane>
     ) {
-        _ = key
-        _ = topLevel
-        _ = detailNavigation
+        guard
+            key.hasPrefix(paneKeyPrefix),
+            let rawPane = key.split(separator: ".", maxSplits: 1).last,
+            let pane = ManagedGuideTopPane(rawValue: String(rawPane))
+        else {
+            return
+        }
+
+        PlatformManagedSettingsFlowLogic.selectTopLevelPane(
+            pane,
+            topLevel: &topLevel,
+            detailNavigation: &detailNavigation
+        )
     }
 }
 
@@ -59,16 +71,33 @@ private struct ManagedSettingsGuideExampleView: View {
             )
     }
 
+    private var sidebarSettingsSections: [SettingsSectionData] {
+        [
+            SettingsSectionData(
+                title: "Top-level panes",
+                items: ManagedGuideTopPane.allCases.map { pane in
+                    SettingsItemData(
+                        key: "pane.\(pane.rawValue)",
+                        title: pane.rawValue.capitalized,
+                        type: .button
+                    )
+                }
+            )
+        ]
+    }
+
     @ViewBuilder private var sidebar: some View {
-        List(ManagedGuideTopPane.allCases, id: \.self) { pane in
-            Button(pane.rawValue.capitalized) {
-                PlatformManagedSettingsFlowLogic.selectTopLevelPane(
-                    pane,
+        platformPresentSettings_L1(
+            settings: sidebarSettingsSections,
+            hints: PresentationHints(),
+            onSettingChanged: { key, _ in
+                ManagedGuideL1SidebarSelectionAdapter.selectFromSidebarSettingKey(
+                    key,
                     topLevel: &topLevel,
                     detailNavigation: &detailNav
                 )
             }
-        }
+        )
         .navigationTitle("Settings")
     }
 
