@@ -712,6 +712,7 @@
 		3DFC4C0D021C6642809BADF2 /* PlatformPrintLayer4.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF8DAF63AF2ABB2AD6E2113D /* PlatformPrintLayer4.swift */; };
 		3E00C6C607BD896FA45915EC /* SixLayerFramework.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C263F30766391143C12BAF70 /* SixLayerFramework.framework */; };
 		3E3933DF223C5FD079681B88 /* CoreArchitectureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88F4CE32B5BBDFEF613CD919 /* CoreArchitectureTests.swift */; };
+		3E405B109BBC7FC30E9A053E /* CategoryCCallbackTestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65ED9D9381B8426E60FACF55 /* CategoryCCallbackTestView.swift */; };
 		3E440A7824FA023AAB238E3D /* AccessibilityWorkflowTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D01FBA366BFF9EFA92140E1 /* AccessibilityWorkflowTests.swift */; };
 		3E5139FB57138B94E4289E05 /* LocationServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EA899D32AD85BF937BD2708 /* LocationServiceTests.swift */; };
 		3E64ED544FF87C3A407498B9 /* SystemImageBoundary.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7A28F742F43CB59AB27397B /* SystemImageBoundary.swift */; };
@@ -1766,6 +1767,7 @@
 		9971F5756D46AC63F3547DCD /* DeclarativeHintsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9318FDD1BFC94B0C0116FA8D /* DeclarativeHintsTests.swift */; };
 		99907492241FE14BC69F5219 /* LiquidGlassCapabilityDetection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A8E30DEBD2DCC98E205EA66 /* LiquidGlassCapabilityDetection.swift */; };
 		999E770F3586399161413D9E /* CloudKitServiceCoreDataTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9184510105D2B99D051DB4C /* CloudKitServiceCoreDataTests.swift */; };
+		99AE4A92B256DFBA7E06C294 /* CategoryCCallbackTestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65ED9D9381B8426E60FACF55 /* CategoryCCallbackTestView.swift */; };
 		99CCC681B058FBABE881140A /* PlatformColorExamples.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21B10A7F2C26C64ADEB9CCFB /* PlatformColorExamples.swift */; };
 		9A2D44DAC2425243B0510217 /* CardBadgeContentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3D7809919AD19E303A4F8C0 /* CardBadgeContentTests.swift */; };
 		9A6640F04B8D785A54FB10F8 /* PlatformSpecificSecureFieldExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5498792D06A0E16EC58C8494 /* PlatformSpecificSecureFieldExtensions.swift */; };
@@ -3464,6 +3466,7 @@
 		656BD40E9672D6CF873A0432 /* TestSetupUtilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestSetupUtilities.swift; sourceTree = "<group>"; };
 		659C215D351A446684812CF2 /* SecurityExamplesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityExamplesView.swift; sourceTree = "<group>"; };
 		65CAA059C07FF265FF484DA0 /* SixLayerFrameworkExternalIntegrationTests_visionOS.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = SixLayerFrameworkExternalIntegrationTests_visionOS.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		65ED9D9381B8426E60FACF55 /* CategoryCCallbackTestView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryCCallbackTestView.swift; sourceTree = "<group>"; };
 		660449FBCF9CF0BAAD1E1D6B /* CardDisplayable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardDisplayable.swift; sourceTree = "<group>"; };
 		6823A7FA3CE18BD0484D5534 /* PlatformManagedSettingsDetailNavigationState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformManagedSettingsDetailNavigationState.swift; sourceTree = "<group>"; };
 		6837EE07B9B62FE066A13500 /* CapabilityMatrixTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CapabilityMatrixTests.swift; sourceTree = "<group>"; };
@@ -4610,6 +4613,7 @@
 			children = (
 				2F028DF08A1EA87B3849ABD1 /* BasicComplianceTestView.swift */,
 				B1EFCA44F5A135C8566EDBC9 /* ButtonTestView.swift */,
+				65ED9D9381B8426E60FACF55 /* CategoryCCallbackTestView.swift */,
 				744E808A66DF1FF304D7DBD1 /* ControlTestView.swift */,
 				8A968477710FAE02D44A6871 /* DetailViewCategoryBAuditView.swift */,
 				88F9AF8FC1E45B605B3AA775 /* DetailViewTestView.swift */,
@@ -5727,7 +5731,7 @@
 			path = API;
 			sourceTree = "<group>";
 		};
-		"TEMP_D2D33C56-3C99-41A3-9EDB-CDC5D6022869" /* Utilities */ = {
+		"TEMP_374DD3E1-1137-41D8-BAC5-0002269DCE15" /* Utilities */ = {
 			isa = PBXGroup;
 			children = (
 			);
@@ -8096,6 +8100,7 @@
 				AF2361528BEE10D0E329C9CC /* BarcodeExamplesView.swift in Sources */,
 				5E56FF7D50002CD4DE4231D6 /* BasicComplianceTestView.swift in Sources */,
 				279F22E76ED789830404F9DB /* ButtonTestView.swift in Sources */,
+				3E405B109BBC7FC30E9A053E /* CategoryCCallbackTestView.swift in Sources */,
 				EAD282B7D521998C3B8DA846 /* ControlTestView.swift in Sources */,
 				33D8A5241E85A4E83A28FAB6 /* DataAnalysisExamplesView.swift in Sources */,
 				C5FBC4B6AA2A61AE761C883B /* DataPresentationExamplesView.swift in Sources */,
@@ -8283,6 +8288,7 @@
 				BB4D7A83D45D1C40696050E2 /* BarcodeExamplesView.swift in Sources */,
 				B199FCFC0BB684B0942C4B17 /* BasicComplianceTestView.swift in Sources */,
 				31A7236D701B99EF417BD4F3 /* ButtonTestView.swift in Sources */,
+				99AE4A92B256DFBA7E06C294 /* CategoryCCallbackTestView.swift in Sources */,
 				B035633947C4FE8408A942D2 /* ControlTestView.swift in Sources */,
 				A8F42D0A6FA07451CF2FD1A2 /* DataAnalysisExamplesView.swift in Sources */,
 				9EFA8C5F77CC73B8D9C95D01 /* DataPresentationExamplesView.swift in Sources */,
