@@ -52,7 +52,7 @@ Create the actual UI components with platform-adaptive behavior, implementing th
 
 #### **Managed settings flow (Issue #209)**
 - `platformManagedSettingsTopLevel_L4` — wires `PlatformManagedSettingsTopLevelState` into the settings shell; optional `platformManagedSettingsDetailNavigationStack_L4` for sub-pane stacks inside the detail column.
-- See [ManagedPlatformSettingsFlowGuide.md](./ManagedPlatformSettingsFlowGuide.md) for the full API, migration from manual `selectedCategory`, and a compile-checked example (unit test).
+- See [ManagedPlatformSettingsFlowGuide.md](./ManagedPlatformSettingsFlowGuide.md) for the full API, migration from manual `selectedCategory`, compile-checked examples, and the Issue #213 escape hatch guidance for non-uniform detail layouts (`platformSettingsContainer_L4` manual shell).
 
 ### **Button Components**
 
