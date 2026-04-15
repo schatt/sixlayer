@@ -26,6 +26,7 @@
 - [x] **#209** Managed settings flow — closed on GitHub (acceptance criteria checked); optional follow-up: result-builder / richer pane tree
 - [x] **#210** Add `SettingsPaneDescriptor` + section builders (stable order, duplicate-ID invariant, `SettingsSectionData` mapping) with MCP-verified unit tests
 - [x] **#214** Optional `ManagedSettingsPaneList` from descriptors with strict TDD (red evidence posted; MCP targeted tests green after refactor)
+- [ ] **#213** Document escape hatches for non-uniform settings detail layouts (`platformSettingsContainer_L4` + arbitrary `detail` composition patterns)
 - [ ] **#177** Fix remaining iOS ViewInspector/accessibility test failures — `AccessibilityIdentifierEdgeCaseTests` exactNamed paths green via `testingGeneratedIdentifier`; manual ID remains soft `if let` in disabled suite (harness nil)
 - [ ] **#193** L4 UITests: `testL4_platformSheet_L4` green (sheet on `L4ContractSheetTrigger` + dismiss query under `app.sheets`); re-run full SLF-iOS-UITests for remaining L4 cases
 - [x] **#197** (slice) Category A UI backfill: exactNamed, accessibilityLabel row, outer manual Group id + tests (commit/push; issue commented)
