@@ -58,14 +58,14 @@ struct CategoryCCallbackTestView: View {
                     Text("Selection flow")
                         .font(.headline)
 
-                    ListCollectionView(
-                        items: items,
-                        hints: PresentationHints(),
-                        onItemSelected: { item in
-                            selectedItemTitle = item.title
+                    platformVStackContainer(alignment: .leading, spacing: 8) {
+                        ForEach(items) { item in
+                            Button(item.title) {
+                                handleSelection(item)
+                            }
+                            .accessibilityIdentifier("category-c-selection-row-\(item.id)")
                         }
-                    )
-                    .frame(minHeight: 220)
+                    }
 
                     Text("Selected item: \(selectedItemTitle)")
                         .accessibilityIdentifier("category-c-selection-state-text")
@@ -82,5 +82,9 @@ struct CategoryCCallbackTestView: View {
 
     private func handleCancel() {
         formCallbackState = "cancel"
+    }
+
+    private func handleSelection(_ item: CategoryCCollectionItem) {
+        selectedItemTitle = item.title
     }
 }
