@@ -19,6 +19,22 @@ Managed APIs **compose with** the navigation layout resolver work (#204 / #206):
 | **iPad / macOS** | `platformSettingsContainer_L4` uses `Layer4NestedSplitShellPresentationHost` | **Yes** — width-driven `NavigationLayoutCompactPresentation` (full split, detail-only inner collapse, overlay outer sidebar) matches settings and app navigation contracts. |
 | **iPhone** | `NavigationStack` + selection-driven detail (`navigationDestination(isPresented:)` when using managed bindings) | **N/A for nested split** — there is no inner/outer dual-sidebar squeeze; stack semantics are always the correct model. Managed flow still uses the same `selectedCategory` wiring as manual `platformSettingsContainer_L4`. |
 
+### `DeviceType` shell policy matrix (Issue #211)
+
+`PlatformManagedSettingsFlowLogic` holds cross-platform rules the managed APIs compose with `platformSettingsContainer_L4`. For a **non-empty** ordered pane list:
+
+| `DeviceType` | `recommendedInitialTopSelection` | `usesSplitStyleTopLevelSettingsShell` | `subPaneNavigationUsesSystemStack` |
+|----------------|--------------------------------------|------------------------------------------|---------------------------------------|
+| `phone` | `nil` (category list first) | false | true |
+| `pad` | first pane | true | true |
+| `mac` | first pane | true | true |
+| `tv` | `nil` | false | false |
+| `watch` | `nil` | false | true |
+| `car` | `nil` | false | false |
+| `vision` | `nil` | false | false |
+
+SPM coverage: `PlatformManagedSettingsFlowLogicTests` (`shellPolicyMatrix_*`). Adding a `DeviceType` case should update this table, production switches, and the test matrix together.
+
 Sub-pane stacks (`platformManagedSettingsDetailNavigationStack_L4`) sit **inside** the detail column (or inside the iPhone pushed detail); they do not bypass resolver output on iPad/macOS.
 
 ## Compile-time top-level panes
