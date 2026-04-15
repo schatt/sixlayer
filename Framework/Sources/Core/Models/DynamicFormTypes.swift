@@ -984,8 +984,8 @@ public class DynamicFormState: ObservableObject {
     /// Auto-save timer for periodic saves
     nonisolated(unsafe) private var autoSaveTimer: Timer?
     
-    /// Debounce timer for change-based saves
-    nonisolated(unsafe) private var debounceTimer: Timer?
+    /// Cancellable task used for change-based debounce saves.
+    private var debouncedSaveTask: Task<Void, Never>?
     
     /// Auto-save configuration
     public var autoSaveEnabled: Bool = true
@@ -1513,15 +1513,19 @@ public class DynamicFormState: ObservableObject {
     /// This should be called when fieldValues change
     public func triggerDebouncedSave() {
         guard autoSaveEnabled else { return }
-        
-        // Cancel existing debounce timer
-        debounceTimer?.invalidate()
-        
-        // Start new debounce timer
-        debounceTimer = Timer.scheduledTimer(withTimeInterval: debounceDelay, repeats: false) { [weak self] _ in
-            Task { @MainActor in
-                self?.saveDraft()
+
+        // Cancel any pending debounce task before scheduling a new save.
+        debouncedSaveTask?.cancel()
+        let delayNanoseconds = UInt64(max(debounceDelay, 0.0) * 1_000_000_000)
+
+        debouncedSaveTask = Task { [weak self] in
+            guard let self = self else { return }
+            if delayNanoseconds > 0 {
+                try? await Task.sleep(nanoseconds: delayNanoseconds)
             }
+
+            guard !Task.isCancelled else { return }
+            self.saveDraft()
         }
     }
     
@@ -1621,7 +1625,7 @@ public class DynamicFormState: ObservableObject {
     deinit {
         // Invalidate timers directly in deinit (safe to do from any context)
         autoSaveTimer?.invalidate()
-        debounceTimer?.invalidate()
+        debouncedSaveTask?.cancel()
     }
 }
 
