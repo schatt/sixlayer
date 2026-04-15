@@ -22,6 +22,12 @@ private enum ManagedGuideSubPane: Hashable, Sendable {
     case cleanupConfirm
 }
 
+private enum ManagedGuideEscapeHatchPattern: String, Hashable, Sendable {
+    case splitHStack
+    case twoColumnDataFlow
+    case embeddedStacks
+}
+
 /// Example adapter for wiring a Layer 1 settings sidebar to managed top-level state.
 private enum ManagedGuideL1SidebarSelectionAdapter {
     static func selectFromSidebarSettingKey(
@@ -109,12 +115,75 @@ private struct ManagedSettingsGuideExampleView: View {
     }
 }
 
+/// Compile-checked manual-shell pattern for non-uniform detail layouts.
+/// This mirrors the "escape hatch" guidance in docs: keep outer shell and customize detail freely.
+private struct ManagedSettingsEscapeHatchGuideExampleView: View {
+    @State private var columnVisibility = NavigationSplitViewVisibility.automatic
+    @State private var selectedCategory: String? = "Data"
+
+    /// Intentionally incomplete for red phase: this should include all documented patterns.
+    static let documentedPatterns: Set<ManagedGuideEscapeHatchPattern> = [
+        .splitHStack,
+        .twoColumnDataFlow
+    ]
+
+    var body: some View {
+        EmptyView()
+            .platformSettingsContainer_L4(
+                columnVisibility: $columnVisibility,
+                selectedCategory: $selectedCategory
+            ) {
+                List {
+                    Button("General") { selectedCategory = "General" }
+                    Button("Data") { selectedCategory = "Data" }
+                }
+                .navigationTitle("Settings")
+            } detail: {
+                Group {
+                    switch selectedCategory {
+                    case "Data":
+                        HStack(alignment: .top, spacing: 20) {
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("Cleanup queue")
+                                Text("Integrity scan")
+                            }
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("Preview pane")
+                                List {
+                                    NavigationLink("Open details", destination: Text("Nested details"))
+                                }
+                            }
+                        }
+                    case "General":
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("General settings")
+                            Text("Standard controls")
+                        }
+                    default:
+                        Text("Select a category")
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                .padding()
+            }
+    }
+}
+
 @Suite("Managed platform settings flow guide example (#209)")
 struct ManagedPlatformSettingsFlowGuideExampleTests {
 
     @Test @MainActor
     func managedSettingsGuideExample_builds() {
         _ = ManagedSettingsGuideExampleView()
+    }
+
+    @Test @MainActor
+    func escapeHatchGuideExample_buildsAndDocumentsPatterns() {
+        _ = ManagedSettingsEscapeHatchGuideExampleView()
+        #expect(ManagedSettingsEscapeHatchGuideExampleView.documentedPatterns.count == 3)
+        #expect(ManagedSettingsEscapeHatchGuideExampleView.documentedPatterns.contains(.splitHStack))
+        #expect(ManagedSettingsEscapeHatchGuideExampleView.documentedPatterns.contains(.twoColumnDataFlow))
+        #expect(ManagedSettingsEscapeHatchGuideExampleView.documentedPatterns.contains(.embeddedStacks))
     }
 
     @Test @MainActor
