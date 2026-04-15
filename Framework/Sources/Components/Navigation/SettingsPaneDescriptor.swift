@@ -37,23 +37,47 @@ public enum SettingsPaneSectionBuilder: Sendable {
     public static func groupedBySection<ID: Hashable & Sendable>(
         _ descriptors: [SettingsPaneDescriptor<ID>]
     ) throws -> [(section: String?, descriptors: [SettingsPaneDescriptor<ID>])] {
-        // Intentionally minimal for red phase.
-        return descriptors.isEmpty ? [] : [(section: nil, descriptors: descriptors)]
+        var seenIDs = Set<ID>()
+        var sectionOrder: [String?] = []
+        var sectionBuckets: [String?: [SettingsPaneDescriptor<ID>]] = [:]
+
+        for descriptor in descriptors {
+            let insertion = seenIDs.insert(descriptor.id)
+            guard insertion.inserted else {
+                throw SettingsPaneSectionBuilderError.duplicatePaneID(String(describing: descriptor.id))
+            }
+
+            if sectionBuckets[descriptor.section] == nil {
+                sectionOrder.append(descriptor.section)
+                sectionBuckets[descriptor.section] = []
+            }
+            sectionBuckets[descriptor.section, default: []].append(descriptor)
+        }
+
+        return sectionOrder.map { section in
+            (section: section, descriptors: sectionBuckets[section] ?? [])
+        }
     }
 
     public static func settingsSectionData<ID: Hashable & Sendable>(
         _ descriptors: [SettingsPaneDescriptor<ID>],
         unsectionedTitle: String = "Other"
     ) throws -> [SettingsSectionData] {
-        // Intentionally minimal for red phase.
-        let items = descriptors.map {
-            SettingsItemData(
-                key: String(describing: $0.id),
-                title: $0.titleKey,
-                description: $0.subtitleKey,
-                type: .button
+        let grouped = try groupedBySection(descriptors)
+
+        return grouped.map { group in
+            let items = group.descriptors.map { descriptor in
+                SettingsItemData(
+                    key: String(describing: descriptor.id),
+                    title: descriptor.titleKey,
+                    description: descriptor.subtitleKey,
+                    type: .button
+                )
+            }
+            return SettingsSectionData(
+                title: group.section ?? unsectionedTitle,
+                items: items
             )
         }
-        return [SettingsSectionData(title: unsectionedTitle, items: items)]
     }
 }
