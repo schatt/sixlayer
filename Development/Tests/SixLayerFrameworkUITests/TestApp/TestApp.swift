@@ -52,6 +52,8 @@ struct TestAppContentView: View {
     private let openLayer5Accessibility = ProcessInfo.processInfo.arguments.contains("-OpenLayer5Accessibility")
     /// When true, app opens directly to Layer 6 Cross-Platform section (launch arg -OpenLayer6Examples).
     private let openLayer6Examples = ProcessInfo.processInfo.arguments.contains("-OpenLayer6Examples")
+    /// When true, app opens to Category B detail backfill host (launch arg -OpenDetailViewCategoryB).
+    private let openDetailViewCategoryB = ProcessInfo.processInfo.arguments.contains("-OpenDetailViewCategoryB")
     /// When true, app opens to Category D OCR backfill host (launch arg -OpenOCRCategoryD).
     private let openOCRCategoryD = ProcessInfo.processInfo.arguments.contains("-OpenOCRCategoryD")
     /// When true, app opens to Issue #221 platform toolbar identifier hub (launch arg -OpenPlatformToolbarIssue221).
@@ -114,6 +116,10 @@ struct TestAppContentView: View {
             } else if openLayer6Examples {
                 NavigationStack {
                     Layer6CrossPlatformOnlyView()
+                }
+            } else if openDetailViewCategoryB {
+                NavigationStack {
+                    DetailViewCategoryBAuditView()
                 }
             } else if openOCRCategoryD {
                 NavigationStack {
