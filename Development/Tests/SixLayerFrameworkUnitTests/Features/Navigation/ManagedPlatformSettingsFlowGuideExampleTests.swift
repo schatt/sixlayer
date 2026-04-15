@@ -32,16 +32,23 @@ private enum ManagedGuideEscapeHatchPattern: String, CaseIterable, Hashable, Sen
 private enum ManagedGuideL1SidebarSelectionAdapter {
     private static let paneKeyPrefix = "pane."
 
+    private static func parsePane(from key: String) -> ManagedGuideTopPane? {
+        guard
+            key.hasPrefix(paneKeyPrefix),
+            let rawPane = key.split(separator: ".", maxSplits: 1).last
+        else {
+            return nil
+        }
+
+        return ManagedGuideTopPane(rawValue: String(rawPane))
+    }
+
     static func selectFromSidebarSettingKey(
         _ key: String,
         topLevel: inout PlatformManagedSettingsTopLevelState<ManagedGuideTopPane>,
         detailNavigation: inout PlatformManagedSettingsDetailNavigationState<ManagedGuideSubPane>
     ) {
-        guard
-            key.hasPrefix(paneKeyPrefix),
-            let rawPane = key.split(separator: ".", maxSplits: 1).last,
-            let pane = ManagedGuideTopPane(rawValue: String(rawPane))
-        else {
+        guard let pane = parsePane(from: key) else {
             return
         }
 
