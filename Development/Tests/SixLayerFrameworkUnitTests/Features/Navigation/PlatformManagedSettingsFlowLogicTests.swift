@@ -20,43 +20,51 @@ private enum DeviceTypeSettingsShellPolicyMatrix {
         var selectsFirstPaneWhenPanesNonEmpty: Bool
         var usesSplitStyleTopLevelShell: Bool
         var subPaneUsesSystemStack: Bool
+        var topLevelShellPolicy: PlatformManagedSettingsTopLevelShellPolicy
     }
 
     static let expectationsByDevice: [DeviceType: Expectation] = [
         .phone: .init(
             selectsFirstPaneWhenPanesNonEmpty: false,
             usesSplitStyleTopLevelShell: false,
-            subPaneUsesSystemStack: true
+            subPaneUsesSystemStack: true,
+            topLevelShellPolicy: .stackWithSelectionPush
         ),
         .pad: .init(
             selectsFirstPaneWhenPanesNonEmpty: true,
             usesSplitStyleTopLevelShell: true,
-            subPaneUsesSystemStack: true
+            subPaneUsesSystemStack: true,
+            topLevelShellPolicy: .splitSidebarDetail
         ),
         .mac: .init(
             selectsFirstPaneWhenPanesNonEmpty: true,
             usesSplitStyleTopLevelShell: true,
-            subPaneUsesSystemStack: true
+            subPaneUsesSystemStack: true,
+            topLevelShellPolicy: .splitSidebarDetail
         ),
         .tv: .init(
             selectsFirstPaneWhenPanesNonEmpty: false,
             usesSplitStyleTopLevelShell: false,
-            subPaneUsesSystemStack: false
+            subPaneUsesSystemStack: false,
+            topLevelShellPolicy: .unsupportedSidebarFallback
         ),
         .watch: .init(
             selectsFirstPaneWhenPanesNonEmpty: false,
             usesSplitStyleTopLevelShell: false,
-            subPaneUsesSystemStack: true
+            subPaneUsesSystemStack: true,
+            topLevelShellPolicy: .unsupportedSidebarFallback
         ),
         .car: .init(
             selectsFirstPaneWhenPanesNonEmpty: false,
             usesSplitStyleTopLevelShell: false,
-            subPaneUsesSystemStack: false
+            subPaneUsesSystemStack: false,
+            topLevelShellPolicy: .stackWithSelectionPush
         ),
         .vision: .init(
             selectsFirstPaneWhenPanesNonEmpty: false,
             usesSplitStyleTopLevelShell: false,
-            subPaneUsesSystemStack: false
+            subPaneUsesSystemStack: false,
+            topLevelShellPolicy: .unsupportedSidebarFallback
         ),
     ]
 }
@@ -110,6 +118,10 @@ struct PlatformManagedSettingsFlowLogicTests {
             #expect(
                 PlatformManagedSettingsFlowLogic.subPaneNavigationUsesSystemStack(deviceType: device)
                     == expected.subPaneUsesSystemStack
+            )
+            #expect(
+                PlatformManagedSettingsFlowLogic.topLevelSettingsShellPolicy(deviceType: device)
+                    == expected.topLevelShellPolicy
             )
         }
     }
