@@ -22,7 +22,7 @@ private enum ManagedGuideSubPane: Hashable, Sendable {
     case cleanupConfirm
 }
 
-private enum ManagedGuideEscapeHatchPattern: String, Hashable, Sendable {
+private enum ManagedGuideEscapeHatchPattern: String, CaseIterable, Hashable, Sendable {
     case splitHStack
     case twoColumnDataFlow
     case embeddedStacks
@@ -122,11 +122,7 @@ private struct ManagedSettingsEscapeHatchGuideExampleView: View {
     @State private var selectedCategory: AnyHashable? = "Data"
 
     /// Intentionally incomplete for red phase: this should include all documented patterns.
-    static let documentedPatterns: Set<ManagedGuideEscapeHatchPattern> = [
-        .splitHStack,
-        .twoColumnDataFlow,
-        .embeddedStacks
-    ]
+    static let documentedPatterns = Set(ManagedGuideEscapeHatchPattern.allCases)
 
     var body: some View {
         EmptyView()
