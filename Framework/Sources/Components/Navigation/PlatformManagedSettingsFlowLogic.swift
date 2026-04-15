@@ -19,6 +19,21 @@ public enum PlatformManagedSettingsTopLevelShellPolicy: Equatable, Sendable {
     case unsupportedSidebarFallback
 }
 
+/// Managed-flow override policy for whether detail sub-panes use a system stack.
+///
+/// Use `.systemDefault` to preserve the framework matrix in
+/// ``PlatformManagedSettingsFlowLogic/subPaneNavigationUsesSystemStack(deviceType:)``.
+public enum PlatformManagedSettingsSubPaneStackPolicyOverride: Equatable, Sendable {
+    /// Preserve framework defaults for each device type.
+    case systemDefault
+    /// Force stack navigation for all platforms.
+    case forceEnabled
+    /// Force non-stack behavior for all platforms.
+    case forceDisabled
+    /// Override only selected platforms; all others fall back to framework defaults.
+    case byDevice([DeviceType: Bool])
+}
+
 // MARK: - PlatformManagedSettingsFlowLogic
 
 /// Routing policy helpers for the default settings (master–detail) experience.
@@ -73,6 +88,32 @@ public enum PlatformManagedSettingsFlowLogic: Sendable {
     /// **watchOS** is included with phone / pad / mac: drill-down settings use stack-style navigation.
     /// **tvOS**, **CarPlay**, and **vision** use `false` when templates or non-stack detail chrome are preferred (see issue #211 matrix tests).
     public static func subPaneNavigationUsesSystemStack(deviceType: DeviceType) -> Bool {
+        subPaneNavigationUsesSystemStack(deviceType: deviceType, override: .systemDefault)
+    }
+
+    /// Whether hierarchical sub-panes inside the detail context should use a system stack, with optional
+    /// managed-flow override policy.
+    ///
+    /// - Parameters:
+    ///   - deviceType: Active platform category.
+    ///   - override: Optional policy override. `.systemDefault` preserves the framework matrix.
+    public static func subPaneNavigationUsesSystemStack(
+        deviceType: DeviceType,
+        override policyOverride: PlatformManagedSettingsSubPaneStackPolicyOverride
+    ) -> Bool {
+        switch policyOverride {
+        case .systemDefault:
+            break
+        case .forceEnabled:
+            return true
+        case .forceDisabled:
+            return false
+        case .byDevice(let overrides):
+            if let overriddenValue = overrides[deviceType] {
+                return overriddenValue
+            }
+        }
+
         switch deviceType {
         case .phone, .pad, .mac, .watch:
             return true
