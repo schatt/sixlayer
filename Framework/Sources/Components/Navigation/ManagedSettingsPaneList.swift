@@ -36,16 +36,73 @@ public struct ManagedSettingsPaneList<ID: Hashable & Sendable>: View {
     }
 
     public var body: some View {
-        let _ = navigationTitle
-        EmptyView()
+        let list = List(selection: selectionBinding()) {
+            ForEach(Array(grouped.enumerated()), id: \.offset) { _, group in
+                if let sectionTitle = group.section {
+                    Section {
+                        paneRows(group.descriptors)
+                    } header: {
+                        Text(LocalizedStringKey(sectionTitle))
+                    }
+                } else {
+                    Section {
+                        paneRows(group.descriptors)
+                    }
+                }
+            }
+        }
+
+        if let navigationTitle {
+            list.navigationTitle(navigationTitle)
+        } else {
+            list
+        }
     }
 
+    @ViewBuilder
+    private func paneRows(_ descriptors: [SettingsPaneDescriptor<ID>]) -> some View {
+        ForEach(descriptors, id: \.id) { pane in
+            paneRow(pane)
+                .tag(Optional(pane.id))
+        }
+    }
+
+    private func paneRow(_ pane: SettingsPaneDescriptor<ID>) -> some View {
+        Label {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(LocalizedStringKey(pane.titleKey))
+                if let subtitle = pane.subtitleKey {
+                    Text(LocalizedStringKey(subtitle))
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+        } icon: {
+            if let systemImage = pane.systemImage {
+                Image(systemName: systemImage)
+            } else {
+                Image(systemName: "circle.fill")
+                    .hidden()
+            }
+        }
+    }
+
+    @MainActor
     private func selectionBinding() -> Binding<ID?> {
         Binding(
             get: { state.wrappedValue.selectedTopLevel },
             set: { newValue in
-                _ = (newValue, onSelectionChange)
-                // TDD red stub: selection does not mutate state (issue #214).
+                if let onSelectionChange {
+                    onSelectionChange(newValue)
+                } else {
+                    var next = state.wrappedValue
+                    if let id = newValue {
+                        next.selectTopLevel(id)
+                    } else {
+                        next.clearTopLevelSelection()
+                    }
+                    state.wrappedValue = next
+                }
             }
         )
     }
@@ -56,10 +113,11 @@ public struct ManagedSettingsPaneList<ID: Hashable & Sendable>: View {
 extension ManagedSettingsPaneList {
     /// Total descriptor rows after section grouping (internal for `@testable` unit tests, issue #214).
     internal var testDescriptorRowCount: Int {
-        grouped.count
+        grouped.flatMap(\.descriptors).count
     }
 
     /// Exposes the same selection binding the list uses (internal for `@testable` unit tests, issue #214).
+    @MainActor
     internal var testSelectionBinding: Binding<ID?> {
         selectionBinding()
     }
