@@ -56,7 +56,7 @@ struct ManagedSettingsPaneListTests {
         #expect(list.testDescriptorRowCount == 3)
     }
 
-    @Test
+    @Test @MainActor
     func defaultSelectionBinding_updatesTopLevelState() throws {
         let descriptors: [SettingsPaneDescriptor<PaneID>] = [
             .init(id: .general, titleKey: "settings.general", section: nil),
@@ -72,7 +72,7 @@ struct ManagedSettingsPaneListTests {
         #expect(holder.state.selectedTopLevel == .privacy)
     }
 
-    @Test
+    @Test @MainActor
     func customOnSelectionChange_doesNotMutateStateByDefault() throws {
         let descriptors: [SettingsPaneDescriptor<PaneID>] = [
             .init(id: .general, titleKey: "settings.general", section: nil)
