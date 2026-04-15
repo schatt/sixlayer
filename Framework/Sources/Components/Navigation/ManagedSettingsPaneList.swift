@@ -38,17 +38,7 @@ public struct ManagedSettingsPaneList<ID: Hashable & Sendable>: View {
     public var body: some View {
         let list = List(selection: selectionBinding()) {
             ForEach(Array(grouped.enumerated()), id: \.offset) { _, group in
-                if let sectionTitle = group.section {
-                    Section {
-                        paneRows(group.descriptors)
-                    } header: {
-                        Text(LocalizedStringKey(sectionTitle))
-                    }
-                } else {
-                    Section {
-                        paneRows(group.descriptors)
-                    }
-                }
+                section(group)
             }
         }
 
@@ -56,6 +46,23 @@ public struct ManagedSettingsPaneList<ID: Hashable & Sendable>: View {
             list.navigationTitle(navigationTitle)
         } else {
             list
+        }
+    }
+
+    @ViewBuilder
+    private func section(
+        _ group: (section: String?, descriptors: [SettingsPaneDescriptor<ID>])
+    ) -> some View {
+        if let sectionTitle = group.section {
+            Section {
+                paneRows(group.descriptors)
+            } header: {
+                Text(LocalizedStringKey(sectionTitle))
+            }
+        } else {
+            Section {
+                paneRows(group.descriptors)
+            }
         }
     }
 
