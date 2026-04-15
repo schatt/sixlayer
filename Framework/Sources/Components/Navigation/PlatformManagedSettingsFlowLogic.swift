@@ -9,6 +9,16 @@
 import Foundation
 import SwiftUI
 
+/// Top-level settings shell policy for a given ``DeviceType``.
+public enum PlatformManagedSettingsTopLevelShellPolicy: Equatable, Sendable {
+    /// Sidebar + detail visible together.
+    case splitSidebarDetail
+    /// Category list pushes into detail when selected.
+    case stackWithSelectionPush
+    /// Fallback for platforms that do not use managed top-level shell routing by default.
+    case unsupportedSidebarFallback
+}
+
 // MARK: - PlatformManagedSettingsFlowLogic
 
 /// Routing policy helpers for the default settings (master–detail) experience.
@@ -41,6 +51,20 @@ public enum PlatformManagedSettingsFlowLogic: Sendable {
             return true
         case .phone, .tv, .watch, .car, .vision:
             return false
+        }
+    }
+
+    /// Explicit top-level settings shell policy for managed flow.
+    public static func topLevelSettingsShellPolicy(
+        deviceType: DeviceType
+    ) -> PlatformManagedSettingsTopLevelShellPolicy {
+        switch deviceType {
+        case .pad, .mac:
+            return .splitSidebarDetail
+        case .phone:
+            return .stackWithSelectionPush
+        case .tv, .watch, .car, .vision:
+            return .unsupportedSidebarFallback
         }
     }
 
