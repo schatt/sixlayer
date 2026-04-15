@@ -45,11 +45,14 @@ public enum PlatformManagedSettingsFlowLogic: Sendable {
     }
 
     /// Whether hierarchical sub-panes inside the detail context should use a system stack (push / pop).
+    ///
+    /// **watchOS** is included with phone / pad / mac: drill-down settings use stack-style navigation.
+    /// **tvOS**, **CarPlay**, and **vision** use `false` when templates or non-stack detail chrome are preferred (see issue #211 matrix tests).
     public static func subPaneNavigationUsesSystemStack(deviceType: DeviceType) -> Bool {
         switch deviceType {
-        case .phone, .pad, .mac:
+        case .phone, .pad, .mac, .watch:
             return true
-        case .tv, .watch, .car, .vision:
+        case .tv, .car, .vision:
             return false
         }
     }
