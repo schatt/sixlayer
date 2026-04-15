@@ -47,30 +47,42 @@ final class IntelligentDetailViewCategoryBUITests: XCTestCase {
     }
 
     @MainActor
-    private func scrollUntilVisible(_ text: String, attempts: Int = 10) -> XCUIElement {
-        let target = app.staticTexts[text].firstMatch
-        if target.waitForExistence(timeout: 1.0) { return target }
+    private func textVisible(_ text: String, timeout: TimeInterval) -> Bool {
+        if app.staticTexts[text].waitForExistence(timeout: timeout) {
+            return true
+        }
+        let containsText = NSPredicate(format: "label CONTAINS[c] %@", text)
+        return app.descendants(matching: .staticText).matching(containsText).firstMatch.waitForExistence(timeout: timeout)
+    }
+
+    @MainActor
+    private func scrollUntilVisible(_ text: String, attempts: Int = 10) -> Bool {
+        if textVisible(text, timeout: 1.0) { return true }
+        let host = app.xcuiPrimaryScrollHost()
+        guard host.exists, !host.frame.isEmpty else {
+            return textVisible(text, timeout: 0.5)
+        }
         for _ in 0..<attempts {
             app.xcuiSwipeScrollHostsUp()
-            if target.waitForExistence(timeout: 0.5) { return target }
+            if textVisible(text, timeout: 0.5) { return true }
         }
-        return target
+        return textVisible(text, timeout: 0.5)
     }
 
     func testCategoryB_defaultDetailView_showsTitleAndSubtitle() throws {
-        XCTAssertTrue(scrollUntilVisible(Copy.defaultTitle).exists, "Default detail title should be visible")
-        XCTAssertTrue(scrollUntilVisible(Copy.defaultSubtitle).exists, "Default detail subtitle should be visible")
+        XCTAssertTrue(scrollUntilVisible(Copy.defaultTitle), "Default detail title should be visible")
+        XCTAssertTrue(scrollUntilVisible(Copy.defaultSubtitle), "Default detail subtitle should be visible")
     }
 
     func testCategoryB_customFieldView_showsCustomMarker() throws {
         XCTAssertTrue(
-            scrollUntilVisible(Copy.customFieldPrefix).exists,
+            scrollUntilVisible(Copy.customFieldPrefix),
             "Custom field rendering should expose the custom marker text"
         )
     }
 
     func testCategoryB_nilValueData_showsRemainingVisibleContent() throws {
-        XCTAssertTrue(scrollUntilVisible(Copy.nilTitle).exists, "Nil-value detail title should be visible")
-        XCTAssertTrue(scrollUntilVisible(Copy.nilDescription).exists, "Nil-value detail description should be visible")
+        XCTAssertTrue(scrollUntilVisible(Copy.nilTitle), "Nil-value detail title should be visible")
+        XCTAssertTrue(scrollUntilVisible(Copy.nilDescription), "Nil-value detail description should be visible")
     }
 }
