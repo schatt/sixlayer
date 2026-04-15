@@ -16,7 +16,7 @@ final class CallbackCategoryCUITests: XCTestCase {
         static let formSubmitButton = "category-c-form-submit-button"
         static let formCancelButton = "category-c-form-cancel-button"
         static let selectionStateText = "category-c-selection-state-text"
-        static let selectionRowSecondTitle = "Category C Item 2"
+        static let selectionRowSecond = "category-c-selection-row-2"
     }
 
     var app: XCUIApplication!
@@ -68,8 +68,8 @@ final class CallbackCategoryCUITests: XCTestCase {
         XCTAssertTrue(state.waitForExistence(timeout: 4.0), "Selection callback state label should exist")
         XCTAssertEqual(state.label, "Selected item: none")
 
-        let row = app.buttons[IDs.selectionRowSecondTitle]
-        XCTAssertTrue(row.waitForExistence(timeout: 5.0), "Selection row should exist and expose tappable label")
+        let row = app.buttons[IDs.selectionRowSecond]
+        XCTAssertTrue(row.waitForExistence(timeout: 5.0), "Selection row should exist")
         row.tap()
 
         XCTAssertEqual(state.label, "Selected item: Category C Item 2")
