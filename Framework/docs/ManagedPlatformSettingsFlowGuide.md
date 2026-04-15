@@ -36,6 +36,8 @@ Managed APIs **compose with** the navigation layout resolver work (#204 / #206):
 
 SPM coverage: `PlatformManagedSettingsFlowLogicTests` (`shellPolicyMatrix_*`). Adding a `DeviceType` case should update this table, production switches, and the test matrix together.
 
+Top-level shell route policy (`PlatformManagedSettingsTopLevelShellPolicy`) is explicit: `phone`/`car` use stack-with-selection push, `pad`/`mac` use split, and `tv`/`watch`/`vision` use sidebar fallback in `platformSettingsContainer_L4` unless you take the escape hatch (`platformSettingsContainer_L4` manual wiring).
+
 Sub-pane stacks (`platformManagedSettingsDetailNavigationStack_L4`) sit **inside** the detail column (or inside the iPhone pushed detail); they do not bypass resolver output on iPad/macOS.
 
 ## Compile-time top-level panes
