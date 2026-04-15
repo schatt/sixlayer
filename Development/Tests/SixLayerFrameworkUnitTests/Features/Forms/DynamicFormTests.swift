@@ -351,6 +351,45 @@ open class DynamicFormTests: BaseTestClass {
         #expect(r.description == "D")
     }
 
+    @Test func testFormHeaderAutomaticModeSuppressesTitleWhenHostProvidesPrimaryHeading() {
+        let r = DynamicFormHeaderVisibility.resolvedInlineHeaderTexts(
+            visibility: .visible,
+            title: "Form Title",
+            description: "Context",
+            showFormTitle: true,
+            displayMode: .automatic,
+            hostProvidesPrimaryHeading: true
+        )
+        #expect(r.title == nil)
+        #expect(r.description == "Context")
+    }
+
+    @Test func testFormHeaderAlwaysModeShowsTitleEvenWhenVisibilityHidden() {
+        let r = DynamicFormHeaderVisibility.resolvedInlineHeaderTexts(
+            visibility: .hidden,
+            title: "Form Title",
+            description: "Context",
+            showFormTitle: true,
+            displayMode: .always,
+            hostProvidesPrimaryHeading: true
+        )
+        #expect(r.title == "Form Title")
+        #expect(r.description == "Context")
+    }
+
+    @Test func testFormHeaderNeverModeAlwaysSuppressesInlineHeader() {
+        let r = DynamicFormHeaderVisibility.resolvedInlineHeaderTexts(
+            visibility: .visible,
+            title: "Form Title",
+            description: "Context",
+            showFormTitle: true,
+            displayMode: .never,
+            hostProvidesPrimaryHeading: false
+        )
+        #expect(r.title == nil)
+        #expect(r.description == nil)
+    }
+
     @Test func testDynamicFormConfigurationFormHeaderVisibilityRoundTrip() {
         let hidden = DynamicFormConfiguration(
             id: "f",
@@ -359,6 +398,22 @@ open class DynamicFormTests: BaseTestClass {
             sections: []
         )
         #expect(hidden.formHeaderVisibility == .hidden)
+    }
+
+    @Test func testDynamicFormConfigurationHeaderControlsRoundTrip() {
+        let config = DynamicFormConfiguration(
+            id: "f2",
+            title: "T2",
+            showFormTitle: false,
+            headerDisplayMode: .never,
+            hostProvidesPrimaryHeading: true,
+            topContentPadding: 28,
+            sections: []
+        )
+        #expect(config.showFormTitle == false)
+        #expect(config.headerDisplayMode == .never)
+        #expect(config.hostProvidesPrimaryHeading == true)
+        #expect(config.topContentPadding == 28)
     }
     
     /// BUSINESS PURPOSE: Validate DynamicFormConfiguration helper functionality
