@@ -61,6 +61,8 @@ struct TestAppContentView: View {
     /// Deep links for XCUITest (macOS back navigation is unreliable); `-OpenPlatformToolbarIssue221Form` / `Detail`.
     private let openPlatformToolbarIssue221Form = ProcessInfo.processInfo.arguments.contains("-OpenPlatformToolbarIssue221Form")
     private let openPlatformToolbarIssue221Detail = ProcessInfo.processInfo.arguments.contains("-OpenPlatformToolbarIssue221Detail")
+    /// When true, app opens to Category C callback coverage host (launch arg -OpenCategoryCCallbacks). Issue #199.
+    private let openCategoryCCallbacks = ProcessInfo.processInfo.arguments.contains("-OpenCategoryCCallbacks")
     
     enum TestView: String, CaseIterable, Identifiable {
         case control = "Control Test"
@@ -136,6 +138,10 @@ struct TestAppContentView: View {
             } else if openPlatformToolbarIssue221 {
                 NavigationStack {
                     PlatformToolbarIssue221HubView(onBackToMain: nil)
+                }
+            } else if openCategoryCCallbacks {
+                NavigationStack {
+                    CategoryCCallbackTestView()
                 }
             } else {
                 NavigationStack {
