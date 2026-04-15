@@ -42,6 +42,7 @@ Patch release following **v7.5.12**. Adds **Layer 4 modal sheet navigation chrom
 
 - **Sheets with toolbars (iOS)**: Prefer `platformModalSheetNavigationChrome_L4` (or keep manual `platformNavigation_L4`) so Done/Apply appears in the nav bar.
 - **Dynamic forms + `navigationTitle`**: Set `formHeaderVisibility: .hidden` when the bar owns the headline; use `description: nil` (not `""`) for no subtitle when the inline header is visible.
+- **Managed settings adoption**: For migration from manual `selectedCategory` wiring to the managed shell, use `PlatformManagedSettingsTopLevelState` with `platformManagedSettingsTopLevel_L4` and follow the guide: [ManagedPlatformSettingsFlowGuide.md](../Framework/docs/ManagedPlatformSettingsFlowGuide.md). For a compile-checked composition example (including Layer 1 sidebar usage), see `Development/Tests/SixLayerFrameworkUnitTests/Features/Navigation/ManagedPlatformSettingsFlowGuideExampleTests.swift`.
 
 ---
 
