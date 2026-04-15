@@ -329,9 +329,11 @@ public func diagnosticsReportedAccessibilityElementCounts(inHosted root: Any?, t
     var maxCount = 0
     var maxSummary = ""
     var heavy: [(String, Int)] = []
+    var containerResponders = 0
 
     func consider(_ view: UIView) {
         guard view.responds(to: countSel), let countResult = view.perform(countSel) else { return }
+        containerResponders += 1
         let n = intFromObjCPerformResult(countResult.takeUnretainedValue())
         if n > maxCount {
             maxCount = n
@@ -355,7 +357,7 @@ public func diagnosticsReportedAccessibilityElementCounts(inHosted root: Any?, t
 
     heavy.sort { $0.1 > $1.1 }
     let topLines = heavy.prefix(12).map { "\($0.1): \($0.0)" }.joined(separator: "\n")
-    var out = "max reported accessibilityElementCount=\(maxCount) (\(maxSummary))\n"
+    var out = "UIView instances responding to accessibilityElementCount=\(containerResponders); max reported count=\(maxCount) (\(maxSummary))\n"
     if heavy.isEmpty {
         out += "no views with count >= \(threshold)"
     } else {
