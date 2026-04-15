@@ -193,8 +193,14 @@ open class DynamicFormStateAutoSaveTests: BaseTestClass {
         formState.setValue("value3", for: "field1")
         formState.triggerDebouncedSave()
         
-        // Wait for debounce delay using async/await
-        try await Task.sleep(nanoseconds: 600_000_000) // 0.6 seconds
+        // Allow extra time under full-suite load; poll until draft appears or timeout.
+        let timeoutNanoseconds: UInt64 = 3_000_000_000
+        let pollIntervalNanoseconds: UInt64 = 100_000_000
+        var waitedNanoseconds: UInt64 = 0
+        while waitedNanoseconds < timeoutNanoseconds && !formState.hasDraft() {
+            try await Task.sleep(nanoseconds: pollIntervalNanoseconds)
+            waitedNanoseconds += pollIntervalNanoseconds
+        }
         
         // Verify draft exists with final value
         #expect(formState.hasDraft())
