@@ -79,6 +79,31 @@ Top-level shell route policy (`PlatformManagedSettingsTopLevelShellPolicy`) is e
 
 Sub-pane stacks (`platformManagedSettingsDetailNavigationStack_L4`) sit **inside** the detail column (or inside the iPhone pushed detail); they do not bypass resolver output on iPad/macOS.
 
+### Sub-pane stack override (Issue #225)
+
+Managed flow now supports a first-class override policy for sub-pane stack behavior:
+
+- `PlatformManagedSettingsSubPaneStackPolicyOverride.systemDefault` (default matrix behavior)
+- `PlatformManagedSettingsSubPaneStackPolicyOverride.forceEnabled`
+- `PlatformManagedSettingsSubPaneStackPolicyOverride.forceDisabled`
+- `PlatformManagedSettingsSubPaneStackPolicyOverride.byDevice([DeviceType: Bool])`
+
+Resolve policy with:
+
+```swift
+let usesStack = PlatformManagedSettingsFlowLogic.subPaneNavigationUsesSystemStack(
+    deviceType: DeviceType.current,
+    override: .byDevice([
+        .car: true,   // opt into stack drill-down on CarPlay
+        .vision: true // opt into stack drill-down on vision
+    ])
+)
+```
+
+Trade-off:
+- Prefer `.systemDefault` unless you have a product-specific navigation contract that requires different sub-pane depth behavior on selected platforms.
+- Use `.byDevice` for narrow, explicit exceptions instead of forcing all platforms with `.forceEnabled` / `.forceDisabled`.
+
 ## Compile-time top-level panes
 
 Define a `Hashable` enum (`CaseIterable` for a static list in source order) and use:
