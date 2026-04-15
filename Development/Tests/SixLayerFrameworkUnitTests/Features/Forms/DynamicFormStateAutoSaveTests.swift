@@ -28,6 +28,16 @@ import Foundation
 /// NOTE: Not marked @MainActor on class to allow parallel execution
 @Suite("DynamicFormState Auto-Save")
 open class DynamicFormStateAutoSaveTests: BaseTestClass {
+    private func makeIsolatedDefaultsSuite() -> (defaults: UserDefaults, suiteName: String) {
+        let suiteName = "test_form_autosave_\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suiteName)!
+        defaults.removePersistentDomain(forName: suiteName)
+        return (defaults, suiteName)
+    }
+
+    private func cleanupDefaultsSuite(_ suiteName: String, defaults: UserDefaults) {
+        defaults.removePersistentDomain(forName: suiteName)
+    }
     
     // MARK: - Auto-Save Timer Tests
     
@@ -78,8 +88,7 @@ open class DynamicFormStateAutoSaveTests: BaseTestClass {
     /// TESTING SCOPE: Tests that form state can be saved as draft
     /// METHODOLOGY: Set field values, save draft, verify it exists
     @Test @MainActor func testSaveDraft() {
-        let testDefaults = UserDefaults(suiteName: "test_form_autosave")!
-        testDefaults.removePersistentDomain(forName: "test_form_autosave")
+        let (testDefaults, suiteName) = makeIsolatedDefaultsSuite()
         
         let storage = UserDefaultsFormStateStorage(userDefaults: testDefaults)
         let config = DynamicFormConfiguration(
@@ -96,15 +105,14 @@ open class DynamicFormStateAutoSaveTests: BaseTestClass {
         
         #expect(formState.hasDraft())
         
-        testDefaults.removePersistentDomain(forName: "test_form_autosave")
+        cleanupDefaultsSuite(suiteName, defaults: testDefaults)
     }
     
     /// BUSINESS PURPOSE: Validate draft load functionality
     /// TESTING SCOPE: Tests that saved draft can be loaded
     /// METHODOLOGY: Save draft, clear state, load draft, verify values restored
     @Test @MainActor func testLoadDraft() {
-        let testDefaults = UserDefaults(suiteName: "test_form_autosave")!
-        testDefaults.removePersistentDomain(forName: "test_form_autosave")
+        let (testDefaults, suiteName) = makeIsolatedDefaultsSuite()
         
         let storage = UserDefaultsFormStateStorage(userDefaults: testDefaults)
         let config = DynamicFormConfiguration(
@@ -131,15 +139,14 @@ open class DynamicFormStateAutoSaveTests: BaseTestClass {
         #expect(formState.getValue(for: "name") as String? == "Jane")
         #expect(formState.getValue(for: "age") as Int? == 25)
         
-        testDefaults.removePersistentDomain(forName: "test_form_autosave")
+        cleanupDefaultsSuite(suiteName, defaults: testDefaults)
     }
     
     /// BUSINESS PURPOSE: Validate draft clear functionality
     /// TESTING SCOPE: Tests that draft can be cleared
     /// METHODOLOGY: Save draft, clear it, verify it no longer exists
     @Test @MainActor func testClearDraft() {
-        let testDefaults = UserDefaults(suiteName: "test_form_autosave")!
-        testDefaults.removePersistentDomain(forName: "test_form_autosave")
+        let (testDefaults, suiteName) = makeIsolatedDefaultsSuite()
         
         let storage = UserDefaultsFormStateStorage(userDefaults: testDefaults)
         let config = DynamicFormConfiguration(
@@ -156,7 +163,7 @@ open class DynamicFormStateAutoSaveTests: BaseTestClass {
         formState.clearDraft()
         #expect(!formState.hasDraft())
         
-        testDefaults.removePersistentDomain(forName: "test_form_autosave")
+        cleanupDefaultsSuite(suiteName, defaults: testDefaults)
     }
     
     // MARK: - Debounced Save Tests
@@ -165,8 +172,7 @@ open class DynamicFormStateAutoSaveTests: BaseTestClass {
     /// TESTING SCOPE: Tests that debounced save is triggered on field changes
     /// METHODOLOGY: Trigger debounced save multiple times, verify only one save occurs after delay
     @Test @MainActor func testDebouncedSave() async throws {
-        let testDefaults = UserDefaults(suiteName: "test_form_autosave")!
-        testDefaults.removePersistentDomain(forName: "test_form_autosave")
+        let (testDefaults, suiteName) = makeIsolatedDefaultsSuite()
         
         let storage = UserDefaultsFormStateStorage(userDefaults: testDefaults)
         let config = DynamicFormConfiguration(
@@ -196,7 +202,7 @@ open class DynamicFormStateAutoSaveTests: BaseTestClass {
         let values = draft?.toFieldValues()
         #expect(values?["field1"] as? String == "value3")
         
-        testDefaults.removePersistentDomain(forName: "test_form_autosave")
+        cleanupDefaultsSuite(suiteName, defaults: testDefaults)
     }
     
     // MARK: - Configuration Tests
@@ -205,8 +211,7 @@ open class DynamicFormStateAutoSaveTests: BaseTestClass {
     /// TESTING SCOPE: Tests that auto-save can be disabled via configuration
     /// METHODOLOGY: Disable auto-save, verify timer doesn't start but manual operations work
     @Test @MainActor func testAutoSaveCanBeDisabled() {
-        let testDefaults = UserDefaults(suiteName: "test_form_autosave")!
-        testDefaults.removePersistentDomain(forName: "test_form_autosave")
+        let (testDefaults, suiteName) = makeIsolatedDefaultsSuite()
         
         let storage = UserDefaultsFormStateStorage(userDefaults: testDefaults)
         let config = DynamicFormConfiguration(
@@ -232,7 +237,7 @@ open class DynamicFormStateAutoSaveTests: BaseTestClass {
         // This is by design - when auto-save is disabled, all auto-save operations are disabled
         #expect(formState.autoSaveEnabled == false)
         
-        testDefaults.removePersistentDomain(forName: "test_form_autosave")
+        cleanupDefaultsSuite(suiteName, defaults: testDefaults)
     }
     
     /// BUSINESS PURPOSE: Validate auto-save interval is configurable
