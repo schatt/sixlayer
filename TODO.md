@@ -12,6 +12,7 @@
   - [ ] **#231** Add consumer-style iOS/macOS smoke tests for navigator
 - [x] **#211** DeviceType settings shell policy: matrix tests + watch sub-pane stack policy + guide table + explicit `PlatformManagedSettingsTopLevelShellPolicy` routing in `platformSettingsContainer_L4` (no silent iOS default fallthrough for `.car`)
 - [x] **#212** Document L1 sidebar + `platformManagedSettingsTopLevel_L4` composition with strict TDD (red evidence comment posted; guide + compile-checked example updated)
+- [x] **#215** CHANGELOG / release notes for managed settings migration retargeted to `v7.6.0` (`CHANGELOG.md`, `Development/RELEASE_v7.6.0.md`, `Development/RELEASES.md`)
 - [ ] **#225** Add managed settings sub-pane stack policy override (keep defaults, add explicit escape hatch without dropping to full manual shell)
 - [x] **#224** Dynamic form inline header: `DynamicFormHeaderVisibility` + strict TDD (unit + ViewInspector); branch `b7.5.13` (issue commented)
 - [x] Tart VM scripts (CarManager-style) in `Development/scripts/vm/` for macOS UI tests off-host (`vm_test.sh test-ui-macos`)
