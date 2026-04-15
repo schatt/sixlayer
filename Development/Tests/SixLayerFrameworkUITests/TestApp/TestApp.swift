@@ -380,15 +380,19 @@ struct OCRCategoryDAuditView: View {
                         result: overlayResult,
                         configuration: OCROverlayConfiguration()
                     )
-                    Button("Done Overlay") {
-                        overlayState = "Overlay state: dismissed"
-                        showOverlay = false
-                    }
-                    .accessibilityIdentifier("category-d-overlay-done")
                 }
                 .padding()
                 .navigationTitle("Category D Overlay")
                 .platformNavigationTitleDisplayMode_L4(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button("Done Overlay") {
+                            overlayState = "Overlay state: dismissed"
+                            showOverlay = false
+                        }
+                        .accessibilityIdentifier("category-d-overlay-done")
+                    }
+                }
             }
         }
         .platformFrame()
