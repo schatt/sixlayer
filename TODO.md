@@ -36,6 +36,7 @@
 - [x] **#198** Category B UI backfill: `-OpenDetailViewCategoryB` TestApp host + XCUITests covering IntelligentDetailView default content, custom-field rendering text, and nil-value visible content
 - [x] **#199** Category C UI backfill: TestApp callback host (`-OpenCategoryCCallbacks`) + strict TDD MCP runs (red evidence posted; green + post-refactor passing)
 - [x] **#200** Category D OCR UI backfill: dedicated TestApp OCR flow screen + UI tests for disambiguation alternatives, selection result reflection, and overlay presentation outcome
+- [ ] **#201** Category E UI backfill: `-OpenCategoryEOneOffs` host + strict TDD for explicit-enable/opt-out tests complete; clipboard + odometer rows pending
 - [x] Fix `ModalContainerTests.swift` missing closing brace (build error)
 - [x] Fix Swift 6 actor-isolation errors in `DynamicFormTests.swift`
 - [x] Fix Swift 6 actor-isolation errors in `LabeledContentDisplayFieldTests.swift`
