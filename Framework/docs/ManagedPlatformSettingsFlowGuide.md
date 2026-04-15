@@ -133,6 +133,69 @@ If you also manage sub-pane stacks, pass `onSelectionChange` and call
 `PlatformManagedSettingsFlowLogic.selectTopLevelPane(_:topLevel:detailNavigation:)` so depth resets when
 the top-level pane changes.
 
+## Layer 1 sidebar + managed top-level shell (Issue #212)
+
+Adopters can keep a **Layer 1** settings-style sidebar and still use the managed outer shell.
+The key is to treat `PlatformManagedSettingsTopLevelState` as the **single source of truth** for
+top-level selection, then adapt Layer 1 callbacks into that state.
+
+```swift
+@State private var topLevel = PlatformManagedSettingsTopLevelState<MyTopPane>(deviceType: DeviceType.current)
+@State private var detailNav = PlatformManagedSettingsDetailNavigationState<MySubPane>()
+
+private var sidebarSections: [SettingsSectionData] {
+    [
+        SettingsSectionData(
+            title: "Settings",
+            items: MyTopPane.allCases.map { pane in
+                SettingsItemData(
+                    key: "pane.\(pane.rawValue)",
+                    title: pane.rawValue.capitalized,
+                    type: .button
+                )
+            }
+        )
+    ]
+}
+
+private func selectFromL1SidebarKey(_ key: String) {
+    guard
+        key.hasPrefix("pane."),
+        let raw = key.split(separator: ".", maxSplits: 1).last,
+        let pane = MyTopPane(rawValue: String(raw))
+    else { return }
+
+    PlatformManagedSettingsFlowLogic.selectTopLevelPane(
+        pane,
+        topLevel: &topLevel,
+        detailNavigation: &detailNav
+    )
+}
+
+EmptyView()
+    .platformManagedSettingsTopLevel_L4(
+        state: $topLevel,
+        sidebar: {
+            platformPresentSettings_L1(
+                settings: sidebarSections,
+                hints: PresentationHints(),
+                onSettingChanged: { key, _ in selectFromL1SidebarKey(key) }
+            )
+        },
+        detail: { detailView }
+    )
+```
+
+Do:
+- Keep top-level ownership in `PlatformManagedSettingsTopLevelState`.
+- Use `PlatformManagedSettingsFlowLogic.selectTopLevelPane` when a sidebar row maps to a pane.
+- Reset detail stack depth on pane switch by passing `detailNavigation` to the flow helper.
+
+Don't:
+- Keep a second independent top-level selection state (`@State selectedPane` + managed state) in parallel.
+- Mutate both `selectedCategory` and managed state manually in separate callback paths.
+- Skip key validation when mapping string keys from Layer 1 callbacks to typed pane enums.
+
 ## Sub-panes (detail stack)
 
 1. Hold stack state: `@State private var detailNav = PlatformManagedSettingsDetailNavigationState<SubPaneID>()`.
