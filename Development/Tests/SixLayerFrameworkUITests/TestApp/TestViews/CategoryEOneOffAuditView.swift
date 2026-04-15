@@ -53,7 +53,6 @@ struct CategoryEOneOffAuditView: View {
                     let config = AccessibilityIdentifierConfig.shared
                     config.enableDebugLogging = true
                     config.clearDebugLog()
-                    config.addDebugLogEntry("Generated ID: SixLayer.category-e.clipboard.button for: category-e")
                     config.generateUITestCodeToClipboard()
 
                     let clipboardText = readClipboardText() ?? ""
