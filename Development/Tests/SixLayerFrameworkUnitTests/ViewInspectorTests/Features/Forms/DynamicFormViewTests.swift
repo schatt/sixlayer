@@ -151,6 +151,40 @@ open class DynamicFormViewTests: BaseTestClass {
         #endif
     }
 
+    /// Issue #235: Explicit configuration should suppress inline heading in automatic mode.
+    @Test @MainActor func testDynamicFormViewAutomaticHeaderSuppressesInlineTitleFromConfigurationFlag() async {
+        initializeTestConfig()
+        let uniqueFormTitle = "SixLayer_Issue235_ConfigFlag_Title"
+        let sectionTitle = "SixLayer_Issue235_ConfigFlag_Section"
+        let section = DynamicFormSection(
+            id: "s235-config",
+            title: sectionTitle,
+            fields: [
+                DynamicFormField(id: "f235-config", contentType: .text, label: "Field Label 235 Config")
+            ]
+        )
+        let configuration = DynamicFormConfiguration(
+            id: "form235-config",
+            title: uniqueFormTitle,
+            description: "Config-flag subtitle",
+            headerDisplayMode: .automatic,
+            hostProvidesPrimaryHeading: true,
+            sections: [section],
+            submitButtonText: "Submit235Config"
+        )
+        let view = DynamicFormView(configuration: configuration, onSubmit: { _ in })
+        #if canImport(ViewInspector)
+        withInspectedView(view) { inspected in
+            let allTexts = inspected.findAll(ViewInspector.ViewType.Text.self)
+            let strings = allTexts.compactMap { try? $0.string() }
+            #expect(strings.contains(sectionTitle), "Section title should still be present")
+            #expect(!strings.contains(uniqueFormTitle), "Inline form title must be suppressed when hostProvidesPrimaryHeading is true")
+        }
+        #else
+        #expect(Bool(true), "View created (ViewInspector not available)")
+        #endif
+    }
+
     @Test @MainActor func testDynamicFormSectionViewRendersSectionTitleAndFields() async {
         initializeTestConfig()
         // TDD: DynamicFormSectionView should render:
