@@ -14,6 +14,8 @@ final class AccessibilityIdentifierCategoryEUITests: XCTestCase {
         static let hostTitle = "Category E One-Off Coverage"
         static let explicitEnableRow = "category-e-explicit-enable-row"
         static let optOutRow = "category-e-opt-out-row"
+        static let clipboardTriggerButton = "category-e-clipboard-generate-button"
+        static let clipboardStateLabel = "category-e-clipboard-state-label"
     }
 
     var app: XCUIApplication!
@@ -56,5 +58,15 @@ final class AccessibilityIdentifierCategoryEUITests: XCTestCase {
             app.descendants(matching: .any)[IDs.optOutRow].exists,
             "Opt-out row should not expose the suppressed automatic identifier"
         )
+    }
+
+    func testCategoryE_clipboardGeneration_updatesVisibleResultState() throws {
+        let trigger = app.buttons[IDs.clipboardTriggerButton]
+        XCTAssertTrue(trigger.waitForExistence(timeout: 4.0), "Clipboard generation trigger should exist")
+        trigger.tap()
+
+        let state = app.staticTexts[IDs.clipboardStateLabel]
+        XCTAssertTrue(state.waitForExistence(timeout: 4.0), "Clipboard state label should exist")
+        XCTAssertEqual(state.label, "Clipboard state: generated")
     }
 }
