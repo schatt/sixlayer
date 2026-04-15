@@ -319,6 +319,50 @@ private func firstAccessibilityLabelFromElements(_ elements: [Any]?) -> String? 
     }
     return nil
 }
+
+/// Walks the same bounded UIView tree as hosted accessibility helpers and reports the largest
+/// `accessibilityElementCount` from the UIAccessibilityContainer-style API (diagnostics for #232).
+@MainActor
+public func diagnosticsReportedAccessibilityElementCounts(inHosted root: Any?, threshold: Int = 256) -> String {
+    guard let rootView = root as? UIView else { return "root is not a UIView" }
+    let countSel = NSSelectorFromString("accessibilityElementCount")
+    var maxCount = 0
+    var maxSummary = ""
+    var heavy: [(String, Int)] = []
+
+    func consider(_ view: UIView) {
+        guard view.responds(to: countSel), let countResult = view.perform(countSel) else { return }
+        let n = intFromObjCPerformResult(countResult.takeUnretainedValue())
+        if n > maxCount {
+            maxCount = n
+            maxSummary = "\(type(of: view)) frame=\(view.frame)"
+        }
+        if n >= threshold {
+            heavy.append(("\(type(of: view)) frame=\(view.frame)", n))
+        }
+    }
+
+    consider(rootView)
+    var stack: [UIView] = rootView.subviews
+    var checked: Set<ObjectIdentifier> = []
+    var visits = 0
+    while let next = stack.popLast(), visits < 500 {
+        visits += 1
+        guard checked.insert(ObjectIdentifier(next)).inserted else { continue }
+        consider(next)
+        stack.append(contentsOf: next.subviews.prefix(80))
+    }
+
+    heavy.sort { $0.1 > $1.1 }
+    let topLines = heavy.prefix(12).map { "\($0.1): \($0.0)" }.joined(separator: "\n")
+    var out = "max reported accessibilityElementCount=\(maxCount) (\(maxSummary))\n"
+    if heavy.isEmpty {
+        out += "no views with count >= \(threshold)"
+    } else {
+        out += "views with count >= \(threshold) (up to 12, sorted desc):\n\(topLines)"
+    }
+    return out
+}
 #endif
 
 /// Depth-first search for the first non-empty accessibility identifier in the platform view hierarchy.
