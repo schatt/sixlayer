@@ -223,9 +223,23 @@ public func getAccessibilityLabelForTest<V: View>(view: V, hostedRoot: Any? = ni
 private let maxAccessibilityContainerEnumerationCount = 256
 
 @MainActor
-private func boundedAccessibilityElementCount(_ raw: Int) -> Int {
-    guard raw > 0 else { return 0 }
-    return min(raw, maxAccessibilityContainerEnumerationCount)
+private func boundedAccessibilityContainerIndices(_ rawCount: Int) -> [Int] {
+    guard rawCount > 0 else { return [] }
+    if rawCount <= maxAccessibilityContainerEnumerationCount {
+        return Array(0 ..< rawCount)
+    }
+
+    // Large SwiftUI-hosted containers can report huge counts. Scan a bounded head+tail
+    // window so we keep runtime predictable while still seeing late-index toolbar items.
+    let tailCount = maxAccessibilityContainerEnumerationCount / 2
+    let headCount = maxAccessibilityContainerEnumerationCount - tailCount
+    let tailStart = max(rawCount - tailCount, headCount)
+
+    var indices: [Int] = Array(0 ..< headCount)
+    if tailStart < rawCount {
+        indices.append(contentsOf: tailStart ..< rawCount)
+    }
+    return indices
 }
 
 /// Integer from ObjC `perform` return value (`NSNumber` is typical for `accessibilityElementCount`).
@@ -271,9 +285,8 @@ private func firstAccessibilityIdentifierFromAccessibilityContainer(_ view: UIVi
           let countResult = view.perform(countSel) else {
         return nil
     }
-    let n = boundedAccessibilityElementCount(intFromObjCPerformResult(countResult.takeUnretainedValue()))
-    guard n > 0 else { return nil }
-    for i in 0 ..< n {
+    let count = intFromObjCPerformResult(countResult.takeUnretainedValue())
+    for i in boundedAccessibilityContainerIndices(count) {
         let atResult = view.perform(atSel, with: i)
         if let id = accessibilityIdentifierFromAccessibilityContainerChild(atResult?.takeUnretainedValue()) {
             return id
@@ -480,8 +493,8 @@ public func hostedViewHasAccessibilityElementWithLabelAndButtonTrait(root: Any?,
         let atSel = NSSelectorFromString("accessibilityElementAtIndex:")
         if view.responds(to: countSel), view.responds(to: atSel),
            let countResult = view.perform(countSel) {
-            let n = boundedAccessibilityElementCount(intFromObjCPerformResult(countResult.takeUnretainedValue()))
-            for i in 0 ..< n {
+            let count = intFromObjCPerformResult(countResult.takeUnretainedValue())
+            for i in boundedAccessibilityContainerIndices(count) {
                 let atResult = view.perform(atSel, with: i)
                 let raw = atResult?.takeUnretainedValue()
                 if let el = raw as? UIAccessibilityElement, checkElement(el) {
@@ -533,13 +546,11 @@ public func findAllAccessibilityIdentifiersFromPlatformView(_ root: Any?) -> [St
         let atSel = NSSelectorFromString("accessibilityElementAtIndex:")
         if view.responds(to: countSel), view.responds(to: atSel),
            let countResult = view.perform(countSel) {
-            let n = boundedAccessibilityElementCount(intFromObjCPerformResult(countResult.takeUnretainedValue()))
-            if n > 0 {
-                for i in 0 ..< n {
-                    let atResult = view.perform(atSel, with: i)
-                    if let id = accessibilityIdentifierFromAccessibilityContainerChild(atResult?.takeUnretainedValue()) {
-                        identifiers.insert(id)
-                    }
+            let count = intFromObjCPerformResult(countResult.takeUnretainedValue())
+            for i in boundedAccessibilityContainerIndices(count) {
+                let atResult = view.perform(atSel, with: i)
+                if let id = accessibilityIdentifierFromAccessibilityContainerChild(atResult?.takeUnretainedValue()) {
+                    identifiers.insert(id)
                 }
             }
         }
