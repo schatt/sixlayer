@@ -61,9 +61,9 @@ public enum PlatformManagedSettingsFlowLogic: Sendable {
         switch deviceType {
         case .pad, .mac:
             return .splitSidebarDetail
-        case .phone:
+        case .phone, .car:
             return .stackWithSelectionPush
-        case .tv, .watch, .car, .vision:
+        case .tv, .watch, .vision:
             return .unsupportedSidebarFallback
         }
     }
