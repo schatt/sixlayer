@@ -4,6 +4,7 @@
 
 ## Current
 
+- [ ] **#232** `b7.6.0` release: verify iOS ViewInspector modal sheet chrome tests after capping `accessibilityElementCount` enumeration in `AccessibilityTestUtilities.swift` (avoids main-thread hang in `hostedViewHasAccessibilityElementWithLabelAndButtonTrait`)
 - [ ] **#233** Epic: Run full test suite for every platform (unit/view/ui)
   - [ ] Build platform x layer matrix from existing schemes/targets (macOS, iOS, watchOS, tvOS, visionOS)
   - [ ] macOS: run Unit tests
