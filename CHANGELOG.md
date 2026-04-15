@@ -1,5 +1,12 @@
 # Changelog
 
+## v7.5.13 - Managed settings migration documentation
+
+### 📚 Documentation
+- Added release-facing managed settings migration notes for adopters moving from manual `selectedCategory` state.
+- Linked managed top-level flow guidance: `Framework/docs/ManagedPlatformSettingsFlowGuide.md`.
+- Added compile-checked example reference: `Development/Tests/SixLayerFrameworkUnitTests/Features/Navigation/ManagedPlatformSettingsFlowGuideExampleTests.swift`.
+
 ## v5.5.0 - SwiftUI Map Support
 
 ### 🎉 Major Features
