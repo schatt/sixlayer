@@ -4,7 +4,12 @@
 
 ## Current
 
-- [ ] **#226** Outline and track a consumer-facing `SixLayerUITestNavigator` contract (stable screen selectors + reusable navigation helpers in `SixLayerTestKit`)
+- [ ] **#226** Consumer-facing `SixLayerUITestNavigator` contract (stable screen selectors + reusable navigation helpers in `SixLayerTestKit`)
+  - [ ] **#227** Define public UI test navigation contract types
+  - [ ] **#228** Implement cross-platform contract element resolver
+  - [ ] **#229** Add `SixLayerUITestNavigator` core primitives
+  - [ ] **#230** Add optional contract assertion helpers and docs
+  - [ ] **#231** Add consumer-style iOS/macOS smoke tests for navigator
 - [x] **#211** DeviceType settings shell policy: matrix tests + watch sub-pane stack policy + guide table + explicit `PlatformManagedSettingsTopLevelShellPolicy` routing in `platformSettingsContainer_L4` (no silent iOS default fallthrough for `.car`)
 - [ ] **#225** Add managed settings sub-pane stack policy override (keep defaults, add explicit escape hatch without dropping to full manual shell)
 - [x] **#224** Dynamic form inline header: `DynamicFormHeaderVisibility` + strict TDD (unit + ViewInspector); branch `b7.5.13` (issue commented)
@@ -27,6 +32,7 @@
 - [x] **#197** (slice) Global-off audit (`-CategoryAGlobalAutoOff`), empty identifierName row + UI tests
 - [x] **#197** Checklist: canonical 83 resolutions filled; 662-row Consolidated dedup in VIEWINSPECTOR_CATEGORY_A_CONSOLIDATED_DEDUP.md + generator script (close #197 on branch when ready)
 - [x] **#198** Category B UI backfill: `-OpenDetailViewCategoryB` TestApp host + XCUITests covering IntelligentDetailView default content, custom-field rendering text, and nil-value visible content
+- [x] **#199** Category C UI backfill: TestApp callback host (`-OpenCategoryCCallbacks`) + strict TDD MCP runs (red evidence posted; green + post-refactor passing)
 - [x] **#200** Category D OCR UI backfill: dedicated TestApp OCR flow screen + UI tests for disambiguation alternatives, selection result reflection, and overlay presentation outcome
 - [x] Fix `ModalContainerTests.swift` missing closing brace (build error)
 - [x] Fix Swift 6 actor-isolation errors in `DynamicFormTests.swift`
