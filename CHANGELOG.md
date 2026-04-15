@@ -1,6 +1,6 @@
 # Changelog
 
-## v7.5.13 - Managed settings migration documentation
+## v7.6.0 - Managed settings migration documentation
 
 ### 📚 Documentation
 - Added release-facing managed settings migration notes for adopters moving from manual `selectedCategory` state.
