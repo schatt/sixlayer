@@ -228,6 +228,22 @@ struct DynamicFormViewInner: View {
         return trimmed.isEmpty ? nil : trimmed
     }
 
+    /// Compatibility fallback so existing consumers can opt into automatic suppression through metadata.
+    private var hostProvidesPrimaryHeading: Bool {
+        if configuration.hostProvidesPrimaryHeading {
+            return true
+        }
+        guard let raw = configuration.metadata?["hostProvidesPrimaryHeading"] else {
+            return false
+        }
+        switch raw.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() {
+        case "1", "true", "yes", "y":
+            return true
+        default:
+            return false
+        }
+    }
+
     #if canImport(CoreData)
     @Environment(\.managedObjectContext) private var managedObjectContext
     #endif
@@ -243,7 +259,10 @@ struct DynamicFormViewInner: View {
         let headerTexts = DynamicFormHeaderVisibility.resolvedInlineHeaderTexts(
             visibility: configuration.formHeaderVisibility,
             title: configuration.title,
-            description: configuration.description
+            description: configuration.description,
+            showFormTitle: configuration.showFormTitle,
+            displayMode: configuration.headerDisplayMode,
+            hostProvidesPrimaryHeading: hostProvidesPrimaryHeading
         )
         if headerTexts.title != nil || headerTexts.description != nil {
             if let titleText = headerTexts.title {
@@ -360,7 +379,9 @@ struct DynamicFormViewInner: View {
                 )
             }
             .environment(\.dynamicFormLocalizationNamespace, formLocalizationNamespace)
-            .padding()
+            .padding(.horizontal)
+            .padding(.bottom)
+            .padding(.top, max(0, configuration.topContentPadding))
             .environment(\.accessibilityIdentifierLabel, configuration.title) // TDD GREEN: Pass label to identifier generation
             .automaticCompliance(
                 identifierName: sanitizeLabelText(configuration.title)  // Auto-generate identifierName from form title
