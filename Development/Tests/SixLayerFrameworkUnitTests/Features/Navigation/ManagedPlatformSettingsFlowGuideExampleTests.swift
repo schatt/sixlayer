@@ -22,6 +22,19 @@ private enum ManagedGuideSubPane: Hashable, Sendable {
     case cleanupConfirm
 }
 
+/// Example adapter for wiring a Layer 1 settings sidebar to managed top-level state.
+private enum ManagedGuideL1SidebarSelectionAdapter {
+    static func selectFromSidebarSettingKey(
+        _ key: String,
+        topLevel: inout PlatformManagedSettingsTopLevelState<ManagedGuideTopPane>,
+        detailNavigation: inout PlatformManagedSettingsDetailNavigationState<ManagedGuideSubPane>
+    ) {
+        _ = key
+        _ = topLevel
+        _ = detailNavigation
+    }
+}
+
 /// Mirrors the migration guide: managed top-level + detail `NavigationStack` for sub-panes.
 private struct ManagedSettingsGuideExampleView: View {
     @State private var columnVisibility = NavigationSplitViewVisibility.automatic
@@ -102,5 +115,24 @@ struct ManagedPlatformSettingsFlowGuideExampleTests {
     @Test @MainActor
     func managedSettingsGuideExample_builds() {
         _ = ManagedSettingsGuideExampleView()
+    }
+
+    @Test @MainActor
+    func l1SidebarSelection_wiresToManagedTopLevelState_andResetsDetailPath() {
+        var topLevel = PlatformManagedSettingsTopLevelState<ManagedGuideTopPane>(
+            orderedTopLevelPaneIDs: ManagedGuideTopPane.allCases,
+            deviceType: .phone
+        )
+        var detailNav = PlatformManagedSettingsDetailNavigationState<ManagedGuideSubPane>()
+        detailNav.push(.cleanup)
+
+        ManagedGuideL1SidebarSelectionAdapter.selectFromSidebarSettingKey(
+            "pane.data",
+            topLevel: &topLevel,
+            detailNavigation: &detailNav
+        )
+
+        #expect(topLevel.selectedTopLevel == .data)
+        #expect(detailNav.path.isEmpty)
     }
 }
