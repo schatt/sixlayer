@@ -292,6 +292,11 @@ open class AccessibilityPreferenceTests: BaseTestClass {
     
     /// Tests that accessibility features are available on current platform
     @Test @MainActor func testAccessibilityFeaturesAvailability() {
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        RuntimeCapabilityDetection.setTestVoiceOver(true)
+        RuntimeCapabilityDetection.setTestSwitchControl(true)
+        defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
+
         // Get platform capabilities using the framework's capability detection
         let config = getCardExpansionPlatformConfig()
 
