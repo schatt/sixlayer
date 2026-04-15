@@ -13,6 +13,45 @@ This guide describes the **default managed settings** API built on `platformSett
 
 Managed APIs **compose with** the navigation layout resolver work (#204 / #206): they delegate to `platformSettingsContainer_L4` for the outer shell; they do not replace resolver-driven split/compact behavior.
 
+## Escape hatch for non-uniform detail layouts (#213)
+
+Use the default managed path (`platformManagedSettingsTopLevel_L4`) when your detail pane is a mostly uniform
+settings form/list pattern.
+
+Switch to the raw shell (`platformSettingsContainer_L4`) when your detail content is intentionally non-uniform and
+needs layout composition that does not fit a single "vanilla" pane shape. This keeps the framework-owned outer
+presentation while letting the detail closure render arbitrary SwiftUI structure.
+
+Typical escape-hatch patterns:
+
+- **Split HStack detail**: data controls on the left, diagnostics/preview on the right.
+- **Two-column data flow**: list/detail or queue/inspector composition inside the detail closure.
+- **Embedded stacks**: nested `NavigationStack`/`NavigationLink` flows inside only one region of detail.
+
+Minimal sketch:
+
+```swift
+@State private var selectedCategory: AnyHashable? = "Data"
+
+EmptyView()
+    .platformSettingsContainer_L4(selectedCategory: $selectedCategory) {
+        SidebarPane()
+    } detail: {
+        switch selectedCategory as? String {
+        case "Data":
+            HStack(alignment: .top) {
+                DataActionsColumn()
+                DataPreviewColumn() // can host its own nested stack links
+            }
+        default:
+            Text("Select a category")
+        }
+    }
+```
+
+Trade-off: this path gives you maximum flexibility, but you own top-level selection wiring and any policy decisions
+that `platformManagedSettingsTopLevel_L4` would otherwise centralize.
+
 ### Resolver behavior by platform (outer shell)
 
 | Context | Outer shell | Resolver (#204 / #206) |
