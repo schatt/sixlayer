@@ -124,7 +124,8 @@ private struct ManagedSettingsEscapeHatchGuideExampleView: View {
     /// Intentionally incomplete for red phase: this should include all documented patterns.
     static let documentedPatterns: Set<ManagedGuideEscapeHatchPattern> = [
         .splitHStack,
-        .twoColumnDataFlow
+        .twoColumnDataFlow,
+        .embeddedStacks
     ]
 
     var body: some View {
