@@ -444,6 +444,16 @@ open class L2LayoutDecisionTests: BaseTestClass {
         #expect(size.width > 0, "Should have positive width")
         #expect(size.height > 0, "Should have positive height")
     }
+
+    @Test @MainActor func testShouldCropImage_OdometerAlias() {
+        // Legacy odometer behavior maps to document-purpose processing.
+        let purpose = PhotoPurpose.document
+        let imageSize = CGSize(width: 1600, height: 900)
+        let targetSize = CGSize(width: 1000, height: 1000)
+
+        let shouldCrop = shouldCropImage(for: purpose, imageSize: imageSize, targetSize: targetSize)
+        #expect(shouldCrop == false, "Legacy odometer photos should not be cropped")
+    }
     
     @Test @MainActor func testDetermineOptimalPhotoLayout_L2_WithMaintenance() {
         // Given
