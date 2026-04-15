@@ -8,6 +8,7 @@ This guide describes the **default managed settings** API built on `platformSett
 |------|-----|
 | Full control, custom routing, or non-standard UX | `platformSettingsContainer_L4` directly (manual `selectedCategory` or your own bindings). |
 | Standard master–detail settings with framework-owned shell + selection | `platformManagedSettingsTopLevel_L4` + `PlatformManagedSettingsTopLevelState`. |
+| Optional default sidebar built from descriptors | `ManagedSettingsPaneList` + `SettingsPaneDescriptor` (issue #214). |
 | Hierarchical screens **inside** a top-level pane (e.g. Data → Cleanup) | `PlatformManagedSettingsDetailNavigationState` + `platformManagedSettingsDetailNavigationStack_L4` + `navigationDestination(for:)`. |
 
 Managed APIs **compose with** the navigation layout resolver work (#204 / #206): they delegate to `platformSettingsContainer_L4` for the outer shell; they do not replace resolver-driven split/compact behavior.
@@ -60,6 +61,36 @@ EmptyView()
 ```
 
 Use `PlatformManagedSettingsTopLevelState.anyHashableBinding($topLevel)` only if you call `platformSettingsContainer_L4` yourself.
+
+## Optional descriptor-driven sidebar
+
+When a custom sidebar is not needed, use `ManagedSettingsPaneList` as the `sidebar` content for
+`platformManagedSettingsTopLevel_L4`.
+
+```swift
+@State private var topLevel = PlatformManagedSettingsTopLevelState<MyPane>(deviceType: DeviceType.current)
+let descriptors: [SettingsPaneDescriptor<MyPane>] = [
+    .init(id: .general, titleKey: "settings.general", systemImage: "gearshape", section: "Main"),
+    .init(id: .privacy, titleKey: "settings.privacy", systemImage: "hand.raised", section: "Main")
+]
+
+EmptyView()
+    .platformManagedSettingsTopLevel_L4(
+        state: $topLevel,
+        sidebar: {
+            if let sidebar = try? ManagedSettingsPaneList(descriptors: descriptors, state: $topLevel) {
+                sidebar
+            } else {
+                Text("Invalid pane descriptors")
+            }
+        },
+        detail: { detailView }
+    )
+```
+
+If you also manage sub-pane stacks, pass `onSelectionChange` and call
+`PlatformManagedSettingsFlowLogic.selectTopLevelPane(_:topLevel:detailNavigation:)` so depth resets when
+the top-level pane changes.
 
 ## Sub-panes (detail stack)
 
