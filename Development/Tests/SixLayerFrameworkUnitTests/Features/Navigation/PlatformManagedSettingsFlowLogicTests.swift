@@ -126,6 +126,56 @@ struct PlatformManagedSettingsFlowLogicTests {
         }
     }
 
+    // MARK: - sub-pane stack override policy (#225)
+
+    @Test func subPaneStackOverride_forceEnabled_usesSystemStackForEveryDevice() {
+        for device in DeviceType.allCases {
+            let usesSystemStack = PlatformManagedSettingsFlowLogic.subPaneNavigationUsesSystemStack(
+                deviceType: device,
+                override: .forceEnabled
+            )
+            #expect(usesSystemStack == true, "forceEnabled should enable stack for \(device)")
+        }
+    }
+
+    @Test func subPaneStackOverride_forceDisabled_disablesSystemStackForEveryDevice() {
+        for device in DeviceType.allCases {
+            let usesSystemStack = PlatformManagedSettingsFlowLogic.subPaneNavigationUsesSystemStack(
+                deviceType: device,
+                override: .forceDisabled
+            )
+            #expect(usesSystemStack == false, "forceDisabled should disable stack for \(device)")
+        }
+    }
+
+    @Test func subPaneStackOverride_perDevice_appliesOverridesAndFallsBackToDefault() {
+        let policy: PlatformManagedSettingsSubPaneStackPolicyOverride = .byDevice([
+            .tv: true,
+            .phone: false
+        ])
+
+        #expect(
+            PlatformManagedSettingsFlowLogic.subPaneNavigationUsesSystemStack(
+                deviceType: .tv,
+                override: policy
+            ) == true
+        )
+        #expect(
+            PlatformManagedSettingsFlowLogic.subPaneNavigationUsesSystemStack(
+                deviceType: .phone,
+                override: policy
+            ) == false
+        )
+
+        // pad is not overridden above, so default policy should apply (true)
+        #expect(
+            PlatformManagedSettingsFlowLogic.subPaneNavigationUsesSystemStack(
+                deviceType: .pad,
+                override: policy
+            ) == true
+        )
+    }
+
     // MARK: - iPhoneTopLevelDetailNavigationIsPresented (#209 stack semantics)
 
     @Test @MainActor func iPhoneTopLevelDetailNavigationIsPresented_nilBinding_returnsNil() {
