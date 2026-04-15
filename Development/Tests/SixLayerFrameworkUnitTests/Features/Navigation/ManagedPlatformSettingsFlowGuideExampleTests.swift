@@ -119,7 +119,7 @@ private struct ManagedSettingsGuideExampleView: View {
 /// This mirrors the "escape hatch" guidance in docs: keep outer shell and customize detail freely.
 private struct ManagedSettingsEscapeHatchGuideExampleView: View {
     @State private var columnVisibility = NavigationSplitViewVisibility.automatic
-    @State private var selectedCategory: String? = "Data"
+    @State private var selectedCategory: AnyHashable? = "Data"
 
     /// Intentionally incomplete for red phase: this should include all documented patterns.
     static let documentedPatterns: Set<ManagedGuideEscapeHatchPattern> = [
@@ -140,7 +140,7 @@ private struct ManagedSettingsEscapeHatchGuideExampleView: View {
                 .navigationTitle("Settings")
             } detail: {
                 Group {
-                    switch selectedCategory {
+                    switch selectedCategory as? String {
                     case "Data":
                         HStack(alignment: .top, spacing: 20) {
                             VStack(alignment: .leading, spacing: 8) {
