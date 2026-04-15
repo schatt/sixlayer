@@ -25,6 +25,7 @@
 - [x] **#197** (slice) Category A UI backfill: exactNamed, accessibilityLabel row, outer manual Group id + tests (commit/push; issue commented)
 - [x] **#197** (slice) Global-off audit (`-CategoryAGlobalAutoOff`), empty identifierName row + UI tests
 - [x] **#197** Checklist: canonical 83 resolutions filled; 662-row Consolidated dedup in VIEWINSPECTOR_CATEGORY_A_CONSOLIDATED_DEDUP.md + generator script (close #197 on branch when ready)
+- [ ] **#200** Category D OCR UI backfill: add dedicated TestApp OCR flow screen + UI tests for disambiguation alternatives, selection result reflection, and overlay presentation outcome
 - [x] Fix `ModalContainerTests.swift` missing closing brace (build error)
 - [x] Fix Swift 6 actor-isolation errors in `DynamicFormTests.swift`
 - [x] Fix Swift 6 actor-isolation errors in `LabeledContentDisplayFieldTests.swift`
