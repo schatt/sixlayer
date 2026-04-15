@@ -63,6 +63,8 @@ struct TestAppContentView: View {
     private let openPlatformToolbarIssue221Detail = ProcessInfo.processInfo.arguments.contains("-OpenPlatformToolbarIssue221Detail")
     /// When true, app opens to Category C callback coverage host (launch arg -OpenCategoryCCallbacks). Issue #199.
     private let openCategoryCCallbacks = ProcessInfo.processInfo.arguments.contains("-OpenCategoryCCallbacks")
+    /// When true, app opens to Category E one-off coverage host (launch arg -OpenCategoryEOneOffs). Issue #201.
+    private let openCategoryEOneOffs = ProcessInfo.processInfo.arguments.contains("-OpenCategoryEOneOffs")
     
     enum TestView: String, CaseIterable, Identifiable {
         case control = "Control Test"
@@ -142,6 +144,10 @@ struct TestAppContentView: View {
             } else if openCategoryCCallbacks {
                 NavigationStack {
                     CategoryCCallbackTestView()
+                }
+            } else if openCategoryEOneOffs {
+                NavigationStack {
+                    CategoryEOneOffAuditView()
                 }
             } else {
                 NavigationStack {
