@@ -31,6 +31,7 @@
 - [x] **#215** CHANGELOG / release notes for managed settings migration retargeted to `v7.6.0` (`CHANGELOG.md`, `Development/RELEASE_v7.6.0.md`, `Development/RELEASES.md`)
 - [x] **#225** Add managed settings sub-pane stack policy override (keep defaults, add explicit escape hatch without dropping to full manual shell)
 - [x] **#224** Dynamic form inline header: `DynamicFormHeaderVisibility` + strict TDD (unit + ViewInspector); branch `b7.5.13` (issue commented)
+- [x] **#235** Dynamic form navigation heading conflict: add `headerDisplayMode`/`showFormTitle`/`hostProvidesPrimaryHeading` + configurable top content padding; strict TDD red evidence posted and targeted tests green
 - [x] Tart VM scripts (CarManager-style) in `Development/scripts/vm/` for macOS UI tests off-host (`vm_test.sh test-ui-macos`)
 
 - [x] UITest app Layer 1 Data Presentation: fix leading text clipping (`platformFrame` topLeading + `ScrollView` on examples)
