@@ -13,8 +13,8 @@ final class OCRCategoryDUITests: XCTestCase {
     private enum IDs {
         static let hostTitle = "Category D OCR Coverage"
         static let disambiguationPrompt = "category-d-disambiguation-prompt"
-        static let candidateFirst = "category-d-candidate-1"
-        static let candidateSecond = "category-d-candidate-2"
+        static let candidateFirstLabelFragment = "Category D Candidate 1"
+        static let candidateSecondLabelFragment = "Category D Candidate 2"
         static let selectionState = "category-d-selection-state"
         static let openOverlayButton = "category-d-open-overlay"
         static let overlayState = "category-d-overlay-state"
@@ -49,12 +49,18 @@ final class OCRCategoryDUITests: XCTestCase {
         }
     }
 
+    @MainActor
+    private func button(containingLabel fragment: String) -> XCUIElement {
+        let predicate = NSPredicate(format: "label CONTAINS %@", fragment)
+        return app.buttons.matching(predicate).firstMatch
+    }
+
     func testCategoryD_disambiguationFlow_showsAlternativesAndReflectsSelection() throws {
         let prompt = app.staticTexts[IDs.disambiguationPrompt]
         XCTAssertTrue(prompt.waitForExistence(timeout: 4.0), "Disambiguation prompt should be visible")
 
-        let firstCandidate = app.buttons[IDs.candidateFirst]
-        let secondCandidate = app.buttons[IDs.candidateSecond]
+        let firstCandidate = button(containingLabel: IDs.candidateFirstLabelFragment)
+        let secondCandidate = button(containingLabel: IDs.candidateSecondLabelFragment)
         XCTAssertTrue(firstCandidate.waitForExistence(timeout: 4.0), "First OCR candidate should exist")
         XCTAssertTrue(secondCandidate.waitForExistence(timeout: 4.0), "Second OCR candidate should exist")
 
