@@ -34,7 +34,7 @@ alwaysApply: true
 ## **Workflow**
 
 1. Edit one file (one or more edits to that file), **or** use the **project.yml + XcodeGen** exception for a single multi-path commit, **or** use the **Xcode-aligned schemes** exception when only Xcode updated shared schemes.
-2. Immediately: `git add` the relevant path(s), `git commit` with a clear message. Optionally document feature state in the message (e.g. "completes X") so it's clear when a multi-file feature is done; not required, since completion is also tracked in GitHub issues.
+2. **Immediately after finishing edits to that file** (while you are still “on” that file), run `git add <that path>` and `git commit -m "<clear message>"`. This must happen **before** you start editing a different file or switch to another task. Do **not** batch a bunch of file edits and then create a series of per-file commits at the end; that defeats the purpose of this rule.
 3. Then proceed to the next file (and repeat).
 
 ## **Rationale**
