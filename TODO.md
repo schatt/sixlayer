@@ -15,9 +15,9 @@
   - [ ] iOS: run Unit tests
   - [ ] iOS: run ViewInspector tests
   - [ ] iOS: run UI tests
-  - [ ] watchOS: run existing Unit/ViewInspector/UI targets (or create follow-up issues for missing targets)
-  - [ ] tvOS: run existing Unit/ViewInspector/UI targets (or create follow-up issues for missing targets)
-  - [ ] visionOS: run existing Unit/ViewInspector/UI targets (or create follow-up issues for missing targets)
+  - [ ] watchOS: run Unit + UI (ViewInspector **N/A** — no target on this platform); follow-up issues only for real failures or optional new coverage
+  - [ ] tvOS: run Unit + UI (ViewInspector **N/A**)
+  - [ ] visionOS: run Unit + UI (ViewInspector **N/A**)
   - [ ] For each distinct failure, create and link a GitHub issue under epic #233
   - [ ] Post consolidated pass/fail/missing matrix and log/xcresult evidence on #233
 
