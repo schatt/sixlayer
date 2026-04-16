@@ -5,9 +5,9 @@
 //  Test- and concurrency-safe overrides for runtime capability *preferences* that
 //  were previously read only from `UserDefaults.standard` (GitHub #236).
 //
-//  Uses `Thread.current.threadDictionary` (not `@TaskLocal`) so
-//  `RuntimeCapabilityDetection` can consult values from `nonisolated` entry points
-//  on the same OS thread as `@MainActor` / synchronous test bodies.
+//  macOS preference shadowing uses `@TaskLocal` so values propagate with the Swift
+//  Testing `provideScope` → test body task (including `@MainActor` tests), unlike
+//  `Thread.current.threadDictionary` which is tied to the OS thread that set it.
 //
 
 import Foundation
@@ -16,50 +16,13 @@ import Foundation
 
 public enum RuntimeCapabilityHarness: Sendable {
 
-    private static let macOSTouchEnabledHarnessKey = "SixLayerFramework.RuntimeHarness.macOSTouchEnabledPreference"
-    private static let macOSHapticEnabledHarnessKey = "SixLayerFramework.RuntimeHarness.macOSHapticEnabledPreference"
+    /// When non-`nil`, macOS `SixLayerFramework.TouchEnabled` resolves to this value for the
+    /// current task instead of reading `UserDefaults.standard`.
+    @TaskLocal public static var macOSTouchEnabledPreference: Bool?
 
-    /// When non-`nil`, macOS `SixLayerFramework.TouchEnabled` resolves to this value for the **current thread**
-    /// instead of reading `UserDefaults.standard`.
-    public static var macOSTouchEnabledPreference: Bool? {
-        get {
-            guard let number = Thread.current.threadDictionary[macOSTouchEnabledHarnessKey] as? NSNumber else {
-                return nil
-            }
-            return number.boolValue
-        }
-        set {
-            if let value = newValue {
-                Thread.current.threadDictionary[macOSTouchEnabledHarnessKey] = NSNumber(value: value)
-            } else {
-                Thread.current.threadDictionary.removeObject(forKey: macOSTouchEnabledHarnessKey)
-            }
-        }
-    }
-
-    /// When non-`nil`, macOS `SixLayerFramework.HapticEnabled` resolves to this value for the **current thread**
-    /// instead of reading `UserDefaults.standard`.
-    public static var macOSHapticEnabledPreference: Bool? {
-        get {
-            guard let number = Thread.current.threadDictionary[macOSHapticEnabledHarnessKey] as? NSNumber else {
-                return nil
-            }
-            return number.boolValue
-        }
-        set {
-            if let value = newValue {
-                Thread.current.threadDictionary[macOSHapticEnabledHarnessKey] = NSNumber(value: value)
-            } else {
-                Thread.current.threadDictionary.removeObject(forKey: macOSHapticEnabledHarnessKey)
-            }
-        }
-    }
-
-    /// Removes harness preference keys from the current thread (typically after each test invocation).
-    public static func removeHarnessPreferenceKeysFromCurrentThread() {
-        Thread.current.threadDictionary.removeObject(forKey: macOSTouchEnabledHarnessKey)
-        Thread.current.threadDictionary.removeObject(forKey: macOSHapticEnabledHarnessKey)
-    }
+    /// When non-`nil`, macOS `SixLayerFramework.HapticEnabled` resolves to this value for the
+    /// current task instead of reading `UserDefaults.standard`.
+    @TaskLocal public static var macOSHapticEnabledPreference: Bool?
 
     /// Keys used for macOS capability *simulation* and `CapabilityOverride` persistence on `UserDefaults.standard`.
     public static let legacyCapabilityUserDefaultsKeys: [String] = [
@@ -77,11 +40,10 @@ public enum RuntimeCapabilityHarness: Sendable {
         }
     }
 
-    /// Clears thread-local `CapabilityOverride` values, harness prefs on this thread, and legacy `standard` keys.
-    /// Suitable as the first step of a unit-test scoping wrapper (GitHub #236).
+    /// Clears thread-local `CapabilityOverride` values and legacy `standard` keys.
+    /// Suitable as part of a unit-test scoping wrapper (GitHub #236).
     public static func resetCapabilityIsolationForCurrentThreadAndStandardDefaults() {
         CapabilityOverride.clearThreadIsolationFromCurrentThread()
-        removeHarnessPreferenceKeysFromCurrentThread()
         scrubLegacyCapabilityKeysFromUserDefaultsStandard()
     }
 }
