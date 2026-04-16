@@ -104,6 +104,7 @@ The SixLayer Framework follows a **layered architecture** where each layer build
 - **All tests must pass** - No exceptions for releases
 - **Use runtime capability detection** - Don't rely on compile-time platform checks
 - **Test accessibility features** - Ensure VoiceOver, Switch Control, etc. work correctly
+- **Respect capability isolation harness** (GitHub #236) - When editing tests that touch `RuntimeCapabilityDetection`, `CapabilityOverride`, or `getCardExpansionPlatformConfig` / `minTouchTarget`, use `DefaultRuntimeCapabilityIsolationTrait()` (or mirror its behavior) and *never* rely on process-global `UserDefaults.standard` state for correctness.
 
 ## 🔧 Common Patterns
 
