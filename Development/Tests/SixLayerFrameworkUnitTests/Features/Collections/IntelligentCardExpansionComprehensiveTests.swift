@@ -13,7 +13,7 @@ import SwiftUI
 /// Comprehensive tests for the Intelligent Card Expansion System
 /// Tests all 6 layers with edge cases, performance, and integration scenarios
 /// NOTE: Not marked @MainActor on class to allow parallel execution
-@Suite("Intelligent Card Expansion Comprehensive")
+@Suite("Intelligent Card Expansion Comprehensive", DefaultRuntimeCapabilityIsolationTrait())
 open class IntelligentCardExpansionComprehensiveTests: BaseTestClass {    // MARK: - Test Data
     
     private var sampleMenuItems: [MenuItem] {
