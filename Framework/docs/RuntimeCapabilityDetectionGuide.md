@@ -57,10 +57,10 @@ if RuntimeCapabilityDetection.supportsTouchWithOverride {
 
 ### Thread / test isolation (GitHub #236)
 
-- **`RuntimeCapabilityHarness`**: On macOS, `SixLayerFramework.TouchEnabled` and `SixLayerFramework.HapticEnabled` are read from **thread-local harness slots** first when set, so unit tests are not coupled to polluted `UserDefaults.standard`.
+- **`RuntimeCapabilityHarness`**: On macOS, `SixLayerFramework.TouchEnabled` and `SixLayerFramework.HapticEnabled` are read from **`@TaskLocal` harness slots** first when set, so unit tests are not coupled to polluted `UserDefaults.standard` (and values follow the Swift Testing task, not only the OS thread).
 - **`CapabilityOverride`**: Assignments are stored on the **current thread** first (all platforms, including iOS). Setters **do not write** `SixLayerFramework.Override.*` into `UserDefaults.standard` (they remove stale keys so legacy reads do not resurrect old values). Getters still read `standard` when no thread-local value is present, for backward compatibility with keys set outside the framework.
 - **Swift Testing**: Apply `DefaultRuntimeCapabilityIsolationTrait()` on `@Suite` types that exercise runtime capabilities (see `Development/Tests/Shared/TestHelpers/DefaultRuntimeCapabilityIsolationTrait.swift`). It scrubs legacy keys and pins macOS harness preferences off for each test.
-- **`RuntimeCapabilityDetection.clearAllCapabilityOverrides()`**: Clears thread test hooks, thread `CapabilityOverride` state, harness preference keys, and scrubs the legacy `UserDefaults.standard` keys listed above.
+- **`RuntimeCapabilityDetection.clearAllCapabilityOverrides()`**: Clears thread test hooks, thread `CapabilityOverride` state, and scrubs the legacy `UserDefaults.standard` keys listed above. (Harness `@TaskLocal` values are reset by the test suite trait’s `withValue` scopes.)
 
 ### Testing Configuration
 
