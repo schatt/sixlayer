@@ -5,7 +5,7 @@ import SwiftUI
 /// Comprehensive tests for Layer 5 platform optimization functions
 /// Ensures all Layer 5 functions are tested
 /// NOTE: Not marked @MainActor on class to allow parallel execution
-@Suite("Layer Platform Optimization")
+@Suite("Layer Platform Optimization", DefaultRuntimeCapabilityIsolationTrait())
 open class Layer5PlatformOptimizationTests: BaseTestClass {
     
     // MARK: - getCardExpansionPlatformConfig Tests
