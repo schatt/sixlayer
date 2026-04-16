@@ -7,7 +7,7 @@ import SwiftUI
 /// Tests for the Intelligent Card Expansion System
 /// Tests all 6 layers of the expandable card functionality
 /// NOTE: Not marked @MainActor on class to allow parallel execution
-@Suite("Intelligent Card Expansion")
+@Suite("Intelligent Card Expansion", DefaultRuntimeCapabilityIsolationTrait())
 open class IntelligentCardExpansionTests: BaseTestClass {
     
     // MARK: - Test Data
