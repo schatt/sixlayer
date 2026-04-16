@@ -42,10 +42,10 @@ if RuntimeCapabilityDetection.supportsHover {
 If you have an external touchscreen connected to your Mac with third-party drivers (like UPDD), you can enable touch support:
 
 ```swift
-// Method 1: Enable via UserDefaults (persistent)
+// Method 1: Enable via UserDefaults (persistent, process-wide)
 UserDefaults.standard.set(true, forKey: "SixLayerFramework.TouchEnabled")
 
-// Method 2: Use the override system (runtime only)
+// Method 2: Use the override system (runtime only; thread-scoped — see GitHub #236)
 CapabilityOverride.touchSupport = true
 
 // Method 3: Check if touch is now supported
@@ -55,9 +55,16 @@ if RuntimeCapabilityDetection.supportsTouchWithOverride {
 }
 ```
 
+### Thread / test isolation (GitHub #236)
+
+- **`RuntimeCapabilityHarness`**: On macOS, `SixLayerFramework.TouchEnabled` and `SixLayerFramework.HapticEnabled` are read from **thread-local harness slots** first when set, so unit tests are not coupled to polluted `UserDefaults.standard`.
+- **`CapabilityOverride`**: Assignments are stored on the **current thread** first (all platforms, including iOS). Setters **do not write** `SixLayerFramework.Override.*` into `UserDefaults.standard` (they remove stale keys so legacy reads do not resurrect old values). Getters still read `standard` when no thread-local value is present, for backward compatibility with keys set outside the framework.
+- **Swift Testing**: Apply `DefaultRuntimeCapabilityIsolationTrait()` on `@Suite` types that exercise runtime capabilities (see `Development/Tests/Shared/TestHelpers/DefaultRuntimeCapabilityIsolationTrait.swift`). It scrubs legacy keys and pins macOS harness preferences off for each test.
+- **`RuntimeCapabilityDetection.clearAllCapabilityOverrides()`**: Clears thread test hooks, thread `CapabilityOverride` state, harness preference keys, and scrubs the legacy `UserDefaults.standard` keys listed above.
+
 ### Testing Configuration
 
-In tests, the framework automatically uses predictable defaults:
+In tests, use `RuntimeCapabilityDetection.setTestTouchSupport` / `CapabilityOverride` and **`clearAllCapabilityOverrides()`** (or the suite trait) so parallel runs stay deterministic:
 
 ```swift
 func testTouchCapability() {
@@ -70,6 +77,7 @@ func testTouchCapability() {
     
     // Clean up
     CapabilityOverride.touchSupport = nil
+    RuntimeCapabilityDetection.clearAllCapabilityOverrides()
 }
 ```
 
@@ -159,5 +167,5 @@ let supportsTouch = RuntimeCapabilityDetection.supportsTouchWithOverride
 ### Performance Considerations
 
 - Runtime detection is cached and efficient
-- Override system uses UserDefaults (persistent)
+- `CapabilityOverride` is thread-scoped; it no longer persists overrides to `UserDefaults.standard` (GitHub #236). Use `UserDefaults` only when you intentionally want process-wide, cross-launch configuration.
 - Testing mode detection is optimized for XCTest environment
