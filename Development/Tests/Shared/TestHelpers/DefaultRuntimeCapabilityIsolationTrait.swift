@@ -24,7 +24,9 @@ public struct DefaultRuntimeCapabilityIsolationTrait: Sendable, TestTrait, Suite
         testCase: Testing.Test.Case?,
         performing function: @Sendable () async throws -> Void
     ) async throws {
-        RuntimeCapabilityHarness.resetCapabilityIsolationForCurrentThreadAndStandardDefaults()
+        // Clear all capability overrides and harness state, including thread-local test hooks,
+        // before each test so we never depend on leaked state from previous invocations.
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
         RuntimeCapabilityHarness.macOSTouchEnabledPreference = false
         RuntimeCapabilityHarness.macOSHapticEnabledPreference = false
         defer {
