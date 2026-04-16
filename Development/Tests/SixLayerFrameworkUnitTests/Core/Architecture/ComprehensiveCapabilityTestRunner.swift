@@ -39,20 +39,21 @@ import SwiftUI
 /// Comprehensive Capability Test Runner
 /// Demonstrates the new testing methodology that tests both sides of every capability branch
 /// NOTE: Not marked @MainActor on class to allow parallel execution
+@Suite("Comprehensive Capability Test Runner", DefaultRuntimeCapabilityIsolationTrait())
 struct ComprehensiveCapabilityTestRunner {
     // MARK: - Test Setup
     
     /// Setup test environment before each test
     @MainActor
-    func setupTestEnvironment() async {
+    func setupTestEnvironment() {
         // Use real platform detection - no override needed
         RuntimeCapabilityDetection.setTestVoiceOver(true)
         RuntimeCapabilityDetection.setTestSwitchControl(true)
     }
     
-    /// Cleanup test environment after each test
+    /// Cleanup test environment after each test (synchronous so `defer` runs before the test returns).
     @MainActor
-    func cleanupTestEnvironment() async {
+    func cleanupTestEnvironment() {
         RuntimeCapabilityDetection.clearAllCapabilityOverrides()
         RuntimeCapabilityDetection.setTestVoiceOver(nil)
         RuntimeCapabilityDetection.setTestSwitchControl(nil)
@@ -125,11 +126,13 @@ struct ComprehensiveCapabilityTestRunner {
     // MARK: - Comprehensive Test Execution
     
     /// Run all comprehensive capability tests
-    
-@Test @MainActor func testAllComprehensiveCapabilityTests() async {
-        await setupTestEnvironment()
-        defer { Task { await cleanupTestEnvironment() } }
-        
+    @Test @MainActor
+    func testAllComprehensiveCapabilityTests() async {
+        setupTestEnvironment()
+        // Do not spawn an un-awaited `Task` here: the next test can start before cleanup runs,
+        // leaving `setTestTouchSupport(false)` on the main actor and breaking later suites.
+        defer { cleanupTestEnvironment() }
+
         for config in testRunnerConfigurations {
             await runComprehensiveCapabilityTest(config)
         }
@@ -568,52 +571,52 @@ struct ComprehensiveCapabilityTestRunner {
     
     /// Run complete capability testing
     @Test @MainActor func completeCapabilityTesting() async {
-        await setupTestEnvironment()
-        
+        setupTestEnvironment()
+
         let config = testRunnerConfigurations.first { $0.name == "Complete Capability Testing" }!
         await runComprehensiveCapabilityTest(config)
-        
-        await cleanupTestEnvironment()
+
+        cleanupTestEnvironment()
     }
     
     /// Run touch-focused testing
     @Test @MainActor func touchFocusedTesting() async {
-        await setupTestEnvironment()
-        
+        setupTestEnvironment()
+
         let config = testRunnerConfigurations.first { $0.name == "Touch-Focused Testing" }!
         await runComprehensiveCapabilityTest(config)
-        
-        await cleanupTestEnvironment()
+
+        cleanupTestEnvironment()
     }
     
     /// Run hover-focused testing
     @Test @MainActor func hoverFocusedTesting() async {
-        await setupTestEnvironment()
-        
+        setupTestEnvironment()
+
         let config = testRunnerConfigurations.first { $0.name == "Hover-Focused Testing" }!
         await runComprehensiveCapabilityTest(config)
-        
-        await cleanupTestEnvironment()
+
+        cleanupTestEnvironment()
     }
     
     /// Run accessibility-focused testing
     @Test @MainActor func accessibilityFocusedTesting() async {
-        await setupTestEnvironment()
-        
+        setupTestEnvironment()
+
         let config = testRunnerConfigurations.first { $0.name == "Accessibility-Focused Testing" }!
         await runComprehensiveCapabilityTest(config)
-        
-        await cleanupTestEnvironment()
+
+        cleanupTestEnvironment()
     }
     
     /// Run vision-focused testing
     @Test @MainActor func visionFocusedTesting() async {
-        await setupTestEnvironment()
-        
+        setupTestEnvironment()
+
         let config = testRunnerConfigurations.first { $0.name == "Vision-Focused Testing" }!
         await runComprehensiveCapabilityTest(config)
-        
-        await cleanupTestEnvironment()
+
+        cleanupTestEnvironment()
     }
     
     // MARK: - Helper Functions
