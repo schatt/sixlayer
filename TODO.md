@@ -8,7 +8,7 @@
 - [x] **#232 / #236** `FormDraftTests`: unique `UserDefaults` suite name per run so parallel clones do not race on `test_form_storage`
 - [ ] **#232** Follow-up: fix failing confirmation-control expectation in `PlatformModalSheetNavigationChromeLayer4Tests.testPlatformModalSheetNavigationChrome_L4_ExposesConfirmationButton()` (assertion still fails with expected label `"Apply"`)
 - [ ] **#233** Epic: Run full test suite for every platform (unit/view/ui)
-  - [ ] Build platform x layer matrix from existing schemes/targets (macOS, iOS, watchOS, tvOS, visionOS)
+  - [x] Build platform x layer matrix from existing schemes/targets (macOS, iOS, watchOS, tvOS, visionOS) — posted on #233 / pointer on #234, SHA `3032f6ce` branch `b7.6.0`
   - [ ] macOS: run Unit tests
   - [ ] macOS: run ViewInspector tests
   - [ ] macOS: run UI tests
