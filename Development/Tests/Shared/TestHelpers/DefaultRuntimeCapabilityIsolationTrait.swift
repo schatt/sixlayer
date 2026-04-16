@@ -24,15 +24,18 @@ public struct DefaultRuntimeCapabilityIsolationTrait: Sendable, TestTrait, Suite
         testCase: Testing.Test.Case?,
         performing function: @Sendable () async throws -> Void
     ) async throws {
-        // Clear all capability overrides and harness state, including thread-local test hooks,
-        // before each test so we never depend on leaked state from previous invocations.
-        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-        RuntimeCapabilityHarness.macOSTouchEnabledPreference = false
-        RuntimeCapabilityHarness.macOSHapticEnabledPreference = false
-        defer {
-            RuntimeCapabilityHarness.removeHarnessPreferenceKeysFromCurrentThread()
-            CapabilityOverride.clearThreadIsolationFromCurrentThread()
+        // `@TaskLocal` so harness values follow the same async task as `function()` (including
+        // `@MainActor` tests), unlike `Thread.current.threadDictionary` which is per-OS-thread.
+        let touchHarness: Bool? = false
+        let hapticHarness: Bool? = false
+        try await RuntimeCapabilityHarness.$macOSTouchEnabledPreference.withValue(touchHarness) {
+            try await RuntimeCapabilityHarness.$macOSHapticEnabledPreference.withValue(hapticHarness) {
+                RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+                defer {
+                    CapabilityOverride.clearThreadIsolationFromCurrentThread()
+                }
+                try await function()
+            }
         }
-        try await function()
     }
 }
