@@ -417,6 +417,7 @@ ERRORS_BEFORE_ISSUES=$ERRORS_FOUND
 RELEASE_FILE="Development/RELEASE_v$VERSION.md"
 
 # Always check for milestones and recently closed issues (even if release file doesn't exist)
+NO_RELEASE_MILESTONE=0
 if command -v gh &> /dev/null; then
     # Initialize milestone issues list (used for filtering recently closed issues)
     ALL_MILESTONE_ISSUES=""
@@ -505,6 +506,7 @@ if command -v gh &> /dev/null; then
             echo "⚠️  Warning: Could not retrieve milestone number for $MILESTONE_TITLE"
         fi
     else
+        NO_RELEASE_MILESTONE=1
         echo "⚠️  Warning: No milestone found for v$VERSION"
         echo "💡 Consider creating a milestone and assigning issues to it for better release tracking"
         echo "💡 Create milestone: gh api repos/:owner/:repo/milestones -X POST -f title=\"v$VERSION\""
@@ -992,6 +994,11 @@ if [ $ERRORS_FOUND -gt 0 ]; then
     echo ""
     echo "Found $ERRORS_FOUND error(s) that need to be fixed:"
     echo -e "$ERROR_MESSAGES"
+    if [ "${NO_RELEASE_MILESTONE:-0}" -eq 1 ]; then
+        echo ""
+        echo "⚠️  No GitHub milestone v$VERSION found (optional; not a blocker). Creating one can help track release work:"
+        echo "   gh api repos/:owner/:repo/milestones -X POST -f title=\"v$VERSION\""
+    fi
     echo ""
     echo "Please fix all errors and run the release script again."
     exit 1
