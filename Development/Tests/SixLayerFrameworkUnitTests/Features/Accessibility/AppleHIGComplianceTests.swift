@@ -7,7 +7,7 @@ import SwiftUI
 /// Comprehensive test suite for Apple HIG Compliance system
 /// Tests automatic application of Apple Human Interface Guidelines
 /// NOTE: Not marked @MainActor on class to allow parallel execution
-@Suite("Apple HIG Compliance")
+@Suite("Apple HIG Compliance", DefaultRuntimeCapabilityIsolationTrait())
 open class AppleHIGComplianceTests: BaseTestClass {
     
     // No shared instance variables - tests run in parallel and should be isolated
