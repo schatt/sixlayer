@@ -78,7 +78,6 @@ public struct RuntimeCapabilityDetection {
         setTestAssistiveTouch(nil)
         setTestHighContrast(nil)
         CapabilityOverride.clearThreadIsolationFromCurrentThread()
-        RuntimeCapabilityHarness.removeHarnessPreferenceKeysFromCurrentThread()
         RuntimeCapabilityHarness.scrubLegacyCapabilityKeysFromUserDefaultsStandard()
     }
     
