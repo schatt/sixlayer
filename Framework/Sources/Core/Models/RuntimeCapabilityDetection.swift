@@ -836,9 +836,9 @@ public struct CapabilityOverride {
 
     /// Clears thread-local `CapabilityOverride` values for the current thread (GitHub #236).
     public static func clearThreadIsolationFromCurrentThread() {
-        Thread.current.threadDictionary.removeValue(forKey: touchThreadIsolationKey)
-        Thread.current.threadDictionary.removeValue(forKey: hapticThreadIsolationKey)
-        Thread.current.threadDictionary.removeValue(forKey: hoverThreadIsolationKey)
+        Thread.current.threadDictionary.removeObject(forKey: touchThreadIsolationKey)
+        Thread.current.threadDictionary.removeObject(forKey: hapticThreadIsolationKey)
+        Thread.current.threadDictionary.removeObject(forKey: hoverThreadIsolationKey)
     }
 
     /// Override touch support (useful for testing with external touchscreens)
@@ -853,7 +853,7 @@ public struct CapabilityOverride {
             if let newValue {
                 Thread.current.threadDictionary[touchThreadIsolationKey] = NSNumber(value: newValue)
             } else {
-                Thread.current.threadDictionary.removeValue(forKey: touchThreadIsolationKey)
+                Thread.current.threadDictionary.removeObject(forKey: touchThreadIsolationKey)
             }
             UserDefaults.standard.removeObject(forKey: "SixLayerFramework.Override.TouchSupport")
         }
@@ -871,7 +871,7 @@ public struct CapabilityOverride {
             if let newValue {
                 Thread.current.threadDictionary[hapticThreadIsolationKey] = NSNumber(value: newValue)
             } else {
-                Thread.current.threadDictionary.removeValue(forKey: hapticThreadIsolationKey)
+                Thread.current.threadDictionary.removeObject(forKey: hapticThreadIsolationKey)
             }
             UserDefaults.standard.removeObject(forKey: "SixLayerFramework.Override.HapticSupport")
         }
@@ -889,7 +889,7 @@ public struct CapabilityOverride {
             if let newValue {
                 Thread.current.threadDictionary[hoverThreadIsolationKey] = NSNumber(value: newValue)
             } else {
-                Thread.current.threadDictionary.removeValue(forKey: hoverThreadIsolationKey)
+                Thread.current.threadDictionary.removeObject(forKey: hoverThreadIsolationKey)
             }
             UserDefaults.standard.removeObject(forKey: "SixLayerFramework.Override.HoverSupport")
         }
