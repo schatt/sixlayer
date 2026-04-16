@@ -282,11 +282,25 @@ fi
 # Step 2: Run tests (unit tests only per platform — no UI tests, no ViewInspector, no AllTests)
 echo "📋 Step 2: Running unit test suite (macOS + iOS unit tests only)..."
 
+# Write structured test bundles for triage when the release gate fails (ignored via build/)
+RELEASE_TEST_STAMP=$(date -u +"%Y%m%dT%H%M%SZ")
+XCRESULT_BASE="build/release-process/${RELEASE_TEST_STAMP}-v${VERSION}"
+mkdir -p "$XCRESULT_BASE"
+MACOS_XCRESULT="${XCRESULT_BASE}/SLF-macOS-UnitTests.xcresult"
+IOS_XCRESULT="${XCRESULT_BASE}/SLF-iOS-UnitTests.xcresult"
+echo "📎 xcresult bundles for this run: $MACOS_XCRESULT and $IOS_XCRESULT"
+
 # Run macOS unit tests first
 echo "🧪 Running macOS unit tests (SLF-macOS-UnitTests)..."
 # Note: do NOT use -quiet here so that any failures print detailed diagnostics
-if ! xcodebuild test -project SixLayerFramework.xcodeproj -scheme SLF-macOS-UnitTests -quiet -destination "platform=macOS,arch=arm64"; then
+if ! xcodebuild test \
+    -project SixLayerFramework.xcodeproj \
+    -scheme SLF-macOS-UnitTests \
+    -destination "platform=macOS,arch=arm64" \
+    -resultBundlePath "$MACOS_XCRESULT" \
+    -quiet; then
     log_error "macOS unit tests failed! Cannot proceed with release."
+    echo "💡 Open the result bundle in Xcode (Report navigator) or inspect with: xcrun xcresulttool get --path \"$MACOS_XCRESULT\" --format json" >&2
     exit 1
 fi
 echo "✅ macOS unit tests passed"
@@ -294,8 +308,15 @@ echo "✅ macOS unit tests passed"
 # Run iOS unit tests on Simulator
 echo "🧪 Running iOS unit tests on Simulator (SLF-iOS-UnitTests)..."
 
-if ! xcodebuild test -project SixLayerFramework.xcodeproj -scheme SLF-iOS-UnitTests -quiet -destination "platform=iOS Simulator,name=iPhone 17 Pro Max"; then
+if ! xcodebuild test \
+    -project SixLayerFramework.xcodeproj \
+    -scheme SLF-iOS-UnitTests \
+    -destination "platform=iOS Simulator,name=iPhone 17 Pro Max" \
+    -resultBundlePath "$IOS_XCRESULT" \
+    -quiet; then
     log_error "iOS unit tests failed! Cannot proceed with release."
+    echo "💡 macOS xcresult (passed): $MACOS_XCRESULT" >&2
+    echo "💡 Open the iOS result bundle in Xcode (Report navigator) or inspect with: xcrun xcresulttool get --path \"$IOS_XCRESULT\" --format json" >&2
     exit 1
 fi
 echo "✅ iOS unit tests passed"
