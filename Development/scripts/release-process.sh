@@ -300,7 +300,7 @@ if ! xcodebuild test \
     -resultBundlePath "$MACOS_XCRESULT" \
     -quiet; then
     log_error "macOS unit tests failed! Cannot proceed with release."
-    echo "💡 Open the result bundle in Xcode (Report navigator) or inspect with: xcrun xcresulttool get --path \"$MACOS_XCRESULT\" --format json" >&2
+    echo "💡 Open the result bundle in Xcode (Report navigator) or inspect with: xcrun xcresulttool get object --legacy --path \"$MACOS_XCRESULT\" --id root --format json" >&2
     exit 1
 fi
 echo "✅ macOS unit tests passed"
@@ -316,7 +316,7 @@ if ! xcodebuild test \
     -quiet; then
     log_error "iOS unit tests failed! Cannot proceed with release."
     echo "💡 macOS xcresult (passed): $MACOS_XCRESULT" >&2
-    echo "💡 Open the iOS result bundle in Xcode (Report navigator) or inspect with: xcrun xcresulttool get --path \"$IOS_XCRESULT\" --format json" >&2
+    echo "💡 Open the iOS result bundle in Xcode (Report navigator) or inspect with: xcrun xcresulttool get object --legacy --path \"$IOS_XCRESULT\" --id root --format json" >&2
     exit 1
 fi
 echo "✅ iOS unit tests passed"
