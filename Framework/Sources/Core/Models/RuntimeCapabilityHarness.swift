@@ -32,7 +32,7 @@ public enum RuntimeCapabilityHarness: Sendable {
             if let value = newValue {
                 Thread.current.threadDictionary[macOSTouchEnabledHarnessKey] = NSNumber(value: value)
             } else {
-                Thread.current.threadDictionary.removeValue(forKey: macOSTouchEnabledHarnessKey)
+                Thread.current.threadDictionary.removeObject(forKey: macOSTouchEnabledHarnessKey)
             }
         }
     }
@@ -50,15 +50,15 @@ public enum RuntimeCapabilityHarness: Sendable {
             if let value = newValue {
                 Thread.current.threadDictionary[macOSHapticEnabledHarnessKey] = NSNumber(value: value)
             } else {
-                Thread.current.threadDictionary.removeValue(forKey: macOSHapticEnabledHarnessKey)
+                Thread.current.threadDictionary.removeObject(forKey: macOSHapticEnabledHarnessKey)
             }
         }
     }
 
     /// Removes harness preference keys from the current thread (typically after each test invocation).
     public static func removeHarnessPreferenceKeysFromCurrentThread() {
-        Thread.current.threadDictionary.removeValue(forKey: macOSTouchEnabledHarnessKey)
-        Thread.current.threadDictionary.removeValue(forKey: macOSHapticEnabledHarnessKey)
+        Thread.current.threadDictionary.removeObject(forKey: macOSTouchEnabledHarnessKey)
+        Thread.current.threadDictionary.removeObject(forKey: macOSHapticEnabledHarnessKey)
     }
 
     /// Keys used for macOS capability *simulation* and `CapabilityOverride` persistence on `UserDefaults.standard`.
