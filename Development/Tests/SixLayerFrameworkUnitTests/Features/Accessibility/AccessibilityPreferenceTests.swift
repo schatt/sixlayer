@@ -39,7 +39,7 @@ import SwiftUI
 /// Accessibility preference testing
 /// Tests that every function behaves correctly based on accessibility preferences
 /// NOTE: Not marked @MainActor on class to allow parallel execution
-@Suite("Accessibility Preference")
+@Suite("Accessibility Preference", DefaultRuntimeCapabilityIsolationTrait())
 open class AccessibilityPreferenceTests: BaseTestClass {
     
     // MARK: - Test Data Setup
