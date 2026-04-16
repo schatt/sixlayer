@@ -14,6 +14,18 @@
 
 set -e
 
+# -----------------------------------------------------------------------------
+# Per-run logging: capture the entire release process output in /tmp
+# -----------------------------------------------------------------------------
+LOG_STAMP="$(date +"%Y%m%d_%H%M%S")"
+RELEASE_LOG_FILE="/tmp/release_process_${LOG_STAMP}.txt"
+
+# Duplicate all stdout/stderr to the timestamped log file.
+# This must run before any other output to ensure a complete trace.
+exec > >(tee -a "${RELEASE_LOG_FILE}") 2>&1
+
+echo "📄 Release process log: ${RELEASE_LOG_FILE}"
+
 AUTO_RELEASE=0
 POSITIONAL=()
 while [ $# -gt 0 ]; do
@@ -300,7 +312,9 @@ if ! xcodebuild test \
     -resultBundlePath "$MACOS_XCRESULT" \
     -quiet; then
     log_error "macOS unit tests failed! Cannot proceed with release."
-    echo "💡 Open the result bundle in Xcode (Report navigator) or inspect with: xcrun xcresulttool get object --legacy --path \"$MACOS_XCRESULT\" --id root --format json" >&2
+    echo "💡 Open the result bundle in Xcode (Report navigator), or inspect failures from the CLI:" >&2
+    echo "   xcrun xcresulttool get test-results summary --path \"$MACOS_XCRESULT\"" >&2
+    echo "   (Legacy \`get object --id root\` is not valid for this xcresult format; use test-results above.)" >&2
     exit 1
 fi
 echo "✅ macOS unit tests passed"
@@ -316,7 +330,9 @@ if ! xcodebuild test \
     -quiet; then
     log_error "iOS unit tests failed! Cannot proceed with release."
     echo "💡 macOS xcresult (passed): $MACOS_XCRESULT" >&2
-    echo "💡 Open the iOS result bundle in Xcode (Report navigator) or inspect with: xcrun xcresulttool get object --legacy --path \"$IOS_XCRESULT\" --id root --format json" >&2
+    echo "💡 Open the iOS result bundle in Xcode (Report navigator), or inspect failures from the CLI:" >&2
+    echo "   xcrun xcresulttool get test-results summary --path \"$IOS_XCRESULT\"" >&2
+    echo "   (Legacy \`get object --id root\` is not valid for this xcresult format; use test-results above.)" >&2
     exit 1
 fi
 echo "✅ iOS unit tests passed"
