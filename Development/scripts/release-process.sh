@@ -231,6 +231,23 @@ log_error() {
     ERROR_MESSAGES="${ERROR_MESSAGES}\n❌ $1"
 }
 
+# Open an .xcresult in Xcode after a failed test gate (local workflow).
+# Skip when CI is set (typical macOS runners) or when RELEASE_SKIP_OPEN_XCRESULT=1 (SSH / automation).
+maybe_open_xcresult() {
+    local bundle="$1"
+    if [[ -n "${RELEASE_SKIP_OPEN_XCRESULT:-}" ]]; then
+        return 0
+    fi
+    if [[ -n "${CI:-}" ]]; then
+        return 0
+    fi
+    command -v open >/dev/null 2>&1 || return 0
+    if [[ -d "$bundle" ]]; then
+        echo "📂 Opening result bundle: $bundle" >&2
+        open "$bundle" 2>/dev/null || true
+    fi
+}
+
 # Optional: create GitHub Release (requires gh CLI, auth, and remote tag v$VERSION)
 create_github_release_for_version() {
     local ver=$1
@@ -314,6 +331,7 @@ if ! xcodebuild test \
     log_error "macOS unit tests failed! Cannot proceed with release."
     echo "💡 Open the result bundle in Xcode (Report navigator), or inspect failures from the CLI:" >&2
     echo "   xcrun xcresulttool get test-results summary --path \"$MACOS_XCRESULT\"" >&2
+    maybe_open_xcresult "$MACOS_XCRESULT"
     exit 1
 fi
 echo "✅ macOS unit tests passed"
@@ -331,6 +349,7 @@ if ! xcodebuild test \
     echo "💡 macOS xcresult (passed): $MACOS_XCRESULT" >&2
     echo "💡 Open the iOS result bundle in Xcode (Report navigator), or inspect failures from the CLI:" >&2
     echo "   xcrun xcresulttool get test-results summary --path \"$IOS_XCRESULT\"" >&2
+    maybe_open_xcresult "$IOS_XCRESULT"
     exit 1
 fi
 echo "✅ iOS unit tests passed"
