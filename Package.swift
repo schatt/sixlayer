@@ -1,5 +1,5 @@
 // swift-tools-version: 6.0
-// SixLayerFramework v7.5.13 - Patch release
+// SixLayerFramework v7.6.0 - Minor release: managed settings migration documentation (Issue #215)
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
