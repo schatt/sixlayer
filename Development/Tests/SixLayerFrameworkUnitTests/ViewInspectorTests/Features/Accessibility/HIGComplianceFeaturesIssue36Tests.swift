@@ -25,7 +25,7 @@ import SwiftUI
 
 /// TDD test suite for Issue #36: Automatic HIG Compliance Features
 /// NOTE: Not marked @MainActor on class to allow parallel execution
-@Suite("HIG Compliance Features - Issue #36")
+@Suite("HIG Compliance Features - Issue #36", DefaultRuntimeCapabilityIsolationTrait())
 open class HIGComplianceFeaturesIssue36Tests: BaseTestClass {
     
     // MARK: - Test Data Setup
