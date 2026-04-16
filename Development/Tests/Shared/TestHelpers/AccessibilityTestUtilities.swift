@@ -242,25 +242,30 @@ private func boundedAccessibilityContainerIndices(_ rawCount: Int) -> [Int] {
     return indices
 }
 
-/// Integer from ObjC `perform` return value (`NSNumber` is typical for `accessibilityElementCount`).
-@MainActor
-private func intFromObjCPerformResult(_ object: Any?) -> Int {
-    switch object {
-    case let n as NSNumber:
-        return n.intValue
-    case let i as Int:
-        return i
-    default:
-        return 0
-    }
-}
-
 /// Identifier from a child returned by `accessibilityElement(at:)` (may be `UIAccessibilityElement` or `UIView`).
 @MainActor
 private func accessibilityIdentifierFromAccessibilityContainerChild(_ raw: Any?) -> String? {
     if let el = raw as? UIAccessibilityElement, let id = el.accessibilityIdentifier, !id.isEmpty { return id }
     if let v = raw as? UIView, let id = v.accessibilityIdentifier, !id.isEmpty { return id }
     return nil
+}
+
+/// UIKit exposes accessibility container APIs directly; prefer those over
+/// Objective-C `perform` to avoid retaining invalid bridged objects from the
+/// runtime on newer simulator stacks.
+@MainActor
+private func accessibilityContainerChildren(for view: UIView) -> [Any] {
+    let count = view.accessibilityElementCount()
+    guard count > 0 else { return [] }
+
+    var children: [Any] = []
+    children.reserveCapacity(min(count, maxAccessibilityContainerEnumerationCount))
+    for index in boundedAccessibilityContainerIndices(count) {
+        if let child = view.accessibilityElement(at: index) {
+            children.append(child)
+        }
+    }
+    return children
 }
 
 /// Return the first non-empty accessibility identifier from a view's accessibilityElements (SwiftUI may expose IDs there).
@@ -279,16 +284,12 @@ private func firstAccessibilityIdentifierFromElements(_ elements: [Any]?) -> Str
 /// SwiftUI hosting views often expose child elements here instead of `accessibilityElements` or `subviews` (aligned with `findAllAccessibilityIdentifiersFromPlatformView`).
 @MainActor
 private func firstAccessibilityIdentifierFromAccessibilityContainer(_ view: UIView) -> String? {
-    let countSel = NSSelectorFromString("accessibilityElementCount")
-    let atSel = NSSelectorFromString("accessibilityElementAtIndex:")
-    guard view.responds(to: countSel), view.responds(to: atSel),
-          let countResult = view.perform(countSel) else {
-        return nil
-    }
-    let count = intFromObjCPerformResult(countResult.takeUnretainedValue())
-    for i in boundedAccessibilityContainerIndices(count) {
-        let atResult = view.perform(atSel, with: i)
-        if let id = accessibilityIdentifierFromAccessibilityContainerChild(atResult?.takeUnretainedValue()) {
+    for child in accessibilityContainerChildren(for: view) {
+        if let id = accessibilityIdentifierFromAccessibilityContainerChild(child) {
+            return id
+        }
+        if let labelContainer = child as? UIView,
+           let id = firstAccessibilityIdentifierFromElements(labelContainer.accessibilityElements) {
             return id
         }
     }
@@ -332,9 +333,9 @@ public func diagnosticsReportedAccessibilityElementCounts(inHosted root: Any?, t
     var containerResponders = 0
 
     func consider(_ view: UIView) {
-        guard view.responds(to: countSel), let countResult = view.perform(countSel) else { return }
+        guard view.responds(to: countSel) else { return }
         containerResponders += 1
-        let n = intFromObjCPerformResult(countResult.takeUnretainedValue())
+        let n = view.accessibilityElementCount()
         if n > maxCount {
             maxCount = n
             maxSummary = "\(type(of: view)) frame=\(view.frame)"
@@ -535,14 +536,8 @@ public func hostedViewHasAccessibilityElementWithLabelAndButtonTrait(root: Any?,
             }
         }
         // SwiftUI hosting often exposes elements via the container API (accessibilityElementCount / accessibilityElement(at:)) instead of subviews or accessibilityElements array. Use runtime so we don't depend on UIAccessibilityContainer being in scope.
-        let countSel = NSSelectorFromString("accessibilityElementCount")
-        let atSel = NSSelectorFromString("accessibilityElementAtIndex:")
-        if view.responds(to: countSel), view.responds(to: atSel),
-           let countResult = view.perform(countSel) {
-            let count = intFromObjCPerformResult(countResult.takeUnretainedValue())
-            for i in boundedAccessibilityContainerIndices(count) {
-                let atResult = view.perform(atSel, with: i)
-                let raw = atResult?.takeUnretainedValue()
+        if view.responds(to: NSSelectorFromString("accessibilityElementCount")) {
+            for raw in accessibilityContainerChildren(for: view) {
                 if let el = raw as? UIAccessibilityElement, checkElement(el) {
                     return true
                 }
@@ -588,14 +583,9 @@ public func findAllAccessibilityIdentifiersFromPlatformView(_ root: Any?) -> [St
         }
         // Some SwiftUI hosting views expose IDs via the UIAccessibilityContainer-style API
         // (accessibilityElementCount / accessibilityElementAtIndex:) instead of subviews or accessibilityElements.
-        let countSel = NSSelectorFromString("accessibilityElementCount")
-        let atSel = NSSelectorFromString("accessibilityElementAtIndex:")
-        if view.responds(to: countSel), view.responds(to: atSel),
-           let countResult = view.perform(countSel) {
-            let count = intFromObjCPerformResult(countResult.takeUnretainedValue())
-            for i in boundedAccessibilityContainerIndices(count) {
-                let atResult = view.perform(atSel, with: i)
-                if let id = accessibilityIdentifierFromAccessibilityContainerChild(atResult?.takeUnretainedValue()) {
+        if view.responds(to: NSSelectorFromString("accessibilityElementCount")) {
+            for child in accessibilityContainerChildren(for: view) {
+                if let id = accessibilityIdentifierFromAccessibilityContainerChild(child) {
                     identifiers.insert(id)
                 }
             }
