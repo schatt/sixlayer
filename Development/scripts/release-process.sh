@@ -507,7 +507,7 @@ if command -v gh &> /dev/null; then
         fi
     else
         NO_RELEASE_MILESTONE=1
-        echo "⚠️  Warning: No milestone found for v$VERSION"
+        echo "⚠️  Warning: No milestone found for v$VERSION (common for patch releases; optional)"
         echo "💡 Consider creating a milestone and assigning issues to it for better release tracking"
         echo "💡 Create milestone: gh api repos/:owner/:repo/milestones -X POST -f title=\"v$VERSION\""
     fi
@@ -996,7 +996,7 @@ if [ $ERRORS_FOUND -gt 0 ]; then
     echo -e "$ERROR_MESSAGES"
     if [ "${NO_RELEASE_MILESTONE:-0}" -eq 1 ]; then
         echo ""
-        echo "⚠️  No GitHub milestone v$VERSION found (optional; not a blocker). Creating one can help track release work:"
+        echo "⚠️  No GitHub milestone v$VERSION found (optional; not a blocker — patch releases often skip milestones). Creating one can help track release work:"
         echo "   gh api repos/:owner/:repo/milestones -X POST -f title=\"v$VERSION\""
     fi
     echo ""
