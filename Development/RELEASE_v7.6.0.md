@@ -71,6 +71,34 @@ Added an explicit managed settings sub-pane stack policy override so apps can ad
 
 Resolved DynamicFormView header and title hierarchy conflicts with large navigation titles by adding configurable header display modes and related layout controls, with tests and documentation aligned to consumer apps.
 
+### **Issues #191–#194 — Accessibility identifiers and contracts**
+
+- **Issue #191**: Tappable card components expose the card as a single tappable accessibility element where appropriate.
+- **Issue #192**: Accessibility identifier tests are robust across ViewInspector and XCUITest harnesses.
+- **Issue #193**: Layer 4 contract UI and APIs align with UITest-oriented accessibility contracts.
+- **Issue #194**: Accessibility identifiers serve as default localization keys where that mapping applies.
+
+### **Issues #197–#201 — UI test backfill (ViewInspector audit)**
+
+- **Issue #197**: Category A — accessibility identifier edge cases and configuration (ViewInspector audit).
+- **Issue #198**: Category B — IntelligentDetailView and visible content (ViewInspector audit).
+- **Issue #199**: Category C — form and collection callbacks (ViewInspector audit).
+- **Issue #200**: Category D — OCR overlay, disambiguation, and selection (ViewInspector audit).
+- **Issue #201**: Category E — one-offs (explicit enable, clipboard, opt-out, odometer) (ViewInspector audit).
+
+### **Issues #202–#206 — Nested sidebar / settings split navigation**
+
+- **Issue #202**: Nested sidebar overlap with settings split UI in host apps (parent epic for resolver work).
+- **Issue #203**: Slice 1 — navigation layout resolver core with profile and policy types.
+- **Issue #204**: Slice 2 — integrate resolver into `platformSettingsContainer_L4`.
+- **Issue #205**: Slice 3 — integrate resolver into `platformAppNavigation_L4` and split wrappers.
+- **Issue #206**: Slice 4 — compact fallback (collapse and overlay) when the width budget fails.
+
+### **Issues #232 and #236 — Release gate (compile / test path to ship)**
+
+- **Issue #232**: Addressed macOS release-blocking Layer 5 all-platform test state leakage so the suite is safe to run for release.
+- **Issue #236**: Runtime capability defaults no longer depend on process-global `UserDefaults.standard` in ways that break isolated or parallel test execution; closed as satisfied for the v7.6.0 release gate (follow-up work can be filed separately if new edge cases appear).
+
 ---
 
 ## ✅ Migration (consumers)
