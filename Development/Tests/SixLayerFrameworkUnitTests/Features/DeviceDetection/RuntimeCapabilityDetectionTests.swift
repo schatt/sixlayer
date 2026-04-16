@@ -334,4 +334,18 @@ open class RuntimeCapabilityDetectionTDDTests: BaseTestClass {
         // Check if both platform detections agree
         #expect(runtimePlatform == sixLayerPlatform, "RuntimeCapabilityDetection.currentPlatform should match SixLayerPlatform.current")
     }
+
+    #if os(macOS)
+    /// Regression for GitHub #236: `UserDefaults.standard` touch simulation must not leak into card config when the suite harness pins preferences off.
+    @Test @MainActor
+    func testMacOSCardConfigIgnoresPollutedTouchEnabledUserDefaults() async {
+        let key = "SixLayerFramework.TouchEnabled"
+        UserDefaults.standard.set(true, forKey: key)
+        defer { UserDefaults.standard.removeObject(forKey: key) }
+
+        let config = getCardExpansionPlatformConfig()
+        #expect(!config.supportsTouch)
+        #expect(config.minTouchTarget == 0.0)
+    }
+    #endif
 }
