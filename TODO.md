@@ -1,6 +1,6 @@
 # TODO
 
-**Current Release**: v7.5.13
+**Current Release**: v7.6.0
 
 ## Current
 
