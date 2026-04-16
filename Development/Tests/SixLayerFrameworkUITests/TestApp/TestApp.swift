@@ -52,11 +52,19 @@ struct TestAppContentView: View {
     private let openLayer5Accessibility = ProcessInfo.processInfo.arguments.contains("-OpenLayer5Accessibility")
     /// When true, app opens directly to Layer 6 Cross-Platform section (launch arg -OpenLayer6Examples).
     private let openLayer6Examples = ProcessInfo.processInfo.arguments.contains("-OpenLayer6Examples")
+    /// When true, app opens to Category B detail backfill host (launch arg -OpenDetailViewCategoryB).
+    private let openDetailViewCategoryB = ProcessInfo.processInfo.arguments.contains("-OpenDetailViewCategoryB")
+    /// When true, app opens to Category D OCR backfill host (launch arg -OpenOCRCategoryD).
+    private let openOCRCategoryD = ProcessInfo.processInfo.arguments.contains("-OpenOCRCategoryD")
     /// When true, app opens to Issue #221 platform toolbar identifier hub (launch arg -OpenPlatformToolbarIssue221).
     private let openPlatformToolbarIssue221 = ProcessInfo.processInfo.arguments.contains("-OpenPlatformToolbarIssue221")
     /// Deep links for XCUITest (macOS back navigation is unreliable); `-OpenPlatformToolbarIssue221Form` / `Detail`.
     private let openPlatformToolbarIssue221Form = ProcessInfo.processInfo.arguments.contains("-OpenPlatformToolbarIssue221Form")
     private let openPlatformToolbarIssue221Detail = ProcessInfo.processInfo.arguments.contains("-OpenPlatformToolbarIssue221Detail")
+    /// When true, app opens to Category C callback coverage host (launch arg -OpenCategoryCCallbacks). Issue #199.
+    private let openCategoryCCallbacks = ProcessInfo.processInfo.arguments.contains("-OpenCategoryCCallbacks")
+    /// When true, app opens to Category E one-off coverage host (launch arg -OpenCategoryEOneOffs). Issue #201.
+    private let openCategoryEOneOffs = ProcessInfo.processInfo.arguments.contains("-OpenCategoryEOneOffs")
     
     enum TestView: String, CaseIterable, Identifiable {
         case control = "Control Test"
@@ -113,6 +121,14 @@ struct TestAppContentView: View {
                 NavigationStack {
                     Layer6CrossPlatformOnlyView()
                 }
+            } else if openDetailViewCategoryB {
+                NavigationStack {
+                    DetailViewCategoryBAuditView()
+                }
+            } else if openOCRCategoryD {
+                NavigationStack {
+                    OCRCategoryDAuditView()
+                }
             } else if openPlatformToolbarIssue221Form {
                 NavigationStack {
                     PlatformToolbarIssue221FormHostView()
@@ -124,6 +140,14 @@ struct TestAppContentView: View {
             } else if openPlatformToolbarIssue221 {
                 NavigationStack {
                     PlatformToolbarIssue221HubView(onBackToMain: nil)
+                }
+            } else if openCategoryCCallbacks {
+                NavigationStack {
+                    CategoryCCallbackTestView()
+                }
+            } else if openCategoryEOneOffs {
+                NavigationStack {
+                    CategoryEOneOffAuditView()
                 }
             } else {
                 NavigationStack {
@@ -295,3 +319,4 @@ struct TestAppContentView: View {
         .platformNavigationTitleDisplayMode_L4(.inline)
     }
 }
+

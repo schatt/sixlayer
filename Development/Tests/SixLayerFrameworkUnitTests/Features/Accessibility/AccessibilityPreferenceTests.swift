@@ -39,7 +39,7 @@ import SwiftUI
 /// Accessibility preference testing
 /// Tests that every function behaves correctly based on accessibility preferences
 /// NOTE: Not marked @MainActor on class to allow parallel execution
-@Suite("Accessibility Preference")
+@Suite("Accessibility Preference", DefaultRuntimeCapabilityIsolationTrait())
 open class AccessibilityPreferenceTests: BaseTestClass {
     
     // MARK: - Test Data Setup
@@ -292,6 +292,11 @@ open class AccessibilityPreferenceTests: BaseTestClass {
     
     /// Tests that accessibility features are available on current platform
     @Test @MainActor func testAccessibilityFeaturesAvailability() {
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        RuntimeCapabilityDetection.setTestVoiceOver(true)
+        RuntimeCapabilityDetection.setTestSwitchControl(true)
+        defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
+
         // Get platform capabilities using the framework's capability detection
         let config = getCardExpansionPlatformConfig()
 

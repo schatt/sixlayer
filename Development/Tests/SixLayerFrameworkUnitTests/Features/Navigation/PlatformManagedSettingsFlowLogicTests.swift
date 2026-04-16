@@ -3,43 +3,85 @@
 //  SixLayerFrameworkUnitTests
 //
 //  TDD for Issue #209: managed platform settings flow (routing policy).
+//  Issue #211: exhaustive DeviceType shell policy matrix (split / initial selection / sub-pane stack).
 //
 
 import SwiftUI
 import Testing
 @testable import SixLayerFramework
 
+// MARK: - Shell policy matrix (#211)
+
+/// Expected routing policy per ``DeviceType`` for managed settings shell helpers.
+/// Keep in sync with ``PlatformManagedSettingsFlowLogic``; every ``DeviceType`` case must appear here.
+private enum DeviceTypeSettingsShellPolicyMatrix {
+    struct Expectation: Equatable, Sendable {
+        /// When the ordered pane list is non-empty, whether ``recommendedInitialTopSelection`` returns the first pane (`true`) or `nil` (`false`).
+        var selectsFirstPaneWhenPanesNonEmpty: Bool
+        var usesSplitStyleTopLevelShell: Bool
+        var subPaneUsesSystemStack: Bool
+        var topLevelShellPolicy: PlatformManagedSettingsTopLevelShellPolicy
+    }
+
+    static let expectationsByDevice: [DeviceType: Expectation] = [
+        .phone: .init(
+            selectsFirstPaneWhenPanesNonEmpty: false,
+            usesSplitStyleTopLevelShell: false,
+            subPaneUsesSystemStack: true,
+            topLevelShellPolicy: .stackWithSelectionPush
+        ),
+        .pad: .init(
+            selectsFirstPaneWhenPanesNonEmpty: true,
+            usesSplitStyleTopLevelShell: true,
+            subPaneUsesSystemStack: true,
+            topLevelShellPolicy: .splitSidebarDetail
+        ),
+        .mac: .init(
+            selectsFirstPaneWhenPanesNonEmpty: true,
+            usesSplitStyleTopLevelShell: true,
+            subPaneUsesSystemStack: true,
+            topLevelShellPolicy: .splitSidebarDetail
+        ),
+        .tv: .init(
+            selectsFirstPaneWhenPanesNonEmpty: false,
+            usesSplitStyleTopLevelShell: false,
+            subPaneUsesSystemStack: false,
+            topLevelShellPolicy: .unsupportedSidebarFallback
+        ),
+        .watch: .init(
+            selectsFirstPaneWhenPanesNonEmpty: false,
+            usesSplitStyleTopLevelShell: false,
+            subPaneUsesSystemStack: true,
+            topLevelShellPolicy: .unsupportedSidebarFallback
+        ),
+        .car: .init(
+            selectsFirstPaneWhenPanesNonEmpty: false,
+            usesSplitStyleTopLevelShell: false,
+            subPaneUsesSystemStack: false,
+            topLevelShellPolicy: .stackWithSelectionPush
+        ),
+        .vision: .init(
+            selectsFirstPaneWhenPanesNonEmpty: false,
+            usesSplitStyleTopLevelShell: false,
+            subPaneUsesSystemStack: false,
+            topLevelShellPolicy: .unsupportedSidebarFallback
+        ),
+    ]
+}
+
+private func assertShellPolicyMatrixCoversAllDeviceTypes() {
+    let expectedKeys = Set(DeviceType.allCases)
+    let actualKeys = Set(DeviceTypeSettingsShellPolicyMatrix.expectationsByDevice.keys)
+    #expect(
+        actualKeys == expectedKeys,
+        "Shell policy matrix must include every DeviceType case (missing or extra: \(expectedKeys.symmetricDifference(actualKeys)))"
+    )
+}
+
 @Suite("PlatformManagedSettingsFlowLogic (#209)")
 struct PlatformManagedSettingsFlowLogicTests {
 
-    // MARK: - recommendedInitialTopSelection
-
-    @Test func recommendedInitialTopSelection_iPad_nonEmpty_returnsFirstPane() {
-        let panes = ["general", "privacy"]
-        let got = PlatformManagedSettingsFlowLogic.recommendedInitialTopSelection(
-            panes: panes,
-            deviceType: .pad
-        )
-        #expect(got == "general")
-    }
-
-    @Test func recommendedInitialTopSelection_macOS_nonEmpty_returnsFirstPane() {
-        let panes = ["general", "privacy"]
-        let got = PlatformManagedSettingsFlowLogic.recommendedInitialTopSelection(
-            panes: panes,
-            deviceType: .mac
-        )
-        #expect(got == "general")
-    }
-
-    @Test func recommendedInitialTopSelection_iPhone_nonEmpty_returnsNil() {
-        let panes = ["general", "privacy"]
-        let got = PlatformManagedSettingsFlowLogic.recommendedInitialTopSelection(
-            panes: panes,
-            deviceType: .phone
-        )
-        #expect(got == nil)
-    }
+    // MARK: - recommendedInitialTopSelection (edge cases; non-empty paths covered by #211 matrix)
 
     @Test func recommendedInitialTopSelection_iPad_empty_returnsNil() {
         let panes: [String] = []
@@ -50,32 +92,88 @@ struct PlatformManagedSettingsFlowLogicTests {
         #expect(got == nil)
     }
 
-    // MARK: - usesSplitStyleTopLevelSettingsShell
+    // MARK: - DeviceType shell policy matrix (#211)
 
-    @Test func splitStyleTopLevel_iPad_true() {
-        #expect(PlatformManagedSettingsFlowLogic.usesSplitStyleTopLevelSettingsShell(deviceType: .pad))
+    @Test func shellPolicyMatrix_coversEveryDeviceType() {
+        assertShellPolicyMatrixCoversAllDeviceTypes()
     }
 
-    @Test func splitStyleTopLevel_macOS_true() {
-        #expect(PlatformManagedSettingsFlowLogic.usesSplitStyleTopLevelSettingsShell(deviceType: .mac))
+    @Test func shellPolicyMatrix_matchesPlatformManagedSettingsFlowLogic() {
+        assertShellPolicyMatrixCoversAllDeviceTypes()
+        let panes = ["general", "privacy"]
+        for (device, expected) in DeviceTypeSettingsShellPolicyMatrix.expectationsByDevice {
+            let initial = PlatformManagedSettingsFlowLogic.recommendedInitialTopSelection(
+                panes: panes,
+                deviceType: device
+            )
+            if expected.selectsFirstPaneWhenPanesNonEmpty {
+                #expect(initial == "general")
+            } else {
+                #expect(initial == nil)
+            }
+            #expect(
+                PlatformManagedSettingsFlowLogic.usesSplitStyleTopLevelSettingsShell(deviceType: device)
+                    == expected.usesSplitStyleTopLevelShell
+            )
+            #expect(
+                PlatformManagedSettingsFlowLogic.subPaneNavigationUsesSystemStack(deviceType: device)
+                    == expected.subPaneUsesSystemStack
+            )
+            #expect(
+                PlatformManagedSettingsFlowLogic.topLevelSettingsShellPolicy(deviceType: device)
+                    == expected.topLevelShellPolicy
+            )
+        }
     }
 
-    @Test func splitStyleTopLevel_iPhone_false() {
-        #expect(!PlatformManagedSettingsFlowLogic.usesSplitStyleTopLevelSettingsShell(deviceType: .phone))
+    // MARK: - sub-pane stack override policy (#225)
+
+    @Test func subPaneStackOverride_forceEnabled_usesSystemStackForEveryDevice() {
+        for device in DeviceType.allCases {
+            let usesSystemStack = PlatformManagedSettingsFlowLogic.subPaneNavigationUsesSystemStack(
+                deviceType: device,
+                override: .forceEnabled
+            )
+            #expect(usesSystemStack == true, "forceEnabled should enable stack for \(device)")
+        }
     }
 
-    // MARK: - subPaneNavigationUsesSystemStack
-
-    @Test func subPaneUsesSystemStack_iPhone_true() {
-        #expect(PlatformManagedSettingsFlowLogic.subPaneNavigationUsesSystemStack(deviceType: .phone))
+    @Test func subPaneStackOverride_forceDisabled_disablesSystemStackForEveryDevice() {
+        for device in DeviceType.allCases {
+            let usesSystemStack = PlatformManagedSettingsFlowLogic.subPaneNavigationUsesSystemStack(
+                deviceType: device,
+                override: .forceDisabled
+            )
+            #expect(usesSystemStack == false, "forceDisabled should disable stack for \(device)")
+        }
     }
 
-    @Test func subPaneUsesSystemStack_iPad_true() {
-        #expect(PlatformManagedSettingsFlowLogic.subPaneNavigationUsesSystemStack(deviceType: .pad))
-    }
+    @Test func subPaneStackOverride_perDevice_appliesOverridesAndFallsBackToDefault() {
+        let policy: PlatformManagedSettingsSubPaneStackPolicyOverride = .byDevice([
+            .tv: true,
+            .phone: false
+        ])
 
-    @Test func subPaneUsesSystemStack_macOS_true() {
-        #expect(PlatformManagedSettingsFlowLogic.subPaneNavigationUsesSystemStack(deviceType: .mac))
+        #expect(
+            PlatformManagedSettingsFlowLogic.subPaneNavigationUsesSystemStack(
+                deviceType: .tv,
+                override: policy
+            ) == true
+        )
+        #expect(
+            PlatformManagedSettingsFlowLogic.subPaneNavigationUsesSystemStack(
+                deviceType: .phone,
+                override: policy
+            ) == false
+        )
+
+        // pad is not overridden above, so default policy should apply (true)
+        #expect(
+            PlatformManagedSettingsFlowLogic.subPaneNavigationUsesSystemStack(
+                deviceType: .pad,
+                override: policy
+            ) == true
+        )
     }
 
     // MARK: - iPhoneTopLevelDetailNavigationIsPresented (#209 stack semantics)

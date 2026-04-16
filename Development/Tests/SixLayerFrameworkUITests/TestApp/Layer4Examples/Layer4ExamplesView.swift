@@ -694,6 +694,20 @@ private struct L4NavDestinationView: View {
     }
 }
 
+/// Presents the L4 sheet from the same view as the trigger button (Form + sheet on `Form` is unreliable for XCUITest; Issue #193).
+private struct L4ContractSheetTrigger: View {
+    @Binding var isPresented: Bool
+    var body: some View {
+        Button("L4ContractSheet") { isPresented = true }
+            .accessibilityIdentifier("L4ContractSheet")
+            .accessibilityLabel("L4ContractSheet")
+            .buttonStyle(.borderless)
+            .platformSheet_L4(isPresented: $isPresented) {
+                L4SheetContentContractView()
+            }
+    }
+}
+
 /// Sheet content for L4 platformSheet_L4 contract; provides Close so tests can dismiss.
 private struct L4SheetContentContractView: View {
     @Environment(\.dismiss) private var dismiss
@@ -740,9 +754,7 @@ struct Layer4ContractOnlyView: View {
     @ViewBuilder
     private var contractPresentationContent: some View {
         platformVStack(alignment: .leading, spacing: 12) {
-            Button("L4ContractSheet") { l4ShowSheet = true }
-                .accessibilityIdentifier("L4ContractSheet")
-                .accessibilityLabel("L4ContractSheet")
+            L4ContractSheetTrigger(isPresented: $l4ShowSheet)
             Button("L4ContractPopover") { l4ShowPopover = true }
                 .accessibilityIdentifier("L4ContractPopover")
                 .accessibilityLabel("L4ContractPopover")
@@ -979,10 +991,6 @@ struct Layer4ContractOnlyView: View {
         .navigationTitle("Layer 4 Examples")
         // Inline title keeps the first contract sections in the visible safe area for XCUITest (Issue #193).
         .platformNavigationTitleDisplayMode_L4(.inline)
-        // Present from the framed root, not inner `Form`/`VStack`, so the sheet subtree is attached for XCUITest (Issue #193).
-        .platformSheet_L4(isPresented: $l4ShowSheet) {
-            L4SheetContentContractView()
-        }
         .platformPopover_L4(isPresented: $l4ShowPopover) {
             Text("L4PopoverContentContract")
                 .accessibilityLabel("L4PopoverContentContract")

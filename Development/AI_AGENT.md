@@ -11,6 +11,7 @@ This document provides guidance for AI assistants working with the SixLayer Fram
 ## 📚 Version-Specific Guides
 
 ### Latest Versions (Recommended)
+- **[AI_AGENT_v7.6.0.md](AI_AGENT_v7.6.0.md)** - Managed settings migration documentation (Issue #215; see [RELEASE_v7.6.0.md](RELEASE_v7.6.0.md))
 - **v7.5.13** - Patch release (see [RELEASE_v7.5.13.md](RELEASE_v7.5.13.md))
 - **v7.5.12** - Patch release (see [RELEASE_v7.5.12.md](RELEASE_v7.5.12.md))
 - **v7.5.11** - Patch release (see [RELEASE_v7.5.11.md](RELEASE_v7.5.11.md))
@@ -104,6 +105,7 @@ The SixLayer Framework follows a **layered architecture** where each layer build
 - **All tests must pass** - No exceptions for releases
 - **Use runtime capability detection** - Don't rely on compile-time platform checks
 - **Test accessibility features** - Ensure VoiceOver, Switch Control, etc. work correctly
+- **Respect capability isolation harness** (GitHub #236) - When editing tests that touch `RuntimeCapabilityDetection`, `CapabilityOverride`, or `getCardExpansionPlatformConfig` / `minTouchTarget`, use `DefaultRuntimeCapabilityIsolationTrait()` (or mirror its behavior) and *never* rely on process-global `UserDefaults.standard` state for correctness.
 
 ## 🔧 Common Patterns
 

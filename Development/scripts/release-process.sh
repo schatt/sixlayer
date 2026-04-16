@@ -14,6 +14,18 @@
 
 set -e
 
+# -----------------------------------------------------------------------------
+# Per-run logging: capture the entire release process output in /tmp
+# -----------------------------------------------------------------------------
+LOG_STAMP="$(date +"%Y%m%d_%H%M%S")"
+RELEASE_LOG_FILE="/tmp/release_process_${LOG_STAMP}.txt"
+
+# Duplicate all stdout/stderr to the timestamped log file.
+# This must run before any other output to ensure a complete trace.
+exec > >(tee -a "${RELEASE_LOG_FILE}") 2>&1
+
+echo "📄 Release process log: ${RELEASE_LOG_FILE}"
+
 AUTO_RELEASE=0
 POSITIONAL=()
 while [ $# -gt 0 ]; do
@@ -219,6 +231,23 @@ log_error() {
     ERROR_MESSAGES="${ERROR_MESSAGES}\n❌ $1"
 }
 
+# Open an .xcresult in Xcode after a failed test gate (local workflow).
+# Skip when CI is set (typical macOS runners) or when RELEASE_SKIP_OPEN_XCRESULT=1 (SSH / automation).
+maybe_open_xcresult() {
+    local bundle="$1"
+    if [[ -n "${RELEASE_SKIP_OPEN_XCRESULT:-}" ]]; then
+        return 0
+    fi
+    if [[ -n "${CI:-}" ]]; then
+        return 0
+    fi
+    command -v open >/dev/null 2>&1 || return 0
+    if [[ -d "$bundle" ]]; then
+        echo "📂 Opening result bundle: $bundle" >&2
+        open "$bundle" 2>/dev/null || true
+    fi
+}
+
 # Optional: create GitHub Release (requires gh CLI, auth, and remote tag v$VERSION)
 create_github_release_for_version() {
     local ver=$1
@@ -282,11 +311,27 @@ fi
 # Step 2: Run tests (unit tests only per platform — no UI tests, no ViewInspector, no AllTests)
 echo "📋 Step 2: Running unit test suite (macOS + iOS unit tests only)..."
 
+# Write structured test bundles for triage when the release gate fails (ignored via build/)
+RELEASE_TEST_STAMP=$(date -u +"%Y%m%dT%H%M%SZ")
+XCRESULT_BASE="build/release-process/${RELEASE_TEST_STAMP}-v${VERSION}"
+mkdir -p "$XCRESULT_BASE"
+MACOS_XCRESULT="${XCRESULT_BASE}/SLF-macOS-UnitTests.xcresult"
+IOS_XCRESULT="${XCRESULT_BASE}/SLF-iOS-UnitTests.xcresult"
+echo "📎 xcresult bundles for this run: $MACOS_XCRESULT and $IOS_XCRESULT"
+
 # Run macOS unit tests first
 echo "🧪 Running macOS unit tests (SLF-macOS-UnitTests)..."
 # Note: do NOT use -quiet here so that any failures print detailed diagnostics
-if ! xcodebuild test -project SixLayerFramework.xcodeproj -scheme SLF-macOS-UnitTests -quiet -destination "platform=macOS,arch=arm64"; then
+if ! xcodebuild test \
+    -project SixLayerFramework.xcodeproj \
+    -scheme SLF-macOS-UnitTests \
+    -destination "platform=macOS,arch=arm64" \
+    -resultBundlePath "$MACOS_XCRESULT" \
+    -quiet; then
     log_error "macOS unit tests failed! Cannot proceed with release."
+    echo "💡 Open the result bundle in Xcode (Report navigator), or inspect failures from the CLI:" >&2
+    echo "   xcrun xcresulttool get test-results summary --path \"$MACOS_XCRESULT\"" >&2
+    maybe_open_xcresult "$MACOS_XCRESULT"
     exit 1
 fi
 echo "✅ macOS unit tests passed"
@@ -294,8 +339,17 @@ echo "✅ macOS unit tests passed"
 # Run iOS unit tests on Simulator
 echo "🧪 Running iOS unit tests on Simulator (SLF-iOS-UnitTests)..."
 
-if ! xcodebuild test -project SixLayerFramework.xcodeproj -scheme SLF-iOS-UnitTests -quiet -destination "platform=iOS Simulator,name=iPhone 17 Pro Max"; then
+if ! xcodebuild test \
+    -project SixLayerFramework.xcodeproj \
+    -scheme SLF-iOS-UnitTests \
+    -destination "platform=iOS Simulator,name=iPhone 17 Pro Max" \
+    -resultBundlePath "$IOS_XCRESULT" \
+    -quiet; then
     log_error "iOS unit tests failed! Cannot proceed with release."
+    echo "💡 macOS xcresult (passed): $MACOS_XCRESULT" >&2
+    echo "💡 Open the iOS result bundle in Xcode (Report navigator), or inspect failures from the CLI:" >&2
+    echo "   xcrun xcresulttool get test-results summary --path \"$IOS_XCRESULT\"" >&2
+    maybe_open_xcresult "$IOS_XCRESULT"
     exit 1
 fi
 echo "✅ iOS unit tests passed"
@@ -363,6 +417,7 @@ ERRORS_BEFORE_ISSUES=$ERRORS_FOUND
 RELEASE_FILE="Development/RELEASE_v$VERSION.md"
 
 # Always check for milestones and recently closed issues (even if release file doesn't exist)
+NO_RELEASE_MILESTONE=0
 if command -v gh &> /dev/null; then
     # Initialize milestone issues list (used for filtering recently closed issues)
     ALL_MILESTONE_ISSUES=""
@@ -451,7 +506,8 @@ if command -v gh &> /dev/null; then
             echo "⚠️  Warning: Could not retrieve milestone number for $MILESTONE_TITLE"
         fi
     else
-        echo "⚠️  Warning: No milestone found for v$VERSION"
+        NO_RELEASE_MILESTONE=1
+        echo "⚠️  Warning: No milestone found for v$VERSION (common for patch releases; optional)"
         echo "💡 Consider creating a milestone and assigning issues to it for better release tracking"
         echo "💡 Create milestone: gh api repos/:owner/:repo/milestones -X POST -f title=\"v$VERSION\""
     fi
@@ -938,6 +994,11 @@ if [ $ERRORS_FOUND -gt 0 ]; then
     echo ""
     echo "Found $ERRORS_FOUND error(s) that need to be fixed:"
     echo -e "$ERROR_MESSAGES"
+    if [ "${NO_RELEASE_MILESTONE:-0}" -eq 1 ]; then
+        echo ""
+        echo "⚠️  No GitHub milestone v$VERSION found (optional; not a blocker — patch releases often skip milestones). Creating one can help track release work:"
+        echo "   gh api repos/:owner/:repo/milestones -X POST -f title=\"v$VERSION\""
+    fi
     echo ""
     echo "Please fix all errors and run the release script again."
     exit 1

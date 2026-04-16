@@ -15,7 +15,20 @@ import CloudKit
 @Suite("CloudKit Service")
 @MainActor
 final class CloudKitServiceTests {
-    
+
+    /// Queue tests must not share `UserDefaults.standard` + the default storage key; parallel runs race and flake.
+    private func makeIsolatedQueueStorage() -> (storage: UserDefaultsCloudKitQueueStorage, suiteName: String) {
+        let suiteName = "SixLayer.CloudKitServiceTests.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suiteName)!
+        defaults.removePersistentDomain(forName: suiteName)
+        let storage = UserDefaultsCloudKitQueueStorage(userDefaults: defaults, key: "cloudkit_queue_operations")
+        return (storage, suiteName)
+    }
+
+    private func removeQueueSuite(_ suiteName: String) {
+        UserDefaults(suiteName: suiteName)?.removePersistentDomain(forName: suiteName)
+    }
+
     // MARK: - Error Types Tests
     
     @Test func testCloudKitServiceErrorTypes() {
@@ -183,68 +196,58 @@ final class CloudKitServiceTests {
     // MARK: - Queue Storage Tests
     
     @Test func testUserDefaultsQueueStorageEnqueue() async throws {
-        // Given: A queue storage
-        let storage = UserDefaultsCloudKitQueueStorage()
-        try storage.clear() // Start fresh
-        
-        // When: Enqueuing an operation
+        let (storage, suiteName) = makeIsolatedQueueStorage()
+        defer { removeQueueSuite(suiteName) }
+        try storage.clear()
+
         let operation = QueuedCloudKitOperation(
             operationType: "save",
             recordID: "test-record-id"
         )
         try storage.enqueue(operation)
-        
-        // Then: Should be able to peek it
+
         let peeked = try storage.peek()
         #expect(peeked != nil)
         #expect(peeked?.id == operation.id)
         #expect(peeked?.operationType == "save")
     }
-    
+
     @Test func testUserDefaultsQueueStorageDequeue() async throws {
-        // Given: A queue storage with operations
-        let storage = UserDefaultsCloudKitQueueStorage()
+        let (storage, suiteName) = makeIsolatedQueueStorage()
+        defer { removeQueueSuite(suiteName) }
         try storage.clear()
-        
+
         let operation1 = QueuedCloudKitOperation(operationType: "save", recordID: "1")
         let operation2 = QueuedCloudKitOperation(operationType: "delete", recordID: "2")
-        
+
         try storage.enqueue(operation1)
         try storage.enqueue(operation2)
-        
-        // When: Dequeuing
+
         let dequeued = try storage.dequeue()
-        
-        // Then: Should get first operation (FIFO)
         #expect(dequeued != nil)
         #expect(dequeued?.id == operation1.id)
-        
-        // And: Count should be reduced
         #expect(try storage.count() == 1)
     }
-    
+
     @Test func testUserDefaultsQueueStorageCount() async throws {
-        // Given: A queue storage
-        let storage = UserDefaultsCloudKitQueueStorage()
+        let (storage, suiteName) = makeIsolatedQueueStorage()
+        defer { removeQueueSuite(suiteName) }
         try storage.clear()
-        
-        // When: Adding operations
+
         try storage.enqueue(QueuedCloudKitOperation(operationType: "save"))
         try storage.enqueue(QueuedCloudKitOperation(operationType: "delete"))
-        
-        // Then: Count should be correct
+
         #expect(try storage.count() == 2)
     }
-    
+
     @Test func testUserDefaultsQueueStorageClear() async throws {
-        // Given: A queue storage with operations
-        let storage = UserDefaultsCloudKitQueueStorage()
+        let (storage, suiteName) = makeIsolatedQueueStorage()
+        defer { removeQueueSuite(suiteName) }
+
         try storage.enqueue(QueuedCloudKitOperation(operationType: "save"))
-        
-        // When: Clearing
+
         try storage.clear()
-        
-        // Then: Should be empty
+
         #expect(try storage.count() == 0)
         #expect(try storage.peek() == nil)
     }

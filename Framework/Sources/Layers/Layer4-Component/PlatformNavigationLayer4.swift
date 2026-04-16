@@ -1212,8 +1212,8 @@ public extension View {
         let deviceType = DeviceType.current
         
         #if os(iOS)
-        switch deviceType {
-        case .pad:
+        switch PlatformManagedSettingsFlowLogic.topLevelSettingsShellPolicy(deviceType: deviceType) {
+        case .splitSidebarDetail:
             // iPad: Use NavigationSplitView
             let sidebarView = sidebar()
             let detailView = detail()
@@ -1224,16 +1224,16 @@ public extension View {
                 detail: { detailView }
             )
             
-        case .phone:
-            // iPhone: Use NavigationStack with conditional detail display
+        case .stackWithSelectionPush:
+            // iPhone/CarPlay: Use NavigationStack with selection-driven push semantics
             createSettingsContainerForiPhone(
                 selectedCategory: selectedCategory,
                 sidebar: sidebar,
                 detail: detail
             )
             
-        default:
-            // Other device types: Default to sidebar
+        case .unsupportedSidebarFallback:
+            // Unsupported top-level shell on current platform: show caller-provided sidebar only.
             sidebar()
                 .automaticCompliance(named: "platformSettingsContainer_L4")
         }

@@ -736,9 +736,32 @@ public enum DynamicFormHeaderVisibility: Sendable, Equatable {
     public static func resolvedInlineHeaderTexts(
         visibility: DynamicFormHeaderVisibility,
         title: String,
+        description: String?,
+        showFormTitle: Bool = true,
+        displayMode: DynamicFormHeaderDisplayMode = .automatic,
+        hostProvidesPrimaryHeading: Bool = false
+    ) -> (title: String?, description: String?) {
+        guard showFormTitle else { return (nil, nil) }
+
+        switch displayMode {
+        case .never:
+            return (nil, nil)
+        case .always:
+            return normalizedInlineHeaderTexts(title: title, description: description)
+        case .automatic:
+            guard visibility == .visible else { return (nil, nil) }
+            if hostProvidesPrimaryHeading {
+                // Keep optional contextual subtitle but avoid duplicate top-level heading semantics.
+                return (nil, normalizedDescription(description))
+            }
+            return normalizedInlineHeaderTexts(title: title, description: description)
+        }
+    }
+
+    private static func normalizedInlineHeaderTexts(
+        title: String,
         description: String?
     ) -> (title: String?, description: String?) {
-        guard visibility == .visible else { return (nil, nil) }
         let trimmedTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
         let titleOut = trimmedTitle.isEmpty ? nil : trimmedTitle
         guard let raw = description else { return (titleOut, nil) }
@@ -746,6 +769,22 @@ public enum DynamicFormHeaderVisibility: Sendable, Equatable {
         let descOut = trimmedDesc.isEmpty ? nil : trimmedDesc
         return (titleOut, descOut)
     }
+
+    private static func normalizedDescription(_ description: String?) -> String? {
+        guard let raw = description else { return nil }
+        let trimmedDesc = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmedDesc.isEmpty ? nil : trimmedDesc
+    }
+}
+
+/// Controls how `DynamicFormView` decides whether to render the top inline header.
+public enum DynamicFormHeaderDisplayMode: Sendable, Equatable {
+    /// Use host context and legacy visibility to avoid duplicate heading hierarchy in navigation screens.
+    case automatic
+    /// Always render the inline header when title/description text resolves non-empty.
+    case always
+    /// Never render the inline header.
+    case never
 }
 
 /// Complete configuration for a dynamic form
@@ -755,6 +794,14 @@ public struct DynamicFormConfiguration: Identifiable {
     public let description: String?
     /// When ``DynamicFormHeaderVisibility/hidden``, `DynamicFormView` omits the top title/description block; prefer ``DynamicFormHeaderVisibility/visible`` with `description: nil` (not `""`) for “no subtitle” when the header is shown.
     public let formHeaderVisibility: DynamicFormHeaderVisibility
+    /// Explicit switch for showing title semantics. Set `false` to suppress inline heading without changing other metadata.
+    public let showFormTitle: Bool
+    /// Header rendering behavior for navigation/host composition scenarios.
+    public let headerDisplayMode: DynamicFormHeaderDisplayMode
+    /// Set `true` when parent navigation already provides the primary heading (e.g. large `navigationTitle`).
+    public let hostProvidesPrimaryHeading: Bool
+    /// Top padding applied to form content stack to keep first section clear of navigation title chrome.
+    public let topContentPadding: CGFloat
     public let sections: [DynamicFormSection]
     public let submitButtonText: String
     public let cancelButtonText: String?
@@ -773,6 +820,10 @@ public struct DynamicFormConfiguration: Identifiable {
         title: String,
         description: String? = nil,
         formHeaderVisibility: DynamicFormHeaderVisibility = .visible,
+        showFormTitle: Bool = true,
+        headerDisplayMode: DynamicFormHeaderDisplayMode = .automatic,
+        hostProvidesPrimaryHeading: Bool = false,
+        topContentPadding: CGFloat = 20,
         sections: [DynamicFormSection] = [],
         submitButtonText: String = "Submit",
         cancelButtonText: String? = "Cancel",
@@ -785,6 +836,10 @@ public struct DynamicFormConfiguration: Identifiable {
         self.title = title
         self.description = description
         self.formHeaderVisibility = formHeaderVisibility
+        self.showFormTitle = showFormTitle
+        self.headerDisplayMode = headerDisplayMode
+        self.hostProvidesPrimaryHeading = hostProvidesPrimaryHeading
+        self.topContentPadding = topContentPadding
         self.sections = sections
         self.submitButtonText = submitButtonText
         self.cancelButtonText = cancelButtonText
@@ -884,6 +939,10 @@ public struct DynamicFormConfiguration: Identifiable {
             title: title,
             description: description,
             formHeaderVisibility: formHeaderVisibility,
+            showFormTitle: showFormTitle,
+            headerDisplayMode: headerDisplayMode,
+            hostProvidesPrimaryHeading: hostProvidesPrimaryHeading,
+            topContentPadding: topContentPadding,
             sections: sectionsWithHints,
             submitButtonText: submitButtonText,
             cancelButtonText: cancelButtonText,
@@ -984,8 +1043,8 @@ public class DynamicFormState: ObservableObject {
     /// Auto-save timer for periodic saves
     nonisolated(unsafe) private var autoSaveTimer: Timer?
     
-    /// Debounce timer for change-based saves
-    nonisolated(unsafe) private var debounceTimer: Timer?
+    /// Cancellable task used for change-based debounce saves.
+    private var debouncedSaveTask: Task<Void, Never>?
     
     /// Auto-save configuration
     public var autoSaveEnabled: Bool = true
@@ -1513,15 +1572,19 @@ public class DynamicFormState: ObservableObject {
     /// This should be called when fieldValues change
     public func triggerDebouncedSave() {
         guard autoSaveEnabled else { return }
-        
-        // Cancel existing debounce timer
-        debounceTimer?.invalidate()
-        
-        // Start new debounce timer
-        debounceTimer = Timer.scheduledTimer(withTimeInterval: debounceDelay, repeats: false) { [weak self] _ in
-            Task { @MainActor in
-                self?.saveDraft()
+
+        // Cancel any pending debounce task before scheduling a new save.
+        debouncedSaveTask?.cancel()
+        let delayNanoseconds = UInt64(max(debounceDelay, 0.0) * 1_000_000_000)
+
+        debouncedSaveTask = Task { [weak self] in
+            guard let self = self else { return }
+            if delayNanoseconds > 0 {
+                try? await Task.sleep(nanoseconds: delayNanoseconds)
             }
+
+            guard !Task.isCancelled else { return }
+            self.saveDraft()
         }
     }
     
@@ -1621,7 +1684,7 @@ public class DynamicFormState: ObservableObject {
     deinit {
         // Invalidate timers directly in deinit (safe to do from any context)
         autoSaveTimer?.invalidate()
-        debounceTimer?.invalidate()
+        debouncedSaveTask?.cancel()
     }
 }
 
@@ -1740,6 +1803,10 @@ public struct DynamicFormBuilder {
         title: String,
         description: String? = nil,
         formHeaderVisibility: DynamicFormHeaderVisibility = .visible,
+        showFormTitle: Bool = true,
+        headerDisplayMode: DynamicFormHeaderDisplayMode = .automatic,
+        hostProvidesPrimaryHeading: Bool = false,
+        topContentPadding: CGFloat = 20,
         submitButtonText: String = "Submit",
         cancelButtonText: String? = "Cancel"
     ) -> DynamicFormConfiguration {
@@ -1753,6 +1820,10 @@ public struct DynamicFormBuilder {
             title: title,
             description: description,
             formHeaderVisibility: formHeaderVisibility,
+            showFormTitle: showFormTitle,
+            headerDisplayMode: headerDisplayMode,
+            hostProvidesPrimaryHeading: hostProvidesPrimaryHeading,
+            topContentPadding: topContentPadding,
             sections: sections,
             submitButtonText: submitButtonText,
             cancelButtonText: cancelButtonText

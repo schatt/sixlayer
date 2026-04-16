@@ -8,9 +8,49 @@ This guide describes the **default managed settings** API built on `platformSett
 |------|-----|
 | Full control, custom routing, or non-standard UX | `platformSettingsContainer_L4` directly (manual `selectedCategory` or your own bindings). |
 | Standard master–detail settings with framework-owned shell + selection | `platformManagedSettingsTopLevel_L4` + `PlatformManagedSettingsTopLevelState`. |
+| Optional default sidebar built from descriptors | `ManagedSettingsPaneList` + `SettingsPaneDescriptor` (issue #214). |
 | Hierarchical screens **inside** a top-level pane (e.g. Data → Cleanup) | `PlatformManagedSettingsDetailNavigationState` + `platformManagedSettingsDetailNavigationStack_L4` + `navigationDestination(for:)`. |
 
 Managed APIs **compose with** the navigation layout resolver work (#204 / #206): they delegate to `platformSettingsContainer_L4` for the outer shell; they do not replace resolver-driven split/compact behavior.
+
+## Escape hatch for non-uniform detail layouts (#213)
+
+Use the default managed path (`platformManagedSettingsTopLevel_L4`) when your detail pane is a mostly uniform
+settings form/list pattern.
+
+Switch to the raw shell (`platformSettingsContainer_L4`) when your detail content is intentionally non-uniform and
+needs layout composition that does not fit a single "vanilla" pane shape. This keeps the framework-owned outer
+presentation while letting the detail closure render arbitrary SwiftUI structure.
+
+Typical escape-hatch patterns:
+
+- **Split HStack detail**: data controls on the left, diagnostics/preview on the right.
+- **Two-column data flow**: list/detail or queue/inspector composition inside the detail closure.
+- **Embedded stacks**: nested `NavigationStack`/`NavigationLink` flows inside only one region of detail.
+
+Minimal sketch:
+
+```swift
+@State private var selectedCategory: AnyHashable? = "Data"
+
+EmptyView()
+    .platformSettingsContainer_L4(selectedCategory: $selectedCategory) {
+        SidebarPane()
+    } detail: {
+        switch selectedCategory as? String {
+        case "Data":
+            HStack(alignment: .top) {
+                DataActionsColumn()
+                DataPreviewColumn() // can host its own nested stack links
+            }
+        default:
+            Text("Select a category")
+        }
+    }
+```
+
+Trade-off: this path gives you maximum flexibility, but you own top-level selection wiring and any policy decisions
+that `platformManagedSettingsTopLevel_L4` would otherwise centralize.
 
 ### Resolver behavior by platform (outer shell)
 
@@ -19,7 +59,50 @@ Managed APIs **compose with** the navigation layout resolver work (#204 / #206):
 | **iPad / macOS** | `platformSettingsContainer_L4` uses `Layer4NestedSplitShellPresentationHost` | **Yes** — width-driven `NavigationLayoutCompactPresentation` (full split, detail-only inner collapse, overlay outer sidebar) matches settings and app navigation contracts. |
 | **iPhone** | `NavigationStack` + selection-driven detail (`navigationDestination(isPresented:)` when using managed bindings) | **N/A for nested split** — there is no inner/outer dual-sidebar squeeze; stack semantics are always the correct model. Managed flow still uses the same `selectedCategory` wiring as manual `platformSettingsContainer_L4`. |
 
+### `DeviceType` shell policy matrix (Issue #211)
+
+`PlatformManagedSettingsFlowLogic` holds cross-platform rules the managed APIs compose with `platformSettingsContainer_L4`. For a **non-empty** ordered pane list:
+
+| `DeviceType` | `recommendedInitialTopSelection` | `usesSplitStyleTopLevelSettingsShell` | `subPaneNavigationUsesSystemStack` |
+|----------------|--------------------------------------|------------------------------------------|---------------------------------------|
+| `phone` | `nil` (category list first) | false | true |
+| `pad` | first pane | true | true |
+| `mac` | first pane | true | true |
+| `tv` | `nil` | false | false |
+| `watch` | `nil` | false | true |
+| `car` | `nil` | false | false |
+| `vision` | `nil` | false | false |
+
+SPM coverage: `PlatformManagedSettingsFlowLogicTests` (`shellPolicyMatrix_*`). Adding a `DeviceType` case should update this table, production switches, and the test matrix together.
+
+Top-level shell route policy (`PlatformManagedSettingsTopLevelShellPolicy`) is explicit: `phone`/`car` use stack-with-selection push, `pad`/`mac` use split, and `tv`/`watch`/`vision` use sidebar fallback in `platformSettingsContainer_L4` unless you take the escape hatch (`platformSettingsContainer_L4` manual wiring).
+
 Sub-pane stacks (`platformManagedSettingsDetailNavigationStack_L4`) sit **inside** the detail column (or inside the iPhone pushed detail); they do not bypass resolver output on iPad/macOS.
+
+### Sub-pane stack override (Issue #225)
+
+Managed flow now supports a first-class override policy for sub-pane stack behavior:
+
+- `PlatformManagedSettingsSubPaneStackPolicyOverride.systemDefault` (default matrix behavior)
+- `PlatformManagedSettingsSubPaneStackPolicyOverride.forceEnabled`
+- `PlatformManagedSettingsSubPaneStackPolicyOverride.forceDisabled`
+- `PlatformManagedSettingsSubPaneStackPolicyOverride.byDevice([DeviceType: Bool])`
+
+Resolve policy with:
+
+```swift
+let usesStack = PlatformManagedSettingsFlowLogic.subPaneNavigationUsesSystemStack(
+    deviceType: DeviceType.current,
+    override: .byDevice([
+        .car: true,   // opt into stack drill-down on CarPlay
+        .vision: true // opt into stack drill-down on vision
+    ])
+)
+```
+
+Trade-off:
+- Prefer `.systemDefault` unless you have a product-specific navigation contract that requires different sub-pane depth behavior on selected platforms.
+- Use `.byDevice` for narrow, explicit exceptions instead of forcing all platforms with `.forceEnabled` / `.forceDisabled`.
 
 ## Compile-time top-level panes
 
@@ -44,6 +127,99 @@ EmptyView()
 ```
 
 Use `PlatformManagedSettingsTopLevelState.anyHashableBinding($topLevel)` only if you call `platformSettingsContainer_L4` yourself.
+
+## Optional descriptor-driven sidebar
+
+When a custom sidebar is not needed, use `ManagedSettingsPaneList` as the `sidebar` content for
+`platformManagedSettingsTopLevel_L4`.
+
+```swift
+@State private var topLevel = PlatformManagedSettingsTopLevelState<MyPane>(deviceType: DeviceType.current)
+let descriptors: [SettingsPaneDescriptor<MyPane>] = [
+    .init(id: .general, titleKey: "settings.general", systemImage: "gearshape", section: "Main"),
+    .init(id: .privacy, titleKey: "settings.privacy", systemImage: "hand.raised", section: "Main")
+]
+
+EmptyView()
+    .platformManagedSettingsTopLevel_L4(
+        state: $topLevel,
+        sidebar: {
+            if let sidebar = try? ManagedSettingsPaneList(descriptors: descriptors, state: $topLevel) {
+                sidebar
+            } else {
+                Text("Invalid pane descriptors")
+            }
+        },
+        detail: { detailView }
+    )
+```
+
+If you also manage sub-pane stacks, pass `onSelectionChange` and call
+`PlatformManagedSettingsFlowLogic.selectTopLevelPane(_:topLevel:detailNavigation:)` so depth resets when
+the top-level pane changes.
+
+## Layer 1 sidebar + managed top-level shell (Issue #212)
+
+Adopters can keep a **Layer 1** settings-style sidebar and still use the managed outer shell.
+The key is to treat `PlatformManagedSettingsTopLevelState` as the **single source of truth** for
+top-level selection, then adapt Layer 1 callbacks into that state.
+
+```swift
+@State private var topLevel = PlatformManagedSettingsTopLevelState<MyTopPane>(deviceType: DeviceType.current)
+@State private var detailNav = PlatformManagedSettingsDetailNavigationState<MySubPane>()
+
+private var sidebarSections: [SettingsSectionData] {
+    [
+        SettingsSectionData(
+            title: "Settings",
+            items: MyTopPane.allCases.map { pane in
+                SettingsItemData(
+                    key: "pane.\(pane.rawValue)",
+                    title: pane.rawValue.capitalized,
+                    type: .button
+                )
+            }
+        )
+    ]
+}
+
+private func selectFromL1SidebarKey(_ key: String) {
+    guard
+        key.hasPrefix("pane."),
+        let raw = key.split(separator: ".", maxSplits: 1).last,
+        let pane = MyTopPane(rawValue: String(raw))
+    else { return }
+
+    PlatformManagedSettingsFlowLogic.selectTopLevelPane(
+        pane,
+        topLevel: &topLevel,
+        detailNavigation: &detailNav
+    )
+}
+
+EmptyView()
+    .platformManagedSettingsTopLevel_L4(
+        state: $topLevel,
+        sidebar: {
+            platformPresentSettings_L1(
+                settings: sidebarSections,
+                hints: PresentationHints(),
+                onSettingChanged: { key, _ in selectFromL1SidebarKey(key) }
+            )
+        },
+        detail: { detailView }
+    )
+```
+
+Do:
+- Keep top-level ownership in `PlatformManagedSettingsTopLevelState`.
+- Use `PlatformManagedSettingsFlowLogic.selectTopLevelPane` when a sidebar row maps to a pane.
+- Reset detail stack depth on pane switch by passing `detailNavigation` to the flow helper.
+
+Don't:
+- Keep a second independent top-level selection state (`@State selectedPane` + managed state) in parallel.
+- Mutate both `selectedCategory` and managed state manually in separate callback paths.
+- Skip key validation when mapping string keys from Layer 1 callbacks to typed pane enums.
 
 ## Sub-panes (detail stack)
 

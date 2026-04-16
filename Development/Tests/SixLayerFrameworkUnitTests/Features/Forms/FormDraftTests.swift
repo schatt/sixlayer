@@ -130,42 +130,44 @@ open class FormDraftTests: BaseTestClass {
     /// TESTING SCOPE: Tests saving drafts to UserDefaults
     /// METHODOLOGY: Save a draft and verify it can be loaded
     @Test func testUserDefaultsStorageSave() throws {
-        let testDefaults = UserDefaults(suiteName: "test_form_storage")!
-        testDefaults.removePersistentDomain(forName: "test_form_storage")
-        
+        let suiteName = "test_form_storage_save_\(UUID().uuidString)"
+        let testDefaults = UserDefaults(suiteName: suiteName)!
+        testDefaults.removePersistentDomain(forName: suiteName)
+
         let storage = UserDefaultsFormStateStorage(userDefaults: testDefaults)
         let fieldValues: [String: Any] = ["name": "Test", "value": 42]
         let draft = FormDraft(formId: "test-form", fieldValues: fieldValues)
-        
+
         try storage.saveDraft(draft)
-        
+
         #expect(storage.hasDraft(formId: "test-form"))
-        
-        testDefaults.removePersistentDomain(forName: "test_form_storage")
+
+        testDefaults.removePersistentDomain(forName: suiteName)
     }
     
     /// BUSINESS PURPOSE: Validate UserDefaultsFormStateStorage load functionality
     /// TESTING SCOPE: Tests loading drafts from UserDefaults
     /// METHODOLOGY: Save a draft, then load it and verify data integrity
     @Test func testUserDefaultsStorageLoad() throws {
-        let testDefaults = UserDefaults(suiteName: "test_form_storage")!
-        testDefaults.removePersistentDomain(forName: "test_form_storage")
-        
+        let suiteName = "test_form_storage_load_\(UUID().uuidString)"
+        let testDefaults = UserDefaults(suiteName: suiteName)!
+        testDefaults.removePersistentDomain(forName: suiteName)
+
         let storage = UserDefaultsFormStateStorage(userDefaults: testDefaults)
         let fieldValues: [String: Any] = ["name": "Test", "value": 42]
         let originalDraft = FormDraft(formId: "test-form", fieldValues: fieldValues)
-        
+
         try storage.saveDraft(originalDraft)
-        
+
         let loadedDraft = storage.loadDraft(formId: "test-form")
         #expect(loadedDraft != nil)
         #expect(loadedDraft?.formId == "test-form")
-        
+
         let restoredValues = loadedDraft?.toFieldValues()
         #expect(restoredValues?["name"] as? String == "Test")
         #expect(restoredValues?["value"] as? Int == 42)
-        
-        testDefaults.removePersistentDomain(forName: "test_form_storage")
+
+        testDefaults.removePersistentDomain(forName: suiteName)
     }
     
     /// BUSINESS PURPOSE: Validate UserDefaultsFormStateStorage clear functionality

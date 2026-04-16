@@ -9,6 +9,31 @@
 import Foundation
 import SwiftUI
 
+/// Top-level settings shell policy for a given ``DeviceType``.
+public enum PlatformManagedSettingsTopLevelShellPolicy: Equatable, Sendable {
+    /// Sidebar + detail visible together.
+    case splitSidebarDetail
+    /// Category list pushes into detail when selected.
+    case stackWithSelectionPush
+    /// Fallback for platforms that do not use managed top-level shell routing by default.
+    case unsupportedSidebarFallback
+}
+
+/// Managed-flow override policy for whether detail sub-panes use a system stack.
+///
+/// Use `.systemDefault` to preserve the framework matrix in
+/// ``PlatformManagedSettingsFlowLogic/subPaneNavigationUsesSystemStack(deviceType:)``.
+public enum PlatformManagedSettingsSubPaneStackPolicyOverride: Equatable, Sendable {
+    /// Preserve framework defaults for each device type.
+    case systemDefault
+    /// Force stack navigation for all platforms.
+    case forceEnabled
+    /// Force non-stack behavior for all platforms.
+    case forceDisabled
+    /// Override only selected platforms; all others fall back to framework defaults.
+    case byDevice([DeviceType: Bool])
+}
+
 // MARK: - PlatformManagedSettingsFlowLogic
 
 /// Routing policy helpers for the default settings (master–detail) experience.
@@ -44,12 +69,55 @@ public enum PlatformManagedSettingsFlowLogic: Sendable {
         }
     }
 
-    /// Whether hierarchical sub-panes inside the detail context should use a system stack (push / pop).
-    public static func subPaneNavigationUsesSystemStack(deviceType: DeviceType) -> Bool {
+    /// Explicit top-level settings shell policy for managed flow.
+    public static func topLevelSettingsShellPolicy(
+        deviceType: DeviceType
+    ) -> PlatformManagedSettingsTopLevelShellPolicy {
         switch deviceType {
-        case .phone, .pad, .mac:
+        case .pad, .mac:
+            return .splitSidebarDetail
+        case .phone, .car:
+            return .stackWithSelectionPush
+        case .tv, .watch, .vision:
+            return .unsupportedSidebarFallback
+        }
+    }
+
+    /// Whether hierarchical sub-panes inside the detail context should use a system stack (push / pop).
+    ///
+    /// **watchOS** is included with phone / pad / mac: drill-down settings use stack-style navigation.
+    /// **tvOS**, **CarPlay**, and **vision** use `false` when templates or non-stack detail chrome are preferred (see issue #211 matrix tests).
+    public static func subPaneNavigationUsesSystemStack(deviceType: DeviceType) -> Bool {
+        subPaneNavigationUsesSystemStack(deviceType: deviceType, override: .systemDefault)
+    }
+
+    /// Whether hierarchical sub-panes inside the detail context should use a system stack, with optional
+    /// managed-flow override policy.
+    ///
+    /// - Parameters:
+    ///   - deviceType: Active platform category.
+    ///   - override: Optional policy override. `.systemDefault` preserves the framework matrix.
+    public static func subPaneNavigationUsesSystemStack(
+        deviceType: DeviceType,
+        override policyOverride: PlatformManagedSettingsSubPaneStackPolicyOverride
+    ) -> Bool {
+        switch policyOverride {
+        case .systemDefault:
+            break
+        case .forceEnabled:
             return true
-        case .tv, .watch, .car, .vision:
+        case .forceDisabled:
+            return false
+        case .byDevice(let overrides):
+            if let overriddenValue = overrides[deviceType] {
+                return overriddenValue
+            }
+        }
+
+        switch deviceType {
+        case .phone, .pad, .mac, .watch:
+            return true
+        case .tv, .car, .vision:
             return false
         }
     }

@@ -1,12 +1,21 @@
 # 🚀 Six-Layer Framework Release History
 
-## 📍 **Current Release: v7.5.13** 🎯
+## 📍 **Current Release: v7.6.0** 🎯
 
-**Release Date**: April 2026
+**Release Date**: TBD
 **Status**: In preparation
-**Previous Release**: v7.5.12 - Patch release
-**Note**: Patch release. Layer 4 `platformModalSheetNavigationChrome_L4` (Issue #223), `DynamicFormHeaderVisibility` / inline header resolution (Issue #224), optional `platformFormToolbar` accessibility identifiers (Issue #221). Stricter TDD / red-issue logging rules in repo docs.
+**Previous Release**: v7.5.13 - Patch release
+**Note**: Release-facing managed settings migration documentation (Issue #215): changelog + migration blurb with links to `ManagedPlatformSettingsFlowGuide.md` and compile-checked example tests.
 **Next Release**: TBD
+
+---
+
+## 🎯 **v7.6.0 - Managed settings migration release documentation** (TBD)
+
+### **What's in v7.6.0:**
+- Documentation-focused release prep for managed settings adoption/migration guidance. See [RELEASE_v7.6.0.md](RELEASE_v7.6.0.md) for details.
+
+**See [RELEASE_v7.6.0.md](RELEASE_v7.6.0.md) for complete release notes.**
 
 ---
 

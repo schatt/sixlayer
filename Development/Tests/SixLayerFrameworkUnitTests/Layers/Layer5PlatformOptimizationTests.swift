@@ -5,7 +5,7 @@ import SwiftUI
 /// Comprehensive tests for Layer 5 platform optimization functions
 /// Ensures all Layer 5 functions are tested
 /// NOTE: Not marked @MainActor on class to allow parallel execution
-@Suite("Layer Platform Optimization")
+@Suite("Layer Platform Optimization", DefaultRuntimeCapabilityIsolationTrait())
 open class Layer5PlatformOptimizationTests: BaseTestClass {
     
     // MARK: - getCardExpansionPlatformConfig Tests
@@ -91,8 +91,12 @@ open class Layer5PlatformOptimizationTests: BaseTestClass {
     }
     
     @Test @MainActor func testGetCardExpansionPlatformConfig_AllPlatforms() async {
-        // Pin hover off so hoverDelay is deterministic (0.0) when run in parallel with other tests
+        // Ensure deterministic capability state regardless of parallel test ordering.
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        RuntimeCapabilityDetection.setTestTouchSupport(false)
+        RuntimeCapabilityDetection.setTestHapticFeedback(false)
         RuntimeCapabilityDetection.setTestHover(false)
+        defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
 
         let platforms: [SixLayerPlatform] = [.iOS, .macOS, .visionOS, .watchOS, .tvOS]
 
@@ -260,6 +264,13 @@ open class Layer5PlatformOptimizationTests: BaseTestClass {
     }
     
     @Test @MainActor func testGetCardExpansionAccessibilityConfig_AllPlatforms() async {
+        // Ensure this test validates platform defaults, not leaked overrides from other tests.
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        RuntimeCapabilityDetection.setTestVoiceOver(true)
+        RuntimeCapabilityDetection.setTestSwitchControl(true)
+        RuntimeCapabilityDetection.setTestAssistiveTouch(true)
+        defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
+
         let platforms: [SixLayerPlatform] = [.iOS, .macOS, .visionOS, .watchOS, .tvOS]
         
         for platform in platforms {

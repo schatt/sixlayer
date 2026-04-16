@@ -77,6 +77,8 @@ public struct RuntimeCapabilityDetection {
         setTestSwitchControl(nil)
         setTestAssistiveTouch(nil)
         setTestHighContrast(nil)
+        CapabilityOverride.clearThreadIsolationFromCurrentThread()
+        RuntimeCapabilityHarness.scrubLegacyCapabilityKeysFromUserDefaultsStandard()
     }
     
     // MARK: - Private Capability Override Getters
@@ -227,8 +229,9 @@ public struct RuntimeCapabilityDetection {
     
     /// Check if touch is enabled in system preferences
     private static func isTouchEnabledInSystemPreferences() -> Bool {
-        // Check UserDefaults or system preferences for touch enablement
-        // This could be set by third-party drivers or user configuration
+        if let harnessValue = RuntimeCapabilityHarness.macOSTouchEnabledPreference {
+            return harnessValue
+        }
         return UserDefaults.standard.bool(forKey: "SixLayerFramework.TouchEnabled")
     }
     #endif
@@ -269,10 +272,9 @@ public struct RuntimeCapabilityDetection {
     
     #if os(macOS)
     private static func detectmacOSHapticSupport() -> Bool {
-        // macOS doesn't natively support haptic feedback
-        // But could be enabled through third-party solutions or user preferences
-        // UserDefaults.bool(forKey:) returns false if the key doesn't exist, which is correct
-        // Only return true if explicitly enabled by the user/application
+        if let harnessValue = RuntimeCapabilityHarness.macOSHapticEnabledPreference {
+            return harnessValue
+        }
         return UserDefaults.standard.bool(forKey: "SixLayerFramework.HapticEnabled")
     }
     #endif
@@ -826,49 +828,69 @@ public struct TestingCapabilityDefaults {
 
 /// Allows users to override capability detection for testing or special configurations
 public struct CapabilityOverride {
-    
+
+    private static let touchThreadIsolationKey = "SixLayerFramework.CapabilityOverride.ThreadIsolation.TouchSupport"
+    private static let hapticThreadIsolationKey = "SixLayerFramework.CapabilityOverride.ThreadIsolation.HapticSupport"
+    private static let hoverThreadIsolationKey = "SixLayerFramework.CapabilityOverride.ThreadIsolation.HoverSupport"
+
+    /// Clears thread-local `CapabilityOverride` values for the current thread (GitHub #236).
+    public static func clearThreadIsolationFromCurrentThread() {
+        Thread.current.threadDictionary.removeObject(forKey: touchThreadIsolationKey)
+        Thread.current.threadDictionary.removeObject(forKey: hapticThreadIsolationKey)
+        Thread.current.threadDictionary.removeObject(forKey: hoverThreadIsolationKey)
+    }
+
     /// Override touch support (useful for testing with external touchscreens)
     public static var touchSupport: Bool? {
         get {
-            let value = UserDefaults.standard.object(forKey: "SixLayerFramework.Override.TouchSupport")
-            return value as? Bool
+            if let number = Thread.current.threadDictionary[touchThreadIsolationKey] as? NSNumber {
+                return number.boolValue
+            }
+            return UserDefaults.standard.object(forKey: "SixLayerFramework.Override.TouchSupport") as? Bool
         }
         set {
-            if let newValue = newValue {
-                UserDefaults.standard.set(newValue, forKey: "SixLayerFramework.Override.TouchSupport")
+            if let newValue {
+                Thread.current.threadDictionary[touchThreadIsolationKey] = NSNumber(value: newValue)
             } else {
-                UserDefaults.standard.removeObject(forKey: "SixLayerFramework.Override.TouchSupport")
+                Thread.current.threadDictionary.removeObject(forKey: touchThreadIsolationKey)
             }
+            UserDefaults.standard.removeObject(forKey: "SixLayerFramework.Override.TouchSupport")
         }
     }
-    
+
     /// Override haptic feedback support
     public static var hapticSupport: Bool? {
         get {
-            let value = UserDefaults.standard.object(forKey: "SixLayerFramework.Override.HapticSupport")
-            return value as? Bool
+            if let number = Thread.current.threadDictionary[hapticThreadIsolationKey] as? NSNumber {
+                return number.boolValue
+            }
+            return UserDefaults.standard.object(forKey: "SixLayerFramework.Override.HapticSupport") as? Bool
         }
         set {
-            if let newValue = newValue {
-                UserDefaults.standard.set(newValue, forKey: "SixLayerFramework.Override.HapticSupport")
+            if let newValue {
+                Thread.current.threadDictionary[hapticThreadIsolationKey] = NSNumber(value: newValue)
             } else {
-                UserDefaults.standard.removeObject(forKey: "SixLayerFramework.Override.HapticSupport")
+                Thread.current.threadDictionary.removeObject(forKey: hapticThreadIsolationKey)
             }
+            UserDefaults.standard.removeObject(forKey: "SixLayerFramework.Override.HapticSupport")
         }
     }
-    
+
     /// Override hover support
     public static var hoverSupport: Bool? {
         get {
-            let value = UserDefaults.standard.object(forKey: "SixLayerFramework.Override.HoverSupport")
-            return value as? Bool
+            if let number = Thread.current.threadDictionary[hoverThreadIsolationKey] as? NSNumber {
+                return number.boolValue
+            }
+            return UserDefaults.standard.object(forKey: "SixLayerFramework.Override.HoverSupport") as? Bool
         }
         set {
-            if let newValue = newValue {
-                UserDefaults.standard.set(newValue, forKey: "SixLayerFramework.Override.HoverSupport")
+            if let newValue {
+                Thread.current.threadDictionary[hoverThreadIsolationKey] = NSNumber(value: newValue)
             } else {
-                UserDefaults.standard.removeObject(forKey: "SixLayerFramework.Override.HoverSupport")
+                Thread.current.threadDictionary.removeObject(forKey: hoverThreadIsolationKey)
             }
+            UserDefaults.standard.removeObject(forKey: "SixLayerFramework.Override.HoverSupport")
         }
     }
 }

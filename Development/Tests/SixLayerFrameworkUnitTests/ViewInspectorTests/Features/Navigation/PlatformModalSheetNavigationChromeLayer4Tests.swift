@@ -67,6 +67,27 @@ open class PlatformModalSheetNavigationChromeLayer4Tests: BaseTestClass {
         #endif
     }
 
+    /// Prints reported `accessibilityElementCount` stats for the same hosted chrome as the toolbar tests (#232 diagnostics).
+    @Test @MainActor func testPlatformModalSheetNavigationChrome_L4_Diagnostics_ReportedAccessibilityElementCounts() {
+        let chrome = EmptyView().platformModalSheetNavigationChrome_L4(
+            title: "Filters",
+            titleDisplayMode: .inline,
+            confirmationTitle: "Apply",
+            onConfirmation: {},
+            content: { Text("Body") }
+        )
+        .enableGlobalAutomaticCompliance()
+
+        #if os(iOS) && canImport(UIKit)
+        let hosted = hostRootPlatformView(chrome)
+        let report = diagnosticsReportedAccessibilityElementCounts(inHosted: hosted)
+        print("[A11y diagnostics] \(report)")
+        #expect(Bool(true), "See test console log for [A11y diagnostics] line")
+        #else
+        #expect(Bool(true), "iOS UIKit-only diagnostic")
+        #endif
+    }
+
     @Test @MainActor func testPlatformModalSheetNavigationChrome_L4_WithLeading_ExposesBothToolbarButtons() {
         let chrome = EmptyView().platformModalSheetNavigationChrome_L4(
             title: "Sort",

@@ -487,6 +487,14 @@ targets:
     dependencies:
       - target: SixLayerFramework_visionOS
 
+# Scheme Test action: per-target parallel workers + random test order (Xcode scheme; pairs with
+# xcodebuild -parallel-testing-enabled in buildconfig.yml). UITest targets included — revisit if
+# parallel UI classes expose ordering or shared-state flakes.
+#
+# XcodeGen emits verbose *.xcscheme XML; Xcode on open/save often aligns that XML with the same
+# scheme intent you declare here (leaner attributes, different Scheme `version`, etc.). Those
+# details are not configured line-by-line below—serialization differs by tool. Commit Xcode’s
+# scheme output when Xcode updates it; see `.cursor/rules/project-yml-exclusive.mdc`.
 schemes:
   SLF-iOS-Framework:
     build:
@@ -494,8 +502,12 @@ schemes:
         SixLayerFramework_iOS: all
     test:
       targets:
-        - SixLayerFrameworkUnitTests_iOS
-        - SixLayerFrameworkExternalIntegrationTests_iOS
+        - name: SixLayerFrameworkUnitTests_iOS
+          parallelizable: true
+          randomExecutionOrder: true
+        - name: SixLayerFrameworkExternalIntegrationTests_iOS
+          parallelizable: true
+          randomExecutionOrder: true
 
   SLF-macOS-Framework:
     build:
@@ -503,8 +515,12 @@ schemes:
         SixLayerFramework_macOS: all
     test:
       targets:
-        - SixLayerFrameworkUnitTests_macOS
-        - SixLayerFrameworkExternalIntegrationTests_macOS
+        - name: SixLayerFrameworkUnitTests_macOS
+          parallelizable: true
+          randomExecutionOrder: true
+        - name: SixLayerFrameworkExternalIntegrationTests_macOS
+          parallelizable: true
+          randomExecutionOrder: true
 
   SLF-macOS-TestApp:
     build:
@@ -527,10 +543,18 @@ schemes:
         SixLayerFrameworkTestApp_iOS: all
     test:
       targets:
-        - SixLayerFrameworkUnitTests_iOS
-        - SLFiOSViewInspectorTests
-        - SixLayerFrameworkUITests_iOS
-        - SixLayerFrameworkExternalIntegrationTests_iOS
+        - name: SixLayerFrameworkUnitTests_iOS
+          parallelizable: true
+          randomExecutionOrder: true
+        - name: SLFiOSViewInspectorTests
+          parallelizable: true
+          randomExecutionOrder: true
+        - name: SixLayerFrameworkUITests_iOS
+          parallelizable: true
+          randomExecutionOrder: true
+        - name: SixLayerFrameworkExternalIntegrationTests_iOS
+          parallelizable: true
+          randomExecutionOrder: true
 
   SLF-macOS-AllTests:
     build:
@@ -539,10 +563,18 @@ schemes:
         SixLayerFrameworkTestApp_macOS: all
     test:
       targets:
-        - SixLayerFrameworkUnitTests_macOS
-        - SLFmacOSViewInspectorTests
-        - SixLayerFrameworkUITests_macOS
-        - SixLayerFrameworkExternalIntegrationTests_macOS
+        - name: SixLayerFrameworkUnitTests_macOS
+          parallelizable: true
+          randomExecutionOrder: true
+        - name: SLFmacOSViewInspectorTests
+          parallelizable: true
+          randomExecutionOrder: true
+        - name: SixLayerFrameworkUITests_macOS
+          parallelizable: true
+          randomExecutionOrder: true
+        - name: SixLayerFrameworkExternalIntegrationTests_macOS
+          parallelizable: true
+          randomExecutionOrder: true
 
   SLF-iOS-UnitTests:
     build:
@@ -551,7 +583,9 @@ schemes:
         SixLayerFrameworkUnitTests_iOS: all
     test:
       targets:
-        - SixLayerFrameworkUnitTests_iOS
+        - name: SixLayerFrameworkUnitTests_iOS
+          parallelizable: true
+          randomExecutionOrder: true
 
   SLF-macOS-UnitTests:
     build:
@@ -560,7 +594,9 @@ schemes:
         SixLayerFrameworkUnitTests_macOS: all
     test:
       targets:
-        - SixLayerFrameworkUnitTests_macOS
+        - name: SixLayerFrameworkUnitTests_macOS
+          parallelizable: true
+          randomExecutionOrder: true
 
   SLF-macOS-UITests:
     build:
@@ -570,7 +606,9 @@ schemes:
         SixLayerFrameworkUITests_macOS: all
     test:
       targets:
-        - SixLayerFrameworkUITests_macOS
+        - name: SixLayerFrameworkUITests_macOS
+          parallelizable: true
+          randomExecutionOrder: true
 
   SLF-iOS-UITests:
     build:
@@ -580,7 +618,9 @@ schemes:
         SixLayerFrameworkUITests_iOS: all
     test:
       targets:
-        - SixLayerFrameworkUITests_iOS
+        - name: SixLayerFrameworkUITests_iOS
+          parallelizable: true
+          randomExecutionOrder: true
 
   SLF-macOS-ViewInspectorTests:
     build:
@@ -589,7 +629,9 @@ schemes:
         SLFmacOSViewInspectorTests: all
     test:
       targets:
-        - SLFmacOSViewInspectorTests
+        - name: SLFmacOSViewInspectorTests
+          parallelizable: true
+          randomExecutionOrder: true
 
   SLF-iOS-ViewInspectorTests:
     build:
@@ -598,7 +640,9 @@ schemes:
         SLFiOSViewInspectorTests: all
     test:
       targets:
-        - SLFiOSViewInspectorTests
+        - name: SLFiOSViewInspectorTests
+          parallelizable: true
+          randomExecutionOrder: true
 
   SLF-tvOS-Framework:
     build:
@@ -606,11 +650,17 @@ schemes:
         SixLayerFramework_tvOS: all
     test:
       targets:
-        - SixLayerFrameworkUnitTests_tvOS
-        - SixLayerFrameworkExternalIntegrationTests_tvOS
+        - name: SixLayerFrameworkUnitTests_tvOS
+          parallelizable: true
+          randomExecutionOrder: true
+        - name: SixLayerFrameworkExternalIntegrationTests_tvOS
+          parallelizable: true
+          randomExecutionOrder: true
       # UITests excluded by default due to ViewInspector Swift 6 issues
       # Uncomment when ViewInspector is fixed:
-      # - SixLayerFrameworkUITests_tvOS
+      # - name: SixLayerFrameworkUITests_tvOS
+      #   parallelizable: true
+      #   randomExecutionOrder: true
 
   SLF-tvOS-AllTests:
     build:
@@ -618,9 +668,15 @@ schemes:
         SixLayerFramework_tvOS: all
     test:
       targets:
-        - SixLayerFrameworkUnitTests_tvOS
-        - SixLayerFrameworkUITests_tvOS
-        - SixLayerFrameworkExternalIntegrationTests_tvOS
+        - name: SixLayerFrameworkUnitTests_tvOS
+          parallelizable: true
+          randomExecutionOrder: true
+        - name: SixLayerFrameworkUITests_tvOS
+          parallelizable: true
+          randomExecutionOrder: true
+        - name: SixLayerFrameworkExternalIntegrationTests_tvOS
+          parallelizable: true
+          randomExecutionOrder: true
 
   SLF-tvOS-UnitTests:
     build:
@@ -629,7 +685,9 @@ schemes:
         SixLayerFrameworkUnitTests_tvOS: all
     test:
       targets:
-        - SixLayerFrameworkUnitTests_tvOS
+        - name: SixLayerFrameworkUnitTests_tvOS
+          parallelizable: true
+          randomExecutionOrder: true
 
   SLF-watchOS-Framework:
     build:
@@ -637,11 +695,17 @@ schemes:
         SixLayerFramework_watchOS: all
     test:
       targets:
-        - SixLayerFrameworkUnitTests_watchOS
-        - SixLayerFrameworkExternalIntegrationTests_watchOS
+        - name: SixLayerFrameworkUnitTests_watchOS
+          parallelizable: true
+          randomExecutionOrder: true
+        - name: SixLayerFrameworkExternalIntegrationTests_watchOS
+          parallelizable: true
+          randomExecutionOrder: true
       # UITests excluded by default due to ViewInspector Swift 6 issues
       # Uncomment when ViewInspector is fixed:
-      # - SixLayerFrameworkUITests_watchOS
+      # - name: SixLayerFrameworkUITests_watchOS
+      #   parallelizable: true
+      #   randomExecutionOrder: true
 
   SLF-watchOS-AllTests:
     build:
@@ -649,9 +713,15 @@ schemes:
         SixLayerFramework_watchOS: all
     test:
       targets:
-        - SixLayerFrameworkUnitTests_watchOS
-        - SixLayerFrameworkUITests_watchOS
-        - SixLayerFrameworkExternalIntegrationTests_watchOS
+        - name: SixLayerFrameworkUnitTests_watchOS
+          parallelizable: true
+          randomExecutionOrder: true
+        - name: SixLayerFrameworkUITests_watchOS
+          parallelizable: true
+          randomExecutionOrder: true
+        - name: SixLayerFrameworkExternalIntegrationTests_watchOS
+          parallelizable: true
+          randomExecutionOrder: true
 
   SLF-watchOS-UnitTests:
     build:
@@ -660,7 +730,9 @@ schemes:
         SixLayerFrameworkUnitTests_watchOS: all
     test:
       targets:
-        - SixLayerFrameworkUnitTests_watchOS
+        - name: SixLayerFrameworkUnitTests_watchOS
+          parallelizable: true
+          randomExecutionOrder: true
 
   SLF-visionOS-Framework:
     build:
@@ -668,11 +740,17 @@ schemes:
         SixLayerFramework_visionOS: all
     test:
       targets:
-        - SixLayerFrameworkUnitTests_visionOS
-        - SixLayerFrameworkExternalIntegrationTests_visionOS
+        - name: SixLayerFrameworkUnitTests_visionOS
+          parallelizable: true
+          randomExecutionOrder: true
+        - name: SixLayerFrameworkExternalIntegrationTests_visionOS
+          parallelizable: true
+          randomExecutionOrder: true
       # UITests excluded by default due to ViewInspector Swift 6 issues
       # Uncomment when ViewInspector is fixed:
-      # - SixLayerFrameworkUITests_visionOS
+      # - name: SixLayerFrameworkUITests_visionOS
+      #   parallelizable: true
+      #   randomExecutionOrder: true
 
   SLF-visionOS-AllTests:
     build:
@@ -680,9 +758,15 @@ schemes:
         SixLayerFramework_visionOS: all
     test:
       targets:
-        - SixLayerFrameworkUnitTests_visionOS
-        - SixLayerFrameworkUITests_visionOS
-        - SixLayerFrameworkExternalIntegrationTests_visionOS
+        - name: SixLayerFrameworkUnitTests_visionOS
+          parallelizable: true
+          randomExecutionOrder: true
+        - name: SixLayerFrameworkUITests_visionOS
+          parallelizable: true
+          randomExecutionOrder: true
+        - name: SixLayerFrameworkExternalIntegrationTests_visionOS
+          parallelizable: true
+          randomExecutionOrder: true
 
   SLF-visionOS-UnitTests:
     build:
@@ -691,4 +775,6 @@ schemes:
         SixLayerFrameworkUnitTests_visionOS: all
     test:
       targets:
-        - SixLayerFrameworkUnitTests_visionOS
+        - name: SixLayerFrameworkUnitTests_visionOS
+          parallelizable: true
+          randomExecutionOrder: true

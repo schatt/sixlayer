@@ -1,41 +1,41 @@
 ---
-description: Project configuration uses project.yml exclusively; never edit generated Xcode files
+description: Project configuration via project.yml + XcodeGen; never hand-edit pbxproj; Xcode may align scheme XML with intent—commit as-is; never hand-edit schemes
 alwaysApply: true
 ---
 
-# Project Configuration: project.yml Only
+# Project Configuration: project.yml + XcodeGen (Xcode aligns scheme XML)
 
 ## **MANDATORY — PRECEDENCE**
 
-- **Never edit generated Xcode artifacts.** Do not edit `*.xcodeproj/project.pbxproj`, `*.xcodeproj/**/*.xcscheme`, or any other generated files under the Xcode project. This rule takes precedence; if a task would require editing those files, change **project.yml** instead and regenerate.
-- **Single source of truth:** project.yml only. No exceptions.
+- **Never hand-edit `project.pbxproj` or other generated project internals.** If a task would require editing `*.xcodeproj/project.pbxproj` (or non-scheme generated artifacts), change **`project.yml`** instead and regenerate with **XcodeGen**.
+- **Never hand-edit `*.xcscheme` files** (no manual XML edits in Cursor or an editor). Structural scheme changes belong in **`project.yml`**, then `xcodegen generate` (or `xcodegen -c` per workflow), then commit per the XcodeGen exception in `.cursor/rules/commit-after-every-edit.mdc`.
+- **Exception — Xcode-updated schemes only:** When **Xcode** (not the agent) updates shared `*.xcscheme` on open/save, that is **the same intent** you already expressed in `project.yml`, stated in the on-disk form Xcode prefers (format/version, omitted default attributes, leaner blocks). **Commit those files as Xcode left them.** **Agents do not “clean up” or re-edit scheme XML by hand.** After a future `xcodegen generate`, verbose XML may return; opening/saving in Xcode may align again—both are consistent with `project.yml` as the declarative source of what the scheme *means*.
 
-## Core Principle
+## Core principle
 
-This project uses **project.yml** (XcodeGen) as the single source of truth for Xcode project configuration. All targets, sources, excludes, build settings, and schemes are defined there.
+**`project.yml`** is where you **declare** project and scheme structure. **`project.pbxproj`** is **XcodeGen output** and must not be edited directly. **`*.xcscheme`** on disk may look different after XcodeGen vs after Xcode, but that is **serialization**, not a different product intent—**commit Xcode’s version when Xcode produced it**; it **aligns** what you meant with what Xcode keeps in the repo.
 
 ## MANDATORY
 
-- **Edit only project.yml** when changing:
+- **Edit `project.yml`** when changing:
   - Targets (adding, removing, renaming)
   - Source file membership or excludes
-  - Build settings
-  - Schemes
+  - Build settings (when not better expressed elsewhere)
+  - Scheme structure (targets in build/test, parallelization, etc.)
   - Dependencies
 
-- **Never edit** generated project artifacts:
+- **Do not hand-edit:**
   - `*.xcodeproj/project.pbxproj`
-  - `*.xcodeproj/**/*.xcscheme`
-  - Any other files under `*.xcodeproj/` that are produced by XcodeGen
+  - `*.xcscheme` (neither to “fix” Xcode nor to mimic XcodeGen output)
+
+- **Do commit Xcode’s scheme updates** when you observe them (see commit exception in `commit-after-every-edit.mdc`). Do **not** revert them only to match a previous XcodeGen-only XML snapshot unless you are deliberately re-generating and choosing that snapshot.
 
 ## Workflow
 
-1. Make project-structure or config changes in **project.yml**.
-2. Regenerate the Xcode project (e.g. `xcodegen generate` or your project’s command).
-3. Do not hand-edit the generated `.xcodeproj` or its contents.
-4. **Commit** `project.yml` and **all** generated files from that XcodeGen run in **one** commit (see `.cursor/rules/commit-after-every-edit.mdc` — XcodeGen exception).
+1. **Declarative changes:** Edit **`project.yml`** → run **XcodeGen** → commit `project.yml` and all generated artifacts from that run in **one** commit (see `commit-after-every-edit.mdc`).
+2. **Xcode-only scheme alignment:** If Xcode changed **`*.xcscheme`** and nothing else, commit those scheme files **as-is** (no manual edits). Optional: run `xcodegen generate` when reconciling with `project.yml`; if Xcode then adjusts schemes again, that output is still fine to commit—**no hand-editing** schemes.
 
 ## Rationale
 
-- Single source of truth avoids drift and merge conflicts.
-- project.yml is version-controlled and readable; pbxproj is generated and brittle to edit by hand.
+- **`project.yml`** stays readable and mergeable; **`pbxproj`** stays generated-only.
+- **Xcode and XcodeGen** may emit different scheme XML for the **same** intent; committing Xcode’s form when *Xcode* wrote it avoids pointless churn and matches how you’ve always treated it: **the version you want in git is the one that aligns your stated intent with Xcode’s canonical shape.**
