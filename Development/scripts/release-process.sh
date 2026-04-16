@@ -314,7 +314,6 @@ if ! xcodebuild test \
     log_error "macOS unit tests failed! Cannot proceed with release."
     echo "💡 Open the result bundle in Xcode (Report navigator), or inspect failures from the CLI:" >&2
     echo "   xcrun xcresulttool get test-results summary --path \"$MACOS_XCRESULT\"" >&2
-    echo "   (Legacy \`get object --id root\` is not valid for this xcresult format; use test-results above.)" >&2
     exit 1
 fi
 echo "✅ macOS unit tests passed"
@@ -332,7 +331,6 @@ if ! xcodebuild test \
     echo "💡 macOS xcresult (passed): $MACOS_XCRESULT" >&2
     echo "💡 Open the iOS result bundle in Xcode (Report navigator), or inspect failures from the CLI:" >&2
     echo "   xcrun xcresulttool get test-results summary --path \"$IOS_XCRESULT\"" >&2
-    echo "   (Legacy \`get object --id root\` is not valid for this xcresult format; use test-results above.)" >&2
     exit 1
 fi
 echo "✅ iOS unit tests passed"
