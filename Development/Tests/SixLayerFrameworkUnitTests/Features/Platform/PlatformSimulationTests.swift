@@ -30,7 +30,7 @@ import Foundation
 
 /// Platform detection and capability tests
 /// Tests verify that runtime capability detection works correctly
-@Suite("Platform Detection")
+@Suite("Platform Detection", DefaultRuntimeCapabilityIsolationTrait())
 open class PlatformSimulationTests: BaseTestClass {
 
     // MARK: - Platform Detection Tests
