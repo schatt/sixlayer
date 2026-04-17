@@ -375,18 +375,29 @@ open class CapabilityAwareFunctionTests: BaseTestClass {
     /// TESTING SCOPE: Color encoding, color decoding, cross-platform color compatibility
     /// METHODOLOGY: Test color encoding and decoding functionality
     @Test @MainActor func testColorEncodingFunctionsEnabled() {
-        // Color encoding should work on all platforms
+        // Issue #237: platformColorEncode/Decode throw .platformNotSupported on
+        // tvOS/watchOS/visionOS by framework design (the documented contract).
+        // A full tvOS/watchOS/visionOS encoding implementation is tracked under
+        // #241 (capability-aware graceful degradation). Until then, this test
+        // asserts the iOS/macOS success contract AND the tvOS/etc. documented
+        // failure contract, so neither regression goes unnoticed.
         let testColor = Color.blue
-        
+        #if os(iOS) || os(macOS)
         do {
             let encodedData = try platformColorEncode(testColor)
-            #expect(!encodedData.isEmpty, "Color encoding should work on all platforms")
-            
+            #expect(!encodedData.isEmpty, "Color encoding should work on iOS/macOS")
+
             let _ = try platformColorDecode(encodedData)
-            #expect(Bool(true), "Color decoding should work on all platforms")  // decodedColor is non-optional
+            #expect(Bool(true), "Color decoding should work on iOS/macOS")
         } catch {
-            Issue.record("Color encoding/decoding should work on all platforms: \(error)")
+            Issue.record("Color encoding/decoding should work on iOS/macOS: \(error)")
         }
+        #else
+        #expect(throws: ColorEncodingError.self,
+                "tvOS/watchOS/visionOS: framework is documented to throw .platformNotSupported until #241") {
+            _ = try platformColorEncode(testColor)
+        }
+        #endif
     }
     
     // MARK: - Comprehensive Capability-Aware Testing
