@@ -2,6 +2,9 @@ import SwiftUI
 #if canImport(UIKit)
 import UIKit
 #endif
+#if canImport(AppKit)
+import AppKit
+#endif
 
 // MARK: - Color Name Types
 
@@ -1160,7 +1163,7 @@ public extension Color {
     /// Fill a rectangle with this color using cross-platform approach
     /// - Parameter rect: The rectangle to fill (can be CGRect or NSRect)
     func fillRect(_ rect: Any) {
-        #if os(iOS)
+        #if os(iOS) || os(tvOS)
         if let cgRect = rect as? CGRect {
             setFill()
             // CGRect doesn't have fill() - we need to use CGContext
@@ -1186,7 +1189,7 @@ public extension Color {
     ///   - rect: The rectangle to fill
     ///   - context: The graphics context (optional, uses current if not provided)
     func fillRectangle(_ rect: Any, in context: CGContext? = nil) {
-        #if os(iOS)
+        #if os(iOS) || os(tvOS)
         if let cgRect = rect as? CGRect {
             if let context = context {
                 fill(cgRect, in: context)
@@ -1229,7 +1232,7 @@ public extension Color {
     ///   - size: The size of the rectangle to fill
     ///   - context: The graphics context (optional, uses current if not provided)
     func fillRect(size: CGSize, in context: Any? = nil) {
-        #if os(iOS)
+        #if os(iOS) || os(tvOS)
         let rect = CGRect(origin: .zero, size: size)
         if let rendererContext = context as? UIGraphicsImageRendererContext {
             fill(rect, in: rendererContext.cgContext)
@@ -1255,7 +1258,7 @@ public extension Color {
     /// Fill the entire current graphics context bounds with this color
     /// - Parameter context: The graphics context (optional, uses current if not provided)
     func fillBounds(in context: CGContext? = nil) {
-        #if os(iOS)
+        #if os(iOS) || os(tvOS)
         if let context = context {
             let bounds = context.boundingBoxOfClipPath
             fill(bounds, in: context)
@@ -1279,47 +1282,51 @@ public extension Color {
 
 /// Cross-platform rectangle type that works with both NSRect and CGRect
 public struct PlatformRect {
-    #if os(iOS)
-    public let cgRect: CGRect
-    #elseif os(macOS)
+    #if os(macOS)
     public let nsRect: NSRect
+    #else
+    public let cgRect: CGRect
     #endif
 
     public var origin: CGPoint {
-        #if os(iOS)
-        return cgRect.origin
-        #elseif os(macOS)
+        #if os(macOS)
         return CGPoint(x: nsRect.origin.x, y: nsRect.origin.y)
+        #else
+        return cgRect.origin
         #endif
     }
 
     public var size: CGSize {
-        #if os(iOS)
-        return cgRect.size
-        #elseif os(macOS)
+        #if os(macOS)
         return CGSize(width: nsRect.size.width, height: nsRect.size.height)
+        #else
+        return cgRect.size
         #endif
     }
 
     public init(x: CGFloat, y: CGFloat, width: CGFloat, height: CGFloat) {
-        #if os(iOS)
-        self.cgRect = CGRect(x: x, y: y, width: width, height: height)
-        #elseif os(macOS)
+        #if os(macOS)
         self.nsRect = NSRect(x: x, y: y, width: width, height: height)
+        #else
+        self.cgRect = CGRect(x: x, y: y, width: width, height: height)
         #endif
     }
 
     public init(origin: CGPoint, size: CGSize) {
-        #if os(iOS)
-        self.cgRect = CGRect(origin: origin, size: size)
-        #elseif os(macOS)
+        #if os(macOS)
         self.nsRect = NSRect(origin: origin, size: size)
+        #else
+        self.cgRect = CGRect(origin: origin, size: size)
         #endif
     }
 
     /// Fill this rectangle with a color
     public func fill(with color: Color) {
-        color.fillRectangle(self)
+        #if os(macOS)
+        color.fillRectangle(nsRect)
+        #else
+        color.fillRectangle(cgRect)
+        #endif
     }
 }
 
