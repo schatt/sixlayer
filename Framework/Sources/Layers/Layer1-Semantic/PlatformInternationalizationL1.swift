@@ -370,12 +370,26 @@ public func platformLocalizedTextEditor_L1(
     let i18n = InternationalizationService(locale: hints.locale)
     let layoutDirection = i18n.getLayoutDirection()
     
-    return TextEditor(text: text)
-        .environment(\.layoutDirection, layoutDirection)
-        .environment(\.locale, hints.locale)
-        .environmentObject(i18n)
-        .automaticCompliance(
-            named: "platformLocalizedTextEditor_L1",
-            accessibilityLabel: accessibilityLabel
-        )
+    return Group {
+        #if os(tvOS)
+        // TextEditor is unavailable on tvOS; use a single-line field as a functional fallback (#237).
+        TextField(title, text: text)
+            .environment(\.layoutDirection, layoutDirection)
+            .environment(\.locale, hints.locale)
+            .environmentObject(i18n)
+            .automaticCompliance(
+                named: "platformLocalizedTextEditor_L1",
+                accessibilityLabel: accessibilityLabel
+            )
+        #else
+        TextEditor(text: text)
+            .environment(\.layoutDirection, layoutDirection)
+            .environment(\.locale, hints.locale)
+            .environmentObject(i18n)
+            .automaticCompliance(
+                named: "platformLocalizedTextEditor_L1",
+                accessibilityLabel: accessibilityLabel
+            )
+        #endif
+    }
 }
