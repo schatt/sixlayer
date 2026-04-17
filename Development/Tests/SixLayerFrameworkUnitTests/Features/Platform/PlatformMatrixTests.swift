@@ -233,18 +233,27 @@ open class PlatformMatrixTests: BaseTestClass {
     
     @Test @MainActor func testColorEncodingCapabilityMatrix() {
         initializeTestConfig()
-        // Test color encoding works on all platforms
+        // Issue #237: the capability matrix for color encoding is asymmetric by
+        // design — iOS/macOS succeed, tvOS/watchOS/visionOS throw
+        // .platformNotSupported. Real per-platform implementations are tracked
+        // under issue #241. Pin the documented contract per platform so either
+        // side regressing is caught.
         let testColor = Color.blue
-        
+        #if os(iOS) || os(macOS)
         do {
             let encodedData = try platformColorEncode(testColor)
-            #expect(!encodedData.isEmpty, "Color encoding should produce data")
-            
+            #expect(!encodedData.isEmpty, "Color encoding should produce data on iOS/macOS")
+
             _ = try platformColorDecode(encodedData)
-            // Decoded color is non-optional, so it exists if we reach here
         } catch {
-            Issue.record("Color encoding/decoding should work on all platforms: \(error)")
+            Issue.record("Color encoding/decoding should work on iOS/macOS: \(error)")
         }
+        #else
+        #expect(throws: ColorEncodingError.self,
+                "tvOS/watchOS/visionOS: documented to throw .platformNotSupported until #241") {
+            _ = try platformColorEncode(testColor)
+        }
+        #endif
     }
     
     // MARK: - OCR Capability Matrix
