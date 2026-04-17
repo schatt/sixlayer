@@ -127,7 +127,12 @@ public struct iOSTouchFormField: View {
                 .dynamicTypeSize(.large...(.accessibility3))
             
             TextField(placeholder, text: $text)
+                #if os(iOS) || os(macOS)
                 .textFieldStyle(.roundedBorder)
+                #else
+                // .roundedBorder is unavailable on tvOS (and not used on watchOS here) (#237).
+                .textFieldStyle(.plain)
+                #endif
                 #if os(iOS)
                 .keyboardType(keyboardType)
                 #endif
