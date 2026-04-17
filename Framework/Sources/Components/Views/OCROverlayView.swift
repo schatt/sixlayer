@@ -31,10 +31,15 @@ public struct OCROverlayView: View {
                 .resizable()
                 .scaledToFit()
                 .automaticCompliance(named: "OCRImage")
-            #else
+            #elseif os(macOS)
             Image(nsImage: image.nsImage)
                 .resizable()
                 .scaledToFit()
+                .automaticCompliance(named: "OCRImage")
+            #else
+            // tvOS/watchOS/visionOS: no NSImage path on PlatformImage in this target (#237).
+            Color.clear
+                .frame(maxWidth: .infinity, maxHeight: 200)
                 .automaticCompliance(named: "OCRImage")
             #endif
             
