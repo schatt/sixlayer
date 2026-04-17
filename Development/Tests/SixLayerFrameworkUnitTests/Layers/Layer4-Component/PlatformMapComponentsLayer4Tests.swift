@@ -42,7 +42,7 @@ open class PlatformMapComponentsLayer4Tests: BaseTestClass {
     /// TESTING SCOPE: Tests that the API signature exists and compiles
     /// METHODOLOGY: Verify compile-time API availability
     @Test @MainActor func testPlatformMapView_APIAvailable() {
-        #if canImport(MapKit)
+        #if canImport(MapKit) && (os(iOS) || os(macOS))
         if #available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *) {
             // Given: Map component API
             let position = Binding.constant(MapCameraPosition.automatic)
@@ -68,7 +68,7 @@ open class PlatformMapComponentsLayer4Tests: BaseTestClass {
     /// TESTING SCOPE: Tests that deprecated MapAnnotation is not used
     /// METHODOLOGY: Verify API uses Annotation with MapContentBuilder
     @Test @MainActor func testPlatformMapView_UsesModernAPI() {
-        #if canImport(MapKit)
+        #if canImport(MapKit) && (os(iOS) || os(macOS))
         if #available(iOS 17.0, macOS 14.0, *) {
             // Given: Modern Map API should be used
             let position = Binding.constant(MapCameraPosition.automatic)
@@ -94,7 +94,7 @@ open class PlatformMapComponentsLayer4Tests: BaseTestClass {
     /// TESTING SCOPE: Tests that the API signature is identical on iOS and macOS
     /// METHODOLOGY: Verify compile-time API consistency
     @Test @MainActor func testPlatformMapView_ConsistentAPI() {
-        #if canImport(MapKit)
+        #if canImport(MapKit) && (os(iOS) || os(macOS))
         if #available(iOS 17.0, macOS 14.0, *) {
             // Given: Map component API
             // When: API is used on different platforms
@@ -161,7 +161,7 @@ open class PlatformMapComponentsLayer4Tests: BaseTestClass {
     /// TESTING SCOPE: Tests that LocationService coordinates can be used
     /// METHODOLOGY: Verify coordinate conversion
     @Test @MainActor func testPlatformMapView_LocationServiceIntegration() {
-        #if canImport(MapKit)
+        #if canImport(MapKit) && (os(iOS) || os(macOS))
         if #available(iOS 17.0, macOS 14.0, *) {
             // Given: LocationService and coordinates
             let testCoordinate = CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194)
@@ -192,7 +192,7 @@ open class PlatformMapComponentsLayer4Tests: BaseTestClass {
     /// TESTING SCOPE: Tests that Annotation API works correctly
     /// METHODOLOGY: Verify annotation creation
     @Test @MainActor func testPlatformMapView_AnnotationSupport() {
-        #if canImport(MapKit)
+        #if canImport(MapKit) && (os(iOS) || os(macOS))
         if #available(iOS 17.0, macOS 14.0, *) {
             // Given: Map annotation data
             let coordinate = CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194)
@@ -223,7 +223,7 @@ open class PlatformMapComponentsLayer4Tests: BaseTestClass {
     /// TESTING SCOPE: Tests error handling for invalid coordinates
     /// METHODOLOGY: Verify error handling
     @Test @MainActor func testPlatformMapView_ErrorHandling() {
-        #if canImport(MapKit)
+        #if canImport(MapKit) && (os(iOS) || os(macOS))
         // Given: Invalid coordinate
         _ = CLLocationCoordinate2D(latitude: 91.0, longitude: 181.0) // Out of range
         
@@ -240,7 +240,7 @@ open class PlatformMapComponentsLayer4Tests: BaseTestClass {
     /// TESTING SCOPE: Tests that map annotations have accessibility support
     /// METHODOLOGY: Verify accessibility features
     @Test @MainActor func testPlatformMapView_Accessibility() {
-        #if canImport(MapKit)
+        #if canImport(MapKit) && (os(iOS) || os(macOS))
         // Given: Map component
         // When: Accessibility is checked
         // Then: Should support accessibility
@@ -255,7 +255,7 @@ open class PlatformMapComponentsLayer4Tests: BaseTestClass {
     /// TESTING SCOPE: Tests that LocationService can provide coordinates for map
     /// METHODOLOGY: Verify LocationService integration API
     @Test @MainActor func testPlatformMapView_LocationServiceIntegrationAPI() {
-        #if canImport(MapKit)
+        #if canImport(MapKit) && (os(iOS) || os(macOS))
         if #available(iOS 17.0, macOS 14.0, *) {
             // Given: LocationService
             let locationService = LocationService()
@@ -276,7 +276,7 @@ open class PlatformMapComponentsLayer4Tests: BaseTestClass {
     /// TESTING SCOPE: Tests error handling when location is unavailable
     /// METHODOLOGY: Verify error handling
     @Test @MainActor func testPlatformMapView_LocationServiceErrorHandling() {
-        #if canImport(MapKit)
+        #if canImport(MapKit) && (os(iOS) || os(macOS))
         if #available(iOS 17.0, macOS 14.0, *) {
             // Given: LocationService that may fail
             let locationService = LocationService()
