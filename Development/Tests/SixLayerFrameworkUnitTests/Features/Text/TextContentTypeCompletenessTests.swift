@@ -10,8 +10,11 @@ import UIKit
 open class TextContentTypeCompletenessTests: BaseTestClass {
     
     /// Test that all UITextContentType cases exist in SixLayerTextContentType
-    /// This test runs on iOS/Mac Catalyst to verify completeness
-    #if canImport(UIKit)
+    /// This test runs on iOS/Mac Catalyst to verify completeness.
+    /// Note: UIKit is only imported on iOS above; on tvOS/watchOS/visionOS
+    /// UITextContentType is out of scope here. Tightening the guard from
+    /// canImport(UIKit) to iOS/macCatalyst to match the import above.
+    #if os(iOS) || targetEnvironment(macCatalyst)
     @Test func testSixLayerTextContentTypeCompleteness() {
         // Get all UITextContentType cases
         let uiTextContentTypes: [UITextContentType] = [

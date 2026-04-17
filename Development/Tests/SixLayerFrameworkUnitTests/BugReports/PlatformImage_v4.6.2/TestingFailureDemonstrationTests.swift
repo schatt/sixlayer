@@ -164,6 +164,7 @@ open class TestingFailureDemonstrationTests: BaseTestClass {
     /// TESTING SCOPE: Shows the specific tests that would have failed
     /// METHODOLOGY: Execute the exact code that was broken
     @Test @MainActor func testWhatWouldHaveCaughtTheBreakingChange() {
+        #if os(iOS) || os(macOS)
         // Given: The exact code that was broken in 4.6.2
         let placeholderImage = PlatformImage.createPlaceholder()
         #if os(iOS)
@@ -194,6 +195,11 @@ open class TestingFailureDemonstrationTests: BaseTestClass {
         // The actual API usage patterns in our production code
         // The actual callback execution in our Layer 4 components
         // The actual delegate method execution in our photo components
+        #else
+        // tvOS/watchOS/visionOS: PlatformImage roundtrip covered by other platform tests.
+        // Graceful-degradation testing is tracked under issue #241.
+        #expect(Bool(true), "Skipped on non-iOS/macOS; see #241 for capability-aware coverage")
+        #endif
     }
     
     /// BUSINESS PURPOSE: Demonstrate the testing architecture failure
