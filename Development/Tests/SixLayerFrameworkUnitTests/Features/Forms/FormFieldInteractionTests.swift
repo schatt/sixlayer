@@ -263,6 +263,7 @@ open class FormFieldInteractionTests: BaseTestClass {
     /// TESTING SCOPE: Tests date field data binding and value synchronization
     /// METHODOLOGY: Create date field with data binding and verify binding functionality
     @Test @MainActor func testDateFieldWithDataBinding() {
+        #if !os(tvOS)
         // Given: Date field with data binding
         resetCallbacks()
         let dateField = sampleFormFields[5]
@@ -283,6 +284,12 @@ open class FormFieldInteractionTests: BaseTestClass {
         
         // Then: View should be created successfully
         // View creation succeeded (non-optional result)
+        #else
+        // DatePicker is unavailable on tvOS; date input is covered by the
+        // tvOS read-only fallback in IntelligentFormView. See #241 for
+        // capability-aware coverage.
+        #expect(Bool(true), "DatePicker not available on tvOS")
+        #endif
     }
     
     /// BUSINESS PURPOSE: Validate checkbox field data binding functionality
