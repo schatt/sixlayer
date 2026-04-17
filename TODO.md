@@ -20,6 +20,8 @@
   - [ ] visionOS: run Unit + UI (ViewInspector **N/A**)
   - [ ] For each distinct failure, create and link a GitHub issue under epic #233
   - [ ] Post consolidated pass/fail/missing matrix and log/xcresult evidence on #233
+  - [ ] **#237** tvOS compile: in progress (`b7.7.0`); interim call-site guards landing to unblock build (e.g. `AdvancedFieldTypes`, `AppleHIGComplianceExamples`); architectural cleanup tracked in #241
+  - [ ] **#241** Follow-up: move SwiftUI availability gates out of Layer 1 into Layer 4/5 primitives (platformStepper / platformSlider / platformColorPicker / platformGauge / platformOnHover / platformOnDrop / platformTextSelection / platformImageView / DatePicker overloads for time+dateTime); delete duplicate `l1SemanticTextFieldBorderStyle`; + capability-aware graceful degradation in Layer 1/2/3 (camera on tvOS → photo picker / informed placeholder)
 
 - [ ] **#226** Consumer-facing `SixLayerUITestNavigator` contract (stable screen selectors + reusable navigation helpers in `SixLayerTestKit`)
   - [ ] **#227** Define public UI test navigation contract types
