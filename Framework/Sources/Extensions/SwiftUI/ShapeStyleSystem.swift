@@ -25,7 +25,9 @@ public struct ShapeStyleSystem {
         public static let info = Color.blue
         
         // Platform-specific colors
-        #if canImport(UIKit)
+        // UIColor dynamic semantic colors exist on iOS; tvOS/watchOS/visionOS import UIKit but do not
+        // expose the same UIColor APIs — use the shared fallback branch below for those OSes (#237).
+        #if os(iOS) && canImport(UIKit)
         public static let systemBackground = Color(UIColor.systemBackground)
         public static let secondarySystemBackground = Color(UIColor.secondarySystemBackground)
         public static let tertiarySystemBackground = Color(UIColor.tertiarySystemBackground)
