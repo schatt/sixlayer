@@ -300,6 +300,9 @@ targets:
       - target: SixLayerFrameworkTestApp_macOS
 
   # UI tests - tvOS (same test sources; no TestApp for tvOS)
+  # Note: XCUITest .tap() is unavailable on tvOS (uses focus/remote model, not touch).
+  # All *UITests.swift files and XCUITestHelpers.swift are iOS-touch-based and excluded here.
+  # tvOS-native UI tests (focus engine driven) are tracked under epic #233 / issue #241.
   SixLayerFrameworkUITests_tvOS:
     type: bundle.ui-testing
     platform: tvOS
@@ -308,6 +311,8 @@ targets:
         excludes:
           - "TestApp/**"
           - "README.md"
+          - "**/*UITests.swift"
+          - "XCUITestHelpers.swift"
     settings:
       PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.framework.ui-tests
       SWIFT_VERSION: "6.0"
@@ -318,6 +323,8 @@ targets:
       - target: SixLayerFramework_tvOS
 
   # UI tests - watchOS (same test sources; no TestApp for watchOS)
+  # Note: XCUITest .tap() is unavailable on watchOS; touch-based helpers excluded.
+  # watchOS-native UI tests tracked under epic #233 / issue #241.
   SixLayerFrameworkUITests_watchOS:
     type: bundle.ui-testing
     platform: watchOS
@@ -326,6 +333,8 @@ targets:
         excludes:
           - "TestApp/**"
           - "README.md"
+          - "**/*UITests.swift"
+          - "XCUITestHelpers.swift"
     settings:
       PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.framework.ui-tests
       SWIFT_VERSION: "6.0"
@@ -336,6 +345,8 @@ targets:
       - target: SixLayerFramework_watchOS
 
   # UI tests - visionOS (same test sources; no TestApp for visionOS)
+  # UI tests - visionOS: XCUITest APIs used by current tests are iOS-specific;
+  # current tests excluded until visionOS-native UI tests are designed (tracked under #233/#241).
   SixLayerFrameworkUITests_visionOS:
     type: bundle.ui-testing
     platform: visionOS
@@ -344,6 +355,8 @@ targets:
         excludes:
           - "TestApp/**"
           - "README.md"
+          - "**/*UITests.swift"
+          - "XCUITestHelpers.swift"
     settings:
       PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.framework.ui-tests
       SWIFT_VERSION: "6.0"
