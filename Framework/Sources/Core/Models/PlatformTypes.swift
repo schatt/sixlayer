@@ -7,6 +7,12 @@
 
 import Foundation
 import SwiftUI
+#if canImport(AppKit)
+import AppKit
+#endif
+#if canImport(UIKit)
+import UIKit
+#endif
 
 // MARK: - Platform Enumeration
 
@@ -685,100 +691,86 @@ public enum ResponsiveType: String, CaseIterable {
 
 /// Cross-platform image type for consistent image handling
 public struct PlatformSize: @unchecked Sendable {
-    #if os(iOS)
-    public let cgSize: CGSize
-    #elseif os(macOS)
+    #if os(macOS)
     public let nsSize: NSSize
+    #else
+    public let cgSize: CGSize
     #endif
     
     public init(width: Double, height: Double) {
-        #if os(iOS)
-        self.cgSize = CGSize(width: width, height: height)
-        #elseif os(macOS)
+        #if os(macOS)
         self.nsSize = NSSize(width: width, height: height)
+        #else
+        self.cgSize = CGSize(width: width, height: height)
         #endif
     }
     
     public init(_ cgSize: CGSize) {
-        #if os(iOS)
-        self.cgSize = cgSize
-        #elseif os(macOS)
+        #if os(macOS)
         self.nsSize = NSSize(width: cgSize.width, height: cgSize.height)
+        #else
+        self.cgSize = cgSize
         #endif
     }
     
     public var width: Double {
-        #if os(iOS)
-        return Double(cgSize.width)
-        #elseif os(macOS)
+        #if os(macOS)
         return Double(nsSize.width)
+        #else
+        return Double(cgSize.width)
         #endif
     }
     
     public var height: Double {
-        #if os(iOS)
-        return Double(cgSize.height)
-        #elseif os(macOS)
+        #if os(macOS)
         return Double(nsSize.height)
+        #else
+        return Double(cgSize.height)
         #endif
     }
     
     /// Output conversion to platform-specific types
     /// Note: Prefer using width and height properties for cross-platform code
-    #if os(iOS)
-    public var asCGSize: CGSize {
-        return self.cgSize
-    }
-    #elseif os(macOS)
+    #if os(macOS)
     public var asNSSize: NSSize {
         return self.nsSize
+    }
+    public var asCGSize: CGSize {
+        CGSize(width: nsSize.width, height: nsSize.height)
+    }
+    #else
+    public var asCGSize: CGSize {
+        self.cgSize
     }
     #endif
 }
 
 public struct PlatformImage: @unchecked Sendable {
-    #if os(iOS)
-    private let _uiImage: UIImage
-    #elseif os(macOS)
+    #if os(macOS)
     private let _nsImage: NSImage
+    #else
+    private let _uiImage: UIImage
     #endif
     
     public init?(data: Data) {
-        #if os(iOS)
-        guard let uiImage = UIImage(data: data) else { return nil }
-        self._uiImage = uiImage
-        #elseif os(macOS)
+        #if os(macOS)
         guard let nsImage = NSImage(data: data) else { return nil }
         self._nsImage = nsImage
+        #else
+        guard let uiImage = UIImage(data: data) else { return nil }
+        self._uiImage = uiImage
         #endif
     }
     
     public init() {
-        #if os(iOS)
-        self._uiImage = UIImage()
-        #elseif os(macOS)
+        #if os(macOS)
         self._nsImage = NSImage()
+        #else
+        self._uiImage = UIImage()
         #endif
     }
     
-    #if os(iOS)
-    public init(uiImage: UIImage) {
-        self._uiImage = uiImage
-    }
-    
-    /// Implicit conversion from UIImage to PlatformImage (iOS only)
-    /// This enables the currency exchange model: UIImage → PlatformImage at system boundary
-    public init(_ image: UIImage) {
-        self.init(uiImage: image)
-    }
-    
-    /// Initialize from CGImage (iOS)
-    /// Implements Issue #23: Add PlatformImage initializer from CGImage
-    /// This eliminates the need for platform-specific code when working with Core Image/Graphics
-    public init(cgImage: CGImage) {
-        self.init(uiImage: UIImage(cgImage: cgImage))
-    }
-    #elseif os(macOS)
+    #if os(macOS)
     public init(nsImage: NSImage) {
         self._nsImage = nsImage
     }
@@ -798,43 +790,49 @@ public struct PlatformImage: @unchecked Sendable {
     public init(cgImage: CGImage, size: CGSize = .zero) {
         self.init(nsImage: NSImage(cgImage: cgImage, size: size))
     }
+    #else
+    public init(uiImage: UIImage) {
+        self._uiImage = uiImage
+    }
+    
+    /// Implicit conversion from UIImage to PlatformImage at the UIKit boundary
+    public init(_ image: UIImage) {
+        self.init(uiImage: image)
+    }
+    
+    /// Initialize from CGImage (UIKit platforms)
+    public init(cgImage: CGImage) {
+        self.init(uiImage: UIImage(cgImage: cgImage))
+    }
     #endif
     
-    #if os(iOS)
-    public var uiImage: UIImage { return _uiImage }
-    #elseif os(macOS)
+    #if os(macOS)
     public var nsImage: NSImage { return _nsImage }
+    #else
+    public var uiImage: UIImage { return _uiImage }
     #endif
     
     /// Check if the image is empty
     public var isEmpty: Bool {
-        #if os(iOS)
-        return uiImage.size == .zero
-        #elseif os(macOS)
+        #if os(macOS)
         return nsImage.size == .zero
+        #else
+        return uiImage.size == .zero
         #endif
     }
     
     /// Get the size of the image
     public var size: CGSize {
-        #if os(iOS)
-        return uiImage.size
-        #elseif os(macOS)
+        #if os(macOS)
         return nsImage.size
+        #else
+        return uiImage.size
         #endif
     }
     
     /// Create a placeholder image for testing/stub purposes
     public static func createPlaceholder() -> PlatformImage {
-        #if os(iOS)
-        let size = CGSize(width: 100, height: 100)
-        let renderer = UIGraphicsImageRenderer(size: size)
-        let uiImage = renderer.image { context in
-            UIColor.systemBlue.setFill()
-            context.fill(CGRect(origin: .zero, size: size))
-        }
-        return PlatformImage(uiImage: uiImage)
-        #elseif os(macOS)
+        #if os(macOS)
         let size = NSSize(width: 100, height: 100)
         let nsImage = NSImage(size: size)
         nsImage.lockFocus()
@@ -843,7 +841,13 @@ public struct PlatformImage: @unchecked Sendable {
         nsImage.unlockFocus()
         return PlatformImage(nsImage: nsImage)
         #else
-        return PlatformImage()
+        let size = CGSize(width: 100, height: 100)
+        let renderer = UIGraphicsImageRenderer(size: size)
+        let uiImage = renderer.image { context in
+            UIColor.systemBlue.setFill()
+            context.fill(CGRect(origin: .zero, size: size))
+        }
+        return PlatformImage(uiImage: uiImage)
         #endif
     }
 }
