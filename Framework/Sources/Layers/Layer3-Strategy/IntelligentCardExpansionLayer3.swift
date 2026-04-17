@@ -135,8 +135,17 @@ private func determineSupportedStrategies(
         strategies.append(.gridReorganize)
     }
     
-    // Focus mode - supported on touch devices and when content is dense
-    if deviceType == .phone || deviceType == .pad || contentDensity == .dense {
+    // Focus mode - supported on touch devices, tvOS (focus engine is the sole
+    // interaction model), watchOS crown/tap, CarPlay, visionOS, and any dense-content
+    // context. Issue #237: tvOS must advertise focusMode so action buttons route
+    // through the platform's focus-based navigation.
+    if deviceType == .phone
+        || deviceType == .pad
+        || deviceType == .tv
+        || deviceType == .watch
+        || deviceType == .car
+        || deviceType == .vision
+        || contentDensity == .dense {
         strategies.append(.focusMode)
     }
     
