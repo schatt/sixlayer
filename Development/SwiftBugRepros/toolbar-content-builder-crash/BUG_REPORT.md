@@ -1,5 +1,7 @@
 # Swift compiler: "failed to produce diagnostic" for bare View mixed with ToolbarItem inside `.toolbar { }`
 
+**Filed upstream as [swiftlang/swift#88533](https://github.com/swiftlang/swift/issues/88533).**
+
 ## Summary
 
 Under Xcode 26.5 / Swift 6.3.2, a `.toolbar { ... }` closure that contains both a bare `View` value and a `ToolbarItem` value (in either order) causes swift-frontend to abort with:

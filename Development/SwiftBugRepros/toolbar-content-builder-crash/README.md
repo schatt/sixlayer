@@ -2,6 +2,8 @@
 
 Standalone reproducer for a swift-frontend crash (`failed to produce diagnostic for expression`) that was originally surfaced inside `Framework/Sources/Extensions/Platform/PlatformSpecificViewExtensions.swift` (the `#else` branch of `platformToolbar(content:leadingActions:trailingActions:)`).
 
+**Filed upstream as [swiftlang/swift#88533](https://github.com/swiftlang/swift/issues/88533).**
+
 The production-side fix is committed separately on this branch. The files here exist to:
 
 1. Confirm the crash is a compiler bug, not a bug in this project.
