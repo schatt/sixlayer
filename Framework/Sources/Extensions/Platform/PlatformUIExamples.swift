@@ -87,7 +87,11 @@ public struct PlatformUIExamples {
                             Text(item.title)
                                 .tag(item)
                         }
+                        #if os(iOS) || os(macOS)
                         .listStyle(SidebarListStyle())
+                        #else
+                        .listStyle(.plain)
+                        #endif
                     }
                     .frame(width: 250)
                     
@@ -390,7 +394,11 @@ public struct PlatformUIExamples {
                                 .font(.subheadline)
                                 .fontWeight(.medium)
                             TextField("Enter your name", text: $name)
+                                #if os(iOS) || os(macOS)
                                 .textFieldStyle(RoundedBorderTextFieldStyle())
+                                #else
+                                .textFieldStyle(.plain)
+                                #endif
                         }
                         
                         VStack(alignment: .leading, spacing: 8) {
@@ -398,7 +406,11 @@ public struct PlatformUIExamples {
                                 .font(.subheadline)
                                 .fontWeight(.medium)
                             TextField("Enter your email", text: $email)
+                                #if os(iOS) || os(macOS)
                                 .textFieldStyle(RoundedBorderTextFieldStyle())
+                                #else
+                                .textFieldStyle(.plain)
+                                #endif
                         }
                         
                         VStack(alignment: .leading, spacing: 8) {
@@ -406,7 +418,11 @@ public struct PlatformUIExamples {
                                 .font(.subheadline)
                                 .fontWeight(.medium)
                             TextField("Enter your age", text: $age)
+                                #if os(iOS) || os(macOS)
                                 .textFieldStyle(RoundedBorderTextFieldStyle())
+                                #else
+                                .textFieldStyle(.plain)
+                                #endif
                         }
                     }
                 }
