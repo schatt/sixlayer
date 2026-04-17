@@ -202,9 +202,19 @@ public func platformDocumentsDirectory(createIfNeeded: Bool = false, useiCloud: 
     }
     #endif
     
-    // Use local directory (default behavior)
+    // Issue #237: tvOS apps have no .documentDirectory — FileManager returns an
+    // empty array for .documentDirectory on tvOS because persistent on-device
+    // storage is not a supported pattern. Apple directs tvOS apps to use
+    // .cachesDirectory (ephemeral) or CloudKit for persistence. We fall back
+    // to caches on tvOS so callers still get a usable writable URL, and
+    // createIfNeeded ensures the directory is materialized on first use.
+    #if os(tvOS)
+    let url = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first
+    return resolveDirectory(url: url, createIfNeeded: true)
+    #else
     let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
     return resolveDirectory(url: url, createIfNeeded: createIfNeeded)
+    #endif
 }
 
 /// Returns the Documents directory URL in a cross-platform manner (throwing variant).
@@ -253,9 +263,14 @@ public func platformDocumentsDirectoryThrowing(createIfNeeded: Bool = false, use
     }
     #endif
     
-    // Use local directory (default behavior)
+    // Issue #237: on tvOS fall back to .cachesDirectory — see non-throwing variant.
+    #if os(tvOS)
+    let url = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first
+    return try resolveDirectoryThrowing(url: url, createIfNeeded: true)
+    #else
     let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
     return try resolveDirectoryThrowing(url: url, createIfNeeded: createIfNeeded)
+    #endif
 }
 
 /// Returns the Caches directory URL in a cross-platform manner.
