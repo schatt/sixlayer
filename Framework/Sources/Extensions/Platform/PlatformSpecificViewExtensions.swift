@@ -2042,6 +2042,7 @@ public extension View {
     ///   - displayedComponents: The date components to display
     ///   - label: The date picker label
     /// - Returns: A platform-specific date picker
+    #if !os(tvOS)
     func platformDatePicker<Label: View>(
         selection: Binding<Date>,
         displayedComponents: DatePickerComponents = [.date],
@@ -2049,12 +2050,27 @@ public extension View {
     ) -> some View {
         #if os(iOS) || os(macOS) || os(visionOS)
         return DatePicker(selection: selection, displayedComponents: displayedComponents, label: label)
-        #elseif os(tvOS) || os(watchOS)
+        #elseif os(watchOS)
         return DatePicker(selection: selection, label: label)
         #else
         return DatePicker(selection: selection, displayedComponents: displayedComponents, label: label)
         #endif
     }
+    #endif
+
+    #if os(tvOS)
+    /// tvOS: `DatePicker` / `DatePickerComponents` are unavailable; show label and formatted value.
+    func platformDatePicker<Label: View>(
+        selection: Binding<Date>,
+        @ViewBuilder label: () -> Label
+    ) -> some View {
+        platformVStackContainer(alignment: .leading, spacing: PlatformSpacing.medium) {
+            label()
+            Text(selection.wrappedValue, format: .dateTime.year().month().day())
+                .foregroundStyle(.secondary)
+        }
+    }
+    #endif
 
     /// Platform-specific toggle
     /// Provides consistent toggle behavior across platforms
