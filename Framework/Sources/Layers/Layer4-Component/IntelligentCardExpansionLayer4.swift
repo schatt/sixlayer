@@ -218,9 +218,11 @@ public struct ExpandableCardComponent<Item: Identifiable>: View {
             handleTap()
             onItemSelected?(item)
         }
+        #if !os(tvOS)
         .onHover { isHovering in
             onHover(isHovering)
         }
+        #endif
         .accessibilityElement(children: .combine)
         .accessibilityLabel(cardTitle)
         .accessibilityAddTraits(isExpanded ? [.isButton, .isSelected] : .isButton)
@@ -887,11 +889,13 @@ public struct SimpleCardComponent<Item: Identifiable>: View {
         }
         
         // Conditionally apply hover-based modifiers
+        #if !os(tvOS)
         if config.supportsHover {
             view = AnyView(view.onHover { _ in
                 // Hover support
             })
         }
+        #endif
         
         // Conditionally apply accessibility modifiers (Issue #191: single tappable element)
         if config.supportsVoiceOver || config.supportsSwitchControl {
@@ -905,9 +909,11 @@ public struct SimpleCardComponent<Item: Identifiable>: View {
         }
         
         // Apply keyboard shortcut when touch is not supported
+        #if !os(tvOS)
         if !config.supportsTouch {
             view = AnyView(view.keyboardShortcut(" ", modifiers: []))
         }
+        #endif
         
         // Always apply animation support
         view = AnyView(view.animation(.easeInOut(duration: 0.3), value: config.supportsTouch))

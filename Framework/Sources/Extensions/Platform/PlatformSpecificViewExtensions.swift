@@ -1523,7 +1523,13 @@ public extension View {
                 }
             }
         }
-        #elseif os(macOS)
+        #else
+        // macOS, tvOS, watchOS, visionOS: `.navigationBarLeading` / `.navigationBarTrailing`
+        // are iOS-only. Use an HStack inside `.toolbar { }` (SwiftUI treats it as an
+        // implicit ToolbarItem with `.automatic` placement) so the layout stays
+        // correct and `ToolbarContentBuilder` does not have to reconcile a mix of
+        // bare Views and `ToolbarItem`s (which previously crashed the Swift 5.10+
+        // type checker with "Failed to produce diagnostic for expression").
         return self.toolbar {
             HStack {
                 if let leadingActions = leadingActions {
@@ -1531,20 +1537,6 @@ public extension View {
                 }
                 content()
                 if let trailingActions = trailingActions {
-                    trailingActions()
-                }
-            }
-        }
-        #else
-        return self.toolbar {
-            if let leadingActions = leadingActions {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    leadingActions()
-                }
-            }
-            content()
-            if let trailingActions = trailingActions {
-                ToolbarItem(placement: .navigationBarTrailing) {
                     trailingActions()
                 }
             }

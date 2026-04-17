@@ -102,6 +102,7 @@ public class KeyboardShortcutManager {
     }
     
     /// Create a platform-appropriate keyboard shortcut
+    #if !os(tvOS)
         func createShortcut(
         key: KeyEquivalent,
         modifiers: EventModifiers = .command,
@@ -110,6 +111,7 @@ public class KeyboardShortcutManager {
         let platformModifiers = adaptModifiersForPlatform(modifiers)
         return KeyboardShortcut(key, modifiers: platformModifiers)
     }
+    #endif
     
     /// Adapt modifiers for platform conventions
     /// Uses PlatformStrategy to reduce code duplication (Issue #140)
@@ -402,9 +404,12 @@ public extension View {
         onPinch: @escaping (CGFloat) -> Void = { _ in },
         onRotate: @escaping (Double) -> Void = { _ in }
     ) -> some View {
+        #if os(tvOS)
+        return self
+        #else
         let manager = InputHandlingManager()
         let patterns = manager.interactionPatterns
-        
+
         return self
             .conditionalGesture(
                 condition: patterns.gestureSupport.contains(.swipe),
@@ -425,6 +430,7 @@ public extension View {
                     onRotate(value.degrees)
                 }
             )
+        #endif
     }
     
     /// Helper to conditionally add gestures
@@ -448,18 +454,20 @@ public enum SwipeDirection: Equatable {
     case right
     case up
     case down
-    
+
+    #if !os(tvOS)
     static func fromDrag(_ drag: DragGesture.Value) -> SwipeDirection {
         let translation = drag.translation
         let absX = abs(translation.width)
         let absY = abs(translation.height)
-        
+
         if absX > absY {
             return translation.width > 0 ? .right : .left
         } else {
             return translation.height > 0 ? .down : .up
         }
     }
+    #endif
 }
 
 // MARK: - Platform-Specific Interaction Components

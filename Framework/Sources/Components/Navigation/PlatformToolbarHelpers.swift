@@ -85,11 +85,8 @@ public extension View {
             return .navigationBarTrailing
         }
         #elseif os(tvOS)
-        if #available(tvOS 16.0, *) {
-            return .secondaryAction
-        } else {
-            return .automatic
-        }
+        // `.secondaryAction` is not available on tvOS; use a neutral placement.
+        return .automatic
         #elseif os(macOS)
         return .automatic
         #else
