@@ -941,7 +941,11 @@ public extension View {
                     sidebar()
                     detail()
                 }
+                #if os(iOS)
                 .navigationViewStyle(.columns)
+                #else
+                .navigationViewStyle(.stack)
+                #endif
                 .automaticCompliance(named: "platformSettingsContainer_L4")
             }
         case .detailOnlyCollapsedInner:
