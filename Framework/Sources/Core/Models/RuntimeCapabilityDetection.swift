@@ -936,16 +936,17 @@ public extension RuntimeCapabilityDetection {
     /// Note: nonisolated - this property considers both platform and runtime capability
     /// Uses PlatformStrategy to reduce code duplication (Issue #140)
     nonisolated static var minTouchTarget: CGFloat {
-        // DTRT: Respect platform's primary interaction method, but ensure accessibility
+        // DTRT: Respect each platform's primary interaction model.
+        //  - Touch-first (iOS/watchOS): always 44pt (Apple HIG).
+        //  - Focus-first (tvOS): 60pt (Apple tvOS HIG focus target at 10-foot distance).
+        //  - Pointer/spatial (macOS/visionOS): 44pt if touch is detected at runtime,
+        //    else 0pt.
+        // Delegate to PlatformStrategy which already encodes these rules (Issue #237).
         let platform = currentPlatform
-        
-        // Use platform strategy for touch-first platforms
-        if platform.isTouchFirstPlatform {
-            return platform.minTouchTarget  // Always 44.0 for touch-first platforms
+        if platform == .macOS || platform == .visionOS {
+            return supportsTouch ? 44.0 : 0.0
         }
-        
-        // Non-touch-first platforms: check runtime touch capability for accessibility
-        return supportsTouch ? 44.0 : 0.0
+        return platform.minTouchTarget
     }
     
     /// Hover delay for platforms that support hover

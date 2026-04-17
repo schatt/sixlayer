@@ -19,19 +19,30 @@ public extension SixLayerPlatform {
     
     // MARK: - Touch & Interaction Properties
     
-    /// Minimum touch target size for accessibility compliance (points)
-    /// Per Apple HIG: 44x44 points on touch-first platforms
-    /// 
-    /// - iOS/watchOS: Always 44.0 (touch-first platforms)
-    /// - macOS/tvOS/visionOS: 44.0 if touch is detected, 0.0 otherwise
+    /// Minimum interactive-target size (points)
+    ///
+    /// Apple HIG per platform:
+    /// - iOS/watchOS: 44pt minimum touch targets (touch-first platforms)
+    /// - tvOS: ~60pt minimum focus targets (focus engine, 10-foot viewing distance)
+    /// - macOS/visionOS: 44pt if touch is detected at runtime (pointer/hand tracking),
+    ///   otherwise 0.0 (no enforced minimum for pointer/cursor driven UI).
+    ///
+    /// Named "minTouchTarget" for historical reasons; on tvOS this is the focus-target
+    /// minimum. Issue #237.
     var minTouchTarget: CGFloat {
         switch self {
         case .iOS, .watchOS:
             return 44.0  // Touch-first platforms always need touch-sized targets
-        case .macOS, .tvOS, .visionOS:
-            // Non-touch-first platforms: check runtime touch capability for accessibility
-            // Note: This requires RuntimeCapabilityDetection, so we'll use a computed property
-            // that checks at runtime. For compile-time only, return 0.0
+        case .tvOS:
+            // tvOS uses the focus engine with 10-foot viewing distance. Apple's tvOS
+            // HIG recommends larger focus targets (roughly 60pt minimum). Returning
+            // this value ensures framework-generated UI respects TV ergonomics even
+            // though tvOS is not touch-based.
+            return 60.0
+        case .macOS, .visionOS:
+            // Non-touch-first pointer/spatial platforms: enforce 44pt only if touch
+            // capability is detected at runtime (e.g. touch-screen Mac or spatial
+            // direct-touch interaction).
             return RuntimeCapabilityDetection.supportsTouch ? 44.0 : 0.0
         }
     }

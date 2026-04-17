@@ -80,14 +80,15 @@ open class AccessibilityStateSimulationTests: BaseTestClass {
         // Given: Platform-specific configuration with accessibility overrides
         let platform = SixLayerPlatform.current
         
-        // Set accessibility capability overrides based on platform
+        // Set accessibility capability overrides based on platform.
+        // Fix #237: earlier this branch set setTestAssistiveTouch(false) for
+        // watchOS/tvOS/visionOS and then asserted supportsAssistiveTouch == true
+        // below — a self-contradiction that failed on the tvOS test build.
+        // Drive the override from the same expectation the assertions use:
+        // AssistiveTouch is expected on iOS/watchOS/tvOS/visionOS and NOT on macOS.
         RuntimeCapabilityDetection.setTestVoiceOver(true)
         RuntimeCapabilityDetection.setTestSwitchControl(true)
-        if platform == .iOS || platform == .macOS {
-            RuntimeCapabilityDetection.setTestAssistiveTouch(platform == .iOS)
-        } else {
-            RuntimeCapabilityDetection.setTestAssistiveTouch(false)
-        }
+        RuntimeCapabilityDetection.setTestAssistiveTouch(platform != .macOS)
         
         let config = getCardExpansionAccessibilityConfig()
         
