@@ -218,7 +218,11 @@ public struct ResponsiveNavigationExample: View {
                         Text("Sidebar Item 1")
                         Text("Sidebar Item 2")
                     }
+                    #if os(iOS) || os(macOS)
                     .listStyle(SidebarListStyle())
+                    #else
+                    .listStyle(.plain)
+                    #endif
                 }
                 .frame(minWidth: 160, maxWidth: 240)
             } else {
