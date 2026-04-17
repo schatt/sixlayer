@@ -40,6 +40,15 @@ import SwiftUI
 @Suite("Platform Color Encode")
 open class PlatformColorEncodeTests: BaseTestClass {
     
+    // Framework's platformColorEncode/platformColorDecode throw
+    // ColorEncodingError.platformNotSupported on tvOS/watchOS/visionOS by
+    // design. The tests below exercise real encoding on iOS/macOS; on other
+    // platforms every call throws, leaving collections empty and causing
+    // downstream out-of-bounds accesses (e.g. testPlatformColorEncodeConsistency
+    // subscripts an empty array). Gate the whole suite body on iOS/macOS.
+    // Capability-aware coverage is tracked under #241.
+    #if os(iOS) || os(macOS)
+    
     // MARK: - Basic Color Encoding Tests
     
     @Test func testPlatformColorEncodeWithSystemColors() {
@@ -265,6 +274,8 @@ open class PlatformColorEncodeTests: BaseTestClass {
             #expect(!encodedData.isEmpty, "Encoded data should not be empty")
         }
     }
+    
+    #endif // os(iOS) || os(macOS)
 }
 
 // MARK: - Helper Functions for Testing
