@@ -46,6 +46,9 @@ public extension PlatformImage {
         self.nsImage.draw(in: NSRect(origin: .zero, size: targetSize))
         resizedImage.unlockFocus()
         return PlatformImage(nsImage: resizedImage)
+        #else
+        // tvOS / watchOS / visionOS: no bitmap backing in PlatformImage for these helpers yet (#237).
+        return self
         #endif
     }
     
@@ -96,6 +99,8 @@ public extension PlatformImage {
         self.nsImage.draw(at: .zero, from: clampedRect, operation: .copy, fraction: 1.0)
         croppedImage.unlockFocus()
         return PlatformImage(nsImage: croppedImage)
+        #else
+        return self
         #endif
     }
     
@@ -110,6 +115,8 @@ public extension PlatformImage {
             return nil
         }
         return jpegData
+        #else
+        return nil
         #endif
     }
     
@@ -146,6 +153,13 @@ public extension PlatformImage {
             fileSize: data.count,
             format: format,
             hasAlpha: true
+        )
+        #else
+        return ImageMetadata(
+            size: PlatformSize(width: 0, height: 0),
+            fileSize: 0,
+            format: .unknown,
+            hasAlpha: false
         )
         #endif
     }
