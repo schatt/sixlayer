@@ -494,12 +494,12 @@ public extension View {
             content()
         }
         .automaticAccessibility()
-        .automaticCompliance()
+        .automaticCompliance(named: identifierName)
         #else
         platformVStackContainer(spacing: spacing) {
             content()
         }
-        .automaticCompliance()
+        .automaticCompliance(named: identifierName)
         #endif
     }
     
@@ -540,7 +540,7 @@ public extension View {
             maxHeight: sizing.container?.maxHeight
         )
         .automaticAccessibility()
-        .automaticCompliance()
+        .automaticCompliance(named: identifierName)
         #else
         platformVStackContainer(spacing: spacing) {
             content()
@@ -553,7 +553,7 @@ public extension View {
             idealHeight: sizing.container?.idealHeight,
             maxHeight: sizing.container?.maxHeight
         )
-        .automaticCompliance()
+        .automaticCompliance(named: identifierName)
         #endif
     }
     
@@ -625,10 +625,10 @@ public extension View {
         #if os(macOS)
         return view
             .automaticAccessibility()
-            .automaticCompliance()
+            .automaticCompliance(named: identifierName)
         #else
         return view
-            .automaticCompliance()
+            .automaticCompliance(named: identifierName)
         #endif
     }
     
@@ -665,13 +665,13 @@ public extension View {
                 .environmentObject(stateValue)
         }
         .automaticAccessibility()
-        .automaticCompliance()
+        .automaticCompliance(named: identifierName)
         #else
         platformVStackContainer(spacing: spacing) {
             content()
                 .environmentObject(stateValue)
         }
-        .automaticCompliance()
+        .automaticCompliance(named: identifierName)
         #endif
     }
     
@@ -702,12 +702,12 @@ public extension View {
             content()
         }
         .automaticAccessibility()
-        .automaticCompliance()
+        .automaticCompliance(named: identifierName)
         #else
         platformHStackContainer(spacing: spacing) {
             content()
         }
-        .automaticCompliance()
+        .automaticCompliance(named: identifierName)
         #endif
     }
     
@@ -748,7 +748,7 @@ public extension View {
             maxHeight: sizing.container?.maxHeight
         )
         .automaticAccessibility()
-        .automaticCompliance()
+        .automaticCompliance(named: identifierName)
         #else
         platformHStackContainer(spacing: spacing) {
             content()
@@ -761,7 +761,7 @@ public extension View {
             idealHeight: sizing.container?.idealHeight,
             maxHeight: sizing.container?.maxHeight
         )
-        .automaticCompliance()
+        .automaticCompliance(named: identifierName)
         #endif
     }
     
@@ -833,10 +833,10 @@ public extension View {
         #if os(macOS)
         return view
             .automaticAccessibility()
-            .automaticCompliance()
+            .automaticCompliance(named: identifierName)
         #else
         return view
-            .automaticCompliance()
+            .automaticCompliance(named: identifierName)
         #endif
     }
     
@@ -873,13 +873,13 @@ public extension View {
                 .environmentObject(stateValue)
         }
         .automaticAccessibility()
-        .automaticCompliance()
+        .automaticCompliance(named: identifierName)
         #else
         platformHStackContainer(spacing: spacing) {
             content()
                 .environmentObject(stateValue)
         }
-        .automaticCompliance()
+        .automaticCompliance(named: identifierName)
         #endif
     }
 }

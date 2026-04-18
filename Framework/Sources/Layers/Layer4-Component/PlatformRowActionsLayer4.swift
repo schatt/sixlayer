@@ -78,21 +78,21 @@ public extension View {
             self.swipeActions(edge: edge, allowsFullSwipe: allowsFullSwipe) {
                 actions()
             }
-            .automaticCompliance()
+            .automaticCompliance(named: "platformRowActions_L4")
         } else {
             // Fallback for older iOS versions
             self
-                .automaticCompliance()
+                .automaticCompliance(named: "platformRowActions_L4")
         }
         #elseif os(macOS)
         // macOS uses context menus for row actions
         self.contextMenu {
             actions()
         }
-        .automaticCompliance()
+        .automaticCompliance(named: "platformRowActions_L4")
         #else
         self
-            .automaticCompliance()
+            .automaticCompliance(named: "platformRowActions_L4")
         #endif
     }
     
@@ -117,15 +117,15 @@ public extension View {
         self.contextMenu {
             menuItems()
         }
-        .automaticCompliance()
+        .automaticCompliance(named: "platformContextMenu_L4")
         #elseif os(macOS)
         self.contextMenu {
             menuItems()
         }
-        .automaticCompliance()
+        .automaticCompliance(named: "platformContextMenu_L4")
         #else
         self
-            .automaticCompliance()
+            .automaticCompliance(named: "platformContextMenu_L4")
         #endif
     }
     
@@ -158,16 +158,16 @@ public extension View {
         } preview: {
             preview()
         }
-        .automaticCompliance()
+        .automaticCompliance(named: "platformContextMenu_L4")
         #elseif os(macOS)
         // macOS doesn't support preview, so ignore it
         self.contextMenu {
             menuItems()
         }
-        .automaticCompliance()
+        .automaticCompliance(named: "platformContextMenu_L4")
         #else
         self
-            .automaticCompliance()
+            .automaticCompliance(named: "platformContextMenu_L4")
         #endif
     }
 }

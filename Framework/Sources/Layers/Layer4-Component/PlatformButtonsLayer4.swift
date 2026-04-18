@@ -25,7 +25,7 @@ public extension View {
             #endif
         }()
         return styledView
-            .automaticCompliance()
+            .automaticCompliance(named: "platformPrimaryButtonStyle")
     }
     
     /// Platform-specific secondary button style
@@ -46,7 +46,7 @@ public extension View {
             #endif
         }()
         return styledView
-            .automaticCompliance()
+            .automaticCompliance(named: "platformSecondaryButtonStyle")
     }
     
     /// Platform-specific destructive button style
@@ -71,7 +71,7 @@ public extension View {
             #endif
         }()
         return styledView
-            .automaticCompliance()
+            .automaticCompliance(named: "platformDestructiveButtonStyle")
     }
     
     /// Platform-specific icon button with consistent styling
@@ -101,6 +101,6 @@ public extension View {
         .accessibilityLabel(accessibilityLabel)
         .accessibilityHint(accessibilityHint)
         .accessibilityAddTraits(.isButton)
-        .automaticCompliance()
+        .automaticCompliance(named: "platformIconButton")
     }
 }

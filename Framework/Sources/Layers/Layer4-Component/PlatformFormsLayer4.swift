@@ -27,7 +27,7 @@ public extension View {
         }
         .padding(.vertical, 4)
         .environment(\.accessibilityIdentifierLabel, label ?? "") // TDD GREEN: Pass label to identifier generation
-        .automaticCompliance()
+        .automaticCompliance(named: "platformFormField")
     }
     
     /// Platform-specific form field group for related fields
@@ -53,7 +53,7 @@ public extension View {
             .cornerRadius(8)
         }
         .environment(\.accessibilityIdentifierLabel, title ?? "") // TDD GREEN: Pass label to identifier generation
-        .automaticCompliance()
+        .automaticCompliance(named: "platformFormFieldGroup")
     }
     
     /// Platform-specific validation message with consistent styling
@@ -76,7 +76,7 @@ public extension View {
         .background(type.color.opacity(0.1))
         .cornerRadius(4)
         .environment(\.accessibilityIdentifierLabel, message) // TDD GREEN: Pass label to identifier generation
-        .automaticCompliance()
+        .automaticCompliance(named: "platformValidationMessage")
     }
     
     /// Platform-specific form divider with consistent styling
@@ -86,7 +86,7 @@ public extension View {
             .fill(Color.platformSeparator)
             .frame(height: 1)
             .padding(.vertical, 8)
-            .automaticCompliance()
+            .automaticCompliance(named: "platformFormDivider")
     }
     
     /// Platform-specific form spacing with consistent sizing

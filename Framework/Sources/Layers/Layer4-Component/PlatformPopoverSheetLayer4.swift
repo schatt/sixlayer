@@ -104,7 +104,7 @@ public extension View {
             arrowEdge: arrowEdge,
             content: content
         )
-        .automaticCompliance()
+        .automaticCompliance(named: "platformPopover_L4")
         #elseif os(macOS)
         self.popover(
             isPresented: isPresented,
@@ -112,7 +112,7 @@ public extension View {
             arrowEdge: arrowEdge,
             content: content
         )
-        .automaticCompliance()
+        .automaticCompliance(named: "platformPopover_L4")
         #else
         // `.popover` SwiftUI API is unavailable on tvOS (#237); use full-screen sheet-style at call sites instead.
         self
