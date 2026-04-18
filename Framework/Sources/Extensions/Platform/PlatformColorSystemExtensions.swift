@@ -113,7 +113,7 @@ public extension Color {
     /// Direct system background color
     /// iOS: systemBackground; macOS: windowBackgroundColor
     static var systemBackground: Color {
-        #if os(iOS) || os(tvOS) || os(visionOS)
+        #if os(iOS)
         return Color(.systemBackground)
         #elseif os(macOS)
         return Color(.windowBackgroundColor)
@@ -137,7 +137,7 @@ public extension Color {
     /// Platform secondary background color
     /// iOS: secondarySystemBackground; macOS: controlBackgroundColor
     static var platformSecondaryBackground: Color {
-        #if os(iOS) || os(tvOS) || os(visionOS)
+        #if os(iOS)
         return Color(.secondarySystemBackground)
         #elseif os(macOS)
         return Color(.controlBackgroundColor)
@@ -149,7 +149,7 @@ public extension Color {
     /// Platform tertiary background color
     /// iOS: tertiarySystemBackground; macOS: textBackgroundColor
     static var platformTertiaryBackground: Color {
-        #if os(iOS) || os(tvOS) || os(visionOS)
+        #if os(iOS)
         return Color(.tertiarySystemBackground)
         #elseif os(macOS)
         return Color(.textBackgroundColor)
@@ -161,7 +161,7 @@ public extension Color {
     /// Platform grouped background color
     /// iOS: systemGroupedBackground; macOS: controlBackgroundColor
     static var platformGroupedBackground: Color {
-        #if os(iOS) || os(tvOS) || os(visionOS)
+        #if os(iOS)
         return Color(.systemGroupedBackground)
         #elseif os(macOS)
         return Color(.controlBackgroundColor)
@@ -173,7 +173,7 @@ public extension Color {
     /// Platform separator color
     /// iOS: separator; macOS: separatorColor
     static var platformSeparator: Color {
-        #if os(iOS) || os(tvOS) || os(visionOS)
+        #if os(iOS)
         return Color(.separator)
         #elseif os(macOS)
         return Color(.separatorColor)
@@ -185,7 +185,7 @@ public extension Color {
     /// Platform label color
     /// iOS: label; macOS: labelColor
     static var platformLabel: Color {
-        #if os(iOS) || os(tvOS) || os(visionOS)
+        #if os(iOS)
         return Color(.label)
         #elseif os(macOS)
         return Color(.labelColor)
@@ -197,7 +197,7 @@ public extension Color {
     /// Platform secondary label color
     /// iOS: secondaryLabel; macOS: secondaryLabelColor
     static var platformSecondaryLabel: Color {
-        #if os(iOS) || os(tvOS) || os(visionOS)
+        #if os(iOS)
         return Color(.secondaryLabel)
         #elseif os(macOS)
         return Color(.secondaryLabelColor)
@@ -209,7 +209,7 @@ public extension Color {
     /// Platform tertiary label color
     /// iOS: tertiaryLabel; macOS: tertiaryLabelColor
     static var platformTertiaryLabel: Color {
-        #if os(iOS) || os(tvOS) || os(visionOS)
+        #if os(iOS)
         return Color(.tertiaryLabel)
         #elseif os(macOS)
         return Color(.tertiaryLabelColor)
@@ -221,7 +221,7 @@ public extension Color {
     /// Platform quaternary label color
     /// iOS: quaternaryLabel; macOS: quaternaryLabelColor
     static var platformQuaternaryLabel: Color {
-        #if os(iOS) || os(tvOS) || os(visionOS)
+        #if os(iOS)
         return Color(.quaternaryLabel)
         #elseif os(macOS)
         return Color(.quaternaryLabelColor)
@@ -233,7 +233,7 @@ public extension Color {
     /// Platform system fill color
     /// iOS: systemFill; macOS: controlColor
     static var platformSystemFill: Color {
-        #if os(iOS) || os(tvOS) || os(visionOS)
+        #if os(iOS)
         return Color(.systemFill)
         #elseif os(macOS)
         return Color(.controlColor)
@@ -245,7 +245,7 @@ public extension Color {
     /// Platform secondary system fill color
     /// iOS: secondarySystemFill; macOS: secondaryControlColor
     static var platformSecondarySystemFill: Color {
-        #if os(iOS) || os(tvOS) || os(visionOS)
+        #if os(iOS)
         return Color(.secondarySystemFill)
         #elseif os(macOS)
         return Color(.controlBackgroundColor)
@@ -257,7 +257,7 @@ public extension Color {
     /// Platform tertiary system fill color
     /// iOS: tertiarySystemFill; macOS: tertiaryControlColor
     static var platformTertiarySystemFill: Color {
-        #if os(iOS) || os(tvOS) || os(visionOS)
+        #if os(iOS)
         return Color(.tertiarySystemFill)
         #elseif os(macOS)
         return Color(.controlBackgroundColor).opacity(0.8)
@@ -269,7 +269,7 @@ public extension Color {
     /// Platform quaternary system fill color
     /// iOS: quaternarySystemFill; macOS: quaternaryControlColor
     static var platformQuaternarySystemFill: Color {
-        #if os(iOS) || os(tvOS) || os(visionOS)
+        #if os(iOS)
         return Color(.quaternarySystemFill)
         #elseif os(macOS)
         return Color(.controlBackgroundColor).opacity(0.6)
@@ -281,7 +281,7 @@ public extension Color {
     /// Platform tint color
     /// iOS: systemBlue; macOS: controlAccentColor
     static var platformTint: Color {
-        #if os(iOS) || os(tvOS) || os(visionOS)
+        #if os(iOS)
         return systemBlue
         #elseif os(macOS)
         return Color(.controlAccentColor)
@@ -317,7 +317,7 @@ public extension Color {
     /// Platform system gray6 color
     /// iOS: systemGray6; macOS: controlBackgroundColor
     static var platformSystemGray6: Color {
-        #if os(iOS) || os(tvOS) || os(visionOS)
+        #if os(iOS)
         return Color(.systemGray6)
         #elseif os(macOS)
         return Color(.controlBackgroundColor)
@@ -329,7 +329,7 @@ public extension Color {
     /// Platform system gray5 color
     /// iOS: systemGray5; macOS: controlColor
     static var platformSystemGray5: Color {
-        #if os(iOS) || os(tvOS) || os(visionOS)
+        #if os(iOS)
         return Color(.systemGray5)
         #elseif os(macOS)
         return Color(.controlColor)
@@ -341,7 +341,7 @@ public extension Color {
     /// Platform system gray4 color
     /// iOS: systemGray4; macOS: controlColor
     static var platformSystemGray4: Color {
-        #if os(iOS) || os(tvOS) || os(visionOS)
+        #if os(iOS)
         return Color(.systemGray4)
         #elseif os(macOS)
         return Color(.controlColor)
@@ -353,7 +353,7 @@ public extension Color {
     /// Platform system gray3 color
     /// iOS: systemGray3; macOS: controlColor
     static var platformSystemGray3: Color {
-        #if os(iOS) || os(tvOS) || os(visionOS)
+        #if os(iOS)
         return Color(.systemGray3)
         #elseif os(macOS)
         return Color(.controlColor)
@@ -365,7 +365,7 @@ public extension Color {
     /// Platform system gray2 color
     /// iOS: systemGray2; macOS: controlColor
     static var platformSystemGray2: Color {
-        #if os(iOS) || os(tvOS) || os(visionOS)
+        #if os(iOS)
         return Color(.systemGray2)
         #elseif os(macOS)
         return Color(.controlColor)
@@ -377,7 +377,7 @@ public extension Color {
     /// Platform system gray color
     /// iOS: systemGray; macOS: systemGray
     static var platformSystemGray: Color {
-        #if os(iOS) || os(tvOS) || os(visionOS)
+        #if os(iOS)
         return Color(.systemGray)
         #elseif os(macOS)
         return Color(.systemGray)
@@ -391,7 +391,7 @@ public extension Color {
     /// Direct system blue color
     /// iOS: systemBlue; macOS: systemBlue
     static var systemBlue: Color {
-        #if os(iOS) || os(tvOS) || os(visionOS)
+        #if os(iOS)
         return Color(.systemBlue)
         #elseif os(macOS)
         return Color(.systemBlue)
@@ -403,7 +403,7 @@ public extension Color {
     /// Direct system red color
     /// iOS: systemRed; macOS: systemRed
     static var systemRed: Color {
-        #if os(iOS) || os(tvOS) || os(visionOS)
+        #if os(iOS)
         return Color(.systemRed)
         #elseif os(macOS)
         return Color(.systemRed)
@@ -415,7 +415,7 @@ public extension Color {
     /// Direct system green color
     /// iOS: systemGreen; macOS: systemGreen
     static var systemGreen: Color {
-        #if os(iOS) || os(tvOS) || os(visionOS)
+        #if os(iOS)
         return Color(.systemGreen)
         #elseif os(macOS)
         return Color(.systemGreen)
@@ -427,7 +427,7 @@ public extension Color {
     /// Direct system orange color
     /// iOS: systemOrange; macOS: systemOrange
     static var systemOrange: Color {
-        #if os(iOS) || os(tvOS) || os(visionOS)
+        #if os(iOS)
         return Color(.systemOrange)
         #elseif os(macOS)
         return Color(.systemOrange)
@@ -439,7 +439,7 @@ public extension Color {
     /// Direct system yellow color
     /// iOS: systemYellow; macOS: systemYellow
     static var systemYellow: Color {
-        #if os(iOS) || os(tvOS) || os(visionOS)
+        #if os(iOS)
         return Color(.systemYellow)
         #elseif os(macOS)
         return Color(.systemYellow)
@@ -451,7 +451,7 @@ public extension Color {
     /// Direct system purple color
     /// iOS: systemPurple; macOS: systemPurple
     static var systemPurple: Color {
-        #if os(iOS) || os(tvOS) || os(visionOS)
+        #if os(iOS)
         return Color(.systemPurple)
         #elseif os(macOS)
         return Color(.systemPurple)
@@ -463,7 +463,7 @@ public extension Color {
     /// Direct system pink color
     /// iOS: systemPink; macOS: systemPink
     static var systemPink: Color {
-        #if os(iOS) || os(tvOS) || os(visionOS)
+        #if os(iOS)
         return Color(.systemPink)
         #elseif os(macOS)
         return Color(.systemPink)
@@ -475,7 +475,7 @@ public extension Color {
     /// Direct system indigo color
     /// iOS: systemIndigo; macOS: systemIndigo
     static var systemIndigo: Color {
-        #if os(iOS) || os(tvOS) || os(visionOS)
+        #if os(iOS)
         return Color(.systemIndigo)
         #elseif os(macOS)
         return Color(.systemIndigo)
@@ -487,7 +487,7 @@ public extension Color {
     /// Direct system teal color
     /// iOS: systemTeal; macOS: systemTeal
     static var systemTeal: Color {
-        #if os(iOS) || os(tvOS) || os(visionOS)
+        #if os(iOS)
         return Color(.systemTeal)
         #elseif os(macOS)
         return Color(.systemTeal)
@@ -499,7 +499,7 @@ public extension Color {
     /// Direct system mint color
     /// iOS: systemMint; macOS: systemMint
     static var systemMint: Color {
-        #if os(iOS) || os(tvOS) || os(visionOS)
+        #if os(iOS)
         return Color(.systemMint)
         #elseif os(macOS)
         return Color(.systemMint)
@@ -511,7 +511,7 @@ public extension Color {
     /// Direct system cyan color
     /// iOS: systemCyan; macOS: systemCyan
     static var systemCyan: Color {
-        #if os(iOS) || os(tvOS) || os(visionOS)
+        #if os(iOS)
         return Color(.systemCyan)
         #elseif os(macOS)
         return Color(.systemCyan)
@@ -523,7 +523,7 @@ public extension Color {
     /// Direct system brown color
     /// iOS: systemBrown; macOS: systemBrown
     static var systemBrown: Color {
-        #if os(iOS) || os(tvOS) || os(visionOS)
+        #if os(iOS)
         return Color(.systemBrown)
         #elseif os(macOS)
         return Color(.systemBrown)
@@ -599,7 +599,7 @@ public extension Color {
     
     /// Platform tertiary background color
     static var tertiaryBackground: Color {
-        #if os(iOS) || os(tvOS) || os(visionOS)
+        #if os(iOS)
         return Color(.tertiarySystemBackground)
         #elseif os(macOS)
         return Color(.controlBackgroundColor).opacity(0.5)
@@ -615,7 +615,7 @@ public extension Color {
     
     /// Platform card background color
     static var cardBackground: Color {
-        #if os(iOS) || os(tvOS) || os(visionOS)
+        #if os(iOS)
         return Color(.secondarySystemBackground)
         #elseif os(macOS)
         return Color(.controlBackgroundColor)
@@ -626,7 +626,7 @@ public extension Color {
     
     /// Platform grouped background color
     static var groupedBackground: Color {
-        #if os(iOS) || os(tvOS) || os(visionOS)
+        #if os(iOS)
         return Color(.systemGroupedBackground)
         #elseif os(macOS)
         return Color(.controlBackgroundColor)
@@ -637,7 +637,7 @@ public extension Color {
     
     /// Platform separator color
     static var separator: Color {
-        #if os(iOS) || os(tvOS) || os(visionOS)
+        #if os(iOS)
         return Color(.separator)
         #elseif os(macOS)
         return Color(.separatorColor)
@@ -648,7 +648,7 @@ public extension Color {
     
     /// Platform label color
     static var label: Color {
-        #if os(iOS) || os(tvOS) || os(visionOS)
+        #if os(iOS)
         return Color(.label)
         #elseif os(macOS)
         return Color(.labelColor)
@@ -659,7 +659,7 @@ public extension Color {
     
     /// Platform secondary label color
     static var secondaryLabel: Color {
-        #if os(iOS) || os(tvOS) || os(visionOS)
+        #if os(iOS)
         return Color(.secondaryLabel)
         #elseif os(macOS)
         return Color(.secondaryLabelColor)
@@ -678,7 +678,7 @@ public extension Color {
     /// Cross-platform placeholder text color
     /// iOS: placeholderText; macOS: placeholderTextColor
     static var platformPlaceholderText: Color {
-        #if os(iOS) || os(tvOS) || os(visionOS)
+        #if os(iOS)
         return Color(.placeholderText)
         #elseif os(macOS)
         return Color(.placeholderTextColor)
@@ -690,7 +690,7 @@ public extension Color {
     /// Cross-platform opaque separator color
     /// iOS: opaqueSeparator; macOS: separatorColor
     static var platformOpaqueSeparator: Color {
-        #if os(iOS) || os(tvOS) || os(visionOS)
+        #if os(iOS)
         return Color(.opaqueSeparator)
         #elseif os(macOS)
         return Color(.separatorColor)
@@ -717,7 +717,7 @@ public extension Color {
     /// macOS: Black with platform-appropriate opacity
     /// This color is designed for shadows, overlays, and elevation effects
     static var platformShadowColor: Color {
-        #if os(iOS) || os(tvOS) || os(visionOS)
+        #if os(iOS)
         // iOS: Use black with standard shadow opacity
         // In high contrast mode, shadows may be adjusted by the system
         return Color.black.opacity(0.1)
@@ -753,7 +753,7 @@ public extension Color {
     /// Tertiary background color alias for business logic
     /// Maps to platform tertiary background color
     static var tertiaryBackgroundColor: Color {
-        #if os(iOS) || os(tvOS) || os(visionOS)
+        #if os(iOS)
         return Color(.tertiarySystemBackground)
         #elseif os(macOS)
         return Color(.textBackgroundColor)
@@ -771,7 +771,7 @@ public extension Color {
     /// Secondary grouped background color alias for business logic
     /// Maps to platform secondary grouped background color
     static var secondaryGroupedBackgroundColor: Color {
-        #if os(iOS) || os(tvOS) || os(visionOS)
+        #if os(iOS)
         return Color(.secondarySystemGroupedBackground)
         #elseif os(macOS)
         return Color(.textBackgroundColor)
@@ -783,7 +783,7 @@ public extension Color {
     /// Tertiary grouped background color alias for business logic
     /// Maps to platform tertiary grouped background color
     static var tertiaryGroupedBackgroundColor: Color {
-        #if os(iOS) || os(tvOS) || os(visionOS)
+        #if os(iOS)
         return Color(.tertiarySystemGroupedBackground)
         #elseif os(macOS)
         return Color(.windowBackgroundColor)
@@ -831,7 +831,7 @@ public extension Color {
     /// Link color alias for business logic
     /// Maps to platform link color
     static var linkColor: Color {
-        #if os(iOS) || os(tvOS) || os(visionOS)
+        #if os(iOS)
         return Color(.link)
         #elseif os(macOS)
         return Color(.linkColor)
@@ -1014,7 +1014,7 @@ public extension Color {
     /// Cross-platform setFill method for graphics contexts
     /// - Parameter context: The graphics context to set fill color on
     func setFill(on context: CGContext) {
-        #if os(iOS) || os(tvOS) || os(visionOS)
+        #if os(iOS)
         let uiColor = UIColor(self)
         context.setFillColor(uiColor.cgColor)
         #elseif os(macOS)
@@ -1026,7 +1026,7 @@ public extension Color {
     /// Cross-platform setFill method that works on any graphics context
     /// Automatically handles platform differences internally
     func setFill() {
-        #if os(iOS) || os(tvOS) || os(visionOS)
+        #if os(iOS)
         let uiColor = UIColor(self)
         uiColor.setFill()
         #elseif os(macOS)
@@ -1037,7 +1037,7 @@ public extension Color {
 
     /// Cross-platform setStroke method for outlines
     func setStroke() {
-        #if os(iOS) || os(tvOS) || os(visionOS)
+        #if os(iOS)
         let uiColor = UIColor(self)
         uiColor.setStroke()
         #elseif os(macOS)
@@ -1051,7 +1051,7 @@ public extension Color {
     /// Platform-specific color accessor
     /// Returns UIColor on iOS, NSColor on macOS
     var platformColor: Any {
-        #if os(iOS) || os(tvOS) || os(visionOS)
+        #if os(iOS)
         return UIColor(self)
         #elseif os(macOS)
         return NSColor(self)
@@ -1124,7 +1124,7 @@ public extension Color {
     /// - Parameter amount: How much to lighten (0.0 = no change, 1.0 = white)
     /// - Returns: A lighter version of this color
     func lighter(by amount: Double = 0.2) -> Color {
-        #if os(iOS) || os(tvOS) || os(visionOS)
+        #if os(iOS)
         let uiColor = UIColor(self)
         var hue: CGFloat = 0, saturation: CGFloat = 0, brightness: CGFloat = 0, alpha: CGFloat = 0
         uiColor.getHue(&hue, saturation: &saturation, brightness: &brightness, alpha: &alpha)
@@ -1143,7 +1143,7 @@ public extension Color {
     /// - Parameter amount: How much to darken (0.0 = no change, 1.0 = black)
     /// - Returns: A darker version of this color
     func darker(by amount: Double = 0.2) -> Color {
-        #if os(iOS) || os(tvOS) || os(visionOS)
+        #if os(iOS)
         let uiColor = UIColor(self)
         var hue: CGFloat = 0, saturation: CGFloat = 0, brightness: CGFloat = 0, alpha: CGFloat = 0
         uiColor.getHue(&hue, saturation: &saturation, brightness: &brightness, alpha: &alpha)
