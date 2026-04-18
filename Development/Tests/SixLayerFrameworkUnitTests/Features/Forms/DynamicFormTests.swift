@@ -509,6 +509,63 @@ open class DynamicFormTests: BaseTestClass {
         #expect(state.getValue(for: "isActive") as Bool? == true)
         #expect(state.isDirty)
     }
+
+    /// BUSINESS PURPOSE: Empty numeric entry must not be confused with a typed zero from schema defaults.
+    /// TESTING SCOPE: ``DynamicFormState`` initial values and ``initializeField`` for number, decimal, and integer fields.
+    /// METHODOLOGY: Build a configuration with trivial zero defaults vs a non-zero default and assert which keys are seeded.
+    @Test @MainActor func testDynamicFormStateDoesNotSeedTrivialNumericZeroDefaults() {
+        let amountField = DynamicFormField(
+            id: "amount",
+            contentType: .decimal,
+            label: "Amount",
+            defaultValue: "0.0"
+        )
+        let quantityField = DynamicFormField(
+            id: "quantity",
+            contentType: .integer,
+            label: "Quantity",
+            defaultValue: "0"
+        )
+        let priceField = DynamicFormField(
+            id: "price",
+            contentType: .decimal,
+            label: "Price",
+            defaultValue: "12.99"
+        )
+        let config = DynamicFormConfiguration(
+            id: "testForm",
+            title: "Test Form",
+            sections: [
+                DynamicFormSection(
+                    id: "basic",
+                    title: "Basic Information",
+                    fields: [amountField, quantityField, priceField]
+                )
+            ]
+        )
+        let state = DynamicFormState(configuration: config)
+        #expect(state.getValue(for: "amount") as String? == nil)
+        #expect(state.getValue(for: "quantity") as String? == nil)
+        #expect(state.getValue(for: "price") as String? == "12.99")
+
+        let zeroNumberField = DynamicFormField(
+            id: "rate",
+            contentType: .number,
+            label: "Rate",
+            defaultValue: "0.00"
+        )
+        state.initializeField(zeroNumberField)
+        #expect(state.getValue(for: "rate") as String? == nil)
+
+        let nonZeroField = DynamicFormField(
+            id: "fee",
+            contentType: .decimal,
+            label: "Fee",
+            defaultValue: "0.01"
+        )
+        state.initializeField(nonZeroField)
+        #expect(state.getValue(for: "fee") as String? == "0.01")
+    }
     
     /// BUSINESS PURPOSE: Validate DynamicFormState validation functionality
     /// TESTING SCOPE: Tests DynamicFormState error management and validation
