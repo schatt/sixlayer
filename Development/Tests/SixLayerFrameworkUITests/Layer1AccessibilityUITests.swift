@@ -92,7 +92,8 @@ final class Layer1AccessibilityUITests: XCTestCase {
         case "Security": return "platformPresentSecureContent_L1"
         case "OCR": return "platformOCRWithDisambiguation_L1"
         case "Notifications": return "platformPresentAlert_L1"
-        case "Internationalization": return "platformPresentLocalizedText_L1"
+        // Formatter shells use anonymous automatic compliance (#245); identifiers are SixLayer.main.ui.*, not API names.
+        case "Internationalization": return "SixLayer.main.ui"
         case "Data Analysis": return "platformAnalyzeDataFrame_L1"
         default: return nil
         }
@@ -288,10 +289,17 @@ final class Layer1AccessibilityUITests: XCTestCase {
                 }
 
             case "Internationalization":
-                let localizedText = app.descendants(matching: .any).matching(identifier: "platformPresentLocalizedText_L1")
-                for i in 0..<min(localizedText.count, 3) {
-                    let el = localizedText.element(boundBy: i)
-                    if el.exists { verifyAccessibilityIdentifier(el, functionName: "platformPresentLocalizedText_L1") }
+                let i18nSurfaces = app.descendants(matching: .any).matching(
+                    NSPredicate(format: "identifier BEGINSWITH %@", "SixLayer.main.ui")
+                )
+                XCTAssertGreaterThan(
+                    i18nSurfaces.count,
+                    0,
+                    "Internationalization examples should expose SixLayer automatic accessibility identifiers (#245)"
+                )
+                for i in 0..<min(i18nSurfaces.count, 12) {
+                    let el = i18nSurfaces.element(boundBy: i)
+                    if el.exists { verifyAccessibilityIdentifier(el, functionName: "Layer1 internationalization surface") }
                 }
                 let localizedField = app.descendants(matching: .any).matching(identifier: "platformLocalizedTextField_L1")
                 for i in 0..<min(localizedField.count, 2) {
