@@ -295,7 +295,7 @@ struct ContentView: View {
 
 ## Accessibility
 
-The print modifier automatically applies accessibility identifiers via `.automaticCompliance(named: "platformPrint_L4")`, ensuring full accessibility support for VoiceOver and other assistive technologies.
+The print modifier chains `.automaticCompliance()` (anonymous) so HIG-related accessibility behavior applies without stamping a fixed named root `accessibilityIdentifier` on arbitrary print content (see gh-243).
 
 ## Error Handling
 
