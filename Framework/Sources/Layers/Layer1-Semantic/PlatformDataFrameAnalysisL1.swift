@@ -91,7 +91,8 @@ public func platformAnalyzeDataFrame_L1<VisualizationContent: View>(
     // Apply custom visualization wrapper if provided, otherwise return default
     if let customWrapper = customVisualizationView {
         return AnyView(customWrapper(baseAnalysisView)
-            .automaticCompliance(named: "platformAnalyzeDataFrame_L1"))
+            // Issue #245 / gh-243: custom wrapper content is caller-owned; avoid a fixed framework named root.
+            .automaticCompliance())
     } else {
         return AnyView(baseAnalysisView
             .automaticCompliance(named: "platformAnalyzeDataFrame_L1"))
@@ -118,7 +119,8 @@ public func platformCompareDataFrames_L1<VisualizationContent: View>(
     // Apply custom visualization wrapper if provided, otherwise return default
     if let customWrapper = customVisualizationView {
         return AnyView(customWrapper(baseComparisonView)
-            .automaticCompliance(named: "platformCompareDataFrames_L1"))
+            // Issue #245 / gh-243: custom wrapper content is caller-owned; avoid a fixed framework named root.
+            .automaticCompliance())
     } else {
         return AnyView(baseComparisonView
             .automaticCompliance(named: "platformCompareDataFrames_L1"))
@@ -145,7 +147,8 @@ public func platformAssessDataQuality_L1<VisualizationContent: View>(
     // Apply custom visualization wrapper if provided, otherwise return default
     if let customWrapper = customVisualizationView {
         return AnyView(customWrapper(baseQualityView)
-            .automaticCompliance(named: "platformAssessDataQuality_L1"))
+            // Issue #245 / gh-243: custom wrapper content is caller-owned; avoid a fixed framework named root.
+            .automaticCompliance())
     } else {
         return AnyView(baseQualityView
             .automaticCompliance(named: "platformAssessDataQuality_L1"))
