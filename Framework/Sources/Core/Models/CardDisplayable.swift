@@ -170,7 +170,34 @@ public struct CardDisplayHelper {
     ///
     /// When the key is absent, empty, or unusable without a default, this falls back to ``extractTitle(from:hints:)`` so collection rows default to human-visible title text for identifier segments.
     public static func accessibilityIdentifierSegment(from item: Any, hints: PresentationHints? = nil) -> String? {
-        extractTitle(from: item, hints: hints)
+        if let hints = hints,
+           let propertyName = hints.customPreferences["itemAccessibilityIdentifierProperty"],
+           !propertyName.isEmpty {
+            let propertyExists = propertyExists(in: item, propertyName: propertyName)
+            if propertyExists {
+                if let value = extractPropertyValue(from: item, propertyName: propertyName) as? String {
+                    if value.isEmpty {
+                        if let defaultValue = hints.customPreferences["itemAccessibilityIdentifierDefault"],
+                           !defaultValue.isEmpty {
+                            return defaultValue
+                        }
+                    } else {
+                        return value
+                    }
+                } else {
+                    if let defaultValue = hints.customPreferences["itemAccessibilityIdentifierDefault"],
+                       !defaultValue.isEmpty {
+                        return defaultValue
+                    }
+                }
+            } else {
+                if let defaultValue = hints.customPreferences["itemAccessibilityIdentifierDefault"],
+                   !defaultValue.isEmpty {
+                    return defaultValue
+                }
+            }
+        }
+        return extractTitle(from: item, hints: hints)
     }
 
     /// Builds the `identifierLabel` passed to ``View/automaticCompliance(named:identifierLabel:accessibilityLabel:)`` for `Identifiable` collection rows: segment from ``accessibilityIdentifierSegment(from:hints:)`` plus the stable `id` description.

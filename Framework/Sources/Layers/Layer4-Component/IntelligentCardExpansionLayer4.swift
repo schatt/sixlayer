@@ -230,8 +230,11 @@ public struct ExpandableCardComponent<Item: Identifiable>: View {
         .accessibilityAction(named: "Activate") {
             handleTap()
         }
-        .environment(\.accessibilityIdentifierLabel, cardTitle) // TDD GREEN: Pass label to identifier generation
-        .automaticCompliance(named: "ExpandableCardComponent")
+        .automaticCompliance(
+            named: "ExpandableCardComponent",
+            identifierLabel: CardDisplayHelper.accessibilityIdentifierLabel(for: item, hints: hints),
+            accessibilityLabel: cardTitle
+        )
     }
     
     @ViewBuilder
@@ -480,8 +483,11 @@ public struct CoverFlowCardComponent<Item: Identifiable>: View {
         .accessibilityAction(named: "Activate") {
             onItemSelected?(item)
         }
-        .environment(\.accessibilityIdentifierLabel, cardTitle) // TDD GREEN: Pass label to identifier generation
-        .automaticCompliance(named: "CoverFlowCardComponent")
+        .automaticCompliance(
+            named: "CoverFlowCardComponent",
+            identifierLabel: CardDisplayHelper.accessibilityIdentifierLabel(for: item, hints: hints),
+            accessibilityLabel: cardTitle
+        )
     }
     
     // MARK: - Card Displayable Support
@@ -920,8 +926,11 @@ public struct SimpleCardComponent<Item: Identifiable>: View {
         
         // Always apply automatic accessibility identifiers with component name
         view = AnyView(view
-            .environment(\.accessibilityIdentifierLabel, cardTitle) // TDD GREEN: Pass label to identifier generation
-            .automaticCompliance(named: "SimpleCardComponent"))
+            .automaticCompliance(
+                named: "SimpleCardComponent",
+                identifierLabel: CardDisplayHelper.accessibilityIdentifierLabel(for: item, hints: hints),
+                accessibilityLabel: cardTitle
+            ))
         
         return view
     }
@@ -1047,8 +1056,11 @@ public struct ListCardComponent<Item: Identifiable>: View {
         .accessibilityAction(named: "Activate") {
             onItemSelected?(item)
         }
-        .environment(\.accessibilityIdentifierLabel, cardTitle) // TDD GREEN: Pass label to identifier generation
-        .automaticCompliance(named: "ListCardComponent")
+        .automaticCompliance(
+            named: "ListCardComponent",
+            identifierLabel: CardDisplayHelper.accessibilityIdentifierLabel(for: item, hints: hints),
+            accessibilityLabel: cardTitle
+        )
     }
     
     // MARK: - Card Displayable Support
@@ -1109,8 +1121,11 @@ public struct MasonryCardComponent<Item: Identifiable>: View {
         .background(.regularMaterial)
         .cornerRadius(12)
         .shadow(radius: 4)
-        .environment(\.accessibilityIdentifierLabel, cardTitle) // TDD GREEN: Pass label to identifier generation
-        .automaticCompliance(named: "MasonryCardComponent")
+        .automaticCompliance(
+            named: "MasonryCardComponent",
+            identifierLabel: CardDisplayHelper.accessibilityIdentifierLabel(for: item, hints: hints),
+            accessibilityLabel: cardTitle
+        )
     }
     
     // MARK: - Card Displayable Support

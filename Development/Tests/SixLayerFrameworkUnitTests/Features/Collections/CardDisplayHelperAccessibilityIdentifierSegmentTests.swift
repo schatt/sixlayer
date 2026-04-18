@@ -12,6 +12,12 @@ struct CardDisplayHelperAccessibilityIdentifierSegmentTests {
         let sku: String
     }
 
+    /// Only `title` plus `id` so ``extractTitle`` does not pick another string field (e.g. SKU) via reflection heuristics.
+    private struct TitleOnlyRow: Identifiable {
+        let id: String
+        let title: String
+    }
+
     @Test func accessibilityIdentifierSegment_usesHintPropertyWhenConfigured() {
         let row = CatalogRow(id: "a", title: "Widget", sku: "INV-42")
         let hints = PresentationHints(customPreferences: [
@@ -21,7 +27,7 @@ struct CardDisplayHelperAccessibilityIdentifierSegmentTests {
     }
 
     @Test func accessibilityIdentifierSegment_defaultsToTitleResolutionWhenHintAbsent() {
-        let row = CatalogRow(id: "a", title: "Widget", sku: "INV-9")
+        let row = TitleOnlyRow(id: "a", title: "Widget")
         let hints = PresentationHints()
         #expect(CardDisplayHelper.accessibilityIdentifierSegment(from: row, hints: hints) == "Widget")
     }
