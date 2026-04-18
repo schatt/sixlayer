@@ -49,8 +49,8 @@ public func platformPresentLocalizedText_L1(
         .environment(\.layoutDirection, direction == .rightToLeft ? .rightToLeft : .leftToRight)
         .environment(\.locale, hints.locale)
         .environmentObject(i18n)
-        // Issue #245 / gh-243: formatter shell must not impose a fixed NamedAutomatic root id.
-        .automaticCompliance())
+        // Issue #245 / gh-243: AutomaticCompliance with element type (not NamedAutomatic); bare `.automaticCompliance()` suppresses leaf IDs (#222).
+        .automaticCompliance(identifierElementType: "Text"))
 }
 
 /// Present localized number with proper formatting
@@ -68,8 +68,8 @@ public func platformPresentLocalizedNumber_L1(
     return AnyView(Text(formatted)
         .environment(\.locale, hints.locale)
         .environmentObject(i18n)
-        // Issue #245 / gh-243: formatter shell must not impose a fixed NamedAutomatic root id.
-        .automaticCompliance())
+        // Issue #245 / gh-243: AutomaticCompliance with element type (not NamedAutomatic); bare `.automaticCompliance()` suppresses leaf IDs (#222).
+        .automaticCompliance(identifierElementType: "Text"))
 }
 
 /// Present localized currency with proper formatting
@@ -87,8 +87,8 @@ public func platformPresentLocalizedCurrency_L1(
     return AnyView(Text(formatted)
         .environment(\.locale, hints.locale)
         .environmentObject(i18n)
-        // Issue #245 / gh-243: formatter shell must not impose a fixed NamedAutomatic root id.
-        .automaticCompliance())
+        // Issue #245 / gh-243: AutomaticCompliance with element type (not NamedAutomatic); bare `.automaticCompliance()` suppresses leaf IDs (#222).
+        .automaticCompliance(identifierElementType: "Text"))
 }
 
 /// Present localized date with proper formatting
@@ -106,8 +106,8 @@ public func platformPresentLocalizedDate_L1(
     return AnyView(Text(formatted)
         .environment(\.locale, hints.locale)
         .environmentObject(i18n)
-        // Issue #245 / gh-243: formatter shell must not impose a fixed NamedAutomatic root id.
-        .automaticCompliance())
+        // Issue #245 / gh-243: AutomaticCompliance with element type (not NamedAutomatic); bare `.automaticCompliance()` suppresses leaf IDs (#222).
+        .automaticCompliance(identifierElementType: "Text"))
 }
 
 /// Present localized time with proper formatting
@@ -125,8 +125,8 @@ public func platformPresentLocalizedTime_L1(
     return AnyView(Text(formatted)
         .environment(\.locale, hints.locale)
         .environmentObject(i18n)
-        // Issue #245 / gh-243: formatter shell must not impose a fixed NamedAutomatic root id.
-        .automaticCompliance())
+        // Issue #245 / gh-243: AutomaticCompliance with element type (not NamedAutomatic); bare `.automaticCompliance()` suppresses leaf IDs (#222).
+        .automaticCompliance(identifierElementType: "Text"))
 }
 
 /// Present localized percentage with proper formatting
@@ -144,8 +144,8 @@ public func platformPresentLocalizedPercentage_L1(
     return AnyView(Text(formatted)
         .environment(\.locale, hints.locale)
         .environmentObject(i18n)
-        // Issue #245 / gh-243: formatter shell must not impose a fixed NamedAutomatic root id.
-        .automaticCompliance())
+        // Issue #245 / gh-243: AutomaticCompliance with element type (not NamedAutomatic); bare `.automaticCompliance()` suppresses leaf IDs (#222).
+        .automaticCompliance(identifierElementType: "Text"))
 }
 
 /// Present localized pluralized text
@@ -165,8 +165,8 @@ public func platformPresentLocalizedPlural_L1(
     return AnyView(Text(pluralized)
         .environment(\.locale, hints.locale)
         .environmentObject(i18n)
-        // Issue #245 / gh-243: formatter shell must not impose a fixed NamedAutomatic root id.
-        .automaticCompliance())
+        // Issue #245 / gh-243: AutomaticCompliance with element type (not NamedAutomatic); bare `.automaticCompliance()` suppresses leaf IDs (#222).
+        .automaticCompliance(identifierElementType: "Text"))
 }
 
 /// Present localized string with arguments
@@ -186,8 +186,8 @@ public func platformPresentLocalizedString_L1(
     return AnyView(Text(localized)
         .environment(\.locale, hints.locale)
         .environmentObject(i18n)
-        // Issue #245 / gh-243: formatter shell must not impose a fixed NamedAutomatic root id.
-        .automaticCompliance())
+        // Issue #245 / gh-243: AutomaticCompliance with element type (not NamedAutomatic); bare `.automaticCompliance()` suppresses leaf IDs (#222).
+        .automaticCompliance(identifierElementType: "Text"))
 }
 
 // MARK: - Internationalization Hints
