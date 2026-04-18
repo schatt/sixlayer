@@ -10,6 +10,11 @@ import SwiftUI
 /// NOTE: Not marked @MainActor on class to allow parallel execution
 open class PlatformInternationalizationL1Tests: BaseTestClass {
 
+    /// Debug log line emitted by `NamedAutomaticComplianceModifier` when `enableDebugLogging` is on (issue #245 audit).
+    private nonisolated static func issue245_namedAutomaticComplianceFingerprint(componentName: String) -> String {
+        "NAMED MODIFIER DEBUG: body() called for '\(componentName)'"
+    }
+
     /// Issue #245 / gh-243 parity: arbitrary-content i18n shell must not use `automaticCompliance(named:)`
     /// (NamedAutomaticComplianceModifier debug fingerprint).
     @Test @MainActor
@@ -28,7 +33,9 @@ open class PlatformInternationalizationL1Tests: BaseTestClass {
             )
             #expect(host != nil, "platformPresentLocalizedContent_L1 should host")
             let log = isolated.getDebugLog()
-            let fingerprint = "NAMED MODIFIER DEBUG: body() called for 'platformPresentLocalizedContent_L1'"
+            let fingerprint = Self.issue245_namedAutomaticComplianceFingerprint(
+                componentName: "platformPresentLocalizedContent_L1"
+            )
             #expect(
                 !log.contains(fingerprint),
                 "Localized content shell must not use NamedAutomaticComplianceModifier (issue #245); log sample: \(String(log.suffix(400)))"
