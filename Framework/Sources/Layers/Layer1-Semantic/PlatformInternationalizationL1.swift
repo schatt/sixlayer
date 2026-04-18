@@ -49,7 +49,8 @@ public func platformPresentLocalizedText_L1(
         .environment(\.layoutDirection, direction == .rightToLeft ? .rightToLeft : .leftToRight)
         .environment(\.locale, hints.locale)
         .environmentObject(i18n)
-        .automaticCompliance(named: "platformPresentLocalizedText_L1"))
+        // Issue #245 / gh-243: formatter shell must not impose a fixed NamedAutomatic root id.
+        .automaticCompliance())
 }
 
 /// Present localized number with proper formatting
@@ -67,7 +68,8 @@ public func platformPresentLocalizedNumber_L1(
     return AnyView(Text(formatted)
         .environment(\.locale, hints.locale)
         .environmentObject(i18n)
-        .automaticCompliance(named: "platformPresentLocalizedNumber_L1"))
+        // Issue #245 / gh-243: formatter shell must not impose a fixed NamedAutomatic root id.
+        .automaticCompliance())
 }
 
 /// Present localized currency with proper formatting
@@ -85,7 +87,8 @@ public func platformPresentLocalizedCurrency_L1(
     return AnyView(Text(formatted)
         .environment(\.locale, hints.locale)
         .environmentObject(i18n)
-        .automaticCompliance(named: "platformPresentLocalizedCurrency_L1"))
+        // Issue #245 / gh-243: formatter shell must not impose a fixed NamedAutomatic root id.
+        .automaticCompliance())
 }
 
 /// Present localized date with proper formatting
@@ -103,7 +106,8 @@ public func platformPresentLocalizedDate_L1(
     return AnyView(Text(formatted)
         .environment(\.locale, hints.locale)
         .environmentObject(i18n)
-        .automaticCompliance(named: "platformPresentLocalizedDate_L1"))
+        // Issue #245 / gh-243: formatter shell must not impose a fixed NamedAutomatic root id.
+        .automaticCompliance())
 }
 
 /// Present localized time with proper formatting
@@ -121,7 +125,8 @@ public func platformPresentLocalizedTime_L1(
     return AnyView(Text(formatted)
         .environment(\.locale, hints.locale)
         .environmentObject(i18n)
-        .automaticCompliance(named: "platformPresentLocalizedTime_L1"))
+        // Issue #245 / gh-243: formatter shell must not impose a fixed NamedAutomatic root id.
+        .automaticCompliance())
 }
 
 /// Present localized percentage with proper formatting
@@ -139,7 +144,8 @@ public func platformPresentLocalizedPercentage_L1(
     return AnyView(Text(formatted)
         .environment(\.locale, hints.locale)
         .environmentObject(i18n)
-        .automaticCompliance(named: "platformPresentLocalizedPercentage_L1"))
+        // Issue #245 / gh-243: formatter shell must not impose a fixed NamedAutomatic root id.
+        .automaticCompliance())
 }
 
 /// Present localized pluralized text
@@ -159,7 +165,8 @@ public func platformPresentLocalizedPlural_L1(
     return AnyView(Text(pluralized)
         .environment(\.locale, hints.locale)
         .environmentObject(i18n)
-        .automaticCompliance(named: "platformPresentLocalizedPlural_L1"))
+        // Issue #245 / gh-243: formatter shell must not impose a fixed NamedAutomatic root id.
+        .automaticCompliance())
 }
 
 /// Present localized string with arguments
@@ -179,7 +186,8 @@ public func platformPresentLocalizedString_L1(
     return AnyView(Text(localized)
         .environment(\.locale, hints.locale)
         .environmentObject(i18n)
-        .automaticCompliance(named: "platformPresentLocalizedString_L1"))
+        // Issue #245 / gh-243: formatter shell must not impose a fixed NamedAutomatic root id.
+        .automaticCompliance())
 }
 
 // MARK: - Internationalization Hints
@@ -231,7 +239,8 @@ public func platformRTLContainer_L1<Content: View>(
         .environment(\.layoutDirection, layoutDirection)
         .environment(\.locale, hints.locale)
         .environmentObject(i18n)
-        .automaticCompliance(named: "platformRTLContainer_L1"))
+        // Issue #245 / gh-243: arbitrary `content` must not get a fixed NamedAutomatic root id (masks inner a11y).
+        .automaticCompliance())
 }
 
 /// RTL-aware HStack that automatically adjusts alignment
@@ -254,7 +263,8 @@ public func platformRTLHStack_L1<Content: View>(
         .environment(\.layoutDirection, layoutDirection)
         .environment(\.locale, hints.locale)
         .environmentObject(i18n)
-        .automaticCompliance(named: "platformRTLHStack_L1"))
+        // Issue #245 / gh-243: arbitrary stack content must not get a fixed NamedAutomatic root id (masks inner a11y).
+        .automaticCompliance())
 }
 
 /// RTL-aware VStack that automatically adjusts alignment
@@ -277,7 +287,8 @@ public func platformRTLVStack_L1<Content: View>(
         .environment(\.layoutDirection, layoutDirection)
         .environment(\.locale, hints.locale)
         .environmentObject(i18n)
-        .automaticCompliance(named: "platformRTLVStack_L1"))
+        // Issue #245 / gh-243: arbitrary stack content must not get a fixed NamedAutomatic root id (masks inner a11y).
+        .automaticCompliance())
 }
 
 /// RTL-aware ZStack that automatically adjusts alignment
@@ -298,7 +309,8 @@ public func platformRTLZStack_L1<Content: View>(
         .environment(\.layoutDirection, layoutDirection)
         .environment(\.locale, hints.locale)
         .environmentObject(i18n)
-        .automaticCompliance(named: "platformRTLZStack_L1"))
+        // Issue #245 / gh-243: arbitrary stack content must not get a fixed NamedAutomatic root id (masks inner a11y).
+        .automaticCompliance())
 }
 
 // MARK: - Localized Form Fields
