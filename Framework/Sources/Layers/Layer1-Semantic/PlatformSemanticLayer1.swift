@@ -2062,6 +2062,7 @@ public struct CollectionEmptyStateView: View {
                 Text(emptyStateTitle)
                     .font(.headline)
                     .foregroundColor(.primary)
+                    .sixLayerOptionalAccessibilityIdentifier(hints.customPreferences["emptyStateTitleAccessibilityIdentifier"])
                 
                 Text(emptyStateMessage)
                     .font(.body)
@@ -2090,6 +2091,7 @@ public struct CollectionEmptyStateView: View {
                         .cornerRadius(8)
                     }
                     .buttonStyle(PlainButtonStyle())
+                    .sixLayerOptionalAccessibilityIdentifier(hints.customPreferences["createButtonAccessibilityIdentifier"])
                 }
             }
         }
@@ -2158,6 +2160,9 @@ public struct CollectionEmptyStateView: View {
     }
     
     private var emptyStateTitle: String {
+        if let custom = hints.customPreferences["emptyTitle"], !custom.isEmpty {
+            return custom
+        }
         switch hints.dataType {
         case .media:
             return "No Media Items"
@@ -2220,6 +2225,9 @@ public struct CollectionEmptyStateView: View {
         // Check for custom message in customPreferences first (takes precedence)
         if let customMessage = hints.customPreferences["customMessage"], !customMessage.isEmpty {
             return customMessage
+        }
+        if let emptyMessage = hints.customPreferences["emptyMessage"], !emptyMessage.isEmpty {
+            return emptyMessage
         }
         
         // Fall back to default context/complexity-based messages
@@ -2291,6 +2299,9 @@ public struct CollectionEmptyStateView: View {
     }
     
     private var createButtonTitle: String {
+        if let custom = hints.customPreferences["createButtonTitle"], !custom.isEmpty {
+            return custom
+        }
         switch hints.dataType {
         case .media:
             return "Add Media"
@@ -2346,6 +2357,20 @@ public struct CollectionEmptyStateView: View {
             return "Add Modal"
         case .sheet:
             return "Add Sheet"
+        }
+    }
+}
+
+// MARK: - Optional accessibility identifiers (host apps / UI tests)
+
+extension View {
+    /// Applies `accessibilityIdentifier` only when `identifier` is non-nil and non-empty.
+    @ViewBuilder
+    internal func sixLayerOptionalAccessibilityIdentifier(_ identifier: String?) -> some View {
+        if let identifier, !identifier.isEmpty {
+            self.accessibilityIdentifier(identifier)
+        } else {
+            self
         }
     }
 }
