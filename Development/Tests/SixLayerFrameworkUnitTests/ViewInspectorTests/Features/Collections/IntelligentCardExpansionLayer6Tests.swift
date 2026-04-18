@@ -144,6 +144,7 @@ open class IntelligentCardExpansionLayer6Tests: BaseTestClass {
         }
     }
     
+    #if os(macOS)
     @Test @MainActor func testmacOSExpandableCardView_Creation() {
         // Given: macOS-specific card view
         let cardView = macOSExpandableCardView(
@@ -177,7 +178,8 @@ open class IntelligentCardExpansionLayer6Tests: BaseTestClass {
             // This is expected and not a failure of the framework
         }
     }
-    
+    #endif
+
     @Test @MainActor func testvisionOSExpandableCardView_Creation() {
         // Given: visionOS-specific card view
         let cardView = visionOSExpandableCardView(
