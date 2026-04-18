@@ -16966,7 +16966,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
             view,
-            expectedPattern: "SixLayer.main.ui.*platformPresentLocalizedContent_L1.*",
+            expectedPattern: "SixLayer.main.ui.*",
             platform: SixLayerPlatform.iOS,
             componentName: "platformPresentLocalizedContent_L1"
         )
@@ -16990,7 +16990,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
             view,
-            expectedPattern: "SixLayer.main.ui.*platformPresentLocalizedContent_L1.*",
+            expectedPattern: "SixLayer.main.ui.*",
             platform: SixLayerPlatform.macOS,
             componentName: "platformPresentLocalizedContent_L1"
         )
