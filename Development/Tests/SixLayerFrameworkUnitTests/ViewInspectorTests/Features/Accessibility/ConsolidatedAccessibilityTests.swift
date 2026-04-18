@@ -15774,12 +15774,14 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         // Get platform capabilities using the framework's capability detection
         let config = getCardExpansionPlatformConfig()
         
-        // Then: Test actual business logic (supports* are Bool; exercise flags via range checks below)
-        // Verify platform-correct minTouchTarget value
-        // Note: minTouchTarget is based on compile-time platform, not capability overrides
+        // Apple HIG per platform (Issue #237): iOS/watchOS 44, tvOS/visionOS
+        // 60 (focus / gaze+pinch floors, not conditional on touch), macOS
+        // conditional. Prior (iOS|watchOS ? 44 : 0) formula miscategorized
+        // tvOS and visionOS.
         let currentPlatform = SixLayerPlatform.current
-        let expectedMinTouchTarget: CGFloat = (currentPlatform == .iOS || currentPlatform == .watchOS) ? 44.0 : 0.0
-        #expect(config.minTouchTarget == expectedMinTouchTarget, "Touch targets should be platform-correct (\(expectedMinTouchTarget)) for current platform \(currentPlatform)")
+        let expectedMinTouchTarget = PlatformTestUtilities.expectedMinTouchTarget(for: currentPlatform)
+        #expect(config.minTouchTarget == expectedMinTouchTarget,
+                "Apple HIG: \(currentPlatform) expected \(expectedMinTouchTarget)pt")
     }
 }
 
