@@ -15,14 +15,59 @@ open class PlatformInternationalizationL1Tests: BaseTestClass {
         "NAMED MODIFIER DEBUG: body() called for '\(componentName)'"
     }
 
-    /// Issue #245 / gh-243 parity: arbitrary-content i18n shell must not use `automaticCompliance(named:)`
-    /// (NamedAutomaticComplianceModifier debug fingerprint).
+    /// Shells that must not use `automaticCompliance(named:)` (NamedAutomaticComplianceModifier); see #245 / gh-243.
+    private nonisolated static func issue245_shellsThatMustNotUseNamedAutomaticCompliance(
+        hints: InternationalizationHints
+    ) -> [(name: String, view: AnyView)] {
+        [
+            ("platformPresentLocalizedContent_L1", platformPresentLocalizedContent_L1(content: Text("c"), hints: hints)),
+            ("platformPresentLocalizedText_L1", platformPresentLocalizedText_L1(text: "t", hints: hints)),
+            ("platformPresentLocalizedNumber_L1", platformPresentLocalizedNumber_L1(number: 1, hints: hints)),
+            ("platformPresentLocalizedCurrency_L1", platformPresentLocalizedCurrency_L1(amount: 1, hints: hints)),
+            ("platformPresentLocalizedDate_L1", platformPresentLocalizedDate_L1(date: Date(timeIntervalSince1970: 0), hints: hints)),
+            ("platformPresentLocalizedTime_L1", platformPresentLocalizedTime_L1(date: Date(timeIntervalSince1970: 0), hints: hints)),
+            ("platformPresentLocalizedPercentage_L1", platformPresentLocalizedPercentage_L1(value: 0.5, hints: hints)),
+            ("platformPresentLocalizedPlural_L1", platformPresentLocalizedPlural_L1(word: "item", count: 2, hints: hints)),
+            ("platformPresentLocalizedString_L1", platformPresentLocalizedString_L1(key: "CFBundleName", arguments: [], hints: hints)),
+            ("platformRTLContainer_L1", platformRTLContainer_L1(content: Text("rtl"), hints: hints)),
+            ("platformRTLHStack_L1", platformRTLHStack_L1(alignment: .center, spacing: nil, content: { Text("h") }, hints: hints)),
+            ("platformRTLVStack_L1", platformRTLVStack_L1(alignment: .center, spacing: nil, content: { Text("v") }, hints: hints)),
+            ("platformRTLZStack_L1", platformRTLZStack_L1(alignment: .center, content: { Text("z") }, hints: hints))
+        ]
+    }
+
+    /// Issue #245 / gh-243 parity: listed i18n shells must not use `automaticCompliance(named:)` (NamedAutomaticComplianceModifier).
     @Test @MainActor
-    func testIssue245_platformPresentLocalizedContentShellDoesNotUseNamedAutomaticComplianceModifier() async {
+    func testIssue245_platformInternationalizationShellsDoNotUseNamedAutomaticComplianceModifier() async {
         let hints = InternationalizationHints()
-        let view = platformPresentLocalizedContent_L1(
-            content: Text("issue245"),
-            hints: hints
+        for shell in Self.issue245_shellsThatMustNotUseNamedAutomaticCompliance(hints: hints) {
+            let isolated = TestSetupUtilities.makeIsolatedAccessibilityIdentifierConfig()
+            AccessibilityIdentifierConfig.$taskLocalConfig.withValue(isolated) {
+                let host = Self.hostRootPlatformView(
+                    shell.view,
+                    forceLayout: true,
+                    accessibilityIdentifierConfig: isolated
+                )
+                #expect(host != nil, "\(shell.name) should host")
+                let log = isolated.getDebugLog()
+                let fingerprint = Self.issue245_namedAutomaticComplianceFingerprint(componentName: shell.name)
+                #expect(
+                    !log.contains(fingerprint),
+                    "\(shell.name) must not use NamedAutomaticComplianceModifier (issue #245); log sample: \(String(log.suffix(400)))"
+                )
+            }
+        }
+    }
+
+    /// Structured L1 fields keep `automaticCompliance(named:accessibilityLabel:)` (NamedAutomaticComplianceModifier).
+    @Test @MainActor
+    func testIssue245_platformLocalizedTextFieldUsesNamedAutomaticComplianceModifier() async {
+        let hints = InternationalizationHints()
+        let view = platformLocalizedTextField_L1(
+            title: "Title",
+            text: .constant(""),
+            hints: hints,
+            accessibilityLabel: nil
         )
         let isolated = TestSetupUtilities.makeIsolatedAccessibilityIdentifierConfig()
         AccessibilityIdentifierConfig.$taskLocalConfig.withValue(isolated) {
@@ -31,14 +76,14 @@ open class PlatformInternationalizationL1Tests: BaseTestClass {
                 forceLayout: true,
                 accessibilityIdentifierConfig: isolated
             )
-            #expect(host != nil, "platformPresentLocalizedContent_L1 should host")
+            #expect(host != nil, "platformLocalizedTextField_L1 should host")
             let log = isolated.getDebugLog()
             let fingerprint = Self.issue245_namedAutomaticComplianceFingerprint(
-                componentName: "platformPresentLocalizedContent_L1"
+                componentName: "platformLocalizedTextField_L1"
             )
             #expect(
-                !log.contains(fingerprint),
-                "Localized content shell must not use NamedAutomaticComplianceModifier (issue #245); log sample: \(String(log.suffix(400)))"
+                log.contains(fingerprint),
+                "platformLocalizedTextField_L1 should still use NamedAutomaticComplianceModifier; log sample: \(String(log.suffix(400)))"
             )
         }
     }
