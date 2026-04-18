@@ -704,11 +704,10 @@ open class Layer4ViewExtensionTests: BaseTestClass {
         context: String,
         @ViewBuilder root: () -> V
     ) {
-        initializeTestConfig()
         let anonymous = root()
         #expect(hostRootPlatformView(anonymous) != nil, "\(context): anonymous compliance path should render")
 
-        let named = AnyView(root()).named(anchorName)
+        let named = root().named(anchorName)
         let foundNamed = testComponentComplianceSinglePlatform(
             named,
             expectedPattern: "SixLayer.*ui",
