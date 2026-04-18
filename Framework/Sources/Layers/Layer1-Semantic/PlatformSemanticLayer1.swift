@@ -1,16 +1,23 @@
 import SwiftUI
 import Foundation
 
-// MARK: - Layer1 semantic field chrome (tvOS)
+// MARK: - Layer1 semantic field chrome (cross-platform)
 
 extension View {
-    /// Dynamic form previews use bordered text fields where available; tvOS has no `.roundedBorder` style.
+    /// Apply the Layer 1 default text-field border style. Dynamic form previews
+    /// use `.roundedBorder` where available; tvOS has no `.roundedBorder` style
+    /// so it falls back to `.plain`.
+    ///
+    /// NOTE: This call-site gate is a tvOS compile shim (Issue #237). The
+    /// architectural fix is tracked under #241 — the availability gate belongs
+    /// in a Layer 4/5 primitive (e.g. `platformTextFieldStyle`) so that Layer 1
+    /// doesn't have to branch on platform.
     @ViewBuilder
     fileprivate func l1SemanticTextFieldBorderStyle() -> some View {
         #if os(tvOS)
         self.textFieldStyle(.plain)
         #else
-        self.l1SemanticTextFieldBorderStyle()
+        self.textFieldStyle(.roundedBorder)
         #endif
     }
 }
