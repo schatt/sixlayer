@@ -34,6 +34,11 @@ public extension CardDisplayable {
 /// Smart fallback helper for items that don't conform to CardDisplayable
 /// Uses reflection to extract meaningful content instead of generic "Item"
 public struct CardDisplayHelper {
+
+    private enum AccessibilityIdentifierHintKeys {
+        static let property = "itemAccessibilityIdentifierProperty"
+        static let `default` = "itemAccessibilityIdentifierDefault"
+    }
     
     /// Extract meaningful title from any item using hints or reflection
     public static func extractTitle(from item: Any, hints: PresentationHints? = nil) -> String? {
@@ -171,13 +176,13 @@ public struct CardDisplayHelper {
     /// When the key is absent, empty, or unusable without a default, this falls back to ``extractTitle(from:hints:)`` so collection rows default to human-visible title text for identifier segments.
     public static func accessibilityIdentifierSegment(from item: Any, hints: PresentationHints? = nil) -> String? {
         if let hints = hints,
-           let propertyName = hints.customPreferences["itemAccessibilityIdentifierProperty"],
+           let propertyName = hints.customPreferences[AccessibilityIdentifierHintKeys.property],
            !propertyName.isEmpty {
             let propertyExists = propertyExists(in: item, propertyName: propertyName)
             if propertyExists {
                 if let value = extractPropertyValue(from: item, propertyName: propertyName) as? String {
                     if value.isEmpty {
-                        if let defaultValue = hints.customPreferences["itemAccessibilityIdentifierDefault"],
+                        if let defaultValue = hints.customPreferences[AccessibilityIdentifierHintKeys.default],
                            !defaultValue.isEmpty {
                             return defaultValue
                         }
@@ -185,13 +190,13 @@ public struct CardDisplayHelper {
                         return value
                     }
                 } else {
-                    if let defaultValue = hints.customPreferences["itemAccessibilityIdentifierDefault"],
+                    if let defaultValue = hints.customPreferences[AccessibilityIdentifierHintKeys.default],
                        !defaultValue.isEmpty {
                         return defaultValue
                     }
                 }
             } else {
-                if let defaultValue = hints.customPreferences["itemAccessibilityIdentifierDefault"],
+                if let defaultValue = hints.customPreferences[AccessibilityIdentifierHintKeys.default],
                    !defaultValue.isEmpty {
                     return defaultValue
                 }
