@@ -9,6 +9,32 @@ import SwiftUI
 @Suite("Platform Internationalization L")
 /// NOTE: Not marked @MainActor on class to allow parallel execution
 open class PlatformInternationalizationL1Tests: BaseTestClass {
+
+    /// Issue #245 / gh-243 parity: arbitrary-content i18n shell must not use `automaticCompliance(named:)`
+    /// (NamedAutomaticComplianceModifier debug fingerprint).
+    @Test @MainActor
+    func testIssue245_platformPresentLocalizedContentShellDoesNotUseNamedAutomaticComplianceModifier() async {
+        let hints = InternationalizationHints()
+        let view = platformPresentLocalizedContent_L1(
+            content: Text("issue245"),
+            hints: hints
+        )
+        let isolated = TestSetupUtilities.makeIsolatedAccessibilityIdentifierConfig()
+        AccessibilityIdentifierConfig.$taskLocalConfig.withValue(isolated) {
+            let host = Self.hostRootPlatformView(
+                view,
+                forceLayout: true,
+                accessibilityIdentifierConfig: isolated
+            )
+            #expect(host != nil, "platformPresentLocalizedContent_L1 should host")
+            let log = isolated.getDebugLog()
+            let fingerprint = "NAMED MODIFIER DEBUG: body() called for 'platformPresentLocalizedContent_L1'"
+            #expect(
+                !log.contains(fingerprint),
+                "Localized content shell must not use NamedAutomaticComplianceModifier (issue #245); log sample: \(String(log.suffix(400)))"
+            )
+        }
+    }
     
 @Test @MainActor func testPlatformPresentLocalizedContentL1GeneratesAccessibilityIdentifiersOnIOS() {
             initializeTestConfig()
