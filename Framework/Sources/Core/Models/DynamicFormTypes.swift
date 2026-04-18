@@ -573,6 +573,24 @@ public struct DynamicFormField: Identifiable {
     }
 }
 
+extension DynamicFormField {
+    /// Model/schema defaults of numeric zero should not prefill the form as if the user typed a value.
+    fileprivate var shouldOmitTrivialNumericZeroFromFormInitialValue: Bool {
+        guard let contentType else { return false }
+        switch contentType {
+        case .number, .decimal, .integer:
+            break
+        default:
+            return false
+        }
+        guard let raw = defaultValue?.trimmingCharacters(in: .whitespacesAndNewlines), !raw.isEmpty else {
+            return false
+        }
+        guard let magnitude = Double(raw) else { return false }
+        return magnitude == 0
+    }
+}
+
 /// Test-specific field type enum for convenience initializer
 public enum DynamicFormFieldType: String, CaseIterable, Hashable {
     case text = "text"
@@ -1136,9 +1154,9 @@ public class DynamicFormState: ObservableObject {
     /// Initialize a field with its default value
     /// - Parameter field: The field to initialize
     public func initializeField(_ field: DynamicFormField) {
-        if let defaultValue = field.defaultValue {
-            fieldValues[field.id] = defaultValue
-        }
+        guard let defaultValue = field.defaultValue else { return }
+        if field.shouldOmitTrivialNumericZeroFromFormInitialValue { return }
+        fieldValues[field.id] = defaultValue
     }
 
     /// Calculate a field value from other field values using a formula
@@ -1488,9 +1506,9 @@ public class DynamicFormState: ObservableObject {
     private func setupInitialState() {
         // Set default values
         for field in configuration.allFields {
-            if let defaultValue = field.defaultValue {
-                fieldValues[field.id] = defaultValue
-            }
+            guard let defaultValue = field.defaultValue else { continue }
+            if field.shouldOmitTrivialNumericZeroFromFormInitialValue { continue }
+            fieldValues[field.id] = defaultValue
         }
 
         // Set initial section states
