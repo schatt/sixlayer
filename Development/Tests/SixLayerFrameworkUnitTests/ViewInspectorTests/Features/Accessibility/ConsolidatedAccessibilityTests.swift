@@ -2393,7 +2393,10 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         self.initializeTestConfig()
         // InternationalizationServiceView doesn't exist - use platformPresentLocalizedContent_L1 instead
         let testView = platformPresentLocalizedContent_L1(
-            content: Text("Test Content"),
+            content: platformPresentContent_L1(
+                content: "Test Content",
+                hints: PresentationHints()
+            ),
             hints: InternationalizationHints()
         )
         #if canImport(ViewInspector)
@@ -16958,7 +16961,10 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         self.runWithTaskLocalConfig {
         // Given: A view using platformPresentLocalizedContent_L1 (which uses InternationalizationService)
         let view = platformPresentLocalizedContent_L1(
-            content: Text("Localized Content"),
+            content: platformPresentContent_L1(
+                content: "Localized Content",
+                hints: PresentationHints()
+            ),
             hints: InternationalizationHints()
         )
         
@@ -16982,7 +16988,10 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         self.runWithTaskLocalConfig {
         // Given: A view using platformPresentLocalizedContent_L1 (which uses InternationalizationService)
         let view = platformPresentLocalizedContent_L1(
-            content: Text("Localized Content"),
+            content: platformPresentContent_L1(
+                content: "Localized Content",
+                hints: PresentationHints()
+            ),
             hints: InternationalizationHints()
         )
         
