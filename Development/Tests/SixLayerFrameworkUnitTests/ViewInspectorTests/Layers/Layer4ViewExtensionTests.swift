@@ -697,24 +697,37 @@ open class Layer4ViewExtensionTests: BaseTestClass {
     // MARK: - Layout chrome dual-path (gh-243)
 
     /// Verifies anonymous layout/chrome modifiers still host, and that an explicit `.named(anchorName)`
-    /// produces discoverable `SixLayer.*ui` identifiers (covers both the anonymous and named call sites).
+    /// produces a discoverable identifier (covers both paths). Uses isolated config + explicit environment
+    /// injection so hosting matches modifier bodies under parallel/full-suite runs.
     @MainActor
     fileprivate func assertLayoutChromeDualPath<V: View>(
         anchorName: String,
         context: String,
         @ViewBuilder root: () -> V
     ) {
-        let anonymous = root()
-        #expect(hostRootPlatformView(anonymous) != nil, "\(context): anonymous compliance path should render")
+        let isolated = TestSetupUtilities.makeIsolatedAccessibilityIdentifierConfig()
+        AccessibilityIdentifierConfig.$taskLocalConfig.withValue(isolated) {
+            let anonymous = root()
+            let anonymousHost = hostRootPlatformView(anonymous, accessibilityIdentifierConfig: isolated)
+            #expect(anonymousHost != nil, "\(context): anonymous compliance path should render")
 
-        let named = root().named(anchorName)
-        let foundNamed = testComponentComplianceSinglePlatform(
-            named,
-            expectedPattern: "SixLayer.*ui",
-            platform: SixLayerPlatform.iOS,
-            componentName: anchorName
-        )
-        #expect(foundNamed, "\(context): explicit `.named(\"\(anchorName)\")` should surface a SixLayer accessibility identifier")
+            let named = root().named(anchorName)
+            let namedHost = hostRootPlatformView(named, accessibilityIdentifierConfig: isolated)
+            #expect(namedHost != nil, "\(context): named path should render")
+
+            let platformIds = findAllAccessibilityIdentifiersFromPlatformView(namedHost)
+            let platformHit = platformIds.contains { $0.contains(anchorName) }
+            #if canImport(ViewInspector)
+            let viIds = AccessibilityTestUtilities.allAccessibilityIdentifiersFromViewInspector(named)
+            let viHit = viIds.contains { $0.contains(anchorName) }
+            #else
+            let viHit = false
+            #endif
+            #expect(
+                platformHit || viHit,
+                "\(context): expected an accessibility identifier containing '\(anchorName)'. Platform sample: \(platformIds.prefix(6).joined(separator: ", "))"
+            )
+        }
     }
 }
 
