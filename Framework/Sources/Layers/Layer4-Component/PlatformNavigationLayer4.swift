@@ -925,7 +925,7 @@ public extension View {
                 #if os(iOS)
                 .navigationViewStyle(.columns)
                 #else
-                .navigationViewStyle(.stack)
+                .navigationViewStyle(.automatic)
                 #endif
             }
         case .detailOnlyCollapsedInner:
