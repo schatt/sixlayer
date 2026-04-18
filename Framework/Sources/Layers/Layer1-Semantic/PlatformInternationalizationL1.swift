@@ -27,7 +27,8 @@ public func platformPresentLocalizedContent_L1<Content: View>(
         .environment(\.layoutDirection, layoutDirection)
         .environment(\.locale, hints.locale)
         .environmentObject(i18n)
-        .automaticCompliance(named: "platformPresentLocalizedContent_L1"))
+        // Issue #245 / gh-243: arbitrary `content` must not get a fixed NamedAutomatic root id (masks inner a11y).
+        .automaticCompliance())
 }
 
 /// Present localized text with automatic formatting
