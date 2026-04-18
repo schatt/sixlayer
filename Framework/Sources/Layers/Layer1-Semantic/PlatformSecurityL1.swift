@@ -31,7 +31,8 @@ public func platformPresentSecureContent_L1<Content: View>(
     return AnyView(content
         .environmentObject(security)
         .environment(\.securityService, security)
-        .automaticCompliance(named: "platformPresentSecureContent_L1"))
+        // Issue #245 / gh-243: arbitrary secure content must not get a fixed NamedAutomatic root id.
+        .automaticCompliance())
 }
 
 /// Present secure text field with automatic secure entry
@@ -93,5 +94,6 @@ public func platformShowPrivacyIndicator_L1(
     security.showPrivacyIndicator(type, isActive: isActive)
     
     return EmptyView() // Indicator is shown via system APIs
-        .automaticCompliance(named: "platformShowPrivacyIndicator_L1")
+        // Issue #245 / gh-243: no visible framework-owned element exists here; avoid a misleading named root.
+        .automaticCompliance()
 }
