@@ -21,40 +21,47 @@ public extension SixLayerPlatform {
     
     /// Minimum interactive-target size (points)
     ///
-    /// Apple HIG per platform — authoritative:
-    /// - iOS/watchOS: 44pt minimum touch targets (touch-first platforms).
-    ///   Apple HIG: "Provide ample touch targets for interactive elements.
-    ///   Try to maintain a minimum tappable area of 44pt × 44pt."
-    /// - tvOS: 60pt minimum focus targets. Apple's tvOS HIG mandates larger
-    ///   interactive areas for the focus engine at 10-foot viewing distance.
-    ///   Interactive elements must be easily focusable from across the room.
-    /// - macOS/visionOS: 44pt if touch is detected at runtime (touch-screen
-    ///   Mac, hand tracking on visionOS), otherwise 0 (pointer/cursor driven
+    /// Apple HIG per platform — authoritative (Issue #237):
+    /// - iOS: 44pt. Apple HIG: "Provide ample touch targets for interactive
+    ///   elements. Try to maintain a minimum tappable area of 44pt × 44pt."
+    /// - watchOS: 44pt (inherited). Apple's watchOS HIG does not publish an
+    ///   explicit numeric minimum; system controls render at ~44pt by default.
+    ///   We inherit iOS's 44pt as a conservative floor — accessibility-safe and
+    ///   consistent with SwiftUI's watchOS control sizing.
+    /// - tvOS: 60pt. Apple tvOS HIG mandates larger interactive targets for
+    ///   the focus engine at 10-foot viewing distance. Not conditional on
+    ///   runtime touch capability — focus is tvOS's primary input.
+    /// - visionOS: 60pt. Apple visionOS HIG: "Make interactive elements at
+    ///   least 60 points on a side." Gaze+pinch targeting is less precise
+    ///   than direct touch; the 60pt floor applies regardless of whether
+    ///   hand-tracking direct-touch is detected at runtime.
+    /// - macOS: 44pt if runtime touch is detected (touch-screen Mac via
+    ///   accessibility or external touch input), otherwise 0pt (pointer/cursor
     ///   UI has no enforced minimum).
     ///
     /// Named "minTouchTarget" for historical compatibility; on tvOS this is
-    /// the platform's focus-target minimum. A distinct `minFocusTarget` API
-    /// to disambiguate touch vs. focus is tracked under issue #241
-    /// (capability-aware graceful degradation).
+    /// the focus-target minimum and on visionOS it's the gaze+pinch target
+    /// minimum. A distinct `minFocusTarget` / `minSpatialTarget` API is
+    /// tracked under issue #241 (capability-aware graceful degradation).
     ///
-    /// DO NOT change tvOS to 0/44: collapsing tvOS to the non-touch-first
-    /// pattern violates Apple's tvOS HIG and produces UIs that are unusable
-    /// at TV viewing distance. If a test asserts tvOS == 0 or 44, the test
-    /// is wrong — fix the test, not this property.
+    /// DO NOT collapse tvOS or visionOS into the macOS pointer-driven branch:
+    /// doing so violates Apple's platform HIGs and produces UIs that are
+    /// unusable at their intended interaction distance. If a test asserts
+    /// tvOS/visionOS should return 0 or only 44-when-touch, the test is
+    /// wrong — fix the test, not this property.
     var minTouchTarget: CGFloat {
         switch self {
         case .iOS, .watchOS:
-            return 44.0  // Apple HIG: 44pt minimum for touch-first platforms
+            return 44.0  // Apple HIG (iOS explicit, watchOS inherited)
         case .tvOS:
-            // Apple tvOS HIG: focus engine at 10-foot viewing distance requires
-            // larger interactive targets. 60pt is the framework's floor for
-            // focusable elements; real focus sizing is driven by the focus
-            // engine at runtime but the property must report the HIG minimum.
+            // Apple tvOS HIG: focus engine at 10-foot viewing distance.
             return 60.0
-        case .macOS, .visionOS:
-            // Non-touch-first pointer/spatial platforms: enforce 44pt only when
-            // touch is detected at runtime (touch-screen Mac, hand tracking
-            // direct-touch on visionOS). Otherwise no minimum.
+        case .visionOS:
+            // Apple visionOS HIG: gaze+pinch targeting requires 60pt minimum.
+            return 60.0
+        case .macOS:
+            // Pointer/cursor driven: enforce 44pt only when runtime touch is
+            // detected (touch-screen Mac / accessibility touch emulation).
             return RuntimeCapabilityDetection.supportsTouch ? 44.0 : 0.0
         }
     }
