@@ -2366,7 +2366,7 @@ public struct CollectionEmptyStateView: View {
 extension View {
     /// Applies `accessibilityIdentifier` only when `identifier` is non-nil and non-empty.
     @ViewBuilder
-    fileprivate func sixLayerOptionalAccessibilityIdentifier(_ identifier: String?) -> some View {
+    internal func sixLayerOptionalAccessibilityIdentifier(_ identifier: String?) -> some View {
         if let identifier, !identifier.isEmpty {
             self.accessibilityIdentifier(identifier)
         } else {
