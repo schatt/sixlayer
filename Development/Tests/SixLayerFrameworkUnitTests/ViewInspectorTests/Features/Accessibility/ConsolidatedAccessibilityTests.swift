@@ -11610,6 +11610,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
 }
 
+    #if os(macOS)
     @Test @MainActor func testMacOSExpandableCardViewGeneratesAccessibilityIdentifiers() async {
         self.initializeTestConfig()
             self.runWithTaskLocalConfig {
@@ -11638,6 +11639,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #endif
     }
 }
+    #endif
 
     @Test @MainActor func testVisionOSExpandableCardViewGeneratesAccessibilityIdentifiers() async {
         self.initializeTestConfig()
