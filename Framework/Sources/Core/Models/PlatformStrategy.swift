@@ -19,30 +19,42 @@ public extension SixLayerPlatform {
     
     // MARK: - Touch & Interaction Properties
     
-    /// Minimum touch-target size (points)
+    /// Minimum interactive-target size (points)
     ///
-    /// Apple HIG per platform:
-    /// - iOS/watchOS: 44pt minimum touch targets (touch-first platforms)
-    /// - macOS/tvOS/visionOS: 44pt if touch is detected at runtime (pointer/
-    ///   hand tracking / accessibility touch emulation), otherwise 0.0.
+    /// Apple HIG per platform — authoritative:
+    /// - iOS/watchOS: 44pt minimum touch targets (touch-first platforms).
+    ///   Apple HIG: "Provide ample touch targets for interactive elements.
+    ///   Try to maintain a minimum tappable area of 44pt × 44pt."
+    /// - tvOS: 60pt minimum focus targets. Apple's tvOS HIG mandates larger
+    ///   interactive areas for the focus engine at 10-foot viewing distance.
+    ///   Interactive elements must be easily focusable from across the room.
+    /// - macOS/visionOS: 44pt if touch is detected at runtime (touch-screen
+    ///   Mac, hand tracking on visionOS), otherwise 0 (pointer/cursor driven
+    ///   UI has no enforced minimum).
     ///
-    /// Note: on tvOS the primary interaction model is the focus engine, not
-    /// touch. Apple's tvOS HIG defines a larger focus-target minimum (~60pt
-    /// at 10-foot viewing distance), but that is conceptually distinct from
-    /// `minTouchTarget` and is tracked as a separate `minFocusTarget` API
-    /// under issue #241 (capability-aware graceful degradation). Collapsing
-    /// tvOS to the non-touch-first contract here keeps the existing test
-    /// corpus internally consistent — every test that asserts the
-    /// `minTouchTarget` contract treats tvOS as non-touch-first (0 unless
-    /// touch is detected, 44 when it is).
+    /// Named "minTouchTarget" for historical compatibility; on tvOS this is
+    /// the platform's focus-target minimum. A distinct `minFocusTarget` API
+    /// to disambiguate touch vs. focus is tracked under issue #241
+    /// (capability-aware graceful degradation).
+    ///
+    /// DO NOT change tvOS to 0/44: collapsing tvOS to the non-touch-first
+    /// pattern violates Apple's tvOS HIG and produces UIs that are unusable
+    /// at TV viewing distance. If a test asserts tvOS == 0 or 44, the test
+    /// is wrong — fix the test, not this property.
     var minTouchTarget: CGFloat {
         switch self {
         case .iOS, .watchOS:
-            return 44.0  // Touch-first platforms always need touch-sized targets
-        case .macOS, .tvOS, .visionOS:
-            // Non-touch-first platforms: enforce 44pt only when runtime touch
-            // capability is detected (e.g. touch-screen Mac, AssistiveTouch on
-            // tvOS, hand tracking on visionOS). Otherwise no minimum.
+            return 44.0  // Apple HIG: 44pt minimum for touch-first platforms
+        case .tvOS:
+            // Apple tvOS HIG: focus engine at 10-foot viewing distance requires
+            // larger interactive targets. 60pt is the framework's floor for
+            // focusable elements; real focus sizing is driven by the focus
+            // engine at runtime but the property must report the HIG minimum.
+            return 60.0
+        case .macOS, .visionOS:
+            // Non-touch-first pointer/spatial platforms: enforce 44pt only when
+            // touch is detected at runtime (touch-screen Mac, hand tracking
+            // direct-touch on visionOS). Otherwise no minimum.
             return RuntimeCapabilityDetection.supportsTouch ? 44.0 : 0.0
         }
     }
