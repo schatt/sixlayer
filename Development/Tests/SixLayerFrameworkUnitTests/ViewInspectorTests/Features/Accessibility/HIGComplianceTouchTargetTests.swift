@@ -132,41 +132,51 @@ open class HIGComplianceTouchTargetTests: BaseTestClass {
         }
     }
     
-    @Test @MainActor func testNonTouchPlatformsDoNotRequireTouchTargets() async {
-            initializeTestConfig()
+    @Test @MainActor func testNonTouchFirstPlatformsReportHIGFloor() async {
+        // Apple HIG per platform (Issue #237). Prior test asserted
+        // `minTouchTarget == 0.0` on macOS/tvOS/visionOS under the premise
+        // that these are "non-touch platforms that don't require touch
+        // targets". That's incorrect for tvOS and visionOS:
+        //
+        //   macOS:    0pt when runtime touch not detected (pointer-driven)
+        //   tvOS:     60pt (focus engine at 10-foot distance, HIG mandatory)
+        //   visionOS: 60pt (gaze+pinch target, HIG mandatory)
+        //
+        // The correct invariant is: non-touch-first platforms report the
+        // HIG floor appropriate to their primary input modality. macOS
+        // alone drops to 0 when no touch is detected.
+        initializeTestConfig()
         runWithTaskLocalConfig {
-            // GIVEN: A button with automatic compliance
             let button = Button("Test Button") { }
                 .automaticCompliance()
-            
-            // WHEN: View is created on platforms that don't require touch targets
-            // THEN: Touch target sizing should not be applied (but other HIG compliance should be)
-            
-            // Test platforms that don't require touch targets (only assert when actually running on that platform)
-            let nonTouchPlatforms: [SixLayerPlatform] = [.macOS, .tvOS, .visionOS]
+
+            let nonTouchFirstPlatforms: [SixLayerPlatform] = [.macOS, .tvOS, .visionOS]
             let currentPlatform = RuntimeCapabilityDetection.currentPlatform
-            guard nonTouchPlatforms.contains(currentPlatform) else {
-                // Running on iOS/watchOS — skip; this test only applies to non-touch platforms
+            guard nonTouchFirstPlatforms.contains(currentPlatform) else {
+                // Running on iOS/watchOS — skip; this test exercises non-touch-first platforms
                 return
             }
-            for platform in nonTouchPlatforms where platform == currentPlatform {
-                let expectedMinTouchTarget = RuntimeCapabilityDetection.minTouchTarget
-                
-                // Verify runtime detection says no touch target required
-                #expect(expectedMinTouchTarget == 0.0, "Runtime detection should indicate no touch target required on \(platform)")
-                
-                // RED PHASE: This will fail until HIG compliance is implemented
-                // But touch target sizing should NOT be applied on these platforms
-                let passed = testComponentComplianceSinglePlatform(
-                    button,
-                    expectedPattern: "SixLayer.*ui",
-                    platform: platform,
-                    componentName: "Button-\(platform)"
-                )
-                #expect(passed, "Button should have HIG compliance on \(platform) (runtime detection: minTouchTarget=\(expectedMinTouchTarget), no touch target required)")
-                
-                RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-            }
+
+            let runtimeMinTouchTarget = RuntimeCapabilityDetection.minTouchTarget
+            let expectedMinTouchTarget = PlatformTestUtilities.expectedMinTouchTarget(
+                for: currentPlatform
+            )
+
+            #expect(runtimeMinTouchTarget == expectedMinTouchTarget,
+                    "Apple HIG: \(currentPlatform) expected \(expectedMinTouchTarget)pt (not 0pt — tvOS/visionOS have platform-intrinsic HIG floors)")
+
+            // HIG compliance modifier should still apply correctly regardless
+            // of the platform's specific minimum.
+            let passed = testComponentComplianceSinglePlatform(
+                button,
+                expectedPattern: "SixLayer.*ui",
+                platform: currentPlatform,
+                componentName: "Button-\(currentPlatform)"
+            )
+            #expect(passed,
+                    "Button should have HIG compliance on \(currentPlatform) (runtime minTouchTarget=\(runtimeMinTouchTarget))")
+
+            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
         }
     }
 }
