@@ -89,9 +89,9 @@ final class Layer1AccessibilityUITests: XCTestCase {
         case "Data Presentation": return "platformPresentItemCollection_L1"
         case "Navigation": return "platformPresentNavigationStack_L1"
         case "Photos": return "platformPhotoCapture_L1"
-        case "Security": return "platformPresentSecureContent_L1"
+        case "Security": return "SixLayer.main.ui"
         case "OCR": return "platformOCRWithDisambiguation_L1"
-        case "Notifications": return "platformPresentAlert_L1"
+        case "Notifications": return "SixLayer.main.ui"
         // Formatter shells use anonymous automatic compliance (#245); identifiers are SixLayer.main.ui.*, not API names.
         case "Internationalization": return "SixLayer.main.ui"
         case "Data Analysis": return "platformAnalyzeDataFrame_L1"
@@ -255,10 +255,17 @@ final class Layer1AccessibilityUITests: XCTestCase {
                 }
 
             case "Security":
-                let secureContent = app.descendants(matching: .any).matching(identifier: "platformPresentSecureContent_L1")
-                for i in 0..<min(secureContent.count, 2) {
+                let secureContent = app.descendants(matching: .any).matching(
+                    NSPredicate(format: "identifier BEGINSWITH %@", "SixLayer.main.ui")
+                )
+                XCTAssertGreaterThan(
+                    secureContent.count,
+                    0,
+                    "Security examples should expose SixLayer automatic accessibility identifiers (#245)"
+                )
+                for i in 0..<min(secureContent.count, 12) {
                     let el = secureContent.element(boundBy: i)
-                    if el.exists { verifyAccessibilityIdentifier(el, functionName: "platformPresentSecureContent_L1") }
+                    if el.exists { verifyAccessibilityIdentifier(el, functionName: "Layer1 security surface") }
                 }
                 let secureField = app.descendants(matching: .any).matching(identifier: "platformPresentSecureTextField_L1")
                 for i in 0..<min(secureField.count, 2) {
@@ -282,10 +289,17 @@ final class Layer1AccessibilityUITests: XCTestCase {
                 }
 
             case "Notifications":
-                let alerts = app.descendants(matching: .any).matching(identifier: "platformPresentAlert_L1")
-                for i in 0..<min(alerts.count, 2) {
-                    let el = alerts.element(boundBy: i)
-                    if el.exists { verifyAccessibilityIdentifier(el, functionName: "platformPresentAlert_L1") }
+                let notificationSurfaces = app.descendants(matching: .any).matching(
+                    NSPredicate(format: "identifier BEGINSWITH %@", "SixLayer.main.ui")
+                )
+                XCTAssertGreaterThan(
+                    notificationSurfaces.count,
+                    0,
+                    "Notification examples should expose SixLayer automatic accessibility identifiers (#245)"
+                )
+                for i in 0..<min(notificationSurfaces.count, 12) {
+                    let el = notificationSurfaces.element(boundBy: i)
+                    if el.exists { verifyAccessibilityIdentifier(el, functionName: "Layer1 notification surface") }
                 }
 
             case "Internationalization":
