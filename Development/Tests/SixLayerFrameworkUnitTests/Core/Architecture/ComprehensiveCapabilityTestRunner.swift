@@ -258,18 +258,20 @@ struct ComprehensiveCapabilityTestRunner {
         case .touch:
             // Touch should match the enabled state (runtime detection)
             #expect(config.supportsTouch == enabled, "Touch UI should be \(enabled ? "generated" : "not generated") based on runtime detection")
-            if enabled {
-                // Verify platform-correct minTouchTarget value
-                // When touch is enabled, use 44.0 for accessibility (even on non-touch-first platforms)
-                let platform = RuntimeCapabilityDetection.currentPlatform
-                let expectedMinTouchTarget: CGFloat = 44.0  // Always 44.0 when touch is enabled (for accessibility)
-                #expect(config.minTouchTarget == expectedMinTouchTarget, "Touch targets should be 44.0 when touch is enabled (for accessibility) on \(platform)")
-            } else {
-                // When touch is disabled, verify platform-native value
-                let platform = RuntimeCapabilityDetection.currentPlatform
-                let expectedMinTouchTarget: CGFloat = (platform == .iOS || platform == .watchOS) ? 44.0 : 0.0
-                #expect(config.minTouchTarget == expectedMinTouchTarget, "Touch targets should be platform-native (\(expectedMinTouchTarget)) when touch is disabled on \(platform)")
-            }
+            // minTouchTarget must match Apple HIG per platform (Issue #237):
+            //   iOS/watchOS: 44  (touch HIG)
+            //   tvOS:        60  (focus HIG @ 10-foot)
+            //   visionOS:    60  (gaze+pinch HIG)
+            //   macOS:       44 if touch detected, else 0
+            // Touch being enabled does NOT override the tvOS/visionOS HIG
+            // floors — those are platform-intrinsic, not touch-conditional.
+            let platform = RuntimeCapabilityDetection.currentPlatform
+            let expectedMinTouchTarget = PlatformTestUtilities.expectedMinTouchTarget(
+                for: platform,
+                touchDetected: enabled
+            )
+            #expect(config.minTouchTarget == expectedMinTouchTarget,
+                    "Touch targets must match Apple HIG for \(platform) (touch \(enabled ? "on" : "off")): expected \(expectedMinTouchTarget)pt")
         case .hover:
             // Hover should match the enabled state (runtime detection)
             #expect(config.supportsHover == enabled, "Hover UI should be \(enabled ? "generated" : "not generated") based on runtime detection")
@@ -476,18 +478,14 @@ struct ComprehensiveCapabilityTestRunner {
         case .touch:
             // Touch should match the enabled state (runtime detection)
             #expect(config.supportsTouch == enabled, "Touch behavior should be \(enabled ? "enabled" : "disabled") based on runtime detection")
-            if enabled {
-                // Verify platform-correct minTouchTarget value
-                // When touch is enabled, use 44.0 for accessibility (even on non-touch-first platforms)
-                let platform = RuntimeCapabilityDetection.currentPlatform
-                let expectedMinTouchTarget: CGFloat = 44.0  // Always 44.0 when touch is enabled (for accessibility)
-                #expect(config.minTouchTarget == expectedMinTouchTarget, "Touch targets should be 44.0 when touch is enabled (for accessibility) on \(platform)")
-            } else {
-                // When touch is disabled, verify platform-native value
-                let platform = RuntimeCapabilityDetection.currentPlatform
-                let expectedMinTouchTarget: CGFloat = (platform == .iOS || platform == .watchOS) ? 44.0 : 0.0
-                #expect(config.minTouchTarget == expectedMinTouchTarget, "Touch targets should be platform-native (\(expectedMinTouchTarget)) when touch is disabled on \(platform)")
-            }
+            // minTouchTarget per Apple HIG (Issue #237); see testUIGeneration above.
+            let platform = RuntimeCapabilityDetection.currentPlatform
+            let expectedMinTouchTarget = PlatformTestUtilities.expectedMinTouchTarget(
+                for: platform,
+                touchDetected: enabled
+            )
+            #expect(config.minTouchTarget == expectedMinTouchTarget,
+                    "Touch targets must match Apple HIG for \(platform) (touch \(enabled ? "on" : "off")): expected \(expectedMinTouchTarget)pt")
         case .hover:
             // Hover should match the enabled state (runtime detection)
             #expect(config.supportsHover == enabled, "Hover behavior should be \(enabled ? "enabled" : "disabled") based on runtime detection")
