@@ -310,13 +310,8 @@ open class Layer4ComponentAccessibilityTests: BaseTestClass {
         // When: Applying platform background
         let backgroundText = testText.platformBackground()
         
-        // Then: Should generate accessibility identifiers
-        let hasAccessibilityID = testComponentComplianceSinglePlatform(
-            backgroundText,
-            expectedPattern: "*.main.ui.element.*",
-            platform: SixLayerPlatform.iOS,
-            componentName: "PlatformBackground"
-        )
-        #expect(hasAccessibilityID, "Platform background should generate accessibility identifiers ")
+        // Then: Should render (layout styling uses anonymous compliance; gh-243)
+        let hostedView = hostRootPlatformView(backgroundText)
+        #expect(hostedView != nil, "Platform background should render")
     }
 }

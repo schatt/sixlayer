@@ -130,13 +130,8 @@ open class Layer4ViewExtensionTests: BaseTestClass {
             let view = Text("Test")
                 .platformFormSpacing(size)
             
-            let hasAccessibilityID = testComponentComplianceSinglePlatform(
-                view,
-                expectedPattern: "SixLayer.*ui",
-                platform: SixLayerPlatform.iOS,
-                componentName: "platformFormSpacing"
-            )
-            #expect(hasAccessibilityID, "platformFormSpacing \(size) should generate accessibility identifiers ")
+            let hostedView = hostRootPlatformView(view)
+            #expect(hostedView != nil, "platformFormSpacing \(size) should render (layout spacing uses anonymous compliance; gh-243)")
         }
     }
     
@@ -148,13 +143,8 @@ open class Layer4ViewExtensionTests: BaseTestClass {
                 Text("Content")
             }
         
-        let hasAccessibilityID = testComponentComplianceSinglePlatform(
-            view,
-            expectedPattern: "SixLayer.*ui",
-            platform: SixLayerPlatform.iOS,
-            componentName: "platformNavigation_L4"
-        )
-        #expect(hasAccessibilityID, "platformNavigation_L4 should generate accessibility identifiers ")
+        let hostedView = hostRootPlatformView(view)
+        #expect(hostedView != nil, "platformNavigation_L4 should render (no named root accessibility identifier; gh-243)")
     }
     
     // MARK: - platformNavigationContainer Tests
@@ -165,13 +155,8 @@ open class Layer4ViewExtensionTests: BaseTestClass {
                 Text("Content")
             }
         
-        let hasAccessibilityID = testComponentComplianceSinglePlatform(
-            view,
-            expectedPattern: "SixLayer.*ui",
-            platform: SixLayerPlatform.iOS,
-            componentName: "platformNavigation_L4"
-        )
-        #expect(hasAccessibilityID, "platformNavigation_L4 should generate accessibility identifiers ")
+        let hostedView = hostRootPlatformView(view)
+        #expect(hostedView != nil, "platformNavigation_L4 should render (no named root accessibility identifier; gh-243)")
     }
     
     // MARK: - platformNavigationDestination Tests
@@ -187,13 +172,8 @@ open class Layer4ViewExtensionTests: BaseTestClass {
                 Text("Destination")
             }
         
-        let hasAccessibilityID = testComponentComplianceSinglePlatform(
-            view,
-            expectedPattern: "SixLayer.*ui",
-            platform: SixLayerPlatform.iOS,
-            componentName: "platformNavigationDestination"
-        )
-        #expect(hasAccessibilityID, "platformNavigationDestination should generate accessibility identifiers ")
+        let hostedView = hostRootPlatformView(view)
+        #expect(hostedView != nil, "platformNavigationDestination_L4 should render (no named root accessibility identifier; gh-243)")
     }
     
     // MARK: - platformNavigationButton Tests
@@ -242,13 +222,8 @@ open class Layer4ViewExtensionTests: BaseTestClass {
             let view = Text("Content")
                 .platformNavigationTitleDisplayMode_L4(mode)
             
-            let hasAccessibilityID = testComponentComplianceSinglePlatform(
-                view,
-                expectedPattern: "SixLayer.*ui",
-                platform: SixLayerPlatform.iOS,
-                componentName: "platformNavigationTitleDisplayMode"
-            )
-            #expect(hasAccessibilityID, "platformNavigationTitleDisplayMode \(mode) should generate accessibility identifiers ")
+            let hostedView = hostRootPlatformView(view)
+            #expect(hostedView != nil, "platformNavigationTitleDisplayMode_L4(\(mode)) should render (gh-243)")
         }
     }
     
@@ -261,13 +236,8 @@ open class Layer4ViewExtensionTests: BaseTestClass {
             let view = Text("Content")
                 .platformNavigationBarTitleDisplayMode_L4(mode)
             
-            let hasAccessibilityID = testComponentComplianceSinglePlatform(
-                view,
-                expectedPattern: "SixLayer.*ui",
-                platform: SixLayerPlatform.iOS,
-                componentName: "platformNavigationBarTitleDisplayMode"
-            )
-            #expect(hasAccessibilityID, "platformNavigationBarTitleDisplayMode \(mode) should generate accessibility identifiers ")
+            let hostedView = hostRootPlatformView(view)
+            #expect(hostedView != nil, "platformNavigationBarTitleDisplayMode_L4(\(mode)) should render (gh-243)")
         }
     }
     
@@ -278,13 +248,8 @@ open class Layer4ViewExtensionTests: BaseTestClass {
         let view = Text("Content")
             .platformBackground()
         
-        let hasAccessibilityID = testComponentComplianceSinglePlatform(
-            view,
-            expectedPattern: "SixLayer.*ui",
-            platform: SixLayerPlatform.iOS,
-            componentName: "platformBackground"
-        )
-        #expect(hasAccessibilityID, "platformBackground default should generate accessibility identifiers ")
+        let hostedView = hostRootPlatformView(view)
+        #expect(hostedView != nil, "platformBackground default should render (anonymous compliance; gh-243)")
     }
     
     @Test @MainActor func testPlatformBackground_CustomColor() async {
@@ -292,13 +257,8 @@ open class Layer4ViewExtensionTests: BaseTestClass {
         let view = Text("Content")
             .platformBackground(.blue)
         
-        let hasAccessibilityID = testComponentComplianceSinglePlatform(
-            view,
-            expectedPattern: "SixLayer.*ui",
-            platform: SixLayerPlatform.iOS,
-            componentName: "platformBackground"
-        )
-        #expect(hasAccessibilityID, "platformBackground custom color should generate accessibility identifiers ")
+        let hostedView = hostRootPlatformView(view)
+        #expect(hostedView != nil, "platformBackground custom color should render (anonymous compliance; gh-243)")
     }
     
     // MARK: - platformBackground Missing Parameters Tests (TDD - RED Phase)
@@ -310,16 +270,8 @@ open class Layer4ViewExtensionTests: BaseTestClass {
         let view = Text("Content")
             .platformBackground(.blue, ignoresSafeAreaEdges: .all)
         
-        let hasAccessibilityID = testComponentComplianceSinglePlatform(
-            view,
-            expectedPattern: "SixLayer.*ui",
-            platform: SixLayerPlatform.iOS,
-            componentName: "platformBackground"
-        )
-        #expect(hasAccessibilityID, "platformBackground with ignoresSafeAreaEdges should generate accessibility identifiers")
-        
         let hostedView = hostRootPlatformView(view)
-        #expect(hostedView != nil, "platformBackground with ignoresSafeAreaEdges should render")
+        #expect(hostedView != nil, "platformBackground with ignoresSafeAreaEdges should render (anonymous compliance; gh-243)")
     }
     
     @Test @MainActor func testPlatformBackgroundWithViewBasedBackground() async {
@@ -331,16 +283,8 @@ open class Layer4ViewExtensionTests: BaseTestClass {
                 Color.blue
             }
         
-        let hasAccessibilityID = testComponentComplianceSinglePlatform(
-            view,
-            expectedPattern: "SixLayer.*ui",
-            platform: SixLayerPlatform.iOS,
-            componentName: "platformBackground"
-        )
-        #expect(hasAccessibilityID, "platformBackground with view-based background should generate accessibility identifiers")
-        
         let hostedView = hostRootPlatformView(view)
-        #expect(hostedView != nil, "platformBackground with view-based background should render")
+        #expect(hostedView != nil, "platformBackground with view-based background should render (anonymous compliance; gh-243)")
     }
     
     @Test @MainActor func testPlatformBackgroundWithViewBasedBackgroundAndAlignment() async {
@@ -364,16 +308,8 @@ open class Layer4ViewExtensionTests: BaseTestClass {
         let view = Text("Content")
             .platformBackground(.blue.gradient, ignoresSafeAreaEdges: .all)
         
-        let hasAccessibilityID = testComponentComplianceSinglePlatform(
-            view,
-            expectedPattern: "SixLayer.*ui",
-            platform: SixLayerPlatform.iOS,
-            componentName: "platformBackground"
-        )
-        #expect(hasAccessibilityID, "platformBackground with ShapeStyle should generate accessibility identifiers")
-        
         let hostedView = hostRootPlatformView(view)
-        #expect(hostedView != nil, "platformBackground with ShapeStyle should render")
+        #expect(hostedView != nil, "platformBackground with ShapeStyle should render (anonymous compliance; gh-243)")
     }
     
     @Test @MainActor func testPlatformBackgroundMatchesSwiftUI() async {
@@ -521,13 +457,8 @@ open class Layer4ViewExtensionTests: BaseTestClass {
         let view = Text("Content")
             .platformPadding()
         
-        let hasAccessibilityID = testComponentComplianceSinglePlatform(
-            view,
-            expectedPattern: "SixLayer.*ui",
-            platform: SixLayerPlatform.iOS,
-            componentName: "platformPadding"
-        )
-        #expect(hasAccessibilityID, "platformPadding default should generate accessibility identifiers ")
+        let hostedView = hostRootPlatformView(view)
+        #expect(hostedView != nil, "platformPadding default should render (anonymous compliance; gh-243)")
     }
     
     @Test @MainActor func testPlatformPadding_Edges() async {
@@ -535,13 +466,8 @@ open class Layer4ViewExtensionTests: BaseTestClass {
         let view = Text("Content")
             .platformPadding(.horizontal, 16)
         
-        let hasAccessibilityID = testComponentComplianceSinglePlatform(
-            view,
-            expectedPattern: "SixLayer.*ui",
-            platform: SixLayerPlatform.iOS,
-            componentName: "platformPadding"
-        )
-        #expect(hasAccessibilityID, "platformPadding edges should generate accessibility identifiers ")
+        let hostedView = hostRootPlatformView(view)
+        #expect(hostedView != nil, "platformPadding edges should render (anonymous compliance; gh-243)")
     }
     
     @Test @MainActor func testPlatformPadding_Value() async {
@@ -549,13 +475,8 @@ open class Layer4ViewExtensionTests: BaseTestClass {
         let view = Text("Content")
             .platformPadding(20)
         
-        let hasAccessibilityID = testComponentComplianceSinglePlatform(
-            view,
-            expectedPattern: "SixLayer.*ui",
-            platform: SixLayerPlatform.iOS,
-            componentName: "platformPadding"
-        )
-        #expect(hasAccessibilityID, "platformPadding value should generate accessibility identifiers ")
+        let hostedView = hostRootPlatformView(view)
+        #expect(hostedView != nil, "platformPadding value should render (anonymous compliance; gh-243)")
     }
     
     @Test @MainActor func testPlatformPadding_EdgeInsets() async {
@@ -567,18 +488,8 @@ open class Layer4ViewExtensionTests: BaseTestClass {
         let view = Text("Content")
             .platformPadding(insets)
         
-        // Then: Should generate accessibility identifiers
-        let hasAccessibilityID = testComponentComplianceSinglePlatform(
-            view,
-            expectedPattern: "SixLayer.*ui",
-            platform: SixLayerPlatform.iOS,
-            componentName: "platformPadding"
-        )
-        #expect(hasAccessibilityID, "platformPadding with EdgeInsets should generate accessibility identifiers")
-        
-        // And: View should render successfully (functional test)
         let hostedView = hostRootPlatformView(view)
-        #expect(hostedView != nil, "platformPadding with EdgeInsets should render successfully")
+        #expect(hostedView != nil, "platformPadding with EdgeInsets should render (anonymous compliance; gh-243)")
     }
     
     @Test @MainActor func testPlatformPadding_EdgeInsets_MatchesSwiftUI() async {
@@ -605,13 +516,8 @@ open class Layer4ViewExtensionTests: BaseTestClass {
         let view = Text("Content")
             .platformReducedPadding()
         
-        let hasAccessibilityID = testComponentComplianceSinglePlatform(
-            view,
-            expectedPattern: "SixLayer.*ui",
-            platform: SixLayerPlatform.iOS,
-            componentName: "platformReducedPadding"
-        )
-        #expect(hasAccessibilityID, "platformReducedPadding should generate accessibility identifiers ")
+        let hostedView = hostRootPlatformView(view)
+        #expect(hostedView != nil, "platformReducedPadding should render (anonymous compliance; gh-243)")
     }
     
     // MARK: - platformCornerRadius Tests
@@ -621,26 +527,16 @@ open class Layer4ViewExtensionTests: BaseTestClass {
         let view = Text("Content")
             .platformCornerRadius()
         
-        let hasAccessibilityID = testComponentComplianceSinglePlatform(
-            view,
-            expectedPattern: "SixLayer.*ui",
-            platform: SixLayerPlatform.iOS,
-            componentName: "platformCornerRadius"
-        )
-        #expect(hasAccessibilityID, "platformCornerRadius default should generate accessibility identifiers ")
+        let hostedView = hostRootPlatformView(view)
+        #expect(hostedView != nil, "platformCornerRadius default should render (anonymous compliance; gh-243)")
     }
     
     @Test @MainActor func testPlatformCornerRadius_Custom() async {
         let view = Text("Content")
             .platformCornerRadius(16)
         
-        let hasAccessibilityID = testComponentComplianceSinglePlatform(
-            view,
-            expectedPattern: "SixLayer.*ui",
-            platform: SixLayerPlatform.iOS,
-            componentName: "platformCornerRadius"
-        )
-        #expect(hasAccessibilityID, "platformCornerRadius custom should generate accessibility identifiers ")
+        let hostedView = hostRootPlatformView(view)
+        #expect(hostedView != nil, "platformCornerRadius custom should render (anonymous compliance; gh-243)")
     }
     
     // MARK: - platformShadow Tests
@@ -649,26 +545,16 @@ open class Layer4ViewExtensionTests: BaseTestClass {
         let view = Text("Content")
             .platformShadow()
         
-        let hasAccessibilityID = testComponentComplianceSinglePlatform(
-            view,
-            expectedPattern: "SixLayer.*ui",
-            platform: SixLayerPlatform.iOS,
-            componentName: "platformShadow"
-        )
-        #expect(hasAccessibilityID, "platformShadow default should generate accessibility identifiers ")
+        let hostedView = hostRootPlatformView(view)
+        #expect(hostedView != nil, "platformShadow default should render (anonymous compliance; gh-243)")
     }
     
     @Test @MainActor func testPlatformShadow_Custom() async {
         let view = Text("Content")
             .platformShadow(color: .gray, radius: 8, x: 2, y: 2)
         
-        let hasAccessibilityID = testComponentComplianceSinglePlatform(
-            view,
-            expectedPattern: "SixLayer.*ui",
-            platform: SixLayerPlatform.iOS,
-            componentName: "platformShadow"
-        )
-        #expect(hasAccessibilityID, "platformShadow custom should generate accessibility identifiers ")
+        let hostedView = hostRootPlatformView(view)
+        #expect(hostedView != nil, "platformShadow custom should render (anonymous compliance; gh-243)")
     }
     
     // MARK: - platformBorder Tests
@@ -677,26 +563,16 @@ open class Layer4ViewExtensionTests: BaseTestClass {
         let view = Text("Content")
             .platformBorder()
         
-        let hasAccessibilityID = testComponentComplianceSinglePlatform(
-            view,
-            expectedPattern: "SixLayer.*ui",
-            platform: SixLayerPlatform.iOS,
-            componentName: "platformBorder"
-        )
-        #expect(hasAccessibilityID, "platformBorder default should generate accessibility identifiers ")
+        let hostedView = hostRootPlatformView(view)
+        #expect(hostedView != nil, "platformBorder default should render (anonymous compliance; gh-243)")
     }
     
     @Test @MainActor func testPlatformBorder_Custom() async {
         let view = Text("Content")
             .platformBorder(color: .blue, width: 2)
         
-        let hasAccessibilityID = testComponentComplianceSinglePlatform(
-            view,
-            expectedPattern: "SixLayer.*ui",
-            platform: SixLayerPlatform.iOS,
-            componentName: "platformBorder"
-        )
-        #expect(hasAccessibilityID, "platformBorder custom should generate accessibility identifiers ")
+        let hostedView = hostRootPlatformView(view)
+        #expect(hostedView != nil, "platformBorder custom should render (anonymous compliance; gh-243)")
     }
     
     // MARK: - platformFont Tests
@@ -705,26 +581,16 @@ open class Layer4ViewExtensionTests: BaseTestClass {
         let view = Text("Content")
             .platformFont()
         
-        let hasAccessibilityID = testComponentComplianceSinglePlatform(
-            view,
-            expectedPattern: "SixLayer.*ui",
-            platform: SixLayerPlatform.iOS,
-            componentName: "platformFont"
-        )
-        #expect(hasAccessibilityID, "platformFont default should generate accessibility identifiers ")
+        let hostedView = hostRootPlatformView(view)
+        #expect(hostedView != nil, "platformFont default should render (anonymous compliance; gh-243)")
     }
     
     @Test @MainActor func testPlatformFont_Custom() async {
         let view = Text("Content")
             .platformFont(.headline)
         
-        let hasAccessibilityID = testComponentComplianceSinglePlatform(
-            view,
-            expectedPattern: "SixLayer.*ui",
-            platform: SixLayerPlatform.iOS,
-            componentName: "platformFont"
-        )
-        #expect(hasAccessibilityID, "platformFont custom should generate accessibility identifiers ")
+        let hostedView = hostRootPlatformView(view)
+        #expect(hostedView != nil, "platformFont custom should render (anonymous compliance; gh-243)")
     }
     
     // MARK: - platformAnimation Tests
@@ -733,26 +599,16 @@ open class Layer4ViewExtensionTests: BaseTestClass {
         let view = Text("Content")
             .platformAnimation()
         
-        let hasAccessibilityID = testComponentComplianceSinglePlatform(
-            view,
-            expectedPattern: "SixLayer.*ui",
-            platform: SixLayerPlatform.iOS,
-            componentName: "platformAnimation"
-        )
-        #expect(hasAccessibilityID, "platformAnimation default should generate accessibility identifiers ")
+        let hostedView = hostRootPlatformView(view)
+        #expect(hostedView != nil, "platformAnimation default should render (anonymous compliance; gh-243)")
     }
     
     @Test @MainActor func testPlatformAnimation_Custom() async {
         let view = Text("Content")
             .platformAnimation(.easeInOut, value: true)
         
-        let hasAccessibilityID = testComponentComplianceSinglePlatform(
-            view,
-            expectedPattern: "SixLayer.*ui",
-            platform: SixLayerPlatform.iOS,
-            componentName: "platformAnimation"
-        )
-        #expect(hasAccessibilityID, "platformAnimation custom should generate accessibility identifiers ")
+        let hostedView = hostRootPlatformView(view)
+        #expect(hostedView != nil, "platformAnimation custom should render (anonymous compliance; gh-243)")
     }
     
     // MARK: - platformFrame Tests
@@ -761,52 +617,32 @@ open class Layer4ViewExtensionTests: BaseTestClass {
         let view = Text("Content")
             .platformMinFrame()
         
-        let hasAccessibilityID = testComponentComplianceSinglePlatform(
-            view,
-            expectedPattern: "SixLayer.*ui",
-            platform: SixLayerPlatform.iOS,
-            componentName: "platformMinFrame"
-        )
-        #expect(hasAccessibilityID, "platformMinFrame should generate accessibility identifiers ")
+        let hostedView = hostRootPlatformView(view)
+        #expect(hostedView != nil, "platformMinFrame should render (anonymous compliance; gh-243)")
     }
     
     @Test @MainActor func testPlatformMaxFrame() async {
         let view = Text("Content")
             .platformMaxFrame()
         
-        let hasAccessibilityID = testComponentComplianceSinglePlatform(
-            view,
-            expectedPattern: "SixLayer.*ui",
-            platform: SixLayerPlatform.iOS,
-            componentName: "platformMaxFrame"
-        )
-        #expect(hasAccessibilityID, "platformMaxFrame should generate accessibility identifiers ")
+        let hostedView = hostRootPlatformView(view)
+        #expect(hostedView != nil, "platformMaxFrame should render (anonymous compliance; gh-243)")
     }
     
     @Test @MainActor func testPlatformIdealFrame() async {
         let view = Text("Content")
             .platformIdealFrame()
         
-        let hasAccessibilityID = testComponentComplianceSinglePlatform(
-            view,
-            expectedPattern: "SixLayer.*ui",
-            platform: SixLayerPlatform.iOS,
-            componentName: "platformIdealFrame"
-        )
-        #expect(hasAccessibilityID, "platformIdealFrame should generate accessibility identifiers ")
+        let hostedView = hostRootPlatformView(view)
+        #expect(hostedView != nil, "platformIdealFrame should render (anonymous compliance; gh-243)")
     }
     
     @Test @MainActor func testPlatformAdaptiveFrame() async {
         let view = Text("Content")
             .platformAdaptiveFrame()
         
-        let hasAccessibilityID = testComponentComplianceSinglePlatform(
-            view,
-            expectedPattern: "SixLayer.*ui",
-            platform: SixLayerPlatform.iOS,
-            componentName: "platformAdaptiveFrame"
-        )
-        #expect(hasAccessibilityID, "platformAdaptiveFrame should generate accessibility identifiers ")
+        let hostedView = hostRootPlatformView(view)
+        #expect(hostedView != nil, "platformAdaptiveFrame should render (anonymous compliance; gh-243)")
     }
     
     // MARK: - platformFormStyle Tests
@@ -815,13 +651,8 @@ open class Layer4ViewExtensionTests: BaseTestClass {
         let view = Text("Content")
             .platformFormStyle()
         
-        let hasAccessibilityID = testComponentComplianceSinglePlatform(
-            view,
-            expectedPattern: "SixLayer.*ui",
-            platform: SixLayerPlatform.iOS,
-            componentName: "platformFormStyle"
-        )
-        #expect(hasAccessibilityID, "platformFormStyle should generate accessibility identifiers ")
+        let hostedView = hostRootPlatformView(view)
+        #expect(hostedView != nil, "platformFormStyle should render (anonymous compliance; gh-243)")
     }
     
     // MARK: - platformContentSpacing Tests
@@ -830,13 +661,8 @@ open class Layer4ViewExtensionTests: BaseTestClass {
         let view = Text("Content")
             .platformContentSpacing()
         
-        let hasAccessibilityID = testComponentComplianceSinglePlatform(
-            view,
-            expectedPattern: "SixLayer.*ui",
-            platform: SixLayerPlatform.iOS,
-            componentName: "platformContentSpacing"
-        )
-        #expect(hasAccessibilityID, "platformContentSpacing should generate accessibility identifiers ")
+        let hostedView = hostRootPlatformView(view)
+        #expect(hostedView != nil, "platformContentSpacing should render (anonymous compliance; gh-243)")
     }
     
     // MARK: - platformPhotoPicker_L4 Tests
