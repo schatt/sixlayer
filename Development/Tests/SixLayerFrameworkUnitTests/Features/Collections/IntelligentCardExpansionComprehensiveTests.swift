@@ -555,8 +555,11 @@ open class IntelligentCardExpansionComprehensiveTests: BaseTestClass {    // MAR
             #expect(config.supportsSwitchControl == true, "visionOS should support Switch Control")
             #expect(config.supportsAssistiveTouch == false, "visionOS should not support AssistiveTouch")
 
-            // visionOS should have platform-correct minTouchTarget (0.0, not 44.0)
-            #expect(config.minTouchTarget == 0.0, "visionOS should have 0.0 touch target (platform-native)")
+            // Apple visionOS HIG: 60pt minimum for gaze+pinch targets (Issue #237).
+            // This runs only when runtimePlatform == .visionOS, so we assert the
+            // HIG floor directly rather than going through a per-platform helper.
+            #expect(config.minTouchTarget == 60.0,
+                    "visionOS HIG: interactive elements must be >= 60pt (gaze+pinch)")
         } else {
             // On other platforms, simulation may not work due to thread/actor isolation
             // Skip assertions - this is expected behavior
@@ -618,12 +621,14 @@ open class IntelligentCardExpansionComprehensiveTests: BaseTestClass {    // MAR
         }
         
         // Test that touch target size is appropriate for current platform
-        // Apple HIG: 44pt minimum applies to touch-first platforms (iOS/watchOS)
-        // regardless of whether touch is currently enabled, as these platforms
-        // are designed for touch interaction
+        // Apple HIG per platform (Issue #237): iOS/watchOS 44, tvOS/visionOS
+        // 60, macOS conditional. The previous (iOS|watchOS ? 44 : 0) formula
+        // silently miscategorized tvOS (60pt focus HIG) and visionOS (60pt
+        // gaze+pinch HIG).
         let currentPlatform = SixLayerPlatform.current
-        let expectedMinTouchTarget: CGFloat = (currentPlatform == .iOS || currentPlatform == .watchOS) ? 44.0 : 0.0
-        #expect(config.minTouchTarget == expectedMinTouchTarget, "Touch targets should be platform-appropriate (\(expectedMinTouchTarget)) for \(currentPlatform)")
+        let expectedMinTouchTarget = PlatformTestUtilities.expectedMinTouchTarget(for: currentPlatform)
+        #expect(config.minTouchTarget == expectedMinTouchTarget,
+                "Apple HIG: \(currentPlatform) expected \(expectedMinTouchTarget)pt")
     }
     
     // MARK: - Layer 6 Tests: Platform System
