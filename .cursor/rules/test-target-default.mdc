@@ -1,33 +1,25 @@
 ---
-description: MANDATORY xcode-tools MCP for agent test runs when available; CLI only when MCP cannot run.
+description: MANDATORY xcode-tools MCP for agent test runs when available; iOS Simulator is the default target.
 alwaysApply: true
 ---
 
 # Test Target Default
 
-## **MANDATORY — xcode-tools MCP for test runs**
+## MCP-first for test runs
 
-- **When the agent runs tests:** Use **xcode-tools** MCP **always**—do **not** choose `dbs-build` or `xcodebuild test` first. CLI is **only** for the narrow exceptions below.
-  - **RunAllTests** or **RunSomeTests**: require `tabIdentifier` from the active Xcode workspace. Use **XcodeListWindows** to discover open windows/tabs and the workspace tab identifier.
-  - **GetTestList**: use to discover test targets and identifiers for **RunSomeTests** (e.g. run a single test class or target).
-  - **Changing scheme before tests:** To run tests for a specific scheme (e.g. SLF-iOS-AllTests, SLF-macOS-UnitTests), set the scheme first so the MCP runs the right one: run `osascript Development/scripts/set_xcode_scheme.applescript "<SchemeName>"` from the repo root. Optionally pass a second argument: window index (e.g. `2` for second window), a window title fragment (e.g. `SixLayer`), or the **absolute path to `SixLayerFramework.xcodeproj`** to open/focus the correct window. Then call **RunAllTests** or **RunSomeTests** with the matching `tabIdentifier` from **XcodeListWindows**.
-  - **ViewInspector tests (e.g. IntelligentCardExpansionComponentAccessibilityTests):** The scheme **SLF-iOS-AllTests** does not run the **SLFiOSViewInspectorTests** target (tests show "not run"). Before running those tests via MCP, set the scheme to **SLF-iOS-ViewInspectorTests**: `osascript Development/scripts/set_xcode_scheme.applescript "SLF-iOS-ViewInspectorTests" "SixLayer"` or pass the `.xcodeproj` path as the second argument. The script requires **Accessibility** permission for the process (e.g. Terminal or Cursor) in System Settings → Privacy & Security → Accessibility.
-  - **If MCP fails** (e.g. tool not found, server disabled): retry once; ensure Xcode is open with **SixLayerFramework.xcodeproj** and the correct scheme. **Only if MCP remains unusable**, state that fact and use `dbs-build --target iOS_tests` or `xcodebuild test` **without** log truncation (see **`.cursor/rules/test-output-diagnostics.mdc`**).
-  - **If no tab** for this repo in **XcodeListWindows**: prompt to open the project in Xcode (or run `set_xcode_scheme` with the `.xcodeproj` path), then **XcodeListWindows** again—**still use MCP** once a tab exists.
+- **Always use xcode-tools MCP** for agent test runs — do not default to `dbs-build` or `xcodebuild test`.
+  - **RunAllTests / RunSomeTests** need `tabIdentifier` from **XcodeListWindows**.
+  - **GetTestList** — discover target/test identifiers for `RunSomeTests`.
+  - **Scheme switching:** `osascript Development/scripts/set_xcode_scheme.applescript "<SchemeName>"` from the repo root. Optional second arg: window index, title fragment (e.g. `"SixLayer"`), or absolute path to `SixLayerFramework.xcodeproj` to focus the right window.
+  - **ViewInspector tests** (e.g. `IntelligentCardExpansionComponentAccessibilityTests`): `SLF-iOS-AllTests` does **not** run `SLFiOSViewInspectorTests` (they show "not run"). Switch to scheme **`SLF-iOS-ViewInspectorTests`** first. The AppleScript requires Accessibility permission for the calling process (Terminal or Cursor) in System Settings → Privacy & Security → Accessibility.
+  - **If MCP fails:** retry once; ensure Xcode is open with `SixLayerFramework.xcodeproj` and the right scheme. Only if MCP stays unusable, state so and fall back to `dbs-build --target iOS_tests` or `xcodebuild test` (full log per [test-output-diagnostics.mdc](mdc:.cursor/rules/test-output-diagnostics.mdc)).
+  - **No Xcode tab for this repo:** ask the user to open the project (or run `set_xcode_scheme` with the `.xcodeproj` path), then re-run `XcodeListWindows` — still use MCP once a tab exists.
 
-## **Default: iOS Simulator**
+## Default target: iOS Simulator
 
-- **Day-to-day testing:** Run **iOS_tests** (iOS Simulator) unless the user asks for macOS or both.
-- **With MCP:** use **RunAllTests** or **RunSomeTests** for the scheme that runs iOS tests (e.g. SLF-iOS-AllTests).
-- **CLI (exception only):** `dbs-build --target iOS_tests` when MCP cannot be used after the steps above.
+- Day-to-day: run iOS tests (e.g. `SLF-iOS-AllTests`) unless the user asks for macOS or both.
+- CLI exception: `dbs-build --target iOS_tests` only when MCP can't be used.
 
-## **Release**
+## Release
 
-- **Release script** runs the full suite (macOS + iOS unit tests) as part of `Development/scripts/release-process.sh`. The agent does not run the full test before release—the script does.
-
-## **Summary**
-
-| Context              | Agent behavior                                      | CLI exception                          |
-|----------------------|-----------------------------------------------------|----------------------------------------|
-| Normal test run      | xcode-tools **RunAllTests** / **RunSomeTests** (with `tabIdentifier`) | Only if MCP unavailable / no Xcode tab |
-| Pre-release check    | xcode-tools (full plan) when user asks agent to run tests | Same                                   |
+The release script `Development/scripts/release-process.sh` runs the full macOS + iOS suite. Do not pre-run the full suite as the agent before release — the script does.

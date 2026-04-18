@@ -1,90 +1,38 @@
 ---
-description: GitHub issue workflow rules for using temporary files when posting comments with special characters
+description: Post GitHub issue/PR comments via --body-file; post TDD red evidence to the issue when issue-driven.
 globs: **/*
 alwaysApply: true
 ---
 
-# GitHub Issue Workflow Rules
+# GitHub Issue Workflow
 
-## **MANDATORY — PRECEDENCE**
+## Comment posting — MANDATORY
 
-- **Always use `--body-file` for issue comments.** Do not pass comment body inline to `gh issue comment` (e.g. `gh issue comment 3 --body "text"`). Inline bodies cause shell interpretation of backticks, `$`, and other characters. This rule has no exceptions when posting issue comments.
-- **When in doubt, use the temp file.** For any issue comment that includes formatting, code, or special characters, write the message to a temp file and use `gh issue comment <number> --body-file <file>`.
+- **Always** use `gh issue comment <N> --body-file <path>` (or a heredoc with a quoted delimiter). **Never** use inline `--body "..."` — shells interpret backticks/`$` inside double quotes.
+- Applies any time a comment contains backticks, code blocks, special shell characters, or multi-line formatting (which is almost always).
 
-## **Core Principle**
+## TDD red-phase log on the issue (MANDATORY when issue-driven)
 
-When updating GitHub issues with comments that contain backticks, code blocks, or special characters, always use a temporary file to avoid shell interpretation issues.
+When work maps to a GitHub issue, post the **deliberately red** test evidence to that issue before treating TDD as complete. The comment must include:
 
-## **TDD — red phase log on the issue (MANDATORY when issue-driven)**
+- **Timestamp** — UTC ISO 8601 (`date -u +%Y-%m-%dT%H:%M:%SZ`) in the body.
+- **How tests were run** — scheme/target, MCP tool or CLI, destination/simulator.
+- **Failing test id(s) + short verbatim excerpt** (one screenful at most) — assertion + `file:line`. Don't paste full runs; reference a local log path instead.
 
-When work maps to a GitHub issue, **strict TDD** requires posting **deliberately red** test output to that issue. See `.cursor/rules/strict-tdd-definition.mdc` → **Required Evidence** → **GitHub issue — red log**.
+See [strict-tdd-definition.mdc](mdc:.cursor/rules/strict-tdd-definition.mdc) → Required Evidence → GitHub issue red log.
 
-**Posting rules:**
+## When to close issues
 
-1. Build the comment in a **temp file** (failure excerpts almost always contain `` ` ``, `$`, or paths—unsafe for inline `gh` `--body`).
-2. Run `gh issue comment <N> --body-file <path>` then **delete** the temp file.
-3. The comment body **must** include a **timestamp** (UTC ISO 8601 in the text), **how tests were run**, and **failing test id(s) + a short verbatim excerpt** of the failure (minimal lines: which test, which assertion/message). **Do not** attach or paste a **complete** test run or full build transcript—**relevant excerpt only**; point to a local/CI log path if the full run matters.
+- **Close when the work is done on its branch** — don't wait for merge to `main`. Name the branch in the closing comment (e.g. "Implemented on `b7.6.0`, pushed").
+- Merge to `main` is part of the release process, not a prerequisite for closing.
 
-This gives a durable, timestamped audit that tests **ran and failed for the right reason**, not only that they eventually passed.
-
-## **When to close issues (branch vs `main`)**
-
-- **Close when the work is done** on the branch where it was implemented (e.g. feature or release-prep branch). Do **not** wait for merge to `main` to close.
-- **Merge to `main`** is part of the **final release process**, not a prerequisite for closing the issue in normal workflow.
-- When commenting or closing, **name the branch** commits live on (e.g. “Implemented on `b7.6.0`, pushed”) so it is obvious where to find the work before release.
-
-## **MANDATORY Workflow**
-
-### **For Issue Comments:**
-
-1. **Write message to temporary file** - Create a temp file with the comment body
-
-2. **Use `--body-file` flag** - Use `gh issue comment <number> --body-file <file>` to add the comment
-
-3. **Close issue if needed** - Use `gh issue close <number> --reason completed` to close
-
-4. **Clean up** - Always remove the temporary file after use
-
-### **Example:**
+## Pattern
 
 ```bash
-# Write comment to temp file
-cat > /tmp/issue_comment.txt << 'EOF'
-✅ Issue completed!
-
-**Implementation Details:**
-
-- Added `ColorUtilities` for generating colors
-- Updated `TaskItem.cardColor` to show user colors
+cat > /tmp/issue_comment.txt <<'EOF'
+...body...
 EOF
-
-# Add comment and close issue
 gh issue comment 3 --body-file /tmp/issue_comment.txt
 gh issue close 3 --reason completed
-
-# Clean up
 rm /tmp/issue_comment.txt
 ```
-
-## **Why This Matters**
-
-- Prevents shell interpretation of backticks as command substitution
-- Allows proper formatting with code blocks and special characters
-- Ensures comments are posted correctly without parsing errors
-- Maintains clean terminal output
-
-## **When to Use**
-
-- **Always** when issue comments contain:
-  - Backticks (`` `code` ``)
-  - Code blocks (```swift```)
-  - Special shell characters ($, `, \, etc.)
-  - Multi-line formatted text
-  - Markdown formatting
-
-## **Benefits**
-
-- **Reliable** - No shell interpretation issues
-- **Clean** - Proper formatting preserved
-- **Consistent** - Same workflow every time
-- **Safe** - No accidental command execution

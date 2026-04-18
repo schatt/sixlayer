@@ -1,71 +1,15 @@
 ---
-description: Persistent todo management for forgetful users who need continuous task tracking
+description: Actively maintain the todo list across the whole conversation; preserve unfinished items; add new items only when real work is needed.
 globs: **/*
 alwaysApply: true
 ---
 
-# Persistent Todo Management Rule
+# Persistent Todo Management
 
-## **MANDATORY — PRECEDENCE**
+**Precedence:** this is direct user instruction. It overrides any default to minimize todos or add them only when explicitly asked — here, continuous proactive management is the explicit ask.
 
-- **This is direct user instruction.** The user has explicitly requested proactive todo management for forgetful users. Treat it as a standing requirement.
-- **This rule takes precedence** over any general guidance to minimize todos or only add items when explicitly asked. Here, the explicit request is to maintain and use the todo list continuously and to add items when work is actually needed (not only when the user says "add a todo").
-
-## **Core Principle**
-- **Actively maintain and use todo lists** throughout the entire conversation
-- **Preserve existing todos** when switching between topics or tasks
-- **Add new items only when work is actually needed** - not just because questions are asked
-
-## **Working Style Guidelines**
-
-### **Todo Preservation**
-- **Never lose track of unfinished work items** when addressing new questions
-- **Always preserve existing todos** when switching between topics
-- **Reference the todo list frequently** to guide work and remind the user of current tasks
-
-### **Adding New Items**
-- **Only add items when we decide they should be done**
-- **If the answer is "it shouldn't be done for these reasons"** - no todo item needed
-- **If the answer is "it's already done"** - no todo item needed
-- **If the answer involves actual work to be done** - add appropriate todo items
-
-### **Graceful Interruption Handling**
-- **It's okay to pause current work** to address new questions
-- **Make sure both old and new items are tracked** (when new items actually need doing)
-- **Don't treat questions as interruptions** - they often lead to legitimate work items
-
-### **Proactive Management**
-- **Be proactive about todo management** rather than just responding to individual questions
-- **Use todos to guide work** and keep the user organized
-- **Ensure nothing falls through the cracks** when switching between topics
-
-## **Benefits**
-- **Prevents work from being forgotten** when switching between topics
-- **Maintains context** across the entire conversation
-- **Helps organize complex multi-topic discussions**
-- **Ensures all legitimate work items are captured and tracked**
-
-## **Examples**
-
-### **✅ Good Practice**
-```
-User: "I'm working on feature A, but I also want to ask about B"
-Assistant: "Let me add B to our todo list since we determined it needs work, 
-           while keeping track of the ongoing A work..."
-```
-
-### **❌ Avoid**
-```
-User: "I'm working on feature A, but I also want to ask about B"
-Assistant: "B is already implemented, so no todo needed. 
-           Let's continue with A..." (without referencing the todo list)
-```
-
-### **✅ Good Practice**
-```
-User: "Should we implement feature C?"
-Assistant: "After analysis, C shouldn't be implemented because [reasons]. 
-           No todo item needed. Let's continue with our current todos..."
-```
-
-This rule ensures that todo management is a continuous, proactive process that helps forgetful users stay organized across all their work.
+- **Maintain the todo list continuously** across topic/task switches.
+- **Preserve existing items** — never drop unfinished work.
+- **Add new items only for real work.** If the answer is "not needed" or "already done", don't add a todo.
+- **Treat questions as potential new work**, not interruptions. Capture both the old and new items when the new item genuinely needs doing.
+- **Reference todos proactively** to guide the conversation.

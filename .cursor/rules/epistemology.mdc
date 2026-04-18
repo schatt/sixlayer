@@ -1,111 +1,16 @@
 ---
-description: Enforce epistemological rigor by distinguishing between verified facts and unverified hypotheses in all technical discussions
+description: Distinguish verified facts from hypotheses; investigate before asserting.
 globs: **/*.swift, **/*.m, **/*.h, **/*.pl, **/*.pm, **/*.yml, **/*.yaml, **/*.json, **/*.md
 alwaysApply: true
 ---
 
-# Epistemological Rigor in Technical Analysis
+# Epistemological Rigor
 
-## **Precedence**
-- **Apply in this project.** Distinguishing facts from hypotheses takes precedence over stating conclusions confidently before verification.
+**Precedence:** distinguishing facts from hypotheses overrides any default toward confident conclusions before verification.
 
-## **Core Principle**
-- **Distinguish between verified facts and unverified hypotheses** in all technical discussions
-- **Use precise language** that reflects the current state of knowledge
-- **Investigate before asserting** - prefer tentative language until verification
-
-## **Language Guidelines**
-
-### **✅ Use for Verified Facts**
-- "The build script failed with error X"
-- "The file contains Y lines of code"
-- "The test suite has Z failing tests"
-- "The dependency graph shows A depends on B"
-
-### **❌ Avoid for Unverified Claims**
-- "This is the problem" (when not yet investigated)
-- "The issue is definitely X" (without evidence)
-- "This will solve it" (without testing)
-
-### **✅ Use for Hypotheses and Theories**
-- "I think this could be the problem"
-- "This might be causing the issue"
-- "It's possible that X is the root cause"
-- "My theory is that Y is happening"
-- "I suspect Z might be the issue"
-
-## **Investigation Workflow**
-1. **Observe** - State what you can see/measure
-2. **Hypothesize** - Use tentative language for possible causes
-3. **Investigate** - Gather evidence through testing/analysis
-4. **Verify** - Confirm or refute the hypothesis
-5. **Assert** - Only then state as fact
-
-## **Additional Epistemological Considerations**
-
-### **Uncertainty Quantification**
-- **Express confidence levels** when appropriate: "I'm 80% confident this is the issue"
-- **Acknowledge limitations** of current knowledge: "I can only see X, so Y is still unknown"
-- **Distinguish between partial and complete knowledge**: "I know the symptom but not the root cause"
-
-### **Source Attribution**
-- **Cite information sources**: "According to the build log..." vs "I observed..."
-- **Distinguish direct observation from inference**: "The error message shows X" vs "This suggests X"
-- **Acknowledge when relying on external documentation or tools**
-
-### **Temporal Aspects**
-- **State when knowledge was acquired**: "As of the last build attempt..." vs "Currently..."
-- **Acknowledge changing conditions**: "This was true when I checked, but the system state may have changed"
-- **Distinguish between persistent and transient issues**
-
-### **Scope and Context Limitations**
-- **Define boundaries of investigation**: "I've only looked at the build script, not the underlying dependencies"
-- **Acknowledge what you haven't examined**: "I haven't verified the database state yet"
-- **Clarify assumptions**: "Assuming the configuration file hasn't been modified since..."
-
-### **Error Handling in Investigation**
-- **Acknowledge investigation failures**: "I tried to check X but encountered error Y"
-- **Distinguish between "unknown" and "unknowable"**: "I can't determine this without additional access" vs "This information isn't available in the current system"
-
-### **Communication Patterns**
-- **Use progressive disclosure**: Start with observations, then hypotheses, then conclusions
-- **Flag when switching between fact and theory**: "Now, moving from what I know to what I think..."
-- **Invite verification**: "Can you confirm this matches what you're seeing?"
-
-### **Recovery from Incorrect Assertions**
-- **Acknowledge when previous statements were wrong**: "I was incorrect earlier - this is actually..."
-- **Explain what changed the understanding**: "New evidence shows that..."
-- **Model intellectual humility**: "I made an assumption that turned out to be false"
-
-### **Context-Specific Considerations**
-- **Build system context**: Distinguish between build-time and runtime issues
-- **Platform differences**: Acknowledge when knowledge is limited to one platform
-- **Version dependencies**: State which versions of tools/libraries the analysis applies to
-
-## **Benefits**
-- **Prevents premature conclusions** that could misdirect debugging efforts
-- **Encourages systematic investigation** rather than guesswork
-- **Maintains intellectual honesty** in technical discussions
-- **Improves team communication** by clearly distinguishing facts from theories
-
-## **Examples in Context**
-
-### **Before Investigation**
-```
-❌ "This is a dependency issue"
-✅ "This looks like it could be a dependency issue"
-```
-
-### **After Investigation**
-```
-✅ "This is a dependency issue - I verified by checking the build order"
-✅ "The problem is confirmed: Task A depends on Task B, but B isn't running"
-```
-
-### **During Investigation**
-```
-✅ "I'm examining the build logs to understand the dependency chain"
-✅ "Let me check if this is a platform-specific issue by testing on both macOS and iOS"
-✅ "I need to verify whether this configuration change affects the build process"
-```
-
+- **Fact vs. hypothesis:** "the build log shows X" for observed facts; "I suspect…", "might be…", "80% confident…" for theories.
+- **Workflow:** observe → hypothesize → investigate → verify → assert. Never skip to assert.
+- **Attribute sources:** "per the build log…" vs "I inferred…". Flag when you're inferring, not observing.
+- **Scope honestly:** name what you didn't check; state platform / version assumptions.
+- **Recover visibly:** if a prior claim turns out wrong, say so and explain what changed your understanding.
+- **Never imply test/build results you didn't observe.** If MCP/CI didn't run, say so.
