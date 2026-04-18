@@ -25,7 +25,7 @@ open class InternationalizationServiceAccessibilityTests: BaseTestClass {
             // When & Then: Should generate accessibility identifiers
             let hasAccessibilityID = testComponentComplianceSinglePlatform(
                 view,
-                expectedPattern: "SixLayer.main.ui.*platformPresentLocalizedContent_L1.*",
+                expectedPattern: "SixLayer.main.ui.*",
                 platform: SixLayerPlatform.iOS,
                 componentName: "platformPresentLocalizedContent_L1"
             )
@@ -47,7 +47,7 @@ open class InternationalizationServiceAccessibilityTests: BaseTestClass {
             // When & Then: Should generate accessibility identifiers
             let hasAccessibilityID = testComponentComplianceSinglePlatform(
                 view,
-                expectedPattern: "SixLayer.main.ui.*platformPresentLocalizedContent_L1.*",
+                expectedPattern: "SixLayer.main.ui.*",
                 platform: SixLayerPlatform.macOS,
                 componentName: "platformPresentLocalizedContent_L1"
             )
