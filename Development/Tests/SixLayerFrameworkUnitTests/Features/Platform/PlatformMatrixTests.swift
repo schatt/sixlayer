@@ -169,17 +169,18 @@ open class PlatformMatrixTests: BaseTestClass {
     // MARK: - Screen Size and Device Type Matrix
     
     @Test @MainActor func testScreenSizeCapabilityMatrix() {
-        // Test screen size capabilities for current platform
+        // Apple HIG per platform (Issue #237): iOS/watchOS 44, tvOS/visionOS
+        // 60 (focus / gaze+pinch floors, not conditional on touch), macOS
+        // conditional. Prior (iOS|watchOS ? 44 : 0) formula miscategorized
+        // tvOS and visionOS.
         let currentPlatform = SixLayerPlatform.current
-        let expectedMinTouchTarget: CGFloat = (currentPlatform == .iOS || currentPlatform == .watchOS) ? 44.0 : 0.0
+        let expectedMinTouchTarget = PlatformTestUtilities.expectedMinTouchTarget(for: currentPlatform)
 
         let config = getCardExpansionPlatformConfig()
 
-        // Verify platform-appropriate minTouchTarget value for current platform
         #expect(config.minTouchTarget == expectedMinTouchTarget,
-               "Current platform \(currentPlatform) should have platform-appropriate minTouchTarget (\(expectedMinTouchTarget))")
+                "Apple HIG: \(currentPlatform) expected \(expectedMinTouchTarget)pt")
 
-        // Clean up
         RuntimeCapabilityDetection.clearAllCapabilityOverrides()
     }
     
