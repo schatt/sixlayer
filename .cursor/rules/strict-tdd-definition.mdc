@@ -32,10 +32,10 @@ Red must show the **new/changed test(s) execute and fail for the right reason** 
 ## Required Evidence
 
 - **Red:** at least one run where the relevant test(s) **fail at runtime** (assertion/XCTest failure) — not a compile failure or unrelated red.
-- **GitHub issue red log** (MANDATORY when the change maps to a numbered GitHub issue): post red evidence on the primary issue **before** it counts as TDD-complete. Must include **UTC ISO 8601 timestamp**, **how tests were run** (scheme/target, MCP tool or `dbs-build`/`xcodebuild`/`swift test`, destination/simulator), and **failing test id(s) + short verbatim excerpt** (one screenful). Use `gh issue comment <N> --body-file <path>` per [github-issue-workflow.mdc](mdc:.cursor/rules/github-issue-workflow.mdc).
+- **GitHub issue red log** (MANDATORY when the change maps to a numbered GitHub issue): post red evidence on the primary issue **immediately after** the deliberate failing run — **before** green implementation and **not** deferred to the end of the session. Must include **UTC ISO 8601 timestamp**, **how tests were run** (scheme/target, MCP tool or `dbs-build`/`xcodebuild`/`swift test`, destination/simulator), and **failing test id(s) + short verbatim excerpt** (one screenful). Use `gh issue comment <N> --body-file <path>` per [github-issue-workflow.mdc](mdc:.cursor/rules/github-issue-workflow.mdc).
   - Scope: pure chores/docs with no issue may omit.
-- **Green:** record a passing run after implementation.
-- **Refactor:** record a passing run after the refactor pass.
+- **Green:** post a passing-run comment on the issue **when** that run completes (same session timing rule as red); do not batch green/red together after the fact.
+- **Refactor:** record a passing run after the refactor pass (post to the issue when that run completes if you are logging evidence there).
 
 ## Guardrails
 

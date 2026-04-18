@@ -11,9 +11,13 @@ alwaysApply: true
 - **Always** use `gh issue comment <N> --body-file <path>` (or a heredoc with a quoted delimiter). **Never** use inline `--body "..."` — shells interpret backticks/`$` inside double quotes.
 - Applies any time a comment contains backticks, code blocks, special shell characters, or multi-line formatting (which is almost always).
 
+## When comments go on the issue (source of truth)
+
+GitHub is the durable record: **post each comment in the same step as the event it documents** — immediately after the failing run (red), immediately after the passing run you are recording (green/refactor), not batched at the end of the session. Do not defer `gh issue comment` until work is “all done”; that falsifies the timeline and undermines the issue as audit trail.
+
 ## TDD red-phase log on the issue (MANDATORY when issue-driven)
 
-When work maps to a GitHub issue, post the **deliberately red** test evidence to that issue before treating TDD as complete. The comment must include:
+When work maps to a GitHub issue, post the **deliberately red** test evidence to that issue **as soon as** you have that failing run (before green implementation). The comment must include:
 
 - **Timestamp** — UTC ISO 8601 (`date -u +%Y-%m-%dT%H:%M:%SZ`) in the body.
 - **How tests were run** — scheme/target, MCP tool or CLI, destination/simulator.
