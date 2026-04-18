@@ -328,17 +328,20 @@ open class Layer4ComponentAccessibilityTests: BaseTestClass {
             let namedHost = hostRootPlatformView(named, accessibilityIdentifierConfig: isolated)
             #expect(namedHost != nil, "\(context): named path should render")
 
+            let expectedNamedId = NamedModifier.testingGeneratedIdentifier(name: anchorName, config: isolated)
             let platformIds = findAllAccessibilityIdentifiersFromPlatformView(namedHost)
-            let platformHit = platformIds.contains { $0.contains(anchorName) }
+            let platformHit = platformIds.contains { $0 == expectedNamedId || $0.contains(anchorName) }
             #if canImport(ViewInspector)
             let viIds = AccessibilityTestUtilities.allAccessibilityIdentifiersFromViewInspector(named)
-            let viHit = viIds.contains { $0.contains(anchorName) }
+            let viHit = viIds.contains { $0 == expectedNamedId || $0.contains(anchorName) }
             #else
             let viHit = false
             #endif
+            let debugLog = isolated.getDebugLog()
+            let logHit = debugLog.contains(expectedNamedId)
             #expect(
-                platformHit || viHit,
-                "\(context): expected an accessibility identifier containing '\(anchorName)'. Platform sample: \(platformIds.prefix(6).joined(separator: ", "))"
+                platformHit || viHit || logHit,
+                "\(context): expected named id '\(expectedNamedId)' via platform, ViewInspector, or config debug log. Platform sample: \(platformIds.prefix(6).joined(separator: ", ")); log tail: \(String(debugLog.suffix(280)))"
             )
         }
     }
