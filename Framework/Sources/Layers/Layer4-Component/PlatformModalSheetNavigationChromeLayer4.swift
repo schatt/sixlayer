@@ -32,7 +32,7 @@ public extension View {
                     confirmationTitle: confirmationTitle
                 )
         }
-        .automaticCompliance(named: "platformModalSheetNavigationChrome_L4")
+        .automaticCompliance()
     }
 
     /// Like ``platformModalSheetNavigationChrome_L4(title:titleDisplayMode:confirmationTitle:onConfirmation:content:)``
@@ -56,6 +56,6 @@ public extension View {
                     confirmationTitle: confirmationTitle
                 )
         }
-        .automaticCompliance(named: "platformModalSheetNavigationChrome_L4")
+        .automaticCompliance()
     }
 }

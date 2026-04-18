@@ -50,14 +50,14 @@ public enum PlatformPhotoComponentsLayer4 {
     ) -> some View {
         #if os(iOS)
         CameraView(onImageCaptured: onImageCaptured, onCameraAuthorizationState: onCameraAuthorizationState)
-            .automaticCompliance(named: "platformCameraInterface_L4")
+            .automaticCompliance()
         #elseif os(macOS)
         MacCameraView(onImageCaptured: onImageCaptured)
-            .automaticCompliance(named: "platformCameraInterface_L4")
+            .automaticCompliance()
         #else
         let i18n = InternationalizationService()
         Text(i18n.localizedString(for: "SixLayerFramework.camera.notAvailable"))
-            .automaticCompliance(named: "platformCameraInterface_L4")
+            .automaticCompliance()
         #endif
     }
     
@@ -70,7 +70,7 @@ public enum PlatformPhotoComponentsLayer4 {
     @MainActor
     public static func platformPhotoPicker_L4(onImageSelected: @escaping (PlatformImage) -> Void) -> some View {
         UnifiedImagePicker(onImageSelected: onImageSelected)
-            .automaticCompliance(named: "platformPhotoPicker_L4")
+            .automaticCompliance()
     }
     
     // MARK: - Photo Display Components
@@ -92,7 +92,7 @@ public enum PlatformPhotoComponentsLayer4 {
             }
         }
         .accessibilityElement(children: .ignore)
-        .automaticCompliance(named: "platformPhotoDisplay_L4")
+        .automaticCompliance()
         .accessibilityIdentifier("platformPhotoDisplay_L4")
     }
     
@@ -105,7 +105,7 @@ public enum PlatformPhotoComponentsLayer4 {
     @MainActor
     public static func platformCameraPreview_L4(session: AVCaptureSession, videoGravity: AVLayerVideoGravity = .resizeAspectFill) -> some View {
         PlatformCameraPreviewView(session: session, videoGravity: videoGravity)
-            .automaticCompliance(named: "platformCameraPreview_L4")
+            .automaticCompliance()
     }
     
     // MARK: - Tabbed Photo Source Components
@@ -127,7 +127,7 @@ public enum PlatformPhotoComponentsLayer4 {
             onImageCaptured: onImageCaptured,
             onImageSelected: onImageSelected
         )
-        .automaticCompliance(named: "platformPhotoSourceTabbed_L4")
+        .automaticCompliance()
     }
 }
 
@@ -299,7 +299,7 @@ public struct PhotoPickerView: View {
                 LegacyPhotoPickerView(onImageSelected: onImageSelected)
             }
         }
-        .automaticCompliance(named: "PhotoPickerView")
+        .automaticCompliance()
     }
 }
 
@@ -560,7 +560,7 @@ struct PhotoDisplayView: View {
                 .aspectRatio(contentMode: aspectRatioForStyle(style))
                 .clipShape(clipShapeForStyle(style))
         }
-        .automaticCompliance(named: "PhotoDisplayView")
+        .automaticCompliance()
     }
     
     private func aspectRatioForStyle(_ style: PhotoDisplayStyle) -> ContentMode {
@@ -622,7 +622,7 @@ struct PlaceholderPhotoView: View {
             .background(Color.gray.opacity(0.1))
             .clipShape(clipShapeForStyle(style))
         }
-        .automaticCompliance(named: "PlaceholderPhotoView")
+        .automaticCompliance()
         .accessibilityIdentifier("platformPhotoDisplay_L4")
     }
     
@@ -720,7 +720,7 @@ struct PhotoSourceTabbedView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        .automaticCompliance(named: "PhotoSourceTabbedView")
+        .automaticCompliance()
     }
 }
 

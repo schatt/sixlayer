@@ -43,11 +43,11 @@ public enum PlatformMapComponentsLayer4 {
         Map(position: position) {
             content()
         }
-        .automaticCompliance(named: "platformMapView_L4")
+        .automaticCompliance()
         #else
         // MapKit not available - provide fallback UI
         UnsupportedPlatformMapView()
-            .automaticCompliance(named: "platformMapView_L4")
+            .automaticCompliance()
         #endif
     }
     
@@ -73,11 +73,11 @@ public enum PlatformMapComponentsLayer4 {
                 }
             }
         }
-        .automaticCompliance(named: "platformMapView_L4")
+        .automaticCompliance()
         #else
         // MapKit not available
         UnsupportedPlatformMapView()
-            .automaticCompliance(named: "platformMapView_L4")
+            .automaticCompliance()
         #endif
     }
     
@@ -100,7 +100,7 @@ public enum PlatformMapComponentsLayer4 {
             additionalAnnotations: additionalAnnotations,
             onAnnotationTapped: onAnnotationTapped
         )
-        .automaticCompliance(named: "platformMapViewWithCurrentLocation_L4")
+        .automaticCompliance()
     }
 }
 #endif
@@ -170,7 +170,7 @@ private struct MapViewWithLocationService: View {
         .onChange(of: currentLocation) {
             updateCameraPosition()
         }
-        .automaticCompliance(named: "MapViewWithLocationService")
+        .automaticCompliance()
     }
     
     private var allAnnotations: [MapAnnotationData] {
@@ -249,7 +249,7 @@ private struct UnsupportedPlatformMapView: View {
                 .foregroundColor(.secondary)
         }
         .padding()
-        .automaticCompliance(named: "UnsupportedPlatformMapView")
+        .automaticCompliance()
     }
 }
 

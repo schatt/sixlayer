@@ -150,7 +150,7 @@ public extension View {
                 onComplete: onComplete
             )
         }
-        .automaticCompliance(named: "platformPrint_L4")
+        .automaticCompliance()
         #elseif os(macOS)
         self.onChange(of: isPresented.wrappedValue) { oldValue, newValue in
             if newValue {
@@ -161,10 +161,10 @@ public extension View {
                 }
             }
         }
-        .automaticCompliance(named: "platformPrint_L4")
+        .automaticCompliance()
         #else
         self
-            .automaticCompliance(named: "platformPrint_L4")
+            .automaticCompliance()
         #endif
     }
 }

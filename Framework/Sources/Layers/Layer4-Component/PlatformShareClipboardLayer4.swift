@@ -78,7 +78,7 @@ public extension View {
                 onComplete: onComplete
             )
         }
-        .automaticCompliance(named: "platformShare_L4")
+        .automaticCompliance()
         #elseif os(macOS)
         self.onChange(of: isPresented.wrappedValue) { oldValue, newValue in
             if newValue {
@@ -89,10 +89,10 @@ public extension View {
                 }
             }
         }
-        .automaticCompliance(named: "platformShare_L4")
+        .automaticCompliance()
         #else
         self
-            .automaticCompliance(named: "platformShare_L4")
+            .automaticCompliance()
         #endif
     }
     
@@ -112,7 +112,7 @@ public extension View {
                 onComplete: onComplete
             )
         }
-        .automaticCompliance(named: "platformShare_L4")
+        .automaticCompliance()
     }
     #endif
     
@@ -166,7 +166,7 @@ public extension View {
         from sourceView: (any View)? = nil
     ) -> some View {
         self.modifier(ShareSheetItemsModifier(items: items, sourceView: sourceView))
-            .automaticCompliance(named: "platformShare_L4")
+            .automaticCompliance()
     }
 }
 

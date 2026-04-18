@@ -18,7 +18,7 @@ public extension View {
         ) {
             content()
         }
-        .automaticCompliance(named: "platformCardGrid")
+        .automaticCompliance()
     }
     
     /// Platform-adaptive masonry layout for cards
@@ -35,7 +35,7 @@ public extension View {
         ) {
             content()
         }
-        .automaticCompliance(named: "platformCardMasonry")
+        .automaticCompliance()
     }
     
     /// Platform-adaptive list layout for cards
@@ -47,7 +47,7 @@ public extension View {
         platformLazyVStackContainer(spacing: spacing) {
             content()
         }
-        .automaticCompliance(named: "platformCardList")
+        .automaticCompliance()
     }
     
     /// Platform-adaptive card with dynamic sizing
@@ -63,7 +63,7 @@ public extension View {
                 maxWidth: maxWidth,
                 alignment: .top
             )
-            .automaticCompliance(named: "platformCardAdaptive")
+            .automaticCompliance()
     }
 }
 
@@ -81,7 +81,7 @@ public extension View {
             .background(backgroundColor)
             .cornerRadius(cornerRadius)
             .shadow(radius: shadowRadius)
-            .automaticCompliance(named: "platformCardStyle")
+            .automaticCompliance()
     }
     
     /// Apply adaptive padding based on device
@@ -89,10 +89,10 @@ public extension View {
     func platformCardPadding() -> some View {
         #if os(macOS)
         self.padding(16)
-            .automaticCompliance(named: "platformCardPadding")
+            .automaticCompliance()
         #else
         self.padding(12)
-            .automaticCompliance(named: "platformCardPadding")
+            .automaticCompliance()
         #endif
     }
 }

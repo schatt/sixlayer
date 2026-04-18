@@ -17,7 +17,6 @@ private let layer4OverlayModalRootAccessibilityIdentifier = "L4OverlayModalRoot"
 /// Detail-first shell with toolbar affordance and dismissible sheet for the outer sidebar (no column squeeze).
 private struct Layer4OuterSidebarOverlayHost<SidebarSheet: View, Detail: View>: View {
     @State private var isOuterSidebarPresented = false
-    let complianceName: String
     @ViewBuilder let sidebarSheet: () -> SidebarSheet
     let detailContent: Detail
 
@@ -79,7 +78,6 @@ private struct Layer4OuterSidebarOverlayHost<SidebarSheet: View, Detail: View>: 
         .sheet(isPresented: $isOuterSidebarPresented) {
             overlaySheetContent()
         }
-        .automaticCompliance(named: complianceName)
     }
 }
 
@@ -233,7 +231,6 @@ public extension View {
             #endif
         }()
         return baseView
-            .automaticCompliance(named: "platformNavigation_L4")
     }
     
 
@@ -248,13 +245,12 @@ public extension View {
         #if os(iOS)
         if #available(iOS 17.0, *) {
             self.navigationDestination(item: item, destination: destination)
-                .automaticCompliance(named: "platformNavigationDestination_L4")
         } else {
             // iOS 15-16 fallback: no navigation destination support
-            self.automaticCompliance(named: "platformNavigationDestination_L4")
+            self
         }
         #else
-        self.automaticCompliance(named: "platformNavigationDestination_L4")
+        self
         #endif
     }
     
@@ -374,10 +370,8 @@ public extension View {
     func platformNavigationTitleDisplayMode_L4(_ displayMode: PlatformTitleDisplayMode) -> some View {
         #if os(iOS)
         return self.navigationBarTitleDisplayMode(displayMode.navigationBarDisplayMode)
-            .automaticCompliance(named: "platformNavigationTitleDisplayMode_L4")
         #else
         return self
-            .automaticCompliance(named: "platformNavigationTitleDisplayMode_L4")
         #endif
     }
     
@@ -387,10 +381,8 @@ public extension View {
     func platformNavigationBarTitleDisplayMode_L4(_ displayMode: PlatformTitleDisplayMode) -> some View {
         #if os(iOS)
         return self.navigationBarTitleDisplayMode(displayMode.navigationBarDisplayMode)
-            .automaticCompliance(named: "platformNavigationBarTitleDisplayMode_L4")
         #else
         return self
-            .automaticCompliance(named: "platformNavigationBarTitleDisplayMode_L4")
         #endif
     }
     
@@ -652,22 +644,18 @@ public extension View {
 
     @ViewBuilder
     private func layer4ResolverDetailOnly<DetailContent: View>(
-        complianceName: String,
         @ViewBuilder detail: () -> DetailContent
     ) -> some View {
         detail()
-            .automaticCompliance(named: complianceName)
     }
 
     private func layer4OuterSidebarOverlay<Sidebar: View, Detail: View>(
-        complianceName: String,
         @ViewBuilder sidebar: () -> Sidebar,
         @ViewBuilder detail: () -> Detail
     ) -> some View {
         let sidebarContent = sidebar()
         let detailContent = detail()
         return Layer4OuterSidebarOverlayHost(
-            complianceName: complianceName,
             sidebarSheet: { createSidebarSheetContent(sidebarContent: sidebarContent) },
             detailContent: detailContent
         )
@@ -687,12 +675,10 @@ public extension View {
                 sidebar: sidebar,
                 detail: detail
             )
-            .automaticCompliance(named: "platformAppNavigation_L4")
         case .detailOnlyCollapsedInner:
-            layer4ResolverDetailOnly(complianceName: "platformAppNavigation_L4", detail: detail)
+            layer4ResolverDetailOnly(detail: detail)
         case .overlayOuterSidebar:
             layer4OuterSidebarOverlay(
-                complianceName: "platformAppNavigation_L4",
                 sidebar: sidebar,
                 detail: detail
             )
@@ -711,12 +697,10 @@ public extension View {
                 sidebar()
                 detail()
             }
-            .automaticCompliance(named: "platformAppNavigation_L4")
         case .detailOnlyCollapsedInner:
-            layer4ResolverDetailOnly(complianceName: "platformAppNavigation_L4", detail: detail)
+            layer4ResolverDetailOnly(detail: detail)
         case .overlayOuterSidebar:
             layer4OuterSidebarOverlay(
-                complianceName: "platformAppNavigation_L4",
                 sidebar: sidebar,
                 detail: detail
             )
@@ -770,7 +754,6 @@ public extension View {
         }
         #else
         detail()
-            .automaticCompliance(named: "platformAppNavigation_L4")
         #endif
     }
     
@@ -808,7 +791,6 @@ public extension View {
             .sheet(isPresented: showingNavigationSheet ?? Binding(get: { false }, set: { _ in })) {
                 createSidebarSheetContent(sidebarContent: sidebarContent)
             }
-            .automaticCompliance(named: "platformAppNavigation_L4")
     }
     
     /// Platform-specific app navigation with intelligent device-aware pattern selection
@@ -935,7 +917,6 @@ public extension View {
                     sidebar: sidebar,
                     detail: detail
                 )
-                .automaticCompliance(named: "platformSettingsContainer_L4")
             } else {
                 NavigationView {
                     sidebar()
@@ -946,13 +927,11 @@ public extension View {
                 #else
                 .navigationViewStyle(.stack)
                 #endif
-                .automaticCompliance(named: "platformSettingsContainer_L4")
             }
         case .detailOnlyCollapsedInner:
-            layer4ResolverDetailOnly(complianceName: "platformSettingsContainer_L4", detail: detail)
+            layer4ResolverDetailOnly(detail: detail)
         case .overlayOuterSidebar:
             layer4OuterSidebarOverlay(
-                complianceName: "platformSettingsContainer_L4",
                 sidebar: sidebar,
                 detail: detail
             )
@@ -984,7 +963,6 @@ public extension View {
                     sidebar()
                 }
             }
-            .automaticCompliance(named: "platformSettingsContainer_L4")
         } else {
             // iOS 15: legacy root swap (no unified stack back semantics)
             NavigationView {
@@ -994,7 +972,6 @@ public extension View {
                     sidebar()
                 }
             }
-            .automaticCompliance(named: "platformSettingsContainer_L4")
         }
     }
     
@@ -1019,19 +996,16 @@ public extension View {
                     sidebar: sidebar,
                     detail: detail
                 )
-                .automaticCompliance(named: "platformSettingsContainer_L4")
             } else {
                 HStack(spacing: 0) {
                     sidebar()
                     detail()
                 }
-                .automaticCompliance(named: "platformSettingsContainer_L4")
             }
         case .detailOnlyCollapsedInner:
-            layer4ResolverDetailOnly(complianceName: "platformSettingsContainer_L4", detail: detail)
+            layer4ResolverDetailOnly(detail: detail)
         case .overlayOuterSidebar:
             layer4OuterSidebarOverlay(
-                complianceName: "platformSettingsContainer_L4",
                 sidebar: sidebar,
                 detail: detail
             )
@@ -1239,7 +1213,6 @@ public extension View {
         case .unsupportedSidebarFallback:
             // Unsupported top-level shell on current platform: show caller-provided sidebar only.
             sidebar()
-                .automaticCompliance(named: "platformSettingsContainer_L4")
         }
         #elseif os(macOS)
         // macOS: Always use NavigationSplitView
@@ -1254,7 +1227,6 @@ public extension View {
         #else
         // Other platforms: Default to sidebar
         sidebar()
-            .automaticCompliance(named: "platformSettingsContainer_L4")
         #endif
     }
 }
