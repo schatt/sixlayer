@@ -12,9 +12,11 @@
   - [ ] macOS: run Unit tests
   - [ ] macOS: run ViewInspector tests
   - [ ] macOS: run UI tests
-  - [ ] iOS: run Unit tests
-  - [ ] iOS: run ViewInspector tests
-  - [ ] iOS: run UI tests
+  - [x] iOS: run Unit tests (`iOS_unit_tests` green on `b7.7.0`)
+  - [ ] iOS: run ViewInspector tests (compile green; runtime: tracked under #242)
+  - [ ] iOS: run UI tests (`iOS_test` / SLF-iOS-AllTests: 515 unique failures, dominated by a11y-identifier non-detection — see #242)
+  - [ ] **#242** iOS: fix a11y-identifier non-detection root cause (~200+ failures across `ConsolidatedAccessibilityTests`, `Layer1AccessibilityTests`, `AppleHIGComplianceComponentAccessibilityTests`, etc.); likely regression from #221/#222 (`af535cef`, `97638fe1`, `7d9d00f5`); suspect `AutomaticComplianceModifier` config propagation vs `@TaskLocal`; plan: isolated reproduction first, then bisect
+  - [ ] **#242** iOS: non-a11y-id buckets — Layer4UITests overlay-contract (5), HIGComplianceTypographyTests (9), HIGComplianceZoomTests (5), Layer4/5/6 XCUITest runtime (platformSheet, navigationTitle, voiceOver) — investigate after a11y-id fix lands
   - [ ] watchOS: run Unit + UI (ViewInspector **N/A** — no target on this platform); follow-up issues only for real failures or optional new coverage
   - [ ] tvOS: run Unit + UI (ViewInspector **N/A**)
   - [ ] visionOS: run Unit + UI (ViewInspector **N/A**)
