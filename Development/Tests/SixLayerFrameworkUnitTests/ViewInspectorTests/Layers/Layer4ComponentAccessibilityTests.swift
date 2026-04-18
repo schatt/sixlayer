@@ -304,14 +304,31 @@ open class Layer4ComponentAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testPlatformBackgroundGeneratesAccessibilityIdentifiers() async {
-        // Given: A test text view
-        let testText = Text("Test Text")
-        
-        // When: Applying platform background
-        let backgroundText = testText.platformBackground()
-        
-        // Then: Should render (layout styling uses anonymous compliance; gh-243)
-        let hostedView = hostRootPlatformView(backgroundText)
-        #expect(hostedView != nil, "Platform background should render")
+        assertLayoutChromeDualPath(anchorName: "Layer4DualPathPlatformBackgroundComponentSuite", context: "Platform background") {
+            Text("Test Text")
+                .platformBackground()
+        }
+    }
+
+    // MARK: - Layout chrome dual-path (gh-243)
+
+    @MainActor
+    fileprivate func assertLayoutChromeDualPath<V: View>(
+        anchorName: String,
+        context: String,
+        @ViewBuilder root: () -> V
+    ) {
+        initializeTestConfig()
+        let anonymous = root()
+        #expect(hostRootPlatformView(anonymous) != nil, "\(context): anonymous compliance path should render")
+
+        let named = AnyView(root()).named(anchorName)
+        let foundNamed = testComponentComplianceSinglePlatform(
+            named,
+            expectedPattern: "SixLayer.*ui",
+            platform: SixLayerPlatform.iOS,
+            componentName: anchorName
+        )
+        #expect(foundNamed, "\(context): explicit `.named(\"\(anchorName)\")` should surface a SixLayer accessibility identifier")
     }
 }
