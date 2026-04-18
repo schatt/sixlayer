@@ -18,7 +18,10 @@ open class InternationalizationServiceAccessibilityTests: BaseTestClass {
         runWithTaskLocalConfig {
             // Given: A view using platformPresentLocalizedContent_L1 (which uses InternationalizationService)
             let view = platformPresentLocalizedContent_L1(
-                content: Text("Localized Content"),
+                content: platformPresentContent_L1(
+                    content: "Localized Content",
+                    hints: PresentationHints()
+                ),
                 hints: InternationalizationHints()
             )
             
@@ -40,7 +43,10 @@ open class InternationalizationServiceAccessibilityTests: BaseTestClass {
         runWithTaskLocalConfig {
             // Given: A view using platformPresentLocalizedContent_L1 (which uses InternationalizationService)
             let view = platformPresentLocalizedContent_L1(
-                content: Text("Localized Content"),
+                content: platformPresentContent_L1(
+                    content: "Localized Content",
+                    hints: PresentationHints()
+                ),
                 hints: InternationalizationHints()
             )
             
