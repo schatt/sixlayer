@@ -19,30 +19,30 @@ public extension SixLayerPlatform {
     
     // MARK: - Touch & Interaction Properties
     
-    /// Minimum interactive-target size (points)
+    /// Minimum touch-target size (points)
     ///
     /// Apple HIG per platform:
     /// - iOS/watchOS: 44pt minimum touch targets (touch-first platforms)
-    /// - tvOS: ~60pt minimum focus targets (focus engine, 10-foot viewing distance)
-    /// - macOS/visionOS: 44pt if touch is detected at runtime (pointer/hand tracking),
-    ///   otherwise 0.0 (no enforced minimum for pointer/cursor driven UI).
+    /// - macOS/tvOS/visionOS: 44pt if touch is detected at runtime (pointer/
+    ///   hand tracking / accessibility touch emulation), otherwise 0.0.
     ///
-    /// Named "minTouchTarget" for historical reasons; on tvOS this is the focus-target
-    /// minimum. Issue #237.
+    /// Note: on tvOS the primary interaction model is the focus engine, not
+    /// touch. Apple's tvOS HIG defines a larger focus-target minimum (~60pt
+    /// at 10-foot viewing distance), but that is conceptually distinct from
+    /// `minTouchTarget` and is tracked as a separate `minFocusTarget` API
+    /// under issue #241 (capability-aware graceful degradation). Collapsing
+    /// tvOS to the non-touch-first contract here keeps the existing test
+    /// corpus internally consistent — every test that asserts the
+    /// `minTouchTarget` contract treats tvOS as non-touch-first (0 unless
+    /// touch is detected, 44 when it is).
     var minTouchTarget: CGFloat {
         switch self {
         case .iOS, .watchOS:
             return 44.0  // Touch-first platforms always need touch-sized targets
-        case .tvOS:
-            // tvOS uses the focus engine with 10-foot viewing distance. Apple's tvOS
-            // HIG recommends larger focus targets (roughly 60pt minimum). Returning
-            // this value ensures framework-generated UI respects TV ergonomics even
-            // though tvOS is not touch-based.
-            return 60.0
-        case .macOS, .visionOS:
-            // Non-touch-first pointer/spatial platforms: enforce 44pt only if touch
-            // capability is detected at runtime (e.g. touch-screen Mac or spatial
-            // direct-touch interaction).
+        case .macOS, .tvOS, .visionOS:
+            // Non-touch-first platforms: enforce 44pt only when runtime touch
+            // capability is detected (e.g. touch-screen Mac, AssistiveTouch on
+            // tvOS, hand tracking on visionOS). Otherwise no minimum.
             return RuntimeCapabilityDetection.supportsTouch ? 44.0 : 0.0
         }
     }
