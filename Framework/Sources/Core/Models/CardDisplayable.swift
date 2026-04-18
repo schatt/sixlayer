@@ -168,32 +168,31 @@ public struct CardDisplayHelper {
         return nil
     }
 
-    // MARK: - Accessibility identifier segment (GitHub #244)
+    // MARK: - Accessibility identifier label (GitHub #244)
 
-    /// When ``PresentationHints.customPreferences`` includes `itemAccessibilityIdentifierProperty`, that property name is resolved on `item` via reflection (same pattern as `itemTitleProperty`).
-    /// Optional `itemAccessibilityIdentifierDefault` supplies a string when the property is missing or not a usable `String`.
-    ///
-    /// When the key is absent, empty, or unusable without a default, this falls back to ``extractTitle(from:hints:)`` so collection rows default to human-visible title text for identifier segments.
-    public static func accessibilityIdentifierSegment(from item: Any, hints: PresentationHints? = nil) -> String? {
-        if let hints = hints,
-           let propertyName = hints.customPreferences[AccessibilityIdentifierHintKeys.property],
-           !propertyName.isEmpty {
-            let propertyExists = propertyExists(in: item, propertyName: propertyName)
-            if propertyExists {
-                if let value = extractPropertyValue(from: item, propertyName: propertyName) as? String {
-                    if value.isEmpty {
-                        if let defaultValue = hints.customPreferences[AccessibilityIdentifierHintKeys.default],
-                           !defaultValue.isEmpty {
-                            return defaultValue
-                        }
-                    } else {
-                        return value
-                    }
-                } else {
+    /// Stable token for row accessibility identifiers (typically ``String(describing: item.id)``).
+    /// Used with ``extractTitle(from:hints:)`` via nil-coalescing when building ``accessibilityIdentifierLabel(for:hints:)``.
+    public static func accessibilityStableIdentityToken<Item: Identifiable>(for item: Item) -> String {
+        String(describing: item.id)
+    }
+
+    /// Optional string from ``itemAccessibilityIdentifierProperty`` / ``itemAccessibilityIdentifierDefault`` only.
+    /// Returns `nil` when that hint path does not apply or yields nothing (caller should use ``extractTitle(from:hints:)`` next).
+    private static func accessibilityIdentifierPropertyHintValue(from item: Any, hints: PresentationHints?) -> String? {
+        guard let hints = hints,
+              let propertyName = hints.customPreferences[AccessibilityIdentifierHintKeys.property],
+              !propertyName.isEmpty
+        else { return nil }
+        let propertyExists = propertyExists(in: item, propertyName: propertyName)
+        if propertyExists {
+            if let value = extractPropertyValue(from: item, propertyName: propertyName) as? String {
+                if value.isEmpty {
                     if let defaultValue = hints.customPreferences[AccessibilityIdentifierHintKeys.default],
                        !defaultValue.isEmpty {
                         return defaultValue
                     }
+                } else {
+                    return value
                 }
             } else {
                 if let defaultValue = hints.customPreferences[AccessibilityIdentifierHintKeys.default],
@@ -201,14 +200,21 @@ public struct CardDisplayHelper {
                     return defaultValue
                 }
             }
+        } else {
+            if let defaultValue = hints.customPreferences[AccessibilityIdentifierHintKeys.default],
+               !defaultValue.isEmpty {
+                return defaultValue
+            }
         }
-        return extractTitle(from: item, hints: hints)
+        return nil
     }
 
-    /// Builds the `identifierLabel` passed to ``View/automaticCompliance(named:identifierLabel:accessibilityLabel:)`` for `Identifiable` collection rows: segment from ``accessibilityIdentifierSegment(from:hints:)`` plus the stable `id` description.
+    /// Builds `identifierLabel` for automatic row compliance: `(hint ?? extractTitle)` then, when non-empty, `"\\(primary) \\(accessibilityStableIdentityToken(for:))"`; otherwise just the stable token (Swift `??` between the first two sources).
     public static func accessibilityIdentifierLabel<Item: Identifiable>(for item: Item, hints: PresentationHints?) -> String {
-        let segment = accessibilityIdentifierSegment(from: item, hints: hints) ?? "item"
-        return "\(segment) \(String(describing: item.id))"
+        let primary = accessibilityIdentifierPropertyHintValue(from: item, hints: hints)
+            ?? extractTitle(from: item, hints: hints)
+        let idToken = accessibilityStableIdentityToken(for: item)
+        return primary.flatMap { $0.isEmpty ? nil : "\($0) \(idToken)" } ?? idToken
     }
 
     /// Extract meaningful subtitle from any item using hints or reflection

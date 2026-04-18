@@ -12,15 +12,15 @@ Applies from **v7.6.1** onward (GitHub #244).
 
 **Who is affected:** Apps with **XCUITest** (or other automation) that match **exact** `accessibilityIdentifier` strings on SixLayer **collection rows** (list cards, grid/simple/masonry/cover-flow cards from `PresentationHints`, or `platformListRow` and related list helpers).
 
-**What changed:** Row views now supply `identifierLabel` to automatic compliance using a **data-derived segment** (from `PresentationHints` / title resolution) plus **`Identifiable.id`**, so identifiers are **more specific** and **unique per item** than a bare component name.
+**What changed:** Row views now supply `identifierLabel` to automatic compliance using `CardDisplayHelper.accessibilityIdentifierLabel(for:hints:)` (optional accessibility-property hint, then `extractTitle`, then `accessibilityStableIdentityToken`; see framework docs), so identifiers are **more specific** and **unique per item** than a bare component name.
 
 **What you should do**
 
 1. Run UI tests after upgrading; failures are often **string equality** on row identifiers.
 2. Prefer **prefix**, **contains**, or **accessibility label** queries instead of full-string equality where possible.
-3. Optionally set `PresentationHints.customPreferences["itemAccessibilityIdentifierProperty"]` to a stable model field name (e.g. `sku`) so the segment matches how your tests already think about the row.
+3. Optionally set `PresentationHints.customPreferences["itemAccessibilityIdentifierProperty"]` to a stable model field name (e.g. `sku`) so the primary part of `identifierLabel` matches how your tests already think about the row.
 
-**Full specification, acceptance criteria, and examples:** [Automatic Accessibility Identifiers — Collection rows](AutomaticAccessibilityIdentifiers.md#collection-rows-and-data-driven-identifier-segments).
+**Full specification, acceptance criteria, and examples:** [Automatic Accessibility Identifiers — Collection rows](AutomaticAccessibilityIdentifiers.md#collection-rows-and-data-driven-identifier-labels).
 
 ## Migration Workflow
 
