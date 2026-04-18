@@ -74,11 +74,19 @@ open class CapabilityAwareFunctionTests: BaseTestClass {
         #expect(config.supportsHapticFeedback, "Haptic feedback should be available when touch is supported on current platform")
         #expect(config.supportsAssistiveTouch, "AssistiveTouch should be available when touch is supported on current platform")
 
-        // Verify minTouchTarget returns 44.0 when touch is enabled (for accessibility)
-        // When touch is enabled, we use 44.0 regardless of platform for accessibility compliance
+        // Verify minTouchTarget per Apple HIG (Issue #237).
+        // Touch enabled here, but platform HIG floors still apply:
+        //   iOS/watchOS: 44 (touch HIG)
+        //   tvOS: 60 (focus HIG)
+        //   visionOS: 60 (gaze+pinch HIG)
+        //   macOS: 44 (touch detected)
         let currentPlatform = SixLayerPlatform.current
-        let expectedMinTouchTarget: CGFloat = 44.0  // Always 44.0 when touch is enabled
-        #expect(config.minTouchTarget == expectedMinTouchTarget, "Touch targets should be 44.0 when touch is enabled (for accessibility) on \(currentPlatform)")
+        let expectedMinTouchTarget = PlatformTestUtilities.expectedMinTouchTarget(
+            for: currentPlatform,
+            touchDetected: true
+        )
+        #expect(config.minTouchTarget == expectedMinTouchTarget,
+                "Touch targets must match Apple HIG for \(currentPlatform): expected \(expectedMinTouchTarget)pt")
 
         // Clean up
         RuntimeCapabilityDetection.clearAllCapabilityOverrides()
@@ -93,9 +101,12 @@ open class CapabilityAwareFunctionTests: BaseTestClass {
         RuntimeCapabilityDetection.setTestHapticFeedback(false)
         RuntimeCapabilityDetection.setTestAssistiveTouch(false)
         
-        // Test touch functions on current platform
+        // Test touch functions on current platform (Issue #237, Apple HIG)
         let currentPlatform = SixLayerPlatform.current
-        let expectedMinTouchTarget: CGFloat = (currentPlatform == .iOS || currentPlatform == .watchOS) ? 44.0 : 0.0
+        let expectedMinTouchTarget = PlatformTestUtilities.expectedMinTouchTarget(
+            for: currentPlatform,
+            touchDetected: false
+        )
 
         let config = getCardExpansionPlatformConfig()
 
@@ -104,9 +115,11 @@ open class CapabilityAwareFunctionTests: BaseTestClass {
         #expect(!config.supportsHapticFeedback, "Haptic feedback should not be available when touch is disabled on current platform")
         #expect(!config.supportsAssistiveTouch, "AssistiveTouch should not be available when touch is disabled on current platform")
 
-        // Note: minTouchTarget is platform-specific and doesn't change based on touch support
-        // Verify it returns the platform-appropriate value for current platform
-        #expect(config.minTouchTarget == expectedMinTouchTarget, "Touch targets should be platform-appropriate (\(expectedMinTouchTarget)) for current platform \(currentPlatform)")
+        // Platform HIG floors apply even when runtime touch is off: tvOS stays at
+        // 60 (focus HIG), visionOS stays at 60 (gaze+pinch HIG). Only macOS
+        // drops to 0 when no touch is detected.
+        #expect(config.minTouchTarget == expectedMinTouchTarget,
+                "Touch targets must match Apple HIG for \(currentPlatform): expected \(expectedMinTouchTarget)pt")
         
         // Clean up
         RuntimeCapabilityDetection.clearAllCapabilityOverrides()
@@ -126,14 +139,19 @@ open class CapabilityAwareFunctionTests: BaseTestClass {
         // Test that touch-related functions work correctly when touch is supported
         let config = getCardExpansionPlatformConfig()
         
-        // Per Apple HIG: Touch targets should be 44.0 when touch is enabled (for accessibility compliance),
-        // regardless of platform. For touch-first platforms (iOS, watchOS), it's always 44.0.
-        // For non-touch-first platforms, it's 44.0 when touch is detected, 0.0 otherwise.
+        // Per Apple HIG (Issue #237):
+        //   iOS/watchOS: 44pt (touch HIG)
+        //   tvOS: 60pt (focus HIG — independent of touch)
+        //   visionOS: 60pt (gaze+pinch HIG — independent of touch)
+        //   macOS: 44pt when runtime touch is detected (touch enabled here)
+        // Touch being enabled does NOT override tvOS/visionOS HIG floors.
         let currentPlatform = SixLayerPlatform.current
-        // Since we explicitly enabled touch support, it should always be 44.0 per Apple HIG
-        let expectedMinTouchTarget: CGFloat = 44.0
-        #expect(config.minTouchTarget == expectedMinTouchTarget, 
-                                   "Touch targets should be 44.0 when touch is enabled (per Apple HIG) for current platform \(currentPlatform)")
+        let expectedMinTouchTarget = PlatformTestUtilities.expectedMinTouchTarget(
+            for: currentPlatform,
+            touchDetected: true
+        )
+        #expect(config.minTouchTarget == expectedMinTouchTarget,
+                "Touch targets must match Apple HIG for \(currentPlatform): expected \(expectedMinTouchTarget)pt")
         
         // Haptic feedback should be available
         #expect(config.supportsHapticFeedback, 
@@ -166,11 +184,15 @@ open class CapabilityAwareFunctionTests: BaseTestClass {
         #expect(!config.supportsAssistiveTouch, 
                       "AssistiveTouch should not be available when touch is disabled")
         
-        // Touch targets should be platform-correct (uses current platform, which is macOS in tests)
+        // Touch targets per Apple HIG (Issue #237). Touch is disabled, but
+        // tvOS/visionOS HIG floors (60pt focus / gaze+pinch) still apply.
         let currentPlatform = SixLayerPlatform.current
-        let expectedMinTouchTarget: CGFloat = (currentPlatform == .iOS || currentPlatform == .watchOS) ? 44.0 : 0.0
-        #expect(config.minTouchTarget == expectedMinTouchTarget, 
-                                   "Touch targets should be platform-correct (\(expectedMinTouchTarget)) for \(currentPlatform)")
+        let expectedMinTouchTarget = PlatformTestUtilities.expectedMinTouchTarget(
+            for: currentPlatform,
+            touchDetected: false
+        )
+        #expect(config.minTouchTarget == expectedMinTouchTarget,
+                "Touch targets must match Apple HIG for \(currentPlatform): expected \(expectedMinTouchTarget)pt")
         RuntimeCapabilityDetection.clearAllCapabilityOverrides()
     }
     
