@@ -918,8 +918,8 @@ public struct DynamicNumberField: View {
     public var body: some View {
         platformVStackContainer(alignment: .leading) {
             let i18n = InternationalizationService()
-            TextField(field.placeholder ?? i18n.localizedString(for: "SixLayerFramework.form.placeholder.enterNumber"), text: Binding(
-                get: { (formState.getValue(for: field.id) as String?) ?? field.defaultValue ?? "" },
+            TextField(dynamicNumberPlaceholder(i18n: i18n), text: Binding(
+                get: { (formState.getValue(for: field.id) as String?) ?? "" },
                 set: { formState.setValue($0, for: field.id) }
             ))
             .platformTextFieldStyle()
@@ -931,6 +931,21 @@ public struct DynamicNumberField: View {
         .padding()
         .dynamicFormFieldAccessibilityLabel(field)
         .automaticComplianceForDynamicFormField(field)
+    }
+
+    /// Placeholder only; value comes from ``DynamicFormState`` so a schema default of `0` reads as a hint, not entered text.
+    private func dynamicNumberPlaceholder(i18n: InternationalizationService) -> String {
+        if let p = field.placeholder?.trimmingCharacters(in: .whitespacesAndNewlines), !p.isEmpty {
+            return p
+        }
+        switch field.contentType {
+        case .integer:
+            return i18n.localizedString(for: "SixLayerFramework.form.placeholder.enterInteger")
+        case .decimal, .number:
+            return "0.0"
+        default:
+            return i18n.localizedString(for: "SixLayerFramework.form.placeholder.enterNumber")
+        }
     }
 }
 
@@ -950,7 +965,7 @@ public struct DynamicIntegerField: View {
         platformVStackContainer(alignment: .leading) {
             let i18n = InternationalizationService()
             TextField(field.placeholder ?? i18n.localizedString(for: "SixLayerFramework.form.placeholder.enterInteger"), text: Binding(
-                get: { (formState.getValue(for: field.id) as String?) ?? field.defaultValue ?? "" },
+                get: { (formState.getValue(for: field.id) as String?) ?? "" },
                 set: { formState.setValue($0, for: field.id) }
             ))
             .platformTextFieldStyle()
