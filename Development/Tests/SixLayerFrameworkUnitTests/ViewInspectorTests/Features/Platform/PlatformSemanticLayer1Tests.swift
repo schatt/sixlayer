@@ -751,7 +751,7 @@ open class PlatformSemanticLayer1Tests: BaseTestClass {
         let hasAccessibilityID = testAccessibilityIdentifiersCrossPlatform(
             view, 
             expectedPattern: "SixLayer.main.ui", 
-            componentName: "platformResponsiveCard_L1",
+            componentName: "SixLayer.main.ui",
             testName: "PlatformTest"
         )
  #expect(hasAccessibilityID, "platformResponsiveCard_L1 should generate accessibility identifiers on iOS ")
@@ -780,7 +780,7 @@ open class PlatformSemanticLayer1Tests: BaseTestClass {
             view, 
             expectedPattern: "SixLayer.main.ui", 
             platform: .macOS,
-            componentName: "platformResponsiveCard_L1"
+            componentName: "SixLayer.main.ui"
         )
  #expect(hasAccessibilityID, "platformResponsiveCard_L1 should generate accessibility identifiers on macOS ")
         #else
