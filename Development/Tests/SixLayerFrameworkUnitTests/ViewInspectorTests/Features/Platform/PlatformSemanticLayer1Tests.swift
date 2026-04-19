@@ -42,7 +42,7 @@ open class PlatformSemanticLayer1Tests: BaseTestClass {
         #if canImport(ViewInspector)
         let hasAccessibilityID = testAccessibilityIdentifiersCrossPlatform(
             view, 
-            expectedPattern: "SixLayer.main.ui", 
+            expectedPattern: "SixLayer.main.ui*", 
             componentName: "platformPresentItemCollection_L1",
             testName: "PlatformTest"
         )
@@ -72,7 +72,7 @@ open class PlatformSemanticLayer1Tests: BaseTestClass {
         #if canImport(ViewInspector)
         let hasAccessibilityID = testAccessibilityIdentifiersCrossPlatform(
             view, 
-            expectedPattern: "SixLayer.main.ui", 
+            expectedPattern: "SixLayer.main.ui*", 
             componentName: "platformPresentItemCollection_L1",
             testName: "PlatformTest"
         )
@@ -101,7 +101,7 @@ open class PlatformSemanticLayer1Tests: BaseTestClass {
         #if canImport(ViewInspector)
         let hasAccessibilityID = testAccessibilityIdentifiersCrossPlatform(
             view, 
-            expectedPattern: "SixLayer.main.ui", 
+            expectedPattern: "SixLayer.main.ui*", 
             componentName: "platformPresentNumericData_L1",
             testName: "PlatformTest"
         )
@@ -128,7 +128,7 @@ open class PlatformSemanticLayer1Tests: BaseTestClass {
         #if canImport(ViewInspector)
         let hasAccessibilityID = testAccessibilityIdentifiersCrossPlatform(
             view, 
-            expectedPattern: "SixLayer.main.ui", 
+            expectedPattern: "SixLayer.main.ui*", 
             componentName: "platformPresentNumericData_L1",
             testName: "PlatformTest"
         )
@@ -164,7 +164,7 @@ open class PlatformSemanticLayer1Tests: BaseTestClass {
         #if canImport(ViewInspector)
         let hasAccessibilityID = testAccessibilityIdentifiersCrossPlatform(
             view, 
-            expectedPattern: "SixLayer.main.ui", 
+            expectedPattern: "SixLayer.main.ui*", 
             componentName: "platformPresentFormData_L1",
             testName: "PlatformTest"
         )
@@ -198,7 +198,7 @@ open class PlatformSemanticLayer1Tests: BaseTestClass {
         #if canImport(ViewInspector)
         let hasAccessibilityID = testAccessibilityIdentifiersCrossPlatform(
             view, 
-            expectedPattern: "SixLayer.main.ui", 
+            expectedPattern: "SixLayer.main.ui*", 
             componentName: "platformPresentFormData_L1",
             testName: "PlatformTest"
         )
@@ -227,7 +227,7 @@ open class PlatformSemanticLayer1Tests: BaseTestClass {
         #if canImport(ViewInspector)
         let hasAccessibilityID = testAccessibilityIdentifiersCrossPlatform(
             view, 
-            expectedPattern: "SixLayer.main.ui", 
+            expectedPattern: "SixLayer.main.ui*", 
             componentName: "platformPresentMediaData_L1",
             testName: "PlatformTest"
         )
@@ -254,7 +254,7 @@ open class PlatformSemanticLayer1Tests: BaseTestClass {
         #if canImport(ViewInspector)
         let hasAccessibilityID = testAccessibilityIdentifiersCrossPlatform(
             view, 
-            expectedPattern: "SixLayer.main.ui", 
+            expectedPattern: "SixLayer.main.ui*", 
             componentName: "platformPresentMediaData_L1",
             testName: "PlatformTest"
         )
@@ -295,7 +295,7 @@ open class PlatformSemanticLayer1Tests: BaseTestClass {
         #if canImport(ViewInspector)
         let hasAccessibilityID = testAccessibilityIdentifiersCrossPlatform(
             view, 
-            expectedPattern: "SixLayer.main.ui", 
+            expectedPattern: "SixLayer.main.ui*", 
             componentName: "platformPresentSettings_L1",
             testName: "PlatformTest"
         )
@@ -333,7 +333,7 @@ open class PlatformSemanticLayer1Tests: BaseTestClass {
         #if canImport(ViewInspector)
         let hasAccessibilityID = testAccessibilityIdentifiersCrossPlatform(
             view, 
-            expectedPattern: "SixLayer.main.ui", 
+            expectedPattern: "SixLayer.main.ui*", 
             componentName: "platformPresentSettings_L1",
             testName: "PlatformTest"
         )
@@ -361,7 +361,7 @@ open class PlatformSemanticLayer1Tests: BaseTestClass {
         #if canImport(ViewInspector)
         let hasAccessibilityID = testAccessibilityIdentifiersCrossPlatform(
             view, 
-            expectedPattern: "SixLayer.main.ui", 
+            expectedPattern: "SixLayer.main.ui*", 
             componentName: "platformPresentContent_L1",
             testName: "PlatformTest"
         )
@@ -387,7 +387,7 @@ open class PlatformSemanticLayer1Tests: BaseTestClass {
         #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
             view, 
-            expectedPattern: "SixLayer.main.ui", 
+            expectedPattern: "SixLayer.main.ui*", 
             platform: .macOS,
             componentName: "platformPresentContent_L1"
         )
@@ -415,7 +415,7 @@ open class PlatformSemanticLayer1Tests: BaseTestClass {
         #if canImport(ViewInspector)
         let hasAccessibilityID = testAccessibilityIdentifiersCrossPlatform(
             view, 
-            expectedPattern: "SixLayer.main.ui", 
+            expectedPattern: "SixLayer.main.ui*", 
             componentName: "platformPresentBasicValue_L1",
             testName: "PlatformTest"
         )
@@ -441,7 +441,7 @@ open class PlatformSemanticLayer1Tests: BaseTestClass {
         #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
             view, 
-            expectedPattern: "SixLayer.main.ui", 
+            expectedPattern: "SixLayer.main.ui*", 
             platform: .macOS,
             componentName: "platformPresentBasicValue_L1"
         )
@@ -470,7 +470,7 @@ open class PlatformSemanticLayer1Tests: BaseTestClass {
         #if canImport(ViewInspector)
         let hasAccessibilityID = testAccessibilityIdentifiersCrossPlatform(
             view, 
-            expectedPattern: "SixLayer.main.ui", 
+            expectedPattern: "SixLayer.main.ui*", 
             componentName: "platformPresentBasicArray_L1",
             testName: "PlatformTest"
         )
@@ -497,7 +497,7 @@ open class PlatformSemanticLayer1Tests: BaseTestClass {
         #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
             view, 
-            expectedPattern: "SixLayer.main.ui", 
+            expectedPattern: "SixLayer.main.ui*", 
             platform: .macOS,
             componentName: "platformPresentBasicArray_L1"
         )
@@ -750,7 +750,7 @@ open class PlatformSemanticLayer1Tests: BaseTestClass {
         #if canImport(ViewInspector)
         let hasAccessibilityID = testAccessibilityIdentifiersCrossPlatform(
             view, 
-            expectedPattern: "SixLayer.main.ui", 
+            expectedPattern: "SixLayer.main.ui*", 
             componentName: "SixLayer.main.ui",
             testName: "PlatformTest"
         )
@@ -778,7 +778,7 @@ open class PlatformSemanticLayer1Tests: BaseTestClass {
         #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
             view, 
-            expectedPattern: "SixLayer.main.ui", 
+            expectedPattern: "SixLayer.main.ui*", 
             platform: .macOS,
             componentName: "SixLayer.main.ui"
         )
