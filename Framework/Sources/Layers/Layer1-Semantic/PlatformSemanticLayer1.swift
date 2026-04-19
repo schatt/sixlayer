@@ -146,6 +146,7 @@ public func platformPresentItemCollection_L1<Item: Identifiable>(
         onItemDeleted: onItemDeleted,
         onItemEdited: onItemEdited
     )
+    // Issue #245: stable collection root via `identifierName` (not an anonymous wrapper over arbitrary content).
     .automaticCompliance(identifierName: "platformPresentItemCollection_L1")
 }
 
@@ -242,6 +243,8 @@ public func platformResponsiveCard_L1<Content: View>(
     )
     
     return ResponsiveCardView(data: cardData)
+        // Issue #245 / gh-243: keep named — this API returns a fixed framework-owned `ResponsiveCardView`
+        // (structured L1 demo card), not a thin named shell over arbitrary caller content.
         .automaticCompliance(named: "platformResponsiveCard_L1")
 }
 
@@ -2523,6 +2526,7 @@ public struct GenericFormView: View {
                 }
             }
         )
+        // Issue #245 / gh-243: keep named — structured dynamic-form shell; inner fields carry their own compliance.
         .automaticCompliance(named: "GenericFormView")
     }
 }
@@ -4328,6 +4332,8 @@ public struct GenericContentView: View {
             platformPresentBasicValue_L1(value: content, hints: hints)
         } else {
             GenericFallbackView(content: content, hints: hints)
+                // Issue #245 / gh-243: keep named — only the unknown-type fallback branch; all typed paths delegate
+                // to other presenters. Names the framework fallback surface, not arbitrary user chrome.
                 .automaticCompliance(named: "GenericContentView")
         }
     }
@@ -4427,6 +4433,7 @@ private struct BasicValueView: View {
         .padding()
         .background(Color.blue.opacity(0.1))
         .cornerRadius(12)
+        // Issue #245 / gh-243: keep named — framework-owned typed scalar presenter (not a generic content wrapper).
         .automaticCompliance(named: "BasicValueView")
     }
 }
@@ -4476,6 +4483,7 @@ private struct BasicArrayView: View {
         .padding()
         .background(Color.orange.opacity(0.1))
         .cornerRadius(12)
+        // Issue #245 / gh-243: keep named — framework-owned list summary UI for `[Any]` previews, not caller chrome.
         .automaticCompliance(named: "BasicArrayView")
     }
 }
@@ -4518,6 +4526,7 @@ private struct GenericFallbackView: View {
         .padding()
         .background(Color.secondary.opacity(0.1))
         .cornerRadius(12)
+        // Issue #245 / gh-243: keep named — intentional diagnostic surface for unknown runtime types.
         .automaticCompliance(named: "GenericFallbackView")
     }
 }
@@ -4736,6 +4745,7 @@ public struct GenericSettingsView: View {
         .onAppear {
             initializeValues()
         }
+        // Issue #245 / gh-243: keep named — structured settings experience; sections/controls have inner IDs.
         .automaticCompliance(named: "GenericSettingsView")
     }
     
