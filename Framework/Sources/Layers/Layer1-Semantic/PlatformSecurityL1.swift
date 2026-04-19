@@ -60,6 +60,7 @@ public func platformPresentSecureTextField_L1(
     return AnyView(SecureField(title, text: text)
         .environmentObject(security)
         .environment(\.securityService, security)
+        // Issue #245 / gh-243: keep named — the secure field is the framework-owned interactive surface.
         .automaticCompliance(named: "platformPresentSecureTextField_L1"))
 }
 
