@@ -805,7 +805,8 @@ public func platformPresentContent_L1(
             .automaticAccessibility()
             .platformPatterns()
             .visualConsistency()
-        // Issue #245: anonymous compliance lives on delegated presenters / `GenericContentView` branches, not here.
+            // Anonymous shell for the content entry point; delegated APIs add their own compliance.
+            .automaticCompliance()
 }
 
 /// Present basic numeric values (Int, Float, Double, Bool) with appropriate formatting (no AnyView — Issue 178).
