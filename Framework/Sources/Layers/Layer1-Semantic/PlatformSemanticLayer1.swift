@@ -817,10 +817,10 @@ public func platformPresentBasicValue_L1(
 ) -> some View {
     BasicValueView(value: value, hints: hints)
         .environment(\.accessibilityIdentifierName, "platformPresentBasicValue_L1")
+        .automaticCompliance()
         .automaticAccessibility()
         .platformPatterns()
         .visualConsistency()
-        .automaticCompliance()
 }
 
 /// Present basic arrays with appropriate formatting (no AnyView — Issue 178).
@@ -831,10 +831,10 @@ public func platformPresentBasicArray_L1(
 ) -> some View {
     BasicArrayView(array: array, hints: hints)
         .environment(\.accessibilityIdentifierName, "platformPresentBasicArray_L1")
+        .automaticCompliance()
         .automaticAccessibility()
         .platformPatterns()
         .visualConsistency()
-        .automaticCompliance()
 }
 
 /// Generic function for presenting settings interface
