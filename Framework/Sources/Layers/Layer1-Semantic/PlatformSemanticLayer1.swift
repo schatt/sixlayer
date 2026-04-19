@@ -805,7 +805,7 @@ public func platformPresentContent_L1(
             .automaticAccessibility()
             .platformPatterns()
             .visualConsistency()
-            .automaticCompliance()
+        // Issue #245: anonymous compliance lives on delegated presenters / `GenericContentView` branches, not here.
 }
 
 /// Present basic numeric values (Int, Float, Double, Bool) with appropriate formatting (no AnyView — Issue 178).
@@ -819,7 +819,7 @@ public func platformPresentBasicValue_L1(
         .automaticAccessibility()
         .platformPatterns()
         .visualConsistency()
-        .automaticCompliance()
+        // Issue #245: single anonymous shell on `BasicValueView` (see body); avoid stacking with outer wrappers.
 }
 
 /// Present basic arrays with appropriate formatting (no AnyView — Issue 178).
@@ -833,7 +833,7 @@ public func platformPresentBasicArray_L1(
         .automaticAccessibility()
         .platformPatterns()
         .visualConsistency()
-        .automaticCompliance()
+        // Issue #245: single anonymous shell on `BasicArrayView` (see body).
 }
 
 /// Generic function for presenting settings interface
@@ -4431,7 +4431,8 @@ private struct BasicValueView: View {
         .padding()
         .background(Color.blue.opacity(0.1))
         .cornerRadius(12)
-        // Issue #245: no inner automaticCompliance here — `platformPresentBasicValue_L1` applies the anonymous shell.
+        // Issue #245 / gh-243: anonymous leaf shell (no `named`) over runtime `Any` scalar presentation.
+        .automaticCompliance()
     }
 }
 
@@ -4480,7 +4481,8 @@ private struct BasicArrayView: View {
         .padding()
         .background(Color.orange.opacity(0.1))
         .cornerRadius(12)
-        // Issue #245: no inner automaticCompliance here — `platformPresentBasicArray_L1` applies the anonymous shell.
+        // Issue #245 / gh-243: anonymous leaf shell over runtime-shaped array previews.
+        .automaticCompliance()
     }
 }
 
