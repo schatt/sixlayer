@@ -16,7 +16,8 @@ open class PlatformInternationalizationL1Tests: BaseTestClass {
     }
 
     /// Shells that must not use `automaticCompliance(named:)` (NamedAutomaticComplianceModifier); see #245 / gh-243.
-    private nonisolated static func issue245_shellsThatMustNotUseNamedAutomaticCompliance(
+    @MainActor
+    private static func issue245_shellsThatMustNotUseNamedAutomaticCompliance(
         hints: InternationalizationHints
     ) -> [(name: String, view: AnyView)] {
         [
