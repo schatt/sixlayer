@@ -397,7 +397,7 @@ public func platformPresentMediaData_L1(
     
     return GenericMediaView(media: media, hints: hints)
         .environment(\.accessibilityIdentifierName, "platformPresentMediaData_L1")
-        .automaticCompliance()
+        .automaticCompliance(identifierName: "platformPresentMediaData_L1")
 }
 
 /// Present a single media item
@@ -461,7 +461,7 @@ public func platformPresentMediaData_L1(
         customMediaView: customMediaView
     )
     .environment(\.accessibilityIdentifierName, "platformPresentMediaData_L1")
-    .automaticCompliance()
+    .automaticCompliance(identifierName: "platformPresentMediaData_L1")
 }
 
 /// Generic function for presenting media data with custom views and enhanced hints
@@ -492,7 +492,7 @@ public func platformPresentMediaData_L1(
     )
     .environment(\.extensibleHints, hints.extensibleHints)
     .environment(\.accessibilityIdentifierName, "platformPresentMediaData_L1")
-    .automaticCompliance()
+    .automaticCompliance(identifierName: "platformPresentMediaData_L1")
 }
 
 /// Generic function for presenting hierarchical data
@@ -504,7 +504,7 @@ public func platformPresentHierarchicalData_L1(
 ) -> some View {
     return GenericHierarchicalView(items: items, hints: hints)
         .environment(\.accessibilityIdentifierName, "platformPresentHierarchicalData_L1")
-        .automaticCompliance()
+        .automaticCompliance(identifierName: "platformPresentHierarchicalData_L1")
 }
 
 /// Present a single hierarchical item
@@ -533,7 +533,7 @@ public func platformPresentHierarchicalData_L1(
         customItemView: customItemView
     )
     .environment(\.accessibilityIdentifierName, "platformPresentHierarchicalData_L1")
-    .automaticCompliance()
+    .automaticCompliance(identifierName: "platformPresentHierarchicalData_L1")
 }
 
 /// Generic function for presenting hierarchical data with custom views and enhanced hints
@@ -564,7 +564,7 @@ public func platformPresentHierarchicalData_L1(
     )
     .environment(\.extensibleHints, hints.extensibleHints)
     .environment(\.accessibilityIdentifierName, "platformPresentHierarchicalData_L1")
-    .automaticCompliance()
+    .automaticCompliance(identifierName: "platformPresentHierarchicalData_L1")
 }
 
 /// Generic function for presenting temporal data
@@ -576,7 +576,7 @@ public func platformPresentTemporalData_L1(
 ) -> some View {
     return GenericTemporalView(items: items, hints: hints)
         .environment(\.accessibilityIdentifierName, "platformPresentTemporalData_L1")
-        .automaticCompliance()
+        .automaticCompliance(identifierName: "platformPresentTemporalData_L1")
 }
 
 /// Present a single temporal item
@@ -604,7 +604,7 @@ public func platformPresentTemporalData_L1(
         customItemView: customItemView
     )
     .environment(\.accessibilityIdentifierName, "platformPresentTemporalData_L1")
-    .automaticCompliance()
+    .automaticCompliance(identifierName: "platformPresentTemporalData_L1")
 }
 
 // MARK: - Navigation Stack Layer 1 Functions
@@ -780,7 +780,7 @@ public func platformPresentTemporalData_L1(
     )
     .environment(\.extensibleHints, hints.extensibleHints)
     .environment(\.accessibilityIdentifierName, "platformPresentTemporalData_L1")
-    .automaticCompliance()
+    .automaticCompliance(identifierName: "platformPresentTemporalData_L1")
 }
 
 /// Generic function for presenting unknown content at runtime
@@ -805,8 +805,9 @@ public func platformPresentContent_L1(
             .automaticAccessibility()
             .platformPatterns()
             .visualConsistency()
-            // Anonymous shell for the content entry point; delegated APIs add their own compliance.
-            .automaticCompliance()
+            // Issue #245: use `identifierName:` (not `automaticCompliance(named:)`) so the shell is not
+            // treated as a fully anonymous wrapper (which suppresses generated accessibility identifiers / #222).
+            .automaticCompliance(identifierName: "platformPresentContent_L1")
 }
 
 /// Present basic numeric values (Int, Float, Double, Bool) with appropriate formatting (no AnyView — Issue 178).
@@ -820,7 +821,7 @@ public func platformPresentBasicValue_L1(
         .automaticAccessibility()
         .platformPatterns()
         .visualConsistency()
-        .automaticCompliance()
+        .automaticCompliance(identifierName: "platformPresentBasicValue_L1")
 }
 
 /// Present basic arrays with appropriate formatting (no AnyView — Issue 178).
@@ -834,7 +835,7 @@ public func platformPresentBasicArray_L1(
         .automaticAccessibility()
         .platformPatterns()
         .visualConsistency()
-        .automaticCompliance()
+        .automaticCompliance(identifierName: "platformPresentBasicArray_L1")
 }
 
 /// Generic function for presenting settings interface
@@ -1612,7 +1613,7 @@ public func platformPresentMediaData_L1(
     return GenericMediaView(media: media, hints: processedHints)
         .environment(\.extensibleHints, hints.extensibleHints)
         .environment(\.accessibilityIdentifierName, "platformPresentMediaData_L1")
-        .automaticCompliance()
+        .automaticCompliance(identifierName: "platformPresentMediaData_L1")
 }
 
 /// Generic function for presenting hierarchical data with enhanced hints
@@ -1635,7 +1636,7 @@ public func platformPresentHierarchicalData_L1(
     return GenericHierarchicalView(items: items, hints: processedHints)
         .environment(\.extensibleHints, hints.extensibleHints)
         .environment(\.accessibilityIdentifierName, "platformPresentHierarchicalData_L1")
-        .automaticCompliance()
+        .automaticCompliance(identifierName: "platformPresentHierarchicalData_L1")
 }
 
 /// Generic function for presenting temporal data with enhanced hints
@@ -1658,7 +1659,7 @@ public func platformPresentTemporalData_L1(
     return GenericTemporalView(items: items, hints: processedHints)
         .environment(\.extensibleHints, hints.extensibleHints)
         .environment(\.accessibilityIdentifierName, "platformPresentTemporalData_L1")
-        .automaticCompliance()
+        .automaticCompliance(identifierName: "platformPresentTemporalData_L1")
 }
 
 // MARK: - Generic View Structures
