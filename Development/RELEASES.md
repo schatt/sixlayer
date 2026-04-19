@@ -1,12 +1,21 @@
 # 🚀 Six-Layer Framework Release History
 
-## 📍 **Current Release: v7.6.0** 🎯
+## 📍 **Current Release: v7.6.1** 🎯
 
-**Release Date**: TBD
-**Status**: In preparation
-**Previous Release**: v7.5.13 - Patch release
-**Note**: Release-facing managed settings migration documentation (Issue #215): changelog + migration blurb with links to `ManagedPlatformSettingsFlowGuide.md` and compile-checked example tests.
+**Release Date**: April 19, 2026
+**Status**: Released
+**Previous Release**: v7.6.0 - Minor release
+**Note**: Layer 1 `automaticCompliance` audit (#245 / gh-243 parity with #243): `identifierName:` vs anonymous shells; DataFrame, security, internationalization, semantic Layer 1; ViewInspector guard tests.
 **Next Release**: TBD
+
+---
+
+## 🎯 **v7.6.1 - Layer 1 accessibility compliance (#245 / gh-243)** (April 19, 2026)
+
+### **What's in v7.6.1:**
+- Patch release. See [RELEASE_v7.6.1.md](RELEASE_v7.6.1.md) for details.
+
+**See [RELEASE_v7.6.1.md](RELEASE_v7.6.1.md) for complete release notes.**
 
 ---
 
