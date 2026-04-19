@@ -996,11 +996,12 @@ public enum AccessibilityTestUtilities {
             config.clearDebugLog()
             defer { config.enableDebugLogging = previousDebug }
             
-            // Hosting can hang for complex view hierarchies; avoid forceLayout here and rely on config debug log when needed.
-            // Inject config via environment so modifiers see the same instance when @TaskLocal is not propagated into SwiftUI updates.
+            // `forceLayout: true` is required on recent iOS simulators for many Layer-1 shells so SwiftUI commits
+            // accessibilityIdentifier onto UIKit before traversal; `false` often yields empty platform + debug signals.
+            // Keep `exposeContentAccessibility` configurable for views where the root must stay a container.
             let hostedRoot = TestSetupUtilities.hostRootPlatformView(
                 view,
-                forceLayout: false,
+                forceLayout: true,
                 exposeContentAccessibility: exposeContentAccessibility,
                 accessibilityIdentifierConfig: config
             )
