@@ -9,6 +9,9 @@ import Foundation
 import SwiftUI
 import TabularData
 
+// Issue #245 / gh-243: public APIs and internal analysis views use `.automaticCompliance(identifierName:)`.
+// Custom-visualization overloads apply anonymous `.automaticCompliance()` on the caller-owned wrapper only.
+
 // MARK: - Layer 1 DataFrame Analysis Functions
 
 /// Analyze a DataFrame and provide intelligent insights at the semantic intent level
