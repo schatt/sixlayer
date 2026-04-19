@@ -9,7 +9,8 @@ open class PlatformSecurityNotificationL1Tests: BaseTestClass {
         "NAMED MODIFIER DEBUG: body() called for '\(componentName)'"
     }
 
-    private nonisolated static func issue245_shellsThatMustNotUseNamedAutomaticCompliance() -> [(name: String, view: AnyView)] {
+    @MainActor
+    private static func issue245_shellsThatMustNotUseNamedAutomaticCompliance() -> [(name: String, view: AnyView)] {
         [
             ("platformPresentSecureContent_L1", AnyView(platformPresentSecureContent_L1(content: Text("secure")))),
             ("platformShowPrivacyIndicator_L1", AnyView(platformShowPrivacyIndicator_L1(type: .camera, isActive: true))),
