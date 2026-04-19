@@ -119,7 +119,7 @@ public func platformPresentAlert_L1(
         .environmentObject(notification)
         .environment(\.layoutDirection, layoutDirection)
         .environment(\.locale, locale ?? Locale.current)
-        // Issue #245 / gh-243: alert service shell has no framework-owned visible root to name.
+        // Issue #245 / gh-243: `EmptyView` service shell — anonymous compliance only; no `named:` (nothing to anchor).
         .automaticCompliance())
 }
 
