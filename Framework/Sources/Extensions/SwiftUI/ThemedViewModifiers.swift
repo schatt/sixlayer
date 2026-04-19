@@ -324,11 +324,16 @@ public extension View {
 /// Platform-aware scrollContentBackground modifier that handles iOS 17.0+ availability
 struct ScrollContentBackgroundModifier: ViewModifier {
     func body(content: Content) -> some View {
-        if #available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *) {
+        #if os(iOS) || os(macOS)
+        if #available(iOS 17.0, macOS 14.0, *) {
             content.scrollContentBackground(.hidden)
         } else {
             content
         }
+        #else
+        // scrollContentBackground is not available on tvOS / watchOS SwiftUI surface (#237).
+        content
+        #endif
     }
 }
 

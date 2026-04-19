@@ -6,6 +6,7 @@
 //  Platform-specific test utilities for getting platform configurations and capabilities
 //
 
+import CoreGraphics
 import Foundation
 @testable import SixLayerFramework
 
@@ -29,6 +30,35 @@ public enum PlatformTestUtilities {
             return true
         case .watchOS, .tvOS, .visionOS:
             return false
+        }
+    }
+
+    /// HIG-correct expected minimum interactive-target size for a platform.
+    ///
+    /// Mirrors PlatformStrategy.minTouchTarget so tests assert the same
+    /// per-platform contract the framework implements (Issue #237):
+    /// - iOS: 44pt (Apple HIG explicit)
+    /// - watchOS: 44pt (inherited; watchOS HIG does not publish a numeric
+    ///   minimum, we use iOS's 44pt as a conservative accessibility-safe floor)
+    /// - tvOS: 60pt (Apple tvOS HIG — focus engine at 10-foot viewing distance)
+    /// - visionOS: 60pt (Apple visionOS HIG — gaze+pinch minimum; applies
+    ///   independent of runtime hand-tracking direct-touch)
+    /// - macOS: 44pt when runtime touch is detected (touch-screen Mac /
+    ///   accessibility touch emulation), else 0pt
+    ///
+    /// If this helper and PlatformStrategy.minTouchTarget diverge, one of
+    /// them is wrong — Apple HIG is authoritative.
+    public static func expectedMinTouchTarget(
+        for platform: SixLayerPlatform,
+        touchDetected: Bool = RuntimeCapabilityDetection.supportsTouch
+    ) -> CGFloat {
+        switch platform {
+        case .iOS, .watchOS:
+            return 44.0
+        case .tvOS, .visionOS:
+            return 60.0
+        case .macOS:
+            return touchDetected ? 44.0 : 0.0
         }
     }
 }

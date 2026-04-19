@@ -348,11 +348,17 @@ open class Layer4CallbackIntegrationTests: BaseTestClass {
         }
         
         // Create the map view
+        #if os(iOS) || os(macOS)
         let _ = platformMapView_L4(
             position: position,
             annotations: annotations,
             onAnnotationTapped: callback
         )
+        #else
+        // Map convenience APIs not provided on tvOS/watchOS/visionOS; tracked under #241.
+        _ = position
+        _ = annotations
+        #endif
         
         // Execute callback directly to verify it works
         if let firstAnnotation = annotations.first {

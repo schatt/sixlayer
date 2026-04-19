@@ -46,7 +46,7 @@ open class GenericFormViewTests: BaseTestClass {
             view, 
             expectedPattern: "SixLayer.*ui", 
             platform: SixLayerPlatform.iOS,
-            componentName: "GenericFormView"
+            componentName: "SixLayer.main.ui"
         )
  #expect(hasAccessibilityID, "GenericFormView should generate accessibility identifiers on iOS ")
         #else
@@ -77,7 +77,7 @@ open class GenericFormViewTests: BaseTestClass {
             view, 
             expectedPattern: "SixLayer.*ui", 
             platform: SixLayerPlatform.iOS,
-            componentName: "GenericFormView"
+            componentName: "SixLayer.main.ui"
         )
  #expect(hasAccessibilityID, "GenericFormView should generate accessibility identifiers on macOS ")
         #else

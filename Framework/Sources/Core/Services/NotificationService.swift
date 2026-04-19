@@ -406,7 +406,8 @@ public class NotificationService: ObservableObject {
     }
     #endif
     
-    /// Schedule a UNNotification
+    #if os(iOS) || os(macOS)
+    /// Schedule a UNNotification (UserNotifications surface is not available for local scheduling on tvOS).
     private func scheduleUNNotification(
         identifier: String,
         title: String,
@@ -510,6 +511,7 @@ public class NotificationService: ObservableObject {
             options: options
         )
     }
+    #endif
 }
 
 // MARK: - View Extension for Platform-Appropriate Alerts

@@ -609,7 +609,7 @@ public struct DynamicTextField: View {
             namespace: localizationNamespace
         )
         TextField(placeholderText, text: field.textBinding(formState: formState))
-            .textFieldStyle(.roundedBorder)
+            .platformTextFieldStyle()
             .focused($isFocused)
             .onSubmit {
                 // Move focus to next field on Enter/Return (Issue #81)
@@ -663,7 +663,7 @@ public struct DynamicTextField: View {
             text: field.textBinding(formState: formState),
             axis: .vertical
         )
-        .textFieldStyle(.roundedBorder)
+        .platformTextFieldStyle()
         .lineLimit(field.minLines...field.maxLines)
         .focused($isFocused)
         .automaticCompliance()
@@ -672,10 +672,18 @@ public struct DynamicTextField: View {
     /// TextEditor fallback for older OS versions
     @ViewBuilder
     private var multiLineTextEditorFallback: some View {
+        #if os(tvOS)
+        TextField("", text: field.textBinding(formState: formState))
+            .platformTextFieldStyle()
+            .frame(minHeight: CGFloat(field.minLines * 20))
+            .border(Color.gray.opacity(0.2))
+            .automaticCompliance()
+        #else
         TextEditor(text: field.textBinding(formState: formState))
             .frame(minHeight: CGFloat(field.minLines * 20))
             .border(Color.gray.opacity(0.2))
             .automaticCompliance()
+        #endif
     }
 }
 
@@ -705,7 +713,7 @@ public struct DynamicEmailField: View {
             field.fieldLabel()
 
             TextField(placeholderText, text: field.textBinding(formState: formState))
-                .textFieldStyle(.roundedBorder)
+                .platformTextFieldStyle()
                 #if os(iOS)
                 .keyboardType(UIKeyboardType.emailAddress)
                 #endif
@@ -759,7 +767,7 @@ public struct DynamicPasswordField: View {
             field.fieldLabel()
 
             SecureField(placeholderText, text: field.textBinding(formState: formState))
-                .textFieldStyle(.roundedBorder)
+                .platformTextFieldStyle()
                 .focused($isFocused)
                 .onSubmit {
                     // Move focus to next field on Enter/Return (Issue #81)
@@ -809,7 +817,7 @@ public struct DynamicPhoneField: View {
 
             let i18n = InternationalizationService()
             TextField(field.placeholder ?? i18n.localizedString(for: "SixLayerFramework.form.placeholder.enterPhone"), text: field.textBinding(formState: formState))
-                .textFieldStyle(.roundedBorder)
+                .platformTextFieldStyle()
                 #if os(iOS)
                 .keyboardType(UIKeyboardType.phonePad)
                 #endif
@@ -883,7 +891,7 @@ public struct DynamicURLField: View {
         let i18n = InternationalizationService()
         VStack(alignment: .leading, spacing: 4) {
             TextField(field.placeholder ?? i18n.localizedString(for: "SixLayerFramework.form.placeholder.enterURL"), text: field.textBinding(formState: formState))
-                .textFieldStyle(.roundedBorder)
+                .platformTextFieldStyle()
                 #if os(iOS)
                 .keyboardType(UIKeyboardType.URL)
                 #endif
@@ -910,11 +918,11 @@ public struct DynamicNumberField: View {
     public var body: some View {
         platformVStackContainer(alignment: .leading) {
             let i18n = InternationalizationService()
-            TextField(field.placeholder ?? i18n.localizedString(for: "SixLayerFramework.form.placeholder.enterNumber"), text: Binding(
-                get: { (formState.getValue(for: field.id) as String?) ?? field.defaultValue ?? "" },
+            TextField(dynamicNumberPlaceholder(i18n: i18n), text: Binding(
+                get: { (formState.getValue(for: field.id) as String?) ?? "" },
                 set: { formState.setValue($0, for: field.id) }
             ))
-            .textFieldStyle(.roundedBorder)
+            .platformTextFieldStyle()
             #if os(iOS)
             .keyboardType(UIKeyboardType.decimalPad)
             #endif
@@ -923,6 +931,21 @@ public struct DynamicNumberField: View {
         .padding()
         .dynamicFormFieldAccessibilityLabel(field)
         .automaticComplianceForDynamicFormField(field)
+    }
+
+    /// Placeholder only; value comes from ``DynamicFormState`` so a schema default of `0` reads as a hint, not entered text.
+    private func dynamicNumberPlaceholder(i18n: InternationalizationService) -> String {
+        if let p = field.placeholder?.trimmingCharacters(in: .whitespacesAndNewlines), !p.isEmpty {
+            return p
+        }
+        switch field.contentType {
+        case .integer:
+            return i18n.localizedString(for: "SixLayerFramework.form.placeholder.enterInteger")
+        case .decimal, .number:
+            return "0.0"
+        default:
+            return i18n.localizedString(for: "SixLayerFramework.form.placeholder.enterNumber")
+        }
     }
 }
 
@@ -942,10 +965,10 @@ public struct DynamicIntegerField: View {
         platformVStackContainer(alignment: .leading) {
             let i18n = InternationalizationService()
             TextField(field.placeholder ?? i18n.localizedString(for: "SixLayerFramework.form.placeholder.enterInteger"), text: Binding(
-                get: { (formState.getValue(for: field.id) as String?) ?? field.defaultValue ?? "" },
+                get: { (formState.getValue(for: field.id) as String?) ?? "" },
                 set: { formState.setValue($0, for: field.id) }
             ))
-            .textFieldStyle(.roundedBorder)
+            .platformTextFieldStyle()
             #if os(iOS)
             .keyboardType(UIKeyboardType.numberPad)
             #endif
@@ -1007,6 +1030,20 @@ public struct DynamicStepperField: View {
 
     public var body: some View {
         platformVStackContainer(alignment: .leading, spacing: 8) {
+            #if os(tvOS)
+            // Stepper is unavailable on tvOS; show a read-only current-value indicator.
+            Text(step.truncatingRemainder(dividingBy: 1.0) == 0.0
+                 ? "\(Int(value.wrappedValue))"
+                 : String(format: "%.2f", value.wrappedValue))
+                .dynamicFormFieldVoiceOverLabel(field)
+                .automaticComplianceForDynamicFormField(
+                    field,
+                    identifierElementType: "Stepper",
+                    accessibilityValue: step.truncatingRemainder(dividingBy: 1.0) == 0.0
+                        ? "\(Int(value.wrappedValue))"
+                        : String(format: "%.2f", value.wrappedValue)
+                )
+            #else
             Stepper(
                 "",
                 value: value,
@@ -1021,6 +1058,7 @@ public struct DynamicStepperField: View {
                     ? "\(Int(value.wrappedValue))"
                     : String(format: "%.2f", value.wrappedValue)  // Issue #165: Current value
             )
+            #endif
 
             // Show current value - use appropriate format based on step size
             Text(step.truncatingRemainder(dividingBy: 1.0) == 0.0 
@@ -1051,6 +1089,12 @@ public struct DynamicDateField: View {
         let i18n = InternationalizationService()
         
         return platformVStackContainer(alignment: .leading) {
+            #if os(tvOS)
+            // DatePicker is unavailable on tvOS; show a formatted value placeholder.
+            Text(Date(), format: .dateTime.year().month().day())
+                .foregroundStyle(.secondary)
+                .automaticComplianceForDynamicFormField(field)
+            #else
             DatePicker(field.placeholder ?? i18n.placeholderSelectDate(),
                       selection: Binding(
                           get: { Date() }, // TODO: Parse from formState
@@ -1058,6 +1102,7 @@ public struct DynamicDateField: View {
                       ),
                       displayedComponents: .date)
             .automaticComplianceForDynamicFormField(field)
+            #endif
         }
         .padding()
         .dynamicFormFieldAccessibilityLabel(field) // Issue #194: resolved label when localized
@@ -1081,6 +1126,11 @@ public struct DynamicTimeField: View {
         let i18n = InternationalizationService()
         
         return platformVStackContainer(alignment: .leading) {
+            #if os(tvOS)
+            Text(Date(), format: .dateTime.hour().minute())
+                .foregroundStyle(.secondary)
+                .automaticCompliance()
+            #else
             DatePicker(field.placeholder ?? i18n.placeholderSelectTime(),
                       selection: Binding(
                           get: { Date() }, // TODO: Parse from formState
@@ -1088,6 +1138,7 @@ public struct DynamicTimeField: View {
                       ),
                       displayedComponents: .hourAndMinute)
             .automaticCompliance()
+            #endif
         }
         .padding()
         .dynamicFormFieldAccessibilityLabel(field) // Issue #194: resolved label when localized
@@ -1111,12 +1162,18 @@ public struct DynamicDateTimeField: View {
         let i18n = InternationalizationService()
         
         return platformVStackContainer(alignment: .leading) {
+            #if os(tvOS)
+            Text(Date(), format: .dateTime.year().month().day().hour().minute())
+                .foregroundStyle(.secondary)
+                .automaticCompliance()
+            #else
             DatePicker(field.placeholder ?? i18n.placeholderSelectDateTime(),
                       selection: Binding(
                           get: { Date() }, // TODO: Parse from formState
                           set: { _ in } // TODO: Store in formState
                       ))
             .automaticCompliance()
+            #endif
         }
         .padding()
         .dynamicFormFieldAccessibilityLabel(field) // Issue #194: resolved label when localized
@@ -1407,7 +1464,7 @@ public struct DynamicRichTextField: View {
             #else
             let i18n = InternationalizationService()
             TextField(field.placeholder ?? i18n.localizedString(for: "SixLayerFramework.form.placeholder.enterText"), text: field.textBinding(formState: formState))
-                .textFieldStyle(.roundedBorder)
+                .platformTextFieldStyle()
                 .frame(minHeight: 100)
                 .automaticCompliance(named: "RichTextEditor")
             #endif
@@ -1491,14 +1548,14 @@ public struct DynamicImageField: View {
             .automaticCompliance(named: "ImagePickerButton")
 
             if let imageData = formState.fieldValues[field.id] as? Data, let image = PlatformImage(data: imageData) {
-                #if os(iOS)
-                Image(uiImage: image.uiImage)
+                #if os(macOS)
+                Image(nsImage: image.nsImage)
                     .resizable()
                     .scaledToFit()
                     .frame(height: 100)
                     .automaticCompliance(named: "ImagePreview")
                 #else
-                Image(nsImage: image.nsImage)
+                Image(uiImage: image.uiImage)
                     .resizable()
                     .scaledToFit()
                     .frame(height: 100)
@@ -1529,11 +1586,21 @@ public struct DynamicRangeField: View {
                 get: { Double((formState.getValue(for: field.id) as String?) ?? field.defaultValue ?? "0") ?? 0 },
                 set: { formState.setValue(String($0), for: field.id) }
             )
+            #if os(tvOS)
+            // Slider is unavailable on tvOS; show a read-only progress indicator.
+            ProgressView(value: sliderValue.wrappedValue, total: 100)
+                .progressViewStyle(.linear)
+                .automaticCompliance(
+                    identifierElementType: "Slider",
+                    accessibilityValue: "\(Int(sliderValue.wrappedValue)) percent"
+                )
+            #else
             Slider(value: sliderValue, in: 0...100)
                 .automaticCompliance(
                     identifierElementType: "Slider",
                     accessibilityValue: "\(Int(sliderValue.wrappedValue)) percent"  // Issue #165: Current value with range context
                 )
+            #endif
         }
         .padding()
         .dynamicFormFieldAccessibilityLabel(field) // Issue #194: resolved label when localized
@@ -1568,7 +1635,7 @@ public struct DynamicArrayField: View {
                             }
                         }
                     ))
-                    .textFieldStyle(.roundedBorder)
+                    .platformTextFieldStyle()
                     .environment(\.accessibilityIdentifierLabel, value) // TDD GREEN: Pass array item value to identifier generation
                     .automaticCompliance(named: "ArrayItem")
 
@@ -1622,6 +1689,25 @@ public struct DynamicDataField: View {
     public var body: some View {
         platformVStackContainer(alignment: .leading, spacing: 8) {
 
+            #if os(tvOS)
+            TextField("", text: Binding(
+                get: {
+                    if let data = formState.fieldValues[field.id] as? Data {
+                        return String(data: data, encoding: .utf8) ?? ""
+                    }
+                    return ""
+                },
+                set: { newValue in
+                    if let data = newValue.data(using: .utf8) {
+                        formState.setValue(data, for: field.id)
+                    }
+                }
+            ))
+            .platformTextFieldStyle()
+            .frame(minHeight: 100)
+            .border(Color.gray.opacity(0.2))
+            .automaticCompliance(named: "DataInput")
+            #else
             TextEditor(text: Binding(
                 get: {
                     if let data = formState.fieldValues[field.id] as? Data {
@@ -1638,6 +1724,7 @@ public struct DynamicDataField: View {
             .frame(minHeight: 100)
             .border(Color.gray.opacity(0.2))
             .automaticCompliance(named: "DataInput")
+            #endif
 
             if let data = formState.fieldValues[field.id] as? Data {
                 Text("Data size: \(data.count) bytes")
@@ -1677,7 +1764,7 @@ public struct DynamicAutocompleteField: View {
                     showSuggestions = !newValue.isEmpty && field.options != nil
                 }
             ))
-            .textFieldStyle(.roundedBorder)
+            .platformTextFieldStyle()
             .automaticCompliance(named: "AutocompleteInput")
             .onAppear {
                 searchText = formState.getValue(for: field.id) as String? ?? ""
@@ -1815,6 +1902,14 @@ public struct DynamicColorField: View {
             let color = Color(hex: colorValue) ?? .black
             
             let i18n = InternationalizationService()
+            #if os(tvOS)
+            // ColorPicker is unavailable on tvOS; show a read-only color swatch + hex value.
+            Text(field.placeholder ?? i18n.placeholderSelectColor())
+                .automaticCompliance(named: "ColorPicker")
+            Text(colorValue)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            #else
             ColorPicker(field.placeholder ?? i18n.placeholderSelectColor(), selection: Binding(
                 get: { color },
                 set: { newColor in
@@ -1823,7 +1918,8 @@ public struct DynamicColorField: View {
                 }
             ))
             .automaticCompliance(named: "ColorPicker")
-            
+            #endif
+
             Rectangle()
                 .fill(color)
                 .frame(height: 40)
@@ -1904,7 +2000,7 @@ public struct DynamicTextAreaField: View {
             #else
             let i18n = InternationalizationService()
             TextField(field.placeholder ?? i18n.localizedString(for: "SixLayerFramework.form.placeholder.enterText"), text: field.textBinding(formState: formState), axis: .vertical)
-                .textFieldStyle(.roundedBorder)
+                .platformTextFieldStyle()
                 .lineLimit(5...10)
                 .automaticCompliance(named: "TextArea")
             #endif
@@ -2028,6 +2124,7 @@ public struct DynamicGaugeField: View {
     
     public var body: some View {
         platformVStackContainer(alignment: .leading, spacing: 8) {
+            #if !os(tvOS)
             if #available(iOS 16.0, macOS 13.0, *) {
                 // Use native Gauge component on supported platforms
                 if gaugeStyle == "circular" {
@@ -2072,6 +2169,17 @@ public struct DynamicGaugeField: View {
                     .foregroundColor(.secondary)
                     .automaticCompliance(named: "GaugeValueLabel")
             }
+            #else
+            // tvOS: Gauge is unavailable; use ProgressView fallback unconditionally.
+            ProgressView(value: value, total: range.upperBound)
+                .progressViewStyle(.linear)
+                .automaticCompliance(named: "ProgressView")
+
+            Text("\(Int(value)) / \(Int(range.upperBound))")
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .automaticCompliance(named: "GaugeValueLabel")
+            #endif
         }
         .padding()
         .automaticComplianceForDynamicFormField(field)

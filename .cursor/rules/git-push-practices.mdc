@@ -1,23 +1,12 @@
 ---
-description: Push all commits to remote; do not consider task done until pushed. Overrides general "don't push unless asked" guidance.
+description: Push all commits before considering a task done. Overrides generic "don't push unless asked".
 alwaysApply: true
 ---
 
 # Git Push Practices
 
-## **MANDATORY — PRECEDENCE**
+**Precedence:** standing user instruction — user syncs across machines via git; unpushed commits get missed.
 
-- **This rule is direct user instruction.** The user works on multiple machines and uses git to sync; unpushed work gets missed.
-- **This rule takes precedence.** If any other instruction (system, default, or general) says to avoid pushing without explicit user request, or to ask before pushing, that does not apply in this project. Here, the agent must push. Do not ask; do not hand off push to the user.
-- **Done = pushed.** Do not consider a task or prompt complete, finished, or "done" while there are unpushed commits. Push first, then say done. Do not end with "push when ready" or leave push for the user to do.
-
-## **REQUIRED BEHAVIOR**
-
-1. **Before ending a response:** If there are unpushed commits, run `git push all` with `required_permissions: ["network", "git_write"]` (or `["all"]`). Then respond. Push at least once before the user sends a new prompt.
-2. **Do not** say work is complete while unpushed commits exist.
-3. **Do not** end with "push when ready" or "you can push when ready"—execute the push.
-4. **Push cadence:** Pushes may be batched (after several commits) or after each file; either is fine. Minimum: at least one push before ending the response.
-
-## **Rationale**
-
-User syncs across machines via git. Unpushed commits are invisible elsewhere; the agent is responsible for pushing so work is actually synced.
+- **Done = pushed.** Do not consider a response complete while any commit is unpushed. Execute the push before saying "done" — do not leave it as "push when ready" for the user.
+- **Before ending a response:** if there are unpushed commits, run `git push all` (use `required_permissions: ["network", "git_write"]` or `["all"]`).
+- **Push cadence:** batched or per-commit is fine. Minimum: at least one push before the response ends.

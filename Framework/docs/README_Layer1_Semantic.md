@@ -181,6 +181,8 @@ platformPresentItemCollection_L1(
 )
 ```
 
+**Row accessibility identifiers (UI tests):** You can steer which model property feeds automatic row `accessibilityIdentifier` segments via `PresentationHints.customPreferences` (`itemAccessibilityIdentifierProperty`, `itemAccessibilityIdentifierDefault`). Defaults follow title resolution plus stable `id`. See [AutomaticAccessibilityIdentifiers.md](AutomaticAccessibilityIdentifiers.md#collection-rows-and-data-driven-identifier-labels) and the [Migration Guide](MigrationGuide.md#accessibility-identifiers-for-collection-rows) when upgrading.
+
 **Automatic Row Actions:**
 - When `onItemEdited` is provided, an "Edit" button automatically appears in row actions (swipe actions on iOS, context menu on macOS)
 - When `onItemDeleted` is provided, a "Delete" button automatically appears

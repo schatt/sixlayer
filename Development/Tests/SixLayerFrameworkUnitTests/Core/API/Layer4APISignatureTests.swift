@@ -186,7 +186,7 @@ open class Layer4APISignatureTests: BaseTestClass {
     /// METHODOLOGY: Test API signature compiles with correct parameter types
     @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
     @Test @MainActor func testPlatformMapView_L4_WithMapContentBuilder_APISignature() {
-        #if canImport(MapKit)
+        #if canImport(MapKit) && (os(iOS) || os(macOS))
         // Given: Binding position and content builder
         let position = Binding<MapCameraPosition>(
             get: { MapCameraPosition.automatic },
@@ -211,7 +211,7 @@ open class Layer4APISignatureTests: BaseTestClass {
     /// METHODOLOGY: Test API signature compiles with annotations parameter
     @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
     @Test @MainActor func testPlatformMapView_L4_WithAnnotations_APISignature() {
-        #if canImport(MapKit)
+        #if canImport(MapKit) && (os(iOS) || os(macOS))
         // Given: Binding position, annotations, and optional callback
         let position = Binding<MapCameraPosition>(
             get: { MapCameraPosition.automatic },
@@ -240,6 +240,7 @@ open class Layer4APISignatureTests: BaseTestClass {
     /// METHODOLOGY: Test API signature compiles with correct parameter types
     @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
     @Test @MainActor func testPlatformMapViewWithCurrentLocation_L4_APISignature() {
+        #if canImport(MapKit) && (os(iOS) || os(macOS))
         // Given: Location service and optional parameters
         let locationService = LocationService()
         
@@ -251,6 +252,10 @@ open class Layer4APISignatureTests: BaseTestClass {
         
         // Then: API should accept the parameters (compile-time check)
         #expect(Bool(true), "platformMapViewWithCurrentLocation_L4 should accept LocationService and optional parameters")
+        #else
+        // Map convenience APIs not provided on tvOS/watchOS/visionOS; tracked under #241.
+        #expect(Bool(true), "platformMapViewWithCurrentLocation_L4 not available on this platform")
+        #endif
     }
     
     // MARK: - Share/Clipboard API Tests

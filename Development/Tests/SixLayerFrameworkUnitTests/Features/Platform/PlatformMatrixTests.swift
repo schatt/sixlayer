@@ -169,17 +169,18 @@ open class PlatformMatrixTests: BaseTestClass {
     // MARK: - Screen Size and Device Type Matrix
     
     @Test @MainActor func testScreenSizeCapabilityMatrix() {
-        // Test screen size capabilities for current platform
+        // Apple HIG per platform (Issue #237): iOS/watchOS 44, tvOS/visionOS
+        // 60 (focus / gaze+pinch floors, not conditional on touch), macOS
+        // conditional. Prior (iOS|watchOS ? 44 : 0) formula miscategorized
+        // tvOS and visionOS.
         let currentPlatform = SixLayerPlatform.current
-        let expectedMinTouchTarget: CGFloat = (currentPlatform == .iOS || currentPlatform == .watchOS) ? 44.0 : 0.0
+        let expectedMinTouchTarget = PlatformTestUtilities.expectedMinTouchTarget(for: currentPlatform)
 
         let config = getCardExpansionPlatformConfig()
 
-        // Verify platform-appropriate minTouchTarget value for current platform
         #expect(config.minTouchTarget == expectedMinTouchTarget,
-               "Current platform \(currentPlatform) should have platform-appropriate minTouchTarget (\(expectedMinTouchTarget))")
+                "Apple HIG: \(currentPlatform) expected \(expectedMinTouchTarget)pt")
 
-        // Clean up
         RuntimeCapabilityDetection.clearAllCapabilityOverrides()
     }
     
@@ -233,18 +234,27 @@ open class PlatformMatrixTests: BaseTestClass {
     
     @Test @MainActor func testColorEncodingCapabilityMatrix() {
         initializeTestConfig()
-        // Test color encoding works on all platforms
+        // Issue #237: the capability matrix for color encoding is asymmetric by
+        // design — iOS/macOS succeed, tvOS/watchOS/visionOS throw
+        // .platformNotSupported. Real per-platform implementations are tracked
+        // under issue #241. Pin the documented contract per platform so either
+        // side regressing is caught.
         let testColor = Color.blue
-        
+        #if os(iOS) || os(macOS)
         do {
             let encodedData = try platformColorEncode(testColor)
-            #expect(!encodedData.isEmpty, "Color encoding should produce data")
-            
+            #expect(!encodedData.isEmpty, "Color encoding should produce data on iOS/macOS")
+
             _ = try platformColorDecode(encodedData)
-            // Decoded color is non-optional, so it exists if we reach here
         } catch {
-            Issue.record("Color encoding/decoding should work on all platforms: \(error)")
+            Issue.record("Color encoding/decoding should work on iOS/macOS: \(error)")
         }
+        #else
+        #expect(throws: ColorEncodingError.self,
+                "tvOS/watchOS/visionOS: documented to throw .platformNotSupported until #241") {
+            _ = try platformColorEncode(testColor)
+        }
+        #endif
     }
     
     // MARK: - OCR Capability Matrix

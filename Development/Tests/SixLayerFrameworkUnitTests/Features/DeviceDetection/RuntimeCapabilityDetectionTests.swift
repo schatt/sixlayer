@@ -291,25 +291,24 @@ open class RuntimeCapabilityDetectionTDDTests: BaseTestClass {
     // MARK: - Touch Target Tests
 
     @Test func testMinTouchTargetValues() {
-        // Test that minTouchTarget returns correct values for each platform
-        // Clear any overrides to test default platform behavior
+        // Apple HIG per platform (Issue #237) — authoritative contract:
+        //   iOS:      44pt (touch HIG)
+        //   watchOS:  44pt (inherited HIG; no explicit numeric minimum published)
+        //   tvOS:     60pt (focus engine at 10-foot viewing distance)
+        //   visionOS: 60pt (gaze+pinch minimum; NOT conditional on runtime touch)
+        //   macOS:    44pt if runtime touch detected, else 0pt
+        //
+        // The prior test lumped tvOS + visionOS with macOS as
+        // "non-touch-first, so 44-if-touch-else-0". That's wrong:
+        // tvOS and visionOS have their own HIG floors independent of touch.
         RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-        
-        let platform = SixLayerPlatform.current
 
-        switch platform {
-        case .iOS, .watchOS:
-            // Touch-first platforms always have 44pt minimum per Apple HIG
-            #expect(RuntimeCapabilityDetection.minTouchTarget == 44.0, "iOS and watchOS should always have 44pt minimum touch targets")
-        case .macOS, .tvOS, .visionOS:
-            // For non-touch-first platforms, it should be 44.0 if touch is detected, 0.0 otherwise
-            // Per Apple HIG: 44pt when touch is available for accessibility compliance
-            let supportsTouch = RuntimeCapabilityDetection.supportsTouch
-            let expected: CGFloat = supportsTouch ? 44.0 : 0.0
-            let actual: CGFloat = RuntimeCapabilityDetection.minTouchTarget
-            // Use abs() for floating point comparison to handle any precision issues
-            #expect(abs(actual - expected) < 0.001, "Non-touch-first platforms should have 44pt targets when touch is detected (per Apple HIG), got \(actual) with supportsTouch=\(supportsTouch), expected \(expected)")
-        }
+        let platform = SixLayerPlatform.current
+        let expected = PlatformTestUtilities.expectedMinTouchTarget(for: platform)
+        let actual = RuntimeCapabilityDetection.minTouchTarget
+
+        #expect(abs(actual - expected) < 0.001,
+                "Apple HIG: \(platform) expected \(expected)pt, got \(actual)pt (supportsTouch=\(RuntimeCapabilityDetection.supportsTouch))")
     }
 
     @Test func testMinTouchTargetIsNonNegative() {

@@ -178,9 +178,11 @@ public struct AppleHIGComplianceExamples {
                         Text("Item \(index)")
                         Spacer()
                     }
+                    #if !os(tvOS)
                     .onHover { _ in
                         // Hover state is automatically applied
                     }
+                    #endif
                 }
             }
             .appleHIGCompliant()

@@ -7,7 +7,7 @@ extension TextField {
         #elseif os(macOS)
         return self.textFieldStyle(.roundedBorder)
         #else
-        return self.textFieldStyle(.roundedBorder)
+        return self.textFieldStyle(.plain)
         #endif
     }
 }

@@ -9,8 +9,10 @@
 //
 
 import SwiftUI
-import ViewInspector
 @testable import SixLayerFramework
+
+#if canImport(ViewInspector)
+import ViewInspector
 
 // MARK: - Canonical inspection (DRY) — direct inspection only, no AnyView
 
@@ -161,3 +163,5 @@ public func firstVStackInHierarchy<V: View & ViewInspector.Inspectable>(_ inspec
 // Prefer inspectView(view) over a View extension; ViewInspector’s Inspectable requirement
 // on Self in extension View where Self: KnownViewType caused “Self does not conform to Inspectable”.
 // Issue 178.
+
+#endif // canImport(ViewInspector)

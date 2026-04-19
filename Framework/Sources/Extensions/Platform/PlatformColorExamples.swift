@@ -50,11 +50,19 @@ public struct PlatformColorExamples: View {
                     VStack(spacing: 8) {
                         TextField("Placeholder text", text: .constant(""))
                             .foregroundColor(.platformPrimaryLabel)
+                            #if os(iOS) || os(macOS)
                             .textFieldStyle(RoundedBorderTextFieldStyle())
+                            #else
+                            .textFieldStyle(.plain)
+                            #endif
                         
                         TextField("Placeholder text", text: .constant(""))
                             .foregroundColor(.platformPlaceholderText)
+                            #if os(iOS) || os(macOS)
                             .textFieldStyle(RoundedBorderTextFieldStyle())
+                            #else
+                            .textFieldStyle(.plain)
+                            #endif
                     }
                     .padding()
                     .background(Color.platformBackground)

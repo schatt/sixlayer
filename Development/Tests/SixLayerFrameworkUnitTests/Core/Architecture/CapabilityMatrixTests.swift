@@ -124,18 +124,27 @@ open class CapabilityMatrixTests: BaseTestClass {
         CapabilityBehaviorTest(
             name: "Color Encoding Behavior",
             testBehavior: {
-                // Test what the framework DOES with color encoding
+                // Issue #237: pin the per-platform documented contract.
+                // iOS/macOS succeed; tvOS/watchOS/visionOS throw
+                // .platformNotSupported until a real implementation lands
+                // under #241. Asserting "should work on all platforms" was
+                // incorrect for the capability matrix.
                 let testColor = Color.blue
-                
+                #if os(iOS) || os(macOS)
                 do {
                     let encodedData = try platformColorEncode(testColor)
-                    #expect(!encodedData.isEmpty, "Color encoding should produce data")
-                    
+                    #expect(!encodedData.isEmpty, "Color encoding should produce data on iOS/macOS")
+
                     let _ = try platformColorDecode(encodedData)
-                    // If we get here, decoding worked (no exception thrown)
                 } catch {
-                    Issue.record("Color encoding/decoding should work on all platforms: \(error)")
+                    Issue.record("Color encoding/decoding should work on iOS/macOS: \(error)")
                 }
+                #else
+                #expect(throws: ColorEncodingError.self,
+                        "tvOS/watchOS/visionOS: documented to throw .platformNotSupported until #241") {
+                    _ = try platformColorEncode(testColor)
+                }
+                #endif
             }
         )
     ]

@@ -171,6 +171,7 @@ open class InputHandlingInteractionsTests: BaseTestClass {
     /// BUSINESS PURPOSE: Validate macOS keyboard shortcut creation functionality
     /// TESTING SCOPE: Tests keyboard shortcut creation for macOS
     /// METHODOLOGY: Create macOS keyboard shortcut and verify creation functionality
+    #if !os(tvOS)
     @Test @MainActor func testCreateKeyboardShortcutForMacOS() {
             initializeTestConfig()
         runWithTaskLocalConfig {
@@ -194,10 +195,12 @@ open class InputHandlingInteractionsTests: BaseTestClass {
         #endif
         }
     }
-    
+    #endif
+
     /// BUSINESS PURPOSE: Validate iOS keyboard shortcut creation functionality
     /// TESTING SCOPE: Tests keyboard shortcut creation for iOS
     /// METHODOLOGY: Create iOS keyboard shortcut and verify creation functionality
+    #if !os(tvOS)
     @Test @MainActor func testCreateKeyboardShortcutForIOS() {
             initializeTestConfig()
         runWithTaskLocalConfig {
@@ -221,7 +224,8 @@ open class InputHandlingInteractionsTests: BaseTestClass {
         #endif
         }
     }
-    
+    #endif
+
     /// BUSINESS PURPOSE: Validate macOS shortcut description functionality
     /// TESTING SCOPE: Tests keyboard shortcut description for macOS
     /// METHODOLOGY: Get macOS shortcut description and verify description functionality
@@ -682,6 +686,7 @@ open class InputHandlingInteractionsTests: BaseTestClass {
     /// BUSINESS PURPOSE: Validate keyboard shortcut with all modifiers functionality
     /// TESTING SCOPE: Tests keyboard shortcut with all modifier combinations
     /// METHODOLOGY: Test all modifier combinations and verify shortcut functionality
+    #if !os(tvOS)
     @Test @MainActor func testKeyboardShortcutWithAllModifiers() {
             initializeTestConfig()
         runWithTaskLocalConfig {
@@ -714,7 +719,8 @@ open class InputHandlingInteractionsTests: BaseTestClass {
             }
         }
     }
-    
+    #endif
+
     /// BUSINESS PURPOSE: Validate haptic feedback with all types functionality
     /// TESTING SCOPE: Tests haptic feedback with all feedback types
     /// METHODOLOGY: Test all haptic feedback types and verify feedback functionality

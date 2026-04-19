@@ -1,56 +1,22 @@
 ---
-description: Required principles to follow for all agents.
+description: sixlayer release quality gate + project-specific TDD/commit cross-refs.
 globs: **/*.swift, **/*.m, **/*.h, **/*.pl, **/*.pm, **/*.yml, **/*.yaml, **/*.json, **/*.md
 alwaysApply: true
 ---
 
-# Always follow these principles.
+# Release Quality Gate & Git Hygiene (sixlayer)
 
-## **Precedence**
+TDD / DTRT / DRY / Epistemology are covered by global user rules. This file adds sixlayer-specific gates and cross-refs.
 
-- **These rules are mandatory.** They take precedence over general or default guidance that would skip tests, allow releases with failing tests, or batch commits.
-- **No exceptions** unless explicitly stated in another rule (e.g. commit-after-every-edit defines the exact commit cadence for this project).
+## Release quality gate
+- **No release (any kind) without a green test suite.** The release script (`Development/scripts/release-process.sh`) runs macOS + iOS tests — the agent does not run the full suite before release; the script does.
+- All tests must pass before any release. Details in `MANDATORY_TESTING_RULES.md` Rule 1.
 
-## **Core Principles**
-TDD. DTRT. DRY. Epistemology
+## TDD specifics (sixlayer)
+- Red ends when tests **compile and fail** (stubs allowed so they compile).
+- Full Red→Green→Refactor definition: [strict-tdd-definition.mdc](mdc:.cursor/rules/strict-tdd-definition.mdc).
 
-## **TDD (Test-Driven Development)**
-- **MANDATORY**: Write tests BEFORE implementing features
-- **MANDATORY**: Follow Red-Green-Refactor cycle
-- **MANDATORY**: **TDD is not complete until the refactor step has been run** (deliberate refactor pass, then tests green again). Green-only is incomplete TDD.
-- **MANDATORY**: Red phase ends when tests COMPILE (and fail) - stubs may be required
-- **MANDATORY**: Green phase begins when tests compile (and fail)
-- **MANDATORY**: No feature implementation without tests first
-- **MANDATORY**: All tests must pass before any release
-- **MANDATORY**: See `MANDATORY_TESTING_RULES.md` Rule 1 for detailed TDD process including breaking API change strategy
-
-## **DTRT (Do The Right Thing)**
-- **MANDATORY**: Implement proper solutions, not quick fixes
-- **MANDATORY**: Follow established patterns and best practices
-- **MANDATORY**: Write maintainable, readable code
-- **MANDATORY**: Consider long-term implications of decisions
-
-## **DRY (Don't Repeat Yourself)**
-- **MANDATORY**: Eliminate code duplication
-- **MANDATORY**: Extract common functionality into reusable components
-- **MANDATORY**: Use abstractions appropriately
-- **MANDATORY**: Refactor when patterns emerge
-
-## **Epistemology (Distinguish Facts from Hypotheses)**
-- **MANDATORY**: Distinguish between verified facts and unverified hypotheses
-- **MANDATORY**: Use precise language that reflects current knowledge
-- **MANDATORY**: Investigate before asserting - prefer tentative language until verification
-- **MANDATORY**: Acknowledge limitations and uncertainties
-
-## **Release Quality Gate**
-- **This rule takes precedence.** No release (major, minor, patch, or pre-release) unless the test suite passes. No exceptions.
-- **MANDATORY**: Never create or suggest a release unless the test suite passes completely.
-- **MANDATORY**: The release script (`Development/scripts/release-process.sh`) runs the full test suite (macOS + iOS); the agent does not run `dbs-build --target test` before release—the script does. Do not tell the user to run the full suite before release; the script enforces it.
-- **MANDATORY**: Stop all release activities if tests fail; fix failing tests before proceeding.
-
-## **Git Hygiene (Commit Early and Often)**
-- **In this project:** Commit behavior is defined by `.cursor/rules/commit-after-every-edit.mdc` (one edit = one commit, with the **project.yml + XcodeGen** single-commit exception documented there). That rule takes precedence over any "logical unit" or batching guidance here.
-- **MANDATORY**: Before every test run, commit current work first. See `.cursor/rules/commit-before-test.mdc`: **do not invoke any test command until `git status` shows no uncommitted changes; if there are changes, run `git add` and `git commit` first, then run tests.** No exceptions.
-- **MANDATORY**: Before switching tasks or contexts, check for a logical unit of work to commit — except where commit-after-every-edit applies (every file edit in this project).
-- **MANDATORY**: Keep working trees clean; avoid accumulating unrelated uncommitted changes across many files.
-- **MANDATORY**: Follow the Git commit message practices defined in `.cursorrules` (clear what/why, issue links, imperative mood).
+## Git hygiene
+- **One edit = one commit** per [commit-after-every-edit.mdc](mdc:.cursor/rules/commit-after-every-edit.mdc) (with the `project.yml` + XcodeGen exception).
+- **Commit before every test run** — see [commit-before-test.mdc](mdc:.cursor/rules/commit-before-test.mdc). Do not invoke any test command while `git status` is dirty.
+- Commit message practices per `.cursorrules` (clear what/why, issue links, imperative mood).

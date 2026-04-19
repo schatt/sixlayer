@@ -31,18 +31,18 @@ public struct SafeTextEditor: View {
     }
     
     public var body: some View {
+        #if os(tvOS)
+        TextField("", text: $text, axis: .vertical)
+            .lineLimit(4...12)
+        #else
         // Wrap TextEditor in a container to isolate it from Metal telemetry
-        // Apply styling to the container, not directly to TextEditor
         ZStack {
-            // Background layer (applied to container, not TextEditor)
             Color.clear
                 .contentShape(Rectangle())
-            
-            // TextEditor without styling modifiers that trigger Metal telemetry
             TextEditor(text: $text)
-                // Only apply safe modifiers that don't trigger Metal telemetry
-                .scrollContentBackground(.hidden) // Hide default background
+                .scrollContentBackground(.hidden)
         }
+        #endif
     }
 }
 
@@ -73,23 +73,33 @@ public struct StyledSafeTextEditor: View {
     }
     
     public var body: some View {
-        // Use ZStack to separate TextEditor from styling
-        // This prevents Metal telemetry from inspecting TextEditor properties
+        #if os(tvOS)
+        TextField("", text: $text, axis: .vertical)
+            .lineLimit(4...12)
+            .padding(8)
+            .background(
+                RoundedRectangle(cornerRadius: cornerRadius)
+                    .fill(backgroundColor)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: cornerRadius)
+                            .stroke(borderColor, lineWidth: borderWidth)
+                    )
+            )
+            .frame(minHeight: minHeight)
+        #else
         ZStack(alignment: .topLeading) {
-            // Background and border applied to container
             RoundedRectangle(cornerRadius: cornerRadius)
                 .fill(backgroundColor)
                 .overlay(
                     RoundedRectangle(cornerRadius: cornerRadius)
                         .stroke(borderColor, lineWidth: borderWidth)
                 )
-            
-            // TextEditor without styling modifiers
             TextEditor(text: $text)
-                .scrollContentBackground(.hidden) // Hide default background
+                .scrollContentBackground(.hidden)
                 .padding(8)
         }
         .frame(minHeight: minHeight)
+        #endif
     }
 }
 
@@ -126,9 +136,10 @@ public extension View {
                         .stroke(borderColor, lineWidth: borderWidth)
                 )
             
-            // Content without styling modifiers
             self
+                #if os(iOS) || os(macOS)
                 .scrollContentBackground(.hidden)
+                #endif
                 .padding(8)
         }
     }

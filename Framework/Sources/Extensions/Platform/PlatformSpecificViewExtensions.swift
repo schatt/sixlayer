@@ -50,6 +50,7 @@ public extension View {
         allowsMultipleSelection: Bool = false,
         onCompletion: @escaping (Result<[URL], Error>) -> Void
     ) -> some View {
+        #if os(iOS) || os(macOS) || os(visionOS)
         self.fileImporter(isPresented: isPresented,
                           allowedContentTypes: allowedContentTypes,
                           allowsMultipleSelection: allowsMultipleSelection) { result in
@@ -58,6 +59,9 @@ public extension View {
             case .failure(let error): onCompletion(.failure(error))
             }
         }
+        #else
+        self
+        #endif
     }
 // Types and helpers moved to dedicated files (PlatformTypes.swift, PlatformTabStrip.swift, PlatformSidebarHelpers.swift)
 
@@ -1076,7 +1080,7 @@ public extension View {
         #elseif os(macOS)
         return self.textFieldStyle(.roundedBorder)
         #else
-        return self.textFieldStyle(.roundedBorder)
+        return self.textFieldStyle(.plain)
         #endif
     }
 
@@ -1099,6 +1103,8 @@ public extension View {
         return self.datePickerStyle(.compact)
         #elseif os(macOS)
         return self.datePickerStyle(.compact)
+        #elseif os(tvOS) || os(watchOS)
+        return self
         #else
         return self.datePickerStyle(.compact)
         #endif
@@ -1523,7 +1529,13 @@ public extension View {
                 }
             }
         }
-        #elseif os(macOS)
+        #else
+        // macOS, tvOS, watchOS, visionOS: `.navigationBarLeading` / `.navigationBarTrailing`
+        // are iOS-only. Use an HStack inside `.toolbar { }` (SwiftUI treats it as an
+        // implicit ToolbarItem with `.automatic` placement) so the layout stays
+        // correct and `ToolbarContentBuilder` does not have to reconcile a mix of
+        // bare Views and `ToolbarItem`s (which previously crashed the Swift 5.10+
+        // type checker with "Failed to produce diagnostic for expression").
         return self.toolbar {
             HStack {
                 if let leadingActions = leadingActions {
@@ -1531,20 +1543,6 @@ public extension View {
                 }
                 content()
                 if let trailingActions = trailingActions {
-                    trailingActions()
-                }
-            }
-        }
-        #else
-        return self.toolbar {
-            if let leadingActions = leadingActions {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    leadingActions()
-                }
-            }
-            content()
-            if let trailingActions = trailingActions {
-                ToolbarItem(placement: .navigationBarTrailing) {
                     trailingActions()
                 }
             }
@@ -1563,6 +1561,12 @@ public extension View {
         #elseif os(macOS)
         return self.toolbar {
             HStack {
+                trailingActions()
+            }
+        }
+        #elseif os(tvOS) || os(watchOS)
+        return self.toolbar {
+            ToolbarItem(placement: .automatic) {
                 trailingActions()
             }
         }
@@ -1586,6 +1590,12 @@ public extension View {
         #elseif os(macOS)
         return self.toolbar {
             HStack {
+                leadingActions()
+            }
+        }
+        #elseif os(tvOS) || os(watchOS)
+        return self.toolbar {
+            ToolbarItem(placement: .automatic) {
                 leadingActions()
             }
         }
@@ -1647,6 +1657,16 @@ public extension View {
                     .disabled(isConfirmationDisabled)
                     .buttonStyle(.borderedProminent)
                     .fixedSize()
+            }
+        }
+        #elseif os(tvOS) || os(watchOS)
+        return self.toolbar {
+            ToolbarItem(placement: .cancellationAction) {
+                Button(cancellationTitle, action: cancellationAction)
+            }
+            ToolbarItem(placement: .confirmationAction) {
+                Button(confirmationTitle, action: confirmationAction)
+                    .disabled(isConfirmationDisabled)
             }
         }
         #else
@@ -1849,10 +1869,20 @@ public extension View {
         @ViewBuilder content: @escaping () -> Content,
         @ViewBuilder label: @escaping () -> Label
     ) -> some View {
-        #if os(iOS)
+        #if os(iOS) || os(macOS) || os(visionOS)
         return DisclosureGroup(isExpanded: isExpanded, content: content, label: label)
         #else
-        return DisclosureGroup(isExpanded: isExpanded, content: content, label: label)
+        return platformVStackContainer(alignment: .leading, spacing: PlatformSpacing.medium) {
+            Button {
+                isExpanded.wrappedValue.toggle()
+            } label: {
+                label()
+            }
+            .buttonStyle(.plain)
+            if isExpanded.wrappedValue {
+                content()
+            }
+        }
         #endif
     }
 
@@ -2012,17 +2042,35 @@ public extension View {
     ///   - displayedComponents: The date components to display
     ///   - label: The date picker label
     /// - Returns: A platform-specific date picker
+    #if !os(tvOS)
     func platformDatePicker<Label: View>(
         selection: Binding<Date>,
         displayedComponents: DatePickerComponents = [.date],
         @ViewBuilder label: () -> Label
     ) -> some View {
-        #if os(iOS)
+        #if os(iOS) || os(macOS) || os(visionOS)
         return DatePicker(selection: selection, displayedComponents: displayedComponents, label: label)
+        #elseif os(watchOS)
+        return DatePicker(selection: selection, label: label)
         #else
         return DatePicker(selection: selection, displayedComponents: displayedComponents, label: label)
         #endif
     }
+    #endif
+
+    #if os(tvOS)
+    /// tvOS: `DatePicker` / `DatePickerComponents` are unavailable; show label and formatted value.
+    func platformDatePicker<Label: View>(
+        selection: Binding<Date>,
+        @ViewBuilder label: () -> Label
+    ) -> some View {
+        platformVStackContainer(alignment: .leading, spacing: PlatformSpacing.medium) {
+            label()
+            Text(selection.wrappedValue, format: .dateTime.year().month().day())
+                .foregroundStyle(.secondary)
+        }
+    }
+    #endif
 
     /// Platform-specific toggle
     /// Provides consistent toggle behavior across platforms
@@ -2097,6 +2145,20 @@ public extension View {
     ) -> some View {
         #if os(iOS)
         return TextEditor(text: text)
+            .overlay(
+                Group {
+                    if text.wrappedValue.isEmpty {
+                        Text(prompt ?? "")
+                            .foregroundColor(.platformTertiaryLabel)
+                            .padding(.horizontal, 4)
+                            .padding(.vertical, 8)
+                            .allowsHitTesting(false)
+                    }
+                },
+                alignment: .topLeading
+            )
+        #elseif os(tvOS) || os(watchOS)
+        return TextField(prompt ?? "", text: text)
             .overlay(
                 Group {
                     if text.wrappedValue.isEmpty {
@@ -2539,7 +2601,7 @@ public extension View {
                 Text("File picker requires iOS 14 or later")
             }
         }
-        #else
+        #elseif os(macOS)
         if #available(macOS 11.0, *) {
             // Use SwiftUI's native fileImporter for modern macOS
             self.fileImporter(
@@ -2569,6 +2631,8 @@ public extension View {
                     }
                 }
         }
+        #else
+        self
         #endif
     }
 

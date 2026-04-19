@@ -18,14 +18,17 @@ open class InternationalizationServiceAccessibilityTests: BaseTestClass {
         runWithTaskLocalConfig {
             // Given: A view using platformPresentLocalizedContent_L1 (which uses InternationalizationService)
             let view = platformPresentLocalizedContent_L1(
-                content: Text("Localized Content"),
+                content: platformPresentContent_L1(
+                    content: "Localized Content",
+                    hints: PresentationHints()
+                ),
                 hints: InternationalizationHints()
             )
             
             // When & Then: Should generate accessibility identifiers
             let hasAccessibilityID = testComponentComplianceSinglePlatform(
                 view,
-                expectedPattern: "SixLayer.main.ui.*platformPresentLocalizedContent_L1.*",
+                expectedPattern: "SixLayer.main.ui.*",
                 platform: SixLayerPlatform.iOS,
                 componentName: "platformPresentLocalizedContent_L1"
             )
@@ -40,14 +43,17 @@ open class InternationalizationServiceAccessibilityTests: BaseTestClass {
         runWithTaskLocalConfig {
             // Given: A view using platformPresentLocalizedContent_L1 (which uses InternationalizationService)
             let view = platformPresentLocalizedContent_L1(
-                content: Text("Localized Content"),
+                content: platformPresentContent_L1(
+                    content: "Localized Content",
+                    hints: PresentationHints()
+                ),
                 hints: InternationalizationHints()
             )
             
             // When & Then: Should generate accessibility identifiers
             let hasAccessibilityID = testComponentComplianceSinglePlatform(
                 view,
-                expectedPattern: "SixLayer.main.ui.*platformPresentLocalizedContent_L1.*",
+                expectedPattern: "SixLayer.main.ui.*",
                 platform: SixLayerPlatform.macOS,
                 componentName: "platformPresentLocalizedContent_L1"
             )

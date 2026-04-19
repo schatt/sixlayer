@@ -1,30 +1,26 @@
 ---
-description: Where tests belong—unit vs ViewInspector vs XCUITest—and how to triage legacy VI failures.
+description: Place each test at the cheapest layer that can truthfully assert the behavior; unit → ViewInspector → XCUITest.
 alwaysApply: true
 ---
 
-# Test layer priority
+# Test Layer Priority
 
-## **MANDATORY ordering**
+**Cheapest truthful layer wins.** Escalate only when a lower layer cannot observe the behavior.
 
-Place each test at the **cheapest** layer that can **truthfully** assert the behavior. Escalate only when a lower layer cannot observe it.
+1. **Unit tests** — pure logic, config, generators, pattern helpers. No SwiftUI hosting or system a11y tree required.
+2. **Hosted SwiftUI + ViewInspector** (shared helpers in `Development/Tests/Shared/TestHelpers/`) — modifiers, view tree, identifiers/labels the harness can observe reliably.
+3. **XCUITest** — real running app + system: navigation, sheets, permissions, real XCUI queries. Keep it a **thin sentinel set**, not a mirror of ViewInspector.
 
-1. **Unit tests** — Pure logic, config, generators, pattern helpers; no SwiftUI hosting or system a11y tree required.
-2. **Hosted SwiftUI + ViewInspector** (and shared helpers under `Development/Tests/Shared/TestHelpers/`) — Modifiers, view tree, identifiers/labels when harness can observe them reliably.
-3. **XCUITest** — Running app + system only: navigation, sheets, permissions, real XCUI queries. Use a **thin** sentinel set, not a full mirror of ViewInspector.
+## Harness before mass rewrites
 
-## **Harness before mass rewrites**
+Cluster failures by symptom. If many tests fail the same way (e.g. "no accessibility identifier"), fix the **shared** hosting / traversal / environment injection **once**, then re-run. Do not move the whole suite to XCUITest to skip harness work.
 
-Cluster failures by symptom. If many tests fail the same way (e.g. “no accessibility identifier”), fix **shared** hosting / traversal / environment injection **once**, then re-run. Do **not** move the whole suite to XCUITest to skip harness work.
+## Triaging legacy ViewInspector failures
 
-## **Legacy ViewInspector tests**
+Tests written without a green run aren't automatically correct. For each failure:
 
-Tests written without a green run are **not** automatically correct. Triage each failure:
+- **Harness issue** → fix helpers; re-measure.
+- **Wrong expectation** → update or delete; lock the contract in unit tests where possible.
+- **E2E-only** → trim VI scope; add a targeted XCUITest.
 
-- **Harness** → fix helpers; re-measure.
-- **Wrong expectation** → update or delete test; lock contract in unit tests where possible.
-- **E2E-only** → trim VI scope; add targeted XCUITest.
-
-## **Full detail**
-
-See **`PROJECT_RULES.md`** → section **“Test layer priority (unit → ViewInspector → XCUITest)”**.
+Full detail: `PROJECT_RULES.md` → "Test layer priority".

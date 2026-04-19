@@ -309,10 +309,20 @@ public extension View {
         title: String,
         @ViewBuilder content: () -> Content
     ) -> some View {
+        #if os(tvOS)
+        // GroupBox is unavailable on tvOS; approximate with titled stack (#237).
+        VStack(alignment: .leading, spacing: 8) {
+            Text(title)
+                .font(.headline)
+            content()
+        }
+        .automaticCompliance()
+        #else
         GroupBox(title) {
             content()
         }
         .automaticCompliance()
+        #endif
     }
     
     /// Platform-specific Section container with consistent styling

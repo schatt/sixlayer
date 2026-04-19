@@ -58,7 +58,9 @@ extension ListCardComponent: ViewInspector.Inspectable where Item: Identifiable 
 extension MasonryCardComponent: ViewInspector.Inspectable where Item: Identifiable {}
 extension NativeExpandableCardView: ViewInspector.Inspectable where Item: Identifiable {}
 extension iOSExpandableCardView: ViewInspector.Inspectable where Item: Identifiable {}
+#if os(macOS)
 extension macOSExpandableCardView: ViewInspector.Inspectable where Item: Identifiable {}
+#endif
 extension visionOSExpandableCardView: ViewInspector.Inspectable where Item: Identifiable {}
 extension PlatformAwareExpandableCardView: ViewInspector.Inspectable where Item: Identifiable {}
 #endif

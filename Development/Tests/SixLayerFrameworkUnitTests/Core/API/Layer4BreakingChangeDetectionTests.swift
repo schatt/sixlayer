@@ -326,6 +326,7 @@ open class Layer4BreakingChangeDetectionTests: BaseTestClass {
             let _: MapAnnotationData = annotation
         }
         
+        #if os(iOS) || os(macOS)
         let _ = platformMapView_L4(
             position: position,
             annotations: annotations,
@@ -334,6 +335,10 @@ open class Layer4BreakingChangeDetectionTests: BaseTestClass {
         
         // Verify API accepts these parameters (would fail if signature changed)
         #expect(Bool(true), "Map view API should accept position, annotations, and callback parameters")
+        #else
+        // Map convenience APIs not provided on tvOS/watchOS/visionOS; tracked under #241.
+        #expect(Bool(true), "platformMapView_L4 not available on this platform")
+        #endif
         #else
         #expect(Bool(true), "MapKit not available on this platform")
         #endif

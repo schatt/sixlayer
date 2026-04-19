@@ -45,11 +45,13 @@ public struct NativeExpandableCardView<Item: Identifiable>: View {
         .onTapGesture {
             handleTap()
         }
+        #if !os(tvOS)
         .onHover { hovering in
             if platformConfig.supportsHover {
                 isHovered = hovering
             }
         }
+        #endif
         .accessibilityElement(children: .combine)
         .accessibilityAddTraits(accessibilityTraits)
         .accessibilityAction(named: "Activate") {
@@ -275,11 +277,12 @@ public struct iOSExpandableCardView<Item: Identifiable>: View {
     }
 }
 
+#if os(macOS)
 /// macOS-specific card implementation
 public struct macOSExpandableCardView<Item: Identifiable>: View {
     let item: Item
     let expansionStrategy: ExpansionStrategy
-    
+
     public var body: some View {
         NativeExpandableCardView(
             item: item,
@@ -290,10 +293,12 @@ public struct macOSExpandableCardView<Item: Identifiable>: View {
         )
         .onHover { hovering in
             // macOS-specific hover behavior
+            _ = hovering
         }
         .automaticCompliance(named: "macOSExpandableCardView")
     }
 }
+#endif
 
 /// visionOS-specific card implementation
 public struct visionOSExpandableCardView<Item: Identifiable>: View {
@@ -326,7 +331,17 @@ public struct PlatformAwareExpandableCardView<Item: Identifiable>: View {
             case .iOS:
                 iOSExpandableCardView(item: item, expansionStrategy: expansionStrategy)
             case .macOS:
+                #if os(macOS)
                 macOSExpandableCardView(item: item, expansionStrategy: expansionStrategy)
+                #else
+                NativeExpandableCardView(
+                    item: item,
+                    expansionStrategy: expansionStrategy,
+                    platformConfig: getCardExpansionPlatformConfig(),
+                    performanceConfig: getCardExpansionPerformanceConfig(),
+                    accessibilityConfig: getCardExpansionAccessibilityConfig()
+                )
+                #endif
             case .visionOS:
                 visionOSExpandableCardView(item: item, expansionStrategy: expansionStrategy)
             case .watchOS, .tvOS:

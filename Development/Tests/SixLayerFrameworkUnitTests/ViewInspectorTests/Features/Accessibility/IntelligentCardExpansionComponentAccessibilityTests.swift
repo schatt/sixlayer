@@ -565,7 +565,8 @@ open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
     }
     
     // MARK: - macOSExpandableCardView Tests
-    
+
+    #if os(macOS)
     @Test @MainActor func testMacOSExpandableCardViewGeneratesAccessibilityIdentifiers() async {
             initializeTestConfig()
         runWithTaskLocalConfig {
@@ -590,7 +591,8 @@ open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
             #expect(hasAccessibilityID, "macOSExpandableCardView should generate accessibility identifiers ")
         }
     }
-    
+    #endif
+
     // MARK: - visionOSExpandableCardView Tests
     
     @Test @MainActor func testVisionOSExpandableCardViewGeneratesAccessibilityIdentifiers() async {

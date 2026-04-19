@@ -391,9 +391,16 @@ public struct HighContrastModifier: ViewModifier {
     
     #if canImport(UIKit)
     private func iosHighContrast<Content: View>(to content: Content) -> some View {
-        content
+        #if os(tvOS)
+        // tvOS does not expose `UIColor.systemBackground`; use a neutral SwiftUI color.
+        return content
+            .foregroundColor(.primary)
+            .background(Color.black)
+        #else
+        return content
             .foregroundColor(.primary)
             .background(Color(UIColor.systemBackground))
+        #endif
     }
     #endif
     

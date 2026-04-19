@@ -8,18 +8,22 @@
 - [x] **#232 / #236** `FormDraftTests`: unique `UserDefaults` suite name per run so parallel clones do not race on `test_form_storage`
 - [ ] **#232** Follow-up: fix failing confirmation-control expectation in `PlatformModalSheetNavigationChromeLayer4Tests.testPlatformModalSheetNavigationChrome_L4_ExposesConfirmationButton()` (assertion still fails with expected label `"Apply"`)
 - [ ] **#233** Epic: Run full test suite for every platform (unit/view/ui)
-  - [ ] Build platform x layer matrix from existing schemes/targets (macOS, iOS, watchOS, tvOS, visionOS)
+  - [x] Build platform x layer matrix from existing schemes/targets (macOS, iOS, watchOS, tvOS, visionOS) — posted on #233 / pointer on #234, SHA `3032f6ce` branch `b7.6.0`
   - [ ] macOS: run Unit tests
   - [ ] macOS: run ViewInspector tests
   - [ ] macOS: run UI tests
-  - [ ] iOS: run Unit tests
-  - [ ] iOS: run ViewInspector tests
-  - [ ] iOS: run UI tests
-  - [ ] watchOS: run existing Unit/ViewInspector/UI targets (or create follow-up issues for missing targets)
-  - [ ] tvOS: run existing Unit/ViewInspector/UI targets (or create follow-up issues for missing targets)
-  - [ ] visionOS: run existing Unit/ViewInspector/UI targets (or create follow-up issues for missing targets)
+  - [x] iOS: run Unit tests (`iOS_unit_tests` green on `b7.7.0`)
+  - [ ] iOS: run ViewInspector tests (compile green; runtime: tracked under #242)
+  - [ ] iOS: run UI tests (`iOS_test` / SLF-iOS-AllTests: 515 unique failures, dominated by a11y-identifier non-detection — see #242)
+  - [ ] **#242** iOS: fix a11y-identifier non-detection root cause (~200+ failures across `ConsolidatedAccessibilityTests`, `Layer1AccessibilityTests`, `AppleHIGComplianceComponentAccessibilityTests`, etc.); likely regression from #221/#222 (`af535cef`, `97638fe1`, `7d9d00f5`); suspect `AutomaticComplianceModifier` config propagation vs `@TaskLocal`; plan: isolated reproduction first, then bisect
+  - [ ] **#242** iOS: non-a11y-id buckets — Layer4UITests overlay-contract (5), HIGComplianceTypographyTests (9), HIGComplianceZoomTests (5), Layer4/5/6 XCUITest runtime (platformSheet, navigationTitle, voiceOver) — investigate after a11y-id fix lands
+  - [ ] watchOS: run Unit + UI (ViewInspector **N/A** — no target on this platform); follow-up issues only for real failures or optional new coverage
+  - [ ] tvOS: run Unit + UI (ViewInspector **N/A**)
+  - [ ] visionOS: run Unit + UI (ViewInspector **N/A**)
   - [ ] For each distinct failure, create and link a GitHub issue under epic #233
   - [ ] Post consolidated pass/fail/missing matrix and log/xcresult evidence on #233
+  - [ ] **#237** tvOS compile: in progress (`b7.7.0`); interim call-site guards landing to unblock build (e.g. `AdvancedFieldTypes`, `AppleHIGComplianceExamples`); architectural cleanup tracked in #241
+  - [ ] **#241** Follow-up: move SwiftUI availability gates out of Layer 1 into Layer 4/5 primitives (platformStepper / platformSlider / platformColorPicker / platformGauge / platformOnHover / platformOnDrop / platformTextSelection / platformImageView / DatePicker overloads for time+dateTime); delete duplicate `l1SemanticTextFieldBorderStyle`; + capability-aware graceful degradation in Layer 1/2/3 (camera on tvOS → photo picker / informed placeholder)
 
 - [ ] **#226** Consumer-facing `SixLayerUITestNavigator` contract (stable screen selectors + reusable navigation helpers in `SixLayerTestKit`)
   - [ ] **#227** Define public UI test navigation contract types

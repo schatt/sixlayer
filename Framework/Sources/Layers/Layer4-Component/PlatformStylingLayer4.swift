@@ -13,20 +13,20 @@ public extension View {
     func platformBackground() -> some View {
         #if os(iOS)
         return self.background(Color.platformGroupedBackground)
-            .automaticCompliance(named: "platformBackground")
+            .automaticCompliance()
         #elseif os(macOS)
         return self.background(Color.platformSecondaryBackground)
-            .automaticCompliance(named: "platformBackground")
+            .automaticCompliance()
         #else
         return self.background(Color.gray.opacity(0.1))
-            .automaticCompliance(named: "platformBackground")
+            .automaticCompliance()
         #endif
     }
     
     /// Platform-specific background with custom color
     func platformBackground(_ color: Color) -> some View {
         return self.background(color)
-            .automaticCompliance(named: "platformBackground")
+            .automaticCompliance()
     }
     
     /// Platform-specific background with custom color and safe area control
@@ -44,7 +44,7 @@ public extension View {
     /// ```
     func platformBackground(_ color: Color, ignoresSafeAreaEdges: Edge.Set = .all) -> some View {
         return self.background(color, ignoresSafeAreaEdges: ignoresSafeAreaEdges)
-            .automaticCompliance(named: "platformBackground")
+            .automaticCompliance()
     }
     
     /// Platform-specific background with view-based content
@@ -67,7 +67,7 @@ public extension View {
         @ViewBuilder content: () -> BackgroundContent
     ) -> some View {
         return self.background(alignment: alignment, content: content)
-            .automaticCompliance(named: "platformBackground")
+            .automaticCompliance()
     }
     
     /// Platform-specific background with ShapeStyle
@@ -88,7 +88,7 @@ public extension View {
         ignoresSafeAreaEdges: Edge.Set = .all
     ) -> some View {
         return self.background(style, ignoresSafeAreaEdges: ignoresSafeAreaEdges)
-            .automaticCompliance(named: "platformBackground")
+            .automaticCompliance()
     }
     
     // MARK: - Padding Styling
@@ -133,7 +133,7 @@ public extension View {
     /// ```
     func platformPadding(_ insets: EdgeInsets) -> some View {
         return self.padding(insets)
-            .automaticCompliance(named: "platformPadding")
+            .automaticCompliance()
     }
     
     /// Platform-specific reduced padding values
@@ -161,27 +161,27 @@ public extension View {
     /// Platform-specific corner radius with custom value
     func platformCornerRadius(_ radius: CGFloat) -> some View {
         return self.cornerRadius(radius)
-            .automaticCompliance(named: "platformCornerRadius")
+            .automaticCompliance()
     }
     
     /// Platform-specific shadow modifier
     func platformShadow() -> some View {
         #if os(iOS)
         return self.shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
-            .automaticCompliance(named: "platformShadow")
+            .automaticCompliance()
         #elseif os(macOS)
         return self.shadow(color: Color.black.opacity(0.08), radius: 3, x: 0, y: 1)
-            .automaticCompliance(named: "platformShadow")
+            .automaticCompliance()
         #else
         return self.shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
-            .automaticCompliance(named: "platformShadow")
+            .automaticCompliance()
         #endif
     }
     
     /// Platform-specific shadow with custom parameters
     func platformShadow(color: Color = .black, radius: CGFloat, x: CGFloat = 0, y: CGFloat = 0) -> some View {
         return self.shadow(color: color, radius: radius, x: x, y: y)
-            .automaticCompliance(named: "platformShadow")
+            .automaticCompliance()
     }
     
     /// Platform-specific border modifier
@@ -191,19 +191,19 @@ public extension View {
             RoundedRectangle(cornerRadius: 12)
                 .stroke(Color.platformSeparator, lineWidth: 0.5)
         )
-        .automaticCompliance(named: "platformBorder")
+        .automaticCompliance()
         #elseif os(macOS)
         return self.overlay(
             RoundedRectangle(cornerRadius: 8)
                 .stroke(Color.platformSeparator, lineWidth: 0.5)
         )
-        .automaticCompliance(named: "platformBorder")
+        .automaticCompliance()
         #else
         return self.overlay(
             RoundedRectangle(cornerRadius: 8)
                 .stroke(Color.platformSeparator, lineWidth: 0.5)
         )
-        .automaticCompliance(named: "platformBorder")
+        .automaticCompliance()
         #endif
     }
     
@@ -213,7 +213,7 @@ public extension View {
             RoundedRectangle(cornerRadius: 8)
                 .stroke(color, lineWidth: width)
         )
-        .automaticCompliance(named: "platformBorder")
+        .automaticCompliance()
     }
     
     // MARK: - Typography
@@ -222,20 +222,20 @@ public extension View {
     func platformFont() -> some View {
         #if os(iOS)
         return self.font(.body)
-            .automaticCompliance(named: "platformFont")
+            .automaticCompliance()
         #elseif os(macOS)
         return self.font(.body)
-            .automaticCompliance(named: "platformFont")
+            .automaticCompliance()
         #else
         return self.font(.body)
-            .automaticCompliance(named: "platformFont")
+            .automaticCompliance()
         #endif
     }
     
     /// Platform-specific font with custom style
     func platformFont(_ style: Font) -> some View {
         return self.font(style)
-            .automaticCompliance(named: "platformFont")
+            .automaticCompliance()
     }
     
     // MARK: - Animation
@@ -244,20 +244,20 @@ public extension View {
     func platformAnimation() -> some View {
         #if os(iOS)
         return self.animation(.easeInOut(duration: 0.3), value: true)
-            .automaticCompliance(named: "platformAnimation")
+            .automaticCompliance()
         #elseif os(macOS)
         return self.animation(.easeInOut(duration: 0.2), value: true)
-            .automaticCompliance(named: "platformAnimation")
+            .automaticCompliance()
         #else
         return self.animation(.easeInOut(duration: 0.3), value: true)
-            .automaticCompliance(named: "platformAnimation")
+            .automaticCompliance()
         #endif
     }
     
     /// Platform-specific animation with custom parameters
     func platformAnimation(_ animation: Animation?, value: AnyHashable) -> some View {
         return self.animation(animation, value: value)
-            .automaticCompliance(named: "platformAnimation")
+            .automaticCompliance()
     }
     
     // MARK: - Frame Constraints
@@ -269,15 +269,15 @@ public extension View {
         // Mobile platforms: Apply max constraints for safety
         let maxSize = PlatformFrameHelpers.getMaxFrameSize()
         return self.frame(maxWidth: maxSize.width, maxHeight: maxSize.height)
-            .automaticCompliance(named: "platformMinFrame")
+            .automaticCompliance()
         #elseif os(macOS)
         let clampedWidth = PlatformFrameHelpers.clampFrameSize(600, dimension: .width)
         let clampedHeight = PlatformFrameHelpers.clampFrameSize(800, dimension: .height)
         return self.frame(minWidth: clampedWidth, minHeight: clampedHeight)
-            .automaticCompliance(named: "platformMinFrame")
+            .automaticCompliance()
         #else
         return self
-            .automaticCompliance(named: "platformMinFrame")
+            .automaticCompliance()
         #endif
     }
     
@@ -288,15 +288,15 @@ public extension View {
         // Mobile platforms: Apply max constraints
         let maxSize = PlatformFrameHelpers.getMaxFrameSize()
         return self.frame(maxWidth: maxSize.width, maxHeight: maxSize.height)
-            .automaticCompliance(named: "platformMaxFrame")
+            .automaticCompliance()
         #elseif os(macOS)
         let clampedMaxWidth = PlatformFrameHelpers.clampMaxFrameSize(1200, dimension: .width)
         let clampedMaxHeight = PlatformFrameHelpers.clampMaxFrameSize(1000, dimension: .height)
         return self.frame(maxWidth: clampedMaxWidth, maxHeight: clampedMaxHeight)
-            .automaticCompliance(named: "platformMaxFrame")
+            .automaticCompliance()
         #else
         return self
-            .automaticCompliance(named: "platformMaxFrame")
+            .automaticCompliance()
         #endif
     }
     
@@ -307,16 +307,16 @@ public extension View {
         // Mobile platforms: Apply max constraints for safety
         let maxSize = PlatformFrameHelpers.getMaxFrameSize()
         return self.frame(maxWidth: maxSize.width, maxHeight: maxSize.height)
-            .automaticCompliance(named: "platformIdealFrame")
+            .automaticCompliance()
         #elseif os(macOS)
         // Clamp ideal size to screen bounds (use clampMaxFrameSize since ideal should be within bounds)
         let clampedIdealWidth = PlatformFrameHelpers.clampMaxFrameSize(800, dimension: .width)
         let clampedIdealHeight = PlatformFrameHelpers.clampMaxFrameSize(900, dimension: .height)
         return self.frame(idealWidth: clampedIdealWidth, idealHeight: clampedIdealHeight)
-            .automaticCompliance(named: "platformIdealFrame")
+            .automaticCompliance()
         #else
         return self
-            .automaticCompliance(named: "platformIdealFrame")
+            .automaticCompliance()
         #endif
     }
     
@@ -327,7 +327,7 @@ public extension View {
         // Mobile platforms: Apply max constraints for safety
         let maxSize = PlatformFrameHelpers.getMaxFrameSize()
         return self.frame(maxWidth: maxSize.width, maxHeight: maxSize.height, alignment: .topLeading)
-            .automaticCompliance(named: "platformAdaptiveFrame")
+            .automaticCompliance()
         #elseif os(macOS)
         // Clamp all values to screen bounds
         let clampedMinWidth = PlatformFrameHelpers.clampFrameSize(600, dimension: .width)
@@ -344,10 +344,10 @@ public extension View {
             idealHeight: clampedIdealHeight,
             maxHeight: clampedMaxHeight
         )
-        .automaticCompliance(named: "platformAdaptiveFrame")
+        .automaticCompliance()
         #else
         return self
-            .automaticCompliance(named: "platformAdaptiveFrame")
+            .automaticCompliance()
         #endif
     }
     

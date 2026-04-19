@@ -103,6 +103,24 @@ public struct RichTextEditor: UIViewRepresentable {
         }
     }
 }
+#elseif os(tvOS)
+// tvOS fallback - `TextEditor` is unavailable; use a focusable `TextField`.
+public struct RichTextEditor: View {
+    @Binding var text: String
+    @Binding var selectedText: NSRange?
+
+    public var body: some View {
+        TextField("", text: $text)
+            .font(.body)
+            .frame(minHeight: 150)
+            .padding(8)
+            .background(Color.secondaryBackground)
+            .cornerRadius(8)
+            .onChange(of: text) {
+                // Handle text changes
+            }
+    }
+}
 #else
 // macOS fallback - simple text editor
 public struct RichTextEditor: View {
@@ -230,7 +248,7 @@ public struct AutocompleteField: View {
     public var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             TextField(field.placeholder ?? field.label, text: $text)
-                .textFieldStyle(.roundedBorder)
+                .platformTextFieldStyle()
                 .accessibilityLabel("Autocomplete field for \(field.label)")
                 .accessibilityHint("Type to search and select from suggestions")
                 .onChange(of: text) { oldValue, newValue in
@@ -417,10 +435,12 @@ public struct FileUploadArea: View {
             RoundedRectangle(cornerRadius: 12)
                 .stroke(isDragOver ? Color.accentColor : Color.platformSeparator, lineWidth: 2)
         )
+        #if !os(tvOS)
         .onDrop(of: allowedTypes.map { $0.identifier }, isTargeted: $isDragOver) { providers in
             handleDrop(providers: providers)
             return true
         }
+        #endif
         .accessibilityLabel("File upload area")
         .accessibilityHint("Drag and drop files here or tap to browse")
         .automaticCompliance(named: "FileUploadArea")
@@ -569,6 +589,16 @@ public struct DatePickerField: View {
             Text(field.label)
                 .font(.headline)
             
+            #if os(tvOS)
+            Text(selectedDate, format: .dateTime.year().month().day())
+                .foregroundStyle(.secondary)
+                .selfLabelingControl(label: field.label)
+                .onChange(of: selectedDate) { oldValue, newDate in
+                    let formatter = DateFormatter()
+                    formatter.dateStyle = .medium
+                    formState.setValue(formatter.string(from: newDate), for: field.id)
+                }
+            #else
             DatePicker(
                 "",
                 selection: $selectedDate,
@@ -591,6 +621,7 @@ public struct DatePickerField: View {
                     }
                 }
             }
+            #endif
         }
         .automaticCompliance()
     }
@@ -609,6 +640,16 @@ public struct TimePickerField: View {
             Text(field.label)
                 .font(.headline)
             
+            #if os(tvOS)
+            Text(selectedTime, format: .dateTime.hour().minute())
+                .foregroundStyle(.secondary)
+                .selfLabelingControl(label: field.label)
+                .onChange(of: selectedTime) { oldValue, newTime in
+                    let formatter = DateFormatter()
+                    formatter.timeStyle = .short
+                    formState.setValue(formatter.string(from: newTime), for: field.id)
+                }
+            #else
             DatePicker(
                 "",
                 selection: $selectedTime,
@@ -631,6 +672,7 @@ public struct TimePickerField: View {
                     }
                 }
             }
+            #endif
         }
         .automaticCompliance()
     }
@@ -649,6 +691,17 @@ public struct DateTimePickerField: View {
             Text(field.label)
                 .font(.headline)
             
+            #if os(tvOS)
+            Text(selectedDateTime, format: .dateTime.year().month().day().hour().minute())
+                .foregroundStyle(.secondary)
+                .selfLabelingControl(label: field.label)
+                .onChange(of: selectedDateTime) { oldValue, newDateTime in
+                    let formatter = DateFormatter()
+                    formatter.dateStyle = .medium
+                    formatter.timeStyle = .short
+                    formState.setValue(formatter.string(from: newDateTime), for: field.id)
+                }
+            #else
             DatePicker(
                 "",
                 selection: $selectedDateTime,
@@ -673,6 +726,7 @@ public struct DateTimePickerField: View {
                     }
                 }
             }
+            #endif
         }
         .automaticCompliance()
     }

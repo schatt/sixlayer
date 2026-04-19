@@ -144,6 +144,7 @@ open class IntelligentCardExpansionLayer6Tests: BaseTestClass {
         }
     }
     
+    #if os(macOS)
     @Test @MainActor func testmacOSExpandableCardView_Creation() {
         // Given: macOS-specific card view
         let cardView = macOSExpandableCardView(
@@ -177,7 +178,8 @@ open class IntelligentCardExpansionLayer6Tests: BaseTestClass {
             // This is expected and not a failure of the framework
         }
     }
-    
+    #endif
+
     @Test @MainActor func testvisionOSExpandableCardView_Creation() {
         // Given: visionOS-specific card view
         let cardView = visionOSExpandableCardView(
@@ -283,11 +285,13 @@ open class IntelligentCardExpansionLayer6Tests: BaseTestClass {
         #expect(config.supportsSwitchControl != nil, "Should have Switch Control support setting")
         #expect(config.supportsAssistiveTouch != nil, "Should have AssistiveTouch support setting")
         
-        // Verify platform-correct minTouchTarget value
-        // When touch is enabled, minTouchTarget is always 44.0 for accessibility
+        // Apple HIG per platform (Issue #237). No capability overrides set in
+        // this test, so the config reflects the platform's natural HIG floor:
+        //   iOS/watchOS: 44, tvOS/visionOS: 60, macOS: 44 if touch detected else 0.
         let platform = RuntimeCapabilityDetection.currentPlatform
-        let expectedMinTouchTarget: CGFloat = 44.0  // Always 44.0 when touch is enabled
-        #expect(config.minTouchTarget == expectedMinTouchTarget, "Should have 44.0 minTouchTarget when touch is enabled (for accessibility) on \(platform)")
+        let expectedMinTouchTarget = PlatformTestUtilities.expectedMinTouchTarget(for: platform)
+        #expect(config.minTouchTarget == expectedMinTouchTarget,
+                "Apple HIG: \(platform) expected \(expectedMinTouchTarget)pt")
         
         #expect(config.hoverDelay >= 0, "Should have non-negative hover delay")
     }

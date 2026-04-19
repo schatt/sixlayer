@@ -620,8 +620,9 @@ public struct DynamicFormSectionView: View {
     public var body: some View {
         platformVStackContainer(alignment: .leading, spacing: 16) {
             if section.isCollapsible {
-                // Use DisclosureGroup for collapsible sections
-                DisclosureGroup(isExpanded: isExpanded) {
+                // Collapsible sections: DisclosureGroup where available; tvOS uses platformDisclosureGroup.
+                EmptyView()
+                    .platformDisclosureGroup(isExpanded: isExpanded) {
                     // Section description if present (shown when expanded)
                     if let description = section.description {
                         Text(description)
@@ -629,7 +630,7 @@ public struct DynamicFormSectionView: View {
                             .foregroundColor(.secondary)
                             .automaticCompliance(named: "SectionDescription")
                     }
-                    
+
                     // Render fields using section's layoutStyle
                     fieldLayoutView
                 } label: {
@@ -907,7 +908,8 @@ public struct FormValidationSummary: View {
         let errorCount = formState.errorCount
         
         if !allErrors.isEmpty {
-            DisclosureGroup(isExpanded: $isExpanded) {
+            EmptyView()
+                .platformDisclosureGroup(isExpanded: $isExpanded) {
                 platformVStackContainer(alignment: .leading, spacing: 12) {
                     ForEach(Array(allErrors.enumerated()), id: \.offset) { index, error in
                         Button(action: {
@@ -917,18 +919,18 @@ public struct FormValidationSummary: View {
                                 Image(systemName: "exclamationmark.circle.fill")
                                     .foregroundColor(.red)
                                     .font(.caption)
-                                
+
                                 platformVStackContainer(alignment: .leading, spacing: 4) {
                                     Text(error.fieldLabel)
                                         .font(.subheadline)
                                         .fontWeight(.medium)
                                         .foregroundColor(.primary)
-                                    
+
                                     Text(error.message)
                                         .font(.caption)
                                         .foregroundColor(.secondary)
                                 }
-                                
+
                                 Spacer()
                             }
                             .padding(.vertical, 4)
@@ -943,7 +945,7 @@ public struct FormValidationSummary: View {
                 HStack {
                     Image(systemName: "exclamationmark.triangle.fill")
                         .foregroundColor(.red)
-                    
+
                     Text("\(errorCount) validation error\(errorCount == 1 ? "" : "s")")
                         .font(.headline)
                         .foregroundColor(.primary)

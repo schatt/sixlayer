@@ -163,7 +163,8 @@ public func platformCloudKitServiceStatus_L4(service: CloudKitService) -> some V
     #if os(macOS)
     .background(Color(NSColor.controlBackgroundColor))
     #else
-    .background(Color(.systemBackground))
+    // Color(.systemBackground) is unavailable on tvOS; use shared platform helper (#237).
+    .background(Color.platformBackground)
     #endif
     .cornerRadius(8)
     .automaticCompliance(named: "platformCloudKitServiceStatus_L4")

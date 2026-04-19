@@ -194,6 +194,7 @@ open class Layer4PlatformImageArchitectureTests: BaseTestClass {
     /// TESTING SCOPE: Tests that Layer 4 enforces the currency exchange architecture
     /// METHODOLOGY: Test that conversions happen at boundaries, not inside Layer 4
     @Test @MainActor func testLayer4FollowsCurrencyExchangeModel() {
+        #if os(iOS) || os(macOS)
         // Given: Platform-specific image types
         #if os(iOS)
         let uiImage = createTestUIImage() // 6LAYER_ALLOW: test helper creating platform-specific image
@@ -234,6 +235,11 @@ open class Layer4PlatformImageArchitectureTests: BaseTestClass {
         // We verify that the callback accepts PlatformImage by checking the interface was created successfully
         // (The callback parameter type is PlatformImage, not UIImage/NSImage)
         #expect(Bool(true), "Camera interface should accept PlatformImage callback")  // cameraInterface is non-optional
+        #else
+        // tvOS/watchOS/visionOS: test helpers and Layer 4 photo components are iOS/macOS only.
+        // Capability-aware coverage is tracked under #241.
+        #expect(Bool(true), "Layer 4 currency exchange test skipped on this platform")
+        #endif
     }
     
     // MARK: - Test Data Helpers

@@ -164,11 +164,15 @@ public final class LocationService: NSObject, LocationServiceProtocol, CLLocatio
         return
         #endif
 
+        #if os(iOS) || os(macOS)
         locationManager.startUpdatingLocation()
+        #endif
     }
 
     public func stopUpdatingLocation() {
+        #if os(iOS) || os(macOS)
         locationManager.stopUpdatingLocation()
+        #endif
     }
 
     public func getCurrentLocation() async throws -> CLLocation {
@@ -190,8 +194,12 @@ public final class LocationService: NSObject, LocationServiceProtocol, CLLocatio
         throw LocationServiceError.servicesDisabled
         #endif
 
+        #if os(iOS) || os(macOS)
         // Start location updates temporarily
         locationManager.startUpdatingLocation()
+        #else
+        throw LocationServiceError.servicesDisabled
+        #endif
 
         // Wait for a location update
         return try await withCheckedThrowingContinuation { continuation in

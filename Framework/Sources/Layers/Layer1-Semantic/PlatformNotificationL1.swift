@@ -119,6 +119,7 @@ public func platformPresentAlert_L1(
         .environmentObject(notification)
         .environment(\.layoutDirection, layoutDirection)
         .environment(\.locale, locale ?? Locale.current)
-        .automaticCompliance(named: "platformPresentAlert_L1"))
+        // Issue #245 / gh-243: `EmptyView` service shell — anonymous compliance only; no `named:` (nothing to anchor).
+        .automaticCompliance())
 }
 

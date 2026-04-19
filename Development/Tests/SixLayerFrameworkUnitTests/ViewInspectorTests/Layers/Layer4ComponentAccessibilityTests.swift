@@ -304,19 +304,45 @@ open class Layer4ComponentAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testPlatformBackgroundGeneratesAccessibilityIdentifiers() async {
-        // Given: A test text view
-        let testText = Text("Test Text")
-        
-        // When: Applying platform background
-        let backgroundText = testText.platformBackground()
-        
-        // Then: Should generate accessibility identifiers
-        let hasAccessibilityID = testComponentComplianceSinglePlatform(
-            backgroundText,
-            expectedPattern: "*.main.ui.element.*",
-            platform: SixLayerPlatform.iOS,
-            componentName: "PlatformBackground"
-        )
-        #expect(hasAccessibilityID, "Platform background should generate accessibility identifiers ")
+        assertLayoutChromeDualPath(anchorName: "Layer4DualPathPlatformBackgroundComponentSuite", context: "Platform background") {
+            Text("Test Text")
+                .platformBackground()
+        }
+    }
+
+    // MARK: - Layout chrome dual-path (gh-243)
+
+    @MainActor
+    fileprivate func assertLayoutChromeDualPath<V: View>(
+        anchorName: String,
+        context: String,
+        @ViewBuilder root: () -> V
+    ) {
+        let isolated = TestSetupUtilities.makeIsolatedAccessibilityIdentifierConfig()
+        AccessibilityIdentifierConfig.$taskLocalConfig.withValue(isolated) {
+            let anonymous = root()
+            let anonymousHost = hostRootPlatformView(anonymous, accessibilityIdentifierConfig: isolated)
+            #expect(anonymousHost != nil, "\(context): anonymous compliance path should render")
+
+            let named = root().named(anchorName)
+            let namedHost = hostRootPlatformView(named, accessibilityIdentifierConfig: isolated)
+            #expect(namedHost != nil, "\(context): named path should render")
+
+            let expectedNamedId = NamedModifier.testingGeneratedIdentifier(name: anchorName, config: isolated)
+            let platformIds = findAllAccessibilityIdentifiersFromPlatformView(namedHost)
+            let platformHit = platformIds.contains { $0 == expectedNamedId || $0.contains(anchorName) }
+            #if canImport(ViewInspector)
+            let viIds = AccessibilityTestUtilities.allAccessibilityIdentifiersFromViewInspector(named)
+            let viHit = viIds.contains { $0 == expectedNamedId || $0.contains(anchorName) }
+            #else
+            let viHit = false
+            #endif
+            let debugLog = isolated.getDebugLog()
+            let logHit = debugLog.contains(expectedNamedId)
+            #expect(
+                platformHit || viHit || logHit,
+                "\(context): expected named id '\(expectedNamedId)' via platform, ViewInspector, or config debug log. Platform sample: \(platformIds.prefix(6).joined(separator: ", ")); log tail: \(String(debugLog.suffix(280)))"
+            )
+        }
     }
 }

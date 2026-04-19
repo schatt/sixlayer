@@ -1227,7 +1227,7 @@ private struct DefaultPlatformFieldView: View {
                     get: { value as? String ?? "" },
                     set: { if isEditable { onValueChange($0) } }
                 ))
-                .textFieldStyle(.roundedBorder)
+                .platformTextFieldStyle()
                 .disabled(!isEditable)
                 .background(isValid ? Color.platformSecondaryBackground : Color.red.opacity(0.1))
                 .overlay(
@@ -1242,7 +1242,7 @@ private struct DefaultPlatformFieldView: View {
                     get: { value as? Double ?? 0.0 },
                     set: { if isEditable { onValueChange($0) } }
                 ), format: .number)
-                .textFieldStyle(.roundedBorder)
+                .platformTextFieldStyle()
                 .disabled(!isEditable)
                 #if os(iOS)
                 .keyboardType(UIKeyboardType.decimalPad)
@@ -1253,11 +1253,13 @@ private struct DefaultPlatformFieldView: View {
                         .stroke(isValid ? Color.clear : Color.red, lineWidth: 1)
                 )
 
+                #if !os(tvOS)
                 Stepper("", value: Binding(
                     get: { value as? Double ?? 0.0 },
                     set: { if isEditable { onValueChange($0) } }
                 ), in: 0...1000)
                 .disabled(!isEditable)
+                #endif
             }
 
         case .boolean:
@@ -1268,6 +1270,14 @@ private struct DefaultPlatformFieldView: View {
             .disabled(!isEditable)
 
         case .date:
+            #if os(tvOS)
+            HStack {
+                Text(field.name.capitalized)
+                Spacer()
+                Text((value as? Date ?? Date()).formatted(date: .abbreviated, time: .omitted))
+                    .foregroundStyle(.secondary)
+            }
+            #else
             DatePicker(
                 field.name.capitalized,
                 selection: Binding(
@@ -1277,13 +1287,14 @@ private struct DefaultPlatformFieldView: View {
                 displayedComponents: [.date]
             )
             .disabled(!isEditable)
+            #endif
 
         case .url:
             TextField("Enter URL", text: Binding(
                 get: { value as? String ?? "" },
                 set: { if isEditable { onValueChange($0) } }
             ))
-            .textFieldStyle(.roundedBorder)
+            .platformTextFieldStyle()
             .disabled(!isEditable)
             #if os(iOS)
             .keyboardType(UIKeyboardType.URL)
@@ -1300,7 +1311,7 @@ private struct DefaultPlatformFieldView: View {
                 get: { value as? String ?? "" },
                 set: { if isEditable { onValueChange($0) } }
             ))
-            .textFieldStyle(.roundedBorder)
+            .platformTextFieldStyle()
             .disabled(!isEditable)
             #if os(iOS)
             .autocapitalization(.none)
@@ -1326,7 +1337,7 @@ private struct DefaultPlatformFieldView: View {
                 get: { value as? String ?? "" },
                 set: { if isEditable { onValueChange($0) } }
             ))
-            .textFieldStyle(.roundedBorder)
+            .platformTextFieldStyle()
             .disabled(!isEditable)
             .background(isValid ? Color.platformSecondaryBackground : Color.red.opacity(0.1))
             .overlay(

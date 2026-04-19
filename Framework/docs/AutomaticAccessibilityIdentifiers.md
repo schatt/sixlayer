@@ -116,8 +116,77 @@ let view = platformPresentItemCollection_L1(
     items: users,
     hints: PresentationHints(...)
 )
-// Each user item gets an ID like: "myapp.list.item.user-1"
+// Row/card identifiers include the component name plus a data-derived segment (see below).
 ```
+
+### Collection rows and data-driven identifier labels
+
+Framework collection **rows** (for example `ListCardComponent`, grid/simple/masonry/cover-flow card variants built on `PresentationHints`) pass an explicit `identifierLabel` into `automaticCompliance(named:identifierLabel:accessibilityLabel:)`. `CardDisplayHelper` builds that string from two public building blocks so behavior stays obvious:
+
+1. **`extractTitle(from:hints:)`** — same title semantics as the rest of the framework (`nil` when a hinted title property is empty with no default, etc.). Used alone for VoiceOver labels on rows.
+2. **`accessibilityStableIdentityToken(for:)`** — `String(describing: item.id)` for `Identifiable` models.
+
+**Row `identifierLabel` composition:** `accessibilityIdentifierLabel(for:hints:)` evaluates  
+`(optional accessibility-property hint ?? extractTitle)`; if that produces a non-empty string, it returns **`"\(primary) \(accessibilityStableIdentityToken(for:))"`** (space-separated). If both the hint and title are absent or empty, it returns **only** the stable identity token. This is the “second use case uses both” pattern: primary text from hints/title, then identity, using Swift nil-coalescing (`??`) between the first two sources.
+
+#### Acceptance criteria (framework behavior)
+
+- **Hinted property:** When `PresentationHints.customPreferences` includes a non-empty `itemAccessibilityIdentifierProperty`, its value is treated as a **property name** on the row model; the framework reads that property via reflection (same pattern as `itemTitleProperty` for titles). The string value is **sanitized** when composed into the final accessibility identifier (see `sanitizeLabelText` in the framework).
+- **Default when no hint:** If the accessibility hint path yields nothing, **`extractTitle(from:hints:)`** supplies the primary segment (same resolution as visible row text).
+- **Default string when reflection fails:** Optional `itemAccessibilityIdentifierDefault` is used when the hinted property is missing, not a `String`, empty (with default configured), or unusable in the same way as `itemTitleDefault` for titles.
+- **Stable uniqueness:** When a non-empty primary string exists, **`accessibilityStableIdentityToken(for:)`** is appended so two rows with the same title still differ in `identifierLabel`. When primary is empty, the label is the token alone.
+- **VoiceOver unchanged by default:** Row views pass **`accessibilityLabel`** from `extractTitle` / card title separately from `identifierLabel` so VoiceOver can keep reading the human title.
+- **Platform list helpers:** `platformListRow`, section headers, empty state, and detail placeholder pass `identifierLabel:` from their `title` (or optional label) parameters so list-style rows participate in the same mechanism.
+
+#### `PresentationHints.customPreferences` keys
+
+| Key | Purpose |
+|-----|---------|
+| `itemAccessibilityIdentifierProperty` | Property name on the model whose string value should feed the identifier segment (reflection). |
+| `itemAccessibilityIdentifierDefault` | Fallback string when the property is missing, not a `String`, or empty and you still want a non–title-driven segment. |
+
+These keys are **optional**. Omit them to keep the default “`extractTitle` then stable identity token” composition for `identifierLabel`.
+
+#### Example: SKU-driven row IDs in UI tests
+
+```swift
+var prefs = hints.customPreferences
+prefs["itemAccessibilityIdentifierProperty"] = "sku"
+let hintsWithSKU = PresentationHints(
+    dataType: hints.dataType,
+    presentationPreference: hints.presentationPreference,
+    complexity: hints.complexity,
+    context: hints.context,
+    customPreferences: prefs,
+    fieldHints: hints.fieldHints
+)
+
+let view = platformPresentItemCollection_L1(
+    items: inventoryRows,
+    hints: hintsWithSKU,
+    onItemSelected: { _ in }
+)
+// XCTest can match identifiers containing the sanitized SKU text; ids still disambiguate duplicate SKUs if any.
+```
+
+#### Implementation note for apps and UI tests (read before upgrading)
+
+**What changed for you**
+
+- Identifiers for **built-in collection row/card** views may **gain extra path segments** (sanitized title or hinted property text, plus id) compared to earlier versions that only used the component name. This is intentional for testability and collision avoidance.
+- **XCUITest (or snapshot) code** that asserted **exact equality** on the full accessibility identifier string for a row may **break** after upgrade. Prefer:
+  - Prefix or **substring** matches (`identifier.hasPrefix`, `CONTAINS`),
+  - Matching on **`accessibilityLabel`** when the interaction is user-visible,
+  - Or setting **`itemAccessibilityIdentifierProperty`** to a field your tests already control (e.g. stable SKU) so the segment aligns with existing expectations.
+- If you relied on **duplicate** display titles producing the **same** identifier string, that is no longer the case for `Identifiable` rows (id is appended). Update queries to use label, index, or your hinted stable field.
+
+**Release checklist for consuming projects**
+
+1. Run your UI test suite against a build that includes this behavior.
+2. Search tests for brittle `accessibilityIdentifier` exact matches on list/collection rows from SixLayer components.
+3. Optionally add `itemAccessibilityIdentifierProperty` (and default if needed) to `PresentationHints` where you want identifiers aligned to a business key.
+
+See also: [Migration Guide — Accessibility identifiers for collection rows](MigrationGuide.md#accessibility-identifiers-for-collection-rows).
 
 ### Manual Override
 

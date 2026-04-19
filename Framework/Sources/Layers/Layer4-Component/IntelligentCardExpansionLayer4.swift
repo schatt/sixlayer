@@ -218,9 +218,11 @@ public struct ExpandableCardComponent<Item: Identifiable>: View {
             handleTap()
             onItemSelected?(item)
         }
+        #if !os(tvOS)
         .onHover { isHovering in
             onHover(isHovering)
         }
+        #endif
         .accessibilityElement(children: .combine)
         .accessibilityLabel(cardTitle)
         .accessibilityAddTraits(isExpanded ? [.isButton, .isSelected] : .isButton)
@@ -228,8 +230,11 @@ public struct ExpandableCardComponent<Item: Identifiable>: View {
         .accessibilityAction(named: "Activate") {
             handleTap()
         }
-        .environment(\.accessibilityIdentifierLabel, cardTitle) // TDD GREEN: Pass label to identifier generation
-        .automaticCompliance(named: "ExpandableCardComponent")
+        .automaticCompliance(
+            named: "ExpandableCardComponent",
+            identifierLabel: CardDisplayHelper.accessibilityIdentifierLabel(for: item, hints: hints),
+            accessibilityLabel: cardTitle
+        )
     }
     
     @ViewBuilder
@@ -478,8 +483,11 @@ public struct CoverFlowCardComponent<Item: Identifiable>: View {
         .accessibilityAction(named: "Activate") {
             onItemSelected?(item)
         }
-        .environment(\.accessibilityIdentifierLabel, cardTitle) // TDD GREEN: Pass label to identifier generation
-        .automaticCompliance(named: "CoverFlowCardComponent")
+        .automaticCompliance(
+            named: "CoverFlowCardComponent",
+            identifierLabel: CardDisplayHelper.accessibilityIdentifierLabel(for: item, hints: hints),
+            accessibilityLabel: cardTitle
+        )
     }
     
     // MARK: - Card Displayable Support
@@ -887,11 +895,13 @@ public struct SimpleCardComponent<Item: Identifiable>: View {
         }
         
         // Conditionally apply hover-based modifiers
+        #if !os(tvOS)
         if config.supportsHover {
             view = AnyView(view.onHover { _ in
                 // Hover support
             })
         }
+        #endif
         
         // Conditionally apply accessibility modifiers (Issue #191: single tappable element)
         if config.supportsVoiceOver || config.supportsSwitchControl {
@@ -905,17 +915,22 @@ public struct SimpleCardComponent<Item: Identifiable>: View {
         }
         
         // Apply keyboard shortcut when touch is not supported
+        #if !os(tvOS)
         if !config.supportsTouch {
             view = AnyView(view.keyboardShortcut(" ", modifiers: []))
         }
+        #endif
         
         // Always apply animation support
         view = AnyView(view.animation(.easeInOut(duration: 0.3), value: config.supportsTouch))
         
         // Always apply automatic accessibility identifiers with component name
         view = AnyView(view
-            .environment(\.accessibilityIdentifierLabel, cardTitle) // TDD GREEN: Pass label to identifier generation
-            .automaticCompliance(named: "SimpleCardComponent"))
+            .automaticCompliance(
+                named: "SimpleCardComponent",
+                identifierLabel: CardDisplayHelper.accessibilityIdentifierLabel(for: item, hints: hints),
+                accessibilityLabel: cardTitle
+            ))
         
         return view
     }
@@ -1041,8 +1056,11 @@ public struct ListCardComponent<Item: Identifiable>: View {
         .accessibilityAction(named: "Activate") {
             onItemSelected?(item)
         }
-        .environment(\.accessibilityIdentifierLabel, cardTitle) // TDD GREEN: Pass label to identifier generation
-        .automaticCompliance(named: "ListCardComponent")
+        .automaticCompliance(
+            named: "ListCardComponent",
+            identifierLabel: CardDisplayHelper.accessibilityIdentifierLabel(for: item, hints: hints),
+            accessibilityLabel: cardTitle
+        )
     }
     
     // MARK: - Card Displayable Support
@@ -1103,8 +1121,11 @@ public struct MasonryCardComponent<Item: Identifiable>: View {
         .background(.regularMaterial)
         .cornerRadius(12)
         .shadow(radius: 4)
-        .environment(\.accessibilityIdentifierLabel, cardTitle) // TDD GREEN: Pass label to identifier generation
-        .automaticCompliance(named: "MasonryCardComponent")
+        .automaticCompliance(
+            named: "MasonryCardComponent",
+            identifierLabel: CardDisplayHelper.accessibilityIdentifierLabel(for: item, hints: hints),
+            accessibilityLabel: cardTitle
+        )
     }
     
     // MARK: - Card Displayable Support

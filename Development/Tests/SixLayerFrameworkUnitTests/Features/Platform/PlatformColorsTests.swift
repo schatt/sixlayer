@@ -157,40 +157,53 @@ open class PlatformColorsTests: BaseTestClass {
     }
     
     @Test func testPlatformColorEncoding() throws {
-        // Given: Platform colors for encoding testing
+        // Issue #237: platformColorEncode is documented to throw
+        // .platformNotSupported on tvOS/watchOS/visionOS. Real per-platform
+        // implementation is tracked under #241. Keep the positive contract
+        // assertion on iOS/macOS; on other platforms assert that each encode
+        // call throws ColorEncodingError as documented. Accessing the platform
+        // color constants is still exercised on every platform via the
+        // testPlatform*LabelColor tests above.
         let primaryLabel = Color.platformPrimaryLabel
         let secondaryLabel = Color.platformSecondaryLabel
         let background = Color.platformBackground
-        
-        // When: Encoding platform colors
+
+        #if os(iOS) || os(macOS)
         let primaryEncoded = try platformColorEncode(primaryLabel)
         let secondaryEncoded = try platformColorEncode(secondaryLabel)
         let backgroundEncoded = try platformColorEncode(background)
-        
-        // Then: Test business logic for color encoding
-        // Encoded data should be non-empty
+
         #expect(!primaryEncoded.isEmpty, "Primary label color should be encodable (non-empty data)")
         #expect(!secondaryEncoded.isEmpty, "Secondary label color should be encodable (non-empty data)")
         #expect(!backgroundEncoded.isEmpty, "Background color should be encodable (non-empty data)")
-        
-        // Test business logic: Encoded colors should be decodable
+
         do {
             let decodedPrimary = try platformColorDecode(primaryEncoded)
             let decodedSecondary = try platformColorDecode(secondaryEncoded)
             let decodedBackground = try platformColorDecode(backgroundEncoded)
-            
-            // Verify decoded colors are valid
+
             #expect(decodedPrimary != Color.clear, "Decoded primary label should be valid")
             #expect(decodedSecondary != Color.clear, "Decoded secondary label should be valid")
             #expect(decodedBackground != Color.clear, "Decoded background should be valid")
         } catch {
             Issue.record("Color decoding failed: \(error)")
         }
-        
-        // Test business logic: Decoded colors should match original colors
+
         #expect(try platformColorDecode(primaryEncoded) == primaryLabel, "Decoded primary label color should match original")
         #expect(try platformColorDecode(secondaryEncoded) == secondaryLabel, "Decoded secondary label color should match original")
         #expect(try platformColorDecode(backgroundEncoded) == background, "Decoded background color should match original")
+        #else
+        #expect(throws: ColorEncodingError.self,
+                "tvOS/watchOS/visionOS: documented to throw .platformNotSupported until #241") {
+            _ = try platformColorEncode(primaryLabel)
+        }
+        #expect(throws: ColorEncodingError.self) {
+            _ = try platformColorEncode(secondaryLabel)
+        }
+        #expect(throws: ColorEncodingError.self) {
+            _ = try platformColorEncode(background)
+        }
+        #endif
     }
     
     // MARK: - Basic Color Tests

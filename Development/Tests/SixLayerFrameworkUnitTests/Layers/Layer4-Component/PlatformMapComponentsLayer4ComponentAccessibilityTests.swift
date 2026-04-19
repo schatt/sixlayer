@@ -16,7 +16,7 @@ import MapKit
 @Suite("Platform Map Components Layer 4 Accessibility")
 open class PlatformMapComponentsLayer4ComponentAccessibilityTests: BaseTestClass {
 
-#if canImport(MapKit)
+#if canImport(MapKit) && (os(iOS) || os(macOS))
     @Test @MainActor func testPlatformMapViewL4GeneratesAccessibilityIdentifiers() async {
         if #available(iOS 17.0, macOS 14.0, *) {
             let position = Binding.constant(MapCameraPosition.automatic)

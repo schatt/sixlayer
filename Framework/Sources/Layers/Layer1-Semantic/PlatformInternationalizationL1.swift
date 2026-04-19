@@ -9,6 +9,11 @@
 import Foundation
 import SwiftUI
 
+// Issue #245 / gh-243 (audit): anonymous `.automaticCompliance()` on RTL/layout shells and
+// `platformPresentLocalizedContent_L1` (arbitrary `content`). Localized TextField / SecureField /
+// TextEditor use `.automaticCompliance(identifierName:accessibilityLabel:)` — same stable anchors without
+// `NamedAutomaticComplianceModifier`.
+
 // MARK: - Layer 1 Internationalization Functions
 
 /// Present localized content with automatic RTL support
@@ -27,7 +32,8 @@ public func platformPresentLocalizedContent_L1<Content: View>(
         .environment(\.layoutDirection, layoutDirection)
         .environment(\.locale, hints.locale)
         .environmentObject(i18n)
-        .automaticCompliance(named: "platformPresentLocalizedContent_L1"))
+        // Issue #245 / gh-243: arbitrary `content` must not get a fixed NamedAutomatic root id (masks inner a11y).
+        .automaticCompliance())
 }
 
 /// Present localized text with automatic formatting
@@ -48,7 +54,8 @@ public func platformPresentLocalizedText_L1(
         .environment(\.layoutDirection, direction == .rightToLeft ? .rightToLeft : .leftToRight)
         .environment(\.locale, hints.locale)
         .environmentObject(i18n)
-        .automaticCompliance(named: "platformPresentLocalizedText_L1"))
+        // Issue #245 / gh-243: AutomaticCompliance with element type (not NamedAutomatic); bare `.automaticCompliance()` suppresses leaf IDs (#222).
+        .automaticCompliance(identifierElementType: "Text"))
 }
 
 /// Present localized number with proper formatting
@@ -66,7 +73,8 @@ public func platformPresentLocalizedNumber_L1(
     return AnyView(Text(formatted)
         .environment(\.locale, hints.locale)
         .environmentObject(i18n)
-        .automaticCompliance(named: "platformPresentLocalizedNumber_L1"))
+        // Issue #245 / gh-243: AutomaticCompliance with element type (not NamedAutomatic); bare `.automaticCompliance()` suppresses leaf IDs (#222).
+        .automaticCompliance(identifierElementType: "Text"))
 }
 
 /// Present localized currency with proper formatting
@@ -84,7 +92,8 @@ public func platformPresentLocalizedCurrency_L1(
     return AnyView(Text(formatted)
         .environment(\.locale, hints.locale)
         .environmentObject(i18n)
-        .automaticCompliance(named: "platformPresentLocalizedCurrency_L1"))
+        // Issue #245 / gh-243: AutomaticCompliance with element type (not NamedAutomatic); bare `.automaticCompliance()` suppresses leaf IDs (#222).
+        .automaticCompliance(identifierElementType: "Text"))
 }
 
 /// Present localized date with proper formatting
@@ -102,7 +111,8 @@ public func platformPresentLocalizedDate_L1(
     return AnyView(Text(formatted)
         .environment(\.locale, hints.locale)
         .environmentObject(i18n)
-        .automaticCompliance(named: "platformPresentLocalizedDate_L1"))
+        // Issue #245 / gh-243: AutomaticCompliance with element type (not NamedAutomatic); bare `.automaticCompliance()` suppresses leaf IDs (#222).
+        .automaticCompliance(identifierElementType: "Text"))
 }
 
 /// Present localized time with proper formatting
@@ -120,7 +130,8 @@ public func platformPresentLocalizedTime_L1(
     return AnyView(Text(formatted)
         .environment(\.locale, hints.locale)
         .environmentObject(i18n)
-        .automaticCompliance(named: "platformPresentLocalizedTime_L1"))
+        // Issue #245 / gh-243: AutomaticCompliance with element type (not NamedAutomatic); bare `.automaticCompliance()` suppresses leaf IDs (#222).
+        .automaticCompliance(identifierElementType: "Text"))
 }
 
 /// Present localized percentage with proper formatting
@@ -138,7 +149,8 @@ public func platformPresentLocalizedPercentage_L1(
     return AnyView(Text(formatted)
         .environment(\.locale, hints.locale)
         .environmentObject(i18n)
-        .automaticCompliance(named: "platformPresentLocalizedPercentage_L1"))
+        // Issue #245 / gh-243: AutomaticCompliance with element type (not NamedAutomatic); bare `.automaticCompliance()` suppresses leaf IDs (#222).
+        .automaticCompliance(identifierElementType: "Text"))
 }
 
 /// Present localized pluralized text
@@ -158,7 +170,8 @@ public func platformPresentLocalizedPlural_L1(
     return AnyView(Text(pluralized)
         .environment(\.locale, hints.locale)
         .environmentObject(i18n)
-        .automaticCompliance(named: "platformPresentLocalizedPlural_L1"))
+        // Issue #245 / gh-243: AutomaticCompliance with element type (not NamedAutomatic); bare `.automaticCompliance()` suppresses leaf IDs (#222).
+        .automaticCompliance(identifierElementType: "Text"))
 }
 
 /// Present localized string with arguments
@@ -178,7 +191,8 @@ public func platformPresentLocalizedString_L1(
     return AnyView(Text(localized)
         .environment(\.locale, hints.locale)
         .environmentObject(i18n)
-        .automaticCompliance(named: "platformPresentLocalizedString_L1"))
+        // Issue #245 / gh-243: AutomaticCompliance with element type (not NamedAutomatic); bare `.automaticCompliance()` suppresses leaf IDs (#222).
+        .automaticCompliance(identifierElementType: "Text"))
 }
 
 // MARK: - Internationalization Hints
@@ -230,7 +244,8 @@ public func platformRTLContainer_L1<Content: View>(
         .environment(\.layoutDirection, layoutDirection)
         .environment(\.locale, hints.locale)
         .environmentObject(i18n)
-        .automaticCompliance(named: "platformRTLContainer_L1"))
+        // Issue #245 / gh-243: arbitrary `content` must not get a fixed NamedAutomatic root id (masks inner a11y).
+        .automaticCompliance())
 }
 
 /// RTL-aware HStack that automatically adjusts alignment
@@ -253,7 +268,8 @@ public func platformRTLHStack_L1<Content: View>(
         .environment(\.layoutDirection, layoutDirection)
         .environment(\.locale, hints.locale)
         .environmentObject(i18n)
-        .automaticCompliance(named: "platformRTLHStack_L1"))
+        // Issue #245 / gh-243: arbitrary stack content must not get a fixed NamedAutomatic root id (masks inner a11y).
+        .automaticCompliance())
 }
 
 /// RTL-aware VStack that automatically adjusts alignment
@@ -276,7 +292,8 @@ public func platformRTLVStack_L1<Content: View>(
         .environment(\.layoutDirection, layoutDirection)
         .environment(\.locale, hints.locale)
         .environmentObject(i18n)
-        .automaticCompliance(named: "platformRTLVStack_L1"))
+        // Issue #245 / gh-243: arbitrary stack content must not get a fixed NamedAutomatic root id (masks inner a11y).
+        .automaticCompliance())
 }
 
 /// RTL-aware ZStack that automatically adjusts alignment
@@ -297,10 +314,14 @@ public func platformRTLZStack_L1<Content: View>(
         .environment(\.layoutDirection, layoutDirection)
         .environment(\.locale, hints.locale)
         .environmentObject(i18n)
-        .automaticCompliance(named: "platformRTLZStack_L1"))
+        // Issue #245 / gh-243: arbitrary stack content must not get a fixed NamedAutomatic root id (masks inner a11y).
+        .automaticCompliance())
 }
 
 // MARK: - Localized Form Fields
+
+// Issue #245 / gh-243: localized field APIs use `identifierName:` (not `named:`) for stable control IDs
+// without NamedAutomaticComplianceModifier — contrast anonymous shells above.
 
 /// RTL-aware text field with proper localization
 /// - Parameters:
@@ -323,7 +344,7 @@ public func platformLocalizedTextField_L1(
         .environment(\.locale, hints.locale)
         .environmentObject(i18n)
         .automaticCompliance(
-            named: "platformLocalizedTextField_L1",
+            identifierName: "platformLocalizedTextField_L1",
             accessibilityLabel: accessibilityLabel
         ))
 }
@@ -349,7 +370,7 @@ public func platformLocalizedSecureField_L1(
         .environment(\.locale, hints.locale)
         .environmentObject(i18n)
         .automaticCompliance(
-            named: "platformLocalizedSecureField_L1",
+            identifierName: "platformLocalizedSecureField_L1",
             accessibilityLabel: accessibilityLabel
         ))
 }
@@ -370,12 +391,26 @@ public func platformLocalizedTextEditor_L1(
     let i18n = InternationalizationService(locale: hints.locale)
     let layoutDirection = i18n.getLayoutDirection()
     
-    return TextEditor(text: text)
-        .environment(\.layoutDirection, layoutDirection)
-        .environment(\.locale, hints.locale)
-        .environmentObject(i18n)
-        .automaticCompliance(
-            named: "platformLocalizedTextEditor_L1",
-            accessibilityLabel: accessibilityLabel
-        )
+    return Group {
+        #if os(tvOS)
+        // TextEditor is unavailable on tvOS; use a single-line field as a functional fallback (#237).
+        TextField(title, text: text)
+            .environment(\.layoutDirection, layoutDirection)
+            .environment(\.locale, hints.locale)
+            .environmentObject(i18n)
+            .automaticCompliance(
+                identifierName: "platformLocalizedTextEditor_L1",
+                accessibilityLabel: accessibilityLabel
+            )
+        #else
+        TextEditor(text: text)
+            .environment(\.layoutDirection, layoutDirection)
+            .environment(\.locale, hints.locale)
+            .environmentObject(i18n)
+            .automaticCompliance(
+                identifierName: "platformLocalizedTextEditor_L1",
+                accessibilityLabel: accessibilityLabel
+            )
+        #endif
+    }
 }

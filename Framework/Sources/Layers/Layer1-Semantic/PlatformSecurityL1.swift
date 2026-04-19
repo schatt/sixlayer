@@ -9,6 +9,10 @@
 import Foundation
 import SwiftUI
 
+// Issue #245 / gh-243: `platformPresentSecureContent_L1` — anonymous compliance (arbitrary `content`).
+// `platformPresentSecureTextField_L1` — `.automaticCompliance(identifierName:)` on the framework control.
+// `platformShowPrivacyIndicator_L1` / badge APIs — no view trees requiring named roots here.
+
 // MARK: - Layer 1 Security Functions
 
 /// Present secure content with biometric authentication
@@ -31,7 +35,8 @@ public func platformPresentSecureContent_L1<Content: View>(
     return AnyView(content
         .environmentObject(security)
         .environment(\.securityService, security)
-        .automaticCompliance(named: "platformPresentSecureContent_L1"))
+        // Issue #245 / gh-243: arbitrary secure content must not get a fixed NamedAutomatic root id.
+        .automaticCompliance())
 }
 
 /// Present secure text field with automatic secure entry
@@ -59,7 +64,9 @@ public func platformPresentSecureTextField_L1(
     return AnyView(SecureField(title, text: text)
         .environmentObject(security)
         .environment(\.securityService, security)
-        .automaticCompliance(named: "platformPresentSecureTextField_L1"))
+        .environment(\.accessibilityIdentifierName, "platformPresentSecureTextField_L1")
+        // Issue #245 / gh-243: framework-owned control surface — identifierName path (not automaticCompliance(named:)).
+        .automaticCompliance(identifierName: "platformPresentSecureTextField_L1"))
 }
 
 /// Request biometric authentication
@@ -93,5 +100,6 @@ public func platformShowPrivacyIndicator_L1(
     security.showPrivacyIndicator(type, isActive: isActive)
     
     return EmptyView() // Indicator is shown via system APIs
-        .automaticCompliance(named: "platformShowPrivacyIndicator_L1")
+        // Issue #245 / gh-243: no visible framework-owned element exists here; avoid a misleading named root.
+        .automaticCompliance()
 }

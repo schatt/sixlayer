@@ -1471,7 +1471,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             testView,
             expectedPattern: "SixLayer.main.ui.*",
             platform: SixLayerPlatform.iOS,
-            componentName: "GenericFormView"
+            componentName: "SixLayer.main.ui"
         )
         #expect(hasAccessibilityID, "GenericFormView should generate accessibility identifiers ")
         #else
@@ -1523,7 +1523,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             testView,
             expectedPattern: "SixLayer.main.ui.*",
             platform: SixLayerPlatform.iOS,
-            componentName: "GenericSettingsView"
+            componentName: "SixLayer.main.ui"
         )
         #expect(hasAccessibilityID, "GenericSettingsView should generate accessibility identifiers ")
         #else
@@ -1623,7 +1623,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             testView,
             expectedPattern: "SixLayer.main.ui.*",
             platform: SixLayerPlatform.iOS,
-            componentName: "GenericContentView"
+            componentName: "SixLayer.main.ui"
         )
         #expect(hasAccessibilityID, "GenericContentView should generate accessibility identifiers ")
         #else
@@ -2393,7 +2393,10 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         self.initializeTestConfig()
         // InternationalizationServiceView doesn't exist - use platformPresentLocalizedContent_L1 instead
         let testView = platformPresentLocalizedContent_L1(
-            content: Text("Test Content"),
+            content: platformPresentContent_L1(
+                content: "Test Content",
+                hints: PresentationHints()
+            ),
             hints: InternationalizationHints()
         )
         #if canImport(ViewInspector)
@@ -11610,6 +11613,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
 }
 
+    #if os(macOS)
     @Test @MainActor func testMacOSExpandableCardViewGeneratesAccessibilityIdentifiers() async {
         self.initializeTestConfig()
             self.runWithTaskLocalConfig {
@@ -11638,6 +11642,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #endif
     }
 }
+    #endif
 
     @Test @MainActor func testVisionOSExpandableCardViewGeneratesAccessibilityIdentifiers() async {
         self.initializeTestConfig()
@@ -15774,12 +15779,14 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         // Get platform capabilities using the framework's capability detection
         let config = getCardExpansionPlatformConfig()
         
-        // Then: Test actual business logic (supports* are Bool; exercise flags via range checks below)
-        // Verify platform-correct minTouchTarget value
-        // Note: minTouchTarget is based on compile-time platform, not capability overrides
+        // Apple HIG per platform (Issue #237): iOS/watchOS 44, tvOS/visionOS
+        // 60 (focus / gaze+pinch floors, not conditional on touch), macOS
+        // conditional. Prior (iOS|watchOS ? 44 : 0) formula miscategorized
+        // tvOS and visionOS.
         let currentPlatform = SixLayerPlatform.current
-        let expectedMinTouchTarget: CGFloat = (currentPlatform == .iOS || currentPlatform == .watchOS) ? 44.0 : 0.0
-        #expect(config.minTouchTarget == expectedMinTouchTarget, "Touch targets should be platform-correct (\(expectedMinTouchTarget)) for current platform \(currentPlatform)")
+        let expectedMinTouchTarget = PlatformTestUtilities.expectedMinTouchTarget(for: currentPlatform)
+        #expect(config.minTouchTarget == expectedMinTouchTarget,
+                "Apple HIG: \(currentPlatform) expected \(expectedMinTouchTarget)pt")
     }
 }
 
@@ -16954,7 +16961,10 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         self.runWithTaskLocalConfig {
         // Given: A view using platformPresentLocalizedContent_L1 (which uses InternationalizationService)
         let view = platformPresentLocalizedContent_L1(
-            content: Text("Localized Content"),
+            content: platformPresentContent_L1(
+                content: "Localized Content",
+                hints: PresentationHints()
+            ),
             hints: InternationalizationHints()
         )
         
@@ -16962,7 +16972,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
             view,
-            expectedPattern: "SixLayer.main.ui.*platformPresentLocalizedContent_L1.*",
+            expectedPattern: "SixLayer.main.ui.*",
             platform: SixLayerPlatform.iOS,
             componentName: "platformPresentLocalizedContent_L1"
         )
@@ -16978,7 +16988,10 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         self.runWithTaskLocalConfig {
         // Given: A view using platformPresentLocalizedContent_L1 (which uses InternationalizationService)
         let view = platformPresentLocalizedContent_L1(
-            content: Text("Localized Content"),
+            content: platformPresentContent_L1(
+                content: "Localized Content",
+                hints: PresentationHints()
+            ),
             hints: InternationalizationHints()
         )
         
@@ -16986,7 +16999,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
             view,
-            expectedPattern: "SixLayer.main.ui.*platformPresentLocalizedContent_L1.*",
+            expectedPattern: "SixLayer.main.ui.*",
             platform: SixLayerPlatform.macOS,
             componentName: "platformPresentLocalizedContent_L1"
         )

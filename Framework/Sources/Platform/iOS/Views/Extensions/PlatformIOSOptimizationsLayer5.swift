@@ -45,6 +45,7 @@ public extension View {
         onSwipeUp: (() -> Void)? = nil,
         onSwipeDown: (() -> Void)? = nil
     ) -> some View {
+        #if os(iOS)
         self
             .gesture(
                 DragGesture()
@@ -78,6 +79,10 @@ public extension View {
                         }
                     }
             )
+        #else
+        // DragGesture-based swipe helpers are unavailable on tvOS (#237).
+        self
+        #endif
     }
     
     /// Platform-specific iOS haptic feedback with consistent behavior

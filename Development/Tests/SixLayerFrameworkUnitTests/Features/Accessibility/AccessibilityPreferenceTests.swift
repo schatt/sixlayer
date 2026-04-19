@@ -134,6 +134,8 @@ open class AccessibilityPreferenceTests: BaseTestClass {
             // visionOS should support haptic feedback
             #expect(config.supportsHapticFeedback == true || config.supportsHapticFeedback == false, 
                          "visionOS haptic feedback support should be determinable")
+            // Apple visionOS HIG: gaze+pinch minimum 60pt (Issue #237)
+            #expect(config.minTouchTarget >= 60, "visionOS should have >= 60pt interactive targets (HIG gaze+pinch)")
         }
     }
     
@@ -305,16 +307,11 @@ open class AccessibilityPreferenceTests: BaseTestClass {
         #expect(config.supportsVoiceOver == true, "VoiceOver should be available on current platform")
         #expect(config.supportsSwitchControl == true, "Switch Control should be available on current platform")
 
-        // Verify platform-correct minTouchTarget value
-        // Note: minTouchTarget is based on runtime platform detection
+        // Verify HIG-correct minTouchTarget per platform (Issue #237).
+        // Apple HIG: iOS/watchOS 44, tvOS/visionOS 60, macOS conditional.
         let currentPlatform = SixLayerPlatform.current
-        let expectedMinTouchTarget: CGFloat
-        switch currentPlatform {
-        case .iOS, .watchOS:
-            expectedMinTouchTarget = 44.0
-        case .macOS, .tvOS, .visionOS:
-            expectedMinTouchTarget = RuntimeCapabilityDetection.supportsTouch ? 44.0 : 0.0
-        }
-        #expect(config.minTouchTarget == expectedMinTouchTarget, "Touch targets should be platform-correct (\(expectedMinTouchTarget)) for current platform \(currentPlatform)")
+        let expectedMinTouchTarget = PlatformTestUtilities.expectedMinTouchTarget(for: currentPlatform)
+        #expect(config.minTouchTarget == expectedMinTouchTarget,
+                "Apple HIG: \(currentPlatform) expected \(expectedMinTouchTarget)pt")
     }
 }

@@ -39,23 +39,15 @@ public enum SafeOCRResult {
 // MARK: - Vision Availability Functions
 
 /// Check if Vision framework is available on current platform
+///
+/// Issue #237: Vision is available on iOS 11+, macOS 10.15+, tvOS 11+, and
+/// visionOS 1+. Earlier versions of this function excluded tvOS/visionOS even
+/// though the Vision framework ships there. Rely on `canImport(Vision)` — if
+/// the compiler can import it, the runtime has it, so no availability guard
+/// is needed for current deployment targets.
 public func isVisionFrameworkAvailable() -> Bool {
     #if canImport(Vision)
-    #if os(iOS)
-    if #available(iOS 11.0, *) {
-        return true
-    } else {
-        return false
-    }
-    #elseif os(macOS)
-    if #available(macOS 10.15, *) {
-        return true
-    } else {
-        return false
-    }
-    #else
-    return false
-    #endif
+    return true
     #else
     return false
     #endif

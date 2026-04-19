@@ -28,8 +28,7 @@ public extension View {
         }
         .padding(.vertical, 8)
         .padding(.horizontal, 16)
-        .environment(\.accessibilityIdentifierLabel, title) // TDD GREEN: Automatically extract label from title parameter
-        .automaticCompliance(named: "platformListRow")
+        .automaticCompliance(named: "platformListRow", identifierLabel: title, accessibilityLabel: title)
     }
     
     /// Platform-specific list row with custom content (legacy support)
@@ -45,8 +44,11 @@ public extension View {
         }
         .padding(.vertical, 8)
         .padding(.horizontal, 16)
-        .environment(\.accessibilityIdentifierLabel, label ?? "") // TDD GREEN: Pass label to identifier generation
-        .automaticCompliance(named: "platformListRow")
+        .automaticCompliance(
+            named: "platformListRow",
+            identifierLabel: label.flatMap { $0.isEmpty ? nil : $0 },
+            accessibilityLabel: label.flatMap { $0.isEmpty ? nil : $0 }
+        )
     }
     
     /// Platform-specific list section header with consistent styling
@@ -68,8 +70,7 @@ public extension View {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 8)
-        .environment(\.accessibilityIdentifierLabel, title) // TDD GREEN: Pass label to identifier generation
-        .automaticCompliance(named: "platformListSectionHeader")
+        .automaticCompliance(named: "platformListSectionHeader", identifierLabel: title, accessibilityLabel: title)
     }
     
     /// Platform-specific list empty state with consistent styling
@@ -110,8 +111,7 @@ public extension View {
         }
         .padding(32)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .environment(\.accessibilityIdentifierLabel, title) // TDD GREEN: Pass label to identifier generation
-        .automaticCompliance(named: "platformListEmptyState")
+        .automaticCompliance(named: "platformListEmptyState", identifierLabel: title, accessibilityLabel: title)
     }
     
     // MARK: - List-Detail Implementation
@@ -191,8 +191,7 @@ public extension View {
             }
         }
         .padding()
-        .environment(\.accessibilityIdentifierLabel, title) // TDD GREEN: Pass label to identifier generation
-        .automaticCompliance(named: "platformDetailPlaceholder")
+        .automaticCompliance(named: "platformDetailPlaceholder", identifierLabel: title, accessibilityLabel: title)
     }
     
     // MARK: - Private Helper Functions

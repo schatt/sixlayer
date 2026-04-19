@@ -114,13 +114,8 @@ public extension View {
         )
         .automaticCompliance(named: "platformPopover_L4")
         #else
-        self.popover(
-            isPresented: isPresented,
-            attachmentAnchor: attachmentAnchor,
-            arrowEdge: arrowEdge,
-            content: content
-        )
-        .automaticCompliance(named: "platformPopover_L4")
+        // `.popover` SwiftUI API is unavailable on tvOS (#237); use full-screen sheet-style at call sites instead.
+        self
         #endif
     }
     

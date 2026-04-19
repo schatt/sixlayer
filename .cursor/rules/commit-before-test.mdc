@@ -1,27 +1,20 @@
 ---
-description: Commit all current changes before running any test. Blocking—no test command until committed.
+description: Commit all current changes before running any test. Blocking.
 alwaysApply: true
 ---
 
 # Commit Before Test (BLOCKING)
 
-## **MANDATORY — BLOCKING**
+**Do not run any test command** (MCP `RunAllTests`/`RunSomeTests`, `dbs-build --target ...`, `xcodebuild test`, `swift test`, any `run_terminal_cmd` that runs tests) until the working tree is fully committed.
 
-- **Do not run any test command** (e.g. xcode-tools **RunAllTests**/**RunSomeTests**, `dbs-build --target iOS_tests`, `dbs-build --target test`, `xcodebuild test`, or any `run_terminal_cmd` that runs tests) **until all current work is committed.** Default for day-to-day is **xcode-tools MCP** with the iOS scheme (see **test-target-default.mdc**); CLI only when MCP cannot run.
+## Sequence
 
-## **REQUIRED SEQUENCE**
+1. `git status` before invoking the test run.
+2. If anything is uncommitted: `git add -A` (or add all changed paths) + `git commit -m "<msg>"` so the **entire** working tree is captured — **multi-agent included**.
+3. Only then run the test command.
 
-1. **Before** invoking a test run: run `git status`.
-2. **If** there are uncommitted changes: run `git add -A` (or add **all** changed paths), then `git commit -m "<message>"` so the **entire** working tree is committed—**multi-agent included**. Do **not** stash.
-3. **Only then** run the test command.
+**"I'll commit after the test" is not allowed.** No exceptions.
 
-## **NO EXCEPTIONS**
+## What "clean" means (multi-agent)
 
-- Running tests with uncommitted changes violates this rule.
-- "I'll commit after the test" is not allowed. Commit first, then test.
-
-## **Multi-agent / how to get a clean tree**
-
-- **Meaning of clean:** A clean `git status` means **everything in the working tree is committed**—all pending edits from every agent/session are captured in commits before you run tests or declare done.
-- **If you need a clean tree before tests:** **Commit everything** (`git add -A`, then `git commit` with a message that reflects the combined change, or split into logical commits if you are following one-commit-per-file elsewhere in the same session). Do **not** use `git stash`, `git restore`, or other tricks to hide work.
-- **Do not** stash, revert, restore, reset, clean, or delete **work you did not make**—see **multi-agent-git-boundaries.mdc**.
+"Clean" = everything in the working tree is committed (across all agents/sessions). Do **not** use `git stash`, `git restore`, `git checkout --`, `git reset`, `git clean`, or delete files to hide work you didn't make. See [multi-agent-git-boundaries.mdc](mdc:.cursor/rules/multi-agent-git-boundaries.mdc). **Commit everything** — that's how you get clean.

@@ -1148,6 +1148,7 @@ public enum AccessibilityTestUtilities {
         return false
     }
 
+    #if canImport(ViewInspector)
     /// Same as testComponentComplianceSinglePlatform but for Inspectable views: uses direct view.inspect() (no AnyView — Issue 178).
     @MainActor
     public static func testComponentComplianceSinglePlatform<V: View & ViewInspector.Inspectable>(
@@ -1231,6 +1232,7 @@ public enum AccessibilityTestUtilities {
         #endif
         return false
     }
+    #endif // canImport(ViewInspector)
 
     /// Test accessibility identifiers for a view across platforms.
     /// Returns true only if at least one accessibility identifier matches the expected pattern or contains the component name.
