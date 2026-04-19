@@ -44,7 +44,6 @@ open class PlatformSemanticLayer1Issue245Tests: BaseTestClass {
             ("GenericContentView", AnyView(GenericContentView(content: UnknownRuntimeContent(), hints: hints))),
             ("BasicValueView", AnyView(platformPresentBasicValue_L1(value: 42, hints: hints))),
             ("BasicArrayView", AnyView(platformPresentBasicArray_L1(array: [1, 2, 3], hints: hints))),
-            ("GenericFallbackView", AnyView(GenericContentView(content: UnknownRuntimeContent(), hints: hints))),
             ("GenericSettingsView", AnyView(GenericSettingsView(settings: settings, hints: hints))),
             (
                 "platformResponsiveCard_L1",
@@ -79,6 +78,15 @@ open class PlatformSemanticLayer1Issue245Tests: BaseTestClass {
                     !log.contains(fingerprint),
                     "\(shell.fingerprintName) must not use NamedAutomaticComplianceModifier (issue #245); log sample: \(String(log.suffix(500)))"
                 )
+                if shell.fingerprintName == "GenericContentView" {
+                    let fallbackPrint = Self.issue245_namedAutomaticComplianceFingerprint(
+                        componentName: "GenericFallbackView"
+                    )
+                    #expect(
+                        !log.contains(fallbackPrint),
+                        "GenericFallbackView must not use NamedAutomaticComplianceModifier (issue #245); log sample: \(String(log.suffix(500)))"
+                    )
+                }
             }
         }
     }
