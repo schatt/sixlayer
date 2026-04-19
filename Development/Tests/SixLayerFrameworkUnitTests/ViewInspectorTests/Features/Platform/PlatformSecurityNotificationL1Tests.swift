@@ -40,7 +40,7 @@ open class PlatformSecurityNotificationL1Tests: BaseTestClass {
     }
 
     @Test @MainActor
-    func testIssue245_platformPresentSecureTextFieldUsesNamedAutomaticComplianceModifier() async {
+    func testIssue245_platformPresentSecureTextFieldDoesNotUseNamedAutomaticComplianceModifier() async {
         let view = platformPresentSecureTextField_L1(
             title: "Password",
             text: .constant("")
@@ -58,8 +58,8 @@ open class PlatformSecurityNotificationL1Tests: BaseTestClass {
                 componentName: "platformPresentSecureTextField_L1"
             )
             #expect(
-                log.contains(fingerprint),
-                "platformPresentSecureTextField_L1 should still use NamedAutomaticComplianceModifier; log sample: \(String(log.suffix(400)))"
+                !log.contains(fingerprint),
+                "platformPresentSecureTextField_L1 must not use NamedAutomaticComplianceModifier (issue #245); use identifierName path; log sample: \(String(log.suffix(400)))"
             )
         }
     }
