@@ -1471,7 +1471,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             testView,
             expectedPattern: "SixLayer.main.ui.*",
             platform: SixLayerPlatform.iOS,
-            componentName: "GenericFormView"
+            componentName: "SixLayer.main.ui"
         )
         #expect(hasAccessibilityID, "GenericFormView should generate accessibility identifiers ")
         #else
@@ -1523,7 +1523,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             testView,
             expectedPattern: "SixLayer.main.ui.*",
             platform: SixLayerPlatform.iOS,
-            componentName: "GenericSettingsView"
+            componentName: "SixLayer.main.ui"
         )
         #expect(hasAccessibilityID, "GenericSettingsView should generate accessibility identifiers ")
         #else
@@ -1623,7 +1623,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             testView,
             expectedPattern: "SixLayer.main.ui.*",
             platform: SixLayerPlatform.iOS,
-            componentName: "GenericContentView"
+            componentName: "SixLayer.main.ui"
         )
         #expect(hasAccessibilityID, "GenericContentView should generate accessibility identifiers ")
         #else
