@@ -856,7 +856,7 @@ public func platformPresentSettings_L1(
         onSettingsSaved: onSettingsSaved,
         onSettingsCancelled: onSettingsCancelled
     )
-    .automaticCompliance()
+    // Issue #245: compliance lives on `GenericSettingsView` (anonymous) so direct and API-hosted paths match.
 }
 
 /// Generic function for presenting settings interface with custom views
@@ -4431,8 +4431,7 @@ private struct BasicValueView: View {
         .padding()
         .background(Color.blue.opacity(0.1))
         .cornerRadius(12)
-        // Issue #245 / gh-243: value is runtime `Any`; anonymous shell so scalar text keeps discoverable auto IDs.
-        .automaticCompliance()
+        // Issue #245: no inner automaticCompliance here — `platformPresentBasicValue_L1` applies the anonymous shell.
     }
 }
 
@@ -4481,8 +4480,7 @@ private struct BasicArrayView: View {
         .padding()
         .background(Color.orange.opacity(0.1))
         .cornerRadius(12)
-        // Issue #245 / gh-243: array content is runtime-shaped; anonymous shell over list preview chrome.
-        .automaticCompliance()
+        // Issue #245: no inner automaticCompliance here — `platformPresentBasicArray_L1` applies the anonymous shell.
     }
 }
 
@@ -4524,8 +4522,7 @@ private struct GenericFallbackView: View {
         .padding()
         .background(Color.secondary.opacity(0.1))
         .cornerRadius(12)
-        // Issue #245 / gh-243: introspection of unknown `Any` must not advertise a stable framework-named root.
-        .automaticCompliance()
+        // Issue #245: no inner automaticCompliance here — `GenericContentView` applies anonymous on this branch.
     }
 }
 
@@ -4743,7 +4740,7 @@ public struct GenericSettingsView: View {
         .onAppear {
             initializeValues()
         }
-        // Issue #245 / gh-243: caller-owned settings model; anonymous outer shell (rows/toggles keep inner IDs).
+        // Issue #245 / gh-243: anonymous (also when used without `platformPresentSettings_L1` in tests).
         .automaticCompliance()
     }
     
