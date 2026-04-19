@@ -315,6 +315,10 @@ public func platformRTLZStack_L1<Content: View>(
 
 // MARK: - Localized Form Fields
 
+// Issue #245 / gh-243: the `platformLocalized*Field` / editor APIs below keep `automaticCompliance(named:)`
+// because they are intentional interactive control surfaces (stable test anchors), not thin shells over
+// arbitrary child content — contrast RTL stack wrappers and `platformPresentLocalizedContent_L1`.
+
 /// RTL-aware text field with proper localization
 /// - Parameters:
 ///   - title: The field title
