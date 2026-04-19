@@ -10,8 +10,9 @@ import Foundation
 import SwiftUI
 
 // Issue #245 / gh-243 (audit): anonymous `.automaticCompliance()` on RTL/layout shells and
-// `platformPresentLocalizedContent_L1` (arbitrary `content`). `automaticCompliance(named:)` remains
-// only on localized TextField / SecureField / TextEditor APIs — intentional control anchors, not generic hosts.
+// `platformPresentLocalizedContent_L1` (arbitrary `content`). Localized TextField / SecureField /
+// TextEditor use `.automaticCompliance(identifierName:accessibilityLabel:)` — same stable anchors without
+// `NamedAutomaticComplianceModifier`.
 
 // MARK: - Layer 1 Internationalization Functions
 
@@ -319,9 +320,8 @@ public func platformRTLZStack_L1<Content: View>(
 
 // MARK: - Localized Form Fields
 
-// Issue #245 / gh-243: the `platformLocalized*Field` / editor APIs below keep `automaticCompliance(named:)`
-// because they are intentional interactive control surfaces (stable test anchors), not thin shells over
-// arbitrary child content — contrast RTL stack wrappers and `platformPresentLocalizedContent_L1`.
+// Issue #245 / gh-243: localized field APIs use `identifierName:` (not `named:`) for stable control IDs
+// without NamedAutomaticComplianceModifier — contrast anonymous shells above.
 
 /// RTL-aware text field with proper localization
 /// - Parameters:
@@ -344,7 +344,7 @@ public func platformLocalizedTextField_L1(
         .environment(\.locale, hints.locale)
         .environmentObject(i18n)
         .automaticCompliance(
-            named: "platformLocalizedTextField_L1",
+            identifierName: "platformLocalizedTextField_L1",
             accessibilityLabel: accessibilityLabel
         ))
 }
@@ -370,7 +370,7 @@ public func platformLocalizedSecureField_L1(
         .environment(\.locale, hints.locale)
         .environmentObject(i18n)
         .automaticCompliance(
-            named: "platformLocalizedSecureField_L1",
+            identifierName: "platformLocalizedSecureField_L1",
             accessibilityLabel: accessibilityLabel
         ))
 }
@@ -399,7 +399,7 @@ public func platformLocalizedTextEditor_L1(
             .environment(\.locale, hints.locale)
             .environmentObject(i18n)
             .automaticCompliance(
-                named: "platformLocalizedTextEditor_L1",
+                identifierName: "platformLocalizedTextEditor_L1",
                 accessibilityLabel: accessibilityLabel
             )
         #else
@@ -408,7 +408,7 @@ public func platformLocalizedTextEditor_L1(
             .environment(\.locale, hints.locale)
             .environmentObject(i18n)
             .automaticCompliance(
-                named: "platformLocalizedTextEditor_L1",
+                identifierName: "platformLocalizedTextEditor_L1",
                 accessibilityLabel: accessibilityLabel
             )
         #endif
