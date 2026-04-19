@@ -60,8 +60,9 @@ public func platformPresentSecureTextField_L1(
     return AnyView(SecureField(title, text: text)
         .environmentObject(security)
         .environment(\.securityService, security)
-        // Issue #245 / gh-243: keep named — the secure field is the framework-owned interactive surface.
-        .automaticCompliance(named: "platformPresentSecureTextField_L1"))
+        .environment(\.accessibilityIdentifierName, "platformPresentSecureTextField_L1")
+        // Issue #245 / gh-243: framework-owned control surface — identifierName path (not automaticCompliance(named:)).
+        .automaticCompliance(identifierName: "platformPresentSecureTextField_L1"))
 }
 
 /// Request biometric authentication
