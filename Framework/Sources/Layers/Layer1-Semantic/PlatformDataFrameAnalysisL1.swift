@@ -205,6 +205,10 @@ public enum AnalysisDepth: String, CaseIterable {
 
 // MARK: - DataFrame Analysis Views
 
+// Issue #245 / gh-243: internal `automaticCompliance(named:)` roots below identify the framework-owned
+// DataFrame analysis view hierarchy. They differ from the `customVisualizationView` overload branches,
+// where the outer wrapper is caller-owned and therefore uses anonymous compliance only.
+
 /// Main view for DataFrame analysis results
 private struct DataFrameAnalysisView: View {
     let dataFrame: DataFrame
