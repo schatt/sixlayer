@@ -60,9 +60,9 @@ open class PlatformInternationalizationL1Tests: BaseTestClass {
         }
     }
 
-    /// Structured L1 fields keep `automaticCompliance(named:accessibilityLabel:)` (NamedAutomaticComplianceModifier).
+    /// Structured L1 fields use `identifierName:` (not `NamedAutomaticComplianceModifier`).
     @Test @MainActor
-    func testIssue245_platformLocalizedTextFieldUsesNamedAutomaticComplianceModifier() async {
+    func testIssue245_platformLocalizedTextFieldDoesNotUseNamedAutomaticComplianceModifier() async {
         let hints = InternationalizationHints()
         let view = platformLocalizedTextField_L1(
             title: "Title",
@@ -83,8 +83,8 @@ open class PlatformInternationalizationL1Tests: BaseTestClass {
                 componentName: "platformLocalizedTextField_L1"
             )
             #expect(
-                log.contains(fingerprint),
-                "platformLocalizedTextField_L1 should still use NamedAutomaticComplianceModifier; log sample: \(String(log.suffix(400)))"
+                !log.contains(fingerprint),
+                "platformLocalizedTextField_L1 must not use NamedAutomaticComplianceModifier (issue #245); log sample: \(String(log.suffix(400)))"
             )
         }
     }
