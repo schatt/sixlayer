@@ -817,10 +817,10 @@ public func platformPresentBasicValue_L1(
 ) -> some View {
     BasicValueView(value: value, hints: hints)
         .environment(\.accessibilityIdentifierName, "platformPresentBasicValue_L1")
-        .automaticCompliance()
         .automaticAccessibility()
         .platformPatterns()
         .visualConsistency()
+        .automaticCompliance()
 }
 
 /// Present basic arrays with appropriate formatting (no AnyView — Issue 178).
@@ -831,10 +831,10 @@ public func platformPresentBasicArray_L1(
 ) -> some View {
     BasicArrayView(array: array, hints: hints)
         .environment(\.accessibilityIdentifierName, "platformPresentBasicArray_L1")
-        .automaticCompliance()
         .automaticAccessibility()
         .platformPatterns()
         .visualConsistency()
+        .automaticCompliance()
 }
 
 /// Generic function for presenting settings interface
@@ -2544,7 +2544,7 @@ public struct GenericMediaView: View {
                 .font(.caption)
         }
         .padding()
-        .automaticCompliance()
+        // Compliance is applied on `platformPresentMediaData_L1` (single anonymous root).
     }
 }
 
@@ -2561,7 +2561,7 @@ public struct GenericHierarchicalView: View {
                 .font(.caption)
         }
         .padding()
-        .automaticCompliance()
+        // Compliance is applied on `platformPresentHierarchicalData_L1` (single anonymous root).
     }
 }
 
@@ -2578,7 +2578,7 @@ public struct GenericTemporalView: View {
                 .font(.caption)
         }
         .padding()
-        .automaticCompliance()
+        // Compliance is applied on `platformPresentTemporalData_L1` (single anonymous root).
     }
 }
 
@@ -4332,8 +4332,7 @@ public struct GenericContentView: View {
             platformPresentBasicValue_L1(value: content, hints: hints)
         } else {
             GenericFallbackView(content: content, hints: hints)
-                // Issue #245 / gh-243: unknown-type fallback is runtime/caller content; avoid a fixed named root.
-                .automaticCompliance()
+            // Issue #245: anonymous compliance is applied on `platformPresentContent_L1`; avoid a second shell here.
         }
     }
     
