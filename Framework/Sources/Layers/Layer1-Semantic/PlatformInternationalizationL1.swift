@@ -9,6 +9,10 @@
 import Foundation
 import SwiftUI
 
+// Issue #245 / gh-243 (audit): anonymous `.automaticCompliance()` on RTL/layout shells and
+// `platformPresentLocalizedContent_L1` (arbitrary `content`). `automaticCompliance(named:)` remains
+// only on localized TextField / SecureField / TextEditor APIs — intentional control anchors, not generic hosts.
+
 // MARK: - Layer 1 Internationalization Functions
 
 /// Present localized content with automatic RTL support
