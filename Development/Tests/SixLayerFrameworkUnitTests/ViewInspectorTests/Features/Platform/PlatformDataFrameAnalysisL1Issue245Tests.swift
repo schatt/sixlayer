@@ -70,7 +70,7 @@ open class PlatformDataFrameAnalysisL1Issue245Tests: BaseTestClass {
     }
 
     @Test @MainActor
-    func testIssue245_dataFrameDefaultViewsKeepNamedAutomaticComplianceModifier() async {
+    func testIssue245_dataFrameDefaultViewsDoNotUseNamedAutomaticComplianceModifier() async {
         let dataFrame = makeDataFrame()
         let views: [(name: String, view: AnyView)] = [
             ("platformAnalyzeDataFrame_L1", AnyView(platformAnalyzeDataFrame_L1(dataFrame: dataFrame))),
@@ -90,8 +90,8 @@ open class PlatformDataFrameAnalysisL1Issue245Tests: BaseTestClass {
                 let log = isolated.getDebugLog()
                 let fingerprint = Self.issue245_namedAutomaticComplianceFingerprint(componentName: wrapper.name)
                 #expect(
-                    log.contains(fingerprint),
-                    "\(wrapper.name) default view should still use NamedAutomaticComplianceModifier; log sample: \(String(log.suffix(400)))"
+                    !log.contains(fingerprint),
+                    "\(wrapper.name) default entry must not use NamedAutomaticComplianceModifier (issue #245); use identifierName path; log sample: \(String(log.suffix(400)))"
                 )
             }
         }
