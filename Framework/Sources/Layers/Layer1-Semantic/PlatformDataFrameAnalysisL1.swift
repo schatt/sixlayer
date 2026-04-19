@@ -28,7 +28,7 @@ public func platformAnalyzeDataFrame_L1(
     hints: DataFrameAnalysisHints = DataFrameAnalysisHints()
 ) -> some View {
     DataFrameAnalysisView(dataFrame: dataFrame, hints: hints)
-        .automaticCompliance(named: "platformAnalyzeDataFrame_L1")
+        .automaticCompliance(identifierName: "platformAnalyzeDataFrame_L1")
 }
 
 /// Analyze multiple DataFrames and provide comparative insights
@@ -47,7 +47,7 @@ public func platformCompareDataFrames_L1(
     hints: DataFrameAnalysisHints = DataFrameAnalysisHints()
 ) -> some View {
     DataFrameComparisonView(dataFrames: dataFrames, hints: hints)
-        .automaticCompliance(named: "platformCompareDataFrames_L1")
+        .automaticCompliance(identifierName: "platformCompareDataFrames_L1")
 }
 
 /// Analyze DataFrame data quality and provide recommendations
@@ -66,7 +66,7 @@ public func platformAssessDataQuality_L1(
     hints: DataFrameAnalysisHints = DataFrameAnalysisHints()
 ) -> some View {
     DataQualityAssessmentView(dataFrame: dataFrame, hints: hints)
-        .automaticCompliance(named: "platformAssessDataQuality_L1")
+        .automaticCompliance(identifierName: "platformAssessDataQuality_L1")
 }
 
 // MARK: - Custom Visualization View Support
@@ -95,7 +95,7 @@ public func platformAnalyzeDataFrame_L1<VisualizationContent: View>(
             .automaticCompliance())
     } else {
         return AnyView(baseAnalysisView
-            .automaticCompliance(named: "platformAnalyzeDataFrame_L1"))
+            .automaticCompliance(identifierName: "platformAnalyzeDataFrame_L1"))
     }
 }
 
@@ -123,7 +123,7 @@ public func platformCompareDataFrames_L1<VisualizationContent: View>(
             .automaticCompliance())
     } else {
         return AnyView(baseComparisonView
-            .automaticCompliance(named: "platformCompareDataFrames_L1"))
+            .automaticCompliance(identifierName: "platformCompareDataFrames_L1"))
     }
 }
 
@@ -151,7 +151,7 @@ public func platformAssessDataQuality_L1<VisualizationContent: View>(
             .automaticCompliance())
     } else {
         return AnyView(baseQualityView
-            .automaticCompliance(named: "platformAssessDataQuality_L1"))
+            .automaticCompliance(identifierName: "platformAssessDataQuality_L1"))
     }
 }
 
@@ -205,9 +205,9 @@ public enum AnalysisDepth: String, CaseIterable {
 
 // MARK: - DataFrame Analysis Views
 
-// Issue #245 / gh-243: internal `automaticCompliance(named:)` roots below identify the framework-owned
-// DataFrame analysis view hierarchy. They differ from the `customVisualizationView` overload branches,
-// where the outer wrapper is caller-owned and therefore uses anonymous compliance only.
+// Issue #245 / gh-243: internal views use `.automaticCompliance(identifierName:)` (not `named:`) so roots
+// are stable for tests/UITest without `NamedAutomaticComplianceModifier`. Custom-visualization overloads
+// keep anonymous compliance on the caller-owned outer wrapper only.
 
 /// Main view for DataFrame analysis results
 private struct DataFrameAnalysisView: View {
@@ -232,7 +232,7 @@ private struct DataFrameAnalysisView: View {
         .onAppear {
             performAnalysis()
         }
-        .automaticCompliance(named: "DataFrameAnalysisView")
+        .automaticCompliance(identifierName: "DataFrameAnalysisView")
     }
     
     private func performAnalysis() {
@@ -276,7 +276,7 @@ private struct DataFrameAnalysisContentView: View {
             }
             .padding()
         }
-        .automaticCompliance(named: "DataFrameAnalysisContentView")
+        .automaticCompliance(identifierName: "DataFrameAnalysisContentView")
     }
 }
 
@@ -310,7 +310,7 @@ private struct DataFrameOverviewSection: View {
         .padding()
         .background(Color.platformSecondaryBackground)
         .cornerRadius(8)
-        .automaticCompliance(named: "DataFrameOverviewSection")
+        .automaticCompliance(identifierName: "DataFrameOverviewSection")
     }
     
     private func qualityColor(_ score: Double) -> Color {
@@ -357,7 +357,7 @@ private struct DataQualitySection: View {
         .padding()
         .background(Color.platformSecondaryBackground)
         .cornerRadius(8)
-        .automaticCompliance(named: "DataQualitySection")
+        .automaticCompliance(identifierName: "DataQualitySection")
     }
 }
 
@@ -391,7 +391,7 @@ private struct StatisticalAnalysisSection: View {
         .padding()
         .background(Color.platformSecondaryBackground)
         .cornerRadius(8)
-        .automaticCompliance(named: "StatisticalAnalysisSection")
+        .automaticCompliance(identifierName: "StatisticalAnalysisSection")
     }
 }
 
@@ -433,7 +433,7 @@ private struct PatternRecognitionSection: View {
         .padding()
         .background(Color.platformSecondaryBackground)
         .cornerRadius(8)
-        .automaticCompliance(named: "PatternRecognitionSection")
+        .automaticCompliance(identifierName: "PatternRecognitionSection")
     }
 }
 
@@ -460,7 +460,7 @@ private struct VisualizationRecommendationsSection: View {
         .padding()
         .background(Color.platformSecondaryBackground)
         .cornerRadius(8)
-        .automaticCompliance(named: "VisualizationRecommendationsSection")
+        .automaticCompliance(identifierName: "VisualizationRecommendationsSection")
     }
 }
 
@@ -493,7 +493,7 @@ private struct QualityMetricRow: View {
                     .frame(width: 100)
             }
         }
-        .automaticCompliance(named: "QualityMetricRow")
+        .automaticCompliance(identifierName: "QualityMetricRow")
     }
     
     private func qualityColor(_ score: Double) -> Color {
@@ -523,7 +523,7 @@ private struct PatternRow: View {
             
             Spacer()
         }
-        .automaticCompliance(named: "PatternRow")
+        .automaticCompliance(identifierName: "PatternRow")
     }
 }
 
@@ -553,7 +553,7 @@ private struct VisualizationRecommendationRow: View {
                     .foregroundColor(.secondary)
             }
         }
-        .automaticCompliance(named: "VisualizationRecommendationRow")
+        .automaticCompliance(identifierName: "VisualizationRecommendationRow")
     }
 }
 
@@ -577,7 +577,7 @@ private struct DataFrameComparisonView: View {
                 .foregroundColor(.secondary)
         }
         .padding()
-        .automaticCompliance(named: "DataFrameComparisonView")
+        .automaticCompliance(identifierName: "DataFrameComparisonView")
     }
 }
 
@@ -605,7 +605,7 @@ private struct DataQualityAssessmentView: View {
         .onAppear {
             performAnalysis()
         }
-        .automaticCompliance(named: "DataQualityAssessmentView")
+        .automaticCompliance(identifierName: "DataQualityAssessmentView")
     }
     
     private func performAnalysis() {
