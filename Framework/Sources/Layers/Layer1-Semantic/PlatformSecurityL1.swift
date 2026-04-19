@@ -9,6 +9,10 @@
 import Foundation
 import SwiftUI
 
+// Issue #245 / gh-243: `platformPresentSecureContent_L1` — anonymous compliance (arbitrary `content`).
+// `platformPresentSecureTextField_L1` — `.automaticCompliance(identifierName:)` on the framework control.
+// `platformShowPrivacyIndicator_L1` / badge APIs — no view trees requiring named roots here.
+
 // MARK: - Layer 1 Security Functions
 
 /// Present secure content with biometric authentication
