@@ -401,29 +401,32 @@ open class PlatformSemanticLayer1Tests: BaseTestClass {
     // MARK: - platformPresentBasicValue_L1 Tests
     
     @Test @MainActor func testPlatformPresentBasicValueL1GeneratesAccessibilityIdentifiersOnIOS() async {
-        let testValue = 42
-        let hints = PresentationHints(
-            dataType: .numeric,
-            presentationPreference: .card,
-            complexity: .simple,
-            context: .detail,
-            customPreferences: [:]
-        )
-        
-        let view = platformPresentBasicValue_L1(value: testValue, hints: hints)
-        
-        #if canImport(ViewInspector)
-        let hasAccessibilityID = testAccessibilityIdentifiersCrossPlatform(
-            view, 
-            expectedPattern: "SixLayer.main.ui*", 
-            componentName: "platformPresentBasicValue_L1",
-            testName: "PlatformTest"
-        )
- #expect(hasAccessibilityID, "platformPresentBasicValue_L1 should generate accessibility identifiers on iOS ")
-        #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-        // The modifier IS present in the code, but ViewInspector can't detect it on macOS
-        #endif
+        initializeTestConfig()
+        await runWithTaskLocalConfig {
+            let testValue = 42
+            let hints = PresentationHints(
+                dataType: .numeric,
+                presentationPreference: .card,
+                complexity: .simple,
+                context: .detail,
+                customPreferences: [:]
+            )
+            
+            let view = platformPresentBasicValue_L1(value: testValue, hints: hints)
+            
+            #if canImport(ViewInspector)
+            let hasAccessibilityID = testAccessibilityIdentifiersCrossPlatform(
+                view,
+                expectedPattern: "SixLayer.main.ui*",
+                componentName: "platformPresentBasicValue_L1",
+                testName: "PlatformTest"
+            )
+            #expect(hasAccessibilityID, "platformPresentBasicValue_L1 should generate accessibility identifiers on iOS ")
+            #else
+            // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+            // The modifier IS present in the code, but ViewInspector can't detect it on macOS
+            #endif
+        }
     }
     
     @Test @MainActor func testPlatformPresentBasicValueL1GeneratesAccessibilityIdentifiersOnMacOS() async {

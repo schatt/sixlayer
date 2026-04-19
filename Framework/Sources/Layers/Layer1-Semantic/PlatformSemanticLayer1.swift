@@ -820,7 +820,7 @@ public func platformPresentBasicValue_L1(
         .automaticAccessibility()
         .platformPatterns()
         .visualConsistency()
-        // Issue #245: single anonymous shell on `BasicValueView` (see body); avoid stacking with outer wrappers.
+        .automaticCompliance()
 }
 
 /// Present basic arrays with appropriate formatting (no AnyView — Issue 178).
@@ -834,7 +834,7 @@ public func platformPresentBasicArray_L1(
         .automaticAccessibility()
         .platformPatterns()
         .visualConsistency()
-        // Issue #245: single anonymous shell on `BasicArrayView` (see body).
+        .automaticCompliance()
 }
 
 /// Generic function for presenting settings interface
@@ -4432,8 +4432,7 @@ private struct BasicValueView: View {
         .padding()
         .background(Color.blue.opacity(0.1))
         .cornerRadius(12)
-        // Issue #245 / gh-243: anonymous leaf shell (no `named`) over runtime `Any` scalar presentation.
-        .automaticCompliance()
+        // Issue #245: compliance applied on `platformPresentBasicValue_L1` (anonymous), not here.
     }
 }
 
@@ -4482,8 +4481,7 @@ private struct BasicArrayView: View {
         .padding()
         .background(Color.orange.opacity(0.1))
         .cornerRadius(12)
-        // Issue #245 / gh-243: anonymous leaf shell over runtime-shaped array previews.
-        .automaticCompliance()
+        // Issue #245: compliance applied on `platformPresentBasicArray_L1` (anonymous), not here.
     }
 }
 
