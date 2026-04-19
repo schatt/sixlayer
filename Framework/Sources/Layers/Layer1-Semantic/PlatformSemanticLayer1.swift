@@ -242,10 +242,9 @@ public func platformResponsiveCard_L1<Content: View>(
         complexity: hints.complexity
     )
     
+    // Issue #245 / gh-243: `ResponsiveCardView` already applies `automaticCompliance(identifierName:)` from the
+    // card title. Do not add an extra `automaticCompliance(named:)` root (misleading vs inner a11y / #243).
     return ResponsiveCardView(data: cardData)
-        // Issue #245 / gh-243: keep named — this API returns a fixed framework-owned `ResponsiveCardView`
-        // (structured L1 demo card), not a thin named shell over arbitrary caller content.
-        .automaticCompliance(named: "platformResponsiveCard_L1")
 }
 
 /// Generic function for presenting form data using our intelligent form system
@@ -2526,8 +2525,8 @@ public struct GenericFormView: View {
                 }
             }
         )
-        // Issue #245 / gh-243: keep named — structured dynamic-form shell; inner fields carry their own compliance.
-        .automaticCompliance(named: "GenericFormView")
+        // Issue #245 / gh-243: caller-defined fields are arbitrary content; anonymous shell (inner controls stay named/typed).
+        .automaticCompliance()
     }
 }
 
@@ -4332,9 +4331,8 @@ public struct GenericContentView: View {
             platformPresentBasicValue_L1(value: content, hints: hints)
         } else {
             GenericFallbackView(content: content, hints: hints)
-                // Issue #245 / gh-243: keep named — only the unknown-type fallback branch; all typed paths delegate
-                // to other presenters. Names the framework fallback surface, not arbitrary user chrome.
-                .automaticCompliance(named: "GenericContentView")
+                // Issue #245 / gh-243: unknown-type fallback is runtime/caller content; avoid a fixed named root.
+                .automaticCompliance()
         }
     }
     
@@ -4433,8 +4431,8 @@ private struct BasicValueView: View {
         .padding()
         .background(Color.blue.opacity(0.1))
         .cornerRadius(12)
-        // Issue #245 / gh-243: keep named — framework-owned typed scalar presenter (not a generic content wrapper).
-        .automaticCompliance(named: "BasicValueView")
+        // Issue #245 / gh-243: value is runtime `Any`; anonymous shell so scalar text keeps discoverable auto IDs.
+        .automaticCompliance()
     }
 }
 
@@ -4483,8 +4481,8 @@ private struct BasicArrayView: View {
         .padding()
         .background(Color.orange.opacity(0.1))
         .cornerRadius(12)
-        // Issue #245 / gh-243: keep named — framework-owned list summary UI for `[Any]` previews, not caller chrome.
-        .automaticCompliance(named: "BasicArrayView")
+        // Issue #245 / gh-243: array content is runtime-shaped; anonymous shell over list preview chrome.
+        .automaticCompliance()
     }
 }
 
@@ -4526,8 +4524,8 @@ private struct GenericFallbackView: View {
         .padding()
         .background(Color.secondary.opacity(0.1))
         .cornerRadius(12)
-        // Issue #245 / gh-243: keep named — intentional diagnostic surface for unknown runtime types.
-        .automaticCompliance(named: "GenericFallbackView")
+        // Issue #245 / gh-243: introspection of unknown `Any` must not advertise a stable framework-named root.
+        .automaticCompliance()
     }
 }
 
@@ -4745,8 +4743,8 @@ public struct GenericSettingsView: View {
         .onAppear {
             initializeValues()
         }
-        // Issue #245 / gh-243: keep named — structured settings experience; sections/controls have inner IDs.
-        .automaticCompliance(named: "GenericSettingsView")
+        // Issue #245 / gh-243: caller-owned settings model; anonymous outer shell (rows/toggles keep inner IDs).
+        .automaticCompliance()
     }
     
     private func initializeValues() {
