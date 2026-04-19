@@ -402,7 +402,7 @@ open class PlatformSemanticLayer1Tests: BaseTestClass {
     
     @Test @MainActor func testPlatformPresentBasicValueL1GeneratesAccessibilityIdentifiersOnIOS() async {
         initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             let testValue = 42
             let hints = PresentationHints(
                 dataType: .numeric,
