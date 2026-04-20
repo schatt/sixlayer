@@ -789,6 +789,95 @@ public func hostedPlatformViewHasNonEmptyAccessibilityLabelForIdentifierSubstrin
     #endif
 }
 
+/// Same as `hostedPlatformViewHasNonEmptyAccessibilityLabelForIdentifierSubstring` but checks
+/// `accessibilityHint` (buttons and controls that benefit from extra context; Issue #169).
+@MainActor
+public func hostedPlatformViewHasNonEmptyAccessibilityHintForIdentifierSubstring(
+    root: Any?,
+    identifierSubstring: String,
+    caseInsensitive: Bool = true
+) -> Bool {
+    func idMatches(_ id: String) -> Bool {
+        if caseInsensitive {
+            return id.range(of: identifierSubstring, options: .caseInsensitive) != nil
+        }
+        return id.contains(identifierSubstring)
+    }
+    func hintNonEmpty(_ hint: String?) -> Bool {
+        guard let hint, !hint.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return false }
+        return true
+    }
+    #if canImport(UIKit)
+    guard let rootView = root as? UIView else { return false }
+
+    func matchesOnView(_ view: UIView) -> Bool {
+        guard let id = view.accessibilityIdentifier, idMatches(id) else { return false }
+        if hintNonEmpty(view.accessibilityHint) { return true }
+        if let elements = view.accessibilityElements {
+            for el in elements {
+                if let ax = el as? UIAccessibilityElement, hintNonEmpty(ax.accessibilityHint) { return true }
+                if let v = el as? UIView, hintNonEmpty(v.accessibilityHint) { return true }
+            }
+        }
+        return false
+    }
+
+    var stack: [(UIView, Int)] = [(rootView, 0)]
+    var checked: Set<ObjectIdentifier> = []
+    var viewCount = 0
+    let maxViews = 500
+    while let (next, depth) = stack.popLast(), viewCount < maxViews {
+        viewCount += 1
+        let oid = ObjectIdentifier(next)
+        if checked.contains(oid) { continue }
+        checked.insert(oid)
+        if matchesOnView(next) { return true }
+        if depth < 40 {
+            let children: [UIView] = next.subviews.count > 20 ? Array(next.subviews.prefix(20)) : next.subviews
+            for sub in children { stack.append((sub, depth + 1)) }
+        }
+    }
+    return false
+    #elseif canImport(AppKit)
+    guard let rootView = root as? NSView else { return false }
+
+    func matchesOnView(_ view: NSView) -> Bool {
+        let id = view.accessibilityIdentifier()
+        guard !id.isEmpty, idMatches(id) else { return false }
+        if hintNonEmpty(view.accessibilityHint()) { return true }
+        if let children = view.accessibilityChildren() {
+            for child in children.prefix(50) {
+                if let el = child as? NSAccessibilityElement, hintNonEmpty(el.accessibilityHint()) {
+                    return true
+                }
+                if let v = child as? NSView, hintNonEmpty(v.accessibilityHint()) { return true }
+            }
+        }
+        return false
+    }
+
+    var stack: [(NSView, Int)] = [(rootView, 0)]
+    var checked: Set<ObjectIdentifier> = []
+    var viewCount = 0
+    let maxViews = 500
+    while let (next, depth) = stack.popLast(), viewCount < maxViews {
+        viewCount += 1
+        let oid = ObjectIdentifier(next)
+        if checked.contains(oid) { continue }
+        checked.insert(oid)
+        if matchesOnView(next) { return true }
+        if depth < 40 {
+            let subviews = next.subviews
+            let children: [NSView] = subviews.count > 20 ? Array(subviews.prefix(20)) : subviews
+            for sub in children { stack.append((sub, depth + 1)) }
+        }
+    }
+    return false
+    #else
+    return false
+    #endif
+}
+
 /// Test utilities for accessibility identifier testing
 public enum AccessibilityTestUtilities {
     
