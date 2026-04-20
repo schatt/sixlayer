@@ -262,6 +262,7 @@ private func cloudKitAccountStatusAccessibilitySummary(_ status: CKAccountStatus
     }
 }
 
+@MainActor
 private func cloudKitServiceStatusAccessibilitySummary(service: CloudKitService) -> String {
     let account = cloudKitAccountStatusAccessibilitySummary(service.accountStatus)
     let sync = cloudKitSyncStatusAccessibilitySummary(service.syncStatus)
