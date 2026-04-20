@@ -552,7 +552,7 @@ struct FieldInfo {
     let fieldType: String
     let isOptional: Bool
     let isArray: Bool
-    /// Parsed Swift `= …` literal when present; merged into `.hints` as `defaultValue` only if the hints file does not already set it.
+    /// Parsed Swift `= …` literal when present; merged into `.hints` as `defaultValue` whenever present (overwrites hints to match model changes).
     let defaultValue: (any Sendable)?
     let isHidden: Bool  // Whether field should be hidden from forms
     let isEditable: Bool  // Whether field is editable (false for computed properties)
@@ -571,7 +571,8 @@ struct HintsGenerator {
     /// Returns both the hints dictionary and the field order (to preserve custom ordering)
     ///
     /// **Merge policy:** Fills missing structural keys from the model (`fieldType`, `isOptional`, `isArray`, `isHidden`, `isEditable`).
-    /// If the Swift model declares `= …` and the hints file has no `defaultValue` for that field, writes `defaultValue` to match the model (including numeric or boolean zero).
+    /// Whenever the Swift model has a parseable `= …` literal, overwrites `defaultValue` in hints so it stays aligned if the model default changes (including numeric or boolean zero).
+    /// If the model has no literal default, any existing `defaultValue` in hints is left unchanged.
     /// Does not set `placeholder` or other presentation keys from Swift—see regenerated `__example` for the full shape; authors override in JSON as needed.
     /// Preserves _sections if they exist, or creates a default section if none exist
     static func generateHintsJSON(
@@ -622,7 +623,7 @@ struct HintsGenerator {
             if fieldHintsDict["isArray"] == nil {
                 fieldHintsDict["isArray"] = field.isArray
             }
-            if let modelDefault = field.defaultValue, fieldHintsDict["defaultValue"] == nil {
+            if let modelDefault = field.defaultValue {
                 fieldHintsDict["defaultValue"] = modelDefault
             }
             // Add isHidden (only if not already present, to allow manual override)
@@ -1262,7 +1263,8 @@ func main() {
 }
 
 /// Generate or update a hints file for a set of fields.
-/// Preserves each field’s existing JSON keys; fills only missing structural keys and missing `defaultValue` from Swift `= …` literals.
+/// Preserves each field’s existing JSON keys except `defaultValue` is overwritten whenever the Swift model supplies a parseable `= …` literal.
+/// Fills only missing structural keys (`fieldType`, `isOptional`, `isArray`, `isHidden`, `isEditable`).
 /// Replaces `__example` with the current template each run.
 func generateHintsFile(for fields: [FieldInfo], outputURL: URL) {
     // Ensure output directory exists
@@ -1344,7 +1346,7 @@ func generateHintsFile(for fields: [FieldInfo], outputURL: URL) {
             "fieldType": "string",  // string, number, boolean, date, url, uuid, document, image, custom
             "isOptional": false,
             "isArray": false,
-            "defaultValue": NSNull(),  // Optional; generator copies Swift `= …` here when this key is absent in your field entry
+            "defaultValue": NSNull(),  // Optional; generator overwrites from Swift `= …` whenever the model declares a literal
             "placeholder": NSNull(),  // Optional; hint text when empty—not derived from the model script (use for UX without pre-fill)
             "isHidden": false,
             "isEditable": true,  // false for computed/read-only fields
