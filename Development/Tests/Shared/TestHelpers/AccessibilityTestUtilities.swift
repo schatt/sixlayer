@@ -743,6 +743,35 @@ public func hostedPlatformViewHasNonEmptyAccessibilityLabelForIdentifierSubstrin
         return subtreeHasAccessibleLabel(view, remainingDepth: 16)
     }
 
+    /// SwiftUI / hosting often exposes matching `accessibilityIdentifier` on `UIAccessibilityElement`
+    /// children (container API or `accessibilityElements`) rather than on the `UIView` itself (#169).
+    func accessibilityExtrasMatchLabel(on view: UIView) -> Bool {
+        if view.responds(to: NSSelectorFromString("accessibilityElementCount")) {
+            for child in accessibilityContainerChildren(for: view) {
+                if let ax = child as? UIAccessibilityElement,
+                   let cid = ax.accessibilityIdentifier, idMatches(cid),
+                   labelNonEmpty(ax.accessibilityLabel) { return true }
+                if let v = child as? UIView,
+                   let cid = v.accessibilityIdentifier, idMatches(cid),
+                   labelNonEmpty(v.accessibilityLabel) { return true }
+            }
+        }
+        if let elements = view.accessibilityElements {
+            for el in elements {
+                if let ax = el as? UIAccessibilityElement,
+                   let cid = ax.accessibilityIdentifier, idMatches(cid),
+                   labelNonEmpty(ax.accessibilityLabel) { return true }
+            }
+        }
+        return false
+    }
+
+    func inspectView(_ view: UIView) -> Bool {
+        if matchesOnView(view) { return true }
+        if accessibilityExtrasMatchLabel(on: view) { return true }
+        return false
+    }
+
     var stack: [(UIView, Int)] = [(rootView, 0)]
     var checked: Set<ObjectIdentifier> = []
     var viewCount = 0
@@ -752,7 +781,7 @@ public func hostedPlatformViewHasNonEmptyAccessibilityLabelForIdentifierSubstrin
         let oid = ObjectIdentifier(next)
         if checked.contains(oid) { continue }
         checked.insert(oid)
-        if matchesOnView(next) { return true }
+        if inspectView(next) { return true }
         if depth < 40 {
             let children: [UIView] = next.subviews.count > 20 ? Array(next.subviews.prefix(20)) : next.subviews
             for sub in children { stack.append((sub, depth + 1)) }
@@ -840,6 +869,33 @@ public func hostedPlatformViewHasNonEmptyAccessibilityHintForIdentifierSubstring
         return false
     }
 
+    func accessibilityExtrasMatchHint(on view: UIView) -> Bool {
+        if view.responds(to: NSSelectorFromString("accessibilityElementCount")) {
+            for child in accessibilityContainerChildren(for: view) {
+                if let ax = child as? UIAccessibilityElement,
+                   let cid = ax.accessibilityIdentifier, idMatches(cid),
+                   hintNonEmpty(ax.accessibilityHint) { return true }
+                if let v = child as? UIView,
+                   let cid = v.accessibilityIdentifier, idMatches(cid),
+                   hintNonEmpty(v.accessibilityHint) { return true }
+            }
+        }
+        if let elements = view.accessibilityElements {
+            for el in elements {
+                if let ax = el as? UIAccessibilityElement,
+                   let cid = ax.accessibilityIdentifier, idMatches(cid),
+                   hintNonEmpty(ax.accessibilityHint) { return true }
+            }
+        }
+        return false
+    }
+
+    func inspectView(_ view: UIView) -> Bool {
+        if matchesOnView(view) { return true }
+        if accessibilityExtrasMatchHint(on: view) { return true }
+        return false
+    }
+
     var stack: [(UIView, Int)] = [(rootView, 0)]
     var checked: Set<ObjectIdentifier> = []
     var viewCount = 0
@@ -849,7 +905,7 @@ public func hostedPlatformViewHasNonEmptyAccessibilityHintForIdentifierSubstring
         let oid = ObjectIdentifier(next)
         if checked.contains(oid) { continue }
         checked.insert(oid)
-        if matchesOnView(next) { return true }
+        if inspectView(next) { return true }
         if depth < 40 {
             let children: [UIView] = next.subviews.count > 20 ? Array(next.subviews.prefix(20)) : next.subviews
             for sub in children { stack.append((sub, depth + 1)) }
