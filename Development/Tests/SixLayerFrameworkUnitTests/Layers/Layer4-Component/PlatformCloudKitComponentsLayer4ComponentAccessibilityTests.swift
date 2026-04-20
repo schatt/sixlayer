@@ -120,11 +120,12 @@ open class PlatformCloudKitComponentsLayer4ComponentAccessibilityTests: BaseTest
         let view = platformCloudKitSyncStatus_L4(status: .idle)
         let root = hostedRootForIssue169CloudKitContract(view)
         #expect(
-            hostedPlatformViewHasNonEmptyAccessibilityLabelForIdentifierSubstring(
+            hostedPlatformViewExposesIdentifierAndContainsLabelText(
                 root: root,
-                identifierSubstring: "platformCloudKitSyncStatus_L4"
+                identifierSubstring: "platformCloudKitSyncStatus_L4",
+                labelSubstring: "CloudKit"
             ),
-            "platformCloudKitSyncStatus_L4 must expose a non-empty accessibility label on the named compliance element (Issue #169)"
+            "platformCloudKitSyncStatus_L4 must surface a generated id and CloudKit-related VoiceOver label text (Issue #169)"
         )
     }
 
@@ -132,11 +133,12 @@ open class PlatformCloudKitComponentsLayer4ComponentAccessibilityTests: BaseTest
         let view = platformCloudKitProgress_L4(progress: 0.5)
         let root = hostedRootForIssue169CloudKitContract(view)
         #expect(
-            hostedPlatformViewHasNonEmptyAccessibilityLabelForIdentifierSubstring(
+            hostedPlatformViewExposesIdentifierAndContainsLabelText(
                 root: root,
-                identifierSubstring: "platformCloudKitProgress_L4"
+                identifierSubstring: "platformCloudKitProgress_L4",
+                labelSubstring: "percent"
             ),
-            "platformCloudKitProgress_L4 must expose a non-empty accessibility label on the named compliance element (Issue #169)"
+            "platformCloudKitProgress_L4 must surface a generated id and progress label text (Issue #169)"
         )
     }
 
@@ -144,11 +146,12 @@ open class PlatformCloudKitComponentsLayer4ComponentAccessibilityTests: BaseTest
         let view = platformCloudKitAccountStatus_L4(status: .available)
         let root = hostedRootForIssue169CloudKitContract(view)
         #expect(
-            hostedPlatformViewHasNonEmptyAccessibilityLabelForIdentifierSubstring(
+            hostedPlatformViewExposesIdentifierAndContainsLabelText(
                 root: root,
-                identifierSubstring: "platformCloudKitAccountStatus_L4"
+                identifierSubstring: "platformCloudKitAccountStatus_L4",
+                labelSubstring: "iCloud"
             ),
-            "platformCloudKitAccountStatus_L4 must expose a non-empty accessibility label on the named compliance element (Issue #169)"
+            "platformCloudKitAccountStatus_L4 must surface a generated id and iCloud account label text (Issue #169)"
         )
     }
 
@@ -158,11 +161,12 @@ open class PlatformCloudKitComponentsLayer4ComponentAccessibilityTests: BaseTest
         let view = platformCloudKitServiceStatus_L4(service: service)
         let root = hostedRootForIssue169CloudKitContract(view)
         #expect(
-            hostedPlatformViewHasNonEmptyAccessibilityLabelForIdentifierSubstring(
+            hostedPlatformViewExposesIdentifierAndContainsLabelText(
                 root: root,
-                identifierSubstring: "platformCloudKitServiceStatus_L4"
+                identifierSubstring: "platformCloudKitServiceStatus_L4",
+                labelSubstring: "CloudKit"
             ),
-            "platformCloudKitServiceStatus_L4 must expose a non-empty accessibility label on the named compliance element (Issue #169)"
+            "platformCloudKitServiceStatus_L4 must surface a generated id and CloudKit-related label text (Issue #169)"
         )
     }
 
@@ -172,18 +176,20 @@ open class PlatformCloudKitComponentsLayer4ComponentAccessibilityTests: BaseTest
         let view = platformCloudKitSyncButton_L4(service: service)
         let root = hostedRootForIssue169CloudKitContract(view)
         #expect(
-            hostedPlatformViewHasNonEmptyAccessibilityLabelForIdentifierSubstring(
+            hostedPlatformViewExposesIdentifierAndContainsLabelText(
                 root: root,
-                identifierSubstring: "platformCloudKitSyncButton_L4"
+                identifierSubstring: "platformCloudKitSyncButton_L4",
+                labelSubstring: "Sync"
             ),
-            "platformCloudKitSyncButton_L4 must expose a non-empty accessibility label on the named compliance element (Issue #169)"
+            "platformCloudKitSyncButton_L4 must surface a generated id and button label text (Issue #169)"
         )
         #expect(
-            hostedPlatformViewHasNonEmptyAccessibilityHintForIdentifierSubstring(
+            hostedPlatformViewExposesIdentifierAndContainsHintText(
                 root: root,
-                identifierSubstring: "platformCloudKitSyncButton_L4"
+                identifierSubstring: "platformCloudKitSyncButton_L4",
+                hintSubstring: "Starts"
             ),
-            "platformCloudKitSyncButton_L4 must expose a non-empty accessibility hint (Issue #169)"
+            "platformCloudKitSyncButton_L4 must surface a generated id and a sync hint (Issue #169)"
         )
     }
 
@@ -193,11 +199,12 @@ open class PlatformCloudKitComponentsLayer4ComponentAccessibilityTests: BaseTest
         let view = platformCloudKitStatusBadge_L4(service: service)
         let root = hostedRootForIssue169CloudKitContract(view)
         #expect(
-            hostedPlatformViewHasNonEmptyAccessibilityLabelForIdentifierSubstring(
+            hostedPlatformViewExposesIdentifierAndContainsLabelText(
                 root: root,
-                identifierSubstring: "platformCloudKitStatusBadge_L4"
+                identifierSubstring: "platformCloudKitStatusBadge_L4",
+                labelSubstring: "CloudKit"
             ),
-            "platformCloudKitStatusBadge_L4 must expose a non-empty accessibility label on the named compliance element (Issue #169)"
+            "platformCloudKitStatusBadge_L4 must surface a generated id and CloudKit status label text (Issue #169)"
         )
     }
 
