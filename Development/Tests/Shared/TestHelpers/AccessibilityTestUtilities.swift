@@ -726,16 +726,29 @@ public func hostedViewAccessibilityTreeContainsLabelSubstring(
         if checked.contains(oid) { continue }
         checked.insert(oid)
         if textMatches(next.accessibilityLabel) { return true }
+        if textMatches(next.accessibilityValue) { return true }
         if let elements = next.accessibilityElements {
             for el in elements {
-                if let ax = el as? UIAccessibilityElement, textMatches(ax.accessibilityLabel) { return true }
-                if let v = el as? UIView, textMatches(v.accessibilityLabel) { return true }
+                if let ax = el as? UIAccessibilityElement {
+                    if textMatches(ax.accessibilityLabel) { return true }
+                    if textMatches(ax.accessibilityValue) { return true }
+                }
+                if let v = el as? UIView {
+                    if textMatches(v.accessibilityLabel) { return true }
+                    if textMatches(v.accessibilityValue) { return true }
+                }
             }
         }
         if next.responds(to: NSSelectorFromString("accessibilityElementCount")) {
             for child in accessibilityContainerChildren(for: next) {
-                if let ax = child as? UIAccessibilityElement, textMatches(ax.accessibilityLabel) { return true }
-                if let v = child as? UIView, textMatches(v.accessibilityLabel) { return true }
+                if let ax = child as? UIAccessibilityElement {
+                    if textMatches(ax.accessibilityLabel) { return true }
+                    if textMatches(ax.accessibilityValue) { return true }
+                }
+                if let v = child as? UIView {
+                    if textMatches(v.accessibilityLabel) { return true }
+                    if textMatches(v.accessibilityValue) { return true }
+                }
             }
         }
         guard depth < 40 else { continue }
@@ -756,10 +769,17 @@ public func hostedViewAccessibilityTreeContainsLabelSubstring(
         if checked.contains(oid) { continue }
         checked.insert(oid)
         if textMatches(next.accessibilityLabel()) { return true }
+        if textMatches(next.accessibilityValue()) { return true }
         if let children = next.accessibilityChildren() {
             for child in children.prefix(50) {
-                if let el = child as? NSAccessibilityElement, textMatches(el.accessibilityLabel()) { return true }
-                if let v = child as? NSView, textMatches(v.accessibilityLabel()) { return true }
+                if let el = child as? NSAccessibilityElement {
+                    if textMatches(el.accessibilityLabel()) { return true }
+                    if textMatches(el.accessibilityValue()) { return true }
+                }
+                if let v = child as? NSView {
+                    if textMatches(v.accessibilityLabel()) { return true }
+                    if textMatches(v.accessibilityValue()) { return true }
+                }
             }
         }
         guard depth < 40 else { continue }
