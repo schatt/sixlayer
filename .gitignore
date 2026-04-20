@@ -42,9 +42,6 @@ xcuserdata/
 .vscode/
 .idea/
 
-# Agent scratch (overwrite for gh issue comment bodies; do not commit)
-Development/scratch/gh-issue-comment-body.md
-
 # Xcode test result bundles (do not write -resultBundlePath into repo root)
 *.xcresult
 
