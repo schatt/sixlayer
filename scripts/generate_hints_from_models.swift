@@ -570,6 +570,27 @@ struct EntityInfo {
 
 /// Generates .hints JSON files from parsed model information
 struct HintsGenerator {
+    /// `0` / `0.0` from a model default reads as an "entered" value in forms; emit `placeholder` instead unless the hints file already sets `defaultValue` or `placeholder`.
+    private static func isTrivialNumericZero(_ value: (any Sendable)?) -> Bool {
+        guard let value else { return false }
+        if value is Bool { return false }
+        if let intValue = value as? Int { return intValue == 0 }
+        if let int32Value = value as? Int32 { return int32Value == 0 }
+        if let int64Value = value as? Int64 { return int64Value == 0 }
+        if let doubleValue = value as? Double { return doubleValue == 0 }
+        if let floatValue = value as? Float { return floatValue == 0 }
+        if let number = value as? NSNumber {
+            let objcType = String(cString: number.objCType)
+            if objcType == "c" || objcType == "C" || objcType == "B" { return false }
+            return number.compare(NSNumber(value: 0)) == .orderedSame
+        }
+        return false
+    }
+    
+    private static func placeholderText(forTrivialNumericDefault value: any Sendable) -> String {
+        String(describing: value)
+    }
+    
     /// Generate hints file content from field information
     /// Returns both the hints dictionary and the field order (to preserve custom ordering)
     /// For existing fields, preserves all properties exactly as they are
@@ -623,8 +644,14 @@ struct HintsGenerator {
             if fieldHintsDict["isArray"] == nil {
                 fieldHintsDict["isArray"] = field.isArray
             }
-            if field.defaultValue != nil && fieldHintsDict["defaultValue"] == nil {
-                fieldHintsDict["defaultValue"] = field.defaultValue
+            if let modelDefault = field.defaultValue, fieldHintsDict["defaultValue"] == nil {
+                if field.fieldType == "number", Self.isTrivialNumericZero(modelDefault) {
+                    if fieldHintsDict["placeholder"] == nil {
+                        fieldHintsDict["placeholder"] = Self.placeholderText(forTrivialNumericDefault: modelDefault)
+                    }
+                } else {
+                    fieldHintsDict["defaultValue"] = modelDefault
+                }
             }
             // Add isHidden (only if not already present, to allow manual override)
             // Users can manually set isHidden: false to show fields that would normally be hidden
@@ -1348,7 +1375,8 @@ func generateHintsFile(for fields: [FieldInfo], outputURL: URL) {
             "fieldType": "string",  // string, number, boolean, date, url, uuid, document, image, custom
             "isOptional": false,
             "isArray": false,
-            "defaultValue": NSNull(),  // Can be String, Int, Bool, Double, etc.
+            "defaultValue": NSNull(),  // Initial value when you want the field pre-filled (use for real zeros, not hint text)
+            "placeholder": NSNull(),  // Shown when empty; generator maps numeric model default 0 to placeholder, not defaultValue
             "isHidden": false,
             "isEditable": true,  // false for computed/read-only fields
             "expectedLength": NSNull(),  // Int or null
