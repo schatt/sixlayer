@@ -721,8 +721,9 @@ public func hostedPlatformViewHasNonEmptyAccessibilityLabelForIdentifierSubstrin
     #if canImport(UIKit)
     guard let rootView = root as? UIView else { return false }
 
-    func matchesOnView(_ view: UIView) -> Bool {
-        guard let id = view.accessibilityIdentifier, idMatches(id) else { return false }
+    /// SwiftUI often places `accessibilityIdentifier` on a container while the readable label lives
+    /// on `accessibilityElements` or a shallow subview — still a valid VoiceOver experience (Issue #169).
+    func subtreeHasAccessibleLabel(_ view: UIView, remainingDepth: Int) -> Bool {
         if labelNonEmpty(view.accessibilityLabel) { return true }
         if let elements = view.accessibilityElements {
             for el in elements {
@@ -730,7 +731,16 @@ public func hostedPlatformViewHasNonEmptyAccessibilityLabelForIdentifierSubstrin
                 if let v = el as? UIView, labelNonEmpty(v.accessibilityLabel) { return true }
             }
         }
+        guard remainingDepth > 0 else { return false }
+        for sub in view.subviews.prefix(40) {
+            if subtreeHasAccessibleLabel(sub, remainingDepth: remainingDepth - 1) { return true }
+        }
         return false
+    }
+
+    func matchesOnView(_ view: UIView) -> Bool {
+        guard let id = view.accessibilityIdentifier, idMatches(id) else { return false }
+        return subtreeHasAccessibleLabel(view, remainingDepth: 16)
     }
 
     var stack: [(UIView, Int)] = [(rootView, 0)]
@@ -752,9 +762,7 @@ public func hostedPlatformViewHasNonEmptyAccessibilityLabelForIdentifierSubstrin
     #elseif canImport(AppKit)
     guard let rootView = root as? NSView else { return false }
 
-    func matchesOnView(_ view: NSView) -> Bool {
-        let id = view.accessibilityIdentifier()
-        guard !id.isEmpty, idMatches(id) else { return false }
+    func subtreeHasAccessibleLabel(_ view: NSView, remainingDepth: Int) -> Bool {
         if labelNonEmpty(view.accessibilityLabel()) { return true }
         if let children = view.accessibilityChildren() {
             for child in children.prefix(50) {
@@ -764,7 +772,17 @@ public func hostedPlatformViewHasNonEmptyAccessibilityLabelForIdentifierSubstrin
                 if let v = child as? NSView, labelNonEmpty(v.accessibilityLabel()) { return true }
             }
         }
+        guard remainingDepth > 0 else { return false }
+        for sub in view.subviews.prefix(40) {
+            if subtreeHasAccessibleLabel(sub, remainingDepth: remainingDepth - 1) { return true }
+        }
         return false
+    }
+
+    func matchesOnView(_ view: NSView) -> Bool {
+        let id = view.accessibilityIdentifier()
+        guard !id.isEmpty, idMatches(id) else { return false }
+        return subtreeHasAccessibleLabel(view, remainingDepth: 16)
     }
 
     var stack: [(NSView, Int)] = [(rootView, 0)]
