@@ -699,287 +699,21 @@ public func findAllAccessibilityIdentifiersFromPlatformView(_ root: Any?) -> [St
     #endif
 }
 
-/// True when any hosted element's `accessibilityIdentifier` contains `identifierSubstring` and that
-/// element (or an immediate `accessibilityElements` child) has a non-empty `accessibilityLabel`.
-/// Used for Issue #169 Layer 4 contract: named compliance views must expose a VoiceOver label.
+/// Depth-first scan of the hosted platform subtree for any non-empty accessibility label containing `substring`.
+/// Pair with ``testComponentComplianceSinglePlatform`` for Issue #169: identifiers and readable labels often split across nodes.
 @MainActor
-public func hostedPlatformViewHasNonEmptyAccessibilityLabelForIdentifierSubstring(
+public func hostedViewAccessibilityTreeContainsLabelSubstring(
     root: Any?,
-    identifierSubstring: String,
+    substring: String,
     caseInsensitive: Bool = true
 ) -> Bool {
-    func idMatches(_ id: String) -> Bool {
-        if caseInsensitive {
-            return id.range(of: identifierSubstring, options: .caseInsensitive) != nil
-        }
-        return id.contains(identifierSubstring)
-    }
-    func labelNonEmpty(_ label: String?) -> Bool {
-        guard let label, !label.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return false }
-        return true
-    }
-    #if canImport(UIKit)
-    guard let rootView = root as? UIView else { return false }
-
-    /// SwiftUI often places `accessibilityIdentifier` on a container while the readable label lives
-    /// on `accessibilityElements` or a shallow subview — still a valid VoiceOver experience (Issue #169).
-    func subtreeHasAccessibleLabel(_ view: UIView, remainingDepth: Int) -> Bool {
-        if labelNonEmpty(view.accessibilityLabel) { return true }
-        if let elements = view.accessibilityElements {
-            for el in elements {
-                if let ax = el as? UIAccessibilityElement, labelNonEmpty(ax.accessibilityLabel) { return true }
-                if let v = el as? UIView, labelNonEmpty(v.accessibilityLabel) { return true }
-            }
-        }
-        guard remainingDepth > 0 else { return false }
-        for sub in view.subviews.prefix(40) {
-            if subtreeHasAccessibleLabel(sub, remainingDepth: remainingDepth - 1) { return true }
-        }
-        return false
-    }
-
-    func matchesOnView(_ view: UIView) -> Bool {
-        guard let id = view.accessibilityIdentifier, idMatches(id) else { return false }
-        return subtreeHasAccessibleLabel(view, remainingDepth: 16)
-    }
-
-    /// SwiftUI / hosting often exposes matching `accessibilityIdentifier` on `UIAccessibilityElement`
-    /// children (container API or `accessibilityElements`) rather than on the `UIView` itself (#169).
-    func accessibilityExtrasMatchLabel(on view: UIView) -> Bool {
-        if view.responds(to: NSSelectorFromString("accessibilityElementCount")) {
-            for child in accessibilityContainerChildren(for: view) {
-                if let ax = child as? UIAccessibilityElement,
-                   let cid = ax.accessibilityIdentifier, idMatches(cid),
-                   labelNonEmpty(ax.accessibilityLabel) { return true }
-                if let v = child as? UIView,
-                   let cid = v.accessibilityIdentifier, idMatches(cid),
-                   labelNonEmpty(v.accessibilityLabel) { return true }
-            }
-        }
-        if let elements = view.accessibilityElements {
-            for el in elements {
-                if let ax = el as? UIAccessibilityElement,
-                   let cid = ax.accessibilityIdentifier, idMatches(cid),
-                   labelNonEmpty(ax.accessibilityLabel) { return true }
-            }
-        }
-        return false
-    }
-
-    func inspectView(_ view: UIView) -> Bool {
-        if matchesOnView(view) { return true }
-        if accessibilityExtrasMatchLabel(on: view) { return true }
-        return false
-    }
-
-    var stack: [(UIView, Int)] = [(rootView, 0)]
-    var checked: Set<ObjectIdentifier> = []
-    var viewCount = 0
-    let maxViews = 500
-    while let (next, depth) = stack.popLast(), viewCount < maxViews {
-        viewCount += 1
-        let oid = ObjectIdentifier(next)
-        if checked.contains(oid) { continue }
-        checked.insert(oid)
-        if inspectView(next) { return true }
-        if depth < 40 {
-            let children: [UIView] = next.subviews.count > 20 ? Array(next.subviews.prefix(20)) : next.subviews
-            for sub in children { stack.append((sub, depth + 1)) }
-        }
-    }
-    return false
-    #elseif canImport(AppKit)
-    guard let rootView = root as? NSView else { return false }
-
-    func subtreeHasAccessibleLabel(_ view: NSView, remainingDepth: Int) -> Bool {
-        if labelNonEmpty(view.accessibilityLabel()) { return true }
-        if let children = view.accessibilityChildren() {
-            for child in children.prefix(50) {
-                if let el = child as? NSAccessibilityElement, labelNonEmpty(el.accessibilityLabel()) {
-                    return true
-                }
-                if let v = child as? NSView, labelNonEmpty(v.accessibilityLabel()) { return true }
-            }
-        }
-        guard remainingDepth > 0 else { return false }
-        for sub in view.subviews.prefix(40) {
-            if subtreeHasAccessibleLabel(sub, remainingDepth: remainingDepth - 1) { return true }
-        }
-        return false
-    }
-
-    func matchesOnView(_ view: NSView) -> Bool {
-        let id = view.accessibilityIdentifier()
-        guard !id.isEmpty, idMatches(id) else { return false }
-        return subtreeHasAccessibleLabel(view, remainingDepth: 16)
-    }
-
-    var stack: [(NSView, Int)] = [(rootView, 0)]
-    var checked: Set<ObjectIdentifier> = []
-    var viewCount = 0
-    let maxViews = 500
-    while let (next, depth) = stack.popLast(), viewCount < maxViews {
-        viewCount += 1
-        let oid = ObjectIdentifier(next)
-        if checked.contains(oid) { continue }
-        checked.insert(oid)
-        if matchesOnView(next) { return true }
-        if depth < 40 {
-            let subviews = next.subviews
-            let children: [NSView] = subviews.count > 20 ? Array(subviews.prefix(20)) : subviews
-            for sub in children { stack.append((sub, depth + 1)) }
-        }
-    }
-    return false
-    #else
-    return false
-    #endif
-}
-
-/// Same as `hostedPlatformViewHasNonEmptyAccessibilityLabelForIdentifierSubstring` but checks
-/// `accessibilityHint` (buttons and controls that benefit from extra context; Issue #169).
-@MainActor
-public func hostedPlatformViewHasNonEmptyAccessibilityHintForIdentifierSubstring(
-    root: Any?,
-    identifierSubstring: String,
-    caseInsensitive: Bool = true
-) -> Bool {
-    func idMatches(_ id: String) -> Bool {
-        if caseInsensitive {
-            return id.range(of: identifierSubstring, options: .caseInsensitive) != nil
-        }
-        return id.contains(identifierSubstring)
-    }
-    func hintNonEmpty(_ hint: String?) -> Bool {
-        guard let hint, !hint.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return false }
-        return true
-    }
-    #if canImport(UIKit)
-    guard let rootView = root as? UIView else { return false }
-
-    func matchesOnView(_ view: UIView) -> Bool {
-        guard let id = view.accessibilityIdentifier, idMatches(id) else { return false }
-        if hintNonEmpty(view.accessibilityHint) { return true }
-        if let elements = view.accessibilityElements {
-            for el in elements {
-                if let ax = el as? UIAccessibilityElement, hintNonEmpty(ax.accessibilityHint) { return true }
-                if let v = el as? UIView, hintNonEmpty(v.accessibilityHint) { return true }
-            }
-        }
-        return false
-    }
-
-    func accessibilityExtrasMatchHint(on view: UIView) -> Bool {
-        if view.responds(to: NSSelectorFromString("accessibilityElementCount")) {
-            for child in accessibilityContainerChildren(for: view) {
-                if let ax = child as? UIAccessibilityElement,
-                   let cid = ax.accessibilityIdentifier, idMatches(cid),
-                   hintNonEmpty(ax.accessibilityHint) { return true }
-                if let v = child as? UIView,
-                   let cid = v.accessibilityIdentifier, idMatches(cid),
-                   hintNonEmpty(v.accessibilityHint) { return true }
-            }
-        }
-        if let elements = view.accessibilityElements {
-            for el in elements {
-                if let ax = el as? UIAccessibilityElement,
-                   let cid = ax.accessibilityIdentifier, idMatches(cid),
-                   hintNonEmpty(ax.accessibilityHint) { return true }
-            }
-        }
-        return false
-    }
-
-    func inspectView(_ view: UIView) -> Bool {
-        if matchesOnView(view) { return true }
-        if accessibilityExtrasMatchHint(on: view) { return true }
-        return false
-    }
-
-    var stack: [(UIView, Int)] = [(rootView, 0)]
-    var checked: Set<ObjectIdentifier> = []
-    var viewCount = 0
-    let maxViews = 500
-    while let (next, depth) = stack.popLast(), viewCount < maxViews {
-        viewCount += 1
-        let oid = ObjectIdentifier(next)
-        if checked.contains(oid) { continue }
-        checked.insert(oid)
-        if inspectView(next) { return true }
-        if depth < 40 {
-            let children: [UIView] = next.subviews.count > 20 ? Array(next.subviews.prefix(20)) : next.subviews
-            for sub in children { stack.append((sub, depth + 1)) }
-        }
-    }
-    return false
-    #elseif canImport(AppKit)
-    guard let rootView = root as? NSView else { return false }
-
-    func matchesOnView(_ view: NSView) -> Bool {
-        let id = view.accessibilityIdentifier()
-        guard !id.isEmpty, idMatches(id) else { return false }
-        if hintNonEmpty(view.accessibilityHint()) { return true }
-        if let children = view.accessibilityChildren() {
-            for child in children.prefix(50) {
-                if let el = child as? NSAccessibilityElement, hintNonEmpty(el.accessibilityHint()) {
-                    return true
-                }
-                if let v = child as? NSView, hintNonEmpty(v.accessibilityHint()) { return true }
-            }
-        }
-        return false
-    }
-
-    var stack: [(NSView, Int)] = [(rootView, 0)]
-    var checked: Set<ObjectIdentifier> = []
-    var viewCount = 0
-    let maxViews = 500
-    while let (next, depth) = stack.popLast(), viewCount < maxViews {
-        viewCount += 1
-        let oid = ObjectIdentifier(next)
-        if checked.contains(oid) { continue }
-        checked.insert(oid)
-        if matchesOnView(next) { return true }
-        if depth < 40 {
-            let subviews = next.subviews
-            let children: [NSView] = subviews.count > 20 ? Array(subviews.prefix(20)) : subviews
-            for sub in children { stack.append((sub, depth + 1)) }
-        }
-    }
-    return false
-    #else
-    return false
-    #endif
-}
-
-/// True when `findAllAccessibilityIdentifiersFromPlatformView` finds an identifier matching
-/// `identifierSubstring` **and** some node in the hosted tree exposes a non-empty
-/// `accessibilityLabel` containing `labelSubstring` (Issue #169). Use this when SwiftUI splits
-/// identifiers and labels across container vs. child elements.
-@MainActor
-public func hostedPlatformViewExposesIdentifierAndContainsLabelText(
-    root: Any?,
-    identifierSubstring: String,
-    labelSubstring: String,
-    caseInsensitive: Bool = true
-) -> Bool {
-    let ids = findAllAccessibilityIdentifiersFromPlatformView(root)
-    let idMatches: (String) -> Bool = { id in
-        if caseInsensitive {
-            return id.range(of: identifierSubstring, options: .caseInsensitive) != nil
-        }
-        return id.contains(identifierSubstring)
-    }
-    guard ids.contains(where: idMatches) else { return false }
-
-    func labelMatches(_ text: String?) -> Bool {
+    func textMatches(_ text: String?) -> Bool {
         guard let text, !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return false }
         if caseInsensitive {
-            return text.range(of: labelSubstring, options: .caseInsensitive) != nil
+            return text.range(of: substring, options: .caseInsensitive) != nil
         }
-        return text.contains(labelSubstring)
+        return text.contains(substring)
     }
-
     #if canImport(UIKit)
     guard let rootView = root as? UIView else { return false }
     var stack: [(UIView, Int)] = [(rootView, 0)]
@@ -991,17 +725,17 @@ public func hostedPlatformViewExposesIdentifierAndContainsLabelText(
         let oid = ObjectIdentifier(next)
         if checked.contains(oid) { continue }
         checked.insert(oid)
-        if labelMatches(next.accessibilityLabel) { return true }
+        if textMatches(next.accessibilityLabel) { return true }
         if let elements = next.accessibilityElements {
             for el in elements {
-                if let ax = el as? UIAccessibilityElement, labelMatches(ax.accessibilityLabel) { return true }
-                if let v = el as? UIView, labelMatches(v.accessibilityLabel) { return true }
+                if let ax = el as? UIAccessibilityElement, textMatches(ax.accessibilityLabel) { return true }
+                if let v = el as? UIView, textMatches(v.accessibilityLabel) { return true }
             }
         }
         if next.responds(to: NSSelectorFromString("accessibilityElementCount")) {
             for child in accessibilityContainerChildren(for: next) {
-                if let ax = child as? UIAccessibilityElement, labelMatches(ax.accessibilityLabel) { return true }
-                if let v = child as? UIView, labelMatches(v.accessibilityLabel) { return true }
+                if let ax = child as? UIAccessibilityElement, textMatches(ax.accessibilityLabel) { return true }
+                if let v = child as? UIView, textMatches(v.accessibilityLabel) { return true }
             }
         }
         guard depth < 40 else { continue }
@@ -1021,11 +755,11 @@ public func hostedPlatformViewExposesIdentifierAndContainsLabelText(
         let oid = ObjectIdentifier(next)
         if checked.contains(oid) { continue }
         checked.insert(oid)
-        if labelMatches(next.accessibilityLabel()) { return true }
+        if textMatches(next.accessibilityLabel()) { return true }
         if let children = next.accessibilityChildren() {
             for child in children.prefix(50) {
-                if let el = child as? NSAccessibilityElement, labelMatches(el.accessibilityLabel()) { return true }
-                if let v = child as? NSView, labelMatches(v.accessibilityLabel()) { return true }
+                if let el = child as? NSAccessibilityElement, textMatches(el.accessibilityLabel()) { return true }
+                if let v = child as? NSView, textMatches(v.accessibilityLabel()) { return true }
             }
         }
         guard depth < 40 else { continue }
@@ -1039,31 +773,20 @@ public func hostedPlatformViewExposesIdentifierAndContainsLabelText(
     #endif
 }
 
-/// Same as ``hostedPlatformViewExposesIdentifierAndContainsLabelText`` but for `accessibilityHint`.
+/// Same as ``hostedViewAccessibilityTreeContainsLabelSubstring`` for `accessibilityHint`.
 @MainActor
-public func hostedPlatformViewExposesIdentifierAndContainsHintText(
+public func hostedViewAccessibilityTreeContainsHintSubstring(
     root: Any?,
-    identifierSubstring: String,
-    hintSubstring: String,
+    substring: String,
     caseInsensitive: Bool = true
 ) -> Bool {
-    let ids = findAllAccessibilityIdentifiersFromPlatformView(root)
-    let idMatches: (String) -> Bool = { id in
-        if caseInsensitive {
-            return id.range(of: identifierSubstring, options: .caseInsensitive) != nil
-        }
-        return id.contains(identifierSubstring)
-    }
-    guard ids.contains(where: idMatches) else { return false }
-
-    func hintMatches(_ text: String?) -> Bool {
+    func textMatches(_ text: String?) -> Bool {
         guard let text, !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return false }
         if caseInsensitive {
-            return text.range(of: hintSubstring, options: .caseInsensitive) != nil
+            return text.range(of: substring, options: .caseInsensitive) != nil
         }
-        return text.contains(hintSubstring)
+        return text.contains(substring)
     }
-
     #if canImport(UIKit)
     guard let rootView = root as? UIView else { return false }
     var stack: [(UIView, Int)] = [(rootView, 0)]
@@ -1075,17 +798,17 @@ public func hostedPlatformViewExposesIdentifierAndContainsHintText(
         let oid = ObjectIdentifier(next)
         if checked.contains(oid) { continue }
         checked.insert(oid)
-        if hintMatches(next.accessibilityHint) { return true }
+        if textMatches(next.accessibilityHint) { return true }
         if let elements = next.accessibilityElements {
             for el in elements {
-                if let ax = el as? UIAccessibilityElement, hintMatches(ax.accessibilityHint) { return true }
-                if let v = el as? UIView, hintMatches(v.accessibilityHint) { return true }
+                if let ax = el as? UIAccessibilityElement, textMatches(ax.accessibilityHint) { return true }
+                if let v = el as? UIView, textMatches(v.accessibilityHint) { return true }
             }
         }
         if next.responds(to: NSSelectorFromString("accessibilityElementCount")) {
             for child in accessibilityContainerChildren(for: next) {
-                if let ax = child as? UIAccessibilityElement, hintMatches(ax.accessibilityHint) { return true }
-                if let v = child as? UIView, hintMatches(v.accessibilityHint) { return true }
+                if let ax = child as? UIAccessibilityElement, textMatches(ax.accessibilityHint) { return true }
+                if let v = child as? UIView, textMatches(v.accessibilityHint) { return true }
             }
         }
         guard depth < 40 else { continue }
@@ -1105,11 +828,11 @@ public func hostedPlatformViewExposesIdentifierAndContainsHintText(
         let oid = ObjectIdentifier(next)
         if checked.contains(oid) { continue }
         checked.insert(oid)
-        if hintMatches(next.accessibilityHint()) { return true }
+        if textMatches(next.accessibilityHint()) { return true }
         if let children = next.accessibilityChildren() {
             for child in children.prefix(50) {
-                if let el = child as? NSAccessibilityElement, hintMatches(el.accessibilityHint()) { return true }
-                if let v = child as? NSView, hintMatches(v.accessibilityHint()) { return true }
+                if let el = child as? NSAccessibilityElement, textMatches(el.accessibilityHint()) { return true }
+                if let v = child as? NSView, textMatches(v.accessibilityHint()) { return true }
             }
         }
         guard depth < 40 else { continue }
