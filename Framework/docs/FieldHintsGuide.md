@@ -390,6 +390,22 @@ When a `.hints` file **already exists**, regeneration is designed around two ide
 
 **New files**: If no `.hints` file exists yet, the script creates one with structural entries for each model field, Swift-sourced `defaultValue` when applicable, optional default `_sections` / `_defaults` as above, and `__example`.
 
+#### Swift parser: when something cannot be parsed
+
+The Swift side uses a **regex-based** extractor (not SwiftSyntax). Behavior when the model does not match what the script understands:
+
+| Situation | What the parser does | Effect on `.hints` |
+|-----------|----------------------|-------------------|
+| **Line does not match** the property pattern (e.g. complex generic type with `<…>`, wrappers/attributes that break the line, `var`/`let` forms outside the supported grammar) | Property is **skipped**—no `FieldInfo` for that name from this file. | That field is **not** updated or added by this parse pass. Any existing JSON entry for the same key is **left as-is** (stale hints are possible if you rename/remove a property and the line no longer matches). |
+| **Computed property** (`{` immediately after the type) | Still listed with structural hints; `isEditable` follows ID/computed rules. | No `defaultValue` from Swift (no stored initializer). |
+| **`=` present but literal not understood** (e.g. `= UUID()`, `= .red`, `= 1_000`, hex `0xFF`, expressions, multi-line values) | `parseDefaultValue` returns **no value** for that property. | **`defaultValue` in hints is not overwritten**—whatever you already had in JSON stays (including omission). The script does **not** write the raw expression text into hints. |
+| **`fieldType` is `date`, `url`, `uuid`, `document`, `image`, or `custom`** | Initializers are **not** parsed into JSON defaults (only `string` / `number` / `boolean` literals are). | Same as row above: no model-driven `defaultValue` update from `= …`. |
+| **Number** | Only decimal integer or floating text that `Int`/`Double` can parse. | Unparseable → no model `defaultValue` sync. |
+| **Boolean** | Only the tokens `true` and `false`. | Anything else → no model `defaultValue` sync. |
+| **String** | Quoted `"…"` content is unescaped into the value; other non-empty text is taken as a single token (limited). | Complex string literals or interpolation are not supported. |
+
+**Practical takeaway**: If the generator ignores a default you care about, set **`defaultValue` (or `placeholder`) explicitly in the `.hints` file**—that remains the source of truth whenever the parser cannot map Swift to JSON.
+
 ## Picker Options for Enum Fields
 
 **NEW in v5.8.0**: You can now specify enum fields as pickers with human-readable labels!
