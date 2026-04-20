@@ -199,7 +199,7 @@ public func platformCloudKitSyncButton_L4(
     .automaticCompliance(
         named: "platformCloudKitSyncButton_L4",
         accessibilityLabel: label,
-        accessibilityHint: "Starts syncing your data with iCloud when your account is available and sync is not already running."
+        accessibilityHint: "Starts syncing your data with iCloud when your account is available and sync is not already running"
     )
 }
 
@@ -239,10 +239,12 @@ public func platformCloudKitStatusBadge_L4(service: CloudKitService) -> some Vie
 
 private func cloudKitProgressAccessibilitySummary(progress: Double, status: CloudKitSyncStatus?) -> String {
     let percent = Int((progress * 100).rounded(.towardZero))
+    // Avoid ASCII `.` in strings passed to automaticCompliance: localizeAccessibilityLabel treats
+    // any substring with `.` as a potential localization key (Issue #169).
     if let status {
-        return "\(cloudKitSyncStatusAccessibilitySummary(status)) Progress \(percent) percent."
+        return "\(cloudKitSyncStatusAccessibilitySummary(status)), progress \(percent) percent"
     }
-    return "CloudKit sync progress \(percent) percent."
+    return "CloudKit sync progress, \(percent) percent"
 }
 
 private func cloudKitAccountStatusAccessibilitySummary(_ status: CKAccountStatus) -> String {
@@ -266,18 +268,18 @@ private func cloudKitAccountStatusAccessibilitySummary(_ status: CKAccountStatus
 private func cloudKitServiceStatusAccessibilitySummary(service: CloudKitService) -> String {
     let account = cloudKitAccountStatusAccessibilitySummary(service.accountStatus)
     let sync = cloudKitSyncStatusAccessibilitySummary(service.syncStatus)
-    var parts = ["CloudKit service status.", account, sync]
+    var parts = ["CloudKit service status", account, sync]
     if case .syncing = service.syncStatus {
         let p = Int((service.syncProgress * 100).rounded(.towardZero))
-        parts.append("Progress \(p) percent.")
+        parts.append("Progress \(p) percent")
     }
     if service.queuedOperationCount > 0 {
-        parts.append("Queued operations: \(service.queuedOperationCount).")
+        parts.append("Queued operations: \(service.queuedOperationCount)")
     }
     if service.lastError != nil {
-        parts.append("An error detail is shown below.")
+        parts.append("An error detail is shown below")
     }
-    return parts.joined(separator: " ")
+    return parts.joined(separator: ", ")
 }
 
 private func cloudKitSyncStatusBadgeAccessibilitySummary(_ status: CloudKitSyncStatus) -> String {
