@@ -305,29 +305,13 @@ The framework will:
 
 ### The `__example` Field
 
-The hints generator tool automatically adds a `__example` field to your hints files:
+The hints generator (`scripts/generate_hints_from_models.swift`) **rewrites** the top-level `__example` object on every run so it always reflects the **current** set of documented keys and patterns (nested field template, sample `_sections`, sample `_defaults`, and related options). It is not a hand-maintained fragment inside an otherwise frozen file.
 
-```json
-{
-  "__example": {
-    "fieldType": "string",
-    "isOptional": false,
-    "isArray": false,
-    "defaultValue": null,
-    "isHidden": false,
-    "isEditable": true,
-    "displayWidth": "medium",
-    "expectedLength": 20,
-    "maxLength": 50,
-    "minLength": 3,
-    "showCharacterCounter": false
-  }
-}
-```
+Structurally, `__example` mirrors what a hints file can contain: for example a template field entry (under a key such as `__examplefield`) plus illustrative `_sections` and `_defaults`. The exact keys evolve with the script; treat the generated block as the source of truth when adding or editing real field entries.
 
-This field serves as **self-documentation** - it shows all available properties and their default values. You can reference it when adding new fields or configuring existing ones.
+This field serves as **self-documentation** alongside your real model keys (`username`, `amount`, …).
 
-**Note**: The `__example` field is ignored during form generation - it's documentation only.
+**Note**: The `__example` key is **ignored during form loading**—it is documentation only.
 
 ### Migration Guide
 
@@ -366,21 +350,45 @@ To migrate existing hints to fully declarative:
 
 ### Using the Hints Generator Tool
 
-The `generate_hints_from_models.swift` tool can automatically generate fully declarative hints from your Swift models:
+The script `scripts/generate_hints_from_models.swift` builds or updates `{ModelName}.hints` from a **Swift** source file (`-model`) or a **Core Data** model (`-modeld`). Run it with the Swift toolchain, for example:
 
 ```bash
 swift scripts/generate_hints_from_models.swift \
-  -model User.swift \
+  -model Models/User.swift \
   -extensionsdir Models \
   -outputdir Hints
 ```
 
-The tool:
-- Parses Swift files to extract field types
-- Detects optionality and arrays
-- Generates hints with `fieldType`, `isOptional`, `isArray`
-- Preserves existing hints and customizations
-- Adds `__example` field for reference
+**Arguments** (see `-h` in the script for the canonical list):
+
+| Flag | Purpose |
+|------|---------|
+| `-model <path>` | Single `.swift` file that defines (or extends) the model; exactly one of `-model` or `-modeld` is required. |
+| `-modeld <path>` | `.xcdatamodel` directory or `.xcdatamodeld` bundle. |
+| `-extensionsdir <path>` | Extra directories to search for `extension TypeName` files (Swift only); may be repeated. |
+| `-outputdir <path>` | Where to write `.hints` files (default: `Hints` under the current working directory). |
+
+#### Regeneration and merge behavior
+
+When a `.hints` file **already exists**, regeneration is designed around two ideas: **keep author-edited presentation hints**, and **keep type/default alignment with the model** where the script can infer it.
+
+1. **Structural keys (per field)** — If a field object is missing any of these, they are filled from the model: `fieldType`, `isOptional`, `isArray`, `isHidden`, `isEditable`. If the file already sets them, they are **not** overwritten (so you can override generator defaults such as hiding UUIDs).
+
+2. **`defaultValue` (Swift models only)** — If the parser finds a **simple** property initializer (`= literal`) on a stored property, the script **writes `defaultValue` in hints to match that literal** on every run—including when you change the literal in Swift (so hints stay in sync). Supported shapes match the script’s parser (e.g. string, numeric, boolean literals). **If the model has no parseable initializer**, any existing `defaultValue` in the hints file is **left unchanged** (the script does not delete hints-only defaults).
+
+3. **`defaultValue` (Core Data)** — Attributes are emitted with structural fields only; the script does **not** currently map Core Data default strings into `defaultValue` in `.hints`. Set `defaultValue` in JSON by hand if you need it.
+
+4. **Never from the model script** — Keys such as `placeholder`, `expectedLength`, `displayWidth`, picker options, etc. are **only** what you put in JSON (or copy from `__example`). The generator does not infer UX copy or presentation from Swift beyond the structural list above and Swift literal `defaultValue`.
+
+5. **`_sections`** — If the file already defines `_sections`, they are **preserved**. If there are no sections, the script may add a minimal default section listing known fields.
+
+6. **`_defaults`** — If you already have presentation defaults under `_defaults`, they are **preserved**. If the file has no color-related defaults, the script may inject a small **example** block so the feature is discoverable (you can edit or remove it).
+
+7. **`__example`** — **Always replaced** with the script’s current full template so documentation stays up to date.
+
+8. **Field order** — Existing top-level field key order is preserved when possible; **new** properties discovered from the model are appended.
+
+**New files**: If no `.hints` file exists yet, the script creates one with structural entries for each model field, Swift-sourced `defaultValue` when applicable, optional default `_sections` / `_defaults` as above, and `__example`.
 
 ## Picker Options for Enum Fields
 
