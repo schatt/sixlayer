@@ -133,7 +133,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     @Test @MainActor func testAccessibilityIdentifierConfigGeneratesAccessibilityIdentifiers() async {
         self.initializeTestConfig()
             self.runWithTaskLocalConfig {
-            // Given: AccessibilityIdentifierConfig singleton
+            // Given: isolated `AccessibilityIdentifierConfig` from `testConfig` (#247)
             guard let config = testConfig else {
                 Issue.record("testConfig is nil")
                 return
