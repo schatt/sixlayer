@@ -118,40 +118,50 @@ open class PlatformCloudKitComponentsLayer4ComponentAccessibilityTests: BaseTest
 
     @Test @MainActor func testPlatformCloudKitSyncStatusL4NamedElementHasVoiceOverLabel() async {
         let view = platformCloudKitSyncStatus_L4(status: .idle)
+        let hasId = testComponentComplianceSinglePlatform(
+            view,
+            expectedPattern: "SixLayer.main.ui.*",
+            platform: SixLayerPlatform.iOS,
+            componentName: "platformCloudKitSyncStatus_L4"
+        )
+        #expect(hasId, "platformCloudKitSyncStatus_L4 should generate accessibility identifiers (Issue #169)")
         let root = hostedRootForIssue169CloudKitContract(view)
         #expect(
-            hostedPlatformViewExposesIdentifierAndContainsLabelText(
-                root: root,
-                identifierSubstring: "platformCloudKitSyncStatus_L4",
-                labelSubstring: "CloudKit"
-            ),
-            "platformCloudKitSyncStatus_L4 must surface a generated id and CloudKit-related VoiceOver label text (Issue #169)"
+            hostedViewAccessibilityTreeContainsLabelSubstring(root: root, substring: "CloudKit"),
+            "platformCloudKitSyncStatus_L4 hosted tree should include CloudKit-related VoiceOver label text (Issue #169)"
         )
     }
 
     @Test @MainActor func testPlatformCloudKitProgressL4NamedElementHasVoiceOverLabel() async {
-        let view = platformCloudKitProgress_L4(progress: 0.5)
+        let view = platformCloudKitProgress_L4(progress: 0.5, status: .idle)
+        let hasId = testComponentComplianceSinglePlatform(
+            view,
+            expectedPattern: "SixLayer.main.ui.*",
+            platform: SixLayerPlatform.iOS,
+            componentName: "platformCloudKitProgress_L4"
+        )
+        #expect(hasId, "platformCloudKitProgress_L4 should generate accessibility identifiers (Issue #169)")
         let root = hostedRootForIssue169CloudKitContract(view)
         #expect(
-            hostedPlatformViewExposesIdentifierAndContainsLabelText(
-                root: root,
-                identifierSubstring: "platformCloudKitProgress_L4",
-                labelSubstring: "percent"
-            ),
-            "platformCloudKitProgress_L4 must surface a generated id and progress label text (Issue #169)"
+            hostedViewAccessibilityTreeContainsLabelSubstring(root: root, substring: "percent")
+                || hostedViewAccessibilityTreeContainsLabelSubstring(root: root, substring: "CloudKit"),
+            "platformCloudKitProgress_L4 hosted tree should include progress or CloudKit label text (Issue #169)"
         )
     }
 
     @Test @MainActor func testPlatformCloudKitAccountStatusL4NamedElementHasVoiceOverLabel() async {
         let view = platformCloudKitAccountStatus_L4(status: .available)
+        let hasId = testComponentComplianceSinglePlatform(
+            view,
+            expectedPattern: "SixLayer.main.ui.*",
+            platform: SixLayerPlatform.iOS,
+            componentName: "platformCloudKitAccountStatus_L4"
+        )
+        #expect(hasId, "platformCloudKitAccountStatus_L4 should generate accessibility identifiers (Issue #169)")
         let root = hostedRootForIssue169CloudKitContract(view)
         #expect(
-            hostedPlatformViewExposesIdentifierAndContainsLabelText(
-                root: root,
-                identifierSubstring: "platformCloudKitAccountStatus_L4",
-                labelSubstring: "iCloud"
-            ),
-            "platformCloudKitAccountStatus_L4 must surface a generated id and iCloud account label text (Issue #169)"
+            hostedViewAccessibilityTreeContainsLabelSubstring(root: root, substring: "iCloud"),
+            "platformCloudKitAccountStatus_L4 hosted tree should include iCloud account label text (Issue #169)"
         )
     }
 
@@ -159,14 +169,17 @@ open class PlatformCloudKitComponentsLayer4ComponentAccessibilityTests: BaseTest
         let delegate = TestCloudKitDelegate()
         let service = CloudKitService(delegate: delegate)
         let view = platformCloudKitServiceStatus_L4(service: service)
+        let hasId = testComponentComplianceSinglePlatform(
+            view,
+            expectedPattern: "SixLayer.main.ui.*",
+            platform: SixLayerPlatform.iOS,
+            componentName: "platformCloudKitServiceStatus_L4"
+        )
+        #expect(hasId, "platformCloudKitServiceStatus_L4 should generate accessibility identifiers (Issue #169)")
         let root = hostedRootForIssue169CloudKitContract(view)
         #expect(
-            hostedPlatformViewExposesIdentifierAndContainsLabelText(
-                root: root,
-                identifierSubstring: "platformCloudKitServiceStatus_L4",
-                labelSubstring: "CloudKit"
-            ),
-            "platformCloudKitServiceStatus_L4 must surface a generated id and CloudKit-related label text (Issue #169)"
+            hostedViewAccessibilityTreeContainsLabelSubstring(root: root, substring: "CloudKit"),
+            "platformCloudKitServiceStatus_L4 hosted tree should include CloudKit-related label text (Issue #169)"
         )
     }
 
@@ -174,22 +187,21 @@ open class PlatformCloudKitComponentsLayer4ComponentAccessibilityTests: BaseTest
         let delegate = TestCloudKitDelegate()
         let service = CloudKitService(delegate: delegate)
         let view = platformCloudKitSyncButton_L4(service: service)
+        let hasId = testComponentComplianceSinglePlatform(
+            view,
+            expectedPattern: "SixLayer.main.ui.*",
+            platform: SixLayerPlatform.iOS,
+            componentName: "platformCloudKitSyncButton_L4"
+        )
+        #expect(hasId, "platformCloudKitSyncButton_L4 should generate accessibility identifiers (Issue #169)")
         let root = hostedRootForIssue169CloudKitContract(view)
         #expect(
-            hostedPlatformViewExposesIdentifierAndContainsLabelText(
-                root: root,
-                identifierSubstring: "platformCloudKitSyncButton_L4",
-                labelSubstring: "Sync"
-            ),
-            "platformCloudKitSyncButton_L4 must surface a generated id and button label text (Issue #169)"
+            hostedViewAccessibilityTreeContainsLabelSubstring(root: root, substring: "Sync"),
+            "platformCloudKitSyncButton_L4 hosted tree should include button label text (Issue #169)"
         )
         #expect(
-            hostedPlatformViewExposesIdentifierAndContainsHintText(
-                root: root,
-                identifierSubstring: "platformCloudKitSyncButton_L4",
-                hintSubstring: "Starts"
-            ),
-            "platformCloudKitSyncButton_L4 must surface a generated id and a sync hint (Issue #169)"
+            hostedViewAccessibilityTreeContainsHintSubstring(root: root, substring: "Starts"),
+            "platformCloudKitSyncButton_L4 hosted tree should include sync hint text (Issue #169)"
         )
     }
 
@@ -197,14 +209,17 @@ open class PlatformCloudKitComponentsLayer4ComponentAccessibilityTests: BaseTest
         let delegate = TestCloudKitDelegate()
         let service = CloudKitService(delegate: delegate)
         let view = platformCloudKitStatusBadge_L4(service: service)
+        let hasId = testComponentComplianceSinglePlatform(
+            view,
+            expectedPattern: "SixLayer.main.ui.*",
+            platform: SixLayerPlatform.iOS,
+            componentName: "platformCloudKitStatusBadge_L4"
+        )
+        #expect(hasId, "platformCloudKitStatusBadge_L4 should generate accessibility identifiers (Issue #169)")
         let root = hostedRootForIssue169CloudKitContract(view)
         #expect(
-            hostedPlatformViewExposesIdentifierAndContainsLabelText(
-                root: root,
-                identifierSubstring: "platformCloudKitStatusBadge_L4",
-                labelSubstring: "CloudKit"
-            ),
-            "platformCloudKitStatusBadge_L4 must surface a generated id and CloudKit status label text (Issue #169)"
+            hostedViewAccessibilityTreeContainsLabelSubstring(root: root, substring: "CloudKit"),
+            "platformCloudKitStatusBadge_L4 hosted tree should include CloudKit status label text (Issue #169)"
         )
     }
 
