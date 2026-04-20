@@ -11,9 +11,17 @@ import SixLayerFramework
 /// Minimal test app that displays views for XCUITest testing
 @main
 struct TestApp: App {
+    /// Per-process config for the UI test host — **not** `AccessibilityIdentifierConfig.shared` (#247).
+    /// Injected at the window root so modifiers resolve the same instance without mutating the production singleton.
+    private let accessibilityIdentifierHostConfiguration: AccessibilityIdentifierConfig
+
     init() {
-        // Clear in-memory + avoid stale UserDefaults (e.g. enableUITestIntegration false) poisoning XCUITest IDs.
-        let config = AccessibilityIdentifierConfig.shared
+        let suiteName = "SixLayer.Framework.UITestHost.AccessibilityIdentifier"
+        UserDefaults.standard.removePersistentDomain(forName: suiteName)
+        guard let defaults = UserDefaults(suiteName: suiteName) else {
+            fatalError("Could not create UserDefaults suite for UI test host: \(suiteName)")
+        }
+        let config = AccessibilityIdentifierConfig(userDefaults: defaults, keyPrefix: "SixLayer.Accessibility.")
         config.resetToDefaults()
         config.namespace = "SixLayer"
         config.mode = .automatic
@@ -27,11 +35,13 @@ struct TestApp: App {
         if ProcessInfo.processInfo.arguments.contains("-CategoryAGlobalAutoOff") {
             config.globalAutomaticAccessibilityIdentifiers = false
         }
+        self.accessibilityIdentifierHostConfiguration = config
     }
 
     var body: some Scene {
         WindowGroup {
             TestAppContentView()
+                .environment(\.accessibilityIdentifierConfig, accessibilityIdentifierHostConfiguration)
         }
     }
 }

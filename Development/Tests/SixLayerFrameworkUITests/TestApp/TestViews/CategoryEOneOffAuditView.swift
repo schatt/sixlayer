@@ -14,6 +14,7 @@ import AppKit
 #endif
 
 struct CategoryEOneOffAuditView: View {
+    @Environment(\.accessibilityIdentifierConfig) private var envAccessibilityIdentifierConfig
     @State private var clipboardState = "Clipboard state: idle"
 
     var body: some View {
@@ -50,7 +51,10 @@ struct CategoryEOneOffAuditView: View {
                     .font(.headline)
 
                 Button("Generate UI test code to clipboard") {
-                    let config = AccessibilityIdentifierConfig.shared
+                    guard let config = envAccessibilityIdentifierConfig else {
+                        clipboardState = "Clipboard state: missing host config"
+                        return
+                    }
                     config.enableDebugLogging = true
                     config.clearDebugLog()
                     config.generateUITestCodeToClipboard()
