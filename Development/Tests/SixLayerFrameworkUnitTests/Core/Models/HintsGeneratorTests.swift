@@ -44,7 +44,7 @@ struct HintsGeneratorTests {
             "balance": [
                 "fieldType": "number",
                 "isOptional": false,
-                "defaultValue": 0
+                "placeholder": "0"
             ]
         ]
         
@@ -109,14 +109,8 @@ struct HintsGeneratorTests {
         let balanceHints = result.fieldHints["balance"]
         #expect(balanceHints != nil)
         #expect(balanceHints?.fieldType == "number")
-        #expect(balanceHints?.defaultValue != nil)
-        if let defaultValue = balanceHints?.defaultValue {
-            if let intValue = defaultValue as? Int {
-                #expect(intValue == 0)
-            } else if let nsNumber = defaultValue as? NSNumber {
-                #expect(nsNumber.intValue == 0)
-            }
-        }
+        #expect(balanceHints?.defaultValue == nil)
+        #expect(balanceHints?.metadata["placeholder"] == "0")
     }
     
     /// Test that generated hints maintain existing display hints
