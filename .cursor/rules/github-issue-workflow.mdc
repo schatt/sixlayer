@@ -11,6 +11,14 @@ alwaysApply: true
 - **Always** use `gh issue comment <N> --body-file <path>` (or a heredoc with a quoted delimiter). **Never** use inline `--body "..."` — shells interpret backticks/`$` inside double quotes.
 - Applies any time a comment contains backticks, code blocks, special shell characters, or multi-line formatting (which is almost always).
 
+## Reusable body file (avoid delete prompts)
+
+- Use **one stable path per Cursor host process** under `/tmp`, so the agent **overwrites** the same file for each `gh issue comment` instead of creating and deleting unique paths (which can trigger repeated “remove file?” prompts).
+- **Path:** `/tmp/cursor-gh-issue-comment-${CURSOR_PID}.md`
+  - Prefer **`CURSOR_PID`** when the Cursor host sets it for the agent terminal.
+  - If **`CURSOR_PID` is unset**, fall back to **`$$`** (current shell PID): `COMMENT_FILE="/tmp/cursor-gh-issue-comment-${CURSOR_PID:-$$}.md"`
+- **Do not delete** that file after posting unless it contains secrets you must clear; the next comment overwrites it.
+
 ## When comments go on the issue (source of truth)
 
 GitHub is the durable record: **post each comment in the same step as the event it documents** — immediately after the failing run (red), immediately after the passing run you are recording (green/refactor), not batched at the end of the session. Do not defer `gh issue comment` until work is “all done”; that falsifies the timeline and undermines the issue as audit trail.
@@ -23,6 +31,8 @@ When work maps to a GitHub issue, post the **deliberately red** test evidence to
 - **How tests were run** — scheme/target, MCP tool or CLI, destination/simulator.
 - **Failing test id(s) + short verbatim excerpt** (one screenful at most) — assertion + `file:line`. Don't paste full runs; reference a local log path instead.
 
+Build the comment in the **reusable body file** under `/tmp` (see above); red excerpts almost always contain backticks, `$`, or paths—unsafe for inline `gh` `--body`. Run `gh issue comment <N> --body-file <path>`; **do not** delete that file by default (reuse next time).
+
 See [strict-tdd-definition.mdc](mdc:.cursor/rules/strict-tdd-definition.mdc) → Required Evidence → GitHub issue red log.
 
 ## When to close issues
@@ -33,10 +43,11 @@ See [strict-tdd-definition.mdc](mdc:.cursor/rules/strict-tdd-definition.mdc) →
 ## Pattern
 
 ```bash
-cat > /tmp/issue_comment.txt <<'EOF'
+COMMENT_FILE="/tmp/cursor-gh-issue-comment-${CURSOR_PID:-$$}.md"
+
+cat > "$COMMENT_FILE" <<'EOF'
 ...body...
 EOF
-gh issue comment 3 --body-file /tmp/issue_comment.txt
+gh issue comment 3 --body-file "$COMMENT_FILE"
 gh issue close 3 --reason completed
-rm /tmp/issue_comment.txt
 ```
