@@ -94,7 +94,6 @@ targets:
           - "ViewInspectorTests/**/CoreDataTestingGuide.md"
           - "ViewInspectorTests/**"  # Temporarily exclude ViewInspector tests
           - "Utilities/Debug/EnvironmentVariableDebugTests.swift"  # Uses ViewInspector
-          - "Features/Accessibility/AutomaticHIGComplianceDemonstrationTests.swift"  # Uses DemonstrationTestItem from excluded file
     settings:
       PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.framework.unit-tests
       SWIFT_VERSION: "6.0"
@@ -169,7 +168,6 @@ targets:
           - "ViewInspectorTests/**/CoreDataTestingGuide.md"
           - "ViewInspectorTests/**"  # Exclude ViewInspector tests - they have their own scheme
           - "Utilities/Debug/EnvironmentVariableDebugTests.swift"  # Uses ViewInspector
-          - "Features/Accessibility/AutomaticHIGComplianceDemonstrationTests.swift"  # Match iOS unit target (parity, #248)
     settings:
       PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.framework.unit-tests
       SWIFT_VERSION: "6.0"
