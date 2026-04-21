@@ -522,6 +522,7 @@ public struct NamedAutomaticComplianceModifier: ViewModifier {
             capturedEnableUITestIntegration: capturedEnableUITestIntegration,
             capturedIncludeComponentNames: capturedIncludeComponentNames,
             capturedIncludeElementTypes: capturedIncludeElementTypes,
+            capturedEnableDebugLogging: capturedEnableDebugLogging,
             capturedNamespace: capturedNamespace,
             capturedGlobalPrefix: capturedGlobalPrefix
         )
@@ -563,6 +564,7 @@ public struct NamedAutomaticComplianceModifier: ViewModifier {
         capturedEnableUITestIntegration: Bool,
         capturedIncludeComponentNames: Bool,
         capturedIncludeElementTypes: Bool,
+        capturedEnableDebugLogging: Bool,
         capturedNamespace: String,
         capturedGlobalPrefix: String
     ) -> String {
@@ -576,7 +578,7 @@ public struct NamedAutomaticComplianceModifier: ViewModifier {
             capturedEnableUITestIntegration: capturedEnableUITestIntegration,
             capturedIncludeComponentNames: capturedIncludeComponentNames,
             capturedIncludeElementTypes: capturedIncludeElementTypes,
-            capturedEnableDebugLogging: false,
+            capturedEnableDebugLogging: capturedEnableDebugLogging,
             capturedNamespace: capturedNamespace,
             capturedGlobalPrefix: capturedGlobalPrefix,
             defaultElementType: "View",
