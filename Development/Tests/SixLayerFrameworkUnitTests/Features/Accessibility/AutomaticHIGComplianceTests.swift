@@ -56,18 +56,24 @@ open class AutomaticHIGComplianceTests: BaseTestClass {
         let hints = PresentationHints()
 
         // When: Creating view using Layer 1 function
-        _ = platformPresentItemCollection_L1(
+        let view = platformPresentItemCollection_L1(
             items: items,
             hints: hints
         )
 
-        // Then: View should automatically have HIG compliance applied
-
-        // Verify that automatic HIG compliance is applied
-        // The fact that this compiles and runs successfully means the modifiers
-        // .appleHIGCompliant(), .automaticAccessibility(), .platformPatterns(), 
-        // and .visualConsistency() are being applied without errors
-        #expect(Bool(true), "Automatic HIG compliance should be applied without errors")
+        // Then: HIG compliance check returns a bounded report (same contract as AppleHIGComplianceTests)
+        let complianceManager = AppleHIGComplianceManager()
+        let report = complianceManager.checkHIGCompliance(view)
+        #expect(report.overallScore >= 0.0)
+        #expect(report.overallScore <= 100.0)
+        #expect(report.accessibilityScore >= 0.0)
+        #expect(report.accessibilityScore <= 100.0)
+        #expect(report.visualScore >= 0.0)
+        #expect(report.visualScore <= 100.0)
+        #expect(report.interactionScore >= 0.0)
+        #expect(report.interactionScore <= 100.0)
+        #expect(report.platformScore >= 0.0)
+        #expect(report.platformScore <= 100.0)
     }
     
     /// BUSINESS PURPOSE: platformPresentItemCollection_L1 should automatically apply accessibility features when VoiceOver is enabled
