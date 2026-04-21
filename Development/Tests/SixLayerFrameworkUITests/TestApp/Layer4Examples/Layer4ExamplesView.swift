@@ -386,7 +386,24 @@ struct Layer4NavigationStackItemsExample: View {
 
 // MARK: - CloudKit Examples
 
+/// Minimal delegate so the TestApp can construct `CloudKitService` for Layer 4 demos (Issue #169).
+@MainActor
+private final class Layer4ExamplesCloudKitDelegate: CloudKitServiceDelegate {
+    func containerIdentifier() -> String { "iCloud.dev.sixlayer.layer4examples" }
+}
+
+/// Retains the delegate strongly (`CloudKitService` holds a weak reference).
+@MainActor
+private final class Layer4ExamplesCloudKitServiceHolder: ObservableObject {
+    private let delegate = Layer4ExamplesCloudKitDelegate()
+    let service: CloudKitService
+    init() {
+        self.service = CloudKitService(delegate: delegate)
+    }
+}
+
 struct CloudKitExamples: View {
+    @StateObject private var cloudKitDemo = Layer4ExamplesCloudKitServiceHolder()
     @State private var mockStatus: CloudKitSyncStatus = .idle
     @State private var mockProgress: Double = 0.0
     @State private var mockAccountStatus: CKAccountStatus = .available
@@ -410,15 +427,15 @@ struct CloudKitExamples: View {
             }
             
             ExampleCard(title: "CloudKit Service Status", description: "platformCloudKitServiceStatus_L4") {
-                CloudKitServiceStatusExample()
+                CloudKitServiceStatusExample(service: cloudKitDemo.service)
             }
             
             ExampleCard(title: "CloudKit Sync Button", description: "platformCloudKitSyncButton_L4") {
-                CloudKitSyncButtonExample()
+                CloudKitSyncButtonExample(service: cloudKitDemo.service)
             }
             
             ExampleCard(title: "CloudKit Status Badge", description: "platformCloudKitStatusBadge_L4") {
-                CloudKitStatusBadgeExample()
+                CloudKitStatusBadgeExample(service: cloudKitDemo.service)
             }
             
             // Controls to change mock status
@@ -487,11 +504,11 @@ struct CloudKitAccountStatusExample: View {
 }
 
 struct CloudKitServiceStatusExample: View {
+    let service: CloudKitService
+
     var body: some View {
         platformVStack(alignment: .leading, spacing: 12) {
-            Text("CloudKit Service Status (requires CloudKitService instance)")
-                .font(.caption)
-                .foregroundColor(.secondary)
+            platformCloudKitServiceStatus_L4(service: service)
         }
         .padding()
         .background(Color.platformSecondaryBackground)
@@ -500,11 +517,11 @@ struct CloudKitServiceStatusExample: View {
 }
 
 struct CloudKitSyncButtonExample: View {
+    let service: CloudKitService
+
     var body: some View {
         platformVStack(alignment: .leading, spacing: 12) {
-            Text("CloudKit Sync Button (requires CloudKitService instance)")
-                .font(.caption)
-                .foregroundColor(.secondary)
+            platformCloudKitSyncButton_L4(service: service)
         }
         .padding()
         .background(Color.platformSecondaryBackground)
@@ -513,11 +530,11 @@ struct CloudKitSyncButtonExample: View {
 }
 
 struct CloudKitStatusBadgeExample: View {
+    let service: CloudKitService
+
     var body: some View {
         platformVStack(alignment: .leading, spacing: 12) {
-            Text("CloudKit Status Badge (requires CloudKitService instance)")
-                .font(.caption)
-                .foregroundColor(.secondary)
+            platformCloudKitStatusBadge_L4(service: service)
         }
         .padding()
         .background(Color.platformSecondaryBackground)

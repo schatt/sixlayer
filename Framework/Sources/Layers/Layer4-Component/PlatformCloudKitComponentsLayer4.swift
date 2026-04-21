@@ -44,9 +44,8 @@ public func platformCloudKitSyncStatus_L4(status: CloudKitSyncStatus) -> some Vi
                 .help(error.localizedDescription)
         }
     }
-    .automaticCompliance(named: "platformCloudKitSyncStatus_L4")
     .accessibilityElement(children: .ignore)
-    .accessibilityLabel(summaryLabel)
+    .automaticCompliance(named: "platformCloudKitSyncStatus_L4", accessibilityLabel: summaryLabel)
     // Stable id for UI tests (Issue #193); must contain substring "platformCloudKitSyncStatus".
     .accessibilityIdentifier("platformCloudKitSyncStatus_L4")
 }
@@ -73,7 +72,8 @@ public func platformCloudKitProgress_L4(
     progress: Double,
     status: CloudKitSyncStatus? = nil
 ) -> some View {
-    platformVStackContainer(alignment: .leading, spacing: 4) {
+    let summary = cloudKitProgressAccessibilitySummary(progress: progress, status: status)
+    return platformVStackContainer(alignment: .leading, spacing: 4) {
         if let status = status {
             platformCloudKitSyncStatus_L4(status: status)
         }
@@ -84,7 +84,7 @@ public func platformCloudKitProgress_L4(
                 .foregroundColor(.secondary)
         }
     }
-    .automaticCompliance(named: "platformCloudKitProgress_L4")
+    .automaticCompliance(named: "platformCloudKitProgress_L4", accessibilityLabel: summary)
 }
 
 // MARK: - CloudKit Account Status Display
@@ -93,7 +93,8 @@ public func platformCloudKitProgress_L4(
 /// - Parameter status: The current account status
 /// - Returns: A view showing the account status
 public func platformCloudKitAccountStatus_L4(status: CKAccountStatus) -> some View {
-    Group {
+    let summary = cloudKitAccountStatusAccessibilitySummary(status)
+    return Group {
         switch status {
         case .available:
             Label("iCloud Account: Available", systemImage: "person.icloud")
@@ -115,7 +116,7 @@ public func platformCloudKitAccountStatus_L4(status: CKAccountStatus) -> some Vi
                 .foregroundColor(.secondary)
         }
     }
-    .automaticCompliance(named: "platformCloudKitAccountStatus_L4")
+    .automaticCompliance(named: "platformCloudKitAccountStatus_L4", accessibilityLabel: summary)
 }
 
 // MARK: - CloudKit Service Status View
@@ -125,7 +126,8 @@ public func platformCloudKitAccountStatus_L4(status: CKAccountStatus) -> some Vi
 /// - Returns: A view showing all CloudKit status information
 @MainActor
 public func platformCloudKitServiceStatus_L4(service: CloudKitService) -> some View {
-    platformVStackContainer(alignment: .leading, spacing: 12) {
+    let summary = cloudKitServiceStatusAccessibilitySummary(service: service)
+    return platformVStackContainer(alignment: .leading, spacing: 12) {
         // Account Status
         platformCloudKitAccountStatus_L4(status: service.accountStatus)
         
@@ -167,7 +169,7 @@ public func platformCloudKitServiceStatus_L4(service: CloudKitService) -> some V
     .background(Color.platformBackground)
     #endif
     .cornerRadius(8)
-    .automaticCompliance(named: "platformCloudKitServiceStatus_L4")
+    .automaticCompliance(named: "platformCloudKitServiceStatus_L4", accessibilityLabel: summary)
 }
 
 // MARK: - CloudKit Sync Button
@@ -194,7 +196,11 @@ public func platformCloudKitSyncButton_L4(
         Label(label, systemImage: "arrow.clockwise.icloud")
     }
     .disabled(service.syncStatus == .syncing || service.accountStatus != .available)
-    .automaticCompliance(named: "platformCloudKitSyncButton_L4")
+    .automaticCompliance(
+        named: "platformCloudKitSyncButton_L4",
+        accessibilityLabel: label,
+        accessibilityHint: "Starts syncing your data with iCloud when your account is available and sync is not already running"
+    )
 }
 
 // MARK: - CloudKit Compact Status Badge
@@ -204,7 +210,8 @@ public func platformCloudKitSyncButton_L4(
 /// - Returns: A compact badge view
 @MainActor
 public func platformCloudKitStatusBadge_L4(service: CloudKitService) -> some View {
-    Group {
+    let badgeLabel = cloudKitSyncStatusBadgeAccessibilitySummary(service.syncStatus)
+    return Group {
         switch service.syncStatus {
         case .idle:
             Image(systemName: "icloud")
@@ -223,6 +230,69 @@ public func platformCloudKitStatusBadge_L4(service: CloudKitService) -> some Vie
                 .foregroundColor(.red)
         }
     }
+    .accessibilityElement(children: .combine)
     .help(service.syncStatus == .syncing ? "Syncing..." : "CloudKit Status")
-    .automaticCompliance(named: "platformCloudKitStatusBadge_L4")
+    .automaticCompliance(named: "platformCloudKitStatusBadge_L4", accessibilityLabel: badgeLabel)
+}
+
+// MARK: - Accessibility summaries (Issue #169)
+
+private func cloudKitProgressAccessibilitySummary(progress: Double, status: CloudKitSyncStatus?) -> String {
+    let percent = Int((progress * 100).rounded(.towardZero))
+    // Avoid ASCII `.` in strings passed to automaticCompliance: localizeAccessibilityLabel treats
+    // any substring with `.` as a potential localization key (Issue #169).
+    if let status {
+        return "\(cloudKitSyncStatusAccessibilitySummary(status)), progress \(percent) percent"
+    }
+    return "CloudKit sync progress, \(percent) percent"
+}
+
+private func cloudKitAccountStatusAccessibilitySummary(_ status: CKAccountStatus) -> String {
+    switch status {
+    case .available:
+        return "iCloud Account: Available"
+    case .noAccount:
+        return "iCloud Account: Not Signed In"
+    case .restricted:
+        return "iCloud Account: Restricted"
+    case .couldNotDetermine:
+        return "iCloud Account: Unknown"
+    case .temporarilyUnavailable:
+        return "iCloud Account: Temporarily Unavailable"
+    @unknown default:
+        return "iCloud Account: Unknown Status"
+    }
+}
+
+@MainActor
+private func cloudKitServiceStatusAccessibilitySummary(service: CloudKitService) -> String {
+    let account = cloudKitAccountStatusAccessibilitySummary(service.accountStatus)
+    let sync = cloudKitSyncStatusAccessibilitySummary(service.syncStatus)
+    var parts = ["CloudKit service status", account, sync]
+    if case .syncing = service.syncStatus {
+        let p = Int((service.syncProgress * 100).rounded(.towardZero))
+        parts.append("Progress \(p) percent")
+    }
+    if service.queuedOperationCount > 0 {
+        parts.append("Queued operations: \(service.queuedOperationCount)")
+    }
+    if service.lastError != nil {
+        parts.append("An error detail is shown below")
+    }
+    return parts.joined(separator: ", ")
+}
+
+private func cloudKitSyncStatusBadgeAccessibilitySummary(_ status: CloudKitSyncStatus) -> String {
+    switch status {
+    case .idle:
+        return "CloudKit status: idle"
+    case .syncing:
+        return "CloudKit status: syncing"
+    case .paused:
+        return "CloudKit status: paused"
+    case .complete:
+        return "CloudKit status: complete"
+    case .error:
+        return "CloudKit status: error"
+    }
 }
