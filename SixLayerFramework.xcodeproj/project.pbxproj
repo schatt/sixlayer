@@ -1508,7 +1508,6 @@
 		83E9D97AD7BEEE0E8FAC928C /* IdentifierEdgeCaseTestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0644E92B88D53AE5EF2B847 /* IdentifierEdgeCaseTestView.swift */; };
 		83F7FB3FDCC7B83745B9DC31 /* StringSanitizationHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14E453367118C40AFA48924A /* StringSanitizationHelpers.swift */; };
 		840282C8A65A63980769DB80 /* UIFont+Weight.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38B84FB7FEA0A434000F112C /* UIFont+Weight.swift */; };
-		8404D9310063596A5207511E /* AutomaticHIGComplianceDemonstrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB8AA57D831C1927F54217FD /* AutomaticHIGComplianceDemonstrationTests.swift */; };
 		841961C006B921E772780255 /* EnvironmentVariableDebugTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB6C614B391AD73230143F4B /* EnvironmentVariableDebugTests.swift */; };
 		84224C05A6344864E9F192DC /* DesignSystemTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0C72ABE5166316267FBC4D8 /* DesignSystemTests.swift */; };
 		843DE1B55CCFCDBC41AA86D0 /* DataFrameAnalysisEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9370489B2A338F777BAD4E7B /* DataFrameAnalysisEngineTests.swift */; };
@@ -5734,7 +5733,14 @@
 			path = API;
 			sourceTree = "<group>";
 		};
-		"TEMP_89A0A24B-9045-45A1-93DF-C9D9C6F75CBB" /* Utilities */ = {
+		"TEMP_2301EC73-F71E-45BD-A1D3-CDD6A436E2F8" /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Shared;
+			sourceTree = "<group>";
+		};
+		"TEMP_3B574695-3A41-49BC-9549-90E3C9B6827C" /* Utilities */ = {
 			isa = PBXGroup;
 			children = (
 			);
@@ -6349,6 +6355,7 @@
 				};
 			};
 			buildConfigurationList = D9A60249BC74A8A6B5C35F55 /* Build configuration list for PBXProject "SixLayerFramework" */;
+			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -6374,7 +6381,6 @@
 				12F9FBE68F97E78F15D3EBF5 /* XCRemoteSwiftPackageReference "ViewInspector" */,
 			);
 			preferredProjectObjectVersion = 77;
-			productRefGroup = 24B581D7E12CAA2F107B5C4E /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -8805,7 +8811,6 @@
 				4FFB424D00DFCA5D73533DB7 /* AdvancedFieldTypesTests.swift in Sources */,
 				544D6610FDE90317E45777DE /* AppleHIGComplianceTests.swift in Sources */,
 				7B369D668E0BC245B985C260 /* AutomaticAccessibilityLabelTests.swift in Sources */,
-				8404D9310063596A5207511E /* AutomaticHIGComplianceDemonstrationTests.swift in Sources */,
 				E18EF7B851EB8EACA081A3B1 /* AutomaticHIGComplianceTests.swift in Sources */,
 				3E98C477C39AFED623A47DAA /* AutomaticHIGStylingTests.swift in Sources */,
 				E11E8B63DD0176874126CC5D /* BarcodeServiceTests.swift in Sources */,
