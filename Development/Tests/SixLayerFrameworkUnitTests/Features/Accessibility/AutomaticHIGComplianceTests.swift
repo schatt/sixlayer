@@ -62,18 +62,7 @@ open class AutomaticHIGComplianceTests: BaseTestClass {
         )
 
         // Then: HIG compliance check returns a bounded report (same contract as AppleHIGComplianceTests)
-        let complianceManager = AppleHIGComplianceManager()
-        let report = complianceManager.checkHIGCompliance(view)
-        #expect(report.overallScore >= 0.0)
-        #expect(report.overallScore <= 100.0)
-        #expect(report.accessibilityScore >= 0.0)
-        #expect(report.accessibilityScore <= 100.0)
-        #expect(report.visualScore >= 0.0)
-        #expect(report.visualScore <= 100.0)
-        #expect(report.interactionScore >= 0.0)
-        #expect(report.interactionScore <= 100.0)
-        #expect(report.platformScore >= 0.0)
-        #expect(report.platformScore <= 100.0)
+        assertHIGComplianceReportBounded(view)
     }
     
     /// BUSINESS PURPOSE: platformPresentItemCollection_L1 should automatically apply accessibility features when VoiceOver is enabled
@@ -85,18 +74,14 @@ open class AutomaticHIGComplianceTests: BaseTestClass {
         RuntimeCapabilityDetection.setTestVoiceOver(true)
 
         // When: Creating view using Layer 1 function
-        _ = platformPresentItemCollection_L1(
+        let view = platformPresentItemCollection_L1(
             items: [TestPatterns.TestItem(id: "1", title: "Test Item 1")],
             hints: PresentationHints()
         )
 
-        // Then: View should automatically have VoiceOver support
-        #expect(Bool(true), "Layer 1 function should create a valid view")
+        // Then: Bounded HIG report and VoiceOver test double is active
+        assertHIGComplianceReportBounded(view)
         #expect(RuntimeCapabilityDetection.supportsVoiceOver, "VoiceOver should be enabled")
-
-        // Verify that automatic accessibility features are applied
-        // The view should automatically adapt to VoiceOver being enabled
-        #expect(Bool(true), "Automatic VoiceOver support should be applied")
 
         // Reset for next test
         RuntimeCapabilityDetection.setTestVoiceOver(false)
@@ -113,21 +98,14 @@ open class AutomaticHIGComplianceTests: BaseTestClass {
             TestPatterns.TestItem(id: "2", title: "Test Item 2")
         ]
 
-        // Given: Current platform
-        let currentPlatform = SixLayerPlatform.current
-
         // When: Creating view using Layer 1 function
-        _ = platformPresentItemCollection_L1(
+        let view = platformPresentItemCollection_L1(
             items: testItems,
             hints: PresentationHints()
         )
 
-        // Then: View should automatically have platform-specific patterns
-        #expect(Bool(true), "Layer 1 function should create a valid view on \(currentPlatform)")
-
-        // Verify that automatic platform patterns are applied
-        // The view should automatically adapt to the current platform
-        #expect(Bool(true), "Automatic platform patterns should be applied on \(currentPlatform)")
+        // Then: Bounded HIG report (platform-specific scoring is inside the manager)
+        assertHIGComplianceReportBounded(view)
     }
     
     /// BUSINESS PURPOSE: platformPresentItemCollection_L1 should automatically apply visual consistency
@@ -136,17 +114,13 @@ open class AutomaticHIGComplianceTests: BaseTestClass {
     @Test @MainActor func testPlatformPresentItemCollection_L1_AutomaticVisualConsistency() async {
         initializeTestConfig()
         // When: Creating view using Layer 1 function
-        _ = platformPresentItemCollection_L1(
+        let view = platformPresentItemCollection_L1(
             items: [TestPatterns.TestItem(id: "1", title: "Test Item 1")],
             hints: PresentationHints()
         )
 
-        // Then: View should automatically have visual consistency applied
-        #expect(Bool(true), "Layer 1 function should create a valid view")
-
-        // Verify that automatic visual consistency is applied
-        // The view should automatically have consistent styling and theming
-        #expect(Bool(true), "Automatic visual consistency should be applied")
+        // Then: Bounded HIG report (includes visual score component)
+        assertHIGComplianceReportBounded(view)
     }
     
     /// BUSINESS PURPOSE: All Layer 1 functions should automatically apply HIG compliance
@@ -161,7 +135,7 @@ open class AutomaticHIGComplianceTests: BaseTestClass {
         )
         // Test that collection view can be hosted and has proper structure
         _ = hostRootPlatformView(collectionView.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "Collection view should be hostable")
+        assertHIGComplianceReportBounded(collectionView)
 
         // Test platformPresentNumericData_L1
         let numericData = [
@@ -174,7 +148,7 @@ open class AutomaticHIGComplianceTests: BaseTestClass {
 
         // Test that numeric view can be hosted and has proper structure
         _ = hostRootPlatformView(numericView.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "Numeric view should be hostable")
+        assertHIGComplianceReportBounded(numericView)
 
         // Verify that both views are created successfully and can be hosted
         // This tests that the HIG compliance modifiers are applied without compilation errors
@@ -186,6 +160,7 @@ open class AutomaticHIGComplianceTests: BaseTestClass {
     /// TESTING SCOPE: Tests automatic compliance with various accessibility features enabled/disabled
     /// METHODOLOGY: Tests automatic compliance with different combinations of accessibility capabilities
     @Test @MainActor func testAutomaticHIGCompliance_WithVariousAccessibilityCapabilities() async {
+        initializeTestConfig()
         // Test with VoiceOver enabled
         RuntimeCapabilityDetection.setTestVoiceOver(true)
         RuntimeCapabilityDetection.setTestSwitchControl(false)
@@ -197,7 +172,7 @@ open class AutomaticHIGComplianceTests: BaseTestClass {
         )
         // Test that VoiceOver-enabled view can be hosted
         _ = hostRootPlatformView(viewWithVoiceOver.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "VoiceOver view should be hostable")
+        assertHIGComplianceReportBounded(viewWithVoiceOver)
 
         // Test with Switch Control enabled
         RuntimeCapabilityDetection.setTestVoiceOver(false)
@@ -211,7 +186,7 @@ open class AutomaticHIGComplianceTests: BaseTestClass {
 
         // Test that Switch Control-enabled view can be hosted
         _ = hostRootPlatformView(viewWithSwitchControl.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "Switch Control view should be hostable")
+        assertHIGComplianceReportBounded(viewWithSwitchControl)
 
         // Test with AssistiveTouch enabled
         RuntimeCapabilityDetection.setTestVoiceOver(false)
@@ -225,7 +200,7 @@ open class AutomaticHIGComplianceTests: BaseTestClass {
 
         // Test that AssistiveTouch-enabled view can be hosted
         _ = hostRootPlatformView(viewWithAssistiveTouch.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "AssistiveTouch view should be hostable")
+        assertHIGComplianceReportBounded(viewWithAssistiveTouch)
 
         // Test with all accessibility features enabled
         RuntimeCapabilityDetection.setTestVoiceOver(true)
@@ -239,7 +214,7 @@ open class AutomaticHIGComplianceTests: BaseTestClass {
 
         // Test that all-accessibility view can be hosted
         _ = hostRootPlatformView(viewWithAllAccessibility.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "All accessibility view should be hostable")
+        assertHIGComplianceReportBounded(viewWithAllAccessibility)
 
         // Verify that all views are created successfully and can be hosted
         // This tests that the HIG compliance modifiers adapt to different accessibility capabilities
@@ -252,5 +227,23 @@ open class AutomaticHIGComplianceTests: BaseTestClass {
         RuntimeCapabilityDetection.setTestVoiceOver(false)
         RuntimeCapabilityDetection.setTestSwitchControl(false)
         RuntimeCapabilityDetection.setTestAssistiveTouch(false)
+    }
+
+    // MARK: - Helpers
+
+    @MainActor
+    private func assertHIGComplianceReportBounded<V: View>(_ view: V) {
+        let complianceManager = AppleHIGComplianceManager()
+        let report = complianceManager.checkHIGCompliance(view)
+        #expect(report.overallScore >= 0.0)
+        #expect(report.overallScore <= 100.0)
+        #expect(report.accessibilityScore >= 0.0)
+        #expect(report.accessibilityScore <= 100.0)
+        #expect(report.visualScore >= 0.0)
+        #expect(report.visualScore <= 100.0)
+        #expect(report.interactionScore >= 0.0)
+        #expect(report.interactionScore <= 100.0)
+        #expect(report.platformScore >= 0.0)
+        #expect(report.platformScore <= 100.0)
     }
 }
