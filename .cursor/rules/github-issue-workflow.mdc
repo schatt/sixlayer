@@ -11,6 +11,14 @@ alwaysApply: true
 - **Always use `--body-file` for issue comments.** Do not pass comment body inline to `gh issue comment` (e.g. `gh issue comment 3 --body "text"`). Inline bodies cause shell interpretation of backticks, `$`, and other characters. This rule has no exceptions when posting issue comments.
 - **When in doubt, use the temp file.** For any issue comment that includes formatting, code, or special characters, write the message to a temp file and use `gh issue comment <number> --body-file <file>`.
 
+## **Reusable body file (avoid delete prompts)**
+
+- Use **one stable path per Cursor host process** under `/tmp`, so the agent **overwrites** the same file for each `gh issue comment` instead of creating and deleting unique paths (which can trigger repeated “remove file?” prompts).
+- **Path:** `/tmp/cursor-gh-issue-comment-${CURSOR_PID}.md`
+  - Prefer **`CURSOR_PID`** when the Cursor host sets it for the agent terminal.
+  - If **`CURSOR_PID` is unset**, fall back to **`$$`** (current shell PID): `COMMENT_FILE="/tmp/cursor-gh-issue-comment-${CURSOR_PID:-$$}.md"`
+- **Do not delete** that file after posting unless it contains secrets you must clear; the next comment overwrites it.
+
 ## **Core Principle**
 
 When updating GitHub issues with comments that contain backticks, code blocks, or special characters, always use a temporary file to avoid shell interpretation issues.
@@ -21,8 +29,8 @@ When work maps to a GitHub issue, **strict TDD** requires posting **deliberately
 
 **Posting rules:**
 
-1. Build the comment in a **temp file** (failure excerpts almost always contain `` ` ``, `$`, or paths—unsafe for inline `gh` `--body`).
-2. Run `gh issue comment <N> --body-file <path>` then **delete** the temp file.
+1. Build the comment in the **reusable body file** under `/tmp` (see **Reusable body file** above; failure excerpts almost always contain `` ` ``, `$`, or paths—unsafe for inline `gh` `--body`).
+2. Run `gh issue comment <N> --body-file <path>`. **Do not** delete that file by default (reuse next time).
 3. The comment body **must** include a **timestamp** (UTC ISO 8601 in the text), **how tests were run**, and **failing test id(s) + a short verbatim excerpt** of the failure (minimal lines: which test, which assertion/message). **Do not** attach or paste a **complete** test run or full build transcript—**relevant excerpt only**; point to a local/CI log path if the full run matters.
 
 This gives a durable, timestamped audit that tests **ran and failed for the right reason**, not only that they eventually passed.
@@ -37,19 +45,21 @@ This gives a durable, timestamped audit that tests **ran and failed for the righ
 
 ### **For Issue Comments:**
 
-1. **Write message to temporary file** - Create a temp file with the comment body
+1. **Write message to reusable body file** — Path: `/tmp/cursor-gh-issue-comment-${CURSOR_PID:-$$}.md` (see **Reusable body file** above).
 
 2. **Use `--body-file` flag** - Use `gh issue comment <number> --body-file <file>` to add the comment
 
 3. **Close issue if needed** - Use `gh issue close <number> --reason completed` to close
 
-4. **Clean up** - Always remove the temporary file after use
+4. **Reuse** — Keep the same `/tmp/cursor-gh-issue-comment-*.md` path; do not delete after each use unless you must clear sensitive content.
 
 ### **Example:**
 
 ```bash
-# Write comment to temp file
-cat > /tmp/issue_comment.txt << 'EOF'
+COMMENT_FILE="/tmp/cursor-gh-issue-comment-${CURSOR_PID:-$$}.md"
+
+# Write comment body (overwrites previous use of this path)
+cat > "$COMMENT_FILE" << 'EOF'
 ✅ Issue completed!
 
 **Implementation Details:**
@@ -59,11 +69,8 @@ cat > /tmp/issue_comment.txt << 'EOF'
 EOF
 
 # Add comment and close issue
-gh issue comment 3 --body-file /tmp/issue_comment.txt
+gh issue comment 3 --body-file "$COMMENT_FILE"
 gh issue close 3 --reason completed
-
-# Clean up
-rm /tmp/issue_comment.txt
 ```
 
 ## **Why This Matters**
