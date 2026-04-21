@@ -2076,7 +2076,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     // - AppleHIGComplianceComponentAccessibilityTests.swift
     // - AppleHIGComplianceManagerAccessibilityTests.swift
     // - AutomaticHIGComplianceTests.swift
-    // - AutomaticHIGComplianceDemonstrationTests.swift
     // - All HIGCompliance*.swift files
     
     @Test @MainActor func testComplianceManagerInitialization() {
