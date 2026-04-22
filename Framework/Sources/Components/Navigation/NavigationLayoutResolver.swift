@@ -283,6 +283,16 @@ public enum NavigationLayoutResolver {
         max(0, containerWidth - max(0, leadingInset) - max(0, trailingInset))
     }
 
+    /// Sanitizes a ``GeometryReader`` width before Layer 4 nested split presentation resolution.
+    ///
+    /// Non-finite or non-positive sizes can appear during early layout; feeding them into
+    /// ``layer4CompactPresentation(forAvailableWidth:)`` can spuriously select ``NavigationLayoutCompactPresentation/fullSplit``,
+    /// which omits the overlay outer sidebar host and its toolbar affordances (issue #207).
+    public static func layer4SanitizedSplitAxisWidthForPresentation(_ width: CGFloat) -> CGFloat {
+        guard width.isFinite, width > 0 else { return 0 }
+        return width
+    }
+
     /// Canonical Layer 4 UI presentation for `availableWidth` (issue #206).
     public static func layer4CompactPresentation(forAvailableWidth width: CGFloat) -> NavigationLayoutCompactPresentation {
         NavigationLayoutCompactPresentation(resolution: resolveSettingsContainer(availableWidth: width))
