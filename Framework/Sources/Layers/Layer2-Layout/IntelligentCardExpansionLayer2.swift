@@ -34,14 +34,20 @@ public struct IntelligentCardLayoutDecision: Sendable {
 // ContentComplexity is already defined in PlatformTypes.swift
 
 /// Intelligent layout decision engine for card collections
+/// - Parameters:
+///   - availableHeight: Vertical size of the collection’s layout region (e.g. `GeometryReader` height).
+///     When provided, card height is capped so rows fit within that budget, and phone + two items
+///     may use two columns in landscape (wider than tall) to reduce row count.
 public func determineIntelligentCardLayout_L2(
     contentCount: Int,
     screenWidth: CGFloat,
     deviceType: DeviceType,
-    contentComplexity: ContentComplexity
+    contentComplexity: ContentComplexity,
+    availableHeight: CGFloat? = nil
 ) -> IntelligentCardLayoutDecision {
     
     // Base calculations
+    let layoutPadding: CGFloat = 16
     let availableWidth = screenWidth - 32 // Account for padding
     let minCardWidth: CGFloat = 200
     let maxCardWidth: CGFloat = 400
@@ -51,13 +57,32 @@ public func determineIntelligentCardLayout_L2(
         contentCount: contentCount,
         screenWidth: screenWidth,
         deviceType: deviceType,
-        contentComplexity: contentComplexity
+        contentComplexity: contentComplexity,
+        availableHeight: availableHeight
     )
     
     // Calculate spacing and card dimensions
     let spacing = calculateOptimalSpacing(deviceType: deviceType, contentComplexity: contentComplexity)
     let cardWidth = max(minCardWidth, min(maxCardWidth, (availableWidth - spacing * CGFloat(columns - 1)) / CGFloat(columns)))
-    let cardHeight = calculateOptimalHeight(cardWidth: cardWidth, contentComplexity: contentComplexity)
+    var cardHeight = calculateOptimalHeight(
+        cardWidth: cardWidth,
+        contentComplexity: contentComplexity,
+        contentCount: contentCount,
+        deviceType: deviceType
+    )
+    
+    if let viewportHeight = availableHeight, viewportHeight > 0, contentCount > 0 {
+        let rows = (contentCount + columns - 1) / columns
+        let verticalGridPadding = layoutPadding * 2
+        let interRowSpacing = spacing * CGFloat(max(0, rows - 1))
+        let contentBudget = viewportHeight - verticalGridPadding - interRowSpacing
+        if contentBudget > 0 {
+            let maxCardHeightForViewport = contentBudget / CGFloat(rows)
+            cardHeight = min(cardHeight, maxCardHeightForViewport)
+        }
+    }
+    
+    cardHeight = max(cardHeight, 110)
     
     // Determine expansion behavior
     let expansionScale = calculateExpansionScale(deviceType: deviceType, contentComplexity: contentComplexity)
@@ -68,7 +93,7 @@ public func determineIntelligentCardLayout_L2(
         spacing: spacing,
         cardWidth: cardWidth,
         cardHeight: cardHeight,
-        padding: 16,
+        padding: layoutPadding,
         expansionScale: expansionScale,
         animationDuration: animationDuration
     )
@@ -79,13 +104,20 @@ private func calculateOptimalColumns(
     contentCount: Int,
     screenWidth: CGFloat,
     deviceType: DeviceType,
-    contentComplexity: ContentComplexity
+    contentComplexity: ContentComplexity,
+    availableHeight: CGFloat?
 ) -> Int {
     
     switch deviceType {
     case .phone:
         // iPhone: 1-2 columns based on content
         if contentCount <= 2 {
+            if contentCount == 2,
+               let height = availableHeight,
+               height > 0,
+               screenWidth > height {
+                return 2
+            }
             return 1
         } else if screenWidth > 400 {
             return 2
@@ -168,7 +200,12 @@ private func calculateOptimalSpacing(deviceType: DeviceType, contentComplexity: 
 }
 
 /// Calculate optimal card height
-private func calculateOptimalHeight(cardWidth: CGFloat, contentComplexity: ContentComplexity) -> CGFloat {
+private func calculateOptimalHeight(
+    cardWidth: CGFloat,
+    contentComplexity: ContentComplexity,
+    contentCount: Int,
+    deviceType: DeviceType
+) -> CGFloat {
     let aspectRatio: CGFloat
     
     switch contentComplexity {
@@ -184,7 +221,17 @@ private func calculateOptimalHeight(cardWidth: CGFloat, contentComplexity: Conte
         aspectRatio = 1.8
     }
     
-    return cardWidth * aspectRatio
+    var height = cardWidth * aspectRatio
+    
+    // Two full-width portrait cards (All Vehicles, etc.) used ~2 × 1.4× width in height plus grid
+    // padding—almost always taller than the visible area under a large navigation title. Cap height
+    // so two stacked cards fit without scrolling on typical iPhone layouts.
+    if deviceType == .phone && contentCount == 2 {
+        let maxHeightForTwoUpPortrait = cardWidth * 0.74
+        height = min(height, maxHeightForTwoUpPortrait)
+    }
+    
+    return max(height, 110)
 }
 
 /// Calculate expansion scale based on device and content
