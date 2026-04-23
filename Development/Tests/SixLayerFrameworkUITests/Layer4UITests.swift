@@ -21,7 +21,7 @@ import XCTest
 /// platformCloudKitProgress_L4, platformCloudKitAccountStatus_L4, platformCloudKitServiceStatus_L4,
 /// platformCloudKitSyncButton_L4, platformCloudKitStatusBadge_L4, platformPhotoDisplay_L4.
 /// Remaining L4 APIs to add: platformImplementNavigationStack_L4, platformAppNavigation_L4, platformRowActions_L4,
-/// platformPhotoPicker_L4, platformMapView_L4, other platformCloudKit*,
+/// platformPhotoPicker_L4, platformMapView_L4,
 /// platformShare_L4, platformVerticalSplit_L4, platformHorizontalSplit_L4, platformStyledContainer_L4, etc.
 @MainActor
 final class Layer4UITests: XCTestCase {
