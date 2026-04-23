@@ -1,12 +1,21 @@
 # 🚀 Six-Layer Framework Release History
 
-## 📍 **Current Release: v7.6.1** 🎯
+## 📍 **Current Release: v7.6.2** 🎯
 
-**Release Date**: April 19, 2026
+**Release Date**: April 23, 2026
 **Status**: Released
-**Previous Release**: v7.6.0 - Minor release
-**Note**: Layer 1 `automaticCompliance` audit (#245 / gh-243 parity with #243): `identifierName:` vs anonymous shells; DataFrame, security, internationalization, semantic Layer 1; ViewInspector guard tests.
+**Previous Release**: v7.6.1 - Patch release
+**Note**: Viewport-aware card layout (#249, #250); `DefaultRuntimeCapabilityIsolationTrait` clears overrides on MainActor for stable runtime-capability tests.
 **Next Release**: TBD
+
+---
+
+## 🎯 **v7.6.2 - Viewport-aware card layout; runtime capability test isolation** (April 23, 2026)
+
+### **What's in v7.6.2:**
+- Patch release. See [RELEASE_v7.6.2.md](RELEASE_v7.6.2.md) for details.
+
+**See [RELEASE_v7.6.2.md](RELEASE_v7.6.2.md) for complete release notes.**
 
 ---
 

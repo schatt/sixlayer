@@ -1,5 +1,5 @@
 // swift-tools-version: 6.0
-// SixLayerFramework v7.6.1 - Patch: Layer 1 automaticCompliance audit (#245 / gh-243 parity with #243)
+// SixLayerFramework v7.6.2 - Patch: Viewport-aware card layout (#249, #250); MainActor capability test isolation
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription

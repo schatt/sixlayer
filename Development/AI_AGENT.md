@@ -11,6 +11,7 @@ This document provides guidance for AI assistants working with the SixLayer Fram
 ## 📚 Version-Specific Guides
 
 ### Latest Versions (Recommended)
+- **[AI_AGENT_v7.6.2.md](AI_AGENT_v7.6.2.md)** - Viewport-aware card layout (#249, #250); MainActor capability test isolation (see [RELEASE_v7.6.2.md](RELEASE_v7.6.2.md))
 - **[AI_AGENT_v7.6.1.md](AI_AGENT_v7.6.1.md)** - Layer 1 automaticCompliance parity with #243 (Issue #245; see [RELEASE_v7.6.1.md](RELEASE_v7.6.1.md))
 - **[AI_AGENT_v7.6.0.md](AI_AGENT_v7.6.0.md)** - Managed settings migration documentation (Issue #215; see [RELEASE_v7.6.0.md](RELEASE_v7.6.0.md))
 - **v7.5.13** - Patch release (see [RELEASE_v7.5.13.md](RELEASE_v7.5.13.md))
