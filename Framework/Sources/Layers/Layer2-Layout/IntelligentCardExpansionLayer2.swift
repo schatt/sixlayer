@@ -182,15 +182,25 @@ private func calculateOptimalSpacing(deviceType: DeviceType, contentComplexity: 
 /// so small collections can fit without scrolling (see GitHub #249).
 private func cardHeightRespectingViewport(
     intrinsicHeight: CGFloat,
-    contentCount _: Int,
-    columns _: Int,
-    spacing _: CGFloat,
-    layoutPadding _: CGFloat,
-    deviceType _: DeviceType,
-    viewportHeight _: CGFloat?
+    contentCount: Int,
+    columns: Int,
+    spacing: CGFloat,
+    layoutPadding: CGFloat,
+    deviceType: DeviceType,
+    viewportHeight: CGFloat?
 ) -> CGFloat {
-    // TDD red stub: viewport ignored; tests require clamping before green implementation.
-    return intrinsicHeight
+    guard deviceType == .phone else { return intrinsicHeight }
+    guard let viewport = viewportHeight, viewport.isFinite, viewport > 0 else { return intrinsicHeight }
+    let columnCount = max(columns, 1)
+    let rows = max(1, Int(ceil(Double(contentCount) / Double(columnCount))))
+    guard rows <= 2 else { return intrinsicHeight }
+    let interRowSpacing = CGFloat(max(0, rows - 1)) * spacing
+    let verticalChrome = layoutPadding * 2 + interRowSpacing
+    let heightBudget = viewport - verticalChrome
+    guard heightBudget.isFinite, heightBudget > 0 else { return intrinsicHeight }
+    let maxHeightPerRow = heightBudget / CGFloat(rows)
+    guard maxHeightPerRow.isFinite, maxHeightPerRow > 0 else { return intrinsicHeight }
+    return min(intrinsicHeight, maxHeightPerRow)
 }
 
 /// Calculate optimal card height
