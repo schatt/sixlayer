@@ -70,14 +70,15 @@ public struct ResponsiveCardsView: View {
     @ViewBuilder
     private func responsiveCardGrid(for cards: [ResponsiveCardData], in geometry: GeometryProxy) -> some View {
         let screenWidth = geometry.size.width
-        let _ = geometry.size.height // Unused but kept for future use
+        let viewportHeight = PlatformFrameHelpers.finiteViewportHeight(for: geometry.size.height)
         
         // Layer 2: Layout Decision Engine - Use existing platform function
         let layoutDecision = determineOptimalCardLayout_L2(
             contentCount: cards.count,
             screenWidth: screenWidth,
             deviceType: SixLayerPlatform.deviceType,
-            contentComplexity: .moderate
+            contentComplexity: .moderate,
+            viewportHeight: viewportHeight
         )
         
         // Layer 3: Strategy Selection - Use existing platform function
@@ -142,7 +143,7 @@ public struct ResponsiveCardsView: View {
                 spacing: layout.spacing
             ) {
                 ForEach(cards) { card in
-                    ResponsiveCardView(data: card)
+                    ResponsiveCardView(data: card, rowHeight: layout.cardRowHeight)
                 }
             }
             .padding(16)
@@ -159,7 +160,7 @@ public struct ResponsiveCardsView: View {
             spacing: layout.spacing
         ) {
             ForEach(cards) { card in
-                ResponsiveCardView(data: card)
+                ResponsiveCardView(data: card, rowHeight: layout.cardRowHeight)
             }
         }
         .padding(16)
@@ -204,7 +205,7 @@ public struct ResponsiveCardsView: View {
     ) -> some View {
         platformLazyVStackContainer(spacing: layout.spacing) {
             ForEach(cards) { card in
-                ResponsiveCardView(data: card)
+                ResponsiveCardView(data: card, rowHeight: layout.cardRowHeight)
             }
         }
         .padding(16)
@@ -217,7 +218,7 @@ public struct ResponsiveCardsView: View {
     ) -> some View {
         platformLazyVStackContainer(spacing: layout.spacing) {
             ForEach(cards) { card in
-                ResponsiveCardView(data: card)
+                ResponsiveCardView(data: card, rowHeight: layout.cardRowHeight)
             }
         }
         .padding(16)
@@ -238,7 +239,7 @@ public struct ResponsiveCardsView: View {
             spacing: layout.spacing
         ) {
             ForEach(cards) { card in
-                ResponsiveCardView(data: card)
+                ResponsiveCardView(data: card, rowHeight: layout.cardRowHeight)
             }
         }
         .padding(16)
@@ -254,7 +255,7 @@ public struct ResponsiveCardsView: View {
             spacing: layout.spacing
         ) {
             ForEach(cards) { card in
-                ResponsiveCardView(data: card)
+                ResponsiveCardView(data: card, rowHeight: layout.cardRowHeight)
             }
         }
         .padding(16)
@@ -270,7 +271,7 @@ public struct ResponsiveCardsView: View {
             spacing: 8
         ) {
             ForEach(cards) { card in
-                ResponsiveCardView(data: card)
+                ResponsiveCardView(data: card, rowHeight: layout.cardRowHeight)
                     .frame(maxWidth: .infinity)
             }
         }
@@ -287,7 +288,7 @@ public struct ResponsiveCardsView: View {
             spacing: 24
         ) {
             ForEach(cards) { card in
-                ResponsiveCardView(data: card)
+                ResponsiveCardView(data: card, rowHeight: layout.cardRowHeight)
                     .frame(maxWidth: .infinity)
             }
         }
@@ -307,7 +308,7 @@ public struct ResponsiveCardsView: View {
                 spacing: layout.spacing
             ) {
                 ForEach(cards) { card in
-                    ResponsiveCardView(data: card)
+                    ResponsiveCardView(data: card, rowHeight: layout.cardRowHeight)
                         .frame(maxWidth: .infinity)
                 }
             }
@@ -333,7 +334,7 @@ public struct ResponsiveCardsView: View {
                     spacing: layout.spacing
                 ) {
                     ForEach(cards) { card in
-                        ResponsiveCardView(data: card)
+                        ResponsiveCardView(data: card, rowHeight: layout.cardRowHeight)
                     }
                 }
                 .padding(16)
@@ -343,7 +344,7 @@ public struct ResponsiveCardsView: View {
                     spacing: layout.spacing
                 ) {
                     ForEach(cards) { card in
-                        ResponsiveCardView(data: card)
+                        ResponsiveCardView(data: card, rowHeight: layout.cardRowHeight)
                     }
                 }
                 .padding(16)
@@ -361,7 +362,7 @@ public struct ResponsiveCardsView: View {
             spacing: layout.spacing
         ) {
             ForEach(cards) { card in
-                ResponsiveCardView(data: card)
+                ResponsiveCardView(data: card, rowHeight: layout.cardRowHeight)
                     .frame(maxWidth: .infinity)
             }
         }
@@ -373,6 +374,12 @@ public struct ResponsiveCardsView: View {
 
 public struct ResponsiveCardView: View {
     let data: ResponsiveCardData
+    let rowHeight: CGFloat
+    
+    public init(data: ResponsiveCardData, rowHeight: CGFloat = 120) {
+        self.data = data
+        self.rowHeight = rowHeight
+    }
     
     public var body: some View {
         platformVStackContainer(alignment: .leading, spacing: 8) {
@@ -416,7 +423,7 @@ public struct ResponsiveCardView: View {
         .background(Color.platformBackground)
         .cornerRadius(12)
         .shadow(radius: 2)
-        .frame(height: 120)
+        .frame(height: rowHeight)
         // Issue #191 / UI tests: one tappable accessibility element with the card title as label (matches Layer1AccessibilityUITests).
         .contentShape(Rectangle())
         .onTapGesture { }
