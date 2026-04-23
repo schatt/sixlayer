@@ -81,6 +81,8 @@ struct TestAppContentView: View {
     private let openPlatformStylingLayer4Extensions = ProcessInfo.processInfo.arguments.contains("-OpenPlatformStylingLayer4Extensions")
     /// When true, app opens to Layer 4 responsive `platformCard*` audit host (launch arg -OpenPlatformResponsiveCardsLayer4).
     private let openPlatformResponsiveCardsLayer4 = ProcessInfo.processInfo.arguments.contains("-OpenPlatformResponsiveCardsLayer4")
+    /// When true, app opens to `platformColorEncode` / `platformColorDecode` audit host (launch arg -OpenPlatformColorEncodeExtensions).
+    private let openPlatformColorEncodeExtensions = ProcessInfo.processInfo.arguments.contains("-OpenPlatformColorEncodeExtensions")
     
     enum TestView: String, CaseIterable, Identifiable {
         case control = "Control Test"
@@ -176,6 +178,10 @@ struct TestAppContentView: View {
             } else if openPlatformResponsiveCardsLayer4 {
                 NavigationStack {
                     PlatformResponsiveCardsLayer4AuditView(onBackToMain: nil)
+                }
+            } else if openPlatformColorEncodeExtensions {
+                NavigationStack {
+                    PlatformColorEncodeExtensionsAuditView(onBackToMain: nil)
                 }
             } else {
                 NavigationStack {
@@ -276,6 +282,11 @@ struct TestAppContentView: View {
                     PlatformResponsiveCardsLayer4AuditView(onBackToMain: nil)
                 }
                 .accessibilityIdentifier("platform-responsive-cards-l4-link")
+
+                NavigationLink("Platform Color Encode / Decode Audit") {
+                    PlatformColorEncodeExtensionsAuditView(onBackToMain: nil)
+                }
+                .accessibilityIdentifier("platform-color-encode-extensions-link")
             }
             .padding()
         }
@@ -697,5 +708,81 @@ struct PlatformResponsiveCardsLayer4AuditView: View {
         .navigationTitle("Responsive Cards L4")
         .platformNavigationTitleDisplayMode_L4(.inline)
     }
+}
+
+/// RealUI/TestApp coverage for `platformColorEncode` / `platformColorDecode` (issue #170 Phase 2).
+struct PlatformColorEncodeExtensionsAuditView: View {
+    var onBackToMain: (() -> Void)?
+    @State private var statusText = "Idle"
+    @State private var recoveredSwatch: Color?
+    @State private var encodedByteCount: Int?
+
+    var body: some View {
+        platformScrollViewContainer {
+            platformVStack(alignment: .leading, spacing: 16) {
+                platformText("platformColorEncode / platformColorDecode")
+                    .font(.headline)
+                    .accessibilityIdentifier("platform-color-encode-audit-title")
+
+                #if os(iOS) || os(macOS)
+                platformText(statusText)
+                    .accessibilityIdentifier("platform-color-encode-status")
+
+                if let recoveredSwatch {
+                    RoundedRectangle(cornerRadius: 6)
+                        .fill(recoveredSwatch)
+                        .frame(width: 56, height: 32)
+                        .accessibilityIdentifier("platform-color-encode-swatch")
+                }
+
+                if let encodedByteCount {
+                    platformText("Encoded payload: \(encodedByteCount) bytes")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                        .accessibilityIdentifier("platform-color-encode-bytecount")
+                }
+
+                platformButton(label: "Run encode → decode again", id: "platform-color-encode-rerun") {
+                    runColorRoundTrip()
+                }
+                #else
+                platformText("platformColorEncode / platformColorDecode are not supported on this OS (framework throws platformNotSupported).")
+                    .accessibilityIdentifier("platform-color-encode-unsupported")
+                #endif
+
+                if let onBackToMain {
+                    platformButton(label: "Back to Main", id: "platform-color-encode-back-to-main") {
+                        onBackToMain()
+                    }
+                }
+            }
+            .padding()
+        }
+        .platformFrame()
+        .navigationTitle("Color Encode / Decode")
+        .platformNavigationTitleDisplayMode_L4(.inline)
+        #if os(iOS) || os(macOS)
+        .task {
+            runColorRoundTrip()
+        }
+        #endif
+    }
+
+    #if os(iOS) || os(macOS)
+    private func runColorRoundTrip() {
+        do {
+            let source = Color.blue
+            let data = try platformColorEncode(source)
+            let recovered = try platformColorDecode(data)
+            encodedByteCount = data.count
+            recoveredSwatch = recovered
+            statusText = "Round-trip succeeded (encode then decode)."
+        } catch {
+            encodedByteCount = nil
+            recoveredSwatch = nil
+            statusText = "Failed: \(error.localizedDescription)"
+        }
+    }
+    #endif
 }
 
