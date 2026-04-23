@@ -76,101 +76,51 @@ open class PlatformMatrixTests: BaseTestClass {
     // MARK: - Touch Capability Matrix
     
     @Test @MainActor func testTouchCapabilityMatrix() {
-        // Set platform-appropriate overrides to ensure consistent test results
+        // Matrix = native runtime detection + card config mirroring it (no capability overrides here).
         let platform = SixLayerPlatform.current
-        switch platform {
-        case .iOS, .watchOS:
-            RuntimeCapabilityDetection.setTestTouchSupport(true)
-            RuntimeCapabilityDetection.setTestHapticFeedback(true)
-        case .macOS, .tvOS, .visionOS:
-            RuntimeCapabilityDetection.setTestTouchSupport(false)
-            RuntimeCapabilityDetection.setTestHapticFeedback(false)
-        }
-        defer {
-            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-        }
-        
+        let touch = RuntimeCapabilityDetection.supportsTouch
+        let haptic = RuntimeCapabilityDetection.supportsHapticFeedback
         let config = getCardExpansionPlatformConfig()
-        
-        // Test touch support matrix
+        #expect(config.supportsTouch == touch)
+        #expect(config.supportsHapticFeedback == haptic)
         switch platform {
         case .iOS, .watchOS:
-            #expect(config.supportsTouch, 
-                          "\(platform) should support touch")
-            #expect(config.supportsHapticFeedback, 
-                         "Touch platforms should support haptic feedback")
+            #expect(touch, "\(platform) should report touch input")
+            #expect(haptic, "\(platform) should report haptic hardware support")
         case .macOS, .tvOS, .visionOS:
-            #expect(!config.supportsTouch, 
-                           "\(platform) should not support touch")
-            #expect(!config.supportsHapticFeedback, 
-                          "Non-touch platforms should not support haptic feedback")
+            #expect(!touch, "\(platform) should not report a primary touch screen")
+            #expect(!haptic, "\(platform) should not report iPhone/watch-style device haptics")
         }
     }
     
     // MARK: - Hover Capability Matrix
     
     @Test @MainActor func testHoverCapabilityMatrix() {
-        // Set hover capability override for macOS
-        let currentPlatform = SixLayerPlatform.current
-        if currentPlatform == .macOS {
-            RuntimeCapabilityDetection.setTestHover(true)
-        } else {
-            RuntimeCapabilityDetection.setTestHover(false)
-        }
+        let hover = RuntimeCapabilityDetection.supportsHover
         let config = getCardExpansionPlatformConfig()
-        
-        // Test hover support matrix
-        switch currentPlatform {
-        case .macOS:
-            #expect(config.supportsHover, 
-                         "macOS should support hover")
-        case .iOS, .watchOS, .tvOS, .visionOS:
-            #expect(!config.supportsHover, 
-                           "\(currentPlatform) should not support hover")
-        }
-        
-        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        #expect(config.supportsHover == hover,
+                 "Card expansion hover should match runtime hover detection")
     }
     
     // MARK: - Accessibility Capability Matrix
     
     @Test @MainActor func testAccessibilityCapabilityMatrix() {
-        defer {
-            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-        }
-        // Set accessibility capability overrides to ensure they're detected
-        RuntimeCapabilityDetection.setTestVoiceOver(true)
-        RuntimeCapabilityDetection.setTestSwitchControl(true)
-        let currentPlatform = SixLayerPlatform.current
-        // Touch-first platforms: pin touch + AssistiveTouch so parallel suites cannot leave
-        // stale `testTouchSupport` / `testAssistiveTouch` on the main actor (release xcresult).
-        switch currentPlatform {
-        case .iOS, .watchOS:
-            RuntimeCapabilityDetection.setTestTouchSupport(true)
-            RuntimeCapabilityDetection.setTestAssistiveTouch(true)
-        case .macOS, .tvOS, .visionOS:
-            break
-        }
+        // Matrix = native platform/detection semantics + card config mirroring (no test overrides).
+        let platform = SixLayerPlatform.current
+        let voice = RuntimeCapabilityDetection.supportsVoiceOver
+        let switchCtl = RuntimeCapabilityDetection.supportsSwitchControl
+        let assistive = RuntimeCapabilityDetection.supportsAssistiveTouch
         let config = getCardExpansionPlatformConfig()
-        
-        // All platforms should support these accessibility features (when enabled)
-        #expect(config.supportsVoiceOver, 
-                     "All platforms should support VoiceOver")
-        #expect(config.supportsSwitchControl, 
-                     "All platforms should support Switch Control")
-        
-        // AssistiveTouch is iOS/watchOS only (overrides above on touch platforms).
-        switch currentPlatform {
+        #expect(config.supportsVoiceOver == voice)
+        #expect(config.supportsSwitchControl == switchCtl)
+        #expect(config.supportsAssistiveTouch == assistive)
+        #expect(voice, "VoiceOver should be available as a platform capability")
+        #expect(switchCtl, "Switch Control should be available as a platform capability")
+        switch platform {
         case .iOS, .watchOS:
-            #expect(config.supportsAssistiveTouch, 
-                          "\(currentPlatform) should support AssistiveTouch when enabled")
+            #expect(assistive, "\(platform) should support AssistiveTouch as a platform capability")
         case .macOS, .tvOS, .visionOS:
-            // On these platforms, AssistiveTouch may be enabled via override but isn't native
-            // The test verifies the override works, so we check if it's enabled
-            if RuntimeCapabilityDetection.supportsAssistiveTouch {
-                #expect(config.supportsAssistiveTouch, 
-                               "\(currentPlatform) should respect AssistiveTouch override")
-            }
+            #expect(!assistive, "\(platform) should not support AssistiveTouch as a platform capability")
         }
     }
     
