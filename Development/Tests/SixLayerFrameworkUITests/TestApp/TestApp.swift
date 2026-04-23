@@ -79,6 +79,8 @@ struct TestAppContentView: View {
     private let openPlatformAccessibilityExtensions = ProcessInfo.processInfo.arguments.contains("-OpenPlatformAccessibilityExtensions")
     /// When true, app opens to Layer 4 `platform*` styling extension audit host (launch arg -OpenPlatformStylingLayer4Extensions).
     private let openPlatformStylingLayer4Extensions = ProcessInfo.processInfo.arguments.contains("-OpenPlatformStylingLayer4Extensions")
+    /// When true, app opens to Layer 4 responsive `platformCard*` audit host (launch arg -OpenPlatformResponsiveCardsLayer4).
+    private let openPlatformResponsiveCardsLayer4 = ProcessInfo.processInfo.arguments.contains("-OpenPlatformResponsiveCardsLayer4")
     
     enum TestView: String, CaseIterable, Identifiable {
         case control = "Control Test"
@@ -170,6 +172,10 @@ struct TestAppContentView: View {
             } else if openPlatformStylingLayer4Extensions {
                 NavigationStack {
                     PlatformStylingLayer4ExtensionsAuditView(onBackToMain: nil)
+                }
+            } else if openPlatformResponsiveCardsLayer4 {
+                NavigationStack {
+                    PlatformResponsiveCardsLayer4AuditView(onBackToMain: nil)
                 }
             } else {
                 NavigationStack {
@@ -265,6 +271,11 @@ struct TestAppContentView: View {
                     PlatformStylingLayer4ExtensionsAuditView(onBackToMain: nil)
                 }
                 .accessibilityIdentifier("platform-styling-l4-extensions-link")
+
+                NavigationLink("Platform Responsive Cards (Layer 4) Audit") {
+                    PlatformResponsiveCardsLayer4AuditView(onBackToMain: nil)
+                }
+                .accessibilityIdentifier("platform-responsive-cards-l4-link")
             }
             .padding()
         }
@@ -567,6 +578,123 @@ struct PlatformStylingLayer4ExtensionsAuditView: View {
         }
         .platformFrame()
         .navigationTitle("Platform Styling L4")
+        .platformNavigationTitleDisplayMode_L4(.inline)
+    }
+}
+
+/// RealUI/TestApp coverage for Layer 4 `platformCard*` APIs (`PlatformResponsiveCardsLayer4`, issue #170 Phase 2).
+struct PlatformResponsiveCardsLayer4AuditView: View {
+    var onBackToMain: (() -> Void)?
+
+    var body: some View {
+        platformScrollViewContainer {
+            platformVStack(alignment: .leading, spacing: 24) {
+                platformText("Layer 4 — platformCard* layouts")
+                    .font(.headline)
+                    .accessibilityIdentifier("platform-cards-l4-audit-title")
+
+                platformText("platformCardGrid")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+
+                Color.clear
+                    .frame(height: 1)
+                    .platformCardGrid(columns: 2, spacing: 12) {
+                        Group {
+                            platformText("Grid 1")
+                                .frame(maxWidth: .infinity, alignment: .center)
+                                .platformCardStyle(backgroundColor: Color.gray.opacity(0.18), cornerRadius: 8, shadowRadius: 2)
+                                .platformCardPadding()
+                                .accessibilityIdentifier("platform-card-l4-grid-1")
+                            platformText("Grid 2")
+                                .frame(maxWidth: .infinity, alignment: .center)
+                                .platformCardStyle(backgroundColor: Color.gray.opacity(0.18), cornerRadius: 8, shadowRadius: 2)
+                                .platformCardPadding()
+                                .accessibilityIdentifier("platform-card-l4-grid-2")
+                            platformText("Grid 3")
+                                .frame(maxWidth: .infinity, alignment: .center)
+                                .platformCardStyle(backgroundColor: Color.gray.opacity(0.18), cornerRadius: 8, shadowRadius: 2)
+                                .platformCardPadding()
+                                .accessibilityIdentifier("platform-card-l4-grid-3")
+                        }
+                    }
+                    .accessibilityIdentifier("platform-card-l4-grid-host")
+
+                platformText("platformCardMasonry")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+
+                Color.clear
+                    .frame(height: 1)
+                    .platformCardMasonry(columns: 2, spacing: 10) {
+                        Group {
+                            platformText("Masonry A")
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .platformCardStyle(backgroundColor: Color.indigo.opacity(0.12), cornerRadius: 6, shadowRadius: 2)
+                                .platformCardPadding()
+                                .accessibilityIdentifier("platform-card-l4-masonry-a")
+                            platformText("Masonry B")
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .platformCardStyle(backgroundColor: Color.indigo.opacity(0.12), cornerRadius: 6, shadowRadius: 2)
+                                .platformCardPadding()
+                                .accessibilityIdentifier("platform-card-l4-masonry-b")
+                        }
+                    }
+                    .accessibilityIdentifier("platform-card-l4-masonry-host")
+
+                platformText("platformCardList")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+
+                Color.clear
+                    .frame(height: 1)
+                    .platformCardList(spacing: 10) {
+                        Group {
+                            platformText("List row 1")
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .platformCardPadding()
+                                .accessibilityIdentifier("platform-card-l4-list-1")
+                            platformText("List row 2")
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .platformCardPadding()
+                                .accessibilityIdentifier("platform-card-l4-list-2")
+                        }
+                    }
+                    .accessibilityIdentifier("platform-card-l4-list-host")
+
+                platformText("platformCardAdaptive")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+
+                Color.clear
+                    .frame(height: 1)
+                    .platformCardAdaptive(minWidth: 120, maxWidth: 320) {
+                        platformText("Content inside adaptive min/max width")
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .platformCardStyle(backgroundColor: Color.teal.opacity(0.12), cornerRadius: 8, shadowRadius: 2)
+                            .platformCardPadding()
+                    }
+                    .accessibilityIdentifier("platform-card-l4-adaptive-host")
+
+                platformText("platformCardStyle + platformCardPadding (standalone)")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+
+                platformText("Styled chip")
+                    .platformCardStyle(backgroundColor: Color.orange.opacity(0.22), cornerRadius: 10, shadowRadius: 3)
+                    .platformCardPadding()
+                    .accessibilityIdentifier("platform-card-l4-style-chip")
+
+                if let onBackToMain {
+                    platformButton(label: "Back to Main", id: "platform-cards-l4-back-to-main") {
+                        onBackToMain()
+                    }
+                }
+            }
+            .padding()
+        }
+        .platformFrame()
+        .navigationTitle("Responsive Cards L4")
         .platformNavigationTitleDisplayMode_L4(.inline)
     }
 }
