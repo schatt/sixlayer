@@ -754,6 +754,7 @@ struct Layer4ContractOnlyView: View {
     @State private var l4ContractCopySource = "L4CopyContractText"
     @State private var l4ShowPrint = false
     @State private var l4OverlayNavigationSheet = false
+    @StateObject private var cloudKitContractService = Layer4ExamplesCloudKitServiceHolder()
     private let l4OverlayStrategy = AppNavigationStrategy(
         implementation: .splitView,
         reasoning: "L4 overlay accessibility contract"
@@ -843,6 +844,26 @@ struct Layer4ContractOnlyView: View {
                 .foregroundColor(.secondary)
             platformCloudKitSyncStatus_L4(status: .idle)
                 .accessibilityIdentifier("platformCloudKitSyncStatus_L4")
+            Text("CloudKit Progress")
+                .font(.caption)
+                .foregroundColor(.secondary)
+            platformCloudKitProgress_L4(progress: 0.6, status: .idle)
+            Text("CloudKit Account")
+                .font(.caption)
+                .foregroundColor(.secondary)
+            platformCloudKitAccountStatus_L4(status: .available)
+            Text("CloudKit Service Status")
+                .font(.caption)
+                .foregroundColor(.secondary)
+            platformCloudKitServiceStatus_L4(service: cloudKitContractService.service)
+            Text("CloudKit Sync Button")
+                .font(.caption)
+                .foregroundColor(.secondary)
+            platformCloudKitSyncButton_L4(service: cloudKitContractService.service)
+            Text("CloudKit Status Badge")
+                .font(.caption)
+                .foregroundColor(.secondary)
+            platformCloudKitStatusBadge_L4(service: cloudKitContractService.service)
             Text("Photo Display")
                 .font(.caption)
                 .foregroundColor(.secondary)
