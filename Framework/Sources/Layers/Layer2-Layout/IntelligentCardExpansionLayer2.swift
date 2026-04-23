@@ -2,6 +2,11 @@ import SwiftUI
 
 // MARK: - Layer 2: Layout Decision Engine for Intelligent Card Expansion
 
+private enum PhoneCardViewportHeightClamp {
+    /// When the phone grid has more than this many rows, prefer scrolling over squashing card height (GitHub #249).
+    static let maxRows: Int = 2
+}
+
 /// Layout decision result for intelligent card expansion
 public struct IntelligentCardLayoutDecision: Sendable {
     public let columns: Int
@@ -193,7 +198,7 @@ private func cardHeightRespectingViewport(
     guard let viewport = viewportHeight, viewport.isFinite, viewport > 0 else { return intrinsicHeight }
     let columnCount = max(columns, 1)
     let rows = max(1, Int(ceil(Double(contentCount) / Double(columnCount))))
-    guard rows <= 2 else { return intrinsicHeight }
+    guard rows <= PhoneCardViewportHeightClamp.maxRows else { return intrinsicHeight }
     let interRowSpacing = CGFloat(max(0, rows - 1)) * spacing
     let verticalChrome = layoutPadding * 2 + interRowSpacing
     let heightBudget = viewport - verticalChrome
