@@ -17,7 +17,9 @@ import XCTest
 /// platformTextEditor, platformDatePicker, platformForm, platformFormSection, platformFormField, platformFormFieldGroup,
 /// platformValidationMessage, platformListRow, platformListSectionHeader, platformListEmptyState,
 /// platformSheet_L4, platformPopover_L4, platformNavigationTitle_L4, platformNavigationLink_L4, platformNavigationBarTitleDisplayMode_L4,
-/// platformCopyToClipboard_L4, platformPrint_L4, platformCloudKitSyncStatus_L4, platformPhotoDisplay_L4.
+/// platformCopyToClipboard_L4, platformPrint_L4, platformCloudKitSyncStatus_L4,
+/// platformCloudKitProgress_L4, platformCloudKitAccountStatus_L4, platformCloudKitServiceStatus_L4,
+/// platformCloudKitSyncButton_L4, platformCloudKitStatusBadge_L4, platformPhotoDisplay_L4.
 /// Remaining L4 APIs to add: platformImplementNavigationStack_L4, platformAppNavigation_L4, platformRowActions_L4,
 /// platformPhotoPicker_L4, platformMapView_L4, other platformCloudKit*,
 /// platformShare_L4, platformVerticalSplit_L4, platformHorizontalSplit_L4, platformStyledContainer_L4, etc.
@@ -833,6 +835,90 @@ final class Layer4UITests: XCTestCase {
             exactId.waitForExistence(timeout: 4.0) || containsId.waitForExistence(timeout: 8.0),
             "platformCloudKitSyncStatus_L4: view must have a11y identifier (contract a11y)"
         )
+    }
+
+    @MainActor
+    func testL4_platformCloudKitProgress_L4() throws {
+        ensureContractRoot()
+        scrollToElement(label: "L4 System")
+        scrollToElement(label: "CloudKit Progress")
+        XCTAssertTrue(
+            app.staticTexts["60%"].waitForExistence(timeout: 6.0),
+            "platformCloudKitProgress_L4: progress caption must be visible (contract structure)"
+        )
+        XCTAssertTrue(
+            app.staticTexts["CloudKit Sync: Idle"].waitForExistence(timeout: 4.0),
+            "platformCloudKitProgress_L4: nested sync status must be visible when status is provided"
+        )
+        let containsId = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "identifier CONTAINS[c] %@", "platformCloudKitProgress_L4"))
+            .firstMatch
+        XCTAssertTrue(containsId.waitForExistence(timeout: 10.0),
+                      "platformCloudKitProgress_L4: view must expose contract a11y identifier (contains platformCloudKitProgress_L4)")
+    }
+
+    @MainActor
+    func testL4_platformCloudKitAccountStatus_L4() throws {
+        ensureContractRoot()
+        scrollToElement(label: "L4 System")
+        scrollToElement(label: "CloudKit Account")
+        XCTAssertTrue(
+            app.staticTexts["iCloud Account: Available"].waitForExistence(timeout: 6.0),
+            "platformCloudKitAccountStatus_L4: account label must be visible (contract structure)"
+        )
+        let containsId = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "identifier CONTAINS[c] %@", "platformCloudKitAccountStatus_L4"))
+            .firstMatch
+        XCTAssertTrue(containsId.waitForExistence(timeout: 10.0),
+                      "platformCloudKitAccountStatus_L4: view must expose contract a11y identifier")
+    }
+
+    @MainActor
+    func testL4_platformCloudKitServiceStatus_L4() throws {
+        ensureContractRoot()
+        scrollToElement(label: "L4 System")
+        scrollToElement(label: "CloudKit Service Status")
+        let containsId = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "identifier CONTAINS[c] %@", "platformCloudKitServiceStatus_L4"))
+            .firstMatch
+        XCTAssertTrue(containsId.waitForExistence(timeout: 12.0),
+                      "platformCloudKitServiceStatus_L4: composite view must expose contract a11y identifier")
+        let hasIdleOrAccount = app.staticTexts["CloudKit Sync: Idle"].waitForExistence(timeout: 4.0)
+            || app.staticTexts["iCloud Account: Available"].waitForExistence(timeout: 2.0)
+            || app.staticTexts["iCloud Account: Unknown"].waitForExistence(timeout: 2.0)
+        XCTAssertTrue(
+            hasIdleOrAccount,
+            "platformCloudKitServiceStatus_L4: at least one child status line must be visible (contract structure)"
+        )
+    }
+
+    @MainActor
+    func testL4_platformCloudKitSyncButton_L4() throws {
+        ensureContractRoot()
+        scrollToElement(label: "L4 System")
+        scrollToElement(label: "CloudKit Sync Button")
+        let containsId = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "identifier CONTAINS[c] %@", "platformCloudKitSyncButton_L4"))
+            .firstMatch
+        XCTAssertTrue(containsId.waitForExistence(timeout: 12.0),
+                      "platformCloudKitSyncButton_L4: button must expose contract a11y identifier")
+        let byLabel = app.buttons["Sync"].firstMatch
+        XCTAssertTrue(
+            byLabel.waitForExistence(timeout: 6.0),
+            "platformCloudKitSyncButton_L4: default Sync button must be findable (contract structure)"
+        )
+    }
+
+    @MainActor
+    func testL4_platformCloudKitStatusBadge_L4() throws {
+        ensureContractRoot()
+        scrollToElement(label: "L4 System")
+        scrollToElement(label: "CloudKit Status Badge")
+        let containsId = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "identifier CONTAINS[c] %@", "platformCloudKitStatusBadge_L4"))
+            .firstMatch
+        XCTAssertTrue(containsId.waitForExistence(timeout: 12.0),
+                      "platformCloudKitStatusBadge_L4: badge must expose contract a11y identifier")
     }
 
     @MainActor
