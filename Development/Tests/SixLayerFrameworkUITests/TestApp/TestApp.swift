@@ -77,6 +77,8 @@ struct TestAppContentView: View {
     private let openCategoryEOneOffs = ProcessInfo.processInfo.arguments.contains("-OpenCategoryEOneOffs")
     /// When true, app opens to platform accessibility extension audit host (launch arg -OpenPlatformAccessibilityExtensions).
     private let openPlatformAccessibilityExtensions = ProcessInfo.processInfo.arguments.contains("-OpenPlatformAccessibilityExtensions")
+    /// When true, app opens to Layer 4 `platform*` styling extension audit host (launch arg -OpenPlatformStylingLayer4Extensions).
+    private let openPlatformStylingLayer4Extensions = ProcessInfo.processInfo.arguments.contains("-OpenPlatformStylingLayer4Extensions")
     
     enum TestView: String, CaseIterable, Identifiable {
         case control = "Control Test"
@@ -164,6 +166,10 @@ struct TestAppContentView: View {
             } else if openPlatformAccessibilityExtensions {
                 NavigationStack {
                     PlatformAccessibilityExtensionsAuditView(onBackToMain: nil)
+                }
+            } else if openPlatformStylingLayer4Extensions {
+                NavigationStack {
+                    PlatformStylingLayer4ExtensionsAuditView(onBackToMain: nil)
                 }
             } else {
                 NavigationStack {
@@ -254,6 +260,11 @@ struct TestAppContentView: View {
                     PlatformAccessibilityExtensionsAuditView(onBackToMain: nil)
                 }
                 .accessibilityIdentifier("platform-a11y-extensions-link")
+
+                NavigationLink("Platform Styling (Layer 4) Extensions Audit") {
+                    PlatformStylingLayer4ExtensionsAuditView(onBackToMain: nil)
+                }
+                .accessibilityIdentifier("platform-styling-l4-extensions-link")
             }
             .padding()
         }
@@ -404,6 +415,158 @@ struct PlatformAccessibilityExtensionsAuditView: View {
         }
         .platformFrame()
         .navigationTitle("Platform A11y Extensions")
+        .platformNavigationTitleDisplayMode_L4(.inline)
+    }
+}
+
+/// RealUI/TestApp coverage for Layer 4 `platform*` styling extensions (`PlatformStylingLayer4`, issue #170 Phase 2).
+struct PlatformStylingLayer4ExtensionsAuditView: View {
+    @State private var animToggle = false
+    var onBackToMain: (() -> Void)?
+
+    var body: some View {
+        platformScrollViewContainer {
+            platformVStack(alignment: .leading, spacing: 20) {
+                platformText("Layer 4 — platform styling extensions")
+                    .font(.headline)
+                    .accessibilityIdentifier("platform-styling-l4-audit-title")
+
+                platformText("platformBackground() default")
+                    .platformBackground()
+                    .accessibilityIdentifier("platform-styling-l4-bg-default")
+
+                platformText("platformBackground(Color)")
+                    .platformBackground(Color.orange.opacity(0.2))
+                    .accessibilityIdentifier("platform-styling-l4-bg-color")
+
+                platformText("platformBackground(Color, ignoresSafeAreaEdges: .horizontal)")
+                    .platformBackground(Color.green.opacity(0.15), ignoresSafeAreaEdges: .horizontal)
+                    .accessibilityIdentifier("platform-styling-l4-bg-color-edges")
+
+                platformText("platformBackground ViewBuilder")
+                    .platformBackground(alignment: .leading) {
+                        Color.purple.opacity(0.12)
+                    }
+                    .accessibilityIdentifier("platform-styling-l4-bg-viewbuilder")
+
+                platformText("platformBackground ShapeStyle")
+                    .platformBackground(Color.cyan.opacity(0.2), ignoresSafeAreaEdges: [])
+                    .accessibilityIdentifier("platform-styling-l4-bg-shapestudio")
+
+                platformText("platformPadding()")
+                    .platformPadding()
+                    .accessibilityIdentifier("platform-styling-l4-pad-default")
+
+                platformText("platformPadding(_ edges, _ length)")
+                    .platformPadding(.horizontal, 12)
+                    .accessibilityIdentifier("platform-styling-l4-pad-edges")
+
+                platformText("platformPadding(_ value)")
+                    .platformPadding(10)
+                    .accessibilityIdentifier("platform-styling-l4-pad-value")
+
+                platformText("platformPadding(EdgeInsets)")
+                    .platformPadding(EdgeInsets(top: 4, leading: 8, bottom: 4, trailing: 8))
+                    .accessibilityIdentifier("platform-styling-l4-pad-insets")
+
+                platformText("platformReducedPadding()")
+                    .platformReducedPadding()
+                    .accessibilityIdentifier("platform-styling-l4-reduced-pad")
+
+                platformText("platformCornerRadius() default")
+                    .platformCornerRadius()
+                    .accessibilityIdentifier("platform-styling-l4-radius-default")
+
+                platformText("platformCornerRadius(6)")
+                    .platformCornerRadius(6)
+                    .accessibilityIdentifier("platform-styling-l4-radius-value")
+
+                platformText("platformShadow() default")
+                    .platformShadow()
+                    .accessibilityIdentifier("platform-styling-l4-shadow-default")
+
+                platformText("platformShadow(color:radius:x:y:)")
+                    .platformShadow(color: .gray.opacity(0.45), radius: 3, x: 1, y: 2)
+                    .accessibilityIdentifier("platform-styling-l4-shadow-custom")
+
+                platformText("platformBorder() default")
+                    .platformBorder()
+                    .padding(4)
+                    .accessibilityIdentifier("platform-styling-l4-border-default")
+
+                platformText("platformBorder(color:width:)")
+                    .platformBorder(color: .blue, width: 1)
+                    .padding(4)
+                    .accessibilityIdentifier("platform-styling-l4-border-custom")
+
+                platformText("platformFont() default")
+                    .platformFont()
+                    .accessibilityIdentifier("platform-styling-l4-font-default")
+
+                platformText("platformFont(.title3)")
+                    .platformFont(.title3)
+                    .accessibilityIdentifier("platform-styling-l4-font-title3")
+
+                platformButton(label: "Toggle animation driving value", id: "platform-styling-l4-anim-toggle") {
+                    animToggle.toggle()
+                }
+
+                platformText("platformAnimation() default")
+                    .platformAnimation()
+                    .accessibilityIdentifier("platform-styling-l4-anim-default")
+
+                platformText("platformAnimation(_:value:) — state: \(animToggle ? "on" : "off")")
+                    .platformAnimation(.easeInOut(duration: 0.25), value: animToggle)
+                    .accessibilityIdentifier("platform-styling-l4-anim-value")
+
+                platformText("platformMinFrame()")
+                    .platformMinFrame()
+                    .accessibilityIdentifier("platform-styling-l4-min-frame")
+
+                platformText("platformMaxFrame()")
+                    .platformMaxFrame()
+                    .accessibilityIdentifier("platform-styling-l4-max-frame")
+
+                platformText("platformIdealFrame()")
+                    .platformIdealFrame()
+                    .accessibilityIdentifier("platform-styling-l4-ideal-frame")
+
+                platformText("platformAdaptiveFrame()")
+                    .platformAdaptiveFrame()
+                    .accessibilityIdentifier("platform-styling-l4-adaptive-frame")
+
+                platformForm {
+                    Section {
+                        platformText("platformFormStyle() — inner row")
+                    } header: {
+                        platformText("Form section")
+                    }
+                }
+                .platformFormStyle()
+                .accessibilityIdentifier("platform-styling-l4-form-style")
+
+                platformVStack(alignment: .leading, spacing: 4) {
+                    platformText("platformContentSpacing() — row A")
+                    platformText("platformContentSpacing() — row B")
+                }
+                .platformContentSpacing()
+                .accessibilityIdentifier("platform-styling-l4-content-spacing")
+
+                platformStyledContainer_L4 {
+                    platformText("platformStyledContainer_L4 content")
+                }
+                .accessibilityIdentifier("platform-styling-l4-styled-container")
+
+                if let onBackToMain {
+                    platformButton(label: "Back to Main", id: "platform-styling-l4-back-to-main") {
+                        onBackToMain()
+                    }
+                }
+            }
+            .padding()
+        }
+        .platformFrame()
+        .navigationTitle("Platform Styling L4")
         .platformNavigationTitleDisplayMode_L4(.inline)
     }
 }
