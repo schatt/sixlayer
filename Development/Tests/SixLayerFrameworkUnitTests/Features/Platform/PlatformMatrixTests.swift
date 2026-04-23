@@ -135,9 +135,22 @@ open class PlatformMatrixTests: BaseTestClass {
     // MARK: - Accessibility Capability Matrix
     
     @Test @MainActor func testAccessibilityCapabilityMatrix() {
+        defer {
+            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        }
         // Set accessibility capability overrides to ensure they're detected
         RuntimeCapabilityDetection.setTestVoiceOver(true)
         RuntimeCapabilityDetection.setTestSwitchControl(true)
+        let currentPlatform = SixLayerPlatform.current
+        // Touch-first platforms: pin touch + AssistiveTouch so parallel suites cannot leave
+        // stale `testTouchSupport` / `testAssistiveTouch` on the main actor (release xcresult).
+        switch currentPlatform {
+        case .iOS, .watchOS:
+            RuntimeCapabilityDetection.setTestTouchSupport(true)
+            RuntimeCapabilityDetection.setTestAssistiveTouch(true)
+        case .macOS, .tvOS, .visionOS:
+            break
+        }
         let config = getCardExpansionPlatformConfig()
         
         // All platforms should support these accessibility features (when enabled)
@@ -146,12 +159,7 @@ open class PlatformMatrixTests: BaseTestClass {
         #expect(config.supportsSwitchControl, 
                      "All platforms should support Switch Control")
         
-        // Clean up
-        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-        
-        // AssistiveTouch is iOS/watchOS only
-        // Note: We set AssistiveTouch to true above, so check if it's actually enabled
-        let currentPlatform = SixLayerPlatform.current
+        // AssistiveTouch is iOS/watchOS only (overrides above on touch platforms).
         switch currentPlatform {
         case .iOS, .watchOS:
             #expect(config.supportsAssistiveTouch, 
