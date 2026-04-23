@@ -75,6 +75,8 @@ struct TestAppContentView: View {
     private let openCategoryCCallbacks = ProcessInfo.processInfo.arguments.contains("-OpenCategoryCCallbacks")
     /// When true, app opens to Category E one-off coverage host (launch arg -OpenCategoryEOneOffs). Issue #201.
     private let openCategoryEOneOffs = ProcessInfo.processInfo.arguments.contains("-OpenCategoryEOneOffs")
+    /// When true, app opens to platform accessibility extension audit host (launch arg -OpenPlatformAccessibilityExtensions).
+    private let openPlatformAccessibilityExtensions = ProcessInfo.processInfo.arguments.contains("-OpenPlatformAccessibilityExtensions")
     
     enum TestView: String, CaseIterable, Identifiable {
         case control = "Control Test"
@@ -159,6 +161,10 @@ struct TestAppContentView: View {
                 NavigationStack {
                     CategoryEOneOffAuditView()
                 }
+            } else if openPlatformAccessibilityExtensions {
+                NavigationStack {
+                    PlatformAccessibilityExtensionsAuditView(onBackToMain: nil)
+                }
             } else {
                 NavigationStack {
                     if let selected = selectedTest {
@@ -242,6 +248,12 @@ struct TestAppContentView: View {
                     Layer6ExamplesView()
                 }
                 .accessibilityIdentifier("layer6-examples-link")
+
+                sectionHeader("Extensions & Utilities (Issue #170)")
+                NavigationLink("Platform Accessibility Extensions Audit") {
+                    PlatformAccessibilityExtensionsAuditView(onBackToMain: nil)
+                }
+                .accessibilityIdentifier("platform-a11y-extensions-link")
             }
             .padding()
         }
