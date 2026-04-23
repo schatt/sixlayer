@@ -46,6 +46,7 @@ open class CapabilityAwareFunctionTests: BaseTestClass {
     // MARK: - Touch thread-local overrides (default / positive / negative)
     
     /// Default: no thread-local touch overrides; card config mirrors `RuntimeCapabilityDetection`.
+    @MainActor
     private func runTouchThreadLocalOverrideDefaultVerification() {
         RuntimeCapabilityDetection.clearAllCapabilityOverrides()
         let touch = RuntimeCapabilityDetection.supportsTouch
@@ -56,6 +57,7 @@ open class CapabilityAwareFunctionTests: BaseTestClass {
     }
     
     /// Positive: `true` overrides where used; touch-first paths and HIG floors (Issue #237).
+    @MainActor
     private func runTouchThreadLocalOverridePositiveVerification() {
         RuntimeCapabilityDetection.setTestTouchSupport(true)
         RuntimeCapabilityDetection.setTestHapticFeedback(true)
@@ -81,6 +83,7 @@ open class CapabilityAwareFunctionTests: BaseTestClass {
     
     /// Negative: `false` is respected on platforms that can simulate “no touch”; on iOS/watchOS a
     /// false **touch** override is ignored (platform guarantee) while other overrides still apply.
+    @MainActor
     private func runTouchThreadLocalOverrideNegativeVerification() {
         RuntimeCapabilityDetection.setTestTouchSupport(false)
         RuntimeCapabilityDetection.setTestHapticFeedback(false)
