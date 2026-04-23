@@ -1,0 +1,25 @@
+---
+description: How to test RuntimeCapabilityDetection thread-local overrides — default, positive, and negative paths on every platform.
+globs: Development/Tests/**/*RuntimeCapability*.swift, Development/Tests/**/*Capability*.swift, Framework/Sources/Core/Models/RuntimeCapabilityDetection.swift
+alwaysApply: false
+---
+
+# Capability override tests (thread-local `setTest*`)
+
+## Three flows on every platform
+
+For each capability that supports `RuntimeCapabilityDetection.setTest*(...)`, structure coverage as:
+
+1. **Default** — `clearAllCapabilityOverrides()` (often via `DefaultRuntimeCapabilityIsolationTrait`); assert behavior matches intrinsic runtime / platform detection and that consumers (e.g. `getCardExpansionPlatformConfig()`) mirror `RuntimeCapabilityDetection`.
+
+2. **Positive override** — set the override to `true` when the platform can honor it; assert the code path that should run **when that capability is on** on **this** platform.
+
+3. **Negative override** — set the override to `false`:
+   - If the platform **cannot** semantically disable the capability (e.g. **iOS/watchOS touch** — a platform guarantee), assert the **negative value is ignored** and documented behavior holds (`supportsTouch` still true; see `setTestTouchSupport` doc on `RuntimeCapabilityDetection`).
+   - If the platform **can** simulate off (e.g. **macOS touch** via thread-local override), assert **false is respected** and downstream behavior matches.
+
+Do not use overrides only to “pin the matrix” for unrelated assertions; matrix tests use native detection. Overrides belong in tests whose purpose is default vs positive vs negative semantics.
+
+## `CapabilityOverride` (UI / `*WithOverride` APIs)
+
+Separate from thread-local `setTest*`. Document in the test which layer is under test. `supportsTouchWithOverride` may still honor `CapabilityOverride.touchSupport` when testing UI override layers.

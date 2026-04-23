@@ -116,6 +116,24 @@ open class RuntimeCapabilityDetectionTDDTests: BaseTestClass {
     
     // MARK: - Override Functionality Tests
     
+    /// Thread-local `false` for touch cannot remove touch on iOS/watchOS (platform guarantee).
+    @Test @MainActor func testThreadLocalFalseTouchOverrideIgnoredOnTouchFirstPlatforms() {
+        switch SixLayerPlatform.current {
+        case .iOS, .watchOS:
+            RuntimeCapabilityDetection.setTestTouchSupport(false)
+            defer {
+                RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+            }
+            #expect(RuntimeCapabilityDetection.supportsTouch)
+        default:
+            RuntimeCapabilityDetection.setTestTouchSupport(false)
+            defer {
+                RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+            }
+            #expect(!RuntimeCapabilityDetection.supportsTouch)
+        }
+    }
+    
     @Test @MainActor func testTouchOverrideTakesPrecedenceOverTestingDefaults() {
         // Set override
         CapabilityOverride.touchSupport = true

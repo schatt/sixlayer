@@ -32,7 +32,11 @@ public struct RuntimeCapabilityDetection {
     
     // MARK: - Capability-Level Override Support
     
-    /// Override touch support detection for testing
+    /// Override touch support detection for testing (thread-local).
+    ///
+    /// **iOS and watchOS:** `false` is ignored — touch is a platform guarantee; a
+    /// negative thread-local value cannot simulate “no touch”. `true` and `nil`
+    /// behave as usual (`nil` uses OS detection). Other platforms respect `false`.
     public static func setTestTouchSupport(_ value: Bool?) {
         Thread.current.threadDictionary["testTouchSupport"] = value
     }
@@ -149,24 +153,30 @@ public struct RuntimeCapabilityDetection {
     /// Detects if touch input is actually supported by querying the OS
     /// Note: nonisolated - detection functions don't access MainActor APIs
     nonisolated public static var supportsTouch: Bool {
-        // Check for capability override first
+        // Use real runtime detection - tests should run on actual platforms/simulators
+        #if os(iOS)
+        if let override = testTouchSupport {
+            return override ? true : detectiOSTouchSupport()
+        }
+        return detectiOSTouchSupport()
+        #elseif os(watchOS)
+        if let override = testTouchSupport {
+            return override ? true : detectwatchOSTouchSupport()
+        }
+        return detectwatchOSTouchSupport()
+        #else
         if let testValue = testTouchSupport {
             return testValue
         }
-        
-        // Use real runtime detection - tests should run on actual platforms/simulators
-        #if os(iOS)
-        return detectiOSTouchSupport()
-        #elseif os(macOS)
+        #if os(macOS)
         return detectmacOSTouchSupport()
-        #elseif os(watchOS)
-        return detectwatchOSTouchSupport()
         #elseif os(tvOS)
         return detecttvOSTouchSupport()
         #elseif os(visionOS)
         return detectvisionOSTouchSupport()
         #else
         return false
+        #endif
         #endif
     }
     

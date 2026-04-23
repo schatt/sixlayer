@@ -43,43 +43,33 @@ open class CapabilityAwareFunctionTests: BaseTestClass {
     
     // BaseTestClass handles cleanup automatically
     
-    // MARK: - Touch-Dependent Function Tests
+    // MARK: - Touch thread-local overrides (default / positive / negative)
     
-    /// BUSINESS PURPOSE: Test touch-dependent functions
-    /// TESTING SCOPE: Touch capability detection, haptic feedback, AssistiveTouch, touch targets
-    /// METHODOLOGY: Test runtime capabilities on current platform
-    @Test @MainActor func testTouchDependentFunctions() {
-        // Test both enabled and disabled states using the new methodology
-        testTouchDependentFunctionsEnabled()
-        testTouchDependentFunctionsDisabled()
+    /// Default: no thread-local touch overrides; card config mirrors `RuntimeCapabilityDetection`.
+    private func runTouchThreadLocalOverrideDefaultVerification() {
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        let touch = RuntimeCapabilityDetection.supportsTouch
+        let haptic = RuntimeCapabilityDetection.supportsHapticFeedback
+        let config = getCardExpansionPlatformConfig()
+        #expect(config.supportsTouch == touch)
+        #expect(config.supportsHapticFeedback == haptic)
     }
     
-    /// BUSINESS PURPOSE: Test touch functions when touch is enabled
-    /// TESTING SCOPE: Touch capability detection, haptic feedback, AssistiveTouch, touch targets
-    /// METHODOLOGY: Test actual runtime capabilities on current platform
-    @Test @MainActor func testTouchDependentFunctionsEnabled() {
-        // Test touch capabilities on current platform
+    /// Positive: `true` overrides where used; touch-first paths and HIG floors (Issue #237).
+    private func runTouchThreadLocalOverridePositiveVerification() {
         RuntimeCapabilityDetection.setTestTouchSupport(true)
         RuntimeCapabilityDetection.setTestHapticFeedback(true)
         RuntimeCapabilityDetection.setTestAssistiveTouch(true)
-
-        // Test the capabilities directly on current platform
-        #expect(RuntimeCapabilityDetection.supportsTouch, "Touch should be supported when enabled on current platform")
-        #expect(RuntimeCapabilityDetection.supportsHapticFeedback, "Haptic feedback should be available when touch is supported on current platform")
-        #expect(RuntimeCapabilityDetection.supportsAssistiveTouch, "AssistiveTouch should be available when touch is supported on current platform")
-
-        // Test the platform config
+        defer {
+            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        }
+        #expect(RuntimeCapabilityDetection.supportsTouch)
+        #expect(RuntimeCapabilityDetection.supportsHapticFeedback)
+        #expect(RuntimeCapabilityDetection.supportsAssistiveTouch)
         let config = getCardExpansionPlatformConfig()
-        #expect(config.supportsTouch, "Touch should be supported when enabled on current platform")
-        #expect(config.supportsHapticFeedback, "Haptic feedback should be available when touch is supported on current platform")
-        #expect(config.supportsAssistiveTouch, "AssistiveTouch should be available when touch is supported on current platform")
-
-        // Verify minTouchTarget per Apple HIG (Issue #237).
-        // Touch enabled here, but platform HIG floors still apply:
-        //   iOS/watchOS: 44 (touch HIG)
-        //   tvOS: 60 (focus HIG)
-        //   visionOS: 60 (gaze+pinch HIG)
-        //   macOS: 44 (touch detected)
+        #expect(config.supportsTouch)
+        #expect(config.supportsHapticFeedback)
+        #expect(config.supportsAssistiveTouch)
         let currentPlatform = SixLayerPlatform.current
         let expectedMinTouchTarget = PlatformTestUtilities.expectedMinTouchTarget(
             for: currentPlatform,
@@ -87,64 +77,81 @@ open class CapabilityAwareFunctionTests: BaseTestClass {
         )
         #expect(config.minTouchTarget == expectedMinTouchTarget,
                 "Touch targets must match Apple HIG for \(currentPlatform): expected \(expectedMinTouchTarget)pt")
-
-        // Clean up
-        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
     }
     
-    /// BUSINESS PURPOSE: Test touch functions when touch is disabled
-    /// TESTING SCOPE: Touch capability detection, haptic feedback, AssistiveTouch, touch targets
-    /// METHODOLOGY: Test runtime capabilities on current platform
-    @Test @MainActor func testTouchDependentFunctionsDisabled() {
-        // Test touch capabilities on current platform
+    /// Negative: `false` is respected on platforms that can simulate “no touch”; on iOS/watchOS a
+    /// false **touch** override is ignored (platform guarantee) while other overrides still apply.
+    private func runTouchThreadLocalOverrideNegativeVerification() {
         RuntimeCapabilityDetection.setTestTouchSupport(false)
         RuntimeCapabilityDetection.setTestHapticFeedback(false)
         RuntimeCapabilityDetection.setTestAssistiveTouch(false)
-        
-        // Test touch functions on current platform (Issue #237, Apple HIG)
+        defer {
+            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        }
         let currentPlatform = SixLayerPlatform.current
+        let config = getCardExpansionPlatformConfig()
+        switch currentPlatform {
+        case .iOS, .watchOS:
+            #expect(RuntimeCapabilityDetection.supportsTouch,
+                    "Thread-local false touch override is ignored on touch-first platforms")
+            #expect(config.supportsTouch)
+            #expect(!RuntimeCapabilityDetection.supportsHapticFeedback)
+            #expect(!config.supportsHapticFeedback)
+            #expect(!RuntimeCapabilityDetection.supportsAssistiveTouch)
+            #expect(!config.supportsAssistiveTouch)
+        case .macOS, .tvOS, .visionOS:
+            #expect(!RuntimeCapabilityDetection.supportsTouch)
+            #expect(!config.supportsTouch)
+            #expect(!config.supportsHapticFeedback)
+            #expect(!config.supportsAssistiveTouch)
+        }
         let expectedMinTouchTarget = PlatformTestUtilities.expectedMinTouchTarget(
             for: currentPlatform,
-            touchDetected: false
+            touchDetected: config.supportsTouch
         )
-
-        let config = getCardExpansionPlatformConfig()
-
-        // Test that touch-related functions handle disabled state gracefully
-        #expect(!config.supportsTouch, "Touch should not be supported when disabled on current platform")
-        #expect(!config.supportsHapticFeedback, "Haptic feedback should not be available when touch is disabled on current platform")
-        #expect(!config.supportsAssistiveTouch, "AssistiveTouch should not be available when touch is disabled on current platform")
-
-        // Platform HIG floors apply even when runtime touch is off: tvOS stays at
-        // 60 (focus HIG), visionOS stays at 60 (gaze+pinch HIG). Only macOS
-        // drops to 0 when no touch is detected.
         #expect(config.minTouchTarget == expectedMinTouchTarget,
                 "Touch targets must match Apple HIG for \(currentPlatform): expected \(expectedMinTouchTarget)pt")
-        
-        // Clean up
-        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
     }
     
-    /// BUSINESS PURPOSE: Touch-dependent functions provide haptic feedback, AssistiveTouch support, and appropriate touch targets
-    /// TESTING SCOPE: Touch capability detection, haptic feedback, AssistiveTouch, touch targets
-    /// METHODOLOGY: Use real system capability detection to test enabled touch state
+    // MARK: - Touch-Dependent Function Tests
+    
+    /// BUSINESS PURPOSE: Runs all three thread-local touch override flows (see `.cursor/rules/capability-override-test-flows.mdc`).
+    @Test @MainActor func testTouchDependentFunctions() {
+        runTouchThreadLocalOverrideDefaultVerification()
+        runTouchThreadLocalOverridePositiveVerification()
+        runTouchThreadLocalOverrideNegativeVerification()
+    }
+    
+    @Test @MainActor func testTouchThreadLocalOverride_DefaultPathMirrorsIntrinsicDetection() {
+        runTouchThreadLocalOverrideDefaultVerification()
+    }
+    
+    @Test @MainActor func testTouchThreadLocalOverride_PositivePathEnablesTouchStack() {
+        runTouchThreadLocalOverridePositiveVerification()
+    }
+    
+    @Test @MainActor func testTouchThreadLocalOverride_NegativePathRespectedOrTouchIgnoredPerPlatform() {
+        runTouchThreadLocalOverrideNegativeVerification()
+    }
+    
+    /// BUSINESS PURPOSE: Positive thread-local touch stack (alias for filters / audit lists).
+    @Test @MainActor func testTouchDependentFunctionsEnabled() {
+        runTouchThreadLocalOverridePositiveVerification()
+    }
+    
+    /// BUSINESS PURPOSE: Negative thread-local touch stack (alias for filters / audit lists).
+    @Test @MainActor func testTouchDependentFunctionsDisabled() {
+        runTouchThreadLocalOverrideNegativeVerification()
+    }
+    
+    /// BUSINESS PURPOSE: Positive path with hover pinned off (card expansion interaction slice).
     @Test @MainActor func testTouchFunctionsEnabled() {
-        // Set platform to iOS (which natively supports touch) to test touch-enabled state
         RuntimeCapabilityDetection.setTestTouchSupport(true)
         RuntimeCapabilityDetection.setTestHapticFeedback(true)
         RuntimeCapabilityDetection.setTestHover(false)
         RuntimeCapabilityDetection.setTestAssistiveTouch(true)
         defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
-        
-        // Test that touch-related functions work correctly when touch is supported
         let config = getCardExpansionPlatformConfig()
-        
-        // Per Apple HIG (Issue #237):
-        //   iOS/watchOS: 44pt (touch HIG)
-        //   tvOS: 60pt (focus HIG — independent of touch)
-        //   visionOS: 60pt (gaze+pinch HIG — independent of touch)
-        //   macOS: 44pt when runtime touch is detected (touch enabled here)
-        // Touch being enabled does NOT override tvOS/visionOS HIG floors.
         let currentPlatform = SixLayerPlatform.current
         let expectedMinTouchTarget = PlatformTestUtilities.expectedMinTouchTarget(
             for: currentPlatform,
@@ -152,48 +159,14 @@ open class CapabilityAwareFunctionTests: BaseTestClass {
         )
         #expect(config.minTouchTarget == expectedMinTouchTarget,
                 "Touch targets must match Apple HIG for \(currentPlatform): expected \(expectedMinTouchTarget)pt")
-        
-        // Haptic feedback should be available
-        #expect(config.supportsHapticFeedback, 
-                     "Haptic feedback should be available when touch is supported")
-        
-        // AssistiveTouch should be available (when enabled)
-        #expect(config.supportsAssistiveTouch, 
-                     "AssistiveTouch should be available when touch is supported and enabled")
+        #expect(config.supportsTouch)
+        #expect(config.supportsHapticFeedback)
+        #expect(config.supportsAssistiveTouch)
     }
     
-    /// BUSINESS PURPOSE: Touch-dependent functions gracefully handle disabled touch state by disabling haptic feedback and AssistiveTouch
-    /// TESTING SCOPE: Touch capability detection, haptic feedback, AssistiveTouch, touch targets
-    /// METHODOLOGY: Use real system capability detection to test disabled touch state
+    /// BUSINESS PURPOSE: Negative path slice without hover (delegates to shared negative semantics).
     @Test @MainActor func testTouchFunctionsDisabled() {
-        // Force disabled state to avoid environment variance
-        RuntimeCapabilityDetection.setTestTouchSupport(false)
-        RuntimeCapabilityDetection.setTestHapticFeedback(false)
-        RuntimeCapabilityDetection.setTestAssistiveTouch(false)
-        let config = getCardExpansionPlatformConfig()
-        
-        // Touch should not be supported
-        #expect(!config.supportsTouch, 
-                      "Touch should not be supported when disabled")
-        
-        // Haptic feedback should not be available
-        #expect(!config.supportsHapticFeedback, 
-                      "Haptic feedback should not be available when touch is disabled")
-        
-        // AssistiveTouch should not be available
-        #expect(!config.supportsAssistiveTouch, 
-                      "AssistiveTouch should not be available when touch is disabled")
-        
-        // Touch targets per Apple HIG (Issue #237). Touch is disabled, but
-        // tvOS/visionOS HIG floors (60pt focus / gaze+pinch) still apply.
-        let currentPlatform = SixLayerPlatform.current
-        let expectedMinTouchTarget = PlatformTestUtilities.expectedMinTouchTarget(
-            for: currentPlatform,
-            touchDetected: false
-        )
-        #expect(config.minTouchTarget == expectedMinTouchTarget,
-                "Touch targets must match Apple HIG for \(currentPlatform): expected \(expectedMinTouchTarget)pt")
-        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        runTouchThreadLocalOverrideNegativeVerification()
     }
     
     // MARK: - Hover-Dependent Function Tests
