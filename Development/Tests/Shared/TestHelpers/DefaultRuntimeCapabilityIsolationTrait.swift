@@ -30,11 +30,21 @@ public struct DefaultRuntimeCapabilityIsolationTrait: Sendable, TestTrait, Suite
         let hapticHarness: Bool? = false
         try await RuntimeCapabilityHarness.$macOSTouchEnabledPreference.withValue(touchHarness) {
             try await RuntimeCapabilityHarness.$macOSHapticEnabledPreference.withValue(hapticHarness) {
+                // `Thread.current` here is often the cooperative pool executor, while `@MainActor`
+                // tests run on the main thread. Clearing only the executor thread leaves stale
+                // `testTouchSupport` / `CapabilityOverride` entries on main and breaks suites
+                // (e.g. RuntimeCapabilityDetectionTDDTests.testOverrideClearing — gh-250 / release xcresult).
                 RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+                await MainActor.run {
+                    RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+                }
                 defer {
-                    CapabilityOverride.clearThreadIsolationFromCurrentThread()
+                    RuntimeCapabilityDetection.clearAllCapabilityOverrides()
                 }
                 try await function()
+                await MainActor.run {
+                    RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+                }
             }
         }
     }
