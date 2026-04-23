@@ -781,12 +781,25 @@ struct Layer4ContractOnlyView: View {
 
     @ViewBuilder
     private var contractNavigationContent: some View {
-        NavigationLink {
-            L4NavDestinationView()
-        } label: {
-            Text("L4NavLinkContract")
+        platformVStack(alignment: .leading, spacing: 12) {
+            NavigationLink {
+                L4NavDestinationView()
+            } label: {
+                Text("L4NavLinkContract")
+            }
+            .accessibilityIdentifier("L4NavLinkContract")
+            Text("Navigation Stack Contract")
+                .font(.caption)
+                .foregroundColor(.secondary)
+            platformImplementNavigationStack_L4(
+                content: Text("L4NavStackContractRoot")
+                    .accessibilityIdentifier("L4NavStackContractRoot")
+                    .accessibilityLabel("L4NavStackContractRoot"),
+                title: "L4NavStackContract",
+                strategy: NavigationStackStrategy(implementation: .navigationStack, reasoning: nil)
+            )
+            .frame(minHeight: 160)
         }
-        .accessibilityIdentifier("L4NavLinkContract")
     }
 
     @ViewBuilder
@@ -935,8 +948,13 @@ struct Layer4ContractOnlyView: View {
             List {
                 EmptyView()
                     .platformListRow(title: "L4ListRowContract")
+                EmptyView()
+                    .platformListRow(title: "L4RowActionsContractRow")
+                    .platformRowActions_L4 {
+                        Button("L4RowActionContract", role: .destructive) { }
+                    }
             }
-            .frame(height: 60)
+            .frame(height: 140)
             EmptyView()
                 .platformListSectionHeader(title: "L4ListSectionHeaderContract")
             EmptyView()
