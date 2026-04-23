@@ -38,7 +38,8 @@ public func determineIntelligentCardLayout_L2(
     contentCount: Int,
     screenWidth: CGFloat,
     deviceType: DeviceType,
-    contentComplexity: ContentComplexity
+    contentComplexity: ContentComplexity,
+    viewportHeight: CGFloat? = nil
 ) -> IntelligentCardLayoutDecision {
     
     // Base calculations
@@ -57,7 +58,17 @@ public func determineIntelligentCardLayout_L2(
     // Calculate spacing and card dimensions
     let spacing = calculateOptimalSpacing(deviceType: deviceType, contentComplexity: contentComplexity)
     let cardWidth = max(minCardWidth, min(maxCardWidth, (availableWidth - spacing * CGFloat(columns - 1)) / CGFloat(columns)))
-    let cardHeight = calculateOptimalHeight(cardWidth: cardWidth, contentComplexity: contentComplexity)
+    let layoutPadding: CGFloat = 16
+    let intrinsicHeight = calculateOptimalHeight(cardWidth: cardWidth, contentComplexity: contentComplexity)
+    let cardHeight = cardHeightRespectingViewport(
+        intrinsicHeight: intrinsicHeight,
+        contentCount: contentCount,
+        columns: columns,
+        spacing: spacing,
+        layoutPadding: layoutPadding,
+        deviceType: deviceType,
+        viewportHeight: viewportHeight
+    )
     
     // Determine expansion behavior
     let expansionScale = calculateExpansionScale(deviceType: deviceType, contentComplexity: contentComplexity)
@@ -68,7 +79,7 @@ public func determineIntelligentCardLayout_L2(
         spacing: spacing,
         cardWidth: cardWidth,
         cardHeight: cardHeight,
-        padding: 16,
+        padding: layoutPadding,
         expansionScale: expansionScale,
         animationDuration: animationDuration
     )
@@ -165,6 +176,21 @@ private func calculateOptimalSpacing(deviceType: DeviceType, contentComplexity: 
     case .advanced:
         return baseSpacing * 2.0
     }
+}
+
+/// Caps card height on **phone** when a finite viewport height is supplied and the grid has at most two rows,
+/// so small collections can fit without scrolling (see GitHub #249).
+private func cardHeightRespectingViewport(
+    intrinsicHeight: CGFloat,
+    contentCount _: Int,
+    columns _: Int,
+    spacing _: CGFloat,
+    layoutPadding _: CGFloat,
+    deviceType _: DeviceType,
+    viewportHeight _: CGFloat?
+) -> CGFloat {
+    // TDD red stub: viewport ignored; tests require clamping before green implementation.
+    return intrinsicHeight
 }
 
 /// Calculate optimal card height

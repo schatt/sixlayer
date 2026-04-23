@@ -84,6 +84,67 @@ open class IntelligentCardExpansionTests: BaseTestClass {
         #expect(layoutDecision.cardHeight > 0)
     }
     
+    /// GitHub #249: phone + small row count + finite viewport should cap card height so two stacked cards fit.
+    @Test func testIntelligentCardLayoutPhoneRespectsViewportHeightForTwoItems() {
+        let viewport: CGFloat = 520
+        let layout = determineIntelligentCardLayout_L2(
+            contentCount: 2,
+            screenWidth: 393,
+            deviceType: .phone,
+            contentComplexity: .moderate,
+            viewportHeight: viewport
+        )
+        #expect(layout.columns == 1)
+        let intrinsic = layout.cardWidth * 1.4
+        let maxPerRow = (viewport - layout.padding * 2 - layout.spacing) / 2
+        #expect(layout.cardHeight <= maxPerRow + 0.001)
+        #expect(layout.cardHeight < intrinsic - 1)
+        #expect(abs(layout.cardHeight - min(intrinsic, maxPerRow)) < 0.5)
+    }
+    
+    @Test func testIntelligentCardLayoutNilViewportPreservesIntrinsicHeight() {
+        let withViewport = determineIntelligentCardLayout_L2(
+            contentCount: 2,
+            screenWidth: 393,
+            deviceType: .phone,
+            contentComplexity: .moderate,
+            viewportHeight: 520
+        )
+        let withoutViewport = determineIntelligentCardLayout_L2(
+            contentCount: 2,
+            screenWidth: 393,
+            deviceType: .phone,
+            contentComplexity: .moderate
+        )
+        #expect(withoutViewport.cardHeight > withViewport.cardHeight)
+    }
+    
+    @Test func testIntelligentCardLayoutPhoneManyRowsIgnoresViewportClamp() {
+        let tightViewport: CGFloat = 400
+        let layout = determineIntelligentCardLayout_L2(
+            contentCount: 6,
+            screenWidth: 375,
+            deviceType: .phone,
+            contentComplexity: .simple,
+            viewportHeight: tightViewport
+        )
+        #expect(layout.columns == 1)
+        let intrinsic = layout.cardWidth * 1.2
+        #expect(abs(layout.cardHeight - intrinsic) < 0.5)
+    }
+    
+    @Test func testIntelligentCardLayoutPadIgnoresViewportHeightClamp() {
+        let layout = determineIntelligentCardLayout_L2(
+            contentCount: 2,
+            screenWidth: 768,
+            deviceType: .pad,
+            contentComplexity: .moderate,
+            viewportHeight: 400
+        )
+        let intrinsic = layout.cardWidth * 1.4
+        #expect(abs(layout.cardHeight - intrinsic) < 0.5)
+    }
+    
     @Test func testDeviceAdaptation() {
         // Test different behaviors for different devices
         let iPhoneLayout = determineIntelligentCardLayout_L2(
