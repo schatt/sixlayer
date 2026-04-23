@@ -83,6 +83,8 @@ struct TestAppContentView: View {
     private let openPlatformResponsiveCardsLayer4 = ProcessInfo.processInfo.arguments.contains("-OpenPlatformResponsiveCardsLayer4")
     /// When true, app opens to `platformColorEncode` / `platformColorDecode` audit host (launch arg -OpenPlatformColorEncodeExtensions).
     private let openPlatformColorEncodeExtensions = ProcessInfo.processInfo.arguments.contains("-OpenPlatformColorEncodeExtensions")
+    /// When true, app opens to clipboard/URL utility audit host (launch arg -OpenPlatformClipboardUrlLayer4).
+    private let openPlatformClipboardUrlLayer4 = ProcessInfo.processInfo.arguments.contains("-OpenPlatformClipboardUrlLayer4")
     
     enum TestView: String, CaseIterable, Identifiable {
         case control = "Control Test"
@@ -182,6 +184,10 @@ struct TestAppContentView: View {
             } else if openPlatformColorEncodeExtensions {
                 NavigationStack {
                     PlatformColorEncodeExtensionsAuditView(onBackToMain: nil)
+                }
+            } else if openPlatformClipboardUrlLayer4 {
+                NavigationStack {
+                    PlatformClipboardUrlLayer4AuditView(onBackToMain: nil)
                 }
             } else {
                 NavigationStack {
@@ -287,6 +293,11 @@ struct TestAppContentView: View {
                     PlatformColorEncodeExtensionsAuditView(onBackToMain: nil)
                 }
                 .accessibilityIdentifier("platform-color-encode-extensions-link")
+
+                NavigationLink("Platform Clipboard / URL Utilities Audit") {
+                    PlatformClipboardUrlLayer4AuditView(onBackToMain: nil)
+                }
+                .accessibilityIdentifier("platform-clipboard-url-l4-link")
             }
             .padding()
         }
@@ -784,5 +795,65 @@ struct PlatformColorEncodeExtensionsAuditView: View {
         }
     }
     #endif
+}
+
+/// RealUI/TestApp coverage for `platformCopyToClipboard_L4` and `platformOpenURL_L4` (issue #170 Phase 2).
+struct PlatformClipboardUrlLayer4AuditView: View {
+    var onBackToMain: (() -> Void)?
+    @State private var copyTextStatus = "Idle"
+    @State private var copyURLStatus = "Idle"
+    @State private var openURLStatus = "Idle"
+
+    var body: some View {
+        platformScrollViewContainer {
+            platformVStack(alignment: .leading, spacing: 16) {
+                platformText("platformCopyToClipboard_L4 / platformOpenURL_L4")
+                    .font(.headline)
+                    .accessibilityIdentifier("platform-clipboard-url-audit-title")
+
+                platformButton(label: "Copy text to clipboard", id: "platform-clipboard-copy-text-btn") {
+                    let payload = "SixLayer clipboard test payload"
+                    let ok = platformCopyToClipboard_L4(content: payload)
+                    copyTextStatus = ok ? "Text copy returned true." : "Text copy returned false."
+                }
+
+                platformText("Text copy status: \(copyTextStatus)")
+                    .accessibilityIdentifier("platform-clipboard-copy-text-status")
+
+                platformButton(label: "Copy URL string to clipboard", id: "platform-clipboard-copy-url-btn") {
+                    let url = URL(string: "https://example.com/sixlayer")!
+                    let ok = platformCopyToClipboard_L4(content: url, provideFeedback: false)
+                    copyURLStatus = ok ? "URL copy returned true." : "URL copy returned false."
+                }
+
+                platformText("URL copy status: \(copyURLStatus)")
+                    .accessibilityIdentifier("platform-clipboard-copy-url-status")
+
+                platformButton(label: "Call platformOpenURL_L4 with invalid scheme", id: "platform-open-url-btn") {
+                    let url = URL(string: "sixlayer-invalid-scheme://not-installed")!
+                    let ok = platformOpenURL_L4(url)
+                    openURLStatus = ok ? "Open URL call returned true." : "Open URL call returned false."
+                }
+
+                platformText("Open URL status: \(openURLStatus)")
+                    .accessibilityIdentifier("platform-open-url-status")
+
+                platformText("Note: openURL call is intentionally using an invalid custom scheme in this audit screen.")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .accessibilityIdentifier("platform-open-url-note")
+
+                if let onBackToMain {
+                    platformButton(label: "Back to Main", id: "platform-clipboard-url-back-to-main") {
+                        onBackToMain()
+                    }
+                }
+            }
+            .padding()
+        }
+        .platformFrame()
+        .navigationTitle("Clipboard / URL Utilities")
+        .platformNavigationTitleDisplayMode_L4(.inline)
+    }
 }
 
