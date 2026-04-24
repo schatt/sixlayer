@@ -529,9 +529,9 @@ public struct RuntimeCapabilityDetection {
     
     #if os(macOS)
     private static func detectmacOSHoverSupport() -> Bool {
-        // macOS supports hover through mouse/trackpad
-        // Check if we can detect hover events
-        return NSEvent.pressedMouseButtons == 0 // If no mouse buttons pressed, hover is possible
+        // macOS pointer devices fundamentally support hover semantics.
+        // Do not couple capability to transient button state (which flakes in CI/tests).
+        return true
     }
     
     private static func detectmacOSAssistiveTouchSupport() -> Bool {

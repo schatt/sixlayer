@@ -40,6 +40,42 @@ See [strict-tdd-definition.mdc](mdc:.cursor/rules/strict-tdd-definition.mdc) →
 
 - **Close when the work is done on its branch** — don't wait for merge to `main`. Name the branch in the closing comment (e.g. "Implemented on `b7.6.0`, pushed").
 - Merge to `main` is part of the release process, not a prerequisite for closing.
+- Before `gh issue close`, rewrite the issue body into a **self-contained final record** so readers do not need to reconstruct outcomes from comment history.
+
+## Final record rewrite before close (MANDATORY)
+
+When an issue is ready to close, run `gh issue edit <N> --body-file <path>` and replace the body with a concise final record that includes:
+
+- **Scope** — what was in/out of scope.
+- **Decisions** — key trade-offs and rationale.
+- **Delivered API** — final public interfaces/behaviors shipped (or explicitly "no API changes").
+- **Tests** — what was added/updated and current status.
+- **References** — PR(s), branch, commit(s), design docs, related issues.
+
+Prefer this structure:
+
+```md
+## Final Record
+
+### Scope
+- ...
+
+### Decisions
+- ...
+
+### Delivered API
+- ...
+
+### Tests
+- Added/updated: ...
+- Result: ...
+
+### References
+- PR: ...
+- Branch: ...
+- Commits: ...
+- Related: ...
+```
 
 ## Pattern
 
@@ -49,6 +85,7 @@ COMMENT_FILE="/tmp/cursor-gh-issue-comment-${CURSOR_PID:-$$}.md"
 cat > "$COMMENT_FILE" <<'EOF'
 ...body...
 EOF
+gh issue edit 3 --body-file "$COMMENT_FILE"   # final self-contained record
 gh issue comment 3 --body-file "$COMMENT_FILE"
 gh issue close 3 --reason completed
 ```
