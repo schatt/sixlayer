@@ -21,7 +21,7 @@ Issue [#229](https://github.com/schatt/sixlayer/issues/229) adds **narrow** XCUI
 
 ## SwiftPM unit tests vs UI tests
 
-`XCUIApplication` is **not** usable in SwiftPM **unit** test bundles (XCTest raises *Device is not configured for UI testing*). The SPM suite for #229 covers ``SixLayerUITestNavigatorInternals/consumeBackSteps`` only. End-to-end navigation belongs in a **UI test** target (#231).
+`XCUIApplication` is **not** usable in SwiftPM **unit** test bundles (XCTest raises *Device is not configured for UI testing*). The SPM suite for #229 covers ``SixLayerUITestNavigatorInternals/consumeBackSteps`` only (including non-positive `maxSteps`, which avoids invalid `0..<n` ranges when `n` is negative). End-to-end navigation belongs in a **UI test** target (#231).
 
 ## Non-goals
 
