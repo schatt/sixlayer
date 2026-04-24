@@ -20,6 +20,8 @@ Issue [#227](https://github.com/schatt/sixlayer/issues/227) introduces **typed**
 
 ## Validation rules
 
+Screen, route, and element identifiers share the same rules; only the thrown empty error (`emptyScreenId` vs `emptyRouteId` vs `emptyElementId`) differs by role.
+
 1. Leading and trailing whitespace is trimmed.
 2. After trim, the value must be non-empty (distinct errors for screen vs route vs element).
 3. Allowed code points: ASCII letters, digits, `.`, `-`, `_` (common for reverse-DNS-style accessibility identifiers and stable route keys).
