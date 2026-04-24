@@ -89,6 +89,8 @@ struct TestAppContentView: View {
     private let openPlatformBasicContainersExtensions = ProcessInfo.processInfo.arguments.contains("-OpenPlatformBasicContainersExtensions")
     /// When true, app opens to list/navigation helper audit host (launch arg -OpenPlatformListNavigationExtensions).
     private let openPlatformListNavigationExtensions = ProcessInfo.processInfo.arguments.contains("-OpenPlatformListNavigationExtensions")
+    /// When true, app opens to navigation routing + settings audit host (launch arg -OpenPlatformNavigationRoutingExtensions).
+    private let openPlatformNavigationRoutingExtensions = ProcessInfo.processInfo.arguments.contains("-OpenPlatformNavigationRoutingExtensions")
     
     enum TestView: String, CaseIterable, Identifiable {
         case control = "Control Test"
@@ -200,6 +202,10 @@ struct TestAppContentView: View {
             } else if openPlatformListNavigationExtensions {
                 NavigationStack {
                     PlatformListNavigationExtensionsAuditView(onBackToMain: nil)
+                }
+            } else if openPlatformNavigationRoutingExtensions {
+                NavigationStack {
+                    PlatformNavigationRoutingExtensionsAuditView(onBackToMain: nil)
                 }
             } else {
                 NavigationStack {
@@ -320,6 +326,11 @@ struct TestAppContentView: View {
                     PlatformListNavigationExtensionsAuditView(onBackToMain: nil)
                 }
                 .accessibilityIdentifier("platform-list-navigation-extensions-link")
+
+                NavigationLink("Platform Navigation Routing + Settings Audit") {
+                    PlatformNavigationRoutingExtensionsAuditView(onBackToMain: nil)
+                }
+                .accessibilityIdentifier("platform-navigation-routing-extensions-link")
             }
             .padding()
         }
@@ -1107,6 +1118,128 @@ struct PlatformListNavigationExtensionsAuditView: View {
         .platformFrame()
         .navigationTitle("List / Navigation Helpers")
         .platformNavigationTitleDisplayMode_L4(.inline)
+    }
+}
+
+/// RealUI/TestApp coverage for navigation routing helpers and open settings (issue #170 Phase 2).
+struct PlatformNavigationRoutingExtensionsAuditView: View {
+    struct NavRoutingRow: Identifiable, Hashable {
+        let id: Int
+        let title: String
+    }
+
+    @State private var selectedNavItem: NavRoutingRow?
+    @State private var openSettingsGlobalStatus = "Idle"
+    @State private var openSettingsEnvStatus = "Idle"
+    var onBackToMain: (() -> Void)?
+
+    private let navRows = [
+        NavRoutingRow(id: 0, title: "Alpha"),
+        NavRoutingRow(id: 1, title: "Beta"),
+    ]
+
+    private let stackStrategy = NavigationStackStrategy(
+        implementation: .navigationStack,
+        reasoning: "Issue #170 TestApp audit"
+    )
+
+    var body: some View {
+        platformScrollViewContainer {
+            platformVStack(alignment: .leading, spacing: 16) {
+                platformText("Platform Navigation Routing + Settings Audit")
+                    .font(.headline)
+                    .accessibilityIdentifier("platform-nav-routing-audit-title")
+
+                platformText("platformNavigationSplitContainer_L4")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                platformText("Split container host")
+                    .platformNavigationSplitContainer_L4 {
+                        platformText("Sidebar column")
+                            .accessibilityIdentifier("platform-nav-routing-split-sidebar")
+                    } detail: {
+                        platformText("Detail column")
+                            .accessibilityIdentifier("platform-nav-routing-split-detail")
+                    }
+                    .accessibilityIdentifier("platform-nav-routing-split-container-host")
+
+                platformText("platformImplementNavigationStackItems_L4")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                platformImplementNavigationStackItems_L4(
+                    items: navRows,
+                    selectedItem: $selectedNavItem,
+                    itemView: { row in
+                        platformText(row.title)
+                            .accessibilityIdentifier("platform-nav-routing-stack-row-\(row.id)")
+                    },
+                    detailView: { row in
+                        platformText("Stack detail: \(row.title)")
+                            .accessibilityIdentifier("platform-nav-routing-stack-detail-\(row.id)")
+                    },
+                    strategy: stackStrategy
+                )
+                .frame(minHeight: 200, maxHeight: 240)
+                .accessibilityIdentifier("platform-nav-routing-stack-items-host")
+
+                platformText("platformBottomBarPlacement (toolbar)")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                NavigationStack {
+                    platformText("Toolbar placement probe")
+                        .toolbar {
+                            ToolbarItem(placement: platformBottomBarPlacement()) {
+                                platformText("Bottom bar probe")
+                                    .accessibilityIdentifier("platform-nav-routing-bottom-bar-probe")
+                            }
+                        }
+                        .accessibilityIdentifier("platform-nav-routing-bottom-bar-host")
+                }
+                .frame(minHeight: 80, maxHeight: 100)
+
+                platformText("platformOpenSettings() (global)")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                platformButton(label: "Call platformOpenSettings()", id: "platform-nav-routing-open-settings-global") {
+                    let ok = platformOpenSettings()
+                    openSettingsGlobalStatus = ok ? "Returned true" : "Returned false"
+                }
+                platformText("Status: \(openSettingsGlobalStatus)")
+                    .accessibilityIdentifier("platform-nav-routing-open-settings-global-status")
+
+                platformText("platformOpenSettings(openURL:)")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                PlatformOpenSettingsOpenURLAuditHost(status: $openSettingsEnvStatus)
+                    .accessibilityIdentifier("platform-nav-routing-open-settings-env-host")
+
+                platformText("Env status: \(openSettingsEnvStatus)")
+                    .accessibilityIdentifier("platform-nav-routing-open-settings-env-status")
+
+                if let onBackToMain {
+                    platformButton(label: "Back to Main", id: "platform-nav-routing-back-to-main") {
+                        onBackToMain()
+                    }
+                }
+            }
+            .padding()
+        }
+        .platformFrame()
+        .navigationTitle("Nav Routing + Settings")
+        .platformNavigationTitleDisplayMode_L4(.inline)
+    }
+}
+
+/// Host for `platformOpenSettings(openURL:)` so SwiftUI injects `OpenURLAction`.
+private struct PlatformOpenSettingsOpenURLAuditHost: View {
+    @Environment(\.openURL) private var openURL
+    @Binding var status: String
+
+    var body: some View {
+        platformButton(label: "Call platformOpenSettings(openURL:)", id: "platform-nav-routing-open-settings-openurl") {
+            let ok = platformOpenSettings(openURL: openURL)
+            status = ok ? "Returned true" : "Returned false"
+        }
     }
 }
 
