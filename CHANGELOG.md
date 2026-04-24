@@ -1,5 +1,29 @@
 # Changelog
 
+## v7.7.0 - VisionKit live scanner path (in preparation)
+
+### ✨ Added
+- New Layer 4 live scanner APIs (Issue #252):
+  - `platformDataScannerContent_L4(...)`
+  - `platformDataScannerInterface_L4(...)`
+  - `platformDataScannerInterface_L4AsSheet(...)`
+  - `platformDataScannerInterface_L4AsFullScreenCover(...)`
+- New scanner configuration/types:
+  - `PlatformDataScannerConfiguration`
+  - recognized data kind filtering for text/barcodes
+  - quality/highlighting/guidance/zoom/high-frame-rate/ROI/presentation options
+- New scanner session lifecycle surface:
+  - `startScanning()`, `stopScanning()`, `capturePhoto()`
+- New test coverage and test app example for scanner flows.
+
+### 🧩 Changed
+- Added VisionKit-backed scanner hosting path alongside existing camera/photo picker path (additive, non-breaking).
+- Layer 4 scanner presentation supports both sheet and full-screen semantics with helper methods.
+
+### 📚 Documentation
+- Added release draft: `Development/RELEASE_v7.7.0.md`.
+- Updated release history pointer in `Development/RELEASES.md` for v7.7.0 in-preparation status.
+
 ## v7.6.0 - Managed settings migration documentation
 
 ### 📚 Documentation
