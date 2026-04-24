@@ -19,57 +19,64 @@ public enum UITestContractAssertions {
     // MARK: - Existence
 
     /// Fails when `element` does not exist within `timeout` (via ``XCUIElement/waitForExistence``).
+    @MainActor
     public static func assertExists(
         _ element: XCUIElement,
         timeout: TimeInterval = 2,
         _ message: @autoclosure () -> String = "Expected element to exist",
-        file: StaticString = #file,
+        file: StaticString = #filePath,
         line: UInt = #line
     ) {
         XCTAssertTrue(element.waitForExistence(timeout: timeout), message(), file: file, line: line)
     }
 
     /// Fails when the element is not hittable after it exists (waits up to `timeout` for existence first).
+    @MainActor
     public static func assertHittable(
         _ element: XCUIElement,
         timeout: TimeInterval = 2,
         _ message: @autoclosure () -> String = "Expected element to be hittable",
-        file: StaticString = #file,
+        file: StaticString = #filePath,
         line: UInt = #line
     ) {
         assertExists(element, timeout: timeout, message(), file: file, line: line)
-        XCTAssertTrue(element.isHittable, "\(message()) (not hittable)", file: file, line: line)
+        let detail = message() + " (not hittable)"
+        XCTAssertTrue(element.isHittable, detail, file: file, line: line)
     }
 
     // MARK: - Accessibility surface
 
     /// Fails when ``XCUIElement/identifier`` is empty after the element exists.
+    @MainActor
     public static func assertNonEmptyAccessibilityIdentifier(
         _ element: XCUIElement,
         timeout: TimeInterval = 2,
         _ message: @autoclosure () -> String = "Expected non-empty accessibility identifier",
-        file: StaticString = #file,
+        file: StaticString = #filePath,
         line: UInt = #line
     ) {
         assertExists(element, timeout: timeout, message(), file: file, line: line)
         let value = element.identifier
-        XCTAssertFalse(value.isEmpty, "\(message()); identifier was empty", file: file, line: line)
+        let detail = message() + "; identifier was empty"
+        XCTAssertFalse(value.isEmpty, detail, file: file, line: line)
     }
 
     /// Fails when ``XCUIElement/label`` is empty after the element exists.
     ///
     /// - Note: Many SwiftUI controls intentionally expose no accessibility label; skip this assertion unless
     ///   your contract requires a visible VoiceOver label.
+    @MainActor
     public static func assertNonEmptyAccessibilityLabel(
         _ element: XCUIElement,
         timeout: TimeInterval = 2,
         _ message: @autoclosure () -> String = "Expected non-empty accessibility label",
-        file: StaticString = #file,
+        file: StaticString = #filePath,
         line: UInt = #line
     ) {
         assertExists(element, timeout: timeout, message(), file: file, line: line)
         let value = element.label
-        XCTAssertFalse(value.isEmpty, "\(message()); label was empty", file: file, line: line)
+        let detail = message() + "; label was empty"
+        XCTAssertFalse(value.isEmpty, detail, file: file, line: line)
     }
 }
 #endif
