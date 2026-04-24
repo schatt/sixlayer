@@ -8,6 +8,8 @@ alwaysApply: false
 
 **TDD already requires** covering every **meaningful** capability state on the host (red → green → refactor). This file only records **project footguns** so agents do not contradict that.
 
+**Context:** The suite historically accumulated **cross-platform emulation** (e.g. “tvOS-like” behavior on an iOS test host via `setTest*`). That drifts from “test what this OS actually does” and breaks when product code correctly ignores nonsensical inputs or when compile-time platform diverges from overrides. Prefer **real** targets/simulators per OS; use thread-local hooks only for **this** host’s meaningful or explicitly nonsensical cases.
+
 ## Per-OS targets
 
 Run assertions on the **real** OS for that scheme (simulator or device). Do not rely on thread-local overrides on **iOS** to stand in for **tvOS / macOS / watchOS / visionOS** behavior — use the matching test target and simulator when you need that platform’s runtime.
