@@ -24,12 +24,24 @@ import AppKit
 import AVFoundation
 #endif
 
+#if canImport(Network)
+import Network
+#endif
+
 #if canImport(Photos)
 import Photos
 #endif
 
 #if canImport(Vision)
 import Vision
+#endif
+
+#if canImport(ReplayKit)
+import ReplayKit
+#endif
+
+#if canImport(ScreenCaptureKit)
+import ScreenCaptureKit
 #endif
 
 #if os(iOS)
@@ -159,6 +171,12 @@ public struct RuntimeCapabilityDetection {
         Vision.setTestSupportsDocumentCamera(nil)
         Files.setTestSupportsSecurityScopedResources(nil)
         Files.setTestSupportsSecurityScopedBookmarks(nil)
+        Network.setTestIsConstrained(nil)
+        Network.setTestIsExpensive(nil)
+        Media.setTestHasMicrophoneInput(nil)
+        Media.setTestSupportsScreenCapture(nil)
+        Pasteboard.setTestCanReadStrings(nil)
+        Pasteboard.setTestCanWriteStrings(nil)
         CapabilityOverride.clearThreadIsolationFromCurrentThread()
         RuntimeCapabilityHarness.scrubLegacyCapabilityKeysFromUserDefaultsStandard()
     }
@@ -227,6 +245,30 @@ public struct RuntimeCapabilityDetection {
 
     private static var testFilesSupportsSecurityScopedBookmarks: Bool? {
         Thread.current.threadDictionary["testFilesSupportsSecurityScopedBookmarks"] as? Bool
+    }
+
+    private static var testNetworkIsConstrained: Bool? {
+        Thread.current.threadDictionary["testNetworkIsConstrained"] as? Bool
+    }
+
+    private static var testNetworkIsExpensive: Bool? {
+        Thread.current.threadDictionary["testNetworkIsExpensive"] as? Bool
+    }
+
+    private static var testMediaHasMicrophoneInput: Bool? {
+        Thread.current.threadDictionary["testMediaHasMicrophoneInput"] as? Bool
+    }
+
+    private static var testMediaSupportsScreenCapture: Bool? {
+        Thread.current.threadDictionary["testMediaSupportsScreenCapture"] as? Bool
+    }
+
+    private static var testPasteboardCanReadStrings: Bool? {
+        Thread.current.threadDictionary["testPasteboardCanReadStrings"] as? Bool
+    }
+
+    private static var testPasteboardCanWriteStrings: Bool? {
+        Thread.current.threadDictionary["testPasteboardCanWriteStrings"] as? Bool
     }
     
     // MARK: - High Contrast Detection
@@ -820,6 +862,85 @@ public struct RuntimeCapabilityDetection {
         }
     }
 
+    /// Dynamic network path state wrappers (Low Data Mode and expensive-link hints).
+    public enum Network {
+        /// Mirrors `NWPath.isConstrained` (Low Data Mode path state).
+        nonisolated public static var isConstrained: Bool {
+            if let forced = testNetworkIsConstrained { return forced }
+            return detectNetworkIsConstrained()
+        }
+
+        /// Mirrors `NWPath.isExpensive` (metered / costly path state).
+        nonisolated public static var isExpensive: Bool {
+            if let forced = testNetworkIsExpensive { return forced }
+            return detectNetworkIsExpensive()
+        }
+
+        public static func setTestIsConstrained(_ value: Bool?) {
+            setThreadOptionalBool(key: "testNetworkIsConstrained", value: value)
+        }
+
+        public static func setTestIsExpensive(_ value: Bool?) {
+            setThreadOptionalBool(key: "testNetworkIsExpensive", value: value)
+        }
+    }
+
+    /// Media capability wrappers for microphone input and screen capture APIs.
+    public enum Media {
+        nonisolated public static var hasMicrophoneInput: Bool {
+            if let forced = testMediaHasMicrophoneInput { return forced }
+            return detectMediaHasMicrophoneInput()
+        }
+
+        nonisolated public static var supportsScreenCapture: Bool {
+            if let forced = testMediaSupportsScreenCapture { return forced }
+            return detectMediaSupportsScreenCapture()
+        }
+
+        public static func setTestHasMicrophoneInput(_ value: Bool?) {
+            setThreadOptionalBool(key: "testMediaHasMicrophoneInput", value: value)
+        }
+
+        public static func setTestSupportsScreenCapture(_ value: Bool?) {
+            setThreadOptionalBool(key: "testMediaSupportsScreenCapture", value: value)
+        }
+    }
+
+    /// Pasteboard / clipboard string IO wrappers.
+    public enum Pasteboard {
+        nonisolated public static var canReadStrings: Bool {
+            if let forced = testPasteboardCanReadStrings { return forced }
+            return detectPasteboardCanReadStrings()
+        }
+
+        nonisolated public static var canWriteStrings: Bool {
+            if let forced = testPasteboardCanWriteStrings { return forced }
+            return detectPasteboardCanWriteStrings()
+        }
+
+        public static func setTestCanReadStrings(_ value: Bool?) {
+            setThreadOptionalBool(key: "testPasteboardCanReadStrings", value: value)
+        }
+
+        public static func setTestCanWriteStrings(_ value: Bool?) {
+            setThreadOptionalBool(key: "testPasteboardCanWriteStrings", value: value)
+        }
+    }
+
+    /// Namespaced access to existing accessibility probes.
+    public enum Accessibility {
+        nonisolated public static var supportsVoiceOver: Bool { RuntimeCapabilityDetection.supportsVoiceOver }
+        nonisolated public static var supportsSwitchControl: Bool { RuntimeCapabilityDetection.supportsSwitchControl }
+        nonisolated public static var supportsAssistiveTouch: Bool { RuntimeCapabilityDetection.supportsAssistiveTouch }
+
+        @MainActor public static var isHighContrastEnabled: Bool { RuntimeCapabilityDetection.isHighContrastEnabled }
+
+        public static func setTestVoiceOver(_ value: Bool?) { RuntimeCapabilityDetection.setTestVoiceOver(value) }
+        public static func setTestSwitchControl(_ value: Bool?) { RuntimeCapabilityDetection.setTestSwitchControl(value) }
+        public static func setTestAssistiveTouch(_ value: Bool?) { RuntimeCapabilityDetection.setTestAssistiveTouch(value) }
+        public static func setTestHighContrast(_ value: Bool?) { RuntimeCapabilityDetection.setTestHighContrast(value) }
+    }
+
     /// Camera, photo library picker, Photos read access, and live VisionKit data scanner (#252).
     public enum Photos {
         /// Photos library authorization / limitation (not the same as “picker UI may appear”).
@@ -884,6 +1005,99 @@ public struct RuntimeCapabilityDetection {
         return MainActor.assumeIsolated {
             probe()
         }
+    }
+
+    #if canImport(Network)
+    private static let networkPathLock = NSLock()
+    private static var networkPathSnapshot: NWPath?
+    private static let networkPathMonitor: NWPathMonitor = {
+        let monitor = NWPathMonitor()
+        monitor.pathUpdateHandler = { path in
+            networkPathLock.lock()
+            networkPathSnapshot = path
+            networkPathLock.unlock()
+        }
+        monitor.start(queue: DispatchQueue(label: "SixLayerFramework.RuntimeCapabilityDetection.Network"))
+        return monitor
+    }()
+    #endif
+
+    private static func detectNetworkIsConstrained() -> Bool {
+        #if canImport(Network)
+        _ = networkPathMonitor
+        networkPathLock.lock()
+        let path = networkPathSnapshot
+        networkPathLock.unlock()
+        return path?.isConstrained ?? false
+        #else
+        return false
+        #endif
+    }
+
+    private static func detectNetworkIsExpensive() -> Bool {
+        #if canImport(Network)
+        _ = networkPathMonitor
+        networkPathLock.lock()
+        let path = networkPathSnapshot
+        networkPathLock.unlock()
+        return path?.isExpensive ?? false
+        #else
+        return false
+        #endif
+    }
+
+    private static func detectMediaHasMicrophoneInput() -> Bool {
+        #if canImport(AVFoundation)
+        return AVCaptureDevice.default(for: .audio) != nil
+        #else
+        return false
+        #endif
+    }
+
+    private static func detectMediaSupportsScreenCapture() -> Bool {
+        #if canImport(ReplayKit)
+        #if os(iOS) || os(tvOS)
+        return withMainActorProbe {
+            RPScreenRecorder.shared().isAvailable
+        } ?? false
+        #else
+        return false
+        #endif
+        #elseif canImport(ScreenCaptureKit)
+        #if os(macOS)
+        if #available(macOS 12.3, *) {
+            return true
+        }
+        #endif
+        return false
+        #else
+        return false
+        #endif
+    }
+
+    private static func detectPasteboardCanReadStrings() -> Bool {
+        #if os(iOS) || os(tvOS) || os(visionOS)
+        return withMainActorProbe {
+            UIPasteboard.general.hasStrings
+        } ?? false
+        #elseif os(macOS)
+        return NSPasteboard.general.canReadObject(forClasses: [NSString.self], options: nil)
+        #else
+        return false
+        #endif
+    }
+
+    private static func detectPasteboardCanWriteStrings() -> Bool {
+        #if os(iOS) || os(tvOS) || os(visionOS)
+        return withMainActorProbe {
+            _ = UIPasteboard.general
+            return true
+        } ?? false
+        #elseif os(macOS)
+        return true
+        #else
+        return false
+        #endif
     }
 
     private static func detectPhotosHasCamera() -> Bool {

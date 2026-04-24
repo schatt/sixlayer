@@ -496,6 +496,67 @@ open class RuntimeCapabilityDetectionTDDTests: BaseTestClass {
         #expect(Bool(true))
     }
 
+    // MARK: - Network / Media / Pasteboard / Accessibility namespaces
+
+    @Test @MainActor
+    func testNetworkOverridesClearWithClearAllCapabilityOverrides() {
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        let baselineConstrained = RuntimeCapabilityDetection.Network.isConstrained
+        let baselineExpensive = RuntimeCapabilityDetection.Network.isExpensive
+
+        RuntimeCapabilityDetection.Network.setTestIsConstrained(!baselineConstrained)
+        #expect(RuntimeCapabilityDetection.Network.isConstrained == !baselineConstrained)
+
+        RuntimeCapabilityDetection.Network.setTestIsExpensive(!baselineExpensive)
+        #expect(RuntimeCapabilityDetection.Network.isExpensive == !baselineExpensive)
+
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        #expect(RuntimeCapabilityDetection.Network.isConstrained == baselineConstrained)
+        #expect(RuntimeCapabilityDetection.Network.isExpensive == baselineExpensive)
+    }
+
+    @Test @MainActor
+    func testMediaOverridesClearWithClearAllCapabilityOverrides() {
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        let baselineMic = RuntimeCapabilityDetection.Media.hasMicrophoneInput
+        let baselineScreen = RuntimeCapabilityDetection.Media.supportsScreenCapture
+
+        RuntimeCapabilityDetection.Media.setTestHasMicrophoneInput(!baselineMic)
+        #expect(RuntimeCapabilityDetection.Media.hasMicrophoneInput == !baselineMic)
+
+        RuntimeCapabilityDetection.Media.setTestSupportsScreenCapture(!baselineScreen)
+        #expect(RuntimeCapabilityDetection.Media.supportsScreenCapture == !baselineScreen)
+
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        #expect(RuntimeCapabilityDetection.Media.hasMicrophoneInput == baselineMic)
+        #expect(RuntimeCapabilityDetection.Media.supportsScreenCapture == baselineScreen)
+    }
+
+    @Test @MainActor
+    func testPasteboardOverridesClearWithClearAllCapabilityOverrides() {
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        let baselineRead = RuntimeCapabilityDetection.Pasteboard.canReadStrings
+        let baselineWrite = RuntimeCapabilityDetection.Pasteboard.canWriteStrings
+
+        RuntimeCapabilityDetection.Pasteboard.setTestCanReadStrings(!baselineRead)
+        #expect(RuntimeCapabilityDetection.Pasteboard.canReadStrings == !baselineRead)
+
+        RuntimeCapabilityDetection.Pasteboard.setTestCanWriteStrings(!baselineWrite)
+        #expect(RuntimeCapabilityDetection.Pasteboard.canWriteStrings == !baselineWrite)
+
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        #expect(RuntimeCapabilityDetection.Pasteboard.canReadStrings == baselineRead)
+        #expect(RuntimeCapabilityDetection.Pasteboard.canWriteStrings == baselineWrite)
+    }
+
+    @Test @MainActor
+    func testAccessibilityNamespaceMatchesExistingAccessors() {
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        #expect(RuntimeCapabilityDetection.Accessibility.supportsVoiceOver == RuntimeCapabilityDetection.supportsVoiceOver)
+        #expect(RuntimeCapabilityDetection.Accessibility.supportsSwitchControl == RuntimeCapabilityDetection.supportsSwitchControl)
+        #expect(RuntimeCapabilityDetection.Accessibility.supportsAssistiveTouch == RuntimeCapabilityDetection.supportsAssistiveTouch)
+    }
+
     #if os(macOS)
     /// Regression for GitHub #236: `UserDefaults.standard` touch simulation must not leak into card config when the suite harness pins preferences off.
     @Test @MainActor
