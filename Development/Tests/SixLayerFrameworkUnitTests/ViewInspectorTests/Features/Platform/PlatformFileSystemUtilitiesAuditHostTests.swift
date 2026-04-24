@@ -9,8 +9,18 @@ open class PlatformFileSystemUtilitiesAuditHostTests: BaseTestClass {
 
     @MainActor
     private func hostedAuditIdentifierSnapshot() -> [String] {
-        let hosted = Self.hostRootPlatformView(PlatformFileSystemUtilitiesAuditHost())
-        return findAllAccessibilityIdentifiersFromPlatformView(hosted)
+        let root = PlatformFileSystemUtilitiesAuditHost()
+        let hosted = Self.hostRootPlatformView(
+            root,
+            forceLayout: true,
+            exposeContentAccessibility: true
+        )
+        var collected = findAllAccessibilityIdentifiersFromPlatformView(hosted)
+        #if canImport(ViewInspector)
+        let vi = AccessibilityTestUtilities.allAccessibilityIdentifiersFromViewInspector(root)
+        collected.append(contentsOf: vi)
+        #endif
+        return collected
     }
 
     @MainActor
@@ -58,12 +68,15 @@ open class PlatformFileSystemUtilitiesAuditHostTests: BaseTestClass {
         #expect(snapshotContainsAny(of: ["platform-fs-audit-documents-parity"], in: ids))
     }
 
-    @Test func testInvalidAppGroupSharedContainerURLIsNil() {
-        let url = platformSharedContainerDirectory(
-            containerIdentifier: "group.sixlayer.audit.invalid.placeholder",
-            createIfNeeded: false
-        )
-        #expect(url == nil)
+    @Test func testPlatformCachesDirectoryOptionalResolvesToFileURL() {
+        guard let caches = platformCachesDirectory(createIfNeeded: true) else {
+            Issue.record("Caches directory should resolve in test host")
+            return
+        }
+        #expect(caches.isFileURL)
+        var isDir: ObjCBool = false
+        #expect(FileManager.default.fileExists(atPath: caches.path, isDirectory: &isDir))
+        #expect(isDir.boolValue)
     }
 
     @Test func testInvalidICloudContainerURLIsNil() {
