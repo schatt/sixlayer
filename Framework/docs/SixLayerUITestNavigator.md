@@ -23,6 +23,12 @@ Issue [#229](https://github.com/schatt/sixlayer/issues/229) adds **narrow** XCUI
 
 `XCUIApplication` is **not** usable in SwiftPM **unit** test bundles (XCTest raises *Device is not configured for UI testing*). The SPM suite for #229 covers ``SixLayerUITestNavigatorInternals/consumeBackSteps`` only (including non-positive `maxSteps`, which avoids invalid `0..<n` ranges when `n` is negative). End-to-end navigation belongs in a **UI test** target (#231).
 
+## Consumer smoke & optional assertions (#230, #231)
+
+- **Smoke tests:** `SixLayerUITestNavigatorConsumerSmokeUITests` in `Development/Tests/SixLayerFrameworkUITests` launches the framework TestApp with **`-OpenUITestContractSmokeHost`**, which shows ``UITestContractSmokeHostView`` (identifiers under `com.sixlayer.smoke.*` only — not Layer N demo menus).
+- **Cross-platform:** the same sources run under `SixLayerFrameworkUITests_iOS` and `SixLayerFrameworkUITests_macOS`; navigation chrome differs by OS, but `NavigationStack` + leading back is the parity target.
+- **Optional assertions:** [UITestContractAssertions.md](UITestContractAssertions.md) (#230).
+
 ## Non-goals
 
 - No reliance on internal SixLayer demo app copy or fixed English labels.
