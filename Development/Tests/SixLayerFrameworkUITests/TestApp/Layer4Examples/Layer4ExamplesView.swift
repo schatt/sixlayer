@@ -181,6 +181,15 @@ struct DataScannerExample: View {
     @Binding var showFullScreen: Bool
     @Binding var lastValue: String
 
+    private func applyScannerPayload(_ payload: PlatformDataScannerRecognizedPayload) {
+        switch payload {
+        case .text(let transcript):
+            lastValue = transcript
+        case .barcode(let payload):
+            lastValue = payload
+        }
+    }
+
     var body: some View {
         platformVStack(alignment: .leading, spacing: 12) {
             Text("Uses RuntimeCapabilityDetection.Photos.supportsLiveDataScanner")
@@ -207,12 +216,7 @@ struct DataScannerExample: View {
                 configuration: PlatformDataScannerConfiguration.default,
                 bannerMessage: "Tap text or a barcode to populate this demo"
             ) { payload in
-                switch payload {
-                case .text(let transcript):
-                    lastValue = transcript
-                case .barcode(let payload):
-                    lastValue = payload
-                }
+                applyScannerPayload(payload)
             }
 
             platformDataScannerInterface_L4AsFullScreenCover(
@@ -220,12 +224,7 @@ struct DataScannerExample: View {
                 configuration: PlatformDataScannerConfiguration.default,
                 bannerMessage: "Full-screen scanner mode"
             ) { payload in
-                switch payload {
-                case .text(let transcript):
-                    lastValue = transcript
-                case .barcode(let payload):
-                    lastValue = payload
-                }
+                applyScannerPayload(payload)
             }
         }
         .padding()
