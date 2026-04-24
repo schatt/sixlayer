@@ -28,6 +28,8 @@ Screen, route, and element identifiers share the same rules; only the thrown emp
 
 Extending allowed characters is a **semver-conscious** API change: add new initializers or configuration if you need Unicode identifiers later.
 
+Optional XCUI assertion helpers built on these identifiers: [UITestContractAssertions.md](UITestContractAssertions.md) (#230).
+
 ## Non-goals
 
 - No coupling to the SixLayer internal test app or demo routes.
