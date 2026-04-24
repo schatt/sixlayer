@@ -3,6 +3,10 @@ import Testing
 import SwiftUI
 @testable import SixLayerFramework
 
+#if canImport(ViewInspector)
+import ViewInspector
+#endif
+
 /// RealUI audit host + direct API probes for `PlatformFileSystemUtilities` (Issue #170). Keep <=10 tests.
 @Suite("Platform File System Utilities Audit Host")
 open class PlatformFileSystemUtilitiesAuditHostTests: BaseTestClass {
@@ -17,8 +21,20 @@ open class PlatformFileSystemUtilitiesAuditHostTests: BaseTestClass {
         )
         var collected = findAllAccessibilityIdentifiersFromPlatformView(hosted)
         #if canImport(ViewInspector)
-        let vi = AccessibilityTestUtilities.allAccessibilityIdentifiersFromViewInspector(root)
-        collected.append(contentsOf: vi)
+        do {
+            let inspected = try AnyView(root).inspect()
+            let vStacks = try inspected.findAll(ViewType.VStack.self)
+            guard let vStack = vStacks.first else {
+                return collected
+            }
+            for text in vStack.findAll(ViewType.Text.self) {
+                if let id = try? text.accessibilityIdentifier(), !id.isEmpty {
+                    collected.append(id)
+                }
+            }
+        } catch {
+            // Keep platform-derived identifiers only.
+        }
         #endif
         return collected
     }

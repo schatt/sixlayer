@@ -14,45 +14,45 @@ struct PlatformFileSystemUtilitiesAuditHost: View {
     var onBackToMain: (() -> Void)?
 
     var body: some View {
-        platformScrollViewContainer {
-            platformVStack(alignment: .leading, spacing: 14) {
-                platformText("Platform file system directory utilities")
-                    .font(.headline)
-                    .accessibilityIdentifier("platform-fs-audit-title")
+        // Flat `VStack` (no scroll wrapper) so ViewInspector and UIKit a11y traversal reliably
+        // reach row `Text` nodes in test hosts (Issue #170).
+        VStack(alignment: .leading, spacing: 14) {
+            platformText("Platform file system directory utilities")
+                .font(.headline)
+                .accessibilityIdentifier("platform-fs-audit-title")
 
-                platformText(PlatformFileSystemAuditCopy.homeLine)
-                    .accessibilityIdentifier("platform-fs-audit-home")
+            platformText(PlatformFileSystemAuditCopy.homeLine)
+                .accessibilityIdentifier("platform-fs-audit-home")
 
-                platformText(PlatformFileSystemAuditCopy.applicationSupportLine)
-                    .accessibilityIdentifier("platform-fs-audit-app-support")
+            platformText(PlatformFileSystemAuditCopy.applicationSupportLine)
+                .accessibilityIdentifier("platform-fs-audit-app-support")
 
-                platformText(PlatformFileSystemAuditCopy.documentsLine)
-                    .accessibilityIdentifier("platform-fs-audit-documents")
+            platformText(PlatformFileSystemAuditCopy.documentsLine)
+                .accessibilityIdentifier("platform-fs-audit-documents")
 
-                platformText(PlatformFileSystemAuditCopy.cachesLine)
-                    .accessibilityIdentifier("platform-fs-audit-caches")
+            platformText(PlatformFileSystemAuditCopy.cachesLine)
+                .accessibilityIdentifier("platform-fs-audit-caches")
 
-                platformText(PlatformFileSystemAuditCopy.temporaryLine)
-                    .accessibilityIdentifier("platform-fs-audit-temporary")
+            platformText(PlatformFileSystemAuditCopy.temporaryLine)
+                .accessibilityIdentifier("platform-fs-audit-temporary")
 
-                platformText(PlatformFileSystemAuditCopy.sharedContainerLine)
-                    .accessibilityIdentifier("platform-fs-audit-shared-container")
+            platformText(PlatformFileSystemAuditCopy.sharedContainerLine)
+                .accessibilityIdentifier("platform-fs-audit-shared-container")
 
-                platformText(PlatformFileSystemAuditCopy.iCloudContainerLine)
-                    .accessibilityIdentifier("platform-fs-audit-icloud-container")
+            platformText(PlatformFileSystemAuditCopy.iCloudContainerLine)
+                .accessibilityIdentifier("platform-fs-audit-icloud-container")
 
-                platformText(PlatformFileSystemAuditCopy.documentsOptionalThrowingParityLine)
-                    .accessibilityIdentifier("platform-fs-audit-documents-parity")
+            platformText(PlatformFileSystemAuditCopy.documentsOptionalThrowingParityLine)
+                .accessibilityIdentifier("platform-fs-audit-documents-parity")
 
-                if let onBackToMain {
-                    platformButton(label: "Back to Main", id: "platform-fs-audit-back-to-main") {
-                        onBackToMain()
-                    }
+            if let onBackToMain {
+                platformButton(label: "Back to Main", id: "platform-fs-audit-back-to-main") {
+                    onBackToMain()
                 }
             }
-            .padding()
         }
-        .platformFrame()
+        .padding()
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .navigationTitle("File System Utilities")
         .platformNavigationTitleDisplayMode_L4(.inline)
     }
