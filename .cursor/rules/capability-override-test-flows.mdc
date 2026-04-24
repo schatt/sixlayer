@@ -1,35 +1,29 @@
 ---
-description: Real runtime capabilities first; thread-local override tests (default / positive / negative) and nonsensical-input handling.
+description: SixLayer-specific runtime capability testing — per-OS targets, thread-local overrides, nonsensical inputs; not a substitute for TDD.
 globs: Development/Tests/**/*RuntimeCapability*.swift, Development/Tests/**/*Capability*.swift, Framework/Sources/Core/Models/RuntimeCapabilityDetection.swift
 alwaysApply: false
 ---
 
-# Real capabilities and thread-local overrides
+# Runtime capability tests (SixLayer-specific)
 
-## Principle
+**TDD already requires** covering every **meaningful** capability state on the host (red → green → refactor). This file only records **project footguns** so agents do not contradict that.
 
-1. **Test real capabilities** on the **actual** OS (simulator or device) for that target — do not assert “platform Y behavior” from an iOS host using overrides alone. Use the **tvOS / macOS / watchOS** test targets and simulators when you need that platform’s runtime.
+## Per-OS targets
 
-2. When a capability **can** be off at runtime on that platform, test **enabled and disabled** (or OS-reported states) against real or thread-local simulation **where that simulation is meaningful** on the current host.
+Run assertions on the **real** OS for that scheme (simulator or device). Do not rely on thread-local overrides on **iOS** to stand in for **tvOS / macOS / watchOS / visionOS** behavior — use the matching test target and simulator when you need that platform’s runtime.
 
-3. **Both states common = test both.** When **presence and absence are both normal** on that OS (e.g. **camera on macOS** — many desktops have none or camera off in privacy; many laptops and displays have one), **always cover both paths**: hardware present / permission granted vs absent or denied. Prefer **real** `AVFoundation` / device APIs in the macOS test host (or documented test doubles only where the OS cannot be controlled). Do not treat the “no camera” branch as rare enough to skip.
+## Thread-local `setTest*` (default / positive / negative)
 
-4. When a “disabled” request is **nonsensical** for the platform (e.g. “no touch” on iPhone), **production code** should **detect it, ignore it, and keep correct behavior** (see `RuntimeCapabilityDetection.supportsTouch` / `setTestTouchSupport`). **Tests** must still run the negative path and **assert** ignore semantics — do not skip. Optional **logging** (e.g. once per thread when the nonsensical override is set) helps diagnose misuse in dev and prod.
+Where `RuntimeCapabilityDetection.setTest*(...)` is used to drive tests:
 
-## Thread-local `setTest*` — three flows on every platform
+1. **Default** — `clearAllCapabilityOverrides()` (often via `DefaultRuntimeCapabilityIsolationTrait`); config mirrors intrinsic `RuntimeCapabilityDetection`.
+2. **Positive** — `true` (or equivalent) when meaningful on **this** host.
+3. **Negative** — `false` must **still run** on every host; expectations depend on semantics:
+   - **Nonsensical on host** (e.g. `setTestTouchSupport(false)` on **iOS/watchOS**): production **ignores** it; tests **assert** ignore (see `RuntimeCapabilityDetection` docs / `supportsTouch`).
+   - **Meaningful on host** (e.g. `false` on **macOS** touch thread-local): assert **honored**.
 
-For each capability that supports `RuntimeCapabilityDetection.setTest*(...)`, structure coverage as:
+Do not use overrides only to “pin the matrix” for unrelated checks; matrix suites use **native** detection without fabricating another platform.
 
-1. **Default** — `clearAllCapabilityOverrides()` (often via `DefaultRuntimeCapabilityIsolationTrait`); assert behavior matches intrinsic runtime / platform detection and that consumers (e.g. `getCardExpansionPlatformConfig()`) mirror `RuntimeCapabilityDetection`.
+## `CapabilityOverride` vs `setTest*`
 
-2. **Positive override** — set the override to `true` when the platform can honor it; assert the code path that should run **when that capability is on** on **this** platform.
-
-3. **Negative override** — set the override to `false` and **always run this path** (do not skip on iOS/watchOS):
-   - If the platform **cannot** semantically disable the capability (e.g. **iOS/watchOS touch** — a platform guarantee), assert the **negative value is ignored** and documented behavior holds (`supportsTouch` still true; see `setTestTouchSupport` doc on `RuntimeCapabilityDetection`).
-   - If the platform **can** simulate off (e.g. **macOS touch** via thread-local override), assert **false is respected** and downstream behavior matches.
-
-Do not use overrides only to “pin the matrix” for unrelated assertions; matrix tests use native detection. Overrides belong in tests whose purpose is default vs positive vs negative semantics.
-
-## `CapabilityOverride` (UI / `*WithOverride` APIs)
-
-Separate from thread-local `setTest*`. Document in the test which layer is under test. `supportsTouchWithOverride` may still honor `CapabilityOverride.touchSupport` when testing UI override layers.
+`CapabilityOverride` + `*WithOverride` APIs are a **separate** layer from thread-local test hooks. Say in the test which layer is under test.
