@@ -37,7 +37,7 @@ That documents the gap without blocking green CI on something the simulator cann
 
 ## Thread-local `setTest*` — **current**, **disabled**, **enabled** (where it belongs)
 
-**Default placement:** **tri-value** (`clear` = **current**, `setTest*(false)` = **disabled**, `setTest*(true)` = **enabled**) testing belongs **on the controls** (and other UI) that **actually branch** on capability — hit targets, hover paths, haptics, focus, announcements, etc. That is where variable behavior is visible and where CI most needs to force both override branches (e.g. macOS haptics off by default but hardware could make “current” positive).
+**Default placement:** **tri-value** (`clear` = **current**, `setTest*(false)` = **disabled**, `setTest*(true)` = **enabled**) belongs **inside the tests for the control** (view, modifier, container, etc.) — not as a **separate** “capability test suite” whose only job is flags. You are still answering: **does this control do the right thing?** Tri-state is **how** you drive the branches on the current host (hit targets, hover paths, haptics, focus, announcements, etc.), not a different product or a different test **kind** in another file unless you are only deduplicating a tiny shared helper (see below).
 
 1. **Current** — `clearAllCapabilityOverrides()` (often via `DefaultRuntimeCapabilityIsolationTrait`); intrinsic / environment-defined.
 2. **Disabled** — `setTest*(false)` where meaningful; on **nonsensical** hosts (e.g. `setTestTouchSupport(false)` on **iOS/watchOS**) production **ignores** false — the **control** test (or a thin plumbing test) asserts the **outcome** that matters (e.g. touch-sized layout still applies), not “touch is false”.
@@ -51,11 +51,11 @@ Optional narrow regression for Layer 5 config wiring: `Development/Tests/Shared/
 
 ### 1) Controls — **primary** home for tri-value / variable-behavior tests
 
-**Any control** (view, modifier, container, sheet, etc.) whose code **branches** on `RuntimeCapabilityDetection` (or config derived from it) must be covered with **tri-state** tests on the **real host** for that scheme’s unit-test bundle — **not** by simulating another OS with thread-local hacks on the wrong machine.
+**Any control** (view, modifier, container, sheet, etc.) whose code **branches** on `RuntimeCapabilityDetection` (or config derived from it) must be covered with **tri-state** runs **as part of that control’s tests** on the **real host** for that scheme’s unit-test bundle — **not** by simulating another OS with thread-local hacks on the wrong machine, and **not** split off as if “capability” were the subject under test. The subject under test remains **the control**; capability phases are structure **within** those tests.
 
 #### Canonical shape (do this; avoid half measures)
 
-1. **One neutral test** (or one neutral suite) per control / concern — **no** `testFoo_tvOS` / `testFoo_macOS` method names that imply a different OS than the runner. The same Swift can ship in every `SixLayerFrameworkUnitTests_*` target; the **host** is whatever simulator or device is attached.
+1. **Same home as other tests for this control** — one or more `@Test` / methods in the **same** test type and **same** file (or same feature test folder) you already use for that control. **No** `testFoo_tvOS` / `testFoo_macOS` method names that imply a different OS than the runner. The same Swift can ship in every `SixLayerFrameworkUnitTests_*` target; the **host** is whatever simulator or device is attached. Tri-state can be three phases in **one** method or three focused methods that still read as “`FooControl` behavior”; either way they are **not** a parallel suite whose title is only “overrides.”
 
 2. **Three phases on the current host**, in order, with `clearAllCapabilityOverrides()` / `defer` hygiene so parallel tests do not leak state:
    - **Current** — overrides cleared; record **effective** capability reads if useful.
@@ -66,7 +66,7 @@ Optional narrow regression for Layer 5 config wiring: `Development/Tests/Shared/
 
 4. **Assertions target behavior**, not “is `supportsTouch` true”. The boolean is only useful as **input** to what the user sees (frames, gestures, labels, timing). If the only check is `config.flag == detection.flag`, that is **plumbing** — keep it **tiny** and secondary to behavioral checks.
 
-5. **Shared neutral file (optional):** a single file under `Development/Tests/Shared/TestHelpers/` (or another path included by **all** unit-test targets) may host **neutral** tri-state suites that apply to **multiple** controls only when the **same** `switch` + phase pattern is genuinely shared; otherwise keep tests **next to the control** to avoid abstraction drift.
+5. **Shared code (optional, small):** under `Development/Tests/Shared/TestHelpers/` you may put **helpers** (e.g. “run these three phases with defer cleanup”) or **one** duplicated `switch` + assertion block **only** when several controls truly share it. The **tests** still live with the control; shared files hold **deduplication**, not the **ownership** of “does `Foo` behave correctly?”
 
 - **Scope:** all controls that vary with capability.
 - **Tracking:** [GitHub #251](https://github.com/schatt/sixlayer/issues/251) (milestone **v7.6.2**).
