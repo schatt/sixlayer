@@ -400,46 +400,51 @@ open class AppleHIGComplianceTests: BaseTestClass {
      * BUSINESS PURPOSE: AppleHIGComplianceManager automatically applies Apple Human Interface Guidelines compliance
      * to UI elements, ensuring consistent design patterns, accessibility features, and platform-specific behaviors
      * without requiring manual configuration from developers.
-     * TESTING SCOPE: Tests platform-specific behavior across all supported platforms
-     * METHODOLOGY: Uses mock platform detection to test each platform's specific capabilities
+     * TESTING SCOPE: Runtime capability signals on the **current** host (simulator or device)
+     * METHODOLOGY: Clear thread-local overrides, read `RuntimeCapabilityDetection`, branch on `SixLayerPlatform.current`
+     * (same sources compile into every unit-test target; only the matching `case` is meaningful per run).
      */
     @Test @MainActor func testPlatformSpecificComplianceBehavior() async {
         initializeTestConfig()
-        // Test that platform detection works correctly
-        _ = RuntimeCapabilityDetection.currentPlatform
-        
-        // Test iOS platform capabilities
-        RuntimeCapabilityDetection.setTestTouchSupport(true)
-        RuntimeCapabilityDetection.setTestHapticFeedback(true)
-        RuntimeCapabilityDetection.setTestHover(false)
-        // Note: Platform detection is compile-time, so we test capabilities instead
-        #expect(RuntimeCapabilityDetection.supportsTouch, "Should support touch (iOS-like)")
-        
-        // Test macOS platform capabilities
-        RuntimeCapabilityDetection.setTestTouchSupport(false)
-        RuntimeCapabilityDetection.setTestHapticFeedback(false)
-        RuntimeCapabilityDetection.setTestHover(true)
-        #expect(RuntimeCapabilityDetection.supportsHover, "Should support hover (macOS-like)")
-        
-        // Test watchOS platform capabilities
-        RuntimeCapabilityDetection.setTestTouchSupport(true)
-        RuntimeCapabilityDetection.setTestHapticFeedback(true)
-        RuntimeCapabilityDetection.setTestHover(false)
-        #expect(RuntimeCapabilityDetection.supportsTouch, "Should support touch (watchOS-like)")
-        
-        // Test tvOS platform capabilities
-        RuntimeCapabilityDetection.setTestTouchSupport(false)
-        RuntimeCapabilityDetection.setTestHapticFeedback(false)
-        RuntimeCapabilityDetection.setTestHover(false)
-        #expect(!RuntimeCapabilityDetection.supportsTouch, "Should not support touch (tvOS-like)")
-        
-        // Test visionOS platform capabilities
-        RuntimeCapabilityDetection.setTestTouchSupport(false)
-        RuntimeCapabilityDetection.setTestHapticFeedback(false)
-        RuntimeCapabilityDetection.setTestHover(true)
-        #expect(RuntimeCapabilityDetection.supportsHover, "Should support hover (visionOS-like)")
-        
-        // Reset to original platform
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        defer {
+            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        }
+        let platform = SixLayerPlatform.current
+        let touch = RuntimeCapabilityDetection.supportsTouch
+        let haptic = RuntimeCapabilityDetection.supportsHapticFeedback
+        let hover = RuntimeCapabilityDetection.supportsHover
+        let voice = RuntimeCapabilityDetection.supportsVoiceOver
+        let switchCtl = RuntimeCapabilityDetection.supportsSwitchControl
+        let assistive = RuntimeCapabilityDetection.supportsAssistiveTouch
+        #expect(voice, "VoiceOver should be available as a platform capability on \(platform)")
+        #expect(switchCtl, "Switch Control should be available as a platform capability on \(platform)")
+        switch platform {
+        case .iOS:
+            #expect(touch, "iOS should report touch from runtime detection")
+            #expect(haptic, "iOS should report haptic support from runtime detection")
+            #expect(assistive, "iOS should report AssistiveTouch as a platform capability")
+        case .macOS:
+            #expect(!touch, "macOS should not report a primary touch screen without hardware/drivers")
+            #expect(!haptic, "macOS should not report device haptics without configured support")
+            #expect(hover, "macOS should report pointer hover when no mouse buttons are pressed")
+            #expect(!assistive, "macOS should not report AssistiveTouch as a native platform capability")
+        case .watchOS:
+            #expect(touch, "watchOS should report touch from runtime detection")
+            #expect(haptic, "watchOS should report haptic support from runtime detection")
+            #expect(!hover, "watchOS should not report hover")
+            #expect(assistive, "watchOS should report AssistiveTouch as a platform capability")
+        case .tvOS:
+            #expect(!touch, "tvOS should not report touch")
+            #expect(!haptic, "tvOS should not report device haptics")
+            #expect(!hover, "tvOS should not report hover")
+            #expect(!assistive, "tvOS should not report AssistiveTouch as a native platform capability")
+        case .visionOS:
+            #expect(!touch, "visionOS should not report primary touchscreen input")
+            #expect(!haptic, "visionOS should not report device haptics from runtime detection")
+            #expect(hover, "visionOS should report spatial hover (hand tracking)")
+            #expect(!assistive, "visionOS should not report AssistiveTouch as a native platform capability")
+        }
     }
     
     // MARK: - Business Purpose Tests
