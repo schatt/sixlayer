@@ -5925,7 +5925,7 @@
 			path = API;
 			sourceTree = "<group>";
 		};
-		"TEMP_3D415070-2308-4F49-AF0A-D70D6E8A561F" /* Utilities */ = {
+		"TEMP_51348BFE-0082-45F6-BFF2-D554A0904921" /* Utilities */ = {
 			isa = PBXGroup;
 			children = (
 			);
@@ -10084,6 +10084,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "com.sixlayer.framework.ui-tests";
 				SDKROOT = iphoneos;
+				SWIFT_ENABLE_EXPLICIT_MODULES = NO;
 				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_TARGET_NAME = SixLayerFrameworkTestApp_iOS;
@@ -10888,6 +10889,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "com.sixlayer.framework.ui-tests";
 				SDKROOT = macosx;
+				SWIFT_ENABLE_EXPLICIT_MODULES = NO;
 				SWIFT_VERSION = 6.0;
 				TEST_TARGET_NAME = SixLayerFrameworkTestApp_macOS;
 			};
@@ -11249,6 +11251,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "com.sixlayer.framework.ui-tests";
 				SDKROOT = macosx;
+				SWIFT_ENABLE_EXPLICIT_MODULES = NO;
 				SWIFT_VERSION = 6.0;
 				TEST_TARGET_NAME = SixLayerFrameworkTestApp_macOS;
 			};
@@ -11269,6 +11272,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "com.sixlayer.framework.ui-tests";
 				SDKROOT = iphoneos;
+				SWIFT_ENABLE_EXPLICIT_MODULES = NO;
 				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_TARGET_NAME = SixLayerFrameworkTestApp_iOS;

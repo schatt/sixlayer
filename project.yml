@@ -315,6 +315,9 @@ targets:
     settings:
       PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.framework.ui-tests
       SWIFT_VERSION: "6.0"
+      # Explicit modules + embedded Swift frameworks in ui-testing bundles can fail to resolve
+      # linked framework modules (SixLayerTestKit); match stable driver behavior (#229, #256).
+      SWIFT_ENABLE_EXPLICIT_MODULES: NO
       GENERATE_INFOPLIST_FILE: YES
       CODE_SIGN_STYLE: Automatic
       ENABLE_TESTING_SEARCH_PATHS: YES
@@ -337,6 +340,7 @@ targets:
     settings:
       PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.framework.ui-tests
       SWIFT_VERSION: "6.0"
+      SWIFT_ENABLE_EXPLICIT_MODULES: NO
       GENERATE_INFOPLIST_FILE: YES
       CODE_SIGN_STYLE: Automatic
       CODE_SIGN_IDENTITY: "Apple Development"
