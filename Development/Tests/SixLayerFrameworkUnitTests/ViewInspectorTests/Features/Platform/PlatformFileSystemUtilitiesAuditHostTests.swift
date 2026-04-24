@@ -3,31 +3,12 @@ import Testing
 import SwiftUI
 @testable import SixLayerFramework
 
-#if canImport(ViewInspector)
-import ViewInspector
-#endif
-
-/// RealUI audit host + API probes for `PlatformFileSystemUtilities` (Issue #170). Keep <=10 tests.
+/// Host rendering + `platform*Directory` API probes (Issue #170). RealUI coverage lives in
+/// `PlatformFileSystemUtilitiesAuditHost` / TestApp; ViewInspector does not reliably enumerate
+/// `Text` rows under `platformNavigationTitleDisplayMode_L4`, so this suite asserts the same
+/// filesystem helpers directly. Keep <=10 tests.
 @Suite("Platform File System Utilities Audit Host")
 open class PlatformFileSystemUtilitiesAuditHostTests: BaseTestClass {
-
-    /// Concatenated `Text` strings from the audit host (ViewInspector); empty if inspection fails.
-    @MainActor
-    private func auditHostTextJoined() -> String {
-        #if canImport(ViewInspector)
-        do {
-            let root = PlatformFileSystemUtilitiesAuditHost()
-            let inspected = try AnyView(root).inspect()
-            let texts = inspected.findAll(ViewType.Text.self)
-            let parts = try texts.map { try $0.string() }
-            return parts.joined(separator: "\n")
-        } catch {
-            return ""
-        }
-        #else
-        return ""
-        #endif
-    }
 
     @Test @MainActor func testPlatformFileSystemAuditHostRenders() async {
         let root = PlatformFileSystemUtilitiesAuditHost()
@@ -35,34 +16,24 @@ open class PlatformFileSystemUtilitiesAuditHostTests: BaseTestClass {
         #expect(hosted != nil)
     }
 
-    @Test @MainActor func testPlatformFileSystemAuditHostViewInspectorSurfacesStandardDirectoryRows() async {
-        #if canImport(ViewInspector)
-        let blob = auditHostTextJoined()
-        #expect(!blob.isEmpty, "ViewInspector should read at least one Text row from the audit host")
-        #expect(blob.contains("home:"))
-        #expect(blob.contains("appSupport:"))
-        #expect(blob.contains("documents:"))
-        #expect(blob.contains("caches:"))
-        #expect(blob.contains("temporary:"))
-        #else
-        #expect(Bool(true), "ViewInspector not linked for this run")
-        #endif
+    @Test func testPlatformHomeDirectoryIsNonemptyFileURL() {
+        let home = platformHomeDirectory()
+        #expect(home.isFileURL)
+        #expect(!home.path.isEmpty)
     }
 
-    @Test @MainActor func testPlatformFileSystemAuditHostViewInspectorSurfacesContainerAndParityRows() async {
-        #if canImport(ViewInspector)
-        let blob = auditHostTextJoined()
-        #expect(blob.contains("sharedContainer"))
-        #expect(blob.contains("iCloudContainer"))
-        let parityOk =
-            blob.contains("documents optional path matches throwing")
-            || blob.contains("documents optional and throwing both nil")
-            || blob.contains("documents optional/throwing availability differs")
-            || blob.contains("PATH MISMATCH")
-        #expect(parityOk)
-        #else
-        #expect(Bool(true), "ViewInspector not linked for this run")
-        #endif
+    @Test func testPlatformTemporaryDirectoryMatchesFileManagerDefault() {
+        guard let resolved = platformTemporaryDirectory(createIfNeeded: false) else {
+            Issue.record("Temporary directory should resolve")
+            return
+        }
+        #expect(resolved.path == FileManager.default.temporaryDirectory.path)
+    }
+
+    @Test func testPlatformDocumentsOptionalPathMatchesThrowing() throws {
+        let opt = platformDocumentsDirectory(createIfNeeded: true)
+        let thrown = try platformDocumentsDirectoryThrowing(createIfNeeded: true)
+        #expect(opt?.path == thrown.path)
     }
 
     @Test func testPlatformApplicationSupportDirectoryOptionalResolves() {
