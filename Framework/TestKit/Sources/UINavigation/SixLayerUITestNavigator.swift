@@ -3,6 +3,7 @@
 //  SixLayerTestKit
 //
 //  Consumer UI test navigation primitives (#229).
+//  See also: Framework/docs/SixLayerUITestNavigator.md
 //
 
 #if canImport(XCTest)
