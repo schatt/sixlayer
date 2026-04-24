@@ -360,7 +360,7 @@ open class PlatformTypesAPISignatureTests: BaseTestClass {
             Issue.record("Should have thrown an error")
         } catch {
             // Expected - error should be propagated
-            #expect(true)
+            #expect(Bool(true))
         }
     }
     
@@ -448,7 +448,7 @@ open class PlatformTypesAPISignatureTests: BaseTestClass {
         }
         
         // Test should complete without crashing
-        #expect(true)
+        #expect(Bool(true))
     }
     #else
     @Test func testPlatformSecurityScopedRestoreReturnsNilOnNonMacOS() {
