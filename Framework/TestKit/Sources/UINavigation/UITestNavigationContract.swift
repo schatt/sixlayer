@@ -3,7 +3,6 @@
 //  SixLayerTestKit
 //
 //  Public contract identifiers for consumer UI test navigation (#227).
-//  See also: Framework/docs/UITestNavigationContract.md
 //
 
 import Foundation
@@ -41,7 +40,7 @@ private enum UITestIdentifierValidation {
         emptyError: UITestNavigationContractError,
         role: String
     ) throws -> String {
-        let trimmed = raw.trimmedForUITestNavigationContract
+        let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { throw emptyError }
         guard trimmed.unicodeScalars.allSatisfy(isAllowedASCII) else {
             throw UITestNavigationContractError.invalidIdentifier(role: role, value: trimmed)
@@ -119,11 +118,5 @@ public struct UITestNavigationContract: Sendable, Hashable, Codable {
         self.screenId = try UITestScreenId(validating: screen)
         self.routeId = try route.map { try UITestRouteId(validating: $0) }
         self.elementId = try element.map { try UITestElementId(validating: $0) }
-    }
-}
-
-private extension String {
-    var trimmedForUITestNavigationContract: String {
-        trimmingCharacters(in: .whitespacesAndNewlines)
     }
 }
