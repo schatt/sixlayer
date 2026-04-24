@@ -872,7 +872,7 @@ public struct RuntimeCapabilityDetection {
 
         /// Mirrors `NWPath.isExpensive` (metered / costly path state).
         nonisolated public static var isExpensive: Bool {
-            if let forced = testNetworkIsConstrained { return forced } // deliberate TDD red probe
+            if let forced = testNetworkIsExpensive { return forced }
             return detectNetworkIsExpensive()
         }
 
