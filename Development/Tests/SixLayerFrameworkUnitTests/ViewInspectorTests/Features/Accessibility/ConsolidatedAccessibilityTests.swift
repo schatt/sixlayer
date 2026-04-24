@@ -133,7 +133,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     @Test @MainActor func testAccessibilityIdentifierConfigGeneratesAccessibilityIdentifiers() async {
         self.initializeTestConfig()
             self.runWithTaskLocalConfig {
-            // Given: AccessibilityIdentifierConfig singleton
+            // Given: isolated `AccessibilityIdentifierConfig` from `testConfig` (#247)
             guard let config = testConfig else {
                 Issue.record("testConfig is nil")
                 return
@@ -657,10 +657,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testPlatformPresentItemCollectionL1GeneratesAccessibilityIdentifiers() async {
         self.initializeTestConfig()
-        // Given: Automatic IDs enabled
-        AccessibilityIdentifierConfig.shared.enableAutoIDs = true
-        
-        // Create test data locally
+        self.runWithTaskLocalConfig {
+        // Given: Automatic IDs enabled on isolated testConfig (defaults from makeIsolated…; #247)
         let testItems = createLayer1TestItems()
         let testHints = createTestHints(presentationPreference: .grid, context: .list)
         
@@ -683,12 +681,12 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
         // The modifier IS present in the code, but ViewInspector can't detect it on macOS
         #endif
+        }
     }
     
     @Test @MainActor func testPlatformPresentItemCollectionL1WithEnhancedHintsGeneratesAccessibilityIdentifiers() async {
         self.initializeTestConfig()
-        AccessibilityIdentifierConfig.shared.enableAutoIDs = true
-        
+        self.runWithTaskLocalConfig {
         let testItems = createLayer1TestItems()
         let enhancedHints = EnhancedPresentationHints(
             dataType: .generic,
@@ -716,6 +714,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
         // The modifier IS present in the code, but ViewInspector can't detect it on macOS
         #endif
+        }
     }
     
     // MARK: - Platform Layer 5 Component Identifier Tests
@@ -2077,7 +2076,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     // - AppleHIGComplianceComponentAccessibilityTests.swift
     // - AppleHIGComplianceManagerAccessibilityTests.swift
     // - AutomaticHIGComplianceTests.swift
-    // - AutomaticHIGComplianceDemonstrationTests.swift
     // - All HIGCompliance*.swift files
     
     @Test @MainActor func testComplianceManagerInitialization() {
@@ -3368,15 +3366,15 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         
         switch platform {
         case .iOS:
-            #expect(config.supportsTouch == true || config.supportsTouch == false,
-                   "iOS touch support should be determinable")
-            #expect(config.supportsHapticFeedback == true || config.supportsHapticFeedback == false,
-                   "iOS haptic feedback support should be determinable")
-            #expect(config.minTouchTarget == 44, "iOS should have 44pt minimum touch targets")
+            #expect(config.supportsTouch == RuntimeCapabilityDetection.supportsTouch)
+            #expect(config.supportsHapticFeedback == RuntimeCapabilityDetection.supportsHapticFeedback)
+            #expect(config.supportsHover == RuntimeCapabilityDetection.supportsHover)
+            #expect(config.hoverDelay == RuntimeCapabilityDetection.hoverDelay)
+            let expectedMin = PlatformTestUtilities.expectedMinTouchTarget(for: .iOS)
+            #expect(config.minTouchTarget == expectedMin, "iOS min touch target should match HIG helper (\(expectedMin)pt)")
         case .macOS:
-            #expect(config.supportsHover == true || config.supportsHover == false,
-                   "macOS hover support should be determinable")
-            #expect(config.hoverDelay == 0.5, "macOS should have 0.5s hover delay")
+            #expect(config.supportsHover == RuntimeCapabilityDetection.supportsHover)
+            #expect(config.hoverDelay == RuntimeCapabilityDetection.hoverDelay)
         case .watchOS:
             #expect(config.supportsTouch == true || config.supportsTouch == false,
                    "watchOS touch support should be determinable")
@@ -9207,7 +9205,12 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     // MARK: - Accessibility Identifier Bug Fix Verification Tests (continued)
     
     @Test @MainActor func testBugReportScenarioIsFixed() async {
-        let config = AccessibilityIdentifierConfig.shared
+        self.initializeTestConfig()
+        self.runWithTaskLocalConfig {
+        guard let config = self.testConfig else {
+            Issue.record("testConfig is nil")
+            return
+        }
         config.enableAutoIDs = true
         config.namespace = "SixLayer"
         config.mode = .automatic
@@ -9242,10 +9245,16 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #expect(config.enableViewHierarchyTracking, "View hierarchy tracking should be enabled")
         #expect(config.enableUITestIntegration, "UI test integration should be enabled")
         #expect(config.enableDebugLogging, "Debug logging should be enabled")
+        }
     }
     
     @Test @MainActor func testNamedModifierGeneratesIdentifiers() async {
-        let config = AccessibilityIdentifierConfig.shared
+        self.initializeTestConfig()
+        self.runWithTaskLocalConfig {
+        guard let config = self.testConfig else {
+            Issue.record("testConfig is nil")
+            return
+        }
         config.enableAutoIDs = true
         config.namespace = "SixLayer"
         config.mode = .automatic
@@ -9271,10 +9280,16 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #else
         // ViewInspector not available on this platform
         #endif
+        }
     }
     
     @Test @MainActor func testNamedModifierWithScreenContext() async {
-        let config = AccessibilityIdentifierConfig.shared
+        self.initializeTestConfig()
+        self.runWithTaskLocalConfig {
+        guard let config = self.testConfig else {
+            Issue.record("testConfig is nil")
+            return
+        }
         config.enableAutoIDs = true
         config.namespace = "SixLayer"
         config.mode = .automatic
@@ -9294,10 +9309,16 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             componentName: "AddFuelButton"
         )
         #expect(hasAccessibilityID, "View with .named() should generate accessibility identifiers matching pattern")
+        }
     }
     
     @Test @MainActor func testScreenContextGeneratesIdentifiers() async {
-        let config = AccessibilityIdentifierConfig.shared
+        self.initializeTestConfig()
+        self.runWithTaskLocalConfig {
+        guard let config = self.testConfig else {
+            Issue.record("testConfig is nil")
+            return
+        }
         config.enableAutoIDs = true
         config.namespace = "SixLayer"
         config.mode = .automatic
@@ -9321,10 +9342,16 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #else
         // ViewInspector not available on this platform
         #endif
+        }
     }
     
     @Test @MainActor func testNavigationStateGeneratesIdentifiers() async {
-        let config = AccessibilityIdentifierConfig.shared
+        self.initializeTestConfig()
+        self.runWithTaskLocalConfig {
+        guard let config = self.testConfig else {
+            Issue.record("testConfig is nil")
+            return
+        }
         config.enableAutoIDs = true
         config.namespace = "SixLayer"
         config.mode = .automatic
@@ -9348,10 +9375,16 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #else
         // ViewInspector not available on this platform
         #endif
+        }
     }
     
     @Test @MainActor func testManualAccessibilityIdentifiersStillWork() async {
-        let config = AccessibilityIdentifierConfig.shared
+        self.initializeTestConfig()
+        self.runWithTaskLocalConfig {
+        guard let config = self.testConfig else {
+            Issue.record("testConfig is nil")
+            return
+        }
         config.enableAutoIDs = true
         config.namespace = "SixLayer"
         config.mode = .automatic
@@ -9373,10 +9406,16 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #else
         // ViewInspector not available on this platform
         #endif
+        }
     }
     
     @Test @MainActor func testGlobalAutomaticAccessibilityIdentifiersIsSet() async {
-        let config = AccessibilityIdentifierConfig.shared
+        self.initializeTestConfig()
+        self.runWithTaskLocalConfig {
+        guard let config = self.testConfig else {
+            Issue.record("testConfig is nil")
+            return
+        }
         config.enableAutoIDs = true
         config.namespace = "SixLayer"
         config.mode = .automatic
@@ -9398,10 +9437,16 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #else
         // ViewInspector not available on this platform
         #endif
+        }
     }
     
     @Test @MainActor func testGlobalModifierStillWorks() async {
-        let config = AccessibilityIdentifierConfig.shared
+        self.initializeTestConfig()
+        self.runWithTaskLocalConfig {
+        guard let config = self.testConfig else {
+            Issue.record("testConfig is nil")
+            return
+        }
         config.enableAutoIDs = true
         config.namespace = "SixLayer"
         config.mode = .automatic
@@ -9410,10 +9455,16 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
 
         #expect(Bool(true), "View with global modifier should be created successfully")
+        }
     }
     
     @Test @MainActor func testIdentifiersGeneratedWithProperContext() async {
-        let config = AccessibilityIdentifierConfig.shared
+        self.initializeTestConfig()
+        self.runWithTaskLocalConfig {
+        guard let config = self.testConfig else {
+            Issue.record("testConfig is nil")
+            return
+        }
         config.enableAutoIDs = true
         config.namespace = "SixLayer"
         config.mode = .automatic
@@ -9440,6 +9491,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 
         config.popViewHierarchy()
         config.popViewHierarchy()
+        }
     }
     
     // MARK: - Assistive Touch Tests (continued)
@@ -10722,6 +10774,11 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testAccessibilityEnhancedViewModifier() {
         self.initializeTestConfig()
+        self.runWithTaskLocalConfig {
+        guard let idConfig = self.testConfig else {
+            Issue.record("testConfig is nil")
+            return
+        }
         let testView = platformPresentContent_L1(
             content: "Test",
             hints: PresentationHints()
@@ -10735,14 +10792,10 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         )
         let enhancedView = testView.accessibilityEnhanced(config: config)
         
-        // Configure accessibility identifier settings
-        let testConfig = AccessibilityIdentifierConfig.currentTaskLocalConfig ?? AccessibilityIdentifierConfig.shared
-        self.testConfig?.enableAutoIDs = true
-        self.testConfig?.includeComponentNames = true
-        self.testConfig?.includeElementTypes = true
-        
-        // Set config directly (no environment variable)
-        testConfig.globalAutomaticAccessibilityIdentifiers = testConfig.enableAutoIDs
+        idConfig.enableAutoIDs = true
+        idConfig.includeComponentNames = true
+        idConfig.includeElementTypes = true
+        idConfig.globalAutomaticAccessibilityIdentifiers = idConfig.enableAutoIDs
         let viewWithEnvironment = enhancedView
         
         // CRITICAL: On macOS, AccessibilityHostingView uses NSViewControllerRepresentable which
@@ -10765,10 +10818,12 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             #expect(Bool(true), "Enhanced view created successfully (hosting skipped due to test limitations)")
         }
         #endif
+        }
     }
     
     @Test @MainActor func testAccessibilityEnhancedViewModifierDefaultConfig() {
         self.initializeTestConfig()
+        self.runWithTaskLocalConfig {
         let testView = platformPresentContent_L1(
             content: "Test",
             hints: PresentationHints()
@@ -10785,6 +10840,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #else
         // ViewInspector not available on this platform
         #endif
+        }
     }
     
     @Test @MainActor func testVoiceOverEnabledViewModifier() {
@@ -12588,207 +12644,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
 }
 
-    @Test @MainActor func testIdentifierGenerationLogicEvaluatesConditionsCorrectly() async {
-        let config = AccessibilityIdentifierConfig.shared
-        
-        // Test Case 1: All conditions met - should generate identifiers
-        config.enableAutoIDs = true
-        config.namespace = "test"
-        
-        // Simulate the logic from AccessibilityIdentifierAssignmentModifier
-        let disableAutoIDs = false  // Environment variable
-        let globalAutoIDs = true    // Environment variable (now defaults to true)
-        let shouldApplyAutoIDs = !disableAutoIDs && config.enableAutoIDs && globalAutoIDs
-        
-        #expect(shouldApplyAutoIDs, "When all conditions are met, identifiers should be generated")
-        
-        // Test Case 2: Global auto IDs disabled - should not generate identifiers
-        let globalAutoIDsDisabled = false
-        let shouldApplyAutoIDsDisabled = !disableAutoIDs && config.enableAutoIDs && globalAutoIDsDisabled
-        
-        #expect(!shouldApplyAutoIDsDisabled, "When global auto IDs are disabled, identifiers should not be generated")
-        
-        // Test Case 3: Config disabled - should not generate identifiers
-        config.enableAutoIDs = false
-        let shouldApplyAutoIDsConfigDisabled = !disableAutoIDs && config.enableAutoIDs && globalAutoIDs
-        
-        #expect(!shouldApplyAutoIDsConfigDisabled, "When config is disabled, identifiers should not be generated")
-        
-        // Test Case 4: View-level opt-out - should not generate identifiers
-        config.enableAutoIDs = true
-        let disableAutoIDsViewLevel = true
-        let shouldApplyAutoIDsViewOptOut = !disableAutoIDsViewLevel && config.enableAutoIDs && globalAutoIDs
-        
-        #expect(!shouldApplyAutoIDsViewOptOut, "When view-level opt-out is enabled, identifiers should not be generated")
-}
-
-    @Test @MainActor func testAutomaticAccessibilityIdentifiersWorkCorrectly() async {
-        let config = AccessibilityIdentifierConfig.shared
-        config.enableAutoIDs = true
-        config.namespace = "test"
-        
-        // Test that automatic accessibility identifiers work correctly
-        // This is the fix that was applied to resolve the bug
-        
-        // Before the fix, automatic accessibility identifiers did NOT work correctly
-        // After the fix, they DO work correctly
-        
-        // We can't easily test the environment variable directly in unit tests,
-        // but we can verify that the modifier chain compiles and the configuration is correct
-        
-        _ = PlatformInteractionButton(style: .primary, action: {}, identifierName: "Test") {
-        platformPresentContent_L1(content: "Test", hints: PresentationHints())
-    }
-        .named("TestButton")
-        
-        _ = PlatformInteractionButton(style: .primary, action: {}, identifierName: "Test") {
-        platformPresentContent_L1(content: "Test", hints: PresentationHints())
-    }
-        
-        _ = PlatformInteractionButton(style: .primary, action: {}, identifierName: "Test") {
-        platformPresentContent_L1(content: "Test", hints: PresentationHints())
-    }
-        
-        // Verify that all modifier chains compile successfully
-        // All views are non-optional, not used further
-        
-        // Verify configuration is correct
-        #expect(config.enableAutoIDs, "Automatic IDs should be enabled")
-        #expect(config.namespace == "test", "Namespace should be set correctly")
-}
-
-    @Test @MainActor func testAccessibilityIdentifierGeneratorCreatesProperIdentifiers() async {
-        let config = AccessibilityIdentifierConfig.shared
-        config.enableAutoIDs = true
-        config.namespace = "SixLayer"
-        config.mode = .automatic
-        
-        let generator = AccessibilityIdentifierGenerator()
-        
-        // Test Case 1: Basic identifier generation
-        let basicID = generator.generateID(for: "TestButton", role: "button", context: "ui")
-        #expect(basicID.hasPrefix("SixLayer"), "Generated ID should start with namespace")
-        #expect(basicID.contains("button"), "Generated ID should contain role")
-        // Note: The actual implementation may not include the exact object name in the ID
-        // This test verifies the ID is generated and has the expected structure
-        #expect(!basicID.isEmpty, "Generated ID should not be empty")
-        
-        // Test Case 2: Identifier with view hierarchy context
-        config.pushViewHierarchy("NavigationView")
-        config.pushViewHierarchy("ProfileSection")
-        let hierarchyID = generator.generateID(for: "EditButton", role: "button", context: "ui")
-        #expect(hierarchyID.hasPrefix("SixLayer"), "Generated ID should start with namespace")
-        #expect(hierarchyID.contains("button"), "Generated ID should contain role")
-        #expect(!hierarchyID.isEmpty, "Generated ID should not be empty")
-        
-        // Test Case 3: Identifier with screen context
-        config.setScreenContext("UserProfile")
-        let screenID = generator.generateID(for: "SaveButton", role: "button", context: "ui")
-        #expect(screenID.hasPrefix("SixLayer"), "Generated ID should start with namespace")
-        #expect(screenID.contains("button"), "Generated ID should contain role")
-        #expect(!screenID.isEmpty, "Generated ID should not be empty")
-        
-        // Test Case 4: Identifier with navigation state
-        config.setNavigationState("ProfileEditMode")
-        let navigationID = generator.generateID(for: "CancelButton", role: "button", context: "ui")
-        #expect(navigationID.hasPrefix("SixLayer"), "Generated ID should start with namespace")
-        #expect(navigationID.contains("button"), "Generated ID should contain role")
-        #expect(!navigationID.isEmpty, "Generated ID should not be empty")
-}
-
-    @Test @MainActor func testBugFixResolvesIdentifierGenerationIssue() async {
-        let config = AccessibilityIdentifierConfig.shared
-        
-        // Given: The exact configuration from the bug report
-        config.enableAutoIDs = true
-        config.namespace = "SixLayer"
-        config.mode = .automatic
-        config.enableViewHierarchyTracking = true
-        config.enableUITestIntegration = true
-        config.enableDebugLogging = true
-        
-        // When: Using the exact combination from the bug report
-        _ = Button(action: {}) {
-        Label("Add Fuel", systemImage: "plus")
-    }
-        .named("AddFuelButton")
-        
-        // Then: The view should be created successfully
-        #expect(Bool(true), "The exact bug scenario should now work correctly")  // testView is non-optional
-        
-        // Verify that all configuration is correct
-        #expect(config.enableAutoIDs, "Auto IDs should be enabled")
-        #expect(config.namespace == "SixLayer", "Namespace should be set correctly")
-        #expect(config.enableViewHierarchyTracking, "View hierarchy tracking should be enabled")
-        #expect(config.enableUITestIntegration, "UI test integration should be enabled")
-        #expect(config.enableDebugLogging, "Debug logging should be enabled")
-        
-        // The key fix was that automatic accessibility identifiers now work correctly
-        // This ensures that the AccessibilityIdentifierAssignmentModifier evaluates shouldApplyAutoIDs as true
-}
-
-    @Test @MainActor func testDefaultBehaviorChangeWorksCorrectly() async {
-        let config = AccessibilityIdentifierConfig.shared
-        
-        // Given: Explicitly set configuration for this test
-        config.resetToDefaults()
-        config.enableAutoIDs = true
-        config.namespace = "defaultApp"
-        
-        // When: Creating a view with explicitly enabled config
-        _ = Text("Hello World")
-        .automaticCompliance()
-        
-        // Then: The view should be created successfully
-        #expect(Bool(true), "View should work with explicitly enabled config")  // testView is non-optional
-        
-        // Verify configuration is correct (explicitly set, not relying on defaults)
-        #expect(config.enableAutoIDs, "Automatic IDs should be enabled (explicitly set)")
-        #expect(config.namespace == "defaultApp", "Namespace should be set correctly (explicitly set)")
-}
-
-    @Test @MainActor func testManualIdentifiersOverrideAutomaticGeneration() async {
-        let config = AccessibilityIdentifierConfig.shared
-        config.enableAutoIDs = true
-        config.namespace = "auto"
-        
-        // When: Creating view with manual identifier
-        let manualID = "manual-custom-id"
-        _ = Text("Test")
-        .accessibilityIdentifier(manualID)
-        .automaticCompliance()
-        
-        // Then: Manual identifier should take precedence
-        #expect(Bool(true), "View with manual identifier should be created successfully")  // testView is non-optional
-        
-        // Verify configuration is correct
-        #expect(config.enableAutoIDs, "Automatic IDs should be enabled")
-        #expect(config.namespace == "auto", "Namespace should be set correctly")
-        
-        // Manual identifiers should always override automatic ones
-        // This is handled by the AccessibilityIdentifierAssignmentModifier logic
-}
-
-    @Test @MainActor func testOptOutPreventsIdentifierGeneration() async {
-        let config = AccessibilityIdentifierConfig.shared
-        config.enableAutoIDs = true
-        config.namespace = "test"
-        
-        // When: Creating view with opt-out modifier
-        _ = Text("Test")
-        .disableAutomaticAccessibilityIdentifiers()
-        .automaticCompliance()
-        
-        // Then: View should be created successfully (but no automatic ID generated)
-        #expect(Bool(true), "View with opt-out should be created successfully")  // testView is non-optional
-        
-        // Verify configuration is correct
-        #expect(config.enableAutoIDs, "Automatic IDs should be enabled globally")
-        #expect(config.namespace == "test", "Namespace should be set correctly")
-        
-        // The opt-out modifier sets disableAutomaticAccessibilityIdentifiers = true
-        // This causes shouldApplyAutoIDs to evaluate as false
-}
+    // Duplicate identifier-logic tests removed (#247): same coverage lives in
+    // `AccessibilityIdentifierLogicVerificationTests` (isolated config, no `shared`).
 
     @Test @MainActor func testAccessibilityIdentifiersArePersistentAcrossSessions() {
         self.initializeTestConfig()
@@ -14565,12 +14422,13 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             self.runWithTaskLocalConfig {
         self.setupTestEnvironment()
         
-        // Create a view with environment values set
-        let testConfig = AccessibilityIdentifierConfig.shared
-        self.testConfig?.enableAutoIDs = true
-        
-        // Set config directly (no environment variable)
-        testConfig.globalAutomaticAccessibilityIdentifiers = true
+        // Create a view with environment values set (isolated config; #247)
+        guard let cfg = self.testConfig else {
+            Issue.record("testConfig is nil")
+            return
+        }
+        cfg.enableAutoIDs = true
+        cfg.globalAutomaticAccessibilityIdentifiers = true
         let view = platformVStackContainer {
             Text("Content")
         }
@@ -14600,23 +14458,26 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             self.runWithTaskLocalConfig {
         self.setupTestEnvironment()
         
-        let testConfig = AccessibilityIdentifierConfig.shared
-        self.testConfig?.enableAutoIDs = true
+        guard let cfg = self.testConfig else {
+            Issue.record("testConfig is nil")
+            return
+        }
+        cfg.enableAutoIDs = true
         
         // Test automaticAccessibilityIdentifiers()
         let view1 = Text("Test")
             .automaticCompliance()
-            .environment(\.accessibilityIdentifierConfig, testConfig)
+            .environment(\.accessibilityIdentifierConfig, cfg)
         
         // Test automaticAccessibilityIdentifiers(named:)
         let view2 = Text("Test")
             .automaticCompliance(named: "TestComponent")
-            .environment(\.accessibilityIdentifierConfig, testConfig)
+            .environment(\.accessibilityIdentifierConfig, cfg)
         
         // Test named()
         let view3 = Text("Test")
             .named("TestElement")
-            .environment(\.accessibilityIdentifierConfig, testConfig)
+            .environment(\.accessibilityIdentifierConfig, cfg)
         
         // All should work without environment access warnings
         #if canImport(ViewInspector)

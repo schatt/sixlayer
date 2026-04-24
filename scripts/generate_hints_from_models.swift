@@ -36,7 +36,7 @@ struct SwiftModelParser {
         let extensionPattern = #"extension\s+(\w+)"#
         let extensionRegex = try? NSRegularExpression(pattern: extensionPattern, options: [])
         
-        // Pattern to match property declarations: let/var name: Type? = defaultValue
+        // Pattern to match property declarations: let/var name: Type? = defaultValue (default group optional)
         let propertyPattern = #"(?:let|var)\s+(\w+)\s*:\s*([\w\.\[\]?]+)(?:\s*=\s*([^\n]+))?"#
         let regex = try? NSRegularExpression(pattern: propertyPattern, options: [])
         
@@ -74,7 +74,7 @@ struct SwiftModelParser {
         let matches = regex?.matches(in: content, options: [], range: NSRange(location: 0, length: nsContent.length)) ?? []
         
         for match in matches {
-            guard match.numberOfRanges >= 3 else { continue }
+            guard match.numberOfRanges >= 4 else { continue }
             
             let nameRange = match.range(at: 1)
             let typeRange = match.range(at: 2)
@@ -110,14 +110,11 @@ struct SwiftModelParser {
             // Map Swift types to fieldType strings
             let fieldType = mapSwiftTypeToFieldType(typeString)
             
-            // Extract default value if present
-            var defaultValue: (any Sendable)? = nil
-            if match.numberOfRanges >= 4 {
-                let defaultValueRange = match.range(at: 3)
-                if defaultValueRange.location != NSNotFound {
-                    let defaultValueString = nsContent.substring(with: defaultValueRange).trimmingCharacters(in: .whitespaces)
-                    defaultValue = parseDefaultValue(from: defaultValueString, type: fieldType)
-                }
+            var parsedDefault: (any Sendable)? = nil
+            let defaultValueRange = match.range(at: 3)
+            if defaultValueRange.location != NSNotFound {
+                let defaultValueString = nsContent.substring(with: defaultValueRange).trimmingCharacters(in: .whitespaces)
+                parsedDefault = parseDefaultValue(from: defaultValueString, type: fieldType)
             }
             
             // Determine if field should be hidden (default suggestion - can be overridden in .hints file)
@@ -137,7 +134,7 @@ struct SwiftModelParser {
                 fieldType: fieldType,
                 isOptional: isOptional,
                 isArray: isArray,
-                defaultValue: defaultValue,
+                defaultValue: parsedDefault,
                 isHidden: isHidden,
                 isEditable: isEditable
             ))
@@ -299,13 +296,12 @@ struct SwiftModelParser {
         }
     }
     
-    /// Parse default value from string representation
+    /// Parse Swift literal after `=` into JSON-serializable defaults for hints `defaultValue`.
     private static func parseDefaultValue(from string: String, type: String) -> (any Sendable)? {
         let trimmed = string.trimmingCharacters(in: .whitespaces)
         
         switch type {
         case "string":
-            // Remove quotes
             if trimmed.hasPrefix("\"") && trimmed.hasSuffix("\"") {
                 return String(trimmed.dropFirst().dropLast())
             }
@@ -556,6 +552,7 @@ struct FieldInfo {
     let fieldType: String
     let isOptional: Bool
     let isArray: Bool
+    /// Parsed Swift `= …` literal when present; merged into `.hints` as `defaultValue` whenever present (overwrites hints to match model changes).
     let defaultValue: (any Sendable)?
     let isHidden: Bool  // Whether field should be hidden from forms
     let isEditable: Bool  // Whether field is editable (false for computed properties)
@@ -572,8 +569,11 @@ struct EntityInfo {
 struct HintsGenerator {
     /// Generate hints file content from field information
     /// Returns both the hints dictionary and the field order (to preserve custom ordering)
-    /// For existing fields, preserves all properties exactly as they are
-    /// Only adds type information if missing (for fully declarative hints)
+    ///
+    /// **Merge policy:** Fills missing structural keys from the model (`fieldType`, `isOptional`, `isArray`, `isHidden`, `isEditable`).
+    /// Whenever the Swift model has a parseable `= …` literal, overwrites `defaultValue` in hints so it stays aligned if the model default changes (including numeric or boolean zero).
+    /// If the model has no literal default, any existing `defaultValue` in hints is left unchanged.
+    /// Does not set `placeholder` or other presentation keys from Swift—see regenerated `__example` for the full shape; authors override in JSON as needed.
     /// Preserves _sections if they exist, or creates a default section if none exist
     static func generateHintsJSON(
         fields: [FieldInfo], 
@@ -623,8 +623,8 @@ struct HintsGenerator {
             if fieldHintsDict["isArray"] == nil {
                 fieldHintsDict["isArray"] = field.isArray
             }
-            if field.defaultValue != nil && fieldHintsDict["defaultValue"] == nil {
-                fieldHintsDict["defaultValue"] = field.defaultValue
+            if let modelDefault = field.defaultValue {
+                fieldHintsDict["defaultValue"] = modelDefault
             }
             // Add isHidden (only if not already present, to allow manual override)
             // Users can manually set isHidden: false to show fields that would normally be hidden
@@ -638,10 +638,6 @@ struct HintsGenerator {
             if fieldHintsDict["isEditable"] == nil {
                 fieldHintsDict["isEditable"] = field.isEditable
             }
-            
-            // For existing fields: don't add any properties that weren't already there
-            // This preserves developer's choice to remove properties
-            // New fields get minimal type info only - see __example for all options
             
             fieldHints[field.name] = fieldHintsDict
             
@@ -1266,8 +1262,10 @@ func main() {
     }
 }
 
-/// Generate or update a hints file for a set of fields
-/// Preserves existing hints properties and field order
+/// Generate or update a hints file for a set of fields.
+/// Preserves each field’s existing JSON keys except `defaultValue` is overwritten whenever the Swift model supplies a parseable `= …` literal.
+/// Fills only missing structural keys (`fieldType`, `isOptional`, `isArray`, `isHidden`, `isEditable`).
+/// Replaces `__example` with the current template each run.
 func generateHintsFile(for fields: [FieldInfo], outputURL: URL) {
     // Ensure output directory exists
     let outputDir = outputURL.deletingLastPathComponent()
@@ -1348,7 +1346,8 @@ func generateHintsFile(for fields: [FieldInfo], outputURL: URL) {
             "fieldType": "string",  // string, number, boolean, date, url, uuid, document, image, custom
             "isOptional": false,
             "isArray": false,
-            "defaultValue": NSNull(),  // Can be String, Int, Bool, Double, etc.
+            "defaultValue": NSNull(),  // Optional; generator overwrites from Swift `= …` whenever the model declares a literal
+            "placeholder": NSNull(),  // Optional; hint text when empty—not derived from the model script (use for UX without pre-fill)
             "isHidden": false,
             "isEditable": true,  // false for computed/read-only fields
             "expectedLength": NSNull(),  // Int or null

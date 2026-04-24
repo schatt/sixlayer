@@ -1,3 +1,4 @@
+import CoreFoundation
 import Foundation
 import SwiftUI
 #if os(iOS)
@@ -537,57 +538,177 @@ public struct DynamicFormField: Identifiable {
     /// - Parameter hints: The hints to apply
     /// - Returns: A new field with hints applied
     public func applying(hints: FieldDisplayHints) -> DynamicFormField {
+        let merged = Self.mergingFieldDisplayHints(hints, into: self)
         return DynamicFormField(
-            id: self.id,
-            textContentType: self.textContentType,
-            contentType: self.contentType,
-            label: self.label,
-            placeholder: self.placeholder,
-            description: self.description,
-            isRequired: self.isRequired,
-            validationRules: self.validationRules,
-            options: self.options,
-            defaultValue: self.defaultValue,
-            metadata: self.metadata,
-            supportsOCR: hints.ocrHints != nil ? true : self.supportsOCR,
-            ocrHint: self.ocrHint,
-            ocrValidationTypes: self.ocrValidationTypes,
-            ocrFieldIdentifier: self.ocrFieldIdentifier,
-            ocrValidationRules: self.ocrValidationRules,
-            ocrHints: hints.ocrHints ?? self.ocrHints,
-            supportsBarcodeScanning: self.supportsBarcodeScanning,
-            barcodeHint: self.barcodeHint,
-            supportedBarcodeTypes: self.supportedBarcodeTypes,
-            barcodeFieldIdentifier: self.barcodeFieldIdentifier,
-            isCalculated: hints.calculationGroups != nil ? true : self.isCalculated,
-            calculationFormula: self.calculationFormula,
-            calculationDependencies: self.calculationDependencies,
-            calculationGroups: hints.calculationGroups ?? self.calculationGroups,
-            visibilityCondition: self.visibilityCondition,
-            fieldAction: self.fieldAction,
-            trailingView: self.trailingView,
-            valueView: self.valueView,
-            maxVisibleActions: self.maxVisibleActions,
-            useActionMenu: self.useActionMenu
+            id: merged.id,
+            textContentType: merged.textContentType,
+            contentType: merged.contentType,
+            label: merged.label,
+            placeholder: merged.placeholder,
+            description: merged.description,
+            isRequired: merged.isRequired,
+            validationRules: merged.validationRules,
+            options: merged.options,
+            defaultValue: merged.defaultValue,
+            metadata: merged.metadata,
+            supportsOCR: hints.ocrHints != nil ? true : merged.supportsOCR,
+            ocrHint: merged.ocrHint,
+            ocrValidationTypes: merged.ocrValidationTypes,
+            ocrFieldIdentifier: merged.ocrFieldIdentifier,
+            ocrValidationRules: merged.ocrValidationRules,
+            ocrHints: hints.ocrHints ?? merged.ocrHints,
+            supportsBarcodeScanning: merged.supportsBarcodeScanning,
+            barcodeHint: merged.barcodeHint,
+            supportedBarcodeTypes: merged.supportedBarcodeTypes,
+            barcodeFieldIdentifier: merged.barcodeFieldIdentifier,
+            isCalculated: hints.calculationGroups != nil ? true : merged.isCalculated,
+            calculationFormula: merged.calculationFormula,
+            calculationDependencies: merged.calculationDependencies,
+            calculationGroups: hints.calculationGroups ?? merged.calculationGroups,
+            visibilityCondition: merged.visibilityCondition,
+            fieldAction: merged.fieldAction,
+            trailingView: merged.trailingView,
+            valueView: merged.valueView,
+            maxVisibleActions: merged.maxVisibleActions,
+            useActionMenu: merged.useActionMenu
         )
     }
-}
 
-extension DynamicFormField {
-    /// Model/schema defaults of numeric zero should not prefill the form as if the user typed a value.
-    fileprivate var shouldOmitTrivialNumericZeroFromFormInitialValue: Bool {
-        guard let contentType else { return false }
-        switch contentType {
-        case .number, .decimal, .integer:
-            break
+    /// Fills ``placeholder``, ``defaultValue``, and ``metadata`` from ``FieldDisplayHints`` when the app left them unset (Issue #246).
+    private static func mergingFieldDisplayHints(_ hints: FieldDisplayHints, into field: DynamicFormField) -> DynamicFormField {
+        let placeholder = effectivePlaceholder(app: field.placeholder, hints: hints)
+        let defaultString = effectiveDefaultValueString(app: field.defaultValue, hints: hints)
+        var mergedMeta = field.metadata ?? [:]
+        for (key, value) in hints.metadata where mergedMeta[key] == nil {
+            mergedMeta[key] = value
+        }
+        if mergedMeta["fieldType"] == nil, let ft = hints.fieldType {
+            mergedMeta["fieldType"] = ft
+        }
+        if mergedMeta["isOptional"] == nil, let io = hints.isOptional {
+            mergedMeta["isOptional"] = io ? "true" : "false"
+        }
+        if mergedMeta["isArray"] == nil, let ia = hints.isArray {
+            mergedMeta["isArray"] = ia ? "true" : "false"
+        }
+        if let dv = defaultString {
+            if mergedMeta["defaultValue"] == nil {
+                mergedMeta["defaultValue"] = dv
+            }
+        }
+        if mergedMeta["expectedLength"] == nil, let el = hints.expectedLength {
+            mergedMeta["expectedLength"] = String(el)
+        }
+        if mergedMeta["displayWidth"] == nil, let dw = hints.displayWidth {
+            mergedMeta["displayWidth"] = dw
+        }
+        if mergedMeta["maxLength"] == nil, let ml = hints.maxLength {
+            mergedMeta["maxLength"] = String(ml)
+        }
+        if mergedMeta["minLength"] == nil, let ml = hints.minLength {
+            mergedMeta["minLength"] = String(ml)
+        }
+        if mergedMeta["showCharacterCounter"] == nil {
+            mergedMeta["showCharacterCounter"] = hints.showCharacterCounter ? "true" : "false"
+        }
+        if mergedMeta["inputType"] == nil, let it = hints.inputType {
+            mergedMeta["inputType"] = it
+        }
+        if mergedMeta["expectedRange"] == nil, let range = hints.expectedRange {
+            mergedMeta["expectedRange"] = "\(range.min):\(range.max)"
+        }
+        if mergedMeta["isHidden"] == nil {
+            mergedMeta["isHidden"] = hints.isHidden ? "true" : "false"
+        }
+        if mergedMeta["isEditable"] == nil {
+            mergedMeta["isEditable"] = hints.isEditable ? "true" : "false"
+        }
+        let finalMeta: [String: String]? = mergedMeta.isEmpty ? nil : mergedMeta
+        return DynamicFormField(
+            id: field.id,
+            textContentType: field.textContentType,
+            contentType: field.contentType,
+            label: field.label,
+            placeholder: placeholder,
+            description: field.description,
+            isRequired: field.isRequired,
+            validationRules: field.validationRules,
+            options: field.options,
+            defaultValue: defaultString,
+            metadata: finalMeta,
+            supportsOCR: field.supportsOCR,
+            ocrHint: field.ocrHint,
+            ocrValidationTypes: field.ocrValidationTypes,
+            ocrFieldIdentifier: field.ocrFieldIdentifier,
+            ocrValidationRules: field.ocrValidationRules,
+            ocrHints: field.ocrHints,
+            supportsBarcodeScanning: field.supportsBarcodeScanning,
+            barcodeHint: field.barcodeHint,
+            supportedBarcodeTypes: field.supportedBarcodeTypes,
+            barcodeFieldIdentifier: field.barcodeFieldIdentifier,
+            isCalculated: field.isCalculated,
+            calculationFormula: field.calculationFormula,
+            calculationDependencies: field.calculationDependencies,
+            calculationGroups: field.calculationGroups,
+            visibilityCondition: field.visibilityCondition,
+            fieldAction: field.fieldAction,
+            trailingView: field.trailingView,
+            valueView: field.valueView,
+            maxVisibleActions: field.maxVisibleActions,
+            useActionMenu: field.useActionMenu
+        )
+    }
+
+    private static func effectivePlaceholder(app: String?, hints: FieldDisplayHints) -> String? {
+        if let p = app?.trimmingCharacters(in: .whitespacesAndNewlines), !p.isEmpty {
+            return app
+        }
+        if let h = hints.metadata["placeholder"]?.trimmingCharacters(in: .whitespacesAndNewlines), !h.isEmpty {
+            return hints.metadata["placeholder"]
+        }
+        return app
+    }
+
+    private static func effectiveDefaultValueString(app: String?, hints: FieldDisplayHints) -> String? {
+        if let p = app?.trimmingCharacters(in: .whitespacesAndNewlines), !p.isEmpty {
+            return app
+        }
+        guard let any = hints.defaultValue else { return app }
+        return stringForm(forHintsDefault: any)
+    }
+
+    /// Stable string form for values coming from JSON-backed ``FieldDisplayHints`` (Issue #246).
+    private static func stringForm(forHintsDefault value: Any) -> String {
+        switch value {
+        case let s as String:
+            return s
+        case let b as Bool:
+            return b ? "true" : "false"
+        case let i as Int:
+            return String(i)
+        case let d as Double:
+            if d.truncatingRemainder(dividingBy: 1) == 0 {
+                return String(Int(d))
+            }
+            return String(d)
+        case let f as Float:
+            let d = Double(f)
+            if d.truncatingRemainder(dividingBy: 1) == 0 {
+                return String(Int(d))
+            }
+            return String(f)
+        case let n as NSNumber:
+            if CFGetTypeID(n) == CFBooleanGetTypeID() {
+                return n.boolValue ? "true" : "false"
+            }
+            let d = n.doubleValue
+            if d.truncatingRemainder(dividingBy: 1) == 0 {
+                return String(Int(d))
+            }
+            return String(d)
         default:
-            return false
+            return String(describing: value)
         }
-        guard let raw = defaultValue?.trimmingCharacters(in: .whitespacesAndNewlines), !raw.isEmpty else {
-            return false
-        }
-        guard let magnitude = Double(raw) else { return false }
-        return magnitude == 0
     }
 }
 
@@ -1154,9 +1275,9 @@ public class DynamicFormState: ObservableObject {
     /// Initialize a field with its default value
     /// - Parameter field: The field to initialize
     public func initializeField(_ field: DynamicFormField) {
-        guard let defaultValue = field.defaultValue else { return }
-        if field.shouldOmitTrivialNumericZeroFromFormInitialValue { return }
-        fieldValues[field.id] = defaultValue
+        if let defaultValue = field.defaultValue {
+            fieldValues[field.id] = defaultValue
+        }
     }
 
     /// Calculate a field value from other field values using a formula
@@ -1506,9 +1627,9 @@ public class DynamicFormState: ObservableObject {
     private func setupInitialState() {
         // Set default values
         for field in configuration.allFields {
-            guard let defaultValue = field.defaultValue else { continue }
-            if field.shouldOmitTrivialNumericZeroFromFormInitialValue { continue }
-            fieldValues[field.id] = defaultValue
+            if let defaultValue = field.defaultValue {
+                fieldValues[field.id] = defaultValue
+            }
         }
 
         // Set initial section states

@@ -11,9 +11,17 @@ import SixLayerFramework
 /// Minimal test app that displays views for XCUITest testing
 @main
 struct TestApp: App {
+    /// Per-process config for the UI test host — **not** `AccessibilityIdentifierConfig.shared` (#247).
+    /// Injected at the window root so modifiers resolve the same instance without mutating the production singleton.
+    private let accessibilityIdentifierHostConfiguration: AccessibilityIdentifierConfig
+
     init() {
-        // Clear in-memory + avoid stale UserDefaults (e.g. enableUITestIntegration false) poisoning XCUITest IDs.
-        let config = AccessibilityIdentifierConfig.shared
+        let suiteName = "SixLayer.Framework.UITestHost.AccessibilityIdentifier"
+        UserDefaults.standard.removePersistentDomain(forName: suiteName)
+        guard let defaults = UserDefaults(suiteName: suiteName) else {
+            fatalError("Could not create UserDefaults suite for UI test host: \(suiteName)")
+        }
+        let config = AccessibilityIdentifierConfig(userDefaults: defaults, keyPrefix: "SixLayer.Accessibility.")
         config.resetToDefaults()
         config.namespace = "SixLayer"
         config.mode = .automatic
@@ -27,11 +35,13 @@ struct TestApp: App {
         if ProcessInfo.processInfo.arguments.contains("-CategoryAGlobalAutoOff") {
             config.globalAutomaticAccessibilityIdentifiers = false
         }
+        self.accessibilityIdentifierHostConfiguration = config
     }
 
     var body: some Scene {
         WindowGroup {
             TestAppContentView()
+                .environment(\.accessibilityIdentifierConfig, accessibilityIdentifierHostConfiguration)
         }
     }
 }
@@ -65,6 +75,16 @@ struct TestAppContentView: View {
     private let openCategoryCCallbacks = ProcessInfo.processInfo.arguments.contains("-OpenCategoryCCallbacks")
     /// When true, app opens to Category E one-off coverage host (launch arg -OpenCategoryEOneOffs). Issue #201.
     private let openCategoryEOneOffs = ProcessInfo.processInfo.arguments.contains("-OpenCategoryEOneOffs")
+    /// When true, app opens to platform accessibility extension audit host (launch arg -OpenPlatformAccessibilityExtensions).
+    private let openPlatformAccessibilityExtensions = ProcessInfo.processInfo.arguments.contains("-OpenPlatformAccessibilityExtensions")
+    /// When true, app opens to Layer 4 `platform*` styling extension audit host (launch arg -OpenPlatformStylingLayer4Extensions).
+    private let openPlatformStylingLayer4Extensions = ProcessInfo.processInfo.arguments.contains("-OpenPlatformStylingLayer4Extensions")
+    /// When true, app opens to Layer 4 responsive `platformCard*` audit host (launch arg -OpenPlatformResponsiveCardsLayer4).
+    private let openPlatformResponsiveCardsLayer4 = ProcessInfo.processInfo.arguments.contains("-OpenPlatformResponsiveCardsLayer4")
+    /// When true, app opens to `platformColorEncode` / `platformColorDecode` audit host (launch arg -OpenPlatformColorEncodeExtensions).
+    private let openPlatformColorEncodeExtensions = ProcessInfo.processInfo.arguments.contains("-OpenPlatformColorEncodeExtensions")
+    /// When true, app opens to clipboard/URL utility audit host (launch arg -OpenPlatformClipboardUrlLayer4).
+    private let openPlatformClipboardUrlLayer4 = ProcessInfo.processInfo.arguments.contains("-OpenPlatformClipboardUrlLayer4")
     
     enum TestView: String, CaseIterable, Identifiable {
         case control = "Control Test"
@@ -149,6 +169,26 @@ struct TestAppContentView: View {
                 NavigationStack {
                     CategoryEOneOffAuditView()
                 }
+            } else if openPlatformAccessibilityExtensions {
+                NavigationStack {
+                    PlatformAccessibilityExtensionsAuditView(onBackToMain: nil)
+                }
+            } else if openPlatformStylingLayer4Extensions {
+                NavigationStack {
+                    PlatformStylingLayer4ExtensionsAuditView(onBackToMain: nil)
+                }
+            } else if openPlatformResponsiveCardsLayer4 {
+                NavigationStack {
+                    PlatformResponsiveCardsLayer4AuditView(onBackToMain: nil)
+                }
+            } else if openPlatformColorEncodeExtensions {
+                NavigationStack {
+                    PlatformColorEncodeExtensionsAuditView(onBackToMain: nil)
+                }
+            } else if openPlatformClipboardUrlLayer4 {
+                NavigationStack {
+                    PlatformClipboardUrlLayer4AuditView(onBackToMain: nil)
+                }
             } else {
                 NavigationStack {
                     if let selected = selectedTest {
@@ -232,6 +272,32 @@ struct TestAppContentView: View {
                     Layer6ExamplesView()
                 }
                 .accessibilityIdentifier("layer6-examples-link")
+
+                sectionHeader("Extensions & Utilities (Issue #170)")
+                NavigationLink("Platform Accessibility Extensions Audit") {
+                    PlatformAccessibilityExtensionsAuditView(onBackToMain: nil)
+                }
+                .accessibilityIdentifier("platform-a11y-extensions-link")
+
+                NavigationLink("Platform Styling (Layer 4) Extensions Audit") {
+                    PlatformStylingLayer4ExtensionsAuditView(onBackToMain: nil)
+                }
+                .accessibilityIdentifier("platform-styling-l4-extensions-link")
+
+                NavigationLink("Platform Responsive Cards (Layer 4) Audit") {
+                    PlatformResponsiveCardsLayer4AuditView(onBackToMain: nil)
+                }
+                .accessibilityIdentifier("platform-responsive-cards-l4-link")
+
+                NavigationLink("Platform Color Encode / Decode Audit") {
+                    PlatformColorEncodeExtensionsAuditView(onBackToMain: nil)
+                }
+                .accessibilityIdentifier("platform-color-encode-extensions-link")
+
+                NavigationLink("Platform Clipboard / URL Utilities Audit") {
+                    PlatformClipboardUrlLayer4AuditView(onBackToMain: nil)
+                }
+                .accessibilityIdentifier("platform-clipboard-url-l4-link")
             }
             .padding()
         }
@@ -316,6 +382,477 @@ struct TestAppContentView: View {
             }
         }
         .navigationTitle(category.rawValue)
+        .platformNavigationTitleDisplayMode_L4(.inline)
+    }
+}
+
+/// RealUI/TestApp coverage for `platformAccessibility*` extension APIs (issue #170, Phase 2).
+struct PlatformAccessibilityExtensionsAuditView: View {
+    @State private var actionCount = 0
+    var onBackToMain: (() -> Void)?
+
+    var body: some View {
+        platformScrollViewContainer {
+            platformVStack(alignment: .leading, spacing: 16) {
+                platformText("Platform Accessibility Extensions Audit")
+                    .font(.headline)
+                    .platformAccessibilityIdentifier("platform-a11y-audit-title")
+
+                platformText("Label demo")
+                    .platformAccessibilityLabel("Platform label demo")
+                    .platformAccessibilityIdentifier("platform-a11y-label-row")
+
+                platformText("Hint demo")
+                    .platformAccessibilityHint("Describes how this row should be read by assistive technologies")
+                    .platformAccessibilityIdentifier("platform-a11y-hint-row")
+
+                platformText("Value demo")
+                    .platformAccessibilityValue("Current value is 42 percent")
+                    .platformAccessibilityIdentifier("platform-a11y-value-row")
+
+                platformText("Add traits demo")
+                    .platformAccessibilityAddTraits(.isButton)
+                    .platformAccessibilityIdentifier("platform-a11y-add-traits-row")
+
+                platformText("Remove traits demo")
+                    .accessibilityAddTraits(.isButton)
+                    .platformAccessibilityRemoveTraits(.isButton)
+                    .platformAccessibilityIdentifier("platform-a11y-remove-traits-row")
+
+                platformText("Sort priority high")
+                    .platformAccessibilitySortPriority(100)
+                    .platformAccessibilityIdentifier("platform-a11y-sort-priority-row")
+
+                platformText("Decorative text hidden from a11y tree")
+                    .platformAccessibilityHidden(true)
+                    .platformAccessibilityIdentifier("platform-a11y-hidden-row")
+
+                platformButton(label: "Custom accessibility action", id: nil) {
+                    actionCount += 1
+                }
+                .platformAccessibilityAction(named: "Increment action count") {
+                    actionCount += 1
+                }
+                .platformAccessibilityIdentifier("platform-a11y-action-button")
+
+                platformText("Action count: \(actionCount)")
+                    .platformAccessibilityIdentifier("platform-a11y-action-count")
+
+                if let onBackToMain {
+                    platformButton(label: "Back to Main", id: "platform-a11y-back-to-main") {
+                        onBackToMain()
+                    }
+                }
+            }
+            .padding()
+        }
+        .platformFrame()
+        .navigationTitle("Platform A11y Extensions")
+        .platformNavigationTitleDisplayMode_L4(.inline)
+    }
+}
+
+/// RealUI/TestApp coverage for Layer 4 `platform*` styling extensions (`PlatformStylingLayer4`, issue #170 Phase 2).
+struct PlatformStylingLayer4ExtensionsAuditView: View {
+    @State private var animToggle = false
+    var onBackToMain: (() -> Void)?
+
+    var body: some View {
+        platformScrollViewContainer {
+            platformVStack(alignment: .leading, spacing: 20) {
+                platformText("Layer 4 — platform styling extensions")
+                    .font(.headline)
+                    .accessibilityIdentifier("platform-styling-l4-audit-title")
+
+                platformText("platformBackground() default")
+                    .platformBackground()
+                    .accessibilityIdentifier("platform-styling-l4-bg-default")
+
+                platformText("platformBackground(Color)")
+                    .platformBackground(Color.orange.opacity(0.2))
+                    .accessibilityIdentifier("platform-styling-l4-bg-color")
+
+                platformText("platformBackground(Color, ignoresSafeAreaEdges: .horizontal)")
+                    .platformBackground(Color.green.opacity(0.15), ignoresSafeAreaEdges: .horizontal)
+                    .accessibilityIdentifier("platform-styling-l4-bg-color-edges")
+
+                platformText("platformBackground ViewBuilder")
+                    .platformBackground(alignment: .leading) {
+                        Color.purple.opacity(0.12)
+                    }
+                    .accessibilityIdentifier("platform-styling-l4-bg-viewbuilder")
+
+                platformText("platformBackground ShapeStyle")
+                    .platformBackground(Color.cyan.opacity(0.2), ignoresSafeAreaEdges: [])
+                    .accessibilityIdentifier("platform-styling-l4-bg-shapestudio")
+
+                platformText("platformPadding()")
+                    .platformPadding()
+                    .accessibilityIdentifier("platform-styling-l4-pad-default")
+
+                platformText("platformPadding(_ edges, _ length)")
+                    .platformPadding(.horizontal, 12)
+                    .accessibilityIdentifier("platform-styling-l4-pad-edges")
+
+                platformText("platformPadding(_ value)")
+                    .platformPadding(10)
+                    .accessibilityIdentifier("platform-styling-l4-pad-value")
+
+                platformText("platformPadding(EdgeInsets)")
+                    .platformPadding(EdgeInsets(top: 4, leading: 8, bottom: 4, trailing: 8))
+                    .accessibilityIdentifier("platform-styling-l4-pad-insets")
+
+                platformText("platformReducedPadding()")
+                    .platformReducedPadding()
+                    .accessibilityIdentifier("platform-styling-l4-reduced-pad")
+
+                platformText("platformCornerRadius() default")
+                    .platformCornerRadius()
+                    .accessibilityIdentifier("platform-styling-l4-radius-default")
+
+                platformText("platformCornerRadius(6)")
+                    .platformCornerRadius(6)
+                    .accessibilityIdentifier("platform-styling-l4-radius-value")
+
+                platformText("platformShadow() default")
+                    .platformShadow()
+                    .accessibilityIdentifier("platform-styling-l4-shadow-default")
+
+                platformText("platformShadow(color:radius:x:y:)")
+                    .platformShadow(color: .gray.opacity(0.45), radius: 3, x: 1, y: 2)
+                    .accessibilityIdentifier("platform-styling-l4-shadow-custom")
+
+                platformText("platformBorder() default")
+                    .platformBorder()
+                    .padding(4)
+                    .accessibilityIdentifier("platform-styling-l4-border-default")
+
+                platformText("platformBorder(color:width:)")
+                    .platformBorder(color: .blue, width: 1)
+                    .padding(4)
+                    .accessibilityIdentifier("platform-styling-l4-border-custom")
+
+                platformText("platformFont() default")
+                    .platformFont()
+                    .accessibilityIdentifier("platform-styling-l4-font-default")
+
+                platformText("platformFont(.title3)")
+                    .platformFont(.title3)
+                    .accessibilityIdentifier("platform-styling-l4-font-title3")
+
+                platformButton(label: "Toggle animation driving value", id: "platform-styling-l4-anim-toggle") {
+                    animToggle.toggle()
+                }
+
+                platformText("platformAnimation() default")
+                    .platformAnimation()
+                    .accessibilityIdentifier("platform-styling-l4-anim-default")
+
+                platformText("platformAnimation(_:value:) — state: \(animToggle ? "on" : "off")")
+                    .platformAnimation(.easeInOut(duration: 0.25), value: animToggle)
+                    .accessibilityIdentifier("platform-styling-l4-anim-value")
+
+                platformText("platformMinFrame()")
+                    .platformMinFrame()
+                    .accessibilityIdentifier("platform-styling-l4-min-frame")
+
+                platformText("platformMaxFrame()")
+                    .platformMaxFrame()
+                    .accessibilityIdentifier("platform-styling-l4-max-frame")
+
+                platformText("platformIdealFrame()")
+                    .platformIdealFrame()
+                    .accessibilityIdentifier("platform-styling-l4-ideal-frame")
+
+                platformText("platformAdaptiveFrame()")
+                    .platformAdaptiveFrame()
+                    .accessibilityIdentifier("platform-styling-l4-adaptive-frame")
+
+                platformForm {
+                    Section {
+                        platformText("platformFormStyle() — inner row")
+                    } header: {
+                        platformText("Form section")
+                    }
+                }
+                .platformFormStyle()
+                .accessibilityIdentifier("platform-styling-l4-form-style")
+
+                platformVStack(alignment: .leading, spacing: 4) {
+                    platformText("platformContentSpacing() — row A")
+                    platformText("platformContentSpacing() — row B")
+                }
+                .platformContentSpacing()
+                .accessibilityIdentifier("platform-styling-l4-content-spacing")
+
+                platformStyledContainer_L4 {
+                    platformText("platformStyledContainer_L4 content")
+                }
+                .accessibilityIdentifier("platform-styling-l4-styled-container")
+
+                if let onBackToMain {
+                    platformButton(label: "Back to Main", id: "platform-styling-l4-back-to-main") {
+                        onBackToMain()
+                    }
+                }
+            }
+            .padding()
+        }
+        .platformFrame()
+        .navigationTitle("Platform Styling L4")
+        .platformNavigationTitleDisplayMode_L4(.inline)
+    }
+}
+
+/// RealUI/TestApp coverage for Layer 4 `platformCard*` APIs (`PlatformResponsiveCardsLayer4`, issue #170 Phase 2).
+struct PlatformResponsiveCardsLayer4AuditView: View {
+    var onBackToMain: (() -> Void)?
+
+    var body: some View {
+        platformScrollViewContainer {
+            platformVStack(alignment: .leading, spacing: 24) {
+                platformText("Layer 4 — platformCard* layouts")
+                    .font(.headline)
+                    .accessibilityIdentifier("platform-cards-l4-audit-title")
+
+                platformText("platformCardGrid")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+
+                Color.clear
+                    .frame(height: 1)
+                    .platformCardGrid(columns: 2, spacing: 12) {
+                        Group {
+                            platformText("Grid 1")
+                                .frame(maxWidth: .infinity, alignment: .center)
+                                .platformCardStyle(backgroundColor: Color.gray.opacity(0.18), cornerRadius: 8, shadowRadius: 2)
+                                .platformCardPadding()
+                                .accessibilityIdentifier("platform-card-l4-grid-1")
+                            platformText("Grid 2")
+                                .frame(maxWidth: .infinity, alignment: .center)
+                                .platformCardStyle(backgroundColor: Color.gray.opacity(0.18), cornerRadius: 8, shadowRadius: 2)
+                                .platformCardPadding()
+                                .accessibilityIdentifier("platform-card-l4-grid-2")
+                            platformText("Grid 3")
+                                .frame(maxWidth: .infinity, alignment: .center)
+                                .platformCardStyle(backgroundColor: Color.gray.opacity(0.18), cornerRadius: 8, shadowRadius: 2)
+                                .platformCardPadding()
+                                .accessibilityIdentifier("platform-card-l4-grid-3")
+                        }
+                    }
+                    .accessibilityIdentifier("platform-card-l4-grid-host")
+
+                platformText("platformCardMasonry")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+
+                Color.clear
+                    .frame(height: 1)
+                    .platformCardMasonry(columns: 2, spacing: 10) {
+                        Group {
+                            platformText("Masonry A")
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .platformCardStyle(backgroundColor: Color.indigo.opacity(0.12), cornerRadius: 6, shadowRadius: 2)
+                                .platformCardPadding()
+                                .accessibilityIdentifier("platform-card-l4-masonry-a")
+                            platformText("Masonry B")
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .platformCardStyle(backgroundColor: Color.indigo.opacity(0.12), cornerRadius: 6, shadowRadius: 2)
+                                .platformCardPadding()
+                                .accessibilityIdentifier("platform-card-l4-masonry-b")
+                        }
+                    }
+                    .accessibilityIdentifier("platform-card-l4-masonry-host")
+
+                platformText("platformCardList")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+
+                Color.clear
+                    .frame(height: 1)
+                    .platformCardList(spacing: 10) {
+                        Group {
+                            platformText("List row 1")
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .platformCardPadding()
+                                .accessibilityIdentifier("platform-card-l4-list-1")
+                            platformText("List row 2")
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .platformCardPadding()
+                                .accessibilityIdentifier("platform-card-l4-list-2")
+                        }
+                    }
+                    .accessibilityIdentifier("platform-card-l4-list-host")
+
+                platformText("platformCardAdaptive")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+
+                Color.clear
+                    .frame(height: 1)
+                    .platformCardAdaptive(minWidth: 120, maxWidth: 320) {
+                        platformText("Content inside adaptive min/max width")
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .platformCardStyle(backgroundColor: Color.teal.opacity(0.12), cornerRadius: 8, shadowRadius: 2)
+                            .platformCardPadding()
+                    }
+                    .accessibilityIdentifier("platform-card-l4-adaptive-host")
+
+                platformText("platformCardStyle + platformCardPadding (standalone)")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+
+                platformText("Styled chip")
+                    .platformCardStyle(backgroundColor: Color.orange.opacity(0.22), cornerRadius: 10, shadowRadius: 3)
+                    .platformCardPadding()
+                    .accessibilityIdentifier("platform-card-l4-style-chip")
+
+                if let onBackToMain {
+                    platformButton(label: "Back to Main", id: "platform-cards-l4-back-to-main") {
+                        onBackToMain()
+                    }
+                }
+            }
+            .padding()
+        }
+        .platformFrame()
+        .navigationTitle("Responsive Cards L4")
+        .platformNavigationTitleDisplayMode_L4(.inline)
+    }
+}
+
+/// RealUI/TestApp coverage for `platformColorEncode` / `platformColorDecode` (issue #170 Phase 2).
+struct PlatformColorEncodeExtensionsAuditView: View {
+    var onBackToMain: (() -> Void)?
+    @State private var statusText = "Idle"
+    @State private var recoveredSwatch: Color?
+    @State private var encodedByteCount: Int?
+
+    var body: some View {
+        platformScrollViewContainer {
+            platformVStack(alignment: .leading, spacing: 16) {
+                platformText("platformColorEncode / platformColorDecode")
+                    .font(.headline)
+                    .accessibilityIdentifier("platform-color-encode-audit-title")
+
+                #if os(iOS) || os(macOS)
+                platformText(statusText)
+                    .accessibilityIdentifier("platform-color-encode-status")
+
+                if let recoveredSwatch {
+                    RoundedRectangle(cornerRadius: 6)
+                        .fill(recoveredSwatch)
+                        .frame(width: 56, height: 32)
+                        .accessibilityIdentifier("platform-color-encode-swatch")
+                }
+
+                if let encodedByteCount {
+                    platformText("Encoded payload: \(encodedByteCount) bytes")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                        .accessibilityIdentifier("platform-color-encode-bytecount")
+                }
+
+                platformButton(label: "Run encode → decode again", id: "platform-color-encode-rerun") {
+                    runColorRoundTrip()
+                }
+                #else
+                platformText("platformColorEncode / platformColorDecode are not supported on this OS (framework throws platformNotSupported).")
+                    .accessibilityIdentifier("platform-color-encode-unsupported")
+                #endif
+
+                if let onBackToMain {
+                    platformButton(label: "Back to Main", id: "platform-color-encode-back-to-main") {
+                        onBackToMain()
+                    }
+                }
+            }
+            .padding()
+        }
+        .platformFrame()
+        .navigationTitle("Color Encode / Decode")
+        .platformNavigationTitleDisplayMode_L4(.inline)
+        #if os(iOS) || os(macOS)
+        .task {
+            runColorRoundTrip()
+        }
+        #endif
+    }
+
+    #if os(iOS) || os(macOS)
+    private func runColorRoundTrip() {
+        do {
+            let source = Color.blue
+            let data = try platformColorEncode(source)
+            let recovered = try platformColorDecode(data)
+            encodedByteCount = data.count
+            recoveredSwatch = recovered
+            statusText = "Round-trip succeeded (encode then decode)."
+        } catch {
+            encodedByteCount = nil
+            recoveredSwatch = nil
+            statusText = "Failed: \(error.localizedDescription)"
+        }
+    }
+    #endif
+}
+
+/// RealUI/TestApp coverage for `platformCopyToClipboard_L4` and `platformOpenURL_L4` (issue #170 Phase 2).
+struct PlatformClipboardUrlLayer4AuditView: View {
+    var onBackToMain: (() -> Void)?
+    @State private var copyTextStatus = "Idle"
+    @State private var copyURLStatus = "Idle"
+    @State private var openURLStatus = "Idle"
+
+    var body: some View {
+        platformScrollViewContainer {
+            platformVStack(alignment: .leading, spacing: 16) {
+                platformText("platformCopyToClipboard_L4 / platformOpenURL_L4")
+                    .font(.headline)
+                    .accessibilityIdentifier("platform-clipboard-url-audit-title")
+
+                platformButton(label: "Copy text to clipboard", id: "platform-clipboard-copy-text-btn") {
+                    let payload = "SixLayer clipboard test payload"
+                    let ok = platformCopyToClipboard_L4(content: payload)
+                    copyTextStatus = ok ? "Text copy returned true." : "Text copy returned false."
+                }
+
+                platformText("Text copy status: \(copyTextStatus)")
+                    .accessibilityIdentifier("platform-clipboard-copy-text-status")
+
+                platformButton(label: "Copy URL string to clipboard", id: "platform-clipboard-copy-url-btn") {
+                    let url = URL(string: "https://example.com/sixlayer")!
+                    let ok = platformCopyToClipboard_L4(content: url, provideFeedback: false)
+                    copyURLStatus = ok ? "URL copy returned true." : "URL copy returned false."
+                }
+
+                platformText("URL copy status: \(copyURLStatus)")
+                    .accessibilityIdentifier("platform-clipboard-copy-url-status")
+
+                platformButton(label: "Call platformOpenURL_L4 with invalid scheme", id: "platform-open-url-btn") {
+                    let url = URL(string: "sixlayer-invalid-scheme://not-installed")!
+                    let ok = platformOpenURL_L4(url)
+                    openURLStatus = ok ? "Open URL call returned true." : "Open URL call returned false."
+                }
+
+                platformText("Open URL status: \(openURLStatus)")
+                    .accessibilityIdentifier("platform-open-url-status")
+
+                platformText("Note: openURL call is intentionally using an invalid custom scheme in this audit screen.")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .accessibilityIdentifier("platform-open-url-note")
+
+                if let onBackToMain {
+                    platformButton(label: "Back to Main", id: "platform-clipboard-url-back-to-main") {
+                        onBackToMain()
+                    }
+                }
+            }
+            .padding()
+        }
+        .platformFrame()
+        .navigationTitle("Clipboard / URL Utilities")
         .platformNavigationTitleDisplayMode_L4(.inline)
     }
 }

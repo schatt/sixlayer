@@ -215,5 +215,25 @@ public enum PlatformFrameHelpers {
         return nil
         #endif
     }
+    
+    /// Prefer `geometry.size.height` when it is finite and positive; otherwise a platform display/window height so layout math never sees an unbounded proposal (GitHub #249).
+    @MainActor
+    public static func finiteViewportHeight(for geometryHeight: CGFloat) -> CGFloat {
+        if geometryHeight.isFinite && geometryHeight > 0 {
+            return geometryHeight
+        }
+        #if os(iOS)
+        return getMaxFrameSize().height
+        #elseif os(watchOS) || os(tvOS) || os(visionOS)
+        return getMaxFrameSize().height
+        #elseif os(macOS)
+        if let height = NSScreen.main?.visibleFrame.height, height > 0 {
+            return height
+        }
+        return 1080
+        #else
+        return 800
+        #endif
+    }
 }
 

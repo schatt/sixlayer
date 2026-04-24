@@ -618,6 +618,10 @@ public struct CardLayoutDecision {
     public let responsive: ResponsiveBehavior
     public let spacing: CGFloat
     public let columns: Int
+    /// Finite height supplied to Layer 2 (e.g. from ``GeometryReader``); `nil` when callers omit it.
+    public let viewportHeight: CGFloat?
+    /// Recommended fixed row height for uniform responsive cards (e.g. ``ResponsiveCardView``).
+    public let cardRowHeight: CGFloat
     
     public init(
         layout: CardLayoutType,
@@ -625,7 +629,9 @@ public struct CardLayoutDecision {
         interaction: CardInteraction,
         responsive: ResponsiveBehavior,
         spacing: CGFloat,
-        columns: Int
+        columns: Int,
+        viewportHeight: CGFloat? = nil,
+        cardRowHeight: CGFloat = 120
     ) {
         self.layout = layout
         self.sizing = sizing
@@ -633,6 +639,8 @@ public struct CardLayoutDecision {
         self.responsive = responsive
         self.spacing = spacing
         self.columns = columns
+        self.viewportHeight = viewportHeight
+        self.cardRowHeight = cardRowHeight
     }
 }
 

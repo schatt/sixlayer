@@ -2,6 +2,11 @@ import SwiftUI
 
 // MARK: - Layer 2: Layout Decision Engine for Intelligent Card Expansion
 
+private enum PhoneCardViewportHeightClamp {
+    /// When the phone grid has more than this many rows, prefer scrolling over squashing card height (GitHub #249).
+    static let maxRows: Int = 2
+}
+
 /// Layout decision result for intelligent card expansion
 public struct IntelligentCardLayoutDecision: Sendable {
     public let columns: Int
@@ -38,7 +43,8 @@ public func determineIntelligentCardLayout_L2(
     contentCount: Int,
     screenWidth: CGFloat,
     deviceType: DeviceType,
-    contentComplexity: ContentComplexity
+    contentComplexity: ContentComplexity,
+    viewportHeight: CGFloat? = nil
 ) -> IntelligentCardLayoutDecision {
     
     // Base calculations
@@ -57,7 +63,17 @@ public func determineIntelligentCardLayout_L2(
     // Calculate spacing and card dimensions
     let spacing = calculateOptimalSpacing(deviceType: deviceType, contentComplexity: contentComplexity)
     let cardWidth = max(minCardWidth, min(maxCardWidth, (availableWidth - spacing * CGFloat(columns - 1)) / CGFloat(columns)))
-    let cardHeight = calculateOptimalHeight(cardWidth: cardWidth, contentComplexity: contentComplexity)
+    let layoutPadding: CGFloat = 16
+    let intrinsicHeight = calculateOptimalHeight(cardWidth: cardWidth, contentComplexity: contentComplexity)
+    let cardHeight = cardHeightRespectingViewport(
+        intrinsicHeight: intrinsicHeight,
+        contentCount: contentCount,
+        columns: columns,
+        spacing: spacing,
+        layoutPadding: layoutPadding,
+        deviceType: deviceType,
+        viewportHeight: viewportHeight
+    )
     
     // Determine expansion behavior
     let expansionScale = calculateExpansionScale(deviceType: deviceType, contentComplexity: contentComplexity)
@@ -68,7 +84,7 @@ public func determineIntelligentCardLayout_L2(
         spacing: spacing,
         cardWidth: cardWidth,
         cardHeight: cardHeight,
-        padding: 16,
+        padding: layoutPadding,
         expansionScale: expansionScale,
         animationDuration: animationDuration
     )
@@ -165,6 +181,31 @@ private func calculateOptimalSpacing(deviceType: DeviceType, contentComplexity: 
     case .advanced:
         return baseSpacing * 2.0
     }
+}
+
+/// Caps card height on **phone** when a finite viewport height is supplied and the grid has at most two rows,
+/// so small collections can fit without scrolling (see GitHub #249).
+private func cardHeightRespectingViewport(
+    intrinsicHeight: CGFloat,
+    contentCount: Int,
+    columns: Int,
+    spacing: CGFloat,
+    layoutPadding: CGFloat,
+    deviceType: DeviceType,
+    viewportHeight: CGFloat?
+) -> CGFloat {
+    guard deviceType == .phone else { return intrinsicHeight }
+    guard let viewport = viewportHeight, viewport.isFinite, viewport > 0 else { return intrinsicHeight }
+    let columnCount = max(columns, 1)
+    let rows = max(1, Int(ceil(Double(contentCount) / Double(columnCount))))
+    guard rows <= PhoneCardViewportHeightClamp.maxRows else { return intrinsicHeight }
+    let interRowSpacing = CGFloat(max(0, rows - 1)) * spacing
+    let verticalChrome = layoutPadding * 2 + interRowSpacing
+    let heightBudget = viewport - verticalChrome
+    guard heightBudget.isFinite, heightBudget > 0 else { return intrinsicHeight }
+    let maxHeightPerRow = heightBudget / CGFloat(rows)
+    guard maxHeightPerRow.isFinite, maxHeightPerRow > 0 else { return intrinsicHeight }
+    return min(intrinsicHeight, maxHeightPerRow)
 }
 
 /// Calculate optimal card height

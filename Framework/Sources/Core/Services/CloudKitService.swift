@@ -387,12 +387,17 @@ public class CloudKitService: ObservableObject {
     
     /// Check if container can be safely initialized (not in test environment without entitlements)
     private func canInitializeContainer() -> Bool {
-        // In test environments, CloudKit may not be available
-        // Check if we're in a test environment by looking for test bundle
+        // XCUITest host: XCTest runs out-of-process; `XCTestConfigurationFilePath` is unset, but the driver
+        // passes `-UITesting` / `XCUI_TESTING`. Creating `CKContainer` can trap without entitlements (#169).
+        if ProcessInfo.processInfo.arguments.contains("-UITesting") {
+            return false
+        }
+        if ProcessInfo.processInfo.environment["XCUI_TESTING"] == "1" {
+            return false
+        }
+        // In-process XCTest: skip CloudKit container (same rationale as UI test host).
         #if DEBUG
         if ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil {
-            // We're in a test environment - CloudKit may not be available
-            // Return false to skip initialization
             return false
         }
         #endif

@@ -9,6 +9,57 @@ open class AccessibilityIdentifierGenerationTests: BaseTestClass {
     
     // MARK: - TDD Red Phase: Write Failing Tests for Desired Behavior
     
+    // MARK: - Issue #242 (iOS AllTests a11y harness): minimal probes
+    
+    /// Named path uses `NamedAutomaticComplianceModifier` (no extra label/hint params).
+    @Test @MainActor func testIssue242_MinimalNamedAutomaticCompliance_TextProbe() {
+        initializeTestConfig()
+        runWithTaskLocalConfig {
+            guard let config = testConfig else {
+                Issue.record("testConfig is nil")
+                return
+            }
+            let view = Text("hi").automaticCompliance(named: "Issue242Probe")
+            let ok = AccessibilityTestUtilities.testComponentComplianceSinglePlatform(
+                view,
+                expectedPattern: "SixLayer.*Issue242Probe.*",
+                platform: .iOS,
+                componentName: "Issue242Probe"
+            )
+            let logSample = String(config.getDebugLog().prefix(500))
+            #expect(
+                ok,
+                "Minimal Text + automaticCompliance(named:) should match via platform, debug log, or ViewInspector (#242). Debug log (prefix): \(logSample)"
+            )
+        }
+    }
+    
+    /// Full `AutomaticComplianceModifier` → `BasicAutomaticComplianceModifier` (typed name + element type).
+    @Test @MainActor func testIssue242_MinimalBasicAutomaticCompliance_TextProbe() {
+        initializeTestConfig()
+        runWithTaskLocalConfig {
+            guard let config = testConfig else {
+                Issue.record("testConfig is nil")
+                return
+            }
+            let view = Text("hi").automaticCompliance(
+                identifierName: "Issue242Basic",
+                identifierElementType: "Text"
+            )
+            let ok = AccessibilityTestUtilities.testComponentComplianceSinglePlatform(
+                view,
+                expectedPattern: "SixLayer.*Issue242Basic.*",
+                platform: .iOS,
+                componentName: "Issue242Basic"
+            )
+            let logSample = String(config.getDebugLog().prefix(500))
+            #expect(
+                ok,
+                "Minimal Text + automaticCompliance(identifierName:elementType:) should match (#242). Debug log (prefix): \(logSample)"
+            )
+        }
+    }
+    
     @Test @MainActor func testAccessibilityIdentifiersAreReasonableLength() {
         initializeTestConfig()
         runWithTaskLocalConfig {

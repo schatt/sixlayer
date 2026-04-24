@@ -450,6 +450,43 @@ open class GenericLayoutDecisionTests: BaseTestClass {
         #expect(wideDecision.columns >= 3) // 1200px screen = 3 columns for iPad
     }
     
+    /// TDD: callers must pass finite `viewportHeight` to exercise height-aware layout (GitHub #250).
+    @Test @MainActor func testDetermineOptimalCardLayout_L2_WithExplicitViewportHeightRefinesColumnsAndRowHeight() {
+        initializeTestConfig()
+        let viewport: CGFloat = 280
+        let decision = determineOptimalCardLayout_L2(
+            contentCount: 6,
+            screenWidth: 390,
+            deviceType: .phone,
+            contentComplexity: .moderate,
+            viewportHeight: viewport
+        )
+        #expect(decision.viewportHeight == viewport)
+        #expect(decision.columns == 2)
+        #expect(decision.cardRowHeight < 120)
+        #expect(decision.cardRowHeight >= 64)
+        let spacing: CGFloat = 16
+        let rows = Int(ceil(6.0 / Double(decision.columns)))
+        let expected = max(
+            64,
+            min(120, (viewport - 32 - CGFloat(max(0, rows - 1)) * spacing) / CGFloat(rows))
+        )
+        #expect(abs(decision.cardRowHeight - expected) < 1)
+    }
+    
+    @Test @MainActor func testDetermineOptimalCardLayout_L2_WithoutViewportHeightKeepsDefaultRowHeight() {
+        initializeTestConfig()
+        let decision = determineOptimalCardLayout_L2(
+            contentCount: 6,
+            screenWidth: 390,
+            deviceType: .phone,
+            contentComplexity: .moderate
+        )
+        #expect(decision.viewportHeight == nil)
+        #expect(decision.cardRowHeight == 120)
+        #expect(decision.columns == 1)
+    }
+    
     // MARK: - determineIntelligentCardLayout_L2 Tests
     
     @Test @MainActor func testDetermineIntelligentCardLayout_L2_Basic() {

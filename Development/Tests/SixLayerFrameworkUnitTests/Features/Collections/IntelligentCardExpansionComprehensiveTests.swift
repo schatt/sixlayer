@@ -459,111 +459,57 @@ open class IntelligentCardExpansionComprehensiveTests: BaseTestClass {    // MAR
     // thread/actor isolation issues on macOS. Each test only runs when simulation works
     // or when testing the actual platform.
     
-    @Test @MainActor func testGetCardExpansionPlatformConfig_iOS() async {
-        // Set iOS-like overrides so assertions are deterministic when run in parallel with other tests
-        RuntimeCapabilityDetection.setTestTouchSupport(true)
-        RuntimeCapabilityDetection.setTestHapticFeedback(true)
-        RuntimeCapabilityDetection.setTestHover(false)
-        RuntimeCapabilityDetection.setTestVoiceOver(true)
-        RuntimeCapabilityDetection.setTestSwitchControl(true)
-        RuntimeCapabilityDetection.setTestAssistiveTouch(true)
-
-        let config = getCardExpansionPlatformConfig()
-
-        // Check runtime platform instead of compile-time platform
-        let runtimePlatform = RuntimeCapabilityDetection.currentPlatform
-        if runtimePlatform == .iOS {
-            #expect(config.supportsTouch == true, "iOS should support touch")
-            #expect(config.supportsHapticFeedback == true, "iOS should support haptic feedback")
-            #expect(config.supportsHover == false, "iOS should not support hover by default")
-            #expect(config.supportsVoiceOver == true, "iOS should support VoiceOver")
-            #expect(config.supportsSwitchControl == true, "iOS should support Switch Control")
-            #expect(config.supportsAssistiveTouch == true, "iOS should support AssistiveTouch")
-        } else {
-            // On other platforms, simulation may not work due to thread/actor isolation
-            // Skip assertions - this is expected behavior
-        }
-    }
-    
-    @Test @MainActor func testGetCardExpansionPlatformConfig_macOS() async {
-        // Set macOS platform overrides for testing
-        RuntimeCapabilityDetection.setTestHapticFeedback(false)
-        RuntimeCapabilityDetection.setTestHover(true)
-        RuntimeCapabilityDetection.setTestTouchSupport(false)
-        RuntimeCapabilityDetection.setTestAssistiveTouch(false)
-        RuntimeCapabilityDetection.setTestVoiceOver(true)
-        RuntimeCapabilityDetection.setTestSwitchControl(true)
-
-        let config = getCardExpansionPlatformConfig()
-
-        #expect(config.supportsTouch == false, "macOS should not support touch")
-        #expect(config.supportsHapticFeedback == false, "macOS should not support haptic feedback")
-        #expect(config.supportsHover == true, "macOS should support hover")
-        #expect(config.supportsVoiceOver == true, "macOS should support VoiceOver")
-        #expect(config.supportsSwitchControl == true, "macOS should support Switch Control")
-        #expect(config.supportsAssistiveTouch == false, "macOS should not support AssistiveTouch")
+    /// Same tri-state contract as `Layer5PlatformOptimizationTests.testGetCardExpansionPlatformConfig_threadLocalTriStateMirrorsRuntime`.
+    @Test @MainActor func testGetCardExpansionPlatformConfig_threadLocalTriStateMirrorsRuntime() async {
+        CapabilityOverrideThreePhaseTestSupport.runAllTriStateAssertionsForCardExpansionPlatformConfig()
     }
     
     @Test @MainActor func testGetCardExpansionPlatformConfig_watchOS() async {
-        // Set watchOS platform overrides for testing
-        RuntimeCapabilityDetection.setTestHapticFeedback(true)
-        RuntimeCapabilityDetection.setTestHover(false)
-        RuntimeCapabilityDetection.setTestTouchSupport(true)
-        RuntimeCapabilityDetection.setTestAssistiveTouch(false)
-        RuntimeCapabilityDetection.setTestVoiceOver(true)
-        RuntimeCapabilityDetection.setTestSwitchControl(true)
-
+        guard SixLayerPlatform.current == .watchOS else { return }
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
         let config = getCardExpansionPlatformConfig()
-
-        #expect(config.supportsTouch == true, "watchOS should support touch")
-        #expect(config.supportsHapticFeedback == true, "watchOS should support haptic feedback")
-        #expect(config.supportsHover == false, "watchOS should not support hover")
-        #expect(config.supportsVoiceOver == true, "watchOS should support VoiceOver")
-        #expect(config.supportsSwitchControl == true, "watchOS should support Switch Control")
-        #expect(config.supportsAssistiveTouch == false, "watchOS should not support AssistiveTouch")
+        #expect(config.supportsTouch == RuntimeCapabilityDetection.supportsTouch)
+        #expect(config.supportsHapticFeedback == RuntimeCapabilityDetection.supportsHapticFeedback)
+        #expect(config.supportsHover == RuntimeCapabilityDetection.supportsHover)
+        #expect(config.supportsVoiceOver == RuntimeCapabilityDetection.supportsVoiceOver)
+        #expect(config.supportsSwitchControl == RuntimeCapabilityDetection.supportsSwitchControl)
+        #expect(config.supportsAssistiveTouch == RuntimeCapabilityDetection.supportsAssistiveTouch)
+        let expectedMin = PlatformTestUtilities.expectedMinTouchTarget(for: .watchOS)
+        #expect(config.minTouchTarget == expectedMin)
+        #expect(config.hoverDelay == RuntimeCapabilityDetection.hoverDelay)
     }
     
     @Test @MainActor func testGetCardExpansionPlatformConfig_tvOS() async {
-        // Set tvOS platform overrides for testing
-        RuntimeCapabilityDetection.setTestHapticFeedback(false)
-        RuntimeCapabilityDetection.setTestHover(false)
-        RuntimeCapabilityDetection.setTestTouchSupport(false)
-        RuntimeCapabilityDetection.setTestAssistiveTouch(false)
-        RuntimeCapabilityDetection.setTestVoiceOver(true)
-        RuntimeCapabilityDetection.setTestSwitchControl(true)
-
+        guard SixLayerPlatform.current == .tvOS else { return }
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
         let config = getCardExpansionPlatformConfig()
-
-        #expect(config.supportsTouch == false, "tvOS should not support touch")
-        #expect(config.supportsHapticFeedback == false, "tvOS should not support haptic feedback")
-        #expect(config.supportsHover == false, "tvOS should not support hover")
-        #expect(config.supportsVoiceOver == true, "tvOS should support VoiceOver")
-        #expect(config.supportsSwitchControl == true, "tvOS should support Switch Control")
-        #expect(config.supportsAssistiveTouch == false, "tvOS should not support AssistiveTouch")
+        #expect(config.supportsTouch == RuntimeCapabilityDetection.supportsTouch)
+        #expect(config.supportsHapticFeedback == RuntimeCapabilityDetection.supportsHapticFeedback)
+        #expect(config.supportsHover == RuntimeCapabilityDetection.supportsHover)
+        #expect(config.supportsVoiceOver == RuntimeCapabilityDetection.supportsVoiceOver)
+        #expect(config.supportsSwitchControl == RuntimeCapabilityDetection.supportsSwitchControl)
+        #expect(config.supportsAssistiveTouch == RuntimeCapabilityDetection.supportsAssistiveTouch)
+        let expectedMin = PlatformTestUtilities.expectedMinTouchTarget(for: .tvOS)
+        #expect(config.minTouchTarget == expectedMin)
+        #expect(config.hoverDelay == RuntimeCapabilityDetection.hoverDelay)
     }
     
     @Test @MainActor func testGetCardExpansionPlatformConfig_visionOS() async {
+        guard SixLayerPlatform.current == .visionOS else { return }
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
         let config = getCardExpansionPlatformConfig()
-
-        // Check runtime platform instead of compile-time platform
-        let runtimePlatform = RuntimeCapabilityDetection.currentPlatform
-        if runtimePlatform == .visionOS {
-            #expect(config.supportsTouch == false, "visionOS should not support touch")
-            #expect(config.supportsHapticFeedback == false, "visionOS should not support haptic feedback")
-            #expect(config.supportsHover == true, "visionOS should support hover")
-            #expect(config.supportsVoiceOver == true, "visionOS should support VoiceOver")
-            #expect(config.supportsSwitchControl == true, "visionOS should support Switch Control")
-            #expect(config.supportsAssistiveTouch == false, "visionOS should not support AssistiveTouch")
-
-            // Apple visionOS HIG: 60pt minimum for gaze+pinch targets (Issue #237).
-            // This runs only when runtimePlatform == .visionOS, so we assert the
-            // HIG floor directly rather than going through a per-platform helper.
-            #expect(config.minTouchTarget == 60.0,
-                    "visionOS HIG: interactive elements must be >= 60pt (gaze+pinch)")
-        } else {
-            // On other platforms, simulation may not work due to thread/actor isolation
-            // Skip assertions - this is expected behavior
-        }
+        #expect(config.supportsTouch == RuntimeCapabilityDetection.supportsTouch)
+        #expect(config.supportsHapticFeedback == RuntimeCapabilityDetection.supportsHapticFeedback)
+        #expect(config.supportsHover == RuntimeCapabilityDetection.supportsHover)
+        #expect(config.supportsVoiceOver == RuntimeCapabilityDetection.supportsVoiceOver)
+        #expect(config.supportsSwitchControl == RuntimeCapabilityDetection.supportsSwitchControl)
+        #expect(config.supportsAssistiveTouch == RuntimeCapabilityDetection.supportsAssistiveTouch)
+        let expectedMin = PlatformTestUtilities.expectedMinTouchTarget(for: .visionOS)
+        #expect(config.minTouchTarget == expectedMin)
+        #expect(config.hoverDelay == RuntimeCapabilityDetection.hoverDelay)
     }
     
     @Test @MainActor func testGetCardExpansionPerformanceConfig() {

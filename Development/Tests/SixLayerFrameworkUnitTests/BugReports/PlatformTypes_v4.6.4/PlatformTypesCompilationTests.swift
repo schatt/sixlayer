@@ -421,6 +421,8 @@ struct PlatformTypesCompilationTests {
         #expect(decision.responsive.type == .adaptive)
         #expect(decision.spacing == 16.0)
         #expect(decision.columns == 2)
+        #expect(decision.viewportHeight == nil)
+        #expect(decision.cardRowHeight == 120)
 
         // Defensive assertions to catch invalid values without crashing
         if decision.columns < 1 {
@@ -729,6 +731,8 @@ struct PlatformTypesCompilationTests {
             spacing: 16.0,
             columns: 2
         )
+        #expect(cardDecision.cardRowHeight == 120)
+        #expect(cardDecision.viewportHeight == nil)
         
         let modalDecision = ModalLayoutDecision(
             presentationType: .sheet,

@@ -510,61 +510,57 @@ open class DynamicFormTests: BaseTestClass {
         #expect(state.isDirty)
     }
 
-    /// BUSINESS PURPOSE: Empty numeric entry must not be confused with a typed zero from schema defaults.
-    /// TESTING SCOPE: ``DynamicFormState`` initial values and ``initializeField`` for number, decimal, and integer fields.
-    /// METHODOLOGY: Build a configuration with trivial zero defaults vs a non-zero default and assert which keys are seeded.
-    @Test @MainActor func testDynamicFormStateDoesNotSeedTrivialNumericZeroDefaults() {
-        let amountField = DynamicFormField(
+    /// BUSINESS PURPOSE: Declarative hints should supply placeholder and default when the app leaves them unset (Issue #246).
+    /// TESTING SCOPE: ``DynamicFormField/applying(hints:)``.
+    /// METHODOLOGY: Build bare fields, apply ``FieldDisplayHints``, assert merged placeholder and string default.
+    @Test func testApplyingHintsFillsPlaceholderAndDefaultWhenAppOmitsThem() {
+        let field = DynamicFormField(
+            id: "amount",
+            contentType: .decimal,
+            label: "Amount"
+        )
+        let hints = FieldDisplayHints(
+            fieldType: "number",
+            defaultValue: 12.5,
+            metadata: ["placeholder": "0.0"]
+        )
+        let merged = field.applying(hints: hints)
+        #expect(merged.placeholder == "0.0")
+        #expect(merged.defaultValue == "12.5")
+        #expect(merged.metadata?["defaultValue"] == "12.5")
+    }
+
+    /// BUSINESS PURPOSE: App-specified placeholder and default must win over hints (Issue #246).
+    @Test func testApplyingHintsDoesNotOverrideAppPlaceholderOrDefault() {
+        let field = DynamicFormField(
             id: "amount",
             contentType: .decimal,
             label: "Amount",
-            defaultValue: "0.0"
+            placeholder: "App hint",
+            defaultValue: "99"
         )
-        let quantityField = DynamicFormField(
-            id: "quantity",
-            contentType: .integer,
-            label: "Quantity",
-            defaultValue: "0"
+        let hints = FieldDisplayHints(
+            defaultValue: 0.0,
+            metadata: ["placeholder": "Hints hint"]
         )
-        let priceField = DynamicFormField(
-            id: "price",
-            contentType: .decimal,
-            label: "Price",
-            defaultValue: "12.99"
-        )
+        let merged = field.applying(hints: hints)
+        #expect(merged.placeholder == "App hint")
+        #expect(merged.defaultValue == "99")
+    }
+
+    /// BUSINESS PURPOSE: Numeric default from hints seeds form state like any other default (Issue #246).
+    @Test @MainActor func testDynamicFormStateSeedsDefaultMergedFromHints() {
+        let bare = DynamicFormField(id: "amount", contentType: .decimal, label: "Amount")
+        let hints = FieldDisplayHints(defaultValue: 0.0)
+        let merged = bare.applying(hints: hints)
+        #expect(merged.defaultValue == "0")
         let config = DynamicFormConfiguration(
             id: "testForm",
             title: "Test Form",
-            sections: [
-                DynamicFormSection(
-                    id: "basic",
-                    title: "Basic Information",
-                    fields: [amountField, quantityField, priceField]
-                )
-            ]
+            sections: [DynamicFormSection(id: "s", title: "S", fields: [merged])]
         )
         let state = DynamicFormState(configuration: config)
-        #expect(state.getValue(for: "amount") as String? == nil)
-        #expect(state.getValue(for: "quantity") as String? == nil)
-        #expect(state.getValue(for: "price") as String? == "12.99")
-
-        let zeroNumberField = DynamicFormField(
-            id: "rate",
-            contentType: .number,
-            label: "Rate",
-            defaultValue: "0.00"
-        )
-        state.initializeField(zeroNumberField)
-        #expect(state.getValue(for: "rate") as String? == nil)
-
-        let nonZeroField = DynamicFormField(
-            id: "fee",
-            contentType: .decimal,
-            label: "Fee",
-            defaultValue: "0.01"
-        )
-        state.initializeField(nonZeroField)
-        #expect(state.getValue(for: "fee") as String? == "0.01")
+        #expect(state.getValue(for: "amount") as String? == "0")
     }
     
     /// BUSINESS PURPOSE: Validate DynamicFormState validation functionality

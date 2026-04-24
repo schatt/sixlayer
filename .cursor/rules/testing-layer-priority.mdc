@@ -24,3 +24,10 @@ Tests written without a green run aren't automatically correct. For each failure
 - **E2E-only** → trim VI scope; add a targeted XCUITest.
 
 Full detail: `PROJECT_RULES.md` → "Test layer priority".
+
+## Cross-platform test parity (GitHub #248)
+
+- **Multiple test lanes are fine** (e.g. macOS vs iOS simulators). Prefer **shared test sources** on both lanes so behavior does not silently diverge.
+- **One test with explicit platform branches** is preferred when expectations or setup differ (e.g. `#if os(iOS)` / `#if os(macOS)` inside the same `@Test`), instead of maintaining duplicate or lane-only test types that can drift.
+- **`project.yml`:** For targets that share `Development/Tests/SixLayerFrameworkUnitTests` (or the same tree), keep **`excludes:` lists aligned** across platforms unless a platform truly cannot compile a file—avoid “runs on tvOS unit but not iOS unit” without a documented reason.
+- **Lane-only exceptions** should be rare and called out (comment + issue link) when required.

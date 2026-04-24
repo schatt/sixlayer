@@ -55,13 +55,15 @@ public struct ExpandableCardCollectionView<Item: Identifiable>: View {
             } else {
                 GeometryReader { geometry in
                     let screenWidth = geometry.size.width
+                    let viewportHeight = PlatformFrameHelpers.finiteViewportHeight(for: geometry.size.height)
                     
                     // Get layout decision from Layer 2
                     let layoutDecision = determineIntelligentCardLayout_L2(
                         contentCount: items.count,
                         screenWidth: screenWidth,
                         deviceType: SixLayerPlatform.deviceType,
-                        contentComplexity: hints.complexity
+                        contentComplexity: hints.complexity,
+                        viewportHeight: viewportHeight
                     )
                     
                     // Get strategy from Layer 3
@@ -569,11 +571,13 @@ public struct GridCollectionView<Item: Identifiable>: View {
                 .background(Color.platformBackground)
             } else {
                 GeometryReader { geometry in
+                    let viewportHeight = PlatformFrameHelpers.finiteViewportHeight(for: geometry.size.height)
                     let layoutDecision = determineIntelligentCardLayout_L2(
                         contentCount: items.count,
                         screenWidth: geometry.size.width,
                         deviceType: SixLayerPlatform.deviceType,
-                        contentComplexity: hints.complexity
+                        contentComplexity: hints.complexity,
+                        viewportHeight: viewportHeight
                     )
                     
                     ScrollView {

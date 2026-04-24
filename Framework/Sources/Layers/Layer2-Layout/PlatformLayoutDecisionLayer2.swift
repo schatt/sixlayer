@@ -326,6 +326,81 @@ private func generateLayoutReasoning(approach: LayoutApproach, columns: Int, spa
 
 // MARK: - Card Layout Decision Functions
 
+private func cardLayoutDeviceColumnLimit(deviceType: DeviceType) -> Int {
+    switch deviceType {
+    case .phone, .car:
+        return 2
+    case .vision, .watch:
+        return 1
+    case .pad:
+        return 3
+    case .mac, .tv:
+        return 4
+    }
+}
+
+private func maximumCardColumnsForWidth(_ screenWidth: CGFloat, minimumCellWidth: CGFloat = 158) -> Int {
+    max(1, Int(floor(screenWidth / minimumCellWidth)))
+}
+
+/// Row height for responsive demo cards: uses viewport budget when height is finite; otherwise 120pt default.
+private func recommendedOptimalCardRowHeight(
+    contentCount: Int,
+    columns: Int,
+    spacing: CGFloat,
+    viewportHeight: CGFloat?
+) -> CGFloat {
+    let fallback: CGFloat = 120
+    guard let viewport = viewportHeight, viewport.isFinite, viewport > 0, contentCount > 0 else {
+        return fallback
+    }
+    let cols = max(1, columns)
+    let rows = max(1, Int(ceil(Double(contentCount) / Double(cols))))
+    let layoutPadding: CGFloat = 16
+    let verticalChrome = layoutPadding * 2 + CGFloat(max(0, rows - 1)) * spacing
+    let budget = viewport - verticalChrome
+    guard budget.isFinite, budget > 0 else { return fallback }
+    let perRow = budget / CGFloat(rows)
+    return max(64, min(fallback, perRow))
+}
+
+private func refineOptimalCardColumnsForViewport(
+    contentCount: Int,
+    screenWidth: CGFloat,
+    deviceType: DeviceType,
+    spacing: CGFloat,
+    viewportHeight: CGFloat?,
+    widthBasedColumns: Int
+) -> Int {
+    guard let viewport = viewportHeight, viewport.isFinite, viewport > 0, contentCount > 0 else {
+        return max(1, widthBasedColumns)
+    }
+    let deviceCap = cardLayoutDeviceColumnLimit(deviceType: deviceType)
+    let widthCap = maximumCardColumnsForWidth(screenWidth)
+    let cMax = max(1, min(deviceCap, widthCap))
+    let cStart = max(1, min(widthBasedColumns, cMax))
+    var bestColumns = cStart
+    var bestRowHeight = recommendedOptimalCardRowHeight(
+        contentCount: contentCount,
+        columns: bestColumns,
+        spacing: spacing,
+        viewportHeight: viewport
+    )
+    for candidateColumns in cStart...cMax {
+        let rowHeight = recommendedOptimalCardRowHeight(
+            contentCount: contentCount,
+            columns: candidateColumns,
+            spacing: spacing,
+            viewportHeight: viewport
+        )
+        if rowHeight > bestRowHeight + 0.5 {
+            bestRowHeight = rowHeight
+            bestColumns = candidateColumns
+        }
+    }
+    return bestColumns
+}
+
 /// Determine optimal card layout for the given content and device
 /// Layer 2: Layout Decision
 @MainActor
@@ -333,7 +408,8 @@ private func generateLayoutReasoning(approach: LayoutApproach, columns: Int, spa
     contentCount: Int,
     screenWidth: CGFloat,
     deviceType: DeviceType,
-    contentComplexity: ContentComplexity
+    contentComplexity: ContentComplexity,
+    viewportHeight: CGFloat? = nil
 ) -> CardLayoutDecision {
     
     // Analyze content and device capabilities
@@ -346,12 +422,26 @@ private func generateLayoutReasoning(approach: LayoutApproach, columns: Int, spa
     
     // Choose optimal approach
     let approach = analysis.recommendedApproach
-    let columns = calculateOptimalCardColumns(
+    let widthBasedColumns = calculateOptimalCardColumns(
         screenWidth: screenWidth,
         deviceType: deviceType,
         contentComplexity: contentComplexity
     )
     let spacing = analysis.optimalSpacing
+    let columns = refineOptimalCardColumnsForViewport(
+        contentCount: contentCount,
+        screenWidth: screenWidth,
+        deviceType: deviceType,
+        spacing: spacing,
+        viewportHeight: viewportHeight,
+        widthBasedColumns: widthBasedColumns
+    )
+    let cardRowHeight = recommendedOptimalCardRowHeight(
+        contentCount: contentCount,
+        columns: columns,
+        spacing: spacing,
+        viewportHeight: viewportHeight
+    )
     let responsive = determineResponsiveBehavior(
         deviceType: deviceType,
         contentComplexity: contentComplexity
@@ -374,7 +464,9 @@ private func generateLayoutReasoning(approach: LayoutApproach, columns: Int, spa
             adaptive: true
         ),
         spacing: spacing,
-        columns: columns
+        columns: columns,
+        viewportHeight: viewportHeight,
+        cardRowHeight: cardRowHeight
     )
 }
 
@@ -441,27 +533,8 @@ private func calculateOptimalCardColumns(
         complexityAdjustment = 1  // Increase columns for advanced content
     }
     
-    // Apply device-specific limits
-    let deviceLimit: Int
-    switch deviceType {
-    case .phone:
-        deviceLimit = 2
-    case .vision:
-        deviceLimit = 1
-    case .pad:
-        deviceLimit = 3
-    case .mac:
-        deviceLimit = 4
-    case .tv:
-        deviceLimit = 4
-    case .watch:
-        deviceLimit = 1
-    case .car:
-        deviceLimit = 2
-    }
-    
     let adjustedColumns = max(1, baseColumns + complexityAdjustment)
-    return min(adjustedColumns, deviceLimit)
+    return min(adjustedColumns, cardLayoutDeviceColumnLimit(deviceType: deviceType))
 }
 
 

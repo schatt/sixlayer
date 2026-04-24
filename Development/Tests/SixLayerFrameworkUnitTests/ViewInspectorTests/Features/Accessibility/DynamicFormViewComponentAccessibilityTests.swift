@@ -104,15 +104,19 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testDynamicFormViewGeneratesAccessibilityIdentifiers() async {
         initializeTestConfig()
+        runWithTaskLocalConfig {
         // TODO: ViewInspector Detection Issue - VERIFIED: DynamicFormView DOES have .automaticCompliance(named: "DynamicFormView") 
         // modifier applied in Framework/Sources/Components/Views/IntelligentFormView.swift:146 and 
         // Framework/Sources/Components/Forms/DynamicFormView.swift:22-35. 
         // The test needs to be updated to handle ViewInspector's inability to detect these modifiers reliably.
         // This is a ViewInspector limitation, not a missing modifier issue.
         
-        // Enable debug logging to see what identifiers are generated
-        let config = AccessibilityIdentifierConfig.currentTaskLocalConfig ?? AccessibilityIdentifierConfig.shared
+        guard let config = testConfig else {
+            Issue.record("testConfig is nil")
+            return
+        }
         let wasDebugLogging = config.enableDebugLogging
+        defer { config.enableDebugLogging = wasDebugLogging }
         config.enableDebugLogging = true
         
         // When: Creating a form view using shared helper
@@ -131,6 +135,7 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
         // The modifier IS present in the code, but ViewInspector can't detect it on macOS
         #endif
+        }
     }
     
     // MARK: - DynamicFormHeader Tests

@@ -1,0 +1,96 @@
+---
+description: How SixLayer does capability testing — real hosts, implied-by-OS expectations, tri-state thread-local hooks inside control tests; per-OS targets and footguns; not a substitute for TDD.
+globs: Development/Tests/**/*RuntimeCapability*.swift, Development/Tests/**/*Capability*.swift, Development/Tests/**/ViewInspectorTests/**/*.swift, Framework/Sources/Core/Models/RuntimeCapabilityDetection.swift
+alwaysApply: false
+---
+
+# How we do capability testing (SixLayer)
+
+This rule is **methodology**: the way we **should** exercise runtime capabilities in tests — **what** to assert (behavior on the real host), **how** to vary state (current / disabled / enabled overrides on **this** machine), and **where** that belongs (with the control’s tests, not a detached “capability-only” suite). File layout follows from that; the point is **practice**, not folder trivia.
+
+**TDD still governs** red → green → refactor for every **meaningful** capability path. This file adds **project-specific** constraints so agents do not drift into cross-host emulation or plumbing-as-proof.
+
+**Historical context:** The suite accumulated **cross-platform emulation** (e.g. “tvOS-like” behavior on an iOS test host via `setTest*`). That contradicts “test what **this** OS actually does” and breaks when product code correctly ignores nonsensical inputs or when compile-time platform diverges from overrides. **Method:** prefer **real** targets/simulators per OS; use thread-local hooks only for **this** host’s meaningful or explicitly nonsensical cases.
+
+## Per-OS targets
+
+Run assertions on the **real** OS for that scheme (simulator or device). Do not rely on thread-local overrides on **iOS** to stand in for **tvOS / macOS / watchOS / visionOS** behavior — use the matching test target and simulator when you need that platform’s runtime.
+
+## Implied capability pattern (current host only)
+
+**Substance:** Establish capability state (e.g. `clearAllCapabilityOverrides()`, then read `RuntimeCapabilityDetection` / device APIs). **Expectations are implied by the host OS** — branch on `SixLayerPlatform.current` (or `#if os(...)` where the test file is target-specific) so **iOS** expectations, **macOS** expectations, etc. each describe what **that** platform should show. The same source can compile into every unit-test bundle; only the branch matching the **running** simulator/device does real work.
+
+**Shape is flexible:** a single `switch platform { case .iOS: … case .macOS: … }`, or separate `@Test` methods each with `guard SixLayerPlatform.current == .iOS else { return }`, or target-split files — **not** prescribed. What’s implied is **no pretending to be another OS** on the wrong host.
+
+## Simulator limitations vs device
+
+**Simulators do not replicate everything** (hardware, some privacy flows, drivers). When a capability is **unavailable or misleading in Simulator** but **real on device**, tests should:
+
+- Assert what the **current environment** actually allows (e.g. skip or soften expectations when `AVCaptureDevice` / session APIs report no hardware or simulator-only behavior).
+- Avoid pretending the simulator **is** a device for that path.
+
+When behavior **must** be validated on hardware and cannot live in CI alone:
+
+1. Add a **brief comment** in the test file, for example:  
+   `// Periodic real-device: re-run or extend this when changing <feature>; iOS Simulator does not fully exercise <camera / LiDAR / …>.`
+2. Register the test in **[Development/PHYSICAL_DEVICE_TEST_REGISTRY.md](../Development/PHYSICAL_DEVICE_TEST_REGISTRY.md)** so release / QA knows what to run on which physical platform.
+
+That documents the gap without blocking green CI on something the simulator cannot provide.
+
+## Method: tri-state thread-local `setTest*` (**current**, **disabled**, **enabled**)
+
+**Tri-state is the standard technique** for forcing both override branches on CI when hardware rarely does. **Default placement:** **tri-value** (`clear` = **current**, `setTest*(false)` = **disabled**, `setTest*(true)` = **enabled**) belongs **inside the tests for the control** (view, modifier, container, etc.) — not as a **separate** “capability test suite” whose only job is flags. You are still answering: **does this control do the right thing?** Tri-state is **how** you drive the branches on the current host (hit targets, hover paths, haptics, focus, announcements, etc.), not a different product or a different test **kind** in another file unless you are only deduplicating a tiny shared helper (see below).
+
+1. **Current** — `clearAllCapabilityOverrides()` (often via `DefaultRuntimeCapabilityIsolationTrait`); intrinsic / environment-defined.
+2. **Disabled** — `setTest*(false)` where meaningful; on **nonsensical** hosts (e.g. `setTestTouchSupport(false)` on **iOS/watchOS**) production **ignores** false — the **control** test (or a thin plumbing test) asserts the **outcome** that matters (e.g. touch-sized layout still applies), not “touch is false”.
+3. **Enabled** — `setTest*(true)` so the positive branch is always exercised when hardware would rarely produce it.
+
+**Detection / shared DTOs:** keep **narrow** tri-state coverage only where it is **TDD for wiring** (see below). Do **not** treat exhaustive tri-state on `RuntimeCapabilityDetection` or every `CardExpansionPlatformConfig` field as a substitute for control tests.
+
+Optional narrow regression for Layer 5 config wiring: `Development/Tests/Shared/TestHelpers/CapabilityOverrideThreePhaseTestSupport.swift` — `runAllTriStateAssertionsForCardExpansionPlatformConfig()`.
+
+## Two layers: **controls (primary)** vs. **TDD plumbing (secondary)**
+
+### 1) Controls — **primary** home for tri-value / variable-behavior tests
+
+**Any control** (view, modifier, container, sheet, etc.) whose code **branches** on `RuntimeCapabilityDetection` (or config derived from it) must be covered with **tri-state** runs **as part of that control’s tests** on the **real host** for that scheme’s unit-test bundle — **not** by simulating another OS with thread-local hacks on the wrong machine, and **not** split off as if “capability” were the subject under test. The subject under test remains **the control**; capability phases are structure **within** those tests.
+
+#### Canonical shape (do this; avoid half measures)
+
+1. **Same home as other tests for this control** — one or more `@Test` / methods in the **same** test type and **same** file (or same feature test folder) you already use for that control. **No** `testFoo_tvOS` / `testFoo_macOS` method names that imply a different OS than the runner. The same Swift can ship in every `SixLayerFrameworkUnitTests_*` target; the **host** is whatever simulator or device is attached. Tri-state can be three phases in **one** method or three focused methods that still read as “`FooControl` behavior”; either way they are **not** a parallel suite whose title is only “overrides.”
+
+2. **Three phases on the current host**, in order, with `clearAllCapabilityOverrides()` / `defer` hygiene so parallel tests do not leak state:
+   - **Current** — overrides cleared; record **effective** capability reads if useful.
+   - **Disabled** — `setTest*(false)` (or the relevant negative) for each axis you are proving.
+   - **Enabled** — `setTest*(true)` so the positive branch always runs even when hardware rarely produces it (e.g. haptics on Mac).
+
+3. **`switch SixLayerPlatform.current` (exhaustive)** — after **each** phase (or inside a small helper you call per phase), branch on **host OS** and assert **what “right” means here** for **that** control: hit target floors, hover affordance presence/absence, animation or haptic branches, focus behavior, copy/semantics, etc. **Do not** assert a single global constant across OSes; **do** encode per-platform law (including **nonsensical** negatives, e.g. touch `false` ignored on iOS/watchOS → layout still matches touch-first HIG).
+
+4. **Assertions target behavior**, not “is `supportsTouch` true”. The boolean is only useful as **input** to what the user sees (frames, gestures, labels, timing). If the only check is `config.flag == detection.flag`, that is **plumbing** — keep it **tiny** and secondary to behavioral checks.
+
+5. **Shared code (optional, small):** under `Development/Tests/Shared/TestHelpers/` you may put **helpers** (e.g. “run these three phases with defer cleanup”) or **one** duplicated `switch` + assertion block **only** when several controls truly share it. The **tests** still live with the control; shared files hold **deduplication**, not the **ownership** of “does `Foo` behave correctly?”
+
+- **Scope:** all controls that vary with capability.
+- **Tracking:** [GitHub #251](https://github.com/schatt/sixlayer/issues/251) (milestone **v7.6.2**).
+
+### 2) TDD plumbing — **secondary**; overrides and DTOs return the right thing
+
+**Narrow** tests at the **detection / config** layer are still useful for red/green on wiring:
+
+- `clearAllCapabilityOverrides()` → reads match intended intrinsics.
+- `setTest*(false)` / `setTest*(true)` → values **propagate** into DTOs where product code is responsible, including **nonsensical** negatives (e.g. touch `false` on iOS/watchOS ignored).
+
+Keep this layer **small**; **most** tri-value work stays in **section 1**.
+
+### Consumer law (policy on shared config), not “is touch on” trivia
+
+For **shared** Layer-style configs, **do not** treat a lone boolean read as the main behavioral outcome.
+
+- **Do** assert **policy** tied to effective state where the framework encodes it (e.g. **`minTouchTarget`** vs **`PlatformTestUtilities.expectedMinTouchTarget(for:host, touchDetected:)`** when testing config wiring; **hover delay** zero when hover is off).
+- **Meaningful** “when haptics off, this button …” belongs under **section 1** at the **control**, not as the main job of detection tests.
+
+Do not use overrides only to “pin the matrix” for unrelated checks; matrix suites use **native** detection without fabricating another platform.
+
+## `CapabilityOverride` vs `setTest*`
+
+`CapabilityOverride` + `*WithOverride` APIs are a **separate** layer from thread-local test hooks. Say in the test which layer is under test.

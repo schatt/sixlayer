@@ -154,9 +154,12 @@ open class AutomaticAccessibilityIdentifiersTests: BaseTestClass {
             // Create a simple root view with the modifier applied
             // This simulates the scenario from Issue #7 where warnings occur
             // Updated to use new parameter-based API (no environment dependencies)
-            let testConfig = AccessibilityIdentifierConfig.shared
-            testConfig.enableAutoIDs = true
-            testConfig.globalAutomaticAccessibilityIdentifiers = true
+            guard let cfg = self.testConfig else {
+                Issue.record("testConfig is nil")
+                return
+            }
+            cfg.enableAutoIDs = true
+            cfg.globalAutomaticAccessibilityIdentifiers = true
             
             let rootView = Text("Test Content")
                 .automaticCompliance()
@@ -193,9 +196,12 @@ open class AutomaticAccessibilityIdentifiersTests: BaseTestClass {
             setupTestEnvironment()
             
             // Create a view with config values set (no environment dependencies)
-            let testConfig = AccessibilityIdentifierConfig.shared
-            testConfig.enableAutoIDs = true
-            testConfig.globalAutomaticAccessibilityIdentifiers = true
+            guard let cfg = self.testConfig else {
+                Issue.record("testConfig is nil")
+                return
+            }
+            cfg.enableAutoIDs = true
+            cfg.globalAutomaticAccessibilityIdentifiers = true
             
             let view = platformVStackContainer {
                 Text("Content")
@@ -231,9 +237,12 @@ open class AutomaticAccessibilityIdentifiersTests: BaseTestClass {
         runWithTaskLocalConfig {
             setupTestEnvironment()
             
-            let testConfig = AccessibilityIdentifierConfig.shared
-            testConfig.enableAutoIDs = true
-            testConfig.globalAutomaticAccessibilityIdentifiers = true
+            guard let cfg = self.testConfig else {
+                Issue.record("testConfig is nil")
+                return
+            }
+            cfg.enableAutoIDs = true
+            cfg.globalAutomaticAccessibilityIdentifiers = true
             
             // Test automaticCompliance() - no environment dependencies
             let view1 = Text("Test")

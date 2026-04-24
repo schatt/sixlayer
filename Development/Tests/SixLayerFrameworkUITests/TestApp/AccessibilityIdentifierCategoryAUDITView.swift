@@ -119,9 +119,10 @@ struct AccessibilityIdentifierCategoryAUDITView: View {
                 // Mid-hierarchy: `enableGlobalAutomaticCompliance` on a sub-stack (auto row only). Sibling is a manual
                 // combined wrapper (VStack + Text) so the identifier matches XCUITest, same as "Manual wins on wrapper".
                 sectionCaption("Mid-hierarchy: auto text + explicit platformButton id")
-                // TestApp already sets `globalAutomaticAccessibilityIdentifiers` (TestApp.swift). Avoid
-                // `enableGlobalAutomaticCompliance()` here: it mutates shared config and ties `onDisappear` to
-                // scroll visibility, which broke a sibling’s manual identifier in XCUITest (#197).
+                // TestApp already sets `globalAutomaticAccessibilityIdentifiers` on the host-injected
+                // config (`TestApp.swift`, #247). Avoid `enableGlobalAutomaticCompliance()` here: it mutates
+                // the global singleton and ties `onDisappear` to scroll visibility, which broke a sibling’s
+                // manual identifier in XCUITest (#197).
                 platformVStack(alignment: .leading, spacing: 8) {
                     platformText("CatA mid auto")
                         .basicAutomaticCompliance(

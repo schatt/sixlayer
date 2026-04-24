@@ -386,7 +386,24 @@ struct Layer4NavigationStackItemsExample: View {
 
 // MARK: - CloudKit Examples
 
+/// Minimal delegate so the TestApp can construct `CloudKitService` for Layer 4 demos (Issue #169).
+@MainActor
+private final class Layer4ExamplesCloudKitDelegate: CloudKitServiceDelegate {
+    func containerIdentifier() -> String { "iCloud.dev.sixlayer.layer4examples" }
+}
+
+/// Retains the delegate strongly (`CloudKitService` holds a weak reference).
+@MainActor
+private final class Layer4ExamplesCloudKitServiceHolder: ObservableObject {
+    private let delegate = Layer4ExamplesCloudKitDelegate()
+    let service: CloudKitService
+    init() {
+        self.service = CloudKitService(delegate: delegate)
+    }
+}
+
 struct CloudKitExamples: View {
+    @StateObject private var cloudKitDemo = Layer4ExamplesCloudKitServiceHolder()
     @State private var mockStatus: CloudKitSyncStatus = .idle
     @State private var mockProgress: Double = 0.0
     @State private var mockAccountStatus: CKAccountStatus = .available
@@ -410,15 +427,15 @@ struct CloudKitExamples: View {
             }
             
             ExampleCard(title: "CloudKit Service Status", description: "platformCloudKitServiceStatus_L4") {
-                CloudKitServiceStatusExample()
+                CloudKitServiceStatusExample(service: cloudKitDemo.service)
             }
             
             ExampleCard(title: "CloudKit Sync Button", description: "platformCloudKitSyncButton_L4") {
-                CloudKitSyncButtonExample()
+                CloudKitSyncButtonExample(service: cloudKitDemo.service)
             }
             
             ExampleCard(title: "CloudKit Status Badge", description: "platformCloudKitStatusBadge_L4") {
-                CloudKitStatusBadgeExample()
+                CloudKitStatusBadgeExample(service: cloudKitDemo.service)
             }
             
             // Controls to change mock status
@@ -487,11 +504,11 @@ struct CloudKitAccountStatusExample: View {
 }
 
 struct CloudKitServiceStatusExample: View {
+    let service: CloudKitService
+
     var body: some View {
         platformVStack(alignment: .leading, spacing: 12) {
-            Text("CloudKit Service Status (requires CloudKitService instance)")
-                .font(.caption)
-                .foregroundColor(.secondary)
+            platformCloudKitServiceStatus_L4(service: service)
         }
         .padding()
         .background(Color.platformSecondaryBackground)
@@ -500,11 +517,11 @@ struct CloudKitServiceStatusExample: View {
 }
 
 struct CloudKitSyncButtonExample: View {
+    let service: CloudKitService
+
     var body: some View {
         platformVStack(alignment: .leading, spacing: 12) {
-            Text("CloudKit Sync Button (requires CloudKitService instance)")
-                .font(.caption)
-                .foregroundColor(.secondary)
+            platformCloudKitSyncButton_L4(service: service)
         }
         .padding()
         .background(Color.platformSecondaryBackground)
@@ -513,11 +530,11 @@ struct CloudKitSyncButtonExample: View {
 }
 
 struct CloudKitStatusBadgeExample: View {
+    let service: CloudKitService
+
     var body: some View {
         platformVStack(alignment: .leading, spacing: 12) {
-            Text("CloudKit Status Badge (requires CloudKitService instance)")
-                .font(.caption)
-                .foregroundColor(.secondary)
+            platformCloudKitStatusBadge_L4(service: service)
         }
         .padding()
         .background(Color.platformSecondaryBackground)
@@ -737,6 +754,7 @@ struct Layer4ContractOnlyView: View {
     @State private var l4ContractCopySource = "L4CopyContractText"
     @State private var l4ShowPrint = false
     @State private var l4OverlayNavigationSheet = false
+    @StateObject private var cloudKitContractService = Layer4ExamplesCloudKitServiceHolder()
     private let l4OverlayStrategy = AppNavigationStrategy(
         implementation: .splitView,
         reasoning: "L4 overlay accessibility contract"
@@ -763,12 +781,25 @@ struct Layer4ContractOnlyView: View {
 
     @ViewBuilder
     private var contractNavigationContent: some View {
-        NavigationLink {
-            L4NavDestinationView()
-        } label: {
-            Text("L4NavLinkContract")
+        platformVStack(alignment: .leading, spacing: 12) {
+            NavigationLink {
+                L4NavDestinationView()
+            } label: {
+                Text("L4NavLinkContract")
+            }
+            .accessibilityIdentifier("L4NavLinkContract")
+            Text("Navigation Stack Contract")
+                .font(.caption)
+                .foregroundColor(.secondary)
+            platformImplementNavigationStack_L4(
+                content: Text("L4NavStackContractRoot")
+                    .accessibilityIdentifier("L4NavStackContractRoot")
+                    .accessibilityLabel("L4NavStackContractRoot"),
+                title: "L4NavStackContract",
+                strategy: NavigationStackStrategy(implementation: .navigationStack, reasoning: nil)
+            )
+            .frame(minHeight: 160)
         }
-        .accessibilityIdentifier("L4NavLinkContract")
     }
 
     @ViewBuilder
@@ -826,6 +857,26 @@ struct Layer4ContractOnlyView: View {
                 .foregroundColor(.secondary)
             platformCloudKitSyncStatus_L4(status: .idle)
                 .accessibilityIdentifier("platformCloudKitSyncStatus_L4")
+            Text("CloudKit Progress")
+                .font(.caption)
+                .foregroundColor(.secondary)
+            platformCloudKitProgress_L4(progress: 0.6, status: .idle)
+            Text("CloudKit Account")
+                .font(.caption)
+                .foregroundColor(.secondary)
+            platformCloudKitAccountStatus_L4(status: .available)
+            Text("CloudKit Service Status")
+                .font(.caption)
+                .foregroundColor(.secondary)
+            platformCloudKitServiceStatus_L4(service: cloudKitContractService.service)
+            Text("CloudKit Sync Button")
+                .font(.caption)
+                .foregroundColor(.secondary)
+            platformCloudKitSyncButton_L4(service: cloudKitContractService.service)
+            Text("CloudKit Status Badge")
+                .font(.caption)
+                .foregroundColor(.secondary)
+            platformCloudKitStatusBadge_L4(service: cloudKitContractService.service)
             Text("Photo Display")
                 .font(.caption)
                 .foregroundColor(.secondary)
@@ -897,8 +948,13 @@ struct Layer4ContractOnlyView: View {
             List {
                 EmptyView()
                     .platformListRow(title: "L4ListRowContract")
+                EmptyView()
+                    .platformListRow(title: "L4RowActionsContractRow")
+                    .platformRowActions_L4 {
+                        Button("L4RowActionContract", role: .destructive) { }
+                    }
             }
-            .frame(height: 60)
+            .frame(height: 140)
             EmptyView()
                 .platformListSectionHeader(title: "L4ListSectionHeaderContract")
             EmptyView()

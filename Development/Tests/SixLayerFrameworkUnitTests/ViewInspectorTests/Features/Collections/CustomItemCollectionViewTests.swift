@@ -12,20 +12,6 @@ import SwiftUI
 /// NOTE: Not marked @MainActor on class to allow parallel execution
 open class CustomItemCollectionViewTests: BaseTestClass {
     
-    // MARK: - Helper Methods
-    
-    // BaseTestClass handles setup automatically
-    
-    @MainActor
-    private func configureAccessibilityIdentifiers() {
-        let config = AccessibilityIdentifierConfig.shared
-        config.resetToDefaults()
-        config.enableAutoIDs = true
-        config.namespace = "SixLayer"
-        config.mode = .automatic
-        config.enableDebugLogging = false
-    }
-    
     // MARK: - CustomItemCollectionView Tests
     
     private func cleanupTestEnvironment() async {
@@ -34,6 +20,7 @@ open class CustomItemCollectionViewTests: BaseTestClass {
     
 @Test @MainActor func testCustomItemCollectionViewGeneratesAccessibilityIdentifiersOnIOS() async {
         initializeTestConfig()
+        runWithTaskLocalConfig {
         let testItems = [
             CustomItemCollectionViewTestItem(id: "item1", title: "Test Item 1"),
             CustomItemCollectionViewTestItem(id: "item2", title: "Test Item 2")
@@ -59,10 +46,12 @@ open class CustomItemCollectionViewTests: BaseTestClass {
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
         // The modifier IS present in the code, but ViewInspector can't detect it on macOS
         #endif
+        }
     }
     
     @Test @MainActor func testCustomItemCollectionViewGeneratesAccessibilityIdentifiersOnMacOS() async {
         initializeTestConfig()
+        runWithTaskLocalConfig {
         let testItems = [
             CustomItemCollectionViewTestItem(id: "item1", title: "Test Item 1"),
             CustomItemCollectionViewTestItem(id: "item2", title: "Test Item 2")
@@ -88,6 +77,7 @@ open class CustomItemCollectionViewTests: BaseTestClass {
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
         // The modifier IS present in the code, but ViewInspector can't detect it on macOS
         #endif
+        }
     }
 }
 

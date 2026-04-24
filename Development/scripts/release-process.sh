@@ -11,6 +11,10 @@
 #   --release  Non-interactive release: auto-accept suggested version (when prompted),
 #              proceed with tag/push or merge+release, skip branch delete (keeps branch,
 #              switches back when not on main). Does not auto-resolve a diverged main.
+#
+# Version suggestion (when VERSION is omitted): latest local semver tag vX.Y.Z, then
+# Package.swift, then README.md. Removed tags are not visible; pass an explicit version
+# for non-linear cases (e.g. emergency re-release).
 
 set -e
 
@@ -40,6 +44,8 @@ while [ $# -gt 0 ]; do
             echo "  --release  Run without prompts: confirm tag/push or merge+release, keep release branch."
             echo "             Auto-accepts suggested version when version is inferred from the repo."
             echo ""
+            echo "  Omitted version: bump is suggested from latest local vX.Y.Z tag, else Package.swift, else README."
+            echo ""
             echo "Examples:"
             echo "  $0 minor"
             echo "  $0 --release patch"
@@ -60,6 +66,23 @@ done
 
 ARG1=${POSITIONAL[0]:-}
 ARG2=${POSITIONAL[1]:-}
+
+# Latest released version from local git tags (strict vMAJOR.MINOR.PATCH only).
+# Best-effort baseline for semver bump; use explicit VERSION if tags were deleted or skewed.
+extract_version_from_git_tags() {
+    if ! git rev-parse --git-dir >/dev/null 2>&1; then
+        return 1
+    fi
+    local latest
+    latest=$(
+        git tag 2>/dev/null | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -n 1
+    ) || true
+    if [ -z "$latest" ]; then
+        return 1
+    fi
+    echo "${latest#v}"
+    return 0
+}
 
 # Function to extract current version from Package.swift
 extract_version_from_package() {
@@ -87,20 +110,24 @@ extract_version_from_readme() {
     return 1
 }
 
-# Function to get current version (tries Package.swift first, then README.md)
-get_current_version() {
-    local version=$(extract_version_from_package)
+# Prints "SOURCE|X.Y.Z" where SOURCE is tags|package|readme for messaging; fails if none found.
+resolve_baseline_version() {
+    local version
+    version=$(extract_version_from_git_tags)
     if [ -n "$version" ]; then
-        echo "$version"
+        echo "tags|$version"
         return 0
     fi
-    
+    version=$(extract_version_from_package)
+    if [ -n "$version" ]; then
+        echo "package|$version"
+        return 0
+    fi
     version=$(extract_version_from_readme)
     if [ -n "$version" ]; then
-        echo "$version"
+        echo "readme|$version"
         return 0
     fi
-    
     return 1
 }
 
@@ -174,11 +201,23 @@ fi
 
 # If version not provided, suggest one based on current version
 if [ -z "$VERSION" ]; then
-    CURRENT_VERSION=$(get_current_version)
-    if [ $? -eq 0 ] && [ -n "$CURRENT_VERSION" ]; then
+    BASELINE_RESOLVED=$(resolve_baseline_version) || true
+    if [ -n "$BASELINE_RESOLVED" ]; then
+        BASELINE_SOURCE=${BASELINE_RESOLVED%%|*}
+        CURRENT_VERSION=${BASELINE_RESOLVED#*|}
+    else
+        BASELINE_SOURCE=""
+        CURRENT_VERSION=""
+    fi
+    if [ -n "$CURRENT_VERSION" ]; then
         SUGGESTED_VERSION=$(increment_version "$CURRENT_VERSION" "$RELEASE_TYPE")
         if [ $? -eq 0 ]; then
-            echo "📋 Current version detected: v$CURRENT_VERSION"
+            case "$BASELINE_SOURCE" in
+                tags)    echo "📋 Baseline for bump (latest semver tag): v$CURRENT_VERSION" ;;
+                package) echo "📋 Baseline for bump (Package.swift): v$CURRENT_VERSION" ;;
+                readme)  echo "📋 Baseline for bump (README.md): v$CURRENT_VERSION" ;;
+                *)       echo "📋 Baseline for bump: v$CURRENT_VERSION" ;;
+            esac
             echo "💡 Suggested next version (${RELEASE_TYPE}): v$SUGGESTED_VERSION"
             echo ""
             if [ "$AUTO_RELEASE" -eq 1 ]; then
@@ -211,7 +250,7 @@ if [ -z "$VERSION" ]; then
         echo "Usage: $0 [--release] [release_type] [version]"
         echo "       $0 [--release] [version] [release_type]"
         echo ""
-        echo "Could not find version in Package.swift or README.md"
+        echo "Could not determine baseline: no semver tag vX.Y.Z, and no version in Package.swift or README.md"
         exit 1
     fi
 fi
@@ -319,7 +358,11 @@ MACOS_XCRESULT="${XCRESULT_BASE}/SLF-macOS-UnitTests.xcresult"
 IOS_XCRESULT="${XCRESULT_BASE}/SLF-iOS-UnitTests.xcresult"
 echo "📎 xcresult bundles for this run: $MACOS_XCRESULT and $IOS_XCRESULT"
 
-# Run macOS unit tests first
+# Run both platform unit tests even if one fails (cross-platform signal). Do not exit here:
+# remaining release checks still run so test + documentation failures appear together at the end.
+MACOS_TESTS_FAILED=0
+IOS_TESTS_FAILED=0
+
 echo "🧪 Running macOS unit tests (SLF-macOS-UnitTests)..."
 # Note: do NOT use -quiet here so that any failures print detailed diagnostics
 if ! xcodebuild test \
@@ -328,34 +371,34 @@ if ! xcodebuild test \
     -destination "platform=macOS,arch=arm64" \
     -resultBundlePath "$MACOS_XCRESULT" \
     -quiet; then
-    log_error "macOS unit tests failed! Cannot proceed with release."
-    echo "💡 Open the result bundle in Xcode (Report navigator), or inspect failures from the CLI:" >&2
-    echo "   xcrun xcresulttool get test-results summary --path \"$MACOS_XCRESULT\"" >&2
-    maybe_open_xcresult "$MACOS_XCRESULT"
-    exit 1
+    MACOS_TESTS_FAILED=1
+    log_error "macOS unit tests failed."
+else
+    echo "✅ macOS unit tests passed"
 fi
-echo "✅ macOS unit tests passed"
 
-# Run iOS unit tests on Simulator
 echo "🧪 Running iOS unit tests on Simulator (SLF-iOS-UnitTests)..."
-
 if ! xcodebuild test \
     -project SixLayerFramework.xcodeproj \
     -scheme SLF-iOS-UnitTests \
     -destination "platform=iOS Simulator,name=iPhone 17 Pro Max" \
     -resultBundlePath "$IOS_XCRESULT" \
     -quiet; then
-    log_error "iOS unit tests failed! Cannot proceed with release."
-    echo "💡 macOS xcresult (passed): $MACOS_XCRESULT" >&2
-    echo "💡 Open the iOS result bundle in Xcode (Report navigator), or inspect failures from the CLI:" >&2
-    echo "   xcrun xcresulttool get test-results summary --path \"$IOS_XCRESULT\"" >&2
-    maybe_open_xcresult "$IOS_XCRESULT"
-    exit 1
+    IOS_TESTS_FAILED=1
+    log_error "iOS unit tests failed."
+else
+    echo "✅ iOS unit tests passed"
 fi
-echo "✅ iOS unit tests passed"
 
 # Release gate runs unit tests only (SLF-*-UnitTests). UI/ViewInspector/AllTests are not run here.
-echo "✅ Unit test suite validation passed (macOS + iOS unit tests only)"
+if [ "$MACOS_TESTS_FAILED" -eq 1 ] || [ "$IOS_TESTS_FAILED" -eq 1 ]; then
+    echo "⚠️  Unit test gate failed on one or more platforms; continuing with remaining release checks." >&2
+    echo "📎 macOS xcresult: $MACOS_XCRESULT" >&2
+    echo "📎 iOS xcresult:   $IOS_XCRESULT" >&2
+    echo "💡 Inspect: xcrun xcresulttool get test-results summary --path <path>" >&2
+else
+    echo "✅ Unit test suite validation passed (macOS + iOS unit tests only)"
+fi
 
 # Step 2: Check git is clean (no uncommitted changes)
 echo "📋 Step 2: Checking git repository status..."
@@ -994,6 +1037,14 @@ if [ $ERRORS_FOUND -gt 0 ]; then
     echo ""
     echo "Found $ERRORS_FOUND error(s) that need to be fixed:"
     echo -e "$ERROR_MESSAGES"
+    if [ "${MACOS_TESTS_FAILED:-0}" -eq 1 ]; then
+        echo "💡 macOS test failures — result bundle: $MACOS_XCRESULT" >&2
+        maybe_open_xcresult "$MACOS_XCRESULT"
+    fi
+    if [ "${IOS_TESTS_FAILED:-0}" -eq 1 ]; then
+        echo "💡 iOS test failures — result bundle: $IOS_XCRESULT" >&2
+        maybe_open_xcresult "$IOS_XCRESULT"
+    fi
     if [ "${NO_RELEASE_MILESTONE:-0}" -eq 1 ]; then
         echo ""
         echo "⚠️  No GitHub milestone v$VERSION found (optional; not a blocker — patch releases often skip milestones). Creating one can help track release work:"

@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import os
 import SwiftUI
 
 #if os(iOS)
@@ -32,43 +33,94 @@ public struct RuntimeCapabilityDetection {
     
     // MARK: - Capability-Level Override Support
     
-    /// Override touch support detection for testing
+    /// Override touch support detection for testing (thread-local).
+    ///
+    /// **iOS and watchOS:** `false` is ignored — touch is a platform guarantee; a
+    /// negative thread-local value cannot simulate “no touch”. `true` and `nil`
+    /// behave as usual (`nil` uses OS detection). Other platforms respect `false`.
+    ///
+    /// A request for `false` on touch-first hosts is logged at most once per thread
+    /// until cleared (`nil` / `true`), so misuse is visible without spamming reads of `supportsTouch`.
     public static func setTestTouchSupport(_ value: Bool?) {
-        Thread.current.threadDictionary["testTouchSupport"] = value
+        #if os(iOS) || os(watchOS)
+        switch value {
+        case .some(false):
+            let logOnceKey = "SixLayerFramework.didLogIgnoredTestTouchFalse"
+            if Thread.current.threadDictionary[logOnceKey] == nil {
+                Thread.current.threadDictionary[logOnceKey] = true
+                os_log(
+                    "SixLayerFramework: setTestTouchSupport(false) ignored on touch-first platform (primary touch is a platform guarantee).",
+                    log: .default,
+                    type: .info
+                )
+            }
+        default:
+            Thread.current.threadDictionary.removeObject(forKey: "SixLayerFramework.didLogIgnoredTestTouchFalse")
+        }
+        #endif
+        if let value {
+            Thread.current.threadDictionary["testTouchSupport"] = value
+        } else {
+            Thread.current.threadDictionary.removeObject(forKey: "testTouchSupport")
+        }
     }
     
     /// Override haptic feedback detection for testing
     public static func setTestHapticFeedback(_ value: Bool?) {
-        Thread.current.threadDictionary["testHapticFeedback"] = value
+        if let value {
+            Thread.current.threadDictionary["testHapticFeedback"] = value
+        } else {
+            Thread.current.threadDictionary.removeObject(forKey: "testHapticFeedback")
+        }
     }
     
     /// Override hover detection for testing
     public static func setTestHover(_ value: Bool?) {
-        Thread.current.threadDictionary["testHover"] = value
+        if let value {
+            Thread.current.threadDictionary["testHover"] = value
+        } else {
+            Thread.current.threadDictionary.removeObject(forKey: "testHover")
+        }
     }
     
     /// Override VoiceOver detection for testing
     public static func setTestVoiceOver(_ value: Bool?) {
-        Thread.current.threadDictionary["testVoiceOver"] = value
+        if let value {
+            Thread.current.threadDictionary["testVoiceOver"] = value
+        } else {
+            Thread.current.threadDictionary.removeObject(forKey: "testVoiceOver")
+        }
     }
     
     /// Override Switch Control detection for testing
     public static func setTestSwitchControl(_ value: Bool?) {
-        Thread.current.threadDictionary["testSwitchControl"] = value
+        if let value {
+            Thread.current.threadDictionary["testSwitchControl"] = value
+        } else {
+            Thread.current.threadDictionary.removeObject(forKey: "testSwitchControl")
+        }
     }
     
     /// Override AssistiveTouch detection for testing
     public static func setTestAssistiveTouch(_ value: Bool?) {
-        Thread.current.threadDictionary["testAssistiveTouch"] = value
+        if let value {
+            Thread.current.threadDictionary["testAssistiveTouch"] = value
+        } else {
+            Thread.current.threadDictionary.removeObject(forKey: "testAssistiveTouch")
+        }
     }
     
     /// Override high contrast mode detection for testing
     /// This allows tests to verify color adaptation behavior
     public static func setTestHighContrast(_ value: Bool?) {
-        Thread.current.threadDictionary["testHighContrast"] = value
+        if let value {
+            Thread.current.threadDictionary["testHighContrast"] = value
+        } else {
+            Thread.current.threadDictionary.removeObject(forKey: "testHighContrast")
+        }
     }
     
-    /// Clear all capability overrides for testing
+    /// Clear all capability overrides for testing (`nil` clears by **removing** thread-dictionary entries so overrides do not linger as `NSNull` / stale values on any OS).
     public static func clearAllCapabilityOverrides() {
         setTestTouchSupport(nil)
         setTestHapticFeedback(nil)
@@ -149,24 +201,30 @@ public struct RuntimeCapabilityDetection {
     /// Detects if touch input is actually supported by querying the OS
     /// Note: nonisolated - detection functions don't access MainActor APIs
     nonisolated public static var supportsTouch: Bool {
-        // Check for capability override first
+        // Use real runtime detection - tests should run on actual platforms/simulators
+        #if os(iOS)
+        if let override = testTouchSupport {
+            return override ? true : detectiOSTouchSupport()
+        }
+        return detectiOSTouchSupport()
+        #elseif os(watchOS)
+        if let override = testTouchSupport {
+            return override ? true : detectwatchOSTouchSupport()
+        }
+        return detectwatchOSTouchSupport()
+        #else
         if let testValue = testTouchSupport {
             return testValue
         }
-        
-        // Use real runtime detection - tests should run on actual platforms/simulators
-        #if os(iOS)
-        return detectiOSTouchSupport()
-        #elseif os(macOS)
+        #if os(macOS)
         return detectmacOSTouchSupport()
-        #elseif os(watchOS)
-        return detectwatchOSTouchSupport()
         #elseif os(tvOS)
         return detecttvOSTouchSupport()
         #elseif os(visionOS)
         return detectvisionOSTouchSupport()
         #else
         return false
+        #endif
         #endif
     }
     
