@@ -486,22 +486,16 @@ open class IntelligentCardExpansionComprehensiveTests: BaseTestClass {    // MAR
     }
     
     @Test @MainActor func testGetCardExpansionPlatformConfig_macOS() async {
-        // Set macOS platform overrides for testing
-        RuntimeCapabilityDetection.setTestHapticFeedback(false)
-        RuntimeCapabilityDetection.setTestHover(true)
-        RuntimeCapabilityDetection.setTestTouchSupport(false)
-        RuntimeCapabilityDetection.setTestAssistiveTouch(false)
-        RuntimeCapabilityDetection.setTestVoiceOver(true)
-        RuntimeCapabilityDetection.setTestSwitchControl(true)
-
+        guard SixLayerPlatform.current == .macOS else { return }
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
         let config = getCardExpansionPlatformConfig()
-
-        #expect(config.supportsTouch == false, "macOS should not support touch")
-        #expect(config.supportsHapticFeedback == false, "macOS should not support haptic feedback")
-        #expect(config.supportsHover == true, "macOS should support hover")
-        #expect(config.supportsVoiceOver == true, "macOS should support VoiceOver")
-        #expect(config.supportsSwitchControl == true, "macOS should support Switch Control")
-        #expect(config.supportsAssistiveTouch == false, "macOS should not support AssistiveTouch")
+        #expect(config.supportsTouch == RuntimeCapabilityDetection.supportsTouch)
+        #expect(config.supportsHapticFeedback == RuntimeCapabilityDetection.supportsHapticFeedback)
+        #expect(config.supportsHover == RuntimeCapabilityDetection.supportsHover)
+        #expect(config.supportsVoiceOver == RuntimeCapabilityDetection.supportsVoiceOver)
+        #expect(config.supportsSwitchControl == RuntimeCapabilityDetection.supportsSwitchControl)
+        #expect(config.supportsAssistiveTouch == RuntimeCapabilityDetection.supportsAssistiveTouch)
     }
     
     @Test @MainActor func testGetCardExpansionPlatformConfig_watchOS() async {

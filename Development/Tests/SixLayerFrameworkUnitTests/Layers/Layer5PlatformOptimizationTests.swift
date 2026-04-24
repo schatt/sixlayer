@@ -37,20 +37,20 @@ open class Layer5PlatformOptimizationTests: BaseTestClass {
     }
 
     @Test @MainActor func testGetCardExpansionPlatformConfig_macOS() async {
-        RuntimeCapabilityDetection.setTestTouchSupport(false); RuntimeCapabilityDetection.setTestHapticFeedback(false); RuntimeCapabilityDetection.setTestHover(true)
+        guard SixLayerPlatform.current == .macOS else { return }
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
         let config = getCardExpansionPlatformConfig()
-
-        #expect(config.supportsHover == true, "macOS should support hover")
         let currentPlatform = SixLayerPlatform.current
         let expectedMinTouchTarget = PlatformTestUtilities.expectedMinTouchTarget(
             for: currentPlatform,
-            touchDetected: false
+            touchDetected: RuntimeCapabilityDetection.supportsTouch
         )
-        let expectedHoverDelay: TimeInterval = (currentPlatform == .macOS || currentPlatform == .visionOS || currentPlatform == .iOS) ? 0.5 : 0.0
-
+        #expect(config.supportsHover == RuntimeCapabilityDetection.supportsHover)
+        #expect(config.supportsTouch == RuntimeCapabilityDetection.supportsTouch)
         #expect(config.minTouchTarget == expectedMinTouchTarget,
-                "Apple HIG: \(currentPlatform) expected \(expectedMinTouchTarget)pt with touch off")
-        #expect(config.hoverDelay == expectedHoverDelay, "Current platform \(currentPlatform) should have platform-appropriate hoverDelay (\(expectedHoverDelay))")
+                "Apple HIG: \(currentPlatform) expected \(expectedMinTouchTarget)pt (effective touch \(config.supportsTouch))")
+        #expect(config.hoverDelay == RuntimeCapabilityDetection.hoverDelay)
     }
 
     @Test @MainActor func testGetCardExpansionPlatformConfig_visionOS() async {

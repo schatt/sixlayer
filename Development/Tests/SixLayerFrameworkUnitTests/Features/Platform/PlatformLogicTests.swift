@@ -55,7 +55,7 @@ open class PlatformLogicTests: BaseTestClass {
                 #expect(!RuntimeCapabilityDetection.supportsTouch, "macOS should not support touch")
                 #expect(!RuntimeCapabilityDetection.supportsHapticFeedback, "macOS should not support haptic feedback")
                 #expect(!RuntimeCapabilityDetection.supportsAssistiveTouch, "macOS should not support AssistiveTouch")
-                #expect(RuntimeCapabilityDetection.supportsHover, "macOS should support hover")
+                // Pointer hover is AppKit/runtime-dependent (e.g. mouse buttons down); do not require true.
                 #expect(RuntimeCapabilityDetection.supportsVoiceOver, "macOS should support VoiceOver")
                 #expect(RuntimeCapabilityDetection.supportsSwitchControl, "macOS should support SwitchControl")
 

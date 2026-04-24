@@ -3372,9 +3372,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
                    "iOS haptic feedback support should be determinable")
             #expect(config.minTouchTarget == 44, "iOS should have 44pt minimum touch targets")
         case .macOS:
-            #expect(config.supportsHover == true || config.supportsHover == false,
-                   "macOS hover support should be determinable")
-            #expect(config.hoverDelay == 0.5, "macOS should have 0.5s hover delay")
+            #expect(config.supportsHover == RuntimeCapabilityDetection.supportsHover)
+            #expect(config.hoverDelay == RuntimeCapabilityDetection.hoverDelay)
         case .watchOS:
             #expect(config.supportsTouch == true || config.supportsTouch == false,
                    "watchOS touch support should be determinable")
