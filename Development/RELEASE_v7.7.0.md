@@ -1,15 +1,15 @@
 # SixLayer Framework v7.7.0 Release Documentation
 
-**Release Date**: TBD  
+**Release Date**: April 24, 2026  
 **Release Type**: Minor  
 **Previous Release**: v7.6.2  
-**Status**: In preparation
+**Status**: Released
 
 ---
 
 ## 🎯 Release Summary
 
-v7.7.0 introduces a new **VisionKit live data scanner path** (Issue #252) alongside the existing camera/photo APIs, with Layer 4 presentation helpers, app-provided top banner messaging, and scanner lifecycle callbacks. This release is also expected to ship with namespaced runtime capability work (Issue #253), which is still being finalized.
+v7.7.0 introduces a new **VisionKit live data scanner path** (Issue #252) alongside the existing camera/photo APIs, with Layer 4 presentation helpers, app-provided top banner messaging, and scanner lifecycle callbacks. It also completes namespaced runtime capability work (Issue #253), including new `Network`, `Media`, `Pasteboard`, and `Accessibility` namespaces.
 
 ---
 
@@ -53,22 +53,22 @@ v7.7.0 introduces a new **VisionKit live data scanner path** (Issue #252) alongs
 
 ---
 
-## 🔄 In-flight for v7.7.0 (co-shipped scope)
+## ✅ Runtime capability namespace completion (Issue #253)
 
-### **Runtime capability namespace completion (Issue #253)**
-
-The release plan is to ship #252 and #253 together. Final #253 details are still under active development; this document will be finalized when namespaced capability scope is complete.
-
-Planned direction:
-- Use namespaced runtime capability accessors (e.g. under `RuntimeCapabilityDetection.Photos`) for scanner availability gating.
-- Avoid duplicate ad-hoc capability checks in Layer 4 scanner call sites.
+Completed in this release:
+- `RuntimeCapabilityDetection.Photos`, `Vision`, `Files` finalized and documented.
+- Additional namespaced surfaces added: `Network`, `Media`, `Pasteboard`, `Accessibility`.
+- Override hooks + `clearAllCapabilityOverrides()` teardown coverage across namespaces.
+- Layer 4 scanner callsites aligned to namespaced scanner availability checks.
 
 ---
 
-## ✅ Resolved GitHub issues (target)
+## ✅ Resolved GitHub issues
 
 - **Issue #252** — VisionKit `DataScannerViewController` path added alongside existing photo/camera flow.
-- **Issue #253** — Runtime capability namespacing (Photos / Vision / Files) targeted to co-ship with this release.
+- **Issue #253** — Runtime capability namespacing completed (Photos / Vision / Files + Network / Media / Pasteboard / Accessibility).
+- **Issue #247** — Internal test harness stability improvements included in release process.
+- **Issue #246** — Release-process/reporting updates included for this milestone.
 
 ---
 
