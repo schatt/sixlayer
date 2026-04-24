@@ -6,7 +6,6 @@
 //  See also: Framework/docs/SixLayerUITestNavigator.md
 //
 
-#if canImport(XCTest)
 import XCTest
 
 /// Thin XCUI primitives composed over ``UITestContractElementResolver`` and contract identifiers (#229).
@@ -92,4 +91,3 @@ public final class SixLayerUITestNavigator: @unchecked Sendable {
         return true
     }
 }
-#endif
