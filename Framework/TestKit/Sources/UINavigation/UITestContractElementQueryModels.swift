@@ -3,6 +3,7 @@
 //  SixLayerTestKit
 //
 //  Cross-platform XCUI contract query slot ordering (#228).
+//  See also: Framework/docs/UITestContractElementResolver.md
 //
 
 import Foundation
