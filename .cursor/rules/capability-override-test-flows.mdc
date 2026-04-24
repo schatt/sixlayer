@@ -21,8 +21,11 @@ Run assertions on the **real** OS for that scheme (simulator or device). Do not 
 - Assert what the **current environment** actually allows (e.g. skip or soften expectations when `AVCaptureDevice` / session APIs report no hardware or simulator-only behavior).
 - Avoid pretending the simulator **is** a device for that path.
 
-When behavior **must** be validated on hardware and cannot live in CI alone, add a **brief comment** in the test file, for example:  
-`// Periodic real-device: re-run or extend this when changing <feature>; iOS Simulator does not fully exercise <camera / LiDAR / …>.`
+When behavior **must** be validated on hardware and cannot live in CI alone:
+
+1. Add a **brief comment** in the test file, for example:  
+   `// Periodic real-device: re-run or extend this when changing <feature>; iOS Simulator does not fully exercise <camera / LiDAR / …>.`
+2. Register the test in **[Development/PHYSICAL_DEVICE_TEST_REGISTRY.md](../Development/PHYSICAL_DEVICE_TEST_REGISTRY.md)** so release / QA knows what to run on which physical platform.
 
 That documents the gap without blocking green CI on something the simulator cannot provide.
 
