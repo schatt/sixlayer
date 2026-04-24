@@ -12,7 +12,9 @@ alwaysApply: false
 
 2. When a capability **can** be off at runtime on that platform, test **enabled and disabled** (or OS-reported states) against real or thread-local simulation **where that simulation is meaningful** on the current host.
 
-3. When a “disabled” request is **nonsensical** for the platform (e.g. “no touch” on iPhone), **production code** should **detect it, ignore it, and keep correct behavior** (see `RuntimeCapabilityDetection.supportsTouch` / `setTestTouchSupport`). **Tests** must still run the negative path and **assert** ignore semantics — do not skip. Optional **logging** (e.g. once per thread when the nonsensical override is set) helps diagnose misuse in dev and prod.
+3. **Both states common = test both.** When **presence and absence are both normal** on that OS (e.g. **camera on macOS** — many desktops have none or camera off in privacy; many laptops and displays have one), **always cover both paths**: hardware present / permission granted vs absent or denied. Prefer **real** `AVFoundation` / device APIs in the macOS test host (or documented test doubles only where the OS cannot be controlled). Do not treat the “no camera” branch as rare enough to skip.
+
+4. When a “disabled” request is **nonsensical** for the platform (e.g. “no touch” on iPhone), **production code** should **detect it, ignore it, and keep correct behavior** (see `RuntimeCapabilityDetection.supportsTouch` / `setTestTouchSupport`). **Tests** must still run the negative path and **assert** ignore semantics — do not skip. Optional **logging** (e.g. once per thread when the nonsensical override is set) helps diagnose misuse in dev and prod.
 
 ## Thread-local `setTest*` — three flows on every platform
 
