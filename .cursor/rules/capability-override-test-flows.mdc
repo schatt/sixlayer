@@ -1,12 +1,20 @@
 ---
-description: How to test RuntimeCapabilityDetection thread-local overrides — default, positive, and negative paths on every platform.
+description: Real runtime capabilities first; thread-local override tests (default / positive / negative) and nonsensical-input handling.
 globs: Development/Tests/**/*RuntimeCapability*.swift, Development/Tests/**/*Capability*.swift, Framework/Sources/Core/Models/RuntimeCapabilityDetection.swift
 alwaysApply: false
 ---
 
-# Capability override tests (thread-local `setTest*`)
+# Real capabilities and thread-local overrides
 
-## Three flows on every platform
+## Principle
+
+1. **Test real capabilities** on the **actual** OS (simulator or device) for that target — do not assert “platform Y behavior” from an iOS host using overrides alone. Use the **tvOS / macOS / watchOS** test targets and simulators when you need that platform’s runtime.
+
+2. When a capability **can** be off at runtime on that platform, test **enabled and disabled** (or OS-reported states) against real or thread-local simulation **where that simulation is meaningful** on the current host.
+
+3. When a “disabled” request is **nonsensical** for the platform (e.g. “no touch” on iPhone), **production code** should **detect it, ignore it, and keep correct behavior** (see `RuntimeCapabilityDetection.supportsTouch` / `setTestTouchSupport`). **Tests** must still run the negative path and **assert** ignore semantics — do not skip. Optional **logging** (e.g. once per thread when the nonsensical override is set) helps diagnose misuse in dev and prod.
+
+## Thread-local `setTest*` — three flows on every platform
 
 For each capability that supports `RuntimeCapabilityDetection.setTest*(...)`, structure coverage as:
 

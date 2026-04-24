@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import os
 import SwiftUI
 
 #if os(iOS)
@@ -37,7 +38,26 @@ public struct RuntimeCapabilityDetection {
     /// **iOS and watchOS:** `false` is ignored — touch is a platform guarantee; a
     /// negative thread-local value cannot simulate “no touch”. `true` and `nil`
     /// behave as usual (`nil` uses OS detection). Other platforms respect `false`.
+    ///
+    /// A request for `false` on touch-first hosts is logged at most once per thread
+    /// until cleared (`nil` / `true`), so misuse is visible without spamming reads of `supportsTouch`.
     public static func setTestTouchSupport(_ value: Bool?) {
+        #if os(iOS) || os(watchOS)
+        switch value {
+        case .some(false):
+            let logOnceKey = "SixLayerFramework.didLogIgnoredTestTouchFalse"
+            if Thread.current.threadDictionary[logOnceKey] == nil {
+                Thread.current.threadDictionary[logOnceKey] = true
+                os_log(
+                    "SixLayerFramework: setTestTouchSupport(false) ignored on touch-first platform (primary touch is a platform guarantee).",
+                    log: .default,
+                    type: .info
+                )
+            }
+        default:
+            Thread.current.threadDictionary.removeObject(forKey: "SixLayerFramework.didLogIgnoredTestTouchFalse")
+        }
+        #endif
         Thread.current.threadDictionary["testTouchSupport"] = value
     }
     
