@@ -49,7 +49,7 @@ final class SixLayerUITestNavigatorConsumerSmokeUITests: XCTestCase {
     func testSmoke_goToScreenThenOpenSectionThenBackToRoot() throws {
         let navigator = SixLayerUITestNavigator(application: app)
         let screen = try UITestScreenId(validating: "com.sixlayer.smoke.screen.entry")
-        XCTAssertTrue(navigator.goToScreen(screen, timeout: 15), "goToScreen should tap smoke entry NavigationLink")
+        XCTAssertTrue(navigator.goToScreen(screen, timeout: 15), "goToScreen should tap smoke entry control")
 
         let route = try UITestRouteId(validating: "com.sixlayer.smoke.route.section")
         XCTAssertTrue(navigator.openSection(route, under: nil, timeout: 15), "openSection should resolve detail marker")

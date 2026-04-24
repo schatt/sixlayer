@@ -10,8 +10,8 @@ Issue [#229](https://github.com/schatt/sixlayer/issues/229) adds **narrow** XCUI
 | Method | Behavior |
 |--------|----------|
 | ``SixLayerUITestNavigator/findContractElement(_:under:)`` | Passthrough to ``UITestContractElementResolver/findFirstExisting`` from the app (or an explicit subtree root). |
-| ``SixLayerUITestNavigator/goToScreen(_:timeout:)`` | Resolves the screen id as an accessibility identifier, waits, taps when hittable. |
-| ``SixLayerUITestNavigator/openSection(_:under:timeout:)`` | Same pattern for a ``UITestRouteId`` within `under` or the app. |
+| ``SixLayerUITestNavigator/goToScreen(_:timeout:)`` | Resolves the screen id as an accessibility identifier, waits, taps when hittable; after a tap returns `true` even if the control leaves the hierarchy (push navigation). |
+| ``SixLayerUITestNavigator/openSection(_:under:timeout:)`` | Same pattern for a ``UITestRouteId`` within `under` or the app (including post-tap success when the target detaches). |
 | ``SixLayerUITestNavigator/backToRoot(maxSteps:stepTimeout:)`` | Repeatedly taps the **leading** button of the **first** navigation bar until failure or `maxSteps`. |
 
 ## `backToRoot` semantics

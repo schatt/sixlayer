@@ -132,9 +132,8 @@ struct TestAppContentView: View {
     var body: some View {
         Group {
             if openUITestContractSmokeHost {
-                NavigationStack {
-                    UITestContractSmokeHostView()
-                }
+                // Host supplies its own `NavigationStack` so `backToRoot` targets one bar (#231).
+                UITestContractSmokeHostView()
             } else if openCategoryAAccessibility, ProcessInfo.processInfo.arguments.contains("-CategoryAGlobalAutoOff") {
                 NavigationStack {
                     AccessibilityIdentifierCategoryAGlobalOffAUDITView()
