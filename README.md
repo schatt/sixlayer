@@ -44,7 +44,7 @@ The framework is distributed as a Swift Package from the `Framework/` directory.
 ## 🆕 Latest Release: v7.6.2
 
 ### **Patch release**
-🔧 **Patch**: Viewport-aware intelligent and optimal card layout (#249, #250); runtime capability test isolation on MainActor in `DefaultRuntimeCapabilityIsolationTrait`. See [RELEASE_v7.6.2.md](Development/RELEASE_v7.6.2.md).
+🔧 **Patch**: Viewport-aware intelligent and optimal card layout (#249, #250); runtime capability test isolation on MainActor in `DefaultRuntimeCapabilityIsolationTrait`; tvOS `SLF-tvOS-AllTests` compile (#237); internal test harness (#247 — no `AccessibilityIdentifierConfig.shared` mutation in tests; #248 — mac/iOS drift). See [RELEASE_v7.6.2.md](Development/RELEASE_v7.6.2.md).
 
 ### **Previous Release: v7.6.1 - Patch release**
 🔧 **Patch**: Layer 1 `automaticCompliance` audit (#245 / gh-243 parity with #243): `identifierName:` presentation roots and anonymous shells where appropriate. See [RELEASE_v7.6.1.md](Development/RELEASE_v7.6.1.md).

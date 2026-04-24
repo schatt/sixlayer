@@ -5,7 +5,7 @@
 **Release Date**: April 23, 2026
 **Status**: Released
 **Previous Release**: v7.6.1 - Patch release
-**Note**: Viewport-aware card layout (#249, #250); `DefaultRuntimeCapabilityIsolationTrait` clears overrides on MainActor for stable runtime-capability tests.
+**Note**: Viewport-aware card layout (#249, #250); `DefaultRuntimeCapabilityIsolationTrait` clears overrides on MainActor for stable runtime-capability tests; tvOS `SLF-tvOS-AllTests` compile path (#237); internal test harness (#247, #248 — shared config isolation, mac/iOS drift reduction).
 **Next Release**: TBD
 
 ---

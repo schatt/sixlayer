@@ -9,7 +9,7 @@
 
 ## 🎯 Release Summary
 
-Patch release improving **viewport-aware card layout** (GitHub **#249**, **#250**) and fixing **Swift Testing isolation** for runtime capability overrides on the main actor (release gate / `supportsTouchWithOverride`).
+Patch release improving **viewport-aware card layout** (GitHub **#249**, **#250**); fixing **Swift Testing isolation** for runtime capability overrides on the main actor (release gate / `supportsTouchWithOverride`); **tvOS** compile path for **`SLF-tvOS-AllTests`** and availability (**#237**); and **internal test harness** updates (**#247**, **#248**).
 
 ---
 
@@ -23,6 +23,12 @@ Patch release improving **viewport-aware card layout** (GitHub **#249**, **#250*
 ### **Tests**
 
 - **`DefaultRuntimeCapabilityIsolationTrait`** — Clears `RuntimeCapabilityDetection` / `CapabilityOverride` thread state on **MainActor** as well as the trait’s executor thread, so `@MainActor` tests do not inherit stale `testTouchSupport` from the main thread (fixes `RuntimeCapabilityDetectionTDDTests.testOverrideClearing` and similar release-suite flakes).
+- **#247** — *Internal:* stop mutating `AccessibilityIdentifierConfig.shared` in tests; use task-local configs and environment overrides so parallel and host-driven suites stay isolated.
+- **#248** — *Internal:* reduce mac/iOS test drift with shared cases and explicit platform branches where UI or capability behavior differs.
+
+### **Platforms**
+
+- **#237** — tvOS: `SixLayerFramework` builds for the **`SLF-tvOS-AllTests`** scheme (availability and call-site guards as needed).
 
 ---
 
@@ -30,6 +36,9 @@ Patch release improving **viewport-aware card layout** (GitHub **#249**, **#250*
 
 - **Issue #249** — Intelligent expandable card collections: height considers viewport / display fallback, not width-only aspect ratio alone.
 - **Issue #250** — Optimal responsive card layout + demo view: explicit height in Layer 2 and tests; `ResponsiveCardsView` wired to geometry.
+- **Issue #237** — tvOS compile / test-target path for `SLF-tvOS-AllTests` (availability-aligned).
+- **Issue #247** — *Internal:* accessibility identifier config isolation in tests (no shared global mutation).
+- **Issue #248** — *Internal:* mac vs iOS test alignment (shared tests, explicit platform branches).
 
 ---
 
