@@ -1107,7 +1107,7 @@ public struct RuntimeCapabilityDetection {
         #elseif os(macOS)
         #if canImport(AVFoundation)
         let session = AVCaptureDevice.DiscoverySession(
-            deviceTypes: [.builtInWideAngleCamera, .externalUnknown],
+            deviceTypes: [.builtInWideAngleCamera, .external],
             mediaType: AVMediaType.video,
             position: .unspecified
         )
