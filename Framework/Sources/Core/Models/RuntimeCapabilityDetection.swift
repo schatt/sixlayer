@@ -877,6 +877,15 @@ public struct RuntimeCapabilityDetection {
         }
     }
 
+    /// Runs a MainActor-isolated sync probe only when already on the main thread.
+    /// Returns `nil` when called off-main, so callers can safely fall back.
+    private static func withMainActorProbe<T>(_ probe: @MainActor () -> T) -> T? {
+        guard Thread.isMainThread else { return nil }
+        return MainActor.assumeIsolated {
+            probe()
+        }
+    }
+
     private static func detectPhotosHasCamera() -> Bool {
         #if os(iOS)
         return UIImagePickerController.isSourceTypeAvailable(.camera)
@@ -934,12 +943,9 @@ public struct RuntimeCapabilityDetection {
         #if canImport(VisionKit)
         if #available(iOS 16.0, *) {
             // VisionKit scanner statics are MainActor-isolated on current SDKs.
-            if Thread.isMainThread {
-                return MainActor.assumeIsolated {
-                    DataScannerViewController.isSupported && DataScannerViewController.isAvailable
-                }
-            }
-            return false
+            return withMainActorProbe {
+                DataScannerViewController.isSupported && DataScannerViewController.isAvailable
+            } ?? false
         }
         #endif
         #endif
@@ -950,12 +956,9 @@ public struct RuntimeCapabilityDetection {
         #if os(iOS)
         #if canImport(VisionKit)
         if #available(iOS 16.0, *) {
-            if Thread.isMainThread {
-                return MainActor.assumeIsolated {
-                    ImageAnalyzer.isSupported
-                }
-            }
-            return false
+            return withMainActorProbe {
+                ImageAnalyzer.isSupported
+            } ?? false
         }
         #endif
         #endif
