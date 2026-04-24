@@ -178,6 +178,19 @@ public struct PhotoDeviceCapabilities {
         self.supportsEditing = supportsEditing
         self.maxImageResolution = maxImageResolution
     }
+
+    /// Snapshot from ``RuntimeCapabilityDetection/Photos`` runtime probes (GitHub #253).
+    ///
+    /// `hasPhotoLibrary` maps to ``RuntimeCapabilityDetection/Photos/isPhotoLibraryPickerAvailable``.
+    /// `supportsEditing` and `maxImageResolution` are not represented on RCD; they keep the same defaults as ``PhotoDeviceCapabilities/init()``.
+    public static func fromRuntimeCapabilityDetection() -> PhotoDeviceCapabilities {
+        PhotoDeviceCapabilities(
+            hasCamera: RuntimeCapabilityDetection.Photos.hasCamera,
+            hasPhotoLibrary: RuntimeCapabilityDetection.Photos.isPhotoLibraryPickerAvailable,
+            supportsEditing: true,
+            maxImageResolution: PlatformSize(width: 4096, height: 4096)
+        )
+    }
 }
 
 // MARK: - Image Metadata

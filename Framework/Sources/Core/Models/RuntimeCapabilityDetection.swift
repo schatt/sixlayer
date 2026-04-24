@@ -2,7 +2,10 @@
 //  RuntimeCapabilityDetection.swift
 //  SixLayerFramework
 //
-//  Runtime capability detection that queries the OS instead of hardcoding platform assumptions
+//  Runtime capability detection that queries the OS instead of hardcoding platform assumptions.
+//
+//  Namespaced capability groups (`Photos`, `Vision`, `Files`) and their test hooks are tracked
+//  under GitHub #253; live VisionKit data scanner availability is co-shipped with #252.
 //
 
 import Foundation
@@ -789,6 +792,10 @@ public struct RuntimeCapabilityDetection {
     }
 
     /// Security-scoped resources and bookmark persistence (GitHub #253).
+    ///
+    /// Use these members for new code instead of the deprecated top-level
+    /// ``RuntimeCapabilityDetection/supportsSecurityScopedResources`` and
+    /// ``RuntimeCapabilityDetection/supportsSecurityScopedBookmarks`` forwarders.
     public enum Files {
         /// Same semantics as legacy ``RuntimeCapabilityDetection/supportsSecurityScopedResources``; prefer this member for new code.
         nonisolated public static var supportsSecurityScopedResources: Bool {
@@ -802,10 +809,12 @@ public struct RuntimeCapabilityDetection {
             return detectSecurityScopedBookmarkSupport()
         }
 
+        /// Thread-local override for tests. `nil` removes the entry so ``clearAllCapabilityOverrides()`` and subsequent reads use OS detection.
         public static func setTestSupportsSecurityScopedResources(_ value: Bool?) {
             setThreadOptionalBool(key: "testFilesSupportsSecurityScopedResources", value: value)
         }
 
+        /// Thread-local override for tests. `nil` removes the entry so ``clearAllCapabilityOverrides()`` and subsequent reads use OS detection.
         public static func setTestSupportsSecurityScopedBookmarks(_ value: Bool?) {
             setThreadOptionalBool(key: "testFilesSupportsSecurityScopedBookmarks", value: value)
         }
@@ -965,11 +974,13 @@ public struct RuntimeCapabilityDetection {
     }
 
     /// Legacy top-level probe; prefer ``Vision/isFrameworkAvailable`` (GitHub #253).
+    @available(*, deprecated, message: "Use RuntimeCapabilityDetection.Vision.isFrameworkAvailable (GitHub #253).")
     nonisolated public static var supportsVision: Bool {
         Vision.isFrameworkAvailable
     }
 
     /// Legacy top-level probe; prefer ``Vision/supportsOCR`` (GitHub #253).
+    @available(*, deprecated, message: "Use RuntimeCapabilityDetection.Vision.supportsOCR (GitHub #253).")
     nonisolated public static var supportsOCR: Bool {
         Vision.supportsOCR
     }

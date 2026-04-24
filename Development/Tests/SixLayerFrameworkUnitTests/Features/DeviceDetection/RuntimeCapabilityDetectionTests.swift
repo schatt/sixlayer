@@ -376,11 +376,9 @@ open class RuntimeCapabilityDetectionTDDTests: BaseTestClass {
 
         RuntimeCapabilityDetection.Vision.setTestIsFrameworkAvailable(!baselineFramework)
         #expect(RuntimeCapabilityDetection.Vision.isFrameworkAvailable == !baselineFramework)
-        #expect(RuntimeCapabilityDetection.supportsVision == !baselineFramework)
 
         RuntimeCapabilityDetection.Vision.setTestSupportsOCR(!baselineOCR)
         #expect(RuntimeCapabilityDetection.Vision.supportsOCR == !baselineOCR)
-        #expect(RuntimeCapabilityDetection.supportsOCR == !baselineOCR)
 
         RuntimeCapabilityDetection.Vision.setTestSupportsImageAnalyzer(!baselineImageAnalyzer)
         #expect(RuntimeCapabilityDetection.Vision.supportsImageAnalyzer == !baselineImageAnalyzer)
@@ -394,8 +392,6 @@ open class RuntimeCapabilityDetectionTDDTests: BaseTestClass {
         #expect(RuntimeCapabilityDetection.Vision.supportsOCR == baselineOCR)
         #expect(RuntimeCapabilityDetection.Vision.supportsImageAnalyzer == baselineImageAnalyzer)
         #expect(RuntimeCapabilityDetection.Vision.supportsDocumentCamera == baselineDocumentCamera)
-        #expect(RuntimeCapabilityDetection.supportsVision == baselineFramework)
-        #expect(RuntimeCapabilityDetection.supportsOCR == baselineOCR)
     }
 
     @Test @MainActor
@@ -419,6 +415,13 @@ open class RuntimeCapabilityDetectionTDDTests: BaseTestClass {
         #expect(RuntimeCapabilityDetection.Photos.hasCamera == baselineCamera)
         #expect(RuntimeCapabilityDetection.Photos.isPhotoLibraryPickerAvailable == baselinePicker)
         #expect(RuntimeCapabilityDetection.Photos.supportsLiveDataScanner == baselineScanner)
+    }
+
+    @Test func testPhotoDeviceCapabilitiesFromRuntimeMatchesPhotosProbes() {
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        let caps = PhotoDeviceCapabilities.fromRuntimeCapabilityDetection()
+        #expect(caps.hasCamera == RuntimeCapabilityDetection.Photos.hasCamera)
+        #expect(caps.hasPhotoLibrary == RuntimeCapabilityDetection.Photos.isPhotoLibraryPickerAvailable)
     }
 
     /// Smoke: VisionKit / Vision static probes must not trap on the main actor.
@@ -450,6 +453,21 @@ open class RuntimeCapabilityDetectionTDDTests: BaseTestClass {
             RuntimeCapabilityDetection.supportsSecurityScopedBookmarks
                 == RuntimeCapabilityDetection.Files.supportsSecurityScopedBookmarks
         )
+    }
+
+    @Test @MainActor
+    func testLegacySecurityScopedForwardersReflectFilesOverrides() {
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        let baseResources = RuntimeCapabilityDetection.Files.supportsSecurityScopedResources
+        let baseBookmarks = RuntimeCapabilityDetection.Files.supportsSecurityScopedBookmarks
+
+        RuntimeCapabilityDetection.Files.setTestSupportsSecurityScopedResources(!baseResources)
+        #expect(RuntimeCapabilityDetection.supportsSecurityScopedResources == !baseResources)
+
+        RuntimeCapabilityDetection.Files.setTestSupportsSecurityScopedBookmarks(!baseBookmarks)
+        #expect(RuntimeCapabilityDetection.supportsSecurityScopedBookmarks == !baseBookmarks)
+
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
     }
 
     @Test @MainActor
