@@ -85,6 +85,8 @@ struct TestAppContentView: View {
     private let openPlatformColorEncodeExtensions = ProcessInfo.processInfo.arguments.contains("-OpenPlatformColorEncodeExtensions")
     /// When true, app opens to clipboard/URL utility audit host (launch arg -OpenPlatformClipboardUrlLayer4).
     private let openPlatformClipboardUrlLayer4 = ProcessInfo.processInfo.arguments.contains("-OpenPlatformClipboardUrlLayer4")
+    /// When true, app opens to core container/navigation extension audit host (launch arg -OpenPlatformBasicContainersExtensions).
+    private let openPlatformBasicContainersExtensions = ProcessInfo.processInfo.arguments.contains("-OpenPlatformBasicContainersExtensions")
     
     enum TestView: String, CaseIterable, Identifiable {
         case control = "Control Test"
@@ -188,6 +190,10 @@ struct TestAppContentView: View {
             } else if openPlatformClipboardUrlLayer4 {
                 NavigationStack {
                     PlatformClipboardUrlLayer4AuditView(onBackToMain: nil)
+                }
+            } else if openPlatformBasicContainersExtensions {
+                NavigationStack {
+                    PlatformBasicContainersExtensionsAuditView(onBackToMain: nil)
                 }
             } else {
                 NavigationStack {
@@ -298,6 +304,11 @@ struct TestAppContentView: View {
                     PlatformClipboardUrlLayer4AuditView(onBackToMain: nil)
                 }
                 .accessibilityIdentifier("platform-clipboard-url-l4-link")
+
+                NavigationLink("Platform Basic Containers / Navigation Audit") {
+                    PlatformBasicContainersExtensionsAuditView(onBackToMain: nil)
+                }
+                .accessibilityIdentifier("platform-basic-containers-extensions-link")
             }
             .padding()
         }
@@ -853,6 +864,100 @@ struct PlatformClipboardUrlLayer4AuditView: View {
         }
         .platformFrame()
         .navigationTitle("Clipboard / URL Utilities")
+        .platformNavigationTitleDisplayMode_L4(.inline)
+    }
+}
+
+/// RealUI/TestApp coverage for core container/navigation extension APIs (issue #170 Phase 2).
+struct PlatformBasicContainersExtensionsAuditView: View {
+    var onBackToMain: (() -> Void)?
+
+    var body: some View {
+        platformScrollViewContainer {
+            platformVStack(alignment: .leading, spacing: 18) {
+                platformText("Platform Basic Containers / Navigation Audit")
+                    .font(.headline)
+                    .accessibilityIdentifier("platform-basic-containers-audit-title")
+
+                platformHStack(alignment: .center, spacing: 8) {
+                    platformText("HStack left")
+                        .accessibilityIdentifier("platform-basic-hstack-left")
+                    platformText("HStack right")
+                        .accessibilityIdentifier("platform-basic-hstack-right")
+                }
+                .accessibilityIdentifier("platform-basic-hstack-host")
+
+                platformZStack(alignment: .center) {
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(Color.blue.opacity(0.12))
+                        .frame(height: 56)
+                    platformText("ZStack overlay")
+                        .accessibilityIdentifier("platform-basic-zstack-overlay")
+                }
+                .accessibilityIdentifier("platform-basic-zstack-host")
+
+                platformLazyVStackContainer(alignment: .leading, spacing: 6) {
+                    ForEach(0..<3, id: \.self) { idx in
+                        platformText("LazyV row \(idx)")
+                            .accessibilityIdentifier("platform-basic-lazyv-row-\(idx)")
+                    }
+                }
+                .accessibilityIdentifier("platform-basic-lazyv-host")
+
+                platformScrollViewContainer(.horizontal, showsIndicators: false) {
+                    platformLazyHStackContainer(alignment: .center, spacing: 10) {
+                        ForEach(0..<3, id: \.self) { idx in
+                            platformText("LazyH \(idx)")
+                                .platformCardStyle(backgroundColor: Color.gray.opacity(0.15), cornerRadius: 6, shadowRadius: 1)
+                                .platformCardPadding()
+                                .accessibilityIdentifier("platform-basic-lazyh-item-\(idx)")
+                        }
+                    }
+                }
+                .frame(height: 72)
+                .accessibilityIdentifier("platform-basic-lazyh-scroll-host")
+
+                platformListContainer {
+                    ForEach(0..<2, id: \.self) { idx in
+                        platformText("List row \(idx)")
+                            .accessibilityIdentifier("platform-basic-list-row-\(idx)")
+                    }
+                }
+                .frame(minHeight: 100, maxHeight: 120)
+                .accessibilityIdentifier("platform-basic-list-host")
+
+                platformForm {
+                    platformSectionContainer(header: "Audit Form Section") {
+                        platformTextField("Audit field", text: .constant("value"), id: "platform-basic-form-field")
+                    }
+                }
+                .frame(minHeight: 100, maxHeight: 120)
+                .accessibilityIdentifier("platform-basic-form-host")
+
+                platformNavigationSplitView {
+                    platformText("Split content")
+                        .accessibilityIdentifier("platform-basic-navsplit-content")
+                } detail: {
+                    platformText("Split detail")
+                        .accessibilityIdentifier("platform-basic-navsplit-detail")
+                }
+                .frame(minHeight: 120, maxHeight: 140)
+                .accessibilityIdentifier("platform-basic-navsplit-host")
+
+                platformSidebarPullIndicator(isVisible: true)
+                    .frame(height: 24)
+                    .accessibilityIdentifier("platform-basic-sidebar-pull-indicator")
+
+                if let onBackToMain {
+                    platformButton(label: "Back to Main", id: "platform-basic-containers-back-to-main") {
+                        onBackToMain()
+                    }
+                }
+            }
+            .padding()
+        }
+        .platformFrame()
+        .navigationTitle("Basic Containers")
         .platformNavigationTitleDisplayMode_L4(.inline)
     }
 }
