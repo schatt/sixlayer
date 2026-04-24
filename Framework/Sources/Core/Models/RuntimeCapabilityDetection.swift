@@ -866,14 +866,12 @@ public struct RuntimeCapabilityDetection {
     public enum Network {
         /// Mirrors `NWPath.isConstrained` (Low Data Mode path state).
         nonisolated public static var isConstrained: Bool {
-            if let forced = testNetworkIsConstrained { return forced }
-            return detectNetworkIsConstrained()
+            resolvedBool(override: testNetworkIsConstrained, detector: detectNetworkIsConstrained)
         }
 
         /// Mirrors `NWPath.isExpensive` (metered / costly path state).
         nonisolated public static var isExpensive: Bool {
-            if let forced = testNetworkIsExpensive { return forced }
-            return detectNetworkIsExpensive()
+            resolvedBool(override: testNetworkIsExpensive, detector: detectNetworkIsExpensive)
         }
 
         public static func setTestIsConstrained(_ value: Bool?) {
@@ -888,13 +886,11 @@ public struct RuntimeCapabilityDetection {
     /// Media capability wrappers for microphone input and screen capture APIs.
     public enum Media {
         nonisolated public static var hasMicrophoneInput: Bool {
-            if let forced = testMediaHasMicrophoneInput { return forced }
-            return detectMediaHasMicrophoneInput()
+            resolvedBool(override: testMediaHasMicrophoneInput, detector: detectMediaHasMicrophoneInput)
         }
 
         nonisolated public static var supportsScreenCapture: Bool {
-            if let forced = testMediaSupportsScreenCapture { return forced }
-            return detectMediaSupportsScreenCapture()
+            resolvedBool(override: testMediaSupportsScreenCapture, detector: detectMediaSupportsScreenCapture)
         }
 
         public static func setTestHasMicrophoneInput(_ value: Bool?) {
@@ -909,13 +905,11 @@ public struct RuntimeCapabilityDetection {
     /// Pasteboard / clipboard string IO wrappers.
     public enum Pasteboard {
         nonisolated public static var canReadStrings: Bool {
-            if let forced = testPasteboardCanReadStrings { return forced }
-            return detectPasteboardCanReadStrings()
+            resolvedBool(override: testPasteboardCanReadStrings, detector: detectPasteboardCanReadStrings)
         }
 
         nonisolated public static var canWriteStrings: Bool {
-            if let forced = testPasteboardCanWriteStrings { return forced }
-            return detectPasteboardCanWriteStrings()
+            resolvedBool(override: testPasteboardCanWriteStrings, detector: detectPasteboardCanWriteStrings)
         }
 
         public static func setTestCanReadStrings(_ value: Bool?) {
@@ -996,6 +990,11 @@ public struct RuntimeCapabilityDetection {
         } else {
             Thread.current.threadDictionary.removeObject(forKey: key)
         }
+    }
+
+    private static func resolvedBool(override: Bool?, detector: () -> Bool) -> Bool {
+        if let forced = override { return forced }
+        return detector()
     }
 
     /// Runs a MainActor-isolated sync probe only when already on the main thread.
