@@ -822,6 +822,8 @@ struct Layer4ContractOnlyView: View {
     @State private var l4ContractCopySource = "L4CopyContractText"
     @State private var l4ShowPrint = false
     @State private var l4ContractShowPhotoPicker = false
+    @State private var l4ContractOpenURLResult: Bool?
+    @State private var l4ContractRegisterRemoteNotificationsResult: Bool?
     @State private var l4OverlayNavigationSheet = false
     @StateObject private var cloudKitContractService = Layer4ExamplesCloudKitServiceHolder()
     private let l4OverlayStrategy = AppNavigationStrategy(
@@ -921,6 +923,38 @@ struct Layer4ContractOnlyView: View {
                 .platformPrint_L4(isPresented: $l4ShowPrint, content: .text("L4 Print Contract"))
                 .accessibilityIdentifier("L4ContractPrint")
                 .accessibilityLabel("L4ContractPrint")
+            Text("Open URL (platformOpenURL_L4)")
+                .font(.caption)
+                .foregroundColor(.secondary)
+            Button("L4ContractOpenURL") {
+                if let url = URL(string: "https://www.apple.com") {
+                    l4ContractOpenURLResult = platformOpenURL_L4(url)
+                } else {
+                    l4ContractOpenURLResult = false
+                }
+            }
+            .accessibilityIdentifier("L4ContractOpenURL")
+            .accessibilityLabel("L4ContractOpenURL")
+            if let openURLResult = l4ContractOpenURLResult {
+                Text("L4ContractOpenURLResult:\(openURLResult ? "true" : "false")")
+                    .font(.caption)
+                    .accessibilityIdentifier("L4ContractOpenURLResult")
+                    .accessibilityLabel("L4ContractOpenURLResult:\(openURLResult ? "true" : "false")")
+            }
+            Text("Remote notifications (platformRegisterForRemoteNotifications_L4)")
+                .font(.caption)
+                .foregroundColor(.secondary)
+            Button("L4ContractRegisterRemoteNotifications") {
+                l4ContractRegisterRemoteNotificationsResult = platformRegisterForRemoteNotifications_L4()
+            }
+            .accessibilityIdentifier("L4ContractRegisterRemoteNotifications")
+            .accessibilityLabel("L4ContractRegisterRemoteNotifications")
+            if let registerResult = l4ContractRegisterRemoteNotificationsResult {
+                Text("L4ContractRegisterRemoteNotificationsResult:\(registerResult ? "true" : "false")")
+                    .font(.caption)
+                    .accessibilityIdentifier("L4ContractRegisterRemoteNotificationsResult")
+                    .accessibilityLabel("L4ContractRegisterRemoteNotificationsResult:\(registerResult ? "true" : "false")")
+            }
             Text("CloudKit Sync Status")
                 .font(.caption)
                 .foregroundColor(.secondary)
