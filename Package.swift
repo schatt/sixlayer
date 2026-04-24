@@ -90,5 +90,14 @@ let package = Package(
             ]
         ),
 
+        /// Public UI test navigation contract types in SixLayerTestKit (#227).
+        .testTarget(
+            name: "SixLayerUITestNavigationContractTests",
+            dependencies: [
+                "SixLayerTestKit"
+            ],
+            path: "Development/Tests/SixLayerUITestNavigationContractTests"
+        ),
+
     ]
 )
