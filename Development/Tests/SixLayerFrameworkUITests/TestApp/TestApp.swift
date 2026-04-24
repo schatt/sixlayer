@@ -950,7 +950,7 @@ struct PlatformBasicContainersExtensionsAuditView: View {
 
                 platformForm {
                     platformSectionContainer(header: "Audit Form Section") {
-                        platformTextField("Audit field", text: .constant("value"), id: "platform-basic-form-field")
+                        SixLayerFramework.platformTextField("Audit field", text: .constant("value"), id: "platform-basic-form-field")
                     }
                 }
                 .frame(minHeight: 100, maxHeight: 120)
