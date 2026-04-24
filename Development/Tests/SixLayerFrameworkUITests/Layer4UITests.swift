@@ -864,6 +864,48 @@ final class Layer4UITests: XCTestCase {
     }
 
     @MainActor
+    func testL4_platformOpenURL_L4() throws {
+        ensureContractRoot()
+        scrollToElement(label: "L4ContractOpenURL")
+        let openById = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "identifier == %@", "L4ContractOpenURL"))
+            .firstMatch
+        let openByLabel = app.buttons["L4ContractOpenURL"].firstMatch
+        let openButton: XCUIElement
+        if openById.waitForExistence(timeout: 10.0) {
+            openButton = openById
+        } else {
+            XCTAssertTrue(openByLabel.waitForExistence(timeout: 3.0),
+                          "platformOpenURL_L4: invocation surface button should exist with contract identifier/label")
+            openButton = openByLabel
+        }
+        tapByNormalizedCenter(openButton)
+        XCTAssertTrue(app.staticTexts["L4ContractOpenURLResult:true"].waitForExistence(timeout: 6.0),
+                      "platformOpenURL_L4: invocation should produce deterministic contract result text")
+    }
+
+    @MainActor
+    func testL4_platformRegisterForRemoteNotifications_L4() throws {
+        ensureContractRoot()
+        scrollToElement(label: "L4ContractRegisterRemoteNotifications")
+        let registerById = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "identifier == %@", "L4ContractRegisterRemoteNotifications"))
+            .firstMatch
+        let registerByLabel = app.buttons["L4ContractRegisterRemoteNotifications"].firstMatch
+        let registerButton: XCUIElement
+        if registerById.waitForExistence(timeout: 10.0) {
+            registerButton = registerById
+        } else {
+            XCTAssertTrue(registerByLabel.waitForExistence(timeout: 3.0),
+                          "platformRegisterForRemoteNotifications_L4: invocation surface button should exist with contract identifier/label")
+            registerButton = registerByLabel
+        }
+        tapByNormalizedCenter(registerButton)
+        XCTAssertTrue(app.staticTexts["L4ContractRegisterRemoteNotificationsResult:true"].waitForExistence(timeout: 6.0),
+                      "platformRegisterForRemoteNotifications_L4: invocation should produce deterministic contract result text")
+    }
+
+    @MainActor
     func testL4_platformCloudKitSyncStatus_L4() throws {
         ensureContractRoot()
         scrollToElement(label: "L4 System")
