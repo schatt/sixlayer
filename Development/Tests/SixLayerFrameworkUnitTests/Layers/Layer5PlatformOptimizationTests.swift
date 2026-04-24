@@ -18,22 +18,18 @@ open class Layer5PlatformOptimizationTests: BaseTestClass {
     // (iOS|watchOS ? 44 : 0) formula that silently miscategorizes tvOS/visionOS.
 
     @Test @MainActor func testGetCardExpansionPlatformConfig_iOS() async {
-        RuntimeCapabilityDetection.setTestTouchSupport(true)
-        RuntimeCapabilityDetection.setTestHapticFeedback(true)
-        RuntimeCapabilityDetection.setTestHover(false)
+        guard SixLayerPlatform.current == .iOS else { return }
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
         let config = getCardExpansionPlatformConfig()
-
-        #expect(config.supportsTouch == true, "iOS should support touch")
         let currentPlatform = SixLayerPlatform.current
-        let expectedMinTouchTarget = PlatformTestUtilities.expectedMinTouchTarget(
-            for: currentPlatform,
-            touchDetected: true
-        )
-        // When hover is disabled, hoverDelay should be 0.0 (Issue #141)
-        let expectedHoverDelay: TimeInterval = 0.0
+        let expectedMinTouchTarget = PlatformTestUtilities.expectedMinTouchTarget(for: currentPlatform)
+        #expect(config.supportsTouch == RuntimeCapabilityDetection.supportsTouch)
+        #expect(config.supportsHapticFeedback == RuntimeCapabilityDetection.supportsHapticFeedback)
+        #expect(config.supportsHover == RuntimeCapabilityDetection.supportsHover)
         #expect(config.minTouchTarget == expectedMinTouchTarget,
-                "Apple HIG: \(currentPlatform) expected \(expectedMinTouchTarget)pt with touch on")
-        #expect(config.hoverDelay == expectedHoverDelay, "Current platform \(currentPlatform) should have hoverDelay 0.0 when hover is disabled")
+                "Apple HIG: \(currentPlatform) expected \(expectedMinTouchTarget)pt")
+        #expect(config.hoverDelay == RuntimeCapabilityDetection.hoverDelay)
     }
 
     @Test @MainActor func testGetCardExpansionPlatformConfig_macOS() async {

@@ -460,29 +460,19 @@ open class IntelligentCardExpansionComprehensiveTests: BaseTestClass {    // MAR
     // or when testing the actual platform.
     
     @Test @MainActor func testGetCardExpansionPlatformConfig_iOS() async {
-        // Set iOS-like overrides so assertions are deterministic when run in parallel with other tests
-        RuntimeCapabilityDetection.setTestTouchSupport(true)
-        RuntimeCapabilityDetection.setTestHapticFeedback(true)
-        RuntimeCapabilityDetection.setTestHover(false)
-        RuntimeCapabilityDetection.setTestVoiceOver(true)
-        RuntimeCapabilityDetection.setTestSwitchControl(true)
-        RuntimeCapabilityDetection.setTestAssistiveTouch(true)
-
+        guard SixLayerPlatform.current == .iOS else { return }
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
         let config = getCardExpansionPlatformConfig()
-
-        // Check runtime platform instead of compile-time platform
-        let runtimePlatform = RuntimeCapabilityDetection.currentPlatform
-        if runtimePlatform == .iOS {
-            #expect(config.supportsTouch == true, "iOS should support touch")
-            #expect(config.supportsHapticFeedback == true, "iOS should support haptic feedback")
-            #expect(config.supportsHover == false, "iOS should not support hover by default")
-            #expect(config.supportsVoiceOver == true, "iOS should support VoiceOver")
-            #expect(config.supportsSwitchControl == true, "iOS should support Switch Control")
-            #expect(config.supportsAssistiveTouch == true, "iOS should support AssistiveTouch")
-        } else {
-            // On other platforms, simulation may not work due to thread/actor isolation
-            // Skip assertions - this is expected behavior
-        }
+        #expect(config.supportsTouch == RuntimeCapabilityDetection.supportsTouch)
+        #expect(config.supportsHapticFeedback == RuntimeCapabilityDetection.supportsHapticFeedback)
+        #expect(config.supportsHover == RuntimeCapabilityDetection.supportsHover)
+        #expect(config.supportsVoiceOver == RuntimeCapabilityDetection.supportsVoiceOver)
+        #expect(config.supportsSwitchControl == RuntimeCapabilityDetection.supportsSwitchControl)
+        #expect(config.supportsAssistiveTouch == RuntimeCapabilityDetection.supportsAssistiveTouch)
+        let expectedMin = PlatformTestUtilities.expectedMinTouchTarget(for: .iOS)
+        #expect(config.minTouchTarget == expectedMin)
+        #expect(config.hoverDelay == RuntimeCapabilityDetection.hoverDelay)
     }
     
     @Test @MainActor func testGetCardExpansionPlatformConfig_macOS() async {

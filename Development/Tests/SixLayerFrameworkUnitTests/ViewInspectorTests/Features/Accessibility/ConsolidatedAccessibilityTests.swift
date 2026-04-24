@@ -3366,11 +3366,12 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         
         switch platform {
         case .iOS:
-            #expect(config.supportsTouch == true || config.supportsTouch == false,
-                   "iOS touch support should be determinable")
-            #expect(config.supportsHapticFeedback == true || config.supportsHapticFeedback == false,
-                   "iOS haptic feedback support should be determinable")
-            #expect(config.minTouchTarget == 44, "iOS should have 44pt minimum touch targets")
+            #expect(config.supportsTouch == RuntimeCapabilityDetection.supportsTouch)
+            #expect(config.supportsHapticFeedback == RuntimeCapabilityDetection.supportsHapticFeedback)
+            #expect(config.supportsHover == RuntimeCapabilityDetection.supportsHover)
+            #expect(config.hoverDelay == RuntimeCapabilityDetection.hoverDelay)
+            let expectedMin = PlatformTestUtilities.expectedMinTouchTarget(for: .iOS)
+            #expect(config.minTouchTarget == expectedMin, "iOS min touch target should match HIG helper (\(expectedMin)pt)")
         case .macOS:
             #expect(config.supportsHover == RuntimeCapabilityDetection.supportsHover)
             #expect(config.hoverDelay == RuntimeCapabilityDetection.hoverDelay)
