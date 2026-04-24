@@ -87,6 +87,8 @@ struct TestAppContentView: View {
     private let openPlatformClipboardUrlLayer4 = ProcessInfo.processInfo.arguments.contains("-OpenPlatformClipboardUrlLayer4")
     /// When true, app opens to core container/navigation extension audit host (launch arg -OpenPlatformBasicContainersExtensions).
     private let openPlatformBasicContainersExtensions = ProcessInfo.processInfo.arguments.contains("-OpenPlatformBasicContainersExtensions")
+    /// When true, app opens to list/navigation helper audit host (launch arg -OpenPlatformListNavigationExtensions).
+    private let openPlatformListNavigationExtensions = ProcessInfo.processInfo.arguments.contains("-OpenPlatformListNavigationExtensions")
     
     enum TestView: String, CaseIterable, Identifiable {
         case control = "Control Test"
@@ -194,6 +196,10 @@ struct TestAppContentView: View {
             } else if openPlatformBasicContainersExtensions {
                 NavigationStack {
                     PlatformBasicContainersExtensionsAuditView(onBackToMain: nil)
+                }
+            } else if openPlatformListNavigationExtensions {
+                NavigationStack {
+                    PlatformListNavigationExtensionsAuditView(onBackToMain: nil)
                 }
             } else {
                 NavigationStack {
@@ -309,6 +315,11 @@ struct TestAppContentView: View {
                     PlatformBasicContainersExtensionsAuditView(onBackToMain: nil)
                 }
                 .accessibilityIdentifier("platform-basic-containers-extensions-link")
+
+                NavigationLink("Platform List / Navigation Helpers Audit") {
+                    PlatformListNavigationExtensionsAuditView(onBackToMain: nil)
+                }
+                .accessibilityIdentifier("platform-list-navigation-extensions-link")
             }
             .padding()
         }
@@ -958,6 +969,143 @@ struct PlatformBasicContainersExtensionsAuditView: View {
         }
         .platformFrame()
         .navigationTitle("Basic Containers")
+        .platformNavigationTitleDisplayMode_L4(.inline)
+    }
+}
+
+/// RealUI/TestApp coverage for list + navigation helper platform APIs (issue #170 Phase 2).
+struct PlatformListNavigationExtensionsAuditView: View {
+    struct AuditRow: Identifiable, Hashable {
+        let id: Int
+        let title: String
+    }
+
+    @State private var selectedSingle: Int? = nil
+    @State private var selectedMulti: Set<Int> = []
+    @State private var selectedDetail: AuditRow? = nil
+    @State private var toolbarTapCount = 0
+    @State private var navButtonTapCount = 0
+    @State private var rowSelectionCount = 0
+    var onBackToMain: (() -> Void)?
+
+    private let rows = (0..<4).map { AuditRow(id: $0, title: "Row \($0)") }
+
+    var body: some View {
+        platformScrollViewContainer {
+            platformVStack(alignment: .leading, spacing: 16) {
+                platformText("Platform List / Navigation Helpers Audit")
+                    .font(.headline)
+                    .accessibilityIdentifier("platform-list-nav-audit-title")
+
+                platformText("platformListStyle + platformListToolbar")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                List(rows, id: \.id) { row in
+                    platformText(row.title)
+                        .accessibilityIdentifier("platform-list-nav-style-row-\(row.id)")
+                }
+                .platformListStyle()
+                .platformListToolbar(onAdd: { toolbarTapCount += 1 }, addButtonTitle: "Add audit row")
+                .frame(minHeight: 120, maxHeight: 140)
+                .accessibilityIdentifier("platform-list-nav-style-toolbar-host")
+
+                platformText("Toolbar tap count: \(toolbarTapCount)")
+                    .accessibilityIdentifier("platform-list-nav-toolbar-count")
+
+                platformText("platformListWithSelection (single)")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                EmptyView().platformListWithSelection(selection: $selectedSingle) {
+                    ForEach(rows, id: \.id) { row in
+                        platformText(row.title)
+                            .tag(row.id)
+                            .accessibilityIdentifier("platform-list-nav-single-row-\(row.id)")
+                    }
+                }
+                .frame(minHeight: 120, maxHeight: 140)
+                .accessibilityIdentifier("platform-list-nav-single-host")
+
+                platformText("platformListWithSelection (multi)")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                EmptyView().platformListWithSelection(selection: $selectedMulti) {
+                    ForEach(rows, id: \.id) { row in
+                        platformText(row.title)
+                            .tag(row.id)
+                            .accessibilityIdentifier("platform-list-nav-multi-row-\(row.id)")
+                    }
+                }
+                .frame(minHeight: 120, maxHeight: 140)
+                .accessibilityIdentifier("platform-list-nav-multi-host")
+
+                platformText("platformBackupListContainer")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                EmptyView().platformBackupListContainer {
+                    platformText("Backup container body")
+                        .accessibilityIdentifier("platform-list-nav-backup-body")
+                }
+                .frame(minHeight: 60, maxHeight: 80)
+                .accessibilityIdentifier("platform-list-nav-backup-host")
+
+                platformText("platformListDetailContainer + platformSelectableListRow")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                EmptyView().platformListDetailContainer {
+                    platformVStack(alignment: .leading, spacing: 6) {
+                        ForEach(rows, id: \.id) { row in
+                            EmptyView().platformSelectableListRow(isSelected: selectedDetail == row, onSelect: {
+                                selectedDetail = row
+                                rowSelectionCount += 1
+                            }) {
+                                platformText(row.title)
+                            }
+                            .accessibilityIdentifier("platform-list-nav-selectable-row-\(row.id)")
+                        }
+                    }
+                } detail: {
+                    platformText(selectedDetail?.title ?? "No selection")
+                        .accessibilityIdentifier("platform-list-nav-detail-body")
+                }
+                .frame(minHeight: 160, maxHeight: 190)
+                .accessibilityIdentifier("platform-list-nav-detail-container-host")
+
+                platformText("Selectable row tap count: \(rowSelectionCount)")
+                    .accessibilityIdentifier("platform-list-nav-row-selection-count")
+
+                platformText("platformListDetailNavigation")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                platformText("List-detail helper host")
+                    .platformListDetailNavigation(
+                        items: rows,
+                        selectedItem: $selectedDetail,
+                        itemView: { item in platformText(item.title) },
+                        detailView: { item in platformText("Detail: \(item.title)") }
+                    )
+                    .frame(minHeight: 140, maxHeight: 170)
+                    .accessibilityIdentifier("platform-list-nav-detail-navigation-host")
+
+                platformText("platformNavigationSheetButton")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                platformText("Navigation sheet helper host")
+                    .platformNavigationSheetButton(action: { navButtonTapCount += 1 })
+                    .accessibilityIdentifier("platform-list-nav-sheet-button-host")
+
+                platformText("Navigation button tap count: \(navButtonTapCount)")
+                    .accessibilityIdentifier("platform-list-nav-sheet-button-count")
+
+                if let onBackToMain {
+                    platformButton(label: "Back to Main", id: "platform-list-nav-back-to-main") {
+                        onBackToMain()
+                    }
+                }
+            }
+            .padding()
+        }
+        .platformFrame()
+        .navigationTitle("List / Navigation Helpers")
         .platformNavigationTitleDisplayMode_L4(.inline)
     }
 }
