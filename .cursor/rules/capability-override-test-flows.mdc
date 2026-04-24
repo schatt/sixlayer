@@ -14,6 +14,18 @@ alwaysApply: false
 
 Run assertions on the **real** OS for that scheme (simulator or device). Do not rely on thread-local overrides on **iOS** to stand in for **tvOS / macOS / watchOS / visionOS** behavior — use the matching test target and simulator when you need that platform’s runtime.
 
+## Simulator limitations vs device
+
+**Simulators do not replicate everything** (hardware, some privacy flows, drivers). When a capability is **unavailable or misleading in Simulator** but **real on device**, tests should:
+
+- Assert what the **current environment** actually allows (e.g. skip or soften expectations when `AVCaptureDevice` / session APIs report no hardware or simulator-only behavior).
+- Avoid pretending the simulator **is** a device for that path.
+
+When behavior **must** be validated on hardware and cannot live in CI alone, add a **brief comment** in the test file, for example:  
+`// Periodic real-device: re-run or extend this when changing <feature>; iOS Simulator does not fully exercise <camera / LiDAR / …>.`
+
+That documents the gap without blocking green CI on something the simulator cannot provide.
+
 ## Thread-local `setTest*` (default / positive / negative)
 
 Where `RuntimeCapabilityDetection.setTest*(...)` is used to drive tests:
