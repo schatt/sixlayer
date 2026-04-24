@@ -516,6 +516,16 @@ open class RuntimeCapabilityDetectionTDDTests: BaseTestClass {
     }
 
     @Test @MainActor
+    func testNetworkOverrideKeysAreIndependent() {
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        RuntimeCapabilityDetection.Network.setTestIsConstrained(true)
+        RuntimeCapabilityDetection.Network.setTestIsExpensive(false)
+        #expect(RuntimeCapabilityDetection.Network.isConstrained)
+        #expect(!RuntimeCapabilityDetection.Network.isExpensive)
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+    }
+
+    @Test @MainActor
     func testMediaOverridesClearWithClearAllCapabilityOverrides() {
         RuntimeCapabilityDetection.clearAllCapabilityOverrides()
         let baselineMic = RuntimeCapabilityDetection.Media.hasMicrophoneInput
