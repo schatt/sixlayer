@@ -352,6 +352,86 @@ open class RuntimeCapabilityDetectionTDDTests: BaseTestClass {
         #expect(runtimePlatform == sixLayerPlatform, "RuntimeCapabilityDetection.currentPlatform should match SixLayerPlatform.current")
     }
 
+    // MARK: - Vision / Photos namespaced runtime (#253)
+
+    @Test @MainActor
+    func testLegacySupportsVisionMatchesVisionNamespace() {
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        #expect(RuntimeCapabilityDetection.supportsVision == RuntimeCapabilityDetection.Vision.isFrameworkAvailable)
+    }
+
+    @Test @MainActor
+    func testLegacySupportsOCRMatchesVisionNamespace() {
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        #expect(RuntimeCapabilityDetection.supportsOCR == RuntimeCapabilityDetection.Vision.supportsOCR)
+    }
+
+    @Test @MainActor
+    func testVisionOverridesClearWithClearAllCapabilityOverrides() {
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        let baselineFramework = RuntimeCapabilityDetection.Vision.isFrameworkAvailable
+        let baselineOCR = RuntimeCapabilityDetection.Vision.supportsOCR
+        let baselineImageAnalyzer = RuntimeCapabilityDetection.Vision.supportsImageAnalyzer
+        let baselineDocumentCamera = RuntimeCapabilityDetection.Vision.supportsDocumentCamera
+
+        RuntimeCapabilityDetection.Vision.setTestIsFrameworkAvailable(!baselineFramework)
+        #expect(RuntimeCapabilityDetection.Vision.isFrameworkAvailable == !baselineFramework)
+        #expect(RuntimeCapabilityDetection.supportsVision == !baselineFramework)
+
+        RuntimeCapabilityDetection.Vision.setTestSupportsOCR(!baselineOCR)
+        #expect(RuntimeCapabilityDetection.Vision.supportsOCR == !baselineOCR)
+        #expect(RuntimeCapabilityDetection.supportsOCR == !baselineOCR)
+
+        RuntimeCapabilityDetection.Vision.setTestSupportsImageAnalyzer(!baselineImageAnalyzer)
+        #expect(RuntimeCapabilityDetection.Vision.supportsImageAnalyzer == !baselineImageAnalyzer)
+
+        RuntimeCapabilityDetection.Vision.setTestSupportsDocumentCamera(!baselineDocumentCamera)
+        #expect(RuntimeCapabilityDetection.Vision.supportsDocumentCamera == !baselineDocumentCamera)
+
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+
+        #expect(RuntimeCapabilityDetection.Vision.isFrameworkAvailable == baselineFramework)
+        #expect(RuntimeCapabilityDetection.Vision.supportsOCR == baselineOCR)
+        #expect(RuntimeCapabilityDetection.Vision.supportsImageAnalyzer == baselineImageAnalyzer)
+        #expect(RuntimeCapabilityDetection.Vision.supportsDocumentCamera == baselineDocumentCamera)
+        #expect(RuntimeCapabilityDetection.supportsVision == baselineFramework)
+        #expect(RuntimeCapabilityDetection.supportsOCR == baselineOCR)
+    }
+
+    @Test @MainActor
+    func testPhotosOverridesClearWithClearAllCapabilityOverrides() {
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        let baselineCamera = RuntimeCapabilityDetection.Photos.hasCamera
+        let baselinePicker = RuntimeCapabilityDetection.Photos.isPhotoLibraryPickerAvailable
+        let baselineScanner = RuntimeCapabilityDetection.Photos.supportsLiveDataScanner
+
+        RuntimeCapabilityDetection.Photos.setTestHasCamera(!baselineCamera)
+        #expect(RuntimeCapabilityDetection.Photos.hasCamera == !baselineCamera)
+
+        RuntimeCapabilityDetection.Photos.setTestIsPhotoLibraryPickerAvailable(!baselinePicker)
+        #expect(RuntimeCapabilityDetection.Photos.isPhotoLibraryPickerAvailable == !baselinePicker)
+
+        RuntimeCapabilityDetection.Photos.setTestSupportsLiveDataScanner(!baselineScanner)
+        #expect(RuntimeCapabilityDetection.Photos.supportsLiveDataScanner == !baselineScanner)
+
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+
+        #expect(RuntimeCapabilityDetection.Photos.hasCamera == baselineCamera)
+        #expect(RuntimeCapabilityDetection.Photos.isPhotoLibraryPickerAvailable == baselinePicker)
+        #expect(RuntimeCapabilityDetection.Photos.supportsLiveDataScanner == baselineScanner)
+    }
+
+    /// Smoke: VisionKit / Vision static probes must not trap on the main actor.
+    @Test @MainActor
+    func testVisionAndPhotosCapabilityReadsDoNotCrashOnMainActor() {
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        _ = RuntimeCapabilityDetection.Photos.photoLibraryReadAccessLevel
+        _ = RuntimeCapabilityDetection.Photos.supportsLiveDataScanner
+        _ = RuntimeCapabilityDetection.Vision.supportsImageAnalyzer
+        _ = RuntimeCapabilityDetection.Vision.supportsDocumentCamera
+        #expect(Bool(true))
+    }
+
     #if os(macOS)
     /// Regression for GitHub #236: `UserDefaults.standard` touch simulation must not leak into card config when the suite harness pins preferences off.
     @Test @MainActor
