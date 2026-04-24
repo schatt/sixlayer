@@ -51,10 +51,25 @@ Optional narrow regression for Layer 5 config wiring: `Development/Tests/Shared/
 
 ### 1) Controls — **primary** home for tri-value / variable-behavior tests
 
-**Any control** whose layout, interaction, HIG compliance, or accessibility **changes** based on touch / hover / haptics / VO / etc. should get **current / disabled / enabled** (or equivalent) tests **next to that control** (ViewInspector, snapshot, or integration as appropriate).
+**Any control** (view, modifier, container, sheet, etc.) whose code **branches** on `RuntimeCapabilityDetection` (or config derived from it) must be covered with **tri-state** tests on the **real host** for that scheme’s unit-test bundle — **not** by simulating another OS with thread-local hacks on the wrong machine.
 
-- **Scope:** all such controls (buttons, cards, sheets, navigation, etc.).
-- **Assert behavior** (sizes, labels, interaction gates, etc.), not only that a capability flag returned a boolean.
+#### Canonical shape (do this; avoid half measures)
+
+1. **One neutral test** (or one neutral suite) per control / concern — **no** `testFoo_tvOS` / `testFoo_macOS` method names that imply a different OS than the runner. The same Swift can ship in every `SixLayerFrameworkUnitTests_*` target; the **host** is whatever simulator or device is attached.
+
+2. **Three phases on the current host**, in order, with `clearAllCapabilityOverrides()` / `defer` hygiene so parallel tests do not leak state:
+   - **Current** — overrides cleared; record **effective** capability reads if useful.
+   - **Disabled** — `setTest*(false)` (or the relevant negative) for each axis you are proving.
+   - **Enabled** — `setTest*(true)` so the positive branch always runs even when hardware rarely produces it (e.g. haptics on Mac).
+
+3. **`switch SixLayerPlatform.current` (exhaustive)** — after **each** phase (or inside a small helper you call per phase), branch on **host OS** and assert **what “right” means here** for **that** control: hit target floors, hover affordance presence/absence, animation or haptic branches, focus behavior, copy/semantics, etc. **Do not** assert a single global constant across OSes; **do** encode per-platform law (including **nonsensical** negatives, e.g. touch `false` ignored on iOS/watchOS → layout still matches touch-first HIG).
+
+4. **Assertions target behavior**, not “is `supportsTouch` true”. The boolean is only useful as **input** to what the user sees (frames, gestures, labels, timing). If the only check is `config.flag == detection.flag`, that is **plumbing** — keep it **tiny** and secondary to behavioral checks.
+
+5. **Shared neutral file (optional):** a single file under `Development/Tests/Shared/TestHelpers/` (or another path included by **all** unit-test targets) may host **neutral** tri-state suites that apply to **multiple** controls only when the **same** `switch` + phase pattern is genuinely shared; otherwise keep tests **next to the control** to avoid abstraction drift.
+
+- **Scope:** all controls that vary with capability.
+- **Tracking:** [GitHub #251](https://github.com/schatt/sixlayer/issues/251) (milestone **v7.6.2**).
 
 ### 2) TDD plumbing — **secondary**; overrides and DTOs return the right thing
 
