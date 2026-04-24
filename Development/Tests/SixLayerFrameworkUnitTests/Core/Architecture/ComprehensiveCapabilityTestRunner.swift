@@ -200,12 +200,34 @@ struct ComprehensiveCapabilityTestRunner {
         testCapabilityDetection(disabledConfig, capability: capability, enabled: false)
     }
     
+    /// Thread-local touch `false` is ignored on iOS/watchOS (platform guarantee); elsewhere it is honored.
+    @MainActor
+    private func assertTouchMatchesThreadLocalMock(_ config: CardExpansionPlatformConfig, mockTouchEnabled: Bool) {
+        let host = SixLayerPlatform.current
+        switch host {
+        case .iOS, .watchOS:
+            if mockTouchEnabled {
+                #expect(config.supportsTouch, "Positive touch override should report touch on \(host)")
+            } else {
+                #expect(
+                    config.supportsTouch,
+                    "Nonsensical false touch override must be ignored on \(host); primary touch remains available"
+                )
+            }
+        default:
+            #expect(
+                config.supportsTouch == mockTouchEnabled,
+                "Touch detection on \(host) should match thread-local mock (\(mockTouchEnabled))"
+            )
+        }
+    }
+    
     /// Test capability detection
     @MainActor
     func testCapabilityDetection(_ config: CardExpansionPlatformConfig, capability: TestRunnerConfig.CapabilityType, enabled: Bool) {
         switch capability {
         case .touch:
-            #expect(config.supportsTouch == enabled, "Touch detection should be \(enabled)")
+            assertTouchMatchesThreadLocalMock(config, mockTouchEnabled: enabled)
         case .hover:
             #expect(config.supportsHover == enabled, "Hover detection should be \(enabled)")
         case .hapticFeedback:
@@ -256,22 +278,16 @@ struct ComprehensiveCapabilityTestRunner {
     func testUIGeneration(_ config: CardExpansionPlatformConfig, capability: TestRunnerConfig.CapabilityType, enabled: Bool) {
         switch capability {
         case .touch:
-            // Touch should match the enabled state (runtime detection)
-            #expect(config.supportsTouch == enabled, "Touch UI should be \(enabled ? "generated" : "not generated") based on runtime detection")
-            // minTouchTarget must match Apple HIG per platform (Issue #237):
-            //   iOS/watchOS: 44  (touch HIG)
-            //   tvOS:        60  (focus HIG @ 10-foot)
-            //   visionOS:    60  (gaze+pinch HIG)
-            //   macOS:       44 if touch detected, else 0
-            // Touch being enabled does NOT override the tvOS/visionOS HIG
-            // floors — those are platform-intrinsic, not touch-conditional.
+            assertTouchMatchesThreadLocalMock(config, mockTouchEnabled: enabled)
+            // minTouchTarget must match Apple HIG for **effective** runtime touch (`config.supportsTouch`), not the mock alone —
+            // on iOS/watchOS a false mock is ignored so floors follow intrinsic touch (Issue #237).
             let platform = RuntimeCapabilityDetection.currentPlatform
             let expectedMinTouchTarget = PlatformTestUtilities.expectedMinTouchTarget(
                 for: platform,
-                touchDetected: enabled
+                touchDetected: config.supportsTouch
             )
             #expect(config.minTouchTarget == expectedMinTouchTarget,
-                    "Touch targets must match Apple HIG for \(platform) (touch \(enabled ? "on" : "off")): expected \(expectedMinTouchTarget)pt")
+                    "Touch targets must match Apple HIG for \(platform) (effective touch \(config.supportsTouch)): expected \(expectedMinTouchTarget)pt")
         case .hover:
             // Hover should match the enabled state (runtime detection)
             #expect(config.supportsHover == enabled, "Hover UI should be \(enabled ? "generated" : "not generated") based on runtime detection")
@@ -476,16 +492,14 @@ struct ComprehensiveCapabilityTestRunner {
         // Test that the behavior is consistent with the platform capabilities
         switch capability {
         case .touch:
-            // Touch should match the enabled state (runtime detection)
-            #expect(config.supportsTouch == enabled, "Touch behavior should be \(enabled ? "enabled" : "disabled") based on runtime detection")
-            // minTouchTarget per Apple HIG (Issue #237); see testUIGeneration above.
+            assertTouchMatchesThreadLocalMock(config, mockTouchEnabled: enabled)
             let platform = RuntimeCapabilityDetection.currentPlatform
             let expectedMinTouchTarget = PlatformTestUtilities.expectedMinTouchTarget(
                 for: platform,
-                touchDetected: enabled
+                touchDetected: config.supportsTouch
             )
             #expect(config.minTouchTarget == expectedMinTouchTarget,
-                    "Touch targets must match Apple HIG for \(platform) (touch \(enabled ? "on" : "off")): expected \(expectedMinTouchTarget)pt")
+                    "Touch targets must match Apple HIG for \(platform) (effective touch \(config.supportsTouch)): expected \(expectedMinTouchTarget)pt")
         case .hover:
             // Hover should match the enabled state (runtime detection)
             #expect(config.supportsHover == enabled, "Hover behavior should be \(enabled ? "enabled" : "disabled") based on runtime detection")

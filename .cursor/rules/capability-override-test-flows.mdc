@@ -14,7 +14,7 @@ For each capability that supports `RuntimeCapabilityDetection.setTest*(...)`, st
 
 2. **Positive override** — set the override to `true` when the platform can honor it; assert the code path that should run **when that capability is on** on **this** platform.
 
-3. **Negative override** — set the override to `false`:
+3. **Negative override** — set the override to `false` and **always run this path** (do not skip on iOS/watchOS):
    - If the platform **cannot** semantically disable the capability (e.g. **iOS/watchOS touch** — a platform guarantee), assert the **negative value is ignored** and documented behavior holds (`supportsTouch` still true; see `setTestTouchSupport` doc on `RuntimeCapabilityDetection`).
    - If the platform **can** simulate off (e.g. **macOS touch** via thread-local override), assert **false is respected** and downstream behavior matches.
 
