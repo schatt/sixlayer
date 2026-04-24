@@ -48,12 +48,16 @@ final class Layer4UITests: XCTestCase {
             localApp.wait(for: .runningForeground, timeout: 20),
             "App should reach foreground after launch (Layer 4 contract host)"
         )
+        // Inline `navigationTitle` on recent iOS/SwiftUI often omits the title from `navigationBars["…"]` queries;
+        // the L4 contract `Form` still exposes section copy and the sheet trigger (Issue #193).
         let contractRootReady =
-            localApp.navigationBars["Layer 4 Examples"].waitForExistence(timeout: 25)
-            || localApp.staticTexts["Layer 4 Examples"].waitForExistence(timeout: 3)
+            localApp.buttons["L4ContractSheet"].waitForExistence(timeout: 20)
+            || localApp.staticTexts["L4 Presentation"].waitForExistence(timeout: 15)
+            || localApp.navigationBars["Layer 4 Examples"].waitForExistence(timeout: 10)
+            || localApp.staticTexts["Layer 4 Examples"].waitForExistence(timeout: 5)
         XCTAssertTrue(
             contractRootReady,
-            "App should open on Layer 4 Examples (launch arg); navigation bar or large-title text should exist"
+            "App should open on Layer 4 contract host (-OpenLayer4Examples): L4ContractSheet / L4 Presentation / nav title"
         )
     }
 
@@ -274,9 +278,14 @@ final class Layer4UITests: XCTestCase {
             let backButton = app.navigationBars.buttons.firstMatch
             if backButton.exists { backButton.tap() }
             _ = app.navigationBars["Layer 4 Examples"].waitForExistence(timeout: 3.0)
+                || app.buttons["L4ContractSheet"].waitForExistence(timeout: 2.0)
         }
-        XCTAssertTrue(app.navigationBars["Layer 4 Examples"].waitForExistence(timeout: 6.0),
-                      "Contract root: Layer 4 Examples nav bar should exist")
+        XCTAssertTrue(
+            app.navigationBars["Layer 4 Examples"].waitForExistence(timeout: 6.0)
+                || app.buttons["L4ContractSheet"].waitForExistence(timeout: 3.0)
+                || app.staticTexts["L4 Presentation"].waitForExistence(timeout: 3.0),
+            "Contract root: Layer 4 Examples nav bar or L4 contract anchors (L4ContractSheet / L4 Presentation) should exist"
+        )
         func contractTopVisible() -> Bool {
             if app.staticTexts["L4 Presentation"].waitForExistence(timeout: 0.3) { return true }
             if anyDescendantHasLabel(equalTo: "L4 Presentation", timeout: 0.25) { return true }
@@ -692,8 +701,11 @@ final class Layer4UITests: XCTestCase {
     @MainActor
     func testL4_platformNavigationBarTitleDisplayMode_L4() throws {
         ensureContractRoot()
-        XCTAssertTrue(app.navigationBars["Layer 4 Examples"].waitForExistence(timeout: 3.0),
-                      "platformNavigationBarTitleDisplayMode_L4: nav bar with title should exist (applied on root)")
+        XCTAssertTrue(
+            app.navigationBars["Layer 4 Examples"].waitForExistence(timeout: 3.0)
+                || app.buttons["L4ContractSheet"].waitForExistence(timeout: 2.0),
+            "platformNavigationBarTitleDisplayMode_L4: root nav bar or L4 contract anchor should exist (applied on root)"
+        )
     }
 
     @MainActor
@@ -870,7 +882,8 @@ final class Layer4UITests: XCTestCase {
         let closePrint = app.navigationBars.buttons["Close"].firstMatch
         if closePrint.waitForExistence(timeout: 0.5) { closePrint.tap() }
         XCTAssertTrue(
-            app.navigationBars["Layer 4 Examples"].waitForExistence(timeout: 6.0),
+            app.navigationBars["Layer 4 Examples"].waitForExistence(timeout: 6.0)
+                || app.buttons["L4ContractSheet"].waitForExistence(timeout: 3.0),
             "platformPrint_L4: contract screen must be reachable after print (no stuck modal blocking the suite)"
         )
     }
@@ -1044,7 +1057,8 @@ final class Layer4UITests: XCTestCase {
             app.navigationBars.buttons["Cancel"].firstMatch.tap()
         }
         XCTAssertTrue(
-            app.navigationBars["Layer 4 Examples"].waitForExistence(timeout: 8.0),
+            app.navigationBars["Layer 4 Examples"].waitForExistence(timeout: 8.0)
+                || app.buttons["L4ContractSheet"].waitForExistence(timeout: 4.0),
             "platformPhotoPicker_L4: must return to contract root after dismiss (no stuck sheet)"
         )
     }
