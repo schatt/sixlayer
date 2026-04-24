@@ -17,6 +17,18 @@ open class PlatformListNavigationExtensionsTests: BaseTestClass {
         #expect(hosted != nil, "\(context) should render in hosted test environment")
     }
 
+    @MainActor
+    private func expectAccessibilityCompliance<V: View>(_ view: V, componentName: String) {
+        initializeTestConfig()
+        let hasAccessibilityID = testComponentComplianceSinglePlatform(
+            view,
+            expectedPattern: "SixLayer.*ui",
+            platform: .iOS,
+            componentName: componentName
+        )
+        #expect(hasAccessibilityID, "\(componentName) should generate accessibility identifiers on iOS")
+    }
+
     @Test @MainActor func testPlatformListToolbarRenders() async {
         let view = List(0..<2, id: \.self) { idx in
             Text("Row \(idx)")
@@ -71,7 +83,7 @@ open class PlatformListNavigationExtensionsTests: BaseTestClass {
         let view = EmptyView().platformSelectableListRow(isSelected: false, onSelect: {}) {
             Text("Selectable row")
         }
-        expectRenderable(view, context: "platformSelectableListRow")
+        expectAccessibilityCompliance(view, componentName: "platformSelectableListRow")
     }
 
     @Test @MainActor func testPlatformListDetailNavigationRenders() async {
@@ -88,6 +100,6 @@ open class PlatformListNavigationExtensionsTests: BaseTestClass {
 
     @Test @MainActor func testPlatformNavigationSheetButtonRenders() async {
         let view = Text("Host").platformNavigationSheetButton(action: {})
-        expectRenderable(view, context: "platformNavigationSheetButton")
+        expectAccessibilityCompliance(view, componentName: "platformNavigationSheetButton")
     }
 }
