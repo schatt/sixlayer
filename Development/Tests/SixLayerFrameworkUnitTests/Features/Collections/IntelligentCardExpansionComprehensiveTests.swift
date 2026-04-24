@@ -459,33 +459,9 @@ open class IntelligentCardExpansionComprehensiveTests: BaseTestClass {    // MAR
     // thread/actor isolation issues on macOS. Each test only runs when simulation works
     // or when testing the actual platform.
     
-    @Test @MainActor func testGetCardExpansionPlatformConfig_iOS() async {
-        guard SixLayerPlatform.current == .iOS else { return }
-        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-        defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
-        let config = getCardExpansionPlatformConfig()
-        #expect(config.supportsTouch == RuntimeCapabilityDetection.supportsTouch)
-        #expect(config.supportsHapticFeedback == RuntimeCapabilityDetection.supportsHapticFeedback)
-        #expect(config.supportsHover == RuntimeCapabilityDetection.supportsHover)
-        #expect(config.supportsVoiceOver == RuntimeCapabilityDetection.supportsVoiceOver)
-        #expect(config.supportsSwitchControl == RuntimeCapabilityDetection.supportsSwitchControl)
-        #expect(config.supportsAssistiveTouch == RuntimeCapabilityDetection.supportsAssistiveTouch)
-        let expectedMin = PlatformTestUtilities.expectedMinTouchTarget(for: .iOS)
-        #expect(config.minTouchTarget == expectedMin)
-        #expect(config.hoverDelay == RuntimeCapabilityDetection.hoverDelay)
-    }
-    
-    @Test @MainActor func testGetCardExpansionPlatformConfig_macOS() async {
-        guard SixLayerPlatform.current == .macOS else { return }
-        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-        defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
-        let config = getCardExpansionPlatformConfig()
-        #expect(config.supportsTouch == RuntimeCapabilityDetection.supportsTouch)
-        #expect(config.supportsHapticFeedback == RuntimeCapabilityDetection.supportsHapticFeedback)
-        #expect(config.supportsHover == RuntimeCapabilityDetection.supportsHover)
-        #expect(config.supportsVoiceOver == RuntimeCapabilityDetection.supportsVoiceOver)
-        #expect(config.supportsSwitchControl == RuntimeCapabilityDetection.supportsSwitchControl)
-        #expect(config.supportsAssistiveTouch == RuntimeCapabilityDetection.supportsAssistiveTouch)
+    /// Same tri-state contract as `Layer5PlatformOptimizationTests.testGetCardExpansionPlatformConfig_threadLocalTriStateMirrorsRuntime`.
+    @Test @MainActor func testGetCardExpansionPlatformConfig_threadLocalTriStateMirrorsRuntime() async {
+        CapabilityOverrideThreePhaseTestSupport.runAllTriStateAssertionsForCardExpansionPlatformConfig()
     }
     
     @Test @MainActor func testGetCardExpansionPlatformConfig_watchOS() async {

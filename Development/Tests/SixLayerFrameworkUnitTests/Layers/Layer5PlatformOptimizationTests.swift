@@ -17,36 +17,10 @@ open class Layer5PlatformOptimizationTests: BaseTestClass {
     // helper below centralizes the expected value instead of inlining a
     // (iOS|watchOS ? 44 : 0) formula that silently miscategorizes tvOS/visionOS.
 
-    @Test @MainActor func testGetCardExpansionPlatformConfig_iOS() async {
-        guard SixLayerPlatform.current == .iOS else { return }
-        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-        defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
-        let config = getCardExpansionPlatformConfig()
-        let currentPlatform = SixLayerPlatform.current
-        let expectedMinTouchTarget = PlatformTestUtilities.expectedMinTouchTarget(for: currentPlatform)
-        #expect(config.supportsTouch == RuntimeCapabilityDetection.supportsTouch)
-        #expect(config.supportsHapticFeedback == RuntimeCapabilityDetection.supportsHapticFeedback)
-        #expect(config.supportsHover == RuntimeCapabilityDetection.supportsHover)
-        #expect(config.minTouchTarget == expectedMinTouchTarget,
-                "Apple HIG: \(currentPlatform) expected \(expectedMinTouchTarget)pt")
-        #expect(config.hoverDelay == RuntimeCapabilityDetection.hoverDelay)
-    }
-
-    @Test @MainActor func testGetCardExpansionPlatformConfig_macOS() async {
-        guard SixLayerPlatform.current == .macOS else { return }
-        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-        defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
-        let config = getCardExpansionPlatformConfig()
-        let currentPlatform = SixLayerPlatform.current
-        let expectedMinTouchTarget = PlatformTestUtilities.expectedMinTouchTarget(
-            for: currentPlatform,
-            touchDetected: RuntimeCapabilityDetection.supportsTouch
-        )
-        #expect(config.supportsHover == RuntimeCapabilityDetection.supportsHover)
-        #expect(config.supportsTouch == RuntimeCapabilityDetection.supportsTouch)
-        #expect(config.minTouchTarget == expectedMinTouchTarget,
-                "Apple HIG: \(currentPlatform) expected \(expectedMinTouchTarget)pt (effective touch \(config.supportsTouch))")
-        #expect(config.hoverDelay == RuntimeCapabilityDetection.hoverDelay)
+    /// Thread-local **current → disabled → enabled** for touch / haptic / hover, plus cleared `minTouchTarget`
+    /// via `PlatformTestUtilities` (see `CapabilityOverrideThreePhaseTestSupport`).
+    @Test @MainActor func testGetCardExpansionPlatformConfig_threadLocalTriStateMirrorsRuntime() async {
+        CapabilityOverrideThreePhaseTestSupport.runAllTriStateAssertionsForCardExpansionPlatformConfig()
     }
 
     @Test @MainActor func testGetCardExpansionPlatformConfig_visionOS() async {
