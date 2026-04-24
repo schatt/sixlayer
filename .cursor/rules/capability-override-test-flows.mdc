@@ -1,6 +1,6 @@
 ---
 description: SixLayer-specific runtime capability testing — per-OS targets, thread-local overrides, nonsensical inputs; not a substitute for TDD.
-globs: Development/Tests/**/*RuntimeCapability*.swift, Development/Tests/**/*Capability*.swift, Framework/Sources/Core/Models/RuntimeCapabilityDetection.swift
+globs: Development/Tests/**/*RuntimeCapability*.swift, Development/Tests/**/*Capability*.swift, Development/Tests/**/ViewInspectorTests/**/*.swift, Framework/Sources/Core/Models/RuntimeCapabilityDetection.swift
 alwaysApply: false
 ---
 
@@ -35,15 +35,42 @@ When behavior **must** be validated on hardware and cannot live in CI alone:
 
 That documents the gap without blocking green CI on something the simulator cannot provide.
 
-## Thread-local `setTest*` (default / positive / negative)
+## Thread-local `setTest*` — **current**, **disabled**, **enabled** (where it belongs)
 
-Where `RuntimeCapabilityDetection.setTest*(...)` is used to drive tests:
+**Default placement:** **tri-value** (`clear` = **current**, `setTest*(false)` = **disabled**, `setTest*(true)` = **enabled**) testing belongs **on the controls** (and other UI) that **actually branch** on capability — hit targets, hover paths, haptics, focus, announcements, etc. That is where variable behavior is visible and where CI most needs to force both override branches (e.g. macOS haptics off by default but hardware could make “current” positive).
 
-1. **Default** — `clearAllCapabilityOverrides()` (often via `DefaultRuntimeCapabilityIsolationTrait`); config mirrors intrinsic `RuntimeCapabilityDetection`.
-2. **Positive** — `true` (or equivalent) when meaningful on **this** host.
-3. **Negative** — `false` must **still run** on every host; expectations depend on semantics:
-   - **Nonsensical on host** (e.g. `setTestTouchSupport(false)` on **iOS/watchOS**): production **ignores** it; tests **assert** ignore (see `RuntimeCapabilityDetection` docs / `supportsTouch`).
-   - **Meaningful on host** (e.g. `false` on **macOS** touch thread-local): assert **honored**.
+1. **Current** — `clearAllCapabilityOverrides()` (often via `DefaultRuntimeCapabilityIsolationTrait`); intrinsic / environment-defined.
+2. **Disabled** — `setTest*(false)` where meaningful; on **nonsensical** hosts (e.g. `setTestTouchSupport(false)` on **iOS/watchOS**) production **ignores** false — the **control** test (or a thin plumbing test) asserts the **outcome** that matters (e.g. touch-sized layout still applies), not “touch is false”.
+3. **Enabled** — `setTest*(true)` so the positive branch is always exercised when hardware would rarely produce it.
+
+**Detection / shared DTOs:** keep **narrow** tri-state coverage only where it is **TDD for wiring** (see below). Do **not** treat exhaustive tri-state on `RuntimeCapabilityDetection` or every `CardExpansionPlatformConfig` field as a substitute for control tests.
+
+Optional narrow regression for Layer 5 config wiring: `Development/Tests/Shared/TestHelpers/CapabilityOverrideThreePhaseTestSupport.swift` — `runAllTriStateAssertionsForCardExpansionPlatformConfig()`.
+
+## Two layers: **controls (primary)** vs. **TDD plumbing (secondary)**
+
+### 1) Controls — **primary** home for tri-value / variable-behavior tests
+
+**Any control** whose layout, interaction, HIG compliance, or accessibility **changes** based on touch / hover / haptics / VO / etc. should get **current / disabled / enabled** (or equivalent) tests **next to that control** (ViewInspector, snapshot, or integration as appropriate).
+
+- **Scope:** all such controls (buttons, cards, sheets, navigation, etc.).
+- **Assert behavior** (sizes, labels, interaction gates, etc.), not only that a capability flag returned a boolean.
+
+### 2) TDD plumbing — **secondary**; overrides and DTOs return the right thing
+
+**Narrow** tests at the **detection / config** layer are still useful for red/green on wiring:
+
+- `clearAllCapabilityOverrides()` → reads match intended intrinsics.
+- `setTest*(false)` / `setTest*(true)` → values **propagate** into DTOs where product code is responsible, including **nonsensical** negatives (e.g. touch `false` on iOS/watchOS ignored).
+
+Keep this layer **small**; **most** tri-value work stays in **section 1**.
+
+### Consumer law (policy on shared config), not “is touch on” trivia
+
+For **shared** Layer-style configs, **do not** treat a lone boolean read as the main behavioral outcome.
+
+- **Do** assert **policy** tied to effective state where the framework encodes it (e.g. **`minTouchTarget`** vs **`PlatformTestUtilities.expectedMinTouchTarget(for:host, touchDetected:)`** when testing config wiring; **hover delay** zero when hover is off).
+- **Meaningful** “when haptics off, this button …” belongs under **section 1** at the **control**, not as the main job of detection tests.
 
 Do not use overrides only to “pin the matrix” for unrelated checks; matrix suites use **native** detection without fabricating another platform.
 
