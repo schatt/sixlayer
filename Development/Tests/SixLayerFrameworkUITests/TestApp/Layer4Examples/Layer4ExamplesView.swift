@@ -753,6 +753,7 @@ struct Layer4ContractOnlyView: View {
     @State private var l4ShowPopover = false
     @State private var l4ContractCopySource = "L4CopyContractText"
     @State private var l4ShowPrint = false
+    @State private var l4ContractShowPhotoPicker = false
     @State private var l4OverlayNavigationSheet = false
     @StateObject private var cloudKitContractService = Layer4ExamplesCloudKitServiceHolder()
     private let l4OverlayStrategy = AppNavigationStrategy(
@@ -877,6 +878,16 @@ struct Layer4ContractOnlyView: View {
                 .font(.caption)
                 .foregroundColor(.secondary)
             platformCloudKitStatusBadge_L4(service: cloudKitContractService.service)
+            #if os(iOS) || os(macOS)
+            Text("Photo Picker Contract")
+                .font(.caption)
+                .foregroundColor(.secondary)
+            Button("L4ContractPhotoPickerOpen") {
+                l4ContractShowPhotoPicker = true
+            }
+            .accessibilityIdentifier("L4ContractPhotoPickerOpen")
+            .accessibilityLabel("L4ContractPhotoPickerOpen")
+            #endif
             Text("Photo Display")
                 .font(.caption)
                 .foregroundColor(.secondary)
@@ -1052,5 +1063,13 @@ struct Layer4ContractOnlyView: View {
                 .accessibilityLabel("L4PopoverContentContract")
                 .accessibilityIdentifier("L4PopoverContentContract")
         }
+        #if os(iOS) || os(macOS)
+        // Sheet on root stack, not inside `Form`, keeps picker a11y visible to XCUITest (Issue #193).
+        .sheet(isPresented: $l4ContractShowPhotoPicker) {
+            platformPhotoPicker_L4 { _ in
+                l4ContractShowPhotoPicker = false
+            }
+        }
+        #endif
     }
 }
