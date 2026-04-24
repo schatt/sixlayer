@@ -354,12 +354,14 @@ open class RuntimeCapabilityDetectionTDDTests: BaseTestClass {
 
     // MARK: - Vision / Photos namespaced runtime (#253)
 
+    @available(*, deprecated, message: "Legacy forwarder compatibility coverage.")
     @Test @MainActor
     func testLegacySupportsVisionMatchesVisionNamespace() {
         RuntimeCapabilityDetection.clearAllCapabilityOverrides()
         #expect(RuntimeCapabilityDetection.supportsVision == RuntimeCapabilityDetection.Vision.isFrameworkAvailable)
     }
 
+    @available(*, deprecated, message: "Legacy forwarder compatibility coverage.")
     @Test @MainActor
     func testLegacySupportsOCRMatchesVisionNamespace() {
         RuntimeCapabilityDetection.clearAllCapabilityOverrides()
@@ -437,6 +439,7 @@ open class RuntimeCapabilityDetectionTDDTests: BaseTestClass {
 
     // MARK: - Files namespaced runtime (#253)
 
+    @available(*, deprecated, message: "Legacy forwarder compatibility coverage.")
     @Test @MainActor
     func testLegacySupportsSecurityScopedResourcesMatchesFilesNamespace() {
         RuntimeCapabilityDetection.clearAllCapabilityOverrides()
@@ -446,6 +449,7 @@ open class RuntimeCapabilityDetectionTDDTests: BaseTestClass {
         )
     }
 
+    @available(*, deprecated, message: "Legacy forwarder compatibility coverage.")
     @Test @MainActor
     func testLegacySupportsSecurityScopedBookmarksMatchesFilesNamespace() {
         RuntimeCapabilityDetection.clearAllCapabilityOverrides()
@@ -455,6 +459,7 @@ open class RuntimeCapabilityDetectionTDDTests: BaseTestClass {
         )
     }
 
+    @available(*, deprecated, message: "Legacy forwarder compatibility coverage.")
     @Test @MainActor
     func testLegacySecurityScopedForwardersReflectFilesOverrides() {
         RuntimeCapabilityDetection.clearAllCapabilityOverrides()
