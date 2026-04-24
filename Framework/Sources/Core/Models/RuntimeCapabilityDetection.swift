@@ -1009,7 +1009,7 @@ public struct RuntimeCapabilityDetection {
 
     #if canImport(Network)
     private static let networkPathLock = NSLock()
-    private static var networkPathSnapshot: NWPath?
+    private nonisolated(unsafe) static var networkPathSnapshot: NWPath?
     private static let networkPathMonitor: NWPathMonitor = {
         let monitor = NWPathMonitor()
         monitor.pathUpdateHandler = { path in
@@ -1102,7 +1102,9 @@ public struct RuntimeCapabilityDetection {
 
     private static func detectPhotosHasCamera() -> Bool {
         #if os(iOS)
-        return UIImagePickerController.isSourceTypeAvailable(.camera)
+        return withMainActorProbe {
+            UIImagePickerController.isSourceTypeAvailable(.camera)
+        } ?? false
         #elseif os(macOS)
         #if canImport(AVFoundation)
         let session = AVCaptureDevice.DiscoverySession(
@@ -1121,7 +1123,9 @@ public struct RuntimeCapabilityDetection {
 
     private static func detectPhotosLibraryPickerAvailable() -> Bool {
         #if os(iOS)
-        return UIImagePickerController.isSourceTypeAvailable(.photoLibrary)
+        return withMainActorProbe {
+            UIImagePickerController.isSourceTypeAvailable(.photoLibrary)
+        } ?? false
         #elseif os(macOS)
         // `platformPhotoPicker_L4` uses `NSOpenPanel` for images on macOS; treat as available when AppKit exists.
         return true
@@ -1183,7 +1187,9 @@ public struct RuntimeCapabilityDetection {
         #if os(iOS)
         #if canImport(Vision)
         if #available(iOS 13.0, *) {
-            return VNDocumentCameraViewController.isSupported
+            return withMainActorProbe {
+                VNDocumentCameraViewController.isSupported
+            } ?? false
         }
         #endif
         #endif
