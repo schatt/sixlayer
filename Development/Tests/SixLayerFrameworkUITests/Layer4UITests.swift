@@ -28,43 +28,41 @@ import XCTest
 @MainActor
 final class Layer4UITests: XCTestCase {
     /// Fresh host per test method (required for parallel + random execution; avoids cross-test UI coupling).
-    private var app: XCUIApplication!
+    /// `nonisolated(unsafe)` so `nonisolated` XCTest hooks can assign without `self` isolation diagnostics; XCTest
+    /// serializes `setUp` / test / `tearDown` per instance on the main thread for UI tests.
+    nonisolated(unsafe) private var app: XCUIApplication!
 
     nonisolated override func setUpWithError() throws {
         continueAfterFailure = false
         addDefaultUIInterruptionMonitor()
 
-        MainActor.assumeIsolated {
-            let localApp = XCUIApplication()
-            localApp.configureForFastTesting()
-            // `-SkipAnimations` can leave `.sheet` presented without a populated a11y subtree on iOS 26
-            // (Sheet exists; contract static text never appears — Issue #193).
-            localApp.launchArguments.removeAll(where: { $0 == "-SkipAnimations" })
-            localApp.launchArguments.append("-OpenLayer4Examples")
-            localApp.launch()
-            self.app = localApp
-            XCTAssertTrue(
-                localApp.wait(for: .runningForeground, timeout: 20),
-                "App should reach foreground after launch (Layer 4 contract host)"
-            )
-            let contractRootReady =
-                localApp.navigationBars["Layer 4 Examples"].waitForExistence(timeout: 25)
-                || localApp.staticTexts["Layer 4 Examples"].waitForExistence(timeout: 3)
-            XCTAssertTrue(
-                contractRootReady,
-                "App should open on Layer 4 Examples (launch arg); navigation bar or large-title text should exist"
-            )
-        }
+        let localApp = XCUIApplication()
+        localApp.configureForFastTesting()
+        // `-SkipAnimations` can leave `.sheet` presented without a populated a11y subtree on iOS 26
+        // (Sheet exists; contract static text never appears — Issue #193).
+        localApp.launchArguments.removeAll(where: { $0 == "-SkipAnimations" })
+        localApp.launchArguments.append("-OpenLayer4Examples")
+        localApp.launch()
+        app = localApp
+        XCTAssertTrue(
+            localApp.wait(for: .runningForeground, timeout: 20),
+            "App should reach foreground after launch (Layer 4 contract host)"
+        )
+        let contractRootReady =
+            localApp.navigationBars["Layer 4 Examples"].waitForExistence(timeout: 25)
+            || localApp.staticTexts["Layer 4 Examples"].waitForExistence(timeout: 3)
+        XCTAssertTrue(
+            contractRootReady,
+            "App should open on Layer 4 Examples (launch arg); navigation bar or large-title text should exist"
+        )
     }
 
     nonisolated override func tearDownWithError() throws {
-        MainActor.assumeIsolated {
-            if let runningApp = app, runningApp.state != .notRunning {
-                runningApp.terminate()
-                _ = runningApp.wait(for: .notRunning, timeout: 20)
-            }
-            app = nil
+        if let runningApp = app, runningApp.state != .notRunning {
+            runningApp.terminate()
+            _ = runningApp.wait(for: .notRunning, timeout: 20)
         }
+        app = nil
         try super.tearDownWithError()
     }
 
