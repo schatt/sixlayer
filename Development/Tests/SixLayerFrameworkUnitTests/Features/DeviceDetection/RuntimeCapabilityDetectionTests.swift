@@ -432,6 +432,34 @@ open class RuntimeCapabilityDetectionTDDTests: BaseTestClass {
         #expect(Bool(true))
     }
 
+    // MARK: - Files namespaced runtime (#253)
+
+    @Test @MainActor
+    func testFilesOverridesClearWithClearAllCapabilityOverrides() {
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        let baselineResources = RuntimeCapabilityDetection.Files.supportsSecurityScopedResources
+        let baselineBookmarks = RuntimeCapabilityDetection.Files.supportsSecurityScopedBookmarks
+
+        RuntimeCapabilityDetection.Files.setTestSupportsSecurityScopedResources(!baselineResources)
+        #expect(RuntimeCapabilityDetection.Files.supportsSecurityScopedResources == !baselineResources)
+
+        RuntimeCapabilityDetection.Files.setTestSupportsSecurityScopedBookmarks(!baselineBookmarks)
+        #expect(RuntimeCapabilityDetection.Files.supportsSecurityScopedBookmarks == !baselineBookmarks)
+
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+
+        #expect(RuntimeCapabilityDetection.Files.supportsSecurityScopedResources == baselineResources)
+        #expect(RuntimeCapabilityDetection.Files.supportsSecurityScopedBookmarks == baselineBookmarks)
+    }
+
+    @Test @MainActor
+    func testFilesCapabilityReadsDoNotCrash() {
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        _ = RuntimeCapabilityDetection.Files.supportsSecurityScopedResources
+        _ = RuntimeCapabilityDetection.Files.supportsSecurityScopedBookmarks
+        #expect(Bool(true))
+    }
+
     #if os(macOS)
     /// Regression for GitHub #236: `UserDefaults.standard` touch simulation must not leak into card config when the suite harness pins preferences off.
     @Test @MainActor
