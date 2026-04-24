@@ -879,7 +879,7 @@ public struct RuntimeCapabilityDetection {
 
     /// Runs a MainActor-isolated sync probe only when already on the main thread.
     /// Returns `nil` when called off-main, so callers can safely fall back.
-    private static func withMainActorProbe<T>(_ probe: @MainActor () -> T) -> T? {
+    private static func withMainActorProbe<T: Sendable>(_ probe: @MainActor () -> T) -> T? {
         guard Thread.isMainThread else { return nil }
         return MainActor.assumeIsolated {
             probe()
