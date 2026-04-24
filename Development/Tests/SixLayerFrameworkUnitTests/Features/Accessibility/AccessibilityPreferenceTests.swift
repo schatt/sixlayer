@@ -86,6 +86,10 @@ open class AccessibilityPreferenceTests: BaseTestClass {
     
     /// Tests that getCardExpansionPlatformConfig returns platform-specific capabilities
     @Test @MainActor func testCardExpansionPlatformConfig_PlatformSpecificCapabilities() {
+        // This file is a member of SixLayerFrameworkUnitTests_iOS, _macOS, _tvOS, etc.
+        // The switch is exhaustive over `SixLayerPlatform`, so every `case` appears in
+        // every binary; at runtime only the branch matching `SixLayerPlatform.current`
+        // runs (e.g. on iOS the `.macOS` case is dead code — not “macOS tests on iOS”).
         // Given: Current platform
         let platform = SixLayerPlatform.current
         
@@ -107,12 +111,10 @@ open class AccessibilityPreferenceTests: BaseTestClass {
             #expect(config.minTouchTarget == 44, "iOS should have 44pt minimum touch targets")
             
         case .macOS:
-            // macOS should support hover but not touch by default
-            #expect(config.supportsHover == true || config.supportsHover == false, 
-                         "macOS hover support should be determinable")
-            #expect(config.supportsTouch == true || config.supportsTouch == false, 
-                         "macOS touch support should be determinable")
-            #expect(config.hoverDelay == 0.5, "macOS should have 0.5s hover delay (per RuntimeCapabilityDetection)")
+            // macOS: hover and hoverDelay follow AppKit runtime (e.g. mouse buttons down → no hover → 0.0s).
+            #expect(config.supportsHover == RuntimeCapabilityDetection.supportsHover)
+            #expect(config.supportsTouch == RuntimeCapabilityDetection.supportsTouch)
+            #expect(config.hoverDelay == RuntimeCapabilityDetection.hoverDelay)
             
         case .watchOS:
             // watchOS should support touch and haptic feedback
