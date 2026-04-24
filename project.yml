@@ -85,10 +85,13 @@ targets:
   SixLayerTestKit_iOS:
     type: framework
     platform: iOS
+    productName: SixLayerTestKit
     sources:
       - path: Framework/TestKit/Sources
     settings:
       base:
+        # PRODUCT_NAME must match Swift module so `import SixLayerTestKit` resolves when linking this framework.
+        PRODUCT_NAME: SixLayerTestKit
         PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.testkit
         PRODUCT_MODULE_NAME: SixLayerTestKit
         SWIFT_VERSION: "6.0"
@@ -107,10 +110,12 @@ targets:
   SixLayerTestKit_macOS:
     type: framework
     platform: macOS
+    productName: SixLayerTestKit
     sources:
       - path: Framework/TestKit/Sources
     settings:
       base:
+        PRODUCT_NAME: SixLayerTestKit
         PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.testkit
         PRODUCT_MODULE_NAME: SixLayerTestKit
         SWIFT_VERSION: "6.0"
