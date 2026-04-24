@@ -9,7 +9,7 @@
 
 ## 🎯 Release Summary
 
-Patch release improving **viewport-aware card layout** (GitHub **#249**, **#250**); fixing **Swift Testing isolation** for runtime capability overrides on the main actor (release gate / `supportsTouchWithOverride`); **tvOS** compile path for **`SLF-tvOS-AllTests`** and availability (**#237**); and **internal test harness** updates (**#247**, **#248**).
+Patch release improving **viewport-aware card layout** (GitHub **#249**, **#250**); fixing **Swift Testing isolation** for runtime capability overrides on the main actor (release gate / `supportsTouchWithOverride`); **incremental tvOS** work toward **`SLF-tvOS-AllTests`** / availability (**#237**); and **internal test harness** updates (**#247**, **#248**). **tvOS, watchOS, and visionOS** product support remains **in progress**—actively worked on, not yet complete (see **Platform support status** below).
 
 ---
 
@@ -28,7 +28,11 @@ Patch release improving **viewport-aware card layout** (GitHub **#249**, **#250*
 
 ### **Platforms**
 
-- **#237** — tvOS: `SixLayerFramework` builds for the **`SLF-tvOS-AllTests`** scheme (availability and call-site guards as needed).
+- **#237** — *Incremental:* tvOS-related compile and availability fixes toward the **`SLF-tvOS-AllTests`** scheme; does **not** imply full tvOS product support is finished.
+
+#### **Platform support status (tvOS, watchOS, visionOS)**
+
+Support for **tvOS**, **watchOS**, and **visionOS** is **in progress**: builds, test targets, and APIs are being brought in line across those platforms, but coverage and polish **lag iOS and macOS**. Treat these platforms as **preview / best-effort** until a future release explicitly declares them supported for production use.
 
 ---
 
@@ -36,7 +40,7 @@ Patch release improving **viewport-aware card layout** (GitHub **#249**, **#250*
 
 - **Issue #249** — Intelligent expandable card collections: height considers viewport / display fallback, not width-only aspect ratio alone.
 - **Issue #250** — Optimal responsive card layout + demo view: explicit height in Layer 2 and tests; `ResponsiveCardsView` wired to geometry.
-- **Issue #237** — tvOS compile / test-target path for `SLF-tvOS-AllTests` (availability-aligned).
+- **Issue #237** — Incremental tvOS compile / test-target work for `SLF-tvOS-AllTests` (availability-aligned); broader tvOS (and watchOS / visionOS) support still **in progress** (see above).
 - **Issue #247** — *Internal:* accessibility identifier config isolation in tests (no shared global mutation).
 - **Issue #248** — *Internal:* mac vs iOS test alignment (shared tests, explicit platform branches).
 
@@ -44,6 +48,7 @@ Patch release improving **viewport-aware card layout** (GitHub **#249**, **#250*
 
 ## ⚠️ Migration / consumer notes
 
+- **Extended Apple platforms** — If you ship on **tvOS**, **watchOS**, or **visionOS**, expect **ongoing churn** and incomplete parity with iOS/macOS until support is formally completed in a later release.
 - **`CardLayoutDecision`** gains optional fields with defaults; existing initializers remain source-compatible.
 - **`determineOptimalCardLayout_L2`** gains trailing `viewportHeight: CGFloat? = nil`; omit for legacy width-only behavior.
 - **Swift Package** consumers: bump `from: "7.6.2"` (or exact revision) after tagging.
