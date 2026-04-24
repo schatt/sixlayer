@@ -6,6 +6,8 @@
 # Branch and Tag Naming Convention:
 # - Branches: b7.0.0 format (e.g., b7.0.0, b7.0.1) - used for pre-release work
 # - Tags: v7.0.0 format (e.g., v7.0.0, v7.0.1) - used for releases on main
+# - After a successful merge+tag from a bM.m.p branch, the script creates b<M'.m'.p'+1>
+#   where vM'.m'.p' is the version you just released (e.g. release v7.6.2 from b7.6.1 -> b7.6.3).
 #
 # Flags:
 #   --release  Non-interactive release: auto-accept suggested version (when prompted),
@@ -158,6 +160,14 @@ increment_version() {
             ;;
     esac
     
+    echo "$major.$minor.$patch"
+}
+
+# Released SemVer X.Y.Z -> next patch only (7.6.2 -> 7.6.3; 7.7.0 -> 7.7.1) for release-prep branch bX.Y.Z+1.
+next_patch_semver() {
+    local current_version=$1
+    IFS='.' read -r major minor patch <<< "$current_version"
+    patch=$((patch + 1))
     echo "$major.$minor.$patch"
 }
 
@@ -1124,6 +1134,7 @@ else
     echo "   4. Create and push tag v$VERSION (tags use v$VERSION format)"
     echo "   5. Push main to all remotes"
     echo "   6. Create GitHub Release from Development/RELEASE_v$VERSION.md (if gh is installed and authenticated)"
+    echo "   7. If $CURRENT_BRANCH matches bM.m.p: create b + next patch after v$VERSION from main and switch (else: switch back to $CURRENT_BRANCH)"
     echo ""
     if [ "$AUTO_RELEASE" -eq 1 ]; then
         echo "🚀 Proceed with merge and release (--release)"
@@ -1190,42 +1201,73 @@ else
         echo "📦 Tag: v$VERSION"
         echo "🌐 Pushed to all remotes (GitHub, Codeberg, GitLab)"
         echo ""
-        
-        # Optionally delete the release branch (--release keeps branch without prompting)
-        if [ "$AUTO_RELEASE" -eq 1 ]; then
-            echo "💡 Keeping branch $CURRENT_BRANCH (--release)"
-            if git show-ref --verify --quiet refs/heads/"$CURRENT_BRANCH"; then
-                echo "🔄 Switching back to $CURRENT_BRANCH..."
-                git checkout "$CURRENT_BRANCH"
-                echo "✅ Now on branch $CURRENT_BRANCH"
+
+        # After merge we are on main. If the source branch matches bM.m.p, create b + (released semver patch+1).
+        RELEASE_PREP_BRANCH_PATTERN='^b[0-9]+\.[0-9]+\.[0-9]+$'
+        if [[ "$CURRENT_BRANCH" =~ $RELEASE_PREP_BRANCH_PATTERN ]]; then
+            NEXT_SEMVER=$(next_patch_semver "$VERSION")
+            NEXT_RELEASE_BRANCH="b${NEXT_SEMVER}"
+            echo "📋 Release-prep branch $CURRENT_BRANCH detected; creating $NEXT_RELEASE_BRANCH from main (patch after released v$VERSION → $NEXT_SEMVER)."
+            if git show-ref --verify --quiet refs/heads/"$NEXT_RELEASE_BRANCH"; then
+                echo "⚠️  Local branch $NEXT_RELEASE_BRANCH already exists; checking out and merging main..."
+                git checkout "$NEXT_RELEASE_BRANCH"
+                if ! git merge main --no-edit -m "Merge main after v$VERSION release"; then
+                    echo "❌ Merge main into $NEXT_RELEASE_BRANCH failed. Resolve conflicts, then: git push all $NEXT_RELEASE_BRANCH"
+                    exit 1
+                fi
             else
-                echo "⚠️  Local branch $CURRENT_BRANCH not found; staying on main"
+                git checkout -b "$NEXT_RELEASE_BRANCH"
+            fi
+            if ! git push all "$NEXT_RELEASE_BRANCH"; then
+                echo "⚠️  Could not push $NEXT_RELEASE_BRANCH to all remotes; push manually: git push all $NEXT_RELEASE_BRANCH"
+            else
+                echo "✅ Pushed $NEXT_RELEASE_BRANCH to all remotes"
+            fi
+            echo "✅ Now on $NEXT_RELEASE_BRANCH for work after v$VERSION"
+            if [ "$AUTO_RELEASE" -ne 1 ]; then
+                read -p "🗑️  Delete prior release branch $CURRENT_BRANCH (local and remote)? (y/N): " -n 1 -r
+                echo
+                if [[ $REPLY =~ ^[Yy]$ ]]; then
+                    echo "🗑️  Deleting branch $CURRENT_BRANCH..."
+                    git push all --delete "$CURRENT_BRANCH" 2>/dev/null || true
+                    if git show-ref --verify --quiet refs/heads/"$CURRENT_BRANCH"; then
+                        git branch -d "$CURRENT_BRANCH" 2>/dev/null || git branch -D "$CURRENT_BRANCH" 2>/dev/null || true
+                        echo "✅ Local branch $CURRENT_BRANCH deleted"
+                    fi
+                    echo "✅ Remote branch $CURRENT_BRANCH removed where present"
+                fi
             fi
         else
-            read -p "🗑️  Delete branch $CURRENT_BRANCH (local and remote)? (y/N): " -n 1 -r
-            echo
-            if [[ $REPLY =~ ^[Yy]$ ]]; then
-                echo "🗑️  Deleting branch $CURRENT_BRANCH..."
-                
-                # Delete remote branches (try all remotes, ignore errors if branch doesn't exist)
-                echo "📤 Deleting remote branch from all remotes..."
-                git push all --delete "$CURRENT_BRANCH" 2>/dev/null || true
-                
-                # Delete local branch (only if we're not on it, which we're not since we switched to main)
-                if git show-ref --verify --quiet refs/heads/"$CURRENT_BRANCH"; then
-                    git branch -d "$CURRENT_BRANCH" 2>/dev/null || git branch -D "$CURRENT_BRANCH" 2>/dev/null || true
-                    echo "✅ Local branch deleted"
-                fi
-                
-                echo "✅ Branch $CURRENT_BRANCH deleted from all remotes"
-            else
-                echo "💡 Branch $CURRENT_BRANCH kept for reference"
+            # Not bM.m.p: same as before — switch back to the working branch (or stay on main if deleted)
+            if [ "$AUTO_RELEASE" -eq 1 ]; then
+                echo "💡 Branch $CURRENT_BRANCH is not bM.m.p (--release); switching back to it if it still exists locally."
                 if git show-ref --verify --quiet refs/heads/"$CURRENT_BRANCH"; then
                     echo "🔄 Switching back to $CURRENT_BRANCH..."
                     git checkout "$CURRENT_BRANCH"
                     echo "✅ Now on branch $CURRENT_BRANCH"
                 else
                     echo "⚠️  Local branch $CURRENT_BRANCH not found; staying on main"
+                fi
+            else
+                read -p "🗑️  Delete branch $CURRENT_BRANCH (local and remote)? (y/N): " -n 1 -r
+                echo
+                if [[ $REPLY =~ ^[Yy]$ ]]; then
+                    echo "🗑️  Deleting branch $CURRENT_BRANCH..."
+                    git push all --delete "$CURRENT_BRANCH" 2>/dev/null || true
+                    if git show-ref --verify --quiet refs/heads/"$CURRENT_BRANCH"; then
+                        git branch -d "$CURRENT_BRANCH" 2>/dev/null || git branch -D "$CURRENT_BRANCH" 2>/dev/null || true
+                        echo "✅ Local branch deleted"
+                    fi
+                    echo "✅ Branch $CURRENT_BRANCH deleted from all remotes"
+                else
+                    echo "💡 Branch $CURRENT_BRANCH kept for reference"
+                    if git show-ref --verify --quiet refs/heads/"$CURRENT_BRANCH"; then
+                        echo "🔄 Switching back to $CURRENT_BRANCH..."
+                        git checkout "$CURRENT_BRANCH"
+                        echo "✅ Now on branch $CURRENT_BRANCH"
+                    else
+                        echo "⚠️  Local branch $CURRENT_BRANCH not found; staying on main"
+                    fi
                 fi
             fi
         fi
@@ -1240,6 +1282,7 @@ else
         echo "5. git push all --tags"
         echo "6. git push all main"
         echo "7. gh release create v$VERSION --title \"SixLayer Framework v$VERSION\" --notes-file Development/RELEASE_v$VERSION.md"
+        echo "8. If on bM.m.p: from main, create branch b + (patch bump on released v$VERSION), push to remotes, checkout"
     fi
 fi
 
