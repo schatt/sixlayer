@@ -32,6 +32,31 @@ extension UITestNavigationContractError: LocalizedError {
     }
 }
 
+// MARK: - Identifier validation
+
+private enum UITestIdentifierValidation {
+    static func normalizedRawValue(
+        _ raw: String,
+        emptyError: UITestNavigationContractError,
+        role: String
+    ) throws -> String {
+        let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { throw emptyError }
+        guard trimmed.unicodeScalars.allSatisfy(isAllowedASCII) else {
+            throw UITestNavigationContractError.invalidIdentifier(role: role, value: trimmed)
+        }
+        return trimmed
+    }
+
+    private static func isAllowedASCII(_ scalar: Unicode.Scalar) -> Bool {
+        switch scalar.value {
+        case 0x30...0x39, 0x41...0x5A, 0x61...0x7A: true // 0-9 A-Z a-z
+        case 0x2E, 0x2D, 0x5F: true // . - _
+        default: false
+        }
+    }
+}
+
 // MARK: - Stable selector types
 
 /// Stable screen-level selector for UI test navigation contracts.
@@ -40,8 +65,11 @@ public struct UITestScreenId: Sendable, Hashable, Codable {
 
     /// Validates and stores a non-empty screen identifier using ASCII `letters/digits._-` only (after trimming whitespace).
     public init(validating rawValue: String) throws {
-        // TDD red stub: accept any string; contract tests require validation before release.
-        self.rawValue = rawValue
+        self.rawValue = try UITestIdentifierValidation.normalizedRawValue(
+            rawValue,
+            emptyError: .emptyScreenId,
+            role: "screen"
+        )
     }
 }
 
@@ -50,7 +78,11 @@ public struct UITestRouteId: Sendable, Hashable, Codable {
     public let rawValue: String
 
     public init(validating rawValue: String) throws {
-        self.rawValue = rawValue
+        self.rawValue = try UITestIdentifierValidation.normalizedRawValue(
+            rawValue,
+            emptyError: .emptyRouteId,
+            role: "route"
+        )
     }
 }
 
@@ -59,7 +91,11 @@ public struct UITestElementId: Sendable, Hashable, Codable {
     public let rawValue: String
 
     public init(validating rawValue: String) throws {
-        self.rawValue = rawValue
+        self.rawValue = try UITestIdentifierValidation.normalizedRawValue(
+            rawValue,
+            emptyError: .emptyElementId,
+            role: "element"
+        )
     }
 }
 
