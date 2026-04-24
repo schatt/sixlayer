@@ -13,6 +13,16 @@ import SwiftUI
 import VisionKit
 #endif
 
+// MARK: - Errors
+
+/// Errors surfaced by the live data scanner session (Issue #252).
+public enum PlatformDataScannerError: Error, Sendable, Equatable {
+    /// No live `DataScannerViewController` is attached yet (e.g. before appear or after teardown).
+    case scannerNotAttached
+    /// The current OS / build does not support the VisionKit live scanner.
+    case platformUnsupported
+}
+
 // MARK: - Presentation
 
 /// How the host intends to present the live data scanner (Issue #252).
@@ -103,6 +113,47 @@ public final class PlatformDataScannerSessionController: Sendable {
         liveScannerViewController = controller
     }
     #endif
+
+    /// Starts VisionKit scanning when a controller is attached (Issue #252).
+    @MainActor
+    public func startScanning() throws {
+        #if os(iOS) && canImport(VisionKit)
+        if #available(iOS 16.0, *) {
+            guard let controller = liveScannerViewController as? DataScannerViewController else {
+                throw PlatformDataScannerError.scannerNotAttached
+            }
+            try controller.startScanning()
+            return
+        }
+        #endif
+        throw PlatformDataScannerError.platformUnsupported
+    }
+
+    /// Stops VisionKit scanning when a controller is attached.
+    @MainActor
+    public func stopScanning() {
+        #if os(iOS) && canImport(VisionKit)
+        if #available(iOS 16.0, *) {
+            guard let controller = liveScannerViewController as? DataScannerViewController else { return }
+            controller.stopScanning()
+        }
+        #endif
+    }
+
+    /// Captures a high-resolution still from the active scanner (VisionKit).
+    @MainActor
+    public func capturePhoto() async throws -> PlatformImage {
+        #if os(iOS) && canImport(VisionKit)
+        if #available(iOS 16.0, *) {
+            guard let controller = liveScannerViewController as? DataScannerViewController else {
+                throw PlatformDataScannerError.scannerNotAttached
+            }
+            let image = try await controller.capturePhoto()
+            return PlatformImage(image)
+        }
+        #endif
+        throw PlatformDataScannerError.platformUnsupported
+    }
 }
 
 // MARK: - Configuration
