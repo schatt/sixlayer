@@ -93,12 +93,38 @@ public final class SixLayerUITestNavigator: @unchecked Sendable {
     }
 
     private func performSingleBackTap(stepTimeout: TimeInterval) -> Bool {
-        let navBar = application.navigationBars.firstMatch
-        guard navBar.waitForExistence(timeout: stepTimeout) else { return false }
-        let leading = navBar.buttons.element(boundBy: 0)
-        guard leading.waitForExistence(timeout: stepTimeout), leading.isHittable else { return false }
-        leading.tap()
-        return true
+        let budget = max(0.05, stepTimeout)
+        let quick = max(0.05, stepTimeout / 2)
+
+        // macOS SwiftUI stacks often surface "Back" at app or window scope before bar index 0 matches
+        // (see `navigateBackToLaunch` in the framework UI test helpers).
+        let searchRoots: [XCUIElement] = [application, application.windows.firstMatch]
+        for root in searchRoots {
+            let back = root.buttons["Back"]
+            if back.waitForExistence(timeout: quick), back.isHittable {
+                back.tap()
+                return true
+            }
+        }
+
+        let navBarCandidates: [XCUIElement] = [
+            application.navigationBars.firstMatch,
+            application.windows.firstMatch.navigationBars.firstMatch,
+        ]
+        for navBar in navBarCandidates {
+            guard navBar.waitForExistence(timeout: budget) else { continue }
+            let named = navBar.buttons["Back"]
+            if named.waitForExistence(timeout: quick), named.isHittable {
+                named.tap()
+                return true
+            }
+            let leading = navBar.buttons.element(boundBy: 0)
+            if leading.waitForExistence(timeout: quick), leading.isHittable {
+                leading.tap()
+                return true
+            }
+        }
+        return false
     }
 }
 #endif

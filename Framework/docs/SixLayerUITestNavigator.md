@@ -16,7 +16,7 @@ Issue [#229](https://github.com/schatt/sixlayer/issues/229) adds **narrow** XCUI
 
 ## `backToRoot` semantics
 
-- Each successful step taps `navigationBars.firstMatch.buttons.element(boundBy: 0)` after existence checks. This matches many iOS navigation stacks but is **not** universal (split views, custom chrome, macOS window toolbars).
+- Each successful step first tries `buttons["Back"]` on the app and on `windows.firstMatch`, then named or leading controls on `navigationBars.firstMatch` and `windows.firstMatch.navigationBars.firstMatch`. This mirrors common iOS stacks and improves macOS SwiftUI parity, but is still **not** universal (split views, fully custom chrome).
 - For tests or hosts that need a different policy, use the **internal** initializer on `SixLayerUITestNavigator` with `backAttemptOverride` (same-module `@testable` from a UI test bundle).
 
 ## SwiftPM unit tests vs UI tests
