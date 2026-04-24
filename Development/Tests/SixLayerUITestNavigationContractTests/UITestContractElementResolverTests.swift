@@ -30,7 +30,7 @@ final class UITestContractElementResolverTests: XCTestCase {
                 materializeLog.append(slot)
                 return slot
             },
-            exists: { value, _ in value == .cell }
+            exists: { value, _ in value == UITestContractXCUIQuerySlot.cell }
         )
 
         XCTAssertEqual(result?.slot, .cell)

@@ -70,6 +70,18 @@ open class Layer4APISignatureTests: BaseTestClass {
         // Then: API should accept the callback (compile-time check)
         #expect(Bool(true), "platformCameraInterface_L4 should accept PlatformImage callback")
     }
+
+    #if os(iOS)
+    /// BUSINESS PURPOSE: Live VisionKit data scanner API exists for Issue #252.
+    @Test @MainActor func testPlatformDataScannerContent_L4_APISignature() {
+        let _ = platformDataScannerContent_L4(
+            configuration: PlatformDataScannerConfiguration.default,
+            bannerMessage: "Hint",
+            onItemTap: { _ in }
+        )
+        #expect(Bool(true), "platformDataScannerContent_L4 should accept configuration and callbacks")
+    }
+    #endif
     
     /// BUSINESS PURPOSE: Verify platformPhotoDisplay_L4 API signature exists and works
     /// TESTING SCOPE: Tests that platformPhotoDisplay_L4 accepts correct parameters
