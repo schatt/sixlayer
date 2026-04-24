@@ -165,10 +165,6 @@ final class PlatformDataScannerHostingViewController: UIViewController, DataScan
             presentUnavailableChrome()
             return
         }
-        guard DataScannerViewController.isSupported, DataScannerViewController.isAvailable else {
-            presentUnavailableChrome()
-            return
-        }
         let recognized = PlatformDataScannerVisionKitMapping.recognizedDataTypes(from: configuration.recognizedDataTypes)
         let quality = PlatformDataScannerVisionKitMapping.qualityLevel(configuration.qualityLevel)
         let scanner = DataScannerViewController(
