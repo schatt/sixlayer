@@ -97,6 +97,8 @@ struct TestAppContentView: View {
     private let openPlatformFileSystemUtilitiesAudit = ProcessInfo.processInfo.arguments.contains("-OpenPlatformFileSystemUtilitiesAudit")
     /// When true, app opens to advanced container styling audit host (launch arg -OpenPlatformAdvancedContainersExtensions).
     private let openPlatformAdvancedContainersExtensions = ProcessInfo.processInfo.arguments.contains("-OpenPlatformAdvancedContainersExtensions")
+    /// When true, app opens to platform menu + context menu audit host (launch arg -OpenPlatformMenuContextMenuExtensions).
+    private let openPlatformMenuContextMenuExtensions = ProcessInfo.processInfo.arguments.contains("-OpenPlatformMenuContextMenuExtensions")
     
     enum TestView: String, CaseIterable, Identifiable {
         case control = "Control Test"
@@ -224,6 +226,10 @@ struct TestAppContentView: View {
             } else if openPlatformAdvancedContainersExtensions {
                 NavigationStack {
                     PlatformAdvancedContainersExtensionsAuditView(onBackToMain: nil)
+                }
+            } else if openPlatformMenuContextMenuExtensions {
+                NavigationStack {
+                    PlatformMenuContextMenuExtensionsAuditHost(onBackToMain: nil)
                 }
             } else {
                 NavigationStack {
@@ -359,6 +365,11 @@ struct TestAppContentView: View {
                     PlatformAdvancedContainersExtensionsAuditView(onBackToMain: nil)
                 }
                 .accessibilityIdentifier("platform-advanced-containers-extensions-link")
+
+                NavigationLink("Platform Menu + Context Menu Audit") {
+                    PlatformMenuContextMenuExtensionsAuditHost(onBackToMain: nil)
+                }
+                .accessibilityIdentifier("platform-menu-context-menu-extensions-link")
             }
             .padding()
         }
