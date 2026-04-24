@@ -106,6 +106,7 @@ open class PlatformMatrixTests: BaseTestClass {
     
     @Test @MainActor func testAccessibilityCapabilityMatrix() {
         // Matrix = native platform/detection semantics + card config mirroring (no test overrides).
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
         let platform = SixLayerPlatform.current
         let voice = RuntimeCapabilityDetection.supportsVoiceOver
         let switchCtl = RuntimeCapabilityDetection.supportsSwitchControl

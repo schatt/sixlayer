@@ -58,41 +58,69 @@ public struct RuntimeCapabilityDetection {
             Thread.current.threadDictionary.removeObject(forKey: "SixLayerFramework.didLogIgnoredTestTouchFalse")
         }
         #endif
-        Thread.current.threadDictionary["testTouchSupport"] = value
+        if let value {
+            Thread.current.threadDictionary["testTouchSupport"] = value
+        } else {
+            Thread.current.threadDictionary.removeObject(forKey: "testTouchSupport")
+        }
     }
     
     /// Override haptic feedback detection for testing
     public static func setTestHapticFeedback(_ value: Bool?) {
-        Thread.current.threadDictionary["testHapticFeedback"] = value
+        if let value {
+            Thread.current.threadDictionary["testHapticFeedback"] = value
+        } else {
+            Thread.current.threadDictionary.removeObject(forKey: "testHapticFeedback")
+        }
     }
     
     /// Override hover detection for testing
     public static func setTestHover(_ value: Bool?) {
-        Thread.current.threadDictionary["testHover"] = value
+        if let value {
+            Thread.current.threadDictionary["testHover"] = value
+        } else {
+            Thread.current.threadDictionary.removeObject(forKey: "testHover")
+        }
     }
     
     /// Override VoiceOver detection for testing
     public static func setTestVoiceOver(_ value: Bool?) {
-        Thread.current.threadDictionary["testVoiceOver"] = value
+        if let value {
+            Thread.current.threadDictionary["testVoiceOver"] = value
+        } else {
+            Thread.current.threadDictionary.removeObject(forKey: "testVoiceOver")
+        }
     }
     
     /// Override Switch Control detection for testing
     public static func setTestSwitchControl(_ value: Bool?) {
-        Thread.current.threadDictionary["testSwitchControl"] = value
+        if let value {
+            Thread.current.threadDictionary["testSwitchControl"] = value
+        } else {
+            Thread.current.threadDictionary.removeObject(forKey: "testSwitchControl")
+        }
     }
     
     /// Override AssistiveTouch detection for testing
     public static func setTestAssistiveTouch(_ value: Bool?) {
-        Thread.current.threadDictionary["testAssistiveTouch"] = value
+        if let value {
+            Thread.current.threadDictionary["testAssistiveTouch"] = value
+        } else {
+            Thread.current.threadDictionary.removeObject(forKey: "testAssistiveTouch")
+        }
     }
     
     /// Override high contrast mode detection for testing
     /// This allows tests to verify color adaptation behavior
     public static func setTestHighContrast(_ value: Bool?) {
-        Thread.current.threadDictionary["testHighContrast"] = value
+        if let value {
+            Thread.current.threadDictionary["testHighContrast"] = value
+        } else {
+            Thread.current.threadDictionary.removeObject(forKey: "testHighContrast")
+        }
     }
     
-    /// Clear all capability overrides for testing
+    /// Clear all capability overrides for testing (`nil` clears by **removing** thread-dictionary entries so overrides do not linger as `NSNull` / stale values on any OS).
     public static func clearAllCapabilityOverrides() {
         setTestTouchSupport(nil)
         setTestHapticFeedback(nil)
