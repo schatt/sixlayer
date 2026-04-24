@@ -10,9 +10,11 @@ import SwiftUI
 
 /// Two-level navigation used by ``SixLayerUITestNavigatorConsumerSmokeUITests`` (public APIs + stable IDs).
 ///
-/// Uses `NavigationLink(destination:)` for reliable macOS + iOS XCUITest resolution (NavigationLink(value:)
-/// labels can be harder to tap consistently across platforms).
+/// Uses a ``Button`` + ``navigationDestination(isPresented:)`` so ``UITestContractElementResolver`` hits the
+/// `.button` slot first (``NavigationLink`` is often surfaced as `.link` and can be order-dependent across OS versions).
 struct UITestContractSmokeHostView: View {
+    @State private var showDetail = false
+
     var body: some View {
         NavigationStack {
             VStack(alignment: .leading, spacing: 20) {
@@ -20,7 +22,9 @@ struct UITestContractSmokeHostView: View {
                     .accessibilityIdentifier("com.sixlayer.smoke.ready.marker")
                     .accessibilityLabel("UITestContractSmokeHost")
 
-                NavigationLink(destination: detailView) {
+                Button {
+                    showDetail = true
+                } label: {
                     Text("Open detail")
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
@@ -28,6 +32,9 @@ struct UITestContractSmokeHostView: View {
             }
             .padding()
             .navigationTitle("Smoke")
+            .navigationDestination(isPresented: $showDetail) {
+                detailView
+            }
         }
     }
 
