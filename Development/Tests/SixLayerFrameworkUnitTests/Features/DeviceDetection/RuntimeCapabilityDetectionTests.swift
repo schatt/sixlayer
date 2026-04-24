@@ -531,6 +531,14 @@ open class RuntimeCapabilityDetectionTDDTests: BaseTestClass {
     }
 
     @Test @MainActor
+    func testNetworkHasPathSnapshotOverrideAndClear() {
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        RuntimeCapabilityDetection.Network.setTestHasPathSnapshot(true)
+        #expect(RuntimeCapabilityDetection.Network.hasPathSnapshot)
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+    }
+
+    @Test @MainActor
     func testMediaOverridesClearWithClearAllCapabilityOverrides() {
         RuntimeCapabilityDetection.clearAllCapabilityOverrides()
         let baselineMic = RuntimeCapabilityDetection.Media.hasMicrophoneInput
@@ -571,6 +579,18 @@ open class RuntimeCapabilityDetectionTDDTests: BaseTestClass {
         #expect(RuntimeCapabilityDetection.Accessibility.supportsSwitchControl == RuntimeCapabilityDetection.supportsSwitchControl)
         #expect(RuntimeCapabilityDetection.Accessibility.supportsAssistiveTouch == RuntimeCapabilityDetection.supportsAssistiveTouch)
     }
+
+    #if os(iOS)
+    @Test @MainActor
+    func testiOSHoverDeviceCapabilityOverrideIsDeterministic() {
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        RuntimeCapabilityDetection.setTestiOSHoverDeviceCapability(true)
+        #expect(RuntimeCapabilityDetection.supportsHover)
+        RuntimeCapabilityDetection.setTestiOSHoverDeviceCapability(false)
+        #expect(!RuntimeCapabilityDetection.supportsHover)
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+    }
+    #endif
 
     #if os(macOS)
     /// Regression for GitHub #236: `UserDefaults.standard` touch simulation must not leak into card config when the suite harness pins preferences off.

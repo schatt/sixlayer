@@ -152,6 +152,17 @@ public struct RuntimeCapabilityDetection {
             Thread.current.threadDictionary.removeObject(forKey: "testHighContrast")
         }
     }
+
+    #if os(iOS)
+    /// Override iOS hover-device capability probe (separate from `setTestHover` result override).
+    public static func setTestiOSHoverDeviceCapability(_ value: Bool?) {
+        if let value {
+            Thread.current.threadDictionary["testiOSHoverDeviceCapability"] = value
+        } else {
+            Thread.current.threadDictionary.removeObject(forKey: "testiOSHoverDeviceCapability")
+        }
+    }
+    #endif
     
     /// Clear all capability overrides for testing (`nil` clears by **removing** thread-dictionary entries so overrides do not linger as `NSNull` / stale values on any OS).
     public static func clearAllCapabilityOverrides() {
@@ -162,6 +173,9 @@ public struct RuntimeCapabilityDetection {
         setTestSwitchControl(nil)
         setTestAssistiveTouch(nil)
         setTestHighContrast(nil)
+        #if os(iOS)
+        setTestiOSHoverDeviceCapability(nil)
+        #endif
         Photos.setTestHasCamera(nil)
         Photos.setTestIsPhotoLibraryPickerAvailable(nil)
         Photos.setTestSupportsLiveDataScanner(nil)
@@ -173,6 +187,7 @@ public struct RuntimeCapabilityDetection {
         Files.setTestSupportsSecurityScopedBookmarks(nil)
         Network.setTestIsConstrained(nil)
         Network.setTestIsExpensive(nil)
+        Network.setTestHasPathSnapshot(nil)
         Media.setTestHasMicrophoneInput(nil)
         Media.setTestSupportsScreenCapture(nil)
         Pasteboard.setTestCanReadStrings(nil)
@@ -247,12 +262,22 @@ public struct RuntimeCapabilityDetection {
         Thread.current.threadDictionary["testFilesSupportsSecurityScopedBookmarks"] as? Bool
     }
 
+    #if os(iOS)
+    private static var testiOSHoverDeviceCapability: Bool? {
+        Thread.current.threadDictionary["testiOSHoverDeviceCapability"] as? Bool
+    }
+    #endif
+
     private static var testNetworkIsConstrained: Bool? {
         Thread.current.threadDictionary["testNetworkIsConstrained"] as? Bool
     }
 
     private static var testNetworkIsExpensive: Bool? {
         Thread.current.threadDictionary["testNetworkIsExpensive"] as? Bool
+    }
+
+    private static var testNetworkHasPathSnapshot: Bool? {
+        Thread.current.threadDictionary["testNetworkHasPathSnapshot"] as? Bool
     }
 
     private static var testMediaHasMicrophoneInput: Bool? {
@@ -492,6 +517,9 @@ public struct RuntimeCapabilityDetection {
     /// 
     /// Note: Uses Thread.isMainThread check to prevent crashes during parallel test execution
     private static func detectiOSHoverSupport() -> Bool {
+        if let override = testiOSHoverDeviceCapability {
+            return override
+        }
         // Check if we're on iPad with hover-capable device
         // Use Thread.isMainThread check with MainActor.assumeIsolated to satisfy compiler
         // while preventing crashes during parallel test execution
@@ -864,6 +892,12 @@ public struct RuntimeCapabilityDetection {
 
     /// Dynamic network path state wrappers (Low Data Mode and expensive-link hints).
     public enum Network {
+        /// Whether an `NWPathMonitor` snapshot has been observed.
+        nonisolated public static var hasPathSnapshot: Bool {
+            if let forced = testNetworkHasPathSnapshot { return forced }
+            return detectNetworkHasPathSnapshot()
+        }
+
         /// Mirrors `NWPath.isConstrained` (Low Data Mode path state).
         nonisolated public static var isConstrained: Bool {
             resolvedBool(override: testNetworkIsConstrained, detector: detectNetworkIsConstrained)
@@ -880,6 +914,10 @@ public struct RuntimeCapabilityDetection {
 
         public static func setTestIsExpensive(_ value: Bool?) {
             setThreadOptionalBool(key: "testNetworkIsExpensive", value: value)
+        }
+
+        public static func setTestHasPathSnapshot(_ value: Bool?) {
+            setThreadOptionalBool(key: "testNetworkHasPathSnapshot", value: value)
         }
     }
 
@@ -1027,6 +1065,7 @@ public struct RuntimeCapabilityDetection {
         networkPathLock.lock()
         let path = networkPathSnapshot
         networkPathLock.unlock()
+        guard path != nil else { return false }
         return path?.isConstrained ?? false
         #else
         return false
@@ -1039,7 +1078,20 @@ public struct RuntimeCapabilityDetection {
         networkPathLock.lock()
         let path = networkPathSnapshot
         networkPathLock.unlock()
+        guard path != nil else { return false }
         return path?.isExpensive ?? false
+        #else
+        return false
+        #endif
+    }
+
+    private static func detectNetworkHasPathSnapshot() -> Bool {
+        #if canImport(Network)
+        _ = networkPathMonitor
+        networkPathLock.lock()
+        let hasPath = networkPathSnapshot != nil
+        networkPathLock.unlock()
+        return hasPath
         #else
         return false
         #endif
