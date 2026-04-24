@@ -87,6 +87,9 @@ struct PhotoCameraExamples: View {
     @State private var selectedImage: PlatformImage?
     @State private var showPhotoPicker = false
     @State private var showCamera = false
+    @State private var showLiveScannerSheet = false
+    @State private var showLiveScannerFullScreen = false
+    @State private var scannerLastValue = ""
     
     var body: some View {
         platformVStack(alignment: .leading, spacing: 16) {
@@ -103,6 +106,14 @@ struct PhotoCameraExamples: View {
                     selectedImage = image
                     showCamera = false
                 })
+            }
+
+            ExampleCard(title: "Live Data Scanner", description: "platformDataScannerInterface_L4") {
+                DataScannerExample(
+                    showSheet: $showLiveScannerSheet,
+                    showFullScreen: $showLiveScannerFullScreen,
+                    lastValue: $scannerLastValue
+                )
             }
             
             ExampleCard(title: "Photo Display", description: "platformPhotoDisplay_L4") {
@@ -157,6 +168,64 @@ struct CameraInterfaceExample: View {
             if showCamera {
                 platformCameraInterface_L4(onImageCaptured: onImageCaptured)
                     .frame(height: 200)
+            }
+        }
+        .padding()
+        .background(Color.platformSecondaryBackground)
+        .cornerRadius(8)
+    }
+}
+
+struct DataScannerExample: View {
+    @Binding var showSheet: Bool
+    @Binding var showFullScreen: Bool
+    @Binding var lastValue: String
+
+    var body: some View {
+        platformVStack(alignment: .leading, spacing: 12) {
+            Text("Uses RuntimeCapabilityDetection.Photos.supportsLiveDataScanner")
+                .font(.caption)
+                .foregroundColor(.secondary)
+
+            platformHStackContainer(spacing: 8) {
+                platformButton("Open Scanner (Sheet)") {
+                    showSheet = true
+                }
+                platformButton("Open Scanner (Full Screen)") {
+                    showFullScreen = true
+                }
+            }
+
+            if !lastValue.isEmpty {
+                Text("Last scanned: \(lastValue)")
+                    .font(.caption)
+                    .foregroundColor(.green)
+            }
+
+            platformDataScannerInterface_L4AsSheet(
+                isPresented: $showSheet,
+                configuration: PlatformDataScannerConfiguration.default,
+                bannerMessage: "Tap text or a barcode to populate this demo"
+            ) { payload in
+                switch payload {
+                case .text(let transcript):
+                    lastValue = transcript
+                case .barcode(let payload):
+                    lastValue = payload
+                }
+            }
+
+            platformDataScannerInterface_L4AsFullScreenCover(
+                isPresented: $showFullScreen,
+                configuration: PlatformDataScannerConfiguration.default,
+                bannerMessage: "Full-screen scanner mode"
+            ) { payload in
+                switch payload {
+                case .text(let transcript):
+                    lastValue = transcript
+                case .barcode(let payload):
+                    lastValue = payload
+                }
             }
         }
         .padding()
