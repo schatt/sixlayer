@@ -5,7 +5,6 @@
 //  XCUIElement contract resolution using deterministic fallback ordering (#228).
 //
 
-#if canImport(XCTest)
 import XCTest
 
 extension UITestContractXCUIQuerySlot {
@@ -56,4 +55,3 @@ public enum UITestContractElementResolver {
         )?.match
     }
 }
-#endif
