@@ -241,7 +241,6 @@ public enum PlatformPhotoComponentsLayer4 {
     }
 
     /// Presents the scanner in a **sheet** (forces `presentationStyle` to ``PlatformDataScannerPresentationStyle/sheet``).
-    @ViewBuilder
     @MainActor
     public static func platformDataScannerInterface_L4AsSheet(
         isPresented: Binding<Bool>,
@@ -272,7 +271,6 @@ public enum PlatformPhotoComponentsLayer4 {
     }
 
     /// Presents the scanner in a **full-screen cover** (forces `presentationStyle` to ``PlatformDataScannerPresentationStyle/fullScreenCover``).
-    @ViewBuilder
     @MainActor
     public static func platformDataScannerInterface_L4AsFullScreenCover(
         isPresented: Binding<Bool>,
