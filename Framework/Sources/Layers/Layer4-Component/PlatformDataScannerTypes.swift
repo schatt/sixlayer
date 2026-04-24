@@ -3,7 +3,7 @@
 //  SixLayerFramework
 //
 //  Public configuration for VisionKit live text / barcode capture (Issue #252).
-//  Cross-platform types; iOS VisionKit wiring lives in PlatformDataScannerLiveContainer_iOS.swift.
+//  Cross-platform types; iOS VisionKit wiring lives in PlatformDataScannerLiveCapture_iOS.swift.
 //
 
 import Foundation
