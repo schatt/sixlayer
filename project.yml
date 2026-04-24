@@ -80,6 +80,52 @@ targets:
         "CODE_SIGN_IDENTITY[sdk=macosx*]": "Apple Development"
     dependencies: []
 
+  # Consumer-facing test utilities (mocks, XCTest navigation helpers). Module `SixLayerTestKit` (#119, #229).
+  # Per-platform targets (not multiplatform) so XcodeGen can wire `SixLayerFramework_*` dependencies.
+  SixLayerTestKit_iOS:
+    type: framework
+    platform: iOS
+    sources:
+      - path: Framework/TestKit/Sources
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.testkit
+        PRODUCT_MODULE_NAME: SixLayerTestKit
+        SWIFT_VERSION: "6.0"
+        SWIFT_ACTIVE_COMPILATION_CONDITIONS: $(inherited) ENABLE_PREVIEWS
+        ENABLE_TESTABILITY: YES
+        GENERATE_INFOPLIST_FILE: YES
+        CODE_SIGN_STYLE: Automatic
+        DEAD_CODE_STRIPPING: YES
+        CLANG_ENABLE_MODULE_VERIFIER: YES
+        CODE_SIGN_IDENTITY: "Apple Development"
+        "CODE_SIGN_IDENTITY[sdk=iphoneos*]": "Apple Development"
+        IPHONEOS_DEPLOYMENT_TARGET: "17.0"
+    dependencies:
+      - target: SixLayerFramework_iOS
+
+  SixLayerTestKit_macOS:
+    type: framework
+    platform: macOS
+    sources:
+      - path: Framework/TestKit/Sources
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.testkit
+        PRODUCT_MODULE_NAME: SixLayerTestKit
+        SWIFT_VERSION: "6.0"
+        SWIFT_ACTIVE_COMPILATION_CONDITIONS: $(inherited) ENABLE_PREVIEWS
+        ENABLE_TESTABILITY: YES
+        GENERATE_INFOPLIST_FILE: YES
+        CODE_SIGN_STYLE: Automatic
+        DEAD_CODE_STRIPPING: YES
+        CLANG_ENABLE_MODULE_VERIFIER: YES
+        CODE_SIGN_IDENTITY: "Apple Development"
+        "CODE_SIGN_IDENTITY[sdk=macosx*]": "Apple Development"
+        MACOSX_DEPLOYMENT_TARGET: "15.0"
+    dependencies:
+      - target: SixLayerFramework_macOS
+
   # Unit tests - iOS
   SixLayerFrameworkUnitTests_iOS:
     type: bundle.unit-test
@@ -277,6 +323,7 @@ targets:
     dependencies:
       - target: SixLayerFramework_iOS
       - target: SixLayerFrameworkTestApp_iOS
+      - target: SixLayerTestKit_iOS
 
   # UI tests - macOS (XCUITest against TestApp; includes WindowRenderingTestHelper)
   SixLayerFrameworkUITests_macOS:
@@ -300,6 +347,7 @@ targets:
     dependencies:
       - target: SixLayerFramework_macOS
       - target: SixLayerFrameworkTestApp_macOS
+      - target: SixLayerTestKit_macOS
 
   # UI tests - tvOS (same test sources; no TestApp for tvOS)
   # Note: XCUITest .tap() is unavailable on tvOS (uses focus/remote model, not touch).
