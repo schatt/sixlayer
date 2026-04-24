@@ -6,7 +6,6 @@
 //  See also: Framework/docs/UITestContractAssertions.md
 //
 
-#if canImport(XCTest)
 import XCTest
 
 /// Optional wrappers around XCTest assertions for XCUI contract checks (#230).
@@ -79,4 +78,3 @@ public enum UITestContractAssertions {
         XCTAssertFalse(value.isEmpty, detail, file: file, line: line)
     }
 }
-#endif

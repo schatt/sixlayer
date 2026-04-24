@@ -35,6 +35,7 @@ final class SixLayerUITestNavigatorConsumerSmokeUITests: XCTestCase {
         }
     }
 
+    @MainActor
     func testSmoke_findContractElement_resolvesReadyMarker() throws {
         let navigator = SixLayerUITestNavigator(application: app)
         let id = try UITestElementId(validating: "com.sixlayer.smoke.ready.marker")
@@ -44,6 +45,7 @@ final class SixLayerUITestNavigatorConsumerSmokeUITests: XCTestCase {
         UITestContractAssertions.assertNonEmptyAccessibilityLabel(resolved!)
     }
 
+    @MainActor
     func testSmoke_goToScreenThenOpenSectionThenBackToRoot() throws {
         let navigator = SixLayerUITestNavigator(application: app)
         let screen = try UITestScreenId(validating: "com.sixlayer.smoke.screen.entry")

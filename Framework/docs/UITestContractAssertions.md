@@ -2,7 +2,9 @@
 
 Issue [#230](https://github.com/schatt/sixlayer/issues/230) adds **optional** helpers around common ``XCUIElement`` checks so consumer suites can share consistent failure wording. They live next to the navigation contract (#227) and resolver (#228) but do **not** replace XCTest.
 
-## API (`#if canImport(XCTest)`)
+## API
+
+In Xcode targets `SixLayerTestKit_iOS` / `SixLayerTestKit_macOS`, these APIs are always built with XCTest linked (no `#if canImport` gate) so consumer UI test bundles resolve them reliably.
 
 | Helper | Use when |
 |--------|-----------|
