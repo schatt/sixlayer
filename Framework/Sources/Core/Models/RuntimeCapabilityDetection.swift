@@ -17,6 +17,24 @@ import UIKit
 import AppKit
 #endif
 
+#if canImport(AVFoundation)
+import AVFoundation
+#endif
+
+#if canImport(Photos)
+import Photos
+#endif
+
+#if canImport(Vision)
+import Vision
+#endif
+
+#if os(iOS)
+#if canImport(VisionKit)
+import VisionKit
+#endif
+#endif
+
 // MARK: - Runtime Capability Detection
 
 /// Runtime capability detection that queries the OS for actual hardware/software capabilities
@@ -129,6 +147,15 @@ public struct RuntimeCapabilityDetection {
         setTestSwitchControl(nil)
         setTestAssistiveTouch(nil)
         setTestHighContrast(nil)
+        Photos.setTestHasCamera(nil)
+        Photos.setTestIsPhotoLibraryPickerAvailable(nil)
+        Photos.setTestSupportsLiveDataScanner(nil)
+        Vision.setTestIsFrameworkAvailable(nil)
+        Vision.setTestSupportsOCR(nil)
+        Vision.setTestSupportsImageAnalyzer(nil)
+        Vision.setTestSupportsDocumentCamera(nil)
+        Files.setTestSupportsSecurityScopedResources(nil)
+        Files.setTestSupportsSecurityScopedBookmarks(nil)
         CapabilityOverride.clearThreadIsolationFromCurrentThread()
         RuntimeCapabilityHarness.scrubLegacyCapabilityKeysFromUserDefaultsStandard()
     }
@@ -161,6 +188,42 @@ public struct RuntimeCapabilityDetection {
     
     private static var testHighContrast: Bool? {
         return Thread.current.threadDictionary["testHighContrast"] as? Bool
+    }
+
+    private static var testPhotosHasCamera: Bool? {
+        Thread.current.threadDictionary["testPhotosHasCamera"] as? Bool
+    }
+
+    private static var testPhotosIsPhotoLibraryPickerAvailable: Bool? {
+        Thread.current.threadDictionary["testPhotosIsPhotoLibraryPickerAvailable"] as? Bool
+    }
+
+    private static var testPhotosSupportsLiveDataScanner: Bool? {
+        Thread.current.threadDictionary["testPhotosSupportsLiveDataScanner"] as? Bool
+    }
+
+    private static var testVisionIsFrameworkAvailable: Bool? {
+        Thread.current.threadDictionary["testVisionIsFrameworkAvailable"] as? Bool
+    }
+
+    private static var testVisionSupportsOCR: Bool? {
+        Thread.current.threadDictionary["testVisionSupportsOCR"] as? Bool
+    }
+
+    private static var testVisionSupportsImageAnalyzer: Bool? {
+        Thread.current.threadDictionary["testVisionSupportsImageAnalyzer"] as? Bool
+    }
+
+    private static var testVisionSupportsDocumentCamera: Bool? {
+        Thread.current.threadDictionary["testVisionSupportsDocumentCamera"] as? Bool
+    }
+
+    private static var testFilesSupportsSecurityScopedResources: Bool? {
+        Thread.current.threadDictionary["testFilesSupportsSecurityScopedResources"] as? Bool
+    }
+
+    private static var testFilesSupportsSecurityScopedBookmarks: Bool? {
+        Thread.current.threadDictionary["testFilesSupportsSecurityScopedBookmarks"] as? Bool
     }
     
     // MARK: - High Contrast Detection
@@ -646,13 +709,6 @@ public struct RuntimeCapabilityDetection {
     
     // MARK: - Vision Framework Detection
     
-    /// Detects if Vision framework is actually available
-    /// Uses the same detection method across all platforms
-    /// Note: nonisolated - only checks framework availability (no MainActor needed)
-    nonisolated public static var supportsVision: Bool {
-        return detectVisionFrameworkAvailability()
-    }
-    
     /// Detect Vision framework availability using runtime checks
     private static func detectVisionFrameworkAvailability() -> Bool {
         #if canImport(Vision)
@@ -684,15 +740,238 @@ public struct RuntimeCapabilityDetection {
         return false
         #endif
     }
-    
-    // MARK: - OCR Detection
-    
-    /// Detects if OCR capabilities are actually available
-    /// OCR depends on Vision framework, so uses the same detection method across all platforms
-    /// Note: nonisolated - only checks framework availability (no MainActor needed)
+
+    // MARK: - Namespaced runtime capabilities (#253 / #252)
+
+    /// Vision framework, OCR, and still-image / document Vision probes.
+    /// Live camera ``DataScannerViewController`` availability is under ``Photos`` (see #252).
+    public enum Vision {
+        /// Whether the Vision framework is usable on this OS/device class (same logic as legacy ``RuntimeCapabilityDetection/supportsVision``).
+        nonisolated public static var isFrameworkAvailable: Bool {
+            if let forced = testVisionIsFrameworkAvailable { return forced }
+            return detectVisionFrameworkAvailability()
+        }
+
+        /// Vision-backed OCR availability (same logic as legacy ``RuntimeCapabilityDetection/supportsOCR``).
+        nonisolated public static var supportsOCR: Bool {
+            if let forced = testVisionSupportsOCR { return forced }
+            return detectVisionFrameworkAvailability()
+        }
+
+        /// Still-image Live Text–style analysis (`ImageAnalyzer`), iOS 16+ when VisionKit exposes it.
+        nonisolated public static var supportsImageAnalyzer: Bool {
+            if let forced = testVisionSupportsImageAnalyzer { return forced }
+            return detectSupportsImageAnalyzer()
+        }
+
+        /// Document camera / scan UX (`VNDocumentCameraViewController`) when supported.
+        nonisolated public static var supportsDocumentCamera: Bool {
+            if let forced = testVisionSupportsDocumentCamera { return forced }
+            return detectSupportsDocumentCamera()
+        }
+
+        /// `nil` clears the override; `true` / `false` force branch tests (does not change OS hardware).
+        public static func setTestIsFrameworkAvailable(_ value: Bool?) {
+            setThreadOptionalBool(key: "testVisionIsFrameworkAvailable", value: value)
+        }
+
+        public static func setTestSupportsOCR(_ value: Bool?) {
+            setThreadOptionalBool(key: "testVisionSupportsOCR", value: value)
+        }
+
+        public static func setTestSupportsImageAnalyzer(_ value: Bool?) {
+            setThreadOptionalBool(key: "testVisionSupportsImageAnalyzer", value: value)
+        }
+
+        public static func setTestSupportsDocumentCamera(_ value: Bool?) {
+            setThreadOptionalBool(key: "testVisionSupportsDocumentCamera", value: value)
+        }
+    }
+
+    /// Security-scoped resources and bookmark persistence (GitHub #253).
+    public enum Files {
+        /// Same semantics as legacy ``RuntimeCapabilityDetection/supportsSecurityScopedResources``; prefer this member for new code.
+        nonisolated public static var supportsSecurityScopedResources: Bool {
+            if let forced = testFilesSupportsSecurityScopedResources { return forced }
+            return detectSecurityScopedResourceSupport()
+        }
+
+        /// Same semantics as legacy ``RuntimeCapabilityDetection/supportsSecurityScopedBookmarks``; prefer this member for new code.
+        nonisolated public static var supportsSecurityScopedBookmarks: Bool {
+            if let forced = testFilesSupportsSecurityScopedBookmarks { return forced }
+            return detectSecurityScopedBookmarkSupport()
+        }
+
+        public static func setTestSupportsSecurityScopedResources(_ value: Bool?) {
+            setThreadOptionalBool(key: "testFilesSupportsSecurityScopedResources", value: value)
+        }
+
+        public static func setTestSupportsSecurityScopedBookmarks(_ value: Bool?) {
+            setThreadOptionalBool(key: "testFilesSupportsSecurityScopedBookmarks", value: value)
+        }
+    }
+
+    /// Camera, photo library picker, Photos read access, and live VisionKit data scanner (#252).
+    public enum Photos {
+        /// Photos library authorization / limitation (not the same as “picker UI may appear”).
+        public enum ReadAccessLevel: Sendable, Equatable {
+            case notDetermined
+            case denied
+            case limited
+            case authorized
+            /// Host OS does not expose `Photos` / read-status APIs for this binary.
+            case unavailable
+        }
+
+        /// Camera capture / preview is possible (runtime probe; `false` on Simulator without camera).
+        nonisolated public static var hasCamera: Bool {
+            if let forced = testPhotosHasCamera { return forced }
+            return detectPhotosHasCamera()
+        }
+
+        /// User can open a system photo / image picker (not full read access).
+        nonisolated public static var isPhotoLibraryPickerAvailable: Bool {
+            if let forced = testPhotosIsPhotoLibraryPickerAvailable { return forced }
+            return detectPhotosLibraryPickerAvailable()
+        }
+
+        /// Photos library read/write authorization snapshot where `Photos` is linked.
+        nonisolated public static var photoLibraryReadAccessLevel: ReadAccessLevel {
+            detectPhotosLibraryReadAccessLevel()
+        }
+
+        /// Live data scanner (`DataScannerViewController`); iOS 16+ when VisionKit reports supported and available.
+        nonisolated public static var supportsLiveDataScanner: Bool {
+            if let forced = testPhotosSupportsLiveDataScanner { return forced }
+            return detectSupportsLiveDataScanner()
+        }
+
+        public static func setTestHasCamera(_ value: Bool?) {
+            setThreadOptionalBool(key: "testPhotosHasCamera", value: value)
+        }
+
+        public static func setTestIsPhotoLibraryPickerAvailable(_ value: Bool?) {
+            setThreadOptionalBool(key: "testPhotosIsPhotoLibraryPickerAvailable", value: value)
+        }
+
+        public static func setTestSupportsLiveDataScanner(_ value: Bool?) {
+            setThreadOptionalBool(key: "testPhotosSupportsLiveDataScanner", value: value)
+        }
+    }
+
+    /// Shared thread-local `Bool?` override helper for namespaced surfaces (#253).
+    private static func setThreadOptionalBool(key: String, value: Bool?) {
+        if let value {
+            Thread.current.threadDictionary[key] = value
+        } else {
+            Thread.current.threadDictionary.removeObject(forKey: key)
+        }
+    }
+
+    private static func detectPhotosHasCamera() -> Bool {
+        #if os(iOS)
+        return UIImagePickerController.isSourceTypeAvailable(.camera)
+        #elseif os(macOS)
+        #if canImport(AVFoundation)
+        let session = AVCaptureDevice.DiscoverySession(
+            deviceTypes: [.builtInWideAngleCamera, .externalUnknown],
+            mediaType: AVMediaType.video,
+            position: .unspecified
+        )
+        return !session.devices.isEmpty
+        #else
+        return false
+        #endif
+        #else
+        return false
+        #endif
+    }
+
+    private static func detectPhotosLibraryPickerAvailable() -> Bool {
+        #if os(iOS)
+        return UIImagePickerController.isSourceTypeAvailable(.photoLibrary)
+        #elseif os(macOS)
+        // `platformPhotoPicker_L4` uses `NSOpenPanel` for images on macOS; treat as available when AppKit exists.
+        return true
+        #else
+        return false
+        #endif
+    }
+
+    private static func detectPhotosLibraryReadAccessLevel() -> Photos.ReadAccessLevel {
+        #if canImport(Photos)
+        #if os(iOS) || os(macOS)
+        if #available(iOS 14, macOS 11, *) {
+            switch PHPhotoLibrary.authorizationStatus(for: .readWrite) {
+            case .notDetermined:
+                return .notDetermined
+            case .restricted, .denied:
+                return .denied
+            case .limited:
+                return .limited
+            case .authorized:
+                return .authorized
+            @unknown default:
+                return .unavailable
+            }
+        }
+        #endif
+        #endif
+        return .unavailable
+    }
+
+    private static func detectSupportsLiveDataScanner() -> Bool {
+        #if os(iOS)
+        #if canImport(VisionKit)
+        if #available(iOS 16.0, *) {
+            // VisionKit scanner statics are MainActor-isolated on current SDKs.
+            if Thread.isMainThread {
+                return MainActor.assumeIsolated {
+                    DataScannerViewController.isSupported && DataScannerViewController.isAvailable
+                }
+            }
+            return false
+        }
+        #endif
+        #endif
+        return false
+    }
+
+    private static func detectSupportsImageAnalyzer() -> Bool {
+        #if os(iOS)
+        #if canImport(VisionKit)
+        if #available(iOS 16.0, *) {
+            if Thread.isMainThread {
+                return MainActor.assumeIsolated {
+                    ImageAnalyzer.isSupported
+                }
+            }
+            return false
+        }
+        #endif
+        #endif
+        return false
+    }
+
+    private static func detectSupportsDocumentCamera() -> Bool {
+        #if os(iOS)
+        #if canImport(Vision)
+        if #available(iOS 13.0, *) {
+            return VNDocumentCameraViewController.isSupported
+        }
+        #endif
+        #endif
+        return false
+    }
+
+    /// Legacy top-level probe; prefer ``Vision/isFrameworkAvailable`` (GitHub #253).
+    nonisolated public static var supportsVision: Bool {
+        Vision.isFrameworkAvailable
+    }
+
+    /// Legacy top-level probe; prefer ``Vision/supportsOCR`` (GitHub #253).
     nonisolated public static var supportsOCR: Bool {
-        // OCR is available through Vision framework, so check Vision availability
-        return detectVisionFrameworkAvailability()
+        Vision.supportsOCR
     }
     
     // MARK: - Security-Scoped Resource Detection
@@ -702,12 +981,14 @@ public struct RuntimeCapabilityDetection {
     /// - **macOS**: Required for App Sandbox (accessing files outside sandbox)
     /// - **iOS**: Required for document picker (accessing files outside app's sandbox)
     /// - **Other platforms**: Not supported
-    /// 
+    ///
+    /// Prefer ``Files/supportsSecurityScopedResources`` (GitHub #253).
     /// This method actually checks if the API is available at runtime by testing
     /// if `URL.startAccessingSecurityScopedResource()` responds to the selector.
     /// Note: nonisolated - only checks API availability (no MainActor needed)
+    @available(*, deprecated, message: "Use RuntimeCapabilityDetection.Files.supportsSecurityScopedResources (GitHub #253).")
     nonisolated public static var supportsSecurityScopedResources: Bool {
-        return detectSecurityScopedResourceSupport()
+        Files.supportsSecurityScopedResources
     }
     
     /// Detects if security-scoped bookmark persistence is supported at runtime
@@ -715,11 +996,13 @@ public struct RuntimeCapabilityDetection {
     /// - **macOS**: Full support for bookmark persistence
     /// - **iOS**: No bookmark persistence support (security-scoped access is temporary)
     /// - **Other platforms**: Not supported
-    /// 
+    ///
+    /// Prefer ``Files/supportsSecurityScopedBookmarks`` (GitHub #253).
     /// This method actually checks if the bookmark APIs are available at runtime.
     /// Note: nonisolated - only checks API availability (no MainActor needed)
+    @available(*, deprecated, message: "Use RuntimeCapabilityDetection.Files.supportsSecurityScopedBookmarks (GitHub #253).")
     nonisolated public static var supportsSecurityScopedBookmarks: Bool {
-        return detectSecurityScopedBookmarkSupport()
+        Files.supportsSecurityScopedBookmarks
     }
     
     /// Runtime detection of security-scoped resource support
