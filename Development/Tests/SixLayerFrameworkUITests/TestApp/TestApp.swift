@@ -56,6 +56,8 @@ struct TestAppContentView: View {
     private let openCategoryAAccessibility = ProcessInfo.processInfo.arguments.contains("-OpenCategoryAAccessibility")
     /// When true, app opens to full `Layer4ExamplesView` (component list incl. Identifier Edge Case). UITest: `-OpenLayer4ComponentExamples`.
     private let openLayer4ComponentExamples = ProcessInfo.processInfo.arguments.contains("-OpenLayer4ComponentExamples")
+    /// When true, app opens to minimal navigator / contract smoke host (launch arg -OpenUITestContractSmokeHost). Issue #231.
+    private let openUITestContractSmokeHost = ProcessInfo.processInfo.arguments.contains("-OpenUITestContractSmokeHost")
     /// When true, app opens directly to Layer 4 contract section (launch arg -OpenLayer4Examples).
     private let openLayer4Examples = ProcessInfo.processInfo.arguments.contains("-OpenLayer4Examples")
     /// When true, app opens directly to Layer 5 Accessibility section (launch arg -OpenLayer5Accessibility).
@@ -125,7 +127,11 @@ struct TestAppContentView: View {
 
     var body: some View {
         Group {
-            if openCategoryAAccessibility, ProcessInfo.processInfo.arguments.contains("-CategoryAGlobalAutoOff") {
+            if openUITestContractSmokeHost {
+                NavigationStack {
+                    UITestContractSmokeHostView()
+                }
+            } else if openCategoryAAccessibility, ProcessInfo.processInfo.arguments.contains("-CategoryAGlobalAutoOff") {
                 NavigationStack {
                     AccessibilityIdentifierCategoryAGlobalOffAUDITView()
                 }
