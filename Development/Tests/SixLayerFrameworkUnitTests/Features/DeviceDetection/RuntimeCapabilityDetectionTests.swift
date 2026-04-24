@@ -435,6 +435,24 @@ open class RuntimeCapabilityDetectionTDDTests: BaseTestClass {
     // MARK: - Files namespaced runtime (#253)
 
     @Test @MainActor
+    func testLegacySupportsSecurityScopedResourcesMatchesFilesNamespace() {
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        #expect(
+            RuntimeCapabilityDetection.supportsSecurityScopedResources
+                == RuntimeCapabilityDetection.Files.supportsSecurityScopedResources
+        )
+    }
+
+    @Test @MainActor
+    func testLegacySupportsSecurityScopedBookmarksMatchesFilesNamespace() {
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        #expect(
+            RuntimeCapabilityDetection.supportsSecurityScopedBookmarks
+                == RuntimeCapabilityDetection.Files.supportsSecurityScopedBookmarks
+        )
+    }
+
+    @Test @MainActor
     func testFilesOverridesClearWithClearAllCapabilityOverrides() {
         RuntimeCapabilityDetection.clearAllCapabilityOverrides()
         let baselineResources = RuntimeCapabilityDetection.Files.supportsSecurityScopedResources
