@@ -18,9 +18,8 @@ open class PlatformFileSystemUtilitiesAuditHostTests: BaseTestClass {
         do {
             let root = PlatformFileSystemUtilitiesAuditHost()
             let inspected = try AnyView(root).inspect()
-            let vStacks = try inspected.findAll(ViewType.VStack.self)
-            guard let vStack = vStacks.first else { return "" }
-            let parts = try vStack.findAll(ViewType.Text.self).map { try $0.string() }
+            let texts = inspected.findAll(ViewType.Text.self)
+            let parts = try texts.map { try $0.string() }
             return parts.joined(separator: "\n")
         } catch {
             return ""
