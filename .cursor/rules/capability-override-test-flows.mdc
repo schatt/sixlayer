@@ -14,6 +14,12 @@ alwaysApply: false
 
 Run assertions on the **real** OS for that scheme (simulator or device). Do not rely on thread-local overrides on **iOS** to stand in for **tvOS / macOS / watchOS / visionOS** behavior — use the matching test target and simulator when you need that platform’s runtime.
 
+## Implied capability pattern (current host only)
+
+**Substance:** Establish capability state (e.g. `clearAllCapabilityOverrides()`, then read `RuntimeCapabilityDetection` / device APIs). **Expectations are implied by the host OS** — branch on `SixLayerPlatform.current` (or `#if os(...)` where the test file is target-specific) so **iOS** expectations, **macOS** expectations, etc. each describe what **that** platform should show. The same source can compile into every unit-test bundle; only the branch matching the **running** simulator/device does real work.
+
+**Shape is flexible:** a single `switch platform { case .iOS: … case .macOS: … }`, or separate `@Test` methods each with `guard SixLayerPlatform.current == .iOS else { return }`, or target-split files — **not** prescribed. What’s implied is **no pretending to be another OS** on the wrong host.
+
 ## Simulator limitations vs device
 
 **Simulators do not replicate everything** (hardware, some privacy flows, drivers). When a capability is **unavailable or misleading in Simulator** but **real on device**, tests should:
