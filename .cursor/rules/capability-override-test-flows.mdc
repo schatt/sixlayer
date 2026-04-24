@@ -1,14 +1,16 @@
 ---
-description: SixLayer-specific runtime capability testing — per-OS targets, thread-local overrides, nonsensical inputs; not a substitute for TDD.
+description: How SixLayer does capability testing — real hosts, implied-by-OS expectations, tri-state thread-local hooks inside control tests; per-OS targets and footguns; not a substitute for TDD.
 globs: Development/Tests/**/*RuntimeCapability*.swift, Development/Tests/**/*Capability*.swift, Development/Tests/**/ViewInspectorTests/**/*.swift, Framework/Sources/Core/Models/RuntimeCapabilityDetection.swift
 alwaysApply: false
 ---
 
-# Runtime capability tests (SixLayer-specific)
+# How we do capability testing (SixLayer)
 
-**TDD already requires** covering every **meaningful** capability state on the host (red → green → refactor). This file only records **project footguns** so agents do not contradict that.
+This rule is **methodology**: the way we **should** exercise runtime capabilities in tests — **what** to assert (behavior on the real host), **how** to vary state (current / disabled / enabled overrides on **this** machine), and **where** that belongs (with the control’s tests, not a detached “capability-only” suite). File layout follows from that; the point is **practice**, not folder trivia.
 
-**Context:** The suite historically accumulated **cross-platform emulation** (e.g. “tvOS-like” behavior on an iOS test host via `setTest*`). That drifts from “test what this OS actually does” and breaks when product code correctly ignores nonsensical inputs or when compile-time platform diverges from overrides. Prefer **real** targets/simulators per OS; use thread-local hooks only for **this** host’s meaningful or explicitly nonsensical cases.
+**TDD still governs** red → green → refactor for every **meaningful** capability path. This file adds **project-specific** constraints so agents do not drift into cross-host emulation or plumbing-as-proof.
+
+**Historical context:** The suite accumulated **cross-platform emulation** (e.g. “tvOS-like” behavior on an iOS test host via `setTest*`). That contradicts “test what **this** OS actually does” and breaks when product code correctly ignores nonsensical inputs or when compile-time platform diverges from overrides. **Method:** prefer **real** targets/simulators per OS; use thread-local hooks only for **this** host’s meaningful or explicitly nonsensical cases.
 
 ## Per-OS targets
 
@@ -35,9 +37,9 @@ When behavior **must** be validated on hardware and cannot live in CI alone:
 
 That documents the gap without blocking green CI on something the simulator cannot provide.
 
-## Thread-local `setTest*` — **current**, **disabled**, **enabled** (where it belongs)
+## Method: tri-state thread-local `setTest*` (**current**, **disabled**, **enabled**)
 
-**Default placement:** **tri-value** (`clear` = **current**, `setTest*(false)` = **disabled**, `setTest*(true)` = **enabled**) belongs **inside the tests for the control** (view, modifier, container, etc.) — not as a **separate** “capability test suite” whose only job is flags. You are still answering: **does this control do the right thing?** Tri-state is **how** you drive the branches on the current host (hit targets, hover paths, haptics, focus, announcements, etc.), not a different product or a different test **kind** in another file unless you are only deduplicating a tiny shared helper (see below).
+**Tri-state is the standard technique** for forcing both override branches on CI when hardware rarely does. **Default placement:** **tri-value** (`clear` = **current**, `setTest*(false)` = **disabled**, `setTest*(true)` = **enabled**) belongs **inside the tests for the control** (view, modifier, container, etc.) — not as a **separate** “capability test suite” whose only job is flags. You are still answering: **does this control do the right thing?** Tri-state is **how** you drive the branches on the current host (hit targets, hover paths, haptics, focus, announcements, etc.), not a different product or a different test **kind** in another file unless you are only deduplicating a tiny shared helper (see below).
 
 1. **Current** — `clearAllCapabilityOverrides()` (often via `DefaultRuntimeCapabilityIsolationTrait`); intrinsic / environment-defined.
 2. **Disabled** — `setTest*(false)` where meaningful; on **nonsensical** hosts (e.g. `setTestTouchSupport(false)` on **iOS/watchOS**) production **ignores** false — the **control** test (or a thin plumbing test) asserts the **outcome** that matters (e.g. touch-sized layout still applies), not “touch is false”.
