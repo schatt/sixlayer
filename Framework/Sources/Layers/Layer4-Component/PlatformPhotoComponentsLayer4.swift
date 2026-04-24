@@ -256,7 +256,7 @@ public enum PlatformPhotoComponentsLayer4 {
     ) -> some View {
         var sheetConfiguration = configuration
         sheetConfiguration.presentationStyle = PlatformDataScannerPresentationStyle.sheet
-        platformDataScannerInterface_L4(
+        return platformDataScannerInterface_L4(
             isPresented: isPresented,
             configuration: sheetConfiguration,
             bannerMessage: bannerMessage,
@@ -286,7 +286,7 @@ public enum PlatformPhotoComponentsLayer4 {
     ) -> some View {
         var fullScreenConfiguration = configuration
         fullScreenConfiguration.presentationStyle = PlatformDataScannerPresentationStyle.fullScreenCover
-        platformDataScannerInterface_L4(
+        return platformDataScannerInterface_L4(
             isPresented: isPresented,
             configuration: fullScreenConfiguration,
             bannerMessage: bannerMessage,
