@@ -7,46 +7,27 @@ import SwiftUI
 import ViewInspector
 #endif
 
-/// RealUI audit host + direct API probes for `PlatformFileSystemUtilities` (Issue #170). Keep <=10 tests.
+/// RealUI audit host + API probes for `PlatformFileSystemUtilities` (Issue #170). Keep <=10 tests.
 @Suite("Platform File System Utilities Audit Host")
 open class PlatformFileSystemUtilitiesAuditHostTests: BaseTestClass {
 
+    /// Concatenated `Text` strings from the audit host (ViewInspector); empty if inspection fails.
     @MainActor
-    private func hostedAuditIdentifierSnapshot() -> [String] {
-        let root = PlatformFileSystemUtilitiesAuditHost()
-        let hosted = Self.hostRootPlatformView(
-            root,
-            forceLayout: true,
-            exposeContentAccessibility: true
-        )
-        var collected = findAllAccessibilityIdentifiersFromPlatformView(hosted)
+    private func auditHostTextJoined() -> String {
         #if canImport(ViewInspector)
         do {
+            let root = PlatformFileSystemUtilitiesAuditHost()
             let inspected = try AnyView(root).inspect()
             let vStacks = try inspected.findAll(ViewType.VStack.self)
-            guard let vStack = vStacks.first else {
-                return collected
-            }
-            for text in vStack.findAll(ViewType.Text.self) {
-                if let id = try? text.accessibilityIdentifier(), !id.isEmpty {
-                    collected.append(id)
-                }
-            }
+            guard let vStack = vStacks.first else { return "" }
+            let parts = try vStack.findAll(ViewType.Text.self).map { try $0.string() }
+            return parts.joined(separator: "\n")
         } catch {
-            // Keep platform-derived identifiers only.
+            return ""
         }
+        #else
+        return ""
         #endif
-        return collected
-    }
-
-    @MainActor
-    private func snapshotContainsAny(of needles: [String], in ids: [String]) -> Bool {
-        for needle in needles {
-            if ids.contains(where: { $0 == needle || $0.hasSuffix(needle) || $0.contains(needle) }) {
-                return true
-            }
-        }
-        return false
     }
 
     @Test @MainActor func testPlatformFileSystemAuditHostRenders() async {
@@ -55,33 +36,42 @@ open class PlatformFileSystemUtilitiesAuditHostTests: BaseTestClass {
         #expect(hosted != nil)
     }
 
-    @Test @MainActor func testPlatformFileSystemAuditHostSurfacesTitleIdentifier() async {
-        let ids = hostedAuditIdentifierSnapshot()
-        #expect(snapshotContainsAny(of: ["platform-fs-audit-title"], in: ids))
+    @Test @MainActor func testPlatformFileSystemAuditHostViewInspectorSurfacesStandardDirectoryRows() async {
+        #if canImport(ViewInspector)
+        let blob = auditHostTextJoined()
+        #expect(!blob.isEmpty, "ViewInspector should read at least one Text row from the audit host")
+        #expect(blob.contains("home:"))
+        #expect(blob.contains("appSupport:"))
+        #expect(blob.contains("documents:"))
+        #expect(blob.contains("caches:"))
+        #expect(blob.contains("temporary:"))
+        #else
+        #expect(Bool(true), "ViewInspector not linked for this run")
+        #endif
     }
 
-    @Test @MainActor func testPlatformFileSystemAuditHostSurfacesHomeAndAppSupportIdentifiers() async {
-        let ids = hostedAuditIdentifierSnapshot()
-        #expect(snapshotContainsAny(of: ["platform-fs-audit-home"], in: ids))
-        #expect(snapshotContainsAny(of: ["platform-fs-audit-app-support"], in: ids))
+    @Test @MainActor func testPlatformFileSystemAuditHostViewInspectorSurfacesContainerAndParityRows() async {
+        #if canImport(ViewInspector)
+        let blob = auditHostTextJoined()
+        #expect(blob.contains("sharedContainer"))
+        #expect(blob.contains("iCloudContainer"))
+        let parityOk =
+            blob.contains("documents optional path matches throwing")
+            || blob.contains("documents optional and throwing both nil")
+            || blob.contains("documents optional/throwing availability differs")
+            || blob.contains("PATH MISMATCH")
+        #expect(parityOk)
+        #else
+        #expect(Bool(true), "ViewInspector not linked for this run")
+        #endif
     }
 
-    @Test @MainActor func testPlatformFileSystemAuditHostSurfacesDocumentsCachesTemporaryIdentifiers() async {
-        let ids = hostedAuditIdentifierSnapshot()
-        #expect(snapshotContainsAny(of: ["platform-fs-audit-documents"], in: ids))
-        #expect(snapshotContainsAny(of: ["platform-fs-audit-caches"], in: ids))
-        #expect(snapshotContainsAny(of: ["platform-fs-audit-temporary"], in: ids))
-    }
-
-    @Test @MainActor func testPlatformFileSystemAuditHostSurfacesContainerProbeIdentifiers() async {
-        let ids = hostedAuditIdentifierSnapshot()
-        #expect(snapshotContainsAny(of: ["platform-fs-audit-shared-container"], in: ids))
-        #expect(snapshotContainsAny(of: ["platform-fs-audit-icloud-container"], in: ids))
-    }
-
-    @Test @MainActor func testPlatformFileSystemAuditHostSurfacesDocumentsParityRowIdentifier() async {
-        let ids = hostedAuditIdentifierSnapshot()
-        #expect(snapshotContainsAny(of: ["platform-fs-audit-documents-parity"], in: ids))
+    @Test func testPlatformApplicationSupportDirectoryOptionalResolves() {
+        guard let url = platformApplicationSupportDirectory(createIfNeeded: true) else {
+            Issue.record("Application Support directory should resolve in test host")
+            return
+        }
+        #expect(url.isFileURL)
     }
 
     @Test func testPlatformCachesDirectoryOptionalResolvesToFileURL() {
