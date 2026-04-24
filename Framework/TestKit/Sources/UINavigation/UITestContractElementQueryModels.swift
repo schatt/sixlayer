@@ -62,8 +62,13 @@ enum UITestContractElementResolverCore {
         materialize: (UITestContractXCUIQuerySlot) -> Materialized?,
         exists: (_ value: Materialized, _ timeout: TimeInterval) -> Bool
     ) -> (slot: UITestContractXCUIQuerySlot, match: Materialized)? {
-        // TDD red stub: do not consult materialize/exists (tests require real ordering).
-        _ = (slots, elementId, timeoutPerSlot, materialize, exists)
+        _ = elementId
+        for slot in slots {
+            guard let materialized = materialize(slot) else { continue }
+            if exists(materialized, timeoutPerSlot) {
+                return (slot, materialized)
+            }
+        }
         return nil
     }
 }
