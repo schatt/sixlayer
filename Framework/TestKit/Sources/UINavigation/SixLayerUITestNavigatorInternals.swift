@@ -3,6 +3,7 @@
 //  SixLayerTestKit
 //
 //  Testable navigation helpers for SixLayerUITestNavigator (#229).
+//  See also: Framework/docs/SixLayerUITestNavigator.md
 //
 
 import Foundation
