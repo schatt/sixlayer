@@ -106,6 +106,7 @@ targets:
         IPHONEOS_DEPLOYMENT_TARGET: "17.0"
     dependencies:
       - target: SixLayerFramework_iOS
+      - sdk: XCTest.framework
 
   SixLayerTestKit_macOS:
     type: framework
@@ -130,6 +131,7 @@ targets:
         MACOSX_DEPLOYMENT_TARGET: "15.0"
     dependencies:
       - target: SixLayerFramework_macOS
+      - sdk: XCTest.framework
 
   # Unit tests - iOS
   SixLayerFrameworkUnitTests_iOS:
