@@ -9,6 +9,7 @@ alwaysApply: true
 ## Comment posting — MANDATORY
 
 - **Always** use `gh issue comment <N> --body-file <path>` (or a heredoc with a quoted delimiter). **Never** use inline `--body "..."` — shells interpret backticks/`$` inside double quotes.
+- Use the same **`--body-file`** + **`COMMENT_FILE`** pattern for `gh issue edit <N> --body-file <path>` when updating the issue description.
 - Applies any time a comment contains backticks, code blocks, special shell characters, or multi-line formatting (which is almost always).
 
 ## Reusable body file (avoid delete prompts)
