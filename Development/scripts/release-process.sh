@@ -358,7 +358,11 @@ MACOS_XCRESULT="${XCRESULT_BASE}/SLF-macOS-UnitTests.xcresult"
 IOS_XCRESULT="${XCRESULT_BASE}/SLF-iOS-UnitTests.xcresult"
 echo "📎 xcresult bundles for this run: $MACOS_XCRESULT and $IOS_XCRESULT"
 
-# Run macOS unit tests first
+# Run both platform unit tests even if one fails (cross-platform signal). Do not exit here:
+# remaining release checks still run so test + documentation failures appear together at the end.
+MACOS_TESTS_FAILED=0
+IOS_TESTS_FAILED=0
+
 echo "🧪 Running macOS unit tests (SLF-macOS-UnitTests)..."
 # Note: do NOT use -quiet here so that any failures print detailed diagnostics
 if ! xcodebuild test \
@@ -367,34 +371,34 @@ if ! xcodebuild test \
     -destination "platform=macOS,arch=arm64" \
     -resultBundlePath "$MACOS_XCRESULT" \
     -quiet; then
-    log_error "macOS unit tests failed! Cannot proceed with release."
-    echo "💡 Open the result bundle in Xcode (Report navigator), or inspect failures from the CLI:" >&2
-    echo "   xcrun xcresulttool get test-results summary --path \"$MACOS_XCRESULT\"" >&2
-    maybe_open_xcresult "$MACOS_XCRESULT"
-    exit 1
+    MACOS_TESTS_FAILED=1
+    log_error "macOS unit tests failed."
+else
+    echo "✅ macOS unit tests passed"
 fi
-echo "✅ macOS unit tests passed"
 
-# Run iOS unit tests on Simulator
 echo "🧪 Running iOS unit tests on Simulator (SLF-iOS-UnitTests)..."
-
 if ! xcodebuild test \
     -project SixLayerFramework.xcodeproj \
     -scheme SLF-iOS-UnitTests \
     -destination "platform=iOS Simulator,name=iPhone 17 Pro Max" \
     -resultBundlePath "$IOS_XCRESULT" \
     -quiet; then
-    log_error "iOS unit tests failed! Cannot proceed with release."
-    echo "💡 macOS xcresult (passed): $MACOS_XCRESULT" >&2
-    echo "💡 Open the iOS result bundle in Xcode (Report navigator), or inspect failures from the CLI:" >&2
-    echo "   xcrun xcresulttool get test-results summary --path \"$IOS_XCRESULT\"" >&2
-    maybe_open_xcresult "$IOS_XCRESULT"
-    exit 1
+    IOS_TESTS_FAILED=1
+    log_error "iOS unit tests failed."
+else
+    echo "✅ iOS unit tests passed"
 fi
-echo "✅ iOS unit tests passed"
 
 # Release gate runs unit tests only (SLF-*-UnitTests). UI/ViewInspector/AllTests are not run here.
-echo "✅ Unit test suite validation passed (macOS + iOS unit tests only)"
+if [ "$MACOS_TESTS_FAILED" -eq 1 ] || [ "$IOS_TESTS_FAILED" -eq 1 ]; then
+    echo "⚠️  Unit test gate failed on one or more platforms; continuing with remaining release checks." >&2
+    echo "📎 macOS xcresult: $MACOS_XCRESULT" >&2
+    echo "📎 iOS xcresult:   $IOS_XCRESULT" >&2
+    echo "💡 Inspect: xcrun xcresulttool get test-results summary --path <path>" >&2
+else
+    echo "✅ Unit test suite validation passed (macOS + iOS unit tests only)"
+fi
 
 # Step 2: Check git is clean (no uncommitted changes)
 echo "📋 Step 2: Checking git repository status..."
@@ -1033,6 +1037,14 @@ if [ $ERRORS_FOUND -gt 0 ]; then
     echo ""
     echo "Found $ERRORS_FOUND error(s) that need to be fixed:"
     echo -e "$ERROR_MESSAGES"
+    if [ "${MACOS_TESTS_FAILED:-0}" -eq 1 ]; then
+        echo "💡 macOS test failures — result bundle: $MACOS_XCRESULT" >&2
+        maybe_open_xcresult "$MACOS_XCRESULT"
+    fi
+    if [ "${IOS_TESTS_FAILED:-0}" -eq 1 ]; then
+        echo "💡 iOS test failures — result bundle: $IOS_XCRESULT" >&2
+        maybe_open_xcresult "$IOS_XCRESULT"
+    fi
     if [ "${NO_RELEASE_MILESTONE:-0}" -eq 1 ]; then
         echo ""
         echo "⚠️  No GitHub milestone v$VERSION found (optional; not a blocker — patch releases often skip milestones). Creating one can help track release work:"
