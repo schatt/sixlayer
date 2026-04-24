@@ -24,7 +24,7 @@ struct PlatformStandaloneDropInTests {
         
         // Then: View should be created successfully (compilation success means it works)
         _ = view // Use view to verify it compiles
-        #expect(true)
+        #expect(Bool(true))
     }
     
     @Test @MainActor func testPlatformTextField_WithAxis() {
@@ -37,7 +37,7 @@ struct PlatformStandaloneDropInTests {
         
         // Then: View should be created successfully
         _ = view
-        #expect(true)
+        #expect(Bool(true))
     }
     
     @Test @MainActor func testPlatformTextField_TextBinding() {
@@ -65,7 +65,7 @@ struct PlatformStandaloneDropInTests {
         
         // Then: View should be created successfully
         _ = view
-        #expect(true)
+        #expect(Bool(true))
     }
     
     @Test @MainActor func testPlatformSecureField_TextBinding() {
@@ -93,7 +93,7 @@ struct PlatformStandaloneDropInTests {
         
         // Then: View should be created successfully
         _ = view
-        #expect(true)
+        #expect(Bool(true))
     }
     
     @Test @MainActor func testPlatformToggle_InitialState() {
@@ -119,7 +119,7 @@ struct PlatformStandaloneDropInTests {
         
         // Then: View should be created (state changes require View context)
         _ = view
-        #expect(true)
+        #expect(Bool(true))
     }
     
     // MARK: - platformForm Tests
@@ -135,7 +135,7 @@ struct PlatformStandaloneDropInTests {
         
         // Then: View should be created successfully
         _ = view
-        #expect(true)
+        #expect(Bool(true))
     }
     
     @Test @MainActor func testPlatformForm_WithMultipleFields() {
@@ -153,7 +153,7 @@ struct PlatformStandaloneDropInTests {
         
         // Then: View should be created successfully
         _ = view
-        #expect(true)
+        #expect(Bool(true))
     }
     
     @Test @MainActor func testPlatformForm_EmptyContent() {
@@ -165,7 +165,7 @@ struct PlatformStandaloneDropInTests {
         
         // Then: View should be created successfully
         _ = view
-        #expect(true)
+        #expect(Bool(true))
     }
     
     // MARK: - platformTextEditor Tests
@@ -180,7 +180,7 @@ struct PlatformStandaloneDropInTests {
         
         // Then: View should be created successfully
         _ = view
-        #expect(true)
+        #expect(Bool(true))
     }
     
     @Test @MainActor func testPlatformTextEditor_WithInitialText() {
@@ -206,7 +206,7 @@ struct PlatformStandaloneDropInTests {
         
         // Then: View should be created (text changes require View context)
         _ = view
-        #expect(true)
+        #expect(Bool(true))
     }
     
     @Test @MainActor func testPlatformTextEditor_StrictDropIn_TextOnly() {
@@ -218,7 +218,7 @@ struct PlatformStandaloneDropInTests {
         
         // Then: View should be created successfully
         _ = view
-        #expect(true)
+        #expect(Bool(true))
     }
     
     // MARK: - Integration Tests
@@ -240,7 +240,7 @@ struct PlatformStandaloneDropInTests {
         
         // Then: All functions should work together
         _ = view
-        #expect(true)
+        #expect(Bool(true))
     }
     
     @Test @MainActor func testStandaloneFunctions_AccessibilityCompliance() {
@@ -262,7 +262,7 @@ struct PlatformStandaloneDropInTests {
         _ = toggle
         _ = form
         _ = editor
-        #expect(true)
+        #expect(Bool(true))
     }
     
     // MARK: - Backward Compatibility Tests
@@ -287,7 +287,7 @@ struct PlatformStandaloneDropInTests {
         _ = toggle
         _ = form
         _ = editor
-        #expect(true)
+        #expect(Bool(true))
     }
 
     // MARK: - platformFormContainer ownership (Issue #218)
@@ -304,7 +304,7 @@ struct PlatformStandaloneDropInTests {
         }
         #expect(hasForm == true, "platformFormContainer should wrap content in Form")
         #else
-        #expect(true)
+        #expect(Bool(true))
         #endif
     }
 
@@ -323,7 +323,7 @@ struct PlatformStandaloneDropInTests {
         }
         #expect(hasSection == true, "no-header platformSectionContainer should use Section inside platformFormContainer")
         #else
-        #expect(true)
+        #expect(Bool(true))
         #endif
     }
 
@@ -342,7 +342,7 @@ struct PlatformStandaloneDropInTests {
         }
         #expect(hasVStack == true, "platformGroupedInsetContainer should use VStack for inset grouping")
         #else
-        #expect(true)
+        #expect(Bool(true))
         #endif
     }
     
@@ -359,7 +359,7 @@ struct PlatformStandaloneDropInTests {
         
         // Then: View should be created successfully
         _ = view
-        #expect(true)
+        #expect(Bool(true))
     }
     
     @Test @MainActor func testPlatformTextField_WithLabelParameter_BackwardCompatible() {
@@ -372,7 +372,7 @@ struct PlatformStandaloneDropInTests {
         
         // Then: View should still work
         _ = view
-        #expect(true)
+        #expect(Bool(true))
     }
     
     @Test @MainActor func testPlatformTextField_WithAxisAndLabel() {
@@ -386,7 +386,7 @@ struct PlatformStandaloneDropInTests {
         
         // Then: View should be created successfully
         _ = view
-        #expect(true)
+        #expect(Bool(true))
     }
     
     @Test @MainActor func testPlatformSecureField_WithLabelParameter() {
@@ -400,7 +400,7 @@ struct PlatformStandaloneDropInTests {
         
         // Then: View should be created successfully
         _ = view
-        #expect(true)
+        #expect(Bool(true))
     }
     
     @Test @MainActor func testPlatformToggle_WithLabelParameter() {
@@ -413,7 +413,7 @@ struct PlatformStandaloneDropInTests {
         
         // Then: View should be created successfully
         _ = view
-        #expect(true)
+        #expect(Bool(true))
     }
     
     @Test @MainActor func testPlatformTextEditor_WithLabelParameter() {
@@ -427,7 +427,7 @@ struct PlatformStandaloneDropInTests {
         
         // Then: View should be created successfully
         _ = view
-        #expect(true)
+        #expect(Bool(true))
     }
     
     @Test @MainActor func testPlatformButton_WithLabelParameter() {
@@ -439,7 +439,7 @@ struct PlatformStandaloneDropInTests {
         
         // Then: View should be created successfully
         _ = view
-        #expect(true)
+        #expect(Bool(true))
     }
     
     // MARK: - LocalizedStringKey and Text Support Tests
@@ -454,7 +454,7 @@ struct PlatformStandaloneDropInTests {
         
         // Then: View should be created successfully
         _ = view
-        #expect(true)
+        #expect(Bool(true))
     }
     
     @Test @MainActor func testPlatformTextField_WithTextLabel() {
@@ -467,7 +467,7 @@ struct PlatformStandaloneDropInTests {
         
         // Then: View should be created successfully
         _ = view
-        #expect(true)
+        #expect(Bool(true))
     }
     
     @Test @MainActor func testPlatformButton_WithLocalizedStringKey() {
@@ -479,7 +479,7 @@ struct PlatformStandaloneDropInTests {
         
         // Then: View should be created successfully
         _ = view
-        #expect(true)
+        #expect(Bool(true))
     }
     
     @Test @MainActor func testPlatformButton_WithTextLabel() {
@@ -491,6 +491,6 @@ struct PlatformStandaloneDropInTests {
         
         // Then: View should be created successfully
         _ = view
-        #expect(true)
+        #expect(Bool(true))
     }
 }

@@ -82,8 +82,8 @@ open class CapabilityMatrixTests: BaseTestClass {
             name: "OCR Behavior",
             testBehavior: {
                 // Test what the framework DOES when OCR is available
-                let isOCRAvailable = RuntimeCapabilityDetection.supportsOCR
-                let isVisionAvailable = RuntimeCapabilityDetection.supportsVision
+                let isOCRAvailable = RuntimeCapabilityDetection.Vision.supportsOCR
+                let isVisionAvailable = RuntimeCapabilityDetection.Vision.isFrameworkAvailable
 
                 // OCR should only be available if Vision is available (logical dependency)
                 #expect(isOCRAvailable == isVisionAvailable, 

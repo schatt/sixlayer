@@ -129,6 +129,176 @@ public enum PlatformPhotoComponentsLayer4 {
         )
         .automaticCompliance(named: "platformPhotoSourceTabbed_L4")
     }
+
+    // MARK: - Live data scanner (VisionKit, Issue #252)
+
+    /// Inner content for the VisionKit live scanner; host may wrap in its own navigation or presentation.
+    /// Uses ``RuntimeCapabilityDetection/Photos/supportsLiveDataScanner`` (#253) for gating.
+    @ViewBuilder
+    @MainActor
+    public static func platformDataScannerContent_L4(
+        configuration: PlatformDataScannerConfiguration,
+        bannerMessage: String,
+        sessionController: PlatformDataScannerSessionController? = nil,
+        onItemTap: @escaping (PlatformDataScannerRecognizedPayload) -> Void,
+        onItemsAdded: (([PlatformDataScannerTrackedItem]) -> Void)? = nil,
+        onItemsUpdated: (([PlatformDataScannerTrackedItem]) -> Void)? = nil,
+        onItemsRemoved: (([PlatformDataScannerTrackedItem]) -> Void)? = nil,
+        onBecameUnavailable: ((Error) -> Void)? = nil
+    ) -> some View {
+        #if os(iOS)
+        if #available(iOS 16.0, *) {
+            PlatformDataScannerLiveSwiftUIView(
+                configuration: configuration,
+                bannerMessage: bannerMessage,
+                sessionController: sessionController,
+                onItemTap: onItemTap,
+                onItemsAdded: onItemsAdded,
+                onItemsUpdated: onItemsUpdated,
+                onItemsRemoved: onItemsRemoved,
+                onBecameUnavailable: onBecameUnavailable
+            )
+            .automaticCompliance(named: "platformDataScannerContent_L4")
+        } else {
+            let i18n = InternationalizationService()
+            Text(i18n.localizedString(for: "SixLayerFramework.camera.notAvailable"))
+                .automaticCompliance(named: "platformDataScannerContent_L4")
+        }
+        #else
+        let i18n = InternationalizationService()
+        Text(i18n.localizedString(for: "SixLayerFramework.camera.notAvailable"))
+            .automaticCompliance(named: "platformDataScannerContent_L4")
+        #endif
+    }
+
+    /// Presents the live data scanner in a sheet or full-screen cover per `configuration.presentationStyle`.
+    @ViewBuilder
+    @MainActor
+    public static func platformDataScannerInterface_L4(
+        isPresented: Binding<Bool>,
+        configuration: PlatformDataScannerConfiguration,
+        bannerMessage: String,
+        sessionController: PlatformDataScannerSessionController? = nil,
+        showsDismissControl: Bool = true,
+        onItemTap: @escaping (PlatformDataScannerRecognizedPayload) -> Void,
+        onItemsAdded: (([PlatformDataScannerTrackedItem]) -> Void)? = nil,
+        onItemsUpdated: (([PlatformDataScannerTrackedItem]) -> Void)? = nil,
+        onItemsRemoved: (([PlatformDataScannerTrackedItem]) -> Void)? = nil,
+        onBecameUnavailable: ((Error) -> Void)? = nil
+    ) -> some View {
+        let scannerCore = platformDataScannerContent_L4(
+            configuration: configuration,
+            bannerMessage: bannerMessage,
+            sessionController: sessionController,
+            onItemTap: onItemTap,
+            onItemsAdded: onItemsAdded,
+            onItemsUpdated: onItemsUpdated,
+            onItemsRemoved: onItemsRemoved,
+            onBecameUnavailable: onBecameUnavailable
+        )
+        let presentedStack = Group {
+            if showsDismissControl {
+                NavigationStack {
+                    scannerCore
+                        .toolbar {
+                            ToolbarItem(placement: .cancellationAction) {
+                                Button(InternationalizationService().localizedString(for: "SixLayerFramework.button.cancel")) {
+                                    isPresented.wrappedValue = false
+                                }
+                            }
+                        }
+                }
+            } else {
+                scannerCore
+            }
+        }
+        Group {
+            switch configuration.presentationStyle {
+            case PlatformDataScannerPresentationStyle.sheet:
+                Color.clear
+                    .frame(width: 0, height: 0)
+                    .accessibilityHidden(true)
+                    .sheet(isPresented: isPresented) {
+                        presentedStack
+                    }
+            case PlatformDataScannerPresentationStyle.fullScreenCover:
+                Color.clear
+                    .frame(width: 0, height: 0)
+                    .accessibilityHidden(true)
+                    #if os(iOS)
+                    .fullScreenCover(isPresented: isPresented) {
+                        presentedStack
+                    }
+                    #else
+                    // `fullScreenCover` is unavailable on macOS; sheet preserves a working presentation surface.
+                    .sheet(isPresented: isPresented) {
+                        presentedStack
+                    }
+                    #endif
+            }
+        }
+        .automaticCompliance(named: "platformDataScannerInterface_L4")
+    }
+
+    /// Presents the scanner in a **sheet** (forces `presentationStyle` to ``PlatformDataScannerPresentationStyle/sheet``).
+    @MainActor
+    public static func platformDataScannerInterface_L4AsSheet(
+        isPresented: Binding<Bool>,
+        configuration: PlatformDataScannerConfiguration,
+        bannerMessage: String,
+        sessionController: PlatformDataScannerSessionController? = nil,
+        showsDismissControl: Bool = true,
+        onItemTap: @escaping (PlatformDataScannerRecognizedPayload) -> Void,
+        onItemsAdded: (([PlatformDataScannerTrackedItem]) -> Void)? = nil,
+        onItemsUpdated: (([PlatformDataScannerTrackedItem]) -> Void)? = nil,
+        onItemsRemoved: (([PlatformDataScannerTrackedItem]) -> Void)? = nil,
+        onBecameUnavailable: ((Error) -> Void)? = nil
+    ) -> some View {
+        var sheetConfiguration = configuration
+        sheetConfiguration.presentationStyle = PlatformDataScannerPresentationStyle.sheet
+        return platformDataScannerInterface_L4(
+            isPresented: isPresented,
+            configuration: sheetConfiguration,
+            bannerMessage: bannerMessage,
+            sessionController: sessionController,
+            showsDismissControl: showsDismissControl,
+            onItemTap: onItemTap,
+            onItemsAdded: onItemsAdded,
+            onItemsUpdated: onItemsUpdated,
+            onItemsRemoved: onItemsRemoved,
+            onBecameUnavailable: onBecameUnavailable
+        )
+    }
+
+    /// Presents the scanner in a **full-screen cover** (forces `presentationStyle` to ``PlatformDataScannerPresentationStyle/fullScreenCover``).
+    @MainActor
+    public static func platformDataScannerInterface_L4AsFullScreenCover(
+        isPresented: Binding<Bool>,
+        configuration: PlatformDataScannerConfiguration,
+        bannerMessage: String,
+        sessionController: PlatformDataScannerSessionController? = nil,
+        showsDismissControl: Bool = true,
+        onItemTap: @escaping (PlatformDataScannerRecognizedPayload) -> Void,
+        onItemsAdded: (([PlatformDataScannerTrackedItem]) -> Void)? = nil,
+        onItemsUpdated: (([PlatformDataScannerTrackedItem]) -> Void)? = nil,
+        onItemsRemoved: (([PlatformDataScannerTrackedItem]) -> Void)? = nil,
+        onBecameUnavailable: ((Error) -> Void)? = nil
+    ) -> some View {
+        var fullScreenConfiguration = configuration
+        fullScreenConfiguration.presentationStyle = PlatformDataScannerPresentationStyle.fullScreenCover
+        return platformDataScannerInterface_L4(
+            isPresented: isPresented,
+            configuration: fullScreenConfiguration,
+            bannerMessage: bannerMessage,
+            sessionController: sessionController,
+            showsDismissControl: showsDismissControl,
+            onItemTap: onItemTap,
+            onItemsAdded: onItemsAdded,
+            onItemsUpdated: onItemsUpdated,
+            onItemsRemoved: onItemsRemoved,
+            onBecameUnavailable: onBecameUnavailable
+        )
+    }
 }
 
 // MARK: - Camera Preview View
@@ -778,4 +948,118 @@ public func platformPhotoDisplay_L4(image: PlatformImage?, style: PhotoDisplaySt
 @MainActor
 public func platformCameraPreview_L4(session: AVCaptureSession, videoGravity: AVLayerVideoGravity = .resizeAspectFill) -> some View {
     PlatformPhotoComponentsLayer4.platformCameraPreview_L4(session: session, videoGravity: videoGravity)
+}
+
+// MARK: - Live data scanner (Issue #252)
+
+/// Live VisionKit scanner content (convenience wrapper).
+@ViewBuilder
+@MainActor
+public func platformDataScannerContent_L4(
+    configuration: PlatformDataScannerConfiguration,
+    bannerMessage: String,
+    sessionController: PlatformDataScannerSessionController? = nil,
+    onItemTap: @escaping (PlatformDataScannerRecognizedPayload) -> Void,
+    onItemsAdded: (([PlatformDataScannerTrackedItem]) -> Void)? = nil,
+    onItemsUpdated: (([PlatformDataScannerTrackedItem]) -> Void)? = nil,
+    onItemsRemoved: (([PlatformDataScannerTrackedItem]) -> Void)? = nil,
+    onBecameUnavailable: ((Error) -> Void)? = nil
+) -> some View {
+    PlatformPhotoComponentsLayer4.platformDataScannerContent_L4(
+        configuration: configuration,
+        bannerMessage: bannerMessage,
+        sessionController: sessionController,
+        onItemTap: onItemTap,
+        onItemsAdded: onItemsAdded,
+        onItemsUpdated: onItemsUpdated,
+        onItemsRemoved: onItemsRemoved,
+        onBecameUnavailable: onBecameUnavailable
+    )
+}
+
+/// Presents the live scanner per `configuration.presentationStyle` (convenience wrapper).
+@ViewBuilder
+@MainActor
+public func platformDataScannerInterface_L4(
+    isPresented: Binding<Bool>,
+    configuration: PlatformDataScannerConfiguration,
+    bannerMessage: String,
+    sessionController: PlatformDataScannerSessionController? = nil,
+    showsDismissControl: Bool = true,
+    onItemTap: @escaping (PlatformDataScannerRecognizedPayload) -> Void,
+    onItemsAdded: (([PlatformDataScannerTrackedItem]) -> Void)? = nil,
+    onItemsUpdated: (([PlatformDataScannerTrackedItem]) -> Void)? = nil,
+    onItemsRemoved: (([PlatformDataScannerTrackedItem]) -> Void)? = nil,
+    onBecameUnavailable: ((Error) -> Void)? = nil
+) -> some View {
+    PlatformPhotoComponentsLayer4.platformDataScannerInterface_L4(
+        isPresented: isPresented,
+        configuration: configuration,
+        bannerMessage: bannerMessage,
+        sessionController: sessionController,
+        showsDismissControl: showsDismissControl,
+        onItemTap: onItemTap,
+        onItemsAdded: onItemsAdded,
+        onItemsUpdated: onItemsUpdated,
+        onItemsRemoved: onItemsRemoved,
+        onBecameUnavailable: onBecameUnavailable
+    )
+}
+
+/// Presents the live scanner in a sheet (convenience wrapper).
+@ViewBuilder
+@MainActor
+public func platformDataScannerInterface_L4AsSheet(
+    isPresented: Binding<Bool>,
+    configuration: PlatformDataScannerConfiguration,
+    bannerMessage: String,
+    sessionController: PlatformDataScannerSessionController? = nil,
+    showsDismissControl: Bool = true,
+    onItemTap: @escaping (PlatformDataScannerRecognizedPayload) -> Void,
+    onItemsAdded: (([PlatformDataScannerTrackedItem]) -> Void)? = nil,
+    onItemsUpdated: (([PlatformDataScannerTrackedItem]) -> Void)? = nil,
+    onItemsRemoved: (([PlatformDataScannerTrackedItem]) -> Void)? = nil,
+    onBecameUnavailable: ((Error) -> Void)? = nil
+) -> some View {
+    PlatformPhotoComponentsLayer4.platformDataScannerInterface_L4AsSheet(
+        isPresented: isPresented,
+        configuration: configuration,
+        bannerMessage: bannerMessage,
+        sessionController: sessionController,
+        showsDismissControl: showsDismissControl,
+        onItemTap: onItemTap,
+        onItemsAdded: onItemsAdded,
+        onItemsUpdated: onItemsUpdated,
+        onItemsRemoved: onItemsRemoved,
+        onBecameUnavailable: onBecameUnavailable
+    )
+}
+
+/// Presents the live scanner in a full-screen cover (convenience wrapper).
+@ViewBuilder
+@MainActor
+public func platformDataScannerInterface_L4AsFullScreenCover(
+    isPresented: Binding<Bool>,
+    configuration: PlatformDataScannerConfiguration,
+    bannerMessage: String,
+    sessionController: PlatformDataScannerSessionController? = nil,
+    showsDismissControl: Bool = true,
+    onItemTap: @escaping (PlatformDataScannerRecognizedPayload) -> Void,
+    onItemsAdded: (([PlatformDataScannerTrackedItem]) -> Void)? = nil,
+    onItemsUpdated: (([PlatformDataScannerTrackedItem]) -> Void)? = nil,
+    onItemsRemoved: (([PlatformDataScannerTrackedItem]) -> Void)? = nil,
+    onBecameUnavailable: ((Error) -> Void)? = nil
+) -> some View {
+    PlatformPhotoComponentsLayer4.platformDataScannerInterface_L4AsFullScreenCover(
+        isPresented: isPresented,
+        configuration: configuration,
+        bannerMessage: bannerMessage,
+        sessionController: sessionController,
+        showsDismissControl: showsDismissControl,
+        onItemTap: onItemTap,
+        onItemsAdded: onItemsAdded,
+        onItemsUpdated: onItemsUpdated,
+        onItemsRemoved: onItemsRemoved,
+        onBecameUnavailable: onBecameUnavailable
+    )
 }

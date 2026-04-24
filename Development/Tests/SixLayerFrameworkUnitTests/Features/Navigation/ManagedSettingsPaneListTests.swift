@@ -26,7 +26,7 @@ struct ManagedSettingsPaneListTests {
         }
     }
 
-    @Test
+    @Test @MainActor
     func init_throwsOnDuplicatePaneIDs() {
         let descriptors: [SettingsPaneDescriptor<PaneID>] = [
             .init(id: .general, titleKey: "settings.general", section: "Main"),
@@ -41,7 +41,7 @@ struct ManagedSettingsPaneListTests {
         }
     }
 
-    @Test
+    @Test @MainActor
     func testDescriptorRowCount_matchesFlattenedDescriptors() throws {
         let descriptors: [SettingsPaneDescriptor<PaneID>] = [
             .init(id: .general, titleKey: "settings.general", section: "Main"),

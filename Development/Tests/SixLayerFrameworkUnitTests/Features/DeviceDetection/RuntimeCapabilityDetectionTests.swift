@@ -352,6 +352,246 @@ open class RuntimeCapabilityDetectionTDDTests: BaseTestClass {
         #expect(runtimePlatform == sixLayerPlatform, "RuntimeCapabilityDetection.currentPlatform should match SixLayerPlatform.current")
     }
 
+    // MARK: - Vision / Photos namespaced runtime (#253)
+
+    @available(*, deprecated, message: "Legacy forwarder compatibility coverage.")
+    @Test @MainActor
+    func testLegacySupportsVisionMatchesVisionNamespace() {
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        #expect(RuntimeCapabilityDetection.supportsVision == RuntimeCapabilityDetection.Vision.isFrameworkAvailable)
+    }
+
+    @available(*, deprecated, message: "Legacy forwarder compatibility coverage.")
+    @Test @MainActor
+    func testLegacySupportsOCRMatchesVisionNamespace() {
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        #expect(RuntimeCapabilityDetection.supportsOCR == RuntimeCapabilityDetection.Vision.supportsOCR)
+    }
+
+    @Test @MainActor
+    func testVisionOverridesClearWithClearAllCapabilityOverrides() {
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        let baselineFramework = RuntimeCapabilityDetection.Vision.isFrameworkAvailable
+        let baselineOCR = RuntimeCapabilityDetection.Vision.supportsOCR
+        let baselineImageAnalyzer = RuntimeCapabilityDetection.Vision.supportsImageAnalyzer
+        let baselineDocumentCamera = RuntimeCapabilityDetection.Vision.supportsDocumentCamera
+
+        RuntimeCapabilityDetection.Vision.setTestIsFrameworkAvailable(!baselineFramework)
+        #expect(RuntimeCapabilityDetection.Vision.isFrameworkAvailable == !baselineFramework)
+
+        RuntimeCapabilityDetection.Vision.setTestSupportsOCR(!baselineOCR)
+        #expect(RuntimeCapabilityDetection.Vision.supportsOCR == !baselineOCR)
+
+        RuntimeCapabilityDetection.Vision.setTestSupportsImageAnalyzer(!baselineImageAnalyzer)
+        #expect(RuntimeCapabilityDetection.Vision.supportsImageAnalyzer == !baselineImageAnalyzer)
+
+        RuntimeCapabilityDetection.Vision.setTestSupportsDocumentCamera(!baselineDocumentCamera)
+        #expect(RuntimeCapabilityDetection.Vision.supportsDocumentCamera == !baselineDocumentCamera)
+
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+
+        #expect(RuntimeCapabilityDetection.Vision.isFrameworkAvailable == baselineFramework)
+        #expect(RuntimeCapabilityDetection.Vision.supportsOCR == baselineOCR)
+        #expect(RuntimeCapabilityDetection.Vision.supportsImageAnalyzer == baselineImageAnalyzer)
+        #expect(RuntimeCapabilityDetection.Vision.supportsDocumentCamera == baselineDocumentCamera)
+    }
+
+    @Test @MainActor
+    func testPhotosOverridesClearWithClearAllCapabilityOverrides() {
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        let baselineCamera = RuntimeCapabilityDetection.Photos.hasCamera
+        let baselinePicker = RuntimeCapabilityDetection.Photos.isPhotoLibraryPickerAvailable
+        let baselineScanner = RuntimeCapabilityDetection.Photos.supportsLiveDataScanner
+
+        RuntimeCapabilityDetection.Photos.setTestHasCamera(!baselineCamera)
+        #expect(RuntimeCapabilityDetection.Photos.hasCamera == !baselineCamera)
+
+        RuntimeCapabilityDetection.Photos.setTestIsPhotoLibraryPickerAvailable(!baselinePicker)
+        #expect(RuntimeCapabilityDetection.Photos.isPhotoLibraryPickerAvailable == !baselinePicker)
+
+        RuntimeCapabilityDetection.Photos.setTestSupportsLiveDataScanner(!baselineScanner)
+        #expect(RuntimeCapabilityDetection.Photos.supportsLiveDataScanner == !baselineScanner)
+
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+
+        #expect(RuntimeCapabilityDetection.Photos.hasCamera == baselineCamera)
+        #expect(RuntimeCapabilityDetection.Photos.isPhotoLibraryPickerAvailable == baselinePicker)
+        #expect(RuntimeCapabilityDetection.Photos.supportsLiveDataScanner == baselineScanner)
+    }
+
+    @Test func testPhotoDeviceCapabilitiesFromRuntimeMatchesPhotosProbes() {
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        let caps = PhotoDeviceCapabilities.fromRuntimeCapabilityDetection()
+        #expect(caps.hasCamera == RuntimeCapabilityDetection.Photos.hasCamera)
+        #expect(caps.hasPhotoLibrary == RuntimeCapabilityDetection.Photos.isPhotoLibraryPickerAvailable)
+    }
+
+    /// Smoke: VisionKit / Vision static probes must not trap on the main actor.
+    @Test @MainActor
+    func testVisionAndPhotosCapabilityReadsDoNotCrashOnMainActor() {
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        _ = RuntimeCapabilityDetection.Photos.photoLibraryReadAccessLevel
+        _ = RuntimeCapabilityDetection.Photos.supportsLiveDataScanner
+        _ = RuntimeCapabilityDetection.Vision.supportsImageAnalyzer
+        _ = RuntimeCapabilityDetection.Vision.supportsDocumentCamera
+        #expect(Bool(true))
+    }
+
+    // MARK: - Files namespaced runtime (#253)
+
+    @available(*, deprecated, message: "Legacy forwarder compatibility coverage.")
+    @Test @MainActor
+    func testLegacySupportsSecurityScopedResourcesMatchesFilesNamespace() {
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        #expect(
+            RuntimeCapabilityDetection.supportsSecurityScopedResources
+                == RuntimeCapabilityDetection.Files.supportsSecurityScopedResources
+        )
+    }
+
+    @available(*, deprecated, message: "Legacy forwarder compatibility coverage.")
+    @Test @MainActor
+    func testLegacySupportsSecurityScopedBookmarksMatchesFilesNamespace() {
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        #expect(
+            RuntimeCapabilityDetection.supportsSecurityScopedBookmarks
+                == RuntimeCapabilityDetection.Files.supportsSecurityScopedBookmarks
+        )
+    }
+
+    @available(*, deprecated, message: "Legacy forwarder compatibility coverage.")
+    @Test @MainActor
+    func testLegacySecurityScopedForwardersReflectFilesOverrides() {
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        let baseResources = RuntimeCapabilityDetection.Files.supportsSecurityScopedResources
+        let baseBookmarks = RuntimeCapabilityDetection.Files.supportsSecurityScopedBookmarks
+
+        RuntimeCapabilityDetection.Files.setTestSupportsSecurityScopedResources(!baseResources)
+        #expect(RuntimeCapabilityDetection.supportsSecurityScopedResources == !baseResources)
+
+        RuntimeCapabilityDetection.Files.setTestSupportsSecurityScopedBookmarks(!baseBookmarks)
+        #expect(RuntimeCapabilityDetection.supportsSecurityScopedBookmarks == !baseBookmarks)
+
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+    }
+
+    @Test @MainActor
+    func testFilesOverridesClearWithClearAllCapabilityOverrides() {
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        let baselineResources = RuntimeCapabilityDetection.Files.supportsSecurityScopedResources
+        let baselineBookmarks = RuntimeCapabilityDetection.Files.supportsSecurityScopedBookmarks
+
+        RuntimeCapabilityDetection.Files.setTestSupportsSecurityScopedResources(!baselineResources)
+        #expect(RuntimeCapabilityDetection.Files.supportsSecurityScopedResources == !baselineResources)
+
+        RuntimeCapabilityDetection.Files.setTestSupportsSecurityScopedBookmarks(!baselineBookmarks)
+        #expect(RuntimeCapabilityDetection.Files.supportsSecurityScopedBookmarks == !baselineBookmarks)
+
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+
+        #expect(RuntimeCapabilityDetection.Files.supportsSecurityScopedResources == baselineResources)
+        #expect(RuntimeCapabilityDetection.Files.supportsSecurityScopedBookmarks == baselineBookmarks)
+    }
+
+    @Test @MainActor
+    func testFilesCapabilityReadsDoNotCrash() {
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        _ = RuntimeCapabilityDetection.Files.supportsSecurityScopedResources
+        _ = RuntimeCapabilityDetection.Files.supportsSecurityScopedBookmarks
+        #expect(Bool(true))
+    }
+
+    // MARK: - Network / Media / Pasteboard / Accessibility namespaces
+
+    @Test @MainActor
+    func testNetworkOverridesClearWithClearAllCapabilityOverrides() {
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        let baselineConstrained = RuntimeCapabilityDetection.Network.isConstrained
+        let baselineExpensive = RuntimeCapabilityDetection.Network.isExpensive
+
+        RuntimeCapabilityDetection.Network.setTestIsConstrained(!baselineConstrained)
+        #expect(RuntimeCapabilityDetection.Network.isConstrained == !baselineConstrained)
+
+        RuntimeCapabilityDetection.Network.setTestIsExpensive(!baselineExpensive)
+        #expect(RuntimeCapabilityDetection.Network.isExpensive == !baselineExpensive)
+
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        #expect(RuntimeCapabilityDetection.Network.isConstrained == baselineConstrained)
+        #expect(RuntimeCapabilityDetection.Network.isExpensive == baselineExpensive)
+    }
+
+    @Test @MainActor
+    func testNetworkOverrideKeysAreIndependent() {
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        RuntimeCapabilityDetection.Network.setTestIsConstrained(true)
+        RuntimeCapabilityDetection.Network.setTestIsExpensive(false)
+        #expect(RuntimeCapabilityDetection.Network.isConstrained)
+        #expect(!RuntimeCapabilityDetection.Network.isExpensive)
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+    }
+
+    @Test @MainActor
+    func testNetworkHasPathSnapshotOverrideAndClear() {
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        RuntimeCapabilityDetection.Network.setTestHasPathSnapshot(true)
+        #expect(RuntimeCapabilityDetection.Network.hasPathSnapshot)
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+    }
+
+    @Test @MainActor
+    func testMediaOverridesClearWithClearAllCapabilityOverrides() {
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        let baselineMic = RuntimeCapabilityDetection.Media.hasMicrophoneInput
+        let baselineScreen = RuntimeCapabilityDetection.Media.supportsScreenCapture
+
+        RuntimeCapabilityDetection.Media.setTestHasMicrophoneInput(!baselineMic)
+        #expect(RuntimeCapabilityDetection.Media.hasMicrophoneInput == !baselineMic)
+
+        RuntimeCapabilityDetection.Media.setTestSupportsScreenCapture(!baselineScreen)
+        #expect(RuntimeCapabilityDetection.Media.supportsScreenCapture == !baselineScreen)
+
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        #expect(RuntimeCapabilityDetection.Media.hasMicrophoneInput == baselineMic)
+        #expect(RuntimeCapabilityDetection.Media.supportsScreenCapture == baselineScreen)
+    }
+
+    @Test @MainActor
+    func testPasteboardOverridesClearWithClearAllCapabilityOverrides() {
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        let baselineRead = RuntimeCapabilityDetection.Pasteboard.canReadStrings
+        let baselineWrite = RuntimeCapabilityDetection.Pasteboard.canWriteStrings
+
+        RuntimeCapabilityDetection.Pasteboard.setTestCanReadStrings(!baselineRead)
+        #expect(RuntimeCapabilityDetection.Pasteboard.canReadStrings == !baselineRead)
+
+        RuntimeCapabilityDetection.Pasteboard.setTestCanWriteStrings(!baselineWrite)
+        #expect(RuntimeCapabilityDetection.Pasteboard.canWriteStrings == !baselineWrite)
+
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        #expect(RuntimeCapabilityDetection.Pasteboard.canReadStrings == baselineRead)
+        #expect(RuntimeCapabilityDetection.Pasteboard.canWriteStrings == baselineWrite)
+    }
+
+    @Test @MainActor
+    func testAccessibilityNamespaceMatchesExistingAccessors() {
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        #expect(RuntimeCapabilityDetection.Accessibility.supportsVoiceOver == RuntimeCapabilityDetection.supportsVoiceOver)
+        #expect(RuntimeCapabilityDetection.Accessibility.supportsSwitchControl == RuntimeCapabilityDetection.supportsSwitchControl)
+        #expect(RuntimeCapabilityDetection.Accessibility.supportsAssistiveTouch == RuntimeCapabilityDetection.supportsAssistiveTouch)
+    }
+
+    #if os(iOS)
+    @Test @MainActor
+    func testiOSHoverDeviceCapabilityOverrideIsDeterministic() {
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        RuntimeCapabilityDetection.setTestiOSHoverDeviceCapability(true)
+        #expect(RuntimeCapabilityDetection.supportsHover)
+        RuntimeCapabilityDetection.setTestiOSHoverDeviceCapability(false)
+        #expect(!RuntimeCapabilityDetection.supportsHover)
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+    }
+    #endif
+
     #if os(macOS)
     /// Regression for GitHub #236: `UserDefaults.standard` touch simulation must not leak into card config when the suite harness pins preferences off.
     @Test @MainActor

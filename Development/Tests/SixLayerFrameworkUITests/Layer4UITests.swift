@@ -20,9 +20,9 @@ import XCTest
 /// platformCopyToClipboard_L4, platformPrint_L4, platformCloudKitSyncStatus_L4,
 /// platformCloudKitProgress_L4, platformCloudKitAccountStatus_L4, platformCloudKitServiceStatus_L4,
 /// platformCloudKitSyncButton_L4, platformCloudKitStatusBadge_L4, platformPhotoDisplay_L4,
-/// platformImplementNavigationStack_L4, platformRowActions_L4.
+/// platformImplementNavigationStack_L4, platformRowActions_L4, platformPhotoPicker_L4 (iOS UITest only).
 /// Remaining L4 APIs to add: platformAppNavigation_L4 (partially exercised via overlay contract),
-/// platformPhotoPicker_L4, platformMapView_L4,
+/// platformMapView_L4,
 /// platformShare_L4, platformVerticalSplit_L4, platformHorizontalSplit_L4, platformStyledContainer_L4, etc.
 @MainActor
 final class Layer4UITests: XCTestCase {
@@ -963,6 +963,38 @@ final class Layer4UITests: XCTestCase {
         XCTAssertTrue(containsId.waitForExistence(timeout: 12.0),
                       "platformCloudKitStatusBadge_L4: badge must expose contract a11y identifier")
     }
+
+    #if os(iOS)
+    @MainActor
+    func testL4_platformPhotoPicker_L4() throws {
+        ensureContractRoot()
+        scrollToElement(label: "L4 System")
+        scrollToElement(label: "Photo Picker Contract")
+        let openBtn = app.buttons["L4ContractPhotoPickerOpen"].firstMatch
+        XCTAssertTrue(
+            openBtn.waitForExistence(timeout: 8.0),
+            "platformPhotoPicker_L4: contract open control must exist (contract structure)"
+        )
+        tapByNormalizedCenter(openBtn)
+        let pickerNode = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "identifier CONTAINS[c] %@", "platformPhotoPicker_L4"))
+            .firstMatch
+        XCTAssertTrue(
+            pickerNode.waitForExistence(timeout: 12.0),
+            "platformPhotoPicker_L4: picker subtree must expose contract a11y identifier"
+        )
+        let cancel = app.buttons["Cancel"].firstMatch
+        if cancel.waitForExistence(timeout: 3.0) {
+            cancel.tap()
+        } else if app.navigationBars.buttons["Cancel"].firstMatch.waitForExistence(timeout: 2.0) {
+            app.navigationBars.buttons["Cancel"].firstMatch.tap()
+        }
+        XCTAssertTrue(
+            app.navigationBars["Layer 4 Examples"].waitForExistence(timeout: 8.0),
+            "platformPhotoPicker_L4: must return to contract root after dismiss (no stuck sheet)"
+        )
+    }
+    #endif
 
     @MainActor
     func testL4_platformPhotoDisplay_L4() throws {

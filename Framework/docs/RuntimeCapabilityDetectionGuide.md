@@ -35,7 +35,52 @@ if RuntimeCapabilityDetection.supportsHover {
     // Enable hover effects
     enableHoverEffects()
 }
+
+// Namespaced runtime probes
+if RuntimeCapabilityDetection.Network.isConstrained {
+    // Low Data Mode is active on current network path
+    reduceNetworkUsage()
+}
+
+if RuntimeCapabilityDetection.Media.hasMicrophoneInput {
+    enableVoiceFeatures()
+}
+
+if RuntimeCapabilityDetection.Pasteboard.canReadStrings {
+    enablePasteShortcut()
+}
 ```
+
+## Namespaced APIs
+
+`RuntimeCapabilityDetection` now exposes focused namespaces:
+
+- `Vision`: Vision framework + OCR + image/document analysis probes
+- `Photos`: camera, library picker/read status, live data scanner
+- `Files`: security-scoped resources/bookmarks
+- `Network`: `NWPath` dynamic network state
+- `Media`: microphone input + screen capture support
+- `Pasteboard`: clipboard string read/write capability
+- `Accessibility`: namespaced access to VoiceOver/Switch Control/AssistiveTouch/high-contrast probes
+
+### Network namespace semantics
+
+`RuntimeCapabilityDetection.Network` maps directly to Apple `Network.framework` path flags:
+
+- `isConstrained` -> `NWPath.isConstrained` (Low Data Mode)
+- `isExpensive` -> `NWPath.isExpensive` (metered/costly link)
+
+These values are **dynamic path state**, not static hardware capabilities. The framework keeps a process-local `NWPathMonitor` snapshot and returns the latest observed path values.
+
+### Media namespace semantics
+
+- `Media.hasMicrophoneInput`: thin wrapper over available audio input device APIs.
+- `Media.supportsScreenCapture`: wraps ReplayKit (`iOS`/`tvOS`) or ScreenCaptureKit availability (`macOS`) where available.
+
+### Pasteboard namespace semantics
+
+- `Pasteboard.canReadStrings`: checks if string content is currently readable from system pasteboard.
+- `Pasteboard.canWriteStrings`: indicates whether string writes are supported on the current platform pasteboard API.
 
 ### Enabling Touch on macOS with External Touchscreen
 
@@ -79,6 +124,19 @@ func testTouchCapability() {
     CapabilityOverride.touchSupport = nil
     RuntimeCapabilityDetection.clearAllCapabilityOverrides()
 }
+```
+
+For namespaced probes, use the namespaced override setters and clear with `clearAllCapabilityOverrides()`:
+
+```swift
+RuntimeCapabilityDetection.Network.setTestIsConstrained(true)
+RuntimeCapabilityDetection.Network.setTestIsExpensive(false)
+RuntimeCapabilityDetection.Media.setTestHasMicrophoneInput(true)
+RuntimeCapabilityDetection.Pasteboard.setTestCanReadStrings(false)
+
+// ...assertions...
+
+RuntimeCapabilityDetection.clearAllCapabilityOverrides()
 ```
 
 ## Platform-Specific Behavior

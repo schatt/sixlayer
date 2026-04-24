@@ -1,5 +1,5 @@
 // swift-tools-version: 6.0
-// SixLayerFramework v7.6.2 - Patch: Viewport-aware card layout (#249, #250); MainActor capability test isolation; tvOS AllTests (#237); internal tests (#247, #248)
+// SixLayerFramework v7.7.0 - Minor: VisionKit live scanner path (#252), runtime capability namespacing completion (#253), release-process updates (#246, #247)
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
@@ -88,6 +88,15 @@ let package = Package(
                 "PlatformManagedSettingsDetailNavigationLayer4Tests.swift",
                 "ManagedPlatformSettingsFlowGuideExampleTests.swift"
             ]
+        ),
+
+        /// Public UI test navigation contract types in SixLayerTestKit (#227).
+        .testTarget(
+            name: "SixLayerUITestNavigationContractTests",
+            dependencies: [
+                "SixLayerTestKit"
+            ],
+            path: "Development/Tests/SixLayerUITestNavigationContractTests"
         ),
 
     ]

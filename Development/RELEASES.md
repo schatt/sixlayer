@@ -1,12 +1,21 @@
 # 🚀 Six-Layer Framework Release History
 
-## 📍 **Current Release: v7.6.2** 🎯
+## 📍 **Current Release: v7.7.0** 🎯
 
-**Release Date**: April 23, 2026
-**Status**: Released
-**Previous Release**: v7.6.1 - Patch release
-**Note**: Viewport-aware card layout (#249, #250); `DefaultRuntimeCapabilityIsolationTrait` clears overrides on MainActor for stable runtime-capability tests; tvOS `SLF-tvOS-AllTests` compile path (#237); internal test harness (#247, #248 — shared config isolation, mac/iOS drift reduction).
+**Release Date**: TBD
+**Status**: In preparation
+**Previous Release**: v7.6.2 - Patch release
+**Note**: Live data scanner path via VisionKit `DataScannerViewController` (#252) plus co-shipped runtime capability namespace work (#253).
 **Next Release**: TBD
+
+---
+
+## 🎯 **v7.7.0 - VisionKit live scanner + capability namespace co-ship** (TBD)
+
+### **What's in v7.7.0:**
+- In-preparation minor release. See [RELEASE_v7.7.0.md](RELEASE_v7.7.0.md) for details.
+
+**See [RELEASE_v7.7.0.md](RELEASE_v7.7.0.md) for complete release notes.**
 
 ---
 

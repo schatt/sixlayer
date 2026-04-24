@@ -53,8 +53,8 @@ open class CapabilityCombinationValidationTests: BaseTestClass {// MARK: - Curre
         let _ = RuntimeCapabilityDetection.supportsAssistiveTouch
         let _ = RuntimeCapabilityDetection.supportsVoiceOver
         let _ = RuntimeCapabilityDetection.supportsSwitchControl
-        let _ = RuntimeCapabilityDetection.supportsVision
-        let _ = RuntimeCapabilityDetection.supportsOCR
+        let _ = RuntimeCapabilityDetection.Vision.isFrameworkAvailable
+        let _ = RuntimeCapabilityDetection.Vision.supportsOCR
         
         // Framework can access all capability properties - that's what matters
         #expect(Bool(true), "Framework can access capability detection for \(platform)")
@@ -102,8 +102,8 @@ open class CapabilityCombinationValidationTests: BaseTestClass {// MARK: - Curre
     }
     
     @Test func testVisionDependencies() {
-        let visionAvailable = RuntimeCapabilityDetection.supportsVision
-        let ocrAvailable = RuntimeCapabilityDetection.supportsOCR
+        let visionAvailable = RuntimeCapabilityDetection.Vision.isFrameworkAvailable
+        let ocrAvailable = RuntimeCapabilityDetection.Vision.supportsOCR
         
         // OCR should only be available if Vision is available
         #expect(ocrAvailable == visionAvailable, 
@@ -162,8 +162,8 @@ open class CapabilityCombinationValidationTests: BaseTestClass {// MARK: - Curre
     
     @Test func testVisionOCRInteraction() {
         // OCR should only be available with Vision
-        if RuntimeCapabilityDetection.supportsOCR {
-            #expect(RuntimeCapabilityDetection.supportsVision, 
+        if RuntimeCapabilityDetection.Vision.supportsOCR {
+            #expect(RuntimeCapabilityDetection.Vision.isFrameworkAvailable,
                          "OCR should only be available with Vision framework")
         }
     }
