@@ -91,6 +91,8 @@ struct TestAppContentView: View {
     private let openPlatformListNavigationExtensions = ProcessInfo.processInfo.arguments.contains("-OpenPlatformListNavigationExtensions")
     /// When true, app opens to navigation routing + settings audit host (launch arg -OpenPlatformNavigationRoutingExtensions).
     private let openPlatformNavigationRoutingExtensions = ProcessInfo.processInfo.arguments.contains("-OpenPlatformNavigationRoutingExtensions")
+    /// When true, app opens to file system directory utility audit host (launch arg -OpenPlatformFileSystemUtilitiesAudit).
+    private let openPlatformFileSystemUtilitiesAudit = ProcessInfo.processInfo.arguments.contains("-OpenPlatformFileSystemUtilitiesAudit")
     
     enum TestView: String, CaseIterable, Identifiable {
         case control = "Control Test"
@@ -206,6 +208,10 @@ struct TestAppContentView: View {
             } else if openPlatformNavigationRoutingExtensions {
                 NavigationStack {
                     PlatformNavigationRoutingExtensionsAuditView(onBackToMain: nil)
+                }
+            } else if openPlatformFileSystemUtilitiesAudit {
+                NavigationStack {
+                    PlatformFileSystemUtilitiesAuditHost(onBackToMain: nil)
                 }
             } else {
                 NavigationStack {
@@ -331,6 +337,11 @@ struct TestAppContentView: View {
                     PlatformNavigationRoutingExtensionsAuditView(onBackToMain: nil)
                 }
                 .accessibilityIdentifier("platform-navigation-routing-extensions-link")
+
+                NavigationLink("Platform File System Directory Utilities Audit") {
+                    PlatformFileSystemUtilitiesAuditHost(onBackToMain: nil)
+                }
+                .accessibilityIdentifier("platform-file-system-utilities-audit-link")
             }
             .padding()
         }
