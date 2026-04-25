@@ -950,6 +950,41 @@ struct PlatformBasicContainersExtensionsAuditView: View {
                     .font(.headline)
                     .accessibilityIdentifier("platform-basic-containers-audit-title")
 
+                platformText("Explicit *Container APIs (Issue #170)")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                    .accessibilityIdentifier("platform-basic-explicit-containers-caption")
+
+                platformVStackContainer(alignment: .leading, spacing: 4) {
+                    platformText("Inside platformVStackContainer")
+                        .accessibilityIdentifier("platform-basic-vstackcontainer-child")
+                }
+                .accessibilityIdentifier("platform-basic-vstackcontainer-host")
+
+                platformHStackContainer(alignment: .center, spacing: 6) {
+                    platformText("H1")
+                        .accessibilityIdentifier("platform-basic-hstackcontainer-a")
+                    platformText("H2")
+                        .accessibilityIdentifier("platform-basic-hstackcontainer-b")
+                }
+                .accessibilityIdentifier("platform-basic-hstackcontainer-host")
+
+                platformZStackContainer {
+                    RoundedRectangle(cornerRadius: 6)
+                        .fill(Color.green.opacity(0.12))
+                        .frame(height: 40)
+                    platformText("ZStackContainer overlay")
+                        .accessibilityIdentifier("platform-basic-zstackcontainer-label")
+                }
+                .frame(height: 44)
+                .accessibilityIdentifier("platform-basic-zstackcontainer-host")
+
+                platformGroupBoxContainer(title: "Group box audit") {
+                    platformText("Group box inner content")
+                        .accessibilityIdentifier("platform-basic-groupbox-content")
+                }
+                .accessibilityIdentifier("platform-basic-groupbox-host")
+
                 platformHStack(alignment: .center, spacing: 8) {
                     platformText("HStack left")
                         .accessibilityIdentifier("platform-basic-hstack-left")
