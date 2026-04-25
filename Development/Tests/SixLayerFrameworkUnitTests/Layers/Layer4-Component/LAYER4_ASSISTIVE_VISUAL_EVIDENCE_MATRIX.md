@@ -9,9 +9,9 @@
 | `platformCloudKitSyncButton_L4` | partial | TBD | TBD | TBD | partial | Semantic unit tests on hosted UIKit (`Layer4SemanticAccessibilityCriterionTests`); full VO rotor → manual or UI test recording. |
 | `platformCloudKitProgress_L4` | partial | TBD | TBD | TBD | partial | Progress/value exposure under automation; VO “Adjustable” phrasing → manual. |
 | `platformCloudKitSyncStatus_L4` | partial | TBD | TBD | TBD | partial | Combined `Label` + contract identifier; color-only state should not be sole cue (verify in manual pass). |
-| `platformCloudKitAccountStatus_L4` | TBD | TBD | TBD | TBD | TBD | |
-| `platformCloudKitServiceStatus_L4` | TBD | TBD | TBD | TBD | TBD | |
-| `platformCloudKitStatusBadge_L4` | TBD | TBD | TBD | TBD | TBD | |
+| `platformCloudKitAccountStatus_L4` | partial | TBD | TBD | TBD | partial | Hosted semantic surface (`Layer4SemanticAccessibilityCriterionTests`); VO label copy → manual #255. |
+| `platformCloudKitServiceStatus_L4` | partial | TBD | TBD | TBD | partial | Composite host + identifier sweep; contrast of error/queue captions → manual. |
+| `platformCloudKitStatusBadge_L4` | partial | TBD | TBD | TBD | partial | Idle vs syncing hosted trait checks; Dynamic Type scaling → manual or snapshot policy. |
 | Navigation / sheet / popover L4 APIs | UITest | TBD | TBD | TBD | partial | `Layer4UITests` exercises structure; macOS parity where scheme runs macOS UITests. |
 | Photo / map / split / form L4 APIs | UITest / TBD | TBD | TBD | TBD | TBD | Staged: align with `PHYSICAL_DEVICE_TEST_REGISTRY.md` where hardware matters. |
 
