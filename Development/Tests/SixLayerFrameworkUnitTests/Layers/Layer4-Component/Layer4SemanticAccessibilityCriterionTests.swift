@@ -92,6 +92,82 @@ open class Layer4SemanticAccessibilityCriterionTests: BaseTestClass {
             "combined sync status should surface as static text, image, or updatesFrequently for assistive tech"
         )
     }
+
+    @Test @MainActor
+    func testPlatformCloudKitAccountStatus_L4_exposesInformativeSemanticSurface() async {
+        let view = platformCloudKitAccountStatus_L4(status: .available)
+        let root = hostedRoot(for: view)
+        #expect(root != nil)
+        let informative = hostedUIKitAccessibilityHierarchyContains(root: root) { v in
+            guard let id = v.accessibilityIdentifier, id.contains("SixLayer") else { return false }
+            guard let label = v.accessibilityLabel, label.localizedCaseInsensitiveContains("icloud") else { return false }
+            return v.accessibilityTraits.contains(.staticText)
+                || v.accessibilityTraits.contains(.image)
+                || v.accessibilityTraits.contains(.updatesFrequently)
+        }
+        #expect(
+            informative,
+            "account status should expose iCloud-related label with informative traits and SixLayer identifier"
+        )
+    }
+
+    @Test @MainActor
+    func testPlatformCloudKitServiceStatus_L4_hostedEmitsIdentifiersAndInformativeSurface() async {
+        let delegate = TestCloudKitDelegate()
+        let service = CloudKitService(delegate: delegate)
+        let view = platformCloudKitServiceStatus_L4(service: service)
+        let root = hostedRoot(for: view)
+        #expect(root != nil)
+        let ids = findAllAccessibilityIdentifiersFromPlatformView(root)
+        #expect(!ids.isEmpty, "service status host should emit at least one accessibility identifier")
+        let informative = hostedUIKitAccessibilityHierarchyContains(root: root) { v in
+            guard let id = v.accessibilityIdentifier, id.contains("SixLayer") else { return false }
+            return v.accessibilityTraits.contains(.staticText)
+                || v.accessibilityTraits.contains(.image)
+                || v.accessibilityTraits.contains(.updatesFrequently)
+        }
+        #expect(
+            informative,
+            "service status stack should include at least one informative SixLayer-identified a11y node"
+        )
+    }
+
+    @Test @MainActor
+    func testPlatformCloudKitStatusBadge_L4_idle_exposesImageOrInformativeSemanticSurface() async {
+        let delegate = TestCloudKitDelegate()
+        let service = CloudKitService(delegate: delegate)
+        service.syncStatus = .idle
+        let view = platformCloudKitStatusBadge_L4(service: service)
+        let root = hostedRoot(for: view)
+        #expect(root != nil)
+        let match = hostedUIKitAccessibilityHierarchyContains(root: root) { v in
+            guard let id = v.accessibilityIdentifier, id.contains("SixLayer") else { return false }
+            return v.accessibilityTraits.contains(.image)
+                || v.accessibilityTraits.contains(.staticText)
+                || v.accessibilityTraits.contains(.updatesFrequently)
+        }
+        #expect(match, "idle badge should expose image or informative traits with SixLayer identifier")
+    }
+
+    @Test @MainActor
+    func testPlatformCloudKitStatusBadge_L4_syncing_exposesProgressOrImageSemanticSurface() async {
+        let delegate = TestCloudKitDelegate()
+        let service = CloudKitService(delegate: delegate)
+        service.syncStatus = .syncing
+        let view = platformCloudKitStatusBadge_L4(service: service)
+        let root = hostedRoot(for: view)
+        #expect(root != nil)
+        let match = hostedUIKitAccessibilityHierarchyContains(root: root) { v in
+            guard let id = v.accessibilityIdentifier, id.contains("SixLayer") else { return false }
+            return v.accessibilityTraits.contains(.updatesFrequently)
+                || v.accessibilityTraits.contains(.adjustable)
+                || v.accessibilityTraits.contains(.image)
+        }
+        #expect(
+            match,
+            "syncing badge should expose progress-like or image traits with SixLayer identifier"
+        )
+    }
 }
 
 #endif
