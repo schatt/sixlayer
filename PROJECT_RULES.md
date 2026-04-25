@@ -79,6 +79,14 @@ This script will:
 - **Don't accumulate changes**: Avoid making many changes without committing
 - **Commit before switching contexts**: Commit when pausing work or switching to different tasks
 
+#### Release branch naming
+**Standard pattern** for a release integration line: `b<major>/b<major>.<minor>.<patch>`.
+
+- **Examples**: `b7/b7.7.1`, `b8/b8.0.0` — the first path segment is `b` plus the **major** version; the leaf matches the full `bX.Y.Z` line identifier.
+- **`main`**: Default branch; completed releases merge here and are **tagged** as usual.
+- **Rationale**: Hosting UIs group branches by the `b<major>/` prefix like folders, so parallel majors stay easy to scan.
+- **Renaming**: Older flat names (e.g. `b7.7.1`) should be migrated to `b7/b7.7.1` when you next touch that line (update default branch settings, CI, and open PRs if any point at the old ref).
+
 #### Benefits
 - Easier to review changes
 - Simpler to identify and revert problematic commits
