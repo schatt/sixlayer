@@ -99,6 +99,8 @@ struct TestAppContentView: View {
     private let openPlatformAdvancedContainersExtensions = ProcessInfo.processInfo.arguments.contains("-OpenPlatformAdvancedContainersExtensions")
     /// When true, app opens to platform menu + context menu audit host (launch arg -OpenPlatformMenuContextMenuExtensions).
     private let openPlatformMenuContextMenuExtensions = ProcessInfo.processInfo.arguments.contains("-OpenPlatformMenuContextMenuExtensions")
+    /// When true, app opens to frame/spacing/help/hover utility audit host (launch arg -OpenPlatformFrameSpacingUtilities).
+    private let openPlatformFrameSpacingUtilities = ProcessInfo.processInfo.arguments.contains("-OpenPlatformFrameSpacingUtilities")
     
     enum TestView: String, CaseIterable, Identifiable {
         case control = "Control Test"
@@ -229,6 +231,10 @@ struct TestAppContentView: View {
             } else if openPlatformMenuContextMenuExtensions {
                 NavigationStack {
                     PlatformMenuContextMenuExtensionsAuditHost(onBackToMain: nil)
+                }
+            } else if openPlatformFrameSpacingUtilities {
+                NavigationStack {
+                    PlatformFrameSpacingUtilitiesAuditHost(onBackToMain: nil)
                 }
             } else {
                 NavigationStack {
@@ -369,6 +375,11 @@ struct TestAppContentView: View {
                     PlatformMenuContextMenuExtensionsAuditHost(onBackToMain: nil)
                 }
                 .accessibilityIdentifier("platform-menu-context-menu-extensions-link")
+
+                NavigationLink("Platform Frame / Spacing Utilities Audit") {
+                    PlatformFrameSpacingUtilitiesAuditHost(onBackToMain: nil)
+                }
+                .accessibilityIdentifier("platform-frame-spacing-utilities-link")
             }
             .padding()
         }
