@@ -101,6 +101,8 @@ struct TestAppContentView: View {
     private let openPlatformMenuContextMenuExtensions = ProcessInfo.processInfo.arguments.contains("-OpenPlatformMenuContextMenuExtensions")
     /// When true, app opens to frame/spacing/help/hover utility audit host (launch arg -OpenPlatformFrameSpacingUtilities).
     private let openPlatformFrameSpacingUtilities = ProcessInfo.processInfo.arguments.contains("-OpenPlatformFrameSpacingUtilities")
+    /// When true, app opens to presentation detents + file importer audit host (launch arg -OpenPlatformPresentationFileImporter).
+    private let openPlatformPresentationFileImporter = ProcessInfo.processInfo.arguments.contains("-OpenPlatformPresentationFileImporter")
     
     enum TestView: String, CaseIterable, Identifiable {
         case control = "Control Test"
@@ -235,6 +237,10 @@ struct TestAppContentView: View {
             } else if openPlatformFrameSpacingUtilities {
                 NavigationStack {
                     PlatformFrameSpacingUtilitiesAuditHost(onBackToMain: nil)
+                }
+            } else if openPlatformPresentationFileImporter {
+                NavigationStack {
+                    PlatformPresentationFileImporterAuditHost(onBackToMain: nil)
                 }
             } else {
                 NavigationStack {
@@ -380,6 +386,11 @@ struct TestAppContentView: View {
                     PlatformFrameSpacingUtilitiesAuditHost(onBackToMain: nil)
                 }
                 .accessibilityIdentifier("platform-frame-spacing-utilities-link")
+
+                NavigationLink("Platform Presentation + File Importer Audit") {
+                    PlatformPresentationFileImporterAuditHost(onBackToMain: nil)
+                }
+                .accessibilityIdentifier("platform-presentation-file-importer-link")
             }
             .padding()
         }
