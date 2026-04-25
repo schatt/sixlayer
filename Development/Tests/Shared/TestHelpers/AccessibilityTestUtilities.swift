@@ -561,6 +561,73 @@ public func hostedViewHasAccessibilityElementWithLabelAndButtonTrait(root: Any?,
     }
     return false
 }
+
+/// Walks `UIView` and nested accessibility container children; returns true if `predicate` matches any node.
+/// Used for Issue #254 semantic checks (traits, identifiers) on hosted Layer 4 `platform*_L4` output.
+@MainActor
+public func hostedUIKitAccessibilityHierarchyContains(
+    root: Any?,
+    maxVisited: Int = 800,
+    predicate: (UIView) -> Bool
+) -> Bool {
+    guard let rootView = root as? UIView else { return false }
+    func checkView(_ view: UIView) -> Bool {
+        if predicate(view) { return true }
+        if let elements = view.accessibilityElements {
+            for el in elements {
+                if let sub = el as? UIView, predicate(sub) { return true }
+            }
+        }
+        if view.responds(to: NSSelectorFromString("accessibilityElementCount")) {
+            for raw in accessibilityContainerChildren(for: view) {
+                if let sub = raw as? UIView, predicate(sub) { return true }
+            }
+        }
+        return false
+    }
+    if checkView(rootView) { return true }
+    var stack: [UIView] = rootView.subviews
+    var checked: Set<ObjectIdentifier> = []
+    var count = 0
+    while let next = stack.popLast(), count < maxVisited {
+        count += 1
+        guard checked.insert(ObjectIdentifier(next)).inserted else { continue }
+        if checkView(next) { return true }
+        stack.append(contentsOf: next.subviews.prefix(80))
+    }
+    return false
+}
+
+/// True when some hosted node exposes all bits in `requiredTraits` and optionally an identifier substring.
+@MainActor
+public func hostedUIKitAccessibilityTraitMatch(
+    root: Any?,
+    requiredTraits: UIAccessibilityTraits,
+    identifierContains: String? = nil
+) -> Bool {
+    hostedUIKitAccessibilityHierarchyContains(root: root) { view in
+        let traits = view.accessibilityTraits
+        let traitsOK = requiredTraits.isSubset(of: traits)
+        guard traitsOK else { return false }
+        if let needle = identifierContains {
+            guard let id = view.accessibilityIdentifier, id.contains(needle) else { return false }
+        }
+        return true
+    }
+}
+
+/// True when some hosted node has a non-empty `accessibilityValue` and an identifier substring match.
+@MainActor
+public func hostedUIKitAccessibilityValuePresent(
+    root: Any?,
+    identifierContains: String
+) -> Bool {
+    hostedUIKitAccessibilityHierarchyContains(root: root) { view in
+        guard let id = view.accessibilityIdentifier, id.contains(identifierContains) else { return false }
+        guard let value = view.accessibilityValue, !value.isEmpty else { return false }
+        return true
+    }
+}
 #endif
 
 /// Find ALL accessibility identifiers in a platform view hierarchy (not just the first one)
