@@ -63,11 +63,12 @@ declare -a old_branches
 declare -a new_branches
 
 while IFS= read -r branch; do
+    normalized_branch="${branch#heads/}"
     # Some repos carry legacy local names like "heads/v6.2.0"; normalize both forms.
-    if [[ "$branch" =~ ^(heads/)?[bv]([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
-        major="${BASH_REMATCH[2]}"
-        semver="${BASH_REMATCH[2]}.${BASH_REMATCH[3]}.${BASH_REMATCH[4]}"
-        old_branches+=("$branch")
+    if [[ "$normalized_branch" =~ ^[bv]([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+        major="${BASH_REMATCH[1]}"
+        semver="${BASH_REMATCH[1]}.${BASH_REMATCH[2]}.${BASH_REMATCH[3]}"
+        old_branches+=("$normalized_branch")
         new_branches+=("b${major}/b${semver}")
     fi
 done < <(git for-each-ref --format='%(refname:short)' refs/heads)
@@ -82,7 +83,17 @@ echo "📋 Branch migration plan (${count}):"
 for i in "${!old_branches[@]}"; do
     old="${old_branches[$i]}"
     new="${new_branches[$i]}"
-    echo "  - ${old} -> ${new}"
+    if git show-ref --verify --quiet "refs/heads/${new}"; then
+        old_sha="$(git rev-parse "refs/heads/${old}")"
+        new_sha="$(git rev-parse "refs/heads/${new}")"
+        if [ "$old_sha" = "$new_sha" ]; then
+            echo "  - ${old} == ${new} (same commit, duplicate can be deleted)"
+        else
+            echo "  - ${old} -> ${new} (target exists with different commit, will skip)"
+        fi
+    else
+        echo "  - ${old} -> ${new}"
+    fi
 done
 
 if [ "$APPLY" -ne 1 ]; then
@@ -99,7 +110,20 @@ for i in "${!old_branches[@]}"; do
     new="${new_branches[$i]}"
 
     if git show-ref --verify --quiet "refs/heads/${new}"; then
-        echo "⚠️ Skipping ${old}: target ${new} already exists locally."
+        old_sha="$(git rev-parse "refs/heads/${old}")"
+        new_sha="$(git rev-parse "refs/heads/${new}")"
+        if [ "$old_sha" = "$new_sha" ]; then
+            echo "🧹 Duplicate detected (${old} == ${new}); deleting legacy local branch ${old}"
+            if [ "$current_branch" = "$old" ]; then
+                git checkout "$new"
+                current_branch="$new"
+            fi
+            git branch -d "$old" 2>/dev/null || git branch -D "$old"
+            echo "🧹 Deleting remote ${old} from ${REMOTE_NAME} (if present)"
+            git push "$REMOTE_NAME" --delete "$old" 2>/dev/null || true
+        else
+            echo "⚠️ Skipping ${old}: target ${new} exists but points to a different commit."
+        fi
         continue
     fi
 
