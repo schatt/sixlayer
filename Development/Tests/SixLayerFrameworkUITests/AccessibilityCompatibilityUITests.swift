@@ -57,7 +57,39 @@ final class AccessibilityCompatibilityUITests: XCTestCase {
         let link = app.findLaunchPageEntry(identifier: "test-view-Control Test")
         XCTAssertTrue(link.waitForExistence(timeout: 5.0), "Control Test link should exist on launch page")
         link.tap()
-        // SWEEP CHECK WAS HERE. REPLACEMENT NEEDED
+        XCTAssertTrue(
+            app.navigationBars["Control Test"].waitForExistence(timeout: 5.0),
+            "Control Test navigation bar should appear after tapping launch link"
+        )
+        app.runAccessibilityCompatibilitySweep(screenLabel: "Control Test")
+    }
+
+    /// Navigate to Text Test view, run compatibility sweep (Issue #180).
+    @MainActor
+    func testTextTestView_CompatibilitySweep() throws {
+        XCTAssertTrue(app.navigateBackToLaunch(timeout: 3.0), "App should be ready (launch page) before finding Text Test link")
+        let link = app.findLaunchPageEntry(identifier: "test-view-Text Test")
+        XCTAssertTrue(link.waitForExistence(timeout: 5.0), "Text Test link should exist on launch page")
+        link.tap()
+        XCTAssertTrue(
+            app.navigationBars["Text Test"].waitForExistence(timeout: 5.0),
+            "Text Test navigation bar should appear after tapping launch link"
+        )
+        app.runAccessibilityCompatibilitySweep(screenLabel: "Text Test")
+    }
+
+    /// Navigate to Platform Picker Test view, run compatibility sweep (Issue #180).
+    @MainActor
+    func testPlatformPickerTestView_CompatibilitySweep() throws {
+        XCTAssertTrue(app.navigateBackToLaunch(timeout: 3.0), "App should be ready (launch page) before finding Platform Picker link")
+        let link = app.findLaunchPageEntry(identifier: "test-view-Platform Picker Test")
+        XCTAssertTrue(link.waitForExistence(timeout: 5.0), "Platform Picker Test link should exist on launch page")
+        link.tap()
+        XCTAssertTrue(
+            app.navigationBars["Platform Picker Test"].waitForExistence(timeout: 5.0),
+            "Platform Picker Test navigation bar should appear after tapping launch link"
+        )
+        app.runAccessibilityCompatibilitySweep(screenLabel: "Platform Picker Test")
     }
 
     /// Navigate to Button Test view (via Layer 4 Examples), run compatibility sweep (Issue #180).
@@ -83,6 +115,10 @@ final class AccessibilityCompatibilityUITests: XCTestCase {
             return
         }
         el.tap()
-        // SWEEP CHECK WAS HERE. REPLACEMENT NEEDED
+        XCTAssertTrue(
+            app.navigationBars["Button Test"].waitForExistence(timeout: 5.0),
+            "Button Test navigation bar should appear after tapping entry on Layer 4 Examples"
+        )
+        app.runAccessibilityCompatibilitySweep(screenLabel: "Button Test")
     }
 }
