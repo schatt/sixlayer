@@ -45,6 +45,21 @@ struct PlatformFileSystemUtilitiesAuditHost: View {
             platformText(PlatformFileSystemAuditCopy.documentsOptionalThrowingParityLine)
                 .accessibilityIdentifier("platform-fs-audit-documents-parity")
 
+            platformText(PlatformFileSystemAuditCopy.securityScopedAccessLine)
+                .accessibilityIdentifier("platform-fs-audit-security-access")
+
+            platformText(PlatformFileSystemAuditCopy.securityScopedBookmarkSaveLine)
+                .accessibilityIdentifier("platform-fs-audit-security-bookmark-save")
+
+            platformText(PlatformFileSystemAuditCopy.securityScopedBookmarkHasLine)
+                .accessibilityIdentifier("platform-fs-audit-security-bookmark-has")
+
+            platformText(PlatformFileSystemAuditCopy.securityScopedBookmarkRestoreLine)
+                .accessibilityIdentifier("platform-fs-audit-security-bookmark-restore")
+
+            platformText(PlatformFileSystemAuditCopy.securityScopedBookmarkRemoveLine)
+                .accessibilityIdentifier("platform-fs-audit-security-bookmark-remove")
+
             if let onBackToMain {
                 platformButton(label: "Back to Main", id: "platform-fs-audit-back-to-main") {
                     onBackToMain()
@@ -119,5 +134,44 @@ private enum PlatformFileSystemAuditCopy {
         default:
             return "documents optional/throwing availability differs"
         }
+    }
+
+    static var securityScopedAccessLine: String {
+        guard let documentsURL = platformDocumentsDirectory(createIfNeeded: true) else {
+            return "securityScopedAccess: documents unavailable"
+        }
+        let lastPath = platformSecurityScopedAccess(url: documentsURL) { accessibleURL in
+            accessibleURL.lastPathComponent
+        }
+        return "securityScopedAccess: last=\(lastPath)"
+    }
+
+    static var securityScopedBookmarkSaveLine: String {
+        guard let documentsURL = platformDocumentsDirectory(createIfNeeded: true) else {
+            return "securityBookmark(save): documents unavailable"
+        }
+        let key = "sixlayer.issue170.audit.securitybookmark"
+        let saved = platformSecurityScopedBookmark(url: documentsURL, key: key)
+        return "securityBookmark(save): \(saved)"
+    }
+
+    static var securityScopedBookmarkHasLine: String {
+        let key = "sixlayer.issue170.audit.securitybookmark"
+        let has = platformSecurityScopedHasBookmark(key: key)
+        return "securityBookmark(has): \(has)"
+    }
+
+    static var securityScopedBookmarkRestoreLine: String {
+        let key = "sixlayer.issue170.audit.securitybookmark"
+        let restored = platformSecurityScopedRestore(key: key)
+        return restored != nil
+            ? "securityBookmark(restore): restored"
+            : "securityBookmark(restore): nil"
+    }
+
+    static var securityScopedBookmarkRemoveLine: String {
+        let key = "sixlayer.issue170.audit.securitybookmark"
+        let removed = platformSecurityScopedRemoveBookmark(key: key)
+        return "securityBookmark(remove): \(removed)"
     }
 }
