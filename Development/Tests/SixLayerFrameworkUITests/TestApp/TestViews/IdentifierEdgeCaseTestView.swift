@@ -54,6 +54,26 @@ struct IdentifierEdgeCaseTestView: View {
                 .padding()
                 .background(Color.platformSecondaryBackground)
                 .cornerRadius(8)
+
+                // Issue #257 repro: explicit list identifier gets replaced by `.named("FuelView")`
+                platformVStack(alignment: .leading, spacing: 8) {
+                    platformText("Issue #257 list identifier repro")
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                        .automaticCompliance()
+
+                    List {
+                        platformText("Purchase row A")
+                        platformText("Purchase row B")
+                    }
+                    .frame(minHeight: 88, maxHeight: 110)
+                    .platformListContainer()
+                    .accessibilityIdentifier("CarManager.FuelView.PurchaseList")
+                    .named("FuelView")
+                }
+                .padding()
+                .background(Color.platformSecondaryBackground)
+                .cornerRadius(8)
             }
             .padding()
         }
