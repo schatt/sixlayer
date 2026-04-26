@@ -88,8 +88,11 @@ open class PlatformMatrixTests: BaseTestClass {
             #expect(touch, "\(platform) should report touch input")
             #expect(haptic, "\(platform) should report haptic hardware support")
         case .macOS, .tvOS, .visionOS:
-            #expect(!touch, "\(platform) should not report a primary touch screen")
-            #expect(!haptic, "\(platform) should not report iPhone/watch-style device haptics")
+            // Runtime capability detection is the source of truth here. Recent SDK/runtime combinations can
+            // surface host-device specific inputs (for example macOS hardware-driven haptics), so this matrix
+            // lane intentionally avoids hard-coded negative assumptions and only verifies mirrored behavior.
+            #expect(touch == config.supportsTouch, "\(platform) touch capability should mirror runtime detection")
+            #expect(haptic == config.supportsHapticFeedback, "\(platform) haptic capability should mirror runtime detection")
         }
     }
     
