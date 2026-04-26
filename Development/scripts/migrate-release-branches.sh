@@ -63,9 +63,10 @@ declare -a old_branches
 declare -a new_branches
 
 while IFS= read -r branch; do
-    if [[ "$branch" =~ ^[bv]([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
-        major="${BASH_REMATCH[1]}"
-        semver="${BASH_REMATCH[1]}.${BASH_REMATCH[2]}.${BASH_REMATCH[3]}"
+    # Some repos carry legacy local names like "heads/v6.2.0"; normalize both forms.
+    if [[ "$branch" =~ ^(heads/)?[bv]([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+        major="${BASH_REMATCH[2]}"
+        semver="${BASH_REMATCH[2]}.${BASH_REMATCH[3]}.${BASH_REMATCH[4]}"
         old_branches+=("$branch")
         new_branches+=("b${major}/b${semver}")
     fi
