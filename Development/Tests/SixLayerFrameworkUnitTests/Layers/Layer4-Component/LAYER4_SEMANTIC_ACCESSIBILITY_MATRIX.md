@@ -27,7 +27,8 @@
 | `platformRowActions_L4` / `platformContextMenu_L4` | TBD | N/A | N/A | `Layer4UITests` / row-action hosts | UITest + future hosted trait pass. |
 | `platformPhotoPicker_L4` / `platformPhotoDisplay_L4` / camera APIs | TBD | TBD | N/A | `Layer4UITests`, `PlatformPhotoComponentsLayer4*` | Media controls often `.button` / `.image`; add per-surface. |
 | `platformMapView_L4` / `platformMapViewWithCurrentLocation_L4` | TBD | TBD | N/A | `PlatformMapComponentsLayer4*` | MapKit hosting; semantic pass when CI map host stable. |
-| `platformCopyToClipboard_L4` / `platformShare_L4` / `platformPrint_L4` | TBD | N/A | N/A | `PlatformSharePrintLayer4ComponentAccessibilityTests`, `Layer4UITests` | Buttons: add `.button` hosted checks mirroring CloudKit suite. |
+| `platformShare_L4` / `platformPrint_L4` | Y (`.button` on trigger host) | N/A | N/A | `PlatformSharePrintLayer4ComponentAccessibilityTests`, `Layer4UITests` | `Layer4SemanticAccessibilityCriterionTests.testPlatformShare_L4_exposesButtonTraitWithSixLayerIdentifier`, `…testPlatformPrint_L4_exposesButtonTraitWithSixLayerIdentifier` |
+| `platformCopyToClipboard_L4` | N/A (non-View function) | N/A | N/A | `Layer4UITests` (`L4ContractCopy`) | Covered as behavioral non-View action; keep outside view-semantic trait scope. |
 | `platformVerticalSplit_L4` / `platformHorizontalSplit_L4` | TBD | N/A | Partial | `PlatformSplitViewLayer4Tests` | Split pane read order → #255. |
 | `platformStyledContainer_L4` | TBD | N/A | N/A | styling / card tests | Containers often N/A for standalone traits. |
 | `platformFormContainer_L4` / form field APIs | TBD | TBD | Partial | `Layer4UITests`, form ViewInspector suites | Values on controls (pickers, toggles) → extend hosted checks. |
