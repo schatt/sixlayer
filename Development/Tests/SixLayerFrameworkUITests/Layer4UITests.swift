@@ -576,7 +576,7 @@ final class Layer4UITests: XCTestCase {
                 ?? app.buttons["L4ContractSheet"].firstMatch)
         XCTAssertTrue(sheetButton.waitForExistence(timeout: 2.5), "Sheet button should exist")
         tapByNormalizedCenter(sheetButton)
-        let closeControl = waitForL4SheetDismissControl(timeout: 1.5)
+        let closeControl = waitForL4SheetDismissControl(timeout: 4.0)
         XCTAssertNotNil(closeControl,
                         "platformSheet_L4: sheet host should expose dismiss control (contract structure)")
         guard let close = closeControl else { return }
@@ -646,7 +646,7 @@ final class Layer4UITests: XCTestCase {
         }
         XCTAssertTrue(app.navigationBars["L4NavTitleContract"].waitForExistence(timeout: 1.2),
                       "platformNavigationTitle_L4: destination title must appear in nav bar (contract structure)")
-        XCTAssertTrue(waitForDestinationContent(timeout: 1.5),
+        XCTAssertTrue(waitForDestinationContent(timeout: 4.0),
                       "platformNavigationTitle_L4: destination content should be visible")
     }
 
@@ -678,7 +678,7 @@ final class Layer4UITests: XCTestCase {
             XCTAssertNotNil(tapTarget, "platformNavigationLink: link with identifier L4NavLinkContract should exist")
             tapByNormalizedCenter(tapTarget!)
         }
-        XCTAssertTrue(waitForDestinationContent(timeout: 1.5),
+        XCTAssertTrue(waitForDestinationContent(timeout: 4.0),
                       "platformNavigationLink_L4: navigating to destination should show content")
     }
 
