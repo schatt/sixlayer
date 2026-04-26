@@ -4,6 +4,7 @@ set -euo pipefail
 
 # Migrates legacy flat release branches:
 #   bX.Y.Z
+#   vX.Y.Z
 # to namespaced branches:
 #   bX/bX.Y.Z
 #
@@ -62,16 +63,17 @@ declare -a old_branches
 declare -a new_branches
 
 while IFS= read -r branch; do
-    if [[ "$branch" =~ ^b([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+    if [[ "$branch" =~ ^[bv]([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
         major="${BASH_REMATCH[1]}"
+        semver="${BASH_REMATCH[1]}.${BASH_REMATCH[2]}.${BASH_REMATCH[3]}"
         old_branches+=("$branch")
-        new_branches+=("b${major}/${branch}")
+        new_branches+=("b${major}/b${semver}")
     fi
 done < <(git for-each-ref --format='%(refname:short)' refs/heads)
 
 count="${#old_branches[@]}"
 if [ "$count" -eq 0 ]; then
-    echo "ℹ️ No legacy flat branches found (bX.Y.Z)."
+    echo "ℹ️ No legacy flat branches found (bX.Y.Z or vX.Y.Z)."
     exit 0
 fi
 
