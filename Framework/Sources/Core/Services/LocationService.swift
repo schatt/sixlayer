@@ -148,20 +148,10 @@ public final class LocationService: NSObject, LocationServiceProtocol, CLLocatio
 
     public func startUpdatingLocation() {
         // Check authorization status (platform-specific)
-        #if os(iOS)
-        guard authorizationStatus == .authorizedAlways || authorizationStatus == .authorizedWhenInUse else {
+        guard hasLocationAuthorization else {
             error = LocationServiceError.unauthorized
             return
         }
-        #elseif os(macOS)
-        guard authorizationStatus == .authorizedAlways else {
-            error = LocationServiceError.unauthorized
-            return
-        }
-        #else
-        error = LocationServiceError.servicesDisabled
-        return
-        #endif
 
         if locationServicesEnabled == false {
             error = LocationServiceError.servicesDisabled
@@ -181,17 +171,9 @@ public final class LocationService: NSObject, LocationServiceProtocol, CLLocatio
 
     public func getCurrentLocation() async throws -> CLLocation {
         // Check authorization status (platform-specific)
-        #if os(iOS)
-        guard authorizationStatus == .authorizedAlways || authorizationStatus == .authorizedWhenInUse else {
+        guard hasLocationAuthorization else {
             throw LocationServiceError.unauthorized
         }
-        #elseif os(macOS)
-        guard authorizationStatus == .authorizedAlways else {
-            throw LocationServiceError.unauthorized
-        }
-        #else
-        throw LocationServiceError.servicesDisabled
-        #endif
 
         let servicesEnabled = await Self.checkLocationServicesEnabled()
         locationServicesEnabled = servicesEnabled
@@ -295,6 +277,16 @@ public final class LocationService: NSObject, LocationServiceProtocol, CLLocatio
                NSClassFromString("XCTestCase") != nil
     }
 
+    private var hasLocationAuthorization: Bool {
+        #if os(iOS)
+        return authorizationStatus == .authorizedAlways || authorizationStatus == .authorizedWhenInUse
+        #elseif os(macOS)
+        return authorizationStatus == .authorizedAlways
+        #else
+        return false
+        #endif
+    }
+
     /// Runs the potentially blocking CoreLocation services check away from the main actor.
     nonisolated private static func checkLocationServicesEnabled() async -> Bool {
         #if os(iOS) || os(macOS)
@@ -307,14 +299,7 @@ public final class LocationService: NSObject, LocationServiceProtocol, CLLocatio
     }
 
     private func updateLocationEnabledStatus() {
-        #if os(iOS)
-        let isAuthorized = authorizationStatus == .authorizedAlways || authorizationStatus == .authorizedWhenInUse
-        #elseif os(macOS)
-        let isAuthorized = authorizationStatus == .authorizedAlways
-        #else
-        let isAuthorized = false
-        #endif
-        isLocationEnabled = isAuthorized && (locationServicesEnabled ?? false)
+        isLocationEnabled = hasLocationAuthorization && (locationServicesEnabled ?? false)
     }
 
     private func refreshLocationServicesEnabledStatus() {
