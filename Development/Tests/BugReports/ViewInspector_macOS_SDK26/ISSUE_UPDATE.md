@@ -4,7 +4,7 @@ We've completed a comprehensive workaround implementation. Here's what was done:
 
 ### Implementation Summary
 
-**Total Files Updated**: 38 test files + 1 wrapper file + 1 package configuration
+**Total Files Updated**: 38 test files + 1 wrapper file (historical count; Xcode wiring lives in `project.yml`)
 
 ### Core Infrastructure Changes
 
@@ -13,22 +13,16 @@ We've completed a comprehensive workaround implementation. Here's what was done:
    - Provides `tryInspect()`, `inspectView()`, `withInspectedView()`, and `withInspectedViewThrowing()` functions
    - Handles platform differences internally
 
-2. **Package.swift** - Added compile-time flag
+2. **Conditional compilation** — tests use:
    ```swift
-   swiftSettings: [
-       // When ViewInspector fixes issue #405, uncomment this line:
-       // .define("VIEW_INSPECTOR_MAC_FIXED")
-   ]
-   ```
-
-3. **Conditional Compilation Pattern** - All files use:
-   ```swift
-   #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+   #if canImport(ViewInspector)
    // ViewInspector code
    #else
-   // Fallback for macOS
+   // Fallback when ViewInspector is not linked
    #endif
    ```
+
+   The old `VIEW_INSPECTOR_MAC_FIXED` Xcode active compilation condition is **removed** from `project.yml`; ignore any historical `Package.swift` `.define(...)` notes in older copies of this file.
 
 ### Complete List of Updated Files (38 test files)
 
@@ -98,26 +92,15 @@ We've completed a comprehensive workaround implementation. Here's what was done:
 #### Utilities (1 file)
 - `Development/Tests/SixLayerFrameworkTests/Utilities/Debug/EnvironmentVariableDebugTests.swift`
 
-### Updated Migration Path
+### Follow-up
 
-**When ViewInspector fixes [Issue #405](https://github.com/nalexn/ViewInspector/issues/405):**
-
-1. **Uncomment one line** in `Package.swift`:
-   ```swift
-   .define("VIEW_INSPECTOR_MAC_FIXED")
-   ```
-
-2. **All 38 test files automatically work** - no manual updates needed
-
-3. **Tests will run on macOS** with full ViewInspector support
+Track upstream [ViewInspector #405](https://github.com/nalexn/ViewInspector/issues/405) for vendor fixes. Repository configuration lives in `project.yml` and shared test helpers under `Development/Tests/Shared/TestHelpers/`.
 
 ### Benefits
 
-✅ **Single point of control** - Change one line to enable macOS support  
-✅ **No manual file updates** - All test files automatically adapt  
-✅ **Type safety** - Wrapper handles `Any` vs `InspectableView` differences  
-✅ **Centralized logic** - Platform differences handled in one place  
-✅ **Easy migration** - Simple one-line change when ViewInspector is fixed
+✅ **Type safety** — Wrapper handles `Any` vs `InspectableView` differences  
+✅ **Centralized logic** — Shared helpers for inspection entry points  
+✅ **Maintainable** — `#if canImport(ViewInspector)` pattern for new tests
 
 ### Documentation
 
