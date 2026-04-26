@@ -6041,7 +6041,7 @@
 			path = API;
 			sourceTree = "<group>";
 		};
-		"TEMP_67A43166-2315-4344-A9F1-3D4B4735C41E" /* Utilities */ = {
+		"TEMP_DF13578D-F972-45A6-8057-90E523903C59" /* Utilities */ = {
 			isa = PBXGroup;
 			children = (
 			);
@@ -10296,7 +10296,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "com.sixlayer.framework.viewinspector-tests";
 				SDKROOT = iphoneos;
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) VIEW_INSPECTOR_MAC_FIXED";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited)";
 				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -10423,7 +10423,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "com.sixlayer.framework.viewinspector-tests";
 				SDKROOT = iphoneos;
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) VIEW_INSPECTOR_MAC_FIXED";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited)";
 				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -10464,7 +10464,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "com.sixlayer.framework.external-integration-tests";
 				SDKROOT = macosx;
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) VIEW_INSPECTOR_MAC_FIXED";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited)";
 				SWIFT_VERSION = 6.0;
 			};
 			name = Debug;
@@ -10485,7 +10485,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "com.sixlayer.framework.unit-tests";
 				SDKROOT = macosx;
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) VIEW_INSPECTOR_MAC_FIXED";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited)";
 				SWIFT_VERSION = 6.0;
 			};
 			name = Debug;
@@ -10537,7 +10537,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "com.sixlayer.framework.unit-tests";
 				SDKROOT = iphoneos;
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) VIEW_INSPECTOR_MAC_FIXED";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited)";
 				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -10589,7 +10589,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "com.sixlayer.framework.viewinspector-tests";
 				SDKROOT = macosx;
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) VIEW_INSPECTOR_MAC_FIXED";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited)";
 				SWIFT_VERSION = 6.0;
 			};
 			name = Release;
@@ -10858,7 +10858,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "com.sixlayer.framework.external-integration-tests";
 				SDKROOT = macosx;
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) VIEW_INSPECTOR_MAC_FIXED";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited)";
 				SWIFT_VERSION = 6.0;
 			};
 			name = Release;
@@ -10986,7 +10986,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "com.sixlayer.framework.viewinspector-tests";
 				SDKROOT = macosx;
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) VIEW_INSPECTOR_MAC_FIXED";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited)";
 				SWIFT_VERSION = 6.0;
 			};
 			name = Debug;
@@ -11145,7 +11145,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "com.sixlayer.framework.unit-tests";
 				SDKROOT = macosx;
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) VIEW_INSPECTOR_MAC_FIXED";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited)";
 				SWIFT_VERSION = 6.0;
 			};
 			name = Release;
@@ -11203,7 +11203,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "com.sixlayer.framework.unit-tests";
 				SDKROOT = iphoneos;
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) VIEW_INSPECTOR_MAC_FIXED";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited)";
 				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};

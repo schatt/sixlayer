@@ -149,7 +149,7 @@ targets:
     settings:
       PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.framework.unit-tests
       SWIFT_VERSION: "6.0"
-      SWIFT_ACTIVE_COMPILATION_CONDITIONS: $(inherited) VIEW_INSPECTOR_MAC_FIXED
+      SWIFT_ACTIVE_COMPILATION_CONDITIONS: $(inherited)
       GENERATE_INFOPLIST_FILE: YES
       CODE_SIGN_STYLE: Automatic
       ENABLE_TESTING_SEARCH_PATHS: YES
@@ -172,7 +172,7 @@ targets:
     settings:
       PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.framework.viewinspector-tests
       SWIFT_VERSION: "6.0"
-      SWIFT_ACTIVE_COMPILATION_CONDITIONS: $(inherited) VIEW_INSPECTOR_MAC_FIXED
+      SWIFT_ACTIVE_COMPILATION_CONDITIONS: $(inherited)
       GENERATE_INFOPLIST_FILE: YES
       CODE_SIGN_STYLE: Automatic
       ENABLE_TESTING_SEARCH_PATHS: YES
@@ -195,7 +195,7 @@ targets:
     settings:
       PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.framework.viewinspector-tests
       SWIFT_VERSION: "6.0"
-      SWIFT_ACTIVE_COMPILATION_CONDITIONS: $(inherited) VIEW_INSPECTOR_MAC_FIXED
+      SWIFT_ACTIVE_COMPILATION_CONDITIONS: $(inherited)
       GENERATE_INFOPLIST_FILE: YES
       CODE_SIGN_STYLE: Automatic
       ENABLE_TESTING_SEARCH_PATHS: YES
@@ -222,7 +222,7 @@ targets:
     settings:
       PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.framework.unit-tests
       SWIFT_VERSION: "6.0"
-      SWIFT_ACTIVE_COMPILATION_CONDITIONS: $(inherited) VIEW_INSPECTOR_MAC_FIXED
+      SWIFT_ACTIVE_COMPILATION_CONDITIONS: $(inherited)
       GENERATE_INFOPLIST_FILE: YES
       CODE_SIGN_STYLE: Automatic
       ENABLE_TESTING_SEARCH_PATHS: YES
@@ -490,7 +490,7 @@ targets:
     settings:
       PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.framework.external-integration-tests
       SWIFT_VERSION: "6.0"
-      SWIFT_ACTIVE_COMPILATION_CONDITIONS: $(inherited) VIEW_INSPECTOR_MAC_FIXED
+      SWIFT_ACTIVE_COMPILATION_CONDITIONS: $(inherited)
       GENERATE_INFOPLIST_FILE: YES
       CODE_SIGN_STYLE: Automatic
       ENABLE_TESTING_SEARCH_PATHS: YES
