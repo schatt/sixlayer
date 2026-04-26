@@ -31,6 +31,9 @@ final class Layer4UITests: XCTestCase {
     /// `nonisolated(unsafe)` so `nonisolated` XCTest hooks can assign without `self` isolation diagnostics; XCTest
     /// serializes `setUp` / test / `tearDown` per instance on the main thread for UI tests.
     nonisolated(unsafe) private var app: XCUIApplication!
+    private static let quickWait: TimeInterval = 0.35
+    private static let rootReadyTimeout: TimeInterval = 8.0
+    private static let maxScrollAttempts = 8
 
     nonisolated override func setUpWithError() throws {
         continueAfterFailure = false
@@ -45,16 +48,10 @@ final class Layer4UITests: XCTestCase {
         localApp.launch()
         app = localApp
         XCTAssertTrue(
-            localApp.wait(for: .runningForeground, timeout: 20),
+            localApp.wait(for: .runningForeground, timeout: Self.rootReadyTimeout),
             "App should reach foreground after launch (Layer 4 contract host)"
         )
-        // Inline `navigationTitle` on recent iOS/SwiftUI often omits the title from `navigationBars["…"]` queries;
-        // the L4 contract `Form` still exposes section copy and the sheet trigger (Issue #193).
-        let contractRootReady =
-            localApp.buttons["L4ContractSheet"].waitForExistence(timeout: 20)
-            || localApp.staticTexts["L4 Presentation"].waitForExistence(timeout: 15)
-            || localApp.navigationBars["Layer 4 Examples"].waitForExistence(timeout: 10)
-            || localApp.staticTexts["Layer 4 Examples"].waitForExistence(timeout: 5)
+        let contractRootReady = waitForContractRoot(timeout: Self.rootReadyTimeout)
         XCTAssertTrue(
             contractRootReady,
             "App should open on Layer 4 contract host (-OpenLayer4Examples): L4ContractSheet / L4 Presentation / nav title"
@@ -82,22 +79,36 @@ final class Layer4UITests: XCTestCase {
         return app.descendants(matching: .any).matching(pred).firstMatch.waitForExistence(timeout: timeout)
     }
 
+    /// Fail fast on known root anchors instead of chaining long waits for each one.
+    @MainActor
+    private func waitForContractRoot(timeout: TimeInterval) -> Bool {
+        let deadline = Date().addingTimeInterval(timeout)
+        while Date() < deadline {
+            if app.buttons["L4ContractSheet"].exists { return true }
+            if app.staticTexts["L4 Presentation"].exists { return true }
+            if app.navigationBars["Layer 4 Examples"].exists { return true }
+            if app.staticTexts["Layer 4 Examples"].exists { return true }
+            RunLoop.current.run(until: Date().addingTimeInterval(Self.quickWait))
+        }
+        return false
+    }
+
     /// Scroll so the element with the given label is visible (content may be below fold).
     /// Uses longer initial wait for buttons so top-of-screen elements (e.g. L4 Presentation) are not skipped.
     @MainActor
     private func scrollToElement(label: String) {
-        if app.staticTexts[label].waitForExistence(timeout: 1.0) { return }
-        if anyDescendantHasLabel(equalTo: label, timeout: 0.5) { return }
-        if app.buttons[label].waitForExistence(timeout: 2.0) { return }
-        if app.links[label].waitForExistence(timeout: 1.0) { return }
-        if element(matchingIdentifier: label).waitForExistence(timeout: 1.0) { return }
+        if app.staticTexts[label].waitForExistence(timeout: Self.quickWait) { return }
+        if anyDescendantHasLabel(equalTo: label, timeout: Self.quickWait) { return }
+        if app.buttons[label].waitForExistence(timeout: Self.quickWait) { return }
+        if app.links[label].waitForExistence(timeout: Self.quickWait) { return }
+        if element(matchingIdentifier: label).waitForExistence(timeout: Self.quickWait) { return }
         if !app.xcuiPrimaryScrollHost().exists, !app.tables.firstMatch.exists, !app.scrollViews.firstMatch.exists { return }
-        for _ in 0..<22 {
+        for _ in 0..<Self.maxScrollAttempts {
             app.xcuiSwipeScrollHostsUp()
-            if app.staticTexts[label].waitForExistence(timeout: 0.5) { return }
-            if anyDescendantHasLabel(equalTo: label, timeout: 0.35) { return }
-            if app.buttons[label].waitForExistence(timeout: 0.5) { return }
-            if element(matchingIdentifier: label).waitForExistence(timeout: 0.35) { return }
+            if app.staticTexts[label].waitForExistence(timeout: Self.quickWait) { return }
+            if anyDescendantHasLabel(equalTo: label, timeout: Self.quickWait) { return }
+            if app.buttons[label].waitForExistence(timeout: Self.quickWait) { return }
+            if element(matchingIdentifier: label).waitForExistence(timeout: Self.quickWait) { return }
         }
     }
 
@@ -110,20 +121,20 @@ final class Layer4UITests: XCTestCase {
     @MainActor
     private func scrollToFormSectionHeader(title: String) {
         let headerId = Self.l4ContractSectionHeaderIdentifier(sectionTitle: title)
-        if element(matchingIdentifier: headerId).waitForExistence(timeout: 1.5) { return }
-        if app.staticTexts[title].waitForExistence(timeout: 0.75) { return }
-        if anyDescendantHasLabel(equalTo: title, timeout: 2.0) { return }
-        if app.buttons[title].waitForExistence(timeout: 0.25) { return }
-        if app.links[title].waitForExistence(timeout: 0.25) { return }
-        if element(matchingIdentifier: title).waitForExistence(timeout: 0.5) { return }
+        if element(matchingIdentifier: headerId).waitForExistence(timeout: Self.quickWait) { return }
+        if app.staticTexts[title].waitForExistence(timeout: Self.quickWait) { return }
+        if anyDescendantHasLabel(equalTo: title, timeout: Self.quickWait) { return }
+        if app.buttons[title].waitForExistence(timeout: Self.quickWait) { return }
+        if app.links[title].waitForExistence(timeout: Self.quickWait) { return }
+        if element(matchingIdentifier: title).waitForExistence(timeout: Self.quickWait) { return }
         if !app.xcuiPrimaryScrollHost().exists, app.tables.count < 1, !app.scrollViews.firstMatch.exists { return }
-        for _ in 0..<22 {
+        for _ in 0..<Self.maxScrollAttempts {
             app.xcuiSwipeScrollHostsUp()
-            if element(matchingIdentifier: headerId).waitForExistence(timeout: 0.35) { return }
-            if app.staticTexts[title].waitForExistence(timeout: 0.35) { return }
-            if anyDescendantHasLabel(equalTo: title, timeout: 0.45) { return }
-            if app.buttons[title].waitForExistence(timeout: 0.2) { return }
-            if element(matchingIdentifier: title).waitForExistence(timeout: 0.25) { return }
+            if element(matchingIdentifier: headerId).waitForExistence(timeout: Self.quickWait) { return }
+            if app.staticTexts[title].waitForExistence(timeout: Self.quickWait) { return }
+            if anyDescendantHasLabel(equalTo: title, timeout: Self.quickWait) { return }
+            if app.buttons[title].waitForExistence(timeout: Self.quickWait) { return }
+            if element(matchingIdentifier: title).waitForExistence(timeout: Self.quickWait) { return }
         }
     }
 
@@ -277,13 +288,10 @@ final class Layer4UITests: XCTestCase {
         if app.navigationBars["L4NavTitleContract"].waitForExistence(timeout: 0.5) {
             let backButton = app.navigationBars.buttons.firstMatch
             if backButton.exists { backButton.tap() }
-            _ = app.navigationBars["Layer 4 Examples"].waitForExistence(timeout: 3.0)
-                || app.buttons["L4ContractSheet"].waitForExistence(timeout: 2.0)
+            _ = waitForContractRoot(timeout: 2.0)
         }
         XCTAssertTrue(
-            app.navigationBars["Layer 4 Examples"].waitForExistence(timeout: 6.0)
-                || app.buttons["L4ContractSheet"].waitForExistence(timeout: 3.0)
-                || app.staticTexts["L4 Presentation"].waitForExistence(timeout: 3.0),
+            waitForContractRoot(timeout: 3.0),
             "Contract root: Layer 4 Examples nav bar or L4 contract anchors (L4ContractSheet / L4 Presentation) should exist"
         )
         func contractTopVisible() -> Bool {
@@ -297,7 +305,7 @@ final class Layer4UITests: XCTestCase {
             return false
         }
         if contractTopVisible() { return }
-        for _ in 0..<18 {
+        for _ in 0..<Self.maxScrollAttempts {
             app.xcuiSwipeScrollHostsDown()
             if contractTopVisible() { return }
         }
