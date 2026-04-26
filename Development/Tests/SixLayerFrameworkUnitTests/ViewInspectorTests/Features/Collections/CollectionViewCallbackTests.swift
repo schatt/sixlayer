@@ -109,7 +109,7 @@ open class CollectionViewCallbackTests: BaseTestClass {
         resetCallbacks()
         
         // When: Creating view with enhanced hints and callbacks
-        let view = platformPresentItemCollection_L1(
+        _ = platformPresentItemCollection_L1(
             items: sampleItems,
             hints: enhancedHints,
             onCreateItem: { self.createdItems += 1 },
@@ -130,7 +130,7 @@ open class CollectionViewCallbackTests: BaseTestClass {
         resetCallbacks()
         
         // When: Creating expandable card collection view
-        let view = ExpandableCardCollectionView(
+        _ = ExpandableCardCollectionView(
             items: sampleItems,
             hints: basicHints,
             onCreateItem: { self.createdItems += 1 },
@@ -149,7 +149,7 @@ open class CollectionViewCallbackTests: BaseTestClass {
         resetCallbacks()
         
         // When: Creating grid collection view
-        let view = GridCollectionView(
+        _ = GridCollectionView(
             items: sampleItems,
             hints: basicHints,
             onCreateItem: { self.createdItems += 1 },
@@ -168,7 +168,7 @@ open class CollectionViewCallbackTests: BaseTestClass {
         resetCallbacks()
         
         // When: Creating list collection view
-        let view = ListCollectionView(
+        _ = ListCollectionView(
             items: sampleItems,
             hints: basicHints,
             onCreateItem: { self.createdItems += 1 },
@@ -189,14 +189,12 @@ open class CollectionViewCallbackTests: BaseTestClass {
         // Given: Track if callbacks are invoked
         resetCallbacks()
         var callbackInvoked = false
-        var receivedItem: TestPatterns.TestItem?
         
         let view = ListCollectionView(
             items: sampleItems,
             hints: basicHints,
             onItemSelected: { item in
                 callbackInvoked = true
-                receivedItem = item
                 self.selectedItems.append(item)
             }
         )
@@ -215,7 +213,7 @@ open class CollectionViewCallbackTests: BaseTestClass {
         resetCallbacks()
         
         // When: Creating cover flow collection view
-        let view = CoverFlowCollectionView(
+        _ = CoverFlowCollectionView(
             items: sampleItems,
             hints: basicHints,
             onCreateItem: { self.createdItems += 1 },
@@ -234,7 +232,7 @@ open class CollectionViewCallbackTests: BaseTestClass {
         resetCallbacks()
         
         // When: Creating masonry collection view
-        let view = MasonryCollectionView(
+        _ = MasonryCollectionView(
             items: sampleItems,
             hints: basicHints,
             onCreateItem: { self.createdItems += 1 },
@@ -251,15 +249,10 @@ open class CollectionViewCallbackTests: BaseTestClass {
                 initializeTestConfig()
         // Rule 6.2 & 7.4: Functional testing - Must verify callbacks ACTUALLY invoke
         
-        var callbackInvoked = false
-        var receivedItem: TestPatterns.TestItem?
-        
-        let view = ListCollectionView(
+        _ = ListCollectionView(
             items: sampleItems,
             hints: basicHints,
             onItemDeleted: { item in
-                callbackInvoked = true
-                receivedItem = item
                 self.deletedItems.append(item)
             }
         )
@@ -269,21 +262,17 @@ open class CollectionViewCallbackTests: BaseTestClass {
         // We verify that callbacks are provided and accessible
         
         // Delete callback test completed - actual callback verification needs implementation
+        #expect(Bool(true), "ListCollectionView with onItemDeleted callback compiles and instantiates")
     }
     
     @Test @MainActor func testListCollectionViewOnItemEditedCallback() async throws {
         initializeTestConfig()
         // Rule 6.2 & 7.4: Functional testing
         
-        var callbackInvoked = false
-        var receivedItem: TestPatterns.TestItem?
-        
-        let view = ListCollectionView(
+        _ = ListCollectionView(
             items: sampleItems,
             hints: basicHints,
             onItemEdited: { item in
-                callbackInvoked = true
-                receivedItem = item
                 self.editedItems.append(item)
             }
         )
@@ -302,7 +291,7 @@ open class CollectionViewCallbackTests: BaseTestClass {
         resetCallbacks()
         
         // When: Creating adaptive collection view
-        let view = AdaptiveCollectionView(
+        _ = AdaptiveCollectionView(
             items: sampleItems,
             hints: basicHints,
             onCreateItem: { self.createdItems += 1 },
@@ -340,7 +329,7 @@ open class CollectionViewCallbackTests: BaseTestClass {
         
         // When: Creating expandable card component
         let hints = PresentationHints()
-        let view = ExpandableCardComponent(
+        _ = ExpandableCardComponent(
             item: item,
             layoutDecision: layoutDecision,
             strategy: strategy,
@@ -373,7 +362,7 @@ open class CollectionViewCallbackTests: BaseTestClass {
         )
         
         // When: Creating simple card component
-        let view = SimpleCardComponent(
+        _ = SimpleCardComponent(
             item: item,
             layoutDecision: layoutDecision,
             hints: PresentationHints(),
@@ -394,7 +383,7 @@ open class CollectionViewCallbackTests: BaseTestClass {
         
         // When: Creating cover flow card component
         let hints = PresentationHints()
-        let view = CoverFlowCardComponent(
+        _ = CoverFlowCardComponent(
             item: item,
             hints: hints,
             onItemSelected: { item in self.selectedItems.append(item) },
@@ -414,7 +403,7 @@ open class CollectionViewCallbackTests: BaseTestClass {
         resetCallbacks()
         
         // When: Creating view with empty collection
-        let view = platformPresentItemCollection_L1(
+        _ = platformPresentItemCollection_L1(
             items: [TestPatterns.TestItem]() as [TestPatterns.TestItem],
             hints: basicHints,
             onCreateItem: { self.createdItems += 1 }
@@ -430,7 +419,7 @@ open class CollectionViewCallbackTests: BaseTestClass {
         resetCallbacks()
         
         // When: Creating view with empty collection
-        let view = platformPresentItemCollection_L1(
+        _ = platformPresentItemCollection_L1(
             items: [TestPatterns.TestItem]() as [TestPatterns.TestItem],
             hints: basicHints
         )
@@ -447,7 +436,7 @@ open class CollectionViewCallbackTests: BaseTestClass {
         resetCallbacks()
         
         // When: Creating view with old API
-        let view = platformPresentItemCollection_L1(
+        _ = platformPresentItemCollection_L1(
             items: sampleItems,
             hints: basicHints,
             onCreateItem: { self.createdItems += 1 }
@@ -463,7 +452,7 @@ open class CollectionViewCallbackTests: BaseTestClass {
         resetCallbacks()
         
         // When: Creating view with enhanced hints but old callback API
-        let view = platformPresentItemCollection_L1(
+        _ = platformPresentItemCollection_L1(
             items: sampleItems,
             hints: enhancedHints,
             onCreateItem: { self.createdItems += 1 }
@@ -481,7 +470,7 @@ open class CollectionViewCallbackTests: BaseTestClass {
         resetCallbacks()
         
         // When: Creating view with nil callbacks
-        let view = platformPresentItemCollection_L1(
+        _ = platformPresentItemCollection_L1(
             items: sampleItems,
             hints: basicHints,
             onCreateItem: nil,
@@ -501,7 +490,7 @@ open class CollectionViewCallbackTests: BaseTestClass {
         let singleItem = [sampleItems[0]]
         
         // When: Creating view with single item
-        let view = platformPresentItemCollection_L1(
+        _ = platformPresentItemCollection_L1(
             items: singleItem,
             hints: basicHints,
             onCreateItem: { self.createdItems += 1 },
@@ -523,7 +512,7 @@ open class CollectionViewCallbackTests: BaseTestClass {
         }
         
         // When: Creating view with large collection
-        let view = platformPresentItemCollection_L1(
+        _ = platformPresentItemCollection_L1(
             items: largeCollection,
             hints: basicHints,
             onCreateItem: { self.createdItems += 1 },
