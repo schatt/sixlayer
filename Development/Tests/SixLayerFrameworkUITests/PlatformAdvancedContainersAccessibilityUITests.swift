@@ -9,6 +9,8 @@ import XCTest
 
 @MainActor
 final class PlatformAdvancedContainersAccessibilityUITests: XCTestCase {
+    private static let quickWait: TimeInterval = 0.5
+    private static let rootReadyTimeout: TimeInterval = 2.0
     private enum IDs {
         static let hostTitle = "platform-advanced-containers-audit-title"
         static let explicitListID = "platform-advanced-list-host"
@@ -42,12 +44,12 @@ final class PlatformAdvancedContainersAccessibilityUITests: XCTestCase {
             app.descendants(matching: .any)
                 .matching(NSPredicate(format: "identifier == %@", IDs.hostTitle))
                 .firstMatch
-                .waitForExistence(timeout: 6.0),
+                .waitForExistence(timeout: Self.rootReadyTimeout),
             "Platform advanced containers audit host should open"
         )
 
         XCTAssertTrue(
-            app.scrollViews[IDs.explicitListID].waitForExistence(timeout: 8.0),
+            app.scrollViews[IDs.explicitListID].waitForExistence(timeout: Self.quickWait),
             "Explicit list accessibility identifier should be queryable as scrollView"
         )
     }
