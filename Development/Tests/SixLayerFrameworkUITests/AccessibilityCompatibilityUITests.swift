@@ -18,7 +18,17 @@ final class AccessibilityCompatibilityUITests: XCTestCase {
         case button = "-OpenAccessibilityCompatibilityButtonTest"
         case platformPicker = "-OpenAccessibilityCompatibilityPlatformPickerTest"
 
-        var navigationTitle: String {
+        /// Shown in each host’s UI (stable across iOS/macOS XCUI); avoids relying on `navigationBars` title chrome.
+        var readyHeadline: String {
+            switch self {
+            case .control: return "Control Test View"
+            case .text: return "Text Test View"
+            case .button: return "Button Test View"
+            case .platformPicker: return "Platform Picker Test View"
+            }
+        }
+
+        var sweepLabel: String {
             switch self {
             case .control: return "Control Test"
             case .text: return "Text Test"
@@ -50,29 +60,29 @@ final class AccessibilityCompatibilityUITests: XCTestCase {
         localApp.launchArguments.append(deepLink.rawValue)
         localApp.launch()
         XCTAssertTrue(
-            localApp.navigationBars[deepLink.navigationTitle].waitForExistence(timeout: 10),
-            "Deep link \(deepLink.rawValue) should show host with title \(deepLink.navigationTitle)"
+            localApp.staticTexts[deepLink.readyHeadline].waitForExistence(timeout: 10),
+            "Deep link \(deepLink.rawValue) should show host headline \(deepLink.readyHeadline)"
         )
         app = localApp
     }
 
     func testControlTestView_CompatibilitySweep() throws {
         launchForDeepLink(.control)
-        app.runAccessibilityCompatibilitySweep(screenLabel: DeepLink.control.navigationTitle)
+        app.runAccessibilityCompatibilitySweep(screenLabel: DeepLink.control.sweepLabel)
     }
 
     func testTextTestView_CompatibilitySweep() throws {
         launchForDeepLink(.text)
-        app.runAccessibilityCompatibilitySweep(screenLabel: DeepLink.text.navigationTitle)
+        app.runAccessibilityCompatibilitySweep(screenLabel: DeepLink.text.sweepLabel)
     }
 
     func testPlatformPickerTestView_CompatibilitySweep() throws {
         launchForDeepLink(.platformPicker)
-        app.runAccessibilityCompatibilitySweep(screenLabel: DeepLink.platformPicker.navigationTitle)
+        app.runAccessibilityCompatibilitySweep(screenLabel: DeepLink.platformPicker.sweepLabel)
     }
 
     func testButtonTestView_CompatibilitySweep() throws {
         launchForDeepLink(.button)
-        app.runAccessibilityCompatibilitySweep(screenLabel: DeepLink.button.navigationTitle)
+        app.runAccessibilityCompatibilitySweep(screenLabel: DeepLink.button.sweepLabel)
     }
 }
