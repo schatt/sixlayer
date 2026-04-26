@@ -39,23 +39,26 @@ final class Layer4UITests: XCTestCase {
         continueAfterFailure = false
         addDefaultUIInterruptionMonitor()
 
-        let localApp = XCUIApplication()
-        localApp.configureForFastTesting()
-        // `-SkipAnimations` can leave `.sheet` presented without a populated a11y subtree on iOS 26
-        // (Sheet exists; contract static text never appears — Issue #193).
-        localApp.launchArguments.removeAll(where: { $0 == "-SkipAnimations" })
-        localApp.launchArguments.append("-OpenLayer4Examples")
-        localApp.launch()
-        app = localApp
-        XCTAssertTrue(
-            localApp.wait(for: .runningForeground, timeout: Self.rootReadyTimeout),
-            "App should reach foreground after launch (Layer 4 contract host)"
-        )
-        let contractRootReady = waitForContractRoot(timeout: Self.rootReadyTimeout)
-        XCTAssertTrue(
-            contractRootReady,
-            "App should open on Layer 4 contract host (-OpenLayer4Examples): L4ContractSheet / L4 Presentation / nav title"
-        )
+        nonisolated(unsafe) let instance = self
+        MainActor.assumeIsolated {
+            let localApp = XCUIApplication()
+            localApp.configureForFastTesting()
+            // `-SkipAnimations` can leave `.sheet` presented without a populated a11y subtree on iOS 26
+            // (Sheet exists; contract static text never appears — Issue #193).
+            localApp.launchArguments.removeAll(where: { $0 == "-SkipAnimations" })
+            localApp.launchArguments.append("-OpenLayer4Examples")
+            localApp.launch()
+            instance.app = localApp
+            XCTAssertTrue(
+                localApp.wait(for: .runningForeground, timeout: Self.rootReadyTimeout),
+                "App should reach foreground after launch (Layer 4 contract host)"
+            )
+            let contractRootReady = instance.waitForContractRoot(timeout: Self.rootReadyTimeout)
+            XCTAssertTrue(
+                contractRootReady,
+                "App should open on Layer 4 contract host (-OpenLayer4Examples): L4ContractSheet / L4 Presentation / nav title"
+            )
+        }
     }
 
     nonisolated override func tearDownWithError() throws {
