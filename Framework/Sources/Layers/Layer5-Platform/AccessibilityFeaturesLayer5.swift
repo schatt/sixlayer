@@ -280,7 +280,7 @@ public struct VoiceOverEnabledView<Content: View>: View {
             .accessibilityElement(children: .contain)
             .accessibilityLabel("Enhanced accessibility view")
             .accessibilityHint("This view has enhanced VoiceOver support")
-            .automaticCompliance() // Apply accessibility identifiers to the entire view
+            .automaticCompliance(identifierName: "voiceOverEnabled", identifierElementType: "View")
     }
 }
 
@@ -313,7 +313,7 @@ public struct KeyboardNavigableView<Content: View>: View {
                     .environmentObject(keyboardManager)
             }
         }
-        .automaticCompliance() // Apply accessibility identifiers to the entire view
+        .automaticCompliance(identifierName: "keyboardNavigable", identifierElementType: "View")
     }
 }
 
@@ -332,7 +332,7 @@ public struct HighContrastEnabledView<Content: View>: View {
         content()
             .environmentObject(highContrastManager)
             .preferredColorScheme(highContrastManager.isHighContrastEnabled ? .dark : nil)
-            .automaticCompliance() // Apply accessibility identifiers to the entire view
+            .automaticCompliance(identifierName: "highContrastEnabled", identifierElementType: "View")
     }
 }
 
