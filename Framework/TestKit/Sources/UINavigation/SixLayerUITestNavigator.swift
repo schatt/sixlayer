@@ -49,11 +49,17 @@ public final class SixLayerUITestNavigator: @unchecked Sendable {
     }
 
     /// Ensures a screen contract is present (and taps it when hittable) using identifier resolution.
+    ///
+    /// After a hittable tap, returns `true` even when the control disappears from the XCUI hierarchy (common when
+    /// navigation pushes a new destination). When the control is not hittable, returns whether it still exists.
     public func goToScreen(_ screenId: UITestScreenId, timeout: TimeInterval = 5.0) -> Bool {
         guard let elementId = try? UITestElementId(validating: screenId.rawValue),
               let element = findFirstExisting(application, elementId, resolverConfiguration),
               element.waitForExistence(timeout: timeout) else { return false }
-        if element.isHittable { element.tap() }
+        if element.isHittable {
+            element.tap()
+            return true
+        }
         return element.exists
     }
 
@@ -63,7 +69,10 @@ public final class SixLayerUITestNavigator: @unchecked Sendable {
         guard let elementId = try? UITestElementId(validating: routeId.rawValue),
               let element = findFirstExisting(scope, elementId, resolverConfiguration),
               element.waitForExistence(timeout: timeout) else { return false }
-        if element.isHittable { element.tap() }
+        if element.isHittable {
+            element.tap()
+            return true
+        }
         return element.exists
     }
 
@@ -84,12 +93,38 @@ public final class SixLayerUITestNavigator: @unchecked Sendable {
     }
 
     private func performSingleBackTap(stepTimeout: TimeInterval) -> Bool {
-        let navBar = application.navigationBars.firstMatch
-        guard navBar.waitForExistence(timeout: stepTimeout) else { return false }
-        let leading = navBar.buttons.element(boundBy: 0)
-        guard leading.waitForExistence(timeout: stepTimeout), leading.isHittable else { return false }
-        leading.tap()
-        return true
+        let budget = max(0.05, stepTimeout)
+        let quick = max(0.05, stepTimeout / 2)
+
+        // macOS SwiftUI stacks often surface "Back" at app or window scope before bar index 0 matches
+        // (see `navigateBackToLaunch` in the framework UI test helpers).
+        let searchRoots: [XCUIElement] = [application, application.windows.firstMatch]
+        for root in searchRoots {
+            let back = root.buttons["Back"]
+            if back.waitForExistence(timeout: quick), back.isHittable {
+                back.tap()
+                return true
+            }
+        }
+
+        let navBarCandidates: [XCUIElement] = [
+            application.navigationBars.firstMatch,
+            application.windows.firstMatch.navigationBars.firstMatch,
+        ]
+        for navBar in navBarCandidates {
+            guard navBar.waitForExistence(timeout: budget) else { continue }
+            let named = navBar.buttons["Back"]
+            if named.waitForExistence(timeout: quick), named.isHittable {
+                named.tap()
+                return true
+            }
+            let leading = navBar.buttons.element(boundBy: 0)
+            if leading.waitForExistence(timeout: quick), leading.isHittable {
+                leading.tap()
+                return true
+            }
+        }
+        return false
     }
 }
 #endif

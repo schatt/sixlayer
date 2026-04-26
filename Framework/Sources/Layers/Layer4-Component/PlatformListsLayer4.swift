@@ -161,6 +161,7 @@ public extension View {
                 Spacer()
             }
         }
+        .automaticCompliance(named: "platformSelectableListRow")
         .buttonStyle(PlainButtonStyle())
         .background(backgroundColorForSelection(isSelected: isSelected))
         .padding(.vertical, 8)

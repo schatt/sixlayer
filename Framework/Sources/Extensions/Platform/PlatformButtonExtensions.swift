@@ -35,6 +35,7 @@ private func iosNavigationSheetButton(
     }
     .accessibilityLabel("Navigation")
     .accessibilityHint("Open navigation sheet")
+    .automaticCompliance(named: "platformNavigationSheetButton")
 }
 #endif
 
@@ -49,6 +50,7 @@ private func macNavigationSheetButton(
     }
     .accessibilityLabel("Toggle Sidebar")
     .accessibilityHint("Show or hide the navigation sidebar")
+    .automaticCompliance(named: "platformNavigationSheetButton")
 }
 #endif
 
@@ -59,4 +61,5 @@ private func fallbackNavigationButton(action: @escaping () -> Void) -> some View
     }
     .accessibilityLabel("Navigation")
     .accessibilityHint("Open navigation")
+    .automaticCompliance(named: "platformNavigationSheetButton")
 }

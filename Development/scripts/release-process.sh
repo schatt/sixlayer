@@ -4,10 +4,11 @@
 # This script enforces the mandatory release documentation process
 #
 # Branch and Tag Naming Convention:
-# - Branches: b7.0.0 format (e.g., b7.0.0, b7.0.1) - used for pre-release work
+# - Branches: b<major>/bX.Y.Z (e.g., b7/b7.7.1) — release-prep / integration lines; major folder matches semver major
+# - Legacy flat bX.Y.Z (e.g., b7.7.1) is still recognized until fully migrated
 # - Tags: v7.0.0 format (e.g., v7.0.0, v7.0.1) - used for releases on main
-# - After a successful merge+tag from a bM.m.p branch, the script creates b<M'.m'.p'+1>
-#   where vM'.m'.p' is the version you just released (e.g. release v7.6.2 from b7.6.1 -> b7.6.3).
+# - After a successful merge+tag from a release-prep branch, the script creates the next patch line:
+#   b<major>/b<X.Y.(Z+1)> where vX.Y.Z is the version you just released (e.g. v7.7.1 -> b7/b7.7.2).
 #
 # Flags:
 #   --release  Non-interactive release: auto-accept suggested version (when prompted),
@@ -163,12 +164,21 @@ increment_version() {
     echo "$major.$minor.$patch"
 }
 
-# Released SemVer X.Y.Z -> next patch only (7.6.2 -> 7.6.3; 7.7.0 -> 7.7.1) for release-prep branch bX.Y.Z+1.
+# Released SemVer X.Y.Z -> next patch only (7.6.2 -> 7.6.3; 7.7.0 -> 7.7.1) for the next release-prep branch leaf.
 next_patch_semver() {
     local current_version=$1
     IFS='.' read -r major minor patch <<< "$current_version"
     patch=$((patch + 1))
     echo "$major.$minor.$patch"
+}
+
+# Released SemVer X.Y.Z -> next standard release-prep branch b<major>/b<X.Y.(Z+1)>.
+next_release_prep_branch_name() {
+    local released_version=$1
+    local next_semver
+    next_semver=$(next_patch_semver "$released_version")
+    IFS='.' read -r major _ _ <<< "$next_semver"
+    echo "b${major}/b${next_semver}"
 }
 
 # Function to check if a string looks like a version number (X.Y.Z)
@@ -430,8 +440,7 @@ if [ "$CURRENT_BRANCH" = "main" ]; then
     echo "✅ On main branch (will use direct tag/push workflow)"
 else
     echo "✅ On branch: $CURRENT_BRANCH (will merge to main before tag/push)"
-    # Note: Branch naming convention is b$VERSION (e.g., b7.0.0) for pre-release work
-    # Tags use v$VERSION (e.g., v7.0.0) format
+    # Note: Release-prep branches use b<major>/bX.Y.Z (e.g., b7/b7.7.1); tags use vX.Y.Z on main
 fi
 
 # Step 3: Check if RELEASES.md needs updating
@@ -1124,8 +1133,7 @@ if [ "$CURRENT_BRANCH" = "main" ]; then
     fi
 else
     # On a branch: merge to main, then tag/push
-    # Note: Branch naming convention is b$VERSION (e.g., b7.0.0) for pre-release work
-    # Tags use v$VERSION (e.g., v7.0.0) format
+    # Release-prep branches: b<major>/bX.Y.Z (legacy flat bX.Y.Z still recognized)
     echo "📋 Current branch: $CURRENT_BRANCH"
     echo "📋 This will:"
     echo "   1. Push $CURRENT_BRANCH to all remotes"
@@ -1134,7 +1142,7 @@ else
     echo "   4. Create and push tag v$VERSION (tags use v$VERSION format)"
     echo "   5. Push main to all remotes"
     echo "   6. Create GitHub Release from Development/RELEASE_v$VERSION.md (if gh is installed and authenticated)"
-    echo "   7. If $CURRENT_BRANCH matches bM.m.p: create b + next patch after v$VERSION from main and switch (else: switch back to $CURRENT_BRANCH)"
+    echo "   7. If $CURRENT_BRANCH is release-prep (b<major>/bM.m.p or legacy bM.m.p): create b<major>/b + next patch after v$VERSION from main and switch (else: switch back to $CURRENT_BRANCH)"
     echo ""
     if [ "$AUTO_RELEASE" -eq 1 ]; then
         echo "🚀 Proceed with merge and release (--release)"
@@ -1202,11 +1210,18 @@ else
         echo "🌐 Pushed to all remotes (GitHub, Codeberg, GitLab)"
         echo ""
 
-        # After merge we are on main. If the source branch matches bM.m.p, create b + (released semver patch+1).
-        RELEASE_PREP_BRANCH_PATTERN='^b[0-9]+\.[0-9]+\.[0-9]+$'
-        if [[ "$CURRENT_BRANCH" =~ $RELEASE_PREP_BRANCH_PATTERN ]]; then
+        # After merge we are on main. If the source branch is release-prep (namespaced or legacy flat), create b<major>/b<next patch>.
+        RELEASE_PREP_MATCH=0
+        if [[ "$CURRENT_BRANCH" =~ ^b([0-9]+)/b([0-9]+)\.[0-9]+\.[0-9]+$ ]]; then
+            if [[ "${BASH_REMATCH[1]}" == "${BASH_REMATCH[2]}" ]]; then
+                RELEASE_PREP_MATCH=1
+            fi
+        elif [[ "$CURRENT_BRANCH" =~ ^b[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            RELEASE_PREP_MATCH=1
+        fi
+        if [ "$RELEASE_PREP_MATCH" -eq 1 ]; then
             NEXT_SEMVER=$(next_patch_semver "$VERSION")
-            NEXT_RELEASE_BRANCH="b${NEXT_SEMVER}"
+            NEXT_RELEASE_BRANCH=$(next_release_prep_branch_name "$VERSION")
             echo "📋 Release-prep branch $CURRENT_BRANCH detected; creating $NEXT_RELEASE_BRANCH from main (patch after released v$VERSION → $NEXT_SEMVER)."
             if git show-ref --verify --quiet refs/heads/"$NEXT_RELEASE_BRANCH"; then
                 echo "⚠️  Local branch $NEXT_RELEASE_BRANCH already exists; checking out and merging main..."
@@ -1238,9 +1253,9 @@ else
                 fi
             fi
         else
-            # Not bM.m.p: same as before — switch back to the working branch (or stay on main if deleted)
+            # Not release-prep shape: switch back to the working branch (or stay on main if deleted)
             if [ "$AUTO_RELEASE" -eq 1 ]; then
-                echo "💡 Branch $CURRENT_BRANCH is not bM.m.p (--release); switching back to it if it still exists locally."
+                echo "💡 Branch $CURRENT_BRANCH is not a release-prep branch (--release); switching back to it if it still exists locally."
                 if git show-ref --verify --quiet refs/heads/"$CURRENT_BRANCH"; then
                     echo "🔄 Switching back to $CURRENT_BRANCH..."
                     git checkout "$CURRENT_BRANCH"
@@ -1282,7 +1297,7 @@ else
         echo "5. git push all --tags"
         echo "6. git push all main"
         echo "7. gh release create v$VERSION --title \"SixLayer Framework v$VERSION\" --notes-file Development/RELEASE_v$VERSION.md"
-        echo "8. If on bM.m.p: from main, create branch b + (patch bump on released v$VERSION), push to remotes, checkout"
+        echo "8. If on release-prep branch: from main, create b<major>/b<next patch>, push to remotes, checkout"
     fi
 fi
 

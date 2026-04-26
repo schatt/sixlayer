@@ -1,12 +1,21 @@
 # 🚀 Six-Layer Framework Release History
 
-## 📍 **Current Release: v7.7.0** 🎯
+## 📍 **Current Release: v7.7.1** 🎯
 
-**Release Date**: TBD
-**Status**: In preparation
-**Previous Release**: v7.6.2 - Patch release
-**Note**: Live data scanner path via VisionKit `DataScannerViewController` (#252) plus co-shipped runtime capability namespace work (#253).
+**Release Date**: April 2026
+**Status**: Patch release
+**Previous Release**: v7.7.0 - Minor release
+**Note**: Restores explicit list accessibility identifier discoverability contract in runtime UI hierarchy (Issue #257).
 **Next Release**: TBD
+
+---
+
+## 🎯 **v7.7.1 - Explicit list accessibility identifier contract restoration** (April 2026)
+
+### **What's in v7.7.1:**
+- Patch release. See [RELEASE_v7.7.1.md](RELEASE_v7.7.1.md) for details.
+
+**See [RELEASE_v7.7.1.md](RELEASE_v7.7.1.md) for complete release notes.**
 
 ---
 

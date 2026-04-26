@@ -56,6 +56,8 @@ struct TestAppContentView: View {
     private let openCategoryAAccessibility = ProcessInfo.processInfo.arguments.contains("-OpenCategoryAAccessibility")
     /// When true, app opens to full `Layer4ExamplesView` (component list incl. Identifier Edge Case). UITest: `-OpenLayer4ComponentExamples`.
     private let openLayer4ComponentExamples = ProcessInfo.processInfo.arguments.contains("-OpenLayer4ComponentExamples")
+    /// When true, app opens to minimal navigator / contract smoke host (launch arg -OpenUITestContractSmokeHost). Issue #231.
+    private let openUITestContractSmokeHost = ProcessInfo.processInfo.arguments.contains("-OpenUITestContractSmokeHost")
     /// When true, app opens directly to Layer 4 contract section (launch arg -OpenLayer4Examples).
     private let openLayer4Examples = ProcessInfo.processInfo.arguments.contains("-OpenLayer4Examples")
     /// When true, app opens directly to Layer 5 Accessibility section (launch arg -OpenLayer5Accessibility).
@@ -85,6 +87,22 @@ struct TestAppContentView: View {
     private let openPlatformColorEncodeExtensions = ProcessInfo.processInfo.arguments.contains("-OpenPlatformColorEncodeExtensions")
     /// When true, app opens to clipboard/URL utility audit host (launch arg -OpenPlatformClipboardUrlLayer4).
     private let openPlatformClipboardUrlLayer4 = ProcessInfo.processInfo.arguments.contains("-OpenPlatformClipboardUrlLayer4")
+    /// When true, app opens to core container/navigation extension audit host (launch arg -OpenPlatformBasicContainersExtensions).
+    private let openPlatformBasicContainersExtensions = ProcessInfo.processInfo.arguments.contains("-OpenPlatformBasicContainersExtensions")
+    /// When true, app opens to list/navigation helper audit host (launch arg -OpenPlatformListNavigationExtensions).
+    private let openPlatformListNavigationExtensions = ProcessInfo.processInfo.arguments.contains("-OpenPlatformListNavigationExtensions")
+    /// When true, app opens to navigation routing + settings audit host (launch arg -OpenPlatformNavigationRoutingExtensions).
+    private let openPlatformNavigationRoutingExtensions = ProcessInfo.processInfo.arguments.contains("-OpenPlatformNavigationRoutingExtensions")
+    /// When true, app opens to file system directory utility audit host (launch arg -OpenPlatformFileSystemUtilitiesAudit).
+    private let openPlatformFileSystemUtilitiesAudit = ProcessInfo.processInfo.arguments.contains("-OpenPlatformFileSystemUtilitiesAudit")
+    /// When true, app opens to advanced container styling audit host (launch arg -OpenPlatformAdvancedContainersExtensions).
+    private let openPlatformAdvancedContainersExtensions = ProcessInfo.processInfo.arguments.contains("-OpenPlatformAdvancedContainersExtensions")
+    /// When true, app opens to platform menu + context menu audit host (launch arg -OpenPlatformMenuContextMenuExtensions).
+    private let openPlatformMenuContextMenuExtensions = ProcessInfo.processInfo.arguments.contains("-OpenPlatformMenuContextMenuExtensions")
+    /// When true, app opens to frame/spacing/help/hover utility audit host (launch arg -OpenPlatformFrameSpacingUtilities).
+    private let openPlatformFrameSpacingUtilities = ProcessInfo.processInfo.arguments.contains("-OpenPlatformFrameSpacingUtilities")
+    /// When true, app opens to presentation detents + file importer audit host (launch arg -OpenPlatformPresentationFileImporter).
+    private let openPlatformPresentationFileImporter = ProcessInfo.processInfo.arguments.contains("-OpenPlatformPresentationFileImporter")
     
     enum TestView: String, CaseIterable, Identifiable {
         case control = "Control Test"
@@ -117,7 +135,10 @@ struct TestAppContentView: View {
 
     var body: some View {
         Group {
-            if openCategoryAAccessibility, ProcessInfo.processInfo.arguments.contains("-CategoryAGlobalAutoOff") {
+            if openUITestContractSmokeHost {
+                // Host supplies its own `NavigationStack` so `backToRoot` targets one bar (#231).
+                UITestContractSmokeHostView()
+            } else if openCategoryAAccessibility, ProcessInfo.processInfo.arguments.contains("-CategoryAGlobalAutoOff") {
                 NavigationStack {
                     AccessibilityIdentifierCategoryAGlobalOffAUDITView()
                 }
@@ -188,6 +209,38 @@ struct TestAppContentView: View {
             } else if openPlatformClipboardUrlLayer4 {
                 NavigationStack {
                     PlatformClipboardUrlLayer4AuditView(onBackToMain: nil)
+                }
+            } else if openPlatformBasicContainersExtensions {
+                NavigationStack {
+                    PlatformBasicContainersExtensionsAuditView(onBackToMain: nil)
+                }
+            } else if openPlatformListNavigationExtensions {
+                NavigationStack {
+                    PlatformListNavigationExtensionsAuditView(onBackToMain: nil)
+                }
+            } else if openPlatformNavigationRoutingExtensions {
+                NavigationStack {
+                    PlatformNavigationRoutingExtensionsAuditView(onBackToMain: nil)
+                }
+            } else if openPlatformFileSystemUtilitiesAudit {
+                NavigationStack {
+                    PlatformFileSystemUtilitiesAuditHost(onBackToMain: nil)
+                }
+            } else if openPlatformAdvancedContainersExtensions {
+                NavigationStack {
+                    PlatformAdvancedContainersExtensionsAuditView(onBackToMain: nil)
+                }
+            } else if openPlatformMenuContextMenuExtensions {
+                NavigationStack {
+                    PlatformMenuContextMenuExtensionsAuditHost(onBackToMain: nil)
+                }
+            } else if openPlatformFrameSpacingUtilities {
+                NavigationStack {
+                    PlatformFrameSpacingUtilitiesAuditHost(onBackToMain: nil)
+                }
+            } else if openPlatformPresentationFileImporter {
+                NavigationStack {
+                    PlatformPresentationFileImporterAuditHost(onBackToMain: nil)
                 }
             } else {
                 NavigationStack {
@@ -298,6 +351,46 @@ struct TestAppContentView: View {
                     PlatformClipboardUrlLayer4AuditView(onBackToMain: nil)
                 }
                 .accessibilityIdentifier("platform-clipboard-url-l4-link")
+
+                NavigationLink("Platform Basic Containers / Navigation Audit") {
+                    PlatformBasicContainersExtensionsAuditView(onBackToMain: nil)
+                }
+                .accessibilityIdentifier("platform-basic-containers-extensions-link")
+
+                NavigationLink("Platform List / Navigation Helpers Audit") {
+                    PlatformListNavigationExtensionsAuditView(onBackToMain: nil)
+                }
+                .accessibilityIdentifier("platform-list-navigation-extensions-link")
+
+                NavigationLink("Platform Navigation Routing + Settings Audit") {
+                    PlatformNavigationRoutingExtensionsAuditView(onBackToMain: nil)
+                }
+                .accessibilityIdentifier("platform-navigation-routing-extensions-link")
+
+                NavigationLink("Platform File System Directory Utilities Audit") {
+                    PlatformFileSystemUtilitiesAuditHost(onBackToMain: nil)
+                }
+                .accessibilityIdentifier("platform-file-system-utilities-audit-link")
+
+                NavigationLink("Platform Advanced Containers (styling) Audit") {
+                    PlatformAdvancedContainersExtensionsAuditView(onBackToMain: nil)
+                }
+                .accessibilityIdentifier("platform-advanced-containers-extensions-link")
+
+                NavigationLink("Platform Menu + Context Menu Audit") {
+                    PlatformMenuContextMenuExtensionsAuditHost(onBackToMain: nil)
+                }
+                .accessibilityIdentifier("platform-menu-context-menu-extensions-link")
+
+                NavigationLink("Platform Frame / Spacing Utilities Audit") {
+                    PlatformFrameSpacingUtilitiesAuditHost(onBackToMain: nil)
+                }
+                .accessibilityIdentifier("platform-frame-spacing-utilities-link")
+
+                NavigationLink("Platform Presentation + File Importer Audit") {
+                    PlatformPresentationFileImporterAuditHost(onBackToMain: nil)
+                }
+                .accessibilityIdentifier("platform-presentation-file-importer-link")
             }
             .padding()
         }
@@ -857,3 +950,390 @@ struct PlatformClipboardUrlLayer4AuditView: View {
     }
 }
 
+/// RealUI/TestApp coverage for core container/navigation extension APIs (issue #170 Phase 2).
+struct PlatformBasicContainersExtensionsAuditView: View {
+    var onBackToMain: (() -> Void)?
+
+    var body: some View {
+        platformScrollViewContainer {
+            platformVStack(alignment: .leading, spacing: 18) {
+                platformText("Platform Basic Containers / Navigation Audit")
+                    .font(.headline)
+                    .accessibilityIdentifier("platform-basic-containers-audit-title")
+
+                platformText("Explicit *Container APIs (Issue #170)")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                    .accessibilityIdentifier("platform-basic-explicit-containers-caption")
+
+                platformVStackContainer(alignment: .leading, spacing: 4) {
+                    platformText("Inside platformVStackContainer")
+                        .accessibilityIdentifier("platform-basic-vstackcontainer-child")
+                }
+                .accessibilityIdentifier("platform-basic-vstackcontainer-host")
+
+                platformHStackContainer(alignment: .center, spacing: 6) {
+                    platformText("H1")
+                        .accessibilityIdentifier("platform-basic-hstackcontainer-a")
+                    platformText("H2")
+                        .accessibilityIdentifier("platform-basic-hstackcontainer-b")
+                }
+                .accessibilityIdentifier("platform-basic-hstackcontainer-host")
+
+                platformZStackContainer {
+                    RoundedRectangle(cornerRadius: 6)
+                        .fill(Color.green.opacity(0.12))
+                        .frame(height: 40)
+                    platformText("ZStackContainer overlay")
+                        .accessibilityIdentifier("platform-basic-zstackcontainer-label")
+                }
+                .frame(height: 44)
+                .accessibilityIdentifier("platform-basic-zstackcontainer-host")
+
+                platformGroupBoxContainer(title: "Group box audit") {
+                    platformText("Group box inner content")
+                        .accessibilityIdentifier("platform-basic-groupbox-content")
+                }
+                .accessibilityIdentifier("platform-basic-groupbox-host")
+
+                platformHStack(alignment: .center, spacing: 8) {
+                    platformText("HStack left")
+                        .accessibilityIdentifier("platform-basic-hstack-left")
+                    platformText("HStack right")
+                        .accessibilityIdentifier("platform-basic-hstack-right")
+                }
+                .accessibilityIdentifier("platform-basic-hstack-host")
+
+                platformZStack(alignment: .center) {
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(Color.blue.opacity(0.12))
+                        .frame(height: 56)
+                    platformText("ZStack overlay")
+                        .accessibilityIdentifier("platform-basic-zstack-overlay")
+                }
+                .accessibilityIdentifier("platform-basic-zstack-host")
+
+                platformLazyVStackContainer(alignment: .leading, spacing: 6) {
+                    ForEach(0..<3, id: \.self) { idx in
+                        platformText("LazyV row \(idx)")
+                            .accessibilityIdentifier("platform-basic-lazyv-row-\(idx)")
+                    }
+                }
+                .accessibilityIdentifier("platform-basic-lazyv-host")
+
+                platformScrollViewContainer(.horizontal, showsIndicators: false) {
+                    platformLazyHStackContainer(alignment: .center, spacing: 10) {
+                        ForEach(0..<3, id: \.self) { idx in
+                            platformText("LazyH \(idx)")
+                                .platformCardStyle(backgroundColor: Color.gray.opacity(0.15), cornerRadius: 6, shadowRadius: 1)
+                                .platformCardPadding()
+                                .accessibilityIdentifier("platform-basic-lazyh-item-\(idx)")
+                        }
+                    }
+                }
+                .frame(height: 72)
+                .accessibilityIdentifier("platform-basic-lazyh-scroll-host")
+
+                platformListContainer {
+                    ForEach(0..<2, id: \.self) { idx in
+                        platformText("List row \(idx)")
+                            .accessibilityIdentifier("platform-basic-list-row-\(idx)")
+                    }
+                }
+                .frame(minHeight: 100, maxHeight: 120)
+                .accessibilityIdentifier("platform-basic-list-host")
+
+                platformForm {
+                    platformSectionContainer(header: "Audit Form Section") {
+                        SixLayerFramework.platformTextField("Audit field", text: .constant("value"), id: "platform-basic-form-field")
+                    }
+                }
+                .frame(minHeight: 100, maxHeight: 120)
+                .accessibilityIdentifier("platform-basic-form-host")
+
+                platformNavigationSplitView {
+                    platformText("Split content")
+                        .accessibilityIdentifier("platform-basic-navsplit-content")
+                } detail: {
+                    platformText("Split detail")
+                        .accessibilityIdentifier("platform-basic-navsplit-detail")
+                }
+                .frame(minHeight: 120, maxHeight: 140)
+                .accessibilityIdentifier("platform-basic-navsplit-host")
+
+                platformSidebarPullIndicator(isVisible: true)
+                    .frame(height: 24)
+                    .accessibilityIdentifier("platform-basic-sidebar-pull-indicator")
+
+                if let onBackToMain {
+                    platformButton(label: "Back to Main", id: "platform-basic-containers-back-to-main") {
+                        onBackToMain()
+                    }
+                }
+            }
+            .padding()
+        }
+        .platformFrame()
+        .navigationTitle("Basic Containers")
+        .platformNavigationTitleDisplayMode_L4(.inline)
+    }
+}
+
+/// RealUI/TestApp coverage for list + navigation helper platform APIs (issue #170 Phase 2).
+struct PlatformListNavigationExtensionsAuditView: View {
+    struct AuditRow: Identifiable, Hashable {
+        let id: Int
+        let title: String
+    }
+
+    @State private var selectedSingle: Int? = nil
+    @State private var selectedMulti: Set<Int> = []
+    @State private var selectedDetail: AuditRow? = nil
+    @State private var toolbarTapCount = 0
+    @State private var navButtonTapCount = 0
+    @State private var rowSelectionCount = 0
+    var onBackToMain: (() -> Void)?
+
+    private let rows = (0..<4).map { AuditRow(id: $0, title: "Row \($0)") }
+
+    var body: some View {
+        platformScrollViewContainer {
+            platformVStack(alignment: .leading, spacing: 16) {
+                platformText("Platform List / Navigation Helpers Audit")
+                    .font(.headline)
+                    .accessibilityIdentifier("platform-list-nav-audit-title")
+
+                platformText("platformListStyle + platformListToolbar")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                List(rows, id: \.id) { row in
+                    platformText(row.title)
+                        .accessibilityIdentifier("platform-list-nav-style-row-\(row.id)")
+                }
+                .platformListStyle()
+                .platformListToolbar(onAdd: { toolbarTapCount += 1 }, addButtonTitle: "Add audit row")
+                .frame(minHeight: 120, maxHeight: 140)
+                .accessibilityIdentifier("platform-list-nav-style-toolbar-host")
+
+                platformText("Toolbar tap count: \(toolbarTapCount)")
+                    .accessibilityIdentifier("platform-list-nav-toolbar-count")
+
+                platformText("platformListWithSelection (single)")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                EmptyView().platformListWithSelection(selection: $selectedSingle) {
+                    ForEach(rows, id: \.id) { row in
+                        platformText(row.title)
+                            .tag(row.id)
+                            .accessibilityIdentifier("platform-list-nav-single-row-\(row.id)")
+                    }
+                }
+                .frame(minHeight: 120, maxHeight: 140)
+                .accessibilityIdentifier("platform-list-nav-single-host")
+
+                platformText("platformListWithSelection (multi)")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                EmptyView().platformListWithSelection(selection: $selectedMulti) {
+                    ForEach(rows, id: \.id) { row in
+                        platformText(row.title)
+                            .tag(row.id)
+                            .accessibilityIdentifier("platform-list-nav-multi-row-\(row.id)")
+                    }
+                }
+                .frame(minHeight: 120, maxHeight: 140)
+                .accessibilityIdentifier("platform-list-nav-multi-host")
+
+                platformText("platformBackupListContainer")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                EmptyView().platformBackupListContainer {
+                    platformText("Backup container body")
+                        .accessibilityIdentifier("platform-list-nav-backup-body")
+                }
+                .frame(minHeight: 60, maxHeight: 80)
+                .accessibilityIdentifier("platform-list-nav-backup-host")
+
+                platformText("platformListDetailContainer + platformSelectableListRow")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                EmptyView().platformListDetailContainer {
+                    platformVStack(alignment: .leading, spacing: 6) {
+                        ForEach(rows, id: \.id) { row in
+                            EmptyView().platformSelectableListRow(isSelected: selectedDetail == row, onSelect: {
+                                selectedDetail = row
+                                rowSelectionCount += 1
+                            }) {
+                                platformText(row.title)
+                            }
+                            .accessibilityIdentifier("platform-list-nav-selectable-row-\(row.id)")
+                        }
+                    }
+                } detail: {
+                    platformText(selectedDetail?.title ?? "No selection")
+                        .accessibilityIdentifier("platform-list-nav-detail-body")
+                }
+                .frame(minHeight: 160, maxHeight: 190)
+                .accessibilityIdentifier("platform-list-nav-detail-container-host")
+
+                platformText("Selectable row tap count: \(rowSelectionCount)")
+                    .accessibilityIdentifier("platform-list-nav-row-selection-count")
+
+                platformText("platformListDetailNavigation")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                platformText("List-detail helper host")
+                    .platformListDetailNavigation(
+                        items: rows,
+                        selectedItem: $selectedDetail,
+                        itemView: { item in platformText(item.title) },
+                        detailView: { item in platformText("Detail: \(item.title)") }
+                    )
+                    .frame(minHeight: 140, maxHeight: 170)
+                    .accessibilityIdentifier("platform-list-nav-detail-navigation-host")
+
+                platformText("platformNavigationSheetButton")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                platformText("Navigation sheet helper host")
+                    .platformNavigationSheetButton(action: { navButtonTapCount += 1 })
+                    .accessibilityIdentifier("platform-list-nav-sheet-button-host")
+
+                platformText("Navigation button tap count: \(navButtonTapCount)")
+                    .accessibilityIdentifier("platform-list-nav-sheet-button-count")
+
+                if let onBackToMain {
+                    platformButton(label: "Back to Main", id: "platform-list-nav-back-to-main") {
+                        onBackToMain()
+                    }
+                }
+            }
+            .padding()
+        }
+        .platformFrame()
+        .navigationTitle("List / Navigation Helpers")
+        .platformNavigationTitleDisplayMode_L4(.inline)
+    }
+}
+
+/// RealUI/TestApp coverage for navigation routing helpers and open settings (issue #170 Phase 2).
+struct PlatformNavigationRoutingExtensionsAuditView: View {
+    struct NavRoutingRow: Identifiable, Hashable {
+        let id: Int
+        let title: String
+    }
+
+    @State private var selectedNavItem: NavRoutingRow?
+    @State private var openSettingsGlobalStatus = "Idle"
+    @State private var openSettingsEnvStatus = "Idle"
+    var onBackToMain: (() -> Void)?
+
+    private let navRows = [
+        NavRoutingRow(id: 0, title: "Alpha"),
+        NavRoutingRow(id: 1, title: "Beta"),
+    ]
+
+    private let stackStrategy = NavigationStackStrategy(
+        implementation: .navigationStack,
+        reasoning: "Issue #170 TestApp audit"
+    )
+
+    var body: some View {
+        platformScrollViewContainer {
+            platformVStack(alignment: .leading, spacing: 16) {
+                platformText("Platform Navigation Routing + Settings Audit")
+                    .font(.headline)
+                    .accessibilityIdentifier("platform-nav-routing-audit-title")
+
+                platformText("platformNavigationSplitContainer_L4")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                platformText("Split container host")
+                    .platformNavigationSplitContainer_L4 {
+                        platformText("Sidebar column")
+                            .accessibilityIdentifier("platform-nav-routing-split-sidebar")
+                    } detail: {
+                        platformText("Detail column")
+                            .accessibilityIdentifier("platform-nav-routing-split-detail")
+                    }
+                    .accessibilityIdentifier("platform-nav-routing-split-container-host")
+
+                platformText("platformImplementNavigationStackItems_L4")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                platformImplementNavigationStackItems_L4(
+                    items: navRows,
+                    selectedItem: $selectedNavItem,
+                    itemView: { row in
+                        platformText(row.title)
+                            .accessibilityIdentifier("platform-nav-routing-stack-row-\(row.id)")
+                    },
+                    detailView: { row in
+                        platformText("Stack detail: \(row.title)")
+                            .accessibilityIdentifier("platform-nav-routing-stack-detail-\(row.id)")
+                    },
+                    strategy: stackStrategy
+                )
+                .frame(minHeight: 200, maxHeight: 240)
+                .accessibilityIdentifier("platform-nav-routing-stack-items-host")
+
+                platformText("platformBottomBarPlacement (toolbar)")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                NavigationStack {
+                    platformText("Toolbar placement probe")
+                        .toolbar {
+                            ToolbarItem(placement: platformBottomBarPlacement()) {
+                                platformText("Bottom bar probe")
+                                    .accessibilityIdentifier("platform-nav-routing-bottom-bar-probe")
+                            }
+                        }
+                        .accessibilityIdentifier("platform-nav-routing-bottom-bar-host")
+                }
+                .frame(minHeight: 80, maxHeight: 100)
+
+                platformText("platformOpenSettings() (global)")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                platformButton(label: "Call platformOpenSettings()", id: "platform-nav-routing-open-settings-global") {
+                    let ok = platformOpenSettings()
+                    openSettingsGlobalStatus = ok ? "Returned true" : "Returned false"
+                }
+                platformText("Status: \(openSettingsGlobalStatus)")
+                    .accessibilityIdentifier("platform-nav-routing-open-settings-global-status")
+
+                platformText("platformOpenSettings(openURL:)")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                PlatformOpenSettingsOpenURLAuditHost(status: $openSettingsEnvStatus)
+                    .accessibilityIdentifier("platform-nav-routing-open-settings-env-host")
+
+                platformText("Env status: \(openSettingsEnvStatus)")
+                    .accessibilityIdentifier("platform-nav-routing-open-settings-env-status")
+
+                if let onBackToMain {
+                    platformButton(label: "Back to Main", id: "platform-nav-routing-back-to-main") {
+                        onBackToMain()
+                    }
+                }
+            }
+            .padding()
+        }
+        .platformFrame()
+        .navigationTitle("Nav Routing + Settings")
+        .platformNavigationTitleDisplayMode_L4(.inline)
+    }
+}
+
+/// Host for `platformOpenSettings(openURL:)` so SwiftUI injects `OpenURLAction`.
+private struct PlatformOpenSettingsOpenURLAuditHost: View {
+    @Environment(\.openURL) private var openURL
+    @Binding var status: String
+
+    var body: some View {
+        platformButton(label: "Call platformOpenSettings(openURL:)", id: "platform-nav-routing-open-settings-openurl") {
+            let ok = platformOpenSettings(openURL: openURL)
+            status = ok ? "Returned true" : "Returned false"
+        }
+    }
+}
