@@ -10,6 +10,9 @@ import XCTest
 
 @MainActor
 final class AccessibilityIdentifierCategoryAUITests: XCTestCase {
+    private static let quickWait: TimeInterval = 0.5
+    private static let mediumWait: TimeInterval = 1.2
+    private static let rootReadyTimeout: TimeInterval = 3.0
     private static var sharedApp: XCUIApplication?
     private var app: XCUIApplication! { Self.sharedApp! }
 
@@ -25,7 +28,8 @@ final class AccessibilityIdentifierCategoryAUITests: XCTestCase {
                 localApp.launch()
                 Self.sharedApp = localApp
                 XCTAssertTrue(
-                    localApp.navigationBars["Category A Audit"].waitForExistence(timeout: 8.0),
+                    localApp.navigationBars["Category A Audit"].waitForExistence(timeout: Self.rootReadyTimeout)
+                        || localApp.staticTexts["Category A Audit"].waitForExistence(timeout: Self.quickWait),
                     "App should open on Category A Audit (launch arg -OpenCategoryAAccessibility)"
                 )
             }
@@ -79,12 +83,12 @@ final class AccessibilityIdentifierCategoryAUITests: XCTestCase {
     }
 
     private func scrollUntil(matching pred: NSPredicate, maxSwipes: Int) -> Bool {
-        if app.descendants(matching: .any).matching(pred).firstMatch.waitForExistence(timeout: 1.0) {
+        if app.descendants(matching: .any).matching(pred).firstMatch.waitForExistence(timeout: Self.mediumWait) {
             return true
         }
         for _ in 0..<maxSwipes {
             app.xcuiSwipeScrollHostsUp()
-            if app.descendants(matching: .any).matching(pred).firstMatch.waitForExistence(timeout: 0.5) {
+            if app.descendants(matching: .any).matching(pred).firstMatch.waitForExistence(timeout: Self.quickWait) {
                 return true
             }
         }
@@ -92,7 +96,7 @@ final class AccessibilityIdentifierCategoryAUITests: XCTestCase {
         guard window.exists else { return false }
         for _ in 0..<maxSwipes {
             window.swipeUp()
-            if app.descendants(matching: .any).matching(pred).firstMatch.waitForExistence(timeout: 0.5) {
+            if app.descendants(matching: .any).matching(pred).firstMatch.waitForExistence(timeout: Self.quickWait) {
                 return true
             }
         }
@@ -103,14 +107,14 @@ final class AccessibilityIdentifierCategoryAUITests: XCTestCase {
     private func assertNoIdentifierContaining(_ substring: String, maxSwipes: Int = 20, file: StaticString = #filePath, line: UInt = #line) {
         let pred = NSPredicate(format: "identifier CONTAINS[c] %@", substring)
         let first = app.descendants(matching: .any).matching(pred).firstMatch
-        if first.waitForExistence(timeout: 1.0) {
+        if first.waitForExistence(timeout: Self.mediumWait) {
             XCTFail("Unexpected element with identifier containing \(substring)", file: file, line: line)
             return
         }
         for _ in 0..<maxSwipes {
             app.xcuiSwipeScrollHostsUp()
             let el = app.descendants(matching: .any).matching(pred).firstMatch
-            if el.waitForExistence(timeout: 0.5) {
+            if el.waitForExistence(timeout: Self.quickWait) {
                 XCTFail("Unexpected identifier containing \(substring) after scroll", file: file, line: line)
                 return
             }
@@ -120,7 +124,7 @@ final class AccessibilityIdentifierCategoryAUITests: XCTestCase {
         for _ in 0..<maxSwipes {
             window.swipeUp()
             let el = app.descendants(matching: .any).matching(pred).firstMatch
-            if el.waitForExistence(timeout: 0.5) {
+            if el.waitForExistence(timeout: Self.quickWait) {
                 XCTFail("Unexpected identifier containing \(substring) after window swipe", file: file, line: line)
                 return
             }
@@ -129,18 +133,18 @@ final class AccessibilityIdentifierCategoryAUITests: XCTestCase {
 
     func testCategoryA_unicodeText_hasAccessibilityIdentifier() throws {
         XCTAssertTrue(
-            anyElement(identifierContains: "CatAUnicodeText").waitForExistence(timeout: 12.0),
+            anyElement(identifierContains: "CatAUnicodeText").waitForExistence(timeout: Self.mediumWait),
             "Unicode identifier name should appear in runtime accessibility identifier (Category A)"
         )
     }
 
     func testCategoryA_nestedNamed_outerAndInner_haveIdentifiers() throws {
         XCTAssertTrue(
-            anyElement(identifierContains: "CatANestedOuter").waitForExistence(timeout: 12.0),
+            anyElement(identifierContains: "CatANestedOuter").waitForExistence(timeout: Self.mediumWait),
             "Outer named component should contribute to identifier"
         )
         XCTAssertTrue(
-            anyElement(identifierContains: "CatANestedInnerButton").waitForExistence(timeout: 12.0),
+            anyElement(identifierContains: "CatANestedInnerButton").waitForExistence(timeout: Self.mediumWait),
             "Inner named component should contribute to identifier"
         )
     }
@@ -154,21 +158,21 @@ final class AccessibilityIdentifierCategoryAUITests: XCTestCase {
 
     func testCategoryA_specialCharsInLabel_hasIdentifier() throws {
         XCTAssertTrue(
-            anyElement(identifierContains: "CatASpecialChars").waitForExistence(timeout: 12.0),
+            anyElement(identifierContains: "CatASpecialChars").waitForExistence(timeout: Self.mediumWait),
             "Special characters in label should still yield a stable identifier substring"
         )
     }
 
     func testCategoryA_longIdentifierName_hasStablePrefixInIdentifier() throws {
         XCTAssertTrue(
-            anyElement(identifierContains: "CatALong").waitForExistence(timeout: 12.0),
+            anyElement(identifierContains: "CatALong").waitForExistence(timeout: Self.mediumWait),
             "Long identifier name should be represented in accessibility identifier (sanitized prefix)"
         )
     }
 
     func testCategoryA_auditTitle_namedComponent() throws {
         XCTAssertTrue(
-            anyElement(identifierContains: "CatAAuditTitle").waitForExistence(timeout: 12.0),
+            anyElement(identifierContains: "CatAAuditTitle").waitForExistence(timeout: Self.mediumWait),
             "Headline named title should expose identifier for UITest"
         )
     }
@@ -186,14 +190,14 @@ final class AccessibilityIdentifierCategoryAUITests: XCTestCase {
             "basicAutomaticCompliance accessibilityLabel should appear on XCUIElement label"
         )
         XCTAssertTrue(
-            anyElement(identifierContains: "CatALabelAndId").waitForExistence(timeout: 8.0),
+            anyElement(identifierContains: "CatALabelAndId").waitForExistence(timeout: Self.mediumWait),
             "identifier should still include CatALabelAndId when accessibilityLabel is set"
         )
     }
 
     func testCategoryA_manualOnOuterGroup_overridesWrapper() throws {
         XCTAssertTrue(
-            anyElement(identifierContains: "CatAManualWinsOnOuter").waitForExistence(timeout: 10.0),
+            anyElement(identifierContains: "CatAManualWinsOnOuter").waitForExistence(timeout: Self.mediumWait),
             "outer Group accessibilityIdentifier should be findable (manual override on wrapper)"
         )
     }
