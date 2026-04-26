@@ -13,28 +13,34 @@ import XCTest
 /// Uses launch argument -OpenLayer6Examples. Compile-time conditionals for platform-specific behavior.
 @MainActor
 final class Layer6UITests: XCTestCase {
-    /// Shared across test instances (Xcode creates one instance per test method).
-    private static var sharedApp: XCUIApplication?
-    private var app: XCUIApplication! { Self.sharedApp! }
+    private static let rootReadyTimeout: TimeInterval = 3.0
+    private static let quickWait: TimeInterval = 0.5
+    nonisolated(unsafe) private var app: XCUIApplication!
 
-    /// One app launch for the suite; all 4 test methods reuse the same launch.
     nonisolated override func setUpWithError() throws {
         continueAfterFailure = false
         addDefaultUIInterruptionMonitor()
 
-        MainActor.assumeIsolated {
-            guard Self.sharedApp == nil else { return }
-            let localApp = XCUIApplication()
-            localApp.configureForFastTesting()
-            localApp.launchArguments.append("-OpenLayer6Examples")
-            localApp.launch()
-            Self.sharedApp = localApp
-            XCTAssertTrue(localApp.navigationBars["Layer 6 Examples"].waitForExistence(timeout: 5.0),
-                          "App should open on Layer 6 Examples (launch arg)")
-        }
+        let localApp = XCUIApplication()
+        localApp.configureForFastTesting()
+        localApp.launchArguments.append("-OpenLayer6Examples")
+        localApp.launch()
+        app = localApp
+        XCTAssertTrue(localApp.wait(for: .runningForeground, timeout: Self.rootReadyTimeout),
+                      "App should reach foreground")
+        XCTAssertTrue(
+            localApp.navigationBars["Layer 6 Examples"].waitForExistence(timeout: Self.rootReadyTimeout)
+                || localApp.staticTexts["Layer 6 Examples"].waitForExistence(timeout: Self.quickWait),
+            "App should open on Layer 6 Examples (launch arg)"
+        )
     }
 
     nonisolated override func tearDownWithError() throws {
+        if let runningApp = app, runningApp.state != .notRunning {
+            runningApp.terminate()
+            _ = runningApp.wait(for: .notRunning, timeout: 5.0)
+        }
+        app = nil
         try super.tearDownWithError()
     }
 
@@ -48,7 +54,7 @@ final class Layer6UITests: XCTestCase {
         } else {
             el = app.staticTexts[label].firstMatch
         }
-        XCTAssertTrue(el.waitForExistence(timeout: 2.0), "\(modifierName): element '\(label)' should exist")
+        XCTAssertTrue(el.waitForExistence(timeout: Self.quickWait), "\(modifierName): element '\(label)' should exist")
         XCTAssertFalse(el.identifier.isEmpty,
                        "\(modifierName) must apply a11y to the element it wraps. '\(label)' should have identifier. Found: '\(el.identifier)'")
     }
@@ -73,14 +79,14 @@ final class Layer6UITests: XCTestCase {
     func testL6_platformNavigationStackEnhancements() throws {
         #if os(iOS)
         let navStackSection = app.staticTexts["Navigation Stack Enhancements"].firstMatch
-        XCTAssertTrue(navStackSection.waitForExistence(timeout: 2.0),
+        XCTAssertTrue(navStackSection.waitForExistence(timeout: Self.quickWait),
                       "platformNavigationStackEnhancements_L6 (iOS): section should be visible")
         #elseif os(macOS)
         let navStackSection = app.staticTexts["Navigation Stack Enhancements"].firstMatch
-        XCTAssertTrue(navStackSection.waitForExistence(timeout: 2.0),
+        XCTAssertTrue(navStackSection.waitForExistence(timeout: Self.quickWait),
                       "platformNavigationStackEnhancements_L6 (macOS): section should be visible")
         #elseif os(tvOS) || os(watchOS) || os(visionOS)
-        XCTAssertTrue(app.staticTexts[Self.expectedSectionTitle].waitForExistence(timeout: 2.0),
+        XCTAssertTrue(app.staticTexts[Self.expectedSectionTitle].waitForExistence(timeout: Self.quickWait),
                       "platformNavigationStackEnhancements_L6 (other): Cross-Platform Optimizations section visible")
         #endif
     }
