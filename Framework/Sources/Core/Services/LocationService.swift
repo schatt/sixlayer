@@ -93,6 +93,7 @@ public final class LocationService: NSObject, LocationServiceProtocol, CLLocatio
     private let locationManager: CLLocationManager
     private var authorizationContinuation: CheckedContinuation<Void, Error>?
     private var locationContinuation: CheckedContinuation<CLLocation, Error>?
+    private var locationServicesEnabled: Bool?
 
     // MARK: - Initialization
 
@@ -101,15 +102,19 @@ public final class LocationService: NSObject, LocationServiceProtocol, CLLocatio
         super.init()
 
         locationManager.delegate = self
+        authorizationStatus = locationManager.authorizationStatus
         updateLocationEnabledStatus()
+        refreshLocationServicesEnabledStatus()
     }
 
     // MARK: - LocationServiceProtocol Implementation
 
     public func requestAuthorization() async throws {
         // Check if we can request authorization
-        // Safe synchronous check using helper to avoid analyzer warnings
-        guard Self.checkLocationServicesEnabled() else {
+        let servicesEnabled = await Self.checkLocationServicesEnabled()
+        locationServicesEnabled = servicesEnabled
+        updateLocationEnabledStatus()
+        guard servicesEnabled else {
             throw LocationServiceError.servicesDisabled
         }
 
@@ -142,12 +147,6 @@ public final class LocationService: NSObject, LocationServiceProtocol, CLLocatio
     }
 
     public func startUpdatingLocation() {
-        // Safe synchronous check using helper to avoid analyzer warnings
-        guard Self.checkLocationServicesEnabled() else {
-            error = LocationServiceError.servicesDisabled
-            return
-        }
-
         // Check authorization status (platform-specific)
         #if os(iOS)
         guard authorizationStatus == .authorizedAlways || authorizationStatus == .authorizedWhenInUse else {
@@ -164,6 +163,11 @@ public final class LocationService: NSObject, LocationServiceProtocol, CLLocatio
         return
         #endif
 
+        if locationServicesEnabled == false {
+            error = LocationServiceError.servicesDisabled
+            return
+        }
+
         #if os(iOS) || os(macOS)
         locationManager.startUpdatingLocation()
         #endif
@@ -176,11 +180,6 @@ public final class LocationService: NSObject, LocationServiceProtocol, CLLocatio
     }
 
     public func getCurrentLocation() async throws -> CLLocation {
-        // Safe synchronous check using helper to avoid analyzer warnings
-        guard Self.checkLocationServicesEnabled() else {
-            throw LocationServiceError.servicesDisabled
-        }
-
         // Check authorization status (platform-specific)
         #if os(iOS)
         guard authorizationStatus == .authorizedAlways || authorizationStatus == .authorizedWhenInUse else {
@@ -193,6 +192,13 @@ public final class LocationService: NSObject, LocationServiceProtocol, CLLocatio
         #else
         throw LocationServiceError.servicesDisabled
         #endif
+
+        let servicesEnabled = await Self.checkLocationServicesEnabled()
+        locationServicesEnabled = servicesEnabled
+        updateLocationEnabledStatus()
+        guard servicesEnabled else {
+            throw LocationServiceError.servicesDisabled
+        }
 
         #if os(iOS) || os(macOS)
         // Start location updates temporarily
@@ -225,7 +231,7 @@ public final class LocationService: NSObject, LocationServiceProtocol, CLLocatio
         let status = manager.authorizationStatus
         Task { @MainActor in
             authorizationStatus = status
-            updateLocationEnabledStatus()
+            refreshLocationServicesEnabledStatus()
 
             // Resume authorization continuation if waiting
             if let continuation = authorizationContinuation {
@@ -289,25 +295,34 @@ public final class LocationService: NSObject, LocationServiceProtocol, CLLocatio
                NSClassFromString("XCTestCase") != nil
     }
 
-    /// Safe synchronous check for location services enabled status
-    /// This is a static method that reads system state and doesn't block
-    nonisolated private static func checkLocationServicesEnabled() -> Bool {
-        return CLLocationManager.locationServicesEnabled()
+    /// Runs the potentially blocking CoreLocation services check away from the main actor.
+    nonisolated private static func checkLocationServicesEnabled() async -> Bool {
+        #if os(iOS) || os(macOS)
+        return await Task.detached(priority: .utility) {
+            CLLocationManager.locationServicesEnabled()
+        }.value
+        #else
+        return false
+        #endif
     }
 
     private func updateLocationEnabledStatus() {
-        // Safe synchronous checks - using helper to avoid analyzer warnings
-        // locationServicesEnabled() is a static method that reads system state synchronously
-        // authorizationStatus is a stored property, both are fast and safe
         #if os(iOS)
-        isLocationEnabled = Self.checkLocationServicesEnabled() &&
-                           (authorizationStatus == .authorizedAlways || authorizationStatus == .authorizedWhenInUse)
+        let isAuthorized = authorizationStatus == .authorizedAlways || authorizationStatus == .authorizedWhenInUse
         #elseif os(macOS)
-        isLocationEnabled = Self.checkLocationServicesEnabled() &&
-                           (authorizationStatus == .authorizedAlways)
+        let isAuthorized = authorizationStatus == .authorizedAlways
         #else
-        isLocationEnabled = false
+        let isAuthorized = false
         #endif
+        isLocationEnabled = isAuthorized && (locationServicesEnabled ?? false)
+    }
+
+    private func refreshLocationServicesEnabledStatus() {
+        Task { @MainActor [weak self] in
+            let servicesEnabled = await Self.checkLocationServicesEnabled()
+            self?.locationServicesEnabled = servicesEnabled
+            self?.updateLocationEnabledStatus()
+        }
     }
 }
 
