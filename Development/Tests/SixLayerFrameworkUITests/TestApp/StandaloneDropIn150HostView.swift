@@ -11,6 +11,7 @@ import SwiftUI
 import SixLayerFramework
 
 /// Hosts `platformTextField` / `platformSecureField` / `platformToggle` / `platformTextEditor` / `platformForm` using the public standalone APIs.
+/// Inside `ViewBuilder` scopes, unqualified `platform*` would resolve to `View` extension methods; use `SixLayerFramework.` for the free functions (same pattern as `Layer4ContractOnlyView`).
 struct StandaloneDropIn150HostView: View {
     @State private var textFieldValue = ""
     @State private var axisFieldValue = ""
@@ -28,14 +29,14 @@ struct StandaloneDropIn150HostView: View {
 
     var body: some View {
         NavigationStack {
-            platformForm {
+            SixLayerFramework.platformForm {
                 Section {
-                    platformTextField("SD150_TextField", text: $textFieldValue)
+                    SixLayerFramework.platformTextField("SD150_TextField", text: $textFieldValue)
                     if showBindingMirrors {
                         Text("SD150_Mirror_T:\(textFieldValue)")
                             .accessibilityIdentifier("SD150_Mirror_T")
                     }
-                    platformTextField("SD150_AxisField", text: $axisFieldValue, axis: .vertical)
+                    SixLayerFramework.platformTextField("SD150_AxisField", text: $axisFieldValue, axis: .vertical)
                     if showBindingMirrors {
                         Text("SD150_Mirror_A:\(axisFieldValue)")
                             .accessibilityIdentifier("SD150_Mirror_A")
@@ -44,7 +45,7 @@ struct StandaloneDropIn150HostView: View {
                     Text("SD150 Text inputs")
                 }
                 Section {
-                    platformSecureField("SD150_SecureField", text: $secureValue)
+                    SixLayerFramework.platformSecureField("SD150_SecureField", text: $secureValue)
                     if showBindingMirrors {
                         Text("SD150_Mirror_S:\(secureValue)")
                             .accessibilityIdentifier("SD150_Mirror_S")
@@ -53,7 +54,7 @@ struct StandaloneDropIn150HostView: View {
                     Text("SD150 Secure")
                 }
                 Section {
-                    platformToggle("SD150_Toggle", isOn: $toggleOn)
+                    SixLayerFramework.platformToggle("SD150_Toggle", isOn: $toggleOn)
                     if showBindingMirrors {
                         Text("SD150_Mirror_G:\(toggleOn ? "1" : "0")")
                             .accessibilityIdentifier("SD150_Mirror_G")
@@ -62,7 +63,7 @@ struct StandaloneDropIn150HostView: View {
                     Text("SD150 Toggle")
                 }
                 Section {
-                    platformTextEditor("SD150_EditorPrompt", text: $editorValue)
+                    SixLayerFramework.platformTextEditor("SD150_EditorPrompt", text: $editorValue)
                     if showBindingMirrors {
                         Text("SD150_Mirror_E:\(editorValue)")
                             .accessibilityIdentifier("SD150_Mirror_E")
@@ -71,7 +72,7 @@ struct StandaloneDropIn150HostView: View {
                     Text("SD150 Editor")
                 }
                 Section {
-                    platformTextField("SD150_LongField", text: $longFieldValue)
+                    SixLayerFramework.platformTextField("SD150_LongField", text: $longFieldValue)
                     if showBindingMirrors {
                         Text("SD150_Mirror_L:\(longFieldValue)")
                             .accessibilityIdentifier("SD150_Mirror_L")
@@ -80,9 +81,9 @@ struct StandaloneDropIn150HostView: View {
                     Text("SD150 Long")
                 }
                 Section {
-                    platformTextField("SD150_Integration_Name", text: $integrationName)
-                    platformSecureField("SD150_Integration_Password", text: $integrationPassword)
-                    platformToggle("SD150_Integration_Toggle", isOn: $integrationOn)
+                    SixLayerFramework.platformTextField("SD150_Integration_Name", text: $integrationName)
+                    SixLayerFramework.platformSecureField("SD150_Integration_Password", text: $integrationPassword)
+                    SixLayerFramework.platformToggle("SD150_Integration_Toggle", isOn: $integrationOn)
                     if showBindingMirrors {
                         Text("SD150_Mirror_IN:\(integrationName)|\(integrationPassword)|\(integrationOn ? "1" : "0")")
                             .accessibilityIdentifier("SD150_Mirror_IN")
