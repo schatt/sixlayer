@@ -1,5 +1,5 @@
 // swift-tools-version: 6.0
-// SixLayerFramework v7.7.0 - Minor: VisionKit live scanner path (#252), runtime capability namespacing completion (#253), release-process updates (#246, #247)
+// SixLayerFramework v7.7.1 - Patch: explicit list accessibility identifier runtime contract restoration (#257)
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
