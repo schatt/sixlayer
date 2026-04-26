@@ -6,6 +6,7 @@
 //
 
 import XCTest
+#if canImport(SixLayerTestKit)
 import SixLayerTestKit
 
 @MainActor
@@ -23,3 +24,4 @@ final class SixLayerUITestNavigatorUITests: XCTestCase {
         XCTAssertFalse(navigator.goToScreen(screen, timeout: 0.01))
     }
 }
+#endif
