@@ -6,7 +6,7 @@
 
 **Investigation verified**: ViewInspector builds successfully on macOS SDK 26.2 with no errors. All tested types (`VideoPlayer`, `SignInWithAppleButton`, `MapAnnotation`, `MapMarker`, `MapPin`) compile successfully on macOS.
 
-**Resolution**: ViewInspector is now enabled on macOS. The `VIEW_INSPECTOR_MAC_FIXED` flag is set in `Package.swift` and ViewInspector dependency is available on macOS.
+**Resolution**: ViewInspector is enabled on macOS via normal SwiftPM / Xcode target dependencies. The historical `VIEW_INSPECTOR_MAC_FIXED` compile flag is no longer used (removed from `project.yml` test `SWIFT_ACTIVE_COMPILATION_CONDITIONS`).
 
 ## Summary (Historical)
 
@@ -18,11 +18,11 @@ ViewInspector uses iOS-only SwiftUI types (`VideoPlayer`, `SignInWithAppleButton
 
 ## Solution Implemented
 
-We've created a centralized wrapper system with a compile-time flag that allows us to:
+We've created a centralized wrapper system that allows us to:
 
-1. **Use ViewInspector on iOS** (works currently)
-2. **Gracefully handle macOS** (tests skip ViewInspector-dependent assertions)
-3. **Single point of control** (one line change in `Package.swift` when ViewInspector is fixed)
+1. **Use ViewInspector** where the test target links the package (`#if canImport(ViewInspector)`)
+2. **Compile targets without ViewInspector** via the same conditional gates
+3. **Centralize** ViewInspector entry points in shared test helpers
 
 ### Implementation Details
 
@@ -36,24 +36,14 @@ Centralized wrapper that provides:
 - `withInspectedViewThrowing()` helper function
 - Platform-agnostic API that handles conditional compilation internally
 
-#### 2. Compile-Time Flag
-**Location**: `Package.swift` (swiftSettings section)
+#### 2. Conditional compilation (current)
+Tests use this pattern (no macOS-only compile flag):
 
 ```swift
-swiftSettings: [
-    // Compile-time flag to control ViewInspector macOS support
-    // When ViewInspector fixes GitHub issue #405, uncomment this line:
-    // .define("VIEW_INSPECTOR_MAC_FIXED")
-]
-```
-
-#### 3. Conditional Compilation Pattern
-All test files use this pattern:
-```swift
-#if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+#if canImport(ViewInspector)
 // ViewInspector-specific code
 #else
-// Fallback for macOS when ViewInspector not available
+// Fallback when ViewInspector is not linked for this target
 #endif
 ```
 
@@ -75,43 +65,24 @@ See [FIXED_FILES.md](./FIXED_FILES.md) for complete list organized by category:
 - **Utilities**: 1 file
 - **Wrapper**: 1 file (`ViewInspectorWrapper.swift`)
 
-## Migration Path
-
-When ViewInspector fixes [Issue #405](https://github.com/nalexn/ViewInspector/issues/405):
-
-1. **Uncomment one line** in `Package.swift`:
-   ```swift
-   .define("VIEW_INSPECTOR_MAC_FIXED")
-   ```
-
-2. **All test files automatically work** - no manual updates needed
-
-3. **Tests will run on macOS** with full ViewInspector support
-
 ## Benefits
 
-✅ **Single point of control** - Change one line to enable macOS support  
-✅ **No manual file updates** - All 38 test files automatically adapt  
-✅ **Type safety** - Wrapper handles `Any` vs `InspectableView` differences  
-✅ **Centralized logic** - Platform differences handled in one place  
-✅ **Easy migration** - Simple one-line change when ViewInspector is fixed  
-✅ **Maintainable** - Clear pattern for future test files
+✅ **Type safety** — Wrapper handles `Any` vs `InspectableView` differences  
+✅ **Centralized logic** — Shared helpers for inspection entry points  
+✅ **Maintainable** — Clear `#if canImport(ViewInspector)` pattern for new tests
 
 ## Current Status
 
 - ✅ **RESOLVED**: ViewInspector builds successfully on macOS SDK 26.2
 - ✅ Wrapper implementation complete (still useful for platform abstraction)
-- ✅ Compile-time flag configured and enabled
-- ✅ All 38 test files updated
-- ✅ ViewInspector dependency available on macOS
-- ✅ Documentation complete
-- ✅ Issue #405 investigation showed original claims were incorrect
+- ✅ No `VIEW_INSPECTOR_MAC_FIXED` in Xcode test `SWIFT_ACTIVE_COMPILATION_CONDITIONS`
+- ✅ ViewInspector dependency available on macOS test targets via `project.yml`
+- ✅ Documentation updated to match current build settings
 
 ## Testing
 
-- **iOS**: All tests pass with full ViewInspector support
-- **macOS**: Tests compile and run, ViewInspector-dependent assertions are skipped gracefully
-- **Migration**: When flag is enabled, all tests will automatically use ViewInspector on macOS
+- **iOS**: ViewInspector-backed tests run in dedicated / shared schemes
+- **macOS**: Same; behavior depends on ViewInspector + SwiftUI, not a compile-time macOS gate
 
 ## Related Documentation
 
