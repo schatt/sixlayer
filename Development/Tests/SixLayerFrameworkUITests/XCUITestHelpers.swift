@@ -385,6 +385,152 @@ extension XCUIApplication {
         return layerExamplesDestinationReached()
     }
 
+    /// Runs compatibility-oriented checks on the **current** screen only (Issue #180).
+    ///
+    /// Call after navigating to a subview; do **not** use on the bare launch list. Waits are implicit via
+    /// `exists` / `waitForExistence` at call sites before sweeping.
+    ///
+    /// One pass per query axis (`buttons`, `textFields`, `switches`, `sliders`, `staticTexts`). For each element,
+    /// runs VoiceOver reachability, readable identity (shared proxy for Dynamic Type readiness and semantic / HC-friendly
+    /// naming), and Switch Control–relevant type checks on interactive controls.
+    func runAccessibilityCompatibilitySweep(screenLabel: String, file: StaticString = #filePath, line: UInt = #line) {
+        let maxPerAxis = 80
+
+        func hint(_ element: XCUIElement) -> String {
+            if !element.label.isEmpty { return element.label }
+            if !element.identifier.isEmpty { return element.identifier }
+            return String(describing: element.elementType)
+        }
+
+        let buttonsAxis = buttons.allElementsBoundByIndex
+        for i in 0..<min(buttonsAxis.count, maxPerAxis) {
+            let element = buttonsAxis[i]
+            guard element.exists else { continue }
+            let h = hint(element)
+            XCTAssertTrue(
+                element.isHittable || element.isEnabled,
+                "\(screenLabel): button \"\(h)\" should be reachable for VoiceOver",
+                file: file,
+                line: line
+            )
+            XCTAssertTrue(
+                !element.label.isEmpty || !element.identifier.isEmpty,
+                "\(screenLabel): button \"\(h)\" should expose label or identifier (VoiceOver / Dynamic Type readiness)",
+                file: file,
+                line: line
+            )
+            XCTAssertEqual(
+                element.elementType,
+                .button,
+                "\(screenLabel): button \"\(h)\" should surface as .button for Switch Control routing",
+                file: file,
+                line: line
+            )
+        }
+
+        let textFieldsAxis = textFields.allElementsBoundByIndex
+        for i in 0..<min(textFieldsAxis.count, maxPerAxis) {
+            let element = textFieldsAxis[i]
+            guard element.exists else { continue }
+            let h = hint(element)
+            XCTAssertTrue(
+                element.isHittable || element.isEnabled,
+                "\(screenLabel): text field \"\(h)\" should be reachable for VoiceOver",
+                file: file,
+                line: line
+            )
+            XCTAssertTrue(
+                !element.label.isEmpty || !element.identifier.isEmpty,
+                "\(screenLabel): text field \"\(h)\" should expose label or identifier",
+                file: file,
+                line: line
+            )
+            XCTAssertEqual(
+                element.elementType,
+                .textField,
+                "\(screenLabel): text field \"\(h)\" should surface as .textField for Switch Control routing",
+                file: file,
+                line: line
+            )
+        }
+
+        let switchesAxis = switches.allElementsBoundByIndex
+        for i in 0..<min(switchesAxis.count, maxPerAxis) {
+            let element = switchesAxis[i]
+            guard element.exists else { continue }
+            let h = hint(element)
+            XCTAssertTrue(
+                element.isHittable || element.isEnabled,
+                "\(screenLabel): switch \"\(h)\" should be reachable for VoiceOver",
+                file: file,
+                line: line
+            )
+            XCTAssertTrue(
+                !element.label.isEmpty || !element.identifier.isEmpty,
+                "\(screenLabel): switch \"\(h)\" should expose label or identifier",
+                file: file,
+                line: line
+            )
+            XCTAssertEqual(
+                element.elementType,
+                .switch,
+                "\(screenLabel): switch \"\(h)\" should surface as .switch for Switch Control routing",
+                file: file,
+                line: line
+            )
+        }
+
+        let slidersAxis = sliders.allElementsBoundByIndex
+        for i in 0..<min(slidersAxis.count, maxPerAxis) {
+            let element = slidersAxis[i]
+            guard element.exists else { continue }
+            let h = hint(element)
+            XCTAssertTrue(
+                element.isHittable || element.isEnabled,
+                "\(screenLabel): slider \"\(h)\" should be reachable for VoiceOver",
+                file: file,
+                line: line
+            )
+            XCTAssertTrue(
+                !element.label.isEmpty || !element.identifier.isEmpty,
+                "\(screenLabel): slider \"\(h)\" should expose label or identifier",
+                file: file,
+                line: line
+            )
+            XCTAssertEqual(
+                element.elementType,
+                .slider,
+                "\(screenLabel): slider \"\(h)\" should surface as .slider for Switch Control routing",
+                file: file,
+                line: line
+            )
+        }
+
+        let statics = staticTexts.allElementsBoundByIndex
+        for i in 0..<min(statics.count, maxPerAxis) {
+            let element = statics[i]
+            guard element.exists else { continue }
+            if element.label.isEmpty && element.identifier.isEmpty { continue }
+            let h = hint(element)
+            if !element.label.isEmpty {
+                XCTAssertFalse(
+                    element.label.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+                    "\(screenLabel): static text \"\(h)\" label should not be whitespace-only (VoiceOver / Dynamic Type)",
+                    file: file,
+                    line: line
+                )
+            }
+            if !element.identifier.isEmpty {
+                XCTAssertFalse(
+                    element.identifier.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+                    "\(screenLabel): static text \"\(h)\" identifier should not be whitespace-only",
+                    file: file,
+                    line: line
+                )
+            }
+        }
+    }
+
 }
 
 extension XCUIApplication {
