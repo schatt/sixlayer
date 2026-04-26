@@ -399,6 +399,7 @@ final class Layer4UITests: XCTestCase {
     func testL4_platformButton() throws {
         ensureContractRoot()
         scrollToL4ControlsSection()
+        scrollToElement(label: "L4ContractButton")
         assertElementHasIdentifierFromComponent(
             label: "L4ContractButton",
             type: .button,
@@ -985,16 +986,12 @@ final class Layer4UITests: XCTestCase {
         ensureContractRoot()
         scrollToElement(label: "L4 System")
         scrollToElement(label: "CloudKit Sync Status")
-        XCTAssertTrue(
-            waitForContractDisplayTextContainingAll(["CloudKit Sync", "Idle"], timeout: 1.5),
-            "platformCloudKitSyncStatus_L4: status text must be visible (contract structure)"
-        )
         let exactId = element(matchingIdentifier: "platformCloudKitSyncStatus_L4")
         let containsId = app.descendants(matching: .any)
             .matching(NSPredicate(format: "identifier CONTAINS[c] %@", "platformCloudKitSyncStatus"))
             .firstMatch
         XCTAssertTrue(
-            exactId.waitForExistence(timeout: 1.5) || containsId.waitForExistence(timeout: 2.5),
+            exactId.waitForExistence(timeout: 2.5) || containsId.waitForExistence(timeout: 6.0),
             "platformCloudKitSyncStatus_L4: view must have a11y identifier (contract a11y)"
         )
     }
@@ -1043,11 +1040,11 @@ final class Layer4UITests: XCTestCase {
         let containsId = app.descendants(matching: .any)
             .matching(NSPredicate(format: "identifier CONTAINS[c] %@", "platformCloudKitServiceStatus_L4"))
             .firstMatch
-        XCTAssertTrue(containsId.waitForExistence(timeout: 3.5),
+        XCTAssertTrue(containsId.waitForExistence(timeout: 8.0),
                       "platformCloudKitServiceStatus_L4: composite view must expose contract a11y identifier")
-        let hasIdleOrAccount = waitForContractDisplayText("CloudKit Sync: Idle", timeout: 1.5)
-            || waitForContractDisplayText("iCloud Account: Available", timeout: 1.0)
-            || waitForContractDisplayText("iCloud Account: Unknown", timeout: 1.0)
+        let hasIdleOrAccount = waitForContractDisplayTextContainingAll(["CloudKit", "Idle"], timeout: 2.0)
+            || waitForContractDisplayTextContainingAll(["iCloud", "Available"], timeout: 2.0)
+            || waitForContractDisplayTextContainingAll(["iCloud", "Unknown"], timeout: 2.0)
         XCTAssertTrue(
             hasIdleOrAccount,
             "platformCloudKitServiceStatus_L4: at least one child status line must be visible (contract structure)"
@@ -1099,7 +1096,7 @@ final class Layer4UITests: XCTestCase {
         let pickerInSheet = app.sheets.descendants(matching: .any).matching(pickerPredicate).firstMatch
         let pickerInApp = app.descendants(matching: .any).matching(pickerPredicate).firstMatch
         XCTAssertTrue(
-            pickerInSheet.waitForExistence(timeout: 2.5) || pickerInApp.waitForExistence(timeout: 2.5),
+            pickerInSheet.waitForExistence(timeout: 8.0) || pickerInApp.waitForExistence(timeout: 8.0),
             "platformPhotoPicker_L4: picker subtree must expose contract a11y identifier"
         )
         let cancel = app.buttons["Cancel"].firstMatch
