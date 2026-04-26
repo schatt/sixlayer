@@ -445,6 +445,79 @@ open class Layer4SemanticAccessibilityCriterionTests: BaseTestClass {
         )
     }
     #endif
+
+    @Test @MainActor
+    func testPlatformNavigationBarTitleDisplayModeInline_preservesHeaderSemantics() async {
+        let view = NavigationStack {
+            Text("L4SemanticNavBodyBarDM")
+                .platformNavigationTitle_L4("L4SemanticNavTitleBarDM254")
+                .platformNavigationBarTitleDisplayMode_L4(.inline)
+        }
+        let root = hostedRoot(for: view)
+        #expect(root != nil)
+        guard hostedTreeExposesSemanticSurface(root) else {
+            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
+            return
+        }
+        let headerFallback = hostedUIKitAccessibilityHierarchyContains(root: root) { v in
+            v.accessibilityTraits.contains(.header)
+                && ((v.accessibilityIdentifier ?? "").contains("SixLayer") || !(v.accessibilityLabel ?? "").isEmpty)
+        }
+        #expect(headerFallback, "bar title display mode chain should keep header-style navigation chrome")
+    }
+
+    // MARK: - Sheet & popover (Issue #254)
+
+    #if !os(tvOS)
+    @Test @MainActor
+    func testPlatformPopover_L4_exposesNamedComplianceOnAnchorTree() async {
+        let view = Text("L4PopoverAnchorLabel254")
+            .platformPopover_L4(isPresented: .constant(false)) {
+                Text("L4PopoverInner254")
+            }
+        let root = hostedRoot(for: view)
+        #expect(root != nil)
+        guard hostedTreeExposesSemanticSurface(root) else {
+            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
+            return
+        }
+        let named = hostedUIKitAccessibilityHierarchyContains(root: root) { v in
+            let id = v.accessibilityIdentifier ?? ""
+            return id.contains("platformPopover_L4") || id.contains("SixLayer.main.ui")
+        }
+        #expect(named, "platformPopover_L4 should attach named automaticCompliance to the hosted anchor subtree")
+    }
+    #endif
+
+    @Test @MainActor
+    func testPlatformSheet_L4_presentedContentKeepsInnerSemanticIdentifiers() async {
+        let view = NavigationStack {
+            Text("L4SheetOuter254")
+                .platformNavigationTitle_L4("L4SheetOuterTitle254")
+                .platformSheet_L4(isPresented: .constant(true), onDismiss: nil) {
+                    Text("L4SheetInnerBody254")
+                        .font(.title3)
+                        .automaticCompliance(
+                            identifierName: "L4SheetInnerBody254",
+                            identifierElementType: "Text"
+                        )
+                }
+        }
+        let root = hostedRoot(for: view)
+        #expect(root != nil)
+        guard hostedTreeExposesSemanticSurface(root) else {
+            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
+            return
+        }
+        let innerMarked = hostedUIKitAccessibilityHierarchyContains(root: root) { v in
+            let id = v.accessibilityIdentifier ?? ""
+            return id.contains("L4SheetInnerBody254") || id.contains("SixLayer.main.ui")
+        }
+        #expect(
+            innerMarked,
+            "platformSheet_L4 presented subtree should expose inner automaticCompliance identifiers (sheet wrapper is intentionally minimal on iOS 16+ per #193)"
+        )
+    }
 }
 
 #endif
