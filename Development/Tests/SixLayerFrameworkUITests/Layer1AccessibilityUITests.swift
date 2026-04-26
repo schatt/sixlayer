@@ -42,7 +42,7 @@ final class Layer1AccessibilityUITests: XCTestCase {
             localApp.launchWithOptimizations()
             instance.app = localApp
             
-            XCTAssertTrue(localApp.waitForReady(timeout: 5.0), "App should be ready for testing")
+            XCTAssertTrue(localApp.waitForReady(timeout: 2.5), "App should be ready for testing")
         }
     }
     
@@ -58,14 +58,14 @@ final class Layer1AccessibilityUITests: XCTestCase {
     /// Expand the Layer 1 examples section (toggle). Called once at start of test.
     @MainActor
     private func expandLayer1ExamplesIfNeeded() {
-        guard app.waitForReady(timeout: 5.0) else {
+        guard app.waitForReady(timeout: 2.5) else {
             XCTFail("App should be ready for testing")
             return
         }
         let toggleButton = app.findElement(byIdentifier: "layer1-examples-toggle",
                                           primaryType: .button,
                                           secondaryTypes: [.cell, .other, .any]) ?? app.buttons["layer1-examples-toggle"]
-        guard toggleButton.waitForExistenceFast(timeout: 3.0) else {
+        guard toggleButton.waitForExistenceFast(timeout: 1.2) else {
             XCTFail("Layer 1 examples toggle button should exist")
             return
         }
@@ -73,8 +73,8 @@ final class Layer1AccessibilityUITests: XCTestCase {
         if (toggleButton.value as? String) != "1" {
             toggleButton.tap()
             // Wait for link after expand; single query avoids 6 failed findElement attempts + snapshots.
-            let found = app.buttons[linkId].waitForExistence(timeout: 5.0)
-                || app.cells[linkId].waitForExistence(timeout: 1.0)
+            let found = app.buttons[linkId].waitForExistence(timeout: 2.0)
+                || app.cells[linkId].waitForExistence(timeout: 0.8)
             XCTAssertTrue(found, "Layer 1 category links should exist after expanding (e.g. Data Presentation)")
         } else {
             XCTAssertTrue(app.buttons[linkId].waitForExistence(timeout: 1.0) || app.cells[linkId].waitForExistence(timeout: 1.0),
@@ -134,17 +134,17 @@ final class Layer1AccessibilityUITests: XCTestCase {
         element.tap()
         // Wait for category content by known static text only (avoids slow "Any (First Match)" predicate query).
         if let contentText = contentTextForCategory(categoryName) {
-            XCTAssertTrue(app.staticTexts[contentText].waitForExistence(timeout: 3.0),
+            XCTAssertTrue(app.staticTexts[contentText].waitForExistence(timeout: 1.2),
                           "Category '\(categoryName)' content should appear (text '\(contentText)')")
         } else {
-            _ = app.navigationBars.buttons.firstMatch.waitForExistence(timeout: 2.0)
+            _ = app.navigationBars.buttons.firstMatch.waitForExistence(timeout: 1.0)
         }
     }
 
     /// Go back from a Layer 1 category screen to the launch page so the next category link can be tapped.
     @MainActor
     private func goBackFromLayer1Category() {
-        _ = app.navigateBackToLaunch(timeout: 3.0)
+        _ = app.navigateBackToLaunch(timeout: 2.0)
     }
     
     /// Verify an element has accessibility identifier
@@ -180,10 +180,10 @@ final class Layer1AccessibilityUITests: XCTestCase {
     @MainActor
     private func assertSingleTappableCard(title: String, elementName: String) {
         var element = app.buttons[title]
-        if !element.waitForExistence(timeout: 2.0) {
+        if !element.waitForExistence(timeout: 1.0) {
             element = app.cells[title]
         }
-        XCTAssertTrue(element.waitForExistence(timeout: 3.0),
+        XCTAssertTrue(element.waitForExistence(timeout: 1.2),
                       "\(elementName) with title '\(title)' should exist as a tappable element")
         element.verifyAccessibilityContract(
             elementName: elementName,
