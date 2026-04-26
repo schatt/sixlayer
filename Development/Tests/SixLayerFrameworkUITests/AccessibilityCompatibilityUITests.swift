@@ -60,7 +60,7 @@ final class AccessibilityCompatibilityUITests: XCTestCase {
         localApp.launchArguments.append(deepLink.rawValue)
         localApp.launch()
         XCTAssertTrue(
-            localApp.staticTexts[deepLink.readyHeadline].waitForExistence(timeout: 10),
+            localApp.staticTexts[deepLink.readyHeadline].waitForExistence(timeout: 3),
             "Deep link \(deepLink.rawValue) should show host headline \(deepLink.readyHeadline)"
         )
         app = localApp
