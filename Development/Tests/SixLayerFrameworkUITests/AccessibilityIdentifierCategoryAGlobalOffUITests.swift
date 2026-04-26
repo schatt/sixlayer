@@ -27,7 +27,7 @@ final class AccessibilityIdentifierCategoryAGlobalOffUITests: XCTestCase {
             localApp.launch()
             Self.sharedApp = localApp
             XCTAssertTrue(
-                localApp.navigationBars["Category A Global Off"].waitForExistence(timeout: 8.0),
+                localApp.navigationBars["Category A Global Off"].waitForExistence(timeout: 2.5),
                 "App should open Category A Global Off audit (launch args -OpenCategoryAAccessibility -CategoryAGlobalAutoOff)"
             )
         }
@@ -38,14 +38,14 @@ final class AccessibilityIdentifierCategoryAGlobalOffUITests: XCTestCase {
         return app.descendants(matching: .any).matching(pred).firstMatch
     }
 
-    private func scrollUntilIdentifierContains(_ substring: String, maxSwipes: Int = 16) -> Bool {
+    private func scrollUntilIdentifierContains(_ substring: String, maxSwipes: Int = 8) -> Bool {
         scrollUntil(
             matching: NSPredicate(format: "identifier CONTAINS[c] %@", substring),
             maxSwipes: maxSwipes
         )
     }
 
-    private func scrollUntilIdentifierEquals(_ exact: String, maxSwipes: Int = 16) -> Bool {
+    private func scrollUntilIdentifierEquals(_ exact: String, maxSwipes: Int = 8) -> Bool {
         scrollUntil(
             matching: NSPredicate(format: "identifier == %@", exact),
             maxSwipes: maxSwipes
@@ -68,7 +68,7 @@ final class AccessibilityIdentifierCategoryAGlobalOffUITests: XCTestCase {
     }
 
     /// Asserts no descendant has an accessibility identifier containing `substring` (scrolls to search).
-    private func assertNoIdentifierContaining(_ substring: String, maxSwipes: Int = 16, file: StaticString = #filePath, line: UInt = #line) {
+    private func assertNoIdentifierContaining(_ substring: String, maxSwipes: Int = 8, file: StaticString = #filePath, line: UInt = #line) {
         let pred = NSPredicate(format: "identifier CONTAINS[c] %@", substring)
         let first = app.descendants(matching: .any).matching(pred).firstMatch
         if first.waitForExistence(timeout: 1.0) {
@@ -107,7 +107,7 @@ final class AccessibilityIdentifierCategoryAGlobalOffUITests: XCTestCase {
 
     func testCategoryAGlobalOff_namedTitle_rowLoads() throws {
         XCTAssertTrue(
-            anyElement(identifierContains: "CatAGlobalOffTitle").waitForExistence(timeout: 8.0),
+            anyElement(identifierContains: "CatAGlobalOffTitle").waitForExistence(timeout: 2.5),
             "Headline with automaticCompliance(named:) should still expose an identifier on this screen"
         )
     }
