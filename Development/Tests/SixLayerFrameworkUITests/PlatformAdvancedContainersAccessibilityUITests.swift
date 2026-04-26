@@ -46,9 +46,9 @@ final class PlatformAdvancedContainersAccessibilityUITests: XCTestCase {
             "Platform advanced containers audit host should open"
         )
 
-        XCTAssertTrue(
+        XCTAssertFalse(
             app.scrollViews[IDs.explicitListID].waitForExistence(timeout: 8.0),
-            "Explicit list accessibility identifier should be queryable as scrollView"
+            "DELIBERATE RED: this assertion is intentionally inverted to prove the test fails when the contract is incorrect"
         )
     }
 }
