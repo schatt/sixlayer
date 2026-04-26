@@ -29,12 +29,12 @@
 - The modifiers ARE present in the code - this is a detection issue, not a missing modifier issue
 
 **Workaround in Tests:**
-Tests use conditional compilation:
+Tests use conditional compilation when ViewInspector is linked:
 ```swift
-#if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+#if canImport(ViewInspector)
 // ViewInspector-based test
 #else
-// Skip test on macOS or when ViewInspector unavailable
+// Skip when ViewInspector is not part of this target / platform
 #endif
 ```
 
