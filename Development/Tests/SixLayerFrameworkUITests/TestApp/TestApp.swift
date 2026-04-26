@@ -58,6 +58,8 @@ struct TestAppContentView: View {
     private let openLayer4ComponentExamples = ProcessInfo.processInfo.arguments.contains("-OpenLayer4ComponentExamples")
     /// When true, app opens to minimal navigator / contract smoke host (launch arg -OpenUITestContractSmokeHost). Issue #231.
     private let openUITestContractSmokeHost = ProcessInfo.processInfo.arguments.contains("-OpenUITestContractSmokeHost")
+    /// When true, app opens to Issue #150 standalone `platform*` drop-in binding / interaction host (launch arg -OpenStandaloneDropIn150).
+    private let openStandaloneDropIn150 = ProcessInfo.processInfo.arguments.contains("-OpenStandaloneDropIn150")
     /// Deep links for ``AccessibilityCompatibilityUITests`` — open a single test host without launch-page navigation (Issue #180).
     private let openAccessibilityCompatibilityControlTest = ProcessInfo.processInfo.arguments.contains("-OpenAccessibilityCompatibilityControlTest")
     private let openAccessibilityCompatibilityTextTest = ProcessInfo.processInfo.arguments.contains("-OpenAccessibilityCompatibilityTextTest")
@@ -143,6 +145,8 @@ struct TestAppContentView: View {
             if openUITestContractSmokeHost {
                 // Host supplies its own `NavigationStack` so `backToRoot` targets one bar (#231).
                 UITestContractSmokeHostView()
+            } else if openStandaloneDropIn150 {
+                StandaloneDropIn150HostView()
             } else if openAccessibilityCompatibilityControlTest {
                 NavigationStack {
                     ControlTestView(onBackToMain: {})
