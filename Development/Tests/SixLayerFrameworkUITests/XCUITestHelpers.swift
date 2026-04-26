@@ -9,6 +9,13 @@
 
 import XCTest
 
+private enum XCUITestFailFast {
+    static let quickWait: TimeInterval = 0.35
+    static let mediumWait: TimeInterval = 1.2
+    static let launchReadyWait: TimeInterval = 3.0
+    static let maxScrollAttempts = 8
+}
+
 // MARK: - XCUIApplication Extensions
 
 extension XCUIApplication {
@@ -27,7 +34,12 @@ extension XCUIApplication {
     /// - Parameter timeout: Maximum time to wait (default: 5.0 seconds)
     /// - Returns: true if the text appears, false if timeout
     func waitForReady(timeout: TimeInterval = 5.0) -> Bool {
-        staticTexts["UI Test Views"].waitForExistence(timeout: timeout)
+        let deadline = Date().addingTimeInterval(timeout)
+        while Date() < deadline {
+            if staticTexts["UI Test Views"].exists { return true }
+            RunLoop.current.run(until: Date().addingTimeInterval(XCUITestFailFast.quickWait))
+        }
+        return false
     }
     
     /// Launch app with performance optimizations
@@ -277,23 +289,23 @@ extension XCUIApplication {
     /// - Parameter timeout: Maximum time to wait for launch page (default 5.0)
     /// - Returns: true if launch page is visible (staticTexts["UI Test Views"] exists)
     func navigateBackToLaunch(timeout: TimeInterval = 5.0) -> Bool {
-        if staticTexts["UI Test Views"].waitForExistence(timeout: 0.5) { return true }
+        if staticTexts["UI Test Views"].waitForExistence(timeout: XCUITestFailFast.quickWait) { return true }
         let deadline = Date().addingTimeInterval(timeout)
         while Date() < deadline {
-            if buttons["UI Test Views"].waitForExistence(timeout: 0.3) {
+            if buttons["UI Test Views"].waitForExistence(timeout: XCUITestFailFast.quickWait) {
                 buttons["UI Test Views"].tap()
-                return staticTexts["UI Test Views"].waitForExistence(timeout: 2.0)
+                return staticTexts["UI Test Views"].waitForExistence(timeout: XCUITestFailFast.mediumWait)
             }
-            if navigationBars.buttons.firstMatch.waitForExistence(timeout: 0.3) {
+            if navigationBars.buttons.firstMatch.waitForExistence(timeout: XCUITestFailFast.quickWait) {
                 navigationBars.buttons.firstMatch.tap()
-            } else if buttons["Back"].waitForExistence(timeout: 0.3) {
+            } else if buttons["Back"].waitForExistence(timeout: XCUITestFailFast.quickWait) {
                 buttons["Back"].tap()
             } else {
                 break
             }
-            if staticTexts["UI Test Views"].waitForExistence(timeout: 1.0) { return true }
+            if staticTexts["UI Test Views"].waitForExistence(timeout: XCUITestFailFast.mediumWait) { return true }
         }
-        return staticTexts["UI Test Views"].waitForExistence(timeout: 0.5)
+        return staticTexts["UI Test Views"].waitForExistence(timeout: XCUITestFailFast.quickWait)
     }
 
     /// Navigate from the launch page to a "Layer N Examples" screen by tapping the given link.
@@ -305,10 +317,12 @@ extension XCUIApplication {
     /// - Returns: true if navigation succeeded (nav bar and list content visible).
     func navigateToLayerExamples(linkIdentifier: String, navigationBarTitle: String, linkLabel: String? = nil) -> Bool {
         func layerExamplesDestinationReached() -> Bool {
-            let navBarExists = navigationBars[navigationBarTitle].waitForExistence(timeout: 8.0)
-            let contentExists = buttons.firstMatch.waitForExistence(timeout: 2.0) || staticTexts.firstMatch.waitForExistence(timeout: 2.0) || cells.firstMatch.waitForExistence(timeout: 1.0)
+            let navBarExists = navigationBars[navigationBarTitle].waitForExistence(timeout: XCUITestFailFast.mediumWait)
+            let contentExists = buttons.firstMatch.waitForExistence(timeout: XCUITestFailFast.quickWait)
+                || staticTexts.firstMatch.waitForExistence(timeout: XCUITestFailFast.quickWait)
+                || cells.firstMatch.waitForExistence(timeout: XCUITestFailFast.quickWait)
             if navBarExists && contentExists { return true }
-            if staticTexts[navigationBarTitle].waitForExistence(timeout: 1.0) && contentExists { return true }
+            if staticTexts[navigationBarTitle].waitForExistence(timeout: XCUITestFailFast.quickWait) && contentExists { return true }
             return false
         }
 
@@ -325,13 +339,13 @@ extension XCUIApplication {
             }
         }()
 
-        _ = navigateBackToLaunch(timeout: 5.0)
-        guard waitForReady(timeout: 5.0) else { return false }
+        _ = navigateBackToLaunch(timeout: XCUITestFailFast.launchReadyWait)
+        guard waitForReady(timeout: XCUITestFailFast.launchReadyWait) else { return false }
 
         if let title = navigationLinkTitle {
-            for _ in 0..<14 {
+            for _ in 0..<XCUITestFailFast.maxScrollAttempts {
                 let rowLink = links[title].firstMatch
-                if rowLink.waitForExistence(timeout: 0.6) && rowLink.isHittable {
+                if rowLink.waitForExistence(timeout: XCUITestFailFast.quickWait) && rowLink.isHittable {
                     rowLink.tap()
                     return layerExamplesDestinationReached()
                 }
@@ -344,29 +358,29 @@ extension XCUIApplication {
             for _ in 0..<5 {
                 xcuiSwipeScrollHostsUp()
                 let found = findLaunchPageEntry(identifier: linkIdentifier)
-                if found.waitForExistence(timeout: 0.8) && found.isHittable { break }
+                if found.waitForExistence(timeout: XCUITestFailFast.quickWait) && found.isHittable { break }
             }
         }
         var link = findLaunchPageEntry(identifier: linkIdentifier)
-        if !link.waitForExistence(timeout: 2.0), let label = navigationLinkTitle {
+        if !link.waitForExistence(timeout: XCUITestFailFast.mediumWait), let label = navigationLinkTitle {
             link = links[label].firstMatch
             if !link.exists { link = buttons[label].firstMatch }
             if !link.exists { link = staticTexts[label].firstMatch }
             if !link.exists { link = cells[label].firstMatch }
         }
         var attempts = 0
-        while !link.waitForExistence(timeout: 1.0), attempts < 3 {
+        while !link.waitForExistence(timeout: XCUITestFailFast.quickWait), attempts < 3 {
             xcuiSwipeScrollHostsUp()
             attempts += 1
             link = findLaunchPageEntry(identifier: linkIdentifier)
-            if !link.waitForExistence(timeout: 1.0), let label = navigationLinkTitle {
+            if !link.waitForExistence(timeout: XCUITestFailFast.quickWait), let label = navigationLinkTitle {
                 link = links[label].firstMatch
                 if !link.exists { link = buttons[label].firstMatch }
                 if !link.exists { link = staticTexts[label].firstMatch }
                 if !link.exists { link = cells[label].firstMatch }
             }
         }
-        guard link.waitForExistence(timeout: 5.0) else { return false }
+        guard link.waitForExistence(timeout: XCUITestFailFast.mediumWait) else { return false }
         link.tap()
         return layerExamplesDestinationReached()
     }
