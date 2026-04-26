@@ -2,123 +2,77 @@
 //  AccessibilityCompatibilityUITests.swift
 //  SixLayerFrameworkUITests
 //
-//  One app launch, per-view compatibility sweep (Issue #180).
-//  Implements Issue #165: Complete accessibility for all platform* methods.
+//  Accessibility compatibility sweeps on isolated TestApp hosts (Issue #180).
+//  Each test launches with a deep link argument so we validate framework behavior without launch-page navigation.
 //
 
 import XCTest
-@testable import SixLayerFramework
 
-/// One launch; one test navigates to a view and runs the shared compatibility sweep (Issue #180).
+/// Per-test launch with ``DeepLink`` args; ``runAccessibilityCompatibilitySweep`` on the current screen only.
 @MainActor
 final class AccessibilityCompatibilityUITests: XCTestCase {
-    static var sharedApp: XCUIApplication?
-    static var didLaunch = false
 
-    var app: XCUIApplication!
+    private enum DeepLink: String {
+        case control = "-OpenAccessibilityCompatibilityControlTest"
+        case text = "-OpenAccessibilityCompatibilityTextTest"
+        case button = "-OpenAccessibilityCompatibilityButtonTest"
+        case platformPicker = "-OpenAccessibilityCompatibilityPlatformPickerTest"
+
+        var navigationTitle: String {
+            switch self {
+            case .control: return "Control Test"
+            case .text: return "Text Test"
+            case .button: return "Button Test"
+            case .platformPicker: return "Platform Picker Test"
+            }
+        }
+    }
+
+    private var app: XCUIApplication!
 
     nonisolated override func setUpWithError() throws {
         continueAfterFailure = false
         addDefaultUIInterruptionMonitor()
-
-        nonisolated(unsafe) let instance = self
-        MainActor.assumeIsolated {
-            if !Self.didLaunch {
-                let localApp = XCUIApplication()
-                localApp.launchWithOptimizations()
-                XCTAssertTrue(localApp.waitForReady(timeout: 5.0), "App should be ready for testing")
-                Self.sharedApp = localApp
-                Self.didLaunch = true
-            }
-            instance.app = Self.sharedApp
-        }
     }
 
     nonisolated override func tearDownWithError() throws {
         nonisolated(unsafe) let instance = self
         MainActor.assumeIsolated {
+            instance.app?.terminate()
             instance.app = nil
         }
         try super.tearDownWithError()
     }
 
-    override class func tearDown() {
-        MainActor.assumeIsolated {
-            sharedApp = nil
-            didLaunch = false
-        }
-        super.tearDown()
+    private func launchForDeepLink(_ deepLink: DeepLink) {
+        let localApp = XCUIApplication()
+        localApp.configureForFastTesting()
+        localApp.launchArguments.append(deepLink.rawValue)
+        localApp.launch()
+        XCTAssertTrue(
+            localApp.navigationBars[deepLink.navigationTitle].waitForExistence(timeout: 10),
+            "Deep link \(deepLink.rawValue) should show host with title \(deepLink.navigationTitle)"
+        )
+        app = localApp
     }
 
-    /// Navigate to Control Test view, run compatibility sweep on that view (Issue #180).
-    @MainActor
     func testControlTestView_CompatibilitySweep() throws {
-        XCTAssertTrue(app.navigateBackToLaunch(timeout: 3.0), "App should be ready (launch page) before finding Control Test link")
-        let link = app.findLaunchPageEntry(identifier: "test-view-Control Test")
-        XCTAssertTrue(link.waitForExistence(timeout: 5.0), "Control Test link should exist on launch page")
-        link.tap()
-        XCTAssertTrue(
-            app.navigationBars["Control Test"].waitForExistence(timeout: 5.0),
-            "Control Test navigation bar should appear after tapping launch link"
-        )
-        app.runAccessibilityCompatibilitySweep(screenLabel: "Control Test")
+        launchForDeepLink(.control)
+        app.runAccessibilityCompatibilitySweep(screenLabel: DeepLink.control.navigationTitle)
     }
 
-    /// Navigate to Text Test view, run compatibility sweep (Issue #180).
-    @MainActor
     func testTextTestView_CompatibilitySweep() throws {
-        XCTAssertTrue(app.navigateBackToLaunch(timeout: 3.0), "App should be ready (launch page) before finding Text Test link")
-        let link = app.findLaunchPageEntry(identifier: "test-view-Text Test")
-        XCTAssertTrue(link.waitForExistence(timeout: 5.0), "Text Test link should exist on launch page")
-        link.tap()
-        XCTAssertTrue(
-            app.navigationBars["Text Test"].waitForExistence(timeout: 5.0),
-            "Text Test navigation bar should appear after tapping launch link"
-        )
-        app.runAccessibilityCompatibilitySweep(screenLabel: "Text Test")
+        launchForDeepLink(.text)
+        app.runAccessibilityCompatibilitySweep(screenLabel: DeepLink.text.navigationTitle)
     }
 
-    /// Navigate to Platform Picker Test view, run compatibility sweep (Issue #180).
-    @MainActor
     func testPlatformPickerTestView_CompatibilitySweep() throws {
-        XCTAssertTrue(app.navigateBackToLaunch(timeout: 3.0), "App should be ready (launch page) before finding Platform Picker link")
-        let link = app.findLaunchPageEntry(identifier: "test-view-Platform Picker Test")
-        XCTAssertTrue(link.waitForExistence(timeout: 5.0), "Platform Picker Test link should exist on launch page")
-        link.tap()
-        XCTAssertTrue(
-            app.navigationBars["Platform Picker Test"].waitForExistence(timeout: 5.0),
-            "Platform Picker Test navigation bar should appear after tapping launch link"
-        )
-        app.runAccessibilityCompatibilitySweep(screenLabel: "Platform Picker Test")
+        launchForDeepLink(.platformPicker)
+        app.runAccessibilityCompatibilitySweep(screenLabel: DeepLink.platformPicker.navigationTitle)
     }
 
-    /// Navigate to Button Test view (via Layer 4 Examples), run compatibility sweep (Issue #180).
-    /// Skips when navigation from launch to Layer 4 Examples fails (tap not triggering push in shared app run).
-    @MainActor
     func testButtonTestView_CompatibilitySweep() throws {
-        guard app.navigateToLayerExamples(linkIdentifier: "layer4-examples-link", navigationBarTitle: "Layer 4 Examples", linkLabel: "Layer 4 Component Examples") else {
-            throw XCTSkip("Navigation to Layer 4 Examples from launch page did not succeed (known flakiness in shared app run)")
-        }
-        if app.scrollViews.firstMatch.exists {
-            app.scrollViews.firstMatch.swipeDown()
-        }
-        var tapTarget: XCUIElement?
-        if let link = app.findElement(byIdentifier: "test-view-Button Test", primaryType: .button, secondaryTypes: [.link, .cell, .staticText, .other, .any], timeout: 5.0), link.waitForExistence(timeout: 1.0) {
-            tapTarget = link
-        } else if app.buttons["Button Test"].waitForExistence(timeout: 2.0) {
-            tapTarget = app.buttons["Button Test"]
-        } else if app.staticTexts["Button Test"].waitForExistence(timeout: 1.0) {
-            tapTarget = app.staticTexts["Button Test"]
-        }
-        guard let el = tapTarget else {
-            XCTFail("Button Test link should exist on Layer 4 Examples")
-            return
-        }
-        el.tap()
-        XCTAssertTrue(
-            app.navigationBars["Button Test"].waitForExistence(timeout: 5.0),
-            "Button Test navigation bar should appear after tapping entry on Layer 4 Examples"
-        )
-        app.runAccessibilityCompatibilitySweep(screenLabel: "Button Test")
+        launchForDeepLink(.button)
+        app.runAccessibilityCompatibilitySweep(screenLabel: DeepLink.button.navigationTitle)
     }
 }
