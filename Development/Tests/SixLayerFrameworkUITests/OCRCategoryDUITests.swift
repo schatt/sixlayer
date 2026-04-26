@@ -36,7 +36,7 @@ final class OCRCategoryDUITests: XCTestCase {
             instance.app = localApp
 
             XCTAssertTrue(
-                localApp.staticTexts[IDs.hostTitle].waitForExistence(timeout: 6.0),
+                localApp.staticTexts[IDs.hostTitle].waitForExistence(timeout: 2.5),
                 "Category D OCR host should appear with -OpenOCRCategoryD"
             )
         }
@@ -57,15 +57,15 @@ final class OCRCategoryDUITests: XCTestCase {
 
     func testCategoryD_disambiguationFlow_showsAlternativesAndReflectsSelection() throws {
         let prompt = app.staticTexts[IDs.disambiguationPrompt]
-        XCTAssertTrue(prompt.waitForExistence(timeout: 4.0), "Disambiguation prompt should be visible")
+        XCTAssertTrue(prompt.waitForExistence(timeout: 1.5), "Disambiguation prompt should be visible")
 
         let firstCandidate = button(containingLabel: IDs.candidateFirstLabelFragment)
         let secondCandidate = button(containingLabel: IDs.candidateSecondLabelFragment)
-        XCTAssertTrue(firstCandidate.waitForExistence(timeout: 4.0), "First OCR candidate should exist")
-        XCTAssertTrue(secondCandidate.waitForExistence(timeout: 4.0), "Second OCR candidate should exist")
+        XCTAssertTrue(firstCandidate.waitForExistence(timeout: 1.5), "First OCR candidate should exist")
+        XCTAssertTrue(secondCandidate.waitForExistence(timeout: 1.5), "Second OCR candidate should exist")
 
         let selectionState = app.staticTexts[IDs.selectionState]
-        XCTAssertTrue(selectionState.waitForExistence(timeout: 4.0), "Selection state label should exist")
+        XCTAssertTrue(selectionState.waitForExistence(timeout: 1.5), "Selection state label should exist")
         XCTAssertEqual(selectionState.label, "Selected candidate: none")
 
         secondCandidate.tap()
@@ -74,16 +74,16 @@ final class OCRCategoryDUITests: XCTestCase {
 
     func testCategoryD_overlayFlow_presentAndDismiss_updatesOutcomeState() throws {
         let overlayState = app.staticTexts[IDs.overlayState]
-        XCTAssertTrue(overlayState.waitForExistence(timeout: 4.0), "Overlay state label should exist")
+        XCTAssertTrue(overlayState.waitForExistence(timeout: 1.5), "Overlay state label should exist")
         XCTAssertEqual(overlayState.label, "Overlay state: hidden")
 
         let openOverlay = app.buttons[IDs.openOverlayButton]
-        XCTAssertTrue(openOverlay.waitForExistence(timeout: 4.0), "Open overlay action should exist")
+        XCTAssertTrue(openOverlay.waitForExistence(timeout: 1.5), "Open overlay action should exist")
         openOverlay.tap()
         XCTAssertEqual(overlayState.label, "Overlay state: presented")
 
         let done = app.buttons[IDs.overlayDoneButton]
-        XCTAssertTrue(done.waitForExistence(timeout: 4.0), "Overlay dismiss action should exist")
+        XCTAssertTrue(done.waitForExistence(timeout: 1.5), "Overlay dismiss action should exist")
         done.tap()
         XCTAssertEqual(overlayState.label, "Overlay state: dismissed")
     }
