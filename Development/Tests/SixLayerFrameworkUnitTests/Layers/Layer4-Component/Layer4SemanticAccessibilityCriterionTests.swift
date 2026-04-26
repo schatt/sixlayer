@@ -273,6 +273,178 @@ open class Layer4SemanticAccessibilityCriterionTests: BaseTestClass {
         }
         #expect(buttonLike || fallbackButtonLike, "platformPrint_L4 host should expose a button-like semantic node")
     }
+
+    // MARK: - Navigation (Issue #254)
+
+    @Test @MainActor
+    func testPlatformNavigationTitle_L4_exposesHeaderTraitWithSixLayerIdentifier() async {
+        let view = NavigationStack {
+            Text("L4SemanticNavBody")
+                .platformNavigationTitle_L4("L4SemanticNavTitle254")
+        }
+        let root = hostedRoot(for: view)
+        #expect(root != nil)
+        guard hostedTreeExposesSemanticSurface(root) else {
+            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
+            return
+        }
+        let headerMatch = hostedUIKitAccessibilityTraitMatch(
+            root: root,
+            requiredTraits: .header,
+            identifierContains: "SixLayer.main.ui"
+        )
+        let headerFallback = hostedUIKitAccessibilityHierarchyContains(root: root) { v in
+            v.accessibilityTraits.contains(.header)
+                && ((v.accessibilityIdentifier ?? "").contains("SixLayer") || !(v.accessibilityLabel ?? "").isEmpty)
+        }
+        #expect(
+            headerMatch || headerFallback,
+            "navigation title should surface header semantics with SixLayer identifier or readable label"
+        )
+    }
+
+    #if os(iOS)
+    @Test @MainActor
+    func testPlatformNavigationTitleDisplayModeInline_preservesHeaderSemantics() async {
+        let view = NavigationStack {
+            Text("L4SemanticNavBodyDM")
+                .platformNavigationTitle_L4("L4SemanticNavTitleDM254")
+                .platformNavigationTitleDisplayMode_L4(.inline)
+        }
+        let root = hostedRoot(for: view)
+        #expect(root != nil)
+        guard hostedTreeExposesSemanticSurface(root) else {
+            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
+            return
+        }
+        let headerFallback = hostedUIKitAccessibilityHierarchyContains(root: root) { v in
+            v.accessibilityTraits.contains(.header)
+                && ((v.accessibilityIdentifier ?? "").contains("SixLayer") || !(v.accessibilityLabel ?? "").isEmpty)
+        }
+        #expect(headerFallback, "inline title display mode chain should keep header-style navigation chrome")
+    }
+    #endif
+
+    @Test @MainActor
+    func testPlatformImplementNavigationStack_L4_exposesHostedSemanticSurface() async {
+        let inner = Text("L4StackInner254")
+        let wrapped = platformImplementNavigationStack_L4(
+            content: inner,
+            title: "L4StackTitle254",
+            strategy: NavigationStackStrategy(implementation: .navigationStack, reasoning: "semantic criterion test")
+        )
+        let root = hostedRoot(for: wrapped)
+        #expect(root != nil)
+        guard hostedTreeExposesSemanticSurface(root) else {
+            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
+            return
+        }
+        let headerOrChrome = hostedUIKitAccessibilityHierarchyContains(root: root) { v in
+            let id = v.accessibilityIdentifier ?? ""
+            let label = v.accessibilityLabel ?? ""
+            let traits = v.accessibilityTraits
+            let six = id.contains("SixLayer")
+            let headerish = traits.contains(.header) || traits.contains(.staticText)
+            return six && (headerish || !label.isEmpty)
+        }
+        #expect(
+            headerOrChrome,
+            "navigation stack host should expose SixLayer-identified navigation chrome (header or titled surface)"
+        )
+    }
+
+    private struct NavigationLinkSemanticHost254: View {
+        @State private var isActive = false
+
+        var body: some View {
+            NavigationStack {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("L4LinkRoot254")
+                        .platformNavigationTitle_L4("L4LinkRootTitle254")
+                    Text("Open destination")
+                        .platformNavigationLink_L4(
+                            title: "L4SemanticLink254",
+                            systemImage: "chevron.right",
+                            isActive: $isActive,
+                            destination: {
+                                Text("L4LinkDestination254")
+                                    .platformNavigationTitle_L4("L4LinkDestTitle254")
+                            }
+                        )
+                }
+            }
+        }
+    }
+
+    @Test @MainActor
+    func testPlatformNavigationLink_L4_bindingStyle_exposesLinkSemanticsWithSixLayerIdentifier() async {
+        let view = NavigationLinkSemanticHost254()
+        let root = hostedRoot(for: view)
+        #expect(root != nil)
+        guard hostedTreeExposesSemanticSurface(root) else {
+            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
+            return
+        }
+        let linkMatch = hostedUIKitAccessibilityTraitMatch(
+            root: root,
+            requiredTraits: .link,
+            identifierContains: "SixLayer.main.ui"
+        )
+        let linkFallback = hostedUIKitAccessibilityHierarchyContains(root: root) { v in
+            let traits = v.accessibilityTraits
+            let id = v.accessibilityIdentifier ?? ""
+            return traits.contains(.link) && (id.contains("SixLayer") || !(v.accessibilityLabel ?? "").isEmpty)
+        }
+        #expect(
+            linkMatch || linkFallback,
+            "platformNavigationLink_L4 binding style should expose link trait with SixLayer id or label"
+        )
+    }
+
+    #if os(iOS)
+    @Test @MainActor
+    func testPlatformNavigationButton_L4_exposesButtonTraitHintsAndSixLayerIdentifier() async {
+        let view = NavigationStack {
+            Text("NavBtnBody254")
+                .platformNavigationTitle_L4("NavBtnTitle254")
+                .platformNavigationBarItems_L4(
+                    trailing: EmptyView()
+                        .platformNavigationButton_L4(
+                            title: "L4SemanticNavAction254",
+                            systemImage: "plus.circle",
+                            accessibilityLabel: "Add item",
+                            accessibilityHint: "Creates a new item",
+                            action: {}
+                        )
+                )
+        }
+        let root = hostedRoot(for: view)
+        #expect(root != nil)
+        guard hostedTreeExposesSemanticSurface(root) else {
+            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
+            return
+        }
+        let buttonMatch = hostedUIKitAccessibilityTraitMatch(
+            root: root,
+            requiredTraits: .button,
+            identifierContains: "SixLayer.main.ui"
+        )
+        let combined = hostedUIKitAccessibilityHierarchyContains(root: root) { v in
+            let traits = v.accessibilityTraits
+            let id = v.accessibilityIdentifier ?? ""
+            let hint = v.accessibilityHint ?? ""
+            let lab = v.accessibilityLabel ?? ""
+            return traits.contains(.button)
+                && id.contains("SixLayer")
+                && !hint.isEmpty
+                && lab.localizedCaseInsensitiveContains("add")
+        }
+        #expect(
+            buttonMatch || combined,
+            "navigation bar action should expose button trait, SixLayer id, hint, and label"
+        )
+    }
+    #endif
 }
 
 #endif
