@@ -60,9 +60,7 @@ fi
 
 current_branch="$(git branch --show-current)"
 plan_file="/tmp/migrate-release-branches-plan-${CURSOR_PID:-$$}.txt"
-remote_heads_file="/tmp/migrate-release-branches-remote-${CURSOR_PID:-$$}.txt"
 : > "$plan_file"
-: > "$remote_heads_file"
 
 local_sha_for_branch() {
     local branch="$1"
@@ -71,8 +69,9 @@ local_sha_for_branch() {
 
 remote_sha_for_branch() {
     local branch="$1"
+    local heads_file="$2"
     local line
-    line="$(rg "^[0-9a-f]{40}[[:space:]]+refs/heads/${branch}$" "$remote_heads_file" -m 1 || true)"
+    line="$(rg "^[0-9a-f]{40}[[:space:]]+refs/heads/${branch}$" "$heads_file" -m 1 || true)"
     if [ -z "$line" ]; then
         echo ""
     else
@@ -82,10 +81,11 @@ remote_sha_for_branch() {
 
 append_plan_entry() {
     local scope="$1"
-    local old="$2"
-    local new="$3"
-    local old_sha="$4"
-    local new_sha="$5"
+    local remote_name="$2"
+    local old="$3"
+    local new="$4"
+    local old_sha="$5"
+    local new_sha="$6"
     local action
     if [ -z "$new_sha" ]; then
         action="rename"
@@ -94,7 +94,7 @@ append_plan_entry() {
     else
         action="conflict_skip"
     fi
-    printf '%s|%s|%s|%s|%s|%s\n' "$scope" "$old" "$new" "$old_sha" "$new_sha" "$action" >> "$plan_file"
+    printf '%s|%s|%s|%s|%s|%s|%s\n' "$scope" "$remote_name" "$old" "$new" "$old_sha" "$new_sha" "$action" >> "$plan_file"
 }
 
 legacy_to_new() {
@@ -121,27 +121,42 @@ while IFS= read -r branch; do
     old_sha="$(local_sha_for_branch "$old")"
     [ -z "$old_sha" ] && continue
     new_sha="$(local_sha_for_branch "$new")"
-    append_plan_entry "local" "$old" "$new" "$old_sha" "$new_sha"
+    append_plan_entry "local" "-" "$old" "$new" "$old_sha" "$new_sha"
 done < <(git for-each-ref --format='%(refname:short)' refs/heads)
 
-# Build remote candidates (without requiring local branches)
-if git ls-remote --heads "$REMOTE_NAME" > "$remote_heads_file" 2>/dev/null; then
-    while IFS= read -r line; do
-        remote_sha="$(echo "$line" | awk '{print $1}')"
-        remote_ref="$(echo "$line" | awk '{print $2}')"
-        remote_branch="${remote_ref#refs/heads/}"
-        pair="$(legacy_to_new "$remote_branch" || true)"
-        if [ -z "$pair" ]; then
-            continue
-        fi
-        old="${pair%%|*}"
-        new="${pair#*|}"
-        new_sha="$(remote_sha_for_branch "$new")"
-        append_plan_entry "remote" "$old" "$new" "$remote_sha" "$new_sha"
-    done < "$remote_heads_file"
+# Build remote candidates (without requiring local branches).
+# For --remote all, fan out to all configured remotes except the synthetic "all".
+declare -a remote_targets
+if [ "$REMOTE_NAME" = "all" ]; then
+    while IFS= read -r r; do
+        [ -z "$r" ] && continue
+        [ "$r" = "all" ] && continue
+        remote_targets+=("$r")
+    done < <(git remote)
 else
-    echo "⚠️ Could not read remote heads from ${REMOTE_NAME}; continuing with local branches only."
+    remote_targets+=("$REMOTE_NAME")
 fi
+
+for remote_target in "${remote_targets[@]}"; do
+    remote_heads_file="/tmp/migrate-release-branches-remote-${remote_target//[^a-zA-Z0-9_.-]/_}-${CURSOR_PID:-$$}.txt"
+    if git ls-remote --heads "$remote_target" > "$remote_heads_file" 2>/dev/null; then
+        while IFS= read -r line; do
+            remote_sha="$(echo "$line" | awk '{print $1}')"
+            remote_ref="$(echo "$line" | awk '{print $2}')"
+            remote_branch="${remote_ref#refs/heads/}"
+            pair="$(legacy_to_new "$remote_branch" || true)"
+            if [ -z "$pair" ]; then
+                continue
+            fi
+            old="${pair%%|*}"
+            new="${pair#*|}"
+            new_sha="$(remote_sha_for_branch "$new" "$remote_heads_file")"
+            append_plan_entry "remote" "$remote_target" "$old" "$new" "$remote_sha" "$new_sha"
+        done < "$remote_heads_file"
+    else
+        echo "⚠️ Could not read remote heads from ${remote_target}; continuing."
+    fi
+done
 
 count="$(wc -l < "$plan_file" | tr -d ' ')"
 if [ "$count" -eq 0 ]; then
@@ -150,16 +165,21 @@ if [ "$count" -eq 0 ]; then
 fi
 
 echo "📋 Branch migration plan (${count}):"
-while IFS='|' read -r scope old new old_sha new_sha action; do
+while IFS='|' read -r scope remote_name old new old_sha new_sha action; do
+    if [ "$scope" = "local" ]; then
+        scope_label="[local]"
+    else
+        scope_label="[remote:${remote_name}]"
+    fi
     case "$action" in
         rename)
-            echo "  - [${scope}] ${old} -> ${new}"
+            echo "  - ${scope_label} ${old} -> ${new}"
             ;;
         duplicate_delete)
-            echo "  - [${scope}] ${old} == ${new} (same commit, duplicate can be deleted)"
+            echo "  - ${scope_label} ${old} == ${new} (same commit, duplicate can be deleted)"
             ;;
         conflict_skip)
-            echo "  - [${scope}] ${old} -> ${new} (target exists with different commit, will skip)"
+            echo "  - ${scope_label} ${old} -> ${new} (target exists with different commit, will skip)"
             ;;
     esac
 done < "$plan_file"
@@ -173,7 +193,7 @@ fi
 echo ""
 echo "🚀 Applying migration..."
 
-while IFS='|' read -r scope old new old_sha new_sha action; do
+while IFS='|' read -r scope remote_name old new old_sha new_sha action; do
     if [ "$scope" = "local" ]; then
         case "$action" in
             conflict_skip)
@@ -200,17 +220,17 @@ while IFS='|' read -r scope old new old_sha new_sha action; do
     else
         case "$action" in
             conflict_skip)
-                echo "⚠️ [remote] Skipping ${old}: target ${new} exists with different commit."
+                echo "⚠️ [remote:${remote_name}] Skipping ${old}: target ${new} exists with different commit."
                 ;;
             duplicate_delete)
-                echo "🧹 [remote] Deleting duplicate legacy branch ${old} from ${REMOTE_NAME}"
-                git push "$REMOTE_NAME" --delete "refs/heads/${old}" 2>/dev/null || true
+                echo "🧹 [remote:${remote_name}] Deleting duplicate legacy branch ${old}"
+                git push "$remote_name" --delete "refs/heads/${old}" 2>/dev/null || true
                 ;;
             rename)
-                echo "🔧 [remote] Creating ${new} at ${old_sha} on ${REMOTE_NAME}"
-                git push "$REMOTE_NAME" "${old_sha}:refs/heads/${new}"
-                echo "🧹 [remote] Deleting legacy ${old} from ${REMOTE_NAME}"
-                git push "$REMOTE_NAME" --delete "refs/heads/${old}" 2>/dev/null || true
+                echo "🔧 [remote:${remote_name}] Creating ${new} at ${old_sha}"
+                git push "$remote_name" "${old_sha}:refs/heads/${new}"
+                echo "🧹 [remote:${remote_name}] Deleting legacy ${old}"
+                git push "$remote_name" --delete "refs/heads/${old}" 2>/dev/null || true
                 ;;
         esac
     fi
