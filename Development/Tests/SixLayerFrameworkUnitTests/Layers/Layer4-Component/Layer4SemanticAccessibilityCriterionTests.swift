@@ -168,6 +168,34 @@ open class Layer4SemanticAccessibilityCriterionTests: BaseTestClass {
             "syncing badge should expose progress-like or image traits with SixLayer identifier"
         )
     }
+
+    @Test @MainActor
+    func testPlatformShare_L4_exposesButtonTraitWithSixLayerIdentifier() async {
+        let view = Button("Share") { }
+            .platformShare_L4(isPresented: .constant(false), items: ["hello"])
+        let root = hostedRoot(for: view)
+        #expect(root != nil)
+        let buttonLike = hostedUIKitAccessibilityTraitMatch(
+            root: root,
+            requiredTraits: .button,
+            identifierContains: "SixLayer.main.ui"
+        )
+        #expect(buttonLike, "platformShare_L4 host should expose a button-like semantic node")
+    }
+
+    @Test @MainActor
+    func testPlatformPrint_L4_exposesButtonTraitWithSixLayerIdentifier() async {
+        let view = Button("Print") { }
+            .platformPrint_L4(isPresented: .constant(false), content: .text("test print"))
+        let root = hostedRoot(for: view)
+        #expect(root != nil)
+        let buttonLike = hostedUIKitAccessibilityTraitMatch(
+            root: root,
+            requiredTraits: .button,
+            identifierContains: "SixLayer.main.ui"
+        )
+        #expect(buttonLike, "platformPrint_L4 host should expose a button-like semantic node")
+    }
 }
 
 #endif
