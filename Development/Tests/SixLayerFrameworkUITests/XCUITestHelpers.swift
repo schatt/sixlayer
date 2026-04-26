@@ -10,10 +10,10 @@
 import XCTest
 
 private enum XCUITestFailFast {
-    static let quickWait: TimeInterval = 0.35
-    static let mediumWait: TimeInterval = 1.2
-    static let launchReadyWait: TimeInterval = 3.0
-    static let maxScrollAttempts = 8
+    static let quickWait: TimeInterval = 0.3
+    static let mediumWait: TimeInterval = 0.75
+    static let launchReadyWait: TimeInterval = 2.0
+    static let maxScrollAttempts = 5
 }
 
 // MARK: - XCUIApplication Extensions
@@ -31,9 +31,9 @@ extension XCUIApplication {
     }
     
     /// Wait for app to be ready: look for a single known text on the launch page (Issue #180).
-    /// - Parameter timeout: Maximum time to wait (default: 5.0 seconds)
+    /// - Parameter timeout: Maximum time to wait (default: 2.5 seconds; fail fast when launch list is wrong)
     /// - Returns: true if the text appears, false if timeout
-    func waitForReady(timeout: TimeInterval = 5.0) -> Bool {
+    func waitForReady(timeout: TimeInterval = 2.5) -> Bool {
         let deadline = Date().addingTimeInterval(timeout)
         while Date() < deadline {
             if staticTexts["UI Test Views"].exists { return true }
@@ -286,9 +286,9 @@ extension XCUIApplication {
     }
 
     /// Navigate back to the launch page (e.g. after another test left the app on a subpage). Taps back/nav until "UI Test Views" appears.
-    /// - Parameter timeout: Maximum time to wait for launch page (default 5.0)
+    /// - Parameter timeout: Maximum time to wait for launch page (default 2.5; bounded back navigation)
     /// - Returns: true if launch page is visible (staticTexts["UI Test Views"] exists)
-    func navigateBackToLaunch(timeout: TimeInterval = 5.0) -> Bool {
+    func navigateBackToLaunch(timeout: TimeInterval = 2.5) -> Bool {
         if staticTexts["UI Test Views"].waitForExistence(timeout: XCUITestFailFast.quickWait) { return true }
         let deadline = Date().addingTimeInterval(timeout)
         while Date() < deadline {
