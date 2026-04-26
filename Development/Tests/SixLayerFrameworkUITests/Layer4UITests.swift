@@ -361,9 +361,15 @@ final class Layer4UITests: XCTestCase {
         scrollToElement(label: label)
         let identifier = Self.l4ContractIdentifier(sanitizedName: sanitizedIdentifierName, elementType: identifierElementType)
         // Prefer contract type first so we find the real control; then .other as fallback (type assertion will fail if only wrapper has id).
-        let typesToTry: [(XCUIElement.ElementType, TimeInterval)] = (type == .textField || type == .secureTextField || type == .switch || type == .textView)
-            ? [(type, 3.0), (.other, 1.2)]
-            : [(type, 3.0)]
+        let typesToTry: [(XCUIElement.ElementType, TimeInterval)]
+        if type == .secureTextField {
+            // Some iOS versions surface `SecureField` as a secure `XCUIElementType.textField` in XCTest.
+            typesToTry = [(type, 3.0), (.textField, 2.5), (.other, 1.2)]
+        } else if type == .textField || type == .switch || type == .textView {
+            typesToTry = [(type, 3.0), (.other, 1.2)]
+        } else {
+            typesToTry = [(type, 3.0)]
+        }
         var el: XCUIElement?
         for (primaryType, timeout) in typesToTry {
             el = app.findElement(byIdentifier: identifier, primaryType: primaryType, secondaryTypes: [.other, .button, .staticText, .any], timeout: timeout)
@@ -382,14 +388,25 @@ final class Layer4UITests: XCTestCase {
             let byLabel = app.descendants(matching: type).matching(Self.l4ContractDisplayTextPredicate(label)).firstMatch
             if byLabel.waitForExistence(timeout: 1.0) { el = byLabel }
         }
+        if el == nil, type == .secureTextField {
+            let byLabelTextField = app.descendants(matching: .textField).matching(Self.l4ContractDisplayTextPredicate(label)).firstMatch
+            if byLabelTextField.waitForExistence(timeout: 1.2) { el = byLabelTextField }
+        }
         XCTAssertNotNil(el, "\(componentName): element with identifier '\(identifier)' or containing '\(sanitizedIdentifierName)' should exist (contract)")
         if let el = el {
             let hasContractId = !el.identifier.isEmpty
                 || app.descendants(matching: .any).matching(NSPredicate(format: "identifier CONTAINS[c] %@", sanitizedIdentifierName)).firstMatch.waitForExistence(timeout: 1.0)
             XCTAssertTrue(hasContractId,
                           "\(componentName) must apply a11y. '\(label)' should expose contract id or a wrapper containing '\(sanitizedIdentifierName)'. Found: '\(el.identifier)'")
-            let hasCorrectType = (el.elementType == type)
-                || (el.descendants(matching: type).firstMatch.waitForExistence(timeout: 0.5))
+            let hasCorrectType: Bool
+            if type == .secureTextField {
+                hasCorrectType = (el.elementType == .secureTextField || el.elementType == .textField)
+                    || el.descendants(matching: .secureTextField).firstMatch.waitForExistence(timeout: 0.5)
+                    || el.descendants(matching: .textField).firstMatch.waitForExistence(timeout: 0.5)
+            } else {
+                hasCorrectType = (el.elementType == type)
+                    || (el.descendants(matching: type).firstMatch.waitForExistence(timeout: 0.5))
+            }
             XCTAssertTrue(hasCorrectType,
                           "\(componentName) must present as \(type) (contract structure). Found: \(el.elementType)")
         }
