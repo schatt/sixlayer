@@ -1086,6 +1086,7 @@ final class Layer4UITests: XCTestCase {
         ensureContractRoot()
         scrollToElement(label: "L4 System")
         scrollToElement(label: "Photo Picker Contract")
+        scrollToElement(label: "L4ContractPhotoPickerOpen")
         let openById = app.descendants(matching: .any)
             .matching(NSPredicate(format: "identifier == %@", "L4ContractPhotoPickerOpen"))
             .firstMatch
@@ -1100,6 +1101,18 @@ final class Layer4UITests: XCTestCase {
         )
         tapByNormalizedCenter(openResolved)
         RunLoop.current.run(until: Date().addingTimeInterval(0.65))
+        // Simulator may prompt for Photos access before `PHPicker` chrome appears.
+        let allowAllPhotos = app.buttons["Allow Access to All Photos"].firstMatch
+        if allowAllPhotos.waitForExistence(timeout: 2.0) {
+            allowAllPhotos.tap()
+            RunLoop.current.run(until: Date().addingTimeInterval(0.35))
+        } else if app.alerts.buttons["Allow Full Access"].firstMatch.waitForExistence(timeout: 1.0) {
+            app.alerts.buttons["Allow Full Access"].firstMatch.tap()
+            RunLoop.current.run(until: Date().addingTimeInterval(0.35))
+        } else if app.alerts.buttons["OK"].firstMatch.waitForExistence(timeout: 0.8) {
+            app.alerts.buttons["OK"].firstMatch.tap()
+            RunLoop.current.run(until: Date().addingTimeInterval(0.35))
+        }
         // `platformPhotoPicker_L4` wraps ``UnifiedImagePicker``; the inner host also carries
         // `UnifiedImagePicker` named compliance. System `PHPicker` presentation may hide the outer
         // SwiftUI identifier from XCUI while the sheet is key (#261).
