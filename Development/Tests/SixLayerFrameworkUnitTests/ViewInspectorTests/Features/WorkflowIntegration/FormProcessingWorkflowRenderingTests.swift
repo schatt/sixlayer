@@ -121,7 +121,7 @@ final class FormProcessingWorkflowRenderingTests: BaseTestClass {
         let hostedView = hostRootPlatformView(formView.enableGlobalAutomaticCompliance())
         
         // Then: Rendered view should have accessibility identifiers (Layer 2 verification)
-        let accessibilityId = firstAccessibilityIdentifier(inHosted: hostedView)
+        _ = firstAccessibilityIdentifier(inHosted: hostedView)
         // Note: On macOS without ViewInspector, this may be nil, but view should still render
         // The key is that the view renders without crashing
         let currentPlatform = SixLayerPlatform.current
