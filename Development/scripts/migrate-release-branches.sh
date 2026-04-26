@@ -204,13 +204,13 @@ while IFS='|' read -r scope old new old_sha new_sha action; do
                 ;;
             duplicate_delete)
                 echo "🧹 [remote] Deleting duplicate legacy branch ${old} from ${REMOTE_NAME}"
-                git push "$REMOTE_NAME" --delete "$old" 2>/dev/null || true
+                git push "$REMOTE_NAME" --delete "refs/heads/${old}" 2>/dev/null || true
                 ;;
             rename)
                 echo "🔧 [remote] Creating ${new} at ${old_sha} on ${REMOTE_NAME}"
                 git push "$REMOTE_NAME" "${old_sha}:refs/heads/${new}"
                 echo "🧹 [remote] Deleting legacy ${old} from ${REMOTE_NAME}"
-                git push "$REMOTE_NAME" --delete "$old" 2>/dev/null || true
+                git push "$REMOTE_NAME" --delete "refs/heads/${old}" 2>/dev/null || true
                 ;;
         esac
     fi
