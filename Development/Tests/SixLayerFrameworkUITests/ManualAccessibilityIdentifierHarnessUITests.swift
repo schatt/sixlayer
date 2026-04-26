@@ -95,4 +95,39 @@ final class ManualAccessibilityIdentifierHarnessUITests: XCTestCase {
         assertAccessibilityIdentifierContains("manual-override-id")
         assertAccessibilityIdentifierContains("manual-cancel-id")
     }
+
+    /// Issue #257 repro on v7.7.0: explicit list id should be queryable, but `.named("FuelView")` can override it.
+    func testIssue257_explicitListIdentifier_queryableViaScrollViewContract() throws {
+        let edgeId = "test-view-Identifier Edge Case"
+        let idQuery = app.descendants(matching: .any).matching(NSPredicate(format: "identifier == %@", edgeId)).firstMatch
+        let labelQuery = app.descendants(matching: .any).matching(NSPredicate(format: "label == %@", "Identifier Edge Case")).firstMatch
+
+        func resolveEdgeRow() -> XCUIElement {
+            if idQuery.waitForExistence(timeout: 0.4), idQuery.isHittable { return idQuery }
+            if labelQuery.waitForExistence(timeout: 0.4), labelQuery.isHittable { return labelQuery }
+            let fallback = app.findLaunchPageEntry(identifier: edgeId)
+            if fallback.waitForExistence(timeout: 0.3), fallback.isHittable { return fallback }
+            return app.links["Identifier Edge Case"].firstMatch
+        }
+
+        var edgeLink = resolveEdgeRow()
+        for _ in 0..<20 {
+            if edgeLink.waitForExistence(timeout: 0.4), edgeLink.isHittable { break }
+            app.xcuiSwipeScrollHostsUp()
+            edgeLink = resolveEdgeRow()
+        }
+        XCTAssertTrue(edgeLink.waitForExistence(timeout: 6.0) && edgeLink.isHittable, "Identifier Edge Case link should exist")
+        edgeLink.tap()
+
+        XCTAssertTrue(
+            app.navigationBars["Identifier Edge Case"].waitForExistence(timeout: 8.0),
+            "Should land on Identifier Edge Case screen"
+        )
+
+        app.xcuiSwipeScrollHostsUp()
+        XCTAssertTrue(
+            app.scrollViews["CarManager.FuelView.PurchaseList"].waitForExistence(timeout: 8.0),
+            "Explicit list accessibility identifier should be queryable in runtime XCUI tree"
+        )
+    }
 }
