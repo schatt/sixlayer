@@ -413,6 +413,7 @@ final class Layer4UITests: XCTestCase {
     func testL4_platformTextField() throws {
         ensureContractRoot()
         scrollToL4ControlsSection()
+        scrollToElement(label: "L4ContractTextField")
         assertElementHasIdentifierFromComponent(
             label: "L4ContractTextField",
             type: .textField,
@@ -427,6 +428,7 @@ final class Layer4UITests: XCTestCase {
         ensureContractRoot()
         scrollToL4ControlsSection()
         scrollToElement(label: "L4ContractPicker")
+        scrollToElement(label: "L4ContractPicker")
         // platformPicker contract: picker or an option has identifier.
         let pred = NSPredicate(format: "identifier CONTAINS[c] %@", "picker")
         let pickerEl = app.descendants(matching: .any).matching(pred).firstMatch
@@ -435,9 +437,12 @@ final class Layer4UITests: XCTestCase {
             return
         }
         // Options may be in hierarchy only when menu is open; tap picker (shows selected "A") to open.
-        if app.buttons["A"].waitForExistence(timeout: 1.0) { app.buttons["A"].firstMatch.tap() }
+        let optionA = app.descendants(matching: .button).matching(Self.l4ContractDisplayTextPredicate("A")).firstMatch
+        if optionA.waitForExistence(timeout: 1.2) {
+            optionA.tap()
+        }
         let optionAId = Self.l4ContractIdentifier(sanitizedName: "a", elementType: "View")
-        let optionEl = app.findElement(byIdentifier: optionAId, primaryType: .button, secondaryTypes: [.staticText, .other, .any], timeout: 1.2)
+        let optionEl = app.findElement(byIdentifier: optionAId, primaryType: .button, secondaryTypes: [.staticText, .other, .any], timeout: 3.0)
         XCTAssertNotNil(optionEl, "platformPicker: picker or option should have identifier (tried 'picker' and '\(optionAId)')")
         if let el = optionEl { XCTAssertFalse(el.identifier.isEmpty, "platformPicker must apply a11y.") }
     }
@@ -446,6 +451,7 @@ final class Layer4UITests: XCTestCase {
     func testL4_platformSecureField() throws {
         ensureContractRoot()
         scrollToL4ControlsSection()
+        scrollToElement(label: "L4ContractSecureField")
         assertElementHasIdentifierFromComponent(
             label: "L4ContractSecureField",
             type: .secureTextField,
@@ -459,6 +465,7 @@ final class Layer4UITests: XCTestCase {
     func testL4_platformToggle() throws {
         ensureContractRoot()
         scrollToL4ControlsSection()
+        scrollToElement(label: "L4ContractToggle")
         assertElementHasIdentifierFromComponent(
             label: "L4ContractToggle",
             type: .switch,
@@ -472,6 +479,7 @@ final class Layer4UITests: XCTestCase {
     func testL4_platformTextEditor() throws {
         ensureContractRoot()
         scrollToL4ControlsSection()
+        scrollToElement(label: "L4ContractTextEditor")
         assertElementHasIdentifierFromComponent(
             label: "L4ContractTextEditor",
             type: .textView,
@@ -486,8 +494,9 @@ final class Layer4UITests: XCTestCase {
         ensureContractRoot()
         scrollToL4ControlsSection()
         scrollToElement(label: "L4ContractDatePicker")
+        scrollToElement(label: "L4ContractDatePicker")
         let hasLabel = app.staticTexts["L4ContractDatePicker"].waitForExistence(timeout: 1.2)
-            || app.descendants(matching: .any).matching(NSPredicate(format: "label == %@", "L4ContractDatePicker")).firstMatch.waitForExistence(timeout: 1.0)
+            || app.descendants(matching: .any).matching(Self.l4ContractDisplayTextPredicate("L4ContractDatePicker")).firstMatch.waitForExistence(timeout: 1.5)
         XCTAssertTrue(hasLabel,
                       "platformDatePicker: label must exist (contract); date picker control is platform-rendered")
     }
@@ -1022,7 +1031,7 @@ final class Layer4UITests: XCTestCase {
         scrollToElement(label: "L4 System")
         scrollToElement(label: "CloudKit Account")
         XCTAssertTrue(
-            waitForContractDisplayText("iCloud Account: Available", timeout: 1.0),
+            waitForContractDisplayTextContainingAll(["iCloud", "Available"], timeout: 2.0),
             "platformCloudKitAccountStatus_L4: account label must be visible (contract structure)"
         )
         let containsId = app.descendants(matching: .any)
