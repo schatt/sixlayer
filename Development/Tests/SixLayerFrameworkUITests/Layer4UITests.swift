@@ -1086,12 +1086,19 @@ final class Layer4UITests: XCTestCase {
         ensureContractRoot()
         scrollToElement(label: "L4 System")
         scrollToElement(label: "Photo Picker Contract")
-        let openBtn = app.descendants(matching: .button).matching(Self.l4ContractDisplayTextPredicate("L4ContractPhotoPickerOpen")).firstMatch
+        let openById = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "identifier == %@", "L4ContractPhotoPickerOpen"))
+            .firstMatch
+        let openByText = app.descendants(matching: .any).matching(Self.l4ContractDisplayTextPredicate("L4ContractPhotoPickerOpen")).firstMatch
+        let openResolved: XCUIElement = {
+            if openById.waitForExistence(timeout: 3.0) { return openById }
+            return openByText
+        }()
         XCTAssertTrue(
-            openBtn.waitForExistence(timeout: 2.5),
-            "platformPhotoPicker_L4: contract open control must exist (contract structure)"
+            openResolved.exists,
+            "platformPhotoPicker_L4: contract open control must exist (identifier L4ContractPhotoPickerOpen or label match)"
         )
-        tapByNormalizedCenter(openBtn)
+        tapByNormalizedCenter(openResolved)
         // `platformPhotoPicker_L4` wraps ``UnifiedImagePicker``; the inner host also carries
         // `UnifiedImagePicker` named compliance. System `PHPicker` presentation may hide the outer
         // SwiftUI identifier from XCUI while the sheet is key (#261).
