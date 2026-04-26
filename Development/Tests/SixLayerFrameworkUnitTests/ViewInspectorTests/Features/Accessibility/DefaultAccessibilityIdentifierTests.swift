@@ -72,7 +72,7 @@ open class DefaultAccessibilityIdentifierTests: BaseTestClass {    /// BUSINESS 
             // clearDebugLog method doesn't exist, so we skip that
                 
             // When: Using framework component with .named() modifier (identifierName for ID; .named for label)
-            let testView = PlatformInteractionButton(style: .primary, action: {}, identifierName: "TestButton") {
+            _ = PlatformInteractionButton(style: .primary, action: {}, identifierName: "TestButton") {
                 platformPresentContent_L1(content: "Test Button", hints: PresentationHints())
             }
             .named("TestButton")
@@ -136,7 +136,7 @@ open class DefaultAccessibilityIdentifierTests: BaseTestClass {    /// BUSINESS 
             // Config is available if we reach here
                 
             // When: Using framework component with opt-out modifier
-            let testView = PlatformInteractionButton(style: .primary, action: {}) {
+            _ = PlatformInteractionButton(style: .primary, action: {}) {
                 platformPresentContent_L1(content: "Decorative Button", hints: PresentationHints())
             }
             // Set config directly (no environment variable)
