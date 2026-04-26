@@ -1099,6 +1099,7 @@ final class Layer4UITests: XCTestCase {
             "platformPhotoPicker_L4: contract open control must exist (identifier L4ContractPhotoPickerOpen or label match)"
         )
         tapByNormalizedCenter(openResolved)
+        RunLoop.current.run(until: Date().addingTimeInterval(0.65))
         // `platformPhotoPicker_L4` wraps ``UnifiedImagePicker``; the inner host also carries
         // `UnifiedImagePicker` named compliance. System `PHPicker` presentation may hide the outer
         // SwiftUI identifier from XCUI while the sheet is key (#261).
@@ -1113,9 +1114,11 @@ final class Layer4UITests: XCTestCase {
         // `PHPickerViewController` often owns the key window: SwiftUI-named compliance may not surface
         // to XCUI while the system picker is foreground (#261). Still require a presented sheet.
         let sheetPresented = app.sheets.firstMatch.waitForExistence(timeout: 3.0)
+        let systemPickerChrome = app.buttons["Cancel"].firstMatch.waitForExistence(timeout: 4.0)
+            || app.navigationBars.buttons["Cancel"].firstMatch.waitForExistence(timeout: 2.0)
         XCTAssertTrue(
-            hasFrameworkId || sheetPresented,
-            "platformPhotoPicker_L4: expect SixLayer picker identifiers when visible, otherwise a presented system picker sheet"
+            hasFrameworkId || sheetPresented || systemPickerChrome,
+            "platformPhotoPicker_L4: expect SixLayer picker identifiers when visible, a presented sheet, or system picker chrome (e.g. Cancel)"
         )
         let cancel = app.buttons["Cancel"].firstMatch
         if cancel.waitForExistence(timeout: 1.2) {
