@@ -392,7 +392,7 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
         
         // Then: Accessibility label should describe the progress
         #if canImport(ViewInspector)
-        withInspectedView(progressIndicator) { inspected in
+        withInspectedView(progressIndicator) { _ in
             // Verify accessibility label is set
             let hasAccessibilityLabel = testComponentComplianceSinglePlatform(
                 progressIndicator,
