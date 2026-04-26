@@ -33,7 +33,7 @@ final class AccessibilityIdentifierCategoryEUITests: XCTestCase {
             instance.app = localApp
 
             XCTAssertTrue(
-                localApp.staticTexts[IDs.hostTitle].waitForExistence(timeout: 6.0),
+                localApp.staticTexts[IDs.hostTitle].waitForExistence(timeout: 2.5),
                 "Category E host should appear with -OpenCategoryEOneOffs"
             )
         }
@@ -48,7 +48,7 @@ final class AccessibilityIdentifierCategoryEUITests: XCTestCase {
 
     func testCategoryE_explicitEnable_generatesIdentifierForPlainSwiftUIView() throws {
         XCTAssertTrue(
-            app.descendants(matching: .any)[IDs.explicitEnableRow].waitForExistence(timeout: 4.0),
+            app.descendants(matching: .any)[IDs.explicitEnableRow].waitForExistence(timeout: 1.5),
             "Explicit-enable row should expose an accessibility identifier for the plain SwiftUI subtree"
         )
     }
@@ -62,11 +62,11 @@ final class AccessibilityIdentifierCategoryEUITests: XCTestCase {
 
     func testCategoryE_clipboardGeneration_updatesVisibleResultState() throws {
         let trigger = app.buttons[IDs.clipboardTriggerButton]
-        XCTAssertTrue(trigger.waitForExistence(timeout: 4.0), "Clipboard generation trigger should exist")
+        XCTAssertTrue(trigger.waitForExistence(timeout: 1.5), "Clipboard generation trigger should exist")
         trigger.tap()
 
         let state = app.staticTexts[IDs.clipboardStateLabel]
-        XCTAssertTrue(state.waitForExistence(timeout: 4.0), "Clipboard state label should exist")
+        XCTAssertTrue(state.waitForExistence(timeout: 1.5), "Clipboard state label should exist")
         XCTAssertEqual(state.label, "Clipboard state: generated")
     }
 }
