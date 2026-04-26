@@ -12,6 +12,7 @@
 | `platformCloudKitAccountStatus_L4` | partial | TBD | TBD | TBD | partial | Hosted semantic surface (`Layer4SemanticAccessibilityCriterionTests`); VO label copy → manual #255. |
 | `platformCloudKitServiceStatus_L4` | partial | TBD | TBD | TBD | partial | Composite host + identifier sweep; contrast of error/queue captions → manual. |
 | `platformCloudKitStatusBadge_L4` | partial | TBD | TBD | TBD | partial | Idle vs syncing hosted trait checks; Dynamic Type scaling → manual or snapshot policy. |
+| `platformShare_L4` / `platformPrint_L4` | partial | TBD | TBD | TBD | partial | Hosted semantic tests assert button-like trigger traits; dialog/picker flows still need explicit assistive walkthrough. |
 | Navigation / sheet / popover L4 APIs | UITest | TBD | TBD | TBD | partial | `Layer4UITests` exercises structure; macOS parity where scheme runs macOS UITests. |
 | Photo / map / split / form L4 APIs | UITest / TBD | TBD | TBD | TBD | TBD | Staged: align with `PHYSICAL_DEVICE_TEST_REGISTRY.md` where hardware matters. |
 
