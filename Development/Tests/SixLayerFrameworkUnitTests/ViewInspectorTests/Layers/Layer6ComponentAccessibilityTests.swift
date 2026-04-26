@@ -102,7 +102,7 @@ open class Layer6ComponentAccessibilityTests: BaseTestClass {
     @Test @MainActor func testCrossPlatformOptimizationLayer6GetPlatformRecommendations() async {
         // NOTE: getPlatformRecommendations() has been removed - PlatformRecommendationEngine moved to possible-features/
         // Given: Layer 6 cross-platform optimization component
-        let crossPlatformOptimization = CrossPlatformOptimizationManager()
+        _ = CrossPlatformOptimizationManager()
         
         // When: Getting platform recommendations
         // let recommendations = crossPlatformOptimization.getPlatformRecommendations()
@@ -138,7 +138,7 @@ open class Layer6ComponentAccessibilityTests: BaseTestClass {
         let performanceLayer = PlatformPerformanceLayer6()
         
         // When: Getting performance view
-        let performanceView = performanceLayer.body
+        _ = performanceLayer.body
         
         // Then: Should return valid view (body always returns a non-optional View)
     }
@@ -148,7 +148,7 @@ open class Layer6ComponentAccessibilityTests: BaseTestClass {
         let performanceLayer = PlatformPerformanceLayer6()
         
         // When: Getting performance view
-        let performanceView = performanceLayer.body
+        _ = performanceLayer.body
         
         // Then: Should return valid view (body always returns a non-optional View)
     }
