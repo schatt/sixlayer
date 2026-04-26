@@ -98,7 +98,7 @@ def fix_test_file(file_path: Path) -> int:
             if expect_indices:
                 # Found expects - wrap them
                 # Add platform check before assignment
-                new_lines.append(' ' * assignment_indent + '#if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)\n')
+                new_lines.append(' ' * assignment_indent + '#if canImport(ViewInspector)\n')
                 
                 # Add assignment lines (remove TODO comments from them)
                 for assignment_line in assignment_lines:
@@ -188,7 +188,7 @@ def fix_test_file(file_path: Path) -> int:
             
             if expect_indices:
                 # Wrap it
-                new_lines.append(' ' * assignment_indent + '#if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)\n')
+                new_lines.append(' ' * assignment_indent + '#if canImport(ViewInspector)\n')
                 
                 for assignment_line in assignment_lines:
                     cleaned = re.sub(r'\s*//\s*(TODO|VERIFIED|The test needs|This is a ViewInspector|Remove this workaround).*', '', assignment_line, flags=re.IGNORECASE)
@@ -236,7 +236,7 @@ def fix_test_file(file_path: Path) -> int:
             complete_expect = ''.join(lines[i:j+1])
             
             # Wrap it
-            new_lines.append(' ' * expect_indent + '#if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)\n')
+            new_lines.append(' ' * expect_indent + '#if canImport(ViewInspector)\n')
             new_lines.append(complete_expect)
             new_lines.append(' ' * expect_indent + '#else\n')
             new_lines.append(' ' * expect_indent + '// ViewInspector not available on this platform (likely macOS) - this is expected, not a failure\n')
