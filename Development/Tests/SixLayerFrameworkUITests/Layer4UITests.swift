@@ -33,7 +33,8 @@ final class Layer4UITests: XCTestCase {
     nonisolated(unsafe) private var app: XCUIApplication!
     private static let quickWait: TimeInterval = 0.35
     private static let rootReadyTimeout: TimeInterval = 4.0
-    private static let maxScrollAttempts = 5
+    /// L4 contract `Form` is tall (overlay + CloudKit blocks); shallow swipes miss mid-form controls on current simulators (#261).
+    private static let maxScrollAttempts = 14
 
     nonisolated override func setUpWithError() throws {
         continueAfterFailure = false
@@ -90,6 +91,15 @@ final class Layer4UITests: XCTestCase {
     @MainActor
     private func waitForContractDisplayText(_ text: String, timeout: TimeInterval) -> Bool {
         app.descendants(matching: .any).matching(Self.l4ContractDisplayTextPredicate(text)).firstMatch.waitForExistence(timeout: timeout)
+    }
+
+    /// Matches `Label` / composite rows where XCTest merges title + image description across one `label` string.
+    @MainActor
+    private func waitForContractDisplayTextContainingAll(_ parts: [String], timeout: TimeInterval) -> Bool {
+        guard !parts.isEmpty else { return false }
+        let predicates = parts.map { NSPredicate(format: "label CONTAINS[c] %@", $0) }
+        let compound = NSCompoundPredicate(andPredicateWithSubpredicates: predicates)
+        return app.descendants(matching: .any).matching(compound).firstMatch.waitForExistence(timeout: timeout)
     }
 
     /// True when any a11y node exposes `label` (Form section headers are often not `XCUIElementType.staticText`).
@@ -352,8 +362,8 @@ final class Layer4UITests: XCTestCase {
         let identifier = Self.l4ContractIdentifier(sanitizedName: sanitizedIdentifierName, elementType: identifierElementType)
         // Prefer contract type first so we find the real control; then .other as fallback (type assertion will fail if only wrapper has id).
         let typesToTry: [(XCUIElement.ElementType, TimeInterval)] = (type == .textField || type == .secureTextField || type == .switch || type == .textView)
-            ? [(type, 1.8), (.other, 0.9)]
-            : [(type, 1.8)]
+            ? [(type, 3.0), (.other, 1.2)]
+            : [(type, 3.0)]
         var el: XCUIElement?
         for (primaryType, timeout) in typesToTry {
             el = app.findElement(byIdentifier: identifier, primaryType: primaryType, secondaryTypes: [.other, .button, .staticText, .any], timeout: timeout)
@@ -975,8 +985,10 @@ final class Layer4UITests: XCTestCase {
         ensureContractRoot()
         scrollToElement(label: "L4 System")
         scrollToElement(label: "CloudKit Sync Status")
-        XCTAssertTrue(waitForContractDisplayText("CloudKit Sync: Idle", timeout: 1.0),
-                      "platformCloudKitSyncStatus_L4: status text must be visible (contract structure)")
+        XCTAssertTrue(
+            waitForContractDisplayTextContainingAll(["CloudKit Sync", "Idle"], timeout: 1.5),
+            "platformCloudKitSyncStatus_L4: status text must be visible (contract structure)"
+        )
         let exactId = element(matchingIdentifier: "platformCloudKitSyncStatus_L4")
         let containsId = app.descendants(matching: .any)
             .matching(NSPredicate(format: "identifier CONTAINS[c] %@", "platformCloudKitSyncStatus"))
