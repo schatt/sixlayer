@@ -27,23 +27,23 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
         // This matches the structure of FormProgressIndicator
         
         // Find VStacks in hierarchy (root may be type-erased — Issue 178)
-        let vStacks = (try? inspected.findAll(ViewInspector.ViewType.VStack.self)) ?? []
+        let vStacks = inspected.findAll(ViewInspector.ViewType.VStack.self)
         for vStack in vStacks {
-            let progressViews = (try? vStack.findAll(ViewInspector.ViewType.ProgressView.self)) ?? []
+            let progressViews = vStack.findAll(ViewInspector.ViewType.ProgressView.self)
             let hasProgressView = !progressViews.isEmpty
-            let texts = (try? vStack.findAll(ViewInspector.ViewType.Text.self)) ?? []
+            let texts = vStack.findAll(ViewInspector.ViewType.Text.self)
             let hasProgressText = texts.contains { (try? $0.string()) == "Progress" }
             if hasProgressView && hasProgressText {
                 return inspected
             }
         }
         
-        // Fallback: search for ProgressView and "Progress" text anywhere (use try? so we never throw)
-        let progressViews = (try? inspected.findAll(ViewInspector.ViewType.ProgressView.self)) ?? []
+        // Fallback: search for ProgressView and "Progress" text anywhere
+        let progressViews = inspected.findAll(ViewInspector.ViewType.ProgressView.self)
         for _ in progressViews {
             // If we found a ProgressView, check if there's "Progress" text nearby
             // (indicating this is likely the progress indicator)
-            let texts = (try? inspected.findAll(ViewInspector.ViewType.Text.self)) ?? []
+            let texts = inspected.findAll(ViewInspector.ViewType.Text.self)
             let hasProgressText = texts.contains { text in
                 (try? text.string()) == "Progress"
             }
@@ -358,7 +358,7 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
             )
             let progressIndicator = FormProgressIndicator(progress: progress)
             
-            let inspectionResult = withInspectedView(progressIndicator) { inspected in
+            withInspectedView(progressIndicator) { inspected in
                 let texts = inspected.findAll(ViewInspector.ViewType.Text.self)
                 let fieldCountText = texts.first { text in
                     (try? text.string())?.contains("of") ?? false
@@ -370,10 +370,6 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
                 } else {
                     Issue.record("Could not find field count text for \(testCase.completed)/\(testCase.total)")
                 }
-            }
-            
-            if inspectionResult == nil {
-                Issue.record("View inspection failed for \(testCase.completed)/\(testCase.total)")
             }
         }
         #else
@@ -396,7 +392,7 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
         
         // Then: Accessibility label should describe the progress
         #if canImport(ViewInspector)
-        let inspectionResult = withInspectedView(progressIndicator) { inspected in
+        withInspectedView(progressIndicator) { inspected in
             // Verify accessibility label is set
             let hasAccessibilityLabel = testComponentComplianceSinglePlatform(
                 progressIndicator,
@@ -405,10 +401,6 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
                 componentName: "FormProgressIndicator"
             )
             #expect(hasAccessibilityLabel, "Progress indicator should have accessibility identifier")
-        }
-        
-        if inspectionResult == nil {
-            Issue.record("View inspection failed - could not verify accessibility label")
         }
         #else
         // ViewInspector not available on macOS - verify component is created
@@ -428,7 +420,7 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
         
         // Then: Accessibility identifier should be set and component should have proper structure
         #if canImport(ViewInspector)
-        let inspectionResult = withInspectedView(progressIndicator) { inspected in
+        withInspectedView(progressIndicator) { inspected in
             // Verify accessibility identifier is set (as per implementation)
             let hasAccessibilityID = testComponentComplianceSinglePlatform(
                 progressIndicator,
@@ -449,10 +441,6 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
             
             // Note: ViewInspector cannot directly read accessibilityLabel/accessibilityValue content,
             // but we verify the component structure and that modifiers are applied via identifier check
-        }
-        
-        if inspectionResult == nil {
-            Issue.record("View inspection failed - could not verify accessibility value")
         }
         #else
         // ViewInspector not available on macOS - verify component is created
@@ -479,7 +467,7 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
         #if canImport(ViewInspector)
         // Verify all indicators have accessibility modifiers
         for (indicator, expectedCompleted) in [(indicator0, 0), (indicator1, 1), (indicator3, 3)] {
-            let inspectionResult = withInspectedView(indicator) { inspected in
+            withInspectedView(indicator) { inspected in
                 // Verify accessibility identifier is set
                 let hasAccessibilityID = testComponentComplianceSinglePlatform(
                     indicator,
@@ -492,10 +480,6 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
                 // Verify structure contains text elements that screen readers can announce
                 let texts = inspected.findAll(ViewInspector.ViewType.Text.self)
                 #expect(texts.count >= 2, "Should have text elements for screen reader announcements")
-            }
-            
-            if inspectionResult == nil {
-                Issue.record("View inspection failed for progress indicator with \(expectedCompleted) completed")
             }
         }
         #else
@@ -520,9 +504,9 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
         #if canImport(ViewInspector)
         tryWithFirstVStack(progressIndicator, testName: "Progress indicator design structure") { vStack in
             let hStack = vStack.findAll(ViewType.HStack.self)
-            #expect(hStack != nil, "Should contain HStack for title and count")
+            #expect(!hStack.isEmpty, "Should contain HStack for title and count")
             let progressView = vStack.findAll(ViewInspector.ViewType.ProgressView.self)
-            #expect(progressView != nil, "Should contain ProgressView for visual progress bar")
+            #expect(!progressView.isEmpty, "Should contain ProgressView for visual progress bar")
         }
         #else
         // ViewInspector not available on macOS - verify component is created
@@ -564,7 +548,7 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
         
         // Then: Should display all elements
         #if canImport(ViewInspector)
-        let inspectionResult = withInspectedView(progressIndicator) { inspected in
+        withInspectedView(progressIndicator) { inspected in
             // Find all Text elements
             let texts = inspected.findAll(ViewInspector.ViewType.Text.self)
             
@@ -585,11 +569,7 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
             
             // Verify ProgressView exists
             let progressView = inspected.findAll(ViewInspector.ViewType.ProgressView.self)
-            #expect(progressView != nil, "Should display progress bar")
-        }
-        
-        if inspectionResult == nil {
-            Issue.record("View inspection failed - could not verify all elements")
+            #expect(!progressView.isEmpty, "Should display progress bar")
         }
         #else
         // ViewInspector not available on macOS - verify component is created
@@ -616,7 +596,7 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
             let texts = vStack.findAll(ViewInspector.ViewType.Text.self)
             #expect(texts.count >= 2, "Should have text elements visible in light mode")
             let progressView = vStack.findAll(ViewInspector.ViewType.ProgressView.self)
-            #expect(progressView != nil, "Progress bar should be visible in light mode")
+            #expect(!progressView.isEmpty, "Progress bar should be visible in light mode")
         }
         #else
         // ViewInspector not available on macOS - verify component is created
@@ -641,7 +621,7 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
             let texts = vStack.findAll(ViewInspector.ViewType.Text.self)
             #expect(texts.count >= 2, "Should have text elements visible in dark mode")
             let progressView = vStack.findAll(ViewInspector.ViewType.ProgressView.self)
-            #expect(progressView != nil, "Progress bar should be visible in dark mode")
+            #expect(!progressView.isEmpty, "Progress bar should be visible in dark mode")
         }
         #else
         // ViewInspector not available on macOS - verify component is created
@@ -668,10 +648,6 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
         let progress1Empty = FormProgress(completed: 0, total: 1, percentage: 0.0)
         let indicator1Empty = FormProgressIndicator(progress: progress1Empty)
         
-        // Test Case 3: Single field completed (1 of 1)
-        let progress1Full = FormProgress(completed: 1, total: 1, percentage: 1.0)
-        let indicator1Full = FormProgressIndicator(progress: progress1Full)
-        
         // Test Case 4: Many fields (10 of 100)
         let progress100 = FormProgress(completed: 10, total: 100, percentage: 0.1)
         let indicator100 = FormProgressIndicator(progress: progress100)
@@ -679,7 +655,7 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
         // Verify text uses singular/plural correctly
         #if canImport(ViewInspector)
         // Test singular "field" text
-        let inspectionResult1 = withInspectedView(indicator1Empty) { inspected in
+        withInspectedView(indicator1Empty) { inspected in
             let texts = inspected.findAll(ViewInspector.ViewType.Text.self)
             let fieldText = texts.first { text in
                 let str = try? text.string()
@@ -692,7 +668,7 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
         }
         
         // Test plural "fields" text
-        let inspectionResult100 = withInspectedView(indicator100) { inspected in
+        withInspectedView(indicator100) { inspected in
             let texts = inspected.findAll(ViewInspector.ViewType.Text.self)
             let fieldText = texts.first { text in
                 let str = try? text.string()
@@ -702,10 +678,6 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
                 let textString = try? text.string()
                 #expect(textString?.contains("fields") ?? false, "Should use plural 'fields' for total > 1")
             }
-        }
-        
-        if inspectionResult1 == nil || inspectionResult100 == nil {
-            Issue.record("View inspection failed - could not verify singular/plural text")
         }
         #else
         // ViewInspector not available on macOS - verify components are created
