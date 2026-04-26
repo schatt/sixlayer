@@ -37,9 +37,9 @@ final class ManualAccessibilityIdentifierHarnessUITests: XCTestCase {
             localApp.launch()
             instance.app = localApp
             // Large-title layouts may not expose "Layer 4 Examples" on NavigationBar immediately; section title is stable.
-            let onLayer4 = localApp.navigationBars["Layer 4 Examples"].waitForExistence(timeout: 5.0)
-                || localApp.staticTexts["Layer 4 Examples"].waitForExistence(timeout: 2.0)
-                || localApp.staticTexts["Component test views"].waitForExistence(timeout: 8.0)
+            let onLayer4 = localApp.navigationBars["Layer 4 Examples"].waitForExistence(timeout: 2.0)
+                || localApp.staticTexts["Layer 4 Examples"].waitForExistence(timeout: 1.2)
+                || localApp.staticTexts["Component test views"].waitForExistence(timeout: 2.5)
             XCTAssertTrue(onLayer4, "Test app should open Layer 4 Examples (-OpenLayer4ComponentExamples)")
         }
     }
@@ -53,7 +53,7 @@ final class ManualAccessibilityIdentifierHarnessUITests: XCTestCase {
 
     /// After UITest integration naming, explicit `platformButton(..., id:)` ids appear as
     /// `SixLayer.main.ui.<id>.Button` (see `Layer4UITests` / `ButtonTestView` comments).
-    private func assertAccessibilityIdentifierContains(_ substring: String, timeout: TimeInterval = 12.0) {
+    private func assertAccessibilityIdentifierContains(_ substring: String, timeout: TimeInterval = 3.0) {
         let pred = NSPredicate(format: "identifier CONTAINS[c] %@", substring)
         let el = app.descendants(matching: .any).matching(pred).firstMatch
         XCTAssertTrue(
@@ -77,16 +77,16 @@ final class ManualAccessibilityIdentifierHarnessUITests: XCTestCase {
         }
 
         var edgeLink = resolveEdgeRow()
-        for _ in 0..<20 {
+        for _ in 0..<8 {
             if edgeLink.waitForExistence(timeout: 0.4), edgeLink.isHittable { break }
             app.xcuiSwipeScrollHostsUp()
             edgeLink = resolveEdgeRow()
         }
-        XCTAssertTrue(edgeLink.waitForExistence(timeout: 6.0) && edgeLink.isHittable, "Identifier Edge Case link should exist")
+        XCTAssertTrue(edgeLink.waitForExistence(timeout: 2.0) && edgeLink.isHittable, "Identifier Edge Case link should exist")
         edgeLink.tap()
 
         XCTAssertTrue(
-            app.navigationBars["Identifier Edge Case"].waitForExistence(timeout: 8.0),
+            app.navigationBars["Identifier Edge Case"].waitForExistence(timeout: 2.5),
             "Should land on Identifier Edge Case screen"
         )
 
