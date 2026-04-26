@@ -142,7 +142,7 @@ open class BarcodeScanningUITests: BaseTestClass {
         #if canImport(ViewInspector)
         if let inspected = try? AnyView(regularFieldView).inspect() {
             // Regular field should not have HStack with barcode button
-            let hStack = inspected.findAll(ViewType.HStack.self)
+            _ = inspected.findAll(ViewType.HStack.self)
             // Note: This might still have HStack if field supports OCR, so we check for barcode button specifically
             #expect(Bool(true), "Regular field test - barcode button should not be present")
         }
@@ -357,14 +357,14 @@ open class BarcodeScanningUITests: BaseTestClass {
         )
         
         // Should initialize successfully
-        let overlayView = BarcodeOverlayView(
+        _ = BarcodeOverlayView(
             image: testImage,
             result: barcodeResult,
             onBarcodeSelect: { _ in }
         )
         
         // Verify view can be created (don't host to avoid UI rendering issues in tests)
-        #expect(BarcodeOverlayView.self != nil, "Barcode overlay view should be creatable")
+        #expect(Bool(true), "Barcode overlay view should be creatable")
         #expect(barcodeResult.hasBarcodes == true, "Result should have barcodes")
     }
     
@@ -384,14 +384,14 @@ open class BarcodeScanningUITests: BaseTestClass {
         let testImage = PlatformImage()
         
         // Should handle empty result gracefully
-        let overlayView = BarcodeOverlayView(
+        _ = BarcodeOverlayView(
             image: testImage,
             result: emptyResult,
             onBarcodeSelect: { _ in }
         )
         
         // Verify view can be created with empty result
-        #expect(BarcodeOverlayView.self != nil, "Barcode overlay view should handle empty result")
+        #expect(Bool(true), "Barcode overlay view should handle empty result")
         #expect(emptyResult.hasBarcodes == false, "Empty result should have no barcodes")
     }
     
@@ -416,7 +416,7 @@ open class BarcodeScanningUITests: BaseTestClass {
         
         // Verify function exists and can be called without hanging
         // We don't host the view because it has .task that auto-starts processing
-        let barcodeView = platformScanBarcode_L1(
+        _ = platformScanBarcode_L1(
             image: testImage,
             context: context,
             onResult: { _ in }
@@ -455,7 +455,7 @@ open class BarcodeScanningUITests: BaseTestClass {
         let formState = DynamicFormState(configuration: testConfig)
         formState.initializeField(field)
         
-        let fieldView = CustomFieldView(field: field, formState: formState)
+        _ = CustomFieldView(field: field, formState: formState)
         
         // Should have barcode hint
         #expect(field.barcodeHint != nil, "Field should have barcode hint for accessibility")
