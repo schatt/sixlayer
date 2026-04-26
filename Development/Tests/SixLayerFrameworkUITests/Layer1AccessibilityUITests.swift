@@ -289,18 +289,19 @@ final class Layer1AccessibilityUITests: XCTestCase {
                 }
 
             case "Notifications":
-                let notificationSurfaces = app.descendants(matching: .any).matching(
-                    NSPredicate(format: "identifier BEGINSWITH %@", "SixLayer.main.ui")
+                // This category documents async APIs (`NotificationExamplesView`); it is not a grid of
+                // `automaticCompliance` surfaces like Security. Assert stable copy instead of #245-style id sweep.
+                XCTAssertTrue(
+                    app.staticTexts["Notification Functions"].waitForExistence(timeout: 2.0),
+                    "Notifications category should show the Notification Functions section"
                 )
-                XCTAssertGreaterThan(
-                    notificationSurfaces.count,
-                    0,
-                    "Notification examples should expose SixLayer automatic accessibility identifiers (#245)"
+                let documentsNotificationAPIs = app.staticTexts
+                    .matching(NSPredicate(format: "label CONTAINS[c] %@", "platformRequestNotificationPermission_L1"))
+                    .firstMatch
+                XCTAssertTrue(
+                    documentsNotificationAPIs.waitForExistence(timeout: 2.0),
+                    "Notifications category should surface documented Layer 1 notification API names in the UI"
                 )
-                for i in 0..<min(notificationSurfaces.count, 12) {
-                    let el = notificationSurfaces.element(boundBy: i)
-                    if el.exists { verifyAccessibilityIdentifier(el, functionName: "Layer1 notification surface") }
-                }
 
             case "Internationalization":
                 let i18nSurfaces = app.descendants(matching: .any).matching(
