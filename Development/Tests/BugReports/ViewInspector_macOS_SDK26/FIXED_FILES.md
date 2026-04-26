@@ -1,11 +1,11 @@
 # Files Updated to Handle ViewInspector macOS Issue
 
-This document lists all test files that have been updated to use the `ViewInspectorWrapper` and `VIEW_INSPECTOR_MAC_FIXED` compile-time flag to handle the ViewInspector macOS compilation issue (GitHub Issue #405).
+This document lists test files that were updated to use `ViewInspectorWrapper` while investigating the ViewInspector macOS compilation concern (GitHub Issue #405).
 
 ## Summary
-- **Total files updated**: 38 test files + 1 wrapper file
-- **Approach**: Centralized wrapper with compile-time flag in `Package.swift`
-- **Migration path**: When ViewInspector fixes issue #405, uncomment `.define("VIEW_INSPECTOR_MAC_FIXED")` in `Package.swift`
+- **Total files updated**: 38 test files + 1 wrapper file (historical count)
+- **Approach**: Centralized wrapper; tests gate ViewInspector usage with `#if canImport(ViewInspector)` (no separate macOS compile flag)
+- **Current build**: The legacy `VIEW_INSPECTOR_MAC_FIXED` Swift active compilation condition was removed from Xcode test targets (`project.yml`); do not reintroduce it unless you have a new migration reason.
 
 ## Core Infrastructure
 
@@ -17,12 +17,11 @@ This document lists all test files that have been updated to use the `ViewInspec
   - `inspectView()` extension on `View`
   - `withInspectedView()` helper function
   - `withInspectedViewThrowing()` helper function
-  - Compile-time flag support via `VIEW_INSPECTOR_MAC_FIXED`
+  - Optional ViewInspector usage guarded with `#if canImport(ViewInspector)` in test sources
 
 ### Package.swift
-- **Location**: `Package.swift`
-- **Change**: Added `swiftSettings` with commented-out `.define("VIEW_INSPECTOR_MAC_FIXED")`
-- **When fixed**: Uncomment the define line to enable macOS support
+- **Location**: `Package.swift` (SwiftPM); Xcode development uses `project.yml` / `SixLayerFramework.xcodeproj`
+- **Note**: Any historical `.define("VIEW_INSPECTOR_MAC_FIXED")` idea is obsolete; macOS ViewInspector is wired via normal target dependencies.
 
 ## Updated Test Files
 
@@ -98,7 +97,7 @@ All files now use one of these patterns:
 
 ### Pattern 1: Using `withInspectedView()` wrapper
 ```swift
-#if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+#if canImport(ViewInspector)
 let inspectionResult = withInspectedView(view) { inspected in
     // ViewInspector-specific code here
     let button = try inspected.button()
@@ -111,7 +110,7 @@ Issue.record("ViewInspector not available on this platform")
 
 ### Pattern 2: Using `tryInspect()` extension
 ```swift
-#if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+#if canImport(ViewInspector)
 if let inspectedView = view.tryInspect(),
    let buttonID = try? inspectedView.accessibilityIdentifier() {
     // Test assertions here
@@ -123,16 +122,14 @@ Issue.record("ViewInspector not available on this platform")
 
 ## Benefits
 
-1. **Single point of control**: Change one line in `Package.swift` to enable macOS support
-2. **No manual file updates**: All test files automatically work when flag is enabled
-3. **Centralized logic**: ViewInspector platform differences handled in one wrapper file
-4. **Type safety**: Wrapper functions handle `Any` vs `InspectableView` type differences
-5. **Easy migration**: When ViewInspector is fixed, uncomment one line
+1. **Centralized logic**: ViewInspector entry points live in the wrapper helpers
+2. **Explicit opt-in**: `#if canImport(ViewInspector)` keeps non-ViewInspector targets compiling
+3. **Type safety**: Wrapper functions handle `Any` vs `InspectableView` type differences
 
 ## Related Files
 
 - **ViewInspector Issue**: https://github.com/nalexn/ViewInspector/issues/405
-- **Wrapper Implementation**: `Development/Tests/SixLayerFrameworkTests/Utilities/TestHelpers/ViewInspectorWrapper.swift`
-- **Package Configuration**: `Package.swift` (swiftSettings section)
+- **Wrapper implementation**: see `Development/Tests/Shared/TestHelpers/` (current tree; paths in lists above are historical)
+- **Xcode configuration**: `project.yml` (ViewInspector package + test targets)
 
 
