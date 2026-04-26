@@ -1092,12 +1092,19 @@ final class Layer4UITests: XCTestCase {
             "platformPhotoPicker_L4: contract open control must exist (contract structure)"
         )
         tapByNormalizedCenter(openBtn)
-        let pickerPredicate = NSPredicate(format: "identifier CONTAINS[c] %@", "platformPhotoPicker_L4")
+        // `platformPhotoPicker_L4` wraps ``UnifiedImagePicker``; the inner host also carries
+        // `UnifiedImagePicker` named compliance. System `PHPicker` presentation may hide the outer
+        // SwiftUI identifier from XCUI while the sheet is key (#261).
+        let pickerPredicate = NSPredicate(
+            format: "identifier CONTAINS[c] %@ OR identifier CONTAINS[c] %@",
+            "platformPhotoPicker_L4",
+            "UnifiedImagePicker"
+        )
         let pickerInSheet = app.sheets.descendants(matching: .any).matching(pickerPredicate).firstMatch
         let pickerInApp = app.descendants(matching: .any).matching(pickerPredicate).firstMatch
         XCTAssertTrue(
             pickerInSheet.waitForExistence(timeout: 8.0) || pickerInApp.waitForExistence(timeout: 8.0),
-            "platformPhotoPicker_L4: picker subtree must expose contract a11y identifier"
+            "platformPhotoPicker_L4: picker subtree must expose contract a11y identifier (platformPhotoPicker_L4 or UnifiedImagePicker)"
         )
         let cancel = app.buttons["Cancel"].firstMatch
         if cancel.waitForExistence(timeout: 1.2) {
