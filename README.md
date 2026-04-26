@@ -27,7 +27,7 @@ Navigate to the `Framework/` directory and use it as a Swift Package:
 ```swift
 // In your Package.swift
 dependencies: [
-    .package(url: "https://github.com/schatt/sixlayer.git", from: "7.7.0")
+    .package(url: "https://github.com/schatt/sixlayer.git", from: "7.7.1")
 ]
 ```
 
@@ -41,9 +41,12 @@ dependencies: [
 
 The framework is distributed as a Swift Package from the `Framework/` directory. This ensures that only the essential framework code is included when other projects consume it.
 
-## 🆕 Latest Release: v7.7.0
+## 🆕 Latest Release: v7.7.1
 
-### **Minor release**
+### **Patch release**
+🔧 **Patch**: Restores explicit list accessibility identifier runtime contract discoverability for UI-test consumers (Issue #257), with release-lane test stabilization updates. See [RELEASE_v7.7.1.md](Development/RELEASE_v7.7.1.md).
+
+### **Previous Release: v7.7.0 - Minor release**
 📋 **Minor**: VisionKit live data scanner Layer 4 path (#252) and runtime capability namespacing/co-ship completion (#253), including new namespaced probes (`Network`, `Media`, `Pasteboard`, `Accessibility`) with test overrides and teardown. Also includes release-process support updates from issues #246 and #247. See [RELEASE_v7.7.0.md](Development/RELEASE_v7.7.0.md).
 
 ### **Previous Release: v7.6.2 - Patch release**
