@@ -44,7 +44,7 @@ The framework is distributed as a Swift Package from the `Framework/` directory.
 ## 🆕 Latest Release: v7.7.2
 
 ### **Patch release**
-🔧 **Patch**: Refreshes release checklist metadata so repository documentation, package comments, README references, and AI-agent guidance consistently identify v7.7.2 (Issue #270). See [RELEASE_v7.7.2.md](Development/RELEASE_v7.7.2.md).
+🔧 **Patch**: Fixes the `LocationService` main-thread services-enabled check (#258), wires `DynamicImageField` into image/photo selection and form state (#265), clarifies Layer 1 dynamic field preview docs (#267), and refreshes release metadata (#270). See [RELEASE_v7.7.2.md](Development/RELEASE_v7.7.2.md).
 
 ### **Previous Release: v7.7.1 - Patch release**
 🔧 **Patch**: Restores explicit list accessibility identifier runtime contract discoverability for UI-test consumers (Issue #257), with release-lane test stabilization updates. See [RELEASE_v7.7.1.md](Development/RELEASE_v7.7.1.md).
