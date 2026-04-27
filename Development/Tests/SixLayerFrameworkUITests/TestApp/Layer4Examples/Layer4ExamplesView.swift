@@ -74,6 +74,17 @@ struct Layer4ExamplesView: View {
                 }
             }
             .padding()
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        // Fill the navigation content bounds; default transparent ScrollView left the window black
+        // above/below short content on Simulator (iOS 26 host).
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        #if os(iOS)
+        .scrollContentBackground(.hidden)
+        #endif
+        .background {
+            Color.platformGroupedBackground
+                .ignoresSafeArea()
         }
         .platformFrame()
         .navigationTitle("Layer 4 Examples")
