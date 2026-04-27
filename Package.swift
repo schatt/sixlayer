@@ -1,5 +1,5 @@
 // swift-tools-version: 6.0
-// SixLayerFramework v7.7.1 - Patch: explicit list accessibility identifier runtime contract restoration (#257)
+// SixLayerFramework v7.7.2 - Patch: release checklist metadata consistency (#270)
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
