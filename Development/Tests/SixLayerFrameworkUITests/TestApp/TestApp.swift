@@ -42,7 +42,6 @@ struct TestApp: App {
         WindowGroup {
             TestAppContentView()
                 .environment(\.accessibilityIdentifierConfig, accessibilityIdentifierHostConfiguration)
-                .testAppHostRootSurface()
         }
     }
 }
