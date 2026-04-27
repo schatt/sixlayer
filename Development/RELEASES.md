@@ -5,12 +5,12 @@
 **Release Date**: April 27, 2026
 **Status**: Patch release
 **Previous Release**: v7.7.1 - Patch release
-**Note**: Refreshes release checklist metadata for v7.7.2 and keeps release automation inputs consistent (Issue #270).
+**Note**: Fixes LocationService main-thread checking, DynamicImageField state integration, Layer 1 preview documentation, and release metadata consistency (Issues #258, #265, #267, #270).
 **Next Release**: TBD
 
 ---
 
-## 🎯 **v7.7.2 - Release checklist metadata refresh** (April 27, 2026)
+## 🎯 **v7.7.2 - LocationService and DynamicImageField fixes** (April 27, 2026)
 
 ### **What's in v7.7.2:**
 - Patch release. See [RELEASE_v7.7.2.md](RELEASE_v7.7.2.md) for details.
