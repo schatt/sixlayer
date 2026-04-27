@@ -272,10 +272,10 @@ open class RuntimeCapabilityDetectionTDDTests: BaseTestClass {
         // Clear override
         CapabilityOverride.touchSupport = nil
         
-        // Should return to testing defaults
-        let platform = SixLayerPlatform.current
-        let expectedDefaults = TestingCapabilityDetection.getTestingDefaults(for: platform)
-        #expect(RuntimeCapabilityDetection.supportsTouchWithOverride == expectedDefaults.supportsTouch)
+        // With no `CapabilityOverride`, `supportsTouchWithOverride` must mirror intrinsic runtime
+        // detection (e.g. macOS can report touch-capable hardware / simulated prefs).
+        let intrinsicTouchSupport = RuntimeCapabilityDetection.supportsTouch
+        #expect(RuntimeCapabilityDetection.supportsTouchWithOverride == intrinsicTouchSupport)
     }
     
     // MARK: - Edge Case Tests
