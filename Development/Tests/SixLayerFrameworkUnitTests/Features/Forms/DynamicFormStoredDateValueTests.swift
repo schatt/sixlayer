@@ -61,4 +61,13 @@ struct DynamicFormStoredDateValueTests {
         #expect(DynamicFormStoredDateValue.date(fromStoredValue: "") == nil)
         #expect(DynamicFormStoredDateValue.date(fromStoredValue: "   ") == nil)
     }
+
+    @Test @MainActor func formState_dateValueRoundTripsThroughFieldValues() {
+        let config = DynamicFormConfiguration(id: "t", title: "T", sections: [])
+        let state = DynamicFormState(configuration: config)
+        let ref = Date(timeIntervalSince1970: 1_712_000_000)
+        state.setValue(ref, for: "due")
+        let parsed = DynamicFormStoredDateValue.date(fromStoredValue: state.fieldValues["due"])
+        #expect(parsed == ref)
+    }
 }
