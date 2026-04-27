@@ -7,7 +7,7 @@ import Foundation
 ///
 /// **Interoperability:** Also accepts `TimeInterval`, ISO-8601 strings, and the same medium/short
 /// localized strings written by `DatePickerField` / `TimePickerField` / `DateTimePickerField` in
-/// `AdvancedFieldTypes.swift` (see issue #266).
+/// `AdvancedFieldTypes.swift`. See `Framework/docs/AdvancedFieldTypesGuide.md` (date contracts) and GitHub #266.
 public enum DynamicFormStoredDateValue {
 
     /// Returns a `Date` suitable for `DatePicker` binding, or `nil` if nothing is stored / parseable.
