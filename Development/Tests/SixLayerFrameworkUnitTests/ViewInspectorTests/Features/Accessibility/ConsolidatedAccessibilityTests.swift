@@ -13373,7 +13373,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         // Given: Platform configuration
         let config = getCardExpansionPlatformConfig()
         let performanceConfig = getCardExpansionPerformanceConfig()
-        let accessibilityConfig = getCardExpansionAccessibilityConfig()
+        _ = getCardExpansionAccessibilityConfig()
         
         // When: Check that all required properties are present
         // Then: Test actual business logic (Bools and durations are non-optional; values checked below)
@@ -15633,7 +15633,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         let simulatedPlatforms = PlatformSimulationTestUtilities.testPlatforms
         
         // When: Check accessibility features for each platform
-        for platform in simulatedPlatforms {
+        for _ in simulatedPlatforms {
         // Set the test platform before getting the config
         defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
         
@@ -15908,21 +15908,21 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         let testHints = PresentationHints()
 
         // Test platformPresentItemCollection_L1
-        let collectionView = platformPresentItemCollection_L1(
+        _ = platformPresentItemCollection_L1(
         items: testItems,
         hints: testHints
         )
-        #expect(Bool(true), "Collection view should have automatic compliance")  // collectionView is non-optional
+        #expect(Bool(true), "Collection view should have automatic compliance")  // view is non-optional
 
         // Test platformPresentNumericData_L1
         let numericData = [
         GenericNumericData(value: 42.0, label: "Test Value", unit: "units")
         ]
-        let numericView = platformPresentNumericData_L1(
+        _ = platformPresentNumericData_L1(
         data: numericData,
         hints: testHints
         )
-        #expect(Bool(true), "Numeric view should have automatic compliance")  // numericView is non-optional
+        #expect(Bool(true), "Numeric view should have automatic compliance")  // view is non-optional
 
         // Both views should automatically have HIG compliance applied
         #expect(Bool(true), "All Layer 1 functions now have automatic HIG compliance!")
@@ -16087,30 +16087,15 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             self.runWithTaskLocalConfig {
         // Given: Default configuration
         guard let config = testConfig else {
-        
-        Issue.record("testConfig is nil")
-        
-        return
-        
-    }
-            
-        // Verify config is properly configured (config is non-optional after guard let)
-        // Config is available if we reach here
-            
-        // When: Using framework component with global disable (no environment variable - set config directly)
-        guard let config = testConfig else {
             Issue.record("testConfig is nil")
             return
         }
+        // When: Using framework component with global disable (set config directly)
         config.globalAutomaticAccessibilityIdentifiers = false  // ← Disable via config
-        let testView = PlatformInteractionButton(style: .primary, action: {}, identifierName: "Test") {
+        _ = PlatformInteractionButton(style: .primary, action: {}, identifierName: "Test") {
             platformPresentContent_L1(content: "Decorative Button", hints: PresentationHints())
         }
-            
-        // Then: The view should be created successfully
-        // testView is non-optional, so no need to check for nil
-            
-        // Opt-out should work even with automatic identifiers enabled by default
+        // Then: View is non-optional; opt-out path exercised via config
     }
 }
 

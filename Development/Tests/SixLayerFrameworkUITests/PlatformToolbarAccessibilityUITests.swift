@@ -45,12 +45,12 @@ final class PlatformToolbarAccessibilityUITests: XCTestCase {
 
             if testName.contains("testIssue221_platformFormToolbar") {
                 XCTAssertTrue(
-                    localApp.staticTexts["Form toolbar host"].waitForExistence(timeout: 5.0),
+                    localApp.staticTexts["Form toolbar host"].waitForExistence(timeout: 2.0),
                     "Form host should appear (-OpenPlatformToolbarIssue221Form)"
                 )
             } else {
                 XCTAssertTrue(
-                    localApp.staticTexts["Detail toolbar host"].waitForExistence(timeout: 5.0),
+                    localApp.staticTexts["Detail toolbar host"].waitForExistence(timeout: 2.0),
                     "Detail host should appear (-OpenPlatformToolbarIssue221Detail)"
                 )
             }
@@ -73,7 +73,7 @@ final class PlatformToolbarAccessibilityUITests: XCTestCase {
             byIdentifier: identifier,
             primaryType: .button,
             secondaryTypes: [.staticText, .cell, .other, .any],
-            timeout: 6.0
+            timeout: 2.0
         )
         XCTAssertNotNil(
             found,

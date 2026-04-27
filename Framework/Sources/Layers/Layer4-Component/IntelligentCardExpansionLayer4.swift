@@ -1000,42 +1000,44 @@ public struct ListCardComponent<Item: Identifiable>: View {
     }
     
     public var body: some View {
-        HStack {
-            Image(systemName: cardIcon)
-                .font(.title2)
-                .foregroundColor(cardColor)
-            
-            platformVStackContainer(alignment: .leading) {
-                Text(cardTitle)
-                    .font(.headline)
-                    .lineLimit(1)
-                    .foregroundColor(isPlaceholderTitle ? .blue.opacity(0.6) : .primary)
-                
-                if let subtitle = cardSubtitle {
-                    Text(subtitle)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+        // Use `Button` (not `onTapGesture`) so VoiceOver / XCUITest expose a single `.button` with the card title
+        // (Layer1 UI test contract: one tappable element per item — Issue #191, #261).
+        Button(action: { onItemSelected?(item) }) {
+            HStack {
+                Image(systemName: cardIcon)
+                    .font(.title2)
+                    .foregroundColor(cardColor)
+
+                platformVStackContainer(alignment: .leading) {
+                    Text(cardTitle)
+                        .font(.headline)
                         .lineLimit(1)
+                        .foregroundColor(isPlaceholderTitle ? .blue.opacity(0.6) : .primary)
+
+                    if let subtitle = cardSubtitle {
+                        Text(subtitle)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                            .lineLimit(1)
+                    }
                 }
+
+                Spacer()
+
+                if let badgeContent = badgeContent {
+                    badgeContent(item)
+                }
+
+                Image(systemName: "chevron.right")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
             }
-            
-            Spacer()
-            
-            // Badge content (if provided)
-            if let badgeContent = badgeContent {
-                badgeContent(item)
-            }
-            
-            Image(systemName: "chevron.right")
-                .font(.caption)
-                .foregroundColor(.secondary)
+            .padding()
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(.regularMaterial)
+            .cornerRadius(8)
         }
-        .padding()
-        .background(.regularMaterial)
-        .cornerRadius(8)
-        .onTapGesture {
-            onItemSelected?(item)
-        }
+        .buttonStyle(.plain)
         .platformRowActions_L4(edge: .trailing, allowsFullSwipe: false) {
             if let onItemEdited = onItemEdited {
                 PlatformRowActionButton(
@@ -1044,7 +1046,7 @@ public struct ListCardComponent<Item: Identifiable>: View {
                     action: { onItemEdited(item) }
                 )
             }
-            
+
             if let onItemDeleted = onItemDeleted {
                 PlatformDestructiveRowActionButton(
                     title: "Delete",
@@ -1053,13 +1055,8 @@ public struct ListCardComponent<Item: Identifiable>: View {
                 )
             }
         }
-        .accessibilityElement(children: .combine)
         .accessibilityLabel(cardTitle)
-        .accessibilityAddTraits(.isButton)
         .accessibilityHint("Tap to view details")
-        .accessibilityAction(named: "Activate") {
-            onItemSelected?(item)
-        }
         .automaticCompliance(
             named: "ListCardComponent",
             identifierLabel: CardDisplayHelper.accessibilityIdentifierLabel(for: item, hints: hints),

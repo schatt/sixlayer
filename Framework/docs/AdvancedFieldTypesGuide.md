@@ -22,6 +22,17 @@ The Advanced Field Types system provides a comprehensive set of sophisticated fo
 - **Value Persistence** - Integration with form state management
 - **Fallback Support** - Graceful degradation for older iOS versions and macOS
 
+### `DynamicFormState` date contracts (CustomFieldView vs advanced pickers)
+
+Two intentional storage shapes exist; do not mix them for the same field without conversion:
+
+| Path | Views | Stored value |
+|------|--------|----------------|
+| **Dynamic form / `CustomFieldView`** | `DynamicDateField`, `DynamicTimeField`, `DynamicDateTimeField` | Prefer `Date` in `fieldValues[fieldId]`. `DynamicFormStoredDateValue` also parses legacy `String` (ISO-8601 or the same medium/short formats below) and `TimeInterval`. |
+| **Advanced composable pickers** | `DatePickerField`, `TimePickerField`, `DateTimePickerField` in `AdvancedFieldTypes.swift` | Localized **medium / short** `String` values (see formatters in those types). |
+
+Hosts that migrate between paths should normalize at the boundary (parse to `Date` or serialize to the string format) so pickers and submit payloads stay consistent.
+
 ### 🔍 Autocomplete Field
 - **Smart Filtering** - Intelligent suggestion filtering with prefix matching
 - **Sorted Results** - Prioritized suggestions (exact matches first)

@@ -90,8 +90,8 @@ def fix_test_file(file_path: Path) -> int:
         
         # Wrap in platform check
         fixed_section = f'''        # VERIFIED: Component has .automaticCompliance() modifier applied
-        # ViewInspector limitation: Can't detect identifiers on macOS without VIEW_INSPECTOR_MAC_FIXED
-        #if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        # ViewInspector limitation: identifier detection can differ on macOS vs iOS
+        #if canImport(ViewInspector)
 {assignment_and_expect}
         #else
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
@@ -141,7 +141,7 @@ def fix_test_file(file_path: Path) -> int:
                     # Need to wrap
                     # Insert platform check before assignment
                     indent = len(lines[assignment_idx]) - len(lines[assignment_idx].lstrip())
-                    new_lines.append(' ' * indent + '#if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)')
+                    new_lines.append(' ' * indent + '#if canImport(ViewInspector)')
                     
                     # Add assignment and expect (remove TODO comments)
                     for j in range(assignment_idx, expect_idx + 1):

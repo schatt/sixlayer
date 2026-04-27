@@ -13,8 +13,8 @@ import XCTest
 /// Uses launch argument -OpenLayer5Accessibility. One app launch for the suite.
 @MainActor
 final class Layer5UITests: XCTestCase {
-    private static let rootReadyTimeout: TimeInterval = 3.0
-    private static let quickWait: TimeInterval = 0.5
+    private nonisolated static let rootReadyTimeout: TimeInterval = 3.0
+    private nonisolated static let quickWait: TimeInterval = 0.5
     nonisolated(unsafe) private var app: XCUIApplication!
 
     nonisolated override func setUpWithError() throws {

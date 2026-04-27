@@ -54,7 +54,7 @@ open class HIGComplianceFeaturesIssue36Tests: BaseTestClass {
     /// Verifies a view can be hosted and has automatic compliance applied
     @MainActor
     private func verifyViewIsHostable<V: View>(_ view: V, description: String) {
-        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
+        _ = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
         #expect(Bool(true), "\(description) should be hostable with automatic compliance")
     }
     
@@ -102,7 +102,6 @@ open class HIGComplianceFeaturesIssue36Tests: BaseTestClass {
         
         // THEN: Non-interactive elements should not have touch target requirements
         // (Touch target sizing only applies to interactive elements)
-        let currentPlatform = RuntimeCapabilityDetection.currentPlatform
         // Test verifies non-interactive elements don't need touch targets on any platform
         verifyViewIsHostable(textView, description: "Text view with automatic compliance")
     }

@@ -90,7 +90,7 @@ open class IntelligentCardExpansionLayer6Tests: BaseTestClass {
         let performanceConfig = getCardExpansionPerformanceConfig()
         let accessibilityConfig = getCardExpansionAccessibilityConfig()
         
-        let cardView = NativeExpandableCardView(
+        _ = NativeExpandableCardView(
             item: testItem,
             expansionStrategy: .hoverExpand,
             platformConfig: platformConfig,
@@ -99,7 +99,7 @@ open class IntelligentCardExpansionLayer6Tests: BaseTestClass {
         )
         
         // Verify card view is properly configured
-        #expect(Bool(true), "Card view should be created")  // cardView is non-optional
+        #expect(Bool(true), "Card view should be created")  // NativeExpandableCardView is non-optional
         
         // When: Testing haptic feedback behavior
         // Then: Configuration should be valid (L6 function responsibility)
@@ -278,12 +278,7 @@ open class IntelligentCardExpansionLayer6Tests: BaseTestClass {
         
         // Then: Configuration should be valid (L6 function responsibility)
         #expect(Bool(true), "Platform config should be created")  // config is non-optional
-        #expect(config.supportsTouch != nil, "Should have touch support setting")
-        #expect(config.supportsHover != nil, "Should have hover support setting")
-        #expect(config.supportsHapticFeedback != nil, "Should have haptic feedback support setting")
-        #expect(config.supportsVoiceOver != nil, "Should have VoiceOver support setting")
-        #expect(config.supportsSwitchControl != nil, "Should have Switch Control support setting")
-        #expect(config.supportsAssistiveTouch != nil, "Should have AssistiveTouch support setting")
+        // Capability flags are non-optional Bool on CardExpansionPlatformConfig
         
         // Apple HIG per platform (Issue #237). No capability overrides set in
         // this test, so the config reflects the platform's natural HIG floor:
@@ -304,9 +299,7 @@ open class IntelligentCardExpansionLayer6Tests: BaseTestClass {
         #expect(Bool(true), "Performance config should be created")  // config is non-optional
         #expect(config.maxAnimationDuration > 0, "Should have positive max animation duration")
         #expect(config.targetFrameRate > 0, "Should have positive target frame rate")
-        #expect(config.supportsSmoothAnimations != nil, "Should have smooth animations setting")
-        #expect(config.memoryOptimization != nil, "Should have memory optimization setting")
-        #expect(config.lazyLoading != nil, "Should have lazy loading setting")
+        // supportsSmoothAnimations, memoryOptimization, lazyLoading are Bool, not optional
     }
     
     @Test @MainActor func testCardExpansionAccessibilityConfig_Creation() {
@@ -315,9 +308,7 @@ open class IntelligentCardExpansionLayer6Tests: BaseTestClass {
         
         // Then: Configuration should be valid (L6 function responsibility)
         #expect(Bool(true), "Accessibility config should be created")  // config is non-optional
-        #expect(config.supportsVoiceOver != nil, "Should have VoiceOver support setting")
-        #expect(config.supportsSwitchControl != nil, "Should have Switch Control support setting")
-        #expect(config.supportsAssistiveTouch != nil, "Should have AssistiveTouch support setting")
+        // VoiceOver / SwitchControl / AssistiveTouch flags are non-optional Bool
         #expect(config.announcementDelay >= 0, "Should have non-negative announcement delay")
     }
     
@@ -359,22 +350,16 @@ open class IntelligentCardExpansionLayer6Tests: BaseTestClass {
     }
     
     @Test @MainActor func testCardExpansionPerformance() {
-        // Given: Card view for performance testing
-        let cardView = PlatformAwareExpandableCardView(
-            item: testItem,
-            expansionStrategy: .hoverExpand
-        )
-        
-        // When: Measuring performance
+        // When: Creating multiple card views (compile / construction smoke)
         for _ in 0..<10 {
-            let _ = PlatformAwareExpandableCardView(
+            _ = PlatformAwareExpandableCardView(
                 item: testItem,
                 expansionStrategy: .hoverExpand
             )
         }
         
         // Then: Performance should be acceptable
-        #expect(Bool(true), "Card should be created for performance test")  // cardView is non-optional
+        #expect(Bool(true), "Card should be created for performance test")
         // Performance test removed - performance monitoring was removed from framework
     }
 }

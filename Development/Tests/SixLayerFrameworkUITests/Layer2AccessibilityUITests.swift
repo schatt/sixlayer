@@ -40,7 +40,7 @@ final class Layer2AccessibilityUITests: XCTestCase {
             instance.app = localApp
             
             // Wait for app to be ready
-            XCTAssertTrue(localApp.waitForReady(timeout: 5.0), "App should be ready for testing")
+            XCTAssertTrue(localApp.waitForReady(timeout: 2.5), "App should be ready for testing")
         }
     }
     

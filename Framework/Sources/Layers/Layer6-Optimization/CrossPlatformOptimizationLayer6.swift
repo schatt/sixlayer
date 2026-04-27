@@ -615,7 +615,7 @@ public struct PlatformOptimizationModifier: ViewModifier {
             .environment(\.supportsHapticFeedback, platform.supportsHapticFeedback)
             .environment(\.supportsTouchGestures, platform.supportsTouchGestures)
             .environment(\.supportsKeyboardNavigation, platform.supportsKeyboardNavigation)
-            .automaticCompliance()
+            .automaticCompliance(identifierName: "platformSpecificOptimizations", identifierElementType: "View")
     }
 }
 
@@ -631,7 +631,7 @@ public struct PerformanceOptimizationModifier: ViewModifier {
         content
             .environment(\.performanceLevel, settings.performanceLevel)
             .environment(\.memoryStrategy, settings.memoryStrategy)
-            .automaticCompliance()
+            .automaticCompliance(identifierName: "performanceOptimizations", identifierElementType: "View")
     }
 }
 
@@ -648,7 +648,7 @@ public struct UIPatternOptimizationModifier: ViewModifier {
             .environment(\.navigationPatterns, patterns.navigationPatterns)
             .environment(\.interactionPatterns, patterns.interactionPatterns)
             .environment(\.layoutPatterns, patterns.layoutPatterns)
-            .automaticCompliance()
+            .automaticCompliance(identifierName: "uiPatternOptimizations", identifierElementType: "View")
     }
 }
 

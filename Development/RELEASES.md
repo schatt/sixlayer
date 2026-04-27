@@ -1,12 +1,21 @@
 # 🚀 Six-Layer Framework Release History
 
-## 📍 **Current Release: v7.7.1** 🎯
+## 📍 **Current Release: v7.7.2** 🎯
 
-**Release Date**: April 2026
+**Release Date**: April 27, 2026
 **Status**: Patch release
-**Previous Release**: v7.7.0 - Minor release
-**Note**: Restores explicit list accessibility identifier discoverability contract in runtime UI hierarchy (Issue #257).
+**Previous Release**: v7.7.1 - Patch release
+**Note**: Fixes LocationService main-thread checking, DynamicImageField state integration, Layer 1 preview documentation, and release metadata consistency (Issues #258, #265, #267, #270).
 **Next Release**: TBD
+
+---
+
+## 🎯 **v7.7.2 - LocationService and DynamicImageField fixes** (April 27, 2026)
+
+### **What's in v7.7.2:**
+- Patch release. See [RELEASE_v7.7.2.md](RELEASE_v7.7.2.md) for details.
+
+**See [RELEASE_v7.7.2.md](RELEASE_v7.7.2.md) for complete release notes.**
 
 ---
 

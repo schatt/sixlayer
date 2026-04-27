@@ -578,7 +578,9 @@ public struct FileRow: View {
 
 // MARK: - Date Picker Field
 
-/// Date picker field for selecting dates
+/// Date picker field for selecting dates.
+///
+/// **Storage contract:** Persists a **localized medium-style string** in ``DynamicFormState`` (see ``DynamicFormStoredDateValue`` and the Advanced Field Types guide for contrast with ``DynamicDateField``, which prefers `Date`).
 public struct DatePickerField: View {
     let field: DynamicFormField
     @ObservedObject var formState: DynamicFormState
@@ -629,7 +631,9 @@ public struct DatePickerField: View {
 
 // MARK: - Time Picker Field
 
-/// Time picker field for selecting times
+/// Time picker field for selecting times.
+///
+/// **Storage contract:** Persists a **localized short time string** in ``DynamicFormState`` (contrast: ``DynamicTimeField`` prefers `Date`).
 public struct TimePickerField: View {
     let field: DynamicFormField
     @ObservedObject var formState: DynamicFormState
@@ -680,7 +684,9 @@ public struct TimePickerField: View {
 
 // MARK: - Date Time Picker Field
 
-/// Date and time picker field for selecting both date and time
+/// Date and time picker field for selecting both date and time.
+///
+/// **Storage contract:** Persists a **localized medium date + short time string** in ``DynamicFormState`` (contrast: ``DynamicDateTimeField`` prefers `Date`).
 public struct DateTimePickerField: View {
     let field: DynamicFormField
     @ObservedObject var formState: DynamicFormState

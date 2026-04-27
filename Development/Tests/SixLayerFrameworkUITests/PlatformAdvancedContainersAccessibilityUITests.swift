@@ -48,9 +48,14 @@ final class PlatformAdvancedContainersAccessibilityUITests: XCTestCase {
             "Platform advanced containers audit host should open"
         )
 
+        // SwiftUI `List` + `.accessibilityIdentifier` is often **not** `XCUIElementType.scrollView` on iOS
+        // (see closed #257); query any node with the id (table / group / scroll view).
+        let listHost = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "identifier == %@", IDs.explicitListID))
+            .firstMatch
         XCTAssertTrue(
-            app.scrollViews[IDs.explicitListID].waitForExistence(timeout: Self.quickWait),
-            "Explicit list accessibility identifier should be queryable as scrollView"
+            listHost.waitForExistence(timeout: Self.quickWait),
+            "Explicit list accessibility identifier should be queryable in the hierarchy (not necessarily scrollViews[])"
         )
     }
 }

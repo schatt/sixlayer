@@ -33,7 +33,7 @@ final class IntelligentDetailViewCategoryBUITests: XCTestCase {
             instance.app = localApp
 
             XCTAssertTrue(
-                localApp.staticTexts[Copy.coverageTitle].waitForExistence(timeout: 6.0),
+                localApp.staticTexts[Copy.coverageTitle].waitForExistence(timeout: 2.5),
                 "Category B host should appear with -OpenDetailViewCategoryB"
             )
         }

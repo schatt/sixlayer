@@ -1,4 +1,7 @@
 import SwiftUI
+#if canImport(UniformTypeIdentifiers)
+import UniformTypeIdentifiers
+#endif
 
 // MARK: - Custom Field View (Generic Field Renderer)
 
@@ -1058,8 +1061,7 @@ public struct DynamicStepperField: View {
     }
 }
 
-/// Date field component
-/// TDD RED PHASE: This is a stub implementation for testing
+/// Date field component; reads and writes `Date` (or interoperable stored values) in ``DynamicFormState``.
 @MainActor
 public struct DynamicDateField: View {
     let field: DynamicFormField
@@ -1070,22 +1072,35 @@ public struct DynamicDateField: View {
         self.formState = formState
     }
 
+    private var selectedDate: Binding<Date> {
+        Binding(
+            get: {
+                DynamicFormStoredDateValue.date(fromStoredValue: formState.fieldValues[field.id]) ?? Date()
+            },
+            set: { formState.setValue($0, for: field.id) }
+        )
+    }
+
     public var body: some View {
         let i18n = InternationalizationService()
-        
+
         return platformVStackContainer(alignment: .leading) {
             #if os(tvOS)
-            // DatePicker is unavailable on tvOS; show a formatted value placeholder.
-            Text(Date(), format: .dateTime.year().month().day())
-                .foregroundStyle(.secondary)
-                .automaticComplianceForDynamicFormField(field)
+            if let valueDate = DynamicFormStoredDateValue.date(fromStoredValue: formState.fieldValues[field.id]) {
+                Text(valueDate, format: .dateTime.year().month().day())
+                    .foregroundStyle(.primary)
+                    .automaticComplianceForDynamicFormField(field)
+            } else {
+                Text(field.placeholder ?? i18n.placeholderSelectDate())
+                    .foregroundStyle(.secondary)
+                    .automaticComplianceForDynamicFormField(field)
+            }
             #else
-            DatePicker(field.placeholder ?? i18n.placeholderSelectDate(),
-                      selection: Binding(
-                          get: { Date() }, // TODO: Parse from formState
-                          set: { _ in } // TODO: Store in formState
-                      ),
-                      displayedComponents: .date)
+            DatePicker(
+                field.placeholder ?? i18n.placeholderSelectDate(),
+                selection: selectedDate,
+                displayedComponents: .date
+            )
             .automaticComplianceForDynamicFormField(field)
             #endif
         }
@@ -1095,8 +1110,7 @@ public struct DynamicDateField: View {
     }
 }
 
-/// Time field component
-/// TDD RED PHASE: This is a stub implementation for testing
+/// Time field component; reads and writes `Date` in ``DynamicFormState`` (time-of-day uses the date’s clock components).
 @MainActor
 public struct DynamicTimeField: View {
     let field: DynamicFormField
@@ -1107,21 +1121,35 @@ public struct DynamicTimeField: View {
         self.formState = formState
     }
 
+    private var selectedTime: Binding<Date> {
+        Binding(
+            get: {
+                DynamicFormStoredDateValue.date(fromStoredValue: formState.fieldValues[field.id]) ?? Date()
+            },
+            set: { formState.setValue($0, for: field.id) }
+        )
+    }
+
     public var body: some View {
         let i18n = InternationalizationService()
-        
+
         return platformVStackContainer(alignment: .leading) {
             #if os(tvOS)
-            Text(Date(), format: .dateTime.hour().minute())
-                .foregroundStyle(.secondary)
-                .automaticCompliance()
+            if let valueDate = DynamicFormStoredDateValue.date(fromStoredValue: formState.fieldValues[field.id]) {
+                Text(valueDate, format: .dateTime.hour().minute())
+                    .foregroundStyle(.primary)
+                    .automaticCompliance()
+            } else {
+                Text(field.placeholder ?? i18n.placeholderSelectTime())
+                    .foregroundStyle(.secondary)
+                    .automaticCompliance()
+            }
             #else
-            DatePicker(field.placeholder ?? i18n.placeholderSelectTime(),
-                      selection: Binding(
-                          get: { Date() }, // TODO: Parse from formState
-                          set: { _ in } // TODO: Store in formState
-                      ),
-                      displayedComponents: .hourAndMinute)
+            DatePicker(
+                field.placeholder ?? i18n.placeholderSelectTime(),
+                selection: selectedTime,
+                displayedComponents: .hourAndMinute
+            )
             .automaticCompliance()
             #endif
         }
@@ -1131,8 +1159,7 @@ public struct DynamicTimeField: View {
     }
 }
 
-/// DateTime field component
-/// TDD RED PHASE: This is a stub implementation for testing
+/// Date-and-time field component; reads and writes `Date` in ``DynamicFormState``.
 @MainActor
 public struct DynamicDateTimeField: View {
     let field: DynamicFormField
@@ -1143,20 +1170,34 @@ public struct DynamicDateTimeField: View {
         self.formState = formState
     }
 
+    private var selectedDateTime: Binding<Date> {
+        Binding(
+            get: {
+                DynamicFormStoredDateValue.date(fromStoredValue: formState.fieldValues[field.id]) ?? Date()
+            },
+            set: { formState.setValue($0, for: field.id) }
+        )
+    }
+
     public var body: some View {
         let i18n = InternationalizationService()
-        
+
         return platformVStackContainer(alignment: .leading) {
             #if os(tvOS)
-            Text(Date(), format: .dateTime.year().month().day().hour().minute())
-                .foregroundStyle(.secondary)
-                .automaticCompliance()
+            if let valueDate = DynamicFormStoredDateValue.date(fromStoredValue: formState.fieldValues[field.id]) {
+                Text(valueDate, format: .dateTime.year().month().day().hour().minute())
+                    .foregroundStyle(.primary)
+                    .automaticCompliance()
+            } else {
+                Text(field.placeholder ?? i18n.placeholderSelectDateTime())
+                    .foregroundStyle(.secondary)
+                    .automaticCompliance()
+            }
             #else
-            DatePicker(field.placeholder ?? i18n.placeholderSelectDateTime(),
-                      selection: Binding(
-                          get: { Date() }, // TODO: Parse from formState
-                          set: { _ in } // TODO: Store in formState
-                      ))
+            DatePicker(
+                field.placeholder ?? i18n.placeholderSelectDateTime(),
+                selection: selectedDateTime
+            )
             .automaticCompliance()
             #endif
         }
@@ -1460,12 +1501,12 @@ public struct DynamicRichTextField: View {
     }
 }
 
-/// File field component
-/// GREEN PHASE: Full implementation of file picker
+/// File field component; uses SwiftUI `fileImporter` on iOS, macOS, and visionOS (``platformFileImporter``).
 @MainActor
 public struct DynamicFileField: View {
     let field: DynamicFormField
     @ObservedObject var formState: DynamicFormState
+    @State private var showFileImporter = false
 
     public init(field: DynamicFormField, formState: DynamicFormState) {
         self.field = field
@@ -1473,15 +1514,10 @@ public struct DynamicFileField: View {
     }
 
     public var body: some View {
-        platformVStackContainer(alignment: .leading, spacing: 8) {
-
-            let i18n = InternationalizationService()
-            
-            Button(action: {
-                // TODO: Implement file picker integration
-                // This should open file picker and update formState
-                print("File picker requested for field: \(field.id)")
-            }) {
+        let i18n = InternationalizationService()
+        return platformVStackContainer(alignment: .leading, spacing: 8) {
+            #if os(iOS) || os(macOS) || os(visionOS)
+            Button(action: { showFileImporter = true }) {
                 HStack {
                     Image(systemName: "doc.badge.plus")
                     Text(i18n.localizedString(for: "SixLayerFramework.button.selectFile"))
@@ -1489,9 +1525,16 @@ public struct DynamicFileField: View {
             }
             .buttonStyle(.bordered)
             .automaticCompliance(named: "FilePickerButton")
+            #else
+            Text(i18n.localizedString(for: "SixLayerFramework.imagePicker.notAvailable"))
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .automaticCompliance(named: "FilePickerUnavailable")
+            #endif
 
-            if let fileName = formState.fieldValues[field.id] as? String, !fileName.isEmpty {
-                Text(i18n.localizedString(for: "SixLayerFramework.form.selected", arguments: [fileName]))
+            if let storedPath = formState.fieldValues[field.id] as? String, !storedPath.isEmpty {
+                let displayName = URL(fileURLWithPath: storedPath).lastPathComponent
+                Text(i18n.localizedString(for: "SixLayerFramework.form.selected", arguments: [displayName]))
                     .font(.caption)
                     .foregroundColor(.secondary)
                     .automaticCompliance(named: "SelectedFileName")
@@ -1500,15 +1543,36 @@ public struct DynamicFileField: View {
         .padding()
         .dynamicFormFieldAccessibilityLabel(field) // Issue #194: resolved label when localized
         .automaticComplianceForDynamicFormField(field)
+        #if os(iOS) || os(macOS) || os(visionOS)
+        .platformFileImporter(
+            isPresented: $showFileImporter,
+            allowedContentTypes: [.item],
+            allowsMultipleSelection: false,
+            onCompletion: { result in
+                switch result {
+                case .success(let urls):
+                    guard let url = urls.first else { return }
+                    do {
+                        let path = try dynamicFormCopyImportedFileToCachesDirectory(from: url)
+                        formState.setValue(path, for: field.id)
+                    } catch {
+                        // Selection failed (e.g. copy); leave existing value unchanged.
+                    }
+                case .failure:
+                    break
+                }
+            }
+        )
+        #endif
     }
 }
 
-/// Image field component
-/// GREEN PHASE: Full implementation of image picker
+/// Image field component; presents ``UnifiedImagePicker`` in a sheet on iOS and macOS.
 @MainActor
 public struct DynamicImageField: View {
     let field: DynamicFormField
     @ObservedObject var formState: DynamicFormState
+    @State private var showImagePickerSheet = false
 
     public init(field: DynamicFormField, formState: DynamicFormState) {
         self.field = field
@@ -1516,14 +1580,10 @@ public struct DynamicImageField: View {
     }
 
     public var body: some View {
-        platformVStackContainer(alignment: .leading, spacing: 8) {
-
-            Button(action: {
-                // TODO: Implement image picker integration
-                // This should open image picker and update formState
-                print("Image picker requested for field: \(field.id)")
-            }) {
-                let i18n = InternationalizationService()
+        let i18n = InternationalizationService()
+        return platformVStackContainer(alignment: .leading, spacing: 8) {
+            #if os(iOS) || os(macOS)
+            Button(action: { showImagePickerSheet = true }) {
                 HStack {
                     Image(systemName: "photo.badge.plus")
                     Text(i18n.localizedString(for: "SixLayerFramework.button.selectImage"))
@@ -1531,6 +1591,12 @@ public struct DynamicImageField: View {
             }
             .buttonStyle(.bordered)
             .automaticCompliance(named: "ImagePickerButton")
+            #else
+            Text(i18n.localizedString(for: "SixLayerFramework.imagePicker.notAvailable"))
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .automaticCompliance(named: "ImagePickerUnavailable")
+            #endif
 
             if let imageData = formState.fieldValues[field.id] as? Data, let image = PlatformImage(data: imageData) {
                 #if os(macOS)
@@ -1550,6 +1616,16 @@ public struct DynamicImageField: View {
         }
         .padding()
         .automaticCompliance(named: "DynamicImageField")
+        #if os(iOS) || os(macOS)
+        .sheet(isPresented: $showImagePickerSheet) {
+            UnifiedImagePicker { platformImage in
+                if let data = platformImage.exportJPEG(quality: 0.85) {
+                    formState.setValue(data, for: field.id)
+                }
+                showImagePickerSheet = false
+            }
+        }
+        #endif
     }
 }
 
@@ -2168,5 +2244,23 @@ public struct DynamicGaugeField: View {
         }
         .padding()
         .automaticComplianceForDynamicFormField(field)
+    }
+}
+
+// MARK: - Dynamic form file import helper
+
+/// Copies a security-scoped import URL into the app caches directory and returns the destination file path string.
+@MainActor
+private func dynamicFormCopyImportedFileToCachesDirectory(from sourceURL: URL) throws -> String {
+    try platformSecurityScopedAccess(url: sourceURL) { scoped in
+        guard let cachesURL = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first else {
+            throw NSError(domain: "SixLayerFramework.DynamicFileField", code: 1, userInfo: nil)
+        }
+        let destURL = cachesURL.appendingPathComponent("SixLayerDynamicForm-\(UUID().uuidString)-\(scoped.lastPathComponent)")
+        if FileManager.default.fileExists(atPath: destURL.path) {
+            try FileManager.default.removeItem(at: destURL)
+        }
+        try FileManager.default.copyItem(at: scoped, to: destURL)
+        return destURL.path
     }
 }

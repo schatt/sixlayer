@@ -10,9 +10,9 @@ import XCTest
 
 @MainActor
 final class AccessibilityIdentifierCategoryAUITests: XCTestCase {
-    private static let quickWait: TimeInterval = 0.5
-    private static let mediumWait: TimeInterval = 1.2
-    private static let rootReadyTimeout: TimeInterval = 3.0
+    private static let quickWait: TimeInterval = 0.4
+    private static let mediumWait: TimeInterval = 0.75
+    private static let rootReadyTimeout: TimeInterval = 2.0
     private static var sharedApp: XCUIApplication?
     private var app: XCUIApplication! { Self.sharedApp! }
 

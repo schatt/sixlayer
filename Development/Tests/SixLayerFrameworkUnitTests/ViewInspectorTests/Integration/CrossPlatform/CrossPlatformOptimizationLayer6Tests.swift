@@ -101,7 +101,7 @@ open class CrossPlatformOptimizationLayer6Tests: BaseTestClass {
     @Test @MainActor func testCrossPlatformOptimizationManager_PlatformRecommendations() {
         // NOTE: getPlatformRecommendations() has been removed - PlatformRecommendationEngine moved to possible-features/
         // Given: Manager
-        let manager = CrossPlatformOptimizationManager()
+        _ = CrossPlatformOptimizationManager()
         
         // When: Getting platform recommendations
         // let recommendations = manager.getPlatformRecommendations()

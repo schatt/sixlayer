@@ -125,7 +125,7 @@ open class CollectionEmptyStateViewTests: BaseTestClass {
             #if canImport(ViewInspector)
             verifyViewContainsAtLeastOneVStack(view, testName: "CollectionEmptyStateView custom message")
             if let inspected = try? AnyView(view).inspect() {
-                let vStacks = (try? inspected.findAll(ViewType.VStack.self)) ?? []
+                let vStacks = inspected.findAll(ViewType.VStack.self)
                 if let vStack = vStacks.first {
                     // The message should be in a Text view within the VStack
                     let texts = vStack.findAll(ViewType.Text.self)
@@ -295,7 +295,7 @@ open class CollectionEmptyStateViewTests: BaseTestClass {
             #if canImport(ViewInspector)
             verifyViewContainsAtLeastOneVStack(view, testName: "CollectionEmptyStateView custom over default")
             if let inspected = try? AnyView(view).inspect() {
-                let vStacks = (try? inspected.findAll(ViewType.VStack.self)) ?? []
+                let vStacks = inspected.findAll(ViewType.VStack.self)
                 if let vStack = vStacks.first {
                     let texts = vStack.findAll(ViewType.Text.self)
                     let messageText = texts.first { text in
@@ -326,6 +326,7 @@ open class CollectionEmptyStateViewTests: BaseTestClass {
     // MARK: - Helper Functions
     
     /// Creates a CollectionEmptyStateView for testing
+    @MainActor
     public func createCollectionEmptyStateView() -> CollectionEmptyStateView {
         return CollectionEmptyStateView(
             hints: PresentationHints(

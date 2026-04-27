@@ -42,6 +42,7 @@ struct TestApp: App {
         WindowGroup {
             TestAppContentView()
                 .environment(\.accessibilityIdentifierConfig, accessibilityIdentifierHostConfiguration)
+                .testAppHostRootSurface()
         }
     }
 }
@@ -58,6 +59,13 @@ struct TestAppContentView: View {
     private let openLayer4ComponentExamples = ProcessInfo.processInfo.arguments.contains("-OpenLayer4ComponentExamples")
     /// When true, app opens to minimal navigator / contract smoke host (launch arg -OpenUITestContractSmokeHost). Issue #231.
     private let openUITestContractSmokeHost = ProcessInfo.processInfo.arguments.contains("-OpenUITestContractSmokeHost")
+    /// When true, app opens to Issue #150 standalone `platform*` drop-in binding / interaction host (launch arg -OpenStandaloneDropIn150).
+    private let openStandaloneDropIn150 = ProcessInfo.processInfo.arguments.contains("-OpenStandaloneDropIn150")
+    /// Deep links for ``AccessibilityCompatibilityUITests`` — open a single test host without launch-page navigation (Issue #180).
+    private let openAccessibilityCompatibilityControlTest = ProcessInfo.processInfo.arguments.contains("-OpenAccessibilityCompatibilityControlTest")
+    private let openAccessibilityCompatibilityTextTest = ProcessInfo.processInfo.arguments.contains("-OpenAccessibilityCompatibilityTextTest")
+    private let openAccessibilityCompatibilityButtonTest = ProcessInfo.processInfo.arguments.contains("-OpenAccessibilityCompatibilityButtonTest")
+    private let openAccessibilityCompatibilityPlatformPickerTest = ProcessInfo.processInfo.arguments.contains("-OpenAccessibilityCompatibilityPlatformPickerTest")
     /// When true, app opens directly to Layer 4 contract section (launch arg -OpenLayer4Examples).
     private let openLayer4Examples = ProcessInfo.processInfo.arguments.contains("-OpenLayer4Examples")
     /// When true, app opens directly to Layer 5 Accessibility section (launch arg -OpenLayer5Accessibility).
@@ -138,6 +146,24 @@ struct TestAppContentView: View {
             if openUITestContractSmokeHost {
                 // Host supplies its own `NavigationStack` so `backToRoot` targets one bar (#231).
                 UITestContractSmokeHostView()
+            } else if openStandaloneDropIn150 {
+                StandaloneDropIn150HostView()
+            } else if openAccessibilityCompatibilityControlTest {
+                NavigationStack {
+                    ControlTestView(onBackToMain: {})
+                }
+            } else if openAccessibilityCompatibilityTextTest {
+                NavigationStack {
+                    TextTestView(onBackToMain: {})
+                }
+            } else if openAccessibilityCompatibilityButtonTest {
+                NavigationStack {
+                    ButtonTestView(onBackToMain: {})
+                }
+            } else if openAccessibilityCompatibilityPlatformPickerTest {
+                NavigationStack {
+                    PlatformPickerTestView(onBackToMain: {})
+                }
             } else if openCategoryAAccessibility, ProcessInfo.processInfo.arguments.contains("-CategoryAGlobalAutoOff") {
                 NavigationStack {
                     AccessibilityIdentifierCategoryAGlobalOffAUDITView()

@@ -47,7 +47,7 @@ def fix_test_file(file_path: Path) -> int:
         expect_line = re.sub(r'\s+', ' ', expect_line)
         
         # Build replacement
-        replacement = f'''{indent}#if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)
+        replacement = f'''{indent}#if canImport(ViewInspector)
 {assignment_block}
 {indent}{expect_line}
 {indent}#else
@@ -119,7 +119,7 @@ def fix_test_file(file_path: Path) -> int:
             
             if expect_idx is not None:
                 # Wrap it
-                new_lines.append(' ' * assignment_indent + '#if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)\n')
+                new_lines.append(' ' * assignment_indent + '#if canImport(ViewInspector)\n')
                 
                 # Add assignment lines
                 for assignment_line in assignment_lines:

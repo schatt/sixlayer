@@ -24,7 +24,7 @@ final class SixLayerUITestNavigatorConsumerSmokeUITests: XCTestCase {
             localApp.launch()
             instance.app = localApp
             let marker = localApp.descendants(matching: .any).matching(identifier: "com.sixlayer.smoke.ready.marker").element
-            XCTAssertTrue(marker.waitForExistence(timeout: 8), "Smoke host ready marker should appear")
+            XCTAssertTrue(marker.waitForExistence(timeout: 3), "Smoke host ready marker should appear")
         }
     }
 
@@ -49,12 +49,12 @@ final class SixLayerUITestNavigatorConsumerSmokeUITests: XCTestCase {
     func testSmoke_goToScreenThenOpenSectionThenBackToRoot() throws {
         let navigator = SixLayerUITestNavigator(application: app)
         let screen = try UITestScreenId(validating: "com.sixlayer.smoke.screen.entry")
-        XCTAssertTrue(navigator.goToScreen(screen, timeout: 15), "goToScreen should tap smoke entry control")
+        XCTAssertTrue(navigator.goToScreen(screen, timeout: 6), "goToScreen should tap smoke entry control")
 
         let route = try UITestRouteId(validating: "com.sixlayer.smoke.route.section")
-        XCTAssertTrue(navigator.openSection(route, under: nil, timeout: 15), "openSection should resolve detail marker")
+        XCTAssertTrue(navigator.openSection(route, under: nil, timeout: 6), "openSection should resolve detail marker")
 
-        let backs = navigator.backToRoot(maxSteps: 8, stepTimeout: 5)
+        let backs = navigator.backToRoot(maxSteps: 8, stepTimeout: 2)
         XCTAssertGreaterThanOrEqual(backs, 1, "backToRoot should perform at least one successful pop")
 
         let markerId = try UITestElementId(validating: "com.sixlayer.smoke.ready.marker")

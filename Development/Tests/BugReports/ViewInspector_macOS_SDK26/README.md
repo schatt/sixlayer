@@ -81,17 +81,16 @@ We've implemented a comprehensive workaround that allows our test suite to work 
 
 ### Our Solution
 1. **Created `ViewInspectorWrapper.swift`**: A centralized wrapper that abstracts ViewInspector usage
-2. **Added compile-time flag**: `VIEW_INSPECTOR_MAC_FIXED` in `Package.swift` for single-point control
-3. **Updated 38 test files**: All test files now use the wrapper with conditional compilation
-4. **Migration path**: When ViewInspector fixes issue #405, uncomment one line in `Package.swift`
+2. **Conditional compilation in tests**: `#if canImport(ViewInspector)` (no macOS-specific compile flag)
+3. **Updated many test files**: See [FIXED_FILES.md](./FIXED_FILES.md) for the historical file list
 
 ### Files Updated
 See [FIXED_FILES.md](./FIXED_FILES.md) for a complete list of all 38 test files that have been updated.
 
 ### Implementation Details
-- **Wrapper location**: `Development/Tests/SixLayerFrameworkTests/Utilities/TestHelpers/ViewInspectorWrapper.swift`
-- **Pattern used**: `#if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)`
-- **Benefits**: Single point of control, no manual file updates needed when ViewInspector is fixed
+- **Wrapper location**: `Development/Tests/Shared/TestHelpers/` (current repo layout)
+- **Pattern used**: `#if canImport(ViewInspector)` … `#else` … `#endif`
+- **Xcode wiring**: ViewInspector SPM dependency and test targets in `project.yml` (the old `VIEW_INSPECTOR_MAC_FIXED` active compilation condition was removed)
 
 ### Previous Workarounds (Not Used)
 1. Use iOS-only test targets

@@ -85,7 +85,7 @@ def fix_test_file(file_path: Path) -> int:
             if expect_idx is not None:
                 # Found the pattern - wrap it
                 # Add platform check before assignment
-                new_lines.append(' ' * assignment_indent + '#if canImport(ViewInspector) && (!os(macOS) || VIEW_INSPECTOR_MAC_FIXED)\n')
+                new_lines.append(' ' * assignment_indent + '#if canImport(ViewInspector)\n')
                 
                 # Add assignment lines (remove TODO comments from them)
                 for assignment_line in assignment_lines:

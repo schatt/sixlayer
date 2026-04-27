@@ -1297,7 +1297,13 @@ private struct AsyncFormView: View {
     }
 }
 
-/// Helper function to create a simple field view for DynamicFormField
+/// Helper function to create a simple **preview** field view for ``DynamicFormField`` used in Layer 1
+/// accessibility / compliance tooling.
+///
+/// **Important:** Controls here use fixed bindings (e.g. `.constant`) and do **not** read or write
+/// ``DynamicFormState``. They are intentionally non-mutative placeholders so the harness can inspect
+/// labels, traits, and layout—not a substitute for ``DynamicFormView`` / ``CustomFieldView`` in real forms.
+/// See GitHub #267.
 @ViewBuilder
 @MainActor
 private func createSimpleFieldView(for field: DynamicFormField, hints: PresentationHints, loadedHints: [String: FieldDisplayHints] = [:]) -> some View {
@@ -2624,6 +2630,7 @@ public struct ModalFormView: View {
         .automaticCompliance()
     }
     
+    /// Layer 1 **preview** field chrome (fixed `.constant` bindings); not backed by ``DynamicFormState`` — see ``createSimpleFieldView`` / #267.
     @ViewBuilder
     @MainActor
     private func createFieldView(for field: DynamicFormField) -> some View {
@@ -3228,6 +3235,7 @@ public struct SimpleFormView: View {
         validationErrors.removeValue(forKey: field.id)
     }
     
+    /// Layer 1 **preview** field chrome (fixed `.constant` bindings); not backed by ``DynamicFormState`` — see ``createSimpleFieldView`` / #267.
     @ViewBuilder
     @MainActor
     private func createFieldView(for field: DynamicFormField) -> some View {
