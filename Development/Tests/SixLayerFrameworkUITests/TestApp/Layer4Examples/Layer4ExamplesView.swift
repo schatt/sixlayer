@@ -74,7 +74,6 @@ struct Layer4ExamplesView: View {
                 }
             }
             .padding()
-            .frame(maxWidth: .infinity, alignment: .leading)
         }
         .platformFrame()
         .navigationTitle("Layer 4 Examples")
