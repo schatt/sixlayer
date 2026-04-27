@@ -44,7 +44,7 @@ Layer 1: Semantic Intent → Layer 2: Layout Decision → Layer 3: Strategy Sele
 
 ### Patch release
 
-Refreshes release checklist metadata so repository documentation, package comments, README references, and AI-agent guidance consistently identify v7.7.2 (Issue #270). See [RELEASE_v7.7.2.md](../Development/RELEASE_v7.7.2.md).
+Fixes the `LocationService` main-thread services-enabled check (#258), wires `DynamicImageField` into image/photo selection and form state (#265), clarifies Layer 1 dynamic field preview docs (#267), and refreshes release metadata (#270). See [RELEASE_v7.7.2.md](../Development/RELEASE_v7.7.2.md).
 
 ## 🆕 What's New in v7.7.1
 
