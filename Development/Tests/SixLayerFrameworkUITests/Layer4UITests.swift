@@ -1144,32 +1144,36 @@ final class Layer4UITests: XCTestCase {
             app.alerts.buttons["OK"].firstMatch.tap()
             RunLoop.current.run(until: Date().addingTimeInterval(0.35))
         }
-        // UITest verifies the Layer 4 **example host** contract: discoverable section + stable open control
-        // that presents `platformPhotoPicker_L4` (see `Layer4ExamplesView`). XCTest often cannot see
-        // `platformPhotoPicker_L4` / `UnifiedImagePicker` identifiers inside system PHPicker (#261); that
-        // named compliance belongs in ViewInspector / unit coverage, not in a hard requirement here.
-        var dismissedChrome = false
+        // Same surface as the former XCTSkip (#261): require that XCUI can *see* presentation, not only
+        // that the open button exists. Fails here when PHPicker / Photos chrome does not expose sheet,
+        // framework ids, or Cancel to the test host.
+        let pickerPredicate = NSPredicate(
+            format: "identifier CONTAINS[c] %@ OR identifier CONTAINS[c] %@",
+            "platformPhotoPicker_L4",
+            "UnifiedImagePicker"
+        )
+        let pickerInSheet = app.sheets.descendants(matching: .any).matching(pickerPredicate).firstMatch
+        let pickerInApp = app.descendants(matching: .any).matching(pickerPredicate).firstMatch
+        let hasFrameworkId = pickerInSheet.waitForExistence(timeout: 8.0) || pickerInApp.waitForExistence(timeout: 8.0)
+        let sheetPresented = app.sheets.firstMatch.waitForExistence(timeout: 3.0)
+        let systemPickerChrome = app.buttons["Cancel"].firstMatch.waitForExistence(timeout: 4.0)
+            || app.navigationBars.buttons["Cancel"].firstMatch.waitForExistence(timeout: 2.0)
+        XCTAssertTrue(
+            hasFrameworkId || sheetPresented || systemPickerChrome,
+            "platformPhotoPicker_L4: after open, XCUI must see platformPhotoPicker_L4/UnifiedImagePicker, a sheet, or Cancel (was XCTSkip #261)"
+        )
         let cancelBar = app.navigationBars.buttons["Cancel"].firstMatch
         let cancelButton = app.buttons["Cancel"].firstMatch
-        if cancelButton.waitForExistence(timeout: 3.0) {
+        if cancelButton.waitForExistence(timeout: 1.2) {
             cancelButton.tap()
-            dismissedChrome = true
-        } else if cancelBar.waitForExistence(timeout: 1.5) {
+        } else if cancelBar.waitForExistence(timeout: 1.0) {
             cancelBar.tap()
-            dismissedChrome = true
         }
-        if dismissedChrome {
-            XCTAssertTrue(
-                app.navigationBars["Layer 4 Examples"].waitForExistence(timeout: 2.5)
-                    || app.buttons["L4ContractSheet"].waitForExistence(timeout: 1.5),
-                "platformPhotoPicker_L4: must return to contract root after dismiss (no stuck sheet)"
-            )
-        } else {
-            XCTAssertTrue(
-                app.state == .runningForeground,
-                "platformPhotoPicker_L4: app must stay in foreground after invoking picker (no XCTest-visible Cancel on this host)"
-            )
-        }
+        XCTAssertTrue(
+            app.navigationBars["Layer 4 Examples"].waitForExistence(timeout: 2.5)
+                || app.buttons["L4ContractSheet"].waitForExistence(timeout: 1.5),
+            "platformPhotoPicker_L4: must return to contract root after dismiss (no stuck sheet)"
+        )
     }
     #endif
 
