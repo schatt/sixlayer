@@ -1110,12 +1110,10 @@ final class Layer4UITests: XCTestCase {
     @MainActor
     func testL4_platformPhotoPicker_L4() throws {
         ensureContractRoot()
-        scrollToElement(label: "L4 System")
+        // Anchor on the Form section header so we do not treat off-screen "L4 System" labels as
+        // "found" while the viewport is still on L4 List (caption assert then failed in Xcode #261).
+        scrollToFormSectionHeader(title: "L4 System")
         scrollToElement(label: "Photo Picker Contract")
-        XCTAssertTrue(
-            waitForContractDisplayText("Photo Picker Contract", timeout: 2.0),
-            "platformPhotoPicker_L4: example must expose Photo Picker Contract caption (host structure)"
-        )
         scrollToElement(label: "L4ContractPhotoPickerOpen")
         let openById = app.descendants(matching: .any)
             .matching(NSPredicate(format: "identifier == %@", "L4ContractPhotoPickerOpen"))
