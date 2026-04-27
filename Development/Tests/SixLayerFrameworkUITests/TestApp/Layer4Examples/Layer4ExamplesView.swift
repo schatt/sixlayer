@@ -17,6 +17,29 @@ import MapKit
 #endif
 #endif
 
+// MARK: - UITest host root chrome (shared by component + contract hosts)
+
+private extension View {
+    /// Hide default scroll/form material on iOS so a custom root background can show (no WindowGroup black gaps).
+    @ViewBuilder
+    func layer4TestHostScrollSurfaceHiddenWhenNeeded() -> some View {
+        #if os(iOS)
+        self.scrollContentBackground(.hidden)
+        #else
+        self
+        #endif
+    }
+
+    /// Expand to navigation bounds and paint grouped background edge-to-edge for TestApp L4 hosts.
+    func layer4TestHostRootFillGroupedBackground() -> some View {
+        frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            .background {
+                Color.platformGroupedBackground
+                    .ignoresSafeArea()
+            }
+    }
+}
+
 /// Single source of truth for L4 component test views (titles and identifiers match Layer4UITests).
 private enum Layer4ComponentTestView: String, CaseIterable, Identifiable {
     case text = "Text Test"
@@ -76,16 +99,8 @@ struct Layer4ExamplesView: View {
             .padding()
             .frame(maxWidth: .infinity, alignment: .leading)
         }
-        // Fill the navigation content bounds; default transparent ScrollView left the window black
-        // above/below short content on Simulator (iOS 26 host).
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        #if os(iOS)
-        .scrollContentBackground(.hidden)
-        #endif
-        .background {
-            Color.platformGroupedBackground
-                .ignoresSafeArea()
-        }
+        .layer4TestHostScrollSurfaceHiddenWhenNeeded()
+        .layer4TestHostRootFillGroupedBackground()
         .platformFrame()
         .navigationTitle("Layer 4 Examples")
         .platformNavigationTitleDisplayMode_L4(.large)
@@ -1135,7 +1150,9 @@ struct Layer4ContractOnlyView: View {
                         contractSectionHeader("L4 List")
                     }
                 }
+                .layer4TestHostScrollSurfaceHiddenWhenNeeded()
             }
+            .layer4TestHostRootFillGroupedBackground()
             #else
             ScrollView {
                 platformVStack(alignment: .leading, spacing: 24) {
@@ -1165,6 +1182,8 @@ struct Layer4ContractOnlyView: View {
                 }
                 .padding()
             }
+            .layer4TestHostScrollSurfaceHiddenWhenNeeded()
+            .layer4TestHostRootFillGroupedBackground()
             #endif
         }
         .platformFrame()
