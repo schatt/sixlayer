@@ -401,6 +401,13 @@ public class CloudKitService: ObservableObject {
             return false
         }
         #endif
+        // `SixLayerFrameworkTestApp_iOS` has no CloudKit container entitlement in `project.yml`. Running
+        // that host via Product → Run (no `-UITesting`) still builds `Layer4Examples` → `CloudKitService`
+        // and `CKContainer(identifier:)` can trap/crash (#169). UITest launches always hit `-UITesting`
+        // above and skip this path.
+        if Bundle.main.bundleIdentifier == "com.sixlayer.framework.test-app" {
+            return false
+        }
         return true
     }
     
