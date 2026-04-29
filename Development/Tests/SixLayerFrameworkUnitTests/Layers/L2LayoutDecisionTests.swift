@@ -338,7 +338,7 @@ open class L2LayoutDecisionTests: BaseTestClass {
             screenWidth: 390,
             deviceType: .phone,
             contentComplexity: .moderate,
-            availableHeight: viewportHeight
+            viewportHeight: viewportHeight
         )
         #expect(decision.columns == 1)
         let rows = (2 + decision.columns - 1) / decision.columns
@@ -355,7 +355,7 @@ open class L2LayoutDecisionTests: BaseTestClass {
             screenWidth: 844,
             deviceType: .phone,
             contentComplexity: .moderate,
-            availableHeight: 390
+            viewportHeight: 390
         )
         #expect(decision.columns == 2)
         let rows = (2 + decision.columns - 1) / decision.columns
