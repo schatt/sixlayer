@@ -287,4 +287,18 @@ struct NavigationLayoutResolverTests {
         #expect(NavigationLayoutResolver.layer4CompactPresentation(forAvailableWidth: w)
             == NavigationLayoutResolver.layer4CompactPresentation(forAvailableWidth: w))
     }
+
+    @Test
+    func layer4SanitizedSplitAxisWidthForPresentation_nonFiniteAndNonPositive_mapToZero() {
+        #expect(NavigationLayoutResolver.layer4SanitizedSplitAxisWidthForPresentation(.infinity) == 0)
+        #expect(NavigationLayoutResolver.layer4SanitizedSplitAxisWidthForPresentation(-.infinity) == 0)
+        #expect(NavigationLayoutResolver.layer4SanitizedSplitAxisWidthForPresentation(.nan) == 0)
+        #expect(NavigationLayoutResolver.layer4SanitizedSplitAxisWidthForPresentation(-12) == 0)
+        #expect(NavigationLayoutResolver.layer4SanitizedSplitAxisWidthForPresentation(0) == 0)
+    }
+
+    @Test
+    func layer4SanitizedSplitAxisWidthForPresentation_finitePositive_passesThrough() {
+        #expect(NavigationLayoutResolver.layer4SanitizedSplitAxisWidthForPresentation(320) == 320)
+    }
 }

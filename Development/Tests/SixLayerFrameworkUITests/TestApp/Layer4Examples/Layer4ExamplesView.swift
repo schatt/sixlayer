@@ -898,6 +898,10 @@ struct Layer4ContractOnlyView: View {
                             .accessibilityIdentifier("L4OverlayDetailAction")
                     }
                     .padding()
+                    #if os(iOS)
+                    .navigationTitle("L4OverlayContract")
+                    .navigationBarTitleDisplayMode(.inline)
+                    #endif
                 }
             )
             // Min height so nested NavigationStack + toolbar fit inside the Form row (XCUITest); avoid unbounded intrinsic height.
