@@ -588,45 +588,21 @@ public struct RuntimeCapabilityDetection {
     }
     
     private static func detectwatchOSVoiceOverSupport() -> Bool {
-        // Check if VoiceOver is available on watchOS
-        #if canImport(UIKit)
-        // Use Thread.isMainThread check to prevent crashes during parallel test execution
-        if Thread.isMainThread {
-            return UIAccessibility.isVoiceOverRunning
-        } else {
-            return false  // Conservative default when not on main thread
-        }
-        #else
+        // watchOS does not expose the UIKit runtime surface used in the iOS/tvOS/visionOS paths.
+        // Keep a conservative runtime value rather than a broad UIKit compile gate.
         return false
-        #endif
     }
     
     private static func detectwatchOSSwitchControlSupport() -> Bool {
-        // Check if Switch Control is available on watchOS
-        #if canImport(UIKit)
-        // Use Thread.isMainThread check to prevent crashes during parallel test execution
-        if Thread.isMainThread {
-            return UIAccessibility.isSwitchControlRunning
-        } else {
-            return false  // Conservative default when not on main thread
-        }
-        #else
+        // watchOS does not expose the UIKit runtime surface used in the iOS/tvOS/visionOS paths.
+        // Keep a conservative runtime value rather than a broad UIKit compile gate.
         return false
-        #endif
     }
     
     private static func detectwatchOSAssistiveTouchSupport() -> Bool {
-        // Check if AssistiveTouch is available on watchOS
-        #if canImport(UIKit)
-        // Use Thread.isMainThread check to prevent crashes during parallel test execution
-        if Thread.isMainThread {
-            return UIAccessibility.isAssistiveTouchRunning
-        } else {
-            return false  // Conservative default when not on main thread
-        }
-        #else
+        // watchOS does not expose the UIKit runtime surface used in the iOS/tvOS/visionOS paths.
+        // Keep a conservative runtime value rather than a broad UIKit compile gate.
         return false
-        #endif
     }
     #endif
     
@@ -648,30 +624,22 @@ public struct RuntimeCapabilityDetection {
     
     private static func detecttvOSVoiceOverSupport() -> Bool {
         // Check if VoiceOver is available on tvOS
-        #if canImport(UIKit)
         // Use Thread.isMainThread check to prevent crashes during parallel test execution
         if Thread.isMainThread {
             return UIAccessibility.isVoiceOverRunning
         } else {
             return false  // Conservative default when not on main thread
         }
-        #else
-        return false
-        #endif
     }
     
     private static func detecttvOSSwitchControlSupport() -> Bool {
         // Check if Switch Control is available on tvOS
-        #if canImport(UIKit)
         // Use Thread.isMainThread check to prevent crashes during parallel test execution
         if Thread.isMainThread {
             return UIAccessibility.isSwitchControlRunning
         } else {
             return false  // Conservative default when not on main thread
         }
-        #else
-        return false
-        #endif
     }
     
     private static func detecttvOSAssistiveTouchSupport() -> Bool {
@@ -699,30 +667,22 @@ public struct RuntimeCapabilityDetection {
     
     private static func detectvisionOSVoiceOverSupport() -> Bool {
         // Check if VoiceOver is available on visionOS
-        #if canImport(UIKit)
         // Use Thread.isMainThread check to prevent crashes during parallel test execution
         if Thread.isMainThread {
             return UIAccessibility.isVoiceOverRunning
         } else {
             return false  // Conservative default when not on main thread
         }
-        #else
-        return false
-        #endif
     }
     
     private static func detectvisionOSSwitchControlSupport() -> Bool {
         // Check if Switch Control is available on visionOS
-        #if canImport(UIKit)
         // Use Thread.isMainThread check to prevent crashes during parallel test execution
         if Thread.isMainThread {
             return UIAccessibility.isSwitchControlRunning
         } else {
             return false  // Conservative default when not on main thread
         }
-        #else
-        return false
-        #endif
     }
     
     private static func detectvisionOSAssistiveTouchSupport() -> Bool {
