@@ -96,6 +96,49 @@ public extension View {
             .frame(height: size.rawValue)
             .automaticCompliance()
     }
+
+    /// Layer 4 date input primitive that hides platform availability differences.
+    func platformDateInput(
+        selection: Binding<Date>,
+        label: String
+    ) -> some View {
+        platformDatePicker(selection: selection) {
+            EmptyView()
+        }
+        .selfLabelingControl(label: label)
+    }
+
+    /// Layer 4 time input primitive that hides platform availability differences.
+    func platformTimeInput(
+        selection: Binding<Date>,
+        label: String
+    ) -> some View {
+        #if os(tvOS)
+        Text(selection.wrappedValue, format: .dateTime.hour().minute())
+            .foregroundStyle(.secondary)
+            .selfLabelingControl(label: label)
+        #else
+        DatePicker("", selection: selection, displayedComponents: .hourAndMinute)
+            .datePickerStyle(.compact)
+            .selfLabelingControl(label: label)
+        #endif
+    }
+
+    /// Layer 4 date-time input primitive that hides platform availability differences.
+    func platformDateTimeInput(
+        selection: Binding<Date>,
+        label: String
+    ) -> some View {
+        #if os(tvOS)
+        Text(selection.wrappedValue, format: .dateTime.year().month().day().hour().minute())
+            .foregroundStyle(.secondary)
+            .selfLabelingControl(label: label)
+        #else
+        DatePicker("", selection: selection, displayedComponents: [.date, .hourAndMinute])
+            .datePickerStyle(.compact)
+            .selfLabelingControl(label: label)
+        #endif
+    }
 }
 
 // MARK: - Validation Types
