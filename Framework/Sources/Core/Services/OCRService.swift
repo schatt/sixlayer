@@ -934,6 +934,7 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
     
     // MARK: - Private Methods
     
+    #if canImport(Vision)
     private func performVisionOCR(
         cgImage: CGImage,
         context: OCRContext,
@@ -1080,6 +1081,15 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
             language: context.language
         )
     }
+    #else
+    private func performVisionOCR(
+        cgImage: CGImage,
+        context: OCRContext,
+        strategy: OCRStrategy
+    ) async throws -> OCRResult {
+        throw OCRError.unsupportedPlatform
+    }
+    #endif
     
     private func detectTextType(_ text: String) -> TextType {
         // Simple text type detection
