@@ -3267,63 +3267,31 @@ public struct SimpleFormView: View {
                         
                 case .time:
                     let i18nTime = InternationalizationService()
-                    #if os(tvOS)
-                    Text(
-                        (DateFormatter.timeFormatter.date(from: field.value) ?? Date())
-                            .formatted(.dateTime.hour().minute())
-                    )
-                    .foregroundStyle(.secondary)
-                    .selfLabelingControl(label: field.placeholder ?? i18nTime.placeholderSelectTime())
-                    .automaticCompliance(
-                        identifierElementType: "DatePicker",
-                        accessibilityLabel: field.label
-                    )
-                    #else
-                    DatePicker(
-                        "",
+                    platformTimeInput(
                         selection: Binding(
                             get: { DateFormatter.timeFormatter.date(from: field.value) ?? Date() },
                             set: { field.value = DateFormatter.timeFormatter.string(from: $0) }
                         ),
-                        displayedComponents: .hourAndMinute
+                        label: field.placeholder ?? i18nTime.placeholderSelectTime()
                     )
-                    .datePickerStyle(.compact)
-                    .selfLabelingControl(label: field.placeholder ?? i18nTime.placeholderSelectTime())
                     .automaticCompliance(
                         identifierElementType: "DatePicker",
                         accessibilityLabel: field.label  // Issue #156: Parameter-based approach
                     )
-                    #endif
                     
                 case .datetime:
                     let i18nDateTime = InternationalizationService()
-                    #if os(tvOS)
-                    Text(
-                        (DateFormatter.iso8601.date(from: field.value) ?? Date())
-                            .formatted(.dateTime.year().month().day().hour().minute())
-                    )
-                    .foregroundStyle(.secondary)
-                    .selfLabelingControl(label: field.placeholder ?? i18nDateTime.placeholderSelectDateTime())
-                    .automaticCompliance(
-                        identifierElementType: "DatePicker",
-                        accessibilityLabel: field.label
-                    )
-                    #else
-                    DatePicker(
-                        "",
+                    platformDateTimeInput(
                         selection: Binding(
                             get: { DateFormatter.iso8601.date(from: field.value) ?? Date() },
                             set: { field.value = DateFormatter.iso8601.string(from: $0) }
                         ),
-                        displayedComponents: [.date, .hourAndMinute]
+                        label: field.placeholder ?? i18nDateTime.placeholderSelectDateTime()
                     )
-                    .datePickerStyle(.compact)
-                    .selfLabelingControl(label: field.placeholder ?? i18nDateTime.placeholderSelectDateTime())
                     .automaticCompliance(
                         identifierElementType: "DatePicker",
                         accessibilityLabel: field.label  // Issue #156: Parameter-based approach
                     )
-                    #endif
                     
                 case .multiselect:
                     platformVStackContainer(alignment: .leading, spacing: 4) {
@@ -3391,27 +3359,16 @@ public struct SimpleFormView: View {
                         
                 case .color:
                     let i18n = InternationalizationService()
-                    #if os(tvOS)
-                    Text(field.value.isEmpty ? (field.placeholder ?? i18n.placeholderSelectColor()) : field.value)
-                        .foregroundStyle(.secondary)
-                    #else
-                    ColorPicker(field.placeholder ?? i18n.placeholderSelectColor(), selection: Binding(
+                    platformColorInput(
+                        label: field.placeholder ?? i18n.placeholderSelectColor(),
+                        selection: Binding(
                         get: { Color(hex: field.value) ?? .blue },
                         set: { field.value = $0.toHex() }
                     ))
-                    #endif
                     
                 case .range:
-                    #if os(tvOS)
                     VStack {
-                        ProgressView(value: Double(field.value) ?? 0.0, total: 100)
-                        Text("Value: \(field.value)")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
-                    #else
-                    VStack {
-                        Slider(
+                        platformRangeInput(
                             value: Binding(
                                 get: { Double(field.value) ?? 0.0 },
                                 set: { field.value = String($0) }
@@ -3422,7 +3379,6 @@ public struct SimpleFormView: View {
                             .font(.caption)
                             .foregroundColor(.secondary)
                     }
-                    #endif
                     
                 case .toggle, .boolean:
                     Toggle(field.placeholder ?? "Toggle", isOn: Binding(
@@ -3431,8 +3387,7 @@ public struct SimpleFormView: View {
                     ))
                     
                 case .richtext:
-                    #if os(tvOS)
-                    TextField(field.placeholder ?? "", text: field.$value)
+                    platformTextEditor(text: field.$value, prompt: field.placeholder)
                         .frame(minHeight: 100)
                         .overlay(
                             RoundedRectangle(cornerRadius: 8)
@@ -3441,17 +3396,6 @@ public struct SimpleFormView: View {
                         .onChange(of: field.value) { _ in
                             clearFieldError(field)
                         }
-                    #else
-                    TextEditor(text: field.$value)
-                        .frame(minHeight: 100)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 8)
-                                .stroke(Color.gray.opacity(0.3), lineWidth: 1)
-                        )
-                        .onChange(of: field.value) { _ in
-                            clearFieldError(field)
-                        }
-                    #endif
                         
                 case .autocomplete:
                     TextField(field.placeholder ?? "Type to search", text: field.$value)
