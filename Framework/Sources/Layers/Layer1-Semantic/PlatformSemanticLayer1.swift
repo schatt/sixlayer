@@ -1349,20 +1349,10 @@ private func createSimpleFieldView(for field: DynamicFormField, hints: Presentat
                     )
                 #endif
             case .textarea, .richtext:
-                #if os(tvOS)
-                TextField(field.placeholder ?? "", text: .constant(field.defaultValue ?? ""))
-                    .frame(minHeight: 80)
-                    .applyFieldHints(fieldHints)
-                    .automaticCompliance(
-                        identifierElementType: "TextField",
-                        accessibilityLabel: field.label  // Issue #156: Parameter-based approach
-                    )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 8)
-                            .stroke(Color.gray.opacity(0.3), lineWidth: 1)
-                    )
-                #else
-                TextEditor(text: .constant(field.defaultValue ?? ""))
+                platformTextEditor(
+                    text: .constant(field.defaultValue ?? ""),
+                    prompt: field.placeholder
+                )
                     .frame(minHeight: 80)
                     .applyFieldHints(fieldHints)
                     .automaticCompliance(
@@ -1373,7 +1363,6 @@ private func createSimpleFieldView(for field: DynamicFormField, hints: Presentat
                         RoundedRectangle(cornerRadius: 8)
                             .stroke(Color.gray.opacity(0.3), lineWidth: 1)
                     )
-                #endif
             case .toggle, .boolean:
                 Toggle(field.label, isOn: .constant(false))
                     .automaticComplianceForDynamicFormField(
@@ -1402,68 +1391,29 @@ private func createSimpleFieldView(for field: DynamicFormField, hints: Presentat
                 }
             case .date:
                 let i18n = InternationalizationService()
-                #if os(tvOS)
-                Text(Date(), format: .dateTime.year().month().day())
-                    .foregroundStyle(.secondary)
-                    .selfLabelingControl(label: field.placeholder ?? i18n.placeholderSelectDate())
-                    .automaticComplianceForDynamicFormField(
-                        field,
-                        identifierElementType: "DatePicker",
-                        accessibilityLabel: field.label
-                    )
-                #else
-                DatePicker("", selection: .constant(Date()))
-                    .datePickerStyle(.compact)
-                    .selfLabelingControl(label: field.placeholder ?? i18n.placeholderSelectDate())
+                platformDateInput(selection: .constant(Date()), label: field.placeholder ?? i18n.placeholderSelectDate())
                     .automaticComplianceForDynamicFormField(
                         field,
                         identifierElementType: "DatePicker",
                         accessibilityLabel: field.label  // Issue #156: Parameter-based approach
                     )
-                #endif
             case .multiDate, .dateRange:
                 // Use DatePicker as fallback for Layer1 (MultiDatePicker requires iOS 16+)
                 let i18n = InternationalizationService()
-                #if os(tvOS)
-                Text(Date(), format: .dateTime.year().month().day())
-                    .foregroundStyle(.secondary)
-                    .selfLabelingControl(label: field.placeholder ?? i18n.placeholderSelectDates())
-                    .automaticComplianceForDynamicFormField(
-                        field,
-                        identifierElementType: "DatePicker",
-                        accessibilityLabel: field.label
-                    )
-                #else
-                DatePicker("", selection: .constant(Date()))
-                    .datePickerStyle(.compact)
-                    .selfLabelingControl(label: field.placeholder ?? i18n.placeholderSelectDates())
+                platformDateInput(selection: .constant(Date()), label: field.placeholder ?? i18n.placeholderSelectDates())
                     .automaticComplianceForDynamicFormField(
                         field,
                         identifierElementType: "DatePicker",
                         accessibilityLabel: field.label  // Issue #156: Parameter-based approach
                     )
-                #endif
             case .time:
                 let i18n = InternationalizationService()
-                #if os(tvOS)
-                Text(Date(), format: .dateTime.hour().minute())
-                    .foregroundStyle(.secondary)
-                    .selfLabelingControl(label: field.placeholder ?? i18n.placeholderSelectTime())
-                    .automaticComplianceForDynamicFormField(
-                        field,
-                        identifierElementType: "DatePicker",
-                        accessibilityLabel: field.label
-                    )
-                #else
-                DatePicker("", selection: .constant(Date()), displayedComponents: .hourAndMinute)
-                    .datePickerStyle(.compact)
-                    .selfLabelingControl(label: field.placeholder ?? i18n.placeholderSelectTime())
+                platformTimeInput(selection: .constant(Date()), label: field.placeholder ?? i18n.placeholderSelectTime())
                     .automaticComplianceForDynamicFormField(
                         field,
                         identifierElementType: "DatePicker",
                         accessibilityLabel: field.label  // Issue #156: Parameter-based approach
                     )
-                #endif
             case .color:
                 #if os(tvOS)
                 Text(field.label)
@@ -2672,43 +2622,19 @@ public struct ModalFormView: View {
                         )
                 case .date:
                     let i18n = InternationalizationService()
-                    #if os(tvOS)
-                    Text(Date(), format: .dateTime.year().month().day())
-                        .foregroundStyle(.secondary)
-                        .selfLabelingControl(label: field.placeholder ?? i18n.placeholderSelectDate())
-                        .automaticCompliance(
-                            identifierElementType: "DatePicker",
-                            accessibilityLabel: field.label
-                        )
-                    #else
-                    DatePicker("", selection: .constant(Date()))
-                        .datePickerStyle(.compact)
-                        .selfLabelingControl(label: field.placeholder ?? i18n.placeholderSelectDate())
+                    platformDateInput(selection: .constant(Date()), label: field.placeholder ?? i18n.placeholderSelectDate())
                         .automaticCompliance(
                             identifierElementType: "DatePicker",
                             accessibilityLabel: field.label  // Issue #156: Parameter-based approach
                         )
-                    #endif
                 case .multiDate, .dateRange:
                     // Use DatePicker as fallback for Layer1 (MultiDatePicker requires iOS 16+)
                     let i18n = InternationalizationService()
-                    #if os(tvOS)
-                    Text(Date(), format: .dateTime.year().month().day())
-                        .foregroundStyle(.secondary)
-                        .selfLabelingControl(label: field.placeholder ?? i18n.placeholderSelectDates())
-                        .automaticCompliance(
-                            identifierElementType: "DatePicker",
-                            accessibilityLabel: field.label
-                        )
-                    #else
-                    DatePicker("", selection: .constant(Date()))
-                        .datePickerStyle(.compact)
-                        .selfLabelingControl(label: field.placeholder ?? i18n.placeholderSelectDates())
+                    platformDateInput(selection: .constant(Date()), label: field.placeholder ?? i18n.placeholderSelectDates())
                         .automaticCompliance(
                             identifierElementType: "DatePicker",
                             accessibilityLabel: field.label  // Issue #156: Parameter-based approach
                         )
-                    #endif
                 case .select:
                     // Use platformPicker helper to automatically apply accessibility (Issue #163)
                     if let options = field.options, !options.isEmpty {
@@ -2729,19 +2655,7 @@ public struct ModalFormView: View {
                             .foregroundColor(.secondary)
                     }
                 case .textarea:
-                    #if os(tvOS)
-                    TextField(field.placeholder ?? "", text: .constant(""))
-                        .frame(minHeight: 80)
-                        .automaticCompliance(
-                            identifierElementType: "TextField",
-                            accessibilityLabel: field.label
-                        )
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 8)
-                                .stroke(Color.gray.opacity(0.3), lineWidth: 1)
-                        )
-                    #else
-                    TextEditor(text: .constant(""))
+                    platformTextEditor(text: .constant(""), prompt: field.placeholder)
                         .frame(minHeight: 80)
                         .automaticCompliance(
                             identifierElementType: "TextEditor",
@@ -2751,7 +2665,6 @@ public struct ModalFormView: View {
                             RoundedRectangle(cornerRadius: 8)
                                 .stroke(Color.gray.opacity(0.3), lineWidth: 1)
                         )
-                    #endif
                 case .checkbox:
                     Toggle(field.placeholder ?? "Toggle", isOn: .constant(false))
                         .automaticCompliance(
@@ -2795,42 +2708,18 @@ public struct ModalFormView: View {
                         )
                 case .time:
                     let i18n = InternationalizationService()
-                    #if os(tvOS)
-                    Text(Date(), format: .dateTime.hour().minute())
-                        .foregroundStyle(.secondary)
-                        .selfLabelingControl(label: field.placeholder ?? i18n.placeholderSelectTime())
-                        .automaticCompliance(
-                            identifierElementType: "DatePicker",
-                            accessibilityLabel: field.label
-                        )
-                    #else
-                    DatePicker("", selection: .constant(Date()), displayedComponents: .hourAndMinute)
-                        .datePickerStyle(.compact)
-                        .selfLabelingControl(label: field.placeholder ?? i18n.placeholderSelectTime())
+                    platformTimeInput(selection: .constant(Date()), label: field.placeholder ?? i18n.placeholderSelectTime())
                         .automaticCompliance(
                             identifierElementType: "DatePicker",
                             accessibilityLabel: field.label  // Issue #156: Parameter-based approach
                         )
-                    #endif
                 case .datetime:
                     let i18n = InternationalizationService()
-                    #if os(tvOS)
-                    Text(Date(), format: .dateTime.year().month().day().hour().minute())
-                        .foregroundStyle(.secondary)
-                        .selfLabelingControl(label: field.placeholder ?? i18n.placeholderSelectDateTime())
-                        .automaticCompliance(
-                            identifierElementType: "DatePicker",
-                            accessibilityLabel: field.label
-                        )
-                    #else
-                    DatePicker("", selection: .constant(Date()), displayedComponents: [.date, .hourAndMinute])
-                        .datePickerStyle(.compact)
-                        .selfLabelingControl(label: field.placeholder ?? i18n.placeholderSelectDateTime())
+                    platformDateTimeInput(selection: .constant(Date()), label: field.placeholder ?? i18n.placeholderSelectDateTime())
                         .automaticCompliance(
                             identifierElementType: "DatePicker",
                             accessibilityLabel: field.label  // Issue #156: Parameter-based approach
                         )
-                    #endif
                 case .multiselect:
                     Text("Multi-select field: \(field.label)")
                         .foregroundColor(.secondary)
