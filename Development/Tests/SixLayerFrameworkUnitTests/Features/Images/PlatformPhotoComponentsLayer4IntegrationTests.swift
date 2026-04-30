@@ -257,7 +257,7 @@ open class PlatformPhotoComponentsLayer4IntegrationTests: BaseTestClass {
     // 6LAYER_ALLOW: test helper using platform-specific image rendering APIs
     private func createTestPlatformImage() -> PlatformImage {
         // Create a simple test image for unit testing
-        #if os(iOS)
+        #if os(iOS) || os(visionOS)
         let size = CGSize(width: 100, height: 100)
         let renderer = UIGraphicsImageRenderer(size: size) // 6LAYER_ALLOW: test helper using platform-specific image rendering APIs
         let uiImage = renderer.image { context in
@@ -283,7 +283,7 @@ open class PlatformPhotoComponentsLayer4IntegrationTests: BaseTestClass {
     }
     
     private func createRealImageData() -> Data {
-        #if os(iOS)
+        #if os(iOS) || os(visionOS)
         let size = CGSize(width: 200, height: 200)
         let renderer = UIGraphicsImageRenderer(size: size)
         let uiImage = renderer.image { context in
