@@ -3089,33 +3089,17 @@ public struct SimpleFormView: View {
                         
                 case .date:
                     let i18nDate = InternationalizationService()
-                    #if os(tvOS)
-                    Text(
-                        (DateFormatter.iso8601.date(from: field.value) ?? Date())
-                            .formatted(.dateTime.year().month().day())
-                    )
-                    .foregroundStyle(.secondary)
-                    .selfLabelingControl(label: field.placeholder ?? i18nDate.placeholderSelectDate())
-                    .automaticCompliance(
-                        identifierElementType: "DatePicker",
-                        accessibilityLabel: field.label
-                    )
-                    #else
-                    DatePicker(
-                        "",
+                    platformDateInput(
                         selection: Binding(
                             get: { DateFormatter.iso8601.date(from: field.value) ?? Date() },
                             set: { field.value = DateFormatter.iso8601.string(from: $0) }
                         ),
-                        displayedComponents: .date
+                        label: field.placeholder ?? i18nDate.placeholderSelectDate()
                     )
-                    .datePickerStyle(.compact)
-                    .selfLabelingControl(label: field.placeholder ?? i18nDate.placeholderSelectDate())
                     .automaticCompliance(
                         identifierElementType: "DatePicker",
                         accessibilityLabel: field.label  // Issue #156: Parameter-based approach
                     )
-                    #endif
                     
                 case .select:
                     // Use platformPicker helper to automatically apply accessibility (Issue #163)
@@ -3142,22 +3126,7 @@ public struct SimpleFormView: View {
                     }
                     
                 case .textarea:
-                    #if os(tvOS)
-                    TextField(field.placeholder ?? "", text: field.$value)
-                        .frame(minHeight: 80)
-                        .automaticCompliance(
-                            identifierElementType: "TextField",
-                            accessibilityLabel: field.label
-                        )
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 8)
-                                .stroke(Color.gray.opacity(0.3), lineWidth: 1)
-                        )
-                        .onChange(of: field.value) { _ in
-                            clearFieldError(field)
-                        }
-                    #else
-                    TextEditor(text: field.$value)
+                    platformTextEditor(text: field.$value, prompt: field.placeholder)
                         .frame(minHeight: 80)
                         .automaticCompliance(
                             identifierElementType: "TextEditor",
@@ -3170,7 +3139,6 @@ public struct SimpleFormView: View {
                         .onChange(of: field.value) { _ in
                             clearFieldError(field)
                         }
-                    #endif
                         
                 case .checkbox:
                     Toggle(field.placeholder ?? "Toggle", isOn: Binding(
