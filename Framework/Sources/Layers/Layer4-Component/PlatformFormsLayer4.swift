@@ -139,6 +139,107 @@ public extension View {
             .selfLabelingControl(label: label)
         #endif
     }
+
+    /// Layer 4 stepper primitive that degrades on platforms without Stepper.
+    func platformStepperInput(
+        label: String,
+        value: Binding<Double>,
+        in range: ClosedRange<Double>,
+        step: Double = 1.0
+    ) -> some View {
+        #if os(tvOS)
+        Text("\(Int(value.wrappedValue))")
+            .foregroundStyle(.secondary)
+            .selfLabelingControl(label: label)
+        #else
+        Stepper(label, value: value, in: range, step: step)
+        #endif
+    }
+
+    /// Layer 4 color picker primitive that degrades on platforms without ColorPicker.
+    func platformColorInput(
+        label: String,
+        selection: Binding<Color>
+    ) -> some View {
+        #if os(tvOS)
+        Text(label)
+            .foregroundStyle(.secondary)
+        #else
+        ColorPicker("", selection: selection)
+            .selfLabelingControl(label: label)
+        #endif
+    }
+
+    /// Layer 4 range input primitive that degrades on platforms without Slider.
+    func platformRangeInput(
+        value: Binding<Double>,
+        in range: ClosedRange<Double>
+    ) -> some View {
+        #if os(tvOS)
+        ProgressView(value: value.wrappedValue, total: range.upperBound)
+        #else
+        Slider(value: value, in: range)
+        #endif
+    }
+
+    /// Layer 4 gauge primitive that degrades to a progress view where needed.
+    @ViewBuilder
+    func platformGaugeInput(
+        value: Double,
+        min: Double,
+        max: Double,
+        label: String? = nil,
+        style: String? = nil
+    ) -> some View {
+        let range = min...max
+        #if os(tvOS)
+        platformVStackContainer(alignment: .leading) {
+            ProgressView(value: value, total: max)
+                .progressViewStyle(.linear)
+            Text("\(Int(value)) / \(Int(max))")
+                .font(.caption)
+                .foregroundColor(.secondary)
+        }
+        #else
+        if #available(iOS 16.0, macOS 13.0, *) {
+            if style == "circular" {
+                Gauge(value: value, in: range) {
+                    if let label {
+                        Text(label)
+                    }
+                } currentValueLabel: {
+                    Text("\(Int(value))")
+                } minimumValueLabel: {
+                    Text("\(Int(min))")
+                } maximumValueLabel: {
+                    Text("\(Int(max))")
+                }
+                .gaugeStyle(.accessoryCircularCapacity)
+            } else {
+                Gauge(value: value, in: range) {
+                    if let label {
+                        Text(label)
+                    }
+                } currentValueLabel: {
+                    Text("\(Int(value))")
+                } minimumValueLabel: {
+                    Text("\(Int(min))")
+                } maximumValueLabel: {
+                    Text("\(Int(max))")
+                }
+                .gaugeStyle(.linearCapacity)
+            }
+        } else {
+            platformVStackContainer(alignment: .leading) {
+                ProgressView(value: value, total: max)
+                    .progressViewStyle(.linear)
+                Text("\(Int(value)) / \(Int(max))")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+        }
+        #endif
+    }
 }
 
 // MARK: - Validation Types
