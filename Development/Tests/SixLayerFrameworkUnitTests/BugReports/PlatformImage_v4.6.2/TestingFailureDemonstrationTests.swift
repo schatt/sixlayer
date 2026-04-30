@@ -86,38 +86,44 @@ open class TestingFailureDemonstrationTests: BaseTestClass {
             callbackExecuted = true
             capturedImage = image
         }
+        // Reset so only the delegate simulation below is measured (view construction must not count).
+        callbackExecuted = false
+        capturedImage = nil
         
         // Simulate the actual delegate method execution
         // This is what we should have been testing
         #if os(iOS)
-        supportsDelegateHarness = true
-        let placeholderImage = PlatformImage.createPlaceholder()
-        // 6LAYER_ALLOW: testing framework boundary with deprecated platform image picker APIs
-        let mockInfo: [UIImagePickerController.InfoKey: Any] = [
-            .originalImage: placeholderImage.uiImage
-        ]
-        
-        // Execute the delegate method that contains the broken code
-        // This would have caught the breaking change
-        let cameraView = CameraView { image in
-            callbackExecuted = true
-            capturedImage = image
+        if SixLayerPlatform.current == .iOS {
+            supportsDelegateHarness = true
+            let placeholderImage = PlatformImage.createPlaceholder()
+            // 6LAYER_ALLOW: testing framework boundary with deprecated platform image picker APIs
+            let mockInfo: [UIImagePickerController.InfoKey: Any] = [
+                .originalImage: placeholderImage.uiImage
+            ]
+            
+            // Execute the delegate method that contains the broken code
+            // This would have caught the breaking change
+            let cameraView = CameraView { image in
+                callbackExecuted = true
+                capturedImage = image
+            }
+            let coordinator = CameraView.Coordinator(cameraView)
+            
+            // 6LAYER_ALLOW: testing framework boundary with deprecated platform image picker APIs
+            coordinator.imagePickerController(UIImagePickerController(), didFinishPickingMediaWithInfo: mockInfo)
         }
-        let coordinator = CameraView.Coordinator(cameraView)
-        
-        // 6LAYER_ALLOW: testing framework boundary with deprecated platform image picker APIs
-        coordinator.imagePickerController(UIImagePickerController(), didFinishPickingMediaWithInfo: mockInfo)
-        
         #elseif os(macOS)
-        supportsDelegateHarness = true
-        // For macOS, we'll test the actual MacCameraView.Coordinator
-        let mockParent = MacCameraView(onImageCaptured: { image in
-            callbackExecuted = true
-            capturedImage = image
-        })
-        
-        let coordinator = MacCameraView.Coordinator(mockParent)
-        coordinator.takePhoto()
+        if SixLayerPlatform.current == .macOS {
+            supportsDelegateHarness = true
+            // For macOS, we'll test the actual MacCameraView.Coordinator
+            let mockParent = MacCameraView(onImageCaptured: { image in
+                callbackExecuted = true
+                capturedImage = image
+            })
+            
+            let coordinator = MacCameraView.Coordinator(mockParent)
+            coordinator.takePhoto()
+        }
         #endif
         
         // Then: Verify proper testing approach on platforms that have a concrete delegate harness.
