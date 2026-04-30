@@ -76,6 +76,7 @@ open class TestingFailureDemonstrationTests: BaseTestClass {
         // Given: Proper testing approach
         var callbackExecuted = false
         var capturedImage: PlatformImage?
+        var supportsDelegateHarness = false
         
         
         
@@ -88,7 +89,8 @@ open class TestingFailureDemonstrationTests: BaseTestClass {
         
         // Simulate the actual delegate method execution
         // This is what we should have been testing
-        #if os(iOS) || os(visionOS)
+        #if os(iOS)
+        supportsDelegateHarness = true
         let placeholderImage = PlatformImage.createPlaceholder()
         // 6LAYER_ALLOW: testing framework boundary with deprecated platform image picker APIs
         let mockInfo: [UIImagePickerController.InfoKey: Any] = [
@@ -107,6 +109,7 @@ open class TestingFailureDemonstrationTests: BaseTestClass {
         coordinator.imagePickerController(UIImagePickerController(), didFinishPickingMediaWithInfo: mockInfo)
         
         #elseif os(macOS)
+        supportsDelegateHarness = true
         // For macOS, we'll test the actual MacCameraView.Coordinator
         let mockParent = MacCameraView(onImageCaptured: { image in
             callbackExecuted = true
@@ -117,9 +120,13 @@ open class TestingFailureDemonstrationTests: BaseTestClass {
         coordinator.takePhoto()
         #endif
         
-        // Then: Verify proper testing approach
-        #expect(callbackExecuted == true, "Callback SHOULD be executed - this is proper testing")
-        #expect(Bool(true), "Image SHOULD be captured - this is proper testing")  // capturedImage is non-optional
+        // Then: Verify proper testing approach on platforms that have a concrete delegate harness.
+        if supportsDelegateHarness {
+            #expect(callbackExecuted == true, "Callback SHOULD be executed - this is proper testing")
+            #expect(capturedImage != nil, "Image SHOULD be captured - this is proper testing")
+        } else {
+            #expect(callbackExecuted == false, "No delegate harness is available on this platform")
+        }
         
         // This demonstrates the solution:
         // We should test that the callback actually executes and works
