@@ -837,6 +837,15 @@ public struct PlatformImage: @unchecked Sendable {
         return uiImage.size
         #endif
     }
+
+    /// Returns a SwiftUI Image for this platform image without call-site branching.
+    public func platformImageView() -> Image {
+        #if os(macOS)
+        return Image(nsImage: nsImage)
+        #else
+        return Image(uiImage: uiImage)
+        #endif
+    }
     
     /// Create a placeholder image for testing/stub purposes
     public static func createPlaceholder() -> PlatformImage {
