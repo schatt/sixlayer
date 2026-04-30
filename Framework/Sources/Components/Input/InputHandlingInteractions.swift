@@ -102,8 +102,8 @@ public class KeyboardShortcutManager {
     }
     
     /// Create a platform-appropriate keyboard shortcut
-    #if !os(tvOS)
-        func createShortcut(
+    #if !os(tvOS) && !os(watchOS)
+    func createShortcut(
         key: KeyEquivalent,
         modifiers: EventModifiers = .command,
         action: @escaping () -> Void
@@ -121,9 +121,11 @@ public class KeyboardShortcutManager {
     
     /// Get platform-appropriate shortcut description
     /// Uses PlatformStrategy to reduce code duplication (Issue #140)
-        func getShortcutDescription(key: KeyEquivalent, modifiers: EventModifiers = .command) -> String {
+    #if !os(tvOS) && !os(watchOS)
+    func getShortcutDescription(key: KeyEquivalent, modifiers: EventModifiers = .command) -> String {
         return platform.defaultShortcutDescription(key: key, modifiers: modifiers)
     }
+    #endif
     
     private func getModifierString(_ modifiers: EventModifiers) -> String {
         var result = ""
@@ -404,7 +406,7 @@ public extension View {
         onPinch: @escaping (CGFloat) -> Void = { _ in },
         onRotate: @escaping (Double) -> Void = { _ in }
     ) -> some View {
-        #if os(tvOS)
+        #if os(tvOS) || os(watchOS)
         return self
         #else
         let manager = InputHandlingManager()
