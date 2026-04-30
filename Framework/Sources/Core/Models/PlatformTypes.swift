@@ -107,9 +107,7 @@ public enum DeviceType: String, CaseIterable, Sendable {
         #elseif os(tvOS)
         return .tv
         #elseif os(visionOS)
-        // No dedicated DeviceType mapping exists for visionOS in older APIs.
-        // Use tv as the closest non-touch, focus/spatial interaction category.
-        return .tv
+        return .vision
         #else
         return .phone // Default fallback
         #endif
