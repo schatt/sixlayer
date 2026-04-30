@@ -88,7 +88,7 @@ open class TestingFailureDemonstrationTests: BaseTestClass {
         
         // Simulate the actual delegate method execution
         // This is what we should have been testing
-        #if os(iOS)
+        #if os(iOS) || os(visionOS)
         let placeholderImage = PlatformImage.createPlaceholder()
         // 6LAYER_ALLOW: testing framework boundary with deprecated platform image picker APIs
         let mockInfo: [UIImagePickerController.InfoKey: Any] = [
