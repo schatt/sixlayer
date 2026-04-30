@@ -1099,7 +1099,14 @@ public struct RuntimeCapabilityDetection {
 
     private static func detectMediaHasMicrophoneInput() -> Bool {
         #if canImport(AVFoundation)
+        #if os(visionOS)
+        if #available(visionOS 2.1, *) {
+            return AVCaptureDevice.default(for: .audio) != nil
+        }
+        return false
+        #else
         return AVCaptureDevice.default(for: .audio) != nil
+        #endif
         #else
         return false
         #endif
