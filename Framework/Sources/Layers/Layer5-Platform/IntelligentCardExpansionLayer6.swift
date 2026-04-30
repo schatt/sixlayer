@@ -45,13 +45,11 @@ public struct NativeExpandableCardView<Item: Identifiable>: View {
         .onTapGesture {
             handleTap()
         }
-        #if !os(tvOS)
-        .onHover { hovering in
+        .platformHoverEffect { hovering in
             if platformConfig.supportsHover {
                 isHovered = hovering
             }
         }
-        #endif
         .accessibilityElement(children: .combine)
         .accessibilityAddTraits(accessibilityTraits)
         .accessibilityAction(named: "Activate") {
@@ -291,7 +289,7 @@ public struct macOSExpandableCardView<Item: Identifiable>: View {
             performanceConfig: getCardExpansionPerformanceConfig(),
             accessibilityConfig: getCardExpansionAccessibilityConfig()
         )
-        .onHover { hovering in
+        .platformHoverEffect { hovering in
             // macOS-specific hover behavior
             _ = hovering
         }
