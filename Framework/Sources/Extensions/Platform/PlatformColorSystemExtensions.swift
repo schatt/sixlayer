@@ -113,7 +113,7 @@ public extension Color {
     /// Direct system background color
     /// iOS: systemBackground; macOS: windowBackgroundColor
     static var systemBackground: Color {
-        #if os(iOS)
+        #if os(iOS) || os(visionOS)
         return Color(.systemBackground)
         #elseif os(macOS)
         return Color(.windowBackgroundColor)
@@ -137,7 +137,7 @@ public extension Color {
     /// Platform secondary background color
     /// iOS: secondarySystemBackground; macOS: controlBackgroundColor
     static var platformSecondaryBackground: Color {
-        #if os(iOS)
+        #if os(iOS) || os(visionOS)
         return Color(.secondarySystemBackground)
         #elseif os(macOS)
         return Color(.controlBackgroundColor)
@@ -149,7 +149,7 @@ public extension Color {
     /// Platform tertiary background color
     /// iOS: tertiarySystemBackground; macOS: textBackgroundColor
     static var platformTertiaryBackground: Color {
-        #if os(iOS)
+        #if os(iOS) || os(visionOS)
         return Color(.tertiarySystemBackground)
         #elseif os(macOS)
         return Color(.textBackgroundColor)
@@ -161,7 +161,7 @@ public extension Color {
     /// Platform grouped background color
     /// iOS: systemGroupedBackground; macOS: controlBackgroundColor
     static var platformGroupedBackground: Color {
-        #if os(iOS)
+        #if os(iOS) || os(visionOS)
         return Color(.systemGroupedBackground)
         #elseif os(macOS)
         return Color(.controlBackgroundColor)
@@ -173,7 +173,7 @@ public extension Color {
     /// Platform separator color
     /// iOS: separator; macOS: separatorColor
     static var platformSeparator: Color {
-        #if os(iOS)
+        #if os(iOS) || os(visionOS)
         return Color(.separator)
         #elseif os(macOS)
         return Color(.separatorColor)
@@ -185,7 +185,7 @@ public extension Color {
     /// Platform label color
     /// iOS: label; macOS: labelColor
     static var platformLabel: Color {
-        #if os(iOS)
+        #if os(iOS) || os(visionOS)
         return Color(.label)
         #elseif os(macOS)
         return Color(.labelColor)
@@ -197,7 +197,7 @@ public extension Color {
     /// Platform secondary label color
     /// iOS: secondaryLabel; macOS: secondaryLabelColor
     static var platformSecondaryLabel: Color {
-        #if os(iOS)
+        #if os(iOS) || os(visionOS)
         return Color(.secondaryLabel)
         #elseif os(macOS)
         return Color(.secondaryLabelColor)
@@ -209,7 +209,7 @@ public extension Color {
     /// Platform tertiary label color
     /// iOS: tertiaryLabel; macOS: tertiaryLabelColor
     static var platformTertiaryLabel: Color {
-        #if os(iOS)
+        #if os(iOS) || os(visionOS)
         return Color(.tertiaryLabel)
         #elseif os(macOS)
         return Color(.tertiaryLabelColor)
