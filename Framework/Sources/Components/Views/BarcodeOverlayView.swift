@@ -171,16 +171,10 @@ private struct BarcodeInfoView: View {
             }
             
             if configuration.showPayload {
-                #if os(tvOS)
                 Text(barcode.payload)
                     .font(.body)
+                    .platformTextSelection(.enabled)
                     .automaticCompliance(named: "BarcodePayload")
-                #else
-                Text(barcode.payload)
-                    .font(.body)
-                    .textSelection(.enabled)
-                    .automaticCompliance(named: "BarcodePayload")
-                #endif
             }
         }
         .padding(.vertical, 4)
