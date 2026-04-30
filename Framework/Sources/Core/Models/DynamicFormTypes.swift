@@ -1,7 +1,7 @@
 import CoreFoundation
 import Foundation
 import SwiftUI
-#if os(iOS)
+#if os(iOS) || targetEnvironment(macCatalyst)
 import UIKit
 #endif
 
@@ -48,7 +48,7 @@ public enum SixLayerTextContentType: String, CaseIterable, Hashable {
     case URL = "URL"
     case creditCardNumber = "creditCardNumber"
     
-    #if canImport(UIKit)
+    #if os(iOS) || targetEnvironment(macCatalyst)
     /// Convert to UITextContentType for iOS/Mac Catalyst
     public var uiTextContentType: UITextContentType {
         switch self {
