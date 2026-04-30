@@ -11,7 +11,7 @@ import SwiftUI
 // MARK: - Liquid Glass Example Usage
 
 /// Example demonstrating how to use Liquid Glass with proper capability detection
-@available(iOS 26.0, macOS 26.0, *)
+@available(iOS 26.0, macOS 26.0, visionOS 26.0, *)
 public struct LiquidGlassExampleUsage: View {
     @State private var capabilityInfo: LiquidGlassCapabilityInfo
     
@@ -110,7 +110,7 @@ public struct ConditionalLiquidGlassExample: View {
         VStack {
             if LiquidGlassCapabilityDetection.isSupported {
                 // Use full Liquid Glass features
-                if #available(iOS 26.0, macOS 26.0, *) {
+                if #available(iOS 26.0, macOS 26.0, visionOS 26.0, *) {
                     FullLiquidGlassView()
                 } else {
                     FallbackUIView()
@@ -124,7 +124,7 @@ public struct ConditionalLiquidGlassExample: View {
     }
 }
 
-@available(iOS 26.0, macOS 26.0, *)
+@available(iOS 26.0, macOS 26.0, visionOS 26.0, *)
 private struct FullLiquidGlassView: View {
     var body: some View {
         VStack {
@@ -171,7 +171,7 @@ private struct FallbackUIView: View {
 struct LiquidGlassExampleUsage_Previews: PreviewProvider {
     static var previews: some View {
         Group {
-            if #available(iOS 26.0, macOS 26.0, *) {
+            if #available(iOS 26.0, macOS 26.0, visionOS 26.0, *) {
                 LiquidGlassExampleUsage()
                     .previewDisplayName("Liquid Glass Example")
             }
