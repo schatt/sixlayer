@@ -1332,22 +1332,17 @@ private func createSimpleFieldView(for field: DynamicFormField, hints: Presentat
                         accessibilityLabel: field.label  // Issue #156: Parameter-based approach
                     )
             case .stepper:
-                #if os(tvOS)
-                Text("0")
-                    .foregroundStyle(.secondary)
-                    .automaticComplianceForDynamicFormField(
-                        field,
-                        identifierElementType: "Stepper",
-                        accessibilityLabel: field.label
-                    )
-                #else
-                Stepper(field.label, value: .constant(0.0), in: 0...100, step: 1.0)
-                    .automaticComplianceForDynamicFormField(
-                        field,
-                        identifierElementType: "Stepper",
-                        accessibilityLabel: field.label  // Issue #156: Parameter-based approach
-                    )
-                #endif
+                platformStepperInput(
+                    label: field.label,
+                    value: .constant(0.0),
+                    in: 0...100,
+                    step: 1.0
+                )
+                .automaticComplianceForDynamicFormField(
+                    field,
+                    identifierElementType: "Stepper",
+                    accessibilityLabel: field.label  // Issue #156: Parameter-based approach
+                )
             case .textarea, .richtext:
                 platformTextEditor(
                     text: .constant(field.defaultValue ?? ""),
@@ -1415,39 +1410,19 @@ private func createSimpleFieldView(for field: DynamicFormField, hints: Presentat
                         accessibilityLabel: field.label  // Issue #156: Parameter-based approach
                     )
             case .color:
-                #if os(tvOS)
-                Text(field.label)
-                    .foregroundStyle(.secondary)
-                    .automaticComplianceForDynamicFormField(
-                        field,
-                        identifierElementType: "ColorPicker",
-                        accessibilityLabel: field.label
-                    )
-                #else
-                ColorPicker("", selection: .constant(.blue))
-                    .selfLabelingControl(label: field.label)
+                platformColorInput(label: field.label, selection: .constant(.blue))
                     .automaticComplianceForDynamicFormField(
                         field,
                         identifierElementType: "ColorPicker",
                         accessibilityLabel: field.label  // Issue #156: Parameter-based approach
                     )
-                #endif
             case .range:
-                #if os(tvOS)
-                ProgressView(value: 0.5, total: 1.0)
-                    .automaticComplianceForDynamicFormField(
-                        field,
-                        identifierElementType: "Slider",
-                        accessibilityLabel: field.label
-                    )
-                #else
-                Slider(value: .constant(0.5), in: 0...1)
+                platformRangeInput(value: .constant(0.5), in: 0...1)
                     .automaticComplianceForDynamicFormField(
                         field,
                         identifierElementType: "Slider",
                         accessibilityLabel: field.label  // Issue #156: Parameter-based approach
                     )
-                #endif
             case .display:
                 // Display fields use LabeledContent or fallback HStack
                 if #available(iOS 16.0, macOS 13.0, *) {
@@ -1469,54 +1444,13 @@ private func createSimpleFieldView(for field: DynamicFormField, hints: Presentat
                 let min = Double(field.metadata?["min"] ?? "0") ?? 0.0
                 let max = Double(field.metadata?["max"] ?? "100") ?? 100.0
                 let value = Double(field.defaultValue ?? "0") ?? 0.0
-                let range = min...max
-                #if os(tvOS)
-                platformVStackContainer(alignment: .leading) {
-                    ProgressView(value: value, total: max)
-                        .progressViewStyle(.linear)
-                    Text("\(Int(value)) / \(Int(max))")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-                #else
-                if #available(iOS 16.0, macOS 13.0, *) {
-                    if field.metadata?["gaugeStyle"] == "circular" {
-                        Gauge(value: value, in: range) {
-                            if let label = field.metadata?["gaugeLabel"] {
-                                Text(label)
-                            }
-                        } currentValueLabel: {
-                            Text("\(Int(value))")
-                        } minimumValueLabel: {
-                            Text("\(Int(min))")
-                        } maximumValueLabel: {
-                            Text("\(Int(max))")
-                        }
-                        .gaugeStyle(.accessoryCircularCapacity)
-                    } else {
-                        Gauge(value: value, in: range) {
-                            if let label = field.metadata?["gaugeLabel"] {
-                                Text(label)
-                            }
-                        } currentValueLabel: {
-                            Text("\(Int(value))")
-                        } minimumValueLabel: {
-                            Text("\(Int(min))")
-                        } maximumValueLabel: {
-                            Text("\(Int(max))")
-                        }
-                        .gaugeStyle(.linearCapacity)
-                    }
-                } else {
-                    platformVStackContainer(alignment: .leading) {
-                        ProgressView(value: value, total: max)
-                            .progressViewStyle(.linear)
-                        Text("\(Int(value)) / \(Int(max))")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
-                }
-                #endif
+                platformGaugeInput(
+                    value: value,
+                    min: min,
+                    max: max,
+                    label: field.metadata?["gaugeLabel"],
+                    style: field.metadata?["gaugeStyle"]
+                )
             case .multiselect, .radio, .checkbox, .file, .image, .datetime, .array, .data, .custom, .text, .email, .password, .phone, .url, .autocomplete, .enum:
                 TextField(field.placeholder ?? "Enter \(field.label)", text: .constant(field.defaultValue ?? ""))
                     .l1SemanticTextFieldBorderStyle()
