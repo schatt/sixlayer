@@ -2757,61 +2757,20 @@ public struct ModalFormView: View {
                     let min = Double(field.metadata?["min"] ?? "0") ?? 0.0
                     let max = Double(field.metadata?["max"] ?? "100") ?? 100.0
                     let value = Double(field.defaultValue ?? "0") ?? 0.0
-                    let range = min...max
-                    #if os(tvOS)
-                    platformVStackContainer(alignment: .leading) {
-                        ProgressView(value: value, total: max)
-                            .progressViewStyle(.linear)
-                        Text("\(Int(value)) / \(Int(max))")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
-                    #else
-                    if #available(iOS 16.0, macOS 13.0, *) {
-                        if field.metadata?["gaugeStyle"] == "circular" {
-                            Gauge(value: value, in: range) {
-                                if let label = field.metadata?["gaugeLabel"] {
-                                    Text(label)
-                                }
-                            } currentValueLabel: {
-                                Text("\(Int(value))")
-                            } minimumValueLabel: {
-                                Text("\(Int(min))")
-                            } maximumValueLabel: {
-                                Text("\(Int(max))")
-                            }
-                            .gaugeStyle(.accessoryCircularCapacity)
-                        } else {
-                            Gauge(value: value, in: range) {
-                                if let label = field.metadata?["gaugeLabel"] {
-                                    Text(label)
-                                }
-                            } currentValueLabel: {
-                                Text("\(Int(value))")
-                            } minimumValueLabel: {
-                                Text("\(Int(min))")
-                            } maximumValueLabel: {
-                                Text("\(Int(max))")
-                            }
-                            .gaugeStyle(.linearCapacity)
-                        }
-                    } else {
-                        platformVStackContainer(alignment: .leading) {
-                            ProgressView(value: value, total: max)
-                                .progressViewStyle(.linear)
-                            Text("\(Int(value)) / \(Int(max))")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-                    }
-                    #endif
+                    platformGaugeInput(
+                        value: value,
+                        min: min,
+                        max: max,
+                        label: field.metadata?["gaugeLabel"],
+                        style: field.metadata?["gaugeStyle"]
+                    )
                 case .stepper:
-                    #if os(tvOS)
-                    Text("0")
-                        .foregroundStyle(.secondary)
-                    #else
-                    Stepper(field.label, value: .constant(0.0), in: 0...100, step: 1.0)
-                    #endif
+                    platformStepperInput(
+                        label: field.label,
+                        value: .constant(0.0),
+                        in: 0...100,
+                        step: 1.0
+                    )
                 case .enum:
                     let i18n = InternationalizationService()
                     // Use platformPicker helper to automatically apply accessibility (Issue #163)
