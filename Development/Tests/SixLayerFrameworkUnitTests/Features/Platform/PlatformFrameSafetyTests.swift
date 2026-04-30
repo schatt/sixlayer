@@ -116,8 +116,10 @@ open class PlatformFrameSafetyTests: BaseTestClass {
         let expectedSize: CGSize
         #if os(watchOS)
         expectedSize = WKInterfaceDevice.current().screenBounds.size
-        #else
+        #elseif os(tvOS)
         expectedSize = UIScreen.main.bounds.size
+        #else
+        expectedSize = CGSize(width: 1280, height: 720)
         #endif
         
         #expect(maxSize.width == expectedSize.width, "Max width should match screen width")
@@ -145,8 +147,10 @@ open class PlatformFrameSafetyTests: BaseTestClass {
         }
         #elseif os(watchOS)
         expectedSize = WKInterfaceDevice.current().screenBounds.size
-        #else
+        #elseif os(tvOS)
         expectedSize = UIScreen.main.bounds.size
+        #else
+        expectedSize = CGSize(width: 1280, height: 720)
         #endif
         
         #expect(maxSize.width == expectedSize.width, "Max width should match screen/window width")
