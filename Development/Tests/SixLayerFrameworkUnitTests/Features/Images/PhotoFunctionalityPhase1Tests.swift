@@ -115,8 +115,8 @@ open class PhotoFunctionalityPhase1Tests: BaseTestClass {
         // by design (no UIKit/AppKit bitmap path implemented yet; tracked under #241).
         // Assert with a safe unwrap instead of force-unwrap so the test reports
         // a failed expectation rather than crashing xctest on unsupported platforms.
-        #if os(iOS) || os(macOS)
-        #expect(compressedData != nil, "Compressed data should be returned on iOS/macOS")
+        #if os(iOS) || os(macOS) || os(visionOS)
+        #expect(compressedData != nil, "Compressed data should be returned on iOS/macOS/visionOS")
         #expect((compressedData?.count ?? 0) > 0, "Compressed data should not be empty")
         #else
         #expect(compressedData == nil, "compressed() is not implemented for this platform (see #241)")
