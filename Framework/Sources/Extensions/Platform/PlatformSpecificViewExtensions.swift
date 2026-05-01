@@ -1776,7 +1776,8 @@ public extension View {
     /// - Parameter content: Form body (sections and controls), not an outer `Form`.
     /// - Returns: A `Form` (with grouped style and outer padding on macOS; outer padding on other
     ///   non-iOS platforms to preserve prior spacing; iOS uses the system form as before).
-    nonisolated func platformFormContainer<Content: View>(
+    @MainActor
+    func platformFormContainer<Content: View>(
         @ViewBuilder content: () -> Content
     ) -> some View {
         #if os(iOS)
@@ -2209,12 +2210,16 @@ public extension View {
     }
 
     /// Platform-specific text selection wrapper.
-    /// tvOS returns an unmodified view because `.textSelection` is unavailable.
-    func platformTextSelection(_ selectability: TextSelectability) -> AnyView {
+    /// tvOS returns an unmodified view because `TextSelectability` / `.textSelection` are unavailable there.
+    func platformTextSelection(_ policy: SixLayerTextSelectionPolicy) -> AnyView {
         #if os(tvOS)
         AnyView(self)
         #else
-        AnyView(self.textSelection(selectability))
+        let selectability: TextSelectability = switch policy {
+        case .enabled: .enabled
+        case .disabled: .disabled
+        }
+        return AnyView(self.textSelection(selectability))
         #endif
     }
 
