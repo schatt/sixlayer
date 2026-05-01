@@ -178,7 +178,7 @@ public struct AppleHIGComplianceExamples {
                         Text("Item \(index)")
                         Spacer()
                     }
-                    #if !os(tvOS)
+                    #if !os(tvOS) && !os(watchOS)
                     .onHover { _ in
                         // Hover state is automatically applied
                     }
