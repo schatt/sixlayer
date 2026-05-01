@@ -1327,7 +1327,7 @@ private func createSimpleFieldView(for field: DynamicFormField, hints: Presentat
                         identifierElementType: "TextField",
                         accessibilityLabel: field.label  // Issue #156: Parameter-based approach
                     )
-                    #if canImport(UIKit)
+                    #if canImport(UIKit) && !os(watchOS)
                     .textContentType(textContentType.uiTextContentType)
                     #endif
             }
@@ -2474,7 +2474,7 @@ public struct GenericFormView: View {
                             TextField(field.placeholder ?? "Enter \(field.label)", text: .constant(""))
                                 .l1SemanticTextFieldBorderStyle()
                                 .background(Color.platformSecondaryBackground)
-                                #if canImport(UIKit)
+                                #if canImport(UIKit) && !os(watchOS)
                                 .textContentType(textContentType.uiTextContentType)
                                 #endif
                         } else if let contentType = field.contentType {
@@ -2647,7 +2647,7 @@ public struct ModalFormView: View {
                         identifierElementType: "TextField",
                         accessibilityLabel: field.label  // Issue #156: Parameter-based approach
                     )
-                    #if canImport(UIKit)
+                    #if canImport(UIKit) && !os(watchOS)
                     .textContentType(textContentType.uiTextContentType)
                     #endif
             } else if let contentType = field.contentType {
