@@ -123,6 +123,29 @@ public enum SixLayerTextContentType: String, CaseIterable, Hashable {
     }
 }
 
+// MARK: - Text input autocapitalization
+
+/// Cross-platform autocapitalization for text fields; maps to SwiftUI `TextInputAutocapitalization` on iOS.
+public enum SixLayerTextInputAutocapitalization: Sendable, Hashable {
+    case never
+    case words
+    case sentences
+    case characters
+}
+
+#if os(iOS)
+extension SixLayerTextInputAutocapitalization {
+    var swiftUITextInputAutocapitalization: TextInputAutocapitalization {
+        switch self {
+        case .never: return .never
+        case .words: return .words
+        case .sentences: return .sentences
+        case .characters: return .characters
+        }
+    }
+}
+#endif
+
 // MARK: - Dynamic Form Field Types
 
 /// Represents a dynamic form field configuration
