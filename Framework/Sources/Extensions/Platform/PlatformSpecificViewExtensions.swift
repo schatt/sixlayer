@@ -2211,11 +2211,11 @@ public extension View {
     /// Platform-specific text selection wrapper.
     /// tvOS returns self because `.textSelection` is unavailable.
     @ViewBuilder
-    func platformTextSelection(_ textSelection: TextSelection?) -> some View {
+    func platformTextSelection(_ selectability: TextSelectability) -> some View {
         #if os(tvOS)
         self
         #else
-        self.textSelection(textSelection)
+        self.textSelection(selectability)
         #endif
     }
 
