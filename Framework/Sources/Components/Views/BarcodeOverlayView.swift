@@ -178,7 +178,7 @@ private struct BarcodeInfoView: View {
             }
             
             if configuration.showPayload {
-                #if os(tvOS)
+                #if os(tvOS) || os(watchOS)
                 Text(barcode.payload)
                     .font(.body)
                     .automaticCompliance(named: "BarcodePayload")
