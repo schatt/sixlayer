@@ -1,5 +1,7 @@
 import SwiftUI
+#if os(iOS) || os(macOS)
 import AVFoundation
+#endif
 
 #if os(iOS) && canImport(PhotosUI)
 import PhotosUI
@@ -98,6 +100,7 @@ public enum PlatformPhotoComponentsLayer4 {
     
     // MARK: - Camera Preview Components
     
+    #if os(iOS) || os(macOS)
     /// Creates a cross-platform camera preview view
     /// Abstracts UIViewControllerRepresentable (iOS) and NSViewRepresentable (macOS)
     /// Note: Requires @MainActor because PlatformCameraPreviewView is a View
@@ -107,6 +110,7 @@ public enum PlatformPhotoComponentsLayer4 {
         PlatformCameraPreviewView(session: session, videoGravity: videoGravity)
             .automaticCompliance(named: "platformCameraPreview_L4")
     }
+    #endif
     
     // MARK: - Tabbed Photo Source Components
     
@@ -303,6 +307,7 @@ public enum PlatformPhotoComponentsLayer4 {
 
 // MARK: - Camera Preview View
 
+#if os(iOS) || os(macOS)
 /// Cross-platform camera preview view
 /// Abstracts UIViewControllerRepresentable (iOS) and NSViewRepresentable (macOS)
 public struct PlatformCameraPreviewView: View {
@@ -328,6 +333,7 @@ public struct PlatformCameraPreviewView: View {
         #endif
     }
 }
+#endif
 
 // MARK: - Supporting Views
 
@@ -942,6 +948,7 @@ public func platformPhotoDisplay_L4(image: PlatformImage?, style: PhotoDisplaySt
     PlatformPhotoComponentsLayer4.platformPhotoDisplay_L4(image: image, style: style)
 }
 
+#if os(iOS) || os(macOS)
 /// Creates a cross-platform camera preview (convenience wrapper)
 /// Note: Requires @MainActor because it calls main-actor isolated methods
 @ViewBuilder
@@ -949,6 +956,7 @@ public func platformPhotoDisplay_L4(image: PlatformImage?, style: PhotoDisplaySt
 public func platformCameraPreview_L4(session: AVCaptureSession, videoGravity: AVLayerVideoGravity = .resizeAspectFill) -> some View {
     PlatformPhotoComponentsLayer4.platformCameraPreview_L4(session: session, videoGravity: videoGravity)
 }
+#endif
 
 // MARK: - Live data scanner (Issue #252)
 
