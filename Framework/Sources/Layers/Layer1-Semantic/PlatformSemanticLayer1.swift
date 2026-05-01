@@ -14,7 +14,7 @@ extension View {
     /// doesn't have to branch on platform.
     @ViewBuilder
     fileprivate func l1SemanticTextFieldBorderStyle() -> some View {
-        #if os(tvOS)
+        #if os(tvOS) || os(watchOS)
         self.textFieldStyle(.plain)
         #else
         self.textFieldStyle(.roundedBorder)
@@ -1327,7 +1327,9 @@ private func createSimpleFieldView(for field: DynamicFormField, hints: Presentat
                         identifierElementType: "TextField",
                         accessibilityLabel: field.label  // Issue #156: Parameter-based approach
                     )
-                    #if canImport(UIKit)
+                    #if os(watchOS)
+                    .textContentType(textContentType.wkTextContentType)
+                    #elseif canImport(UIKit)
                     .textContentType(textContentType.uiTextContentType)
                     #endif
             }
@@ -1343,7 +1345,7 @@ private func createSimpleFieldView(for field: DynamicFormField, hints: Presentat
                         accessibilityLabel: field.label  // Issue #156: Parameter-based approach
                     )
             case .stepper:
-                #if os(tvOS)
+                #if os(tvOS) || os(watchOS)
                 Text("0")
                     .foregroundStyle(.secondary)
                     .automaticComplianceForDynamicFormField(
@@ -1360,7 +1362,7 @@ private func createSimpleFieldView(for field: DynamicFormField, hints: Presentat
                     )
                 #endif
             case .textarea, .richtext:
-                #if os(tvOS)
+                #if os(tvOS) || os(watchOS)
                 TextField(field.placeholder ?? "", text: .constant(field.defaultValue ?? ""))
                     .frame(minHeight: 80)
                     .applyFieldHints(fieldHints)
@@ -1400,7 +1402,7 @@ private func createSimpleFieldView(for field: DynamicFormField, hints: Presentat
                         selection: .constant(""),
                         options: options,
                         pickerName: "Layer1SelectField",
-                        style: MenuPickerStyle()
+                        style: PlatformMenuLikePickerStyle()
                     )
                     .automaticCompliance(
                         identifierElementType: "Picker",
@@ -1413,7 +1415,7 @@ private func createSimpleFieldView(for field: DynamicFormField, hints: Presentat
                 }
             case .date:
                 let i18n = InternationalizationService()
-                #if os(tvOS)
+                #if os(tvOS) || os(watchOS)
                 Text(Date(), format: .dateTime.year().month().day())
                     .foregroundStyle(.secondary)
                     .selfLabelingControl(label: field.placeholder ?? i18n.placeholderSelectDate())
@@ -1435,7 +1437,7 @@ private func createSimpleFieldView(for field: DynamicFormField, hints: Presentat
             case .multiDate, .dateRange:
                 // Use DatePicker as fallback for Layer1 (MultiDatePicker requires iOS 16+)
                 let i18n = InternationalizationService()
-                #if os(tvOS)
+                #if os(tvOS) || os(watchOS)
                 Text(Date(), format: .dateTime.year().month().day())
                     .foregroundStyle(.secondary)
                     .selfLabelingControl(label: field.placeholder ?? i18n.placeholderSelectDates())
@@ -1456,7 +1458,7 @@ private func createSimpleFieldView(for field: DynamicFormField, hints: Presentat
                 #endif
             case .time:
                 let i18n = InternationalizationService()
-                #if os(tvOS)
+                #if os(tvOS) || os(watchOS)
                 Text(Date(), format: .dateTime.hour().minute())
                     .foregroundStyle(.secondary)
                     .selfLabelingControl(label: field.placeholder ?? i18n.placeholderSelectTime())
@@ -1476,7 +1478,7 @@ private func createSimpleFieldView(for field: DynamicFormField, hints: Presentat
                     )
                 #endif
             case .color:
-                #if os(tvOS)
+                #if os(tvOS) || os(watchOS)
                 Text(field.label)
                     .foregroundStyle(.secondary)
                     .automaticComplianceForDynamicFormField(
@@ -1494,7 +1496,7 @@ private func createSimpleFieldView(for field: DynamicFormField, hints: Presentat
                     )
                 #endif
             case .range:
-                #if os(tvOS)
+                #if os(tvOS) || os(watchOS)
                 ProgressView(value: 0.5, total: 1.0)
                     .automaticComplianceForDynamicFormField(
                         field,
@@ -1531,7 +1533,7 @@ private func createSimpleFieldView(for field: DynamicFormField, hints: Presentat
                 let max = Double(field.metadata?["max"] ?? "100") ?? 100.0
                 let value = Double(field.defaultValue ?? "0") ?? 0.0
                 let range = min...max
-                #if os(tvOS)
+                #if os(tvOS) || os(watchOS)
                 platformVStackContainer(alignment: .leading) {
                     ProgressView(value: value, total: max)
                         .progressViewStyle(.linear)
@@ -2474,7 +2476,9 @@ public struct GenericFormView: View {
                             TextField(field.placeholder ?? "Enter \(field.label)", text: .constant(""))
                                 .l1SemanticTextFieldBorderStyle()
                                 .background(Color.platformSecondaryBackground)
-                                #if canImport(UIKit)
+                                #if os(watchOS)
+                                .textContentType(textContentType.wkTextContentType)
+                                #elseif canImport(UIKit)
                                 .textContentType(textContentType.uiTextContentType)
                                 #endif
                         } else if let contentType = field.contentType {
@@ -2489,7 +2493,7 @@ public struct GenericFormView: View {
                                     .l1SemanticTextFieldBorderStyle()
                                     .background(Color.platformSecondaryBackground)
                             case .textarea:
-                                #if os(tvOS)
+                                #if os(tvOS) || os(watchOS)
                                 TextField(field.placeholder ?? "", text: .constant(""))
                                     .frame(minHeight: 80)
                                     .background(Color.platformSecondaryBackground)
@@ -2510,7 +2514,7 @@ public struct GenericFormView: View {
                                         selection: .constant(""),
                                         options: options,
                                         pickerName: "GenericFormSelectField",
-                                        style: MenuPickerStyle()
+                                        style: PlatformMenuLikePickerStyle()
                                     )
                                 } else {
                                     // Fallback if no options
@@ -2647,7 +2651,9 @@ public struct ModalFormView: View {
                         identifierElementType: "TextField",
                         accessibilityLabel: field.label  // Issue #156: Parameter-based approach
                     )
-                    #if canImport(UIKit)
+                    #if os(watchOS)
+                    .textContentType(textContentType.wkTextContentType)
+                    #elseif canImport(UIKit)
                     .textContentType(textContentType.uiTextContentType)
                     #endif
             } else if let contentType = field.contentType {
@@ -2683,7 +2689,7 @@ public struct ModalFormView: View {
                         )
                 case .date:
                     let i18n = InternationalizationService()
-                    #if os(tvOS)
+                    #if os(tvOS) || os(watchOS)
                     Text(Date(), format: .dateTime.year().month().day())
                         .foregroundStyle(.secondary)
                         .selfLabelingControl(label: field.placeholder ?? i18n.placeholderSelectDate())
@@ -2703,7 +2709,7 @@ public struct ModalFormView: View {
                 case .multiDate, .dateRange:
                     // Use DatePicker as fallback for Layer1 (MultiDatePicker requires iOS 16+)
                     let i18n = InternationalizationService()
-                    #if os(tvOS)
+                    #if os(tvOS) || os(watchOS)
                     Text(Date(), format: .dateTime.year().month().day())
                         .foregroundStyle(.secondary)
                         .selfLabelingControl(label: field.placeholder ?? i18n.placeholderSelectDates())
@@ -2728,7 +2734,7 @@ public struct ModalFormView: View {
                             selection: .constant(""),
                             options: options,
                             pickerName: "Layer1SelectField",
-                            style: MenuPickerStyle()
+                            style: PlatformMenuLikePickerStyle()
                         )
                         .automaticCompliance(
                             identifierElementType: "Picker",
@@ -2740,7 +2746,7 @@ public struct ModalFormView: View {
                             .foregroundColor(.secondary)
                     }
                 case .textarea:
-                    #if os(tvOS)
+                    #if os(tvOS) || os(watchOS)
                     TextField(field.placeholder ?? "", text: .constant(""))
                         .frame(minHeight: 80)
                         .automaticCompliance(
@@ -2806,7 +2812,7 @@ public struct ModalFormView: View {
                         )
                 case .time:
                     let i18n = InternationalizationService()
-                    #if os(tvOS)
+                    #if os(tvOS) || os(watchOS)
                     Text(Date(), format: .dateTime.hour().minute())
                         .foregroundStyle(.secondary)
                         .selfLabelingControl(label: field.placeholder ?? i18n.placeholderSelectTime())
@@ -2825,7 +2831,7 @@ public struct ModalFormView: View {
                     #endif
                 case .datetime:
                     let i18n = InternationalizationService()
-                    #if os(tvOS)
+                    #if os(tvOS) || os(watchOS)
                     Text(Date(), format: .dateTime.year().month().day().hour().minute())
                         .foregroundStyle(.secondary)
                         .selfLabelingControl(label: field.placeholder ?? i18n.placeholderSelectDateTime())
@@ -2946,7 +2952,7 @@ public struct ModalFormView: View {
                     let max = Double(field.metadata?["max"] ?? "100") ?? 100.0
                     let value = Double(field.defaultValue ?? "0") ?? 0.0
                     let range = min...max
-                    #if os(tvOS)
+                    #if os(tvOS) || os(watchOS)
                     platformVStackContainer(alignment: .leading) {
                         ProgressView(value: value, total: max)
                             .progressViewStyle(.linear)
@@ -2994,7 +3000,7 @@ public struct ModalFormView: View {
                     }
                     #endif
                 case .stepper:
-                    #if os(tvOS)
+                    #if os(tvOS) || os(watchOS)
                     Text("0")
                         .foregroundStyle(.secondary)
                     #else
@@ -3009,7 +3015,7 @@ public struct ModalFormView: View {
                             selection: .constant(""),
                             options: options,
                             pickerName: "GenericFormEnumField",
-                            style: MenuPickerStyle()
+                            style: PlatformMenuLikePickerStyle()
                         )
                         .automaticCompliance(
                             identifierElementType: "View",
@@ -3318,7 +3324,7 @@ public struct SimpleFormView: View {
                         
                 case .date:
                     let i18nDate = InternationalizationService()
-                    #if os(tvOS)
+                    #if os(tvOS) || os(watchOS)
                     Text(
                         (DateFormatter.iso8601.date(from: field.value) ?? Date())
                             .formatted(.dateTime.year().month().day())
@@ -3357,7 +3363,7 @@ public struct SimpleFormView: View {
                                 selection: field.$value,
                                 options: field.options,
                                 pickerName: "Layer1SelectField",
-                                style: MenuPickerStyle()
+                                style: PlatformMenuLikePickerStyle()
                             )
                             .automaticCompliance(
                                 identifierElementType: "Picker",
@@ -3371,7 +3377,7 @@ public struct SimpleFormView: View {
                     }
                     
                 case .textarea:
-                    #if os(tvOS)
+                    #if os(tvOS) || os(watchOS)
                     TextField(field.placeholder ?? "", text: field.$value)
                         .frame(minHeight: 80)
                         .automaticCompliance(
@@ -3455,7 +3461,7 @@ public struct SimpleFormView: View {
                         
                 case .time:
                     let i18nTime = InternationalizationService()
-                    #if os(tvOS)
+                    #if os(tvOS) || os(watchOS)
                     Text(
                         (DateFormatter.timeFormatter.date(from: field.value) ?? Date())
                             .formatted(.dateTime.hour().minute())
@@ -3485,7 +3491,7 @@ public struct SimpleFormView: View {
                     
                 case .datetime:
                     let i18nDateTime = InternationalizationService()
-                    #if os(tvOS)
+                    #if os(tvOS) || os(watchOS)
                     Text(
                         (DateFormatter.iso8601.date(from: field.value) ?? Date())
                             .formatted(.dateTime.year().month().day().hour().minute())
@@ -3579,7 +3585,7 @@ public struct SimpleFormView: View {
                         
                 case .color:
                     let i18n = InternationalizationService()
-                    #if os(tvOS)
+                    #if os(tvOS) || os(watchOS)
                     Text(field.value.isEmpty ? (field.placeholder ?? i18n.placeholderSelectColor()) : field.value)
                         .foregroundStyle(.secondary)
                     #else
@@ -3590,7 +3596,7 @@ public struct SimpleFormView: View {
                     #endif
                     
                 case .range:
-                    #if os(tvOS)
+                    #if os(tvOS) || os(watchOS)
                     VStack {
                         ProgressView(value: Double(field.value) ?? 0.0, total: 100)
                         Text("Value: \(field.value)")
@@ -3619,7 +3625,7 @@ public struct SimpleFormView: View {
                     ))
                     
                 case .richtext:
-                    #if os(tvOS)
+                    #if os(tvOS) || os(watchOS)
                     TextField(field.placeholder ?? "", text: field.$value)
                         .frame(minHeight: 100)
                         .overlay(
@@ -3688,7 +3694,7 @@ public struct SimpleFormView: View {
                             selection: field.$value,
                             options: field.options,
                             pickerName: "Layer1EnumField",
-                            style: MenuPickerStyle()
+                            style: PlatformMenuLikePickerStyle()
                         )
                         .automaticCompliance(
                             identifierElementType: "View",
@@ -4883,7 +4889,7 @@ struct GenericSettingsItemView: View {
                             ),
                             options: options,
                             pickerName: "Layer1SelectItem",
-                            style: MenuPickerStyle()
+                            style: PlatformMenuLikePickerStyle()
                         )
                         .disabled(!item.isEnabled)
                     }
@@ -4891,7 +4897,7 @@ struct GenericSettingsItemView: View {
                 
             case .slider:
                 if let doubleValue = value as? Double {
-                    #if os(tvOS)
+                    #if os(tvOS) || os(watchOS)
                     ProgressView(value: doubleValue, total: 100)
                         .disabled(!item.isEnabled)
                     #else
@@ -4905,7 +4911,7 @@ struct GenericSettingsItemView: View {
                 
             case .color:
                 if let colorValue = value as? Color {
-                    #if os(tvOS)
+                    #if os(tvOS) || os(watchOS)
                     Text(item.title)
                         .foregroundStyle(colorValue)
                         .disabled(!item.isEnabled)
