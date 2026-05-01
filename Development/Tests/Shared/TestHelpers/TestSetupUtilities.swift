@@ -90,7 +90,7 @@ public enum TestSetupUtilities {
         accessibilityIdentifierConfig: AccessibilityIdentifierConfig? = nil
     ) -> Any? {
         let injectedConfig = accessibilityIdentifierConfig ?? AccessibilityIdentifierConfig.currentTaskLocalConfig
-        #if canImport(UIKit)
+        #if canImport(UIKit) && !os(watchOS)
         // Re-bind task-local config for the whole hosting + layout window so SwiftUI modifier bodies that run
         // synchronously during layout still see the isolated test config (and debug log), not only `.shared`.
         let hostUIKitSubtree: () -> UIView? = {
