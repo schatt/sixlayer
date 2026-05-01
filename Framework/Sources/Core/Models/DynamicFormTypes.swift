@@ -4,6 +4,9 @@ import SwiftUI
 #if os(iOS)
 import UIKit
 #endif
+#if os(watchOS)
+import WatchKit
+#endif
 
 // MARK: - Cross-Platform Text Content Types
 
@@ -48,8 +51,8 @@ public enum SixLayerTextContentType: String, CaseIterable, Hashable {
     case URL = "URL"
     case creditCardNumber = "creditCardNumber"
     
-    #if canImport(UIKit)
-    /// Convert to UITextContentType for iOS/Mac Catalyst
+    #if canImport(UIKit) && !os(watchOS)
+    /// Convert to UITextContentType for iOS/Mac Catalyst/tvOS (not watchOS — use ``wkTextContentType``).
     public var uiTextContentType: UITextContentType {
         switch self {
         case .name: return .name
@@ -113,6 +116,40 @@ public enum SixLayerTextContentType: String, CaseIterable, Hashable {
         default:
             // Handle any future UITextContentType cases that might be added
             self = .name
+        }
+    }
+    #endif
+
+    #if os(watchOS)
+    /// Maps semantic types to `WKTextContentType` for watchOS `TextField` autofill hints.
+    public var wkTextContentType: WKTextContentType {
+        switch self {
+        case .name: return .name
+        case .namePrefix: return .namePrefix
+        case .givenName: return .givenName
+        case .middleName: return .middleName
+        case .familyName: return .familyName
+        case .nameSuffix: return .nameSuffix
+        case .jobTitle: return .jobTitle
+        case .organizationName: return .organizationName
+        case .emailAddress: return .emailAddress
+        case .telephoneNumber: return .telephoneNumber
+        case .username: return .username
+        case .password: return .password
+        case .newPassword: return .newPassword
+        case .oneTimeCode: return .oneTimeCode
+        case .location: return .location
+        case .fullStreetAddress: return .fullStreetAddress
+        case .streetAddressLine1: return .streetAddressLine1
+        case .streetAddressLine2: return .streetAddressLine2
+        case .addressCity: return .addressCity
+        case .addressState: return .addressState
+        case .addressCityAndState: return .addressCityAndState
+        case .sublocality: return .sublocality
+        case .countryName: return .countryName
+        case .postalCode: return .postalCode
+        case .URL: return .URL
+        case .creditCardNumber: return .creditCardNumber
         }
     }
     #endif
