@@ -309,8 +309,8 @@ public extension View {
         title: String,
         @ViewBuilder content: () -> Content
     ) -> some View {
-        #if os(tvOS)
-        // GroupBox is unavailable on tvOS; approximate with titled stack (#237).
+        #if os(tvOS) || os(watchOS)
+        // GroupBox is unavailable on tvOS and watchOS; approximate with titled stack (#237, #233).
         VStack(alignment: .leading, spacing: 8) {
             Text(title)
                 .font(.headline)
