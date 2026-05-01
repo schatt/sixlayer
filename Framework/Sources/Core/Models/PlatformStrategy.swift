@@ -571,6 +571,7 @@ public extension SixLayerPlatform {
         }
     }
     
+    #if !os(watchOS)
     /// Get platform-appropriate shortcut description
     /// Returns a string describing how shortcuts work on this platform
     /// For macOS, formats with modifier string and key character
@@ -595,6 +596,7 @@ public extension SixLayerPlatform {
             return "Hand gesture or voice"
         }
     }
+    #endif
 }
 
 // MARK: - Platform Strategy Helper Functions
