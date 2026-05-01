@@ -1134,7 +1134,8 @@ public struct RuntimeCapabilityDetection {
     }
 
     private static func detectPasteboardCanReadStrings() -> Bool {
-        #if os(iOS) || os(tvOS) || os(visionOS)
+        // UIPasteboard is unavailable on tvOS and watchOS; use AppKit on macOS only.
+        #if os(iOS) || os(visionOS)
         return withMainActorProbe {
             UIPasteboard.general.hasStrings
         } ?? false
@@ -1146,7 +1147,7 @@ public struct RuntimeCapabilityDetection {
     }
 
     private static func detectPasteboardCanWriteStrings() -> Bool {
-        #if os(iOS) || os(tvOS) || os(visionOS)
+        #if os(iOS) || os(visionOS)
         return withMainActorProbe {
             _ = UIPasteboard.general
             return true
