@@ -1366,9 +1366,9 @@ private func createSimpleFieldView(for field: DynamicFormField, hints: Presentat
             case .select:
                 // Use platformPicker helper to automatically apply accessibility (Issue #163)
                 if let options = field.options, !options.isEmpty {
-                    EmptyView().platformPicker(
+                    platformPicker(
                         label: field.label,
-                        selection: .constant(""),
+                        selection: Binding.constant(""),
                         options: options,
                         pickerName: "Layer1SelectField",
                         style: MenuPickerStyle()
