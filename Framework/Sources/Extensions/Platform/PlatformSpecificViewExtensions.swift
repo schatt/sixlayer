@@ -1163,6 +1163,26 @@ public extension View {
         #endif
     }
 
+    /// Text input autocapitalization on iOS; no-op on other platforms (matches prior `#if os(iOS)` usage).
+    @ViewBuilder
+    func platformTextInputAutocapitalization(_ style: TextInputAutocapitalization) -> some View {
+        #if os(iOS)
+        self.textInputAutocapitalization(style)
+        #else
+        self
+        #endif
+    }
+
+    /// Maps ``SixLayerTextContentType`` to the system text content type when UIKit is available.
+    @ViewBuilder
+    func platformTextContentType(_ contentType: SixLayerTextContentType) -> some View {
+        #if canImport(UIKit)
+        self.textContentType(contentType.uiTextContentType)
+        #else
+        self
+        #endif
+    }
+
     // MARK: - Platform-Specific View Builders
 
 /// Protocol for platform-specific view builders
