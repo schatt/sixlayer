@@ -675,7 +675,7 @@ public struct DynamicTextField: View {
     /// TextEditor fallback for older OS versions
     @ViewBuilder
     private var multiLineTextEditorFallback: some View {
-        #if os(tvOS)
+        #if os(tvOS) || os(watchOS)
         TextField("", text: field.textBinding(formState: formState))
             .platformTextFieldStyle()
             .frame(minHeight: CGFloat(field.minLines * 20))
@@ -1750,7 +1750,7 @@ public struct DynamicDataField: View {
     public var body: some View {
         platformVStackContainer(alignment: .leading, spacing: 8) {
 
-            #if os(tvOS)
+            #if os(tvOS) || os(watchOS)
             TextField("", text: Binding(
                 get: {
                     if let data = formState.fieldValues[field.id] as? Data {
@@ -1963,8 +1963,8 @@ public struct DynamicColorField: View {
             let color = Color(hex: colorValue) ?? .black
             
             let i18n = InternationalizationService()
-            #if os(tvOS)
-            // ColorPicker is unavailable on tvOS; show a read-only color swatch + hex value.
+            #if os(tvOS) || os(watchOS)
+            // ColorPicker is unavailable on tvOS/watchOS; show placeholder + hex value.
             Text(field.placeholder ?? i18n.placeholderSelectColor())
                 .automaticCompliance(named: "ColorPicker")
             Text(colorValue)
