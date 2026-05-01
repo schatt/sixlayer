@@ -1351,20 +1351,22 @@ public class DynamicFormState: ObservableObject {
         return nil
     }
 
-    /// Evaluate a simple mathematical expression
-    /// Supports basic arithmetic: +, -, *, /
+    /// Evaluate a mathematical expression after caller has substituted field names with numeric literals.
+    /// Uses `NSExpression` for parentheses and operator precedence (required by e.g. `(a * b) + c` fuel hints).
     private func evaluateMathExpression(_ expression: String) -> Double? {
-        // This is a very basic implementation for demonstration
-        // In a real implementation, you'd use a proper expression parser
-
         let cleanedExpression = expression.replacingOccurrences(of: " ", with: "")
-
-        // Handle simple operations
-        if let result = evaluateSimpleExpression(cleanedExpression) {
-            return result
+        guard !cleanedExpression.isEmpty else { return nil }
+        if let literal = Double(cleanedExpression) {
+            return literal
         }
-
-        return nil
+        let expr = NSExpression(format: cleanedExpression)
+        if let anyValue = expr.expressionValue(with: nil, context: nil) {
+            if let num = anyValue as? NSNumber {
+                let d = num.doubleValue
+                return d.isFinite ? d : nil
+            }
+        }
+        return evaluateSimpleExpression(cleanedExpression)
     }
 
     /// Evaluate simple expressions with one operator
