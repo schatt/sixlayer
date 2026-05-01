@@ -217,6 +217,7 @@
 		1195F26413FC8160D8AD3DB2 /* PlatformManagedSettingsTopLevelState.swift in Sources */ = {isa = PBXBuildFile; fileRef = F203009FDCD29DADD0C273D2 /* PlatformManagedSettingsTopLevelState.swift */; };
 		11A314C9CADF8857FF69290F /* LAYER4_ASSISTIVE_VISUAL_EVIDENCE_MATRIX.md in Resources */ = {isa = PBXBuildFile; fileRef = DAFAA2ABB23F7EC2D1A5D131 /* LAYER4_ASSISTIVE_VISUAL_EVIDENCE_MATRIX.md */; };
 		11AF612E7761BC2E172E4147 /* CardDisplayHelperNilFallbackTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7201816514B94A5E1A7864C1 /* CardDisplayHelperNilFallbackTests.swift */; };
+		11BFE29A0D3E35E6B567206C /* WatchOSFormColorPickers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C3CC0A3797BBD65958EAB62 /* WatchOSFormColorPickers.swift */; };
 		11C4A27225465F79C64F2133 /* TabularDataAPITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69128AA189274DD8C3B44FE4 /* TabularDataAPITests.swift */; };
 		11CA4BC8A598C0EBE5AD01E7 /* FormHoverInteractionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60242E7E831D9FEDEF6930F9 /* FormHoverInteractionTests.swift */; };
 		11D083FF52F8515F0FDDC69D /* DynamicFormViewAutoSaveTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0B047B2879F85EC19B4CBE0 /* DynamicFormViewAutoSaveTests.swift */; };
@@ -915,6 +916,7 @@
 		4C94C91496DCEF56F895D473 /* PlatformSimulationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2D3372160FF88CACF40B1A3 /* PlatformSimulationTests.swift */; };
 		4C99FBBD9CF2D07B43DEF713 /* NavigationStackLayer5Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B1B95639D24A95365CC9506 /* NavigationStackLayer5Tests.swift */; };
 		4CC13AE0F7DDCF72405707FC /* CrossComponentIntegrationRenderingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C4590A83D8316ED96D28512 /* CrossComponentIntegrationRenderingTests.swift */; };
+		4CDD503C3AB4D0CAACA259BD /* WatchOSFormColorPickers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C3CC0A3797BBD65958EAB62 /* WatchOSFormColorPickers.swift */; };
 		4CDFB6858F182F2FD32B2248 /* ThemingIntegration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A8723AE44E462450B23E862 /* ThemingIntegration.swift */; };
 		4CEF1BC7256E1D39752DAF0E /* LayoutParameterCalculatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C7107736EAD12E6DAB4DB06 /* LayoutParameterCalculatorTests.swift */; };
 		4D007ADE822BAE969A9B4873 /* DefaultRuntimeCapabilityIsolationTrait.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54D20D03C676F8F86FBAF55A /* DefaultRuntimeCapabilityIsolationTrait.swift */; };
@@ -1125,6 +1127,7 @@
 		5D8898BA779066733D6681CC /* MaterialAccessibilityManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 079ACE6C0E35A23448973E98 /* MaterialAccessibilityManager.swift */; };
 		5DAA09076956625189A6CA5A /* CapabilityMatrixTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6837EE07B9B62FE066A13500 /* CapabilityMatrixTests.swift */; };
 		5DE73CF0B19FD369D08E5539 /* PlatformAccessibilityExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71997B40CEA5F546B35AF408 /* PlatformAccessibilityExtensions.swift */; };
+		5E124F6B00460BDC4F2F08BB /* WatchOSFormColorPickers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C3CC0A3797BBD65958EAB62 /* WatchOSFormColorPickers.swift */; };
 		5E1646E0791E4FDD6EF3C2DE /* TextModifierExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BF6C8E25DF49F2B9F33AF5A /* TextModifierExtensionsTests.swift */; };
 		5E20CA16CFFE78244E181385 /* SettingsPaneDescriptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBDE891A63DBEB5D5337116C /* SettingsPaneDescriptor.swift */; };
 		5E56FF7D50002CD4DE4231D6 /* BasicComplianceTestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F028DF08A1EA87B3849ABD1 /* BasicComplianceTestView.swift */; };
@@ -1964,6 +1967,7 @@
 		A5378CADD2ED49372EDEC444 /* PlatformPhotoPickerGlobalAccessTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EB8EAECACAFCD941F1C1E8C /* PlatformPhotoPickerGlobalAccessTests.swift */; };
 		A538FE00008B006ED5DB4A67 /* HIGComplianceFeaturesIssue36Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2825D3219901EDE976E65549 /* HIGComplianceFeaturesIssue36Tests.swift */; };
 		A53AC73E766A7B5C03A2F853 /* L2LayoutDecisionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B2B7B9EC73AD808C6E3BE60 /* L2LayoutDecisionTests.swift */; };
+		A559FDD70BE95C65D8F82823 /* WatchOSFormColorPickers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C3CC0A3797BBD65958EAB62 /* WatchOSFormColorPickers.swift */; };
 		A594B9CA15B6803E3006C1F8 /* AccessibilityIdentifiersDebugTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F8FC3B6CB0AA57DEDF2B0F7 /* AccessibilityIdentifiersDebugTests.swift */; };
 		A5A40156AEDC7D4BCEEC7330 /* PlatformTypesAPISignatureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F3465DEADE0CAAC6FDDC3D2 /* PlatformTypesAPISignatureTests.swift */; };
 		A5ADBB459FF2E3DF58B792DE /* TestSetupUtilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 656BD40E9672D6CF873A0432 /* TestSetupUtilities.swift */; };
@@ -2526,6 +2530,7 @@
 		D59315A3C36FF1BB2800E626 /* OCRServiceAutomaticHintsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B44FAB91A54EB3C69FA1A6EA /* OCRServiceAutomaticHintsTests.swift */; };
 		D5A2AF4849F594A18B43666E /* IntelligentFormViewAutoBindingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E13A3E05AA19B9069CCFB0EF /* IntelligentFormViewAutoBindingTests.swift */; };
 		D5C10842285994239A036FA5 /* ComponentLabelTextAccessibilityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A230762A8F72A640CEEA7B89 /* ComponentLabelTextAccessibilityTests.swift */; };
+		D5C292D5DE0E4B2BE946F0CA /* WatchOSFormColorPickers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C3CC0A3797BBD65958EAB62 /* WatchOSFormColorPickers.swift */; };
 		D5C50444863B65B3F78023B7 /* SixLayerFramework.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 77ADA5A0EF4DADCCD2C559D8 /* SixLayerFramework.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D5DA67809A8BB8C2B4AD0133 /* UITestContractAssertions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1518F9FB0020575E297E09D6 /* UITestContractAssertions.swift */; };
 		D5E855F66E96D410D47F592C /* RuntimeCapabilityDetection.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF24C793FD142E6B5379925C /* RuntimeCapabilityDetection.swift */; };
@@ -3766,6 +3771,7 @@
 		8B1F85F34804B03D3317A7A7 /* PlatformSplitViewOptimizationsLayer5.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformSplitViewOptimizationsLayer5.swift; sourceTree = "<group>"; };
 		8B920D420E50AB0D3D309859 /* DynamicFormViewComponentAccessibilityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DynamicFormViewComponentAccessibilityTests.swift; sourceTree = "<group>"; };
 		8C110A8D1BDFBF19FDCDB634 /* ShapeStyleSystemTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShapeStyleSystemTests.swift; sourceTree = "<group>"; };
+		8C3CC0A3797BBD65958EAB62 /* WatchOSFormColorPickers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchOSFormColorPickers.swift; sourceTree = "<group>"; };
 		8C7A752E338A8DCD2451A262 /* AccessibilityIdentifierConfigUserDefaultsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessibilityIdentifierConfigUserDefaultsTests.swift; sourceTree = "<group>"; };
 		8C9E4B02788B28764D4ED21E /* PlatformAdvancedContainerExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformAdvancedContainerExtensions.swift; sourceTree = "<group>"; };
 		8CB433AEF8D1FB96C967FACC /* AccessibilityFeaturesLayer5.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessibilityFeaturesLayer5.swift; sourceTree = "<group>"; };
@@ -4984,6 +4990,7 @@
 				684F019336FBF1D10A30C17B /* PlatformUIPatterns.swift */,
 				A99CFE982A39BDB47D56B73B /* PlatformUITypes.swift */,
 				38B84FB7FEA0A434000F112C /* UIFont+Weight.swift */,
+				8C3CC0A3797BBD65958EAB62 /* WatchOSFormColorPickers.swift */,
 			);
 			path = Platform;
 			sourceTree = "<group>";
@@ -6072,7 +6079,7 @@
 			path = API;
 			sourceTree = "<group>";
 		};
-		"TEMP_6079DA80-A401-44B7-B4FE-C2FBA290EB60" /* Utilities */ = {
+		"TEMP_C4578DC5-3839-4D22-819E-D7416BECDE06" /* Utilities */ = {
 			isa = PBXGroup;
 			children = (
 			);
@@ -7483,6 +7490,7 @@
 				B42AF2F6EE27861A3EAB735C /* UnifiedWindowDetection.swift in Sources */,
 				E258F4F0103EF9084BA34492 /* VisionSafety.swift in Sources */,
 				7F1D7477F11E756C3CCA956A /* VisualDesignSystem.swift in Sources */,
+				D5C292D5DE0E4B2BE946F0CA /* WatchOSFormColorPickers.swift in Sources */,
 				C2845E33BE8F371C09410835 /* iOSSpecificHelpers.swift in Sources */,
 				EC4C7E67CEECD89275079411 /* iOSWindowDetection.swift in Sources */,
 				6DD47A2F0557376C83592075 /* macOSSpecificHelpers.swift in Sources */,
@@ -7755,6 +7763,7 @@
 				3640DEB2FF3253DB4A15493A /* UnifiedWindowDetection.swift in Sources */,
 				66DF172E1B9DBC063CBCE191 /* VisionSafety.swift in Sources */,
 				DAC48F18304DA3609973C0B7 /* VisualDesignSystem.swift in Sources */,
+				5E124F6B00460BDC4F2F08BB /* WatchOSFormColorPickers.swift in Sources */,
 				DD0F99D62895616CC6459F2C /* iOSSpecificHelpers.swift in Sources */,
 				094B5858C890DA4ACC1BD831 /* iOSWindowDetection.swift in Sources */,
 				6C83F417B946198EC27856F4 /* macOSSpecificHelpers.swift in Sources */,
@@ -8281,6 +8290,7 @@
 				AA2D5EE501755CEA81AB4261 /* UnifiedWindowDetection.swift in Sources */,
 				3CC59B12F2632CED0B8CCACC /* VisionSafety.swift in Sources */,
 				2A221B5A1435AF7C77F518EE /* VisualDesignSystem.swift in Sources */,
+				4CDD503C3AB4D0CAACA259BD /* WatchOSFormColorPickers.swift in Sources */,
 				0F04888ADBC4E7BB8670A72D /* iOSSpecificHelpers.swift in Sources */,
 				67B58E52A06942120B71A405 /* iOSWindowDetection.swift in Sources */,
 				CFAB7934D7EDEE597E38A388 /* macOSSpecificHelpers.swift in Sources */,
@@ -9284,6 +9294,7 @@
 				53565751EDA3D3C9669A88E9 /* UnifiedWindowDetection.swift in Sources */,
 				444F2FB703D2FA7404390C75 /* VisionSafety.swift in Sources */,
 				BDC0F4046C9B18285DA70D86 /* VisualDesignSystem.swift in Sources */,
+				A559FDD70BE95C65D8F82823 /* WatchOSFormColorPickers.swift in Sources */,
 				34034E18D9BD745A874A097C /* iOSSpecificHelpers.swift in Sources */,
 				47280F21FCE031DFD8CB1A76 /* iOSWindowDetection.swift in Sources */,
 				7102E8D5A8D0E6D21A64CE9F /* macOSSpecificHelpers.swift in Sources */,
@@ -9805,6 +9816,7 @@
 				C6927E4F93D84B05C3589057 /* UnifiedWindowDetection.swift in Sources */,
 				535F288D30C02337698094E8 /* VisionSafety.swift in Sources */,
 				0736DD3E4AD8210B5B640768 /* VisualDesignSystem.swift in Sources */,
+				11BFE29A0D3E35E6B567206C /* WatchOSFormColorPickers.swift in Sources */,
 				043FB7F765BE376C65A32A4D /* iOSSpecificHelpers.swift in Sources */,
 				733A99CB3D803CB2BE966E74 /* iOSWindowDetection.swift in Sources */,
 				30C5D48519D26C0695FA32DB /* macOSSpecificHelpers.swift in Sources */,
