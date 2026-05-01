@@ -196,7 +196,8 @@ public func platformDocumentsDirectory(createIfNeeded: Bool = false, useiCloud: 
         if let iCloudURL = FileManager.default.url(forUbiquityContainerIdentifier: nil) {
             // Use Documents subdirectory in iCloud container (standard pattern)
             let documentsURL = iCloudURL.appendingPathComponent("Documents", isDirectory: true)
-            return resolveDirectory(url: documentsURL, createIfNeeded: createIfNeeded)
+            let materialize = createIfNeeded || userDomainDirectoryNeedsMaterialization(at: documentsURL)
+            return resolveDirectory(url: documentsURL, createIfNeeded: materialize)
         }
         // Fall back to local directory if iCloud is not available
     }
@@ -213,7 +214,8 @@ public func platformDocumentsDirectory(createIfNeeded: Bool = false, useiCloud: 
     return resolveDirectory(url: url, createIfNeeded: true)
     #else
     let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
-    return resolveDirectory(url: url, createIfNeeded: createIfNeeded)
+    let materialize = createIfNeeded || (url.map { userDomainDirectoryNeedsMaterialization(at: $0) } ?? false)
+    return resolveDirectory(url: url, createIfNeeded: materialize)
     #endif
 }
 
@@ -259,7 +261,8 @@ public func platformDocumentsDirectoryThrowing(createIfNeeded: Bool = false, use
         }
         // Use Documents subdirectory in iCloud container (standard pattern)
         let documentsURL = iCloudURL.appendingPathComponent("Documents", isDirectory: true)
-        return try resolveDirectoryThrowing(url: documentsURL, createIfNeeded: createIfNeeded)
+        let materialize = createIfNeeded || userDomainDirectoryNeedsMaterialization(at: documentsURL)
+        return try resolveDirectoryThrowing(url: documentsURL, createIfNeeded: materialize)
     }
     #endif
     
@@ -269,7 +272,8 @@ public func platformDocumentsDirectoryThrowing(createIfNeeded: Bool = false, use
     return try resolveDirectoryThrowing(url: url, createIfNeeded: true)
     #else
     let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
-    return try resolveDirectoryThrowing(url: url, createIfNeeded: createIfNeeded)
+    let materialize = createIfNeeded || (url.map { userDomainDirectoryNeedsMaterialization(at: $0) } ?? false)
+    return try resolveDirectoryThrowing(url: url, createIfNeeded: materialize)
     #endif
 }
 
@@ -1085,6 +1089,14 @@ private func mapFoundationError(_ error: Error) -> PlatformFileSystemError {
 }
 
 // MARK: - Directory Resolution Helpers
+
+/// Whether a path returned for a user-domain directory still needs to be materialized.
+/// XCTest / fresh sandbox hosts may report a Documents URL from `FileManager` before the directory exists on disk.
+private func userDomainDirectoryNeedsMaterialization(at url: URL) -> Bool {
+    var isDirectory: ObjCBool = false
+    let exists = FileManager.default.fileExists(atPath: url.path, isDirectory: &isDirectory)
+    return !exists || !isDirectory.boolValue
+}
 
 /// Resolves a directory URL, creating it if needed (optional variant).
 ///
