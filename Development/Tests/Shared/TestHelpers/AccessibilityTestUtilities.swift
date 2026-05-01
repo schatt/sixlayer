@@ -1075,10 +1075,26 @@ public enum AccessibilityTestUtilities {
             let debugIdentifiers = parseGeneratedIdentifiers(from: config.getDebugLog())
             let directIdentifier = getAccessibilityIdentifierForTest(view: view, hostedRoot: hostedRoot)
             let inspectButtonIdentifier = inspectButtonAccessibilityIdentifier(view)
+
+            // watchOS: UIKit hosting root is nil; collect identifiers from ViewInspector when available.
+            #if canImport(ViewInspector) && os(watchOS)
+            let viewInspectorIdentifiers: [String] = {
+                guard hostedRoot == nil else { return [] }
+                do {
+                    let inspected = try AnyView(view).inspect()
+                    return allAccessibilityIdentifiersInInspectedRecursive(inspected)
+                } catch {
+                    return []
+                }
+            }()
+            #else
+            let viewInspectorIdentifiers: [String] = []
+            #endif
             
             var allSignals: [String] = []
             allSignals.append(contentsOf: platformIdentifiers)
             allSignals.append(contentsOf: debugIdentifiers)
+            allSignals.append(contentsOf: viewInspectorIdentifiers)
             if let directIdentifier, !directIdentifier.isEmpty { allSignals.append(directIdentifier) }
             if let inspectButtonIdentifier, !inspectButtonIdentifier.isEmpty { allSignals.append(inspectButtonIdentifier) }
             var seenSignals = Set<String>()
