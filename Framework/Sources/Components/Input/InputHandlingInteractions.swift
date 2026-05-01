@@ -102,8 +102,8 @@ public class KeyboardShortcutManager {
     }
     
     /// Create a platform-appropriate keyboard shortcut
-    #if !os(tvOS)
-        func createShortcut(
+    #if !os(tvOS) && !os(watchOS)
+    func createShortcut(
         key: KeyEquivalent,
         modifiers: EventModifiers = .command,
         action: @escaping () -> Void
@@ -111,7 +111,6 @@ public class KeyboardShortcutManager {
         let platformModifiers = adaptModifiersForPlatform(modifiers)
         return KeyboardShortcut(key, modifiers: platformModifiers)
     }
-    #endif
     
     /// Adapt modifiers for platform conventions
     /// Uses PlatformStrategy to reduce code duplication (Issue #140)
@@ -121,7 +120,7 @@ public class KeyboardShortcutManager {
     
     /// Get platform-appropriate shortcut description
     /// Uses PlatformStrategy to reduce code duplication (Issue #140)
-        func getShortcutDescription(key: KeyEquivalent, modifiers: EventModifiers = .command) -> String {
+    func getShortcutDescription(key: KeyEquivalent, modifiers: EventModifiers = .command) -> String {
         return platform.defaultShortcutDescription(key: key, modifiers: modifiers)
     }
     
@@ -133,6 +132,7 @@ public class KeyboardShortcutManager {
         if modifiers.contains(.shift) { result += "⇧" }
         return result
     }
+    #endif
 }
 
 // MARK: - Haptic Feedback Manager
@@ -410,7 +410,7 @@ public extension View {
         let manager = InputHandlingManager()
         let patterns = manager.interactionPatterns
 
-        return self
+        let withSwipe = self
             .conditionalGesture(
                 condition: patterns.gestureSupport.contains(.swipe),
                 gesture: DragGesture().onEnded { value in
@@ -418,6 +418,11 @@ public extension View {
                     onSwipe(direction)
                 }
             )
+        #if os(watchOS)
+        // MagnificationGesture / RotationGesture are unavailable on watchOS.
+        return withSwipe
+        #else
+        return withSwipe
             .conditionalGesture(
                 condition: patterns.gestureSupport.contains(.pinch),
                 gesture: MagnificationGesture().onChanged { value in
@@ -430,6 +435,7 @@ public extension View {
                     onRotate(value.degrees)
                 }
             )
+        #endif
         #endif
     }
     
