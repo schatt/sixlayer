@@ -330,6 +330,11 @@ public struct AdaptiveUIPatterns {
                 content(item)
             }
             .listStyle(SidebarListStyle())
+            #elseif os(watchOS)
+            List(data, id: \.id) { item in
+                content(item)
+            }
+            .listStyle(.plain)
             #else
             List(data, id: \.id) { item in
                 content(item)
