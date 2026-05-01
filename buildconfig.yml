@@ -125,17 +125,18 @@ platforms:
     artifact_patterns:
       - build/visionos/*.app
   - name: visionOS_unit_tests
-    build_command: xcodebuild test -project SixLayerFramework.xcodeproj -scheme SLF-visionOS-UnitTests -destination "platform=visionOS Simulator,name=Apple Vision Pro" -parallel-testing-enabled YES
+    # Match scheme: unit bundle is non-parallel on visionOS Simulator to avoid "not run" scheduling (epic #233).
+    build_command: xcodebuild test -project SixLayerFramework.xcodeproj -scheme SLF-visionOS-UnitTests -destination "platform=visionOS Simulator,name=Apple Vision Pro" -parallel-testing-enabled NO
     artifact_dir: build/visionos
     artifact_patterns:
       - build/visionos/*.app
   - name: visionOS_tests
-    build_command: xcodebuild test -project SixLayerFramework.xcodeproj -scheme SLF-visionOS-AllTests -destination "platform=visionOS Simulator,name=Apple Vision Pro" -parallel-testing-enabled YES
+    build_command: xcodebuild test -project SixLayerFramework.xcodeproj -scheme SLF-visionOS-AllTests -destination "platform=visionOS Simulator,name=Apple Vision Pro" -parallel-testing-enabled NO
     artifact_dir: build/visionos
     artifact_patterns:
       - build/visionos/*.app
   - name: visionOS_framework_tests
-    build_command: xcodebuild test -project SixLayerFramework.xcodeproj -scheme SLF-visionOS-Framework -destination "platform=visionOS Simulator,name=Apple Vision Pro" -parallel-testing-enabled YES
+    build_command: xcodebuild test -project SixLayerFramework.xcodeproj -scheme SLF-visionOS-Framework -destination "platform=visionOS Simulator,name=Apple Vision Pro" -parallel-testing-enabled NO
     artifact_dir: build/visionos
     artifact_patterns:
       - build/visionos/*.app
