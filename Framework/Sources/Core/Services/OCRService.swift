@@ -9,7 +9,7 @@
 import Foundation
 import SwiftUI
 
-#if canImport(Vision)
+#if canImport(Vision) && !os(watchOS)
 import Vision
 #endif
 
@@ -126,11 +126,15 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
             throw OCRError.invalidImage
         }
         
+        #if canImport(Vision) && !os(watchOS)
         return try await performVisionOCR(
             cgImage: cgImage,
             context: context,
             strategy: strategy
         )
+        #else
+        throw OCRError.unsupportedPlatform
+        #endif
     }
     
     /// Process an image for structured data extraction
@@ -934,6 +938,7 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
     
     // MARK: - Private Methods
     
+    #if canImport(Vision) && !os(watchOS)
     private func performVisionOCR(
         cgImage: CGImage,
         context: OCRContext,
@@ -1080,6 +1085,7 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
             language: context.language
         )
     }
+    #endif
     
     private func detectTextType(_ text: String) -> TextType {
         // Simple text type detection
