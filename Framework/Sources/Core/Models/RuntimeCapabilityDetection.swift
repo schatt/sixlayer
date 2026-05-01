@@ -588,45 +588,16 @@ public struct RuntimeCapabilityDetection {
     }
     
     private static func detectwatchOSVoiceOverSupport() -> Bool {
-        // Check if VoiceOver is available on watchOS
-        #if canImport(UIKit)
-        // Use Thread.isMainThread check to prevent crashes during parallel test execution
-        if Thread.isMainThread {
-            return UIAccessibility.isVoiceOverRunning
-        } else {
-            return false  // Conservative default when not on main thread
-        }
-        #else
+        // UIAccessibility VoiceOver flags used on iOS/tvOS are unavailable on watchOS SDK (#233).
         return false
-        #endif
     }
     
     private static func detectwatchOSSwitchControlSupport() -> Bool {
-        // Check if Switch Control is available on watchOS
-        #if canImport(UIKit)
-        // Use Thread.isMainThread check to prevent crashes during parallel test execution
-        if Thread.isMainThread {
-            return UIAccessibility.isSwitchControlRunning
-        } else {
-            return false  // Conservative default when not on main thread
-        }
-        #else
         return false
-        #endif
     }
     
     private static func detectwatchOSAssistiveTouchSupport() -> Bool {
-        // Check if AssistiveTouch is available on watchOS
-        #if canImport(UIKit)
-        // Use Thread.isMainThread check to prevent crashes during parallel test execution
-        if Thread.isMainThread {
-            return UIAccessibility.isAssistiveTouchRunning
-        } else {
-            return false  // Conservative default when not on main thread
-        }
-        #else
         return false
-        #endif
     }
     #endif
     
@@ -1099,7 +1070,9 @@ public struct RuntimeCapabilityDetection {
 
     private static func detectMediaHasMicrophoneInput() -> Bool {
         #if canImport(AVFoundation)
-        #if os(visionOS)
+        #if os(watchOS)
+        return false
+        #elseif os(visionOS)
         if #available(visionOS 2.1, *) {
             return AVCaptureDevice.default(for: .audio) != nil
         }
