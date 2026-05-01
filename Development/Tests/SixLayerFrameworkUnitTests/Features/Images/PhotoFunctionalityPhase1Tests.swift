@@ -110,13 +110,9 @@ open class PhotoFunctionalityPhase1Tests: BaseTestClass {
         // When: Compressing the image
         let compressedData = originalImage.compressed(for: purpose, quality: 0.8)
         
-        // Then: Compressed data should be returned on platforms that support it.
-        // On tvOS/watchOS/visionOS the framework's compressed(...) returns nil
-        // by design (no UIKit/AppKit bitmap path implemented yet; tracked under #241).
-        // Assert with a safe unwrap instead of force-unwrap so the test reports
-        // a failed expectation rather than crashing xctest on unsupported platforms.
-        #if os(iOS) || os(macOS)
-        #expect(compressedData != nil, "Compressed data should be returned on iOS/macOS")
+        // Then: Compressed data should be returned wherever UIImage/NSImage JPEG encoding exists.
+        #if os(iOS) || os(tvOS) || os(visionOS) || os(watchOS) || os(macOS)
+        #expect(compressedData != nil, "Compressed data should be returned on this platform")
         #expect((compressedData?.count ?? 0) > 0, "Compressed data should not be empty")
         #else
         #expect(compressedData == nil, "compressed() is not implemented for this platform (see #241)")
