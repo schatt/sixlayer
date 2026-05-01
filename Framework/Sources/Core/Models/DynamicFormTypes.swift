@@ -146,6 +146,14 @@ extension SixLayerTextInputAutocapitalization {
 }
 #endif
 
+// MARK: - Text selection policy
+
+/// Cross-platform policy for SwiftUI `textSelection(_:)`; on tvOS the framework applies a no-op instead.
+public enum SixLayerTextSelectionPolicy: Sendable, Hashable {
+    case enabled
+    case disabled
+}
+
 // MARK: - Dynamic Form Field Types
 
 /// Represents a dynamic form field configuration
