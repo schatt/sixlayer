@@ -1411,6 +1411,7 @@
 		75F075F70AB3FB1A76E8BFEF /* PlatformDataFrameAnalysisL1Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7DE809CC11B55C07BFB419E1 /* PlatformDataFrameAnalysisL1Tests.swift */; };
 		760BEF28D23E8F6D3D34CF53 /* PlatformHapticFeedbackExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 338F46850FB1DD0AFEC57806 /* PlatformHapticFeedbackExtensionsTests.swift */; };
 		76191CE0B94C7BBD5C97FF7F /* IntelligentCardExpansionComprehensiveTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F370DFBCC1AB86D88105C77 /* IntelligentCardExpansionComprehensiveTests.swift */; };
+		763EE6837E60207E420330BC /* ViewInspector in Frameworks */ = {isa = PBXBuildFile; productRef = C9E4C9C72500B6D970597984 /* ViewInspector */; };
 		763FF05ED185DD3BB6E1F68F /* PlatformManagedSettingsFlowLogic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81AE3C41DE9DA88FC64BFBF5 /* PlatformManagedSettingsFlowLogic.swift */; };
 		764A81346435B6C51D4F4592 /* OCROverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73AF32072717F16C7863A085 /* OCROverlayView.swift */; };
 		764AC4AF2677AB469463945D /* DesignSystemUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3DEE5874BE33CEC62AAB606 /* DesignSystemUITests.swift */; };
@@ -4128,6 +4129,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				DD689622DB84A8B935B19AD6 /* SixLayerFramework.framework in Frameworks */,
+				763EE6837E60207E420330BC /* ViewInspector in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -6059,7 +6061,7 @@
 			path = API;
 			sourceTree = "<group>";
 		};
-		"TEMP_2710A792-0F8C-45D3-A3AF-50D67C61EBD7" /* Utilities */ = {
+		"TEMP_30CB801B-A7DE-4C19-8733-F5A57F97F21A" /* Utilities */ = {
 			isa = PBXGroup;
 			children = (
 			);
@@ -6234,6 +6236,7 @@
 			);
 			name = SixLayerFrameworkUnitTests_watchOS;
 			packageProductDependencies = (
+				C9E4C9C72500B6D970597984 /* ViewInspector */,
 			);
 			productName = SixLayerFrameworkUnitTests_watchOS;
 			productReference = 16BE181E512673A040D39517 /* SixLayerFrameworkUnitTests_watchOS.xctest */;
@@ -11843,6 +11846,11 @@
 			productName = ViewInspector;
 		};
 		C2E51C153E3E84BD2F0FEC40 /* ViewInspector */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 12F9FBE68F97E78F15D3EBF5 /* XCRemoteSwiftPackageReference "ViewInspector" */;
+			productName = ViewInspector;
+		};
+		C9E4C9C72500B6D970597984 /* ViewInspector */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 12F9FBE68F97E78F15D3EBF5 /* XCRemoteSwiftPackageReference "ViewInspector" */;
 			productName = ViewInspector;
