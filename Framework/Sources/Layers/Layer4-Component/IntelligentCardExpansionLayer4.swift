@@ -220,7 +220,7 @@ public struct ExpandableCardComponent<Item: Identifiable>: View {
             handleTap()
             onItemSelected?(item)
         }
-        #if !os(tvOS)
+        #if !os(tvOS) && !os(watchOS)
         .onHover { isHovering in
             onHover(isHovering)
         }
@@ -899,7 +899,7 @@ public struct SimpleCardComponent<Item: Identifiable>: View {
         }
         
         // Conditionally apply hover-based modifiers
-        #if !os(tvOS)
+        #if !os(tvOS) && !os(watchOS)
         if config.supportsHover {
             view = AnyView(view.onHover { _ in
                 // Hover support
@@ -919,7 +919,7 @@ public struct SimpleCardComponent<Item: Identifiable>: View {
         }
         
         // Apply keyboard shortcut when touch is not supported
-        #if !os(tvOS)
+        #if !os(tvOS) && !os(watchOS)
         if !config.supportsTouch {
             view = AnyView(view.keyboardShortcut(" ", modifiers: []))
         }
