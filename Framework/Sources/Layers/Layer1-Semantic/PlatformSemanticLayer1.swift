@@ -2362,17 +2362,10 @@ public struct GenericFormView: View {
                                     .l1SemanticTextFieldBorderStyle()
                                     .background(Color.platformSecondaryBackground)
                             case .textarea:
-                                #if os(tvOS)
-                                TextField(field.placeholder ?? "", text: .constant(""))
+                                platformTextEditor(text: .constant(""), prompt: field.placeholder)
                                     .frame(minHeight: 80)
                                     .background(Color.platformSecondaryBackground)
                                     .cornerRadius(8)
-                                #else
-                                TextEditor(text: .constant(""))
-                                    .frame(minHeight: 80)
-                                    .background(Color.platformSecondaryBackground)
-                                    .cornerRadius(8)
-                                #endif
                             case .toggle, .boolean:
                                 Toggle(field.label, isOn: .constant(false))
                             case .select:
@@ -4573,32 +4566,27 @@ struct GenericSettingsItemView: View {
                 }
                 
             case .slider:
-                if let doubleValue = value as? Double {
-                    #if os(tvOS)
-                    ProgressView(value: doubleValue, total: 100)
-                        .disabled(!item.isEnabled)
-                    #else
-                    Slider(value: Binding(
-                        get: { doubleValue },
-                        set: { value = $0 }
-                    ), in: 0...100)
+                if value as? Double != nil {
+                    platformRangeInput(
+                        value: Binding(
+                            get: { value as? Double ?? 0 },
+                            set: { value = $0 }
+                        ),
+                        in: 0...100
+                    )
                     .disabled(!item.isEnabled)
-                    #endif
                 }
                 
             case .color:
-                if let colorValue = value as? Color {
-                    #if os(tvOS)
-                    Text(item.title)
-                        .foregroundStyle(colorValue)
-                        .disabled(!item.isEnabled)
-                    #else
-                    ColorPicker("", selection: Binding(
-                        get: { colorValue },
-                        set: { value = $0 }
-                    ))
+                if value as? Color != nil {
+                    platformColorInput(
+                        label: item.title,
+                        selection: Binding(
+                            get: { value as? Color ?? .clear },
+                            set: { value = $0 }
+                        )
+                    )
                     .disabled(!item.isEnabled)
-                    #endif
                 }
                 
             case .button:
