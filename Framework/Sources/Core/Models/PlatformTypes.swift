@@ -855,6 +855,11 @@ public struct PlatformImage: @unchecked Sendable {
         NSRect(origin: .zero, size: size).fill()
         nsImage.unlockFocus()
         return PlatformImage(nsImage: nsImage)
+        #elseif os(watchOS)
+        // UIGraphicsImageRenderer / many UIColor semantic colors are unavailable on watchOS.
+        let config = UIImage.SymbolConfiguration(pointSize: 48, weight: .regular)
+        let uiImage = UIImage(systemName: "square.fill", withConfiguration: config) ?? UIImage()
+        return PlatformImage(uiImage: uiImage)
         #else
         let size = CGSize(width: 100, height: 100)
         let renderer = UIGraphicsImageRenderer(size: size)
