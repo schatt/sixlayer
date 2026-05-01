@@ -1775,6 +1775,26 @@ public struct DynamicDataField: View {
             .frame(minHeight: 100)
             .border(Color.gray.opacity(0.2))
             .automaticCompliance(named: "DataInput")
+            #elseif os(watchOS)
+            // TextEditor is unavailable on watchOS; multiline TextField matches Layer 1 textarea pattern.
+            TextField("", text: Binding(
+                get: {
+                    if let data = formState.fieldValues[field.id] as? Data {
+                        return String(data: data, encoding: .utf8) ?? ""
+                    }
+                    return ""
+                },
+                set: { newValue in
+                    if let data = newValue.data(using: .utf8) {
+                        formState.setValue(data, for: field.id)
+                    }
+                }
+            ), axis: .vertical)
+            .platformTextFieldStyle()
+            .lineLimit(4...24)
+            .frame(minHeight: 100)
+            .border(Color.gray.opacity(0.2))
+            .automaticCompliance(named: "DataInput")
             #else
             TextEditor(text: Binding(
                 get: {
