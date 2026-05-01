@@ -103,8 +103,8 @@ public struct RichTextEditor: UIViewRepresentable {
         }
     }
 }
-#elseif os(tvOS)
-// tvOS fallback - `TextEditor` is unavailable; use a focusable `TextField`.
+#elseif os(tvOS) || os(watchOS)
+// tvOS/watchOS: `TextEditor` is unavailable; use a focusable `TextField`.
 public struct RichTextEditor: View {
     @Binding var text: String
     @Binding var selectedText: NSRange?
@@ -435,7 +435,7 @@ public struct FileUploadArea: View {
             RoundedRectangle(cornerRadius: 12)
                 .stroke(isDragOver ? Color.accentColor : Color.platformSeparator, lineWidth: 2)
         )
-        #if !os(tvOS)
+        #if !os(tvOS) && !os(watchOS)
         .onDrop(of: allowedTypes.map { $0.identifier }, isTargeted: $isDragOver) { providers in
             handleDrop(providers: providers)
             return true
@@ -591,7 +591,7 @@ public struct DatePickerField: View {
             Text(field.label)
                 .font(.headline)
             
-            #if os(tvOS)
+            #if os(tvOS) || os(watchOS)
             Text(selectedDate, format: .dateTime.year().month().day())
                 .foregroundStyle(.secondary)
                 .selfLabelingControl(label: field.label)
@@ -644,7 +644,7 @@ public struct TimePickerField: View {
             Text(field.label)
                 .font(.headline)
             
-            #if os(tvOS)
+            #if os(tvOS) || os(watchOS)
             Text(selectedTime, format: .dateTime.hour().minute())
                 .foregroundStyle(.secondary)
                 .selfLabelingControl(label: field.label)
@@ -697,7 +697,7 @@ public struct DateTimePickerField: View {
             Text(field.label)
                 .font(.headline)
             
-            #if os(tvOS)
+            #if os(tvOS) || os(watchOS)
             Text(selectedDateTime, format: .dateTime.year().month().day().hour().minute())
                 .foregroundStyle(.secondary)
                 .selfLabelingControl(label: field.label)
