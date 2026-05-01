@@ -35,7 +35,12 @@ public struct FieldActionRenderer: View {
             } else if actions.count <= field.maxVisibleActions && !field.useActionMenu {
                 horizontalActionButtons(actions: actions)
             } else {
+                // SwiftUI `Menu` is unavailable on watchOS; show inline actions instead.
+                #if os(watchOS)
+                horizontalActionButtons(actions: actions)
+                #else
                 actionMenu(actions: actions)
+                #endif
             }
         }
         .sheet(isPresented: $showBarcodeScanner) {
