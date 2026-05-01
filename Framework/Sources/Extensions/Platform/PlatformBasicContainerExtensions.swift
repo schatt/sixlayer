@@ -971,8 +971,6 @@ public func platformToggle(
 
 /// Drop-in replacement for SwiftUI's Form
 /// Provides platform-specific form container with automatic accessibility compliance
-/// Note: Form doesn't require @MainActor for creation
-///
 /// - Parameter content: The form content
 /// - Returns: A platform-specific form container with automatic accessibility compliance
 ///
@@ -983,6 +981,7 @@ public func platformToggle(
 ///     platformToggle("Enabled", isOn: $enabled)
 /// }
 /// ```
+@MainActor
 @ViewBuilder
 public func platformForm<Content: View>(
     @ViewBuilder content: () -> Content
