@@ -1399,8 +1399,7 @@ private func createSimpleFieldView(for field: DynamicFormField, hints: Presentat
                         label: field.label,
                         selection: .constant(""),
                         options: options,
-                        pickerName: "Layer1SelectField",
-                        style: MenuPickerStyle()
+                        pickerName: "Layer1SelectField"
                     )
                     .automaticCompliance(
                         identifierElementType: "Picker",
@@ -2509,8 +2508,7 @@ public struct GenericFormView: View {
                                         label: field.label,
                                         selection: .constant(""),
                                         options: options,
-                                        pickerName: "GenericFormSelectField",
-                                        style: MenuPickerStyle()
+                                        pickerName: "GenericFormSelectField"
                                     )
                                 } else {
                                     // Fallback if no options
@@ -2727,8 +2725,7 @@ public struct ModalFormView: View {
                             label: field.label,
                             selection: .constant(""),
                             options: options,
-                            pickerName: "Layer1SelectField",
-                            style: MenuPickerStyle()
+                            pickerName: "Layer1SelectField"
                         )
                         .automaticCompliance(
                             identifierElementType: "Picker",
@@ -3008,8 +3005,7 @@ public struct ModalFormView: View {
                             label: field.label,
                             selection: .constant(""),
                             options: options,
-                            pickerName: "GenericFormEnumField",
-                            style: MenuPickerStyle()
+                            pickerName: "GenericFormEnumField"
                         )
                         .automaticCompliance(
                             identifierElementType: "View",
@@ -3356,8 +3352,7 @@ public struct SimpleFormView: View {
                                 label: field.label,
                                 selection: field.$value,
                                 options: field.options,
-                                pickerName: "Layer1SelectField",
-                                style: MenuPickerStyle()
+                                pickerName: "Layer1SelectField"
                             )
                             .automaticCompliance(
                                 identifierElementType: "Picker",
@@ -3687,8 +3682,7 @@ public struct SimpleFormView: View {
                             label: field.label,
                             selection: field.$value,
                             options: field.options,
-                            pickerName: "Layer1EnumField",
-                            style: MenuPickerStyle()
+                            pickerName: "Layer1EnumField"
                         )
                         .automaticCompliance(
                             identifierElementType: "View",
@@ -4882,8 +4876,7 @@ struct GenericSettingsItemView: View {
                                 set: { value = $0 }
                             ),
                             options: options,
-                            pickerName: "Layer1SelectItem",
-                            style: MenuPickerStyle()
+                            pickerName: "Layer1SelectItem"
                         )
                         .disabled(!item.isEnabled)
                     }
