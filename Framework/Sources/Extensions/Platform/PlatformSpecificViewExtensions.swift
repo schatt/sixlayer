@@ -1165,9 +1165,9 @@ public extension View {
 
     /// Text input autocapitalization on iOS; no-op on other platforms (matches prior `#if os(iOS)` usage).
     @ViewBuilder
-    func platformTextInputAutocapitalization(_ style: TextInputAutocapitalization) -> some View {
+    func platformTextInputAutocapitalization(_ style: SixLayerTextInputAutocapitalization) -> some View {
         #if os(iOS)
-        self.textInputAutocapitalization(style)
+        self.textInputAutocapitalization(style.swiftUITextInputAutocapitalization)
         #else
         self
         #endif
