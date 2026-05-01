@@ -163,7 +163,7 @@ public extension View {
     ) -> some View {
         #if os(tvOS)
         Text(label)
-            .foregroundStyle(.secondary)
+            .foregroundStyle(selection.wrappedValue)
         #else
         ColorPicker("", selection: selection)
             .selfLabelingControl(label: label)
