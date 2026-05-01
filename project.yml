@@ -810,9 +810,10 @@ schemes:
         SixLayerFramework_visionOS: all
     test:
       targets:
+        # Parallel + random on visionOS Simulator often leaves many unit tests as "not run" (Xcode rdar-style behavior; epic #233).
         - name: SixLayerFrameworkUnitTests_visionOS
-          parallelizable: true
-          randomExecutionOrder: true
+          parallelizable: false
+          randomExecutionOrder: false
         - name: SixLayerFrameworkExternalIntegrationTests_visionOS
           parallelizable: true
           randomExecutionOrder: true
@@ -829,8 +830,8 @@ schemes:
     test:
       targets:
         - name: SixLayerFrameworkUnitTests_visionOS
-          parallelizable: true
-          randomExecutionOrder: true
+          parallelizable: false
+          randomExecutionOrder: false
         - name: SixLayerFrameworkUITests_visionOS
           parallelizable: true
           randomExecutionOrder: true
@@ -846,5 +847,5 @@ schemes:
     test:
       targets:
         - name: SixLayerFrameworkUnitTests_visionOS
-          parallelizable: true
-          randomExecutionOrder: true
+          parallelizable: false
+          randomExecutionOrder: false

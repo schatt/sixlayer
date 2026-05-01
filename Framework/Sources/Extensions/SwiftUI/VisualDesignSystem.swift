@@ -423,7 +423,10 @@ public struct SixLayerDesignSystem: DesignSystem {
     }
 
     private static func detectPlatformStyle() -> PlatformStyle {
-        #if os(iOS)
+        // visionOS must precede iOS: `#if os(iOS)` can be true for visionOS targets on some SDKs.
+        #if os(visionOS)
+        return .visionOS
+        #elseif os(iOS)
         return .ios
         #elseif os(macOS)
         return .macOS
@@ -431,8 +434,6 @@ public struct SixLayerDesignSystem: DesignSystem {
         return .watchOS
         #elseif os(tvOS)
         return .tvOS
-        #elseif os(visionOS)
-        return .visionOS
         #else
         return .ios
         #endif
@@ -608,7 +609,10 @@ public struct HighContrastDesignSystem: DesignSystem {
     }
 
     private static func detectPlatformStyle() -> PlatformStyle {
-        #if os(iOS)
+        // visionOS must precede iOS: `#if os(iOS)` can be true for visionOS targets on some SDKs.
+        #if os(visionOS)
+        return .visionOS
+        #elseif os(iOS)
         return .ios
         #elseif os(macOS)
         return .macOS
@@ -616,8 +620,6 @@ public struct HighContrastDesignSystem: DesignSystem {
         return .watchOS
         #elseif os(tvOS)
         return .tvOS
-        #elseif os(visionOS)
-        return .visionOS
         #else
         return .ios
         #endif
@@ -759,8 +761,8 @@ public class VisualDesignSystem: ObservableObject {
             }
         }
 
-        // Listen for iOS theme changes
-        #if os(iOS)
+        // Listen for iOS screen mode changes (not applicable to visionOS windows).
+        #if os(iOS) && !os(visionOS)
         NotificationCenter.default.addObserver(
             forName: UIScreen.modeDidChangeNotification,
             object: nil,
@@ -816,12 +818,12 @@ public class VisualDesignSystem: ObservableObject {
             return .light
         }
         
-        #if os(iOS)
+        #if os(iOS) || os(visionOS)
         if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
            let window = windowScene.windows.first {
             return window.traitCollection.userInterfaceStyle == .dark ? .dark : .light
         }
-        return .light // Fallback for iOS when no window is available
+        return .light // Fallback when no window is available
         #elseif os(macOS)
         // NSApp should be available in normal app contexts, but we've already checked for test environment
         let appearance = NSApp.effectiveAppearance
@@ -832,7 +834,10 @@ public class VisualDesignSystem: ObservableObject {
     }
     
     private static func detectPlatformStyle() -> PlatformStyle {
-        #if os(iOS)
+        // visionOS must precede iOS: `#if os(iOS)` can be true for visionOS targets on some SDKs.
+        #if os(visionOS)
+        return .visionOS
+        #elseif os(iOS)
         return .ios
         #elseif os(macOS)
         return .macOS
@@ -846,7 +851,7 @@ public class VisualDesignSystem: ObservableObject {
     }
     
     private static func detectAccessibilitySettings() -> AccessibilitySettings {
-        #if os(iOS)
+        #if os(iOS) || os(visionOS)
         return AccessibilitySettings(
             voiceOverSupport: UIAccessibility.isVoiceOverRunning,
             keyboardNavigation: true,

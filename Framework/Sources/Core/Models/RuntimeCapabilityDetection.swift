@@ -1099,7 +1099,14 @@ public struct RuntimeCapabilityDetection {
 
     private static func detectMediaHasMicrophoneInput() -> Bool {
         #if canImport(AVFoundation)
+        #if os(visionOS)
+        if #available(visionOS 2.1, *) {
+            return AVCaptureDevice.default(for: .audio) != nil
+        }
+        return false
+        #else
         return AVCaptureDevice.default(for: .audio) != nil
+        #endif
         #else
         return false
         #endif
@@ -1565,14 +1572,10 @@ public extension RuntimeCapabilityDetection {
         // DTRT: Respect each platform's primary interaction model.
         //  - Touch-first (iOS/watchOS): always 44pt (Apple HIG).
         //  - Focus-first (tvOS): 60pt (Apple tvOS HIG focus target at 10-foot distance).
-        //  - Pointer/spatial (macOS/visionOS): 44pt if touch is detected at runtime,
-        //    else 0pt.
+        //  - visionOS: always 60pt (Apple visionOS HIG gaze+pinch minimum).
+        //  - Pointer-driven (macOS): 44pt if touch is detected at runtime, else 0pt.
         // Delegate to PlatformStrategy which already encodes these rules (Issue #237).
-        let platform = currentPlatform
-        if platform == .macOS || platform == .visionOS {
-            return supportsTouch ? 44.0 : 0.0
-        }
-        return platform.minTouchTarget
+        return currentPlatform.minTouchTarget
     }
     
     /// Hover delay for platforms that support hover
