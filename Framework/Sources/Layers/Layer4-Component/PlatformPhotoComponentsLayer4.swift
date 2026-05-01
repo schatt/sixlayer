@@ -101,12 +101,14 @@ public enum PlatformPhotoComponentsLayer4 {
     /// Creates a cross-platform camera preview view
     /// Abstracts UIViewControllerRepresentable (iOS) and NSViewRepresentable (macOS)
     /// Note: Requires @MainActor because PlatformCameraPreviewView is a View
+    #if !os(watchOS)
     @ViewBuilder
     @MainActor
     public static func platformCameraPreview_L4(session: AVCaptureSession, videoGravity: AVLayerVideoGravity = .resizeAspectFill) -> some View {
         PlatformCameraPreviewView(session: session, videoGravity: videoGravity)
             .automaticCompliance(named: "platformCameraPreview_L4")
     }
+    #endif
     
     // MARK: - Tabbed Photo Source Components
     
@@ -305,6 +307,7 @@ public enum PlatformPhotoComponentsLayer4 {
 
 /// Cross-platform camera preview view
 /// Abstracts UIViewControllerRepresentable (iOS) and NSViewRepresentable (macOS)
+#if !os(watchOS)
 public struct PlatformCameraPreviewView: View {
     let session: AVCaptureSession
     let videoGravity: AVLayerVideoGravity
@@ -328,6 +331,7 @@ public struct PlatformCameraPreviewView: View {
         #endif
     }
 }
+#endif
 
 // MARK: - Supporting Views
 
@@ -944,11 +948,13 @@ public func platformPhotoDisplay_L4(image: PlatformImage?, style: PhotoDisplaySt
 
 /// Creates a cross-platform camera preview (convenience wrapper)
 /// Note: Requires @MainActor because it calls main-actor isolated methods
+#if !os(watchOS)
 @ViewBuilder
 @MainActor
 public func platformCameraPreview_L4(session: AVCaptureSession, videoGravity: AVLayerVideoGravity = .resizeAspectFill) -> some View {
     PlatformPhotoComponentsLayer4.platformCameraPreview_L4(session: session, videoGravity: videoGravity)
 }
+#endif
 
 // MARK: - Live data scanner (Issue #252)
 
