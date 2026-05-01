@@ -117,9 +117,13 @@ open class TestingFailureDemonstrationTests: BaseTestClass {
         coordinator.takePhoto()
         #endif
         
-        // Then: Verify proper testing approach
+        // Then: Verify proper testing approach (UIImagePicker/NSCamera coordinator is only simulated on iOS/macOS)
+        #if os(iOS) || os(macOS)
         #expect(callbackExecuted == true, "Callback SHOULD be executed - this is proper testing")
         #expect(Bool(true), "Image SHOULD be captured - this is proper testing")  // capturedImage is non-optional
+        #else
+        #expect(Bool(true), "Camera delegate simulation is iOS/macOS-only in this regression test")
+        #endif
         
         // This demonstrates the solution:
         // We should test that the callback actually executes and works
