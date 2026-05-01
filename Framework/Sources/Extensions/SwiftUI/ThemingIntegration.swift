@@ -218,7 +218,7 @@ public struct ThemedGenericFormView: View {
                             ),
                             options: field.options,
                             pickerName: "ThemedSelectField",
-                            style: MenuPickerStyle()
+                            style: PlatformMenuLikePickerStyle()
                         )
                         .themedTextField()
                     } else {
@@ -393,7 +393,7 @@ public struct ThemedGenericFormView: View {
                             ),
                             options: field.options,
                             pickerName: "ThemedEnumField",
-                            style: MenuPickerStyle()
+                            style: PlatformMenuLikePickerStyle()
                         )
                         .themedTextField()
                     } else {
