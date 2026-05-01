@@ -1332,7 +1332,7 @@ private func createSimpleFieldView(for field: DynamicFormField, hints: Presentat
             case .stepper:
                 platformStepperInput(
                     label: field.label,
-                    value: .constant(0.0),
+                    value: Binding.constant(0.0),
                     in: 0...100,
                     step: 1.0
                 )
