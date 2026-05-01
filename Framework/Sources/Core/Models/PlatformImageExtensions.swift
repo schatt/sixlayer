@@ -13,8 +13,8 @@ import CoreImage
 #endif
 
 // UIKit is available on iOS, tvOS, visionOS, and watchOS (in differing surfaces).
-// Bitmap helpers use UIGraphicsImageRenderer / UIImage APIs that are available on watchOS
-// in current SDKs (same family as iOS/tvOS/visionOS). See issue #237 / #271.
+// watchOS: UIGraphicsImageRenderer is unavailable; resize/rotate use UIGraphicsBeginImageContext.
+// Crop/export/metadata use UIImage the same as iOS. See #237 / #271.
 #if canImport(UIKit)
 import UIKit
 #endif
@@ -38,11 +38,18 @@ public extension PlatformImage {
             return self
         }
         
-        #if os(iOS) || os(tvOS) || os(visionOS) || os(watchOS)
+        #if os(iOS) || os(tvOS) || os(visionOS)
         let renderer = UIGraphicsImageRenderer(size: targetSize)
         let resizedImage = renderer.image { _ in
             self.uiImage.draw(in: CGRect(origin: .zero, size: targetSize))
         }
+        return PlatformImage(uiImage: resizedImage)
+        #elseif os(watchOS)
+        // UIGraphicsImageRenderer is unavailable on watchOS; legacy context matches iOS output for unit tests.
+        UIGraphicsBeginImageContextWithOptions(targetSize, false, 0)
+        defer { UIGraphicsEndImageContext() }
+        self.uiImage.draw(in: CGRect(origin: .zero, size: targetSize))
+        guard let resizedImage = UIGraphicsGetImageFromCurrentImageContext() else { return self }
         return PlatformImage(uiImage: resizedImage)
         #elseif os(macOS)
         let resizedImage = NSImage(size: targetSize)
@@ -261,7 +268,7 @@ public extension PlatformImage {
             return self
         }
         
-        #if os(iOS) || os(tvOS) || os(visionOS) || os(watchOS)
+        #if os(iOS) || os(tvOS) || os(visionOS)
         let radians = angle * .pi / 180.0
         let rotatedSize = CGSize(
             width: abs(self.size.width * cos(radians)) + abs(self.size.height * sin(radians)),
@@ -275,6 +282,21 @@ public extension PlatformImage {
             context.cgContext.translateBy(x: -self.size.width / 2, y: -self.size.height / 2)
             self.uiImage.draw(at: .zero)
         }
+        return PlatformImage(uiImage: rotatedImage)
+        #elseif os(watchOS)
+        let radians = angle * .pi / 180.0
+        let rotatedSize = CGSize(
+            width: abs(self.size.width * cos(radians)) + abs(self.size.height * sin(radians)),
+            height: abs(self.size.width * sin(radians)) + abs(self.size.height * cos(radians))
+        )
+        UIGraphicsBeginImageContextWithOptions(rotatedSize, false, 0)
+        defer { UIGraphicsEndImageContext() }
+        guard let context = UIGraphicsGetCurrentContext() else { return self }
+        context.translateBy(x: rotatedSize.width / 2, y: rotatedSize.height / 2)
+        context.rotate(by: CGFloat(radians))
+        context.translateBy(x: -self.size.width / 2, y: -self.size.height / 2)
+        self.uiImage.draw(in: CGRect(origin: .zero, size: self.size))
+        guard let rotatedImage = UIGraphicsGetImageFromCurrentImageContext() else { return self }
         return PlatformImage(uiImage: rotatedImage)
         #elseif os(macOS)
         let radians = angle * .pi / 180.0
