@@ -334,7 +334,11 @@ public struct AdaptiveUIPatterns {
             List(data, id: \.id) { item in
                 content(item)
             }
+            #if os(watchOS)
+            .listStyle(DefaultListStyle())
+            #else
             .listStyle(GroupedListStyle())
+            #endif
             #endif
         }
         
