@@ -195,7 +195,7 @@ open class FormFieldInteractionTests: BaseTestClass {
                     Text(option).tag(option)
                 }
             }
-            .pickerStyle(.menu)
+            .pickerStyleMenuOrWheelForUnitTests()
         }
         
         // Then: View should be created successfully
