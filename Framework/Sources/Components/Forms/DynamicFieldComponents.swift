@@ -1599,19 +1599,11 @@ public struct DynamicImageField: View {
             #endif
 
             if let imageData = formState.fieldValues[field.id] as? Data, let image = PlatformImage(data: imageData) {
-                #if os(macOS)
-                Image(nsImage: image.nsImage)
+                image.platformImageView()
                     .resizable()
                     .scaledToFit()
                     .frame(height: 100)
                     .automaticCompliance(named: "ImagePreview")
-                #else
-                Image(uiImage: image.uiImage)
-                    .resizable()
-                    .scaledToFit()
-                    .frame(height: 100)
-                    .automaticCompliance(named: "ImagePreview")
-                #endif
             }
         }
         .padding()
