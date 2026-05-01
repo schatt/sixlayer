@@ -1330,7 +1330,7 @@ private func createSimpleFieldView(for field: DynamicFormField, hints: Presentat
                         accessibilityLabel: field.label  // Issue #156: Parameter-based approach
                     )
             case .stepper:
-                platformStepperInput(
+                EmptyView().platformStepperInput(
                     label: field.label,
                     value: Binding.constant(0.0),
                     in: 0...100,
@@ -1342,7 +1342,7 @@ private func createSimpleFieldView(for field: DynamicFormField, hints: Presentat
                     accessibilityLabel: field.label  // Issue #156: Parameter-based approach
                 )
             case .textarea, .richtext:
-                platformTextEditor(
+                EmptyView().platformTextEditor(
                     text: .constant(field.defaultValue ?? ""),
                     prompt: field.placeholder
                 )
@@ -1366,7 +1366,7 @@ private func createSimpleFieldView(for field: DynamicFormField, hints: Presentat
             case .select:
                 // Use platformPicker helper to automatically apply accessibility (Issue #163)
                 if let options = field.options, !options.isEmpty {
-                    platformPicker(
+                    EmptyView().platformPicker(
                         label: field.label,
                         selection: .constant(""),
                         options: options,
@@ -1384,7 +1384,7 @@ private func createSimpleFieldView(for field: DynamicFormField, hints: Presentat
                 }
             case .date:
                 let i18n = InternationalizationService()
-                platformDateInput(selection: .constant(Date()), label: field.placeholder ?? i18n.placeholderSelectDate())
+                EmptyView().platformDateInput(selection: .constant(Date()), label: field.placeholder ?? i18n.placeholderSelectDate())
                     .automaticComplianceForDynamicFormField(
                         field,
                         identifierElementType: "DatePicker",
@@ -1393,7 +1393,7 @@ private func createSimpleFieldView(for field: DynamicFormField, hints: Presentat
             case .multiDate, .dateRange:
                 // Use DatePicker as fallback for Layer1 (MultiDatePicker requires iOS 16+)
                 let i18n = InternationalizationService()
-                platformDateInput(selection: .constant(Date()), label: field.placeholder ?? i18n.placeholderSelectDates())
+                EmptyView().platformDateInput(selection: .constant(Date()), label: field.placeholder ?? i18n.placeholderSelectDates())
                     .automaticComplianceForDynamicFormField(
                         field,
                         identifierElementType: "DatePicker",
@@ -1401,21 +1401,21 @@ private func createSimpleFieldView(for field: DynamicFormField, hints: Presentat
                     )
             case .time:
                 let i18n = InternationalizationService()
-                platformTimeInput(selection: .constant(Date()), label: field.placeholder ?? i18n.placeholderSelectTime())
+                EmptyView().platformTimeInput(selection: .constant(Date()), label: field.placeholder ?? i18n.placeholderSelectTime())
                     .automaticComplianceForDynamicFormField(
                         field,
                         identifierElementType: "DatePicker",
                         accessibilityLabel: field.label  // Issue #156: Parameter-based approach
                     )
             case .color:
-                platformColorInput(label: field.label, selection: .constant(.blue))
+                EmptyView().platformColorInput(label: field.label, selection: .constant(.blue))
                     .automaticComplianceForDynamicFormField(
                         field,
                         identifierElementType: "ColorPicker",
                         accessibilityLabel: field.label  // Issue #156: Parameter-based approach
                     )
             case .range:
-                platformRangeInput(value: .constant(0.5), in: 0...1)
+                EmptyView().platformRangeInput(value: Binding.constant(0.5), in: 0...1)
                     .automaticComplianceForDynamicFormField(
                         field,
                         identifierElementType: "Slider",
@@ -1442,7 +1442,7 @@ private func createSimpleFieldView(for field: DynamicFormField, hints: Presentat
                 let min = Double(field.metadata?["min"] ?? "0") ?? 0.0
                 let max = Double(field.metadata?["max"] ?? "100") ?? 100.0
                 let value = Double(field.defaultValue ?? "0") ?? 0.0
-                platformGaugeInput(
+                EmptyView().platformGaugeInput(
                     value: value,
                     min: min,
                     max: max,
