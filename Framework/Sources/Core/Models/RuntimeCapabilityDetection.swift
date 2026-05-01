@@ -588,45 +588,18 @@ public struct RuntimeCapabilityDetection {
     }
     
     private static func detectwatchOSVoiceOverSupport() -> Bool {
-        // Check if VoiceOver is available on watchOS
-        #if canImport(UIKit)
-        // Use Thread.isMainThread check to prevent crashes during parallel test execution
-        if Thread.isMainThread {
-            return UIAccessibility.isVoiceOverRunning
-        } else {
-            return false  // Conservative default when not on main thread
-        }
-        #else
-        return false
-        #endif
+        // VoiceOver exists on Apple Watch; UIAccessibility voice-over query APIs are unavailable on watchOS SDK.
+        return true
     }
     
     private static func detectwatchOSSwitchControlSupport() -> Bool {
-        // Check if Switch Control is available on watchOS
-        #if canImport(UIKit)
-        // Use Thread.isMainThread check to prevent crashes during parallel test execution
-        if Thread.isMainThread {
-            return UIAccessibility.isSwitchControlRunning
-        } else {
-            return false  // Conservative default when not on main thread
-        }
-        #else
+        // Switch Control is an iPhone/iPad-focused feature; avoid unavailable UIAccessibility APIs on watchOS.
         return false
-        #endif
     }
     
     private static func detectwatchOSAssistiveTouchSupport() -> Bool {
-        // Check if AssistiveTouch is available on watchOS
-        #if canImport(UIKit)
-        // Use Thread.isMainThread check to prevent crashes during parallel test execution
-        if Thread.isMainThread {
-            return UIAccessibility.isAssistiveTouchRunning
-        } else {
-            return false  // Conservative default when not on main thread
-        }
-        #else
+        // AssistiveTouch is not applicable to watchOS; avoid unavailable UIAccessibility APIs.
         return false
-        #endif
     }
     #endif
     
@@ -1098,7 +1071,7 @@ public struct RuntimeCapabilityDetection {
     }
 
     private static func detectMediaHasMicrophoneInput() -> Bool {
-        #if canImport(AVFoundation)
+        #if canImport(AVFoundation) && !os(watchOS)
         return AVCaptureDevice.default(for: .audio) != nil
         #else
         return false
