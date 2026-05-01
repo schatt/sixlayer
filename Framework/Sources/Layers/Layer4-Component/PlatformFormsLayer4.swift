@@ -242,6 +242,111 @@ public extension View {
     }
 }
 
+// MARK: - Form container (Layer 4)
+
+/// Resolves ``FormStrategy`` into a concrete form container. File-scope API so call sites use trailing-closure syntax without a dummy `View` receiver.
+@MainActor
+func platformFormContainer_L4<Content: View>(
+    strategy: FormStrategy,
+    @ViewBuilder content: @escaping () -> Content
+) -> some View {
+    switch strategy.containerType {
+    case .form:
+        return AnyView(
+            Form {
+                content()
+            }
+            .background(Color.platformGroupedBackground)
+        )
+
+    case .standard:
+        let spacing: CGFloat = {
+            switch strategy.fieldLayout {
+            case .compact: return 8
+            case .standard: return 16
+            case .spacious: return 20
+            case .adaptive: return 16
+            case .vertical: return 16
+            case .horizontal: return 12
+            case .grid: return 20
+            }
+        }()
+        return AnyView(
+            platformVStackContainer(spacing: spacing) {
+                content()
+            }
+            .padding()
+            .background(Color.platformSecondaryBackground)
+            .cornerRadius(8)
+        )
+
+    case .scrollView:
+        let spacing: CGFloat = {
+            switch strategy.fieldLayout {
+            case .compact: return 8
+            case .standard: return 16
+            case .spacious: return 20
+            case .adaptive: return 16
+            case .vertical: return 16
+            case .horizontal: return 12
+            case .grid: return 20
+            }
+        }()
+
+        return AnyView(
+            ScrollView {
+                platformVStackContainer(spacing: spacing) {
+                    content()
+                }
+                .padding(.vertical)
+            }
+            .background(Color.platformGroupedBackground)
+        )
+
+    case .custom:
+        let spacing: CGFloat = {
+            switch strategy.fieldLayout {
+            case .compact: return 8
+            case .standard: return 16
+            case .spacious: return 20
+            case .adaptive: return 16
+            case .vertical: return 16
+            case .horizontal: return 12
+            case .grid: return 20
+            }
+        }()
+        return AnyView(
+            platformVStackContainer(spacing: spacing) {
+                content()
+            }
+            .padding()
+            .background(Color.platformSecondaryBackground)
+            .cornerRadius(8)
+        )
+
+    case .adaptive:
+        let spacing: CGFloat = {
+            switch strategy.fieldLayout {
+            case .compact: return 8
+            case .standard: return 16
+            case .spacious: return 20
+            case .adaptive: return 16
+            case .vertical: return 16
+            case .horizontal: return 12
+            case .grid: return 20
+            }
+        }()
+        return AnyView(
+            platformVStackContainer(spacing: spacing) {
+                content()
+            }
+            .padding()
+            .background(Color.platformSecondaryBackground)
+            .cornerRadius(12)
+        )
+    }
+}
+
 // MARK: - Validation Types
 
 /// Validation message types for form fields
@@ -275,117 +380,4 @@ public enum FormSpacing: CGFloat, CaseIterable {
     case medium = 16
     case large = 24
     case extraLarge = 32
-}
-
-// MARK: - Migration Phase: Temporary Type-Specific Layer 4 Functions
-
-/// Generic Layer 4 function for form container implementation
-/// This implements the actual container based on the strategy from Layer 3
-@MainActor
-    func platformFormContainer_L4<Content: View>(
-    strategy: FormStrategy,
-    @ViewBuilder content: @escaping () -> Content
-) -> some View {
-    
-    // Implement the container based on the strategy
-    switch strategy.containerType {
-    case .form:
-        // Use SwiftUI Form (works well on macOS, can have issues on iOS)
-        return AnyView(
-            Form {
-                content()
-            }
-            .background(Color.platformGroupedBackground)
-        )
-        
-    case .standard:
-        // Standard container implementation
-        let spacing: CGFloat = {
-            switch strategy.fieldLayout {
-            case .compact: return 8
-            case .standard: return 16
-            case .spacious: return 20
-            case .adaptive: return 16
-            case .vertical: return 16
-            case .horizontal: return 12
-            case .grid: return 20
-            }
-        }()
-        return AnyView(
-            platformVStackContainer(spacing: spacing) {
-                content()
-            }
-            .padding()
-            .background(Color.platformSecondaryBackground)
-            .cornerRadius(8)
-        )
-        
-    case .scrollView:
-        // Use ScrollView + VStack (reliable on iOS, works on macOS too)
-        let spacing: CGFloat = {
-            switch strategy.fieldLayout {
-            case .compact: return 8
-            case .standard: return 16
-            case .spacious: return 20
-            case .adaptive: return 16
-            case .vertical: return 16
-            case .horizontal: return 12
-            case .grid: return 20
-            }
-        }()
-        
-        return AnyView(
-            ScrollView {
-                platformVStackContainer(spacing: spacing) {
-                    content()
-                }
-                .padding(.vertical)
-            }
-            .background(Color.platformGroupedBackground)
-        )
-        
-    case .custom:
-        // Custom container implementation
-        let spacing: CGFloat = {
-            switch strategy.fieldLayout {
-            case .compact: return 8
-            case .standard: return 16
-            case .spacious: return 20
-            case .adaptive: return 16
-            case .vertical: return 16
-            case .horizontal: return 12
-            case .grid: return 20
-            }
-        }()
-        return AnyView(
-            platformVStackContainer(spacing: spacing) {
-                content()
-            }
-            .padding()
-            .background(Color.platformSecondaryBackground)
-            .cornerRadius(8)
-        )
-        
-    case .adaptive:
-        // Adaptive container that adjusts based on content
-        let spacing: CGFloat = {
-            switch strategy.fieldLayout {
-            case .compact: return 8
-            case .standard: return 16
-            case .spacious: return 20
-            case .adaptive: return 16
-            case .vertical: return 16
-            case .horizontal: return 12
-            case .grid: return 20
-            }
-        }()
-        return AnyView(
-            platformVStackContainer(spacing: spacing) {
-                content()
-            }
-            .padding()
-            .background(Color.platformSecondaryBackground)
-            .cornerRadius(12)
-        )
-    }
 }
