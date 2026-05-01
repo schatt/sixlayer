@@ -1316,9 +1316,7 @@ private func createSimpleFieldView(for field: DynamicFormField, hints: Presentat
                         identifierElementType: "TextField",
                         accessibilityLabel: field.label  // Issue #156: Parameter-based approach
                     )
-                    #if canImport(UIKit)
-                    .textContentType(textContentType.uiTextContentType)
-                    #endif
+                    .platformTextContentType(textContentType)
             }
         }
         // Handle UI components using our custom DynamicContentType
@@ -2347,9 +2345,7 @@ public struct GenericFormView: View {
                             TextField(field.placeholder ?? "Enter \(field.label)", text: .constant(""))
                                 .l1SemanticTextFieldBorderStyle()
                                 .background(Color.platformSecondaryBackground)
-                                #if canImport(UIKit)
-                                .textContentType(textContentType.uiTextContentType)
-                                #endif
+                                .platformTextContentType(textContentType)
                         } else if let contentType = field.contentType {
                             // Handle UI components using our custom DynamicContentType
                             switch contentType {
@@ -2513,9 +2509,7 @@ public struct ModalFormView: View {
                         identifierElementType: "TextField",
                         accessibilityLabel: field.label  // Issue #156: Parameter-based approach
                     )
-                    #if canImport(UIKit)
-                    .textContentType(textContentType.uiTextContentType)
-                    #endif
+                    .platformTextContentType(textContentType)
             } else if let contentType = field.contentType {
                 // Handle UI components using our custom DynamicContentType
                 switch contentType {
@@ -3026,6 +3020,7 @@ public struct SimpleFormView: View {
                             identifierElementType: "TextField",
                             accessibilityLabel: field.label  // Issue #156: Parameter-based approach
                         )
+                        .platformTextContentType(textContentType)
                 } else if let contentType = field.contentType {
                     // Handle UI components using our custom DynamicContentType
                     switch contentType {
@@ -3047,10 +3042,8 @@ public struct SimpleFormView: View {
                             identifierElementType: "TextField",
                             accessibilityLabel: field.label  // Issue #156: Parameter-based approach
                         )
-                        #if os(iOS)
-                        .keyboardType(.emailAddress)
-                        .autocapitalization(.none)
-                        #endif
+                        .keyboardType(KeyboardType.emailAddress)
+                        .platformTextInputAutocapitalization(.never)
                         .onChange(of: field.value) { _ in
                             clearFieldError(field)
                         }
@@ -3073,9 +3066,7 @@ public struct SimpleFormView: View {
                             identifierElementType: "TextField",
                             accessibilityLabel: field.label  // Issue #156: Parameter-based approach
                         )
-                        #if os(iOS)
-                        .keyboardType(.decimalPad)
-                        #endif
+                        .keyboardType(KeyboardType.decimalPad)
                         .onChange(of: field.value) { _ in
                             clearFieldError(field)
                         }
@@ -3178,9 +3169,7 @@ public struct SimpleFormView: View {
                             identifierElementType: "TextField",
                             accessibilityLabel: field.label  // Issue #156: Parameter-based approach
                         )
-                        #if os(iOS)
-                        .keyboardType(.phonePad)
-                        #endif
+                        .keyboardType(KeyboardType.phonePad)
                         .onChange(of: field.value) { _ in
                             clearFieldError(field)
                         }
@@ -3269,10 +3258,8 @@ public struct SimpleFormView: View {
                             identifierElementType: "TextField",
                             accessibilityLabel: field.label  // Issue #156: Parameter-based approach
                         )
-                        #if os(iOS)
-                        .keyboardType(.URL)
-                        .autocapitalization(.none)
-                        #endif
+                        .keyboardType(KeyboardType.URL)
+                        .platformTextInputAutocapitalization(.never)
                         .onChange(of: field.value) { _ in
                             clearFieldError(field)
                         }
