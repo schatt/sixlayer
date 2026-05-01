@@ -15,7 +15,7 @@ import Testing
 import ViewInspector
 #endif
 
-#if canImport(UIKit)
+#if canImport(UIKit) && !os(watchOS)
 import UIKit
 #endif
 
@@ -216,7 +216,7 @@ public func getAccessibilityLabelForTest<V: View>(view: V, hostedRoot: Any? = ni
     return firstAccessibilityLabel(inHosted: root)
 }
 
-#if canImport(UIKit)
+#if canImport(UIKit) && !os(watchOS)
 /// Upper bound for `accessibilityElementCount` before enumerating via `accessibilityElementAtIndex:`.
 /// Some SwiftUI/UIKit hosting views report counts that make naive enumeration effectively hang
 /// (main-thread retain churn in test helpers; e.g. modal sheet chrome ViewInspector tests).
@@ -372,7 +372,7 @@ public func diagnosticsReportedAccessibilityElementCounts(inHosted root: Any?, t
 /// Traverses up to 40 levels deep; checks `accessibilityElements`, the UIAccessibilityContainer-style API, and subviews (SwiftUI / Issue 178 / Issue #193).
 @MainActor
 public func firstAccessibilityIdentifier(inHosted root: Any?) -> String? {
-    #if canImport(UIKit)
+    #if canImport(UIKit) && !os(watchOS)
     // 6LAYER_ALLOW: test utilities must traverse platform-specific view hierarchies for accessibility testing
     guard let rootView = root as? UIView else { return nil }
     
@@ -450,7 +450,7 @@ public func firstAccessibilityIdentifier(inHosted root: Any?) -> String? {
 /// Also checks each view's accessibilityElements (SwiftUI may expose labels there).
 @MainActor
 public func firstAccessibilityLabel(inHosted root: Any?) -> String? {
-    #if canImport(UIKit)
+    #if canImport(UIKit) && !os(watchOS)
     guard let rootView = root as? UIView else { return nil }
     if let label = rootView.accessibilityLabel, !label.isEmpty { return label }
     if let label = firstAccessibilityLabelFromElements(rootView.accessibilityElements) {
@@ -485,7 +485,7 @@ public func firstAccessibilityLabel(inHosted root: Any?) -> String? {
     #endif
 }
 
-#if canImport(UIKit)
+#if canImport(UIKit) && !os(watchOS)
 /// Diagnostic: dump the hosted view's accessibility tree to a string for debugging single-tappable tests (Issue #191).
 /// Call when hostedViewHasAccessibilityElementWithLabelAndButtonTrait returns false to see where label/traits appear.
 @MainActor
@@ -637,7 +637,7 @@ public func hostedUIKitAccessibilityValuePresent(
 public func findAllAccessibilityIdentifiersFromPlatformView(_ root: Any?) -> [String] {
     var identifiers: Set<String> = []
     
-    #if canImport(UIKit)
+    #if canImport(UIKit) && !os(watchOS)
     // 6LAYER_ALLOW: test utilities must traverse platform-specific view hierarchies for accessibility testing
     guard let rootView = root as? UIView else { return [] }
 
@@ -1147,7 +1147,7 @@ public enum AccessibilityTestUtilities {
             let prefix = expectedPattern.replacingOccurrences(of: ".*", with: "")
             return id.hasPrefix(prefix) || id.contains(componentName)
         }
-        #if canImport(UIKit) || canImport(AppKit)
+        #if (canImport(UIKit) && !os(watchOS)) || canImport(AppKit)
         let config = TestSetupUtilities.makeIsolatedAccessibilityIdentifierConfig()
         config.enableDebugLogging = true
         config.clearDebugLog()
@@ -1231,7 +1231,7 @@ public enum AccessibilityTestUtilities {
             let prefix = expectedPattern.replacingOccurrences(of: ".*", with: "")
             return id.hasPrefix(prefix) || id.contains(componentName)
         }
-        #if canImport(UIKit) || canImport(AppKit)
+        #if (canImport(UIKit) && !os(watchOS)) || canImport(AppKit)
         let config = TestSetupUtilities.makeIsolatedAccessibilityIdentifierConfig()
         config.enableDebugLogging = true
         config.clearDebugLog()
@@ -1245,7 +1245,7 @@ public enum AccessibilityTestUtilities {
             )
             var platformIds: [String] = []
             var viewInspectorIds: [String] = []
-            #if canImport(UIKit) || canImport(AppKit)
+            #if (canImport(UIKit) && !os(watchOS)) || canImport(AppKit)
             if let root = hosted {
                 platformIds = findAllAccessibilityIdentifiersFromPlatformView(root)
                 if platformIds.contains(where: identifierMatches) { passed = true; return hosted }
@@ -1293,7 +1293,7 @@ public enum AccessibilityTestUtilities {
             return hosted
         }
         if passed { return true }
-        #if canImport(UIKit) || canImport(AppKit)
+        #if (canImport(UIKit) && !os(watchOS)) || canImport(AppKit)
         _ = root
         #endif
         #endif
