@@ -1127,10 +1127,13 @@ public struct RuntimeCapabilityDetection {
     }
 
     private static func detectPasteboardCanReadStrings() -> Bool {
-        #if os(iOS) || os(tvOS) || os(visionOS)
+        #if os(iOS) || os(visionOS)
         return withMainActorProbe {
             UIPasteboard.general.hasStrings
         } ?? false
+        #elseif os(tvOS)
+        // UIPasteboard is API_UNAVAILABLE on tvOS.
+        return false
         #elseif os(macOS)
         return NSPasteboard.general.canReadObject(forClasses: [NSString.self], options: nil)
         #else
@@ -1139,11 +1142,13 @@ public struct RuntimeCapabilityDetection {
     }
 
     private static func detectPasteboardCanWriteStrings() -> Bool {
-        #if os(iOS) || os(tvOS) || os(visionOS)
+        #if os(iOS) || os(visionOS)
         return withMainActorProbe {
             _ = UIPasteboard.general
             return true
         } ?? false
+        #elseif os(tvOS)
+        return false
         #elseif os(macOS)
         return true
         #else
