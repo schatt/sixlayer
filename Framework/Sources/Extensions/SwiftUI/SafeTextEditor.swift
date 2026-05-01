@@ -31,7 +31,7 @@ public struct SafeTextEditor: View {
     }
     
     public var body: some View {
-        #if os(tvOS)
+        #if os(tvOS) || os(watchOS)
         TextField("", text: $text, axis: .vertical)
             .lineLimit(4...12)
         #else
@@ -73,7 +73,7 @@ public struct StyledSafeTextEditor: View {
     }
     
     public var body: some View {
-        #if os(tvOS)
+        #if os(tvOS) || os(watchOS)
         TextField("", text: $text, axis: .vertical)
             .lineLimit(4...12)
             .padding(8)
