@@ -1088,10 +1088,12 @@ public struct DynamicDateField: View {
 
         return platformVStackContainer(alignment: .leading) {
             #if os(tvOS)
-            if let valueDate = DynamicFormStoredDateValue.date(fromStoredValue: formState.fieldValues[field.id]) {
-                Text(valueDate, format: .dateTime.year().month().day())
-                    .foregroundStyle(.primary)
-                    .automaticComplianceForDynamicFormField(field)
+            if DynamicFormStoredDateValue.date(fromStoredValue: formState.fieldValues[field.id]) != nil {
+                EmptyView().platformDateInput(
+                    selection: selectedDate,
+                    label: field.placeholder ?? i18n.placeholderSelectDate()
+                )
+                .automaticComplianceForDynamicFormField(field)
             } else {
                 Text(field.placeholder ?? i18n.placeholderSelectDate())
                     .foregroundStyle(.secondary)
@@ -1137,10 +1139,12 @@ public struct DynamicTimeField: View {
 
         return platformVStackContainer(alignment: .leading) {
             #if os(tvOS)
-            if let valueDate = DynamicFormStoredDateValue.date(fromStoredValue: formState.fieldValues[field.id]) {
-                Text(valueDate, format: .dateTime.hour().minute())
-                    .foregroundStyle(.primary)
-                    .automaticCompliance()
+            if DynamicFormStoredDateValue.date(fromStoredValue: formState.fieldValues[field.id]) != nil {
+                EmptyView().platformTimeInput(
+                    selection: selectedTime,
+                    label: field.placeholder ?? i18n.placeholderSelectTime()
+                )
+                .automaticCompliance()
             } else {
                 Text(field.placeholder ?? i18n.placeholderSelectTime())
                     .foregroundStyle(.secondary)
@@ -1186,10 +1190,12 @@ public struct DynamicDateTimeField: View {
 
         return platformVStackContainer(alignment: .leading) {
             #if os(tvOS)
-            if let valueDate = DynamicFormStoredDateValue.date(fromStoredValue: formState.fieldValues[field.id]) {
-                Text(valueDate, format: .dateTime.year().month().day().hour().minute())
-                    .foregroundStyle(.primary)
-                    .automaticCompliance()
+            if DynamicFormStoredDateValue.date(fromStoredValue: formState.fieldValues[field.id]) != nil {
+                EmptyView().platformDateTimeInput(
+                    selection: selectedDateTime,
+                    label: field.placeholder ?? i18n.placeholderSelectDateTime()
+                )
+                .automaticCompliance()
             } else {
                 Text(field.placeholder ?? i18n.placeholderSelectDateTime())
                     .foregroundStyle(.secondary)
