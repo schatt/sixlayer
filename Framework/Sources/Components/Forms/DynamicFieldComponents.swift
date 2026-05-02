@@ -1640,8 +1640,8 @@ public struct DynamicRangeField: View {
                 set: { formState.setValue(String($0), for: field.id) }
             )
             #if os(tvOS)
-            // Slider is unavailable on tvOS; show a read-only progress indicator.
-            ProgressView(value: sliderValue.wrappedValue, total: 100)
+            // Slider is unavailable on tvOS; Layer 4 maps range to a read-only progress indicator.
+            EmptyView().platformRangeInput(value: sliderValue, in: 0...100)
                 .progressViewStyle(.linear)
                 .automaticCompliance(
                     identifierElementType: "Slider",
