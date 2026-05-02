@@ -1019,18 +1019,20 @@ public struct DynamicStepperField: View {
     public var body: some View {
         platformVStackContainer(alignment: .leading, spacing: 8) {
             #if os(tvOS)
-            // Stepper is unavailable on tvOS; show a read-only current-value indicator.
-            Text(step.truncatingRemainder(dividingBy: 1.0) == 0.0
-                 ? "\(Int(value.wrappedValue))"
-                 : String(format: "%.2f", value.wrappedValue))
-                .dynamicFormFieldVoiceOverLabel(field)
-                .automaticComplianceForDynamicFormField(
-                    field,
-                    identifierElementType: "Stepper",
-                    accessibilityValue: step.truncatingRemainder(dividingBy: 1.0) == 0.0
-                        ? "\(Int(value.wrappedValue))"
-                        : String(format: "%.2f", value.wrappedValue)
-                )
+            EmptyView().platformStepperInput(
+                label: field.label,
+                value: value,
+                in: range,
+                step: step
+            )
+            .dynamicFormFieldVoiceOverLabel(field)
+            .automaticComplianceForDynamicFormField(
+                field,
+                identifierElementType: "Stepper",
+                accessibilityValue: step.truncatingRemainder(dividingBy: 1.0) == 0.0
+                    ? "\(Int(value.wrappedValue))"
+                    : String(format: "%.2f", value.wrappedValue)
+            )
             #else
             Stepper(
                 "",
