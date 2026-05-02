@@ -9,7 +9,7 @@
 
 import SwiftUI
 
-#if os(iOS)
+#if os(iOS) || os(tvOS)
 import UIKit
 #endif
 
@@ -66,9 +66,11 @@ public enum PlatformFrameHelpers {
         #if os(watchOS)
         // watchOS: Use WKInterfaceDevice for accurate screen size
         let screenSize = WKInterfaceDevice.current().screenBounds.size
-        #else
-        // tvOS and visionOS: Use UIScreen (same API as iOS)
+        #elseif os(tvOS)
         let screenSize = UIScreen.main.bounds.size
+        #else
+        // visionOS: UIScreen is unavailable; use a conservative default for clamp heuristics.
+        let screenSize = CGSize(width: 1920, height: 1080)
         #endif
         
         // Use 100% of screen size (these platforms typically use full-screen layouts)
