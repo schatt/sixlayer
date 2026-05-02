@@ -1957,21 +1957,24 @@ public struct DynamicColorField: View {
             let color = Color(hex: colorValue) ?? .black
             
             let i18n = InternationalizationService()
-            #if os(tvOS)
-            // ColorPicker is unavailable on tvOS; show a read-only color swatch + hex value.
-            Text(field.placeholder ?? i18n.placeholderSelectColor())
-                .automaticCompliance(named: "ColorPicker")
-            Text(colorValue)
-                .font(.caption)
-                .foregroundStyle(.secondary)
-            #else
-            ColorPicker(field.placeholder ?? i18n.placeholderSelectColor(), selection: Binding(
+            let colorSelection = Binding(
                 get: { color },
                 set: { newColor in
                     let hex = newColor.toHex()
                     formState.setValue(hex, for: field.id)
                 }
-            ))
+            )
+            #if os(tvOS)
+            EmptyView().platformColorInput(
+                label: field.placeholder ?? i18n.placeholderSelectColor(),
+                selection: colorSelection
+            )
+            .automaticCompliance(named: "ColorPicker")
+            Text(colorValue)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            #else
+            ColorPicker(field.placeholder ?? i18n.placeholderSelectColor(), selection: colorSelection)
             .automaticCompliance(named: "ColorPicker")
             #endif
 
