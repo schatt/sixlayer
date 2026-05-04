@@ -32,6 +32,14 @@ Define the user's intent in platform-agnostic terms that can be interpreted by t
 - `platformPresentItemCollection_L1(items:hints:callbacks:)` - Present collections of identifiable items with automatic row actions
 - `platformPresentItemCollection_L1(items:hints:callbacks:customItemView:)` - Present collections with custom item view styling
 
+#### List layout, hints, and card-style rows (#272)
+
+Both overloads share the same **hint-driven layout resolver**. Set `PresentationHints.presentationPreference` (for example `.list`, `.cards`, `.grid`, `.automatic`, or `.countBased`) on **generic and custom** collections so host apps do not fork layout logic.
+
+- **Dense list with rich row content:** use `presentationPreference: .list` and supply `customItemView` for row chrome.
+- **Optional framework row surface:** set `customPreferences["rowVisualStyle"]` to `"card"` on the list path to apply a default padded, rounded background per row (omit or use any other value for a plain row).
+- **Accessibility:** the custom list path is implemented as `ScrollView` plus a lazy vertical stack, not SwiftUI `List`. Individual rows remain separate views for assistive technologies; adopt `List` at the host layer if you require full list control semantics.
+
 ### **Photo Functions**
 - `platformPhotoCapture_L1(purpose:context:onImageCaptured:)` - Capture photos with intelligent camera interface selection
 - `platformPhotoCapture_L1(purpose:context:onImageCaptured:customCameraView:)` - Capture photos with custom camera UI wrapper
