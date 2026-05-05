@@ -61,15 +61,13 @@ public class PlatformResourceLayer5 {
     
     /// Creates a platform-specific resource text field
     public func createResourceTextField(placeholder: String, text: Binding<String>) -> some View {
-        #if os(iOS)
+        #if os(iOS) || os(macOS)
         return TextField(placeholder, text: text)
             .textFieldStyle(.roundedBorder)
-            .autocapitalization(.none)
-        #elseif os(macOS)
-        return TextField(placeholder, text: text)
-            .textFieldStyle(.roundedBorder)
+            .platformTextInputAutocapitalization(.never)
         #else
         return TextField(placeholder, text: text)
+            .platformTextInputAutocapitalization(.never)
         #endif
     }
     

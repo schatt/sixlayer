@@ -113,7 +113,7 @@ public enum PlatformPhotoComponentsLayer4 {
     }
     #endif
     #endif
-    
+
     // MARK: - Tabbed Photo Source Components
     
     /// Creates a tabbed interface for switching between camera and photo library
@@ -962,7 +962,6 @@ public func platformCameraPreview_L4(session: AVCaptureSession, videoGravity: AV
     PlatformPhotoComponentsLayer4.platformCameraPreview_L4(session: session, videoGravity: videoGravity)
 }
 #endif
-#endif
 
 // MARK: - Live data scanner (Issue #252)
 
@@ -1077,3 +1076,4 @@ public func platformDataScannerInterface_L4AsFullScreenCover(
         onBecameUnavailable: onBecameUnavailable
     )
 }
+#endif

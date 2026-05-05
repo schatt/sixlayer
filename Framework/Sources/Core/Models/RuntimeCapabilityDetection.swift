@@ -621,22 +621,24 @@ public struct RuntimeCapabilityDetection {
     
     private static func detecttvOSVoiceOverSupport() -> Bool {
         // Check if VoiceOver is available on tvOS
-        // Use Thread.isMainThread check to prevent crashes during parallel test execution
-        if Thread.isMainThread {
-            return UIAccessibility.isVoiceOverRunning
-        } else {
-            return false  // Conservative default when not on main thread
-        }
+        #if canImport(UIKit)
+        return withMainActorProbe {
+            UIAccessibility.isVoiceOverRunning
+        } ?? false
+        #else
+        return false
+        #endif
     }
     
     private static func detecttvOSSwitchControlSupport() -> Bool {
         // Check if Switch Control is available on tvOS
-        // Use Thread.isMainThread check to prevent crashes during parallel test execution
-        if Thread.isMainThread {
-            return UIAccessibility.isSwitchControlRunning
-        } else {
-            return false  // Conservative default when not on main thread
-        }
+        #if canImport(UIKit)
+        return withMainActorProbe {
+            UIAccessibility.isSwitchControlRunning
+        } ?? false
+        #else
+        return false
+        #endif
     }
     
     private static func detecttvOSAssistiveTouchSupport() -> Bool {
@@ -664,22 +666,24 @@ public struct RuntimeCapabilityDetection {
     
     private static func detectvisionOSVoiceOverSupport() -> Bool {
         // Check if VoiceOver is available on visionOS
-        // Use Thread.isMainThread check to prevent crashes during parallel test execution
-        if Thread.isMainThread {
-            return UIAccessibility.isVoiceOverRunning
-        } else {
-            return false  // Conservative default when not on main thread
-        }
+        #if canImport(UIKit)
+        return withMainActorProbe {
+            UIAccessibility.isVoiceOverRunning
+        } ?? false
+        #else
+        return false
+        #endif
     }
     
     private static func detectvisionOSSwitchControlSupport() -> Bool {
         // Check if Switch Control is available on visionOS
-        // Use Thread.isMainThread check to prevent crashes during parallel test execution
-        if Thread.isMainThread {
-            return UIAccessibility.isSwitchControlRunning
-        } else {
-            return false  // Conservative default when not on main thread
-        }
+        #if canImport(UIKit)
+        return withMainActorProbe {
+            UIAccessibility.isSwitchControlRunning
+        } ?? false
+        #else
+        return false
+        #endif
     }
     
     private static func detectvisionOSAssistiveTouchSupport() -> Bool {
@@ -1059,12 +1063,14 @@ public struct RuntimeCapabilityDetection {
         #if os(watchOS)
         return false
         #elseif os(visionOS)
+        // `AVCaptureDevice.default(for:)` adopted for microphone on visionOS in 2.1 SDKs.
         if #available(visionOS 2.1, *) {
             return AVCaptureDevice.default(for: .audio) != nil
         }
         return false
         #else
         return AVCaptureDevice.default(for: .audio) != nil
+        #endif
         #else
         return false
         #endif
@@ -1097,6 +1103,9 @@ public struct RuntimeCapabilityDetection {
         return withMainActorProbe {
             UIPasteboard.general.hasStrings
         } ?? false
+        #elseif os(tvOS)
+        // UIPasteboard is API_UNAVAILABLE on tvOS.
+        return false
         #elseif os(macOS)
         return NSPasteboard.general.canReadObject(forClasses: [NSString.self], options: nil)
         #else
@@ -1110,6 +1119,8 @@ public struct RuntimeCapabilityDetection {
             _ = UIPasteboard.general
             return true
         } ?? false
+        #elseif os(tvOS)
+        return false
         #elseif os(macOS)
         return true
         #else
