@@ -305,6 +305,7 @@ public enum PlatformPhotoComponentsLayer4 {
         )
     }
 }
+#endif
 
 // MARK: - Camera Preview View
 
@@ -1074,3 +1075,4 @@ public func platformDataScannerInterface_L4AsFullScreenCover(
         onBecameUnavailable: onBecameUnavailable
     )
 }
+#endif
