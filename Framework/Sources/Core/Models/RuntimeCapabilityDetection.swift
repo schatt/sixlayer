@@ -1059,20 +1059,17 @@ public struct RuntimeCapabilityDetection {
     }
 
     private static func detectMediaHasMicrophoneInput() -> Bool {
-        #if canImport(AVFoundation)
-        #if os(watchOS)
+        // Single `#if` chain avoids nested `canImport` + `os` blocks that trip some toolchain parsers
+        // (“further conditions after #else”) while preserving visionOS 2.1+ microphone adoption timing.
+        #if !canImport(AVFoundation) || os(watchOS)
         return false
         #elseif os(visionOS)
-        // `AVCaptureDevice.default(for:)` adopted for microphone on visionOS in 2.1 SDKs.
         if #available(visionOS 2.1, *) {
             return AVCaptureDevice.default(for: .audio) != nil
         }
         return false
         #else
         return AVCaptureDevice.default(for: .audio) != nil
-        #endif
-        #else
-        return false
         #endif
     }
 
