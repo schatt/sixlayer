@@ -588,15 +588,17 @@ public struct RuntimeCapabilityDetection {
     }
     
     private static func detectwatchOSVoiceOverSupport() -> Bool {
-        // UIAccessibility VoiceOver flags used on iOS/tvOS are unavailable on watchOS SDK (#233).
-        return false
+        // VoiceOver exists on Apple Watch; UIAccessibility voice-over query APIs are unavailable on watchOS SDK.
+        return true
     }
     
     private static func detectwatchOSSwitchControlSupport() -> Bool {
+        // Switch Control is an iPhone/iPad-focused feature; avoid unavailable UIAccessibility APIs on watchOS.
         return false
     }
     
     private static func detectwatchOSAssistiveTouchSupport() -> Bool {
+        // AssistiveTouch is not applicable to watchOS; avoid unavailable UIAccessibility APIs.
         return false
     }
     #endif

@@ -404,7 +404,7 @@ public extension View {
         onPinch: @escaping (CGFloat) -> Void = { _ in },
         onRotate: @escaping (Double) -> Void = { _ in }
     ) -> some View {
-        #if os(tvOS)
+        #if os(tvOS) || os(watchOS)
         return self
         #else
         let manager = InputHandlingManager()

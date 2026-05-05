@@ -141,7 +141,7 @@ public struct RichTextEditor: View {
     }
 }
 #else
-// macOS fallback - simple text editor
+// macOS (and other platforms with `TextEditor`) — simple text editor
 public struct RichTextEditor: View {
     @Binding var text: String
     @Binding var selectedText: NSRange?
@@ -634,6 +634,7 @@ public struct DatePickerField: View {
                 selection: $selectedDate,
                 displayedComponents: .date
             )
+            .datePickerStyle(.wheel)
             .selfLabelingControl(label: field.label)
             .onChange(of: selectedDate) { oldValue, newDate in
                 let formatter = DateFormatter()
@@ -717,6 +718,7 @@ public struct TimePickerField: View {
                 selection: $selectedTime,
                 displayedComponents: .hourAndMinute
             )
+            .datePickerStyle(.wheel)
             .selfLabelingControl(label: field.label)
             .onChange(of: selectedTime) { oldValue, newTime in
                 let formatter = DateFormatter()
@@ -802,6 +804,7 @@ public struct DateTimePickerField: View {
                 selection: $selectedDateTime,
                 displayedComponents: [.date, .hourAndMinute]
             )
+            .datePickerStyle(.wheel)
             .selfLabelingControl(label: field.label)
             .onChange(of: selectedDateTime) { oldValue, newDateTime in
                 let formatter = DateFormatter()
