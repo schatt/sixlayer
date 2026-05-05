@@ -1057,7 +1057,6 @@ public struct RuntimeCapabilityDetection {
     private static func detectMediaHasMicrophoneInput() -> Bool {
         #if canImport(AVFoundation) && !os(watchOS)
         return AVCaptureDevice.default(for: .audio) != nil
-        #endif
         #else
         return false
         #endif
