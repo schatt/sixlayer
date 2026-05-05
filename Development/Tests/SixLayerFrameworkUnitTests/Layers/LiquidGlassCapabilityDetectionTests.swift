@@ -66,8 +66,11 @@ open class LiquidGlassCapabilityDetectionTests: BaseTestClass {
         let supportsHardware = LiquidGlassCapabilityDetection.supportsHardwareRequirements
         
         // Then
-        // This should be true on current platforms (simplified implementation)
+        #if os(watchOS)
+        #expect(!supportsHardware, "watchOS uses simplified detection: no Liquid Glass hardware baseline yet")
+        #else
         #expect(supportsHardware, "Current platforms should support hardware requirements")
+        #endif
     }
     
     // MARK: - Feature Availability Tests

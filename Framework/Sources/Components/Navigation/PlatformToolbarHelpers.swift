@@ -10,12 +10,9 @@ public extension View {
     /// macOS: .automatic
     func platformConfirmationActionPlacement() -> ToolbarItemPlacement {
         #if os(watchOS)
-        if #available(watchOS 9.0, *) {
-            return .confirmationAction
-        }
         return .automatic
         #elseif os(iOS) || os(visionOS)
-        if #available(iOS 16.0, *) {
+        if #available(iOS 16.0, watchOS 9.0, *) {
             return .confirmationAction
         } else {
             return .navigationBarTrailing
@@ -38,12 +35,9 @@ public extension View {
     /// macOS: .automatic
     func platformCancellationActionPlacement() -> ToolbarItemPlacement {
         #if os(watchOS)
-        if #available(watchOS 9.0, *) {
-            return .cancellationAction
-        }
         return .automatic
         #elseif os(iOS) || os(visionOS)
-        if #available(iOS 16.0, *) {
+        if #available(iOS 16.0, watchOS 9.0, *) {
             return .cancellationAction
         } else {
             return .navigationBarTrailing
@@ -66,12 +60,9 @@ public extension View {
     /// macOS: .automatic
     func platformPrimaryActionPlacement() -> ToolbarItemPlacement {
         #if os(watchOS)
-        if #available(watchOS 9.0, *) {
-            return .primaryAction
-        }
         return .automatic
         #elseif os(iOS) || os(visionOS)
-        if #available(iOS 16.0, *) {
+        if #available(iOS 16.0, watchOS 9.0, *) {
             return .primaryAction
         } else {
             return .navigationBarTrailing
@@ -94,10 +85,9 @@ public extension View {
     /// macOS: .automatic
     func platformSecondaryActionPlacement() -> ToolbarItemPlacement {
         #if os(watchOS)
-        // `.secondaryAction` and `navigationBarTrailing` are unavailable on watchOS.
         return .automatic
         #elseif os(iOS) || os(visionOS)
-        if #available(iOS 16.0, *) {
+        if #available(iOS 16.0, watchOS 9.0, *) {
             return .secondaryAction
         } else {
             return .navigationBarTrailing

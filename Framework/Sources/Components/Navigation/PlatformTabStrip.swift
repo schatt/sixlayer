@@ -32,16 +32,32 @@ public struct PlatformTabStrip: View {
             .padding(.horizontal, 8)
         }
         #elseif os(watchOS)
-        let indices = Array(items.indices)
-        platformPicker(
-            label: "",
-            selection: $selection,
-            options: indices,
-            optionTag: { $0 },
-            optionLabel: { items[$0].title },
-            pickerName: "PlatformTabStrip",
-            style: WheelPickerStyle()
-        )
+        // SegmentedPickerStyle is unavailable on watchOS; use the same chip strip pattern as iOS.
+        ScrollView(.horizontal, showsIndicators: false) {
+            platformHStackContainer(spacing: 8) {
+                ForEach(Array(items.enumerated()), id: \.offset) { index, item in
+                    Button(action: { selection = index }) {
+                        platformHStackContainer(spacing: 6) {
+                            if let icon = item.systemImage {
+                                Image(systemName: icon)
+                            }
+                            Text(item.title)
+                                .font(.subheadline)
+                        }
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 6)
+                        .background(selection == index ? Color.accentColor.opacity(0.15) : Color.clear)
+                        .cornerRadius(8)
+                    }
+                    .buttonStyle(.plain)
+                    .environment(\.accessibilityIdentifierLabel, item.title)
+                    .automaticCompliance(
+                        identifierName: sanitizeLabelText(item.title)
+                    )
+                }
+            }
+            .padding(.horizontal, 8)
+        }
         #else
         // Use platformPicker helper to automatically apply accessibility to picker and segments (Issue #163)
         // Use indices as options (Hashable) and map to items for labels

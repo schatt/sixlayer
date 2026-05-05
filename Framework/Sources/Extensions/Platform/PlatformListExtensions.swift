@@ -87,8 +87,9 @@ public extension View {
         @ViewBuilder content: () -> Content
     ) -> some View {
         #if os(watchOS)
-        // List(selection:) is unavailable on watchOS; selection binding is ignored (graceful degradation).
-        return List { content() }
+        return List(content: content)
+        #elseif os(iOS)
+        return List(selection: selection, content: content)
         #else
         return List(selection: selection, content: content)
         #endif
@@ -107,7 +108,9 @@ public extension View {
         @ViewBuilder content: () -> Content
     ) -> some View {
         #if os(watchOS)
-        return List { content() }
+        return List(content: content)
+        #elseif os(iOS)
+        return List(selection: selection, content: content)
         #else
         return List(selection: selection, content: content)
         #endif

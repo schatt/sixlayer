@@ -938,7 +938,7 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
     
     // MARK: - Private Methods
     
-    #if canImport(Vision) && !os(watchOS)
+    #if canImport(Vision)
     private func performVisionOCR(
         cgImage: CGImage,
         context: OCRContext,
@@ -1084,6 +1084,14 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
             processingTime: 0.0, // Will be set by caller
             language: context.language
         )
+    }
+    #else
+    private func performVisionOCR(
+        cgImage: CGImage,
+        context: OCRContext,
+        strategy: OCRStrategy
+    ) async throws -> OCRResult {
+        throw OCRError.unsupportedPlatform
     }
     #endif
     
