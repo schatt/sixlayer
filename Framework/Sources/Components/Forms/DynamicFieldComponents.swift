@@ -1017,7 +1017,6 @@ public struct DynamicStepperField: View {
 
     public var body: some View {
         platformVStackContainer(alignment: .leading, spacing: 8) {
-            #if os(tvOS)
             EmptyView().platformStepperInput(
                 label: field.label,
                 value: value,
@@ -1032,22 +1031,6 @@ public struct DynamicStepperField: View {
                     ? "\(Int(value.wrappedValue))"
                     : String(format: "%.2f", value.wrappedValue)
             )
-            #else
-            Stepper(
-                "",
-                value: value,
-                in: range,
-                step: step
-            )
-            .dynamicFormFieldVoiceOverLabel(field)
-            .automaticComplianceForDynamicFormField(
-                field,
-                identifierElementType: "Stepper",
-                accessibilityValue: step.truncatingRemainder(dividingBy: 1.0) == 0.0
-                    ? "\(Int(value.wrappedValue))"
-                    : String(format: "%.2f", value.wrappedValue)  // Issue #165: Current value
-            )
-            #endif
 
             // Show current value - use appropriate format based on step size
             Text(step.truncatingRemainder(dividingBy: 1.0) == 0.0 
