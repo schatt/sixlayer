@@ -9,7 +9,7 @@
 
 import SwiftUI
 
-#if os(iOS)
+#if os(iOS) || os(visionOS)
 import UIKit
 #endif
 
@@ -58,7 +58,7 @@ public enum PlatformFrameHelpers {
     }
     #endif
     
-    /// Get maximum frame size for watchOS, tvOS, and visionOS based on screen size
+    /// Get maximum frame size for watchOS, tvOS, and visionOS based on screen/window size
     /// - Returns: Maximum size that fits within available screen space
     #if os(watchOS) || os(tvOS) || os(visionOS)
     @MainActor
@@ -70,8 +70,14 @@ public enum PlatformFrameHelpers {
         // tvOS: Use UIScreen for full-screen layout bounds.
         let screenSize = UIScreen.main.bounds.size
         #else
-        // visionOS does not expose UIScreen; use a conservative default volume/window size.
-        let screenSize = CGSize(width: 1280, height: 720)
+        // visionOS: prefer window scene bounds; avoid UIScreen on this SDK (#239/#240).
+        let screenSize: CGSize
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+           let window = windowScene.windows.first {
+            screenSize = window.bounds.size
+        } else {
+            screenSize = CGSize(width: 1280, height: 720)
+        }
         #endif
         
         // Use 100% of screen size (these platforms typically use full-screen layouts)

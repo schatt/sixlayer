@@ -1,7 +1,7 @@
 import CoreFoundation
 import Foundation
 import SwiftUI
-#if os(iOS)
+#if os(iOS) || targetEnvironment(macCatalyst)
 import UIKit
 #endif
 #if os(watchOS)

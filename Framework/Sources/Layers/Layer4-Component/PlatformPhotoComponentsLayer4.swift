@@ -112,6 +112,7 @@ public enum PlatformPhotoComponentsLayer4 {
             .automaticCompliance(named: "platformCameraPreview_L4")
     }
     #endif
+    #endif
     
     // MARK: - Tabbed Photo Source Components
     
@@ -335,6 +336,7 @@ public struct PlatformCameraPreviewView: View {
         #endif
     }
 }
+#endif
 #endif
 
 // MARK: - Supporting Views
@@ -959,6 +961,7 @@ public func platformPhotoDisplay_L4(image: PlatformImage?, style: PhotoDisplaySt
 public func platformCameraPreview_L4(session: AVCaptureSession, videoGravity: AVLayerVideoGravity = .resizeAspectFill) -> some View {
     PlatformPhotoComponentsLayer4.platformCameraPreview_L4(session: session, videoGravity: videoGravity)
 }
+#endif
 #endif
 
 // MARK: - Live data scanner (Issue #252)
