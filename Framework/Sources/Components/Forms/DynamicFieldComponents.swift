@@ -676,8 +676,7 @@ public struct DynamicTextField: View {
     @ViewBuilder
     private var multiLineTextEditorFallback: some View {
         #if os(tvOS)
-        TextField("", text: field.textBinding(formState: formState))
-            .platformTextFieldStyle()
+        EmptyView().platformTextEditor(text: field.textBinding(formState: formState), prompt: "")
             .frame(minHeight: CGFloat(field.minLines * 20))
             .border(Color.gray.opacity(0.2))
             .automaticCompliance()
