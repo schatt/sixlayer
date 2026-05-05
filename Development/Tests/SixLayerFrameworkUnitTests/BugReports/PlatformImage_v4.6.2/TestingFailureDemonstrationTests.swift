@@ -76,6 +76,7 @@ open class TestingFailureDemonstrationTests: BaseTestClass {
         // Given: Proper testing approach
         var callbackExecuted = false
         var capturedImage: PlatformImage?
+        var supportsDelegateHarness = false
         
         
         
@@ -85,41 +86,53 @@ open class TestingFailureDemonstrationTests: BaseTestClass {
             callbackExecuted = true
             capturedImage = image
         }
+        // Reset so only the delegate simulation below is measured (view construction must not count).
+        callbackExecuted = false
+        capturedImage = nil
         
         // Simulate the actual delegate method execution
         // This is what we should have been testing
         #if os(iOS)
-        let placeholderImage = PlatformImage.createPlaceholder()
-        // 6LAYER_ALLOW: testing framework boundary with deprecated platform image picker APIs
-        let mockInfo: [UIImagePickerController.InfoKey: Any] = [
-            .originalImage: placeholderImage.uiImage
-        ]
-        
-        // Execute the delegate method that contains the broken code
-        // This would have caught the breaking change
-        let cameraView = CameraView { image in
-            callbackExecuted = true
-            capturedImage = image
+        if SixLayerPlatform.current == .iOS {
+            supportsDelegateHarness = true
+            let placeholderImage = PlatformImage.createPlaceholder()
+            // 6LAYER_ALLOW: testing framework boundary with deprecated platform image picker APIs
+            let mockInfo: [UIImagePickerController.InfoKey: Any] = [
+                .originalImage: placeholderImage.uiImage
+            ]
+            
+            // Execute the delegate method that contains the broken code
+            // This would have caught the breaking change
+            let cameraView = CameraView { image in
+                callbackExecuted = true
+                capturedImage = image
+            }
+            let coordinator = CameraView.Coordinator(cameraView)
+            
+            // 6LAYER_ALLOW: testing framework boundary with deprecated platform image picker APIs
+            coordinator.imagePickerController(UIImagePickerController(), didFinishPickingMediaWithInfo: mockInfo)
         }
-        let coordinator = CameraView.Coordinator(cameraView)
-        
-        // 6LAYER_ALLOW: testing framework boundary with deprecated platform image picker APIs
-        coordinator.imagePickerController(UIImagePickerController(), didFinishPickingMediaWithInfo: mockInfo)
-        
         #elseif os(macOS)
-        // For macOS, we'll test the actual MacCameraView.Coordinator
-        let mockParent = MacCameraView(onImageCaptured: { image in
-            callbackExecuted = true
-            capturedImage = image
-        })
-        
-        let coordinator = MacCameraView.Coordinator(mockParent)
-        coordinator.takePhoto()
+        if SixLayerPlatform.current == .macOS {
+            supportsDelegateHarness = true
+            // For macOS, we'll test the actual MacCameraView.Coordinator
+            let mockParent = MacCameraView(onImageCaptured: { image in
+                callbackExecuted = true
+                capturedImage = image
+            })
+            
+            let coordinator = MacCameraView.Coordinator(mockParent)
+            coordinator.takePhoto()
+        }
         #endif
         
-        // Then: Verify proper testing approach
+        // Then: Verify proper testing approach (UIImagePicker/NSCamera coordinator is only simulated on iOS/macOS)
+        #if os(iOS) || os(macOS)
         #expect(callbackExecuted == true, "Callback SHOULD be executed - this is proper testing")
         #expect(Bool(true), "Image SHOULD be captured - this is proper testing")  // capturedImage is non-optional
+        #else
+        #expect(Bool(true), "Camera delegate simulation is iOS/macOS-only in this regression test")
+        #endif
         
         // This demonstrates the solution:
         // We should test that the callback actually executes and works

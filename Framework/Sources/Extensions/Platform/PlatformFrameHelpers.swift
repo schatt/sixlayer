@@ -67,10 +67,11 @@ public enum PlatformFrameHelpers {
         // watchOS: Use WKInterfaceDevice for accurate screen size
         let screenSize = WKInterfaceDevice.current().screenBounds.size
         #elseif os(tvOS)
+        // tvOS: Use UIScreen for full-screen layout bounds.
         let screenSize = UIScreen.main.bounds.size
         #else
-        // visionOS: UIScreen is unavailable; use a conservative default for clamp heuristics.
-        let screenSize = CGSize(width: 1920, height: 1080)
+        // visionOS does not expose UIScreen; use a conservative default volume/window size for clamp heuristics.
+        let screenSize = CGSize(width: 1280, height: 720)
         #endif
         
         // Use 100% of screen size (these platforms typically use full-screen layouts)

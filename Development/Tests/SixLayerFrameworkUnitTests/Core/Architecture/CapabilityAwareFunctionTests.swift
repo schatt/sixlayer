@@ -251,6 +251,11 @@ open class CapabilityAwareFunctionTests: BaseTestClass {
     /// TESTING SCOPE: Vision framework availability, OCR processing, image analysis
     /// METHODOLOGY: Test Vision framework enabled state with actual OCR processing
     @Test @MainActor func testVisionFunctionsEnabled() {
+        // Vision is not surfaced for OCR on watchOS in this stack; the disabled-path suite covers it.
+        #if os(watchOS)
+        #expect(Bool(true), "Vision enabled-path checks run on platforms with Vision OCR support")
+        return
+        #endif
         // Vision framework should be available
         #expect(isVisionFrameworkAvailable(), 
                      "Vision framework should be available when enabled")

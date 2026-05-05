@@ -103,8 +103,8 @@ public struct RichTextEditor: UIViewRepresentable {
         }
     }
 }
-#elseif os(tvOS)
-// tvOS fallback - `TextEditor` is unavailable; use a focusable `TextField`.
+#elseif os(tvOS) || os(watchOS)
+// tvOS/watchOS — `TextEditor` is unavailable; use a focusable `TextField`.
 public struct RichTextEditor: View {
     @Binding var text: String
     @Binding var selectedText: NSRange?
@@ -121,8 +121,27 @@ public struct RichTextEditor: View {
             }
     }
 }
+#elseif os(watchOS)
+// watchOS: multiline `TextField` with vertical axis (TextEditor is heavy on small screens).
+public struct RichTextEditor: View {
+    @Binding var text: String
+    @Binding var selectedText: NSRange?
+
+    public var body: some View {
+        TextField("", text: $text, axis: .vertical)
+            .font(.body)
+            .lineLimit(4...12)
+            .frame(minHeight: 120)
+            .padding(8)
+            .background(Color.secondaryBackground)
+            .cornerRadius(8)
+            .onChange(of: text) {
+                // Handle text changes
+            }
+    }
+}
 #else
-// macOS fallback - simple text editor
+// macOS (and other platforms with `TextEditor`) — simple text editor
 public struct RichTextEditor: View {
     @Binding var text: String
     @Binding var selectedText: NSRange?
@@ -589,7 +608,17 @@ public struct DatePickerField: View {
             Text(field.label)
                 .font(.headline)
             
+            #if os(watchOS)
+            DatePicker(
+                "",
+                selection: $selectedDate,
+                displayedComponents: .date
+            )
+            .datePickerStyle(.wheel)
+            .selfLabelingControl(label: field.label)
+            #else
             platformDateInput(selection: $selectedDate, label: field.label)
+            #endif
             .onChange(of: selectedDate) { oldValue, newDate in
                 let formatter = DateFormatter()
                 formatter.dateStyle = .medium
@@ -625,7 +654,17 @@ public struct TimePickerField: View {
             Text(field.label)
                 .font(.headline)
             
+            #if os(watchOS)
+            DatePicker(
+                "",
+                selection: $selectedTime,
+                displayedComponents: .hourAndMinute
+            )
+            .datePickerStyle(.wheel)
+            .selfLabelingControl(label: field.label)
+            #else
             platformTimeInput(selection: $selectedTime, label: field.label)
+            #endif
             .onChange(of: selectedTime) { oldValue, newTime in
                 let formatter = DateFormatter()
                 formatter.timeStyle = .short
@@ -661,7 +700,17 @@ public struct DateTimePickerField: View {
             Text(field.label)
                 .font(.headline)
             
+            #if os(watchOS)
+            DatePicker(
+                "",
+                selection: $selectedDateTime,
+                displayedComponents: [.date, .hourAndMinute]
+            )
+            .datePickerStyle(.wheel)
+            .selfLabelingControl(label: field.label)
+            #else
             platformDateTimeInput(selection: $selectedDateTime, label: field.label)
+            #endif
             .onChange(of: selectedDateTime) { oldValue, newDateTime in
                 let formatter = DateFormatter()
                 formatter.dateStyle = .medium

@@ -915,7 +915,7 @@ public struct SimpleCardComponent<Item: Identifiable>: View {
         }
         
         // Apply keyboard shortcut when touch is not supported
-        #if !os(tvOS)
+        #if !os(tvOS) && !os(watchOS)
         if !config.supportsTouch {
             view = AnyView(view.keyboardShortcut(" ", modifiers: []))
         }

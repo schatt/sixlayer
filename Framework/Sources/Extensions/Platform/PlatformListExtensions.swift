@@ -86,7 +86,9 @@ public extension View {
         selection: Binding<Set<SelectionValue>>,
         @ViewBuilder content: () -> Content
     ) -> some View {
-        #if os(iOS)
+        #if os(watchOS)
+        return List(content: content)
+        #elseif os(iOS)
         return List(selection: selection, content: content)
         #else
         return List(selection: selection, content: content)
@@ -105,7 +107,9 @@ public extension View {
         selection: Binding<SelectionValue?>,
         @ViewBuilder content: () -> Content
     ) -> some View {
-        #if os(iOS)
+        #if os(watchOS)
+        return List(content: content)
+        #elseif os(iOS)
         return List(selection: selection, content: content)
         #else
         return List(selection: selection, content: content)

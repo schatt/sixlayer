@@ -588,36 +588,18 @@ public struct RuntimeCapabilityDetection {
     }
     
     private static func detectwatchOSVoiceOverSupport() -> Bool {
-        // Check if VoiceOver is available on watchOS
-        #if canImport(UIKit)
-        return withMainActorProbe {
-            UIAccessibility.isVoiceOverRunning
-        } ?? false
-        #else
-        return false
-        #endif
+        // VoiceOver exists on Apple Watch; UIAccessibility voice-over query APIs are unavailable on watchOS SDK.
+        return true
     }
     
     private static func detectwatchOSSwitchControlSupport() -> Bool {
-        // Check if Switch Control is available on watchOS
-        #if canImport(UIKit)
-        return withMainActorProbe {
-            UIAccessibility.isSwitchControlRunning
-        } ?? false
-        #else
+        // Switch Control is an iPhone/iPad-focused feature; avoid unavailable UIAccessibility APIs on watchOS.
         return false
-        #endif
     }
     
     private static func detectwatchOSAssistiveTouchSupport() -> Bool {
-        // Check if AssistiveTouch is available on watchOS
-        #if canImport(UIKit)
-        return withMainActorProbe {
-            UIAccessibility.isAssistiveTouchRunning
-        } ?? false
-        #else
+        // AssistiveTouch is not applicable to watchOS; avoid unavailable UIAccessibility APIs.
         return false
-        #endif
     }
     #endif
     
@@ -1078,7 +1060,9 @@ public struct RuntimeCapabilityDetection {
 
     private static func detectMediaHasMicrophoneInput() -> Bool {
         #if canImport(AVFoundation)
-        #if os(visionOS)
+        #if os(watchOS)
+        return false
+        #elseif os(visionOS)
         // `AVCaptureDevice.default(for:)` adopted for microphone on visionOS in 2.1 SDKs.
         if #available(visionOS 2.1, *) {
             return AVCaptureDevice.default(for: .audio) != nil
@@ -1114,6 +1098,7 @@ public struct RuntimeCapabilityDetection {
     }
 
     private static func detectPasteboardCanReadStrings() -> Bool {
+        // UIPasteboard is unavailable on tvOS and watchOS; use AppKit on macOS only.
         #if os(iOS) || os(visionOS)
         return withMainActorProbe {
             UIPasteboard.general.hasStrings
@@ -1557,14 +1542,10 @@ public extension RuntimeCapabilityDetection {
         // DTRT: Respect each platform's primary interaction model.
         //  - Touch-first (iOS/watchOS): always 44pt (Apple HIG).
         //  - Focus-first (tvOS): 60pt (Apple tvOS HIG focus target at 10-foot distance).
-        //  - Pointer/spatial (macOS/visionOS): 44pt if touch is detected at runtime,
-        //    else 0pt.
+        //  - visionOS: always 60pt (Apple visionOS HIG gaze+pinch minimum).
+        //  - Pointer-driven (macOS): 44pt if touch is detected at runtime, else 0pt.
         // Delegate to PlatformStrategy which already encodes these rules (Issue #237).
-        let platform = currentPlatform
-        if platform == .macOS || platform == .visionOS {
-            return supportsTouch ? 44.0 : 0.0
-        }
-        return platform.minTouchTarget
+        return currentPlatform.minTouchTarget
     }
     
     /// Hover delay for platforms that support hover

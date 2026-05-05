@@ -680,6 +680,13 @@ public struct DynamicTextField: View {
             .frame(minHeight: CGFloat(field.minLines * 20))
             .border(Color.gray.opacity(0.2))
             .automaticCompliance()
+        #elseif os(watchOS)
+        TextField("", text: field.textBinding(formState: formState), axis: .vertical)
+            .platformTextFieldStyle()
+            .lineLimit(field.minLines...field.maxLines)
+            .frame(minHeight: CGFloat(field.minLines * 20))
+            .border(Color.gray.opacity(0.2))
+            .automaticCompliance()
         #else
         TextEditor(text: field.textBinding(formState: formState))
             .frame(minHeight: CGFloat(field.minLines * 20))
@@ -1731,8 +1738,7 @@ public struct DynamicDataField: View {
 
     public var body: some View {
         platformVStackContainer(alignment: .leading, spacing: 8) {
-
-            EmptyView().platformTextEditor(text: Binding(
+            let dataTextBinding = Binding(
                 get: {
                     if let data = formState.fieldValues[field.id] as? Data {
                         return String(data: data, encoding: .utf8) ?? ""
@@ -1744,10 +1750,26 @@ public struct DynamicDataField: View {
                         formState.setValue(data, for: field.id)
                     }
                 }
-            ))
-            .frame(minHeight: 100)
-            .border(Color.gray.opacity(0.2))
-            .automaticCompliance(named: "DataInput")
+            )
+
+            #if os(tvOS)
+            EmptyView().platformTextEditor(text: dataTextBinding, prompt: "")
+                .frame(minHeight: 100)
+                .border(Color.gray.opacity(0.2))
+                .automaticCompliance(named: "DataInput")
+            #elseif os(watchOS)
+            TextField("", text: dataTextBinding, axis: .vertical)
+                .platformTextFieldStyle()
+                .lineLimit(4...24)
+                .frame(minHeight: 100)
+                .border(Color.gray.opacity(0.2))
+                .automaticCompliance(named: "DataInput")
+            #else
+            TextEditor(text: dataTextBinding)
+                .frame(minHeight: 100)
+                .border(Color.gray.opacity(0.2))
+                .automaticCompliance(named: "DataInput")
+            #endif
 
             if let data = formState.fieldValues[field.id] as? Data {
                 Text("Data size: \(data.count) bytes")
@@ -1932,6 +1954,7 @@ public struct DynamicColorField: View {
                     formState.setValue(hex, for: field.id)
                 }
             )
+
             #if os(tvOS)
             EmptyView().platformColorInput(
                 label: field.placeholder ?? i18n.placeholderSelectColor(),
@@ -1941,9 +1964,18 @@ public struct DynamicColorField: View {
             Text(colorValue)
                 .font(.caption)
                 .foregroundStyle(.secondary)
+            #elseif os(watchOS)
+            WatchOSHexWheelPicker(
+                label: field.placeholder ?? i18n.placeholderSelectColor(),
+                hex: Binding(
+                    get: { formState.fieldValues[field.id] as? String ?? "#000000" },
+                    set: { formState.setValue($0, for: field.id) }
+                )
+            )
+            .automaticCompliance(named: "ColorPicker")
             #else
             ColorPicker(field.placeholder ?? i18n.placeholderSelectColor(), selection: colorSelection)
-            .automaticCompliance(named: "ColorPicker")
+                .automaticCompliance(named: "ColorPicker")
             #endif
 
             Rectangle()
