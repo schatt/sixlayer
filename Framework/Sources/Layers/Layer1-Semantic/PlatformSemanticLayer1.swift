@@ -1375,13 +1375,24 @@ private func createSimpleFieldView(for field: DynamicFormField, hints: Presentat
             case .select:
                 // Use platformPicker helper to automatically apply accessibility (Issue #163)
                 if let options = field.options, !options.isEmpty {
-                    platformPicker(
-                        label: field.label,
-                        selection: Binding.constant(""),
-                        options: options,
-                        pickerName: "Layer1SelectField",
-                        style: MenuPickerStyle()
-                    )
+                    Group {
+                        #if os(watchOS)
+                        platformPicker(
+                            label: field.label,
+                            selection: Binding.constant(""),
+                            options: options,
+                            pickerName: "Layer1SelectField"
+                        )
+                        #else
+                        platformPicker(
+                            label: field.label,
+                            selection: Binding.constant(""),
+                            options: options,
+                            pickerName: "Layer1SelectField",
+                            style: MenuPickerStyle()
+                        )
+                        #endif
+                    }
                     .automaticCompliance(
                         identifierElementType: "Picker",
                         accessibilityLabel: field.label  // Issue #156: Parameter-based approach
@@ -2395,13 +2406,24 @@ public struct GenericFormView: View {
                             case .select:
                                 // Use platformPicker helper to automatically apply accessibility (Issue #163)
                                 if let options = field.options, !options.isEmpty {
-                                    platformPicker(
-                                        label: field.label,
-                                        selection: .constant(""),
-                                        options: options,
-                                        pickerName: "GenericFormSelectField",
-                                        style: MenuPickerStyle()
-                                    )
+                                    Group {
+                                        #if os(watchOS)
+                                        platformPicker(
+                                            label: field.label,
+                                            selection: .constant(""),
+                                            options: options,
+                                            pickerName: "GenericFormSelectField"
+                                        )
+                                        #else
+                                        platformPicker(
+                                            label: field.label,
+                                            selection: .constant(""),
+                                            options: options,
+                                            pickerName: "GenericFormSelectField",
+                                            style: MenuPickerStyle()
+                                        )
+                                        #endif
+                                    }
                                 } else {
                                     // Fallback if no options
                                     Text("No options available")
@@ -2587,13 +2609,24 @@ public struct ModalFormView: View {
                 case .select:
                     // Use platformPicker helper to automatically apply accessibility (Issue #163)
                     if let options = field.options, !options.isEmpty {
-                        platformPicker(
-                            label: field.label,
-                            selection: .constant(""),
-                            options: options,
-                            pickerName: "Layer1SelectField",
-                            style: MenuPickerStyle()
-                        )
+                        Group {
+                            #if os(watchOS)
+                            platformPicker(
+                                label: field.label,
+                                selection: .constant(""),
+                                options: options,
+                                pickerName: "Layer1SelectField"
+                            )
+                            #else
+                            platformPicker(
+                                label: field.label,
+                                selection: .constant(""),
+                                options: options,
+                                pickerName: "Layer1SelectField",
+                                style: MenuPickerStyle()
+                            )
+                            #endif
+                        }
                         .automaticCompliance(
                             identifierElementType: "Picker",
                             accessibilityLabel: field.label  // Issue #156: Parameter-based approach
@@ -2799,13 +2832,24 @@ public struct ModalFormView: View {
                     let i18n = InternationalizationService()
                     // Use platformPicker helper to automatically apply accessibility (Issue #163)
                     if let options = field.options, !options.isEmpty {
-                        platformPicker(
-                            label: field.label,
-                            selection: .constant(""),
-                            options: options,
-                            pickerName: "GenericFormEnumField",
-                            style: MenuPickerStyle()
-                        )
+                        Group {
+                            #if os(watchOS)
+                            platformPicker(
+                                label: field.label,
+                                selection: .constant(""),
+                                options: options,
+                                pickerName: "GenericFormEnumField"
+                            )
+                            #else
+                            platformPicker(
+                                label: field.label,
+                                selection: .constant(""),
+                                options: options,
+                                pickerName: "GenericFormEnumField",
+                                style: MenuPickerStyle()
+                            )
+                            #endif
+                        }
                         .automaticCompliance(
                             identifierElementType: "View",
                             accessibilityLabel: field.label  // Issue #156: Parameter-based approach
@@ -3141,13 +3185,24 @@ public struct SimpleFormView: View {
                     Group {
                         if !field.options.isEmpty {
                             let i18nSelect = InternationalizationService()
-                            platformPicker(
-                                label: field.label,
-                                selection: field.$value,
-                                options: field.options,
-                                pickerName: "Layer1SelectField",
-                                style: MenuPickerStyle()
-                            )
+                            Group {
+                                #if os(watchOS)
+                                platformPicker(
+                                    label: field.label,
+                                    selection: field.$value,
+                                    options: field.options,
+                                    pickerName: "Layer1SelectField"
+                                )
+                                #else
+                                platformPicker(
+                                    label: field.label,
+                                    selection: field.$value,
+                                    options: field.options,
+                                    pickerName: "Layer1SelectField",
+                                    style: MenuPickerStyle()
+                                )
+                                #endif
+                            }
                             .automaticCompliance(
                                 identifierElementType: "Picker",
                                 accessibilityLabel: field.label  // Issue #156: Parameter-based approach
@@ -3453,13 +3508,24 @@ public struct SimpleFormView: View {
                     // Use platformPicker helper to automatically apply accessibility (Issue #163)
                     if !field.options.isEmpty {
                         let i18n = InternationalizationService()
-                        platformPicker(
-                            label: field.label,
-                            selection: field.$value,
-                            options: field.options,
-                            pickerName: "Layer1EnumField",
-                            style: MenuPickerStyle()
-                        )
+                        Group {
+                            #if os(watchOS)
+                            platformPicker(
+                                label: field.label,
+                                selection: field.$value,
+                                options: field.options,
+                                pickerName: "Layer1EnumField"
+                            )
+                            #else
+                            platformPicker(
+                                label: field.label,
+                                selection: field.$value,
+                                options: field.options,
+                                pickerName: "Layer1EnumField",
+                                style: MenuPickerStyle()
+                            )
+                            #endif
+                        }
                         .automaticCompliance(
                             identifierElementType: "View",
                             accessibilityLabel: field.label  // Issue #156: Parameter-based approach
@@ -4645,16 +4711,30 @@ struct GenericSettingsItemView: View {
                 // Use platformPicker helper to automatically apply accessibility (Issue #163)
                 Group {
                     if let options = item.options, !options.isEmpty {
-                        platformPicker(
-                            label: item.title,
-                            selection: Binding(
-                                get: { value as? String ?? options.first ?? "" },
-                                set: { value = $0 }
-                            ),
-                            options: options,
-                            pickerName: "Layer1SelectItem",
-                            style: MenuPickerStyle()
-                        )
+                        Group {
+                            #if os(watchOS)
+                            platformPicker(
+                                label: item.title,
+                                selection: Binding(
+                                    get: { value as? String ?? options.first ?? "" },
+                                    set: { value = $0 }
+                                ),
+                                options: options,
+                                pickerName: "Layer1SelectItem"
+                            )
+                            #else
+                            platformPicker(
+                                label: item.title,
+                                selection: Binding(
+                                    get: { value as? String ?? options.first ?? "" },
+                                    set: { value = $0 }
+                                ),
+                                options: options,
+                                pickerName: "Layer1SelectItem",
+                                style: MenuPickerStyle()
+                            )
+                            #endif
+                        }
                         .disabled(!item.isEnabled)
                     }
                 }

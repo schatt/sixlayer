@@ -1180,7 +1180,7 @@ public extension View {
     /// Maps ``SixLayerTextContentType`` to the system text content type when UIKit is available.
     @ViewBuilder
     func platformTextContentType(_ contentType: SixLayerTextContentType) -> some View {
-        #if canImport(UIKit)
+        #if os(iOS) && canImport(UIKit)
         self.textContentType(contentType.uiTextContentType)
         #else
         self
@@ -1915,6 +1915,43 @@ public extension View {
 
 // MARK: - Platform Picker Functions
 
+/// Shared picker implementation (no default `MenuPickerStyle` / `WheelPickerStyle` — watchOS cannot use menu style).
+@ViewBuilder
+fileprivate func platformPickerCore<SelectionValue: Hashable, Option: Hashable, S: SwiftUI.PickerStyle>(
+    label: String,
+    selection: Binding<SelectionValue>,
+    options: [Option],
+    optionTag: @escaping (Option) -> SelectionValue,
+    optionLabel: @escaping (Option) -> String,
+    pickerName: String?,
+    style: S
+) -> some View {
+    let selectedValue: String? = {
+        if let selectedOption = options.first(where: { optionTag($0) == selection.wrappedValue }) {
+            return optionLabel(selectedOption)
+        }
+        return nil
+    }()
+
+    SwiftUI.Picker(label, selection: selection) {
+        ForEach(options, id: \.self) { option in
+            let optionText = optionLabel(option)
+            let segmentIdentifierName = sanitizeLabelText(optionText)
+            Text(optionText)
+                .tag(optionTag(option))
+                .automaticCompliance(
+                    identifierName: segmentIdentifierName
+                )
+        }
+    }
+    .pickerStyle(style)
+    .automaticCompliance(
+        named: pickerName ?? "Picker",
+        accessibilityHint: generateAccessibilityHintForPicker(label: label, pickerName: pickerName),
+        accessibilityValue: selectedValue
+    )
+}
+
 /// Platform-specific picker with automatic accessibility compliance (generic implementation)
 /// Fixes #163: Automatically applies accessibility identifiers and labels to both
 /// the picker and its segments, following the Stack Overflow pattern for segmented pickers.
@@ -2204,9 +2241,9 @@ public extension View {
     }
 
     /// Platform-specific text selection wrapper.
-    /// tvOS returns an unmodified view because `TextSelectability` / `.textSelection` are unavailable there.
+    /// tvOS and watchOS return an unmodified view because `TextSelectability` / `.textSelection` are unavailable there.
     func platformTextSelection(_ policy: SixLayerTextSelectionPolicy) -> AnyView {
-        #if os(tvOS)
+        #if os(tvOS) || os(watchOS)
         AnyView(self)
         #else
         let selectability: TextSelectability = switch policy {

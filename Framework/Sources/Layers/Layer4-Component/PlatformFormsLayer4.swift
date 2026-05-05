@@ -117,6 +117,10 @@ public extension View {
         Text(selection.wrappedValue, format: .dateTime.hour().minute())
             .foregroundStyle(.secondary)
             .selfLabelingControl(label: label)
+        #elseif os(watchOS)
+        Text(selection.wrappedValue, format: .dateTime.hour().minute())
+            .foregroundStyle(.secondary)
+            .selfLabelingControl(label: label)
         #else
         DatePicker("", selection: selection, displayedComponents: .hourAndMinute)
             .datePickerStyle(.compact)
@@ -130,6 +134,10 @@ public extension View {
         label: String
     ) -> some View {
         #if os(tvOS)
+        Text(selection.wrappedValue, format: .dateTime.year().month().day().hour().minute())
+            .foregroundStyle(.secondary)
+            .selfLabelingControl(label: label)
+        #elseif os(watchOS)
         Text(selection.wrappedValue, format: .dateTime.year().month().day().hour().minute())
             .foregroundStyle(.secondary)
             .selfLabelingControl(label: label)
@@ -161,7 +169,7 @@ public extension View {
         label: String,
         selection: Binding<Color>
     ) -> some View {
-        #if os(tvOS)
+        #if os(tvOS) || os(watchOS)
         Text(label)
             .foregroundStyle(selection.wrappedValue)
         #else

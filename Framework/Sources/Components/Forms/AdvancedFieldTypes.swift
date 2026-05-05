@@ -616,10 +616,23 @@ public struct DatePickerField: View {
             )
             .datePickerStyle(.wheel)
             .selfLabelingControl(label: field.label)
+            .onChange(of: selectedDate) { newDate in
+                let formatter = DateFormatter()
+                formatter.dateStyle = .medium
+                formState.setValue(formatter.string(from: newDate), for: field.id)
+            }
+            .onAppear {
+                if let existingValue: String = formState.getValue(for: field.id) {
+                    let formatter = DateFormatter()
+                    formatter.dateStyle = .medium
+                    if let date = formatter.date(from: existingValue) {
+                        selectedDate = date
+                    }
+                }
+            }
             #else
             platformDateInput(selection: $selectedDate, label: field.label)
-            #endif
-            .onChange(of: selectedDate) { oldValue, newDate in
+            .onChange(of: selectedDate) { newDate in
                 let formatter = DateFormatter()
                 formatter.dateStyle = .medium
                 formState.setValue(formatter.string(from: newDate), for: field.id)
@@ -634,6 +647,7 @@ public struct DatePickerField: View {
                     }
                 }
             }
+            #endif
         }
         .automaticCompliance()
     }
@@ -662,10 +676,23 @@ public struct TimePickerField: View {
             )
             .datePickerStyle(.wheel)
             .selfLabelingControl(label: field.label)
+            .onChange(of: selectedTime) { newTime in
+                let formatter = DateFormatter()
+                formatter.timeStyle = .short
+                formState.setValue(formatter.string(from: newTime), for: field.id)
+            }
+            .onAppear {
+                if let existingValue: String = formState.getValue(for: field.id) {
+                    let formatter = DateFormatter()
+                    formatter.timeStyle = .short
+                    if let time = formatter.date(from: existingValue) {
+                        selectedTime = time
+                    }
+                }
+            }
             #else
             platformTimeInput(selection: $selectedTime, label: field.label)
-            #endif
-            .onChange(of: selectedTime) { oldValue, newTime in
+            .onChange(of: selectedTime) { newTime in
                 let formatter = DateFormatter()
                 formatter.timeStyle = .short
                 formState.setValue(formatter.string(from: newTime), for: field.id)
@@ -680,6 +707,7 @@ public struct TimePickerField: View {
                     }
                 }
             }
+            #endif
         }
         .automaticCompliance()
     }
@@ -708,10 +736,25 @@ public struct DateTimePickerField: View {
             )
             .datePickerStyle(.wheel)
             .selfLabelingControl(label: field.label)
+            .onChange(of: selectedDateTime) { newDateTime in
+                let formatter = DateFormatter()
+                formatter.dateStyle = .medium
+                formatter.timeStyle = .short
+                formState.setValue(formatter.string(from: newDateTime), for: field.id)
+            }
+            .onAppear {
+                if let existingValue: String = formState.getValue(for: field.id) {
+                    let formatter = DateFormatter()
+                    formatter.dateStyle = .medium
+                    formatter.timeStyle = .short
+                    if let dateTime = formatter.date(from: existingValue) {
+                        selectedDateTime = dateTime
+                    }
+                }
+            }
             #else
             platformDateTimeInput(selection: $selectedDateTime, label: field.label)
-            #endif
-            .onChange(of: selectedDateTime) { oldValue, newDateTime in
+            .onChange(of: selectedDateTime) { newDateTime in
                 let formatter = DateFormatter()
                 formatter.dateStyle = .medium
                 formatter.timeStyle = .short
@@ -728,6 +771,7 @@ public struct DateTimePickerField: View {
                     }
                 }
             }
+            #endif
         }
         .automaticCompliance()
     }
