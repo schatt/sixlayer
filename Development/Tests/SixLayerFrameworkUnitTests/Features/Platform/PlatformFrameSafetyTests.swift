@@ -42,7 +42,10 @@ private func expectUIKitHostedRootIfAvailable<V: View>(_ view: V, _ message: Str
     #if os(watchOS)
     _ = view
     #else
-    #expect(TestSetupUtilities.hostRootPlatformView(view) != nil, message)
+    // `#expect`'s trailing comment overload requires literals; callers still pass human context.
+    let installed = TestSetupUtilities.hostRootPlatformView(view)
+    #expect(installed != nil)
+    _ = message
     #endif
 }
 
