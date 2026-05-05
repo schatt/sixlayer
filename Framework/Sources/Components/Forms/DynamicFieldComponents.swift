@@ -1750,26 +1750,7 @@ public struct DynamicDataField: View {
     public var body: some View {
         platformVStackContainer(alignment: .leading, spacing: 8) {
 
-            #if os(tvOS)
-            TextField("", text: Binding(
-                get: {
-                    if let data = formState.fieldValues[field.id] as? Data {
-                        return String(data: data, encoding: .utf8) ?? ""
-                    }
-                    return ""
-                },
-                set: { newValue in
-                    if let data = newValue.data(using: .utf8) {
-                        formState.setValue(data, for: field.id)
-                    }
-                }
-            ))
-            .platformTextFieldStyle()
-            .frame(minHeight: 100)
-            .border(Color.gray.opacity(0.2))
-            .automaticCompliance(named: "DataInput")
-            #else
-            TextEditor(text: Binding(
+            EmptyView().platformTextEditor(text: Binding(
                 get: {
                     if let data = formState.fieldValues[field.id] as? Data {
                         return String(data: data, encoding: .utf8) ?? ""
@@ -1785,7 +1766,6 @@ public struct DynamicDataField: View {
             .frame(minHeight: 100)
             .border(Color.gray.opacity(0.2))
             .automaticCompliance(named: "DataInput")
-            #endif
 
             if let data = formState.fieldValues[field.id] as? Data {
                 Text("Data size: \(data.count) bytes")
