@@ -45,7 +45,7 @@ public struct NativeExpandableCardView<Item: Identifiable>: View {
         .onTapGesture {
             handleTap()
         }
-        #if !os(tvOS)
+        #if !os(tvOS) && !os(watchOS)
         .onHover { hovering in
             if platformConfig.supportsHover {
                 isHovered = hovering

@@ -187,24 +187,47 @@ public struct PlatformUIExamples {
                 VStack(spacing: 0) {
                     // Style picker - use platformPicker for automatic accessibility (Issue #163)
                     let listStyles: [ListStyle] = [.adaptive, .plain, .grouped, .insetGrouped, .sidebar, .carousel]
-                    platformPicker(
-                        label: "List Style",
-                        selection: $selectedStyle,
-                        options: listStyles,
-                        optionTag: { $0 },
-                        optionLabel: { style in
-                            switch style {
-                            case .adaptive: return "Adaptive"
-                            case .plain: return "Plain"
-                            case .grouped: return "Grouped"
-                            case .insetGrouped: return "Inset Grouped"
-                            case .sidebar: return "Sidebar"
-                            case .carousel: return "Carousel"
-                            }
-                        },
-                        pickerName: "ListStylePicker",
-                        style: SegmentedPickerStyle()
-                    )
+                    Group {
+                        #if os(watchOS)
+                        platformPicker(
+                            label: "List Style",
+                            selection: $selectedStyle,
+                            options: listStyles,
+                            optionTag: { $0 },
+                            optionLabel: { style in
+                                switch style {
+                                case .adaptive: return "Adaptive"
+                                case .plain: return "Plain"
+                                case .grouped: return "Grouped"
+                                case .insetGrouped: return "Inset Grouped"
+                                case .sidebar: return "Sidebar"
+                                case .carousel: return "Carousel"
+                                }
+                            },
+                            pickerName: "ListStylePicker",
+                            style: WheelPickerStyle()
+                        )
+                        #else
+                        platformPicker(
+                            label: "List Style",
+                            selection: $selectedStyle,
+                            options: listStyles,
+                            optionTag: { $0 },
+                            optionLabel: { style in
+                                switch style {
+                                case .adaptive: return "Adaptive"
+                                case .plain: return "Plain"
+                                case .grouped: return "Grouped"
+                                case .insetGrouped: return "Inset Grouped"
+                                case .sidebar: return "Sidebar"
+                                case .carousel: return "Carousel"
+                                }
+                            },
+                            pickerName: "ListStylePicker",
+                            style: SegmentedPickerStyle()
+                        )
+                        #endif
+                    }
                     .padding()
                     
                     Divider()

@@ -270,6 +270,7 @@ targets:
           - "ViewInspectorTests/**/CoreDataTestingGuide.md"
           - "ViewInspectorTests/**"  # Exclude ViewInspector tests - they have their own scheme
           - "Utilities/Debug/EnvironmentVariableDebugTests.swift"  # ViewInspector debug; match iOS/macOS unit (#248)
+          - "Layers/Layer4-Component/Layer4SemanticAccessibilityCriterionTests.swift"  # UIKit UIView hosting a11y traversal; watchOS has no UIHostingController (#233)
     settings:
       PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.framework.unit-tests
       SWIFT_VERSION: "6.0"
@@ -279,6 +280,8 @@ targets:
       ENABLE_TESTING_SEARCH_PATHS: YES
     dependencies:
       - target: SixLayerFramework_watchOS
+      - package: ViewInspector
+        product: ViewInspector
 
   # Unit tests - visionOS
   SixLayerFrameworkUnitTests_visionOS:
@@ -537,6 +540,8 @@ targets:
       ENABLE_TESTING_SEARCH_PATHS: YES
     dependencies:
       - target: SixLayerFramework_watchOS
+      - package: ViewInspector
+        product: ViewInspector
 
   # External integration tests - visionOS
   SixLayerFrameworkExternalIntegrationTests_visionOS:
@@ -810,9 +815,10 @@ schemes:
         SixLayerFramework_visionOS: all
     test:
       targets:
+        # Parallel + random on visionOS Simulator often leaves many unit tests as "not run" (Xcode rdar-style behavior; epic #233).
         - name: SixLayerFrameworkUnitTests_visionOS
-          parallelizable: true
-          randomExecutionOrder: true
+          parallelizable: false
+          randomExecutionOrder: false
         - name: SixLayerFrameworkExternalIntegrationTests_visionOS
           parallelizable: true
           randomExecutionOrder: true
@@ -829,8 +835,8 @@ schemes:
     test:
       targets:
         - name: SixLayerFrameworkUnitTests_visionOS
-          parallelizable: true
-          randomExecutionOrder: true
+          parallelizable: false
+          randomExecutionOrder: false
         - name: SixLayerFrameworkUITests_visionOS
           parallelizable: true
           randomExecutionOrder: true
@@ -846,5 +852,5 @@ schemes:
     test:
       targets:
         - name: SixLayerFrameworkUnitTests_visionOS
-          parallelizable: true
-          randomExecutionOrder: true
+          parallelizable: false
+          randomExecutionOrder: false

@@ -67,17 +67,16 @@ public enum PlatformFrameHelpers {
         // watchOS: Use WKInterfaceDevice for accurate screen size
         let screenSize = WKInterfaceDevice.current().screenBounds.size
         #elseif os(tvOS)
-        // tvOS: use screen bounds (single-screen fullscreen environment)
+        // tvOS: Use UIScreen for full-screen layout bounds.
         let screenSize = UIScreen.main.bounds.size
         #else
-        // visionOS: prefer the active window scene size, with UIScreen fallback.
-        // This mirrors iOS split/stage-manager style sizing behavior.
+        // visionOS: prefer window scene bounds; avoid UIScreen on this SDK (#239/#240).
         let screenSize: CGSize
         if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
            let window = windowScene.windows.first {
             screenSize = window.bounds.size
         } else {
-            screenSize = UIScreen.main.bounds.size
+            screenSize = CGSize(width: 1280, height: 720)
         }
         #endif
         

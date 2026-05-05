@@ -26,7 +26,10 @@ public enum SixLayerPlatform: String, CaseIterable, Sendable {
     
     /// Current platform detection (compile-time only)
     public static var current: SixLayerPlatform {
-        #if os(iOS)
+        // visionOS must precede iOS: on some SDKs `#if os(iOS)` is also true for visionOS targets.
+        #if os(visionOS)
+        return .visionOS
+        #elseif os(iOS)
         return .iOS
         #elseif os(macOS)
         return .macOS
@@ -34,8 +37,6 @@ public enum SixLayerPlatform: String, CaseIterable, Sendable {
         return .watchOS
         #elseif os(tvOS)
         return .tvOS
-        #elseif os(visionOS)
-        return .visionOS
         #else
         return .iOS // Default fallback
         #endif
@@ -68,8 +69,7 @@ public enum SixLayerPlatform: String, CaseIterable, Sendable {
         case .tvOS:
             return .tv
         case .visionOS:
-            // visionOS doesn't have a specific DeviceType, use tv as placeholder
-            return .tv
+            return .vision
         }
     }
 }
@@ -89,7 +89,10 @@ public enum DeviceType: String, CaseIterable, Sendable {
     /// Current device type detection
     @MainActor
     public static var current: DeviceType {
-        #if os(iOS)
+        // visionOS must precede iOS: UIKit idiom checks are not meaningful for spatial devices.
+        #if os(visionOS)
+        return .vision
+        #elseif os(iOS)
         // Check for CarPlay first
         if CarPlayCapabilityDetection.isCarPlayActive {
             return .car
@@ -118,7 +121,9 @@ public enum DeviceType: String, CaseIterable, Sendable {
         let minDimension = min(width, height)
         let maxDimension = max(width, height)
         
-        #if os(iOS)
+        #if os(visionOS)
+        return .vision
+        #elseif os(iOS)
         // iOS device detection based on screen dimensions
         if minDimension >= 768 {
             return .pad
@@ -159,7 +164,9 @@ public enum DeviceContext: String, CaseIterable {
     /// Current device context detection
     @MainActor
     public static var current: DeviceContext {
-        #if os(iOS)
+        #if os(visionOS)
+        return .standard
+        #elseif os(iOS)
         // Check for CarPlay
         if CarPlayCapabilityDetection.isCarPlayActive {
             return .carPlay
@@ -203,7 +210,7 @@ public struct CarPlayCapabilityDetection {
     /// Whether CarPlay is currently active
     @MainActor
     public static var isCarPlayActive: Bool {
-        #if os(iOS)
+        #if os(iOS) && !os(visionOS)
         if #available(iOS 14.0, *) {
             // Check if we're in a CarPlay context
             if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
@@ -218,7 +225,7 @@ public struct CarPlayCapabilityDetection {
     
     /// Whether the app supports CarPlay
     public static var supportsCarPlay: Bool {
-        #if os(iOS)
+        #if os(iOS) && !os(visionOS)
         if #available(iOS 14.0, *) {
             return true
         }
@@ -329,7 +336,7 @@ public enum KeyboardType: String, CaseIterable {
     
     /// Platform-specific decimal keyboard type
         static func platformDecimalKeyboardType() -> KeyboardType {
-        #if os(iOS)
+        #if os(iOS) || os(visionOS)
         return .decimalPad
         #else
         return .default
@@ -404,7 +411,7 @@ public struct PlatformDeviceCapabilities {
     
     /// Whether the device supports haptic feedback
     public static var supportsHapticFeedback: Bool {
-        #if os(iOS)
+        #if os(iOS) && !os(visionOS)
         return true
         #else
         return false
@@ -422,7 +429,7 @@ public struct PlatformDeviceCapabilities {
     
     /// Whether the device supports context menus
     public static var supportsContextMenus: Bool {
-        #if os(macOS) || os(iOS)
+        #if os(macOS) || os(iOS) || os(visionOS)
         return true
         #else
         return false
@@ -848,6 +855,14 @@ public struct PlatformImage: @unchecked Sendable {
         NSRect(origin: .zero, size: size).fill()
         nsImage.unlockFocus()
         return PlatformImage(nsImage: nsImage)
+        #elseif os(watchOS)
+        let size = CGSize(width: 100, height: 100)
+        UIGraphicsBeginImageContextWithOptions(size, false, 1)
+        UIColor.blue.setFill()
+        UIRectFill(CGRect(origin: .zero, size: size))
+        let uiImage = UIGraphicsGetImageFromCurrentImageContext() ?? UIImage()
+        UIGraphicsEndImageContext()
+        return PlatformImage(uiImage: uiImage)
         #else
         let size = CGSize(width: 100, height: 100)
         let renderer = UIGraphicsImageRenderer(size: size)

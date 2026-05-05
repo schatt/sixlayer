@@ -25,7 +25,7 @@ import Testing
 //
 
 import SwiftUI
-#if os(iOS)
+#if os(iOS) || os(watchOS)
 import UIKit
 #elseif os(macOS)
 import AppKit
@@ -257,7 +257,7 @@ open class PlatformPhotoComponentsLayer4IntegrationTests: BaseTestClass {
     // 6LAYER_ALLOW: test helper using platform-specific image rendering APIs
     private func createTestPlatformImage() -> PlatformImage {
         // Create a simple test image for unit testing
-        #if os(iOS)
+        #if os(iOS) || os(visionOS)
         let size = CGSize(width: 100, height: 100)
         let renderer = UIGraphicsImageRenderer(size: size) // 6LAYER_ALLOW: test helper using platform-specific image rendering APIs
         let uiImage = renderer.image { context in
@@ -272,6 +272,14 @@ open class PlatformPhotoComponentsLayer4IntegrationTests: BaseTestClass {
         NSColor.blue.drawSwatch(in: NSRect(origin: .zero, size: size)) // 6LAYER_ALLOW: test helper using platform-specific image rendering APIs
         nsImage.unlockFocus()
         return PlatformImage(nsImage: nsImage)
+        #elseif os(watchOS)
+        let size = CGSize(width: 100, height: 100)
+        UIGraphicsBeginImageContextWithOptions(size, false, 0)
+        defer { UIGraphicsEndImageContext() }
+        UIColor.blue.setFill()
+        UIRectFill(CGRect(origin: .zero, size: size))
+        guard let uiImage = UIGraphicsGetImageFromCurrentImageContext() else { return PlatformImage() }
+        return PlatformImage(uiImage: uiImage)
         #else
         return PlatformImage()
         #endif
@@ -283,7 +291,7 @@ open class PlatformPhotoComponentsLayer4IntegrationTests: BaseTestClass {
     }
     
     private func createRealImageData() -> Data {
-        #if os(iOS)
+        #if os(iOS) || os(visionOS)
         let size = CGSize(width: 200, height: 200)
         let renderer = UIGraphicsImageRenderer(size: size)
         let uiImage = renderer.image { context in
@@ -304,6 +312,14 @@ open class PlatformPhotoComponentsLayer4IntegrationTests: BaseTestClass {
             return Data()
         }
         return jpegData
+        #elseif os(watchOS)
+        let size = CGSize(width: 200, height: 200)
+        UIGraphicsBeginImageContextWithOptions(size, false, 0)
+        defer { UIGraphicsEndImageContext() }
+        UIColor.blue.setFill()
+        UIRectFill(CGRect(origin: .zero, size: size))
+        guard let uiImage = UIGraphicsGetImageFromCurrentImageContext() else { return Data() }
+        return uiImage.jpegData(compressionQuality: 0.8) ?? Data()
         #else
         return Data()
         #endif

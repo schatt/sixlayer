@@ -14,7 +14,7 @@ extension View {
     /// doesn't have to branch on platform.
     @ViewBuilder
     fileprivate func l1SemanticTextFieldBorderStyle() -> some View {
-        #if os(tvOS)
+        #if os(tvOS) || os(watchOS)
         self.textFieldStyle(.plain)
         #else
         self.textFieldStyle(.roundedBorder)
@@ -1327,7 +1327,7 @@ private func createSimpleFieldView(for field: DynamicFormField, hints: Presentat
                         identifierElementType: "TextField",
                         accessibilityLabel: field.label  // Issue #156: Parameter-based approach
                     )
-                    #if canImport(UIKit)
+                    #if canImport(UIKit) && !os(watchOS)
                     .textContentType(textContentType.uiTextContentType)
                     #endif
             }
@@ -1360,8 +1360,21 @@ private func createSimpleFieldView(for field: DynamicFormField, hints: Presentat
                     )
                 #endif
             case .textarea, .richtext:
-                #if os(tvOS)
+                #if os(tvOS) || os(watchOS)
                 TextField(field.placeholder ?? "", text: .constant(field.defaultValue ?? ""))
+                    .frame(minHeight: 80)
+                    .applyFieldHints(fieldHints)
+                    .automaticCompliance(
+                        identifierElementType: "TextField",
+                        accessibilityLabel: field.label  // Issue #156: Parameter-based approach
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 8)
+                            .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                    )
+                #elseif os(watchOS)
+                TextField(field.placeholder ?? "", text: .constant(field.defaultValue ?? ""), axis: .vertical)
+                    .lineLimit(4...12)
                     .frame(minHeight: 80)
                     .applyFieldHints(fieldHints)
                     .automaticCompliance(
@@ -1399,8 +1412,7 @@ private func createSimpleFieldView(for field: DynamicFormField, hints: Presentat
                         label: field.label,
                         selection: .constant(""),
                         options: options,
-                        pickerName: "Layer1SelectField",
-                        style: MenuPickerStyle()
+                        pickerName: "Layer1SelectField"
                     )
                     .automaticCompliance(
                         identifierElementType: "Picker",
@@ -1413,9 +1425,17 @@ private func createSimpleFieldView(for field: DynamicFormField, hints: Presentat
                 }
             case .date:
                 let i18n = InternationalizationService()
-                #if os(tvOS)
+                #if os(tvOS) || os(watchOS)
                 Text(Date(), format: .dateTime.year().month().day())
                     .foregroundStyle(.secondary)
+                    .selfLabelingControl(label: field.placeholder ?? i18n.placeholderSelectDate())
+                    .automaticComplianceForDynamicFormField(
+                        field,
+                        identifierElementType: "DatePicker",
+                        accessibilityLabel: field.label
+                    )
+                #elseif os(watchOS)
+                DatePicker("", selection: .constant(Date()))
                     .selfLabelingControl(label: field.placeholder ?? i18n.placeholderSelectDate())
                     .automaticComplianceForDynamicFormField(
                         field,
@@ -1435,9 +1455,17 @@ private func createSimpleFieldView(for field: DynamicFormField, hints: Presentat
             case .multiDate, .dateRange:
                 // Use DatePicker as fallback for Layer1 (MultiDatePicker requires iOS 16+)
                 let i18n = InternationalizationService()
-                #if os(tvOS)
+                #if os(tvOS) || os(watchOS)
                 Text(Date(), format: .dateTime.year().month().day())
                     .foregroundStyle(.secondary)
+                    .selfLabelingControl(label: field.placeholder ?? i18n.placeholderSelectDates())
+                    .automaticComplianceForDynamicFormField(
+                        field,
+                        identifierElementType: "DatePicker",
+                        accessibilityLabel: field.label
+                    )
+                #elseif os(watchOS)
+                DatePicker("", selection: .constant(Date()))
                     .selfLabelingControl(label: field.placeholder ?? i18n.placeholderSelectDates())
                     .automaticComplianceForDynamicFormField(
                         field,
@@ -1456,9 +1484,17 @@ private func createSimpleFieldView(for field: DynamicFormField, hints: Presentat
                 #endif
             case .time:
                 let i18n = InternationalizationService()
-                #if os(tvOS)
+                #if os(tvOS) || os(watchOS)
                 Text(Date(), format: .dateTime.hour().minute())
                     .foregroundStyle(.secondary)
+                    .selfLabelingControl(label: field.placeholder ?? i18n.placeholderSelectTime())
+                    .automaticComplianceForDynamicFormField(
+                        field,
+                        identifierElementType: "DatePicker",
+                        accessibilityLabel: field.label
+                    )
+                #elseif os(watchOS)
+                DatePicker("", selection: .constant(Date()), displayedComponents: .hourAndMinute)
                     .selfLabelingControl(label: field.placeholder ?? i18n.placeholderSelectTime())
                     .automaticComplianceForDynamicFormField(
                         field,
@@ -1476,7 +1512,7 @@ private func createSimpleFieldView(for field: DynamicFormField, hints: Presentat
                     )
                 #endif
             case .color:
-                #if os(tvOS)
+                #if os(tvOS) || os(watchOS)
                 Text(field.label)
                     .foregroundStyle(.secondary)
                     .automaticComplianceForDynamicFormField(
@@ -1484,6 +1520,17 @@ private func createSimpleFieldView(for field: DynamicFormField, hints: Presentat
                         identifierElementType: "ColorPicker",
                         accessibilityLabel: field.label
                     )
+                #elseif os(watchOS)
+                WatchOSHexWheelPicker(
+                    label: field.label,
+                    hex: .constant(WatchOSFormPresetHexColor.normalizedHex(for: field.defaultValue ?? WatchOSFormPresetHexColor.blue.rawValue))
+                )
+                .selfLabelingControl(label: field.label)
+                .automaticComplianceForDynamicFormField(
+                    field,
+                    identifierElementType: "ColorPicker",
+                    accessibilityLabel: field.label
+                )
                 #else
                 ColorPicker("", selection: .constant(.blue))
                     .selfLabelingControl(label: field.label)
@@ -1538,6 +1585,31 @@ private func createSimpleFieldView(for field: DynamicFormField, hints: Presentat
                     Text("\(Int(value)) / \(Int(max))")
                         .font(.caption)
                         .foregroundColor(.secondary)
+                }
+                #elseif os(watchOS)
+                if #available(watchOS 10.0, *) {
+                    Gauge(value: value, in: range) {
+                        if let label = field.metadata?["gaugeLabel"] {
+                            Text(label)
+                        } else {
+                            Text(field.label)
+                        }
+                    } currentValueLabel: {
+                        Text("\(Int(value))")
+                    } minimumValueLabel: {
+                        Text("\(Int(min))")
+                    } maximumValueLabel: {
+                        Text("\(Int(max))")
+                    }
+                    .gaugeStyle(.linearCapacity)
+                } else {
+                    platformVStackContainer(alignment: .leading) {
+                        ProgressView(value: value, total: max)
+                            .progressViewStyle(.linear)
+                        Text("\(Int(value)) / \(Int(max))")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
                 }
                 #else
                 if #available(iOS 16.0, macOS 13.0, *) {
@@ -2474,7 +2546,7 @@ public struct GenericFormView: View {
                             TextField(field.placeholder ?? "Enter \(field.label)", text: .constant(""))
                                 .l1SemanticTextFieldBorderStyle()
                                 .background(Color.platformSecondaryBackground)
-                                #if canImport(UIKit)
+                                #if canImport(UIKit) && !os(watchOS)
                                 .textContentType(textContentType.uiTextContentType)
                                 #endif
                         } else if let contentType = field.contentType {
@@ -2489,8 +2561,14 @@ public struct GenericFormView: View {
                                     .l1SemanticTextFieldBorderStyle()
                                     .background(Color.platformSecondaryBackground)
                             case .textarea:
-                                #if os(tvOS)
+                                #if os(tvOS) || os(watchOS)
                                 TextField(field.placeholder ?? "", text: .constant(""))
+                                    .frame(minHeight: 80)
+                                    .background(Color.platformSecondaryBackground)
+                                    .cornerRadius(8)
+                                #elseif os(watchOS)
+                                TextField(field.placeholder ?? "", text: .constant(""), axis: .vertical)
+                                    .lineLimit(4...12)
                                     .frame(minHeight: 80)
                                     .background(Color.platformSecondaryBackground)
                                     .cornerRadius(8)
@@ -2509,8 +2587,7 @@ public struct GenericFormView: View {
                                         label: field.label,
                                         selection: .constant(""),
                                         options: options,
-                                        pickerName: "GenericFormSelectField",
-                                        style: MenuPickerStyle()
+                                        pickerName: "GenericFormSelectField"
                                     )
                                 } else {
                                     // Fallback if no options
@@ -2647,7 +2724,7 @@ public struct ModalFormView: View {
                         identifierElementType: "TextField",
                         accessibilityLabel: field.label  // Issue #156: Parameter-based approach
                     )
-                    #if canImport(UIKit)
+                    #if canImport(UIKit) && !os(watchOS)
                     .textContentType(textContentType.uiTextContentType)
                     #endif
             } else if let contentType = field.contentType {
@@ -2683,9 +2760,16 @@ public struct ModalFormView: View {
                         )
                 case .date:
                     let i18n = InternationalizationService()
-                    #if os(tvOS)
+                    #if os(tvOS) || os(watchOS)
                     Text(Date(), format: .dateTime.year().month().day())
                         .foregroundStyle(.secondary)
+                        .selfLabelingControl(label: field.placeholder ?? i18n.placeholderSelectDate())
+                        .automaticCompliance(
+                            identifierElementType: "DatePicker",
+                            accessibilityLabel: field.label
+                        )
+                    #elseif os(watchOS)
+                    DatePicker("", selection: .constant(Date()))
                         .selfLabelingControl(label: field.placeholder ?? i18n.placeholderSelectDate())
                         .automaticCompliance(
                             identifierElementType: "DatePicker",
@@ -2703,9 +2787,16 @@ public struct ModalFormView: View {
                 case .multiDate, .dateRange:
                     // Use DatePicker as fallback for Layer1 (MultiDatePicker requires iOS 16+)
                     let i18n = InternationalizationService()
-                    #if os(tvOS)
+                    #if os(tvOS) || os(watchOS)
                     Text(Date(), format: .dateTime.year().month().day())
                         .foregroundStyle(.secondary)
+                        .selfLabelingControl(label: field.placeholder ?? i18n.placeholderSelectDates())
+                        .automaticCompliance(
+                            identifierElementType: "DatePicker",
+                            accessibilityLabel: field.label
+                        )
+                    #elseif os(watchOS)
+                    DatePicker("", selection: .constant(Date()))
                         .selfLabelingControl(label: field.placeholder ?? i18n.placeholderSelectDates())
                         .automaticCompliance(
                             identifierElementType: "DatePicker",
@@ -2727,8 +2818,7 @@ public struct ModalFormView: View {
                             label: field.label,
                             selection: .constant(""),
                             options: options,
-                            pickerName: "Layer1SelectField",
-                            style: MenuPickerStyle()
+                            pickerName: "Layer1SelectField"
                         )
                         .automaticCompliance(
                             identifierElementType: "Picker",
@@ -2740,8 +2830,20 @@ public struct ModalFormView: View {
                             .foregroundColor(.secondary)
                     }
                 case .textarea:
-                    #if os(tvOS)
+                    #if os(tvOS) || os(watchOS)
                     TextField(field.placeholder ?? "", text: .constant(""))
+                        .frame(minHeight: 80)
+                        .automaticCompliance(
+                            identifierElementType: "TextField",
+                            accessibilityLabel: field.label
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 8)
+                                .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                        )
+                    #elseif os(watchOS)
+                    TextField(field.placeholder ?? "", text: .constant(""), axis: .vertical)
+                        .lineLimit(4...12)
                         .frame(minHeight: 80)
                         .automaticCompliance(
                             identifierElementType: "TextField",
@@ -2806,9 +2908,16 @@ public struct ModalFormView: View {
                         )
                 case .time:
                     let i18n = InternationalizationService()
-                    #if os(tvOS)
+                    #if os(tvOS) || os(watchOS)
                     Text(Date(), format: .dateTime.hour().minute())
                         .foregroundStyle(.secondary)
+                        .selfLabelingControl(label: field.placeholder ?? i18n.placeholderSelectTime())
+                        .automaticCompliance(
+                            identifierElementType: "DatePicker",
+                            accessibilityLabel: field.label
+                        )
+                    #elseif os(watchOS)
+                    DatePicker("", selection: .constant(Date()), displayedComponents: .hourAndMinute)
                         .selfLabelingControl(label: field.placeholder ?? i18n.placeholderSelectTime())
                         .automaticCompliance(
                             identifierElementType: "DatePicker",
@@ -2825,9 +2934,16 @@ public struct ModalFormView: View {
                     #endif
                 case .datetime:
                     let i18n = InternationalizationService()
-                    #if os(tvOS)
+                    #if os(tvOS) || os(watchOS)
                     Text(Date(), format: .dateTime.year().month().day().hour().minute())
                         .foregroundStyle(.secondary)
+                        .selfLabelingControl(label: field.placeholder ?? i18n.placeholderSelectDateTime())
+                        .automaticCompliance(
+                            identifierElementType: "DatePicker",
+                            accessibilityLabel: field.label
+                        )
+                    #elseif os(watchOS)
+                    DatePicker("", selection: .constant(Date()), displayedComponents: [.date, .hourAndMinute])
                         .selfLabelingControl(label: field.placeholder ?? i18n.placeholderSelectDateTime())
                         .automaticCompliance(
                             identifierElementType: "DatePicker",
@@ -2864,19 +2980,52 @@ public struct ModalFormView: View {
                             accessibilityLabel: field.label  // Issue #156: Parameter-based approach
                         )
                 case .color:
+                    #if os(tvOS)
                     Text("Color picker field: \(field.label)")
                         .foregroundColor(.secondary)
                         .automaticCompliance(
                             identifierElementType: "View",
                             accessibilityLabel: field.label  // Issue #156: Parameter-based approach
                         )
+                    #elseif os(watchOS)
+                    WatchOSHexWheelPicker(
+                        label: field.label,
+                        hex: .constant(WatchOSFormPresetHexColor.normalizedHex(for: field.defaultValue ?? WatchOSFormPresetHexColor.blue.rawValue))
+                    )
+                    .automaticCompliance(
+                        identifierElementType: "ColorPicker",
+                        accessibilityLabel: field.label  // Issue #156: Parameter-based approach
+                    )
+                    #else
+                    Text("Color picker field: \(field.label)")
+                        .foregroundColor(.secondary)
+                        .automaticCompliance(
+                            identifierElementType: "View",
+                            accessibilityLabel: field.label  // Issue #156: Parameter-based approach
+                        )
+                    #endif
                 case .range:
+                    #if os(tvOS)
                     Text("Range field: \(field.label)")
                         .foregroundColor(.secondary)
                         .automaticCompliance(
                             identifierElementType: "View",
                             accessibilityLabel: field.label  // Issue #156: Parameter-based approach
                         )
+                    #elseif os(watchOS)
+                    Slider(value: .constant(0.5), in: 0...1)
+                        .automaticCompliance(
+                            identifierElementType: "Slider",
+                            accessibilityLabel: field.label  // Issue #156: Parameter-based approach
+                        )
+                    #else
+                    Text("Range field: \(field.label)")
+                        .foregroundColor(.secondary)
+                        .automaticCompliance(
+                            identifierElementType: "View",
+                            accessibilityLabel: field.label  // Issue #156: Parameter-based approach
+                        )
+                    #endif
                 case .toggle, .boolean:
                     Toggle(field.placeholder ?? "Toggle", isOn: .constant(false))
                 case .richtext:
@@ -2954,6 +3103,31 @@ public struct ModalFormView: View {
                             .font(.caption)
                             .foregroundColor(.secondary)
                     }
+                    #elseif os(watchOS)
+                    if #available(watchOS 10.0, *) {
+                        Gauge(value: value, in: range) {
+                            if let label = field.metadata?["gaugeLabel"] {
+                                Text(label)
+                            } else {
+                                Text(field.label)
+                            }
+                        } currentValueLabel: {
+                            Text("\(Int(value))")
+                        } minimumValueLabel: {
+                            Text("\(Int(min))")
+                        } maximumValueLabel: {
+                            Text("\(Int(max))")
+                        }
+                        .gaugeStyle(.linearCapacity)
+                    } else {
+                        platformVStackContainer(alignment: .leading) {
+                            ProgressView(value: value, total: max)
+                                .progressViewStyle(.linear)
+                            Text("\(Int(value)) / \(Int(max))")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                    }
                     #else
                     if #available(iOS 16.0, macOS 13.0, *) {
                         if field.metadata?["gaugeStyle"] == "circular" {
@@ -3008,8 +3182,7 @@ public struct ModalFormView: View {
                             label: field.label,
                             selection: .constant(""),
                             options: options,
-                            pickerName: "GenericFormEnumField",
-                            style: MenuPickerStyle()
+                            pickerName: "GenericFormEnumField"
                         )
                         .automaticCompliance(
                             identifierElementType: "View",
@@ -3329,6 +3502,21 @@ public struct SimpleFormView: View {
                         identifierElementType: "DatePicker",
                         accessibilityLabel: field.label
                     )
+                    #elseif os(watchOS)
+                    DatePicker(
+                        "",
+                        selection: Binding(
+                            get: { DateFormatter.iso8601.date(from: field.value) ?? Date() },
+                            set: { field.value = DateFormatter.iso8601.string(from: $0) }
+                        ),
+                        displayedComponents: .date
+                    )
+                    .datePickerStyle(.wheel)
+                    .selfLabelingControl(label: field.placeholder ?? i18nDate.placeholderSelectDate())
+                    .automaticCompliance(
+                        identifierElementType: "DatePicker",
+                        accessibilityLabel: field.label  // Issue #156: Parameter-based approach
+                    )
                     #else
                     DatePicker(
                         "",
@@ -3356,8 +3544,7 @@ public struct SimpleFormView: View {
                                 label: field.label,
                                 selection: field.$value,
                                 options: field.options,
-                                pickerName: "Layer1SelectField",
-                                style: MenuPickerStyle()
+                                pickerName: "Layer1SelectField"
                             )
                             .automaticCompliance(
                                 identifierElementType: "Picker",
@@ -3371,8 +3558,23 @@ public struct SimpleFormView: View {
                     }
                     
                 case .textarea:
-                    #if os(tvOS)
+                    #if os(tvOS) || os(watchOS)
                     TextField(field.placeholder ?? "", text: field.$value)
+                        .frame(minHeight: 80)
+                        .automaticCompliance(
+                            identifierElementType: "TextField",
+                            accessibilityLabel: field.label
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 8)
+                                .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                        )
+                        .onChange(of: field.value) { _ in
+                            clearFieldError(field)
+                        }
+                    #elseif os(watchOS)
+                    TextField(field.placeholder ?? "", text: field.$value, axis: .vertical)
+                        .lineLimit(4...40)
                         .frame(minHeight: 80)
                         .automaticCompliance(
                             identifierElementType: "TextField",
@@ -3466,6 +3668,21 @@ public struct SimpleFormView: View {
                         identifierElementType: "DatePicker",
                         accessibilityLabel: field.label
                     )
+                    #elseif os(watchOS)
+                    DatePicker(
+                        "",
+                        selection: Binding(
+                            get: { DateFormatter.timeFormatter.date(from: field.value) ?? Date() },
+                            set: { field.value = DateFormatter.timeFormatter.string(from: $0) }
+                        ),
+                        displayedComponents: .hourAndMinute
+                    )
+                    .datePickerStyle(.wheel)
+                    .selfLabelingControl(label: field.placeholder ?? i18nTime.placeholderSelectTime())
+                    .automaticCompliance(
+                        identifierElementType: "DatePicker",
+                        accessibilityLabel: field.label  // Issue #156: Parameter-based approach
+                    )
                     #else
                     DatePicker(
                         "",
@@ -3495,6 +3712,21 @@ public struct SimpleFormView: View {
                     .automaticCompliance(
                         identifierElementType: "DatePicker",
                         accessibilityLabel: field.label
+                    )
+                    #elseif os(watchOS)
+                    DatePicker(
+                        "",
+                        selection: Binding(
+                            get: { DateFormatter.iso8601.date(from: field.value) ?? Date() },
+                            set: { field.value = DateFormatter.iso8601.string(from: $0) }
+                        ),
+                        displayedComponents: [.date, .hourAndMinute]
+                    )
+                    .datePickerStyle(.wheel)
+                    .selfLabelingControl(label: field.placeholder ?? i18nDateTime.placeholderSelectDateTime())
+                    .automaticCompliance(
+                        identifierElementType: "DatePicker",
+                        accessibilityLabel: field.label  // Issue #156: Parameter-based approach
                     )
                     #else
                     DatePicker(
@@ -3579,9 +3811,17 @@ public struct SimpleFormView: View {
                         
                 case .color:
                     let i18n = InternationalizationService()
-                    #if os(tvOS)
+                    #if os(tvOS) || os(watchOS)
                     Text(field.value.isEmpty ? (field.placeholder ?? i18n.placeholderSelectColor()) : field.value)
                         .foregroundStyle(.secondary)
+                    #elseif os(watchOS)
+                    WatchOSHexWheelPicker(
+                        label: field.placeholder ?? i18n.placeholderSelectColor(),
+                        hex: Binding(
+                            get: { WatchOSFormPresetHexColor.normalizedHex(for: field.value) },
+                            set: { field.value = $0 }
+                        )
+                    )
                     #else
                     ColorPicker(field.placeholder ?? i18n.placeholderSelectColor(), selection: Binding(
                         get: { Color(hex: field.value) ?? .blue },
@@ -3619,8 +3859,19 @@ public struct SimpleFormView: View {
                     ))
                     
                 case .richtext:
-                    #if os(tvOS)
+                    #if os(tvOS) || os(watchOS)
                     TextField(field.placeholder ?? "", text: field.$value)
+                        .frame(minHeight: 100)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 8)
+                                .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                        )
+                        .onChange(of: field.value) { _ in
+                            clearFieldError(field)
+                        }
+                    #elseif os(watchOS)
+                    TextField(field.placeholder ?? "", text: field.$value, axis: .vertical)
+                        .lineLimit(6...50)
                         .frame(minHeight: 100)
                         .overlay(
                             RoundedRectangle(cornerRadius: 8)
@@ -3687,8 +3938,7 @@ public struct SimpleFormView: View {
                             label: field.label,
                             selection: field.$value,
                             options: field.options,
-                            pickerName: "Layer1EnumField",
-                            style: MenuPickerStyle()
+                            pickerName: "Layer1EnumField"
                         )
                         .automaticCompliance(
                             identifierElementType: "View",
@@ -4571,7 +4821,7 @@ extension Color {
     }
     
     func toHex() -> String {
-        #if os(iOS)
+        #if os(iOS) || os(tvOS) || os(watchOS) || os(visionOS)
         let uiColor = UIColor(self)
         var red: CGFloat = 0
         var green: CGFloat = 0
@@ -4882,8 +5132,7 @@ struct GenericSettingsItemView: View {
                                 set: { value = $0 }
                             ),
                             options: options,
-                            pickerName: "Layer1SelectItem",
-                            style: MenuPickerStyle()
+                            pickerName: "Layer1SelectItem"
                         )
                         .disabled(!item.isEnabled)
                     }
@@ -4905,10 +5154,23 @@ struct GenericSettingsItemView: View {
                 
             case .color:
                 if let colorValue = value as? Color {
-                    #if os(tvOS)
+                    #if os(tvOS) || os(watchOS)
                     Text(item.title)
                         .foregroundStyle(colorValue)
                         .disabled(!item.isEnabled)
+                    #elseif os(watchOS)
+                    WatchOSHexWheelPicker(
+                        label: item.title,
+                        hex: Binding(
+                            get: { colorValue.toHex() },
+                            set: { newHex in
+                                if let c = Color(hex: newHex) {
+                                    value = c
+                                }
+                            }
+                        )
+                    )
+                    .disabled(!item.isEnabled)
                     #else
                     ColorPicker("", selection: Binding(
                         get: { colorValue },

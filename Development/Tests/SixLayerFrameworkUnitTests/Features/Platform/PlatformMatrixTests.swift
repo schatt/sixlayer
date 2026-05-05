@@ -68,8 +68,8 @@ open class PlatformMatrixTests: BaseTestClass {
             #expect(deviceType == .tv, 
                           "tvOS should have tv device type")
         case .visionOS:
-            #expect(deviceType == .tv, 
-                          "visionOS should have tv device type (using tv as closest match)")
+            #expect(deviceType == .vision,
+                          "visionOS should have vision device type")
         }
     }
     
@@ -470,7 +470,7 @@ struct PlatformFeatureMatrix {
         case .tvOS:
             return !supportsTouch && !supportsHover && !supportsHapticFeedback && !supportsAssistiveTouch && !supportsCarPlay && !isCarPlayActive
         case .visionOS:
-            return !supportsTouch && !supportsHover && !supportsHapticFeedback && !supportsAssistiveTouch && !supportsCarPlay && !isCarPlayActive
+            return !supportsTouch && supportsHover && !supportsHapticFeedback && !supportsAssistiveTouch && !supportsCarPlay && !isCarPlayActive
         }
     }
 }

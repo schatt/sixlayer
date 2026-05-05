@@ -675,9 +675,16 @@ public struct DynamicTextField: View {
     /// TextEditor fallback for older OS versions
     @ViewBuilder
     private var multiLineTextEditorFallback: some View {
-        #if os(tvOS)
+        #if os(tvOS) || os(watchOS)
         TextField("", text: field.textBinding(formState: formState))
             .platformTextFieldStyle()
+            .frame(minHeight: CGFloat(field.minLines * 20))
+            .border(Color.gray.opacity(0.2))
+            .automaticCompliance()
+        #elseif os(watchOS)
+        TextField("", text: field.textBinding(formState: formState), axis: .vertical)
+            .platformTextFieldStyle()
+            .lineLimit(field.minLines...field.maxLines)
             .frame(minHeight: CGFloat(field.minLines * 20))
             .border(Color.gray.opacity(0.2))
             .automaticCompliance()
@@ -1750,7 +1757,7 @@ public struct DynamicDataField: View {
     public var body: some View {
         platformVStackContainer(alignment: .leading, spacing: 8) {
 
-            #if os(tvOS)
+            #if os(tvOS) || os(watchOS)
             TextField("", text: Binding(
                 get: {
                     if let data = formState.fieldValues[field.id] as? Data {
@@ -1765,6 +1772,26 @@ public struct DynamicDataField: View {
                 }
             ))
             .platformTextFieldStyle()
+            .frame(minHeight: 100)
+            .border(Color.gray.opacity(0.2))
+            .automaticCompliance(named: "DataInput")
+            #elseif os(watchOS)
+            // TextEditor is unavailable on watchOS; multiline TextField matches Layer 1 textarea pattern.
+            TextField("", text: Binding(
+                get: {
+                    if let data = formState.fieldValues[field.id] as? Data {
+                        return String(data: data, encoding: .utf8) ?? ""
+                    }
+                    return ""
+                },
+                set: { newValue in
+                    if let data = newValue.data(using: .utf8) {
+                        formState.setValue(data, for: field.id)
+                    }
+                }
+            ), axis: .vertical)
+            .platformTextFieldStyle()
+            .lineLimit(4...24)
             .frame(minHeight: 100)
             .border(Color.gray.opacity(0.2))
             .automaticCompliance(named: "DataInput")
@@ -1963,13 +1990,22 @@ public struct DynamicColorField: View {
             let color = Color(hex: colorValue) ?? .black
             
             let i18n = InternationalizationService()
-            #if os(tvOS)
-            // ColorPicker is unavailable on tvOS; show a read-only color swatch + hex value.
+            #if os(tvOS) || os(watchOS)
+            // ColorPicker is unavailable on tvOS/watchOS; show placeholder + hex value.
             Text(field.placeholder ?? i18n.placeholderSelectColor())
                 .automaticCompliance(named: "ColorPicker")
             Text(colorValue)
                 .font(.caption)
                 .foregroundStyle(.secondary)
+            #elseif os(watchOS)
+            WatchOSHexWheelPicker(
+                label: field.placeholder ?? i18n.placeholderSelectColor(),
+                hex: Binding(
+                    get: { formState.fieldValues[field.id] as? String ?? "#000000" },
+                    set: { formState.setValue($0, for: field.id) }
+                )
+            )
+            .automaticCompliance(named: "ColorPicker")
             #else
             ColorPicker(field.placeholder ?? i18n.placeholderSelectColor(), selection: Binding(
                 get: { color },
