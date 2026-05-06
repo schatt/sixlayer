@@ -51,8 +51,8 @@ public enum SixLayerTextContentType: String, CaseIterable, Hashable {
     case URL = "URL"
     case creditCardNumber = "creditCardNumber"
     
-    #if os(iOS) || targetEnvironment(macCatalyst)
-    /// Convert to UITextContentType for iOS/Mac Catalyst (unavailable on watchOS; use platform text hints there).
+    #if canImport(UIKit) && !os(watchOS)
+    /// Convert to UITextContentType for iOS/Mac Catalyst/tvOS (not watchOS — use ``wkTextContentType``).
     public var uiTextContentType: UITextContentType {
         switch self {
         case .name: return .name
@@ -158,6 +158,37 @@ public enum SixLayerTextContentType: String, CaseIterable, Hashable {
     public var stringValue: String {
         return self.rawValue
     }
+}
+
+// MARK: - Text input autocapitalization
+
+/// Cross-platform autocapitalization for text fields; maps to SwiftUI `TextInputAutocapitalization` on iOS.
+public enum SixLayerTextInputAutocapitalization: Sendable, Hashable {
+    case never
+    case words
+    case sentences
+    case characters
+}
+
+#if os(iOS)
+extension SixLayerTextInputAutocapitalization {
+    var swiftUITextInputAutocapitalization: TextInputAutocapitalization {
+        switch self {
+        case .never: return .never
+        case .words: return .words
+        case .sentences: return .sentences
+        case .characters: return .characters
+        }
+    }
+}
+#endif
+
+// MARK: - Text selection policy
+
+/// Cross-platform policy for SwiftUI `textSelection(_:)`; on tvOS the framework applies a no-op instead.
+public enum SixLayerTextSelectionPolicy: Sendable, Hashable {
+    case enabled
+    case disabled
 }
 
 // MARK: - Dynamic Form Field Types

@@ -393,7 +393,7 @@ public func platformLocalizedTextEditor_L1(
     
     return Group {
         #if os(tvOS) || os(watchOS)
-        // TextEditor is unavailable on tvOS/watchOS; use a single-line field as a functional fallback.
+        // TextEditor is unavailable on tvOS and watchOS; use a single-line field as a functional fallback (#237, watchOS parity).
         TextField(title, text: text)
             .environment(\.layoutDirection, layoutDirection)
             .environment(\.locale, hints.locale)

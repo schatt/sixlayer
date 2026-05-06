@@ -111,7 +111,7 @@ open class SelectFieldImplementationTests: BaseTestClass {
                     Text(option).tag(option)
                 }
             }
-            .selectFieldImplementationTestPickerStyle()
+            .pickerStyleMenuOrWheelForUnitTests()
         }
         
         // Then: View should be created successfully
@@ -132,7 +132,7 @@ open class SelectFieldImplementationTests: BaseTestClass {
                     Text(option).tag(option)
                 }
             }
-            .selectFieldImplementationTestPickerStyle()
+            .pickerStyleMenuOrWheelForUnitTests()
         }
         
         // Then: View should be created successfully
@@ -170,7 +170,7 @@ open class SelectFieldImplementationTests: BaseTestClass {
                     Text(option).tag(option)
                 }
             }
-            .selectFieldImplementationTestPickerStyle()
+            .pickerStyleMenuOrWheelForUnitTests()
         }
         
         // Then: View should be created successfully
@@ -197,7 +197,7 @@ open class SelectFieldImplementationTests: BaseTestClass {
                     Text(option).tag(option)
                 }
             }
-            .selectFieldImplementationTestPickerStyle()
+            .pickerStyleMenuOrWheelForUnitTests()
         }
         
         // Then: View should be created successfully
@@ -325,7 +325,7 @@ open class SelectFieldImplementationTests: BaseTestClass {
                 Text(option).tag(option)
             }
         }
-        .selectFieldImplementationTestPickerStyle()
+        .pickerStyleMenuOrWheelForUnitTests()
         
         // Then: View should be created successfully
         #expect(Bool(true), "view is non-optional")  // view is non-optional

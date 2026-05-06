@@ -220,11 +220,9 @@ public struct ExpandableCardComponent<Item: Identifiable>: View {
             handleTap()
             onItemSelected?(item)
         }
-        #if !os(tvOS) && !os(watchOS)
-        .onHover { isHovering in
+        .platformHoverEffect { isHovering in
             onHover(isHovering)
         }
-        #endif
         .accessibilityElement(children: .combine)
         .accessibilityLabel(cardTitle)
         .accessibilityAddTraits(isExpanded ? [.isButton, .isSelected] : .isButton)
@@ -899,13 +897,11 @@ public struct SimpleCardComponent<Item: Identifiable>: View {
         }
         
         // Conditionally apply hover-based modifiers
-        #if !os(tvOS) && !os(watchOS)
         if config.supportsHover {
-            view = AnyView(view.onHover { _ in
+            view = AnyView(view.platformHoverEffect { _ in
                 // Hover support
             })
         }
-        #endif
         
         // Conditionally apply accessibility modifiers (Issue #191: single tappable element)
         if config.supportsVoiceOver || config.supportsSwitchControl {

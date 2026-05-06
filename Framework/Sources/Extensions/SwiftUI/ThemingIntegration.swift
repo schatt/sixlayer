@@ -217,7 +217,8 @@ public struct ThemedGenericFormView: View {
                                 set: { formData[field.id.uuidString] = $0 }
                             ),
                             options: field.options,
-                            pickerName: "ThemedSelectField"
+                            pickerName: "ThemedSelectField",
+                            style: PlatformMenuLikePickerStyle()
                         )
                         .themedTextField()
                     } else {
@@ -391,7 +392,8 @@ public struct ThemedGenericFormView: View {
                                 set: { formData[field.id.uuidString] = $0 }
                             ),
                             options: field.options,
-                            pickerName: "ThemedEnumField"
+                            pickerName: "ThemedEnumField",
+                            style: PlatformMenuLikePickerStyle()
                         )
                         .themedTextField()
                     } else {
