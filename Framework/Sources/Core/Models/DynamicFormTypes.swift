@@ -1242,8 +1242,7 @@ public class DynamicFormState: ObservableObject {
     
     private let configuration: DynamicFormConfiguration
     
-    /// Optional override for draft persistence key (Issue #273). When `nil` or empty after trimming
-    /// usage in resolution, drafts use `configuration.id`.
+    /// Optional override for draft persistence key (Issue #273). When `nil` or `""`, drafts use `configuration.id`.
     private let draftStorageKey: String?
     
     // MARK: - Auto-Save Properties (Issue #80)
@@ -1264,7 +1263,10 @@ public class DynamicFormState: ObservableObject {
     
     /// Resolved id for `FormDraft` / storage I/O (`draftStorageKey` when non-empty, else `configuration.id`).
     private var draftPersistenceFormId: String {
-        configuration.id
+        if let key = draftStorageKey, !key.isEmpty {
+            return key
+        }
+        return configuration.id
     }
     
     /// Initialize with configuration and optional storage
