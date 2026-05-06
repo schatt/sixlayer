@@ -1242,6 +1242,10 @@ public class DynamicFormState: ObservableObject {
     
     private let configuration: DynamicFormConfiguration
     
+    /// Optional override for draft persistence key (Issue #273). When `nil` or empty after trimming
+    /// usage in resolution, drafts use `configuration.id`.
+    private let draftStorageKey: String?
+    
     // MARK: - Auto-Save Properties (Issue #80)
     
     /// Storage for form drafts
@@ -1258,20 +1262,23 @@ public class DynamicFormState: ObservableObject {
     public var autoSaveInterval: TimeInterval = 30.0 // seconds
     public var debounceDelay: TimeInterval = 2.0 // seconds
     
-    /// Form ID for draft storage (uses configuration.id)
-    private var formId: String {
-        return configuration.id
+    /// Resolved id for `FormDraft` / storage I/O (`draftStorageKey` when non-empty, else `configuration.id`).
+    private var draftPersistenceFormId: String {
+        configuration.id
     }
     
     /// Initialize with configuration and optional storage
     /// - Parameters:
     ///   - configuration: Form configuration
+    ///   - draftStorageKey: Optional UserDefaults draft bucket key; `nil` or empty uses `configuration.id`
     ///   - storage: Optional storage implementation (defaults to UserDefaultsFormStateStorage)
     public init(
         configuration: DynamicFormConfiguration,
+        draftStorageKey: String? = nil,
         storage: FormStateStorage? = nil
     ) {
         self.configuration = configuration
+        self.draftStorageKey = draftStorageKey
         self.storage = storage ?? UserDefaultsFormStateStorage()
         setupInitialState()
     }
@@ -1736,7 +1743,7 @@ public class DynamicFormState: ObservableObject {
         guard autoSaveEnabled else { return }
         
         let draft = FormDraft(
-            formId: formId,
+            formId: draftPersistenceFormId,
             fieldValues: fieldValues,
             timestamp: Date()
         )
@@ -1753,7 +1760,7 @@ public class DynamicFormState: ObservableObject {
     /// - Returns: True if draft was loaded, false otherwise
     @discardableResult
     public func loadDraft() -> Bool {
-        guard let draft = storage.loadDraft(formId: formId) else {
+        guard let draft = storage.loadDraft(formId: draftPersistenceFormId) else {
             return false
         }
         
@@ -1765,7 +1772,7 @@ public class DynamicFormState: ObservableObject {
     /// Clear draft state
     public func clearDraft() {
         do {
-            try storage.clearDraft(formId: formId)
+            try storage.clearDraft(formId: draftPersistenceFormId)
         } catch {
             // Log error but don't crash
             print("Error clearing form draft: \(error.localizedDescription)")
@@ -1774,7 +1781,7 @@ public class DynamicFormState: ObservableObject {
     
     /// Check if draft exists
     public func hasDraft() -> Bool {
-        return storage.hasDraft(formId: formId)
+        return storage.hasDraft(formId: draftPersistenceFormId)
     }
     
     /// Trigger debounced save on field change
