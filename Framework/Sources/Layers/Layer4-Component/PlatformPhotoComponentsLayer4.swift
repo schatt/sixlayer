@@ -703,7 +703,6 @@ private class CameraPreviewNSViewWrapper: NSView {
     }
 }
 #endif
-#endif
 
 // MARK: - Photo Display Views
 
