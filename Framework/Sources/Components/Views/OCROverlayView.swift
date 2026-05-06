@@ -26,22 +26,10 @@ public struct OCROverlayView: View {
         // GREEN PHASE: Full implementation of OCR overlay interface
         platformVStackContainer(spacing: 16) {
             // Display image with OCR overlay
-            #if os(iOS)
-            Image(uiImage: image.uiImage)
+            image.platformImageView()
                 .resizable()
                 .scaledToFit()
                 .automaticCompliance(named: "OCRImage")
-            #elseif os(macOS)
-            Image(nsImage: image.nsImage)
-                .resizable()
-                .scaledToFit()
-                .automaticCompliance(named: "OCRImage")
-            #else
-            // tvOS/watchOS/visionOS: no NSImage path on PlatformImage in this target (#237).
-            Color.clear
-                .frame(maxWidth: .infinity, maxHeight: 200)
-                .automaticCompliance(named: "OCRImage")
-            #endif
             
             // Display extracted text
             if !result.extractedText.isEmpty {

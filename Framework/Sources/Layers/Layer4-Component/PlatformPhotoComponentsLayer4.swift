@@ -1,5 +1,7 @@
 import SwiftUI
+#if os(iOS) || os(macOS)
 import AVFoundation
+#endif
 
 #if os(iOS) && canImport(PhotosUI)
 import PhotosUI
@@ -98,6 +100,7 @@ public enum PlatformPhotoComponentsLayer4 {
     
     // MARK: - Camera Preview Components
     
+    #if os(iOS) || os(macOS)
     /// Creates a cross-platform camera preview view
     /// Abstracts UIViewControllerRepresentable (iOS) and NSViewRepresentable (macOS)
     /// Note: Requires @MainActor because PlatformCameraPreviewView is a View
@@ -109,7 +112,8 @@ public enum PlatformPhotoComponentsLayer4 {
             .automaticCompliance(named: "platformCameraPreview_L4")
     }
     #endif
-    
+    #endif
+
     // MARK: - Tabbed Photo Source Components
     
     /// Creates a tabbed interface for switching between camera and photo library
@@ -305,6 +309,7 @@ public enum PlatformPhotoComponentsLayer4 {
 
 // MARK: - Camera Preview View
 
+#if os(iOS) || os(macOS)
 /// Cross-platform camera preview view
 /// Abstracts UIViewControllerRepresentable (iOS) and NSViewRepresentable (macOS)
 #if !os(watchOS)
@@ -331,6 +336,7 @@ public struct PlatformCameraPreviewView: View {
         #endif
     }
 }
+#endif
 #endif
 
 // MARK: - Supporting Views
@@ -946,6 +952,7 @@ public func platformPhotoDisplay_L4(image: PlatformImage?, style: PhotoDisplaySt
     PlatformPhotoComponentsLayer4.platformPhotoDisplay_L4(image: image, style: style)
 }
 
+#if os(iOS) || os(macOS)
 /// Creates a cross-platform camera preview (convenience wrapper)
 /// Note: Requires @MainActor because it calls main-actor isolated methods
 #if !os(watchOS)
@@ -1069,3 +1076,4 @@ public func platformDataScannerInterface_L4AsFullScreenCover(
         onBecameUnavailable: onBecameUnavailable
     )
 }
+#endif

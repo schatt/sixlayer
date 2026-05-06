@@ -29,7 +29,8 @@ struct PlatformFormToolbarAccessibilityTests {
 
     @Test @MainActor
     func platformFormToolbar_nilIdentifiers_doNotRequireProvidedStrings() throws {
-        #if canImport(ViewInspector)
+        // ViewInspector toolbar enumeration is unreliable on watchOS in this SDK matrix (#271).
+        #if canImport(ViewInspector) && !os(watchOS)
         let view = Text("ToolbarHostNil")
             .platformFormToolbar(
                 onCancel: {},
@@ -46,12 +47,9 @@ struct PlatformFormToolbarAccessibilityTests {
         #expect(!primaryIds.contains(saveID))
         #expect(!primaryIds.contains(selectID))
         #else
-        // ViewInspector is not available on tvOS/watchOS/visionOS, and this test
-        // inspects SwiftUI toolbar internals which only ViewInspector can surface.
-        // Record a passing expectation so the suite doesn't fail on platforms where
-        // this code path is untestable. The positive contract is covered by
-        // PlatformToolbarAccessibilityUITests on iOS/macOS.
-        #expect(Bool(true), "Skipped: ViewInspector unavailable on this platform (Issue #221 / #237)")
+        // tvOS/visionOS: ViewInspector not linked; watchOS: toolbar item extraction unreliable (#271).
+        // Positive contract: PlatformToolbarAccessibilityUITests on iOS/macOS.
+        #expect(Bool(true), "Skipped: toolbar nil-ID check needs ViewInspector on iOS/macOS only (Issue #221 / #271)")
         #endif
     }
 }

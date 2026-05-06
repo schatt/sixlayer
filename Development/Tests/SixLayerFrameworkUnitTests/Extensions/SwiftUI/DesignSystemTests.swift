@@ -128,9 +128,12 @@ class DesignSystemTests: XCTestCase {
 
         // Test component states
         let states = designSystem.componentStates()
-        // Corner radius is platform-style-specific: iOS uses 8, non-iOS uses 6.
-        let expectedCornerRadius: CGFloat = (SixLayerPlatform.current == .iOS) ? 8 : 6
-        XCTAssertEqual(states.cornerRadius.sm, expectedCornerRadius)
+        // Corner radius is platform-specific at compile time: macOS/watchOS use 6; others use 8 (tvOS aligns with iOS chrome).
+        #if os(macOS) || os(watchOS)
+        XCTAssertEqual(states.cornerRadius.sm, 6)
+        #else
+        XCTAssertEqual(states.cornerRadius.sm, 8)
+        #endif
         XCTAssertEqual(states.borderWidth.sm, 0.5)
     }
 

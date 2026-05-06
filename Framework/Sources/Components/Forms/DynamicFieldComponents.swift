@@ -676,8 +676,7 @@ public struct DynamicTextField: View {
     @ViewBuilder
     private var multiLineTextEditorFallback: some View {
         #if os(tvOS)
-        TextField("", text: field.textBinding(formState: formState))
-            .platformTextFieldStyle()
+        EmptyView().platformTextEditor(text: field.textBinding(formState: formState), prompt: "")
             .frame(minHeight: CGFloat(field.minLines * 20))
             .border(Color.gray.opacity(0.2))
             .automaticCompliance()
@@ -1025,22 +1024,8 @@ public struct DynamicStepperField: View {
 
     public var body: some View {
         platformVStackContainer(alignment: .leading, spacing: 8) {
-            #if os(tvOS)
-            // Stepper is unavailable on tvOS; show a read-only current-value indicator.
-            Text(step.truncatingRemainder(dividingBy: 1.0) == 0.0
-                 ? "\(Int(value.wrappedValue))"
-                 : String(format: "%.2f", value.wrappedValue))
-                .dynamicFormFieldVoiceOverLabel(field)
-                .automaticComplianceForDynamicFormField(
-                    field,
-                    identifierElementType: "Stepper",
-                    accessibilityValue: step.truncatingRemainder(dividingBy: 1.0) == 0.0
-                        ? "\(Int(value.wrappedValue))"
-                        : String(format: "%.2f", value.wrappedValue)
-                )
-            #else
-            Stepper(
-                "",
+            EmptyView().platformStepperInput(
+                label: field.label,
                 value: value,
                 in: range,
                 step: step
@@ -1051,9 +1036,8 @@ public struct DynamicStepperField: View {
                 identifierElementType: "Stepper",
                 accessibilityValue: step.truncatingRemainder(dividingBy: 1.0) == 0.0
                     ? "\(Int(value.wrappedValue))"
-                    : String(format: "%.2f", value.wrappedValue)  // Issue #165: Current value
+                    : String(format: "%.2f", value.wrappedValue)
             )
-            #endif
 
             // Show current value - use appropriate format based on step size
             Text(step.truncatingRemainder(dividingBy: 1.0) == 0.0 
@@ -1093,10 +1077,12 @@ public struct DynamicDateField: View {
 
         return platformVStackContainer(alignment: .leading) {
             #if os(tvOS)
-            if let valueDate = DynamicFormStoredDateValue.date(fromStoredValue: formState.fieldValues[field.id]) {
-                Text(valueDate, format: .dateTime.year().month().day())
-                    .foregroundStyle(.primary)
-                    .automaticComplianceForDynamicFormField(field)
+            if DynamicFormStoredDateValue.date(fromStoredValue: formState.fieldValues[field.id]) != nil {
+                EmptyView().platformDateInput(
+                    selection: selectedDate,
+                    label: field.placeholder ?? i18n.placeholderSelectDate()
+                )
+                .automaticComplianceForDynamicFormField(field)
             } else {
                 Text(field.placeholder ?? i18n.placeholderSelectDate())
                     .foregroundStyle(.secondary)
@@ -1142,10 +1128,12 @@ public struct DynamicTimeField: View {
 
         return platformVStackContainer(alignment: .leading) {
             #if os(tvOS)
-            if let valueDate = DynamicFormStoredDateValue.date(fromStoredValue: formState.fieldValues[field.id]) {
-                Text(valueDate, format: .dateTime.hour().minute())
-                    .foregroundStyle(.primary)
-                    .automaticCompliance()
+            if DynamicFormStoredDateValue.date(fromStoredValue: formState.fieldValues[field.id]) != nil {
+                EmptyView().platformTimeInput(
+                    selection: selectedTime,
+                    label: field.placeholder ?? i18n.placeholderSelectTime()
+                )
+                .automaticCompliance()
             } else {
                 Text(field.placeholder ?? i18n.placeholderSelectTime())
                     .foregroundStyle(.secondary)
@@ -1191,10 +1179,12 @@ public struct DynamicDateTimeField: View {
 
         return platformVStackContainer(alignment: .leading) {
             #if os(tvOS)
-            if let valueDate = DynamicFormStoredDateValue.date(fromStoredValue: formState.fieldValues[field.id]) {
-                Text(valueDate, format: .dateTime.year().month().day().hour().minute())
-                    .foregroundStyle(.primary)
-                    .automaticCompliance()
+            if DynamicFormStoredDateValue.date(fromStoredValue: formState.fieldValues[field.id]) != nil {
+                EmptyView().platformDateTimeInput(
+                    selection: selectedDateTime,
+                    label: field.placeholder ?? i18n.placeholderSelectDateTime()
+                )
+                .automaticCompliance()
             } else {
                 Text(field.placeholder ?? i18n.placeholderSelectDateTime())
                     .foregroundStyle(.secondary)
@@ -1606,19 +1596,11 @@ public struct DynamicImageField: View {
             #endif
 
             if let imageData = formState.fieldValues[field.id] as? Data, let image = PlatformImage(data: imageData) {
-                #if os(macOS)
-                Image(nsImage: image.nsImage)
+                image.platformImageView()
                     .resizable()
                     .scaledToFit()
                     .frame(height: 100)
                     .automaticCompliance(named: "ImagePreview")
-                #else
-                Image(uiImage: image.uiImage)
-                    .resizable()
-                    .scaledToFit()
-                    .frame(height: 100)
-                    .automaticCompliance(named: "ImagePreview")
-                #endif
             }
         }
         .padding()
@@ -1655,8 +1637,8 @@ public struct DynamicRangeField: View {
                 set: { formState.setValue(String($0), for: field.id) }
             )
             #if os(tvOS)
-            // Slider is unavailable on tvOS; show a read-only progress indicator.
-            ProgressView(value: sliderValue.wrappedValue, total: 100)
+            // Slider is unavailable on tvOS; Layer 4 maps range to a read-only progress indicator.
+            EmptyView().platformRangeInput(value: sliderValue, in: 0...100)
                 .progressViewStyle(.linear)
                 .automaticCompliance(
                     identifierElementType: "Slider",
@@ -1756,62 +1738,37 @@ public struct DynamicDataField: View {
 
     public var body: some View {
         platformVStackContainer(alignment: .leading, spacing: 8) {
+            let dataTextBinding = Binding(
+                get: {
+                    if let data = formState.fieldValues[field.id] as? Data {
+                        return String(data: data, encoding: .utf8) ?? ""
+                    }
+                    return ""
+                },
+                set: { newValue in
+                    if let data = newValue.data(using: .utf8) {
+                        formState.setValue(data, for: field.id)
+                    }
+                }
+            )
 
             #if os(tvOS)
-            TextField("", text: Binding(
-                get: {
-                    if let data = formState.fieldValues[field.id] as? Data {
-                        return String(data: data, encoding: .utf8) ?? ""
-                    }
-                    return ""
-                },
-                set: { newValue in
-                    if let data = newValue.data(using: .utf8) {
-                        formState.setValue(data, for: field.id)
-                    }
-                }
-            ))
-            .platformTextFieldStyle()
-            .frame(minHeight: 100)
-            .border(Color.gray.opacity(0.2))
-            .automaticCompliance(named: "DataInput")
+            EmptyView().platformTextEditor(text: dataTextBinding, prompt: "")
+                .frame(minHeight: 100)
+                .border(Color.gray.opacity(0.2))
+                .automaticCompliance(named: "DataInput")
             #elseif os(watchOS)
-            // TextEditor is unavailable on watchOS; multiline TextField matches Layer 1 textarea pattern.
-            TextField("", text: Binding(
-                get: {
-                    if let data = formState.fieldValues[field.id] as? Data {
-                        return String(data: data, encoding: .utf8) ?? ""
-                    }
-                    return ""
-                },
-                set: { newValue in
-                    if let data = newValue.data(using: .utf8) {
-                        formState.setValue(data, for: field.id)
-                    }
-                }
-            ), axis: .vertical)
-            .platformTextFieldStyle()
-            .lineLimit(4...24)
-            .frame(minHeight: 100)
-            .border(Color.gray.opacity(0.2))
-            .automaticCompliance(named: "DataInput")
+            TextField("", text: dataTextBinding, axis: .vertical)
+                .platformTextFieldStyle()
+                .lineLimit(4...24)
+                .frame(minHeight: 100)
+                .border(Color.gray.opacity(0.2))
+                .automaticCompliance(named: "DataInput")
             #else
-            TextEditor(text: Binding(
-                get: {
-                    if let data = formState.fieldValues[field.id] as? Data {
-                        return String(data: data, encoding: .utf8) ?? ""
-                    }
-                    return ""
-                },
-                set: { newValue in
-                    if let data = newValue.data(using: .utf8) {
-                        formState.setValue(data, for: field.id)
-                    }
-                }
-            ))
-            .frame(minHeight: 100)
-            .border(Color.gray.opacity(0.2))
-            .automaticCompliance(named: "DataInput")
+            TextEditor(text: dataTextBinding)
+                .frame(minHeight: 100)
+                .border(Color.gray.opacity(0.2))
+                .automaticCompliance(named: "DataInput")
             #endif
 
             if let data = formState.fieldValues[field.id] as? Data {
@@ -1990,10 +1947,20 @@ public struct DynamicColorField: View {
             let color = Color(hex: colorValue) ?? .black
             
             let i18n = InternationalizationService()
+            let colorSelection = Binding(
+                get: { color },
+                set: { newColor in
+                    let hex = newColor.toHex()
+                    formState.setValue(hex, for: field.id)
+                }
+            )
+
             #if os(tvOS)
-            // ColorPicker is unavailable on tvOS; show placeholder + hex readout.
-            Text(field.placeholder ?? i18n.placeholderSelectColor())
-                .automaticCompliance(named: "ColorPicker")
+            EmptyView().platformColorInput(
+                label: field.placeholder ?? i18n.placeholderSelectColor(),
+                selection: colorSelection
+            )
+            .automaticCompliance(named: "ColorPicker")
             Text(colorValue)
                 .font(.caption)
                 .foregroundStyle(.secondary)
@@ -2007,14 +1974,8 @@ public struct DynamicColorField: View {
             )
             .automaticCompliance(named: "ColorPicker")
             #else
-            ColorPicker(field.placeholder ?? i18n.placeholderSelectColor(), selection: Binding(
-                get: { color },
-                set: { newColor in
-                    let hex = newColor.toHex()
-                    formState.setValue(hex, for: field.id)
-                }
-            ))
-            .automaticCompliance(named: "ColorPicker")
+            ColorPicker(field.placeholder ?? i18n.placeholderSelectColor(), selection: colorSelection)
+                .automaticCompliance(named: "ColorPicker")
             #endif
 
             Rectangle()

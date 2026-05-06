@@ -844,6 +844,15 @@ public struct PlatformImage: @unchecked Sendable {
         return uiImage.size
         #endif
     }
+
+    /// Returns a SwiftUI Image for this platform image without call-site branching.
+    public func platformImageView() -> Image {
+        #if os(macOS)
+        return Image(nsImage: nsImage)
+        #else
+        return Image(uiImage: uiImage)
+        #endif
+    }
     
     /// Create a placeholder image for testing/stub purposes
     public static func createPlaceholder() -> PlatformImage {
@@ -856,9 +865,12 @@ public struct PlatformImage: @unchecked Sendable {
         nsImage.unlockFocus()
         return PlatformImage(nsImage: nsImage)
         #elseif os(watchOS)
-        // UIGraphicsImageRenderer / many UIColor semantic colors are unavailable on watchOS.
-        let config = UIImage.SymbolConfiguration(pointSize: 48, weight: .regular)
-        let uiImage = UIImage(systemName: "square.fill", withConfiguration: config) ?? UIImage()
+        let size = CGSize(width: 100, height: 100)
+        UIGraphicsBeginImageContextWithOptions(size, false, 1)
+        UIColor.blue.setFill()
+        UIRectFill(CGRect(origin: .zero, size: size))
+        let uiImage = UIGraphicsGetImageFromCurrentImageContext() ?? UIImage()
+        UIGraphicsEndImageContext()
         return PlatformImage(uiImage: uiImage)
         #else
         let size = CGSize(width: 100, height: 100)

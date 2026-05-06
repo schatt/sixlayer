@@ -96,6 +96,263 @@ public extension View {
             .frame(height: size.rawValue)
             .automaticCompliance()
     }
+
+    /// Layer 4 date input primitive that hides platform availability differences.
+    func platformDateInput(
+        selection: Binding<Date>,
+        label: String
+    ) -> some View {
+        platformDatePicker(selection: selection) {
+            EmptyView()
+        }
+        .selfLabelingControl(label: label)
+    }
+
+    /// Layer 4 time input primitive that hides platform availability differences.
+    func platformTimeInput(
+        selection: Binding<Date>,
+        label: String
+    ) -> some View {
+        #if os(tvOS)
+        Text(selection.wrappedValue, format: .dateTime.hour().minute())
+            .foregroundStyle(.secondary)
+            .selfLabelingControl(label: label)
+        #elseif os(watchOS)
+        Text(selection.wrappedValue, format: .dateTime.hour().minute())
+            .foregroundStyle(.secondary)
+            .selfLabelingControl(label: label)
+        #else
+        DatePicker("", selection: selection, displayedComponents: .hourAndMinute)
+            .datePickerStyle(.compact)
+            .selfLabelingControl(label: label)
+        #endif
+    }
+
+    /// Layer 4 date-time input primitive that hides platform availability differences.
+    func platformDateTimeInput(
+        selection: Binding<Date>,
+        label: String
+    ) -> some View {
+        #if os(tvOS)
+        Text(selection.wrappedValue, format: .dateTime.year().month().day().hour().minute())
+            .foregroundStyle(.secondary)
+            .selfLabelingControl(label: label)
+        #elseif os(watchOS)
+        Text(selection.wrappedValue, format: .dateTime.year().month().day().hour().minute())
+            .foregroundStyle(.secondary)
+            .selfLabelingControl(label: label)
+        #else
+        DatePicker("", selection: selection, displayedComponents: [.date, .hourAndMinute])
+            .datePickerStyle(.compact)
+            .selfLabelingControl(label: label)
+        #endif
+    }
+
+    /// Layer 4 stepper primitive that degrades on platforms without Stepper.
+    func platformStepperInput(
+        label: String,
+        value: Binding<Double>,
+        in range: ClosedRange<Double>,
+        step: Double = 1.0
+    ) -> some View {
+        #if os(tvOS)
+        Text("\(Int(value.wrappedValue))")
+            .foregroundStyle(.secondary)
+            .selfLabelingControl(label: label)
+        #else
+        Stepper(label, value: value, in: range, step: step)
+        #endif
+    }
+
+    /// Layer 4 color picker primitive that degrades on platforms without ColorPicker.
+    func platformColorInput(
+        label: String,
+        selection: Binding<Color>
+    ) -> some View {
+        #if os(tvOS) || os(watchOS)
+        Text(label)
+            .foregroundStyle(selection.wrappedValue)
+        #else
+        ColorPicker("", selection: selection)
+            .selfLabelingControl(label: label)
+        #endif
+    }
+
+    /// Layer 4 range input primitive that degrades on platforms without Slider.
+    func platformRangeInput(
+        value: Binding<Double>,
+        in range: ClosedRange<Double>
+    ) -> some View {
+        #if os(tvOS)
+        ProgressView(value: value.wrappedValue, total: range.upperBound)
+        #else
+        Slider(value: value, in: range)
+        #endif
+    }
+
+    /// Layer 4 gauge primitive that degrades to a progress view where needed.
+    @ViewBuilder
+    func platformGaugeInput(
+        value: Double,
+        min: Double,
+        max: Double,
+        label: String? = nil,
+        style: String? = nil
+    ) -> some View {
+        let range = min...max
+        #if os(tvOS)
+        platformVStackContainer(alignment: .leading) {
+            ProgressView(value: value, total: max)
+                .progressViewStyle(.linear)
+            Text("\(Int(value)) / \(Int(max))")
+                .font(.caption)
+                .foregroundColor(.secondary)
+        }
+        #else
+        if #available(iOS 16.0, macOS 13.0, *) {
+            if style == "circular" {
+                Gauge(value: value, in: range) {
+                    if let label {
+                        Text(label)
+                    }
+                } currentValueLabel: {
+                    Text("\(Int(value))")
+                } minimumValueLabel: {
+                    Text("\(Int(min))")
+                } maximumValueLabel: {
+                    Text("\(Int(max))")
+                }
+                .gaugeStyle(.accessoryCircularCapacity)
+            } else {
+                Gauge(value: value, in: range) {
+                    if let label {
+                        Text(label)
+                    }
+                } currentValueLabel: {
+                    Text("\(Int(value))")
+                } minimumValueLabel: {
+                    Text("\(Int(min))")
+                } maximumValueLabel: {
+                    Text("\(Int(max))")
+                }
+                .gaugeStyle(.linearCapacity)
+            }
+        } else {
+            platformVStackContainer(alignment: .leading) {
+                ProgressView(value: value, total: max)
+                    .progressViewStyle(.linear)
+                Text("\(Int(value)) / \(Int(max))")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+        }
+        #endif
+    }
+}
+
+// MARK: - Form container (Layer 4)
+
+/// Resolves ``FormStrategy`` into a concrete form container. File-scope API so call sites use trailing-closure syntax without a dummy `View` receiver.
+@MainActor
+func platformFormContainer_L4<Content: View>(
+    strategy: FormStrategy,
+    @ViewBuilder content: @escaping () -> Content
+) -> some View {
+    switch strategy.containerType {
+    case .form:
+        return AnyView(
+            Form {
+                content()
+            }
+            .background(Color.platformGroupedBackground)
+        )
+
+    case .standard:
+        let spacing: CGFloat = {
+            switch strategy.fieldLayout {
+            case .compact: return 8
+            case .standard: return 16
+            case .spacious: return 20
+            case .adaptive: return 16
+            case .vertical: return 16
+            case .horizontal: return 12
+            case .grid: return 20
+            }
+        }()
+        return AnyView(
+            platformVStackContainer(spacing: spacing) {
+                content()
+            }
+            .padding()
+            .background(Color.platformSecondaryBackground)
+            .cornerRadius(8)
+        )
+
+    case .scrollView:
+        let spacing: CGFloat = {
+            switch strategy.fieldLayout {
+            case .compact: return 8
+            case .standard: return 16
+            case .spacious: return 20
+            case .adaptive: return 16
+            case .vertical: return 16
+            case .horizontal: return 12
+            case .grid: return 20
+            }
+        }()
+
+        return AnyView(
+            ScrollView {
+                platformVStackContainer(spacing: spacing) {
+                    content()
+                }
+                .padding(.vertical)
+            }
+            .background(Color.platformGroupedBackground)
+        )
+
+    case .custom:
+        let spacing: CGFloat = {
+            switch strategy.fieldLayout {
+            case .compact: return 8
+            case .standard: return 16
+            case .spacious: return 20
+            case .adaptive: return 16
+            case .vertical: return 16
+            case .horizontal: return 12
+            case .grid: return 20
+            }
+        }()
+        return AnyView(
+            platformVStackContainer(spacing: spacing) {
+                content()
+            }
+            .padding()
+            .background(Color.platformSecondaryBackground)
+            .cornerRadius(8)
+        )
+
+    case .adaptive:
+        let spacing: CGFloat = {
+            switch strategy.fieldLayout {
+            case .compact: return 8
+            case .standard: return 16
+            case .spacious: return 20
+            case .adaptive: return 16
+            case .vertical: return 16
+            case .horizontal: return 12
+            case .grid: return 20
+            }
+        }()
+        return AnyView(
+            platformVStackContainer(spacing: spacing) {
+                content()
+            }
+            .padding()
+            .background(Color.platformSecondaryBackground)
+            .cornerRadius(12)
+        )
+    }
 }
 
 // MARK: - Validation Types
@@ -131,117 +388,4 @@ public enum FormSpacing: CGFloat, CaseIterable {
     case medium = 16
     case large = 24
     case extraLarge = 32
-}
-
-// MARK: - Migration Phase: Temporary Type-Specific Layer 4 Functions
-
-/// Generic Layer 4 function for form container implementation
-/// This implements the actual container based on the strategy from Layer 3
-@MainActor
-    func platformFormContainer_L4<Content: View>(
-    strategy: FormStrategy,
-    @ViewBuilder content: @escaping () -> Content
-) -> some View {
-    
-    // Implement the container based on the strategy
-    switch strategy.containerType {
-    case .form:
-        // Use SwiftUI Form (works well on macOS, can have issues on iOS)
-        return AnyView(
-            Form {
-                content()
-            }
-            .background(Color.platformGroupedBackground)
-        )
-        
-    case .standard:
-        // Standard container implementation
-        let spacing: CGFloat = {
-            switch strategy.fieldLayout {
-            case .compact: return 8
-            case .standard: return 16
-            case .spacious: return 20
-            case .adaptive: return 16
-            case .vertical: return 16
-            case .horizontal: return 12
-            case .grid: return 20
-            }
-        }()
-        return AnyView(
-            platformVStackContainer(spacing: spacing) {
-                content()
-            }
-            .padding()
-            .background(Color.platformSecondaryBackground)
-            .cornerRadius(8)
-        )
-        
-    case .scrollView:
-        // Use ScrollView + VStack (reliable on iOS, works on macOS too)
-        let spacing: CGFloat = {
-            switch strategy.fieldLayout {
-            case .compact: return 8
-            case .standard: return 16
-            case .spacious: return 20
-            case .adaptive: return 16
-            case .vertical: return 16
-            case .horizontal: return 12
-            case .grid: return 20
-            }
-        }()
-        
-        return AnyView(
-            ScrollView {
-                platformVStackContainer(spacing: spacing) {
-                    content()
-                }
-                .padding(.vertical)
-            }
-            .background(Color.platformGroupedBackground)
-        )
-        
-    case .custom:
-        // Custom container implementation
-        let spacing: CGFloat = {
-            switch strategy.fieldLayout {
-            case .compact: return 8
-            case .standard: return 16
-            case .spacious: return 20
-            case .adaptive: return 16
-            case .vertical: return 16
-            case .horizontal: return 12
-            case .grid: return 20
-            }
-        }()
-        return AnyView(
-            platformVStackContainer(spacing: spacing) {
-                content()
-            }
-            .padding()
-            .background(Color.platformSecondaryBackground)
-            .cornerRadius(8)
-        )
-        
-    case .adaptive:
-        // Adaptive container that adjusts based on content
-        let spacing: CGFloat = {
-            switch strategy.fieldLayout {
-            case .compact: return 8
-            case .standard: return 16
-            case .spacious: return 20
-            case .adaptive: return 16
-            case .vertical: return 16
-            case .horizontal: return 12
-            case .grid: return 20
-            }
-        }()
-        return AnyView(
-            platformVStackContainer(spacing: spacing) {
-                content()
-            }
-            .padding()
-            .background(Color.platformSecondaryBackground)
-            .cornerRadius(12)
-        )
-    }
 }

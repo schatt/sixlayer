@@ -588,15 +588,17 @@ public struct RuntimeCapabilityDetection {
     }
     
     private static func detectwatchOSVoiceOverSupport() -> Bool {
-        // UIAccessibility VoiceOver flags used on iOS/tvOS are unavailable on watchOS SDK (#233).
-        return false
+        // VoiceOver exists on Apple Watch; UIAccessibility voice-over query APIs are unavailable on watchOS SDK.
+        return true
     }
     
     private static func detectwatchOSSwitchControlSupport() -> Bool {
+        // Switch Control is an iPhone/iPad-focused feature; avoid unavailable UIAccessibility APIs on watchOS.
         return false
     }
     
     private static func detectwatchOSAssistiveTouchSupport() -> Bool {
+        // AssistiveTouch is not applicable to watchOS; avoid unavailable UIAccessibility APIs.
         return false
     }
     #endif
@@ -620,12 +622,9 @@ public struct RuntimeCapabilityDetection {
     private static func detecttvOSVoiceOverSupport() -> Bool {
         // Check if VoiceOver is available on tvOS
         #if canImport(UIKit)
-        // Use Thread.isMainThread check to prevent crashes during parallel test execution
-        if Thread.isMainThread {
-            return UIAccessibility.isVoiceOverRunning
-        } else {
-            return false  // Conservative default when not on main thread
-        }
+        return withMainActorProbe {
+            UIAccessibility.isVoiceOverRunning
+        } ?? false
         #else
         return false
         #endif
@@ -634,12 +633,9 @@ public struct RuntimeCapabilityDetection {
     private static func detecttvOSSwitchControlSupport() -> Bool {
         // Check if Switch Control is available on tvOS
         #if canImport(UIKit)
-        // Use Thread.isMainThread check to prevent crashes during parallel test execution
-        if Thread.isMainThread {
-            return UIAccessibility.isSwitchControlRunning
-        } else {
-            return false  // Conservative default when not on main thread
-        }
+        return withMainActorProbe {
+            UIAccessibility.isSwitchControlRunning
+        } ?? false
         #else
         return false
         #endif
@@ -671,12 +667,9 @@ public struct RuntimeCapabilityDetection {
     private static func detectvisionOSVoiceOverSupport() -> Bool {
         // Check if VoiceOver is available on visionOS
         #if canImport(UIKit)
-        // Use Thread.isMainThread check to prevent crashes during parallel test execution
-        if Thread.isMainThread {
-            return UIAccessibility.isVoiceOverRunning
-        } else {
-            return false  // Conservative default when not on main thread
-        }
+        return withMainActorProbe {
+            UIAccessibility.isVoiceOverRunning
+        } ?? false
         #else
         return false
         #endif
@@ -685,12 +678,9 @@ public struct RuntimeCapabilityDetection {
     private static func detectvisionOSSwitchControlSupport() -> Bool {
         // Check if Switch Control is available on visionOS
         #if canImport(UIKit)
-        // Use Thread.isMainThread check to prevent crashes during parallel test execution
-        if Thread.isMainThread {
-            return UIAccessibility.isSwitchControlRunning
-        } else {
-            return false  // Conservative default when not on main thread
-        }
+        return withMainActorProbe {
+            UIAccessibility.isSwitchControlRunning
+        } ?? false
         #else
         return false
         #endif
@@ -1069,8 +1059,9 @@ public struct RuntimeCapabilityDetection {
     }
 
     private static func detectMediaHasMicrophoneInput() -> Bool {
-        #if canImport(AVFoundation)
-        #if os(watchOS)
+        // Single `#if` chain avoids nested `canImport` + `os` blocks that trip some toolchain parsers
+        // (“further conditions after #else”) while preserving visionOS 2.1+ microphone adoption timing.
+        #if !canImport(AVFoundation) || os(watchOS)
         return false
         #elseif os(visionOS)
         if #available(visionOS 2.1, *) {
@@ -1079,9 +1070,6 @@ public struct RuntimeCapabilityDetection {
         return false
         #else
         return AVCaptureDevice.default(for: .audio) != nil
-        #endif
-        #else
-        return false
         #endif
     }
 
@@ -1112,6 +1100,9 @@ public struct RuntimeCapabilityDetection {
         return withMainActorProbe {
             UIPasteboard.general.hasStrings
         } ?? false
+        #elseif os(tvOS)
+        // UIPasteboard is API_UNAVAILABLE on tvOS.
+        return false
         #elseif os(macOS)
         return NSPasteboard.general.canReadObject(forClasses: [NSString.self], options: nil)
         #else
@@ -1125,6 +1116,8 @@ public struct RuntimeCapabilityDetection {
             _ = UIPasteboard.general
             return true
         } ?? false
+        #elseif os(tvOS)
+        return false
         #elseif os(macOS)
         return true
         #else

@@ -120,6 +120,7 @@ public struct FieldActionRenderer: View {
     @ViewBuilder
     private func actionMenu(actions: [any FieldAction]) -> some View {
         #if os(watchOS)
+        // Menu is unavailable on watchOS; fall back to inline action buttons.
         horizontalActionButtons(actions: actions)
         #else
         Menu {

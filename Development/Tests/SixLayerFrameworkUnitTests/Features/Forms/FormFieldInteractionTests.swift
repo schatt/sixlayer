@@ -4,6 +4,17 @@ import Testing
 import SwiftUI
 @testable import SixLayerFramework
 
+private extension View {
+    /// `MenuPickerStyle` is unavailable on watchOS; use wheel in tests there.
+    func formFieldInteractionTestPickerStyle() -> some View {
+        #if os(watchOS)
+        self.pickerStyle(.wheel)
+        #else
+        self.pickerStyle(.menu)
+        #endif
+    }
+}
+
 //
 //  FormFieldInteractionTests.swift
 //  SixLayerFrameworkTests

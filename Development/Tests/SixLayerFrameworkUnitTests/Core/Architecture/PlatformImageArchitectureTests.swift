@@ -24,7 +24,7 @@ import Testing
 //
 
 import SwiftUI
-#if os(iOS)
+#if os(iOS) || os(watchOS)
 import UIKit
 #elseif os(macOS)
 import AppKit
@@ -248,6 +248,15 @@ open class PlatformImageArchitectureTests: BaseTestClass {
         }
         return jpegData
         
+        #elseif os(watchOS)
+        let size = CGSize(width: 100, height: 100)
+        UIGraphicsBeginImageContextWithOptions(size, false, 0)
+        defer { UIGraphicsEndImageContext() }
+        UIColor.red.setFill()
+        UIRectFill(CGRect(origin: .zero, size: size))
+        guard let uiImage = UIGraphicsGetImageFromCurrentImageContext() else { return Data() }
+        return uiImage.jpegData(compressionQuality: 0.8) ?? Data()
+
         #else
         return Data()
         #endif
