@@ -103,8 +103,8 @@ public struct RichTextEditor: UIViewRepresentable {
         }
     }
 }
-#elseif os(tvOS) || os(watchOS)
-// tvOS/watchOS — `TextEditor` is unavailable; use a focusable `TextField`.
+#elseif os(tvOS)
+// tvOS: `TextEditor` is unavailable; use a single-line `TextField`.
 public struct RichTextEditor: View {
     @Binding var text: String
     @Binding var selectedText: NSRange?

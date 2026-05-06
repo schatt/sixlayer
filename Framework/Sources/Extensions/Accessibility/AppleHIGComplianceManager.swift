@@ -1,9 +1,6 @@
 import Foundation
 import SwiftUI
 import Combine
-#if canImport(UIKit)
-import UIKit
-#endif
 
 // MARK: - Apple HIG Compliance Manager
 
