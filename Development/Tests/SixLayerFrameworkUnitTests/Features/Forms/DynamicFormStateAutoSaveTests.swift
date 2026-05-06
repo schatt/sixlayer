@@ -263,4 +263,72 @@ open class DynamicFormStateAutoSaveTests: BaseTestClass {
         formState.autoSaveInterval = 15.0
         #expect(formState.autoSaveInterval == 15.0)
     }
+    
+    // MARK: - Draft storage key (Issue #273)
+    
+    /// Same `configuration.id`, different `draftStorageKey` → separate draft buckets.
+    @Test @MainActor func testDraftStorageKeyIsolatesDraftsForSameConfigurationId() {
+        let (testDefaults, suiteName) = makeIsolatedDefaultsSuite()
+        let storage = UserDefaultsFormStateStorage(userDefaults: testDefaults)
+        let config = DynamicFormConfiguration(
+            id: "shared-form",
+            title: "Shared",
+            sections: []
+        )
+        let addState = DynamicFormState(
+            configuration: config,
+            draftStorageKey: "add-bucket",
+            storage: storage
+        )
+        let editState = DynamicFormState(
+            configuration: config,
+            draftStorageKey: "edit-bucket",
+            storage: storage
+        )
+        addState.setValue("from-add", for: "f")
+        addState.saveDraft()
+        editState.setValue("from-edit", for: "f")
+        editState.saveDraft()
+        
+        #expect(addState.hasDraft())
+        #expect(editState.hasDraft())
+        
+        addState.fieldValues.removeAll()
+        #expect(addState.loadDraft())
+        #expect(addState.getValue(for: "f") as String? == "from-add")
+        
+        editState.fieldValues.removeAll()
+        #expect(editState.loadDraft())
+        #expect(editState.getValue(for: "f") as String? == "from-edit")
+        
+        cleanupDefaultsSuite(suiteName, defaults: testDefaults)
+    }
+    
+    /// Empty `draftStorageKey` falls back to `configuration.id` (same bucket as `nil`).
+    @Test @MainActor func testEmptyDraftStorageKeyFallsBackToConfigurationId() {
+        let (testDefaults, suiteName) = makeIsolatedDefaultsSuite()
+        let storage = UserDefaultsFormStateStorage(userDefaults: testDefaults)
+        let config = DynamicFormConfiguration(
+            id: "fallback-form",
+            title: "Fallback",
+            sections: []
+        )
+        let explicitEmpty = DynamicFormState(
+            configuration: config,
+            draftStorageKey: "",
+            storage: storage
+        )
+        let defaultKeyState = DynamicFormState(
+            configuration: config,
+            storage: storage
+        )
+        explicitEmpty.setValue("shared", for: "f")
+        explicitEmpty.saveDraft()
+        #expect(defaultKeyState.hasDraft())
+        defaultKeyState.fieldValues.removeAll()
+        #expect(defaultKeyState.loadDraft())
+        #expect(defaultKeyState.getValue(for: "f") as String? == "shared")
+        
+        cleanupDefaultsSuite(suiteName, defaults: testDefaults)
+    }
 }
