@@ -378,10 +378,12 @@ public struct HighContrastModifier: ViewModifier {
             return content.wrappedWithCompliance()
         }
         
-        #if canImport(UIKit)
-        return iosHighContrast(to: content).wrappedWithCompliance()
-        #elseif os(macOS)
+        // Explicit OS split (#240): `canImport(UIKit)` is true on tvOS but many UIKit color APIs are
+        // the wrong shape; routing by OS keeps watchOS/tvOS on the neutral path without relying on UIKit import.
+        #if os(macOS)
         return macOSHighContrast(to: content).wrappedWithCompliance()
+        #elseif os(iOS) || os(tvOS) || os(watchOS) || os(visionOS)
+        return iosHighContrast(to: content).wrappedWithCompliance()
         #else
         return fallbackHighContrast(to: content)
         #endif
@@ -389,7 +391,6 @@ public struct HighContrastModifier: ViewModifier {
     
     // MARK: - Platform-Specific Implementations
     
-    #if canImport(UIKit)
     private func iosHighContrast<Content: View>(to content: Content) -> some View {
         #if os(tvOS) || os(watchOS)
         // tvOS/watchOS: `UIColor.systemBackground` is unavailable or unsuitable; use neutral SwiftUI colors.
@@ -402,7 +403,6 @@ public struct HighContrastModifier: ViewModifier {
             .background(Color(UIColor.systemBackground))
         #endif
     }
-    #endif
     
     #if os(macOS)
     private func macOSHighContrast<Content: View>(to content: Content) -> some View {
