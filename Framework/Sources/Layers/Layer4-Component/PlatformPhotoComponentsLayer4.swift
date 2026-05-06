@@ -305,7 +305,6 @@ public enum PlatformPhotoComponentsLayer4 {
             onBecameUnavailable: onBecameUnavailable
         )
     }
-#endif
 }
 
 // MARK: - Camera Preview View
