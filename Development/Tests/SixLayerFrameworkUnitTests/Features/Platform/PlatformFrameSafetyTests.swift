@@ -36,13 +36,16 @@ import AppKit
 import WatchKit
 #endif
 
-/// On watchOS, ``hostRootPlatformView`` returns nil (UIKit/UIView hosting is unavailable). Frame clamp tests still validate numeric behavior; skip UI hosting nil checks.
+/// On watchOS, `TestSetupUtilities.hostRootPlatformView` is nil (UIKit hosting path unused). Frame clamp tests still validate numeric behavior; skip UI hosting nil checks.
 @MainActor
 private func expectUIKitHostedRootIfAvailable<V: View>(_ view: V, _ message: String) {
     #if os(watchOS)
     _ = view
     #else
-    #expect(hostRootPlatformView(view) != nil, message)
+    // `#expect`'s trailing comment overload requires literals; callers still pass human context.
+    let installed = TestSetupUtilities.hostRootPlatformView(view)
+    #expect(installed != nil)
+    _ = message
     #endif
 }
 

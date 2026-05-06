@@ -10,7 +10,7 @@ private extension View {
         #if os(watchOS)
         self.pickerStyle(.wheel)
         #else
-        self.selectFieldImplementationTestPickerStyle()
+        self.pickerStyle(.menu)
         #endif
     }
 }

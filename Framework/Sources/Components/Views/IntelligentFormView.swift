@@ -1296,10 +1296,8 @@ private struct DefaultPlatformFieldView: View {
             ))
             .platformTextFieldStyle()
             .disabled(!isEditable)
-            #if os(iOS)
-            .keyboardType(UIKeyboardType.URL)
-            .autocapitalization(.none)
-            #endif
+            .keyboardType(KeyboardType.URL)
+            .platformTextInputAutocapitalization(.never)
             .background(isValid ? Color.platformSecondaryBackground : Color.red.opacity(0.1))
             .overlay(
                 RoundedRectangle(cornerRadius: 8)
@@ -1313,9 +1311,7 @@ private struct DefaultPlatformFieldView: View {
             ))
             .platformTextFieldStyle()
             .disabled(!isEditable)
-            #if os(iOS)
-            .autocapitalization(.none)
-            #endif
+            .platformTextInputAutocapitalization(.never)
             .background(isValid ? Color.platformSecondaryBackground : Color.red.opacity(0.1))
             .overlay(
                 RoundedRectangle(cornerRadius: 8)

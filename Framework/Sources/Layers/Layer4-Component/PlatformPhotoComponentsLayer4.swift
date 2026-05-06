@@ -112,7 +112,8 @@ public enum PlatformPhotoComponentsLayer4 {
             .automaticCompliance(named: "platformCameraPreview_L4")
     }
     #endif
-    
+    #endif
+
     // MARK: - Tabbed Photo Source Components
     
     /// Creates a tabbed interface for switching between camera and photo library
@@ -336,6 +337,7 @@ public struct PlatformCameraPreviewView: View {
         #endif
     }
 }
+#endif
 #endif
 
 // MARK: - Supporting Views
