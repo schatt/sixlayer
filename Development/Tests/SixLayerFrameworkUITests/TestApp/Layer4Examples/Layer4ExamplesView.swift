@@ -1005,7 +1005,7 @@ struct Layer4ContractOnlyView: View {
     @ViewBuilder
     private var contractControlsContent: some View {
         platformVStack(alignment: .leading, spacing: 16) {
-            platformButton("L4ContractButton") { }
+            platformButton(label: "L4ContractButton", id: "l4contractbutton") { }
             SixLayerFramework.platformTextField("L4ContractTextField", text: $l4ContractText)
             platformPicker(
                 label: "L4ContractPicker",
