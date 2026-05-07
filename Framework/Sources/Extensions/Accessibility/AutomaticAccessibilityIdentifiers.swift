@@ -16,11 +16,6 @@
 import SwiftUI
 import Foundation
 import os.log
-#if canImport(UIKit)
-import UIKit
-#elseif os(macOS)
-import AppKit
-#endif
 
 // Note: All hints are now passed as parameters to modifiers (Option A from issue #160)
 // This eliminates environment dependencies and makes the API explicit and testable
