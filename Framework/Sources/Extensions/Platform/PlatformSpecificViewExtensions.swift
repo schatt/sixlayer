@@ -1177,10 +1177,10 @@ public extension View {
         #endif
     }
 
-    /// Maps ``SixLayerTextContentType`` to the system text content type when UIKit is available.
+    /// Maps ``SixLayerTextContentType`` to the system text content type on iOS.
     @ViewBuilder
     func platformTextContentType(_ contentType: SixLayerTextContentType) -> some View {
-        #if os(iOS) && canImport(UIKit)
+        #if os(iOS)
         self.textContentType(contentType.uiTextContentType)
         #else
         self
