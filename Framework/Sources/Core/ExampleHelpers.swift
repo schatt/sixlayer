@@ -133,7 +133,7 @@ public struct ExampleProjectFormField: View {
                 .fontWeight(.medium)
             
             TextField(placeholder, text: $text)
-                .textFieldStyle(.roundedBorder)
+                .platformTextFieldStyle()
         }
         .automaticCompliance(named: "ExampleProjectFormField")
     }
