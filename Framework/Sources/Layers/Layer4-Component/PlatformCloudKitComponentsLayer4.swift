@@ -9,10 +9,6 @@
 import SwiftUI
 import CloudKit
 
-#if canImport(UIKit)
-import UIKit
-#endif
-
 #if canImport(AppKit)
 import AppKit
 #endif
