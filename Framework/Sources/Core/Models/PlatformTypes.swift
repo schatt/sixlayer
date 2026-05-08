@@ -10,7 +10,7 @@ import SwiftUI
 #if canImport(AppKit)
 import AppKit
 #endif
-#if canImport(UIKit)
+#if os(iOS) || os(tvOS) || os(watchOS) || os(visionOS)
 import UIKit
 #endif
 
