@@ -144,7 +144,22 @@ final class Layer4UITests: XCTestCase {
     /// `Form` rows for L4 Controls sit mid-scroll; anchor on the section header before field/button contract checks.
     @MainActor
     private func scrollToL4ControlsSection() {
+        let headerId = Self.l4ContractSectionHeaderIdentifier(sectionTitle: "L4 Controls")
+        let deadline = Date().addingTimeInterval(14)
+        while Date() < deadline {
+            if element(matchingIdentifier: headerId).exists { break }
+            if app.staticTexts["L4 Controls"].exists { break }
+            if anyDescendantHasLabel(equalTo: "L4ContractTextField", timeout: 0.25) { break }
+            if !app.tables.firstMatch.exists, !app.xcuiPrimaryScrollHost().exists {
+                RunLoop.current.run(until: Date().addingTimeInterval(Self.quickWait))
+                continue
+            }
+            app.xcuiSwipeScrollHostsUp()
+        }
         scrollToFormSectionHeader(title: "L4 Controls")
+        _ = element(matchingIdentifier: headerId).waitForExistence(timeout: 2)
+            || anyDescendantHasLabel(equalTo: "L4 Controls", timeout: 0.5)
+            || anyDescendantHasLabel(equalTo: "L4ContractTextField", timeout: 1.2)
     }
 
     /// Element with the given accessibility identifier (any type).
