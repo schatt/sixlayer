@@ -38,9 +38,20 @@ See [strict-tdd-definition.mdc](mdc:.cursor/rules/strict-tdd-definition.mdc) →
 
 ## When to close issues
 
-- **Close when the work is done on its branch** — don't wait for merge to `main`. Name the branch in the closing comment (e.g. "Implemented on `b7.6.0`, pushed").
-- Merge to `main` is part of the release process, not a prerequisite for closing.
-- Before `gh issue close`, rewrite the issue body into a **self-contained final record** so readers do not need to reconstruct outcomes from comment history.
+- **Default:** **Close when the work is done on its branch** — don't wait for merge to `main`. Name the branch in the closing comment (e.g. "Implemented on `b7.6.0`, pushed").
+- Merge to `main` is part of the release process, not a prerequisite for closing (unless you are using the integration-line workflow below — then `next` is part of “done”).
+
+### Worklist closure: `wip/` + `next` + dedicated worktree
+
+When the linked work uses a **`wip/<issue-slug>`** branch (often in a **temp worktree**) and lands on **`next`** (not necessarily `main`), **do not close the issue until** this sequence is finished; then post the **final** comment and close.
+
+1. **Merge `next` into `wip/...`** (in the worktree or equivalent checkout), resolve conflicts, commit the merge if needed, push.
+2. **Merge `wip/...` into `next`** in the primary clone, push `next` (`git push all next` or repo convention).
+3. **Rename branch** `wip/<slug>` → **`done/<slug>`** (same history), **`git push all done/<slug>`**, then **`git push all --delete wip/<slug>`** on remotes that still carry the old name (retain history on `done/`, same issue — do not silently drop unpushed commits).
+4. **`git worktree remove <path>`** for the dedicated worktree.
+5. **Then** finalize GitHub state: **`gh issue edit`** replaces the issue body with the **Final Record** (mandatory section below). Add a **`gh issue comment`** (same `--body-file` hygiene) documenting steps 1–4: merge SHAs, `next`/`done/` tips, **worktree path removed**, pushes. **`gh issue close --reason completed`**. **Order:** edits and comment **before** close (close last). If the issue was closed early by mistake, **reopen**, post the closure comment, then close again.
+
+If production work used **`wip/`** + **`next`** but you close before step 5, the audit trail diverges from the integration-line record — avoid that.
 
 ## Final record rewrite before close (MANDATORY)
 
