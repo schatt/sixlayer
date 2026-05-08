@@ -8,7 +8,7 @@
 import Foundation
 import SwiftUI
 
-#if os(iOS)
+#if os(iOS) || os(visionOS)
 import UIKit
 #endif
 
@@ -243,6 +243,38 @@ public struct EnhancedDeviceCapabilities {
                 self.supportsSplitView = false
                 self.supportsStageManager = false
             }
+            #elseif os(visionOS)
+            // Prefer window/scene sizing; avoid UIScreen as primary bounds (#240).
+            self.deviceType = .vision
+            self.orientation = .unknown
+            self.iPhoneSizeCategory = nil
+            self.iPadSizeCategory = nil
+            self.supportsSplitView = false
+            self.supportsStageManager = false
+            
+            let actualWindowSize: CGSize
+            let safeAreaInsets: UIEdgeInsets
+            let pixelDensity: CGFloat
+            
+            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+               let window = windowScene.windows.first {
+                actualWindowSize = window.bounds.size
+                safeAreaInsets = window.safeAreaInsets
+                pixelDensity = window.traitCollection.displayScale
+            } else {
+                actualWindowSize = CGSize(width: 1280, height: 720)
+                safeAreaInsets = UIEdgeInsets.zero
+                pixelDensity = 2.0
+            }
+            
+            self.screenSize = actualWindowSize
+            self.pixelDensity = pixelDensity
+            self.safeAreaInsets = EdgeInsets(
+                top: safeAreaInsets.top,
+                leading: safeAreaInsets.left,
+                bottom: safeAreaInsets.bottom,
+                trailing: safeAreaInsets.right
+            )
             #elseif os(macOS)
             // macOS: Use actual window size detection
             // This will be updated by macOSWindowDetection when available
