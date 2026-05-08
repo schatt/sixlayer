@@ -51,8 +51,8 @@ public enum SixLayerTextContentType: String, CaseIterable, Hashable {
     case URL = "URL"
     case creditCardNumber = "creditCardNumber"
     
-    #if canImport(UIKit) && !os(watchOS)
-    /// Convert to UITextContentType for iOS/Mac Catalyst/tvOS (not watchOS — use ``wkTextContentType``).
+    #if os(iOS) || targetEnvironment(macCatalyst) || os(visionOS)
+    /// Convert to UITextContentType for iOS-family targets (iOS / Mac Catalyst / visionOS).
     public var uiTextContentType: UITextContentType {
         switch self {
         case .name: return .name
