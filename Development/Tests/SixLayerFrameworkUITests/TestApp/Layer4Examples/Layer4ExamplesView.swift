@@ -1007,18 +1007,15 @@ struct Layer4ContractOnlyView: View {
         platformVStack(alignment: .leading, spacing: 16) {
             platformButton(label: "L4ContractButton", id: "l4contractbutton") { }
             SixLayerFramework.platformTextField("L4ContractTextField", text: $l4ContractText, id: "l4contracttextfield")
-                .accessibilityIdentifier("SixLayer.main.ui.l4contracttextfield.TextField")
             platformPicker(
                 label: "L4ContractPicker",
                 selection: $l4ContractPickerSelection,
                 options: ["A", "B", "C"],
                 pickerName: "l4contractpicker"
             )
-            .accessibilityIdentifier("SixLayer.main.ui.l4contractpicker.Picker")
             platformSecureField("L4ContractSecureField", text: $l4ContractSecureText, id: "l4contractsecurefield")
                 .accessibilityIdentifier("SixLayer.main.ui.l4contractsecurefield.SecureField")
             SixLayerFramework.platformToggle("L4ContractToggle", isOn: $l4ContractToggleOn, id: "l4contracttoggle")
-                .accessibilityIdentifier("SixLayer.main.ui.l4contracttoggle.Toggle")
             SixLayerFramework.platformTextEditor("L4ContractTextEditor", text: $l4ContractEditorText, id: "l4contracttexteditor")
                 .accessibilityIdentifier("SixLayer.main.ui.l4contracttexteditor.TextEditor")
             EmptyView()
