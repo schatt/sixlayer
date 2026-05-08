@@ -1014,8 +1014,10 @@ struct Layer4ContractOnlyView: View {
                 pickerName: "l4contractpicker"
             )
             platformSecureField("L4ContractSecureField", text: $l4ContractSecureText, id: "l4contractsecurefield")
+                .accessibilityIdentifier("SixLayer.main.ui.l4contractsecurefield.SecureField")
             SixLayerFramework.platformToggle("L4ContractToggle", isOn: $l4ContractToggleOn, id: "l4contracttoggle")
             SixLayerFramework.platformTextEditor("L4ContractTextEditor", text: $l4ContractEditorText, id: "l4contracttexteditor")
+                .accessibilityIdentifier("SixLayer.main.ui.l4contracttexteditor.TextEditor")
             EmptyView()
                 .platformDatePicker(selection: $l4ContractDate, displayedComponents: .date) { Text("L4ContractDatePicker") }
         }
