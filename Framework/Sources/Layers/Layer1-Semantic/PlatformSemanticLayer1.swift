@@ -1608,7 +1608,12 @@ public struct CustomItemCollectionView<Item: Identifiable, CustomView: View>: Vi
                 customCreateView: nil
             )
         } else {
-            switch determinePresentationStrategy() {
+            switch ItemCollectionPresentationStrategyResolver.resolve(
+                hints: hints,
+                itemCount: items.count,
+                platform: SixLayerPlatform.currentPlatform,
+                deviceType: SixLayerPlatform.deviceType
+            ) {
             case .grid:
                 CustomGridCollectionView(
                     items: items,
@@ -1637,43 +1642,6 @@ public struct CustomItemCollectionView<Item: Identifiable, CustomView: View>: Vi
                     onItemEdited: onItemEdited
                 )
             }
-        }
-    }
-    
-    /// Determine the optimal presentation strategy based on hints and platform
-    private func determinePresentationStrategy() -> PresentationStrategy {
-        let _ = hints.customPreferences["itemType"] ?? "generic"
-        let _ = hints.customPreferences["interactionStyle"] ?? "static"
-        
-        // Platform-aware decision making
-        let platform = SixLayerPlatform.currentPlatform
-        let deviceType = SixLayerPlatform.deviceType
-        
-        // For custom views, prefer grid on larger screens, list on smaller
-        // Use PlatformStrategy to reduce code duplication (Issue #140)
-        let preference = platform.defaultPresentationPreference(deviceType: deviceType)
-        return presentationStrategyFromPreference(preference)
-    }
-    
-    /// Convert PresentationPreference to PresentationStrategy
-    /// Helper function to bridge PlatformStrategy (which uses PresentationPreference) 
-    /// with internal PresentationStrategy enum
-    private func presentationStrategyFromPreference(_ preference: PresentationPreference) -> PresentationStrategy {
-        switch preference {
-        case .cards, .card:
-            return .expandableCards
-        case .list:
-            return .list
-        case .grid:
-            return .grid
-        case .masonry:
-            return .masonry
-        case .coverFlow:
-            return .coverFlow
-        case .automatic:
-            return .adaptive
-        default:
-            return .adaptive
         }
     }
 }
@@ -1710,7 +1678,12 @@ public struct GenericItemCollectionView<Item: Identifiable>: View {
             if items.isEmpty {
                 CollectionEmptyStateView(hints: hints, onCreateItem: onCreateItem)
             } else {
-                switch determinePresentationStrategy() {
+                switch ItemCollectionPresentationStrategyResolver.resolve(
+                    hints: hints,
+                    itemCount: items.count,
+                    platform: SixLayerPlatform.currentPlatform,
+                    deviceType: SixLayerPlatform.deviceType
+                ) {
                 case .expandableCards:
                     ExpandableCardCollectionView(
                         items: items,
@@ -1773,180 +1746,6 @@ public struct GenericItemCollectionView<Item: Identifiable>: View {
         .automaticCompliance()
         .platformPatterns()
         .visualConsistency()
-    }
-    
-    /// Determine the optimal presentation strategy based on hints and platform
-    private func determinePresentationStrategy() -> PresentationStrategy {
-        let itemTypeString = hints.customPreferences["itemType"] ?? "generic"
-        let interactionStyleString = hints.customPreferences["interactionStyle"] ?? "static"
-        let _ = hints.customPreferences["layoutPreference"] ?? "automatic"
-        
-        // Convert strings to enums for type safety
-        let itemType = ItemType.from(string: itemTypeString)
-        let interactionStyle = InteractionStyle(rawValue: interactionStyleString) ?? .static
-        
-        // Platform-aware decision making
-        let platform = SixLayerPlatform.currentPlatform
-        let deviceType = SixLayerPlatform.deviceType
-        
-        // Feature cards with expandable interaction
-        if itemType == .featureCards && interactionStyle == .expandable {
-            switch platform {
-            case .visionOS:
-                return .coverFlow // Spatial interface prefers coverflow
-            case .macOS:
-                return .expandableCards // Desktop prefers hover-expandable cards
-            case .iOS:
-                return deviceType == .pad ? .expandableCards : .adaptive
-            case .watchOS, .tvOS:
-                return .list // Constrained interfaces prefer lists
-            }
-        }
-        
-        // Media content
-        if hints.dataType == .media {
-            // Use PlatformStrategy to reduce code duplication (Issue #140)
-            let preference = platform.defaultMediaPresentationPreference(deviceType: deviceType)
-            return presentationStrategyFromPreference(preference)
-        }
-        
-        // Navigation items
-        if hints.dataType == .navigation {
-            // Use PlatformStrategy to reduce code duplication (Issue #140)
-            let preference = platform.defaultNavigationPresentationPreference()
-            return presentationStrategyFromPreference(preference)
-        }
-        
-        // Default based on presentation preference
-        switch hints.presentationPreference {
-        case .cards:
-            return .expandableCards
-        case .list:
-            return .list
-        case .grid:
-            return .grid
-        case .masonry:
-            return .masonry
-        case .coverFlow:
-            return .coverFlow
-        case .countBased(let lowCount, let highCount, let threshold):
-            // Explicit count-based preference
-            return items.count <= threshold
-                ? determineStrategyForPreference(lowCount)
-                : determineStrategyForPreference(highCount)
-        case .automatic:
-            // Count-aware logic for generic/collection content
-            if hints.dataType == .generic || hints.dataType == .collection {
-                // Safety override: very large collections → list
-                if items.count > 200 {
-                    return .list
-                }
-                
-                // Count-aware automatic selection
-                return determineCountAwareStrategy(
-                    count: items.count,
-                    dataType: hints.dataType,
-                    platform: platform,
-                    deviceType: deviceType
-                )
-            }
-            // For other content types with .automatic, use adaptive
-            return .adaptive
-        default:
-            return .adaptive
-        }
-    }
-    
-    /// Determine count-aware presentation strategy for generic/collection content
-    private func determineCountAwareStrategy(
-        count: Int,
-        dataType: DataTypeHint,
-        platform: SixLayerPlatform,
-        deviceType: DeviceType
-    ) -> PresentationStrategy {
-        let threshold = getCountThreshold(
-            dataType: dataType,
-            platform: platform,
-            deviceType: deviceType
-        )
-        
-        if count <= threshold {
-            // Small collection: prefer cards/grid
-            switch (platform, deviceType) {
-            case (.macOS, _), (.iOS, .pad):
-                return .grid
-            case (.iOS, .phone):
-                return count <= 4 ? .expandableCards : .grid
-            default:
-                return .grid
-            }
-        } else {
-            // Large collection: prefer list
-            return .list
-        }
-    }
-    
-    /// Get count threshold based on content type, platform, and device
-    /// Uses PlatformStrategy to reduce code duplication (Issue #140)
-    private func getCountThreshold(
-        dataType: DataTypeHint,
-        platform: SixLayerPlatform,
-        deviceType: DeviceType
-    ) -> Int {
-        // Use PlatformStrategy which handles both base threshold and platform/device adjustments
-        return platform.countThreshold(dataType: dataType, deviceType: deviceType)
-    }
-
-    /// Convert PresentationPreference to PresentationStrategy
-    /// Helper function to bridge PlatformStrategy (which uses PresentationPreference) 
-    /// with internal PresentationStrategy enum
-    private func presentationStrategyFromPreference(_ preference: PresentationPreference) -> PresentationStrategy {
-        switch preference {
-        case .cards, .card:
-            return .expandableCards
-        case .list:
-            return .list
-        case .grid:
-            return .grid
-        case .masonry:
-            return .masonry
-        case .coverFlow:
-            return .coverFlow
-        case .automatic:
-            return .adaptive
-        default:
-            return .adaptive
-        }
-    }
-    
-    /// Convert a PresentationPreference to a PresentationStrategy
-    /// Used for countBased preferences where nested preferences need resolution
-    private func determineStrategyForPreference(_ preference: PresentationPreference) -> PresentationStrategy {
-        switch preference {
-        case .cards, .card:
-            return .expandableCards
-        case .list:
-            return .list
-        case .grid:
-            return .grid
-        case .masonry:
-            return .masonry
-        case .coverFlow:
-            return .coverFlow
-        case .automatic:
-            // Recursive: use count-aware automatic logic from Phase 1
-            return determineCountAwareStrategy(
-                count: items.count,
-                dataType: hints.dataType,
-                platform: SixLayerPlatform.currentPlatform,
-                deviceType: SixLayerPlatform.deviceType
-            )
-        case .countBased:
-            // Shouldn't happen (handled above), but fallback to prevent recursion
-            return .adaptive
-        default:
-            return .adaptive
-        }
     }
 }
 
@@ -2284,16 +2083,6 @@ extension View {
             self
         }
     }
-}
-
-/// Presentation strategies that Layer 1 can choose from
-private enum PresentationStrategy {
-    case expandableCards
-    case coverFlow
-    case grid
-    case list
-    case masonry
-    case adaptive
 }
 
 /// Generic numeric data view
@@ -4884,7 +4673,7 @@ public struct CustomListCollectionView<Item: Identifiable, CustomView: View>: Vi
         ScrollView {
             platformLazyVStackContainer(spacing: 12) {
                 ForEach(items) { item in
-                    customItemView(item)
+                    listRowSurface(for: item)
                         .onTapGesture {
                             onItemSelected?(item)
                         }
@@ -4892,6 +4681,26 @@ public struct CustomListCollectionView<Item: Identifiable, CustomView: View>: Vi
             }
             .padding(16)
         }
+    }
+
+    /// When `hints.customPreferences["rowVisualStyle"]` is `"card"`, applies a default card-like row surface (#272).
+    @ViewBuilder
+    private func listRowSurface(for item: Item) -> some View {
+        if rowVisualStyleIsCard {
+            customItemView(item)
+                .padding(12)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .fill(Color.platformSecondaryBackground)
+                )
+        } else {
+            customItemView(item)
+        }
+    }
+
+    private var rowVisualStyleIsCard: Bool {
+        hints.customPreferences["rowVisualStyle"]?.lowercased() == "card"
     }
 }
 
