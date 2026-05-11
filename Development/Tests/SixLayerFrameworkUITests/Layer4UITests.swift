@@ -370,6 +370,24 @@ final class Layer4UITests: XCTestCase {
             let byLabel = app.descendants(matching: type).matching(NSPredicate(format: "label == %@", label)).firstMatch
             if byLabel.waitForExistence(timeout: 1.0) { el = byLabel }
         }
+        if el == nil {
+            let byLabelContains = app.descendants(matching: type).matching(NSPredicate(format: "label CONTAINS[c] %@", label)).firstMatch
+            if byLabelContains.waitForExistence(timeout: 0.8) { el = byLabelContains }
+        }
+        // Form-backed SwiftUI often surfaces typed axes on `app.textFields` / `app.secureTextFields` / `app.textViews`
+        // even when generic descendant queries miss the node.
+        if el == nil, type == .textField {
+            let axis = app.textFields[label]
+            if axis.waitForExistence(timeout: 1.0) { el = axis }
+        }
+        if el == nil, type == .secureTextField {
+            let axis = app.secureTextFields[label]
+            if axis.waitForExistence(timeout: 1.0) { el = axis }
+        }
+        if el == nil, type == .textView {
+            let axis = app.textViews[label]
+            if axis.waitForExistence(timeout: 1.0) { el = axis }
+        }
         XCTAssertNotNil(el, "\(componentName): element with identifier '\(identifier)' or containing '\(sanitizedIdentifierName)' should exist (contract)")
         if let el = el {
             let hasContractId = !el.identifier.isEmpty
