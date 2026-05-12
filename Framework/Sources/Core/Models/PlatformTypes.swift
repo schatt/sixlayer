@@ -766,6 +766,10 @@ public struct PlatformImage: @unchecked Sendable {
     #else
     private let _uiImage: UIImage
     #endif
+
+    /// Encoded container bytes when this value was created from \`init?(data:)\`; \`nil\` for bitmap-only construction (CGImage, empty inits, platform image wrappers).
+    /// Used for lossless EXIF reads via \`CGImageSource\` (Issue #274).
+    internal let originalEncodedData: Data?
     
     public init?(data: Data) {
         #if os(macOS)
@@ -775,6 +779,7 @@ public struct PlatformImage: @unchecked Sendable {
         guard let uiImage = UIImage(data: data) else { return nil }
         self._uiImage = uiImage
         #endif
+        self.originalEncodedData = data
     }
     
     public init() {
@@ -783,11 +788,13 @@ public struct PlatformImage: @unchecked Sendable {
         #else
         self._uiImage = UIImage()
         #endif
+        self.originalEncodedData = nil
     }
     
     #if os(macOS)
     public init(nsImage: NSImage) {
         self._nsImage = nsImage
+        self.originalEncodedData = nil
     }
     
     /// Implicit conversion from NSImage to PlatformImage (macOS only)
@@ -808,6 +815,7 @@ public struct PlatformImage: @unchecked Sendable {
     #else
     public init(uiImage: UIImage) {
         self._uiImage = uiImage
+        self.originalEncodedData = nil
     }
     
     /// Implicit conversion from UIImage to PlatformImage at the UIKit boundary
