@@ -65,10 +65,10 @@ public struct RichTextEditor: UIViewRepresentable {
         textView.font = Font.uiFontBody()
         textView.isEditable = true
         textView.isScrollEnabled = true
-        textView.backgroundColor = UIColor.systemBackground
+        textView.backgroundColor = UIColor(Color.platformSystemBackground)
         textView.layer.cornerRadius = 8
         textView.layer.borderWidth = 1
-        textView.layer.borderColor = UIColor.separator.cgColor
+        textView.layer.borderColor = UIColor(Color.platformSeparator).cgColor
         
         // Enable rich text editing
         textView.allowsEditingTextAttributes = true
