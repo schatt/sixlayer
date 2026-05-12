@@ -11,7 +11,11 @@ import CoreLocation
 @testable import SixLayerFramework
 
 #if canImport(ImageIO) && canImport(CoreLocation)
+import CoreGraphics
 import ImageIO
+#if canImport(UniformTypeIdentifiers)
+import UniformTypeIdentifiers
+#endif
 #endif
 
 /// Tests for PlatformImage EXIF GPS location extraction
@@ -138,4 +142,67 @@ open class PlatformImageEXIFTests: BaseTestClass {
         #expect(location == nil)
     }
 }
+
+#if canImport(ImageIO) && canImport(CoreLocation) && canImport(CoreGraphics)
+extension PlatformImageEXIFTests {
+    /// JPEG bytes produced with an embedded GPS dictionary (Issue #274).
+    fileprivate static func makeJPEGDataOnePixelWithGPS() throws -> Data {
+        let colorSpace = CGColorSpaceCreateDeviceRGB()
+        let bitmapInfo = CGBitmapInfo.byteOrder32Little.rawValue | CGImageAlphaInfo.premultipliedFirst.rawValue
+        guard let ctx = CGContext(
+            data: nil,
+            width: 1,
+            height: 1,
+            bitsPerComponent: 8,
+            bytesPerRow: 4,
+            space: colorSpace,
+            bitmapInfo: bitmapInfo
+        ) else {
+            struct MakeImageError: Error {}
+            throw MakeImageError()
+        }
+        ctx.setFillColor(red: 1, green: 1, blue: 1, alpha: 1)
+        ctx.fill(CGRect(x: 0, y: 0, width: 1, height: 1))
+        guard let cgImage = ctx.makeImage() else {
+            struct MakeImageError: Error {}
+            throw MakeImageError()
+        }
+        let mutable = NSMutableData()
+        #if canImport(UniformTypeIdentifiers)
+        let type = UTType.jpeg.identifier as CFString
+        #else
+        let type = "public.jpeg" as CFString
+        #endif
+        guard let dest = CGImageDestinationCreateWithData(mutable, type, 1, nil) else {
+            struct DestinationError: Error {}
+            throw DestinationError()
+        }
+        let gps: [String: Any] = [
+            kCGImagePropertyGPSLatitude as String: 37.7749,
+            kCGImagePropertyGPSLatitudeRef as String: "N",
+            kCGImagePropertyGPSLongitude as String: 122.4194,
+            kCGImagePropertyGPSLongitudeRef as String: "W"
+        ]
+        let properties: [String: Any] = [kCGImagePropertyGPSDictionary as String: gps]
+        CGImageDestinationAddImage(dest, cgImage, properties as CFDictionary)
+        guard CGImageDestinationFinalize(dest) else {
+            struct FinalizeError: Error {}
+            throw FinalizeError()
+        }
+        return mutable as Data
+    }
+
+    @Test func testEXIFReadsGPSFromEncodedJPEGFixture() async throws {
+        let jpegData = try Self.makeJPEGDataOnePixelWithGPS()
+        let image = PlatformImage(data: jpegData)
+        #expect(image != nil, "Fixture JPEG should decode as PlatformImage")
+        guard let image else { return }
+        let location = image.exif.gpsLocation
+        #expect(location != nil, "GPS from source JPEG bytes should be readable (Issue #274)")
+        guard let location else { return }
+        #expect(abs(location.coordinate.latitude - 37.7749) < 0.000_1)
+        #expect(abs(location.coordinate.longitude - (-122.4194)) < 0.000_1)
+    }
+}
+#endif
 
