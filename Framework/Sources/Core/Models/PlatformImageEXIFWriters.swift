@@ -45,7 +45,7 @@ public extension PlatformImageEXIF {
     /// GPS dictionary. Encodes using `PlatformImageEXIFConfig.current.defaultWriteFormat`.
     /// Returns `nil` only if the encode fails entirely.
     func with(gpsLocation: CLLocation?) -> PlatformImage? {
-        return write(gpsMerge: gpsLocation.map(Self.gpsDictionary(from:)) ?? .removeKey,
+        return write(gpsMerge: Self.gpsMerge(for: gpsLocation),
                      stripDictionaries: [],
                      format: nil)
     }
@@ -72,7 +72,7 @@ public extension PlatformImageEXIF {
     /// Format-explicit variant of `with(gpsLocation:)`. Encodes using `format`
     /// regardless of `PlatformImageEXIFConfig`; returns `nil` on encode failure.
     func with(gpsLocation: CLLocation?, as format: ImageFormat) -> PlatformImage? {
-        return write(gpsMerge: gpsLocation.map(Self.gpsDictionary(from:)) ?? .removeKey,
+        return write(gpsMerge: Self.gpsMerge(for: gpsLocation),
                      stripDictionaries: [],
                      format: format)
     }
@@ -125,8 +125,16 @@ private extension PlatformImageEXIF {
         ]
     }
 
-    /// Build the GPS top-level dictionary value for the given `CLLocation`.
-    static func gpsDictionary(from location: CLLocation) -> GPSMerge {
+    /// Resolves a `GPSMerge` for an optional `CLLocation`: `nil` means
+    /// "remove the GPS dictionary", non-nil means "set it to the EXIF-shape
+    /// dictionary derived from the location".
+    static func gpsMerge(for location: CLLocation?) -> GPSMerge {
+        guard let location else { return .removeKey }
+        return .set(gpsDictionary(from: location))
+    }
+
+    /// Build the EXIF GPS top-level dictionary value for the given `CLLocation`.
+    static func gpsDictionary(from location: CLLocation) -> [String: Any] {
         let lat = location.coordinate.latitude
         let lon = location.coordinate.longitude
         var dict: [String: Any] = [
@@ -142,7 +150,7 @@ private extension PlatformImageEXIF {
         if location.horizontalAccuracy >= 0 {
             dict[kCGImagePropertyGPSHPositioningError as String] = location.horizontalAccuracy
         }
-        return .set(dict)
+        return dict
     }
 
     /// Resolve the encoded source data we can hand to `CGImageSource`.
