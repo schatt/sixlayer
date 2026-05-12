@@ -390,9 +390,10 @@ final class Layer4UITests: XCTestCase {
         }
         // SwiftUI `Form` rows often split title (`staticText`) from the control; typed axes then have empty / different labels.
         if el == nil, [.textField, .secureTextField, .textView].contains(type) {
-            let titleAnchor = app.staticTexts[label]
-            if titleAnchor.waitForExistence(timeout: 0.8), app.tables.firstMatch.waitForExistence(timeout: 0.2) {
-                let cellQuery = app.tables.firstMatch.cells.containing(titleAnchor)
+            let rowTitle = NSPredicate(format: "label == %@", label)
+            let table = app.tables.firstMatch
+            if table.waitForExistence(timeout: 0.5) {
+                let cellQuery = table.cells.containing(rowTitle)
                 let typedInCell: XCUIElement = {
                     switch type {
                     case .textField: return cellQuery.textFields.firstMatch
