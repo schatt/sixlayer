@@ -25,7 +25,7 @@ public struct ShapeStyleSystem {
         public static let info = Color.blue
         
         // Semantic system colors: delegate to `Color` platform extensions (PlatformColorSystemExtensions).
-        // Single source of truth per AI_AGENT_QUICK_REFERENCE / #237 (avoid UIColor/NSColor at call sites).
+        // Single source of truth per AI_AGENT_QUICK_REFERENCE; policy / hygiene tracked in GitHub #276.
         public static let systemBackground = Color.systemBackground
         public static let secondarySystemBackground = Color.platformSecondaryBackground
         public static let tertiarySystemBackground = Color.platformTertiaryBackground
