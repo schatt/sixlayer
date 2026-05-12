@@ -25,7 +25,10 @@ import AppKit
 /// EXIF metadata accessor for PlatformImage
 /// Provides clean, cross-platform access to image EXIF metadata
 public struct PlatformImageEXIF {
-    private let image: PlatformImage
+    // Module-internal so writer extensions in companion files can read the
+    // wrapped image and its `originalEncodedData` (Issue #275). Not part of
+    // the public API surface.
+    internal let image: PlatformImage
     
     public init(image: PlatformImage) {
         self.image = image
@@ -214,7 +217,10 @@ public extension PlatformImage {
 #else
 // Fallback implementation for platforms without ImageIO/CoreLocation
 public struct PlatformImageEXIF {
-    private let image: PlatformImage
+    // Module-internal so writer extensions in companion files can read the
+    // wrapped image and its `originalEncodedData` (Issue #275). Not part of
+    // the public API surface.
+    internal let image: PlatformImage
     
     public init(image: PlatformImage) {
         self.image = image
