@@ -30,13 +30,15 @@ public final class PresentationProfilesCatalog: @unchecked Sendable {
     /// Clears parsed profile cache. Use from tests or when replacing bundled resources.
     public func resetCache(bundle: Bundle? = nil) {
         cacheLock.lock()
-        defer { cacheLock.unlock() }
         if let bundle {
             cache.removeValue(forKey: bundle.bundlePath)
         } else {
             cache.removeAll()
         }
+        cacheLock.unlock()
+
         logLock.lock()
+        defer { logLock.unlock() }
         if bundle == nil {
             loggedMissingFileBundles.removeAll()
             loggedMissingProfileKeys.removeAll()
@@ -45,7 +47,6 @@ public final class PresentationProfilesCatalog: @unchecked Sendable {
             loggedMissingFileBundles.remove(prefix)
             loggedMissingProfileKeys = loggedMissingProfileKeys.filter { !$0.hasPrefix(prefix + "|") }
         }
-        logLock.unlock()
     }
 
     /// Resolved hints for `profileID`, or default ``PresentationHints()`` when the profile or file is absent.
