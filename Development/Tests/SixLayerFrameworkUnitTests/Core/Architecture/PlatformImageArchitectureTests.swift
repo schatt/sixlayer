@@ -224,23 +224,23 @@ open class PlatformImageArchitectureTests: BaseTestClass {
     }
     #endif
     
-    // 6LAYER_ALLOW: test helper using platform-specific image rendering APIs
+    /// Raster fixture for JPEG encode tests (uses platform graphics APIs intentionally).
     private func createTestImageData() -> Data {
         #if os(iOS) || os(visionOS)
         let size = CGSize(width: 100, height: 100)
-        let renderer = UIGraphicsImageRenderer(size: size) // 6LAYER_ALLOW: test helper using platform-specific image rendering APIs
+        let renderer = UIGraphicsImageRenderer(size: size)
         let uiImage = renderer.image { context in
-            Color.systemRed.setFill() // 6LAYER_ALLOW: test helper using platform-specific image rendering APIs
+            Color.systemRed.setFill()
             context.fill(CGRect(origin: .zero, size: size))
         }
         return uiImage.jpegData(compressionQuality: 0.8) ?? Data()
 
         #elseif os(macOS)
-        let size = NSSize(width: 100, height: 100) // 6LAYER_ALLOW: test helper using platform-specific image rendering APIs
-        let nsImage = NSImage(size: size) // 6LAYER_ALLOW: test helper using platform-specific image rendering APIs
+        let size = NSSize(width: 100, height: 100)
+        let nsImage = NSImage(size: size)
         nsImage.lockFocus()
-        Color.systemRed.setFill() // 6LAYER_ALLOW: test helper using platform-specific image rendering APIs
-        NSRect(origin: .zero, size: size).fill() // 6LAYER_ALLOW: test helper using platform-specific image rendering APIs
+        Color.systemRed.setFill()
+        NSRect(origin: .zero, size: size).fill()
         nsImage.unlockFocus()
         
         guard let tiffData = nsImage.tiffRepresentation,
