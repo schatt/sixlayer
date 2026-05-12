@@ -388,6 +388,22 @@ final class Layer4UITests: XCTestCase {
             let axis = app.textViews[label]
             if axis.waitForExistence(timeout: 1.0) { el = axis }
         }
+        // SwiftUI `Form` rows often split title (`staticText`) from the control; typed axes then have empty / different labels.
+        if el == nil, [.textField, .secureTextField, .textView].contains(type) {
+            let titleAnchor = app.staticTexts[label]
+            if titleAnchor.waitForExistence(timeout: 0.8), app.tables.firstMatch.waitForExistence(timeout: 0.2) {
+                let cellQuery = app.tables.firstMatch.cells.containing(titleAnchor)
+                let typedInCell: XCUIElement = {
+                    switch type {
+                    case .textField: return cellQuery.textFields.firstMatch
+                    case .secureTextField: return cellQuery.secureTextFields.firstMatch
+                    case .textView: return cellQuery.textViews.firstMatch
+                    default: return cellQuery.descendants(matching: type).firstMatch
+                    }
+                }()
+                if typedInCell.waitForExistence(timeout: 1.4) { el = typedInCell }
+            }
+        }
         XCTAssertNotNil(el, "\(componentName): element with identifier '\(identifier)' or containing '\(sanitizedIdentifierName)' should exist (contract)")
         if let el = el {
             let hasContractId = !el.identifier.isEmpty
