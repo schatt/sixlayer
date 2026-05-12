@@ -354,7 +354,7 @@ open class PlatformPrintLayer4Tests: BaseTestClass {
         var mediaBox = CGRect(x: 0, y: 0, width: 612, height: 792)
         let context = CGContext(consumer: consumer, mediaBox: &mediaBox, nil)!
         context.beginPDFPage(nil)
-        context.setFillColor(NSColor.white.cgColor)
+        Color.white.setFill(on: context)
         context.fill(mediaBox)
         context.endPDFPage()
         context.closePDF()
