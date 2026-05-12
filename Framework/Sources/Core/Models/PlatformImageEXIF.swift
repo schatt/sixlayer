@@ -60,14 +60,16 @@ public struct PlatformImageEXIF {
     
     // MARK: - Private Helper Methods
     
-    /// Extract image data for EXIF parsing
-    /// Platform-specific implementation to preserve EXIF metadata
+    /// Extract image data for EXIF parsing.
+    /// When \`PlatformImage\` was created from \`init?(data:)\`, uses those bytes so \`CGImageSource\` sees the original container metadata (GPS, TIFF tags, etc.).
+    /// Otherwise re-encodes the decoded bitmap as JPEG (best-effort): that path typically strips EXIF because the encoder writes a fresh container (Issue #274).
     private func extractImageData() -> Data? {
+        if let data = image.originalEncodedData {
+            return data
+        }
         #if os(iOS)
-        // On iOS, use JPEG data to preserve EXIF metadata
         return image.uiImage.jpegData(compressionQuality: 1.0)
         #elseif os(macOS)
-        // On macOS, convert NSImage to JPEG to preserve EXIF metadata
         guard let tiffData = image.nsImage.tiffRepresentation,
               let bitmapRep = NSBitmapImageRep(data: tiffData),
               let jpegData = bitmapRep.representation(using: .jpeg, properties: [.compressionFactor: 1.0]) else {
