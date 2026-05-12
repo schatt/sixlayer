@@ -5534,6 +5534,7 @@
       }
     },
     "SixLayerFramework.camera.previewNotAvailable" : {
+      "extractionState" : "stale",
       "localizations" : {
         "da" : {
           "stringUnit" : {
