@@ -393,14 +393,15 @@ public struct HighContrastModifier: ViewModifier {
     
     private func iosHighContrast<Content: View>(to content: Content) -> some View {
         #if os(tvOS) || os(watchOS)
-        // tvOS/watchOS: `UIColor.systemBackground` is unavailable or unsuitable; use neutral SwiftUI colors.
+        // tvOS/watchOS: keep a neutral canvas; avoid system background APIs that differ from iOS (#237).
         return content
             .foregroundColor(.primary)
             .background(Color.black)
         #else
+        // iOS / visionOS: `Color.platformSystemBackground` (PlatformColorSystemExtensions).
         return content
             .foregroundColor(.primary)
-            .background(Color(UIColor.systemBackground))
+            .background(Color.platformSystemBackground)
         #endif
     }
     
