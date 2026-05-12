@@ -1018,7 +1018,7 @@ public extension Color {
     /// Cross-platform setFill method for graphics contexts
     /// - Parameter context: The graphics context to set fill color on
     func setFill(on context: CGContext) {
-        #if os(iOS)
+        #if os(iOS) || os(tvOS) || os(watchOS) || os(visionOS)
         let uiColor = UIColor(self)
         context.setFillColor(uiColor.cgColor)
         #elseif os(macOS)
@@ -1030,7 +1030,7 @@ public extension Color {
     /// Cross-platform setFill method that works on any graphics context
     /// Automatically handles platform differences internally
     func setFill() {
-        #if os(iOS)
+        #if os(iOS) || os(tvOS) || os(watchOS) || os(visionOS)
         let uiColor = UIColor(self)
         uiColor.setFill()
         #elseif os(macOS)
@@ -1041,7 +1041,7 @@ public extension Color {
 
     /// Cross-platform setStroke method for outlines
     func setStroke() {
-        #if os(iOS)
+        #if os(iOS) || os(tvOS) || os(watchOS) || os(visionOS)
         let uiColor = UIColor(self)
         uiColor.setStroke()
         #elseif os(macOS)
@@ -1053,9 +1053,9 @@ public extension Color {
     // MARK: - Platform-Specific Color Access
 
     /// Platform-specific color accessor
-    /// Returns UIColor on iOS, NSColor on macOS
+    /// Returns `UIColor` on UIKit-based platforms, `NSColor` on macOS
     var platformColor: Any {
-        #if os(iOS)
+        #if os(iOS) || os(tvOS) || os(watchOS) || os(visionOS)
         return UIColor(self)
         #elseif os(macOS)
         return NSColor(self)
