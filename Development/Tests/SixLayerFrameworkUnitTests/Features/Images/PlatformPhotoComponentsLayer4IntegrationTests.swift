@@ -254,29 +254,30 @@ open class PlatformPhotoComponentsLayer4IntegrationTests: BaseTestClass {
     }
     
     
-    // 6LAYER_ALLOW: test helper using platform-specific image rendering APIs
+    /// Raster helper for `PlatformImage` fixtures (uses framework `Color` for fill).
     private func createTestPlatformImage() -> PlatformImage {
         // Create a simple test image for unit testing
         #if os(iOS) || os(visionOS)
         let size = CGSize(width: 100, height: 100)
-        let renderer = UIGraphicsImageRenderer(size: size) // 6LAYER_ALLOW: test helper using platform-specific image rendering APIs
+        let renderer = UIGraphicsImageRenderer(size: size)
         let uiImage = renderer.image { context in
-            UIColor.blue.setFill() // 6LAYER_ALLOW: test helper using platform-specific image rendering APIs
+            Color.systemBlue.setFill()
             context.fill(CGRect(origin: .zero, size: size))
         }
         return PlatformImage(uiImage: uiImage)
         #elseif os(macOS)
-        let size = NSSize(width: 100, height: 100) // 6LAYER_ALLOW: test helper using platform-specific image rendering APIs
-        let nsImage = NSImage(size: size) // 6LAYER_ALLOW: test helper using platform-specific image rendering APIs
+        let size = NSSize(width: 100, height: 100)
+        let nsImage = NSImage(size: size)
         nsImage.lockFocus()
-        NSColor.blue.drawSwatch(in: NSRect(origin: .zero, size: size)) // 6LAYER_ALLOW: test helper using platform-specific image rendering APIs
+        Color.systemBlue.setFill()
+        NSRect(origin: .zero, size: size).fill()
         nsImage.unlockFocus()
         return PlatformImage(nsImage: nsImage)
         #elseif os(watchOS)
         let size = CGSize(width: 100, height: 100)
         UIGraphicsBeginImageContextWithOptions(size, false, 0)
         defer { UIGraphicsEndImageContext() }
-        UIColor.blue.setFill()
+        Color.systemBlue.setFill()
         UIRectFill(CGRect(origin: .zero, size: size))
         guard let uiImage = UIGraphicsGetImageFromCurrentImageContext() else { return PlatformImage() }
         return PlatformImage(uiImage: uiImage)
@@ -295,7 +296,7 @@ open class PlatformPhotoComponentsLayer4IntegrationTests: BaseTestClass {
         let size = CGSize(width: 200, height: 200)
         let renderer = UIGraphicsImageRenderer(size: size)
         let uiImage = renderer.image { context in
-            UIColor.blue.setFill()
+            Color.systemBlue.setFill()
             context.fill(CGRect(origin: .zero, size: size))
         }
         return uiImage.jpegData(compressionQuality: 0.8) ?? Data()
@@ -303,7 +304,8 @@ open class PlatformPhotoComponentsLayer4IntegrationTests: BaseTestClass {
         let size = NSSize(width: 200, height: 200)
         let nsImage = NSImage(size: size)
         nsImage.lockFocus()
-        NSColor.blue.drawSwatch(in: NSRect(origin: .zero, size: size))
+        Color.systemBlue.setFill()
+        NSRect(origin: .zero, size: size).fill()
         nsImage.unlockFocus()
         
         guard let tiffData = nsImage.tiffRepresentation,
@@ -316,7 +318,7 @@ open class PlatformPhotoComponentsLayer4IntegrationTests: BaseTestClass {
         let size = CGSize(width: 200, height: 200)
         UIGraphicsBeginImageContextWithOptions(size, false, 0)
         defer { UIGraphicsEndImageContext() }
-        UIColor.blue.setFill()
+        Color.systemBlue.setFill()
         UIRectFill(CGRect(origin: .zero, size: size))
         guard let uiImage = UIGraphicsGetImageFromCurrentImageContext() else { return Data() }
         return uiImage.jpegData(compressionQuality: 0.8) ?? Data()
@@ -328,9 +330,9 @@ open class PlatformPhotoComponentsLayer4IntegrationTests: BaseTestClass {
     #if os(iOS)
     private func createTestUIImage() -> UIImage { // 6LAYER_ALLOW: test helper returning platform-specific image type
         let size = CGSize(width: 200, height: 200)
-        let renderer = UIGraphicsImageRenderer(size: size) // 6LAYER_ALLOW: test helper using platform-specific image rendering APIs
+        let renderer = UIGraphicsImageRenderer(size: size)
         return renderer.image { context in
-            UIColor.red.setFill() // 6LAYER_ALLOW: test helper using platform-specific image rendering APIs
+            Color.systemRed.setFill()
             context.fill(CGRect(origin: .zero, size: size))
         }
     }
@@ -338,10 +340,11 @@ open class PlatformPhotoComponentsLayer4IntegrationTests: BaseTestClass {
 
     #if os(macOS)
     private func createTestNSImage() -> NSImage { // 6LAYER_ALLOW: test helper returning platform-specific image type
-        let size = NSSize(width: 200, height: 200) // 6LAYER_ALLOW: test helper using platform-specific image rendering APIs
-        let nsImage = NSImage(size: size) // 6LAYER_ALLOW: test helper using platform-specific image rendering APIs
+        let size = NSSize(width: 200, height: 200)
+        let nsImage = NSImage(size: size)
         nsImage.lockFocus()
-        NSColor.red.drawSwatch(in: NSRect(origin: .zero, size: size)) // 6LAYER_ALLOW: test helper using platform-specific image rendering APIs
+        Color.systemRed.setFill()
+        NSRect(origin: .zero, size: size).fill()
         nsImage.unlockFocus()
         return nsImage
     }
