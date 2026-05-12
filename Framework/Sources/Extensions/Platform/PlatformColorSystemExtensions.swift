@@ -112,7 +112,7 @@ public extension Color {
 
     /// Direct system background color
     /// iOS: systemBackground; macOS: windowBackgroundColor
-    /// watchOS: `UIColor.systemBackground` is not in the same shape as iOS (see ShapeStyleSystem / #237);
+    /// watchOS: `UIColor.systemBackground` is not in the same shape as iOS (see `ShapeStyleSystem`; tvOS matrix #237, platform-color policy #276);
     /// use a dark canvas so `platformLabel` (`.primary` foreground) contrasts with `platformBackground`.
     static var systemBackground: Color {
         #if os(iOS) || os(visionOS)
