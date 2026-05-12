@@ -216,7 +216,7 @@ final class PlatformDataScannerHostingViewController: UIViewController, DataScan
         label.font = .preferredFont(forTextStyle: .subheadline)
         label.numberOfLines = 0
         label.textAlignment = .center
-        label.backgroundColor = UIColor.black.withAlphaComponent(0.55)
+        label.backgroundColor = UIColor(Color.black.opacity(0.55))
         label.layer.cornerRadius = 8
         label.clipsToBounds = true
         label.translatesAutoresizingMaskIntoConstraints = false
