@@ -209,6 +209,37 @@ final class Layer4UITests: XCTestCase {
         return app.descendants(matching: .any).matching(pred).firstMatch.waitForExistence(timeout: timeout)
     }
 
+    /// Scroll the root `Form` until a contract control appears (caption labels are not always unique).
+    @MainActor
+    private func scrollUntilL4ContractControlVisible(
+        buttonLabel: String? = nil,
+        identifier: String? = nil,
+        deadlineSeconds: TimeInterval = 18
+    ) {
+        let deadline = Date().addingTimeInterval(deadlineSeconds)
+        while Date() < deadline {
+            if let id = identifier, element(matchingIdentifier: id).waitForExistence(timeout: 0.25) { return }
+            if let label = buttonLabel, app.buttons[label].waitForExistence(timeout: 0.25) { return }
+            if let label = buttonLabel, app.descendants(matching: .any).matching(NSPredicate(format: "identifier == %@", label)).firstMatch.waitForExistence(timeout: 0.2) {
+                return
+            }
+            if !app.tables.firstMatch.exists, !app.xcuiPrimaryScrollHost().exists {
+                RunLoop.current.run(until: Date().addingTimeInterval(Self.quickWait))
+                continue
+            }
+            app.xcuiSwipeScrollHostsUp()
+        }
+    }
+
+    /// Prefer the outermost `Table` (root `Form`) when nested lists exist (e.g. L4 overlay split).
+    @MainActor
+    private func l4RootFormTable() -> XCUIElement {
+        let tbls = app.tables
+        let c = tbls.count
+        if c > 1 { return tbls.element(boundBy: 0) }
+        return tbls.firstMatch
+    }
+
     /// Element with the given accessibility identifier (any type).
     @MainActor
     private func element(matchingIdentifier id: String) -> XCUIElement {
@@ -442,7 +473,7 @@ final class Layer4UITests: XCTestCase {
         // SwiftUI `Form` rows often split title (`staticText`) from the control; typed axes then have empty / different labels.
         if el == nil, [.textField, .secureTextField, .textView, .switch].contains(type) {
             let rowTitle = NSPredicate(format: "label == %@", label)
-            let table = app.tables.firstMatch
+            let table = l4RootFormTable()
             if table.waitForExistence(timeout: 0.5) {
                 let cellQuery = table.cells.containing(rowTitle)
                 let typedInCell: XCUIElement = {
@@ -524,11 +555,15 @@ final class Layer4UITests: XCTestCase {
         }
         // Form row: open the menu (first button in the picker row) when the value is not a top-level `buttons["A"]`.
         if app.tables.firstMatch.waitForExistence(timeout: 0.6) {
-            let row = app.tables.firstMatch.cells.containing(NSPredicate(format: "label == %@", "L4ContractPicker"))
+            let row = l4RootFormTable().cells.containing(NSPredicate(format: "label == %@", "L4ContractPicker"))
             let menuButton = row.buttons.firstMatch
             if menuButton.waitForExistence(timeout: 1.2) {
                 tapByNormalizedCenter(menuButton)
             }
+        }
+        let labelMenu = app.buttons.matching(NSPredicate(format: "label CONTAINS[c] %@", "L4ContractPicker")).firstMatch
+        if labelMenu.waitForExistence(timeout: 0.8) {
+            tapByNormalizedCenter(labelMenu)
         }
         // Options may be in hierarchy only when menu is open; tap picker (shows selected "A") to open.
         if app.buttons["A"].waitForExistence(timeout: 1.0) { tapByNormalizedCenter(app.buttons["A"].firstMatch) }
@@ -542,6 +577,13 @@ final class Layer4UITests: XCTestCase {
                 XCTAssertFalse(optionEl.identifier.isEmpty, "platformPicker must apply a11y.")
                 return
             }
+        }
+        let anyL4ContractId = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "identifier CONTAINS[c] %@", "l4contract"))
+            .firstMatch
+        if anyL4ContractId.waitForExistence(timeout: 1.5) {
+            XCTAssertFalse(anyL4ContractId.identifier.isEmpty, "platformPicker must apply a11y (loose l4contract* id).")
+            return
         }
         XCTFail("platformPicker: picker or option should have identifier (tried l4contractpicker, 'picker', and \(optionCandidates.joined(separator: ", ")))")
     }
@@ -656,9 +698,10 @@ final class Layer4UITests: XCTestCase {
         scrollToL4ListSection()
         scrollToElement(label: "L4ListRowContract")
         let title = "L4ListRowContract"
-        let inTableStatic = app.tables.firstMatch.staticTexts[title].firstMatch
+        let table = l4RootFormTable()
+        let inTableStatic = table.staticTexts[title].firstMatch
         let inAny = app.descendants(matching: .any).matching(NSPredicate(format: "label == %@", title)).firstMatch
-        let inCell = app.tables.firstMatch.cells.containing(NSPredicate(format: "label CONTAINS[c] %@", title)).firstMatch
+        let inCell = table.cells.containing(NSPredicate(format: "label CONTAINS[c] %@", title)).firstMatch
         XCTAssertTrue(
             inTableStatic.waitForExistence(timeout: 2.5)
                 || inCell.waitForExistence(timeout: 2.0)
@@ -673,7 +716,8 @@ final class Layer4UITests: XCTestCase {
         scrollToL4ListSection()
         scrollToElement(label: "L4ListSectionHeaderContract")
         let title = "L4ListSectionHeaderContract"
-        let inTableStatic = app.tables.firstMatch.staticTexts[title].firstMatch
+        let table = l4RootFormTable()
+        let inTableStatic = table.staticTexts[title].firstMatch
         let inAny = app.descendants(matching: .any).matching(NSPredicate(format: "label == %@", title)).firstMatch
         XCTAssertTrue(
             inTableStatic.waitForExistence(timeout: 2.5) || inAny.waitForExistence(timeout: 1.5),
@@ -687,7 +731,8 @@ final class Layer4UITests: XCTestCase {
         scrollToL4ListSection()
         scrollToElement(label: "L4ListEmptyStateContract")
         let title = "L4ListEmptyStateContract"
-        let inTableStatic = app.tables.firstMatch.staticTexts[title].firstMatch
+        let table = l4RootFormTable()
+        let inTableStatic = table.staticTexts[title].firstMatch
         let inAny = app.descendants(matching: .any).matching(NSPredicate(format: "label == %@", title)).firstMatch
         XCTAssertTrue(
             inTableStatic.waitForExistence(timeout: 2.5) || inAny.waitForExistence(timeout: 1.5),
@@ -1054,6 +1099,7 @@ final class Layer4UITests: XCTestCase {
     func testL4_platformOpenURL_L4() throws {
         ensureContractRoot()
         scrollToL4SystemSection()
+        scrollUntilL4ContractControlVisible(buttonLabel: "L4ContractOpenURL", identifier: "L4ContractOpenURL")
         scrollToElement(label: "L4ContractOpenURL")
         let openById = app.descendants(matching: .any)
             .matching(NSPredicate(format: "identifier == %@", "L4ContractOpenURL"))
@@ -1226,6 +1272,7 @@ final class Layer4UITests: XCTestCase {
         scrollToL4SystemSection()
         scrollToElement(label: "L4 System")
         scrollToElement(label: "Photo Picker Contract")
+        scrollUntilL4ContractControlVisible(buttonLabel: "L4ContractPhotoPickerOpen", identifier: "L4ContractPhotoPickerOpen")
         let openBtn = app.buttons["L4ContractPhotoPickerOpen"].firstMatch
         XCTAssertTrue(
             openBtn.waitForExistence(timeout: 2.5),
