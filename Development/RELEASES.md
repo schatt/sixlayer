@@ -5,7 +5,7 @@
 **Release Date**: May 13, 2026
 **Status**: Minor release
 **Previous Release**: v7.7.2 - Patch release
-**Note**: Presentation profiles and hint-driven sparse-grid collections (#277), list layout for card-style collections (#272), optional DynamicForm draft storage key (#273), PlatformImage EXIF configuration (#275), system-action contract for openURL and remote notifications (#256 / #169).
+**Note**: Presentation profiles catalog (#277); item collection hint resolver and optional card row style on custom lists (#272); optional DynamicForm draft storage key (#273); PlatformImage EXIF configuration (#275); system-action contract for openURL and remote notifications (#256 / #169).
 **Next Release**: TBD
 
 ---
