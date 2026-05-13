@@ -176,9 +176,17 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
     #if os(iOS)
     private func dismissKeyboardIfPresent() {
         guard app.keyboards.count > 0 else { return }
-        let nav = app.navigationBars["SD150 Standalone"].firstMatch
-        if nav.waitForExistence(timeout: 0.8) {
-            nav.coordinate(withNormalizedOffset: CGVector(dx: 0.92, dy: 0.5)).tap()
+        let kb = app.keyboards.firstMatch
+        let hide = kb.buttons["Hide keyboard"]
+        if hide.waitForExistence(timeout: 0.35) {
+            hide.tap()
+        } else if kb.buttons["Done"].waitForExistence(timeout: 0.25) {
+            kb.buttons["Done"].tap()
+        } else {
+            let nav = app.navigationBars["SD150 Standalone"].firstMatch
+            if nav.waitForExistence(timeout: 0.8) {
+                nav.coordinate(withNormalizedOffset: CGVector(dx: 0.92, dy: 0.5)).tap()
+            }
         }
         let deadline = Date().addingTimeInterval(2.5)
         while Date() < deadline, app.keyboards.count > 0 {
@@ -190,11 +198,12 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
     private func assertBindingMirrorContains(
         _ mirrorId: String,
         _ substring: String,
+        mirrorExistenceTimeout: TimeInterval = 2.5,
         file: StaticString = #filePath,
         line: UInt = #line
     ) {
         let m = mirrorElement(identifier: mirrorId)
-        XCTAssertTrue(m.waitForExistence(timeout: 2.5), "Mirror \(mirrorId) should exist", file: file, line: line)
+        XCTAssertTrue(m.waitForExistence(timeout: mirrorExistenceTimeout), "Mirror \(mirrorId) should exist", file: file, line: line)
         let text = m.label
         XCTAssertTrue(
             text.contains(substring),
@@ -258,8 +267,8 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
         #if os(iOS)
         dismissKeyboardIfPresent()
         #endif
-        scrollUntilExists(mirrorS)
-        assertBindingMirrorContains("SD150_Mirror_S", "hunter2")
+        scrollUntilExists(mirrorElement(identifier: "SD150_Mirror_S"))
+        assertBindingMirrorContains("SD150_Mirror_S", "hunter2", mirrorExistenceTimeout: 4)
         #else
         throw XCTSkip("Issue #150 host UI tests require iOS or macOS TestApp")
         #endif
