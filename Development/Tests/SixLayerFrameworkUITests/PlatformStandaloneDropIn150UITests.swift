@@ -71,6 +71,15 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
         }
     }
 
+    /// Form `StaticText` mirrors can exist in the tree with an invalid activation point; querying
+    /// `isHittable` then fails the run (#261). Use existence-only scrolling for those anchors.
+    private func scrollUntilExists(_ element: XCUIElement) {
+        for _ in 0..<Self.maxFormScrolls {
+            if element.waitForExistence(timeout: 0.45) { return }
+            app.xcuiSwipeScrollHostsUp()
+        }
+    }
+
     /// `XCUIElementTypeQueryProvider` subscript matching uses accessibility identifiers; SixLayer labels end with `.` (Issue #169).
     private func sd150TextField(labelContains: String) -> XCUIElement {
         let byLabel = NSPredicate(format: "label CONTAINS[c] %@", labelContains)
@@ -146,7 +155,7 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
 
     /// Single `.tap()` often fails to make secure fields / editors first responder under parallel UI runs (#261).
     private func tapToFocusForTyping(_ element: XCUIElement) {
-        scrollUntilHittable(element)
+        scrollUntilExists(element)
         let point = element.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
         point.tap()
         RunLoop.current.run(until: Date().addingTimeInterval(0.2))
@@ -227,10 +236,10 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
         // Scroll the secure section into view first: SwiftUI Form rows (and SecureField a11y nodes)
         // may not exist until the section is materialized (#261); mirror S is in the same section.
         let mirrorS = mirrorElement(identifier: "SD150_Mirror_S")
-        scrollUntilHittable(mirrorS)
+        scrollUntilExists(mirrorS)
         XCTAssertTrue(mirrorS.waitForExistence(timeout: 2.0), "Binding mirror for secure section should exist")
         let field = sd150SecureField(labelContains: "SD150_SecureField")
-        scrollUntilHittable(field)
+        scrollUntilExists(field)
         XCTAssertTrue(field.waitForExistence(timeout: 2.0), "Secure field")
         tapToFocusForTyping(field)
         field.typeText("hunter2")
