@@ -89,6 +89,16 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
     }
 
     private func sd150SecureField(labelContains: String) -> XCUIElement {
+        if labelContains == "SD150_SecureField" {
+            let mirrorPred = NSPredicate(format: "identifier == %@", "SD150_Mirror_S")
+            if app.tables.firstMatch.waitForExistence(timeout: 0.5) {
+                let cell = app.tables.firstMatch.cells.containing(mirrorPred).firstMatch
+                if cell.waitForExistence(timeout: 1.2) {
+                    let inCell = cell.secureTextFields.firstMatch
+                    if inCell.waitForExistence(timeout: 0.6) { return inCell }
+                }
+            }
+        }
         let slugHyphen = labelContains.lowercased().replacingOccurrences(of: "_", with: "-")
         let slugCompact = labelContains.lowercased().replacingOccurrences(of: "_", with: "")
         let byLabel = NSPredicate(format: "label CONTAINS[c] %@", labelContains)
