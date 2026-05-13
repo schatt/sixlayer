@@ -201,6 +201,8 @@ public func platformCloudKitSyncButton_L4(
         accessibilityLabel: label,
         accessibilityHint: "Starts syncing your data with iCloud when your account is available and sync is not already running"
     )
+    // Stable id for XCUITest (Form + Label can move generated ids; explicit id matches sync status pattern).
+    .accessibilityIdentifier("platformCloudKitSyncButton_L4")
 }
 
 // MARK: - CloudKit Compact Status Badge
@@ -233,6 +235,7 @@ public func platformCloudKitStatusBadge_L4(service: CloudKitService) -> some Vie
     .accessibilityElement(children: .combine)
     .help(service.syncStatus == .syncing ? "Syncing..." : "CloudKit Status")
     .automaticCompliance(named: "platformCloudKitStatusBadge_L4", accessibilityLabel: badgeLabel)
+    .accessibilityIdentifier("platformCloudKitStatusBadge_L4")
 }
 
 // MARK: - Accessibility summaries (Issue #169)
