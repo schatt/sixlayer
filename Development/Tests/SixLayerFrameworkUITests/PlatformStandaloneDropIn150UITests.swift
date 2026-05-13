@@ -71,6 +71,34 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
         }
     }
 
+    /// Single `.tap()` often fails to make secure fields / editors first responder under parallel UI runs (#261).
+    private func tapToFocusForTyping(_ element: XCUIElement) {
+        scrollUntilHittable(element)
+        let point = element.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
+        point.tap()
+        RunLoop.current.run(until: Date().addingTimeInterval(0.2))
+        #if os(iOS)
+        if element.elementType == .secureTextField {
+            point.tap()
+            RunLoop.current.run(until: Date().addingTimeInterval(0.15))
+        }
+        #endif
+    }
+
+    #if os(iOS)
+    private func dismissKeyboardIfPresent() {
+        guard app.keyboards.count > 0 else { return }
+        let nav = app.navigationBars["SD150 Standalone"].firstMatch
+        if nav.waitForExistence(timeout: 0.8) {
+            nav.coordinate(withNormalizedOffset: CGVector(dx: 0.92, dy: 0.5)).tap()
+        }
+        let deadline = Date().addingTimeInterval(2.5)
+        while Date() < deadline, app.keyboards.count > 0 {
+            RunLoop.current.run(until: Date().addingTimeInterval(0.12))
+        }
+    }
+    #endif
+
     private func assertBindingMirrorContains(
         _ mirrorId: String,
         _ substring: String,
@@ -122,9 +150,8 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
     func test150_platformSecureField_typingUpdatesBinding() throws {
         #if os(iOS) || os(macOS)
         let field = app.secureTextFields["SD150_SecureField"]
-        scrollUntilHittable(field)
         XCTAssertTrue(field.waitForExistence(timeout: 2.0), "Secure field")
-        field.tap()
+        tapToFocusForTyping(field)
         field.typeText("hunter2")
         assertBindingMirrorContains("SD150_Mirror_S", "hunter2")
         #else
@@ -140,7 +167,10 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
         let toggle = app.switches["SD150_Toggle"]
         scrollUntilHittable(toggle)
         XCTAssertTrue(toggle.waitForExistence(timeout: 2.0), "Toggle")
-        toggle.tap()
+        #if os(iOS)
+        dismissKeyboardIfPresent()
+        #endif
+        toggle.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
         assertBindingMirrorContains("SD150_Mirror_G", "1")
         #else
         throw XCTSkip("Issue #150 host UI tests require iOS or macOS TestApp")
@@ -150,10 +180,9 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
     func test150_platformTextEditor_prefillAndAdditionalTyping() throws {
         #if os(iOS) || os(macOS)
         let editor = app.textViews["SD150_EditorPrompt"]
-        scrollUntilHittable(editor)
         XCTAssertTrue(editor.waitForExistence(timeout: 2.5), "Text editor")
         assertBindingMirrorContains("SD150_Mirror_E", "PrefillSeed")
-        editor.tap()
+        tapToFocusForTyping(editor)
         editor.typeText("More")
         assertBindingMirrorContains("SD150_Mirror_E", "PrefillSeedMore")
         #else
@@ -194,15 +223,24 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
         let name = app.textFields["SD150_Integration_Name"]
         let pass = app.secureTextFields["SD150_Integration_Password"]
         let toggle = app.switches["SD150_Integration_Toggle"]
-        scrollUntilHittable(name)
         XCTAssertTrue(name.waitForExistence(timeout: 2.0), "Integration name")
-        name.tap()
+        tapToFocusForTyping(name)
         name.typeText("Pat")
-        scrollUntilHittable(pass)
-        pass.tap()
+        #if os(iOS)
+        dismissKeyboardIfPresent()
+        #endif
+        XCTAssertTrue(pass.waitForExistence(timeout: 2.0), "Integration password")
+        tapToFocusForTyping(pass)
         pass.typeText("secret")
+        #if os(iOS)
+        dismissKeyboardIfPresent()
+        #endif
         scrollUntilHittable(toggle)
-        toggle.tap()
+        XCTAssertTrue(toggle.waitForExistence(timeout: 2.0), "Integration toggle")
+        #if os(iOS)
+        dismissKeyboardIfPresent()
+        #endif
+        toggle.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
         assertBindingMirrorContains("SD150_Mirror_IN", "Pat|secret|1")
         #else
         throw XCTSkip("Issue #150 host UI tests require iOS or macOS TestApp")
