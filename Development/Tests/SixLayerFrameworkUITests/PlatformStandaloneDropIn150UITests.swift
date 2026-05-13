@@ -203,7 +203,7 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
         line: UInt = #line
     ) {
         let byId = mirrorElement(identifier: mirrorId)
-        let byLabel = app.staticTexts.matching(NSPredicate(format: "label CONTAINS[c] %@", "\(mirrorId):")).firstMatch
+        let byLabel = app.staticTexts.matching(NSPredicate(format: "label CONTAINS[c] %@", mirrorId)).firstMatch
         let m: XCUIElement
         if byId.waitForExistence(timeout: min(1.5, mirrorExistenceTimeout)) {
             m = byId
@@ -211,10 +211,10 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
             m = byLabel
         }
         XCTAssertTrue(m.waitForExistence(timeout: mirrorExistenceTimeout), "Mirror \(mirrorId) should exist", file: file, line: line)
-        let text = m.label
+        let raw = (m.value as? String).flatMap { $0.isEmpty ? nil : $0 } ?? m.label
         XCTAssertTrue(
-            text.contains(substring),
-            "Mirror \(mirrorId) should contain '\(substring)'; got label: '\(text)'",
+            raw.contains(substring),
+            "Mirror \(mirrorId) should contain '\(substring)'; got label/value: '\(raw)'",
             file: file,
             line: line
         )
@@ -282,6 +282,9 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
         #if os(iOS)
         dismissKeyboardIfPresent()
         #endif
+        for _ in 0..<10 {
+            app.xcuiSwipeScrollHostsDown()
+        }
         scrollUntilExists(mirrorElement(identifier: "SD150_Mirror_S"))
         assertBindingMirrorContains("SD150_Mirror_S", "hunter2", mirrorExistenceTimeout: 4)
         #else
