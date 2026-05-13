@@ -90,6 +90,13 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
 
     private func sd150SecureField(labelContains: String) -> XCUIElement {
         if labelContains == "SD150_SecureField" {
+            // Host shows at most one standalone `SecureField` until the integration section is scrolled
+            // into the accessibility tree; when count is 1, predicate-based `firstMatch` can still
+            // resolve to a stale proxy (#261) — use the collection query instead.
+            let secureCount = app.secureTextFields.count
+            if secureCount == 1 {
+                return app.secureTextFields.firstMatch
+            }
             let exactId = "UITest_SD150_SecureField"
             let bySecure = app.secureTextFields[exactId]
             if bySecure.waitForExistence(timeout: 0.45) { return bySecure }
@@ -268,10 +275,7 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
         XCTAssertTrue(mirrorS.waitForExistence(timeout: 2.0), "Binding mirror for secure section should exist")
         let field = sd150SecureField(labelContains: "SD150_SecureField")
         scrollUntilExists(field)
-        XCTAssertTrue(
-            field.waitForExistence(timeout: 2.0),
-            "Secure field (secureTextFields.count=\(app.secureTextFields.count) textFields.count=\(app.textFields.count))"
-        )
+        XCTAssertTrue(field.waitForExistence(timeout: 2.0), "Secure field")
         tapToFocusForTyping(field)
         field.typeText("hunter2")
         assertBindingMirrorContains("SD150_Mirror_S", "hunter2")
