@@ -50,6 +50,19 @@ v7.8.0 is a **minor** release focused on a **presentation profiles** catalog, **
 
 ---
 
+## 📎 Additional resolved issues (not in v7.8.0 milestone)
+
+The release script flags **recently closed** work that is easy to miss when writing milestone-only notes. The items below closed during the same release window and are **documented here for traceability**; tie-break for “in this tag vs earlier” is the integration branch / merge order in git, not this list.
+
+- **[Issue #276](https://github.com/schatt/sixlayer/issues/276)** — Platform color hygiene: `Color.platform*` alignment and **UIColor / NSColor** drift reduction across the framework.
+- **[Issue #274](https://github.com/schatt/sixlayer/issues/274)** — **PlatformImage.exif** read could return **nil** after lossy JPEG round-trips that strip metadata; complements the EXIF configuration work tracked under **#275**.
+- **[Issue #271](https://github.com/schatt/sixlayer/issues/271)** — **watchOS** compile unblockers around **OCRService** and camera API availability (**Epic #233**).
+- **[Issue #270](https://github.com/schatt/sixlayer/issues/270)** — **v7.7.2** release checklist and metadata consistency fixes (automation / docs hygiene).
+- **[Issue #269](https://github.com/schatt/sixlayer/issues/269)** — Generalize **`Development/scripts/commit-xcodegen.sh`** so the Xcode project name comes from **`project.yml`** (not a hard-coded repo name).
+- **[Issue #268](https://github.com/schatt/sixlayer/issues/268)** — Add the **XcodeGen commit helper** script used with declarative project regeneration.
+
+---
+
 ## ⚠️ Migration / consumer notes
 
 - **Forms**: If you rely on draft persistence keyed only by `DynamicFormConfiguration.id`, review whether a dedicated draft key is preferable for multi-form or shared-draft scenarios.
