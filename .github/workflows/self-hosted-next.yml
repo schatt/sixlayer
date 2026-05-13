@@ -1,0 +1,73 @@
+# Self-hosted runner: full macOS + iOS test matrix when `next` updates.
+# Schemes match project.yml / buildconfig.yml (unit + ViewInspector + UI + external integration).
+#
+# Runner: `runs-on: self-hosted` — add labels if your runner uses custom tags.
+name: Self-hosted (next)
+
+on:
+  push:
+    branches: [next]
+  workflow_dispatch:
+
+concurrency:
+  group: self-hosted-next-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  all-tests:
+    name: Full test matrix (macOS + iOS)
+    runs-on: self-hosted
+    timeout-minutes: 240
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Generate Xcode project (XcodeGen)
+        run: |
+          set -euo pipefail
+          if [[ -x /opt/homebrew/bin/brew ]]; then
+            eval "$(/opt/homebrew/bin/brew shellenv)"
+          elif [[ -x /usr/local/bin/brew ]]; then
+            eval "$(/usr/local/bin/brew shellenv)"
+          fi
+          command -v xcodegen >/dev/null 2>&1 || brew install xcodegen
+          xcodegen generate
+
+      - name: Run all macOS tests (SLF-macOS-AllTests)
+        run: |
+          set -euo pipefail
+          mkdir -p build
+          set -o pipefail
+          xcodebuild test \
+            -project SixLayerFramework.xcodeproj \
+            -scheme "SLF-macOS-AllTests" \
+            -destination 'platform=macOS' \
+            -configuration Debug \
+            -allowProvisioningUpdates \
+            -parallel-testing-enabled YES \
+            -resultBundlePath "build/SLF-macOS-AllTests.xcresult"
+
+      - name: Run all iOS tests (SLF-iOS-AllTests)
+        run: |
+          set -euo pipefail
+          mkdir -p build
+          set -o pipefail
+          xcodebuild test \
+            -project SixLayerFramework.xcodeproj \
+            -scheme "SLF-iOS-AllTests" \
+            -destination 'platform=iOS Simulator,name=iPhone 16' \
+            -configuration Debug \
+            -allowProvisioningUpdates \
+            -parallel-testing-enabled YES \
+            -maximum-concurrent-test-simulator-destinations 2 \
+            -resultBundlePath "build/SLF-iOS-AllTests.xcresult"
+
+      - name: Upload test result bundles
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: xcresult-bundles
+          path: |
+            build/SLF-macOS-AllTests.xcresult
+            build/SLF-iOS-AllTests.xcresult
+          if-no-files-found: ignore
