@@ -255,6 +255,10 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
         XCTAssertTrue(field.waitForExistence(timeout: 2.0), "Secure field")
         tapToFocusForTyping(field)
         field.typeText("hunter2")
+        #if os(iOS)
+        dismissKeyboardIfPresent()
+        #endif
+        scrollUntilExists(mirrorS)
         assertBindingMirrorContains("SD150_Mirror_S", "hunter2")
         #else
         throw XCTSkip("Issue #150 host UI tests require iOS or macOS TestApp")
