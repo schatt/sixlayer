@@ -88,7 +88,25 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
             NSPredicate(format: "identifier CONTAINS[c] %@", slugCompact)
         ])
         let matchA11y = NSCompoundPredicate(orPredicateWithSubpredicates: [byLabel, byId])
-        // SwiftUI may surface secure entry as `SecureTextField` or `TextField` depending on OS/runtime (#261).
+
+        // `platformForm` sections: resolve inside the section row (typed queries miss nested SwiftUI fields).
+        let sectionHeader: String
+        if labelContains.contains("Integration") {
+            sectionHeader = "SD150 Integration"
+        } else {
+            sectionHeader = "SD150 Secure"
+        }
+        let header = app.staticTexts[sectionHeader].firstMatch
+        if header.waitForExistence(timeout: 1.2), app.tables.firstMatch.waitForExistence(timeout: 0.5) {
+            let cell = app.tables.firstMatch.cells.containing(header).firstMatch
+            let scoped = cell.descendants(matching: .secureTextField).matching(matchA11y).firstMatch
+            if scoped.waitForExistence(timeout: 0.6) { return scoped }
+            let scopedTF = cell.descendants(matching: .textField).matching(matchA11y).firstMatch
+            if scopedTF.waitForExistence(timeout: 0.6) { return scopedTF }
+            let anySecure = cell.secureTextFields.firstMatch
+            if anySecure.waitForExistence(timeout: 0.4) { return anySecure }
+        }
+
         let isSecureOrPlainText = NSCompoundPredicate(orPredicateWithSubpredicates: [
             NSPredicate(format: "elementType == %d", XCUIElement.ElementType.secureTextField.rawValue),
             NSPredicate(format: "elementType == %d", XCUIElement.ElementType.textField.rawValue)
