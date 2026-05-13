@@ -28,8 +28,8 @@ struct PresentationProfilesCatalogTests {
                 NSLocalizedDescriptionKey: "Bundle(path:) failed"
             ])
         }
-        let tearDown = {
-            try? FileManager.default.removeItem(at: root)
+        let tearDown: () -> Void = {
+            _ = try? FileManager.default.removeItem(at: root)
         }
         return (bundle, tearDown)
     }
