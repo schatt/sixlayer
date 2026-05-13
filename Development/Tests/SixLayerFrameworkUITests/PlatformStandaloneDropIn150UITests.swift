@@ -92,9 +92,9 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
         if labelContains == "SD150_SecureField" {
             let exactId = "UITest_SD150_SecureField"
             let bySecure = app.secureTextFields[exactId]
-            if bySecure.waitForExistence(timeout: 0.6) { return bySecure }
+            if bySecure.waitForExistence(timeout: 0.45) { return bySecure }
             let byAny = app.descendants(matching: .any).matching(NSPredicate(format: "identifier == %@", exactId)).firstMatch
-            if byAny.waitForExistence(timeout: 0.6) { return byAny }
+            if byAny.waitForExistence(timeout: 0.45) { return byAny }
 
             let idSlug = "sd150-securefield"
             let typePred = NSCompoundPredicate(orPredicateWithSubpredicates: [
@@ -103,12 +103,18 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
             ])
             let idPred = NSPredicate(format: "identifier CONTAINS[c] %@", idSlug)
             let rowPred = NSCompoundPredicate(andPredicateWithSubpredicates: [typePred, idPred])
-            let tableCount = min(app.tables.count, 4)
-            if tableCount > 0 {
-                for b in 0..<tableCount {
-                    let scoped = app.tables.element(boundBy: b).descendants(matching: .any).matching(rowPred).firstMatch
-                    if scoped.waitForExistence(timeout: 0.35) { return scoped }
+            for _ in 0..<Self.maxFormScrolls {
+                if app.tables.firstMatch.waitForExistence(timeout: 0.35) {
+                    let t = app.tables.firstMatch
+                    let cellCount = min(t.cells.count, 32)
+                    for i in 0..<cellCount {
+                        let f = t.cells.element(boundBy: i).descendants(matching: .any).matching(rowPred).firstMatch
+                        if f.waitForExistence(timeout: 0.15) { return f }
+                    }
+                    let scoped = t.descendants(matching: .any).matching(rowPred).firstMatch
+                    if scoped.waitForExistence(timeout: 0.25) { return scoped }
                 }
+                app.xcuiSwipeScrollHostsUp()
             }
         }
         let slugHyphen = labelContains.lowercased().replacingOccurrences(of: "_", with: "-")
