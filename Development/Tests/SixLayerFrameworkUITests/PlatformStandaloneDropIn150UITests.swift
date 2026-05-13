@@ -224,6 +224,11 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
 
     func test150_platformSecureField_typingUpdatesBinding() throws {
         #if os(iOS) || os(macOS)
+        // Scroll the secure section into view first: SwiftUI Form rows (and SecureField a11y nodes)
+        // may not exist until the section is materialized (#261); mirror S is in the same section.
+        let mirrorS = mirrorElement(identifier: "SD150_Mirror_S")
+        scrollUntilHittable(mirrorS)
+        XCTAssertTrue(mirrorS.waitForExistence(timeout: 2.0), "Binding mirror for secure section should exist")
         let field = sd150SecureField(labelContains: "SD150_SecureField")
         scrollUntilHittable(field)
         XCTAssertTrue(field.waitForExistence(timeout: 2.0), "Secure field")
