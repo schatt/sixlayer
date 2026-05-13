@@ -433,6 +433,7 @@
 		24291F373C2DD846589E881A /* CardDisplayHelperAccessibilityIdentifierLabelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4EAE6E23F8D885FC37B2D882 /* CardDisplayHelperAccessibilityIdentifierLabelTests.swift */; };
 		2454C95FEF7DF4EDC549B31A /* FormTestPickerStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF4E2B65A6E7FF36B2FF7738 /* FormTestPickerStyle.swift */; };
 		2467AF323BDA11FC7CB5FB00 /* Layer1CallbackFunctionalTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90541EB06444C58C57B29953 /* Layer1CallbackFunctionalTests.swift */; };
+		246E0DBBF5DFBF4D1023B3E6 /* PresentationProfilesCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 951351CCDB9482231BDD67BE /* PresentationProfilesCatalog.swift */; };
 		249F4B1AA69D6D3491A65E38 /* FormDraftTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FB366419811B5BB8151A5C8 /* FormDraftTypes.swift */; };
 		24AB26F388C882CAFA317382 /* OCRServiceAutomaticHintsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B44FAB91A54EB3C69FA1A6EA /* OCRServiceAutomaticHintsTests.swift */; };
 		24C95748BA4004586DA67757 /* AppleHIGComplianceManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB014FE9BDCE02E66611A3F9 /* AppleHIGComplianceManager.swift */; };
@@ -865,6 +866,7 @@
 		47A10002DAF44F791FA198DD /* PlatformTabStrip.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90DFF357E6006CA31E9B8C83 /* PlatformTabStrip.swift */; };
 		47A937A112C768452FBB3421 /* PlatformOCRSafetyExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDF4D25EDEC5C0FB3914881F /* PlatformOCRSafetyExtensions.swift */; };
 		47BEE3431CC81928F0548BA2 /* Layer4PlatformImageArchitectureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37BDD359030E59E4C1A4F3EC /* Layer4PlatformImageArchitectureTests.swift */; };
+		47DEAE19DDB6A03B39B34660 /* PresentationProfilesCatalogTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFF85BCB18EC7E49A369DD7A /* PresentationProfilesCatalogTests.swift */; };
 		47FF274FA589B377C545C451 /* PlatformFontSystemExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0B9B4FE73177F70296E750F /* PlatformFontSystemExtensions.swift */; };
 		48087B4F65C1243FAFB24160 /* PlatformPrivacy.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9FDFF802095DCD7522A434E /* PlatformPrivacy.swift */; };
 		4808971814D1DA841A76CECE /* PlatformSemanticLayer1ComponentAccessibilityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4F9342638BB2FD2337A2ACE /* PlatformSemanticLayer1ComponentAccessibilityTests.swift */; };
@@ -998,6 +1000,7 @@
 		52D9524F02901DB096240E65 /* PlatformFontSystemExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0B9B4FE73177F70296E750F /* PlatformFontSystemExtensions.swift */; };
 		52EDE6385485871208C84258 /* DataFrameAnalysisEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9370489B2A338F777BAD4E7B /* DataFrameAnalysisEngineTests.swift */; };
 		52FB2591F4C46AB731353876 /* LayoutSpec.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AF9B38DE0012FA10783F256 /* LayoutSpec.swift */; };
+		5306C9A2F86F272FFA1C6842 /* PresentationProfilesCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 951351CCDB9482231BDD67BE /* PresentationProfilesCatalog.swift */; };
 		530B6FAB1D83ED6E57A7A14D /* SixLayerUITestNavigator.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2578EEAEAADECABF62233FB /* SixLayerUITestNavigator.swift */; };
 		533C2AFA5B30BD5404F41303 /* ThemedViewModifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90C2AC65C118270C10625059 /* ThemedViewModifiers.swift */; };
 		53565751EDA3D3C9669A88E9 /* UnifiedWindowDetection.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB4F894476347050DA9DBCD0 /* UnifiedWindowDetection.swift */; };
@@ -1069,6 +1072,7 @@
 		585C5EAC7A9A49A05A184A58 /* Layer3ComponentAccessibilityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E05B1577823B60CF55B02CB /* Layer3ComponentAccessibilityTests.swift */; };
 		5867340B23C393E418606896 /* IntelligentFormViewHintsFirstTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6DDCF1BC4EB316C7A5E7247 /* IntelligentFormViewHintsFirstTests.swift */; };
 		5885BDC7CDFD7CC75CA33931 /* FieldViewTypeDeterminer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1714ED78CC3BEE3E81B013DF /* FieldViewTypeDeterminer.swift */; };
+		588B46FC020AAB2B16C59AB4 /* PresentationProfilesCatalogTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFF85BCB18EC7E49A369DD7A /* PresentationProfilesCatalogTests.swift */; };
 		58919CF57A556AD6E8EB7EE2 /* Layer6PlatformOptimizationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59F655E11D0263D255FE68FF /* Layer6PlatformOptimizationTests.swift */; };
 		58A15A36575C8311D2030D1C /* PlatformKnowledgeLayer5.swift in Sources */ = {isa = PBXBuildFile; fileRef = D78E277C0ECCE3D21841817A /* PlatformKnowledgeLayer5.swift */; };
 		58CC28AE6841E86A85DE58B7 /* PlatformOCRSemanticLayer1.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61560AE74EDC88FB604ADF3E /* PlatformOCRSemanticLayer1.swift */; };
@@ -1429,6 +1433,7 @@
 		75F075F70AB3FB1A76E8BFEF /* PlatformDataFrameAnalysisL1Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7DE809CC11B55C07BFB419E1 /* PlatformDataFrameAnalysisL1Tests.swift */; };
 		760BEF28D23E8F6D3D34CF53 /* PlatformHapticFeedbackExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 338F46850FB1DD0AFEC57806 /* PlatformHapticFeedbackExtensionsTests.swift */; };
 		76191CE0B94C7BBD5C97FF7F /* IntelligentCardExpansionComprehensiveTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F370DFBCC1AB86D88105C77 /* IntelligentCardExpansionComprehensiveTests.swift */; };
+		76340E5A3CFB4E30C0B10333 /* PresentationProfilesCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 951351CCDB9482231BDD67BE /* PresentationProfilesCatalog.swift */; };
 		763EE6837E60207E420330BC /* ViewInspector in Frameworks */ = {isa = PBXBuildFile; productRef = C9E4C9C72500B6D970597984 /* ViewInspector */; };
 		763FF05ED185DD3BB6E1F68F /* PlatformManagedSettingsFlowLogic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81AE3C41DE9DA88FC64BFBF5 /* PlatformManagedSettingsFlowLogic.swift */; };
 		764A81346435B6C51D4F4592 /* OCROverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73AF32072717F16C7863A085 /* OCROverlayView.swift */; };
@@ -1794,6 +1799,7 @@
 		93E46FF4F0C1938796827CBB /* L4_CONTRACT_INVENTORY.md in Resources */ = {isa = PBXBuildFile; fileRef = 82D190F72B3FB1C803487155 /* L4_CONTRACT_INVENTORY.md */; };
 		93FCF7A8D8C022CCEC3FA494 /* RuntimeCapabilityDetectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4ABAD26C29AD3270D57C816 /* RuntimeCapabilityDetectionView.swift */; };
 		940DC22DFE133DBEAB8BCD79 /* LocationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5133DA05740E59506EE17AD8 /* LocationService.swift */; };
+		941B9ADED21FA65501DA4EB0 /* PresentationProfilesCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 951351CCDB9482231BDD67BE /* PresentationProfilesCatalog.swift */; };
 		942016C72BCEFF78AA131741 /* TextContentTypeCompletenessTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F27182B9369586BE680DEF55 /* TextContentTypeCompletenessTests.swift */; };
 		942F8BD1FB18784E03ADDEEB /* AccessibilityTestingSuite.swift in Sources */ = {isa = PBXBuildFile; fileRef = 774E4BFF48F77F4696ED8CB1 /* AccessibilityTestingSuite.swift */; };
 		942FB74FBE2C506B9F57882B /* InternationalizationServiceMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = B580C2B0B9B2C133734822E5 /* InternationalizationServiceMock.swift */; };
@@ -2303,6 +2309,7 @@
 		C0B5C8E3504F0D1450AC0CB4 /* Layer1AccessibilityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C27F205235EA9EA63386F1F /* Layer1AccessibilityTests.swift */; };
 		C0C6D1601A5F1027BC5077A0 /* Layer5PlatformOptimizationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26A711CEC8558677DB4273DB /* Layer5PlatformOptimizationTests.swift */; };
 		C0D7C4341D662F448BAEC78C /* SwitchControlTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A8E0E6670EF429DC0C799C4 /* SwitchControlTests.swift */; };
+		C0FE0C32BEE9C6559EB074D1 /* PresentationProfilesCatalogTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFF85BCB18EC7E49A369DD7A /* PresentationProfilesCatalogTests.swift */; };
 		C0FE2A4D093DDC9A1B802110 /* PlatformManagedSettingsDetailNavigationLayer4.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5CB1001EDD85C50F49A7F22 /* PlatformManagedSettingsDetailNavigationLayer4.swift */; };
 		C12DAC7A9F740B3969516CAF /* GenericDataItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43F9BB9F7677DBA23A5A5BD3 /* GenericDataItem.swift */; };
 		C158ABA2803BB1703420FA7E /* PlatformAnimationSystemExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E13207FD966EB91C1BD0E88 /* PlatformAnimationSystemExtensions.swift */; };
@@ -2557,6 +2564,7 @@
 		D6118EB61A4899A2E39E3F5F /* LAYER4_ASSISTIVE_VISUAL_EVIDENCE_MATRIX.md in Resources */ = {isa = PBXBuildFile; fileRef = DAFAA2ABB23F7EC2D1A5D131 /* LAYER4_ASSISTIVE_VISUAL_EVIDENCE_MATRIX.md */; };
 		D6253EF5B5060E082BA346F9 /* ViewDefinitionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44FB5F3DEF9510EC97A2B06E /* ViewDefinitionTests.swift */; };
 		D628FEB6B1D9D3422A71ABF2 /* DynamicFormLabelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F84CA2B7A6C9BC043160C280 /* DynamicFormLabelTests.swift */; };
+		D665E4FA1DEA7E43995CFC7E /* PresentationProfilesCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 951351CCDB9482231BDD67BE /* PresentationProfilesCatalog.swift */; };
 		D66677541A5FFA9B18BCDCE6 /* DynamicFormGridLayoutTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 391F24462104C647E4AEF81D /* DynamicFormGridLayoutTests.swift */; };
 		D67CD14F892F2C1BE41C92B7 /* ModalContainerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09FFAA8FB08DDD888050C880 /* ModalContainerTests.swift */; };
 		D69026154CD3795103C97A0B /* BasicAutomaticComplianceLogicTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FFFE89D716B2F60C57A15AD7 /* BasicAutomaticComplianceLogicTests.swift */; };
@@ -2745,6 +2753,7 @@
 		E73B8BD077B253C373C702C7 /* SixLayerUITestNavigatorConsumerSmokeUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9637C1BD539DDBC16EE9740 /* SixLayerUITestNavigatorConsumerSmokeUITests.swift */; };
 		E749AE3C800E00993379115D /* ThemingIntegration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A8723AE44E462450B23E862 /* ThemingIntegration.swift */; };
 		E757E9CF11FA072E49E06763 /* PlatformOrganizationLayer5.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72371D9DB6D1A7F1AA5639ED /* PlatformOrganizationLayer5.swift */; };
+		E762290B04E0AF4DB4B5E07C /* PresentationProfilesCatalogTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFF85BCB18EC7E49A369DD7A /* PresentationProfilesCatalogTests.swift */; };
 		E7937551F980E4BB18EA3863 /* PlatformColorSystemExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28754605478BC396694FA796 /* PlatformColorSystemExtensions.swift */; };
 		E7B49E268FEEF1F1B72E8856 /* PlatformImageFixVerificationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 263A35F12E3456464CB32A7F /* PlatformImageFixVerificationTests.swift */; };
 		E7D02D41A93DED0DF515BA93 /* FrameworkComponentIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C6179CF823FA01587121862 /* FrameworkComponentIntegrationTests.swift */; };
@@ -2857,6 +2866,7 @@
 		F103841BF1C197684D3383D7 /* SixLayerFramework.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = BD6A23819A82A61C2C487623 /* SixLayerFramework.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		F1691E5A0FD9D2F3B871F9F2 /* macOSWindowDetection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B44380C0DAB8A16595F84F8 /* macOSWindowDetection.swift */; };
 		F17839F7C0F5CFCFD6AB149B /* PhotoSemanticLayerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58F95D91A2D47A3DB655B5DA /* PhotoSemanticLayerTests.swift */; };
+		F1F510FADDD4A89BEECA0FEC /* PresentationProfilesCatalogTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFF85BCB18EC7E49A369DD7A /* PresentationProfilesCatalogTests.swift */; };
 		F1F992827BE292A36B14CB68 /* PlatformSidebarHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = A091847EEB0BCF8A6DF1DB7E /* PlatformSidebarHelpers.swift */; };
 		F201B4CDA1B42A1CB9142AE1 /* SwitchControlManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 070BF63CA4F7EB1293F77063 /* SwitchControlManager.swift */; };
 		F22DA1979EA45A73E9BE011C /* ImageMetadataIntelligence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F013CB3E81488D6A31378F9 /* ImageMetadataIntelligence.swift */; };
@@ -3820,6 +3830,7 @@
 		9383124C6FEB79EA5CA75AE7 /* SixLayerUITestNavigatorUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SixLayerUITestNavigatorUITests.swift; sourceTree = "<group>"; };
 		938D6C266D2ED60B5811AB68 /* SixLayerUITestNavigatorInternals.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SixLayerUITestNavigatorInternals.swift; sourceTree = "<group>"; };
 		938EFB8E5A9D36D3C456B306 /* EyeTrackingManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EyeTrackingManager.swift; sourceTree = "<group>"; };
+		951351CCDB9482231BDD67BE /* PresentationProfilesCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresentationProfilesCatalog.swift; sourceTree = "<group>"; };
 		9528C3BB8701ACDB9F949476 /* DataPresentationIntelligence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataPresentationIntelligence.swift; sourceTree = "<group>"; };
 		959A6C6D0F2BEA9209FB1A6C /* CoreDataTestUtilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataTestUtilities.swift; sourceTree = "<group>"; };
 		95E9384F29FD43936D08084A /* WindowDetectionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowDetectionTests.swift; sourceTree = "<group>"; };
@@ -3886,6 +3897,7 @@
 		AF962225B133F6E677EAAD5E /* FieldActionScanningHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FieldActionScanningHelpers.swift; sourceTree = "<group>"; };
 		AF9889F26B45B183C2D84009 /* SixLayerFrameworkUITests_visionOS.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = SixLayerFrameworkUITests_visionOS.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		AFB1B7BF24C3498802F0D781 /* PlatformProfilingLayer5.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformProfilingLayer5.swift; sourceTree = "<group>"; };
+		AFF85BCB18EC7E49A369DD7A /* PresentationProfilesCatalogTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresentationProfilesCatalogTests.swift; sourceTree = "<group>"; };
 		B07E518F6C7C3CA19FD1C91F /* PlatformSemanticLayer1HierarchicalTemporalAccessibilityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformSemanticLayer1HierarchicalTemporalAccessibilityTests.swift; sourceTree = "<group>"; };
 		B164DC063A5A99943DE854C6 /* PlatformNavigationStackEnhancementsLayer6.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformNavigationStackEnhancementsLayer6.swift; sourceTree = "<group>"; };
 		B1CD4CFE4D6947CF16F82C3F /* DataValueExtraction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataValueExtraction.swift; sourceTree = "<group>"; };
@@ -4347,6 +4359,7 @@
 				47DAD3848FE439B29A38F11B /* HintsGeneratorTests.swift */,
 				F127275D2426698CB7EED69A /* NativeTypesTests.swift */,
 				89F62E0BE08A34001773F194 /* PlatformImageEXIFTests.swift */,
+				AFF85BCB18EC7E49A369DD7A /* PresentationProfilesCatalogTests.swift */,
 				69128AA189274DD8C3B44FE4 /* TabularDataAPITests.swift */,
 			);
 			path = Models;
@@ -5710,6 +5723,7 @@
 				DDF9E56CCC236FC337679E51 /* PlatformPhotoTypes.swift */,
 				7C403CCB938E98E123063462 /* PlatformStrategy.swift */,
 				884ADF6145D2C12C1C46571A /* PlatformTypes.swift */,
+				951351CCDB9482231BDD67BE /* PresentationProfilesCatalog.swift */,
 				CF24C793FD142E6B5379925C /* RuntimeCapabilityDetection.swift */,
 				F1DE91A3943C18168D531916 /* RuntimeCapabilityHarness.swift */,
 				F6A88D8E24398AE87D26BAF4 /* SecurityHints.swift */,
@@ -6111,7 +6125,7 @@
 			path = API;
 			sourceTree = "<group>";
 		};
-		"TEMP_F43E9674-69B3-4678-974F-F3058E81B098" /* Utilities */ = {
+		"TEMP_55D6A11B-9F14-4AF9-9983-50D6638F39BF" /* Utilities */ = {
 			isa = PBXGroup;
 			children = (
 			);
@@ -7257,6 +7271,7 @@
 				DE5FC8E222D08C45BA6FDD4C /* PlatformTypesAPISignatureTests.swift in Sources */,
 				83D0DA8551771C26AC0C8B2C /* PlatformTypesCompilationTests.swift in Sources */,
 				B449BD713A16C5DF9F8D9C02 /* PresentationHintsColorConfigurationTests.swift in Sources */,
+				588B46FC020AAB2B16C59AB4 /* PresentationProfilesCatalogTests.swift in Sources */,
 				891A956C85E33EBA8284151D /* RuntimeCapabilityDetectionTests.swift in Sources */,
 				C8986027529689F80A21EA8C /* SecurityServiceTests.swift in Sources */,
 				DCC6F20A7C7DA416D945B918 /* SelectFieldImplementationTests.swift in Sources */,
@@ -7503,6 +7518,7 @@
 				38E361FED78E8DD38D684B57 /* PlatformUIPatterns.swift in Sources */,
 				18817ED14497E5E2464F843E /* PlatformUITypes.swift in Sources */,
 				667ED6E8C9B5BF17A47862F1 /* PlatformWisdomLayer5.swift in Sources */,
+				941B9ADED21FA65501DA4EB0 /* PresentationProfilesCatalog.swift in Sources */,
 				4337AE0C31A18293A45DABF5 /* ResponsiveCardsView.swift in Sources */,
 				A9BFF0C6A5E4104346DA9C5A /* ResponsiveContainer.swift in Sources */,
 				E0D84CFB3239572472F694FD /* ResponsiveLayout.swift in Sources */,
@@ -7779,6 +7795,7 @@
 				2E5B2E2BDCEF9378B642184D /* PlatformUIPatterns.swift in Sources */,
 				4E00A46747A56F53092C9E90 /* PlatformUITypes.swift in Sources */,
 				5070BC34FAA74C6EE243AF4B /* PlatformWisdomLayer5.swift in Sources */,
+				76340E5A3CFB4E30C0B10333 /* PresentationProfilesCatalog.swift in Sources */,
 				5431C43403540EE7E52BE0F5 /* ResponsiveCardsView.swift in Sources */,
 				81C32DD7CB928284ABE9ACE2 /* ResponsiveContainer.swift in Sources */,
 				30522B006B7DCB490F4B3368 /* ResponsiveLayout.swift in Sources */,
@@ -8309,6 +8326,7 @@
 				B4CE2385CCCF1A9A35E80BB1 /* PlatformUIPatterns.swift in Sources */,
 				FA8EC4E239B2495456CD8CCF /* PlatformUITypes.swift in Sources */,
 				A0F5A456E7EDFA838A27C9A4 /* PlatformWisdomLayer5.swift in Sources */,
+				D665E4FA1DEA7E43995CFC7E /* PresentationProfilesCatalog.swift in Sources */,
 				42C97687B166374C75D6048B /* ResponsiveCardsView.swift in Sources */,
 				6763EC250A1FFB1C98F55C38 /* ResponsiveContainer.swift in Sources */,
 				8C40C430B07242D774323743 /* ResponsiveLayout.swift in Sources */,
@@ -8550,6 +8568,7 @@
 				1FD0A28E3231EA3C7F011BD8 /* PlatformTypesAPISignatureTests.swift in Sources */,
 				967AA7873E091BE93BAAA595 /* PlatformTypesCompilationTests.swift in Sources */,
 				1D7D46C38C557B34762CBBCC /* PresentationHintsColorConfigurationTests.swift in Sources */,
+				E762290B04E0AF4DB4B5E07C /* PresentationProfilesCatalogTests.swift in Sources */,
 				6866457D4732232E5E2FB4D9 /* RuntimeCapabilityDetectionTests.swift in Sources */,
 				21CD1DC761637F734B4019E3 /* SecurityServiceTests.swift in Sources */,
 				49B045C94A0127D2A4A21C35 /* SelectFieldImplementationTests.swift in Sources */,
@@ -9072,6 +9091,7 @@
 				DA8B7A64A2112DCCCACD0191 /* PlatformTypesAPISignatureTests.swift in Sources */,
 				BDC68106DC87DD937D8148F0 /* PlatformTypesCompilationTests.swift in Sources */,
 				62E0F176D2D0A7C50BE82B8A /* PresentationHintsColorConfigurationTests.swift in Sources */,
+				C0FE0C32BEE9C6559EB074D1 /* PresentationProfilesCatalogTests.swift in Sources */,
 				92B343E8DCEB74F045E23719 /* RuntimeCapabilityDetectionTests.swift in Sources */,
 				AE7B6CAD0E86D0032083D22E /* SecurityServiceTests.swift in Sources */,
 				A1E2378CB01F93CE85BE1AE1 /* SelectFieldImplementationTests.swift in Sources */,
@@ -9318,6 +9338,7 @@
 				5FDE5FA37905B74F6323001C /* PlatformUIPatterns.swift in Sources */,
 				9BE651D4829D102D6B5AD9D5 /* PlatformUITypes.swift in Sources */,
 				45FCEC940BF89E91800712D8 /* PlatformWisdomLayer5.swift in Sources */,
+				246E0DBBF5DFBF4D1023B3E6 /* PresentationProfilesCatalog.swift in Sources */,
 				FFB0FD2BB2D9DAB1FC79A8A9 /* ResponsiveCardsView.swift in Sources */,
 				5C13FD20693C469B4B7FCE46 /* ResponsiveContainer.swift in Sources */,
 				7F690BE20EF56976EA1DEA40 /* ResponsiveLayout.swift in Sources */,
@@ -9579,6 +9600,7 @@
 				A5A40156AEDC7D4BCEEC7330 /* PlatformTypesAPISignatureTests.swift in Sources */,
 				43A089920F4DCBC98419FBE5 /* PlatformTypesCompilationTests.swift in Sources */,
 				CADA2774A486DD090F3EE1E0 /* PresentationHintsColorConfigurationTests.swift in Sources */,
+				47DEAE19DDB6A03B39B34660 /* PresentationProfilesCatalogTests.swift in Sources */,
 				0ACF78DE2792327E06AB8B6D /* RuntimeCapabilityDetectionTests.swift in Sources */,
 				B66304B0268F5AEF4AD8BE45 /* SecurityServiceTests.swift in Sources */,
 				00A4EE449F0D20EE831E9289 /* SelectFieldImplementationTests.swift in Sources */,
@@ -9844,6 +9866,7 @@
 				7395027EBA6C45946A189314 /* PlatformUIPatterns.swift in Sources */,
 				C8587C5846B66A7BD78666D8 /* PlatformUITypes.swift in Sources */,
 				766F0E9C82D8FE308FF91CE6 /* PlatformWisdomLayer5.swift in Sources */,
+				5306C9A2F86F272FFA1C6842 /* PresentationProfilesCatalog.swift in Sources */,
 				485E6AE8A7169225D29CC19C /* ResponsiveCardsView.swift in Sources */,
 				206D709BAAD29D9B24A7F2D9 /* ResponsiveContainer.swift in Sources */,
 				D1E9780A9DE8503438164D01 /* ResponsiveLayout.swift in Sources */,
@@ -10086,6 +10109,7 @@
 				45944C31519E8978DDC67E77 /* PlatformTypesAPISignatureTests.swift in Sources */,
 				290F8D0C289C1771B2C57E5F /* PlatformTypesCompilationTests.swift in Sources */,
 				88DEF3C6D5E1D2A23158844E /* PresentationHintsColorConfigurationTests.swift in Sources */,
+				F1F510FADDD4A89BEECA0FEC /* PresentationProfilesCatalogTests.swift in Sources */,
 				AE313242BA644CCDAF01172A /* RuntimeCapabilityDetectionTests.swift in Sources */,
 				1C0AB67D5F597B359F4856DB /* SecurityServiceTests.swift in Sources */,
 				6AB02E1D5E66C7DF093CB47F /* SelectFieldImplementationTests.swift in Sources */,

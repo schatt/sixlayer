@@ -562,9 +562,9 @@ targets:
     dependencies:
       - target: SixLayerFramework_visionOS
 
-# Scheme Test action: per-target parallel workers + random test order (Xcode scheme; pairs with
-# xcodebuild -parallel-testing-enabled in buildconfig.yml). UITest targets included — revisit if
-# parallel UI classes expose ordering or shared-state flakes.
+# Scheme Test action: every listed test bundle uses parallel workers + random test order (Xcode
+# scheme; pair with xcodebuild -parallel-testing-enabled YES in buildconfig.yml). UITest targets
+# included — revisit if parallel UI classes expose ordering or shared-state flakes.
 #
 # XcodeGen emits verbose *.xcscheme XML; Xcode on open/save often aligns that XML with the same
 # scheme intent you declare here (leaner attributes, different Scheme `version`, etc.). Those
@@ -815,10 +815,9 @@ schemes:
         SixLayerFramework_visionOS: all
     test:
       targets:
-        # Parallel + random on visionOS Simulator often leaves many unit tests as "not run" (Xcode rdar-style behavior; epic #233).
         - name: SixLayerFrameworkUnitTests_visionOS
-          parallelizable: false
-          randomExecutionOrder: false
+          parallelizable: true
+          randomExecutionOrder: true
         - name: SixLayerFrameworkExternalIntegrationTests_visionOS
           parallelizable: true
           randomExecutionOrder: true
@@ -835,8 +834,8 @@ schemes:
     test:
       targets:
         - name: SixLayerFrameworkUnitTests_visionOS
-          parallelizable: false
-          randomExecutionOrder: false
+          parallelizable: true
+          randomExecutionOrder: true
         - name: SixLayerFrameworkUITests_visionOS
           parallelizable: true
           randomExecutionOrder: true
@@ -852,5 +851,5 @@ schemes:
     test:
       targets:
         - name: SixLayerFrameworkUnitTests_visionOS
-          parallelizable: false
-          randomExecutionOrder: false
+          parallelizable: true
+          randomExecutionOrder: true
