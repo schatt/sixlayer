@@ -16,6 +16,8 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
 
     private static let hostReadyTimeout: TimeInterval = 4.0
     private static let maxFormScrolls = 7
+    /// Extra passes for lazy `Form` / `ScrollView` content that may need bidirectional scrolling (#261).
+    private static let maxMaterializeScrolls = 16
 
     nonisolated override func setUpWithError() throws {
         continueAfterFailure = false
@@ -74,9 +76,13 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
     /// Form `StaticText` mirrors can exist in the tree with an invalid activation point; querying
     /// `isHittable` then fails the run (#261). Use existence-only scrolling for those anchors.
     private func scrollUntilExists(_ element: XCUIElement) {
-        for _ in 0..<Self.maxFormScrolls {
+        for i in 0..<Self.maxMaterializeScrolls {
             if element.waitForExistence(timeout: 0.45) { return }
-            app.xcuiSwipeScrollHostsUp()
+            if i % 2 == 0 {
+                app.xcuiSwipeScrollHostsUp()
+            } else {
+                app.xcuiSwipeScrollHostsDown()
+            }
         }
     }
 
