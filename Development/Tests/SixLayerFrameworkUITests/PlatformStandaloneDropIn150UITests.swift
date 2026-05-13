@@ -80,12 +80,21 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
     }
 
     private func sd150SecureField(labelContains: String) -> XCUIElement {
-        let slug = labelContains.lowercased().replacingOccurrences(of: "_", with: "-")
+        let slugHyphen = labelContains.lowercased().replacingOccurrences(of: "_", with: "-")
+        let slugCompact = labelContains.lowercased().replacingOccurrences(of: "_", with: "")
         let byLabel = NSPredicate(format: "label CONTAINS[c] %@", labelContains)
-        let byId = NSPredicate(format: "identifier CONTAINS[c] %@", slug)
-        let pred = NSCompoundPredicate(orPredicateWithSubpredicates: [byLabel, byId])
-        // Some hosts nest `SecureField` under containers; typed `app.secureTextFields[...]` can miss (#261).
-        return app.descendants(matching: .secureTextField).matching(pred).firstMatch
+        let byId = NSCompoundPredicate(orPredicateWithSubpredicates: [
+            NSPredicate(format: "identifier CONTAINS[c] %@", slugHyphen),
+            NSPredicate(format: "identifier CONTAINS[c] %@", slugCompact)
+        ])
+        let matchA11y = NSCompoundPredicate(orPredicateWithSubpredicates: [byLabel, byId])
+        // SwiftUI may surface secure entry as `SecureTextField` or `TextField` depending on OS/runtime (#261).
+        let isSecureOrPlainText = NSCompoundPredicate(orPredicateWithSubpredicates: [
+            NSPredicate(format: "elementType == %d", XCUIElement.ElementType.secureTextField.rawValue),
+            NSPredicate(format: "elementType == %d", XCUIElement.ElementType.textField.rawValue)
+        ])
+        let combined = NSCompoundPredicate(andPredicateWithSubpredicates: [isSecureOrPlainText, matchA11y])
+        return app.descendants(matching: .any).matching(combined).firstMatch
     }
 
     private func sd150Switch(labelContains: String) -> XCUIElement {
@@ -109,7 +118,9 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
         point.tap()
         RunLoop.current.run(until: Date().addingTimeInterval(0.2))
         #if os(iOS)
-        if element.elementType == .secureTextField {
+        let isSecureLike = element.elementType == .secureTextField
+            || (element.elementType == .textField && element.identifier.lowercased().contains("securefield"))
+        if isSecureLike {
             point.tap()
             RunLoop.current.run(until: Date().addingTimeInterval(0.15))
         }
