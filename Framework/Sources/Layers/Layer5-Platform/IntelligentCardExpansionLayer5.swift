@@ -87,7 +87,20 @@ private func iOSCardExpansionConfig(deviceType: DeviceType) -> CardExpansionPlat
             animationEasing: .easeInOut(duration: 0.3)
         )
     default:
-        return CardExpansionPlatformConfig()
+        // CarPlay / future idioms: still mirror runtime capability reads so Layer 5 never drifts
+        // from `RuntimeCapabilityDetection` (empty `CardExpansionPlatformConfig()` defaults would
+        // falsely clear haptics/touch and break matrix tests).
+        return CardExpansionPlatformConfig(
+            supportsHapticFeedback: RuntimeCapabilityDetection.supportsHapticFeedback,
+            supportsHover: RuntimeCapabilityDetection.supportsHover,
+            supportsTouch: RuntimeCapabilityDetection.supportsTouch,
+            supportsVoiceOver: RuntimeCapabilityDetection.supportsVoiceOver,
+            supportsSwitchControl: RuntimeCapabilityDetection.supportsSwitchControl,
+            supportsAssistiveTouch: RuntimeCapabilityDetection.supportsAssistiveTouch,
+            minTouchTarget: RuntimeCapabilityDetection.minTouchTarget,
+            hoverDelay: RuntimeCapabilityDetection.hoverDelay,
+            animationEasing: .easeInOut(duration: 0.25)
+        )
     }
 }
 
