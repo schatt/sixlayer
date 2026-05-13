@@ -85,6 +85,7 @@ public func platformCloudKitProgress_L4(
         }
     }
     .automaticCompliance(named: "platformCloudKitProgress_L4", accessibilityLabel: summary)
+    .accessibilityIdentifier("platformCloudKitProgress_L4")
 }
 
 // MARK: - CloudKit Account Status Display
@@ -117,6 +118,7 @@ public func platformCloudKitAccountStatus_L4(status: CKAccountStatus) -> some Vi
         }
     }
     .automaticCompliance(named: "platformCloudKitAccountStatus_L4", accessibilityLabel: summary)
+    .accessibilityIdentifier("platformCloudKitAccountStatus_L4")
 }
 
 // MARK: - CloudKit Service Status View
