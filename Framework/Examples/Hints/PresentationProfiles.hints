@@ -1,0 +1,21 @@
+{
+  "profiles": {
+    "default": {
+      "_dataType": "collection",
+      "_presentationPreference": "cards",
+      "_complexity": "moderate",
+      "_context": "dashboard",
+      "_customPreferences": {}
+    },
+    "fuelSummary": {
+      "_dataType": "collection",
+      "_presentationPreference": "cards",
+      "_complexity": "simple",
+      "_context": "summary",
+      "_customPreferences": {
+        "exampleProfileKey": "fuel"
+      },
+      "_defaultColor": "teal"
+    }
+  }
+}
