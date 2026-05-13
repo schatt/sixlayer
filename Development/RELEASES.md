@@ -1,12 +1,21 @@
 # 🚀 Six-Layer Framework Release History
 
-## 📍 **Current Release: v7.7.2** 🎯
+## 📍 **Current Release: v7.8.0** 🎯
 
-**Release Date**: April 27, 2026
-**Status**: Patch release
-**Previous Release**: v7.7.1 - Patch release
-**Note**: Fixes LocationService main-thread checking, DynamicImageField state integration, Layer 1 preview documentation, and release metadata consistency (Issues #258, #265, #267, #270).
+**Release Date**: May 13, 2026
+**Status**: Minor release
+**Previous Release**: v7.7.2 - Patch release
+**Note**: Presentation profiles and hint-driven sparse-grid collections (#277), list layout for card-style collections (#272), optional DynamicForm draft storage key (#273), PlatformImage EXIF configuration (#275), system-action contract for openURL and remote notifications (#256 / #169).
 **Next Release**: TBD
+
+---
+
+## 🎯 **v7.8.0 - Presentation profiles, collections, EXIF, and system actions** (May 13, 2026)
+
+### **What's in v7.8.0:**
+- Minor release. See [RELEASE_v7.8.0.md](RELEASE_v7.8.0.md) for details.
+
+**See [RELEASE_v7.8.0.md](RELEASE_v7.8.0.md) for complete release notes.**
 
 ---
 
