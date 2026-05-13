@@ -1,4 +1,5 @@
 import Testing
+import SwiftUI
 @testable import SixLayerFramework
 #if os(iOS)
 import UIKit
@@ -27,15 +28,6 @@ import AppKit
 //
 //  CRITICAL: These tests verify the currency exchange model works with implicit conversions
 //
-
-import SwiftUI
-#if os(iOS)
-import UIKit
-#elseif os(macOS)
-import AppKit
-#endif
-@testable import SixLayerFramework
-
 
 /// NOTE: Not marked @MainActor on class to allow parallel execution
 open class PlatformImageImplicitConversionTests: BaseTestClass {
@@ -200,13 +192,10 @@ open class PlatformImageImplicitConversionTests: BaseTestClass {
         // Test with different UIImage creation methods
         let size = CGSize(width: 50, height: 50)
         
-        // Test 1: UIGraphicsImageRenderer
-        // 6LAYER_ALLOW: testing platform-specific image rendering boundary conversions
-        // 6LAYER_ALLOW: testing platform-specific image rendering boundary conversions
+        // Test 1: UIGraphicsImageRenderer (fill via framework Color; assertions target UIImage)
         let renderer = UIGraphicsImageRenderer(size: size)
         let uiImage1 = renderer.image { context in
-            // 6LAYER_ALLOW: testing platform-specific image rendering boundary conversions
-            UIColor.red.setFill()
+            Color.systemRed.setFill()
             context.fill(CGRect(origin: .zero, size: size))
         }
         let platformImage1 = PlatformImage(uiImage1)
@@ -221,14 +210,13 @@ open class PlatformImageImplicitConversionTests: BaseTestClass {
         
         #elseif os(macOS)
         // Test with different NSImage creation methods
-        // 6LAYER_ALLOW: testing platform-specific image rendering boundary conversions
         let size = NSSize(width: 50, height: 50)
 
-        // Test 1: NSImage with size
-        // 6LAYER_ALLOW: testing platform-specific image rendering boundary conversions
+        // Test 1: NSImage with size (fill via framework Color)
         let nsImage1 = NSImage(size: size)
         nsImage1.lockFocus()
-        NSColor.red.drawSwatch(in: NSRect(origin: .zero, size: size)) // 6LAYER_ALLOW: testing platform-specific image rendering boundary conversions
+        Color.systemRed.setFill()
+        NSRect(origin: .zero, size: size).fill()
         nsImage1.unlockFocus()
         let platformImage1 = PlatformImage(nsImage1)
         #expect(platformImage1.nsImage == nsImage1, "Implicit conversion should work with NSImage")
@@ -247,9 +235,9 @@ open class PlatformImageImplicitConversionTests: BaseTestClass {
     #if os(iOS)
     private func createTestUIImage() -> UIImage { // 6LAYER_ALLOW: test helper returning platform-specific image type
         let size = CGSize(width: 100, height: 100)
-        let renderer = UIGraphicsImageRenderer(size: size) // 6LAYER_ALLOW: test helper using platform-specific image rendering APIs
+        let renderer = UIGraphicsImageRenderer(size: size)
         return renderer.image { context in
-            UIColor.blue.setFill() // 6LAYER_ALLOW: test helper using platform-specific image rendering APIs
+            Color.systemBlue.setFill()
             context.fill(CGRect(origin: .zero, size: size))
         }
     }
@@ -257,10 +245,11 @@ open class PlatformImageImplicitConversionTests: BaseTestClass {
     
     #if os(macOS)
     private func createTestNSImage() -> NSImage { // 6LAYER_ALLOW: test helper returning platform-specific image type
-        let size = NSSize(width: 100, height: 100) // 6LAYER_ALLOW: test helper using platform-specific image rendering APIs
-        let nsImage = NSImage(size: size) // 6LAYER_ALLOW: test helper using platform-specific image rendering APIs
+        let size = NSSize(width: 100, height: 100)
+        let nsImage = NSImage(size: size)
         nsImage.lockFocus()
-        NSColor.blue.drawSwatch(in: NSRect(origin: .zero, size: size)) // 6LAYER_ALLOW: test helper using platform-specific image rendering APIs
+        Color.systemBlue.setFill()
+        NSRect(origin: .zero, size: size).fill()
         nsImage.unlockFocus()
         return nsImage
     }

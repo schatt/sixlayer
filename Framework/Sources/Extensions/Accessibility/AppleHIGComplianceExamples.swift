@@ -1,8 +1,5 @@
 import Foundation
 import SwiftUI
-#if canImport(UIKit)
-import UIKit
-#endif
 
 // MARK: - Apple HIG Compliance Examples
 
@@ -178,11 +175,9 @@ public struct AppleHIGComplianceExamples {
                         Text("Item \(index)")
                         Spacer()
                     }
-                    #if !os(tvOS)
-                    .onHover { _ in
+                    .platformHoverEffect { _ in
                         // Hover state is automatically applied
                     }
-                    #endif
                 }
             }
             .appleHIGCompliant()

@@ -35,7 +35,12 @@ public struct FieldActionRenderer: View {
             } else if actions.count <= field.maxVisibleActions && !field.useActionMenu {
                 horizontalActionButtons(actions: actions)
             } else {
+                // SwiftUI `Menu` is unavailable on watchOS; show inline actions instead.
+                #if os(watchOS)
+                horizontalActionButtons(actions: actions)
+                #else
                 actionMenu(actions: actions)
+                #endif
             }
         }
         .sheet(isPresented: $showBarcodeScanner) {
@@ -114,6 +119,10 @@ public struct FieldActionRenderer: View {
     /// Render actions in menu (when count > maxVisibleActions or useActionMenu is true)
     @ViewBuilder
     private func actionMenu(actions: [any FieldAction]) -> some View {
+        #if os(watchOS)
+        // Menu is unavailable on watchOS; fall back to inline action buttons.
+        horizontalActionButtons(actions: actions)
+        #else
         Menu {
             ForEach(Array(actions.enumerated()), id: \.offset) { index, action in
                 Button(action: {
@@ -132,6 +141,7 @@ public struct FieldActionRenderer: View {
         .accessibilityLabel("Field actions")
         .accessibilityHint("Tap to see available actions for this field")
         .automaticCompliance(named: "FieldActionMenu")
+        #endif
     }
     
     // MARK: - Action Execution

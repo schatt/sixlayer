@@ -392,8 +392,8 @@ public func platformLocalizedTextEditor_L1(
     let layoutDirection = i18n.getLayoutDirection()
     
     return Group {
-        #if os(tvOS)
-        // TextEditor is unavailable on tvOS; use a single-line field as a functional fallback (#237).
+        #if os(tvOS) || os(watchOS)
+        // TextEditor is unavailable on tvOS and watchOS; use a single-line field as a functional fallback (#237, watchOS parity).
         TextField(title, text: text)
             .environment(\.layoutDirection, layoutDirection)
             .environment(\.locale, hints.locale)

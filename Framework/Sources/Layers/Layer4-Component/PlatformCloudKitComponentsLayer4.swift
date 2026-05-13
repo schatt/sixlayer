@@ -9,10 +9,6 @@
 import SwiftUI
 import CloudKit
 
-#if canImport(UIKit)
-import UIKit
-#endif
-
 #if canImport(AppKit)
 import AppKit
 #endif
@@ -163,9 +159,9 @@ public func platformCloudKitServiceStatus_L4(service: CloudKitService) -> some V
     }
     .padding()
     #if os(macOS)
-    .background(Color(NSColor.controlBackgroundColor))
+    .background(Color.platformSecondaryBackground)
     #else
-    // Color(.systemBackground) is unavailable on tvOS; use shared platform helper (#237).
+    // Non-macOS: `Color.platformBackground` (tvOS-safe; #237).
     .background(Color.platformBackground)
     #endif
     .cornerRadius(8)

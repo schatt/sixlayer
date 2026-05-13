@@ -124,7 +124,7 @@ private struct Layer4NestedSplitShellPresentationHost<Sidebar: View, Detail: Vie
 
     var body: some View {
         GeometryReader { geo in
-            let width = max(0, geo.size.width)
+            let width = NavigationLayoutResolver.layer4SanitizedSplitAxisWidthForPresentation(geo.size.width)
             let fresh = NavigationLayoutResolver.layer4CompactPresentation(forAvailableWidth: width)
             let columnSeeded = columnSeededPresentation()
             let prev = persistedPresentation ?? columnSeeded ?? fresh

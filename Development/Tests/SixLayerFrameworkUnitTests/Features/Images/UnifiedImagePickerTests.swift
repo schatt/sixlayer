@@ -231,21 +231,22 @@ open class UnifiedImagePickerTests: BaseTestClass {
     
     // MARK: - Test Helpers
     
-    // 6LAYER_ALLOW: test helper using platform-specific image rendering APIs
+    /// Raster helper returning `PlatformImage` (framework `Color` for fill).
     private func createTestPlatformImage() -> PlatformImage {
         #if os(iOS)
         let size = CGSize(width: 100, height: 100)
-        let renderer = UIGraphicsImageRenderer(size: size) // 6LAYER_ALLOW: test helper using platform-specific image rendering APIs
+        let renderer = UIGraphicsImageRenderer(size: size)
         let uiImage = renderer.image { context in
-            UIColor.blue.setFill() // 6LAYER_ALLOW: test helper using platform-specific image rendering APIs
+            Color.systemBlue.setFill()
             context.fill(CGRect(origin: .zero, size: size))
         }
         return PlatformImage(uiImage: uiImage)
         #elseif os(macOS)
-        let size = NSSize(width: 100, height: 100) // 6LAYER_ALLOW: test helper using platform-specific image rendering APIs
-        let nsImage = NSImage(size: size) // 6LAYER_ALLOW: test helper using platform-specific image rendering APIs
+        let size = NSSize(width: 100, height: 100)
+        let nsImage = NSImage(size: size)
         nsImage.lockFocus()
-        NSColor.blue.drawSwatch(in: NSRect(origin: .zero, size: size)) // 6LAYER_ALLOW: test helper using platform-specific image rendering APIs
+        Color.systemBlue.setFill()
+        NSRect(origin: .zero, size: size).fill()
         nsImage.unlockFocus()
         return PlatformImage(nsImage: nsImage)
         #else
@@ -253,22 +254,22 @@ open class UnifiedImagePickerTests: BaseTestClass {
         #endif
     }
     
-    // 6LAYER_ALLOW: test helper using platform-specific image rendering APIs
     func createTestImageData() -> Data {
         #if os(iOS)
         let size = CGSize(width: 100, height: 100)
-        let renderer = UIGraphicsImageRenderer(size: size) // 6LAYER_ALLOW: test helper using platform-specific image rendering APIs
+        let renderer = UIGraphicsImageRenderer(size: size)
         let uiImage = renderer.image { context in
-            UIColor.red.setFill() // 6LAYER_ALLOW: test helper using platform-specific image rendering APIs
+            Color.systemRed.setFill()
             context.fill(CGRect(origin: .zero, size: size))
         }
         return uiImage.jpegData(compressionQuality: 0.8) ?? Data()
 
         #elseif os(macOS)
-        let size = NSSize(width: 100, height: 100) // 6LAYER_ALLOW: test helper using platform-specific image rendering APIs
-        let nsImage = NSImage(size: size) // 6LAYER_ALLOW: test helper using platform-specific image rendering APIs
+        let size = NSSize(width: 100, height: 100)
+        let nsImage = NSImage(size: size)
         nsImage.lockFocus()
-        NSColor.red.drawSwatch(in: NSRect(origin: .zero, size: size)) // 6LAYER_ALLOW: test helper using platform-specific image rendering APIs
+        Color.systemRed.setFill()
+        NSRect(origin: .zero, size: size).fill()
         nsImage.unlockFocus()
         
         guard let tiffData = nsImage.tiffRepresentation,

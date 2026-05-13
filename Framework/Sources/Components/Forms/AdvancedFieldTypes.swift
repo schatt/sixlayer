@@ -65,10 +65,10 @@ public struct RichTextEditor: UIViewRepresentable {
         textView.font = Font.uiFontBody()
         textView.isEditable = true
         textView.isScrollEnabled = true
-        textView.backgroundColor = UIColor.systemBackground
+        textView.backgroundColor = UIColor(Color.platformSystemBackground)
         textView.layer.cornerRadius = 8
         textView.layer.borderWidth = 1
-        textView.layer.borderColor = UIColor.separator.cgColor
+        textView.layer.borderColor = UIColor(Color.platformSeparator).cgColor
         
         // Enable rich text editing
         textView.allowsEditingTextAttributes = true
@@ -104,7 +104,7 @@ public struct RichTextEditor: UIViewRepresentable {
     }
 }
 #elseif os(tvOS)
-// tvOS fallback - `TextEditor` is unavailable; use a focusable `TextField`.
+// tvOS: `TextEditor` is unavailable; use a single-line `TextField`.
 public struct RichTextEditor: View {
     @Binding var text: String
     @Binding var selectedText: NSRange?
@@ -121,8 +121,27 @@ public struct RichTextEditor: View {
             }
     }
 }
+#elseif os(watchOS)
+// watchOS: multiline `TextField` with vertical axis (TextEditor is heavy on small screens).
+public struct RichTextEditor: View {
+    @Binding var text: String
+    @Binding var selectedText: NSRange?
+
+    public var body: some View {
+        TextField("", text: $text, axis: .vertical)
+            .font(.body)
+            .lineLimit(4...12)
+            .frame(minHeight: 120)
+            .padding(8)
+            .background(Color.secondaryBackground)
+            .cornerRadius(8)
+            .onChange(of: text) {
+                // Handle text changes
+            }
+    }
+}
 #else
-// macOS fallback - simple text editor
+// macOS (and other platforms with `TextEditor`) — simple text editor
 public struct RichTextEditor: View {
     @Binding var text: String
     @Binding var selectedText: NSRange?
@@ -435,12 +454,10 @@ public struct FileUploadArea: View {
             RoundedRectangle(cornerRadius: 12)
                 .stroke(isDragOver ? Color.accentColor : Color.platformSeparator, lineWidth: 2)
         )
-        #if !os(tvOS)
-        .onDrop(of: allowedTypes.map { $0.identifier }, isTargeted: $isDragOver) { providers in
+        .platformOnDrop(supportedTypes: allowedTypes, isTargeted: $isDragOver) { providers in
             handleDrop(providers: providers)
             return true
         }
-        #endif
         .accessibilityLabel("File upload area")
         .accessibilityHint("Drag and drop files here or tap to browse")
         .automaticCompliance(named: "FileUploadArea")
@@ -591,24 +608,31 @@ public struct DatePickerField: View {
             Text(field.label)
                 .font(.headline)
             
-            #if os(tvOS)
-            Text(selectedDate, format: .dateTime.year().month().day())
-                .foregroundStyle(.secondary)
-                .selfLabelingControl(label: field.label)
-                .onChange(of: selectedDate) { oldValue, newDate in
-                    let formatter = DateFormatter()
-                    formatter.dateStyle = .medium
-                    formState.setValue(formatter.string(from: newDate), for: field.id)
-                }
-            #else
+            #if os(watchOS)
             DatePicker(
                 "",
                 selection: $selectedDate,
                 displayedComponents: .date
             )
-            .datePickerStyle(.compact)
+            .datePickerStyle(.wheel)
             .selfLabelingControl(label: field.label)
-            .onChange(of: selectedDate) { oldValue, newDate in
+            .onChange(of: selectedDate) { newDate in
+                let formatter = DateFormatter()
+                formatter.dateStyle = .medium
+                formState.setValue(formatter.string(from: newDate), for: field.id)
+            }
+            .onAppear {
+                if let existingValue: String = formState.getValue(for: field.id) {
+                    let formatter = DateFormatter()
+                    formatter.dateStyle = .medium
+                    if let date = formatter.date(from: existingValue) {
+                        selectedDate = date
+                    }
+                }
+            }
+            #else
+            platformDateInput(selection: $selectedDate, label: field.label)
+            .onChange(of: selectedDate) { newDate in
                 let formatter = DateFormatter()
                 formatter.dateStyle = .medium
                 formState.setValue(formatter.string(from: newDate), for: field.id)
@@ -644,24 +668,31 @@ public struct TimePickerField: View {
             Text(field.label)
                 .font(.headline)
             
-            #if os(tvOS)
-            Text(selectedTime, format: .dateTime.hour().minute())
-                .foregroundStyle(.secondary)
-                .selfLabelingControl(label: field.label)
-                .onChange(of: selectedTime) { oldValue, newTime in
-                    let formatter = DateFormatter()
-                    formatter.timeStyle = .short
-                    formState.setValue(formatter.string(from: newTime), for: field.id)
-                }
-            #else
+            #if os(watchOS)
             DatePicker(
                 "",
                 selection: $selectedTime,
                 displayedComponents: .hourAndMinute
             )
-            .datePickerStyle(.compact)
+            .datePickerStyle(.wheel)
             .selfLabelingControl(label: field.label)
-            .onChange(of: selectedTime) { oldValue, newTime in
+            .onChange(of: selectedTime) { newTime in
+                let formatter = DateFormatter()
+                formatter.timeStyle = .short
+                formState.setValue(formatter.string(from: newTime), for: field.id)
+            }
+            .onAppear {
+                if let existingValue: String = formState.getValue(for: field.id) {
+                    let formatter = DateFormatter()
+                    formatter.timeStyle = .short
+                    if let time = formatter.date(from: existingValue) {
+                        selectedTime = time
+                    }
+                }
+            }
+            #else
+            platformTimeInput(selection: $selectedTime, label: field.label)
+            .onChange(of: selectedTime) { newTime in
                 let formatter = DateFormatter()
                 formatter.timeStyle = .short
                 formState.setValue(formatter.string(from: newTime), for: field.id)
@@ -697,25 +728,33 @@ public struct DateTimePickerField: View {
             Text(field.label)
                 .font(.headline)
             
-            #if os(tvOS)
-            Text(selectedDateTime, format: .dateTime.year().month().day().hour().minute())
-                .foregroundStyle(.secondary)
-                .selfLabelingControl(label: field.label)
-                .onChange(of: selectedDateTime) { oldValue, newDateTime in
-                    let formatter = DateFormatter()
-                    formatter.dateStyle = .medium
-                    formatter.timeStyle = .short
-                    formState.setValue(formatter.string(from: newDateTime), for: field.id)
-                }
-            #else
+            #if os(watchOS)
             DatePicker(
                 "",
                 selection: $selectedDateTime,
                 displayedComponents: [.date, .hourAndMinute]
             )
-            .datePickerStyle(.compact)
+            .datePickerStyle(.wheel)
             .selfLabelingControl(label: field.label)
-            .onChange(of: selectedDateTime) { oldValue, newDateTime in
+            .onChange(of: selectedDateTime) { newDateTime in
+                let formatter = DateFormatter()
+                formatter.dateStyle = .medium
+                formatter.timeStyle = .short
+                formState.setValue(formatter.string(from: newDateTime), for: field.id)
+            }
+            .onAppear {
+                if let existingValue: String = formState.getValue(for: field.id) {
+                    let formatter = DateFormatter()
+                    formatter.dateStyle = .medium
+                    formatter.timeStyle = .short
+                    if let dateTime = formatter.date(from: existingValue) {
+                        selectedDateTime = dateTime
+                    }
+                }
+            }
+            #else
+            platformDateTimeInput(selection: $selectedDateTime, label: field.label)
+            .onChange(of: selectedDateTime) { newDateTime in
                 let formatter = DateFormatter()
                 formatter.dateStyle = .medium
                 formatter.timeStyle = .short

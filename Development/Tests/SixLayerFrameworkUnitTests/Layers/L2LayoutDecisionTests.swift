@@ -331,6 +331,39 @@ open class L2LayoutDecisionTests: BaseTestClass {
         #expect(decision.animationDuration > 0, "Should have positive animation duration")
     }
     
+    @Test @MainActor func testDetermineIntelligentCardLayout_L2_CapsCardHeightToViewportRows() {
+        let viewportHeight: CGFloat = 500
+        let decision = determineIntelligentCardLayout_L2(
+            contentCount: 2,
+            screenWidth: 390,
+            deviceType: .phone,
+            contentComplexity: .moderate,
+            viewportHeight: viewportHeight
+        )
+        #expect(decision.columns == 1)
+        let rows = (2 + decision.columns - 1) / decision.columns
+        let verticalPadding = decision.padding * 2
+        let interRow = decision.spacing * CGFloat(max(0, rows - 1))
+        let perRowBudget = (viewportHeight - verticalPadding - interRow) / CGFloat(rows)
+        #expect(decision.cardHeight <= perRowBudget + 0.5)
+        #expect(decision.cardHeight >= 110)
+    }
+    
+    @Test @MainActor func testDetermineIntelligentCardLayout_L2_PhoneLandscapeTwoItemsUsesTwoColumns() {
+        let decision = determineIntelligentCardLayout_L2(
+            contentCount: 2,
+            screenWidth: 844,
+            deviceType: .phone,
+            contentComplexity: .moderate,
+            viewportHeight: 390
+        )
+        #expect(decision.columns == 2)
+        let rows = (2 + decision.columns - 1) / decision.columns
+        #expect(rows == 1)
+        let perRowBudget = (390 - decision.padding * 2) / CGFloat(rows)
+        #expect(decision.cardHeight <= perRowBudget + 0.5)
+    }
+    
     // MARK: - OCR Layout Decision Tests
     
     @Test @MainActor func testPlatformOCRLayout_L2_WithGeneralContext() {

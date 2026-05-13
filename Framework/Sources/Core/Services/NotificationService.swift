@@ -19,7 +19,7 @@ import UserNotifications
 import Intents
 #endif
 
-#if canImport(UIKit)
+#if os(iOS)
 import UIKit
 #endif
 

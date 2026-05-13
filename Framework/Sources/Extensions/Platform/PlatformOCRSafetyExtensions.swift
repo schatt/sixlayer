@@ -8,7 +8,7 @@
 import Foundation
 import SwiftUI
 
-#if canImport(Vision)
+#if canImport(Vision) && !os(watchOS)
 import Vision
 #endif
 
@@ -46,7 +46,10 @@ public enum SafeOCRResult {
 /// the compiler can import it, the runtime has it, so no availability guard
 /// is needed for current deployment targets.
 public func isVisionFrameworkAvailable() -> Bool {
-    #if canImport(Vision)
+    #if os(watchOS)
+    // Vision text recognition stack is not available for watchOS targets; keep OCR off this platform (#233).
+    return false
+    #elseif canImport(Vision)
     return true
     #else
     return false
@@ -112,7 +115,7 @@ public func isVisionOCRAvailable() -> Bool {
 
 // MARK: - Safe Vision OCR View
 
-#if canImport(Vision)
+#if canImport(Vision) && !os(watchOS)
 struct SafeVisionOCRView: View {
     let image: PlatformImage
     let context: OCRContext

@@ -1,6 +1,6 @@
 import SwiftUI
 
-#if canImport(UIKit)
+#if os(iOS)
 import UIKit
 #endif
 
@@ -314,7 +314,7 @@ private struct PrintSheet: UIViewControllerRepresentable {
                 let uiImage = renderer.image { context in
                     // Note: This is a simplified fallback - full SwiftUI rendering
                     // would require more complex implementation
-                    UIColor.white.setFill()
+                    Color.white.setFill()
                     context.fill(CGRect(origin: .zero, size: size))
                 }
                 printController.printingItem = uiImage
@@ -430,7 +430,7 @@ private func platformPrintiOS(
                 let size = CGSize(width: 612, height: 792)
                 let renderer = UIGraphicsImageRenderer(size: size)
                 let uiImage = renderer.image { context in
-                    UIColor.white.setFill()
+                    Color.white.setFill()
                     context.fill(CGRect(origin: .zero, size: size))
                 }
                 printController.printingItem = uiImage
@@ -559,7 +559,7 @@ private func platformPrintMacOS(
             var mediaBox = CGRect(x: 0, y: 0, width: 612, height: 792)
             let context = CGContext(consumer: consumer, mediaBox: &mediaBox, nil)!
             context.beginPDFPage(nil)
-            context.setFillColor(NSColor.white.cgColor)
+            Color.white.setFill(on: context)
             context.fill(mediaBox)
             context.endPDFPage()
             context.closePDF()

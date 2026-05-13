@@ -270,6 +270,7 @@ targets:
           - "ViewInspectorTests/**/CoreDataTestingGuide.md"
           - "ViewInspectorTests/**"  # Exclude ViewInspector tests - they have their own scheme
           - "Utilities/Debug/EnvironmentVariableDebugTests.swift"  # ViewInspector debug; match iOS/macOS unit (#248)
+          - "Layers/Layer4-Component/Layer4SemanticAccessibilityCriterionTests.swift"  # UIKit UIView hosting a11y traversal; watchOS has no UIHostingController (#233)
     settings:
       PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.framework.unit-tests
       SWIFT_VERSION: "6.0"
@@ -279,6 +280,8 @@ targets:
       ENABLE_TESTING_SEARCH_PATHS: YES
     dependencies:
       - target: SixLayerFramework_watchOS
+      - package: ViewInspector
+        product: ViewInspector
 
   # Unit tests - visionOS
   SixLayerFrameworkUnitTests_visionOS:
@@ -537,6 +540,8 @@ targets:
       ENABLE_TESTING_SEARCH_PATHS: YES
     dependencies:
       - target: SixLayerFramework_watchOS
+      - package: ViewInspector
+        product: ViewInspector
 
   # External integration tests - visionOS
   SixLayerFrameworkExternalIntegrationTests_visionOS:
@@ -557,9 +562,9 @@ targets:
     dependencies:
       - target: SixLayerFramework_visionOS
 
-# Scheme Test action: per-target parallel workers + random test order (Xcode scheme; pairs with
-# xcodebuild -parallel-testing-enabled in buildconfig.yml). UITest targets included — revisit if
-# parallel UI classes expose ordering or shared-state flakes.
+# Scheme Test action: every listed test bundle uses parallel workers + random test order (Xcode
+# scheme; pair with xcodebuild -parallel-testing-enabled YES in buildconfig.yml). UITest targets
+# included — revisit if parallel UI classes expose ordering or shared-state flakes.
 #
 # XcodeGen emits verbose *.xcscheme XML; Xcode on open/save often aligns that XML with the same
 # scheme intent you declare here (leaner attributes, different Scheme `version`, etc.). Those

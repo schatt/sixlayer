@@ -4,6 +4,17 @@ import Testing
 import SwiftUI
 @testable import SixLayerFramework
 
+private extension View {
+    /// `MenuPickerStyle` is unavailable on watchOS; use wheel in tests there.
+    func selectFieldImplementationTestPickerStyle() -> some View {
+        #if os(watchOS)
+        self.pickerStyle(.wheel)
+        #else
+        self.pickerStyle(.menu)
+        #endif
+    }
+}
+
 /// Tests for Select Field Implementation
 /// Tests that select fields are properly implemented with interactive Picker components
 /// NOTE: Not marked @MainActor on class to allow parallel execution
@@ -100,7 +111,7 @@ open class SelectFieldImplementationTests: BaseTestClass {
                     Text(option).tag(option)
                 }
             }
-            .pickerStyle(.menu)
+            .pickerStyleMenuOrWheelForUnitTests()
         }
         
         // Then: View should be created successfully
@@ -121,7 +132,7 @@ open class SelectFieldImplementationTests: BaseTestClass {
                     Text(option).tag(option)
                 }
             }
-            .pickerStyle(.menu)
+            .pickerStyleMenuOrWheelForUnitTests()
         }
         
         // Then: View should be created successfully
@@ -159,7 +170,7 @@ open class SelectFieldImplementationTests: BaseTestClass {
                     Text(option).tag(option)
                 }
             }
-            .pickerStyle(.menu)
+            .pickerStyleMenuOrWheelForUnitTests()
         }
         
         // Then: View should be created successfully
@@ -186,7 +197,7 @@ open class SelectFieldImplementationTests: BaseTestClass {
                     Text(option).tag(option)
                 }
             }
-            .pickerStyle(.menu)
+            .pickerStyleMenuOrWheelForUnitTests()
         }
         
         // Then: View should be created successfully
@@ -314,7 +325,7 @@ open class SelectFieldImplementationTests: BaseTestClass {
                 Text(option).tag(option)
             }
         }
-        .pickerStyle(.menu)
+        .pickerStyleMenuOrWheelForUnitTests()
         
         // Then: View should be created successfully
         #expect(Bool(true), "view is non-optional")  // view is non-optional

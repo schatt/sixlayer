@@ -1,6 +1,6 @@
 # SixLayer Framework
 
-[![Version](https://img.shields.io/badge/version-v7.7.2-blue.svg)](https://github.com/schatt/sixlayer/releases/tag/v7.7.2)
+[![Version](https://img.shields.io/badge/version-v7.8.0-blue.svg)](https://github.com/schatt/sixlayer/releases/tag/v7.8.0)
 [![Platform](https://img.shields.io/badge/platform-iOS%2016%2B%20%7C%20macOS%2013%2B-lightgrey.svg)](https://github.com/schatt/6layer)
 [![Swift](https://img.shields.io/badge/Swift-5.9+-orange.svg)](https://swift.org)
 
@@ -39,6 +39,12 @@ Layer 1: Semantic Intent → Layer 2: Layout Decision → Layer 3: Strategy Sele
 - **Extensible**: Easy to extend with custom layers and strategies
 - **Comprehensively Tested**: 800+ tests with platform-aware testing and mandatory TDD implementation
 - **DRY Architecture**: Define hints once in files, use everywhere automatically
+
+## 🆕 What's New in v7.8.0
+
+### Minor release
+
+Presentation profiles catalog (`PresentationProfilesCatalog`, bundled `PresentationProfiles.hints`, profile-keyed `PresentationHints`) (#277); item collection presentation resolver with optional `"card"` row chrome on custom list collections (#272); optional separate `DynamicForm` draft storage key (#273); `PlatformImage` EXIF read/write configuration (#275); system-action contract updates for `openURL` and remote notifications (#256 / #169). See [RELEASE_v7.8.0.md](../Development/RELEASE_v7.8.0.md).
 
 ## 🆕 What's New in v7.7.2
 
@@ -631,7 +637,7 @@ if let location = image?.exif.gpsLocation {
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/schatt/6layer.git", from: "7.7.2")
+    .package(url: "https://github.com/schatt/6layer.git", from: "7.8.0")
 ]
 ```
 

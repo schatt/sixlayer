@@ -31,6 +31,17 @@ public struct PlatformTabStrip: View {
             }
             .padding(.horizontal, 8)
         }
+        #elseif os(watchOS)
+        let indices = Array(items.indices)
+        platformPicker(
+            label: "",
+            selection: $selection,
+            options: indices,
+            optionTag: { $0 },
+            optionLabel: { items[$0].title },
+            pickerName: "PlatformTabStrip",
+            style: WheelPickerStyle()
+        )
         #else
         // Use platformPicker helper to automatically apply accessibility to picker and segments (Issue #163)
         // Use indices as options (Hashable) and map to items for labels

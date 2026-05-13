@@ -1,5 +1,5 @@
 import SwiftUI
-#if canImport(UIKit)
+#if os(iOS) || os(tvOS) || os(visionOS)
 import UIKit
 #endif
 #if canImport(AppKit)
@@ -112,11 +112,15 @@ public extension Color {
 
     /// Direct system background color
     /// iOS: systemBackground; macOS: windowBackgroundColor
+    /// watchOS: `UIColor.systemBackground` is not in the same shape as iOS (see `ShapeStyleSystem`; tvOS matrix #237, platform-color policy #276);
+    /// use a dark canvas so `platformLabel` (`.primary` foreground) contrasts with `platformBackground`.
     static var systemBackground: Color {
-        #if os(iOS)
+        #if os(iOS) || os(visionOS)
         return Color(.systemBackground)
         #elseif os(macOS)
         return Color(.windowBackgroundColor)
+        #elseif os(watchOS)
+        return Color.black
         #else
         return Color.primary
         #endif
@@ -137,7 +141,7 @@ public extension Color {
     /// Platform secondary background color
     /// iOS: secondarySystemBackground; macOS: controlBackgroundColor
     static var platformSecondaryBackground: Color {
-        #if os(iOS)
+        #if os(iOS) || os(visionOS)
         return Color(.secondarySystemBackground)
         #elseif os(macOS)
         return Color(.controlBackgroundColor)
@@ -149,7 +153,7 @@ public extension Color {
     /// Platform tertiary background color
     /// iOS: tertiarySystemBackground; macOS: textBackgroundColor
     static var platformTertiaryBackground: Color {
-        #if os(iOS)
+        #if os(iOS) || os(visionOS)
         return Color(.tertiarySystemBackground)
         #elseif os(macOS)
         return Color(.textBackgroundColor)
@@ -161,7 +165,7 @@ public extension Color {
     /// Platform grouped background color
     /// iOS: systemGroupedBackground; macOS: controlBackgroundColor
     static var platformGroupedBackground: Color {
-        #if os(iOS)
+        #if os(iOS) || os(visionOS)
         return Color(.systemGroupedBackground)
         #elseif os(macOS)
         return Color(.controlBackgroundColor)
@@ -173,7 +177,7 @@ public extension Color {
     /// Platform separator color
     /// iOS: separator; macOS: separatorColor
     static var platformSeparator: Color {
-        #if os(iOS)
+        #if os(iOS) || os(visionOS)
         return Color(.separator)
         #elseif os(macOS)
         return Color(.separatorColor)
@@ -185,7 +189,7 @@ public extension Color {
     /// Platform label color
     /// iOS: label; macOS: labelColor
     static var platformLabel: Color {
-        #if os(iOS)
+        #if os(iOS) || os(visionOS)
         return Color(.label)
         #elseif os(macOS)
         return Color(.labelColor)
@@ -197,7 +201,7 @@ public extension Color {
     /// Platform secondary label color
     /// iOS: secondaryLabel; macOS: secondaryLabelColor
     static var platformSecondaryLabel: Color {
-        #if os(iOS)
+        #if os(iOS) || os(visionOS)
         return Color(.secondaryLabel)
         #elseif os(macOS)
         return Color(.secondaryLabelColor)
@@ -209,7 +213,7 @@ public extension Color {
     /// Platform tertiary label color
     /// iOS: tertiaryLabel; macOS: tertiaryLabelColor
     static var platformTertiaryLabel: Color {
-        #if os(iOS)
+        #if os(iOS) || os(visionOS)
         return Color(.tertiaryLabel)
         #elseif os(macOS)
         return Color(.tertiaryLabelColor)
@@ -1014,7 +1018,7 @@ public extension Color {
     /// Cross-platform setFill method for graphics contexts
     /// - Parameter context: The graphics context to set fill color on
     func setFill(on context: CGContext) {
-        #if os(iOS)
+        #if os(iOS) || os(tvOS) || os(watchOS) || os(visionOS)
         let uiColor = UIColor(self)
         context.setFillColor(uiColor.cgColor)
         #elseif os(macOS)
@@ -1026,7 +1030,7 @@ public extension Color {
     /// Cross-platform setFill method that works on any graphics context
     /// Automatically handles platform differences internally
     func setFill() {
-        #if os(iOS)
+        #if os(iOS) || os(tvOS) || os(watchOS) || os(visionOS)
         let uiColor = UIColor(self)
         uiColor.setFill()
         #elseif os(macOS)
@@ -1037,7 +1041,7 @@ public extension Color {
 
     /// Cross-platform setStroke method for outlines
     func setStroke() {
-        #if os(iOS)
+        #if os(iOS) || os(tvOS) || os(watchOS) || os(visionOS)
         let uiColor = UIColor(self)
         uiColor.setStroke()
         #elseif os(macOS)
@@ -1049,9 +1053,9 @@ public extension Color {
     // MARK: - Platform-Specific Color Access
 
     /// Platform-specific color accessor
-    /// Returns UIColor on iOS, NSColor on macOS
+    /// Returns `UIColor` on UIKit-based platforms, `NSColor` on macOS
     var platformColor: Any {
-        #if os(iOS)
+        #if os(iOS) || os(tvOS) || os(watchOS) || os(visionOS)
         return UIColor(self)
         #elseif os(macOS)
         return NSColor(self)

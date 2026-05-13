@@ -25,7 +25,10 @@ import AppKit
 /// EXIF metadata accessor for PlatformImage
 /// Provides clean, cross-platform access to image EXIF metadata
 public struct PlatformImageEXIF {
-    private let image: PlatformImage
+    // Module-internal so writer extensions in companion files can read the
+    // wrapped image and its `originalEncodedData` (Issue #275). Not part of
+    // the public API surface.
+    internal let image: PlatformImage
     
     public init(image: PlatformImage) {
         self.image = image
@@ -60,14 +63,16 @@ public struct PlatformImageEXIF {
     
     // MARK: - Private Helper Methods
     
-    /// Extract image data for EXIF parsing
-    /// Platform-specific implementation to preserve EXIF metadata
+    /// Extract image data for EXIF parsing.
+    /// When \`PlatformImage\` was created from \`init?(data:)\`, uses those bytes so \`CGImageSource\` sees the original container metadata (GPS, TIFF tags, etc.).
+    /// Otherwise re-encodes the decoded bitmap as JPEG (best-effort): that path typically strips EXIF because the encoder writes a fresh container (Issue #274).
     private func extractImageData() -> Data? {
+        if let data = image.originalEncodedData {
+            return data
+        }
         #if os(iOS)
-        // On iOS, use JPEG data to preserve EXIF metadata
         return image.uiImage.jpegData(compressionQuality: 1.0)
         #elseif os(macOS)
-        // On macOS, convert NSImage to JPEG to preserve EXIF metadata
         guard let tiffData = image.nsImage.tiffRepresentation,
               let bitmapRep = NSBitmapImageRep(data: tiffData),
               let jpegData = bitmapRep.representation(using: .jpeg, properties: [.compressionFactor: 1.0]) else {
@@ -212,7 +217,10 @@ public extension PlatformImage {
 #else
 // Fallback implementation for platforms without ImageIO/CoreLocation
 public struct PlatformImageEXIF {
-    private let image: PlatformImage
+    // Module-internal so writer extensions in companion files can read the
+    // wrapped image and its `originalEncodedData` (Issue #275). Not part of
+    // the public API surface.
+    internal let image: PlatformImage
     
     public init(image: PlatformImage) {
         self.image = image

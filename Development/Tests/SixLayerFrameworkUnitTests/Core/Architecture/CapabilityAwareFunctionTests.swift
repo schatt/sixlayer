@@ -37,8 +37,10 @@ import SwiftUI
 @testable import SixLayerFramework
 
 /// Capability-aware function testing
-/// Tests every function that depends on capabilities in both enabled and disabled states
-/// NOTE: Not marked @MainActor on class to allow parallel execution
+/// Tests every function that depends on capabilities in both enabled and disabled states.
+/// Uses `DefaultRuntimeCapabilityIsolationTrait` (GitHub #236) for per-test override hygiene;
+/// see `.cursor/rules/capability-override-test-flows.mdc` and GitHub #278.
+@Suite("Capability-aware functions", DefaultRuntimeCapabilityIsolationTrait())
 open class CapabilityAwareFunctionTests: BaseTestClass {
     
     // BaseTestClass handles cleanup automatically
@@ -48,7 +50,6 @@ open class CapabilityAwareFunctionTests: BaseTestClass {
     /// Default: no thread-local touch overrides; card config mirrors `RuntimeCapabilityDetection`.
     @MainActor
     private func runTouchThreadLocalOverrideDefaultVerification() {
-        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
         let touch = RuntimeCapabilityDetection.supportsTouch
         let haptic = RuntimeCapabilityDetection.supportsHapticFeedback
         let config = getCardExpansionPlatformConfig()
@@ -187,7 +188,9 @@ open class CapabilityAwareFunctionTests: BaseTestClass {
     /// TESTING SCOPE: Hover capability detection, hover delay, touch exclusion
     /// METHODOLOGY: Test runtime capabilities on current platform
     @Test @MainActor func testHoverDependentFunctionsEnabled() {
-        // Test hover capabilities on current platform
+        // Suite trait clears overrides before each @Test; chained calls inside
+        // `testHoverDependentFunctions` / `testAllCapabilityDependentFunctions` still rely on
+        // explicit cleanup at the end of each phase below.
         RuntimeCapabilityDetection.setTestHover(true)
         RuntimeCapabilityDetection.setTestTouchSupport(false)
         
@@ -251,6 +254,11 @@ open class CapabilityAwareFunctionTests: BaseTestClass {
     /// TESTING SCOPE: Vision framework availability, OCR processing, image analysis
     /// METHODOLOGY: Test Vision framework enabled state with actual OCR processing
     @Test @MainActor func testVisionFunctionsEnabled() {
+        // Vision is not surfaced for OCR on watchOS in this stack; the disabled-path suite covers it.
+        #if os(watchOS)
+        #expect(Bool(true), "Vision enabled-path checks run on platforms with Vision OCR support")
+        return
+        #endif
         // Vision framework should be available
         #expect(isVisionFrameworkAvailable(), 
                      "Vision framework should be available when enabled")
@@ -349,14 +357,12 @@ open class CapabilityAwareFunctionTests: BaseTestClass {
         // Set test overrides for accessibility capabilities
         RuntimeCapabilityDetection.setTestVoiceOver(true)
         RuntimeCapabilityDetection.setTestSwitchControl(true)
-        
+        defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
+
         // Test that accessibility behavior can be tested
         let config = getCardExpansionPlatformConfig()
         #expect(config.supportsVoiceOver, "VoiceOver should be supported")
         #expect(config.supportsSwitchControl, "Switch Control should be supported")
-        
-        // Clean up
-        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
     }
     
     // MARK: - Color Encoding-Dependent Function Tests
@@ -435,27 +441,31 @@ open class CapabilityAwareFunctionTests: BaseTestClass {
         // Validate capability consistency for current platform
         #expect(validateCapabilityStateConsistency(capabilities),
                      "Capability state should be internally consistent on current platform")
-
-        // Clean up
-        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
     }
     
     private func validateCapabilityStateConsistency(_ capabilities: [String: Bool]) -> Bool {
-        // Touch and haptic should be consistent
-        if capabilities["Touch"] == true && capabilities["Haptic"] != true {
+        // Haptic without touch is incoherent (actuators ride on touch-class hardware).
+        if capabilities["Haptic"] == true && capabilities["Touch"] != true {
             return false
         }
-        
-        // AssistiveTouch should only be available on touch platforms
-        if capabilities["AssistiveTouch"] == true && capabilities["Touch"] != true {
+
+        // AssistiveTouch: on platforms that ship it (iOS/watch per `SixLayerPlatform`), enabling
+        // AssistiveTouch implies touch. On macOS/tvOS/visionOS the OS feature is absent — any
+        // `true` here is a stale thread-local override and must not pass this diagnostic.
+        let assistiveTouchPlatformSupported = SixLayerPlatform.current.supportsAssistiveTouch
+        if assistiveTouchPlatformSupported {
+            if capabilities["AssistiveTouch"] == true && capabilities["Touch"] != true {
+                return false
+            }
+        } else if capabilities["AssistiveTouch"] == true {
             return false
         }
-        
+
         // OCR should only be available if Vision is available
         if capabilities["OCR"] == true && capabilities["Vision"] != true {
             return false
         }
-        
+
         return true
     }
 }

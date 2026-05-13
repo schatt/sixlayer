@@ -297,6 +297,10 @@ public struct KeyboardNavigableView<Content: View>: View {
     
     public var body: some View {
         Group {
+            #if os(watchOS)
+            content()
+                .environmentObject(keyboardManager)
+            #else
             if #available(iOS 17.0, macOS 14.0, *) {
                 content()
                     .environmentObject(keyboardManager)
@@ -312,6 +316,7 @@ public struct KeyboardNavigableView<Content: View>: View {
                 content()
                     .environmentObject(keyboardManager)
             }
+            #endif
         }
         .automaticCompliance(identifierName: "keyboardNavigable", identifierElementType: "View")
     }

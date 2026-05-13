@@ -31,17 +31,10 @@ public struct BarcodeOverlayView: View {
         return platformVStackContainer(spacing: 16) {
             // Display image with barcode overlay
             ZStack {
-                #if os(macOS)
-                Image(nsImage: image.nsImage)
+                image.platformImageView()
                     .resizable()
                     .scaledToFit()
                     .automaticCompliance(named: "BarcodeImage")
-                #else
-                Image(uiImage: image.uiImage)
-                    .resizable()
-                    .scaledToFit()
-                    .automaticCompliance(named: "BarcodeImage")
-                #endif
                 
                 // Overlay bounding boxes if configured
                 if configuration.showBoundingBoxes {
@@ -178,14 +171,14 @@ private struct BarcodeInfoView: View {
             }
             
             if configuration.showPayload {
-                #if os(tvOS)
+                #if os(tvOS) || os(watchOS)
                 Text(barcode.payload)
                     .font(.body)
                     .automaticCompliance(named: "BarcodePayload")
                 #else
                 Text(barcode.payload)
                     .font(.body)
-                    .textSelection(.enabled)
+                    .platformTextSelection(.enabled)
                     .automaticCompliance(named: "BarcodePayload")
                 #endif
             }

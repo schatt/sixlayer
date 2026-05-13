@@ -13,11 +13,9 @@ import CoreImage
 #endif
 
 // UIKit is available on iOS, tvOS, visionOS, and watchOS (in differing surfaces).
-// The image APIs used in this file (UIGraphicsImageRenderer, UIImage.pngData/jpegData,
-// UIImage.cgImage, UIImage(cgImage:scale:orientation:)) are available on iOS/tvOS/visionOS.
-// watchOS lacks UIGraphicsImageRenderer, so we gate UIKit-backed implementations to
-// iOS/tvOS/visionOS explicitly. See issue #237.
-#if canImport(UIKit)
+// watchOS: UIGraphicsImageRenderer is unavailable; resize/rotate use UIGraphicsBeginImageContext.
+// Crop/export/metadata use UIImage the same as iOS. See #237 / #271.
+#if os(iOS) || os(tvOS) || os(watchOS) || os(visionOS)
 import UIKit
 #endif
 #if canImport(AppKit)
@@ -46,6 +44,13 @@ public extension PlatformImage {
             self.uiImage.draw(in: CGRect(origin: .zero, size: targetSize))
         }
         return PlatformImage(uiImage: resizedImage)
+        #elseif os(watchOS)
+        // UIGraphicsImageRenderer is unavailable on watchOS; legacy context matches iOS output for unit tests.
+        UIGraphicsBeginImageContextWithOptions(targetSize, false, 0)
+        defer { UIGraphicsEndImageContext() }
+        self.uiImage.draw(in: CGRect(origin: .zero, size: targetSize))
+        guard let resizedImage = UIGraphicsGetImageFromCurrentImageContext() else { return self }
+        return PlatformImage(uiImage: resizedImage)
         #elseif os(macOS)
         let resizedImage = NSImage(size: targetSize)
         resizedImage.lockFocus()
@@ -53,7 +58,6 @@ public extension PlatformImage {
         resizedImage.unlockFocus()
         return PlatformImage(nsImage: resizedImage)
         #else
-        // tvOS / watchOS / visionOS: no bitmap backing in PlatformImage for these helpers yet (#237).
         return self
         #endif
     }
@@ -70,7 +74,7 @@ public extension PlatformImage {
             return self
         }
         
-        #if os(iOS) || os(tvOS) || os(visionOS)
+        #if os(iOS) || os(tvOS) || os(visionOS) || os(watchOS)
         // Clamp rect to image bounds
         let imageSize = self.size
         let clampedRect = CGRect(
@@ -112,7 +116,7 @@ public extension PlatformImage {
     
     /// Apply compression for specific use case
     func compressed(for purpose: PhotoPurpose, quality: Double = 0.8) -> Data? {
-        #if os(iOS) || os(tvOS) || os(visionOS)
+        #if os(iOS) || os(tvOS) || os(visionOS) || os(watchOS)
         return self.uiImage.jpegData(compressionQuality: CGFloat(quality))
         #elseif os(macOS)
         guard let tiffData = self.nsImage.tiffRepresentation,
@@ -140,7 +144,7 @@ public extension PlatformImage {
     
     /// Get image metadata
     var metadata: ImageMetadata {
-        #if os(iOS) || os(tvOS) || os(visionOS)
+        #if os(iOS) || os(tvOS) || os(visionOS) || os(watchOS)
         let size = self.uiImage.size
         let data = self.uiImage.pngData() ?? Data()
         let format: ImageFormat = data.count > 0 ? .png : .unknown
@@ -200,7 +204,7 @@ public extension PlatformImage {
     /// Export image to PNG format
     /// Phase 3: Implements Issue #33
     func exportPNG() -> Data? {
-        #if os(iOS) || os(tvOS) || os(visionOS)
+        #if os(iOS) || os(tvOS) || os(visionOS) || os(watchOS)
         return self.uiImage.pngData()
         #elseif os(macOS)
         guard let tiffData = self.nsImage.tiffRepresentation,
@@ -217,7 +221,7 @@ public extension PlatformImage {
     /// Export image to JPEG format
     /// Phase 3: Implements Issue #33
     func exportJPEG(quality: Double = 0.8) -> Data? {
-        #if os(iOS) || os(tvOS) || os(visionOS)
+        #if os(iOS) || os(tvOS) || os(visionOS) || os(watchOS)
         return self.uiImage.jpegData(compressionQuality: CGFloat(quality))
         #elseif os(macOS)
         guard let tiffData = self.nsImage.tiffRepresentation,
@@ -246,7 +250,7 @@ public extension PlatformImage {
     /// Export image to bitmap format
     /// Phase 3: Implements Issue #33
     func exportBitmap() -> Data? {
-        #if os(iOS) || os(tvOS) || os(visionOS)
+        #if os(iOS) || os(tvOS) || os(visionOS) || os(watchOS)
         return self.uiImage.pngData()
         #elseif os(macOS)
         return self.nsImage.tiffRepresentation
@@ -279,6 +283,21 @@ public extension PlatformImage {
             self.uiImage.draw(at: .zero)
         }
         return PlatformImage(uiImage: rotatedImage)
+        #elseif os(watchOS)
+        let radians = angle * .pi / 180.0
+        let rotatedSize = CGSize(
+            width: abs(self.size.width * cos(radians)) + abs(self.size.height * sin(radians)),
+            height: abs(self.size.width * sin(radians)) + abs(self.size.height * cos(radians))
+        )
+        UIGraphicsBeginImageContextWithOptions(rotatedSize, false, 0)
+        defer { UIGraphicsEndImageContext() }
+        guard let context = UIGraphicsGetCurrentContext() else { return self }
+        context.translateBy(x: rotatedSize.width / 2, y: rotatedSize.height / 2)
+        context.rotate(by: CGFloat(radians))
+        context.translateBy(x: -self.size.width / 2, y: -self.size.height / 2)
+        self.uiImage.draw(in: CGRect(origin: .zero, size: self.size))
+        guard let rotatedImage = UIGraphicsGetImageFromCurrentImageContext() else { return self }
+        return PlatformImage(uiImage: rotatedImage)
         #elseif os(macOS)
         let radians = angle * .pi / 180.0
         let rotatedSize = CGSize(
@@ -306,7 +325,7 @@ public extension PlatformImage {
     /// Convert PlatformImage to CIImage for processing
     /// Phase 3: Implements Issue #33
     private func toCIImage() -> CIImage? {
-        #if os(iOS) || os(tvOS) || os(visionOS)
+        #if os(iOS) || os(tvOS) || os(visionOS) || os(watchOS)
         return CIImage(image: self.uiImage)
         #elseif os(macOS)
         return CIImage(data: self.nsImage.tiffRepresentation ?? Data())
@@ -330,7 +349,7 @@ public extension PlatformImage {
             return self
         }
         
-        #if os(iOS) || os(tvOS) || os(visionOS)
+        #if os(iOS) || os(tvOS) || os(visionOS) || os(watchOS)
         // Preserve original point-based size by keeping the original scale and orientation.
         // Using a scale of 1.0 here would inflate size to raw pixel dimensions (e.g. 300x300 for a @3x 100x100 image).
         let uiImage = UIImage(
@@ -464,7 +483,7 @@ public extension PlatformImage {
             return self
         }
         
-        #if os(iOS) || os(tvOS) || os(visionOS)
+        #if os(iOS) || os(tvOS) || os(visionOS) || os(watchOS)
         // Preserve original logical size by honoring the original scale and orientation.
         let uiImage = UIImage(
             cgImage: cgImage,
@@ -507,7 +526,7 @@ public extension PlatformImage {
     var properties: ImageProperties {
         let size = self.size
         
-        #if os(iOS) || os(tvOS) || os(visionOS)
+        #if os(iOS) || os(tvOS) || os(visionOS) || os(watchOS)
         var colorSpaceName: String? = nil
         var pixelFormatName: String? = nil
         
@@ -557,7 +576,7 @@ public extension PlatformImage {
 
 // MARK: - Platform-Specific Image Extensions for Conversion
 
-#if os(iOS) || os(tvOS) || os(visionOS)
+#if os(iOS) || os(tvOS) || os(visionOS) || os(watchOS)
 public extension UIImage {
     /// Conversion from PlatformImage to UIImage (UIKit platforms)
     /// This enables the currency exchange model: PlatformImage → UIImage at system boundary
@@ -586,7 +605,7 @@ public extension NSImage {
 public extension Image {
     /// Create a SwiftUI Image from a PlatformImage
     init(platformImage: PlatformImage) {
-        #if os(iOS) || os(tvOS) || os(visionOS)
+        #if os(iOS) || os(tvOS) || os(visionOS) || os(watchOS)
         self.init(uiImage: platformImage.uiImage)
         #elseif os(macOS)
         self.init(nsImage: platformImage.nsImage)

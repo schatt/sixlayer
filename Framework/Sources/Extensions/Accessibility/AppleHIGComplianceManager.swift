@@ -1,9 +1,6 @@
 import Foundation
 import SwiftUI
 import Combine
-#if canImport(UIKit)
-import UIKit
-#endif
 
 // MARK: - Apple HIG Compliance Manager
 
@@ -309,7 +306,9 @@ public class AppleHIGComplianceManager: ObservableObject {
             )
         }
         
-        return maxScore > 0 ? score : 0.0
+        // Return this category as a 0...50 contribution so all platform
+        // category groups remain comparable in checkPlatformCompliance.
+        return maxScore > 0 ? (score / maxScore) * 50.0 : 0.0
     }
     
     // MARK: - Helper Methods

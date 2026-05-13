@@ -86,8 +86,9 @@ public extension View {
         selection: Binding<Set<SelectionValue>>,
         @ViewBuilder content: () -> Content
     ) -> some View {
-        #if os(iOS)
-        return List(selection: selection, content: content)
+        #if os(watchOS)
+        // List(selection:) is unavailable on watchOS; selection binding is ignored (graceful degradation).
+        return List { content() }
         #else
         return List(selection: selection, content: content)
         #endif
@@ -105,8 +106,8 @@ public extension View {
         selection: Binding<SelectionValue?>,
         @ViewBuilder content: () -> Content
     ) -> some View {
-        #if os(iOS)
-        return List(selection: selection, content: content)
+        #if os(watchOS)
+        return List { content() }
         #else
         return List(selection: selection, content: content)
         #endif

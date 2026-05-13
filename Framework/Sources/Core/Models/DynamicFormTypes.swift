@@ -1,8 +1,11 @@
 import CoreFoundation
 import Foundation
 import SwiftUI
-#if os(iOS)
+#if os(iOS) || targetEnvironment(macCatalyst)
 import UIKit
+#endif
+#if os(watchOS)
+import WatchKit
 #endif
 
 // MARK: - Cross-Platform Text Content Types
@@ -48,8 +51,8 @@ public enum SixLayerTextContentType: String, CaseIterable, Hashable {
     case URL = "URL"
     case creditCardNumber = "creditCardNumber"
     
-    #if canImport(UIKit)
-    /// Convert to UITextContentType for iOS/Mac Catalyst
+    #if os(iOS) || targetEnvironment(macCatalyst) || os(visionOS)
+    /// Convert to UITextContentType for iOS-family targets (iOS / Mac Catalyst / visionOS).
     public var uiTextContentType: UITextContentType {
         switch self {
         case .name: return .name
@@ -116,11 +119,76 @@ public enum SixLayerTextContentType: String, CaseIterable, Hashable {
         }
     }
     #endif
+
+    #if os(watchOS)
+    /// Maps semantic types to `WKTextContentType` for watchOS `TextField` autofill hints.
+    public var wkTextContentType: WKTextContentType {
+        switch self {
+        case .name: return .name
+        case .namePrefix: return .namePrefix
+        case .givenName: return .givenName
+        case .middleName: return .middleName
+        case .familyName: return .familyName
+        case .nameSuffix: return .nameSuffix
+        case .jobTitle: return .jobTitle
+        case .organizationName: return .organizationName
+        case .emailAddress: return .emailAddress
+        case .telephoneNumber: return .telephoneNumber
+        case .username: return .username
+        case .password: return .password
+        case .newPassword: return .newPassword
+        case .oneTimeCode: return .oneTimeCode
+        case .location: return .location
+        case .fullStreetAddress: return .fullStreetAddress
+        case .streetAddressLine1: return .streetAddressLine1
+        case .streetAddressLine2: return .streetAddressLine2
+        case .addressCity: return .addressCity
+        case .addressState: return .addressState
+        case .addressCityAndState: return .addressCityAndState
+        case .sublocality: return .sublocality
+        case .countryName: return .countryName
+        case .postalCode: return .postalCode
+        case .URL: return .URL
+        case .creditCardNumber: return .creditCardNumber
+        }
+    }
+    #endif
     
     /// Get string representation for native macOS
     public var stringValue: String {
         return self.rawValue
     }
+}
+
+// MARK: - Text input autocapitalization
+
+/// Cross-platform autocapitalization for text fields; maps to SwiftUI `TextInputAutocapitalization` on iOS.
+public enum SixLayerTextInputAutocapitalization: Sendable, Hashable {
+    case never
+    case words
+    case sentences
+    case characters
+}
+
+#if os(iOS)
+extension SixLayerTextInputAutocapitalization {
+    var swiftUITextInputAutocapitalization: TextInputAutocapitalization {
+        switch self {
+        case .never: return .never
+        case .words: return .words
+        case .sentences: return .sentences
+        case .characters: return .characters
+        }
+    }
+}
+#endif
+
+// MARK: - Text selection policy
+
+/// Cross-platform policy for SwiftUI `textSelection(_:)`; on tvOS the framework applies a no-op instead.
+public enum SixLayerTextSelectionPolicy: Sendable, Hashable {
+    case enabled
+    case disabled
 }
 
 // MARK: - Dynamic Form Field Types
@@ -1174,6 +1242,9 @@ public class DynamicFormState: ObservableObject {
     
     private let configuration: DynamicFormConfiguration
     
+    /// Optional override for draft persistence key (Issue #273). When `nil` or `""`, drafts use `configuration.id`.
+    private let draftStorageKey: String?
+    
     // MARK: - Auto-Save Properties (Issue #80)
     
     /// Storage for form drafts
@@ -1190,20 +1261,26 @@ public class DynamicFormState: ObservableObject {
     public var autoSaveInterval: TimeInterval = 30.0 // seconds
     public var debounceDelay: TimeInterval = 2.0 // seconds
     
-    /// Form ID for draft storage (uses configuration.id)
-    private var formId: String {
+    /// Resolved id for `FormDraft` / storage I/O (`draftStorageKey` when non-empty, else `configuration.id`).
+    private var draftPersistenceFormId: String {
+        if let key = draftStorageKey, !key.isEmpty {
+            return key
+        }
         return configuration.id
     }
     
     /// Initialize with configuration and optional storage
     /// - Parameters:
     ///   - configuration: Form configuration
+    ///   - draftStorageKey: Optional UserDefaults draft bucket key; `nil` or empty uses `configuration.id`
     ///   - storage: Optional storage implementation (defaults to UserDefaultsFormStateStorage)
     public init(
         configuration: DynamicFormConfiguration,
+        draftStorageKey: String? = nil,
         storage: FormStateStorage? = nil
     ) {
         self.configuration = configuration
+        self.draftStorageKey = draftStorageKey
         self.storage = storage ?? UserDefaultsFormStateStorage()
         setupInitialState()
     }
@@ -1351,20 +1428,22 @@ public class DynamicFormState: ObservableObject {
         return nil
     }
 
-    /// Evaluate a simple mathematical expression
-    /// Supports basic arithmetic: +, -, *, /
+    /// Evaluate a mathematical expression after caller has substituted field names with numeric literals.
+    /// Uses `NSExpression` for parentheses and operator precedence (required by e.g. `(a * b) + c` fuel hints).
     private func evaluateMathExpression(_ expression: String) -> Double? {
-        // This is a very basic implementation for demonstration
-        // In a real implementation, you'd use a proper expression parser
-
         let cleanedExpression = expression.replacingOccurrences(of: " ", with: "")
-
-        // Handle simple operations
-        if let result = evaluateSimpleExpression(cleanedExpression) {
-            return result
+        guard !cleanedExpression.isEmpty else { return nil }
+        if let literal = Double(cleanedExpression) {
+            return literal
         }
-
-        return nil
+        let expr = NSExpression(format: cleanedExpression)
+        if let anyValue = expr.expressionValue(with: nil, context: nil) {
+            if let num = anyValue as? NSNumber {
+                let d = num.doubleValue
+                return d.isFinite ? d : nil
+            }
+        }
+        return evaluateSimpleExpression(cleanedExpression)
     }
 
     /// Evaluate simple expressions with one operator
@@ -1666,7 +1745,7 @@ public class DynamicFormState: ObservableObject {
         guard autoSaveEnabled else { return }
         
         let draft = FormDraft(
-            formId: formId,
+            formId: draftPersistenceFormId,
             fieldValues: fieldValues,
             timestamp: Date()
         )
@@ -1683,7 +1762,7 @@ public class DynamicFormState: ObservableObject {
     /// - Returns: True if draft was loaded, false otherwise
     @discardableResult
     public func loadDraft() -> Bool {
-        guard let draft = storage.loadDraft(formId: formId) else {
+        guard let draft = storage.loadDraft(formId: draftPersistenceFormId) else {
             return false
         }
         
@@ -1695,7 +1774,7 @@ public class DynamicFormState: ObservableObject {
     /// Clear draft state
     public func clearDraft() {
         do {
-            try storage.clearDraft(formId: formId)
+            try storage.clearDraft(formId: draftPersistenceFormId)
         } catch {
             // Log error but don't crash
             print("Error clearing form draft: \(error.localizedDescription)")
@@ -1704,7 +1783,7 @@ public class DynamicFormState: ObservableObject {
     
     /// Check if draft exists
     public func hasDraft() -> Bool {
-        return storage.hasDraft(formId: formId)
+        return storage.hasDraft(formId: draftPersistenceFormId)
     }
     
     /// Trigger debounced save on field change
