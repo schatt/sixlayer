@@ -90,12 +90,18 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
 
     private func sd150SecureField(labelContains: String) -> XCUIElement {
         if labelContains == "SD150_SecureField" {
-            let mirrorPred = NSPredicate(format: "identifier == %@", "SD150_Mirror_S")
-            if app.tables.firstMatch.waitForExistence(timeout: 0.5) {
-                let cell = app.tables.firstMatch.cells.containing(mirrorPred).firstMatch
-                if cell.waitForExistence(timeout: 1.2) {
-                    let inCell = cell.secureTextFields.firstMatch
-                    if inCell.waitForExistence(timeout: 0.6) { return inCell }
+            let idSlug = "sd150-securefield"
+            let typePred = NSCompoundPredicate(orPredicateWithSubpredicates: [
+                NSPredicate(format: "elementType == %d", XCUIElement.ElementType.secureTextField.rawValue),
+                NSPredicate(format: "elementType == %d", XCUIElement.ElementType.textField.rawValue)
+            ])
+            let idPred = NSPredicate(format: "identifier CONTAINS[c] %@", idSlug)
+            let rowPred = NSCompoundPredicate(andPredicateWithSubpredicates: [typePred, idPred])
+            let tableCount = min(app.tables.count, 4)
+            if tableCount > 0 {
+                for b in 0..<tableCount {
+                    let scoped = app.tables.element(boundBy: b).descendants(matching: .any).matching(rowPred).firstMatch
+                    if scoped.waitForExistence(timeout: 0.35) { return scoped }
                 }
             }
         }
