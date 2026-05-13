@@ -9,20 +9,22 @@
 
 ## 🎯 Release Summary
 
-v7.8.0 is a **minor** release focused on presentation and collection behavior, optional form draft storage configuration, richer **PlatformImage** EXIF handling, and clearer **system-action** contracts (open URL and remote notifications). Milestone issues **#256**, **#272**, **#273**, **#275**, and **#277** are included.
+v7.8.0 is a **minor** release focused on a **presentation profiles** catalog, **item-collection** hint resolution and optional card-style list rows, optional **DynamicForm** draft storage keys, richer **PlatformImage** EXIF handling, and clearer **system-action** contracts (open URL and remote notifications). Milestone issues **#256**, **#272**, **#273**, **#275**, and **#277** are included.
 
 ---
 
 ## 🆕 Confirmed in v7.8.0 (implemented)
 
-### **Presentation profiles catalog and hints-driven collections (Issue #277)**
+### **Presentation profiles catalog (Issue #277)**
 
-- Loads presentation profile metadata from bundled `Hints/PresentationProfiles.hints` (and related catalog APIs).
-- Hint-driven card height and content alignment for sparse grids in collection-style layouts.
+- Ships shared `Hints/PresentationProfiles.hints`, **`PresentationProfilesCatalog`** (including **`globalPresentationProfilesCatalog`**), and **`PresentationHints(presentationProfileID:bundle:catalog:)`** so apps can centralize presentation defaults outside per-model `.hints`.
+- Includes example JSON, cache reset, and unit tests (`PresentationProfilesCatalogTests`).
+- Profile-driven sparse-grid geometry / Layer-2 wiring called out in the issue remains **follow-up work** (not part of the #277 closure).
 
-### **List layout for card-style item collections (Issue #272)**
+### **Item collection presentation strategy (Issue #272)**
 
-- Adds a **list** presentation layout path for card-style item collections, with an explicit presentation contract for consumers and tests.
+- Adds **`ItemCollectionPresentationStrategyResolver`** so `PresentationHints` / `PresentationPreference` (including automatic and `countBased`) drive **`platformPresentItemCollection_L1`** for both generic and `customItemView` overloads.
+- Optional `hints.customPreferences["rowVisualStyle"] == "card"` applies default padded, rounded row chrome on the custom list path; see **`Framework/docs/README_Layer1_Semantic.md`** (Item Collections).
 
 ### **Optional draft storage key for dynamic forms (Issue #273)**
 
@@ -40,10 +42,10 @@ v7.8.0 is a **minor** release focused on presentation and collection behavior, o
 
 ## ✅ Resolved GitHub issues
 
-- **[Issue #277](https://github.com/schatt/sixlayer/issues/277)** — Presentation profiles catalog; hint-driven card height / content alignment for sparse grids.
+- **[Issue #277](https://github.com/schatt/sixlayer/issues/277)** — `PresentationProfilesCatalog`, bundled `PresentationProfiles.hints`, and profile-keyed `PresentationHints` construction.
 - **[Issue #275](https://github.com/schatt/sixlayer/issues/275)** — PlatformImage EXIF writers and configuration (including HEIC defaults via `PlatformImageEXIFConfig`).
 - **[Issue #273](https://github.com/schatt/sixlayer/issues/273)** — Optional draft storage key separate from `DynamicFormConfiguration.id`.
-- **[Issue #272](https://github.com/schatt/sixlayer/issues/272)** — List layout for card-style item collections (presentation contract).
+- **[Issue #272](https://github.com/schatt/sixlayer/issues/272)** — Hint-driven item collection presentation resolver; optional `"card"` row style on custom list collections.
 - **[Issue #256](https://github.com/schatt/sixlayer/issues/256)** — System-action contract improvements (`openURL`, remote notifications; closes **#169** contract gaps).
 
 ---
@@ -52,7 +54,7 @@ v7.8.0 is a **minor** release focused on presentation and collection behavior, o
 
 - **Forms**: If you rely on draft persistence keyed only by `DynamicFormConfiguration.id`, review whether a dedicated draft key is preferable for multi-form or shared-draft scenarios.
 - **Images**: When preserving or stripping EXIF, use the new configuration surface on **PlatformImage** rather than ad hoc metadata handling.
-- **Collections**: Prefer the documented presentation contract when choosing **list** vs card-style layouts for item collections.
+- **Collections**: Read the Item Collections section in **`Framework/docs/README_Layer1_Semantic.md`**; custom list collections remain `ScrollView` + lazy stack (not full SwiftUI `List` semantics).
 
 ---
 
