@@ -90,39 +90,9 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
 
     private func sd150SecureField(labelContains: String) -> XCUIElement {
         if labelContains == "SD150_SecureField" {
-            // Host shows at most one standalone `SecureField` until the integration section is scrolled
-            // into the accessibility tree; when count is 1, predicate-based `firstMatch` can still
-            // resolve to a stale proxy (#261) — use the collection query instead.
-            let secureCount = app.secureTextFields.count
-            if secureCount == 1 {
-                return app.secureTextFields.firstMatch
-            }
-            let exactId = "UITest_SD150_SecureField"
-            let bySecure = app.secureTextFields[exactId]
-            if bySecure.waitForExistence(timeout: 0.45) { return bySecure }
-            let byAny = app.descendants(matching: .any).matching(NSPredicate(format: "identifier == %@", exactId)).firstMatch
-            if byAny.waitForExistence(timeout: 0.45) { return byAny }
-
-            let idSlug = "sd150-securefield"
-            let typePred = NSCompoundPredicate(orPredicateWithSubpredicates: [
-                NSPredicate(format: "elementType == %d", XCUIElement.ElementType.secureTextField.rawValue),
-                NSPredicate(format: "elementType == %d", XCUIElement.ElementType.textField.rawValue)
-            ])
-            let idPred = NSPredicate(format: "identifier CONTAINS[c] %@", idSlug)
-            let rowPred = NSCompoundPredicate(andPredicateWithSubpredicates: [typePred, idPred])
-            for _ in 0..<Self.maxFormScrolls {
-                if app.tables.firstMatch.waitForExistence(timeout: 0.35) {
-                    let t = app.tables.firstMatch
-                    let cellCount = min(t.cells.count, 32)
-                    for i in 0..<cellCount {
-                        let f = t.cells.element(boundBy: i).descendants(matching: .any).matching(rowPred).firstMatch
-                        if f.waitForExistence(timeout: 0.15) { return f }
-                    }
-                    let scoped = t.descendants(matching: .any).matching(rowPred).firstMatch
-                    if scoped.waitForExistence(timeout: 0.25) { return scoped }
-                }
-                app.xcuiSwipeScrollHostsUp()
-            }
+            // Do not snapshot `secureTextFields.count` here: it is often 0 before the Form row is
+            // materialized, while `firstMatch` is a live query that resolves after scrolling (#261).
+            return app.secureTextFields.firstMatch
         }
         let slugHyphen = labelContains.lowercased().replacingOccurrences(of: "_", with: "-")
         let slugCompact = labelContains.lowercased().replacingOccurrences(of: "_", with: "")
@@ -131,11 +101,7 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
             NSPredicate(format: "identifier CONTAINS[c] %@", slugHyphen),
             NSPredicate(format: "identifier CONTAINS[c] %@", slugCompact)
         ])
-        var matchParts: [NSPredicate] = [byLabel, byId]
-        if labelContains == "SD150_SecureField" {
-            matchParts.append(NSPredicate(format: "identifier == %@", "UITest_SD150_SecureField"))
-        }
-        let matchA11y = NSCompoundPredicate(orPredicateWithSubpredicates: matchParts)
+        let matchA11y = NSCompoundPredicate(orPredicateWithSubpredicates: [byLabel, byId])
 
         // `platformForm` sections: resolve inside the section row (typed queries miss nested SwiftUI fields).
         let sectionHeader: String
@@ -153,17 +119,6 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
             if scopedTF.waitForExistence(timeout: 0.6) { return scopedTF }
             let anySecure = cell.secureTextFields.firstMatch
             if anySecure.waitForExistence(timeout: 0.4) { return anySecure }
-        }
-
-        if labelContains == "SD150_SecureField" {
-            let anchor = app.descendants(matching: .any).matching(NSPredicate(format: "identifier == %@", "UITest_SD150_SecureField")).firstMatch
-            if anchor.waitForExistence(timeout: 1.0) {
-                let inner = anchor.descendants(matching: .secureTextField).firstMatch
-                if inner.waitForExistence(timeout: 0.6) { return inner }
-                let plain = anchor.descendants(matching: .textField).firstMatch
-                if plain.waitForExistence(timeout: 0.35) { return plain }
-                if anchor.elementType == .secureTextField { return anchor }
-            }
         }
 
         let isSecureOrPlainText = NSCompoundPredicate(orPredicateWithSubpredicates: [
