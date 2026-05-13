@@ -20,7 +20,7 @@ jobs:
     timeout-minutes: 240
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Generate Xcode project (XcodeGen)
         run: |
@@ -64,7 +64,7 @@ jobs:
 
       - name: Upload test result bundles
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: xcresult-bundles
           path: |
