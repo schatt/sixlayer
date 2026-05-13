@@ -1,8 +1,8 @@
 # 🚀 Six-Layer Framework Development Roadmap
 
 **Purpose**: Track planned upcoming work and future enhancements.  
-**Last Updated**: April 10, 2026  
-**Current Release**: v7.5.12
+**Last Updated**: May 13, 2026  
+**Current Release**: v7.8.0
 
 > **Note**: This roadmap tracks planned work. For active todos, see [`todos.md`](../todos.md). For release history, see [`RELEASES.md`](RELEASES.md).
 
@@ -10,7 +10,7 @@
 
 ## 📍 **Current Status**
 
-**Last Release**: v7.5.12
+**Last Release**: v7.8.0
 **Current Phase**: Patch Release
 **Next Phase**: Continue framework evolution and stability improvements
 
