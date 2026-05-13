@@ -268,7 +268,10 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
         XCTAssertTrue(mirrorS.waitForExistence(timeout: 2.0), "Binding mirror for secure section should exist")
         let field = sd150SecureField(labelContains: "SD150_SecureField")
         scrollUntilExists(field)
-        XCTAssertTrue(field.waitForExistence(timeout: 2.0), "Secure field")
+        XCTAssertTrue(
+            field.waitForExistence(timeout: 2.0),
+            "Secure field (secureTextFields.count=\(app.secureTextFields.count) textFields.count=\(app.textFields.count))"
+        )
         tapToFocusForTyping(field)
         field.typeText("hunter2")
         assertBindingMirrorContains("SD150_Mirror_S", "hunter2")
