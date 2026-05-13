@@ -195,7 +195,8 @@ final class Layer1AccessibilityUITests: XCTestCase {
                 element = labelMatch
                 if element.isHittable { break }
             }
-            app.xcuiSwipeScrollHostsUp()
+            // Avoid nested ScrollView swipe failures (empty visible frame) from xcuiPrimaryScrollHost (#261).
+            app.swipeUp()
         }
         XCTAssertTrue(element.waitForExistence(timeout: 1.0),
                       "\(elementName) with title '\(title)' should exist as a tappable element")
