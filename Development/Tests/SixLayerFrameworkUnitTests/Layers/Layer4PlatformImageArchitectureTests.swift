@@ -247,9 +247,9 @@ open class Layer4PlatformImageArchitectureTests: BaseTestClass {
     #if os(iOS)
     private func createTestUIImage() -> UIImage { // 6LAYER_ALLOW: test helper returning platform-specific image type
         let size = CGSize(width: 100, height: 100)
-        let renderer = UIGraphicsImageRenderer(size: size) // 6LAYER_ALLOW: test helper using platform-specific image rendering APIs
+        let renderer = UIGraphicsImageRenderer(size: size)
         return renderer.image { context in
-            UIColor.blue.setFill() // 6LAYER_ALLOW: test helper using platform-specific image rendering APIs
+            Color.systemBlue.setFill()
             context.fill(CGRect(origin: .zero, size: size))
         }
     }
@@ -257,10 +257,11 @@ open class Layer4PlatformImageArchitectureTests: BaseTestClass {
     
     #if os(macOS)
     private func createTestNSImage() -> NSImage { // 6LAYER_ALLOW: test helper returning platform-specific image type
-        let size = NSSize(width: 100, height: 100) // 6LAYER_ALLOW: test helper using platform-specific image rendering APIs
-        let nsImage = NSImage(size: size) // 6LAYER_ALLOW: test helper using platform-specific image rendering APIs
+        let size = NSSize(width: 100, height: 100)
+        let nsImage = NSImage(size: size)
         nsImage.lockFocus()
-        NSColor.blue.drawSwatch(in: NSRect(origin: .zero, size: size)) // 6LAYER_ALLOW: test helper using platform-specific image rendering APIs
+        Color.systemBlue.setFill()
+        NSRect(origin: .zero, size: size).fill()
         nsImage.unlockFocus()
         return nsImage
     }
