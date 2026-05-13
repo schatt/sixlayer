@@ -263,6 +263,14 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
         }
         XCTAssertTrue(field.waitForExistence(timeout: 2.0), "Secure field")
         tapToFocusForTyping(field)
+        #if os(iOS)
+        let kbDeadline = Date().addingTimeInterval(4)
+        while Date() < kbDeadline, app.keyboards.count == 0 {
+            field.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
+            RunLoop.current.run(until: Date().addingTimeInterval(0.18))
+        }
+        XCTAssertTrue(app.keyboards.count > 0, "Secure field should show the software keyboard")
+        #endif
         field.typeText("hunter2")
         #if os(iOS)
         dismissKeyboardIfPresent()
