@@ -202,7 +202,14 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
         file: StaticString = #filePath,
         line: UInt = #line
     ) {
-        let m = mirrorElement(identifier: mirrorId)
+        let byId = mirrorElement(identifier: mirrorId)
+        let byLabel = app.staticTexts.matching(NSPredicate(format: "label CONTAINS[c] %@", "\(mirrorId):")).firstMatch
+        let m: XCUIElement
+        if byId.waitForExistence(timeout: min(1.5, mirrorExistenceTimeout)) {
+            m = byId
+        } else {
+            m = byLabel
+        }
         XCTAssertTrue(m.waitForExistence(timeout: mirrorExistenceTimeout), "Mirror \(mirrorId) should exist", file: file, line: line)
         let text = m.label
         XCTAssertTrue(
