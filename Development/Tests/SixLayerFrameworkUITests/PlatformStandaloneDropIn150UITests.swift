@@ -96,9 +96,9 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
         } else {
             sectionHeader = "SD150 Secure"
         }
-        let header = app.staticTexts[sectionHeader].firstMatch
-        if header.waitForExistence(timeout: 1.2), app.tables.firstMatch.waitForExistence(timeout: 0.5) {
-            let cell = app.tables.firstMatch.cells.containing(header).firstMatch
+        let headerPred = NSPredicate(format: "label == %@", sectionHeader)
+        if app.staticTexts[sectionHeader].waitForExistence(timeout: 1.2), app.tables.firstMatch.waitForExistence(timeout: 0.5) {
+            let cell = app.tables.firstMatch.cells.containing(headerPred).firstMatch
             let scoped = cell.descendants(matching: .secureTextField).matching(matchA11y).firstMatch
             if scoped.waitForExistence(timeout: 0.6) { return scoped }
             let scopedTF = cell.descendants(matching: .textField).matching(matchA11y).firstMatch
