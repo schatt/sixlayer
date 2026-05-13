@@ -90,8 +90,16 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
 
     private func sd150SecureField(labelContains: String) -> XCUIElement {
         if labelContains == "SD150_SecureField" {
-            // Do not snapshot `secureTextFields.count` here: it is often 0 before the Form row is
-            // materialized, while `firstMatch` is a live query that resolves after scrolling (#261).
+            // Form may back the field with `Table` or `ScrollView` depending on OS; probe a few roots
+            // before falling back to the app-wide typed query (#261).
+            let candidates = [
+                app.tables.firstMatch.secureTextFields.firstMatch,
+                app.scrollViews.firstMatch.secureTextFields.firstMatch,
+                app.secureTextFields.firstMatch
+            ]
+            for candidate in candidates {
+                if candidate.waitForExistence(timeout: 0.35) { return candidate }
+            }
             return app.secureTextFields.firstMatch
         }
         let slugHyphen = labelContains.lowercased().replacingOccurrences(of: "_", with: "-")
