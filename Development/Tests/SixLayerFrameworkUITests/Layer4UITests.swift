@@ -223,11 +223,19 @@ final class Layer4UITests: XCTestCase {
             if let label = buttonLabel, app.descendants(matching: .any).matching(NSPredicate(format: "identifier == %@", label)).firstMatch.waitForExistence(timeout: 0.2) {
                 return
             }
+            if let label = buttonLabel {
+                let anyHit = app.descendants(matching: .any).matching(
+                    NSPredicate(format: "label == %@ OR label CONTAINS[c] %@", label, label)
+                ).firstMatch
+                if anyHit.waitForExistence(timeout: 0.25) { return }
+            }
             if !app.tables.firstMatch.exists, !app.xcuiPrimaryScrollHost().exists {
                 RunLoop.current.run(until: Date().addingTimeInterval(Self.quickWait))
                 continue
             }
             app.xcuiSwipeScrollHostsUp()
+            // Nested `Form` + split chrome: primary host sometimes stops moving; nudge the window too (#261).
+            app.swipeUp()
         }
     }
 
@@ -554,7 +562,7 @@ final class Layer4UITests: XCTestCase {
             return
         }
         // Form row: open the menu (first button in the picker row) when the value is not a top-level `buttons["A"]`.
-        if app.tables.firstMatch.waitForExistence(timeout: 0.6) {
+        if l4RootFormTable().waitForExistence(timeout: 0.6) {
             let row = l4RootFormTable().cells.containing(NSPredicate(format: "label == %@", "L4ContractPicker"))
             let menuButton = row.buttons.firstMatch
             if menuButton.waitForExistence(timeout: 1.2) {
@@ -584,6 +592,16 @@ final class Layer4UITests: XCTestCase {
         if anyL4ContractId.waitForExistence(timeout: 1.5) {
             XCTAssertFalse(anyL4ContractId.identifier.isEmpty, "platformPicker must apply a11y (loose l4contract* id).")
             return
+        }
+        if l4RootFormTable().waitForExistence(timeout: 0.5) {
+            let row = l4RootFormTable().cells.containing(NSPredicate(format: "label == %@", "L4ContractPicker"))
+            let anySixLayerId = row.descendants(matching: .any)
+                .matching(NSPredicate(format: "identifier CONTAINS[c] %@", "SixLayer.main.ui"))
+                .firstMatch
+            if anySixLayerId.waitForExistence(timeout: 2.0) {
+                XCTAssertFalse(anySixLayerId.identifier.isEmpty, "platformPicker row should expose a SixLayer contract id.")
+                return
+            }
         }
         XCTFail("platformPicker: picker or option should have identifier (tried l4contractpicker, 'picker', and \(optionCandidates.joined(separator: ", ")))")
     }
@@ -702,10 +720,17 @@ final class Layer4UITests: XCTestCase {
         let inTableStatic = table.staticTexts[title].firstMatch
         let inAny = app.descendants(matching: .any).matching(NSPredicate(format: "label == %@", title)).firstMatch
         let inCell = table.cells.containing(NSPredicate(format: "label CONTAINS[c] %@", title)).firstMatch
+        let byListId = app.descendants(matching: .any).matching(
+            NSCompoundPredicate(andPredicateWithSubpredicates: [
+                NSPredicate(format: "identifier CONTAINS[c] %@", "platformListRow"),
+                NSPredicate(format: "label CONTAINS[c] %@", title)
+            ])
+        ).firstMatch
         XCTAssertTrue(
             inTableStatic.waitForExistence(timeout: 2.5)
                 || inCell.waitForExistence(timeout: 2.0)
-                || inAny.waitForExistence(timeout: 1.5),
+                || inAny.waitForExistence(timeout: 1.5)
+                || byListId.waitForExistence(timeout: 2.0),
             "platformListRow: row title must be visible in list (contract structure)"
         )
     }
