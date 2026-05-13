@@ -90,6 +90,12 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
 
     private func sd150SecureField(labelContains: String) -> XCUIElement {
         if labelContains == "SD150_SecureField" {
+            let exactId = "UITest_SD150_SecureField"
+            let bySecure = app.secureTextFields[exactId]
+            if bySecure.waitForExistence(timeout: 0.6) { return bySecure }
+            let byAny = app.descendants(matching: .any).matching(NSPredicate(format: "identifier == %@", exactId)).firstMatch
+            if byAny.waitForExistence(timeout: 0.6) { return byAny }
+
             let idSlug = "sd150-securefield"
             let typePred = NSCompoundPredicate(orPredicateWithSubpredicates: [
                 NSPredicate(format: "elementType == %d", XCUIElement.ElementType.secureTextField.rawValue),
