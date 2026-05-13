@@ -27,7 +27,7 @@ Navigate to the `Framework/` directory and use it as a Swift Package:
 ```swift
 // In your Package.swift
 dependencies: [
-    .package(url: "https://github.com/schatt/sixlayer.git", from: "7.7.2")
+    .package(url: "https://github.com/schatt/sixlayer.git", from: "7.8.0")
 ]
 ```
 
@@ -41,9 +41,12 @@ dependencies: [
 
 The framework is distributed as a Swift Package from the `Framework/` directory. This ensures that only the essential framework code is included when other projects consume it.
 
-## 🆕 Latest Release: v7.7.2
+## 🆕 Latest Release: v7.8.0
 
-### **Patch release**
+### **Minor release**
+📋 **Minor**: Presentation profiles and hint-driven sparse-grid collections (#277), list layout for card-style item collections (#272), optional `DynamicForm` draft storage key (#273), `PlatformImage` EXIF configuration (#275), and system-action contract updates for `openURL` and remote notifications (#256 / #169). See [RELEASE_v7.8.0.md](Development/RELEASE_v7.8.0.md).
+
+### **Previous Release: v7.7.2 - Patch release**
 🔧 **Patch**: Fixes the `LocationService` main-thread services-enabled check (#258), wires `DynamicImageField` into image/photo selection and form state (#265), clarifies Layer 1 dynamic field preview docs (#267), and refreshes release metadata (#270). See [RELEASE_v7.7.2.md](Development/RELEASE_v7.7.2.md).
 
 ### **Previous Release: v7.7.1 - Patch release**
@@ -256,8 +259,8 @@ These guides contain critical information about the Layer 1 Semantic Intent phil
 
 ## 📋 Current Status
 
-**Version**: v7.7.2 (Patch)
-**Phase**: Minor Release
+**Version**: v7.8.0 (Minor)
+**Phase**: Minor release
 **Next**: TBD
 
 ## 🤝 Contributing
