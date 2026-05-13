@@ -71,6 +71,23 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
         }
     }
 
+    /// `XCUIElementTypeQueryProvider` subscript matching uses accessibility identifiers; SixLayer labels end with `.` (Issue #169).
+    private func sd150TextField(labelContains: String) -> XCUIElement {
+        app.textFields.matching(NSPredicate(format: "label CONTAINS[c] %@", labelContains)).firstMatch
+    }
+
+    private func sd150SecureField(labelContains: String) -> XCUIElement {
+        app.secureTextFields.matching(NSPredicate(format: "label CONTAINS[c] %@", labelContains)).firstMatch
+    }
+
+    private func sd150Switch(labelContains: String) -> XCUIElement {
+        app.switches.matching(NSPredicate(format: "label CONTAINS[c] %@", labelContains)).firstMatch
+    }
+
+    private func sd150TextView(labelContains: String) -> XCUIElement {
+        app.textViews.matching(NSPredicate(format: "label CONTAINS[c] %@", labelContains)).firstMatch
+    }
+
     /// Single `.tap()` often fails to make secure fields / editors first responder under parallel UI runs (#261).
     private func tapToFocusForTyping(_ element: XCUIElement) {
         scrollUntilHittable(element)
@@ -120,7 +137,7 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
 
     func test150_platformTextField_typingUpdatesBinding() throws {
         #if os(iOS) || os(macOS)
-        let field = app.textFields["SD150_TextField"]
+        let field = sd150TextField(labelContains: "SD150_TextField")
         scrollUntilHittable(field)
         XCTAssertTrue(field.waitForExistence(timeout: 2.0), "Text field")
         field.tap()
@@ -136,7 +153,7 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
 
     func test150_platformTextField_verticalAxis_typingUpdatesBinding() throws {
         #if os(iOS) || os(macOS)
-        let field = app.textFields["SD150_AxisField"]
+        let field = sd150TextField(labelContains: "SD150_AxisField")
         scrollUntilHittable(field)
         XCTAssertTrue(field.waitForExistence(timeout: 2.0), "Axis text field")
         field.tap()
@@ -149,7 +166,7 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
 
     func test150_platformSecureField_typingUpdatesBinding() throws {
         #if os(iOS) || os(macOS)
-        let field = app.secureTextFields["SD150_SecureField"]
+        let field = sd150SecureField(labelContains: "SD150_SecureField")
         XCTAssertTrue(field.waitForExistence(timeout: 2.0), "Secure field")
         tapToFocusForTyping(field)
         field.typeText("hunter2")
@@ -164,7 +181,7 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
         let mirrorOff = mirrorElement(identifier: "SD150_Mirror_G")
         scrollUntilHittable(mirrorOff)
         assertBindingMirrorContains("SD150_Mirror_G", "0")
-        let toggle = app.switches["SD150_Toggle"]
+        let toggle = sd150Switch(labelContains: "SD150_Toggle")
         scrollUntilHittable(toggle)
         XCTAssertTrue(toggle.waitForExistence(timeout: 2.0), "Toggle")
         #if os(iOS)
@@ -179,7 +196,8 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
 
     func test150_platformTextEditor_prefillAndAdditionalTyping() throws {
         #if os(iOS) || os(macOS)
-        let editor = app.textViews["SD150_EditorPrompt"]
+        let editor = sd150TextView(labelContains: "SD150_EditorPrompt")
+        scrollUntilHittable(editor)
         XCTAssertTrue(editor.waitForExistence(timeout: 2.5), "Text editor")
         assertBindingMirrorContains("SD150_Mirror_E", "PrefillSeed")
         tapToFocusForTyping(editor)
@@ -193,7 +211,7 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
     func test150_platformTextField_longInputMirror() throws {
         #if os(iOS) || os(macOS)
         let long = String(repeating: "Z", count: 220)
-        let field = app.textFields["SD150_LongField"]
+        let field = sd150TextField(labelContains: "SD150_LongField")
         scrollUntilHittable(field)
         XCTAssertTrue(field.waitForExistence(timeout: 2.0), "Long field")
         field.tap()
@@ -207,7 +225,7 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
 
     func test150_rapidSequentialTyping_appends() throws {
         #if os(iOS) || os(macOS)
-        let field = app.textFields["SD150_TextField"]
+        let field = sd150TextField(labelContains: "SD150_TextField")
         scrollUntilHittable(field)
         field.tap()
         field.typeText("a")
@@ -220,9 +238,9 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
 
     func test150_platformForm_integrationMultipleControls() throws {
         #if os(iOS) || os(macOS)
-        let name = app.textFields["SD150_Integration_Name"]
-        let pass = app.secureTextFields["SD150_Integration_Password"]
-        let toggle = app.switches["SD150_Integration_Toggle"]
+        let name = sd150TextField(labelContains: "SD150_Integration_Name")
+        let pass = sd150SecureField(labelContains: "SD150_Integration_Password")
+        let toggle = sd150Switch(labelContains: "SD150_Integration_Toggle")
         XCTAssertTrue(name.waitForExistence(timeout: 2.0), "Integration name")
         tapToFocusForTyping(name)
         name.typeText("Pat")
