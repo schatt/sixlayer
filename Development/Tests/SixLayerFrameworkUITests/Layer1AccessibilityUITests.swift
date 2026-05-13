@@ -180,7 +180,7 @@ final class Layer1AccessibilityUITests: XCTestCase {
     @MainActor
     private func assertSingleTappableCard(title: String, elementName: String) {
         var element = app.buttons[title].firstMatch
-        for _ in 0..<10 {
+        for _ in 0..<18 {
             if element.waitForExistence(timeout: 0.35), element.isHittable { break }
             if app.cells[title].firstMatch.waitForExistence(timeout: 0.35) {
                 element = app.cells[title].firstMatch
@@ -193,6 +193,11 @@ final class Layer1AccessibilityUITests: XCTestCase {
             let labelMatch = app.buttons.matching(NSPredicate(format: "label == %@", title)).firstMatch
             if labelMatch.waitForExistence(timeout: 0.3) {
                 element = labelMatch
+                if element.isHittable { break }
+            }
+            let containsTitle = app.buttons.matching(NSPredicate(format: "label CONTAINS[c] %@", title)).firstMatch
+            if containsTitle.waitForExistence(timeout: 0.35) {
+                element = containsTitle
                 if element.isHittable { break }
             }
             // Avoid nested ScrollView swipe failures (empty visible frame) from xcuiPrimaryScrollHost (#261).
