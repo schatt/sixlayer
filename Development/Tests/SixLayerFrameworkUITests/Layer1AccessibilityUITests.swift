@@ -179,11 +179,25 @@ final class Layer1AccessibilityUITests: XCTestCase {
     /// Contract: the card should present as a button with a non-empty label (single element per card title).
     @MainActor
     private func assertSingleTappableCard(title: String, elementName: String) {
-        var element = app.buttons[title]
-        if !element.waitForExistence(timeout: 1.0) {
-            element = app.cells[title]
+        var element = app.buttons[title].firstMatch
+        for _ in 0..<10 {
+            if element.waitForExistence(timeout: 0.35), element.isHittable { break }
+            if app.cells[title].firstMatch.waitForExistence(timeout: 0.35) {
+                element = app.cells[title].firstMatch
+                if element.isHittable { break }
+            }
+            if app.otherElements[title].firstMatch.waitForExistence(timeout: 0.35) {
+                element = app.otherElements[title].firstMatch
+                if element.isHittable { break }
+            }
+            let labelMatch = app.buttons.matching(NSPredicate(format: "label == %@", title)).firstMatch
+            if labelMatch.waitForExistence(timeout: 0.3) {
+                element = labelMatch
+                if element.isHittable { break }
+            }
+            app.xcuiSwipeScrollHostsUp()
         }
-        XCTAssertTrue(element.waitForExistence(timeout: 1.2),
+        XCTAssertTrue(element.waitForExistence(timeout: 1.0),
                       "\(elementName) with title '\(title)' should exist as a tappable element")
         element.verifyAccessibilityContract(
             elementName: elementName,
