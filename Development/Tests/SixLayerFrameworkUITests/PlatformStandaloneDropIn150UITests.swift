@@ -80,6 +80,9 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
     }
 
     private func sd150SecureField(labelContains: String) -> XCUIElement {
+        if labelContains == "SD150_SecureField" {
+            return app.descendants(matching: .any).matching(NSPredicate(format: "identifier == %@", "UITest_SD150_SecureField")).firstMatch
+        }
         let slugHyphen = labelContains.lowercased().replacingOccurrences(of: "_", with: "-")
         let slugCompact = labelContains.lowercased().replacingOccurrences(of: "_", with: "")
         let byLabel = NSPredicate(format: "label CONTAINS[c] %@", labelContains)
