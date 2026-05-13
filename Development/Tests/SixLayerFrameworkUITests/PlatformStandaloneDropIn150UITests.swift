@@ -242,8 +242,16 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
         let mirrorS = mirrorElement(identifier: "SD150_Mirror_S")
         scrollUntilExists(mirrorS)
         XCTAssertTrue(mirrorS.waitForExistence(timeout: 2.0), "Binding mirror for secure section should exist")
-        let field = sd150SecureField(labelContains: "SD150_SecureField")
-        scrollUntilExists(field)
+        var field = sd150SecureField(labelContains: "SD150_SecureField")
+        for i in 0..<Self.maxMaterializeScrolls {
+            if field.waitForExistence(timeout: 0.4) { break }
+            if i % 2 == 0 {
+                app.xcuiSwipeScrollHostsUp()
+            } else {
+                app.xcuiSwipeScrollHostsDown()
+            }
+            field = sd150SecureField(labelContains: "SD150_SecureField")
+        }
         XCTAssertTrue(field.waitForExistence(timeout: 2.0), "Secure field")
         tapToFocusForTyping(field)
         field.typeText("hunter2")
