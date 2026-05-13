@@ -46,7 +46,7 @@ struct StandaloneDropIn150HostView: View {
                 }
                 Section {
                     SixLayerFramework.platformSecureField("SD150_SecureField", text: $secureValue)
-                        .accessibilityIdentifier("UITest_SD150_SecureField")
+                        .exactNamed("UITest_SD150_SecureField")
                     if showBindingMirrors {
                         Text("SD150_Mirror_S:\(secureValue)")
                             .accessibilityIdentifier("SD150_Mirror_S")
