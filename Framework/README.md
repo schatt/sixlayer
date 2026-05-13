@@ -44,7 +44,7 @@ Layer 1: Semantic Intent → Layer 2: Layout Decision → Layer 3: Strategy Sele
 
 ### Minor release
 
-Presentation profiles catalog and hint-driven sparse-grid collection behavior (#277), list layout for card-style item collections (#272), optional separate `DynamicForm` draft storage key (#273), `PlatformImage` EXIF read/write configuration (#275), and system-action contract updates for `openURL` and remote notifications (#256 / #169). See [RELEASE_v7.8.0.md](../Development/RELEASE_v7.8.0.md).
+Presentation profiles catalog (`PresentationProfilesCatalog`, bundled `PresentationProfiles.hints`, profile-keyed `PresentationHints`) (#277); item collection presentation resolver with optional `"card"` row chrome on custom list collections (#272); optional separate `DynamicForm` draft storage key (#273); `PlatformImage` EXIF read/write configuration (#275); system-action contract updates for `openURL` and remote notifications (#256 / #169). See [RELEASE_v7.8.0.md](../Development/RELEASE_v7.8.0.md).
 
 ## 🆕 What's New in v7.7.2
 
