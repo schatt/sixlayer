@@ -37,8 +37,10 @@ import SwiftUI
 @testable import SixLayerFramework
 
 /// Capability-aware function testing
-/// Tests every function that depends on capabilities in both enabled and disabled states
-/// NOTE: Not marked @MainActor on class to allow parallel execution
+/// Tests every function that depends on capabilities in both enabled and disabled states.
+/// Uses `DefaultRuntimeCapabilityIsolationTrait` (GitHub #236) for per-test override hygiene;
+/// see `.cursor/rules/capability-override-test-flows.mdc` and GitHub #278.
+@Suite("Capability-aware functions", DefaultRuntimeCapabilityIsolationTrait())
 open class CapabilityAwareFunctionTests: BaseTestClass {
     
     // BaseTestClass handles cleanup automatically
@@ -48,7 +50,6 @@ open class CapabilityAwareFunctionTests: BaseTestClass {
     /// Default: no thread-local touch overrides; card config mirrors `RuntimeCapabilityDetection`.
     @MainActor
     private func runTouchThreadLocalOverrideDefaultVerification() {
-        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
         let touch = RuntimeCapabilityDetection.supportsTouch
         let haptic = RuntimeCapabilityDetection.supportsHapticFeedback
         let config = getCardExpansionPlatformConfig()
@@ -187,10 +188,9 @@ open class CapabilityAwareFunctionTests: BaseTestClass {
     /// TESTING SCOPE: Hover capability detection, hover delay, touch exclusion
     /// METHODOLOGY: Test runtime capabilities on current platform
     @Test @MainActor func testHoverDependentFunctionsEnabled() {
-        // Reset thread-local overrides before composing hover/touch flags so prior tests cannot
-        // leave AssistiveTouch (or other knobs) in a state that violates platform law on macOS.
-        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-        // Test hover capabilities on current platform
+        // Suite trait clears overrides before each @Test; chained calls inside
+        // `testHoverDependentFunctions` / `testAllCapabilityDependentFunctions` still rely on
+        // explicit cleanup at the end of each phase below.
         RuntimeCapabilityDetection.setTestHover(true)
         RuntimeCapabilityDetection.setTestTouchSupport(false)
         
@@ -357,14 +357,12 @@ open class CapabilityAwareFunctionTests: BaseTestClass {
         // Set test overrides for accessibility capabilities
         RuntimeCapabilityDetection.setTestVoiceOver(true)
         RuntimeCapabilityDetection.setTestSwitchControl(true)
-        
+        defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
+
         // Test that accessibility behavior can be tested
         let config = getCardExpansionPlatformConfig()
         #expect(config.supportsVoiceOver, "VoiceOver should be supported")
         #expect(config.supportsSwitchControl, "Switch Control should be supported")
-        
-        // Clean up
-        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
     }
     
     // MARK: - Color Encoding-Dependent Function Tests
@@ -426,9 +424,6 @@ open class CapabilityAwareFunctionTests: BaseTestClass {
     /// TESTING SCOPE: Capability state consistency, logical capability relationships
     /// METHODOLOGY: Test capability state consistency on current platform
     @Test @MainActor func testCapabilityStateConsistency() {
-        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-        defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
-
         let config = getCardExpansionPlatformConfig()
 
         // Test that all capability states are consistent
