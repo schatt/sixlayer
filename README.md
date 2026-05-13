@@ -44,7 +44,7 @@ The framework is distributed as a Swift Package from the `Framework/` directory.
 ## 🆕 Latest Release: v7.8.0
 
 ### **Minor release**
-📋 **Minor**: Presentation profiles and hint-driven sparse-grid collections (#277), list layout for card-style item collections (#272), optional `DynamicForm` draft storage key (#273), `PlatformImage` EXIF configuration (#275), and system-action contract updates for `openURL` and remote notifications (#256 / #169). See [RELEASE_v7.8.0.md](Development/RELEASE_v7.8.0.md).
+📋 **Minor**: `PresentationProfilesCatalog` and bundled profile hints (#277); `ItemCollectionPresentationStrategyResolver` with optional `"card"` row style on custom list collections (#272); optional `DynamicForm` draft storage key (#273); `PlatformImage` EXIF configuration (#275); system-action contract updates for `openURL` and remote notifications (#256 / #169). See [RELEASE_v7.8.0.md](Development/RELEASE_v7.8.0.md).
 
 ### **Previous Release: v7.7.2 - Patch release**
 🔧 **Patch**: Fixes the `LocationService` main-thread services-enabled check (#258), wires `DynamicImageField` into image/photo selection and form state (#265), clarifies Layer 1 dynamic field preview docs (#267), and refreshes release metadata (#270). See [RELEASE_v7.7.2.md](Development/RELEASE_v7.7.2.md).
