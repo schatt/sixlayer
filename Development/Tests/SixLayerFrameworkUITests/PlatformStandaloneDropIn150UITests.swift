@@ -204,11 +204,14 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
     ) {
         let byId = mirrorElement(identifier: mirrorId)
         let byLabel = app.staticTexts.matching(NSPredicate(format: "label CONTAINS[c] %@", mirrorId)).firstMatch
+        let byAnyLabel = app.descendants(matching: .any).matching(NSPredicate(format: "label CONTAINS[c] %@", mirrorId)).firstMatch
         let m: XCUIElement
-        if byId.waitForExistence(timeout: min(1.5, mirrorExistenceTimeout)) {
+        if byId.waitForExistence(timeout: min(1.2, mirrorExistenceTimeout)) {
             m = byId
-        } else {
+        } else if byLabel.waitForExistence(timeout: min(1.0, mirrorExistenceTimeout)) {
             m = byLabel
+        } else {
+            m = byAnyLabel
         }
         XCTAssertTrue(m.waitForExistence(timeout: mirrorExistenceTimeout), "Mirror \(mirrorId) should exist", file: file, line: line)
         let raw = (m.value as? String).flatMap { $0.isEmpty ? nil : $0 } ?? m.label
@@ -282,9 +285,6 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
         #if os(iOS)
         dismissKeyboardIfPresent()
         #endif
-        for _ in 0..<10 {
-            app.xcuiSwipeScrollHostsDown()
-        }
         scrollUntilExists(mirrorElement(identifier: "SD150_Mirror_S"))
         assertBindingMirrorContains("SD150_Mirror_S", "hunter2", mirrorExistenceTimeout: 4)
         #else
