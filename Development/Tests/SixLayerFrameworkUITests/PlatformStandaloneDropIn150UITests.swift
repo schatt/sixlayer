@@ -73,19 +73,33 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
 
     /// `XCUIElementTypeQueryProvider` subscript matching uses accessibility identifiers; SixLayer labels end with `.` (Issue #169).
     private func sd150TextField(labelContains: String) -> XCUIElement {
-        app.textFields.matching(NSPredicate(format: "label CONTAINS[c] %@", labelContains)).firstMatch
+        let byLabel = NSPredicate(format: "label CONTAINS[c] %@", labelContains)
+        let slug = labelContains.lowercased().replacingOccurrences(of: "_", with: "-")
+        let byId = NSPredicate(format: "identifier CONTAINS[c] %@", slug)
+        return app.textFields.matching(NSCompoundPredicate(orPredicateWithSubpredicates: [byLabel, byId])).firstMatch
     }
 
     private func sd150SecureField(labelContains: String) -> XCUIElement {
-        app.secureTextFields.matching(NSPredicate(format: "label CONTAINS[c] %@", labelContains)).firstMatch
+        let slug = labelContains.lowercased().replacingOccurrences(of: "_", with: "-")
+        let byLabel = NSPredicate(format: "label CONTAINS[c] %@", labelContains)
+        let byId = NSPredicate(format: "identifier CONTAINS[c] %@", slug)
+        let pred = NSCompoundPredicate(orPredicateWithSubpredicates: [byLabel, byId])
+        // Some hosts nest `SecureField` under containers; typed `app.secureTextFields[...]` can miss (#261).
+        return app.descendants(matching: .secureTextField).matching(pred).firstMatch
     }
 
     private func sd150Switch(labelContains: String) -> XCUIElement {
-        app.switches.matching(NSPredicate(format: "label CONTAINS[c] %@", labelContains)).firstMatch
+        let byLabel = NSPredicate(format: "label CONTAINS[c] %@", labelContains)
+        let slug = labelContains.lowercased().replacingOccurrences(of: "_", with: "-")
+        let byId = NSPredicate(format: "identifier CONTAINS[c] %@", slug)
+        return app.switches.matching(NSCompoundPredicate(orPredicateWithSubpredicates: [byLabel, byId])).firstMatch
     }
 
     private func sd150TextView(labelContains: String) -> XCUIElement {
-        app.textViews.matching(NSPredicate(format: "label CONTAINS[c] %@", labelContains)).firstMatch
+        let byLabel = NSPredicate(format: "label CONTAINS[c] %@", labelContains)
+        let slug = labelContains.lowercased().replacingOccurrences(of: "_", with: "-")
+        let byId = NSPredicate(format: "identifier CONTAINS[c] %@", slug)
+        return app.textViews.matching(NSCompoundPredicate(orPredicateWithSubpredicates: [byLabel, byId])).firstMatch
     }
 
     /// Single `.tap()` often fails to make secure fields / editors first responder under parallel UI runs (#261).
@@ -167,6 +181,7 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
     func test150_platformSecureField_typingUpdatesBinding() throws {
         #if os(iOS) || os(macOS)
         let field = sd150SecureField(labelContains: "SD150_SecureField")
+        scrollUntilHittable(field)
         XCTAssertTrue(field.waitForExistence(timeout: 2.0), "Secure field")
         tapToFocusForTyping(field)
         field.typeText("hunter2")
@@ -242,12 +257,14 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
         let pass = sd150SecureField(labelContains: "SD150_Integration_Password")
         let toggle = sd150Switch(labelContains: "SD150_Integration_Toggle")
         XCTAssertTrue(name.waitForExistence(timeout: 2.0), "Integration name")
+        scrollUntilHittable(name)
         tapToFocusForTyping(name)
         name.typeText("Pat")
         #if os(iOS)
         dismissKeyboardIfPresent()
         #endif
         XCTAssertTrue(pass.waitForExistence(timeout: 2.0), "Integration password")
+        scrollUntilHittable(pass)
         tapToFocusForTyping(pass)
         pass.typeText("secret")
         #if os(iOS)
