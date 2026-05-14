@@ -87,6 +87,10 @@ This script will:
 - **Rationale**: Hosting UIs group branches by the `b<major>/` prefix like folders, so parallel majors stay easy to scan.
 - **Renaming**: Older flat names (e.g. `b7.7.1`) should be migrated to `b7/b7.7.1` when you next touch that line (update default branch settings, CI, and open PRs if any point at the old ref).
 
+#### GitHub issue–linked work (`wip/` branches)
+
+**MANDATORY**: Any work scoped to a **numbered GitHub issue** is implemented on **`wip/<issue-slug>`** and merged (or PR’d) into the integration line — **not** committed directly to `next` / `main` for that scope. Full workflow, worktree preference, and closure steps: [.cursor/rules/github-issue-workflow.mdc](.cursor/rules/github-issue-workflow.mdc).
+
 #### Benefits
 - Easier to review changes
 - Simpler to identify and revert problematic commits
