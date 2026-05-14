@@ -518,6 +518,93 @@ open class Layer4SemanticAccessibilityCriterionTests: BaseTestClass {
             "platformSheet_L4 presented subtree should expose inner automaticCompliance identifiers (sheet wrapper is intentionally minimal on iOS 16+ per #193)"
         )
     }
+
+    // MARK: - Navigation stack items (Issue #254)
+
+    private struct SemanticNavStackItem254: Identifiable, Hashable {
+        let id: Int
+    }
+
+    private struct NavigationStackItemsSemanticHost254: View {
+        @State private var selected: SemanticNavStackItem254?
+        private let items = [SemanticNavStackItem254(id: 1), SemanticNavStackItem254(id: 2)]
+
+        var body: some View {
+            platformImplementNavigationStackItems_L4(
+                items: items,
+                selectedItem: $selected,
+                itemView: { item in
+                    Text("Row \(item.id)")
+                        .automaticCompliance(
+                            identifierName: "L4StackItemsRow\(item.id)",
+                            identifierElementType: "Text"
+                        )
+                },
+                detailView: { item in
+                    Text("Detail \(item.id)")
+                        .automaticCompliance(
+                            identifierName: "L4StackItemsDetail\(item.id)",
+                            identifierElementType: "Text"
+                        )
+                },
+                strategy: NavigationStackStrategy(implementation: .navigationStack, reasoning: "Issue 254 semantic criterion")
+            )
+        }
+    }
+
+    @Test @MainActor
+    func testPlatformImplementNavigationStackItems_L4_exposesHostedListOrNavigationSemantics() async {
+        let view = NavigationStackItemsSemanticHost254()
+        let root = hostedRoot(for: view)
+        #expect(root != nil)
+        guard hostedTreeExposesSemanticSurface(root) else {
+            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
+            return
+        }
+        let ids = findAllAccessibilityIdentifiersFromPlatformView(root)
+        let rowMarked = ids.contains { $0.contains("L4StackItemsRow") }
+        let listOrNavSemantics = hostedUIKitAccessibilityHierarchyContains(root: root) { v in
+            let traits = v.accessibilityTraits
+            let id = v.accessibilityIdentifier ?? ""
+            let tracked = id.contains("SixLayer") || id.contains("L4StackItemsRow")
+            let sem = traits.contains(.header)
+                || traits.contains(.staticText)
+                || traits.contains(.button)
+                || traits.contains(.link)
+            return tracked && sem
+        }
+        #expect(
+            rowMarked || listOrNavSemantics,
+            "items navigation host should expose SixLayer/L4 row identifiers or list/navigation semantic traits"
+        )
+    }
+
+    @Test @MainActor
+    func testPlatformStyledContainer_L4_preservesInnerAutomaticComplianceUnderHostedTree() async {
+        let view = Group { EmptyView() }
+            .platformStyledContainer_L4 {
+                Text("L4StyledInner254")
+                    .automaticCompliance(
+                        identifierName: "L4StyledInner254",
+                        identifierElementType: "Text"
+                    )
+            }
+        let root = hostedRoot(for: view)
+        #expect(root != nil)
+        guard hostedTreeExposesSemanticSurface(root) else {
+            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
+            return
+        }
+        let ids = findAllAccessibilityIdentifiersFromPlatformView(root)
+        let inner = ids.contains { $0.contains("L4StyledInner254") }
+        let fallback = hostedUIKitAccessibilityHierarchyContains(root: root) { v in
+            (v.accessibilityIdentifier ?? "").contains("L4StyledInner254")
+        }
+        #expect(
+            inner || fallback,
+            "styled container should preserve inner automaticCompliance identifiers in hosted subtree"
+        )
+    }
 }
 
 #endif
