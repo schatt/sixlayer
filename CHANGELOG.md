@@ -1,5 +1,38 @@
 # Changelog
 
+## v7.8.1 - OCR inclusive defaults, EXIF date/orientation writers, L4 a11y/UITest (May 14, 2026)
+
+### ✨ Added
+- **PlatformImage.exif** writers for **capture date** and **orientation** (extends #275): `with(captureDate:)`, `with(orientation:)`, and format-explicit overloads; tests in `PlatformImageEXIFTests`.
+- **Structured OCR** inclusive extraction, uncategorized handling, and Layer 2 forwarding (#279); unit coverage for inclusive defaults.
+
+### 🧩 Changed
+- **Layer 4** accessibility identifiers for CloudKit, photo picker, and contract surfaces; **XCUITest** helper hardening (scroll, Form, keyboard, queries).
+- **`platformPrint_L4`** isolated in view modifiers; Layer 4 compile hygiene in photo/scanner paths.
+
+### 📚 Documentation
+- Agent workflow: issue-linked **`wip/`** worktree checklist (#280).
+- Full notes: [`Development/RELEASE_v7.8.1.md`](Development/RELEASE_v7.8.1.md), index [`Development/RELEASES.md`](Development/RELEASES.md).
+
+---
+
+## v7.8.0 - Presentation profiles, collections, EXIF, system actions (May 13, 2026)
+
+### ✨ Added
+- **Presentation profiles** catalog (#277): `PresentationProfilesCatalog`, bundled `PresentationProfiles.hints`, profile-keyed `PresentationHints`.
+- **Item collection** presentation strategy resolver (#272); optional `rowVisualStyle` card chrome on custom list collections.
+- Optional **DynamicForm** draft storage key separate from configuration id (#273).
+- **PlatformImage** EXIF lossless read from original bytes (#274) and **EXIF writers** / stripping with `PlatformImageEXIFConfig` HEIC default (#275).
+- **System-action** contract gaps closed for `openURL` and remote notifications (#256 / #169).
+
+### 🧩 Changed
+- **Platform color** token hygiene to reduce UIKit/AppKit drift (#276).
+
+### 📚 Documentation
+- Full notes: [`Development/RELEASE_v7.8.0.md`](Development/RELEASE_v7.8.0.md).
+
+---
+
 ## v7.7.0 - VisionKit live scanner path (in preparation)
 
 ### ✨ Added
