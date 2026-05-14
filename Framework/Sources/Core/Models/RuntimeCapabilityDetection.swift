@@ -360,6 +360,32 @@ public struct RuntimeCapabilityDetection {
         #endif
         #endif
     }
+
+    /// Touch reads for **card expansion** on macOS (GitHub #236).
+    ///
+    /// When `RuntimeCapabilityHarness.macOSTouchEnabledPreference` is unset, ignores
+    /// `SixLayerFramework.TouchEnabled` in `UserDefaults` so stale keys do not force
+    /// touch-sized chrome. Harness, `setTestTouchSupport`, and hardware/driver paths
+    /// still align with full `supportsTouch`. Non-macOS hosts return `supportsTouch`.
+    nonisolated internal static var supportsTouchForMacOSCardExpansion: Bool {
+        #if os(macOS)
+        if let testValue = testTouchSupport {
+            return testValue
+        }
+        if RuntimeCapabilityHarness.macOSTouchEnabledPreference != nil {
+            return detectmacOSTouchSupport()
+        }
+        if canDetectTouchEvents() {
+            return true
+        }
+        if hasThirdPartyTouchDrivers() {
+            return true
+        }
+        return false
+        #else
+        return supportsTouch
+        #endif
+    }
     
     #if os(iOS)
     /// iOS touch detection - checks for actual touch capability
