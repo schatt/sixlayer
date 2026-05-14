@@ -27,14 +27,14 @@
 | `platformPopover_L4` | Y (named `automaticCompliance` on anchor subtree; popover unavailable tvOS) | N/A | N/A | `Layer4UITests` | `Layer4SemanticAccessibilityCriterionTests.testPlatformPopover_L4_exposesNamedComplianceOnAnchorTree` |
 | `platformSheet_L4` | Y (presented content keeps inner semantic ids; sheet wrapper minimal on iOS 16+ per #193) | N/A | N/A | `Layer4UITests` | `Layer4SemanticAccessibilityCriterionTests.testPlatformSheet_L4_presentedContentKeepsInnerSemanticIdentifiers` |
 | `platformImplementNavigationStack_L4` | Y (navigation chrome / header or titled surface) | N/A | N/A | `Layer4UITests` | `Layer4SemanticAccessibilityCriterionTests.testPlatformImplementNavigationStack_L4_exposesHostedSemanticSurface` |
-| `platformImplementNavigationStackItems_L4` | TBD | N/A | Partial (list order) | TBD | List read order → coordinate with #255 VoiceOver. |
+| `platformImplementNavigationStackItems_L4` | Y (list/header/link/button on hosted row/chrome) | N/A | Partial (list order) | `PlatformNavigationRoutingExtensionsTests`, `Layer4UITests` | `Layer4SemanticAccessibilityCriterionTests.testPlatformImplementNavigationStackItems_L4_exposesHostedListOrNavigationSemantics` — rotor/read order still #255. |
 | `platformRowActions_L4` / `platformContextMenu_L4` | TBD | N/A | N/A | `Layer4UITests` / row-action hosts | UITest + future hosted trait pass. |
 | `platformPhotoPicker_L4` / `platformPhotoDisplay_L4` / camera APIs | TBD | TBD | N/A | `Layer4UITests`, `PlatformPhotoComponentsLayer4*` | Media controls often `.button` / `.image`; add per-surface. |
 | `platformMapView_L4` / `platformMapViewWithCurrentLocation_L4` | TBD | TBD | N/A | `PlatformMapComponentsLayer4*` | MapKit hosting; semantic pass when CI map host stable. |
 | `platformShare_L4` / `platformPrint_L4` | Y (`.button` on trigger host) | N/A | N/A | `PlatformSharePrintLayer4ComponentAccessibilityTests`, `Layer4UITests` | `Layer4SemanticAccessibilityCriterionTests.testPlatformShare_L4_exposesButtonTraitWithSixLayerIdentifier`, `…testPlatformPrint_L4_exposesButtonTraitWithSixLayerIdentifier` |
 | `platformCopyToClipboard_L4` | N/A (non-View function) | N/A | N/A | `Layer4UITests` (`L4ContractCopy`) | Covered as behavioral non-View action; keep outside view-semantic trait scope. |
 | `platformVerticalSplit_L4` / `platformHorizontalSplit_L4` | TBD | N/A | Partial | `PlatformSplitViewLayer4Tests` | Split pane read order → #255. |
-| `platformStyledContainer_L4` | TBD | N/A | N/A | styling / card tests | Containers often N/A for standalone traits. |
+| `platformStyledContainer_L4` | Y (via inner subtree static text / ids) | N/A | N/A | `PlatformStylingLayer4Tests` | `Layer4SemanticAccessibilityCriterionTests.testPlatformStyledContainer_L4_preservesInnerAutomaticComplianceUnderHostedTree` |
 | `platformFormContainer_L4` / form field APIs | TBD | TBD | Partial | `Layer4UITests`, form ViewInspector suites | Values on controls (pickers, toggles) → extend hosted checks. |
 | `platformAppNavigation_L4` / `platformSettingsContainer_L4` | TBD | N/A | Partial | UITest / navigation hosts | Large surface; staged. |
 
