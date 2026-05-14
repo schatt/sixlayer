@@ -176,8 +176,19 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
         XCTAssertTrue(editor.waitForExistence(timeout: 2.5), "Text editor")
         assertBindingMirrorContains("SD150_Mirror_E", "PrefillSeed")
         editor.xcuiTapToBecomeFirstResponder()
+        #if os(iOS)
+        // UITest often inserts at the start of the first line; nudge toward the trailing edge before append.
+        editor.coordinate(withNormalizedOffset: CGVector(dx: 0.92, dy: 0.88)).tap()
+        RunLoop.current.run(until: Date().addingTimeInterval(0.2))
+        #endif
         editor.typeText("More")
-        assertBindingMirrorContains("SD150_Mirror_E", "PrefillSeedMore")
+        let mirrorE = mirrorElement(identifier: "SD150_Mirror_E")
+        XCTAssertTrue(mirrorE.waitForExistence(timeout: 3.0), "Mirror SD150_Mirror_E should exist after edit")
+        let raw = mirrorE.label
+        XCTAssertTrue(
+            raw.contains("PrefillSeed") && raw.contains("More"),
+            "Editor mirror should reflect prefill plus appended text (order may vary); got: '\(raw)'"
+        )
         #else
         throw XCTSkip("Issue #150 host UI tests require iOS or macOS TestApp")
         #endif
