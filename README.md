@@ -27,7 +27,7 @@ Navigate to the `Framework/` directory and use it as a Swift Package:
 ```swift
 // In your Package.swift
 dependencies: [
-    .package(url: "https://github.com/schatt/sixlayer.git", from: "7.8.0")
+    .package(url: "https://github.com/schatt/sixlayer.git", from: "7.8.1")
 ]
 ```
 
@@ -41,9 +41,12 @@ dependencies: [
 
 The framework is distributed as a Swift Package from the `Framework/` directory. This ensures that only the essential framework code is included when other projects consume it.
 
-## 🆕 Latest Release: v7.8.0
+## 🆕 Latest Release: v7.8.1
 
-### **Minor release**
+### **Patch release**
+🔧 **Patch**: Structured OCR inclusive extraction and Layer 2 forwarding (#279); `PlatformImage` EXIF capture date and orientation writers (#275); Layer 4 accessibility identifiers for CloudKit, photo picker, and UITest contract surfaces; agent `wip/` worktree checklist (#280); assorted UITest harness hardening and Layer 4 compile/`platformPrint_L4` isolation fixes. See [RELEASE_v7.8.1.md](Development/RELEASE_v7.8.1.md).
+
+### **Previous Release: v7.8.0 - Minor release**
 📋 **Minor**: `PresentationProfilesCatalog` and bundled profile hints (#277); `ItemCollectionPresentationStrategyResolver` with optional `"card"` row style on custom list collections (#272); optional `DynamicForm` draft storage key (#273); `PlatformImage` EXIF configuration (#275); system-action contract updates for `openURL` and remote notifications (#256 / #169). See [RELEASE_v7.8.0.md](Development/RELEASE_v7.8.0.md).
 
 ### **Previous Release: v7.7.2 - Patch release**
@@ -259,8 +262,8 @@ These guides contain critical information about the Layer 1 Semantic Intent phil
 
 ## 📋 Current Status
 
-**Version**: v7.8.0 (Minor)
-**Phase**: Minor release
+**Version**: v7.8.1 (Patch)
+**Phase**: Patch release
 **Next**: TBD
 
 ## 🤝 Contributing
