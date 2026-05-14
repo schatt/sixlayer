@@ -1,0 +1,9 @@
+repos:
+-   repo: local
+    hooks:
+    -   id: no-commit-on-integration-branches
+        name: Block direct commits on integration branches (main/next)
+        entry: scripts/git-hooks/block-integration-branch-commits.sh
+        language: script
+        pass_filenames: false
+        always_run: true
