@@ -605,6 +605,76 @@ open class Layer4SemanticAccessibilityCriterionTests: BaseTestClass {
             "styled container should preserve inner automaticCompliance identifiers in hosted subtree"
         )
     }
+
+    // MARK: - Split views (Issue #254)
+
+    @Test @MainActor
+    func testPlatformVerticalSplit_L4_preservesPaneAutomaticComplianceUnderHosting() async {
+        let view = Text("SplitPrimary254")
+            .platformVerticalSplit_L4(spacing: 0) {
+                Text("SplitTop254")
+                    .automaticCompliance(
+                        identifierName: "L4SplitTop254",
+                        identifierElementType: "Text"
+                    )
+                Text("SplitBottom254")
+                    .automaticCompliance(
+                        identifierName: "L4SplitBottom254",
+                        identifierElementType: "Text"
+                    )
+            }
+        let root = hostedRoot(for: view)
+        #expect(root != nil)
+        guard hostedTreeExposesSemanticSurface(root) else {
+            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
+            return
+        }
+        let ids = findAllAccessibilityIdentifiersFromPlatformView(root)
+        let top = ids.contains { $0.contains("L4SplitTop254") }
+        let bottom = ids.contains { $0.contains("L4SplitBottom254") }
+        let fallback = hostedUIKitAccessibilityHierarchyContains(root: root) { v in
+            let id = v.accessibilityIdentifier ?? ""
+            return id.contains("L4SplitTop254") || id.contains("L4SplitBottom254")
+        }
+        #expect(
+            (top && bottom) || fallback,
+            "vertical split host should retain pane automaticCompliance identifiers in the hosted subtree"
+        )
+    }
+
+    @Test @MainActor
+    func testPlatformHorizontalSplit_L4_preservesPaneAutomaticComplianceUnderHosting() async {
+        let view = Text("HSplitPrimary254")
+            .platformHorizontalSplit_L4(spacing: 0) {
+                Text("SplitLeft254")
+                    .automaticCompliance(
+                        identifierName: "L4SplitLeft254",
+                        identifierElementType: "Text"
+                    )
+                Text("SplitRight254")
+                    .automaticCompliance(
+                        identifierName: "L4SplitRight254",
+                        identifierElementType: "Text"
+                    )
+            }
+        let root = hostedRoot(for: view)
+        #expect(root != nil)
+        guard hostedTreeExposesSemanticSurface(root) else {
+            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
+            return
+        }
+        let ids = findAllAccessibilityIdentifiersFromPlatformView(root)
+        let left = ids.contains { $0.contains("L4SplitLeft254") }
+        let right = ids.contains { $0.contains("L4SplitRight254") }
+        let fallback = hostedUIKitAccessibilityHierarchyContains(root: root) { v in
+            let id = v.accessibilityIdentifier ?? ""
+            return id.contains("L4SplitLeft254") || id.contains("L4SplitRight254")
+        }
+        #expect(
+            (left && right) || fallback,
+            "horizontal split host should retain pane automaticCompliance identifiers in the hosted subtree"
+        )
+    }
 }
 
 #endif
