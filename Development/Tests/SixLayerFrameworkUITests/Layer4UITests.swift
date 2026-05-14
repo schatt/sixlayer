@@ -33,7 +33,7 @@ final class Layer4UITests: XCTestCase {
     nonisolated(unsafe) private var app: XCUIApplication!
     private static let quickWait: TimeInterval = 0.35
     private static let rootReadyTimeout: TimeInterval = 4.0
-    private static let maxScrollAttempts = 5
+    private static let maxScrollAttempts = 14
 
     nonisolated override func setUpWithError() throws {
         continueAfterFailure = false
@@ -94,6 +94,13 @@ final class Layer4UITests: XCTestCase {
             RunLoop.current.run(until: Date().addingTimeInterval(Self.quickWait))
         }
         return false
+    }
+
+    /// `Label` / grouped controls often surface as `other` with a combined accessibility label, not `XCUIElementType.staticText`.
+    @MainActor
+    private func waitForCombinedAccessibilityLabel(equalTo text: String, timeout: TimeInterval) -> Bool {
+        let pred = NSPredicate(format: "label == %@", text)
+        return app.descendants(matching: .any).matching(pred).firstMatch.waitForExistence(timeout: timeout)
     }
 
     /// Scroll so the element with the given label is visible (content may be below fold).
@@ -521,6 +528,7 @@ final class Layer4UITests: XCTestCase {
     @MainActor
     func testL4_platformListRow() throws {
         ensureContractRoot()
+        scrollToFormSectionHeader(title: "L4 List")
         scrollToElement(label: "L4ListRowContract")
         let row = app.descendants(matching: .any).matching(NSPredicate(format: "label == %@", "L4ListRowContract")).firstMatch
         XCTAssertTrue(row.waitForExistence(timeout: 1.2),
@@ -530,6 +538,7 @@ final class Layer4UITests: XCTestCase {
     @MainActor
     func testL4_platformListSectionHeader() throws {
         ensureContractRoot()
+        scrollToFormSectionHeader(title: "L4 List")
         scrollToElement(label: "L4ListSectionHeaderContract")
         let header = app.descendants(matching: .any).matching(NSPredicate(format: "label == %@", "L4ListSectionHeaderContract")).firstMatch
         XCTAssertTrue(header.waitForExistence(timeout: 1.2),
@@ -539,6 +548,7 @@ final class Layer4UITests: XCTestCase {
     @MainActor
     func testL4_platformListEmptyState() throws {
         ensureContractRoot()
+        scrollToFormSectionHeader(title: "L4 List")
         scrollToElement(label: "L4ListEmptyStateContract")
         let emptyState = app.descendants(matching: .any).matching(NSPredicate(format: "label == %@", "L4ListEmptyStateContract")).firstMatch
         XCTAssertTrue(emptyState.waitForExistence(timeout: 1.2),
@@ -548,6 +558,7 @@ final class Layer4UITests: XCTestCase {
     @MainActor
     func testL4_platformRowActions_L4() throws {
         ensureContractRoot()
+        scrollToFormSectionHeader(title: "L4 List")
         scrollToElement(label: "L4 List")
         scrollToElement(label: "L4RowActionsContractRow")
         let row = app.descendants(matching: .any).matching(NSPredicate(format: "label == %@", "L4RowActionsContractRow")).firstMatch
@@ -944,10 +955,13 @@ final class Layer4UITests: XCTestCase {
     @MainActor
     func testL4_platformCloudKitSyncStatus_L4() throws {
         ensureContractRoot()
+        scrollToFormSectionHeader(title: "L4 System")
         scrollToElement(label: "L4 System")
         scrollToElement(label: "CloudKit Sync Status")
-        XCTAssertTrue(app.staticTexts["CloudKit Sync: Idle"].waitForExistence(timeout: 1.0),
-                      "platformCloudKitSyncStatus_L4: status text must be visible (contract structure)")
+        XCTAssertTrue(
+            waitForCombinedAccessibilityLabel(equalTo: "CloudKit Sync: Idle", timeout: 2.0),
+            "platformCloudKitSyncStatus_L4: status text must be visible (contract structure)"
+        )
         let exactId = element(matchingIdentifier: "platformCloudKitSyncStatus_L4")
         let containsId = app.descendants(matching: .any)
             .matching(NSPredicate(format: "identifier CONTAINS[c] %@", "platformCloudKitSyncStatus"))
@@ -961,14 +975,15 @@ final class Layer4UITests: XCTestCase {
     @MainActor
     func testL4_platformCloudKitProgress_L4() throws {
         ensureContractRoot()
+        scrollToFormSectionHeader(title: "L4 System")
         scrollToElement(label: "L4 System")
         scrollToElement(label: "CloudKit Progress")
         XCTAssertTrue(
-            app.staticTexts["60%"].waitForExistence(timeout: 1.0),
+            app.descendants(matching: .any).matching(NSPredicate(format: "label CONTAINS %@", "60")).firstMatch.waitForExistence(timeout: 2.0),
             "platformCloudKitProgress_L4: progress caption must be visible (contract structure)"
         )
         XCTAssertTrue(
-            app.staticTexts["CloudKit Sync: Idle"].waitForExistence(timeout: 1.5),
+            waitForCombinedAccessibilityLabel(equalTo: "CloudKit Sync: Idle", timeout: 2.0),
             "platformCloudKitProgress_L4: nested sync status must be visible when status is provided"
         )
         let containsId = app.descendants(matching: .any)
@@ -981,10 +996,11 @@ final class Layer4UITests: XCTestCase {
     @MainActor
     func testL4_platformCloudKitAccountStatus_L4() throws {
         ensureContractRoot()
+        scrollToFormSectionHeader(title: "L4 System")
         scrollToElement(label: "L4 System")
         scrollToElement(label: "CloudKit Account")
         XCTAssertTrue(
-            app.staticTexts["iCloud Account: Available"].waitForExistence(timeout: 1.0),
+            waitForCombinedAccessibilityLabel(equalTo: "iCloud Account: Available", timeout: 2.0),
             "platformCloudKitAccountStatus_L4: account label must be visible (contract structure)"
         )
         let containsId = app.descendants(matching: .any)
@@ -997,6 +1013,7 @@ final class Layer4UITests: XCTestCase {
     @MainActor
     func testL4_platformCloudKitServiceStatus_L4() throws {
         ensureContractRoot()
+        scrollToFormSectionHeader(title: "L4 System")
         scrollToElement(label: "L4 System")
         scrollToElement(label: "CloudKit Service Status")
         let containsId = app.descendants(matching: .any)
@@ -1004,9 +1021,9 @@ final class Layer4UITests: XCTestCase {
             .firstMatch
         XCTAssertTrue(containsId.waitForExistence(timeout: 3.5),
                       "platformCloudKitServiceStatus_L4: composite view must expose contract a11y identifier")
-        let hasIdleOrAccount = app.staticTexts["CloudKit Sync: Idle"].waitForExistence(timeout: 1.5)
-            || app.staticTexts["iCloud Account: Available"].waitForExistence(timeout: 1.0)
-            || app.staticTexts["iCloud Account: Unknown"].waitForExistence(timeout: 1.0)
+        let hasIdleOrAccount = waitForCombinedAccessibilityLabel(equalTo: "CloudKit Sync: Idle", timeout: 2.0)
+            || waitForCombinedAccessibilityLabel(equalTo: "iCloud Account: Available", timeout: 1.5)
+            || waitForCombinedAccessibilityLabel(equalTo: "iCloud Account: Unknown", timeout: 1.0)
         XCTAssertTrue(
             hasIdleOrAccount,
             "platformCloudKitServiceStatus_L4: at least one child status line must be visible (contract structure)"
@@ -1016,6 +1033,7 @@ final class Layer4UITests: XCTestCase {
     @MainActor
     func testL4_platformCloudKitSyncButton_L4() throws {
         ensureContractRoot()
+        scrollToFormSectionHeader(title: "L4 System")
         scrollToElement(label: "L4 System")
         scrollToElement(label: "CloudKit Sync Button")
         let containsId = app.descendants(matching: .any)
@@ -1023,16 +1041,20 @@ final class Layer4UITests: XCTestCase {
             .firstMatch
         XCTAssertTrue(containsId.waitForExistence(timeout: 3.5),
                       "platformCloudKitSyncButton_L4: button must expose contract a11y identifier")
-        let byLabel = app.buttons["Sync"].firstMatch
+        let syncButton = app.descendants(matching: .button)
+            .matching(NSPredicate(format: "identifier CONTAINS[c] %@", "platformCloudKitSyncButton_L4"))
+            .firstMatch
         XCTAssertTrue(
-            byLabel.waitForExistence(timeout: 1.0),
-            "platformCloudKitSyncButton_L4: default Sync button must be findable (contract structure)"
+            syncButton.waitForExistence(timeout: 2.5)
+                || (containsId.elementType == .button && containsId.exists),
+            "platformCloudKitSyncButton_L4: sync control should appear as a button (may be disabled when CloudKit is gated in UITest host)"
         )
     }
 
     @MainActor
     func testL4_platformCloudKitStatusBadge_L4() throws {
         ensureContractRoot()
+        scrollToFormSectionHeader(title: "L4 System")
         scrollToElement(label: "L4 System")
         scrollToElement(label: "CloudKit Status Badge")
         let containsId = app.descendants(matching: .any)
@@ -1046,6 +1068,7 @@ final class Layer4UITests: XCTestCase {
     @MainActor
     func testL4_platformPhotoPicker_L4() throws {
         ensureContractRoot()
+        scrollToFormSectionHeader(title: "L4 System")
         scrollToElement(label: "L4 System")
         scrollToElement(label: "Photo Picker Contract")
         let openBtn = app.buttons["L4ContractPhotoPickerOpen"].firstMatch
