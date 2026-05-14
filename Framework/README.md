@@ -40,6 +40,12 @@ Layer 1: Semantic Intent → Layer 2: Layout Decision → Layer 3: Strategy Sele
 - **Comprehensively Tested**: 800+ tests with platform-aware testing and mandatory TDD implementation
 - **DRY Architecture**: Define hints once in files, use everywhere automatically
 
+## 🆕 What's New in v7.8.1
+
+### Patch release
+
+Structured OCR inclusive extraction and Layer 2 forwarding (#279); `PlatformImage` EXIF capture date and orientation writers (#275); Layer 4 accessibility identifiers for CloudKit, photo picker, and UITest contract controls; agent `wip/` worktree checklist (#280); Layer 4 compile fixes and `platformPrint_L4` isolation. See [RELEASE_v7.8.1.md](../Development/RELEASE_v7.8.1.md).
+
 ## 🆕 What's New in v7.8.0
 
 ### Minor release
@@ -637,7 +643,7 @@ if let location = image?.exif.gpsLocation {
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/schatt/6layer.git", from: "7.8.0")
+    .package(url: "https://github.com/schatt/6layer.git", from: "7.8.1")
 ]
 ```
 
