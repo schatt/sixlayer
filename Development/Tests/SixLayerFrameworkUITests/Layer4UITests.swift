@@ -1013,6 +1013,7 @@ final class Layer4UITests: XCTestCase {
     func testL4_platformCloudKitSyncStatus_L4() throws {
         ensureContractRoot()
         scrollToFormSectionHeader(title: "L4 System")
+        nudgeScrollInsideL4SystemSection()
         scrollToElement(label: "CloudKit Sync Status")
         XCTAssertTrue(
             waitForCombinedAccessibilityLabel(containing: "CloudKit Sync: Idle", timeout: 4.0),
@@ -1032,6 +1033,7 @@ final class Layer4UITests: XCTestCase {
     func testL4_platformCloudKitProgress_L4() throws {
         ensureContractRoot()
         scrollToFormSectionHeader(title: "L4 System")
+        nudgeScrollInsideL4SystemSection()
         scrollToElement(label: "CloudKit Progress")
         XCTAssertTrue(
             app.descendants(matching: .any).matching(NSPredicate(format: "label CONTAINS %@", "60")).firstMatch.waitForExistence(timeout: 3.0),
@@ -1052,6 +1054,7 @@ final class Layer4UITests: XCTestCase {
     func testL4_platformCloudKitAccountStatus_L4() throws {
         ensureContractRoot()
         scrollToFormSectionHeader(title: "L4 System")
+        nudgeScrollInsideL4SystemSection()
         scrollToElement(label: "CloudKit Account")
         XCTAssertTrue(
             waitForCombinedAccessibilityLabel(containing: "iCloud Account: Available", timeout: 4.0),
@@ -1068,6 +1071,7 @@ final class Layer4UITests: XCTestCase {
     func testL4_platformCloudKitServiceStatus_L4() throws {
         ensureContractRoot()
         scrollToFormSectionHeader(title: "L4 System")
+        nudgeScrollInsideL4SystemSection()
         scrollToElement(label: "CloudKit Service Status")
         let containsId = app.descendants(matching: .any)
             .matching(NSPredicate(format: "identifier CONTAINS[c] %@", "platformCloudKitServiceStatus_L4"))
