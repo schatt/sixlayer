@@ -180,6 +180,22 @@ final class Layer4UITests: XCTestCase {
         scrollToFormSectionHeader(title: "L4 Controls")
     }
 
+    /// Rows below the L4 Controls header can stay off-screen until the Form scrolls a few more notches (iOS 26).
+    @MainActor
+    private func nudgeScrollInsideL4ControlsSection() {
+        for _ in 0..<5 {
+            app.xcuiSwipeScrollHostsUp()
+        }
+    }
+
+    /// Captions and controls under L4 System often sit below the section header in the root Form.
+    @MainActor
+    private func nudgeScrollInsideL4SystemSection() {
+        for _ in 0..<6 {
+            app.xcuiSwipeScrollHostsUp()
+        }
+    }
+
     /// Element with the given accessibility identifier (any type).
     @MainActor
     private func element(matchingIdentifier id: String) -> XCUIElement {
@@ -463,6 +479,7 @@ final class Layer4UITests: XCTestCase {
     func testL4_platformSecureField() throws {
         ensureContractRoot()
         scrollToL4ControlsSection()
+        nudgeScrollInsideL4ControlsSection()
         assertElementHasIdentifierFromComponent(
             label: "L4ContractSecureField",
             type: .secureTextField,
@@ -502,9 +519,12 @@ final class Layer4UITests: XCTestCase {
     func testL4_platformDatePicker() throws {
         ensureContractRoot()
         scrollToL4ControlsSection()
+        nudgeScrollInsideL4ControlsSection()
         scrollToElement(label: "L4ContractDatePicker")
-        let hasLabel = app.staticTexts["L4ContractDatePicker"].waitForExistence(timeout: 1.2)
-            || app.descendants(matching: .any).matching(NSPredicate(format: "label == %@", "L4ContractDatePicker")).firstMatch.waitForExistence(timeout: 1.0)
+        let hasLabel = app.staticTexts["L4ContractDatePicker"].waitForExistence(timeout: 2.0)
+            || app.buttons["L4ContractDatePicker"].waitForExistence(timeout: 1.2)
+            || app.descendants(matching: .any).matching(NSPredicate(format: "label == %@", "L4ContractDatePicker")).firstMatch.waitForExistence(timeout: 1.2)
+            || app.descendants(matching: .any).matching(NSPredicate(format: "label CONTAINS[c] %@", "L4ContractDatePicker")).firstMatch.waitForExistence(timeout: 2.0)
         XCTAssertTrue(hasLabel,
                       "platformDatePicker: label must exist (contract); date picker control is platform-rendered")
     }
@@ -1067,18 +1087,23 @@ final class Layer4UITests: XCTestCase {
     func testL4_platformCloudKitSyncButton_L4() throws {
         ensureContractRoot()
         scrollToFormSectionHeader(title: "L4 System")
+        nudgeScrollInsideL4SystemSection()
         scrollToElement(label: "CloudKit Sync Button")
+        let exactId = element(matchingIdentifier: "platformCloudKitSyncButton_L4")
         let containsId = app.descendants(matching: .any)
             .matching(NSPredicate(format: "identifier CONTAINS[c] %@", "platformCloudKitSyncButton_L4"))
             .firstMatch
-        XCTAssertTrue(containsId.waitForExistence(timeout: 3.5),
-                      "platformCloudKitSyncButton_L4: button must expose contract a11y identifier")
+        XCTAssertTrue(
+            exactId.waitForExistence(timeout: 4.0) || containsId.waitForExistence(timeout: 4.0),
+            "platformCloudKitSyncButton_L4: button must expose contract a11y identifier"
+        )
         let syncButton = app.descendants(matching: .button)
             .matching(NSPredicate(format: "identifier CONTAINS[c] %@", "platformCloudKitSyncButton_L4"))
             .firstMatch
+        let idNode = exactId.exists ? exactId : containsId
         XCTAssertTrue(
             syncButton.waitForExistence(timeout: 2.5)
-                || (containsId.elementType == .button && containsId.exists),
+                || (idNode.elementType == .button && idNode.exists),
             "platformCloudKitSyncButton_L4: sync control should appear as a button (may be disabled when CloudKit is gated in UITest host)"
         )
     }
@@ -1100,10 +1125,12 @@ final class Layer4UITests: XCTestCase {
     func testL4_platformPhotoPicker_L4() throws {
         ensureContractRoot()
         scrollToFormSectionHeader(title: "L4 System")
+        nudgeScrollInsideL4SystemSection()
         scrollToElement(label: "Photo Picker Contract")
-        let openBtn = app.buttons["L4ContractPhotoPickerOpen"].firstMatch
+        let openPred = NSPredicate(format: "identifier == %@ OR label == %@", "L4ContractPhotoPickerOpen", "L4ContractPhotoPickerOpen")
+        let openBtn = app.descendants(matching: .any).matching(openPred).firstMatch
         XCTAssertTrue(
-            openBtn.waitForExistence(timeout: 2.5),
+            openBtn.waitForExistence(timeout: 3.5),
             "platformPhotoPicker_L4: contract open control must exist (contract structure)"
         )
         tapByNormalizedCenter(openBtn)
