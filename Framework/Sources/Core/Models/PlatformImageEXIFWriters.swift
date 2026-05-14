@@ -19,6 +19,7 @@
 
 import Foundation
 import CoreLocation
+import CoreGraphics
 
 #if canImport(ImageIO)
 import ImageIO
@@ -46,6 +47,30 @@ public extension PlatformImageEXIF {
     /// Returns `nil` only if the encode fails entirely.
     func with(gpsLocation: CLLocation?) -> PlatformImage? {
         return write(gpsMerge: Self.gpsMerge(for: gpsLocation),
+                     captureDateMerge: .noChange,
+                     orientationWrite: .noChange,
+                     stripDictionaries: [],
+                     format: nil)
+    }
+
+    /// Returns a new `PlatformImage` whose EXIF capture timestamp fields
+    /// (`DateTimeOriginal` / `DateTimeDigitized`) are set from `captureDate`, or
+    /// removed when `captureDate` is `nil`. Encodes using
+    /// `PlatformImageEXIFConfig.current.defaultWriteFormat`.
+    func with(captureDate: Date?) -> PlatformImage? {
+        return write(gpsMerge: .noChange,
+                     captureDateMerge: Self.captureDateMerge(for: captureDate),
+                     orientationWrite: .noChange,
+                     stripDictionaries: [],
+                     format: nil)
+    }
+
+    /// Returns a new `PlatformImage` whose container stores the given EXIF
+    /// orientation tag at the top level (`kCGImagePropertyOrientation`).
+    func with(orientation: CGImagePropertyOrientation) -> PlatformImage? {
+        return write(gpsMerge: .noChange,
+                     captureDateMerge: .noChange,
+                     orientationWrite: .set(orientation),
                      stripDictionaries: [],
                      format: nil)
     }
@@ -54,6 +79,8 @@ public extension PlatformImageEXIF {
     /// removed and all other metadata preserved.
     func strippingGPS() -> PlatformImage? {
         return write(gpsMerge: .removeKey,
+                     captureDateMerge: .noChange,
+                     orientationWrite: .noChange,
                      stripDictionaries: [],
                      format: nil)
     }
@@ -63,6 +90,8 @@ public extension PlatformImageEXIF {
     /// EXIF auxiliary, JFIF, PNG, 8BIM, and common maker-note dictionaries).
     func strippingAll() -> PlatformImage? {
         return write(gpsMerge: .removeKey,
+                     captureDateMerge: .noChange,
+                     orientationWrite: .noChange,
                      stripDictionaries: Self.allMetadataDictionaryKeys,
                      format: nil)
     }
@@ -73,6 +102,26 @@ public extension PlatformImageEXIF {
     /// regardless of `PlatformImageEXIFConfig`; returns `nil` on encode failure.
     func with(gpsLocation: CLLocation?, as format: ImageFormat) -> PlatformImage? {
         return write(gpsMerge: Self.gpsMerge(for: gpsLocation),
+                     captureDateMerge: .noChange,
+                     orientationWrite: .noChange,
+                     stripDictionaries: [],
+                     format: format)
+    }
+
+    /// Format-explicit variant of `with(captureDate:)`.
+    func with(captureDate: Date?, as format: ImageFormat) -> PlatformImage? {
+        return write(gpsMerge: .noChange,
+                     captureDateMerge: Self.captureDateMerge(for: captureDate),
+                     orientationWrite: .noChange,
+                     stripDictionaries: [],
+                     format: format)
+    }
+
+    /// Format-explicit variant of `with(orientation:)`.
+    func with(orientation: CGImagePropertyOrientation, as format: ImageFormat) -> PlatformImage? {
+        return write(gpsMerge: .noChange,
+                     captureDateMerge: .noChange,
+                     orientationWrite: .set(orientation),
                      stripDictionaries: [],
                      format: format)
     }
@@ -80,6 +129,8 @@ public extension PlatformImageEXIF {
     /// Format-explicit variant of `strippingGPS()`.
     func strippingGPS(as format: ImageFormat) -> PlatformImage? {
         return write(gpsMerge: .removeKey,
+                     captureDateMerge: .noChange,
+                     orientationWrite: .noChange,
                      stripDictionaries: [],
                      format: format)
     }
@@ -87,6 +138,8 @@ public extension PlatformImageEXIF {
     /// Format-explicit variant of `strippingAll()`.
     func strippingAll(as format: ImageFormat) -> PlatformImage? {
         return write(gpsMerge: .removeKey,
+                     captureDateMerge: .noChange,
+                     orientationWrite: .noChange,
                      stripDictionaries: Self.allMetadataDictionaryKeys,
                      format: format)
     }
@@ -102,6 +155,19 @@ private extension PlatformImageEXIF {
         case noChange
         case removeKey
         case set([String: Any])
+    }
+
+    /// EXIF capture date merge for `with(captureDate:)`.
+    enum CaptureDateMerge {
+        case noChange
+        case remove
+        case set(Date)
+    }
+
+    /// Top-level EXIF orientation write.
+    enum OrientationWrite {
+        case noChange
+        case set(CGImagePropertyOrientation)
     }
 
     /// Top-level metadata dictionary keys removed by `strippingAll()`.
@@ -131,6 +197,19 @@ private extension PlatformImageEXIF {
     static func gpsMerge(for location: CLLocation?) -> GPSMerge {
         guard let location else { return .removeKey }
         return .set(gpsDictionary(from: location))
+    }
+
+    static func captureDateMerge(for date: Date?) -> CaptureDateMerge {
+        guard let date else { return .remove }
+        return .set(date)
+    }
+
+    /// EXIF `DateTimeOriginal` / `DateTimeDigitized` string (`yyyy:MM:dd HH:mm:ss`, UTC).
+    static func exifDateTimeString(from date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy:MM:dd HH:mm:ss"
+        formatter.timeZone = TimeZone(secondsFromGMT: 0)
+        return formatter.string(from: date)
     }
 
     /// Build the EXIF GPS top-level dictionary value for the given `CLLocation`.
@@ -179,6 +258,8 @@ private extension PlatformImageEXIF {
     /// `nil`, uses `PlatformImageEXIFConfig.current.defaultWriteFormat` and
     /// falls back to JPEG on HEIC encode failure.
     func write(gpsMerge: GPSMerge,
+               captureDateMerge: CaptureDateMerge,
+               orientationWrite: OrientationWrite,
                stripDictionaries: [CFString],
                format: ImageFormat?) -> PlatformImage? {
         guard let source = sourceData() else { return nil }
@@ -186,6 +267,8 @@ private extension PlatformImageEXIF {
         if let bytes = Self.encode(source: source,
                                    format: primary,
                                    gpsMerge: gpsMerge,
+                                   captureDateMerge: captureDateMerge,
+                                   orientationWrite: orientationWrite,
                                    stripDictionaries: stripDictionaries) {
             return PlatformImage(data: bytes)
         }
@@ -194,6 +277,8 @@ private extension PlatformImageEXIF {
             if let bytes = Self.encode(source: source,
                                        format: .jpeg,
                                        gpsMerge: gpsMerge,
+                                       captureDateMerge: captureDateMerge,
+                                       orientationWrite: orientationWrite,
                                        stripDictionaries: stripDictionaries) {
                 return PlatformImage(data: bytes)
             }
@@ -207,6 +292,8 @@ private extension PlatformImageEXIF {
     static func encode(source: Data,
                        format: ImageFormat,
                        gpsMerge: GPSMerge,
+                       captureDateMerge: CaptureDateMerge,
+                       orientationWrite: OrientationWrite,
                        stripDictionaries: [CFString]) -> Data? {
         guard let imageSource = CGImageSourceCreateWithData(source as CFData, nil) else { return nil }
         guard let utiString = uti(for: format) else { return nil }
@@ -226,6 +313,26 @@ private extension PlatformImageEXIF {
         }
         for key in stripDictionaries {
             merge[key as String] = kCFNull
+        }
+        switch orientationWrite {
+        case .noChange: break
+        case .set(let orientation):
+            merge[kCGImagePropertyOrientation as String] = orientation.rawValue
+        }
+        switch captureDateMerge {
+        case .noChange: break
+        case .remove:
+            // Nested `kCFNull` removes EXIF sub-keys when Image I/O merges dictionaries.
+            merge[kCGImagePropertyExifDictionary as String] = [
+                kCGImagePropertyExifDateTimeOriginal as String: kCFNull,
+                kCGImagePropertyExifDateTimeDigitized as String: kCFNull
+            ]
+        case .set(let date):
+            let dateString = exifDateTimeString(from: date)
+            merge[kCGImagePropertyExifDictionary as String] = [
+                kCGImagePropertyExifDateTimeOriginal as String: dateString,
+                kCGImagePropertyExifDateTimeDigitized as String: dateString
+            ]
         }
         CGImageDestinationAddImageFromSource(destination, imageSource, 0, merge as CFDictionary)
         guard CGImageDestinationFinalize(destination) else { return nil }

@@ -157,11 +157,32 @@ extension XCUIElement {
     }
 
     /// Tap to become first responder; uses a coordinate tap when `Form` chrome clips hittability.
+    /// On iOS, secure fields often need a second tap before `typeText` receives keyboard focus (#150 / iOS 26).
+    /// For switches, prefer the trailing thumb region when the control is not hittable.
     func xcuiTapToBecomeFirstResponder() {
+        let center = coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
+        #if os(iOS)
+        if elementType == .secureTextField {
+            center.tap()
+            RunLoop.current.run(until: Date().addingTimeInterval(0.2))
+            center.tap()
+            RunLoop.current.run(until: Date().addingTimeInterval(0.3))
+            return
+        }
+        if elementType == .switch {
+            if isHittable {
+                tap()
+            } else {
+                coordinate(withNormalizedOffset: CGVector(dx: 0.92, dy: 0.5)).tap()
+            }
+            RunLoop.current.run(until: Date().addingTimeInterval(0.25))
+            return
+        }
+        #endif
         if isHittable {
             tap()
         } else {
-            coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
+            center.tap()
         }
         RunLoop.current.run(until: Date().addingTimeInterval(0.2))
     }
