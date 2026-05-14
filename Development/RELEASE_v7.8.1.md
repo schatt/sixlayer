@@ -3,7 +3,7 @@
 **Release Date**: May 14, 2026  
 **Release Type**: Patch  
 **Previous Release**: v7.8.0  
-**Status**: In preparation
+**Status**: Released
 
 ---
 
