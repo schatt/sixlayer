@@ -963,7 +963,6 @@ struct Layer4ContractOnlyView: View {
                 .font(.caption)
                 .foregroundColor(.secondary)
             platformCloudKitSyncStatus_L4(status: .idle)
-                .accessibilityIdentifier("platformCloudKitSyncStatus_L4")
             Text("CloudKit Progress")
                 .font(.caption)
                 .foregroundColor(.secondary)
