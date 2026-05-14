@@ -15,7 +15,8 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
     private nonisolated(unsafe) var app: XCUIApplication!
 
     private static let hostReadyTimeout: TimeInterval = 3.0
-    private static let maxFormScrolls = 6
+    /// Enough swipes for deep SD150 `Form` rows; still bounded (Refs #261).
+    private static let maxFormScrolls = 12
 
     nonisolated override func setUpWithError() throws {
         continueAfterFailure = false
@@ -84,6 +85,13 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
         if direct.waitForExistence(timeout: 0.25) { return direct }
         let pred = NSPredicate(format: "identifier CONTAINS[c] %@ OR label CONTAINS[c] %@", fragment, fragment)
         return app.descendants(matching: .textView).matching(pred).firstMatch
+    }
+
+    private func sd150Switch(matching fragment: String) -> XCUIElement {
+        let direct = app.switches[fragment]
+        if direct.waitForExistence(timeout: 0.3) { return direct }
+        let pred = NSPredicate(format: "identifier CONTAINS[c] %@ OR label CONTAINS[c] %@", fragment, fragment)
+        return app.switches.matching(pred).firstMatch
     }
 
     private func sd150TextField(matching fragment: String) -> XCUIElement {
@@ -159,7 +167,7 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
         let mirrorOff = mirrorElement(identifier: "SD150_Mirror_G")
         scrollUntilHittable(mirrorOff)
         assertBindingMirrorContains("SD150_Mirror_G", "0")
-        let toggle = app.switches["SD150_Toggle"]
+        let toggle = sd150Switch(matching: "SD150_Toggle")
         scrollUntilHittable(toggle)
         XCTAssertTrue(toggle.waitForExistence(timeout: 2.0), "Toggle")
         toggle.xcuiTapToBecomeFirstResponder()
@@ -226,7 +234,7 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
         #if os(iOS) || os(macOS)
         let name = sd150TextField(matching: "SD150_Integration_Name")
         let pass = sd150SecureField(matching: "SD150_Integration_Password")
-        let toggle = app.switches["SD150_Integration_Toggle"]
+        let toggle = sd150Switch(matching: "SD150_Integration_Toggle")
         scrollUntilHittable(name)
         XCTAssertTrue(name.waitForExistence(timeout: 2.0), "Integration name")
         name.xcuiTapToBecomeFirstResponder()
@@ -236,6 +244,11 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
         RunLoop.current.run(until: Date().addingTimeInterval(0.35))
         #endif
         scrollUntilHittable(pass)
+        XCTAssertTrue(pass.waitForExistence(timeout: 2.5), "Integration password field should exist")
+        if !pass.isHittable {
+            app.xcuiSwipeScrollHostsUp()
+            RunLoop.current.run(until: Date().addingTimeInterval(0.25))
+        }
         pass.xcuiTapToBecomeFirstResponder()
         pass.typeText("secret")
         #if os(iOS)
@@ -243,6 +256,7 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
         RunLoop.current.run(until: Date().addingTimeInterval(0.35))
         #endif
         scrollUntilHittable(toggle)
+        XCTAssertTrue(toggle.waitForExistence(timeout: 2.0), "Integration toggle should exist")
         toggle.xcuiTapToBecomeFirstResponder()
         assertBindingMirrorContains("SD150_Mirror_IN", "Pat|secret|1")
         #else
