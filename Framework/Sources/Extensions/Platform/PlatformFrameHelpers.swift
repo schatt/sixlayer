@@ -9,7 +9,7 @@
 
 import SwiftUI
 
-#if os(iOS) || os(tvOS)
+#if os(iOS) || os(tvOS) || os(visionOS)
 import UIKit
 #endif
 
@@ -70,8 +70,14 @@ public enum PlatformFrameHelpers {
         // tvOS: Use UIScreen for full-screen layout bounds.
         let screenSize = UIScreen.main.bounds.size
         #else
-        // visionOS does not expose UIScreen; use a conservative default volume/window size for clamp heuristics.
-        let screenSize = CGSize(width: 1280, height: 720)
+        // visionOS: UIScreen is not a portable sizing API; prefer window scene bounds (#240).
+        let screenSize: CGSize
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+           let window = windowScene.windows.first {
+            screenSize = window.bounds.size
+        } else {
+            screenSize = CGSize(width: 1280, height: 720)
+        }
         #endif
         
         // Use 100% of screen size (these platforms typically use full-screen layouts)

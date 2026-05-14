@@ -10,7 +10,7 @@ import SwiftUI
 #if canImport(AppKit)
 import AppKit
 #endif
-#if canImport(UIKit)
+#if os(iOS) || os(tvOS) || os(watchOS) || os(visionOS)
 import UIKit
 #endif
 
@@ -766,6 +766,10 @@ public struct PlatformImage: @unchecked Sendable {
     #else
     private let _uiImage: UIImage
     #endif
+
+    /// Encoded container bytes when this value was created from \`init?(data:)\`; \`nil\` for bitmap-only construction (CGImage, empty inits, platform image wrappers).
+    /// Used for lossless EXIF reads via \`CGImageSource\` (Issue #274).
+    internal let originalEncodedData: Data?
     
     public init?(data: Data) {
         #if os(macOS)
@@ -775,6 +779,7 @@ public struct PlatformImage: @unchecked Sendable {
         guard let uiImage = UIImage(data: data) else { return nil }
         self._uiImage = uiImage
         #endif
+        self.originalEncodedData = data
     }
     
     public init() {
@@ -783,11 +788,13 @@ public struct PlatformImage: @unchecked Sendable {
         #else
         self._uiImage = UIImage()
         #endif
+        self.originalEncodedData = nil
     }
     
     #if os(macOS)
     public init(nsImage: NSImage) {
         self._nsImage = nsImage
+        self.originalEncodedData = nil
     }
     
     /// Implicit conversion from NSImage to PlatformImage (macOS only)
@@ -808,6 +815,7 @@ public struct PlatformImage: @unchecked Sendable {
     #else
     public init(uiImage: UIImage) {
         self._uiImage = uiImage
+        self.originalEncodedData = nil
     }
     
     /// Implicit conversion from UIImage to PlatformImage at the UIKit boundary
@@ -860,14 +868,14 @@ public struct PlatformImage: @unchecked Sendable {
         let size = NSSize(width: 100, height: 100)
         let nsImage = NSImage(size: size)
         nsImage.lockFocus()
-        NSColor.systemBlue.setFill()
+        Color.systemBlue.setFill()
         NSRect(origin: .zero, size: size).fill()
         nsImage.unlockFocus()
         return PlatformImage(nsImage: nsImage)
         #elseif os(watchOS)
         let size = CGSize(width: 100, height: 100)
         UIGraphicsBeginImageContextWithOptions(size, false, 1)
-        UIColor.blue.setFill()
+        Color.systemBlue.setFill()
         UIRectFill(CGRect(origin: .zero, size: size))
         let uiImage = UIGraphicsGetImageFromCurrentImageContext() ?? UIImage()
         UIGraphicsEndImageContext()
@@ -876,7 +884,7 @@ public struct PlatformImage: @unchecked Sendable {
         let size = CGSize(width: 100, height: 100)
         let renderer = UIGraphicsImageRenderer(size: size)
         let uiImage = renderer.image { context in
-            UIColor.systemBlue.setFill()
+            Color.systemBlue.setFill()
             context.fill(CGRect(origin: .zero, size: size))
         }
         return PlatformImage(uiImage: uiImage)

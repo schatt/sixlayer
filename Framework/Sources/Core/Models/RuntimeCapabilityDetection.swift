@@ -621,24 +621,16 @@ public struct RuntimeCapabilityDetection {
     
     private static func detecttvOSVoiceOverSupport() -> Bool {
         // Check if VoiceOver is available on tvOS
-        #if canImport(UIKit)
         return withMainActorProbe {
             UIAccessibility.isVoiceOverRunning
         } ?? false
-        #else
-        return false
-        #endif
     }
     
     private static func detecttvOSSwitchControlSupport() -> Bool {
         // Check if Switch Control is available on tvOS
-        #if canImport(UIKit)
         return withMainActorProbe {
             UIAccessibility.isSwitchControlRunning
         } ?? false
-        #else
-        return false
-        #endif
     }
     
     private static func detecttvOSAssistiveTouchSupport() -> Bool {
@@ -666,24 +658,16 @@ public struct RuntimeCapabilityDetection {
     
     private static func detectvisionOSVoiceOverSupport() -> Bool {
         // Check if VoiceOver is available on visionOS
-        #if canImport(UIKit)
         return withMainActorProbe {
             UIAccessibility.isVoiceOverRunning
         } ?? false
-        #else
-        return false
-        #endif
     }
     
     private static func detectvisionOSSwitchControlSupport() -> Bool {
         // Check if Switch Control is available on visionOS
-        #if canImport(UIKit)
         return withMainActorProbe {
             UIAccessibility.isSwitchControlRunning
         } ?? false
-        #else
-        return false
-        #endif
     }
     
     private static func detectvisionOSAssistiveTouchSupport() -> Bool {

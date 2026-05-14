@@ -15,9 +15,7 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
     private nonisolated(unsafe) var app: XCUIApplication!
 
     private static let hostReadyTimeout: TimeInterval = 4.0
-    private static let maxFormScrolls = 7
-    /// Extra passes for lazy `Form` / `ScrollView` content that may need bidirectional scrolling (#261).
-    private static let maxMaterializeScrolls = 16
+    private static let maxFormScrolls = 14
 
     nonisolated override func setUpWithError() throws {
         continueAfterFailure = false
@@ -73,151 +71,40 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
         }
     }
 
-    /// Form `StaticText` mirrors can exist in the tree with an invalid activation point; querying
-    /// `isHittable` then fails the run (#261). Use existence-only scrolling for those anchors.
-    private func scrollUntilExists(_ element: XCUIElement) {
-        for i in 0..<Self.maxMaterializeScrolls {
-            if element.waitForExistence(timeout: 0.45) { return }
-            if i % 2 == 0 {
-                app.xcuiSwipeScrollHostsUp()
-            } else {
-                app.xcuiSwipeScrollHostsDown()
-            }
-        }
+    /// Resolves a secure field by accessibility label/id or by generated `SixLayer.main.ui…` identifier fragment (iOS Form).
+    private func sd150SecureField(matching fragment: String) -> XCUIElement {
+        let direct = app.secureTextFields[fragment]
+        if direct.waitForExistence(timeout: 0.25) { return direct }
+        let pred = NSPredicate(format: "identifier CONTAINS[c] %@ OR label CONTAINS[c] %@", fragment, fragment)
+        return app.descendants(matching: .secureTextField).matching(pred).firstMatch
     }
 
-    /// `XCUIElementTypeQueryProvider` subscript matching uses accessibility identifiers; SixLayer labels end with `.` (Issue #169).
-    private func sd150TextField(labelContains: String) -> XCUIElement {
-        let byLabel = NSPredicate(format: "label CONTAINS[c] %@", labelContains)
-        let slug = labelContains.lowercased().replacingOccurrences(of: "_", with: "-")
-        let byId = NSPredicate(format: "identifier CONTAINS[c] %@", slug)
-        return app.textFields.matching(NSCompoundPredicate(orPredicateWithSubpredicates: [byLabel, byId])).firstMatch
+    private func sd150TextView(matching fragment: String) -> XCUIElement {
+        let direct = app.textViews[fragment]
+        if direct.waitForExistence(timeout: 0.25) { return direct }
+        let pred = NSPredicate(format: "identifier CONTAINS[c] %@ OR label CONTAINS[c] %@", fragment, fragment)
+        return app.descendants(matching: .textView).matching(pred).firstMatch
     }
 
-    private func sd150SecureField(labelContains: String) -> XCUIElement {
-        if labelContains == "SD150_SecureField" {
-            // Form may back the field with `Table` or `ScrollView` depending on OS; probe a few roots
-            // before falling back to the app-wide typed query (#261).
-            let candidates = [
-                app.tables.firstMatch.secureTextFields.firstMatch,
-                app.scrollViews.firstMatch.secureTextFields.firstMatch,
-                app.secureTextFields.firstMatch
-            ]
-            for candidate in candidates {
-                if candidate.waitForExistence(timeout: 0.35) { return candidate }
-            }
-            return app.secureTextFields.firstMatch
-        }
-        let slugHyphen = labelContains.lowercased().replacingOccurrences(of: "_", with: "-")
-        let slugCompact = labelContains.lowercased().replacingOccurrences(of: "_", with: "")
-        let byLabel = NSPredicate(format: "label CONTAINS[c] %@", labelContains)
-        let byId = NSCompoundPredicate(orPredicateWithSubpredicates: [
-            NSPredicate(format: "identifier CONTAINS[c] %@", slugHyphen),
-            NSPredicate(format: "identifier CONTAINS[c] %@", slugCompact)
-        ])
-        let matchA11y = NSCompoundPredicate(orPredicateWithSubpredicates: [byLabel, byId])
-
-        // `platformForm` sections: resolve inside the section row (typed queries miss nested SwiftUI fields).
-        let sectionHeader: String
-        if labelContains.contains("Integration") {
-            sectionHeader = "SD150 Integration"
-        } else {
-            sectionHeader = "SD150 Secure"
-        }
-        let headerPred = NSPredicate(format: "label == %@", sectionHeader)
-        if app.staticTexts[sectionHeader].waitForExistence(timeout: 1.2), app.tables.firstMatch.waitForExistence(timeout: 0.5) {
-            let cell = app.tables.firstMatch.cells.containing(headerPred).firstMatch
-            let scoped = cell.descendants(matching: .secureTextField).matching(matchA11y).firstMatch
-            if scoped.waitForExistence(timeout: 0.6) { return scoped }
-            let scopedTF = cell.descendants(matching: .textField).matching(matchA11y).firstMatch
-            if scopedTF.waitForExistence(timeout: 0.6) { return scopedTF }
-            let anySecure = cell.secureTextFields.firstMatch
-            if anySecure.waitForExistence(timeout: 0.4) { return anySecure }
-        }
-
-        let isSecureOrPlainText = NSCompoundPredicate(orPredicateWithSubpredicates: [
-            NSPredicate(format: "elementType == %d", XCUIElement.ElementType.secureTextField.rawValue),
-            NSPredicate(format: "elementType == %d", XCUIElement.ElementType.textField.rawValue)
-        ])
-        let combined = NSCompoundPredicate(andPredicateWithSubpredicates: [isSecureOrPlainText, matchA11y])
-        return app.descendants(matching: .any).matching(combined).firstMatch
+    private func sd150TextField(matching fragment: String) -> XCUIElement {
+        let direct = app.textFields[fragment]
+        if direct.waitForExistence(timeout: 0.25) { return direct }
+        let pred = NSPredicate(format: "identifier CONTAINS[c] %@ OR label CONTAINS[c] %@", fragment, fragment)
+        return app.descendants(matching: .textField).matching(pred).firstMatch
     }
-
-    private func sd150Switch(labelContains: String) -> XCUIElement {
-        let byLabel = NSPredicate(format: "label CONTAINS[c] %@", labelContains)
-        let slug = labelContains.lowercased().replacingOccurrences(of: "_", with: "-")
-        let byId = NSPredicate(format: "identifier CONTAINS[c] %@", slug)
-        return app.switches.matching(NSCompoundPredicate(orPredicateWithSubpredicates: [byLabel, byId])).firstMatch
-    }
-
-    private func sd150TextView(labelContains: String) -> XCUIElement {
-        let byLabel = NSPredicate(format: "label CONTAINS[c] %@", labelContains)
-        let slug = labelContains.lowercased().replacingOccurrences(of: "_", with: "-")
-        let byId = NSPredicate(format: "identifier CONTAINS[c] %@", slug)
-        return app.textViews.matching(NSCompoundPredicate(orPredicateWithSubpredicates: [byLabel, byId])).firstMatch
-    }
-
-    /// Single `.tap()` often fails to make secure fields / editors first responder under parallel UI runs (#261).
-    private func tapToFocusForTyping(_ element: XCUIElement) {
-        scrollUntilExists(element)
-        let point = element.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
-        point.tap()
-        RunLoop.current.run(until: Date().addingTimeInterval(0.2))
-        #if os(iOS)
-        let isSecureLike = element.elementType == .secureTextField
-            || (element.elementType == .textField && element.identifier.lowercased().contains("securefield"))
-        if isSecureLike {
-            point.tap()
-            RunLoop.current.run(until: Date().addingTimeInterval(0.15))
-        }
-        #endif
-    }
-
-    #if os(iOS)
-    private func dismissKeyboardIfPresent() {
-        guard app.keyboards.count > 0 else { return }
-        let kb = app.keyboards.firstMatch
-        let hide = kb.buttons["Hide keyboard"]
-        if hide.waitForExistence(timeout: 0.35) {
-            hide.tap()
-        } else if kb.buttons["Done"].waitForExistence(timeout: 0.25) {
-            kb.buttons["Done"].tap()
-        } else {
-            let nav = app.navigationBars["SD150 Standalone"].firstMatch
-            if nav.waitForExistence(timeout: 0.8) {
-                nav.coordinate(withNormalizedOffset: CGVector(dx: 0.92, dy: 0.5)).tap()
-            }
-        }
-        let deadline = Date().addingTimeInterval(2.5)
-        while Date() < deadline, app.keyboards.count > 0 {
-            RunLoop.current.run(until: Date().addingTimeInterval(0.12))
-        }
-    }
-    #endif
 
     private func assertBindingMirrorContains(
         _ mirrorId: String,
         _ substring: String,
-        mirrorExistenceTimeout: TimeInterval = 2.5,
         file: StaticString = #filePath,
         line: UInt = #line
     ) {
-        let byId = mirrorElement(identifier: mirrorId)
-        let byLabel = app.staticTexts.matching(NSPredicate(format: "label CONTAINS[c] %@", mirrorId)).firstMatch
-        let byAnyLabel = app.descendants(matching: .any).matching(NSPredicate(format: "label CONTAINS[c] %@", mirrorId)).firstMatch
-        let m: XCUIElement
-        if byId.waitForExistence(timeout: min(1.2, mirrorExistenceTimeout)) {
-            m = byId
-        } else if byLabel.waitForExistence(timeout: min(1.0, mirrorExistenceTimeout)) {
-            m = byLabel
-        } else {
-            m = byAnyLabel
-        }
-        XCTAssertTrue(m.waitForExistence(timeout: mirrorExistenceTimeout), "Mirror \(mirrorId) should exist", file: file, line: line)
-        let raw = (m.value as? String).flatMap { $0.isEmpty ? nil : $0 } ?? m.label
+        let m = mirrorElement(identifier: mirrorId)
+        XCTAssertTrue(m.waitForExistence(timeout: 2.5), "Mirror \(mirrorId) should exist", file: file, line: line)
+        let text = m.label
         XCTAssertTrue(
-            raw.contains(substring),
-            "Mirror \(mirrorId) should contain '\(substring)'; got label/value: '\(raw)'",
+            text.contains(substring),
+            "Mirror \(mirrorId) should contain '\(substring)'; got label: '\(text)'",
             file: file,
             line: line
         )
@@ -227,10 +114,10 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
 
     func test150_platformTextField_typingUpdatesBinding() throws {
         #if os(iOS) || os(macOS)
-        let field = sd150TextField(labelContains: "SD150_TextField")
+        let field = app.textFields["SD150_TextField"]
         scrollUntilHittable(field)
         XCTAssertTrue(field.waitForExistence(timeout: 2.0), "Text field")
-        field.tap()
+        field.xcuiTapToBecomeFirstResponder()
         field.typeText("Hello150")
         assertBindingMirrorContains("SD150_Mirror_T", "Hello150")
         #if os(iOS)
@@ -243,10 +130,10 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
 
     func test150_platformTextField_verticalAxis_typingUpdatesBinding() throws {
         #if os(iOS) || os(macOS)
-        let field = sd150TextField(labelContains: "SD150_AxisField")
+        let field = app.textFields["SD150_AxisField"]
         scrollUntilHittable(field)
         XCTAssertTrue(field.waitForExistence(timeout: 2.0), "Axis text field")
-        field.tap()
+        field.xcuiTapToBecomeFirstResponder()
         field.typeText("AxisX")
         assertBindingMirrorContains("SD150_Mirror_A", "AxisX")
         #else
@@ -256,36 +143,12 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
 
     func test150_platformSecureField_typingUpdatesBinding() throws {
         #if os(iOS) || os(macOS)
-        // Scroll the secure section into view first: SwiftUI Form rows (and SecureField a11y nodes)
-        // may not exist until the section is materialized (#261); mirror S is in the same section.
-        let mirrorS = mirrorElement(identifier: "SD150_Mirror_S")
-        scrollUntilExists(mirrorS)
-        XCTAssertTrue(mirrorS.waitForExistence(timeout: 2.0), "Binding mirror for secure section should exist")
-        var field = sd150SecureField(labelContains: "SD150_SecureField")
-        for i in 0..<Self.maxMaterializeScrolls {
-            if field.waitForExistence(timeout: 0.4) { break }
-            if i % 2 == 0 {
-                app.xcuiSwipeScrollHostsUp()
-            } else {
-                app.xcuiSwipeScrollHostsDown()
-            }
-            field = sd150SecureField(labelContains: "SD150_SecureField")
-        }
+        let field = sd150SecureField(matching: "SD150_SecureField")
+        scrollUntilHittable(field)
         XCTAssertTrue(field.waitForExistence(timeout: 2.0), "Secure field")
-        tapToFocusForTyping(field)
-        #if os(iOS)
-        let kbDeadline = Date().addingTimeInterval(4)
-        while Date() < kbDeadline, app.keyboards.count == 0 {
-            field.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
-            RunLoop.current.run(until: Date().addingTimeInterval(0.18))
-        }
-        #endif
+        field.xcuiTapToBecomeFirstResponder()
         field.typeText("hunter2")
-        #if os(iOS)
-        dismissKeyboardIfPresent()
-        #endif
-        scrollUntilExists(mirrorElement(identifier: "SD150_Mirror_S"))
-        assertBindingMirrorContains("SD150_Mirror_S", "hunter2", mirrorExistenceTimeout: 4)
+        assertBindingMirrorContains("SD150_Mirror_S", "hunter2")
         #else
         throw XCTSkip("Issue #150 host UI tests require iOS or macOS TestApp")
         #endif
@@ -296,13 +159,10 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
         let mirrorOff = mirrorElement(identifier: "SD150_Mirror_G")
         scrollUntilHittable(mirrorOff)
         assertBindingMirrorContains("SD150_Mirror_G", "0")
-        let toggle = sd150Switch(labelContains: "SD150_Toggle")
+        let toggle = app.switches["SD150_Toggle"]
         scrollUntilHittable(toggle)
         XCTAssertTrue(toggle.waitForExistence(timeout: 2.0), "Toggle")
-        #if os(iOS)
-        dismissKeyboardIfPresent()
-        #endif
-        toggle.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
+        toggle.xcuiTapToBecomeFirstResponder()
         assertBindingMirrorContains("SD150_Mirror_G", "1")
         #else
         throw XCTSkip("Issue #150 host UI tests require iOS or macOS TestApp")
@@ -311,11 +171,11 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
 
     func test150_platformTextEditor_prefillAndAdditionalTyping() throws {
         #if os(iOS) || os(macOS)
-        let editor = sd150TextView(labelContains: "SD150_EditorPrompt")
+        let editor = sd150TextView(matching: "SD150_EditorPrompt")
         scrollUntilHittable(editor)
         XCTAssertTrue(editor.waitForExistence(timeout: 2.5), "Text editor")
         assertBindingMirrorContains("SD150_Mirror_E", "PrefillSeed")
-        tapToFocusForTyping(editor)
+        editor.xcuiTapToBecomeFirstResponder()
         editor.typeText("More")
         assertBindingMirrorContains("SD150_Mirror_E", "PrefillSeedMore")
         #else
@@ -326,10 +186,10 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
     func test150_platformTextField_longInputMirror() throws {
         #if os(iOS) || os(macOS)
         let long = String(repeating: "Z", count: 220)
-        let field = sd150TextField(labelContains: "SD150_LongField")
+        let field = app.textFields["SD150_LongField"]
         scrollUntilHittable(field)
         XCTAssertTrue(field.waitForExistence(timeout: 2.0), "Long field")
-        field.tap()
+        field.xcuiTapToBecomeFirstResponder()
         field.typeText(long)
         assertBindingMirrorContains("SD150_Mirror_L", String(repeating: "Z", count: 32))
         assertBindingMirrorContains("SD150_Mirror_L", "ZZZZ")
@@ -340,9 +200,9 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
 
     func test150_rapidSequentialTyping_appends() throws {
         #if os(iOS) || os(macOS)
-        let field = sd150TextField(labelContains: "SD150_TextField")
+        let field = app.textFields["SD150_TextField"]
         scrollUntilHittable(field)
-        field.tap()
+        field.xcuiTapToBecomeFirstResponder()
         field.typeText("a")
         field.typeText("b")
         assertBindingMirrorContains("SD150_Mirror_T", "ab")
@@ -353,29 +213,26 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
 
     func test150_platformForm_integrationMultipleControls() throws {
         #if os(iOS) || os(macOS)
-        let name = sd150TextField(labelContains: "SD150_Integration_Name")
-        let pass = sd150SecureField(labelContains: "SD150_Integration_Password")
-        let toggle = sd150Switch(labelContains: "SD150_Integration_Toggle")
-        XCTAssertTrue(name.waitForExistence(timeout: 2.0), "Integration name")
+        let name = sd150TextField(matching: "SD150_Integration_Name")
+        let pass = sd150SecureField(matching: "SD150_Integration_Password")
+        let toggle = app.switches["SD150_Integration_Toggle"]
         scrollUntilHittable(name)
-        tapToFocusForTyping(name)
+        XCTAssertTrue(name.waitForExistence(timeout: 2.0), "Integration name")
+        name.xcuiTapToBecomeFirstResponder()
         name.typeText("Pat")
         #if os(iOS)
-        dismissKeyboardIfPresent()
+        app.xcuiDismissSoftwareKeyboardIfPresent()
+        RunLoop.current.run(until: Date().addingTimeInterval(0.35))
         #endif
-        XCTAssertTrue(pass.waitForExistence(timeout: 2.0), "Integration password")
         scrollUntilHittable(pass)
-        tapToFocusForTyping(pass)
+        pass.xcuiTapToBecomeFirstResponder()
         pass.typeText("secret")
         #if os(iOS)
-        dismissKeyboardIfPresent()
+        app.xcuiDismissSoftwareKeyboardIfPresent()
+        RunLoop.current.run(until: Date().addingTimeInterval(0.35))
         #endif
         scrollUntilHittable(toggle)
-        XCTAssertTrue(toggle.waitForExistence(timeout: 2.0), "Integration toggle")
-        #if os(iOS)
-        dismissKeyboardIfPresent()
-        #endif
-        toggle.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
+        toggle.xcuiTapToBecomeFirstResponder()
         assertBindingMirrorContains("SD150_Mirror_IN", "Pat|secret|1")
         #else
         throw XCTSkip("Issue #150 host UI tests require iOS or macOS TestApp")

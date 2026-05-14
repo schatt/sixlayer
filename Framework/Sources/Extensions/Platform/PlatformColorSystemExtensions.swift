@@ -1,5 +1,5 @@
 import SwiftUI
-#if canImport(UIKit)
+#if os(iOS) || os(tvOS) || os(visionOS)
 import UIKit
 #endif
 #if canImport(AppKit)
@@ -112,7 +112,7 @@ public extension Color {
 
     /// Direct system background color
     /// iOS: systemBackground; macOS: windowBackgroundColor
-    /// watchOS: `UIColor.systemBackground` is not in the same shape as iOS (see ShapeStyleSystem / #237);
+    /// watchOS: `UIColor.systemBackground` is not in the same shape as iOS (see `ShapeStyleSystem`; tvOS matrix #237, platform-color policy #276);
     /// use a dark canvas so `platformLabel` (`.primary` foreground) contrasts with `platformBackground`.
     static var systemBackground: Color {
         #if os(iOS) || os(visionOS)
@@ -1018,7 +1018,7 @@ public extension Color {
     /// Cross-platform setFill method for graphics contexts
     /// - Parameter context: The graphics context to set fill color on
     func setFill(on context: CGContext) {
-        #if os(iOS)
+        #if os(iOS) || os(tvOS) || os(watchOS) || os(visionOS)
         let uiColor = UIColor(self)
         context.setFillColor(uiColor.cgColor)
         #elseif os(macOS)
@@ -1030,7 +1030,7 @@ public extension Color {
     /// Cross-platform setFill method that works on any graphics context
     /// Automatically handles platform differences internally
     func setFill() {
-        #if os(iOS)
+        #if os(iOS) || os(tvOS) || os(watchOS) || os(visionOS)
         let uiColor = UIColor(self)
         uiColor.setFill()
         #elseif os(macOS)
@@ -1041,7 +1041,7 @@ public extension Color {
 
     /// Cross-platform setStroke method for outlines
     func setStroke() {
-        #if os(iOS)
+        #if os(iOS) || os(tvOS) || os(watchOS) || os(visionOS)
         let uiColor = UIColor(self)
         uiColor.setStroke()
         #elseif os(macOS)
@@ -1053,9 +1053,9 @@ public extension Color {
     // MARK: - Platform-Specific Color Access
 
     /// Platform-specific color accessor
-    /// Returns UIColor on iOS, NSColor on macOS
+    /// Returns `UIColor` on UIKit-based platforms, `NSColor` on macOS
     var platformColor: Any {
-        #if os(iOS)
+        #if os(iOS) || os(tvOS) || os(watchOS) || os(visionOS)
         return UIColor(self)
         #elseif os(macOS)
         return NSColor(self)

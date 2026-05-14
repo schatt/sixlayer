@@ -8,6 +8,14 @@
 import SwiftUI
 import Foundation
 
+#if os(iOS) || os(tvOS) || os(visionOS)
+import UIKit
+#endif
+
+#if os(watchOS)
+import WatchKit
+#endif
+
 // MARK: - Layer 2: Layout Decision Engine
 // This layer analyzes content and makes layout decisions based on content characteristics
 // It is CONTENT-AWARE but NOT platform-aware (platform decisions happen in Layer 3)
@@ -268,8 +276,27 @@ public struct DeviceCapabilities {
     @MainActor
     public init() {
         #if os(iOS)
-        self.screenSize = UIScreen.main.bounds.size
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+           let window = windowScene.windows.first {
+            self.screenSize = window.bounds.size
+        } else {
+            self.screenSize = UIScreen.main.bounds.size
+        }
         self.orientation = DeviceOrientation.fromUIDeviceOrientation(UIDevice.current.orientation)
+        #elseif os(tvOS)
+        self.screenSize = UIScreen.main.bounds.size
+        self.orientation = .landscape
+        #elseif os(visionOS)
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+           let window = windowScene.windows.first {
+            self.screenSize = window.bounds.size
+        } else {
+            self.screenSize = CGSize(width: 1280, height: 720)
+        }
+        self.orientation = .unknown
+        #elseif os(watchOS)
+        self.screenSize = WKInterfaceDevice.current().screenBounds.size
+        self.orientation = .portrait
         #else
         self.screenSize = CGSize(width: 1024, height: 768)
         self.orientation = .portrait

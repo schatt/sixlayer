@@ -24,49 +24,20 @@ public struct ShapeStyleSystem {
         public static let success = Color.green
         public static let info = Color.blue
         
-        // Platform-specific colors
-        // UIColor dynamic semantic colors exist on iOS; tvOS/watchOS/visionOS import UIKit but do not
-        // expose the same UIColor APIs — use the shared fallback branch below for those OSes (#237).
-        #if os(iOS) && canImport(UIKit)
-        public static let systemBackground = Color(UIColor.systemBackground)
-        public static let secondarySystemBackground = Color(UIColor.secondarySystemBackground)
-        public static let tertiarySystemBackground = Color(UIColor.tertiarySystemBackground)
-        public static let systemGroupedBackground = Color(UIColor.systemGroupedBackground)
-        public static let secondarySystemGroupedBackground = Color(UIColor.secondarySystemGroupedBackground)
-        public static let tertiarySystemGroupedBackground = Color(UIColor.tertiarySystemGroupedBackground)
-        public static let label = Color(UIColor.label)
-        public static let secondaryLabel = Color(UIColor.secondaryLabel)
-        public static let tertiaryLabel = Color(UIColor.tertiaryLabel)
-        public static let quaternaryLabel = Color(UIColor.quaternaryLabel)
-        public static let separator = Color(UIColor.separator)
-        public static let opaqueSeparator = Color(UIColor.opaqueSeparator)
-        #elseif os(macOS)
-        public static let systemBackground = Color(.windowBackgroundColor)
-        public static let secondarySystemBackground = Color(.controlBackgroundColor)
-        public static let tertiarySystemBackground = Color(.textBackgroundColor)
-        public static let systemGroupedBackground = Color(.controlBackgroundColor)
-        public static let secondarySystemGroupedBackground = Color(.textBackgroundColor)
-        public static let tertiarySystemGroupedBackground = Color(.windowBackgroundColor)
-        public static let label = Color(.labelColor)
-        public static let secondaryLabel = Color(.secondaryLabelColor)
-        public static let tertiaryLabel = Color(.tertiaryLabelColor)
-        public static let quaternaryLabel = Color(.quaternaryLabelColor)
-        public static let separator = Color(.separatorColor)
-        public static let opaqueSeparator = Color(.separatorColor)
-        #else
-        public static let systemBackground = Color.blue
-        public static let secondarySystemBackground = Color.gray
-        public static let tertiarySystemBackground = Color.gray
-        public static let systemGroupedBackground = Color.blue
-        public static let secondarySystemGroupedBackground = Color.gray
-        public static let tertiarySystemGroupedBackground = Color.gray
-        public static let label = Color.primary
-        public static let secondaryLabel = Color.secondary
-        public static let tertiaryLabel = Color.secondary
-        public static let quaternaryLabel = Color.secondary
-        public static let separator = Color.gray
-        public static let opaqueSeparator = Color.gray
-        #endif
+        // Semantic system colors: delegate to `Color` platform extensions (PlatformColorSystemExtensions).
+        // Single source of truth per AI_AGENT_QUICK_REFERENCE; policy / hygiene tracked in GitHub #276.
+        public static let systemBackground = Color.systemBackground
+        public static let secondarySystemBackground = Color.platformSecondaryBackground
+        public static let tertiarySystemBackground = Color.platformTertiaryBackground
+        public static let systemGroupedBackground = Color.platformGroupedBackground
+        public static let secondarySystemGroupedBackground = Color.secondaryGroupedBackgroundColor
+        public static let tertiarySystemGroupedBackground = Color.tertiaryGroupedBackgroundColor
+        public static let label = Color.platformLabel
+        public static let secondaryLabel = Color.platformSecondaryLabel
+        public static let tertiaryLabel = Color.platformTertiaryLabel
+        public static let quaternaryLabel = Color.platformQuaternaryLabel
+        public static let separator = Color.platformSeparator
+        public static let opaqueSeparator = Color.platformOpaqueSeparator
     }
     
     // MARK: - Gradient Support

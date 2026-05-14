@@ -16,7 +16,7 @@ import Foundation
 #if canImport(AppKit)
 import AppKit
 #endif
-#if canImport(UIKit)
+#if os(iOS)
 import UIKit
 #endif
 

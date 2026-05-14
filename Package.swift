@@ -1,5 +1,5 @@
 // swift-tools-version: 6.0
-// SixLayerFramework v7.7.2 - Patch: LocationService threading and DynamicImageField state fixes (#258, #265)
+// SixLayerFramework v7.8.0 - Minor: presentation profiles/collections (#277), list card layout (#272), draft key (#273), PlatformImage EXIF (#275), system actions (#256)
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription

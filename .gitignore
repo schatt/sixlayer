@@ -50,5 +50,5 @@ test_performance_*.json
 slow_test_suites.json
 test_output.log
 
-# Local agent / IDE logs
+# Local agent / CLI full logs (tee targets); not for version control
 .logs/

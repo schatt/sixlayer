@@ -47,7 +47,7 @@ open class Layer4APITestHelpers {
         let size = CGSize(width: 200, height: 200)
         let renderer = UIGraphicsImageRenderer(size: size)
         return renderer.image { context in
-            UIColor.blue.setFill()
+            Color.systemBlue.setFill()
             context.fill(CGRect(origin: .zero, size: size))
         }
     }
@@ -59,7 +59,8 @@ open class Layer4APITestHelpers {
         let size = NSSize(width: 200, height: 200)
         let nsImage = NSImage(size: size)
         nsImage.lockFocus()
-        NSColor.blue.drawSwatch(in: NSRect(origin: .zero, size: size))
+        Color.systemBlue.setFill()
+        NSRect(origin: .zero, size: size).fill()
         nsImage.unlockFocus()
         return nsImage
     }

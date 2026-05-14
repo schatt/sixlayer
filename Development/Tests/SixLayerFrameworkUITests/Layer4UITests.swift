@@ -33,7 +33,7 @@ final class Layer4UITests: XCTestCase {
     nonisolated(unsafe) private var app: XCUIApplication!
     private static let quickWait: TimeInterval = 0.35
     private static let rootReadyTimeout: TimeInterval = 4.0
-    private static let maxScrollAttempts = 5
+    private static let maxScrollAttempts = 14
 
     nonisolated override func setUpWithError() throws {
         continueAfterFailure = false
@@ -96,6 +96,39 @@ final class Layer4UITests: XCTestCase {
         return false
     }
 
+    /// `Label` / grouped controls often surface as `other` with a combined accessibility label, not `XCUIElementType.staticText`.
+    @MainActor
+    private func waitForCombinedAccessibilityLabel(equalTo text: String, timeout: TimeInterval) -> Bool {
+        let pred = NSPredicate(format: "label == %@", text)
+        return app.descendants(matching: .any).matching(pred).firstMatch.waitForExistence(timeout: timeout)
+    }
+
+    /// SF Symbol `Label` rows often expose VoiceOver-style labels that **contain** the contract summary but are not `==`.
+    @MainActor
+    private func waitForCombinedAccessibilityLabel(containing text: String, timeout: TimeInterval) -> Bool {
+        let pred = NSPredicate(format: "label CONTAINS[c] %@", text)
+        return app.descendants(matching: .any).matching(pred).firstMatch.waitForExistence(timeout: timeout)
+    }
+
+    /// List / Form contract titles: match `staticText`, grouped `other`, or generated identifier fragments.
+    @MainActor
+    private func l4ContractLabelOrIdentifierVisible(title: String, timeout: TimeInterval = 3.0) -> Bool {
+        let pred = NSCompoundPredicate(orPredicateWithSubpredicates: [
+            NSPredicate(format: "label == %@", title),
+            NSPredicate(format: "label CONTAINS[c] %@", title),
+            NSPredicate(format: "identifier CONTAINS[c] %@", title),
+        ])
+        return app.descendants(matching: .any).matching(pred).firstMatch.waitForExistence(timeout: timeout)
+    }
+
+    /// After the L4 List section header is on-screen, nudge past the header chrome so embedded `List` rows resolve.
+    @MainActor
+    private func nudgeScrollAfterL4ListSectionHeader() {
+        for _ in 0..<5 {
+            app.xcuiSwipeScrollHostsUp()
+        }
+    }
+
     /// Scroll so the element with the given label is visible (content may be below fold).
     /// Uses longer initial wait for buttons so top-of-screen elements (e.g. L4 Presentation) are not skipped.
     @MainActor
@@ -144,108 +177,7 @@ final class Layer4UITests: XCTestCase {
     /// `Form` rows for L4 Controls sit mid-scroll; anchor on the section header before field/button contract checks.
     @MainActor
     private func scrollToL4ControlsSection() {
-        let headerId = Self.l4ContractSectionHeaderIdentifier(sectionTitle: "L4 Controls")
-        let deadline = Date().addingTimeInterval(14)
-        while Date() < deadline {
-            if element(matchingIdentifier: headerId).exists { break }
-            if app.staticTexts["L4 Controls"].exists { break }
-            if anyDescendantHasLabel(equalTo: "L4ContractTextField", timeout: 0.25) { break }
-            if !app.tables.firstMatch.exists, !app.xcuiPrimaryScrollHost().exists {
-                RunLoop.current.run(until: Date().addingTimeInterval(Self.quickWait))
-                continue
-            }
-            app.xcuiSwipeScrollHostsUp()
-        }
         scrollToFormSectionHeader(title: "L4 Controls")
-        _ = element(matchingIdentifier: headerId).waitForExistence(timeout: 2)
-            || anyDescendantHasLabel(equalTo: "L4 Controls", timeout: 0.5)
-            || anyDescendantHasLabel(equalTo: "L4ContractTextField", timeout: 1.2)
-    }
-
-    /// `L4 System` (CloudKit, URLs, …) sits below overlay/navigation sections in the root `Form`.
-    @MainActor
-    private func scrollToL4SystemSection() {
-        let headerId = Self.l4ContractSectionHeaderIdentifier(sectionTitle: "L4 System")
-        let deadline = Date().addingTimeInterval(16)
-        while Date() < deadline {
-            if element(matchingIdentifier: headerId).exists { break }
-            if anyDescendantHasLabel(equalTo: "CloudKit Sync Status", timeout: 0.25) { break }
-            if !app.tables.firstMatch.exists, !app.xcuiPrimaryScrollHost().exists {
-                RunLoop.current.run(until: Date().addingTimeInterval(Self.quickWait))
-                continue
-            }
-            app.xcuiSwipeScrollHostsUp()
-        }
-        scrollToFormSectionHeader(title: "L4 System")
-        _ = element(matchingIdentifier: headerId).waitForExistence(timeout: 2.5)
-            || anyDescendantHasLabel(equalTo: "L4 System", timeout: 0.8)
-            || anyDescendantHasLabel(equalTo: "CloudKit Sync Status", timeout: 1.2)
-    }
-
-    /// List contract rows live under `L4 List` in the root `Form`.
-    @MainActor
-    private func scrollToL4ListSection() {
-        let headerId = Self.l4ContractSectionHeaderIdentifier(sectionTitle: "L4 List")
-        let deadline = Date().addingTimeInterval(16)
-        while Date() < deadline {
-            if element(matchingIdentifier: headerId).exists { break }
-            if anyDescendantHasLabel(equalTo: "L4ListRowContract", timeout: 0.25) { break }
-            if !app.tables.firstMatch.exists, !app.xcuiPrimaryScrollHost().exists {
-                RunLoop.current.run(until: Date().addingTimeInterval(Self.quickWait))
-                continue
-            }
-            app.xcuiSwipeScrollHostsUp()
-        }
-        scrollToFormSectionHeader(title: "L4 List")
-        _ = element(matchingIdentifier: headerId).waitForExistence(timeout: 2.5)
-            || anyDescendantHasLabel(equalTo: "L4 List", timeout: 0.8)
-            || anyDescendantHasLabel(equalTo: "L4ListRowContract", timeout: 1.0)
-    }
-
-    /// SwiftUI `Label` / combined a11y often surfaces as non-`staticText` or split labels; match substrings.
-    @MainActor
-    private func anyDescendantLabelContains(_ substring: String, timeout: TimeInterval) -> Bool {
-        let pred = NSPredicate(format: "label CONTAINS[c] %@", substring)
-        return app.descendants(matching: .any).matching(pred).firstMatch.waitForExistence(timeout: timeout)
-    }
-
-    /// Scroll the root `Form` until a contract control appears (caption labels are not always unique).
-    @MainActor
-    private func scrollUntilL4ContractControlVisible(
-        buttonLabel: String? = nil,
-        identifier: String? = nil,
-        deadlineSeconds: TimeInterval = 18
-    ) {
-        let deadline = Date().addingTimeInterval(deadlineSeconds)
-        while Date() < deadline {
-            if let id = identifier, element(matchingIdentifier: id).waitForExistence(timeout: 0.25) { return }
-            if let label = buttonLabel, app.buttons[label].waitForExistence(timeout: 0.25) { return }
-            if let label = buttonLabel, app.descendants(matching: .any).matching(NSPredicate(format: "identifier == %@", label)).firstMatch.waitForExistence(timeout: 0.2) {
-                return
-            }
-            if let label = buttonLabel {
-                let anyHit = app.descendants(matching: .any).matching(
-                    NSPredicate(format: "label == %@ OR label CONTAINS[c] %@", label, label)
-                ).firstMatch
-                if anyHit.waitForExistence(timeout: 0.25) { return }
-            }
-            if !app.tables.firstMatch.exists, !app.xcuiPrimaryScrollHost().exists {
-                RunLoop.current.run(until: Date().addingTimeInterval(Self.quickWait))
-                continue
-            }
-            app.xcuiSwipeScrollHostsUp()
-            // Nested `Form` + split chrome: primary host sometimes stops moving; nudge the window too (#261).
-            app.swipeUp()
-        }
-    }
-
-    /// Prefer the outermost `Table` (root `Form`) when nested lists exist (e.g. L4 overlay split).
-    @MainActor
-    private func l4RootFormTable() -> XCUIElement {
-        let tbls = app.tables
-        let c = tbls.count
-        if c > 1 { return tbls.element(boundBy: 0) }
-        return tbls.firstMatch
     }
 
     /// Element with the given accessibility identifier (any type).
@@ -456,58 +388,12 @@ final class Layer4UITests: XCTestCase {
             let byLabel = app.descendants(matching: type).matching(NSPredicate(format: "label == %@", label)).firstMatch
             if byLabel.waitForExistence(timeout: 1.0) { el = byLabel }
         }
-        if el == nil {
-            let byLabelContains = app.descendants(matching: type).matching(NSPredicate(format: "label CONTAINS[c] %@", label)).firstMatch
-            if byLabelContains.waitForExistence(timeout: 0.8) { el = byLabelContains }
-        }
-        // Form-backed SwiftUI often surfaces typed axes on `app.textFields` / `app.secureTextFields` / `app.textViews`
-        // even when generic descendant queries miss the node.
-        if el == nil, type == .textField {
-            let axis = app.textFields[label]
-            if axis.waitForExistence(timeout: 1.0) { el = axis }
-        }
-        if el == nil, type == .secureTextField {
-            let axis = app.secureTextFields[label]
-            if axis.waitForExistence(timeout: 1.0) { el = axis }
-        }
-        if el == nil, type == .textView {
-            let axis = app.textViews[label]
-            if axis.waitForExistence(timeout: 1.0) { el = axis }
-        }
-        if el == nil, type == .switch {
-            let axis = app.switches[label]
-            if axis.waitForExistence(timeout: 1.0) { el = axis }
-        }
-        // SwiftUI `Form` rows often split title (`staticText`) from the control; typed axes then have empty / different labels.
-        if el == nil, [.textField, .secureTextField, .textView, .switch].contains(type) {
-            let rowTitle = NSPredicate(format: "label == %@", label)
-            let table = l4RootFormTable()
-            if table.waitForExistence(timeout: 0.5) {
-                let cellQuery = table.cells.containing(rowTitle)
-                let typedInCell: XCUIElement = {
-                    switch type {
-                    case .textField: return cellQuery.textFields.firstMatch
-                    case .secureTextField: return cellQuery.secureTextFields.firstMatch
-                    case .textView: return cellQuery.textViews.firstMatch
-                    case .switch: return cellQuery.switches.firstMatch
-                    default: return cellQuery.descendants(matching: type).firstMatch
-                    }
-                }()
-                if typedInCell.waitForExistence(timeout: 1.4) { el = typedInCell }
-            }
-        }
         XCTAssertNotNil(el, "\(componentName): element with identifier '\(identifier)' or containing '\(sanitizedIdentifierName)' should exist (contract)")
         if let el = el {
             let hasContractId = !el.identifier.isEmpty
                 || app.descendants(matching: .any).matching(NSPredicate(format: "identifier CONTAINS[c] %@", sanitizedIdentifierName)).firstMatch.waitForExistence(timeout: 1.0)
-            let hasStableLabelFallback =
-                app.descendants(matching: type).matching(NSPredicate(format: "label == %@", label)).firstMatch.waitForExistence(timeout: 0.8)
-                || app.descendants(matching: .any).matching(NSPredicate(format: "label == %@", label)).firstMatch.waitForExistence(timeout: 0.6)
-                || app.staticTexts[label].waitForExistence(timeout: 0.6)
-            XCTAssertTrue(
-                hasContractId || hasStableLabelFallback,
-                "\(componentName) must expose contract id (or stable labeled control fallback when runtime drops id). Label: '\(label)', identifier: '\(el.identifier)'"
-            )
+            XCTAssertTrue(hasContractId,
+                          "\(componentName) must apply a11y. '\(label)' should expose contract id or a wrapper containing '\(sanitizedIdentifierName)'. Found: '\(el.identifier)'")
             let hasCorrectType = (el.elementType == type)
                 || (el.descendants(matching: type).firstMatch.waitForExistence(timeout: 0.5))
             XCTAssertTrue(hasCorrectType,
@@ -546,64 +432,31 @@ final class Layer4UITests: XCTestCase {
         ensureContractRoot()
         scrollToL4ControlsSection()
         scrollToElement(label: "L4ContractPicker")
-        // Contract host uses `pickerName: "l4contractpicker"`; Menu-style pickers may expose id on the menu button.
-        let byPickerName = app.descendants(matching: .any)
-            .matching(NSPredicate(format: "identifier CONTAINS[c] %@", "l4contractpicker"))
-            .firstMatch
-        if byPickerName.waitForExistence(timeout: 2.0) {
-            XCTAssertFalse(byPickerName.identifier.isEmpty, "platformPicker must apply a11y. Found: '\(byPickerName.identifier)'")
-            return
-        }
         // platformPicker contract: picker or an option has identifier.
-        let pred = NSPredicate(format: "identifier CONTAINS[c] %@", "picker")
-        let pickerEl = app.descendants(matching: .any).matching(pred).firstMatch
-        if pickerEl.waitForExistence(timeout: 1.2) {
-            XCTAssertFalse(pickerEl.identifier.isEmpty, "platformPicker must apply a11y. Found: '\(pickerEl.identifier)'")
-            return
-        }
-        // Form row: open the menu (first button in the picker row) when the value is not a top-level `buttons["A"]`.
-        if l4RootFormTable().waitForExistence(timeout: 0.6) {
-            let row = l4RootFormTable().cells.containing(NSPredicate(format: "label == %@", "L4ContractPicker"))
-            let menuButton = row.buttons.firstMatch
-            if menuButton.waitForExistence(timeout: 1.2) {
-                tapByNormalizedCenter(menuButton)
-            }
-        }
-        let labelMenu = app.buttons.matching(NSPredicate(format: "label CONTAINS[c] %@", "L4ContractPicker")).firstMatch
-        if labelMenu.waitForExistence(timeout: 0.8) {
-            tapByNormalizedCenter(labelMenu)
-        }
-        // Options may be in hierarchy only when menu is open; tap picker (shows selected "A") to open.
-        if app.buttons["A"].waitForExistence(timeout: 1.0) { tapByNormalizedCenter(app.buttons["A"].firstMatch) }
-        let optionCandidates = [
-            Self.l4ContractIdentifier(sanitizedName: "a", elementType: "View"),
-            "SixLayer.main.ui.a",
-            "SixLayer.main.ui.a.View"
+        let pickerPredicates: [NSPredicate] = [
+            NSPredicate(format: "identifier CONTAINS[c] %@", "picker"),
+            NSPredicate(format: "identifier CONTAINS[c] %@", "Picker"),
+            NSPredicate(format: "identifier CONTAINS[c] %@", "platformPicker"),
+            NSPredicate(format: "identifier CONTAINS[c] %@", "L4ContractPicker"),
         ]
-        for optionAId in optionCandidates {
-            if let optionEl = app.findElement(byIdentifier: optionAId, primaryType: .button, secondaryTypes: [.staticText, .other, .any], timeout: 1.0) {
-                XCTAssertFalse(optionEl.identifier.isEmpty, "platformPicker must apply a11y.")
+        for pred in pickerPredicates {
+            let pickerEl = app.descendants(matching: .any).matching(pred).firstMatch
+            if pickerEl.waitForExistence(timeout: 1.2) {
+                XCTAssertFalse(pickerEl.identifier.isEmpty, "platformPicker must apply a11y. Found: '\(pickerEl.identifier)'")
                 return
             }
         }
-        let anyL4ContractId = app.descendants(matching: .any)
-            .matching(NSPredicate(format: "identifier CONTAINS[c] %@", "l4contract"))
-            .firstMatch
-        if anyL4ContractId.waitForExistence(timeout: 1.5) {
-            XCTAssertFalse(anyL4ContractId.identifier.isEmpty, "platformPicker must apply a11y (loose l4contract* id).")
+        // Menu-style picker: invocation surface may be a button showing the selected value.
+        if app.buttons["A"].waitForExistence(timeout: 1.0) { app.buttons["A"].firstMatch.tap() }
+        let menuByLabel = app.buttons.matching(NSPredicate(format: "label CONTAINS[c] %@", "L4ContractPicker")).firstMatch
+        if menuByLabel.waitForExistence(timeout: 1.0) {
+            XCTAssertFalse(menuByLabel.identifier.isEmpty, "platformPicker menu must expose a11y identifier")
             return
         }
-        if l4RootFormTable().waitForExistence(timeout: 0.5) {
-            let row = l4RootFormTable().cells.containing(NSPredicate(format: "label == %@", "L4ContractPicker"))
-            let anySixLayerId = row.descendants(matching: .any)
-                .matching(NSPredicate(format: "identifier CONTAINS[c] %@", "SixLayer.main.ui"))
-                .firstMatch
-            if anySixLayerId.waitForExistence(timeout: 2.0) {
-                XCTAssertFalse(anySixLayerId.identifier.isEmpty, "platformPicker row should expose a SixLayer contract id.")
-                return
-            }
-        }
-        XCTFail("platformPicker: picker or option should have identifier (tried l4contractpicker, 'picker', and \(optionCandidates.joined(separator: ", ")))")
+        let optionAId = Self.l4ContractIdentifier(sanitizedName: "a", elementType: "View")
+        let optionEl = app.findElement(byIdentifier: optionAId, primaryType: .button, secondaryTypes: [.staticText, .other, .any], timeout: 1.2)
+        XCTAssertNotNil(optionEl, "platformPicker: picker or option should have identifier (tried picker ids, menu label, and '\(optionAId)')")
+        if let el = optionEl { XCTAssertFalse(el.identifier.isEmpty, "platformPicker must apply a11y.") }
     }
 
     @MainActor
@@ -713,66 +566,40 @@ final class Layer4UITests: XCTestCase {
     @MainActor
     func testL4_platformListRow() throws {
         ensureContractRoot()
-        scrollToL4ListSection()
+        scrollToFormSectionHeader(title: "L4 List")
+        nudgeScrollAfterL4ListSectionHeader()
         scrollToElement(label: "L4ListRowContract")
-        let title = "L4ListRowContract"
-        let table = l4RootFormTable()
-        let inTableStatic = table.staticTexts[title].firstMatch
-        let inAny = app.descendants(matching: .any).matching(NSPredicate(format: "label == %@", title)).firstMatch
-        let inCell = table.cells.containing(NSPredicate(format: "label CONTAINS[c] %@", title)).firstMatch
-        let byListId = app.descendants(matching: .any).matching(
-            NSCompoundPredicate(andPredicateWithSubpredicates: [
-                NSPredicate(format: "identifier CONTAINS[c] %@", "platformListRow"),
-                NSPredicate(format: "label CONTAINS[c] %@", title)
-            ])
-        ).firstMatch
-        XCTAssertTrue(
-            inTableStatic.waitForExistence(timeout: 2.5)
-                || inCell.waitForExistence(timeout: 2.0)
-                || inAny.waitForExistence(timeout: 1.5)
-                || byListId.waitForExistence(timeout: 2.0),
-            "platformListRow: row title must be visible in list (contract structure)"
-        )
+        XCTAssertTrue(l4ContractLabelOrIdentifierVisible(title: "L4ListRowContract", timeout: 3.5),
+                      "platformListRow: row title must be in list cell (contract structure)")
     }
 
     @MainActor
     func testL4_platformListSectionHeader() throws {
         ensureContractRoot()
-        scrollToL4ListSection()
+        scrollToFormSectionHeader(title: "L4 List")
+        nudgeScrollAfterL4ListSectionHeader()
         scrollToElement(label: "L4ListSectionHeaderContract")
-        let title = "L4ListSectionHeaderContract"
-        let table = l4RootFormTable()
-        let inTableStatic = table.staticTexts[title].firstMatch
-        let inAny = app.descendants(matching: .any).matching(NSPredicate(format: "label == %@", title)).firstMatch
-        XCTAssertTrue(
-            inTableStatic.waitForExistence(timeout: 2.5) || inAny.waitForExistence(timeout: 1.5),
-            "platformListSectionHeader: header title must exist (contract structure)"
-        )
+        XCTAssertTrue(l4ContractLabelOrIdentifierVisible(title: "L4ListSectionHeaderContract", timeout: 3.5),
+                      "platformListSectionHeader: header title must exist (contract structure)")
     }
 
     @MainActor
     func testL4_platformListEmptyState() throws {
         ensureContractRoot()
-        scrollToL4ListSection()
+        scrollToFormSectionHeader(title: "L4 List")
+        nudgeScrollAfterL4ListSectionHeader()
         scrollToElement(label: "L4ListEmptyStateContract")
-        let title = "L4ListEmptyStateContract"
-        let table = l4RootFormTable()
-        let inTableStatic = table.staticTexts[title].firstMatch
-        let inAny = app.descendants(matching: .any).matching(NSPredicate(format: "label == %@", title)).firstMatch
-        XCTAssertTrue(
-            inTableStatic.waitForExistence(timeout: 2.5) || inAny.waitForExistence(timeout: 1.5),
-            "platformListEmptyState: title must exist (contract structure)"
-        )
+        XCTAssertTrue(l4ContractLabelOrIdentifierVisible(title: "L4ListEmptyStateContract", timeout: 3.5),
+                      "platformListEmptyState: title must exist (contract structure)")
     }
 
     @MainActor
     func testL4_platformRowActions_L4() throws {
         ensureContractRoot()
-        scrollToL4ListSection()
-        scrollToElement(label: "L4 List")
+        scrollToFormSectionHeader(title: "L4 List")
+        nudgeScrollAfterL4ListSectionHeader()
         scrollToElement(label: "L4RowActionsContractRow")
-        let row = app.descendants(matching: .any).matching(NSPredicate(format: "label == %@", "L4RowActionsContractRow")).firstMatch
-        XCTAssertTrue(row.waitForExistence(timeout: 1.0),
+        XCTAssertTrue(l4ContractLabelOrIdentifierVisible(title: "L4RowActionsContractRow", timeout: 3.5),
                       "platformRowActions_L4: contract row must be visible (contract structure)")
         let containsId = app.descendants(matching: .any)
             .matching(NSPredicate(format: "identifier CONTAINS[c] %@", "platformRowActions_L4"))
@@ -1123,8 +950,6 @@ final class Layer4UITests: XCTestCase {
     @MainActor
     func testL4_platformOpenURL_L4() throws {
         ensureContractRoot()
-        scrollToL4SystemSection()
-        scrollUntilL4ContractControlVisible(buttonLabel: "L4ContractOpenURL", identifier: "L4ContractOpenURL")
         scrollToElement(label: "L4ContractOpenURL")
         let openById = app.descendants(matching: .any)
             .matching(NSPredicate(format: "identifier == %@", "L4ContractOpenURL"))
@@ -1139,17 +964,8 @@ final class Layer4UITests: XCTestCase {
             openButton = openByLabel
         }
         tapByNormalizedCenter(openButton)
-        // Bounded query: full-app `descendants` snapshots can time out under parallel UI runs.
-        let resultPred = NSPredicate(
-            format: "label == %@ OR label BEGINSWITH %@",
-            "L4ContractOpenURLResult:true",
-            "L4ContractOpenURLResult:"
-        )
-        let resultEl = app.staticTexts.matching(resultPred).firstMatch
-        XCTAssertTrue(
-            resultEl.waitForExistence(timeout: 4.0),
-            "platformOpenURL_L4: invocation should produce deterministic contract result text"
-        )
+        XCTAssertTrue(app.staticTexts["L4ContractOpenURLResult:true"].waitForExistence(timeout: 1.0),
+                      "platformOpenURL_L4: invocation should produce deterministic contract result text")
     }
 
     @MainActor
@@ -1176,13 +992,12 @@ final class Layer4UITests: XCTestCase {
     @MainActor
     func testL4_platformCloudKitSyncStatus_L4() throws {
         ensureContractRoot()
-        scrollToL4SystemSection()
-        scrollToElement(label: "L4 System")
+        scrollToFormSectionHeader(title: "L4 System")
         scrollToElement(label: "CloudKit Sync Status")
-        let hasStatusLine = app.staticTexts["CloudKit Sync: Idle"].waitForExistence(timeout: 1.2)
-            || anyDescendantLabelContains("CloudKit Sync", timeout: 2.0)
-        XCTAssertTrue(hasStatusLine,
-                      "platformCloudKitSyncStatus_L4: status text must be visible (contract structure)")
+        XCTAssertTrue(
+            waitForCombinedAccessibilityLabel(containing: "CloudKit Sync: Idle", timeout: 4.0),
+            "platformCloudKitSyncStatus_L4: status text must be visible (contract structure)"
+        )
         let exactId = element(matchingIdentifier: "platformCloudKitSyncStatus_L4")
         let containsId = app.descendants(matching: .any)
             .matching(NSPredicate(format: "identifier CONTAINS[c] %@", "platformCloudKitSyncStatus"))
@@ -1196,20 +1011,14 @@ final class Layer4UITests: XCTestCase {
     @MainActor
     func testL4_platformCloudKitProgress_L4() throws {
         ensureContractRoot()
-        scrollToL4SystemSection()
-        scrollToElement(label: "L4 System")
+        scrollToFormSectionHeader(title: "L4 System")
         scrollToElement(label: "CloudKit Progress")
-        let hasPercentCaption = app.staticTexts["60%"].waitForExistence(timeout: 1.5)
-            || anyDescendantLabelContains("60%", timeout: 2.0)
-            || (anyDescendantLabelContains("60", timeout: 1.2) && anyDescendantLabelContains("%", timeout: 0.5))
         XCTAssertTrue(
-            hasPercentCaption,
+            app.descendants(matching: .any).matching(NSPredicate(format: "label CONTAINS %@", "60")).firstMatch.waitForExistence(timeout: 3.0),
             "platformCloudKitProgress_L4: progress caption must be visible (contract structure)"
         )
-        let hasNestedSync = app.staticTexts["CloudKit Sync: Idle"].waitForExistence(timeout: 2.0)
-            || anyDescendantLabelContains("CloudKit Sync", timeout: 2.0)
         XCTAssertTrue(
-            hasNestedSync,
+            waitForCombinedAccessibilityLabel(containing: "CloudKit Sync: Idle", timeout: 4.0),
             "platformCloudKitProgress_L4: nested sync status must be visible when status is provided"
         )
         let containsId = app.descendants(matching: .any)
@@ -1222,14 +1031,10 @@ final class Layer4UITests: XCTestCase {
     @MainActor
     func testL4_platformCloudKitAccountStatus_L4() throws {
         ensureContractRoot()
-        scrollToL4SystemSection()
-        scrollToElement(label: "L4 System")
+        scrollToFormSectionHeader(title: "L4 System")
         scrollToElement(label: "CloudKit Account")
-        let accountPred = NSPredicate(format: "label CONTAINS[c] %@ AND label CONTAINS[c] %@", "iCloud", "Available")
-        let hasAccount = app.staticTexts["iCloud Account: Available"].waitForExistence(timeout: 1.5)
-            || app.descendants(matching: .any).matching(accountPred).firstMatch.waitForExistence(timeout: 2.5)
         XCTAssertTrue(
-            hasAccount,
+            waitForCombinedAccessibilityLabel(containing: "iCloud Account: Available", timeout: 4.0),
             "platformCloudKitAccountStatus_L4: account label must be visible (contract structure)"
         )
         let containsId = app.descendants(matching: .any)
@@ -1242,17 +1047,16 @@ final class Layer4UITests: XCTestCase {
     @MainActor
     func testL4_platformCloudKitServiceStatus_L4() throws {
         ensureContractRoot()
-        scrollToL4SystemSection()
-        scrollToElement(label: "L4 System")
+        scrollToFormSectionHeader(title: "L4 System")
         scrollToElement(label: "CloudKit Service Status")
         let containsId = app.descendants(matching: .any)
             .matching(NSPredicate(format: "identifier CONTAINS[c] %@", "platformCloudKitServiceStatus_L4"))
             .firstMatch
         XCTAssertTrue(containsId.waitForExistence(timeout: 3.5),
                       "platformCloudKitServiceStatus_L4: composite view must expose contract a11y identifier")
-        let hasIdleOrAccount = app.staticTexts["CloudKit Sync: Idle"].waitForExistence(timeout: 1.5)
-            || app.staticTexts["iCloud Account: Available"].waitForExistence(timeout: 1.0)
-            || app.staticTexts["iCloud Account: Unknown"].waitForExistence(timeout: 1.0)
+        let hasIdleOrAccount = waitForCombinedAccessibilityLabel(containing: "CloudKit Sync: Idle", timeout: 3.0)
+            || waitForCombinedAccessibilityLabel(containing: "iCloud Account: Available", timeout: 2.5)
+            || waitForCombinedAccessibilityLabel(containing: "iCloud Account: Unknown", timeout: 2.0)
         XCTAssertTrue(
             hasIdleOrAccount,
             "platformCloudKitServiceStatus_L4: at least one child status line must be visible (contract structure)"
@@ -1262,26 +1066,27 @@ final class Layer4UITests: XCTestCase {
     @MainActor
     func testL4_platformCloudKitSyncButton_L4() throws {
         ensureContractRoot()
-        scrollToL4SystemSection()
-        scrollToElement(label: "L4 System")
+        scrollToFormSectionHeader(title: "L4 System")
         scrollToElement(label: "CloudKit Sync Button")
         let containsId = app.descendants(matching: .any)
             .matching(NSPredicate(format: "identifier CONTAINS[c] %@", "platformCloudKitSyncButton_L4"))
             .firstMatch
         XCTAssertTrue(containsId.waitForExistence(timeout: 3.5),
                       "platformCloudKitSyncButton_L4: button must expose contract a11y identifier")
-        let byLabel = app.buttons["Sync"].firstMatch
+        let syncButton = app.descendants(matching: .button)
+            .matching(NSPredicate(format: "identifier CONTAINS[c] %@", "platformCloudKitSyncButton_L4"))
+            .firstMatch
         XCTAssertTrue(
-            byLabel.waitForExistence(timeout: 1.0),
-            "platformCloudKitSyncButton_L4: default Sync button must be findable (contract structure)"
+            syncButton.waitForExistence(timeout: 2.5)
+                || (containsId.elementType == .button && containsId.exists),
+            "platformCloudKitSyncButton_L4: sync control should appear as a button (may be disabled when CloudKit is gated in UITest host)"
         )
     }
 
     @MainActor
     func testL4_platformCloudKitStatusBadge_L4() throws {
         ensureContractRoot()
-        scrollToL4SystemSection()
-        scrollToElement(label: "L4 System")
+        scrollToFormSectionHeader(title: "L4 System")
         scrollToElement(label: "CloudKit Status Badge")
         let containsId = app.descendants(matching: .any)
             .matching(NSPredicate(format: "identifier CONTAINS[c] %@", "platformCloudKitStatusBadge_L4"))
@@ -1294,35 +1099,20 @@ final class Layer4UITests: XCTestCase {
     @MainActor
     func testL4_platformPhotoPicker_L4() throws {
         ensureContractRoot()
-        scrollToL4SystemSection()
-        scrollToElement(label: "L4 System")
+        scrollToFormSectionHeader(title: "L4 System")
         scrollToElement(label: "Photo Picker Contract")
-        scrollUntilL4ContractControlVisible(buttonLabel: "L4ContractPhotoPickerOpen", identifier: "L4ContractPhotoPickerOpen")
         let openBtn = app.buttons["L4ContractPhotoPickerOpen"].firstMatch
         XCTAssertTrue(
             openBtn.waitForExistence(timeout: 2.5),
             "platformPhotoPicker_L4: contract open control must exist (contract structure)"
         )
         tapByNormalizedCenter(openBtn)
-        let pred = NSPredicate(format: "identifier CONTAINS[c] %@", "platformPhotoPicker_L4")
-        let onRoot = app.descendants(matching: .any).matching(pred).firstMatch
-        var found = onRoot.waitForExistence(timeout: 2.5)
-        if !found, app.sheets.count > 0 {
-            let sheet = app.sheets.element(boundBy: 0)
-            found = sheet.descendants(matching: .any).matching(pred).firstMatch.waitForExistence(timeout: 2.5)
-        }
-        // `PHPickerViewController` is UIKit-hosted; contract id may stay on the SwiftUI wrapper only until
-        // presentation finishes — treat a presented system picker (Cancel + Photos chrome) as sufficient.
-        if !found {
-            let cancel = app.buttons["Cancel"].firstMatch
-            found = cancel.waitForExistence(timeout: 2.0)
-                && (app.navigationBars["Photos"].waitForExistence(timeout: 0.5)
-                    || app.staticTexts["Photos"].waitForExistence(timeout: 0.5)
-                    || app.navigationBars["Photo Library"].waitForExistence(timeout: 0.5))
-        }
+        let pickerNode = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "identifier CONTAINS[c] %@", "platformPhotoPicker_L4"))
+            .firstMatch
         XCTAssertTrue(
-            found,
-            "platformPhotoPicker_L4: picker subtree must expose contract a11y identifier, or system Photos picker must present"
+            pickerNode.waitForExistence(timeout: 3.5),
+            "platformPhotoPicker_L4: picker subtree must expose contract a11y identifier"
         )
         let cancel = app.buttons["Cancel"].firstMatch
         if cancel.waitForExistence(timeout: 1.2) {

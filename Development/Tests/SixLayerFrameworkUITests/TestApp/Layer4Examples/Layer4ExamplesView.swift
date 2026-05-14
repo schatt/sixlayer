@@ -1074,7 +1074,8 @@ struct Layer4ContractOnlyView: View {
                         Button("L4RowActionContract", role: .destructive) { }
                     }
             }
-            .frame(height: 140)
+            // Taller than two platformListRow rows so XCUITest sees row titles without inner List clipping (iOS 26 Form).
+            .frame(height: 260)
             EmptyView()
                 .platformListSectionHeader(title: "L4ListSectionHeaderContract")
             EmptyView()

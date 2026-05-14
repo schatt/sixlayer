@@ -15,7 +15,7 @@ import CoreImage
 // UIKit is available on iOS, tvOS, visionOS, and watchOS (in differing surfaces).
 // watchOS: UIGraphicsImageRenderer is unavailable; resize/rotate use UIGraphicsBeginImageContext.
 // Crop/export/metadata use UIImage the same as iOS. See #237 / #271.
-#if canImport(UIKit)
+#if os(iOS) || os(tvOS) || os(watchOS) || os(visionOS)
 import UIKit
 #endif
 #if canImport(AppKit)

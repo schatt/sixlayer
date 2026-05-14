@@ -9,10 +9,6 @@
 import SwiftUI
 import CloudKit
 
-#if canImport(UIKit)
-import UIKit
-#endif
-
 #if canImport(AppKit)
 import AppKit
 #endif
@@ -165,13 +161,14 @@ public func platformCloudKitServiceStatus_L4(service: CloudKitService) -> some V
     }
     .padding()
     #if os(macOS)
-    .background(Color(NSColor.controlBackgroundColor))
+    .background(Color.platformSecondaryBackground)
     #else
-    // Color(.systemBackground) is unavailable on tvOS; use shared platform helper (#237).
+    // Non-macOS: `Color.platformBackground` (tvOS-safe; #237).
     .background(Color.platformBackground)
     #endif
     .cornerRadius(8)
     .automaticCompliance(named: "platformCloudKitServiceStatus_L4", accessibilityLabel: summary)
+    .accessibilityIdentifier("platformCloudKitServiceStatus_L4")
 }
 
 // MARK: - CloudKit Sync Button
@@ -237,6 +234,7 @@ public func platformCloudKitStatusBadge_L4(service: CloudKitService) -> some Vie
     .accessibilityElement(children: .combine)
     .help(service.syncStatus == .syncing ? "Syncing..." : "CloudKit Status")
     .automaticCompliance(named: "platformCloudKitStatusBadge_L4", accessibilityLabel: badgeLabel)
+    // Stable id for XCUITest (same pattern as platformCloudKitSyncStatus_L4; Label + combine can hide generated id on some OS).
     .accessibilityIdentifier("platformCloudKitStatusBadge_L4")
 }
 
