@@ -14,8 +14,8 @@ import XCTest
 final class PlatformStandaloneDropIn150UITests: XCTestCase {
     private nonisolated(unsafe) var app: XCUIApplication!
 
-    private static let hostReadyTimeout: TimeInterval = 4.0
-    private static let maxFormScrolls = 14
+    private static let hostReadyTimeout: TimeInterval = 3.0
+    private static let maxFormScrolls = 6
 
     nonisolated override func setUpWithError() throws {
         continueAfterFailure = false
