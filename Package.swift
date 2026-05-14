@@ -1,5 +1,5 @@
 // swift-tools-version: 6.0
-// SixLayerFramework v7.8.0 - Minor: presentation profiles/collections (#277), list card layout (#272), draft key (#273), PlatformImage EXIF (#275), system actions (#256)
+// SixLayerFramework v7.8.1 - Patch: OCR structured extraction (#279), EXIF date/orientation writers (#275), L4 a11y identifiers and UITest hardening, agent wip docs (#280), platformPrint_L4 isolation
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
