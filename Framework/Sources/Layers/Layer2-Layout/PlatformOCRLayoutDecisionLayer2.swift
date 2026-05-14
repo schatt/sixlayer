@@ -87,7 +87,14 @@ public func platformReceiptOCRLayout_L2(
         language: context.language,
         confidenceThreshold: max(context.confidenceThreshold, 0.85),
         allowsEditing: context.allowsEditing,
-        maxImageSize: context.maxImageSize
+        maxImageSize: context.maxImageSize,
+        extractionHints: context.extractionHints,
+        requiredFields: context.requiredFields,
+        extractionMode: context.extractionMode,
+        entityName: context.entityName,
+        fieldRanges: context.fieldRanges,
+        fieldAverages: context.fieldAverages,
+        strictVisionTextTypeFiltering: context.strictVisionTextTypeFiltering
     )
     
     // Use document layout for receipts
@@ -109,7 +116,14 @@ public func platformBusinessCardOCRLayout_L2(
         language: context.language,
         confidenceThreshold: context.confidenceThreshold,
         allowsEditing: context.allowsEditing,
-        maxImageSize: context.maxImageSize
+        maxImageSize: context.maxImageSize,
+        extractionHints: context.extractionHints,
+        requiredFields: context.requiredFields,
+        extractionMode: context.extractionMode,
+        entityName: context.entityName,
+        fieldRanges: context.fieldRanges,
+        fieldAverages: context.fieldAverages,
+        strictVisionTextTypeFiltering: context.strictVisionTextTypeFiltering
     )
     
     // Use document layout for business cards
@@ -377,7 +391,14 @@ private func adjustContextForDocument(
         language: context.language,
         confidenceThreshold: max(context.confidenceThreshold, requirements.minConfidence),
         allowsEditing: context.allowsEditing,
-        maxImageSize: context.maxImageSize ?? requirements.preferredImageSize
+        maxImageSize: context.maxImageSize ?? requirements.preferredImageSize,
+        extractionHints: context.extractionHints,
+        requiredFields: context.requiredFields,
+        extractionMode: context.extractionMode,
+        entityName: context.entityName,
+        fieldRanges: context.fieldRanges,
+        fieldAverages: context.fieldAverages,
+        strictVisionTextTypeFiltering: context.strictVisionTextTypeFiltering
     )
 }
 
