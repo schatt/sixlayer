@@ -73,6 +73,7 @@ public enum PlatformPhotoComponentsLayer4 {
     public static func platformPhotoPicker_L4(onImageSelected: @escaping (PlatformImage) -> Void) -> some View {
         UnifiedImagePicker(onImageSelected: onImageSelected)
             .automaticCompliance(named: "platformPhotoPicker_L4")
+            .accessibilityIdentifier("platformPhotoPicker_L4")
     }
     
     // MARK: - Photo Display Components

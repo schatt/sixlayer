@@ -117,24 +117,11 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
         context: OCRContext,
         strategy: OCRStrategy
     ) async throws -> OCRResult {
-        
-        guard isAvailable else {
-            throw OCRError.visionUnavailable
-        }
-        
-        guard let cgImage = getCGImage(from: image) else {
-            throw OCRError.invalidImage
-        }
-        
-        #if canImport(Vision) && !os(watchOS)
-        return try await performVisionOCR(
-            cgImage: cgImage,
+        try await performVisionOCRIfAvailable(
+            image: image,
             context: context,
             strategy: strategy
-        )
-        #else
-        throw OCRError.unsupportedPlatform
-        #endif
+        ).result
     }
     
     /// Process an image for structured data extraction
@@ -142,16 +129,17 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
         _ image: PlatformImage,
         context: OCRContext
     ) async throws -> OCRResult {
-        // Use existing OCR processing
-        let baseResult = try await processImage(
-            image,
-            context: context,
-            strategy: OCRStrategy(
-                supportedTextTypes: context.textTypes,
-                supportedLanguages: [context.language],
-                processingMode: .accurate
-            )
+        let structuredStrategy = OCRStrategy(
+            supportedTextTypes: context.visionStrategySupportedTextTypes,
+            supportedLanguages: [context.language],
+            processingMode: .accurate
         )
+        let visionOutcome = try await performVisionOCRIfAvailable(
+            image: image,
+            context: context,
+            strategy: structuredStrategy
+        )
+        let baseResult = visionOutcome.result
         
         // Perform structured extraction
         var structuredData = extractStructuredData(from: baseResult, context: context)
@@ -182,6 +170,14 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
         let extractionConfidence = calculateExtractionConfidence(structuredData, context: context)
         let missingFields = findMissingRequiredFields(structuredData, context: context)
         
+        let structuredValues = Set(
+            structuredData.values.map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }.filter { !$0.isEmpty }
+        )
+        let uncategorized = OCRUncategorizedExtractionBuilder.build(
+            recognizedLines: visionOutcome.recognizedLineTexts,
+            structuredValues: structuredValues
+        )
+        
         return OCRResult(
             extractedText: baseResult.extractedText,
             confidence: baseResult.confidence,
@@ -192,8 +188,31 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
             structuredData: structuredData,
             extractionConfidence: extractionConfidence,
             missingRequiredFields: missingFields,
-            adjustedFields: adjustedFields
+            adjustedFields: adjustedFields,
+            uncategorizedExtractions: uncategorized
         )
+    }
+    
+    private func performVisionOCRIfAvailable(
+        image: PlatformImage,
+        context: OCRContext,
+        strategy: OCRStrategy
+    ) async throws -> (result: OCRResult, recognizedLineTexts: [String]) {
+        guard isAvailable else {
+            throw OCRError.visionUnavailable
+        }
+        guard let cgImage = getCGImage(from: image) else {
+            throw OCRError.invalidImage
+        }
+        #if canImport(Vision) && !os(watchOS)
+        return try await performVisionOCR(
+            cgImage: cgImage,
+            context: context,
+            strategy: strategy
+        )
+        #else
+        throw OCRError.unsupportedPlatform
+        #endif
     }
     
     // MARK: - Structured Extraction Helper Methods
@@ -943,7 +962,7 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
         cgImage: CGImage,
         context: OCRContext,
         strategy: OCRStrategy
-    ) async throws -> OCRResult {
+    ) async throws -> (result: OCRResult, recognizedLineTexts: [String]) {
         
         return try await withCheckedThrowingContinuation { continuation in
             let request = VNRecognizeTextRequest { request, error in
@@ -957,12 +976,12 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
                     return
                 }
                 
-                let result = self.processVisionResults(
+                let outcome = self.processVisionResults(
                     observations: observations,
                     context: context,
                     strategy: strategy
                 )
-                continuation.resume(returning: result)
+                continuation.resume(returning: outcome)
             }
             
             // Configure request based on strategy
@@ -1011,7 +1030,7 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
         observations: [VNRecognizedTextObservation],
         context: OCRContext,
         strategy: OCRStrategy
-    ) -> OCRResult {
+    ) -> (result: OCRResult, recognizedLineTexts: [String]) {
         
         // Sort observations by position (top to bottom, left to right) for proper reading order
         // Vision returns observations in arbitrary order, not reading order
@@ -1029,6 +1048,7 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
         }
         
         var extractedText = ""
+        var recognizedLineTexts: [String] = []
         var boundingBoxes: [CGRect] = []
         var textTypes: [TextType: String] = [:]
         var totalConfidence: Float = 0.0
@@ -1061,13 +1081,14 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
             
             // Filter by text types if specified
             if !strategy.supportedTextTypes.isEmpty {
-                let detectedType = detectTextType(text)
+                let detectedType = OCRTextTypeInference.inferredType(for: text)
                 guard strategy.supportedTextTypes.contains(detectedType) else { continue }
             }
             
             extractedText += text + " "
+            recognizedLineTexts.append(text)
             boundingBoxes.append(observation.boundingBox)
-            textTypes[detectTextType(text)] = text
+            textTypes[OCRTextTypeInference.inferredType(for: text)] = text
             
             totalConfidence += confidence
             validObservations += 1
@@ -1076,33 +1097,18 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
         // Calculate average confidence
         let averageConfidence = validObservations > 0 ? totalConfidence / Float(validObservations) : 0.0
         
-        return OCRResult(
+        let result = OCRResult(
             extractedText: extractedText.trimmingCharacters(in: .whitespacesAndNewlines),
             confidence: averageConfidence,
             boundingBoxes: boundingBoxes,
             textTypes: textTypes,
             processingTime: 0.0, // Will be set by caller
-            language: context.language
+            language: context.language,
+            uncategorizedExtractions: []
         )
+        return (result, recognizedLineTexts)
     }
     #endif
-    
-    private func detectTextType(_ text: String) -> TextType {
-        // Simple text type detection
-        if text.contains("$") || text.contains("€") || text.contains("£") {
-            return .price
-        } else if text.allSatisfy({ $0.isNumber || $0 == "." || $0 == "," }) {
-            return .number
-        } else if text.contains("@") {
-            return .email
-        } else if text.hasPrefix("http") || text.hasPrefix("www") {
-            return .url
-        } else if text.range(of: #"\d{1,2}[/-]\d{1,2}[/-]\d{2,4}"#, options: .regularExpression) != nil {
-            return .date
-        } else {
-            return .general
-        }
-    }
     
     private func getCGImage(from image: PlatformImage) -> CGImage? {
         #if os(iOS)

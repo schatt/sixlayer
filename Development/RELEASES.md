@@ -1,12 +1,21 @@
 # 🚀 Six-Layer Framework Release History
 
-## 📍 **Current Release: v7.8.0** 🎯
+## 📍 **Current Release: v7.8.1** 🎯
 
-**Release Date**: May 13, 2026
-**Status**: Minor release
-**Previous Release**: v7.7.2 - Patch release
-**Note**: Presentation profiles catalog (#277); item collection hint resolver and optional card row style on custom lists (#272); optional DynamicForm draft storage key (#273); PlatformImage EXIF configuration (#275); system-action contract for openURL and remote notifications (#256 / #169).
+**Release Date**: May 14, 2026
+**Status**: Patch release
+**Previous Release**: v7.8.0 - Minor release
+**Note**: Structured OCR inclusive extraction and Layer 2 forwarding (#279); PlatformImage EXIF capture date and orientation writers (#275); L4 accessibility identifiers and UITest contract stabilization; agent `wip/` worktree checklist (#280); Layer 4 compile and platformPrint isolation fixes.
 **Next Release**: TBD
+
+---
+
+## 🎯 **v7.8.1 - OCR, EXIF writers, L4 a11y/UITest, and agent workflow docs** (May 14, 2026)
+
+### **What's in v7.8.1:**
+- Patch release. See [RELEASE_v7.8.1.md](RELEASE_v7.8.1.md) for details.
+
+**See [RELEASE_v7.8.1.md](RELEASE_v7.8.1.md) for complete release notes.**
 
 ---
 

@@ -107,15 +107,17 @@ private func iOSCardExpansionConfig(deviceType: DeviceType) -> CardExpansionPlat
 /// macOS-specific configuration using runtime capability detection
 @MainActor
 private func macOSCardExpansionConfig() -> CardExpansionPlatformConfig {
+    let touchForCards = RuntimeCapabilityDetection.supportsTouchForMacOSCardExpansion
+    let minTouch: CGFloat = touchForCards ? 44.0 : 0.0
     return CardExpansionPlatformConfig(
         supportsHapticFeedback: RuntimeCapabilityDetection.supportsHapticFeedback,
         supportsHover: RuntimeCapabilityDetection.supportsHover,
-        supportsTouch: RuntimeCapabilityDetection.supportsTouch,
+        supportsTouch: touchForCards,
         supportsVoiceOver: RuntimeCapabilityDetection.supportsVoiceOver,
         supportsSwitchControl: RuntimeCapabilityDetection.supportsSwitchControl,
         supportsAssistiveTouch: RuntimeCapabilityDetection.supportsAssistiveTouch,
-        minTouchTarget: RuntimeCapabilityDetection.minTouchTarget, // Platform-native touch target size
-        hoverDelay: RuntimeCapabilityDetection.hoverDelay, // Platform-native hover delay
+        minTouchTarget: minTouch,
+        hoverDelay: RuntimeCapabilityDetection.hoverDelay,
         animationEasing: .easeInOut(duration: 0.3)
     )
 }

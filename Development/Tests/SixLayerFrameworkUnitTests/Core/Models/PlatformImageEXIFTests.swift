@@ -256,6 +256,60 @@ extension PlatformImageEXIFTests {
         return props[key as String] as? [String: Any]
     }
 
+    /// JPEG with GPS, EXIF `DateTimeOriginal`, and top-level orientation (Issue #275 follow-up).
+    fileprivate static func makeJPEGDataOnePixelWithGPSExifDateAndOrientation() throws -> Data {
+        let colorSpace = CGColorSpaceCreateDeviceRGB()
+        let bitmapInfo = CGBitmapInfo.byteOrder32Little.rawValue | CGImageAlphaInfo.premultipliedFirst.rawValue
+        guard let ctx = CGContext(
+            data: nil, width: 1, height: 1,
+            bitsPerComponent: 8, bytesPerRow: 4,
+            space: colorSpace, bitmapInfo: bitmapInfo
+        ) else { struct E: Error {}; throw E() }
+        ctx.setFillColor(red: 1, green: 1, blue: 1, alpha: 1)
+        ctx.fill(CGRect(x: 0, y: 0, width: 1, height: 1))
+        guard let cgImage = ctx.makeImage() else { struct E: Error {}; throw E() }
+        let mutable = NSMutableData()
+        #if canImport(UniformTypeIdentifiers)
+        let type = UTType.jpeg.identifier as CFString
+        #else
+        let type = "public.jpeg" as CFString
+        #endif
+        guard let dest = CGImageDestinationCreateWithData(mutable, type, 1, nil) else {
+            struct E: Error {}; throw E()
+        }
+        let gps: [String: Any] = [
+            kCGImagePropertyGPSLatitude as String: 10.0,
+            kCGImagePropertyGPSLatitudeRef as String: "N",
+            kCGImagePropertyGPSLongitude as String: 20.0,
+            kCGImagePropertyGPSLongitudeRef as String: "E"
+        ]
+        let exif: [String: Any] = [
+            kCGImagePropertyExifDateTimeOriginal as String: "2019:06:15 14:30:00",
+            kCGImagePropertyExifDateTimeDigitized as String: "2019:06:15 14:30:00"
+        ]
+        let properties: [String: Any] = [
+            kCGImagePropertyGPSDictionary as String: gps,
+            kCGImagePropertyExifDictionary as String: exif,
+            kCGImagePropertyOrientation as String: CGImagePropertyOrientation.up.rawValue
+        ]
+        CGImageDestinationAddImage(dest, cgImage, properties as CFDictionary)
+        guard CGImageDestinationFinalize(dest) else { struct E: Error {}; throw E() }
+        return mutable as Data
+    }
+
+    fileprivate static func exifDateTimeOriginal(_ data: Data) -> String? {
+        guard let exif = topLevelDict(data, kCGImagePropertyExifDictionary) else { return nil }
+        return exif[kCGImagePropertyExifDateTimeOriginal as String] as? String
+    }
+
+    fileprivate static func orientationRaw(_ data: Data) -> UInt32? {
+        guard let src = CGImageSourceCreateWithData(data as CFData, nil) else { return nil }
+        guard let props = CGImageSourceCopyPropertiesAtIndex(src, 0, nil) as? [String: Any] else { return nil }
+        if let n = props[kCGImagePropertyOrientation as String] as? NSNumber { return n.uint32Value }
+        if let i = props[kCGImagePropertyOrientation as String] as? Int { return UInt32(i) }
+        return nil
+    }
+
     // MARK: Config contract
 
     @Test func testPlatformImageEXIFConfigDefaultsToHEIC() async {
@@ -394,6 +448,84 @@ extension PlatformImageEXIFTests {
             #expect(["heic", "heix", "mif1", "msf1", "heim", "heis"].contains(brand),
                     "Issue #275: HEIC brand must be in the HEIF family (got \(brand))")
         }
+    }
+
+    // MARK: Writers — capture date & orientation (Issue #275 follow-up)
+
+    @Test func testWithCaptureDateRoundTripsExifDateOnJPEG() async throws {
+        let jpegData = try Self.makeJPEGDataOnePixelWithGPSExifDateAndOrientation()
+        guard let image = PlatformImage(data: jpegData) else {
+            Issue.record("Fixture JPEG should decode as PlatformImage"); return
+        }
+        var cal = Calendar(identifier: .gregorian)
+        cal.timeZone = TimeZone(secondsFromGMT: 0)!
+        var comps = DateComponents()
+        comps.year = 2024
+        comps.month = 3
+        comps.day = 10
+        comps.hour = 18
+        comps.minute = 45
+        comps.second = 0
+        guard let targetDate = cal.date(from: comps) else {
+            Issue.record("Expected valid fixture date"); return
+        }
+        let result = image.exif.with(captureDate: targetDate, as: .jpeg)
+        #expect(result != nil, "with(captureDate:) must return an image")
+        guard let bytes = result?.originalEncodedData else { return }
+        #expect(Self.exifDateTimeOriginal(bytes) == "2024:03:10 18:45:00",
+                "EXIF DateTimeOriginal should round-trip in UTC EXIF format")
+    }
+
+    @Test func testWithCaptureDateNilRemovesExifDateOnJPEG() async throws {
+        let jpegData = try Self.makeJPEGDataOnePixelWithGPSExifDateAndOrientation()
+        guard let image = PlatformImage(data: jpegData) else {
+            Issue.record("Fixture JPEG should decode as PlatformImage"); return
+        }
+        let result = image.exif.with(captureDate: nil, as: .jpeg)
+        #expect(result != nil, "with(captureDate: nil) must return an image")
+        guard let bytes = result?.originalEncodedData else { return }
+        #expect(Self.exifDateTimeOriginal(bytes) == nil,
+                "nil captureDate should remove DateTimeOriginal from EXIF")
+    }
+
+    @Test func testWithOrientationRoundTripsOnJPEG() async throws {
+        let jpegData = try Self.makeJPEGDataOnePixelWithGPSExifDateAndOrientation()
+        guard let image = PlatformImage(data: jpegData) else {
+            Issue.record("Fixture JPEG should decode as PlatformImage"); return
+        }
+        #expect(Self.orientationRaw(jpegData) == CGImagePropertyOrientation.up.rawValue)
+        let result = image.exif.with(orientation: .right, as: .jpeg)
+        #expect(result != nil, "with(orientation:) must return an image")
+        guard let bytes = result?.originalEncodedData else { return }
+        #expect(Self.orientationRaw(bytes) == CGImagePropertyOrientation.right.rawValue,
+                "Top-level orientation should be updated to .right")
+    }
+
+    @Test func testWithCaptureDatePreservesGPSOnJPEG() async throws {
+        let jpegData = try Self.makeJPEGDataOnePixelWithGPSExifDateAndOrientation()
+        guard let image = PlatformImage(data: jpegData) else {
+            Issue.record("Fixture JPEG should decode as PlatformImage"); return
+        }
+        var cal = Calendar(identifier: .gregorian)
+        cal.timeZone = TimeZone(secondsFromGMT: 0)!
+        var comps = DateComponents()
+        comps.year = 2021
+        comps.month = 1
+        comps.day = 2
+        comps.hour = 0
+        comps.minute = 0
+        comps.second = 1
+        guard let newDate = cal.date(from: comps) else { return }
+        let result = image.exif.with(captureDate: newDate, as: .jpeg)
+        guard let out = result, let bytes = out.originalEncodedData else {
+            Issue.record("Writer must return encoded bytes"); return
+        }
+        #expect(Self.exifDateTimeOriginal(bytes) == "2021:01:02 00:00:01")
+        let loc = out.exif.gpsLocation
+        #expect(loc != nil, "GPS should survive capture-date-only write")
+        guard let loc else { return }
+        #expect(abs(loc.coordinate.latitude - 10.0) < 0.000_1)
+        #expect(abs(loc.coordinate.longitude - 20.0) < 0.000_1)
     }
 }
 #endif

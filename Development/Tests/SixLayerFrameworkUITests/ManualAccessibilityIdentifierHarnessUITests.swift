@@ -55,10 +55,20 @@ final class ManualAccessibilityIdentifierHarnessUITests: XCTestCase {
     /// `SixLayer.main.ui.<id>.Button` (see `Layer4UITests` / `ButtonTestView` comments).
     private func assertAccessibilityIdentifierContains(_ substring: String, timeout: TimeInterval = 3.0) {
         let pred = NSPredicate(format: "identifier CONTAINS[c] %@", substring)
-        let el = app.descendants(matching: .any).matching(pred).firstMatch
-        XCTAssertTrue(
-            el.waitForExistence(timeout: timeout),
-            "Expected an element whose accessibility identifier contains '\(substring)' (query full runtime tree)"
+        let roots: [XCUIElement] = [
+            app.scrollViews.firstMatch,
+            app.tables.firstMatch,
+            app.collectionViews.firstMatch,
+            app
+        ]
+        for root in roots where root.exists {
+            let el = root.descendants(matching: .any).matching(pred).firstMatch
+            if el.waitForExistence(timeout: min(timeout, 2.0)) {
+                return
+            }
+        }
+        XCTFail(
+            "Expected an element whose accessibility identifier contains '\(substring)' (query bounded scroll/table/collection first)"
         )
     }
 

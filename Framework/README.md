@@ -1,6 +1,6 @@
 # SixLayer Framework
 
-[![Version](https://img.shields.io/badge/version-v7.8.0-blue.svg)](https://github.com/schatt/sixlayer/releases/tag/v7.8.0)
+[![Version](https://img.shields.io/badge/version-v7.8.1-blue.svg)](https://github.com/schatt/sixlayer/releases/tag/v7.8.1)
 [![Platform](https://img.shields.io/badge/platform-iOS%2016%2B%20%7C%20macOS%2013%2B-lightgrey.svg)](https://github.com/schatt/6layer)
 [![Swift](https://img.shields.io/badge/Swift-5.9+-orange.svg)](https://swift.org)
 
@@ -39,6 +39,12 @@ Layer 1: Semantic Intent → Layer 2: Layout Decision → Layer 3: Strategy Sele
 - **Extensible**: Easy to extend with custom layers and strategies
 - **Comprehensively Tested**: 800+ tests with platform-aware testing and mandatory TDD implementation
 - **DRY Architecture**: Define hints once in files, use everywhere automatically
+
+## 🆕 What's New in v7.8.1
+
+### Patch release
+
+Structured OCR inclusive extraction and Layer 2 forwarding (#279); `PlatformImage` EXIF capture date and orientation writers (#275); Layer 4 accessibility identifiers for CloudKit, photo picker, and UITest contract controls; agent `wip/` worktree checklist (#280); Layer 4 compile fixes and `platformPrint_L4` isolation. See [RELEASE_v7.8.1.md](../Development/RELEASE_v7.8.1.md).
 
 ## 🆕 What's New in v7.8.0
 
@@ -637,7 +643,7 @@ if let location = image?.exif.gpsLocation {
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/schatt/6layer.git", from: "7.8.0")
+    .package(url: "https://github.com/schatt/6layer.git", from: "7.8.1")
 ]
 ```
 

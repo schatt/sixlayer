@@ -420,52 +420,39 @@ open class CapabilityAwareFunctionTests: BaseTestClass {
     
     // MARK: - Capability State Validation
     
-    /// BUSINESS PURPOSE: Capability state validation ensures internal consistency between related capabilities
-    /// TESTING SCOPE: Capability state consistency, logical capability relationships
-    /// METHODOLOGY: Test capability state consistency on current platform
+    /// **Plumbing:** `CardExpansionPlatformConfig` mirrors `RuntimeCapabilityDetection` for the fields it copies.
+    /// **Cross-cutting laws:** haptic implies touch; AssistiveTouch matches platform availability; OCR implies Vision.
+    /// Kept narrow per `.cursor/rules/capability-override-test-flows.mdc` (GitHub #278) — not a parallel capability matrix suite.
     @Test @MainActor func testCapabilityStateConsistency() {
         let config = getCardExpansionPlatformConfig()
 
-        // Test that all capability states are consistent
-        let capabilities = [
-            "Touch": config.supportsTouch,
-            "Hover": config.supportsHover,
-            "Haptic": config.supportsHapticFeedback,
-            "AssistiveTouch": config.supportsAssistiveTouch,
-            "VoiceOver": config.supportsVoiceOver,
-            "SwitchControl": config.supportsSwitchControl,
-            "Vision": isVisionFrameworkAvailable(),
-            "OCR": isVisionOCRAvailable()
-        ]
+        #expect(config.supportsTouch == RuntimeCapabilityDetection.supportsTouch,
+                "Card expansion config should mirror runtime touch detection")
+        #expect(config.supportsHover == RuntimeCapabilityDetection.supportsHover,
+                "Card expansion config should mirror runtime hover detection")
+        #expect(config.supportsHapticFeedback == RuntimeCapabilityDetection.supportsHapticFeedback,
+                "Card expansion config should mirror runtime haptic detection")
+        #expect(config.supportsAssistiveTouch == RuntimeCapabilityDetection.supportsAssistiveTouch,
+                "Card expansion config should mirror runtime AssistiveTouch availability")
+        #expect(config.supportsVoiceOver == RuntimeCapabilityDetection.supportsVoiceOver,
+                "Card expansion config should mirror runtime VoiceOver detection")
+        #expect(config.supportsSwitchControl == RuntimeCapabilityDetection.supportsSwitchControl,
+                "Card expansion config should mirror runtime Switch Control detection")
 
-        // Validate capability consistency for current platform
-        #expect(validateCapabilityStateConsistency(capabilities),
-                     "Capability state should be internally consistent on current platform")
-    }
-    
-    private func validateCapabilityStateConsistency(_ capabilities: [String: Bool]) -> Bool {
-        // Haptic without touch is incoherent (actuators ride on touch-class hardware).
-        if capabilities["Haptic"] == true && capabilities["Touch"] != true {
-            return false
-        }
+        let vision = isVisionFrameworkAvailable()
+        let ocr = isVisionOCRAvailable()
+        #expect(!(ocr && !vision), "OCR availability should imply Vision framework availability")
 
-        // AssistiveTouch: on platforms that ship it (iOS/watch per `SixLayerPlatform`), enabling
-        // AssistiveTouch implies touch. On macOS/tvOS/visionOS the OS feature is absent — any
-        // `true` here is a stale thread-local override and must not pass this diagnostic.
+        #expect(!(config.supportsHapticFeedback && !config.supportsTouch),
+                "Haptic capability should not be reported without touch (incoherent actuation surface)")
+
         let assistiveTouchPlatformSupported = SixLayerPlatform.current.supportsAssistiveTouch
         if assistiveTouchPlatformSupported {
-            if capabilities["AssistiveTouch"] == true && capabilities["Touch"] != true {
-                return false
-            }
-        } else if capabilities["AssistiveTouch"] == true {
-            return false
+            #expect(!(config.supportsAssistiveTouch && !config.supportsTouch),
+                    "AssistiveTouch implies touch on platforms that ship the feature")
+        } else {
+            #expect(!config.supportsAssistiveTouch,
+                    "AssistiveTouch should be unavailable on platforms that do not ship the OS feature")
         }
-
-        // OCR should only be available if Vision is available
-        if capabilities["OCR"] == true && capabilities["Vision"] != true {
-            return false
-        }
-
-        return true
     }
 }

@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "hooks": {
+    "preToolUse": [
+      {
+        "command": ".cursor/hooks/git-prevent-multi-file-dirty.sh",
+        "failClosed": false
+      }
+    ],
+    "stop": [
+      {
+        "command": ".cursor/hooks/git-stop-dirty-worktree-remind.sh",
+        "loop_limit": 3
+      }
+    ]
+  }
+}

@@ -119,6 +119,83 @@ public enum ExtractionMode: String, CaseIterable, Sendable {
     }
 }
 
+// MARK: - OCR text inference & uncategorized extractions
+
+/// A typed text fragment recognized by Vision that was **not** promoted into ``OCRResult/structuredData``
+/// (e.g. pump readouts without a matching hint field). Ordered in reading order; labels are stable per run.
+public struct UncategorizedOCRExtraction: Sendable, Equatable {
+    public let label: String
+    public let inferredTextType: TextType
+    public let value: String
+    
+    public init(label: String, inferredTextType: TextType, value: String) {
+        self.label = label
+        self.inferredTextType = inferredTextType
+        self.value = value
+    }
+}
+
+/// Coarse classification for a single OCR text fragment (Vision line or substring).
+public enum OCRTextTypeInference: Sendable {
+    public static func inferredType(for text: String) -> TextType {
+        let t = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        if t.isEmpty { return .general }
+        if t.contains("$") || t.contains("€") || t.contains("£") || t.contains("¥") {
+            return .price
+        }
+        if t.allSatisfy({ $0.isNumber || $0 == "." || $0 == "," }) {
+            return .number
+        }
+        if t.contains("@") {
+            return .email
+        }
+        if t.hasPrefix("http") || t.hasPrefix("www") {
+            return .url
+        }
+        if t.range(of: #"\d{1,2}[/-]\d{1,2}[/-]\d{2,4}"#, options: .regularExpression) != nil {
+            return .date
+        }
+        return .general
+    }
+}
+
+public enum OCRUncategorizedExtractionBuilder: Sendable {
+    /// Builds ordered ``UncategorizedOCRExtraction`` values from Vision lines (reading order).
+    /// Skips trimmed lines that exactly match a structured field value.
+    /// By default only includes ``TextType/number``, ``TextType/date``, and ``TextType/price`` clusters.
+    public static func build(
+        recognizedLines: [String],
+        structuredValues: Set<String>,
+        includeEmailAndURL: Bool = false
+    ) -> [UncategorizedOCRExtraction] {
+        var out: [UncategorizedOCRExtraction] = []
+        var counts: [TextType: Int] = [:]
+        for line in recognizedLines {
+            let trimmed = line.trimmingCharacters(in: .whitespacesAndNewlines)
+            if trimmed.isEmpty { continue }
+            let inferred = OCRTextTypeInference.inferredType(for: trimmed)
+            guard isUncategorizedCandidate(inferred, includeEmailAndURL: includeEmailAndURL) else { continue }
+            if structuredValues.contains(trimmed) { continue }
+            let nextIndex = (counts[inferred] ?? 0) + 1
+            counts[inferred] = nextIndex
+            let label = "\(inferred.rawValue)[\(nextIndex)]"
+            out.append(UncategorizedOCRExtraction(label: label, inferredTextType: inferred, value: trimmed))
+        }
+        return out
+    }
+    
+    private static func isUncategorizedCandidate(_ t: TextType, includeEmailAndURL: Bool) -> Bool {
+        switch t {
+        case .number, .date, .price:
+            return true
+        case .email, .url:
+            return includeEmailAndURL
+        default:
+            return false
+        }
+    }
+}
+
 // MARK: - OCR Context
 
 /// Context information for OCR operations
@@ -165,10 +242,15 @@ public struct OCRContext: Sendable {
     /// This is particularly useful when expected ranges are broad but typical values are narrower
     public let fieldAverages: [String: Double]?
     
+    /// When `true`, Vision observations are filtered by ``textTypes`` using coarse ``OCRTextTypeInference``.
+    /// When `false` (default), no per-line type filtering is applied so numeric and label text is not dropped
+    /// solely because the app requested semantic types like ``TextType/quantity`` (GitHub #279).
+    public let strictVisionTextTypeFiltering: Bool
+    
     public init(
         textTypes: [TextType] = [.general],
         language: OCRLanguage = .english,
-        confidenceThreshold: Float = 0.8,
+        confidenceThreshold: Float = 0.35,
         allowsEditing: Bool = true,
         maxImageSize: CGSize? = nil,
         extractionHints: [String: String] = [:],
@@ -176,7 +258,8 @@ public struct OCRContext: Sendable {
         extractionMode: ExtractionMode = .automatic,
         entityName: String? = nil,
         fieldRanges: [String: ValueRange]? = nil,
-        fieldAverages: [String: Double]? = nil
+        fieldAverages: [String: Double]? = nil,
+        strictVisionTextTypeFiltering: Bool = false
     ) {
         self.textTypes = textTypes
         self.language = language
@@ -189,6 +272,12 @@ public struct OCRContext: Sendable {
         self.entityName = entityName
         self.fieldRanges = fieldRanges
         self.fieldAverages = fieldAverages
+        self.strictVisionTextTypeFiltering = strictVisionTextTypeFiltering
+    }
+    
+    /// Text types supplied to Vision for observation filtering. Empty means **no** per-line type filter.
+    public var visionStrategySupportedTextTypes: [TextType] {
+        strictVisionTextTypeFiltering ? textTypes : []
     }
 }
 
@@ -250,6 +339,9 @@ public struct OCRResult: Sendable {
     public let isValid: Bool
     public let validationReason: String?
     
+    /// Typed fragments that did not become ``structuredData`` entries (reading order; GitHub #279).
+    public let uncategorizedExtractions: [UncategorizedOCRExtraction]
+    
     public init(
         extractedText: String,
         confidence: Float,
@@ -261,6 +353,7 @@ public struct OCRResult: Sendable {
         extractionConfidence: Float = 0.0,
         missingRequiredFields: [String] = [],
         adjustedFields: [String: String] = [:],
+        uncategorizedExtractions: [UncategorizedOCRExtraction] = [],
         isValid: Bool? = nil,
         validationReason: String? = nil
     ) {
@@ -274,6 +367,7 @@ public struct OCRResult: Sendable {
         self.extractionConfidence = extractionConfidence
         self.missingRequiredFields = missingRequiredFields
         self.adjustedFields = adjustedFields
+        self.uncategorizedExtractions = uncategorizedExtractions
         
         // Set validation properties - use provided value or compute from confidence
         self.isValid = isValid ?? (confidence >= 0.5)
@@ -296,6 +390,7 @@ public struct OCRResult: Sendable {
                 extractionConfidence: extractionConfidence,
                 missingRequiredFields: missingRequiredFields,
                 adjustedFields: adjustedFields,
+                uncategorizedExtractions: [],
                 isValid: false,
                 validationReason: "Confidence below threshold (\(threshold))"
             )
@@ -337,7 +432,7 @@ public struct OCRConfiguration {
     public init(
         textTypes: [TextType] = [.general],
         language: OCRLanguage = .english,
-        confidenceThreshold: Float = 0.8,
+        confidenceThreshold: Float = 0.35,
         allowsEditing: Bool = true,
         maxImageSize: CGSize? = nil,
         processingOptions: OCRProcessingOptions = OCRProcessingOptions()

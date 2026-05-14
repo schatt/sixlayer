@@ -114,28 +114,15 @@ public struct PrintOptions {
 // MARK: - View Extension
 
 public extension View {
-    
     /// Unified print presentation helper
     ///
     /// **Cross-Platform Behavior:**
     /// - **iOS**: Presents `UIPrintInteractionController` as a modal sheet
-    ///   - Shows print options and preview
-    ///   - Supports AirPrint
-    ///   - Can save as PDF
     /// - **macOS**: Presents `NSPrintOperation` print dialog
-    ///   - Shows standard macOS print panel
-    ///   - Supports all print services
-    ///   - Can save as PDF
     ///
-    /// **Use For**: Printing text, images, PDFs, or SwiftUI views
-    ///
-    /// - Parameters:
-    ///   - isPresented: Binding to control print dialog presentation
-    ///   - content: Content to print (text, image, PDF, or view)
-    ///   - options: Optional print configuration options
-    ///   - onComplete: Optional callback when printing completes
-    /// - Returns: View with print modifier applied
-    @ViewBuilder
+    /// Implementation uses dedicated ``ViewModifier`` types so the `.sheet` branch does not
+    /// fuse with the caller’s opaque `ViewBuilder` type (AttributeGraph + `swift_getOpaqueTypeMetadataImpl`
+    /// crashes on some iOS 26 / XCTest host builds — GitHub #261).
     func platformPrint_L4(
         isPresented: Binding<Bool>,
         content: PrintContent,
@@ -143,28 +130,21 @@ public extension View {
         onComplete: ((Bool) -> Void)? = nil
     ) -> some View {
         #if os(iOS)
-        self.sheet(isPresented: isPresented) {
-            PrintSheet(
-                content: content,
-                options: options,
-                onComplete: onComplete
-            )
-        }
-        .automaticCompliance(named: "platformPrint_L4")
+        modifier(PlatformPrintL4IOSModifier(
+            isPresented: isPresented,
+            printContent: content,
+            options: options,
+            onComplete: onComplete
+        ))
         #elseif os(macOS)
-        self.onChange(of: isPresented.wrappedValue) { oldValue, newValue in
-            if newValue {
-                let _ = platformPrintMacOS(content: content, options: options, onComplete: onComplete)
-                // Reset binding after printing
-                DispatchQueue.main.async {
-                    isPresented.wrappedValue = false
-                }
-            }
-        }
-        .automaticCompliance(named: "platformPrint_L4")
+        modifier(PlatformPrintL4MacModifier(
+            isPresented: isPresented,
+            printContent: content,
+            options: options,
+            onComplete: onComplete
+        ))
         #else
-        self
-            .automaticCompliance(named: "platformPrint_L4")
+        modifier(PlatformPrintL4UnsupportedModifier())
         #endif
     }
 }
@@ -343,6 +323,26 @@ private struct PrintSheet: UIViewControllerRepresentable {
     }
 }
 
+/// Narrow opaque-type surface for `.sheet` + print host (see `View.platformPrint_L4` doc).
+private struct PlatformPrintL4IOSModifier: ViewModifier {
+    @Binding var isPresented: Bool
+    let printContent: PrintContent
+    let options: PrintOptions?
+    let onComplete: ((Bool) -> Void)?
+
+    func body(content: Content) -> some View {
+        content
+            .sheet(isPresented: $isPresented) {
+                PrintSheet(
+                    content: printContent,
+                    options: options,
+                    onComplete: onComplete
+                )
+            }
+            .automaticCompliance(named: "platformPrint_L4")
+    }
+}
+
 /// iOS print helper function
 @MainActor
 private func platformPrintiOS(
@@ -468,9 +468,41 @@ private extension UIPrintInteractionController {
 }
 #endif
 
+#if !os(iOS) && !os(macOS)
+private struct PlatformPrintL4UnsupportedModifier: ViewModifier {
+    func body(content: Content) -> some View {
+        content.automaticCompliance(named: "platformPrint_L4")
+    }
+}
+#endif
+
 // MARK: - macOS Implementation
 
 #if os(macOS)
+private struct PlatformPrintL4MacModifier: ViewModifier {
+    @Binding var isPresented: Bool
+    let printContent: PrintContent
+    let options: PrintOptions?
+    let onComplete: ((Bool) -> Void)?
+
+    func body(content: Content) -> some View {
+        content
+            .onChange(of: isPresented) { _, newValue in
+                if newValue {
+                    let _ = platformPrintMacOS(
+                        content: printContent,
+                        options: options,
+                        onComplete: onComplete
+                    )
+                    DispatchQueue.main.async {
+                        isPresented = false
+                    }
+                }
+            }
+            .automaticCompliance(named: "platformPrint_L4")
+    }
+}
+
 /// macOS print helper function
 @MainActor
 private func platformPrintMacOS(
