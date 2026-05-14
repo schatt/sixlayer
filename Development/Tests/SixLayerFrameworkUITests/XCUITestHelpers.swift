@@ -107,6 +107,20 @@ extension XCUIApplication {
             }
         }
     }
+
+    /// Swipe down on the software keyboard when present so the next `Form` row can scroll above the
+    /// keyboard and accept first responder (Issue #150 / iOS 26 UITest flakes; Refs #261).
+    func xcuiDismissSoftwareKeyboardIfPresent() {
+        #if os(iOS)
+        let board = keyboards.firstMatch
+        guard board.exists else { return }
+        board.swipeDown()
+        let deadline = Date().addingTimeInterval(2.5)
+        while keyboards.firstMatch.exists, Date() < deadline {
+            RunLoop.current.run(until: Date().addingTimeInterval(0.1))
+        }
+        #endif
+    }
 }
 
 // MARK: - XCUIElement Extensions
@@ -140,6 +154,16 @@ extension XCUIElement {
             Thread.sleep(forTimeInterval: 0.1)
         }
         return !exists || !isHittable
+    }
+
+    /// Tap to become first responder; uses a coordinate tap when `Form` chrome clips hittability.
+    func xcuiTapToBecomeFirstResponder() {
+        if isHittable {
+            tap()
+        } else {
+            coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
+        }
+        RunLoop.current.run(until: Date().addingTimeInterval(0.2))
     }
 }
 
