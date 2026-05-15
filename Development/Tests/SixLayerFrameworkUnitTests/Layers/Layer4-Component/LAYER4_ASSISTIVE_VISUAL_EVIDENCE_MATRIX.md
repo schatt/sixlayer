@@ -12,10 +12,12 @@
 | `platformCloudKitAccountStatus_L4` | partial | TBD | TBD | TBD | partial | Hosted semantic surface (`Layer4SemanticAccessibilityCriterionTests`); VO label copy → manual #255. |
 | `platformCloudKitServiceStatus_L4` | partial | TBD | TBD | TBD | partial | Composite host + identifier sweep; contrast of error/queue captions → manual. |
 | `platformCloudKitStatusBadge_L4` | partial | TBD | TBD | TBD | partial | Idle vs syncing hosted trait checks; Dynamic Type scaling → manual or snapshot policy. |
-| `platformShare_L4` / `platformPrint_L4` | partial | TBD | TBD | TBD | partial | Hosted semantic tests assert button-like trigger traits; dialog/picker flows still need explicit assistive walkthrough. |
+| `platformShare_L4` / `platformPrint_L4` | partial | TBD | partial (`platformShare_L4`) | TBD | partial | Share: semantic + Dynamic Type button stability (`Layer4AssistiveVisualAdaptabilityCriterionTests.testPlatformShare_L4_retainsButtonSemanticsAcrossDynamicTypeSteps`); print Dynamic Type → staged. |
 | Navigation / sheet / popover L4 APIs | UITest | TBD | TBD | TBD | partial | `Layer4UITests` exercises structure; macOS parity where scheme runs macOS UITests. |
 | `platformVerticalSplit_L4` / `platformHorizontalSplit_L4` | partial | TBD | partial | TBD | partial | #254 hosted pane ids; #255 Dynamic Type pane stability (`Layer4AssistiveVisualAdaptabilityCriterionTests.testPlatformVerticalSplit_L4_paneMarkersSurviveLargeDynamicTypeHosting`); VO / Switch Control / high contrast still manual. |
-| Photo / map / form L4 APIs | UITest / TBD | TBD | TBD | TBD | TBD | Staged: align with `PHYSICAL_DEVICE_TEST_REGISTRY.md` where hardware matters. |
+| `platformPhotoPicker_L4` / `platformPhotoDisplay_L4` | partial | TBD | partial (picker) | TBD | partial | #254 hosted semantics; picker Dynamic Type (`…testPlatformPhotoPicker_L4_retainsNamedIdentifiersAcrossDynamicTypeSteps`); display Dynamic Type → staged. |
+| `platformMapView_L4` | partial | TBD | TBD | TBD | partial | #254 named compliance on hosted map; full VO / contrast → manual. |
+| `platformFormContainer_L4` / other form APIs | UITest / partial | TBD | TBD | TBD | partial | #254 inner id preservation on form container; per-field values staged. |
 
 **How to close rows**
 
