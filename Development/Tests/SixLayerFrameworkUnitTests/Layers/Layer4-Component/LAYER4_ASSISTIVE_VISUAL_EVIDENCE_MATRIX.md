@@ -7,8 +7,8 @@
 | API | VoiceOver | Switch Control | Dynamic Type | High contrast | Cross-platform (iOS/macOS) | Notes |
 | --- | --- | --- | --- | --- | --- | --- |
 | `platformCloudKitSyncButton_L4` | partial | TBD | partial | TBD | partial | Semantic unit tests (`Layer4SemanticAccessibilityCriterionTests`); Dynamic Type id overlap (`Layer4AssistiveVisualAdaptabilityCriterionTests.testPlatformCloudKitSyncButton_L4_retainsSixLayerIdentifiersAcrossDynamicTypeSteps`); full VO rotor → manual or UI test recording. |
-| `platformCloudKitProgress_L4` | partial | TBD | TBD | TBD | partial | Progress/value exposure under automation; VO “Adjustable” phrasing → manual. |
-| `platformCloudKitSyncStatus_L4` | partial | TBD | TBD | TBD | partial | Combined `Label` + contract identifier; color-only state should not be sole cue (verify in manual pass). |
+| `platformCloudKitProgress_L4` | partial | TBD | partial | TBD | partial | Dynamic Type progress semantics (`Layer4AssistiveVisualAdaptabilityCriterionTests.testPlatformCloudKitProgress_L4_retainsProgressSemanticsAcrossDynamicTypeSteps`); VO “Adjustable” phrasing → manual. |
+| `platformCloudKitSyncStatus_L4` | partial | TBD | partial | TBD | partial | Dynamic Type informative traits (`…testPlatformCloudKitSyncStatus_L4_retainsInformativeSemanticsAcrossDynamicTypeSteps`); color-only state → manual pass. |
 | `platformCloudKitAccountStatus_L4` | partial | TBD | TBD | TBD | partial | Hosted semantic surface (`Layer4SemanticAccessibilityCriterionTests`); VO label copy → manual #255. |
 | `platformCloudKitServiceStatus_L4` | partial | TBD | TBD | TBD | partial | Composite host + identifier sweep; contrast of error/queue captions → manual. |
 | `platformCloudKitStatusBadge_L4` | partial | TBD | TBD | TBD | partial | Idle vs syncing hosted trait checks; Dynamic Type scaling → manual or snapshot policy. |
@@ -17,6 +17,8 @@
 | `platformVerticalSplit_L4` / `platformHorizontalSplit_L4` | partial | TBD | partial | TBD | partial | #254 hosted pane ids; #255 Dynamic Type pane stability (`Layer4AssistiveVisualAdaptabilityCriterionTests.testPlatformVerticalSplit_L4_paneMarkersSurviveLargeDynamicTypeHosting`); VO / Switch Control / high contrast still manual. |
 | `platformPhotoPicker_L4` / `platformPhotoDisplay_L4` | partial | TBD | partial (picker) | TBD | partial | #254 hosted semantics; picker Dynamic Type (`…testPlatformPhotoPicker_L4_retainsNamedIdentifiersAcrossDynamicTypeSteps`); display Dynamic Type → staged. |
 | `platformMapView_L4` | partial | TBD | TBD | TBD | partial | #254 named compliance on hosted map; full VO / contrast → manual. |
+| `platformRowActions_L4` / `platformContextMenu_L4` | partial | TBD | TBD | TBD | partial | #254 named compliance on hosted row/menu anchor; VO swipe/long-press → manual or UITest. |
+| `platformMapViewWithCurrentLocation_L4` | partial | TBD | TBD | TBD | partial | #254 named compliance (`…testPlatformMapViewWithCurrentLocation_L4_exposesNamedComplianceOnHostedTree`); location permission flows → manual where needed. |
 | `platformFormContainer_L4` / other form APIs | UITest / partial | TBD | TBD | TBD | partial | #254 inner id preservation on form container; per-field values staged. |
 
 **How to close rows**
