@@ -35,8 +35,9 @@ final class Layer4UITests: XCTestCase {
     /// UITest fail-fast: bounded launch + scroll work so a bad host does not burn CI minutes (Refs #261).
     private static let rootReadyTimeout: TimeInterval = 3.0
     /// Deep `Form` hosts need more than a handful of swipes; still capped (Refs #261).
-    private static let maxScrollAttempts = 12
-    private static let maxL4SystemScrollAttempts = 20
+    /// Root `Form` is tall (overlay ~400pt + full L4 sections); shallow caps miss L4 Controls / System (#261).
+    private static let maxScrollAttempts = 28
+    private static let maxL4SystemScrollAttempts = 36
 
     nonisolated override func setUpWithError() throws {
         continueAfterFailure = false
@@ -210,13 +211,16 @@ final class Layer4UITests: XCTestCase {
     @MainActor
     private func scrollToL4SystemCloudKitContracts() {
         scrollToFormSectionHeader(title: "L4 System")
-        scrollToElement(label: "CloudKit Sync Status", maxAttempts: Self.maxL4SystemScrollAttempts)
+        // Caption labels are flaky; anchor on the first L4 System contract control (clipboard row).
+        scrollToContractIdentifier("L4ContractCopy", maxAttempts: Self.maxL4SystemScrollAttempts)
+        nudgeScrollInsideL4SystemSection()
+        scrollToContractIdentifier("platformCloudKitSyncStatus_L4", maxAttempts: Self.maxL4SystemScrollAttempts)
         nudgeScrollInsideL4SystemSection()
     }
 
     /// Scroll until a contract accessibility identifier is on-screen (L4 System rows are deep under overlay section).
     @MainActor
-    private func scrollToContractIdentifier(_ identifier: String) {
+    private func scrollToContractIdentifier(_ identifier: String, maxAttempts: Int = Self.maxScrollAttempts) {
         let node = element(matchingIdentifier: identifier)
         if node.waitForExistence(timeout: Self.quickWait) { return }
         let contains = app.descendants(matching: .any)
@@ -224,7 +228,7 @@ final class Layer4UITests: XCTestCase {
             .firstMatch
         if contains.waitForExistence(timeout: Self.quickWait) { return }
         if !app.xcuiPrimaryScrollHost().exists, !app.tables.firstMatch.exists, !app.scrollViews.firstMatch.exists { return }
-        for _ in 0..<Self.maxScrollAttempts {
+        for _ in 0..<maxAttempts {
             app.xcuiSwipeScrollHostsUp()
             if node.waitForExistence(timeout: Self.quickWait) { return }
             if contains.waitForExistence(timeout: Self.quickWait) { return }
@@ -1055,7 +1059,7 @@ final class Layer4UITests: XCTestCase {
     func testL4_platformCloudKitSyncStatus_L4() throws {
         ensureContractRoot()
         scrollToL4SystemCloudKitContracts()
-        scrollToContractIdentifier("platformCloudKitSyncStatus_L4")
+        scrollToContractIdentifier("platformCloudKitSyncStatus_L4", maxAttempts: Self.maxL4SystemScrollAttempts)
         let exactId = element(matchingIdentifier: "platformCloudKitSyncStatus_L4")
         XCTAssertTrue(
             exactId.waitForExistence(timeout: 3.5),
@@ -1184,7 +1188,7 @@ final class Layer4UITests: XCTestCase {
     func testL4_platformPhotoPicker_L4() throws {
         ensureContractRoot()
         scrollToL4SystemCloudKitContracts()
-        scrollToContractIdentifier("L4ContractPhotoPickerOpen")
+        scrollToContractIdentifier("L4ContractPhotoPickerOpen", maxAttempts: Self.maxL4SystemScrollAttempts)
         let openBtn = app.buttons["L4ContractPhotoPickerOpen"].firstMatch
         let openAny = app.descendants(matching: .any)
             .matching(NSPredicate(format: "identifier == %@ OR label == %@", "L4ContractPhotoPickerOpen", "L4ContractPhotoPickerOpen"))
