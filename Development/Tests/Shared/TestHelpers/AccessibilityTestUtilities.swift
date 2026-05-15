@@ -628,6 +628,55 @@ public func hostedUIKitAccessibilityValuePresent(
         return true
     }
 }
+
+/// Proxy for VoiceOver traversal: a named, non-hidden node with meaningful traits on the hosted UIKit tree.
+@MainActor
+public func hostedTreeHasVoiceOverDiscoverableNode(root: Any?) -> Bool {
+    hostedUIKitAccessibilityHierarchyContains(root: root) { view in
+        if view.accessibilityElementsHidden { return false }
+        let hasName = !(view.accessibilityLabel ?? "").isEmpty || !(view.accessibilityIdentifier ?? "").isEmpty
+        guard hasName else { return false }
+        let traits = view.accessibilityTraits
+        return traits.contains(.button)
+            || traits.contains(.link)
+            || traits.contains(.staticText)
+            || traits.contains(.header)
+            || traits.contains(.image)
+            || traits.contains(.adjustable)
+            || traits.contains(.updatesFrequently)
+            || traits.contains(.searchField)
+    }
+}
+
+/// Proxy for Switch Control focus: actionable traits (or SixLayer-identified informative surfaces).
+@MainActor
+public func hostedTreeHasSwitchControlActivationCandidate(root: Any?) -> Bool {
+    hostedUIKitAccessibilityHierarchyContains(root: root) { view in
+        if view.accessibilityElementsHidden { return false }
+        let traits = view.accessibilityTraits
+        let hasName = !(view.accessibilityLabel ?? "").isEmpty || !(view.accessibilityIdentifier ?? "").isEmpty
+        guard hasName else { return false }
+        if traits.contains(.button) || traits.contains(.link) || traits.contains(.adjustable) {
+            return true
+        }
+        if !(view.accessibilityIdentifier ?? "").isEmpty {
+            return traits.contains(.staticText)
+                || traits.contains(.header)
+                || traits.contains(.image)
+                || traits.contains(.updatesFrequently)
+        }
+        return false
+    }
+}
+
+/// High-contrast / differentiate-without-color proxy: SixLayer identifier keys overlap after visual adaptability overrides.
+@MainActor
+public func hostedTreesRetainOverlappingSixLayerAccessibilityKeys(defaultRoot: Any?, adaptedRoot: Any?) -> Bool {
+    let defaultIDs = Set(findAllAccessibilityIdentifiersFromPlatformView(defaultRoot).filter { $0.contains("SixLayer") })
+    let adaptedIDs = Set(findAllAccessibilityIdentifiersFromPlatformView(adaptedRoot).filter { $0.contains("SixLayer") })
+    guard !defaultIDs.isEmpty, !adaptedIDs.isEmpty else { return false }
+    return !defaultIDs.isDisjoint(with: adaptedIDs)
+}
 #endif
 
 /// Find ALL accessibility identifiers in a platform view hierarchy (not just the first one)
