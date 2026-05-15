@@ -28,8 +28,7 @@ open class Layer4AssistiveVisualAdaptabilityCriterionTests: BaseTestClass {
     @MainActor
     private func hostedRoot<V: View>(
         for view: V,
-        increasedContrast: Bool = false,
-        differentiateWithoutColor: Bool = false
+        increasedContrast: Bool = false
     ) -> Any? {
         let config = TestSetupUtilities.makeIsolatedAccessibilityIdentifierConfig()
         config.resetToDefaults()
@@ -42,16 +41,13 @@ open class Layer4AssistiveVisualAdaptabilityCriterionTests: BaseTestClass {
         config.enableUITestIntegration = true
         config.enableDebugLogging = false
         return AccessibilityIdentifierConfig.$taskLocalConfig.withValue(config) {
-            let withConfig = view.environment(\.accessibilityIdentifierConfig, config)
-            let withDifferentiate = differentiateWithoutColor
-                ? AnyView(withConfig.environment(\.accessibilityDifferentiateWithoutColor, true))
-                : AnyView(withConfig)
+            let withConfig = AnyView(view.environment(\.accessibilityIdentifierConfig, config))
             let configured: AnyView = {
-                guard increasedContrast else { return withDifferentiate }
+                guard increasedContrast else { return withConfig }
                 if #available(iOS 17.0, macOS 14.0, *) {
-                    return AnyView(withDifferentiate.environment(\.colorSchemeContrast, .increased))
+                    return AnyView(withConfig.environment(\.colorSchemeContrast, .increased))
                 }
-                return withDifferentiate
+                return withConfig
             }()
             return Self.hostRootPlatformView(
                 configured,
@@ -65,11 +61,7 @@ open class Layer4AssistiveVisualAdaptabilityCriterionTests: BaseTestClass {
     @MainActor
     private func assertLayer4AssistiveVisualAdaptability(caseName: String, view: some View) {
         let defaultRoot = hostedRoot(for: view)
-        let adaptedRoot = hostedRoot(
-            for: view,
-            increasedContrast: true,
-            differentiateWithoutColor: true
-        )
+        let adaptedRoot = hostedRoot(for: view, increasedContrast: true)
         #expect(defaultRoot != nil && adaptedRoot != nil, "\(caseName): hosted roots should exist")
         guard hostedTreeExposesSemanticSurface(defaultRoot), hostedTreeExposesSemanticSurface(adaptedRoot) else {
             #expect(Bool(true), "\(caseName): hosted UIKit tree did not expose semantic accessibility surface in this lane")
@@ -87,7 +79,7 @@ open class Layer4AssistiveVisualAdaptabilityCriterionTests: BaseTestClass {
         )
         #expect(
             hostedTreesRetainOverlappingSixLayerAccessibilityKeys(defaultRoot: defaultRoot, adaptedRoot: adaptedRoot),
-            "\(caseName): SixLayer accessibility keys should overlap under increased contrast and differentiate-without-color"
+            "\(caseName): SixLayer accessibility keys should overlap under increased color-scheme contrast"
         )
     }
 
