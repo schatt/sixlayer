@@ -213,6 +213,114 @@ open class Layer4AssistiveVisualAdaptabilityCriterionTests: BaseTestClass {
         let buttonScaled = hostedUIKitAccessibilityHierarchyContains(root: rootScaled) { $0.accessibilityTraits.contains(.button) }
         #expect(buttonDefault && buttonScaled, "share trigger should remain button-discoverable under elevated Dynamic Type")
     }
+
+    @Test @MainActor
+    func testPlatformPrint_L4_retainsButtonSemanticsAcrossDynamicTypeSteps() async {
+        let view = Button("Print255") { }
+            .platformPrint_L4(isPresented: .constant(false), content: .text("test print"))
+        let rootDefault = hostedRoot(for: view)
+        let rootScaled = hostedRoot(for: view.dynamicTypeSize(.accessibility3))
+        #expect(rootDefault != nil && rootScaled != nil)
+        guard hostedTreeExposesSemanticSurface(rootDefault), hostedTreeExposesSemanticSurface(rootScaled) else {
+            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
+            return
+        }
+        let buttonDefault = hostedUIKitAccessibilityHierarchyContains(root: rootDefault) { $0.accessibilityTraits.contains(.button) }
+        let buttonScaled = hostedUIKitAccessibilityHierarchyContains(root: rootScaled) { $0.accessibilityTraits.contains(.button) }
+        #expect(buttonDefault && buttonScaled, "print trigger should remain button-discoverable under elevated Dynamic Type")
+    }
+
+    @Test @MainActor
+    func testPlatformPhotoDisplay_L4_retainsContractIdentifierAcrossDynamicTypeSteps() async {
+        let view = PlatformPhotoComponentsLayer4.platformPhotoDisplay_L4(image: nil, style: .thumbnail)
+        let rootDefault = hostedRoot(for: view)
+        let rootScaled = hostedRoot(for: view.dynamicTypeSize(.accessibility3))
+        #expect(rootDefault != nil && rootScaled != nil)
+        guard hostedTreeExposesSemanticSurface(rootDefault), hostedTreeExposesSemanticSurface(rootScaled) else {
+            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
+            return
+        }
+        func hasDisplayMarkers(_ root: Any?) -> Bool {
+            hostedUIKitAccessibilityHierarchyContains(root: root) { v in
+                (v.accessibilityIdentifier ?? "").contains("platformPhotoDisplay_L4")
+            }
+        }
+        #expect(
+            hasDisplayMarkers(rootDefault) && hasDisplayMarkers(rootScaled),
+            "photo display should keep contract identifier when Dynamic Type increases"
+        )
+    }
+
+    @Test @MainActor
+    func testPlatformCloudKitAccountStatus_L4_retainsInformativeSemanticsAcrossDynamicTypeSteps() async {
+        let view = platformCloudKitAccountStatus_L4(status: .available)
+        let rootDefault = hostedRoot(for: view)
+        let rootScaled = hostedRoot(for: view.dynamicTypeSize(.accessibility3))
+        #expect(rootDefault != nil && rootScaled != nil)
+        guard hostedTreeExposesSemanticSurface(rootDefault), hostedTreeExposesSemanticSurface(rootScaled) else {
+            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
+            return
+        }
+        func hasAccountSurface(_ root: Any?) -> Bool {
+            hostedUIKitAccessibilityHierarchyContains(root: root) { v in
+                guard let label = v.accessibilityLabel, label.localizedCaseInsensitiveContains("icloud") else { return false }
+                return v.accessibilityTraits.contains(.staticText)
+                    || v.accessibilityTraits.contains(.image)
+                    || v.accessibilityTraits.contains(.updatesFrequently)
+            }
+        }
+        #expect(
+            hasAccountSurface(rootDefault) && hasAccountSurface(rootScaled),
+            "account status should keep iCloud-related informative semantics when Dynamic Type increases"
+        )
+    }
+
+    @Test @MainActor
+    func testPlatformCloudKitServiceStatus_L4_retainsSixLayerIdentifiersAcrossDynamicTypeSteps() async {
+        let delegate = TestCloudKitDelegate()
+        let service = CloudKitService(delegate: delegate)
+        let view = platformCloudKitServiceStatus_L4(service: service)
+        let rootDefault = hostedRoot(for: view)
+        let rootScaled = hostedRoot(for: view.dynamicTypeSize(.accessibility3))
+        #expect(rootDefault != nil && rootScaled != nil)
+        guard hostedTreeExposesSemanticSurface(rootDefault), hostedTreeExposesSemanticSurface(rootScaled) else {
+            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
+            return
+        }
+        let defaultIDs = Set(sixLayerAccessibilityIDs(from: rootDefault))
+        let scaledIDs = Set(sixLayerAccessibilityIDs(from: rootScaled))
+        #expect(!defaultIDs.isEmpty && !scaledIDs.isEmpty, "service status should expose SixLayer ids at both Dynamic Type steps")
+        #expect(
+            !defaultIDs.isDisjoint(with: scaledIDs),
+            "service status should keep overlapping SixLayer identifier keys when Dynamic Type increases"
+        )
+    }
+
+    @Test @MainActor
+    func testPlatformCloudKitStatusBadge_L4_idle_retainsInformativeSemanticsAcrossDynamicTypeSteps() async {
+        let delegate = TestCloudKitDelegate()
+        let service = CloudKitService(delegate: delegate)
+        service.syncStatus = .idle
+        let view = platformCloudKitStatusBadge_L4(service: service)
+        let rootDefault = hostedRoot(for: view)
+        let rootScaled = hostedRoot(for: view.dynamicTypeSize(.accessibility3))
+        #expect(rootDefault != nil && rootScaled != nil)
+        guard hostedTreeExposesSemanticSurface(rootDefault), hostedTreeExposesSemanticSurface(rootScaled) else {
+            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
+            return
+        }
+        func hasBadgeSemantics(_ root: Any?) -> Bool {
+            hostedUIKitAccessibilityHierarchyContains(root: root) { v in
+                v.accessibilityTraits.contains(.image)
+                    || v.accessibilityTraits.contains(.staticText)
+                    || v.accessibilityTraits.contains(.updatesFrequently)
+            }
+        }
+        #expect(
+            hasBadgeSemantics(rootDefault) && hasBadgeSemantics(rootScaled),
+            "idle status badge should keep informative traits when Dynamic Type increases"
+        )
+    }
 }
 
 #endif
