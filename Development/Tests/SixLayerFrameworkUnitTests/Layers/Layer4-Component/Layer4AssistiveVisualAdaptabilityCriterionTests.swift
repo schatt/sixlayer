@@ -41,21 +41,30 @@ open class Layer4AssistiveVisualAdaptabilityCriterionTests: BaseTestClass {
         config.enableUITestIntegration = true
         config.enableDebugLogging = false
         return AccessibilityIdentifierConfig.$taskLocalConfig.withValue(config) {
-            let withConfig = AnyView(view.environment(\.accessibilityIdentifierConfig, config))
-            let configured: AnyView = {
-                guard increasedContrast else { return withConfig }
-                if #available(iOS 17.0, macOS 14.0, *) {
-                    return AnyView(withConfig.environment(\.colorSchemeContrast, .increased))
-                }
-                return withConfig
-            }()
-            return Self.hostRootPlatformView(
+            let configured = AnyView(view.environment(\.accessibilityIdentifierConfig, config))
+            let root = Self.hostRootPlatformView(
                 configured,
                 forceLayout: true,
                 exposeContentAccessibility: true,
                 accessibilityIdentifierConfig: config
             )
+            if increasedContrast {
+                applyHostedIncreasedAccessibilityContrast(to: root)
+            }
+            return root
         }
+    }
+
+    @MainActor
+    private func applyHostedIncreasedAccessibilityContrast(to root: Any?) {
+        guard let rootView = root as? UIView else { return }
+        let highContrast = UITraitCollection(accessibilityContrast: .high)
+        if let window = rootView.window, let host = window.rootViewController {
+            host.setOverrideTraitCollection(highContrast, forChild: host)
+        }
+        rootView.setNeedsLayout()
+        rootView.layoutIfNeeded()
+        RunLoop.current.run(until: Date().addingTimeInterval(0.05))
     }
 
     @MainActor
