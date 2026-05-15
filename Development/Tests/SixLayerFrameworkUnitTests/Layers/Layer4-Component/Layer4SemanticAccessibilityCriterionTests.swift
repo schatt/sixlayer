@@ -787,6 +787,86 @@ open class Layer4SemanticAccessibilityCriterionTests: BaseTestClass {
             "form container should preserve inner automaticCompliance identifiers in the hosted subtree"
         )
     }
+
+    // MARK: - Row actions & context menu (Issue #254)
+
+    @Test @MainActor
+    func testPlatformRowActions_L4_exposesNamedComplianceOnRowAnchor() async {
+        let view = List {
+            Text("L4RowActionsAnchor254")
+                .automaticCompliance(
+                    identifierName: "L4RowActionsAnchor254",
+                    identifierElementType: "Text"
+                )
+                .platformRowActions_L4 {
+                    Button("Remove", role: .destructive) { }
+                }
+        }
+        let root = hostedRoot(for: view)
+        #expect(root != nil)
+        guard hostedTreeExposesSemanticSurface(root) else {
+            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
+            return
+        }
+        let named = hostedUIKitAccessibilityHierarchyContains(root: root) { v in
+            let id = v.accessibilityIdentifier ?? ""
+            return id.contains("platformRowActions_L4")
+                || id.contains("L4RowActionsAnchor254")
+                || id.contains("SixLayer.main.ui")
+        }
+        #expect(named, "platformRowActions_L4 should attach named compliance to the hosted row subtree")
+    }
+
+    @Test @MainActor
+    func testPlatformContextMenu_L4_exposesNamedComplianceOnAnchorTree() async {
+        let view = Text("L4ContextMenuAnchor254")
+            .automaticCompliance(
+                identifierName: "L4ContextMenuAnchor254",
+                identifierElementType: "Text"
+            )
+            .platformContextMenu_L4 {
+                Button("L4ContextMenuAction254") { }
+            }
+        let root = hostedRoot(for: view)
+        #expect(root != nil)
+        guard hostedTreeExposesSemanticSurface(root) else {
+            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
+            return
+        }
+        let named = hostedUIKitAccessibilityHierarchyContains(root: root) { v in
+            let id = v.accessibilityIdentifier ?? ""
+            return id.contains("platformContextMenu_L4")
+                || id.contains("L4ContextMenuAnchor254")
+                || id.contains("SixLayer.main.ui")
+        }
+        #expect(named, "platformContextMenu_L4 should attach named automaticCompliance to the hosted anchor subtree")
+    }
+
+    #if canImport(MapKit)
+    @Test @MainActor
+    @available(iOS 17.0, macOS 14.0, *)
+    func testPlatformMapViewWithCurrentLocation_L4_exposesNamedComplianceOnHostedTree() async {
+        let locationService = LocationService()
+        let view = PlatformMapComponentsLayer4.platformMapViewWithCurrentLocation_L4(
+            locationService: locationService,
+            showCurrentLocation: false
+        )
+        let root = hostedRoot(for: view)
+        #expect(root != nil)
+        guard hostedTreeExposesSemanticSurface(root) else {
+            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
+            return
+        }
+        let named = hostedUIKitAccessibilityHierarchyContains(root: root) { v in
+            let id = v.accessibilityIdentifier ?? ""
+            return id.contains("platformMapViewWithCurrentLocation_L4") || id.contains("SixLayer.main.ui")
+        }
+        #expect(
+            named,
+            "platformMapViewWithCurrentLocation_L4 should attach named automaticCompliance to the hosted map subtree"
+        )
+    }
+    #endif
 }
 
 #endif
