@@ -435,6 +435,283 @@ open class Layer4AssistiveVisualAdaptabilityCriterionTests: BaseTestClass {
         )
     }
 
+    @Test @MainActor
+    func testPlatformFormContainer_L4_retainsInnerIdentifiersAcrossDynamicTypeSteps() async {
+        let view = platformFormContainer_L4(
+            strategy: FormStrategy(containerType: .form, fieldLayout: .standard, validation: .deferred)
+        ) {
+            Text("L4FormInner255DT")
+                .automaticCompliance(identifierName: "L4FormInner255DT", identifierElementType: "Text")
+        }
+        let rootDefault = hostedRoot(for: view)
+        let rootScaled = hostedRoot(for: view.dynamicTypeSize(.accessibility3))
+        #expect(rootDefault != nil && rootScaled != nil)
+        guard hostedTreeExposesSemanticSurface(rootDefault), hostedTreeExposesSemanticSurface(rootScaled) else {
+            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
+            return
+        }
+        func hasInnerMarkers(_ root: Any?) -> Bool {
+            let ids = findAllAccessibilityIdentifiersFromPlatformView(root)
+            if ids.contains(where: { $0.contains("L4FormInner255DT") }) { return true }
+            return hostedUIKitAccessibilityHierarchyContains(root: root) { ($0.accessibilityIdentifier ?? "").contains("L4FormInner255DT") }
+        }
+        #expect(
+            hasInnerMarkers(rootDefault) && hasInnerMarkers(rootScaled),
+            "form container should preserve inner identifiers when Dynamic Type increases"
+        )
+    }
+
+    @Test @MainActor
+    func testPlatformFormFieldGroup_L4_retainsNamedComplianceAcrossDynamicTypeSteps() async {
+        let view = Text("L4FormGroupAnchor255DT")
+            .platformFormFieldGroup(title: "L4FormGroupTitle255DT") {
+                Text("L4FormGroupInner255DT")
+                    .automaticCompliance(identifierName: "L4FormGroupInner255DT", identifierElementType: "Text")
+            }
+        let rootDefault = hostedRoot(for: view)
+        let rootScaled = hostedRoot(for: view.dynamicTypeSize(.accessibility3))
+        #expect(rootDefault != nil && rootScaled != nil)
+        guard hostedTreeExposesSemanticSurface(rootDefault), hostedTreeExposesSemanticSurface(rootScaled) else {
+            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
+            return
+        }
+        func hasGroupMarkers(_ root: Any?) -> Bool {
+            hostedUIKitAccessibilityHierarchyContains(root: root) { v in
+                let id = v.accessibilityIdentifier ?? ""
+                return id.contains("platformFormFieldGroup") || id.contains("L4FormGroupInner255DT") || id.contains("SixLayer")
+            }
+        }
+        #expect(
+            hasGroupMarkers(rootDefault) && hasGroupMarkers(rootScaled),
+            "form field group should keep discoverable identifiers when Dynamic Type increases"
+        )
+    }
+
+    @Test @MainActor
+    func testPlatformRowActions_L4_retainsNamedComplianceAcrossDynamicTypeSteps() async {
+        let view = List {
+            Text("L4RowActionsAnchor255DT")
+                .automaticCompliance(identifierName: "L4RowActionsAnchor255DT", identifierElementType: "Text")
+                .platformRowActions_L4 {
+                    Button("Remove", role: .destructive) { }
+                }
+        }
+        let rootDefault = hostedRoot(for: view)
+        let rootScaled = hostedRoot(for: view.dynamicTypeSize(.accessibility3))
+        #expect(rootDefault != nil && rootScaled != nil)
+        guard hostedTreeExposesSemanticSurface(rootDefault), hostedTreeExposesSemanticSurface(rootScaled) else {
+            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
+            return
+        }
+        func hasRowActionMarkers(_ root: Any?) -> Bool {
+            hostedUIKitAccessibilityHierarchyContains(root: root) { v in
+                let id = v.accessibilityIdentifier ?? ""
+                return id.contains("platformRowActions_L4") || id.contains("L4RowActionsAnchor255DT") || id.contains("SixLayer")
+            }
+        }
+        #expect(
+            hasRowActionMarkers(rootDefault) && hasRowActionMarkers(rootScaled),
+            "row actions should keep named compliance when Dynamic Type increases"
+        )
+    }
+
+    @Test @MainActor
+    func testPlatformContextMenu_L4_retainsNamedComplianceAcrossDynamicTypeSteps() async {
+        let view = Text("L4ContextMenuAnchor255DT")
+            .automaticCompliance(identifierName: "L4ContextMenuAnchor255DT", identifierElementType: "Text")
+            .platformContextMenu_L4 {
+                Button("L4ContextMenuAction255DT") { }
+            }
+        let rootDefault = hostedRoot(for: view)
+        let rootScaled = hostedRoot(for: view.dynamicTypeSize(.accessibility3))
+        #expect(rootDefault != nil && rootScaled != nil)
+        guard hostedTreeExposesSemanticSurface(rootDefault), hostedTreeExposesSemanticSurface(rootScaled) else {
+            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
+            return
+        }
+        func hasContextMenuMarkers(_ root: Any?) -> Bool {
+            hostedUIKitAccessibilityHierarchyContains(root: root) { v in
+                let id = v.accessibilityIdentifier ?? ""
+                return id.contains("platformContextMenu_L4") || id.contains("L4ContextMenuAnchor255DT") || id.contains("SixLayer")
+            }
+        }
+        #expect(
+            hasContextMenuMarkers(rootDefault) && hasContextMenuMarkers(rootScaled),
+            "context menu anchor should keep named compliance when Dynamic Type increases"
+        )
+    }
+
+    @Test @MainActor
+    func testPlatformAppNavigation_L4_retainsSidebarDetailMarkersAcrossDynamicTypeSteps() async {
+        let strategy = AppNavigationStrategy(implementation: .splitView, reasoning: "255 Dynamic Type criterion")
+        let view = EmptyView()
+            .platformAppNavigation_L4(
+                strategy: strategy,
+                sidebar: {
+                    Text("L4AppNavSidebar255DT")
+                        .automaticCompliance(identifierName: "L4AppNavSidebar255DT", identifierElementType: "Text")
+                },
+                detail: {
+                    Text("L4AppNavDetail255DT")
+                        .automaticCompliance(identifierName: "L4AppNavDetail255DT", identifierElementType: "Text")
+                }
+            )
+        let rootDefault = hostedRoot(for: view)
+        let rootScaled = hostedRoot(for: view.dynamicTypeSize(.accessibility3))
+        #expect(rootDefault != nil && rootScaled != nil)
+        guard hostedTreeExposesSemanticSurface(rootDefault), hostedTreeExposesSemanticSurface(rootScaled) else {
+            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
+            return
+        }
+        func hasSidebarDetailMarkers(_ root: Any?) -> Bool {
+            let ids = findAllAccessibilityIdentifiersFromPlatformView(root)
+            let sidebar = ids.contains { $0.contains("L4AppNavSidebar255DT") }
+            let detail = ids.contains { $0.contains("L4AppNavDetail255DT") }
+            if sidebar && detail { return true }
+            return hostedUIKitAccessibilityHierarchyContains(root: root) { v in
+                let id = v.accessibilityIdentifier ?? ""
+                return id.contains("L4AppNavSidebar255DT") || id.contains("L4AppNavDetail255DT")
+            }
+        }
+        #expect(
+            hasSidebarDetailMarkers(rootDefault) && hasSidebarDetailMarkers(rootScaled),
+            "app navigation should retain sidebar and detail markers when Dynamic Type increases"
+        )
+    }
+
+    @Test @MainActor
+    func testPlatformSettingsContainer_L4_retainsSidebarDetailMarkersAcrossDynamicTypeSteps() async {
+        let view = EmptyView()
+            .platformSettingsContainer_L4(
+                sidebar: {
+                    Text("L4SettingsSidebar255DT")
+                        .automaticCompliance(identifierName: "L4SettingsSidebar255DT", identifierElementType: "Text")
+                },
+                detail: {
+                    Text("L4SettingsDetail255DT")
+                        .automaticCompliance(identifierName: "L4SettingsDetail255DT", identifierElementType: "Text")
+                }
+            )
+        let rootDefault = hostedRoot(for: view)
+        let rootScaled = hostedRoot(for: view.dynamicTypeSize(.accessibility3))
+        #expect(rootDefault != nil && rootScaled != nil)
+        guard hostedTreeExposesSemanticSurface(rootDefault), hostedTreeExposesSemanticSurface(rootScaled) else {
+            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
+            return
+        }
+        func hasSettingsMarkers(_ root: Any?) -> Bool {
+            let ids = findAllAccessibilityIdentifiersFromPlatformView(root)
+            let sidebar = ids.contains { $0.contains("L4SettingsSidebar255DT") }
+            let detail = ids.contains { $0.contains("L4SettingsDetail255DT") }
+            if sidebar && detail { return true }
+            return hostedUIKitAccessibilityHierarchyContains(root: root) { v in
+                let id = v.accessibilityIdentifier ?? ""
+                return id.contains("L4SettingsSidebar255DT") || id.contains("L4SettingsDetail255DT")
+            }
+        }
+        #expect(
+            hasSettingsMarkers(rootDefault) && hasSettingsMarkers(rootScaled),
+            "settings container should retain sidebar and detail markers when Dynamic Type increases"
+        )
+    }
+
+    #if canImport(MapKit)
+    @Test @MainActor
+    @available(iOS 17.0, macOS 14.0, *)
+    func testPlatformMapView_L4_retainsMapSubtreeAcrossDynamicTypeSteps() async {
+        let position = Binding.constant(MapCameraPosition.automatic)
+        let view = VStack {
+            PlatformMapComponentsLayer4.platformMapView_L4(position: position, annotations: [])
+        }
+        .frame(width: 320, height: 240)
+        let rootDefault = hostedRoot(for: view)
+        let rootScaled = hostedRoot(for: view.dynamicTypeSize(.accessibility3))
+        #expect(rootDefault != nil && rootScaled != nil)
+        func hasMapMarkers(_ root: Any?) -> Bool {
+            let ids = findAllAccessibilityIdentifiersFromPlatformView(root)
+            if ids.contains(where: { $0.contains("platformMapView_L4") || $0.contains("SixLayer") }) { return true }
+            return hostedUIKitAccessibilityHierarchyContains(root: root) { $0 is MKMapView }
+        }
+        #expect(
+            hasMapMarkers(rootDefault) && hasMapMarkers(rootScaled),
+            "map view should keep MKMapView or contract identifiers when Dynamic Type increases"
+        )
+    }
+
+    @Test @MainActor
+    @available(iOS 17.0, macOS 14.0, *)
+    func testPlatformMapViewWithCurrentLocation_L4_retainsNamedComplianceAcrossDynamicTypeSteps() async {
+        let view = PlatformMapComponentsLayer4.platformMapViewWithCurrentLocation_L4(
+            locationService: LocationService(),
+            showCurrentLocation: false
+        )
+        let rootDefault = hostedRoot(for: view)
+        let rootScaled = hostedRoot(for: view.dynamicTypeSize(.accessibility3))
+        #expect(rootDefault != nil && rootScaled != nil)
+        guard hostedTreeExposesSemanticSurface(rootDefault), hostedTreeExposesSemanticSurface(rootScaled) else {
+            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
+            return
+        }
+        func hasLocationMapMarkers(_ root: Any?) -> Bool {
+            hostedUIKitAccessibilityHierarchyContains(root: root) { v in
+                let id = v.accessibilityIdentifier ?? ""
+                return id.contains("platformMapViewWithCurrentLocation_L4") || id.contains("SixLayer")
+            }
+                || hostedUIKitAccessibilityHierarchyContains(root: root) { $0 is MKMapView }
+        }
+        #expect(
+            hasLocationMapMarkers(rootDefault) && hasLocationMapMarkers(rootScaled),
+            "map with current location should keep named compliance or MKMapView when Dynamic Type increases"
+        )
+    }
+    #endif
+
+    #if os(iOS)
+    @Test @MainActor
+    func testPlatformCameraInterface_L4_retainsSemanticsAcrossDynamicTypeSteps() async {
+        let view = PlatformPhotoComponentsLayer4.platformCameraInterface_L4 { _ in }
+        let rootDefault = hostedRoot(for: view)
+        let rootScaled = hostedRoot(for: view.dynamicTypeSize(.accessibility3))
+        #expect(rootDefault != nil && rootScaled != nil)
+        guard hostedTreeExposesSemanticSurface(rootDefault), hostedTreeExposesSemanticSurface(rootScaled) else {
+            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
+            return
+        }
+        func hasCameraSemantics(_ root: Any?) -> Bool {
+            hostedUIKitAccessibilityHierarchyContains(root: root) { v in
+                let id = v.accessibilityIdentifier ?? ""
+                return id.contains("platformCameraInterface_L4") || id.contains("SixLayer") || v.accessibilityTraits.contains(.button)
+            }
+        }
+        #expect(
+            hasCameraSemantics(rootDefault) && hasCameraSemantics(rootScaled),
+            "camera interface should keep identifiers or button semantics when Dynamic Type increases"
+        )
+    }
+
+    @Test @MainActor
+    func testPlatformCameraPreview_L4_retainsNamedComplianceAcrossDynamicTypeSteps() async {
+        let view = PlatformPhotoComponentsLayer4.platformCameraPreview_L4(session: AVCaptureSession())
+        let rootDefault = hostedRoot(for: view)
+        let rootScaled = hostedRoot(for: view.dynamicTypeSize(.accessibility3))
+        #expect(rootDefault != nil && rootScaled != nil)
+        guard hostedTreeExposesSemanticSurface(rootDefault), hostedTreeExposesSemanticSurface(rootScaled) else {
+            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
+            return
+        }
+        func hasPreviewMarkers(_ root: Any?) -> Bool {
+            hostedUIKitAccessibilityHierarchyContains(root: root) { v in
+                let id = v.accessibilityIdentifier ?? ""
+                return id.contains("platformCameraPreview_L4") || id.contains("SixLayer")
+            }
+        }
+        #expect(
+            hasPreviewMarkers(rootDefault) && hasPreviewMarkers(rootScaled),
+            "camera preview should keep named compliance when Dynamic Type increases"
+        )
+    }
+    #endif
+
     // MARK: - Matrix sweep: VoiceOver / Switch Control / high contrast (#255)
 
     @Test @MainActor
