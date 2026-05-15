@@ -92,6 +92,9 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
         let hyphenated = fragment
             .replacingOccurrences(of: "_", with: "-")
             .lowercased()
+        let genPred = NSPredicate(format: "identifier CONTAINS[c] %@", "SixLayer.main.ui.\(hyphenated)")
+        let byGen = app.descendants(matching: .secureTextField).matching(genPred).firstMatch
+        if byGen.waitForExistence(timeout: 0.6) { return byGen }
         let candidates = [fragment, hyphenated, "UITest_\(fragment)"]
         for key in candidates {
             let direct = app.secureTextFields[key]
