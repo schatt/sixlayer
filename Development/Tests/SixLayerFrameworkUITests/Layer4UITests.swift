@@ -1039,16 +1039,18 @@ final class Layer4UITests: XCTestCase {
         scrollToFormSectionHeader(title: "L4 System")
         nudgeScrollInsideL4SystemSection()
         scrollToContractIdentifier("platformCloudKitSyncStatus_L4")
-        scrollToElement(label: "CloudKit Sync Status")
+        let exactId = element(matchingIdentifier: "platformCloudKitSyncStatus_L4")
+        XCTAssertTrue(
+            exactId.waitForExistence(timeout: 3.5),
+            "platformCloudKitSyncStatus_L4: contract view must be on-screen with stable a11y identifier"
+        )
         let idleContract =
-            waitForCombinedAccessibilityLabel(containing: "CloudKit Sync: Idle", timeout: 3.5)
-            || app.staticTexts.matching(NSPredicate(format: "label CONTAINS[c] %@", "CloudKit Sync: Idle")).firstMatch.waitForExistence(timeout: 2.5)
-            || element(matchingIdentifier: "platformCloudKitSyncStatus_L4").waitForExistence(timeout: 2.5)
+            waitForCombinedAccessibilityLabel(containing: "CloudKit Sync: Idle", timeout: 2.0)
+            || app.staticTexts.matching(NSPredicate(format: "label CONTAINS[c] %@", "CloudKit Sync: Idle")).firstMatch.waitForExistence(timeout: 1.5)
         XCTAssertTrue(
             idleContract,
-            "platformCloudKitSyncStatus_L4: status text must be visible (contract structure)"
+            "platformCloudKitSyncStatus_L4: idle summary label should be exposed when visible"
         )
-        let exactId = element(matchingIdentifier: "platformCloudKitSyncStatus_L4")
         let containsId = app.descendants(matching: .any)
             .matching(NSPredicate(format: "identifier CONTAINS[c] %@", "platformCloudKitSyncStatus"))
             .firstMatch
@@ -1172,22 +1174,16 @@ final class Layer4UITests: XCTestCase {
         scrollToFormSectionHeader(title: "L4 System")
         nudgeScrollInsideL4SystemSection()
         scrollToContractIdentifier("L4ContractPhotoPickerOpen")
-        scrollToElement(label: "Photo Picker Contract")
-        let openPred = NSPredicate(
-            format: "identifier == %@ OR label == %@ OR label CONTAINS[c] %@",
-            "L4ContractPhotoPickerOpen",
-            "L4ContractPhotoPickerOpen",
-            "L4ContractPhotoPickerOpen"
-        )
-        let openAsButton = app.buttons.matching(openPred).firstMatch
-        let openBtn = openAsButton.waitForExistence(timeout: 1.5)
-            ? openAsButton
-            : app.descendants(matching: .any).matching(openPred).firstMatch
+        let openBtn = app.buttons["L4ContractPhotoPickerOpen"].firstMatch
+        let openAny = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "identifier == %@ OR label == %@", "L4ContractPhotoPickerOpen", "L4ContractPhotoPickerOpen"))
+            .firstMatch
         XCTAssertTrue(
-            openBtn.waitForExistence(timeout: 2.0),
+            openBtn.waitForExistence(timeout: 3.0) || openAny.waitForExistence(timeout: 2.0),
             "platformPhotoPicker_L4: contract open control must exist (contract structure)"
         )
-        tapByNormalizedCenter(openBtn)
+        let openControl = openBtn.exists ? openBtn : openAny
+        tapByNormalizedCenter(openControl)
         let pickerNode = app.descendants(matching: .any)
             .matching(NSPredicate(format: "identifier CONTAINS[c] %@", "platformPhotoPicker_L4"))
             .firstMatch
