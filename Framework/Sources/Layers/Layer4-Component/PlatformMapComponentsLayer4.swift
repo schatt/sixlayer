@@ -46,7 +46,7 @@ public enum PlatformMapComponentsLayer4 {
                 content()
             }
         }
-        .accessibilityElement(children: .contain)
+        .accessibilityElement(children: .ignore)
         .automaticCompliance(named: "platformMapView_L4")
         .accessibilityIdentifier("platformMapView_L4")
         #else
@@ -80,7 +80,7 @@ public enum PlatformMapComponentsLayer4 {
                 }
             }
         }
-        .accessibilityElement(children: .contain)
+        .accessibilityElement(children: .ignore)
         .automaticCompliance(named: "platformMapView_L4")
         .accessibilityIdentifier("platformMapView_L4")
         #else
