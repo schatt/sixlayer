@@ -11,7 +11,7 @@
 | `platformCloudKitSyncStatus_L4` | partial | TBD | partial | TBD | partial | Dynamic Type informative traits (`…testPlatformCloudKitSyncStatus_L4_retainsInformativeSemanticsAcrossDynamicTypeSteps`); color-only state → manual pass. |
 | `platformCloudKitAccountStatus_L4` | partial | TBD | partial | TBD | partial | Dynamic Type iCloud informative surface (`…testPlatformCloudKitAccountStatus_L4_retainsInformativeSemanticsAcrossDynamicTypeSteps`); VO label copy → manual. |
 | `platformCloudKitServiceStatus_L4` | partial | TBD | partial | TBD | partial | Dynamic Type SixLayer id overlap (`…testPlatformCloudKitServiceStatus_L4_retainsSixLayerIdentifiersAcrossDynamicTypeSteps`); contrast of error/queue captions → manual. |
-| `platformCloudKitStatusBadge_L4` | partial | TBD | partial (idle) | TBD | partial | Idle Dynamic Type informative traits (`…testPlatformCloudKitStatusBadge_L4_idle_retainsInformativeSemanticsAcrossDynamicTypeSteps`); syncing → manual or extend. |
+| `platformCloudKitStatusBadge_L4` | partial | TBD | partial | TBD | partial | Idle + syncing Dynamic Type (`…_idle_…`, `…_syncing_retainsInformativeSemanticsAcrossDynamicTypeSteps`). |
 | `platformShare_L4` / `platformPrint_L4` | partial | TBD | partial | TBD | partial | Share + print Dynamic Type button stability (`…testPlatformShare_L4_…`, `…testPlatformPrint_L4_retainsButtonSemanticsAcrossDynamicTypeSteps`). |
 | Navigation / sheet / popover L4 APIs | UITest | TBD | TBD | TBD | partial | `Layer4UITests` exercises structure; macOS parity where scheme runs macOS UITests. |
 | `platformVerticalSplit_L4` / `platformHorizontalSplit_L4` | partial | TBD | partial | TBD | partial | #254 hosted pane ids; #255 Dynamic Type pane stability (`Layer4AssistiveVisualAdaptabilityCriterionTests.testPlatformVerticalSplit_L4_paneMarkersSurviveLargeDynamicTypeHosting`); VO / Switch Control / high contrast still manual. |
@@ -20,7 +20,9 @@
 | `platformMapView_L4` | partial | TBD | TBD | TBD | partial | #254 named compliance on hosted map; full VO / contrast → manual. |
 | `platformRowActions_L4` / `platformContextMenu_L4` | partial | TBD | TBD | TBD | partial | #254 named compliance on hosted row/menu anchor; VO swipe/long-press → manual or UITest. |
 | `platformMapViewWithCurrentLocation_L4` | partial | TBD | TBD | TBD | partial | #254 named compliance (`…testPlatformMapViewWithCurrentLocation_L4_exposesNamedComplianceOnHostedTree`); location permission flows → manual where needed. |
-| `platformFormContainer_L4` / other form APIs | UITest / partial | TBD | TBD | TBD | partial | #254 inner id preservation on form container; per-field values staged. |
+| `platformFormContainer_L4` | UITest / partial | TBD | TBD | TBD | partial | #254 inner id preservation on form container. |
+| `platformFormField` / `platformFormFieldGroup` | partial | TBD | partial (field) | TBD | partial | #254 hosted semantics; form field Dynamic Type (`…testPlatformFormField_L4_retainsNamedComplianceAcrossDynamicTypeSteps`). |
+| `platformAppNavigation_L4` / `platformSettingsContainer_L4` | partial | TBD | TBD | TBD | partial | #254 sidebar/detail marker preservation; VO split/stack behavior → manual or UITest. |
 
 **How to close rows**
 
