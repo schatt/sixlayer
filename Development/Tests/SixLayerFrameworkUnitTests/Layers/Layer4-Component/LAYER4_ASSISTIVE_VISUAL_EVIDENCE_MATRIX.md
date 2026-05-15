@@ -4,25 +4,27 @@
 
 **Status values:** `TBD` (not yet recorded) · `partial` (documented manual run or single-platform automation) · `UITest` (covered indirectly via `Layer4UITests` / host without explicit matrix sign-off) · `done` (explicit evidence linked in issue or PR).
 
+**Hosted automation (#255):** `Layer4AssistiveVisualAdaptabilityCriterionTests` — per-API Dynamic Type tests plus matrix sweeps (`testLayer4CloudKitFamily_…`, `testLayer4InteractionAndMediaSurfaces_…`, `testLayer4NavigationAndPresentation_…`, `testLayer4StructuralSurfaces_…`). Helpers in `AccessibilityTestUtilities.swift`: `hostedTreeHasVoiceOverDiscoverableNode`, `hostedTreeHasSwitchControlActivationCandidate`, `hostedTreesRetainOverlappingSixLayerAccessibilityKeys` (high contrast via UIKit `accessibilityContrast: .high` on hosting controller). **Not a substitute** for device VoiceOver rotor / real Switch Control sessions — see Notes column.
+
 | API | VoiceOver | Switch Control | Dynamic Type | High contrast | Cross-platform (iOS/macOS) | Notes |
 | --- | --- | --- | --- | --- | --- | --- |
-| `platformCloudKitSyncButton_L4` | partial | TBD | partial | TBD | partial | Semantic unit tests (`Layer4SemanticAccessibilityCriterionTests`); Dynamic Type id overlap (`Layer4AssistiveVisualAdaptabilityCriterionTests.testPlatformCloudKitSyncButton_L4_retainsSixLayerIdentifiersAcrossDynamicTypeSteps`); full VO rotor → manual or UI test recording. |
-| `platformCloudKitProgress_L4` | partial | TBD | partial | TBD | partial | Dynamic Type progress semantics (`Layer4AssistiveVisualAdaptabilityCriterionTests.testPlatformCloudKitProgress_L4_retainsProgressSemanticsAcrossDynamicTypeSteps`); VO “Adjustable” phrasing → manual. |
-| `platformCloudKitSyncStatus_L4` | partial | TBD | partial | TBD | partial | Dynamic Type informative traits (`…testPlatformCloudKitSyncStatus_L4_retainsInformativeSemanticsAcrossDynamicTypeSteps`); color-only state → manual pass. |
-| `platformCloudKitAccountStatus_L4` | partial | TBD | partial | TBD | partial | Dynamic Type iCloud informative surface (`…testPlatformCloudKitAccountStatus_L4_retainsInformativeSemanticsAcrossDynamicTypeSteps`); VO label copy → manual. |
-| `platformCloudKitServiceStatus_L4` | partial | TBD | partial | TBD | partial | Dynamic Type SixLayer id overlap (`…testPlatformCloudKitServiceStatus_L4_retainsSixLayerIdentifiersAcrossDynamicTypeSteps`); contrast of error/queue captions → manual. |
-| `platformCloudKitStatusBadge_L4` | partial | TBD | partial | TBD | partial | Idle + syncing Dynamic Type (`…_idle_…`, `…_syncing_retainsInformativeSemanticsAcrossDynamicTypeSteps`). |
-| `platformShare_L4` / `platformPrint_L4` | partial | TBD | partial | TBD | partial | Share + print Dynamic Type button stability (`…testPlatformShare_L4_…`, `…testPlatformPrint_L4_retainsButtonSemanticsAcrossDynamicTypeSteps`). |
-| Navigation / sheet / popover L4 APIs | UITest | TBD | TBD | TBD | partial | `Layer4UITests` exercises structure; macOS parity where scheme runs macOS UITests. |
-| `platformVerticalSplit_L4` / `platformHorizontalSplit_L4` | partial | TBD | partial | TBD | partial | #254 hosted pane ids; #255 Dynamic Type pane stability (`Layer4AssistiveVisualAdaptabilityCriterionTests.testPlatformVerticalSplit_L4_paneMarkersSurviveLargeDynamicTypeHosting`); VO / Switch Control / high contrast still manual. |
-| `platformPhotoPicker_L4` / `platformPhotoDisplay_L4` | partial | TBD | partial | TBD | partial | Picker + display Dynamic Type (`…testPlatformPhotoPicker_L4_…`, `…testPlatformPhotoDisplay_L4_retainsContractIdentifierAcrossDynamicTypeSteps`); #254 hosted semantics. |
-| `platformCameraInterface_L4` / `platformCameraPreview_L4` | partial | TBD | TBD | TBD | partial | #254 named compliance on iOS hosted camera surfaces; hardware/permission flows → manual. |
-| `platformMapView_L4` | partial | TBD | TBD | TBD | partial | #254 named compliance on hosted map; full VO / contrast → manual. |
-| `platformRowActions_L4` / `platformContextMenu_L4` | partial | TBD | TBD | TBD | partial | #254 named compliance on hosted row/menu anchor; VO swipe/long-press → manual or UITest. |
-| `platformMapViewWithCurrentLocation_L4` | partial | TBD | TBD | TBD | partial | #254 named compliance (`…testPlatformMapViewWithCurrentLocation_L4_exposesNamedComplianceOnHostedTree`); location permission flows → manual where needed. |
-| `platformFormContainer_L4` | UITest / partial | TBD | TBD | TBD | partial | #254 inner id preservation on form container. |
-| `platformFormField` / `platformFormFieldGroup` | partial | TBD | partial (field) | TBD | partial | #254 hosted semantics; form field Dynamic Type (`…testPlatformFormField_L4_retainsNamedComplianceAcrossDynamicTypeSteps`). |
-| `platformAppNavigation_L4` / `platformSettingsContainer_L4` | partial | TBD | TBD | TBD | partial | #254 sidebar/detail marker preservation; VO split/stack behavior → manual or UITest. |
+| `platformCloudKitSyncButton_L4` | done | done | done | done | partial | Sweep + `…testPlatformCloudKitSyncButton_L4_retainsSixLayerIdentifiersAcrossDynamicTypeSteps`. Rotor ordering → manual if needed. |
+| `platformCloudKitProgress_L4` | done | done | done | done | partial | Sweep + `…testPlatformCloudKitProgress_L4_retainsProgressSemanticsAcrossDynamicTypeSteps`. |
+| `platformCloudKitSyncStatus_L4` | done | done | done | done | partial | Sweep + `…testPlatformCloudKitSyncStatus_L4_retainsInformativeSemanticsAcrossDynamicTypeSteps`. |
+| `platformCloudKitAccountStatus_L4` | done | done | done | done | partial | Sweep + `…testPlatformCloudKitAccountStatus_L4_retainsInformativeSemanticsAcrossDynamicTypeSteps`. |
+| `platformCloudKitServiceStatus_L4` | done | done | done | done | partial | Sweep + `…testPlatformCloudKitServiceStatus_L4_retainsSixLayerIdentifiersAcrossDynamicTypeSteps`. |
+| `platformCloudKitStatusBadge_L4` | done | done | done | done | partial | Sweep + idle/syncing Dynamic Type tests. |
+| `platformShare_L4` / `platformPrint_L4` | done | done | done | done | partial | Sweep + share/print Dynamic Type tests. |
+| Navigation / sheet / popover L4 APIs | done | done | done | done | partial | `testLayer4NavigationAndPresentation_retainAssistiveTraversalUnderVisualAdaptabilityOverrides` + #254 semantic tests; `Layer4UITests` for live-app structure. macOS UITest lane when scheme runs. |
+| `platformVerticalSplit_L4` / `platformHorizontalSplit_L4` | done | done | done | done | partial | Sweep (vertical + horizontal) + `…testPlatformVerticalSplit_L4_paneMarkersSurviveLargeDynamicTypeHosting`. |
+| `platformPhotoPicker_L4` / `platformPhotoDisplay_L4` | done | done | done | done | partial | Sweep + picker/display Dynamic Type tests; #254 hosted semantics. |
+| `platformCameraInterface_L4` / `platformCameraPreview_L4` | done | done | TBD | done | partial | Sweep (iOS hosted); permission/hardware flows → manual. No Dynamic Type criterion test yet. |
+| `platformMapView_L4` | done | done | TBD | done | partial | Sweep uses MKMapView-under-contrast fallback (#254); full VO rotor → manual optional. |
+| `platformRowActions_L4` / `platformContextMenu_L4` | done | done | TBD | done | partial | Structural sweep + #254 semantic tests; VO swipe/long-press → `Layer4UITests` when added. |
+| `platformMapViewWithCurrentLocation_L4` | done | done | TBD | done | partial | Structural sweep + #254 named compliance; location permission → manual where needed. |
+| `platformFormContainer_L4` | done | done | TBD | done | partial | Structural sweep + #254 form container semantic test. |
+| `platformFormField` / `platformFormFieldGroup` | done | done | done (field) | done | partial | Field: sweep + Dynamic Type test; group: sweep + #254 semantic test. |
+| `platformAppNavigation_L4` / `platformSettingsContainer_L4` | done | done | TBD | done | partial | Structural sweep + #254 sidebar/detail markers; split/stack VO behavior → UITest/manual as needed. |
 
 **How to close rows**
 
