@@ -12,6 +12,9 @@ import Testing
 #if canImport(UIKit)
 import UIKit
 #endif
+#if canImport(MapKit)
+import MapKit
+#endif
 @testable import SixLayerFramework
 
 #if canImport(UIKit) && !os(watchOS)
@@ -673,6 +676,115 @@ open class Layer4SemanticAccessibilityCriterionTests: BaseTestClass {
         #expect(
             (left && right) || fallback,
             "horizontal split host should retain pane automaticCompliance identifiers in the hosted subtree"
+        )
+    }
+
+    // MARK: - Photo (Issue #254)
+
+    @Test @MainActor
+    func testPlatformPhotoPicker_L4_exposesNamedComplianceOrButtonSemantics() async {
+        let view = PlatformPhotoComponentsLayer4.platformPhotoPicker_L4 { _ in }
+        let root = hostedRoot(for: view)
+        #expect(root != nil)
+        guard hostedTreeExposesSemanticSurface(root) else {
+            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
+            return
+        }
+        let named = hostedUIKitAccessibilityHierarchyContains(root: root) { v in
+            let id = v.accessibilityIdentifier ?? ""
+            return id.contains("platformPhotoPicker_L4") || id.contains("SixLayer.main.ui")
+        }
+        let buttonLike = hostedUIKitAccessibilityHierarchyContains(root: root) { v in
+            v.accessibilityTraits.contains(.button)
+        }
+        #expect(
+            named || buttonLike,
+            "photo picker should expose platformPhotoPicker_L4 / SixLayer identifiers or button semantics"
+        )
+    }
+
+    @Test @MainActor
+    func testPlatformPhotoDisplay_L4_exposesContractIdentifierOrImageSemantics() async {
+        let view = PlatformPhotoComponentsLayer4.platformPhotoDisplay_L4(image: nil, style: .thumbnail)
+        let root = hostedRoot(for: view)
+        #expect(root != nil)
+        guard hostedTreeExposesSemanticSurface(root) else {
+            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
+            return
+        }
+        let contractId = hostedUIKitAccessibilityHierarchyContains(root: root) { v in
+            (v.accessibilityIdentifier ?? "").contains("platformPhotoDisplay_L4")
+        }
+        let informative = hostedUIKitAccessibilityHierarchyContains(root: root) { v in
+            let traits = v.accessibilityTraits
+            let id = v.accessibilityIdentifier ?? ""
+            return id.contains("SixLayer") || id.contains("platformPhotoDisplay_L4")
+                ? traits.contains(.image) || traits.contains(.button) || traits.contains(.staticText)
+                : false
+        }
+        let fallbackInformative = hostedUIKitAccessibilityHierarchyContains(root: root) { v in
+            v.accessibilityTraits.contains(.image)
+                || v.accessibilityTraits.contains(.button)
+                || v.accessibilityTraits.contains(.staticText)
+        }
+        #expect(
+            contractId || informative || fallbackInformative,
+            "photo display should expose contract identifier or image/button/static-text semantics"
+        )
+    }
+
+    // MARK: - Map (Issue #254)
+
+    #if canImport(MapKit)
+    @Test @MainActor
+    @available(iOS 17.0, macOS 14.0, *)
+    func testPlatformMapView_L4_exposesNamedComplianceOnHostedTree() async {
+        let position = Binding.constant(MapCameraPosition.automatic)
+        let view = PlatformMapComponentsLayer4.platformMapView_L4(position: position, annotations: [])
+        let root = hostedRoot(for: view)
+        #expect(root != nil)
+        guard hostedTreeExposesSemanticSurface(root) else {
+            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
+            return
+        }
+        let named = hostedUIKitAccessibilityHierarchyContains(root: root) { v in
+            let id = v.accessibilityIdentifier ?? ""
+            return id.contains("platformMapView_L4") || id.contains("SixLayer.main.ui")
+        }
+        #expect(named, "platformMapView_L4 should attach named automaticCompliance to the hosted map subtree")
+    }
+    #endif
+
+    // MARK: - Form container (Issue #254)
+
+    @Test @MainActor
+    func testPlatformFormContainer_L4_preservesInnerAutomaticComplianceUnderHosting() async {
+        let strategy = FormStrategy(
+            containerType: .form,
+            fieldLayout: .standard,
+            validation: .deferred
+        )
+        let view = platformFormContainer_L4(strategy: strategy) {
+            Text("L4FormInner254")
+                .automaticCompliance(
+                    identifierName: "L4FormInner254",
+                    identifierElementType: "Text"
+                )
+        }
+        let root = hostedRoot(for: view)
+        #expect(root != nil)
+        guard hostedTreeExposesSemanticSurface(root) else {
+            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
+            return
+        }
+        let ids = findAllAccessibilityIdentifiersFromPlatformView(root)
+        let inner = ids.contains { $0.contains("L4FormInner254") }
+        let fallback = hostedUIKitAccessibilityHierarchyContains(root: root) { v in
+            (v.accessibilityIdentifier ?? "").contains("L4FormInner254")
+        }
+        #expect(
+            inner || fallback,
+            "form container should preserve inner automaticCompliance identifiers in the hosted subtree"
         )
     }
 }
