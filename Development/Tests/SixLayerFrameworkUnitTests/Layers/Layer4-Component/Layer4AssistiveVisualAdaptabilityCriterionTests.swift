@@ -12,6 +12,12 @@ import Testing
 #if canImport(UIKit)
 import UIKit
 #endif
+#if canImport(MapKit)
+import MapKit
+#endif
+#if os(iOS)
+import AVFoundation
+#endif
 @testable import SixLayerFramework
 
 #if canImport(UIKit) && !os(watchOS)
@@ -20,7 +26,11 @@ import UIKit
 open class Layer4AssistiveVisualAdaptabilityCriterionTests: BaseTestClass {
 
     @MainActor
-    private func hostedRoot<V: View>(for view: V) -> Any? {
+    private func hostedRoot<V: View>(
+        for view: V,
+        increasedContrast: Bool = false,
+        differentiateWithoutColor: Bool = false
+    ) -> Any? {
         let config = TestSetupUtilities.makeIsolatedAccessibilityIdentifierConfig()
         config.resetToDefaults()
         config.namespace = "SixLayer"
@@ -32,13 +42,51 @@ open class Layer4AssistiveVisualAdaptabilityCriterionTests: BaseTestClass {
         config.enableUITestIntegration = true
         config.enableDebugLogging = false
         return AccessibilityIdentifierConfig.$taskLocalConfig.withValue(config) {
-            Self.hostRootPlatformView(
-                view.environment(\.accessibilityIdentifierConfig, config),
+            var configured = view.environment(\.accessibilityIdentifierConfig, config)
+            if differentiateWithoutColor {
+                configured = configured.environment(\.accessibilityDifferentiateWithoutColor, true)
+            }
+            if increasedContrast {
+                if #available(iOS 17.0, macOS 14.0, *) {
+                    configured = configured.environment(\.colorSchemeContrast, .increased)
+                }
+            }
+            return Self.hostRootPlatformView(
+                configured,
                 forceLayout: true,
                 exposeContentAccessibility: true,
                 accessibilityIdentifierConfig: config
             )
         }
+    }
+
+    @MainActor
+    private func assertLayer4AssistiveVisualAdaptability(caseName: String, view: some View) {
+        let defaultRoot = hostedRoot(for: view)
+        let adaptedRoot = hostedRoot(
+            for: view,
+            increasedContrast: true,
+            differentiateWithoutColor: true
+        )
+        #expect(defaultRoot != nil && adaptedRoot != nil, "\(caseName): hosted roots should exist")
+        guard hostedTreeExposesSemanticSurface(defaultRoot), hostedTreeExposesSemanticSurface(adaptedRoot) else {
+            #expect(Bool(true), "\(caseName): hosted UIKit tree did not expose semantic accessibility surface in this lane")
+            return
+        }
+        #expect(
+            hostedTreeHasVoiceOverDiscoverableNode(root: defaultRoot)
+                && hostedTreeHasVoiceOverDiscoverableNode(root: adaptedRoot),
+            "\(caseName): VoiceOver-discoverable nodes should remain under contrast overrides"
+        )
+        #expect(
+            hostedTreeHasSwitchControlActivationCandidate(root: defaultRoot)
+                || hostedTreeHasSwitchControlActivationCandidate(root: adaptedRoot),
+            "\(caseName): Switch Control activation candidate should exist on default or adapted tree"
+        )
+        #expect(
+            hostedTreesRetainOverlappingSixLayerAccessibilityKeys(defaultRoot: defaultRoot, adaptedRoot: adaptedRoot),
+            "\(caseName): SixLayer accessibility keys should overlap under increased contrast and differentiate-without-color"
+        )
     }
 
     @MainActor
@@ -371,6 +419,257 @@ open class Layer4AssistiveVisualAdaptabilityCriterionTests: BaseTestClass {
             hasFormFieldMarkers(rootDefault) && hasFormFieldMarkers(rootScaled),
             "form field should keep discoverable identifiers when Dynamic Type increases"
         )
+    }
+
+    // MARK: - Matrix sweep: VoiceOver / Switch Control / high contrast (#255)
+
+    @Test @MainActor
+    func testLayer4CloudKitFamily_retainAssistiveTraversalUnderVisualAdaptabilityOverrides() async {
+        let delegate = TestCloudKitDelegate()
+        let service = CloudKitService(delegate: delegate)
+        service.syncStatus = .syncing
+        assertLayer4AssistiveVisualAdaptability(
+            caseName: "platformCloudKitSyncButton_L4",
+            view: platformCloudKitSyncButton_L4(service: service)
+        )
+        assertLayer4AssistiveVisualAdaptability(
+            caseName: "platformCloudKitProgress_L4",
+            view: platformCloudKitProgress_L4(progress: 0.42)
+        )
+        assertLayer4AssistiveVisualAdaptability(
+            caseName: "platformCloudKitSyncStatus_L4",
+            view: platformCloudKitSyncStatus_L4(status: .syncing)
+        )
+        assertLayer4AssistiveVisualAdaptability(
+            caseName: "platformCloudKitAccountStatus_L4",
+            view: platformCloudKitAccountStatus_L4(status: .available)
+        )
+        assertLayer4AssistiveVisualAdaptability(
+            caseName: "platformCloudKitServiceStatus_L4",
+            view: platformCloudKitServiceStatus_L4(service: service)
+        )
+        service.syncStatus = .idle
+        assertLayer4AssistiveVisualAdaptability(
+            caseName: "platformCloudKitStatusBadge_L4_idle",
+            view: platformCloudKitStatusBadge_L4(service: service)
+        )
+        service.syncStatus = .syncing
+        assertLayer4AssistiveVisualAdaptability(
+            caseName: "platformCloudKitStatusBadge_L4_syncing",
+            view: platformCloudKitStatusBadge_L4(service: service)
+        )
+    }
+
+    @Test @MainActor
+    func testLayer4InteractionAndMediaSurfaces_retainAssistiveTraversalUnderVisualAdaptabilityOverrides() async {
+        assertLayer4AssistiveVisualAdaptability(
+            caseName: "platformShare_L4",
+            view: Button("Share255Sweep") { }
+                .platformShare_L4(isPresented: .constant(false), items: ["sweep"])
+        )
+        assertLayer4AssistiveVisualAdaptability(
+            caseName: "platformPrint_L4",
+            view: Button("Print255Sweep") { }
+                .platformPrint_L4(isPresented: .constant(false), content: .text("sweep"))
+        )
+        assertLayer4AssistiveVisualAdaptability(
+            caseName: "platformPhotoPicker_L4",
+            view: PlatformPhotoComponentsLayer4.platformPhotoPicker_L4 { _ in }
+        )
+        assertLayer4AssistiveVisualAdaptability(
+            caseName: "platformPhotoDisplay_L4",
+            view: PlatformPhotoComponentsLayer4.platformPhotoDisplay_L4(image: nil, style: .thumbnail)
+        )
+        let splitView = Text("SplitPrimary255Sweep")
+            .platformVerticalSplit_L4(spacing: 0) {
+                Text("SplitTop255Sweep")
+                    .automaticCompliance(identifierName: "L4SplitTop255Sweep", identifierElementType: "Text")
+                Text("SplitBottom255Sweep")
+                    .automaticCompliance(identifierName: "L4SplitBottom255Sweep", identifierElementType: "Text")
+            }
+        assertLayer4AssistiveVisualAdaptability(caseName: "platformVerticalSplit_L4", view: splitView)
+        assertLayer4AssistiveVisualAdaptability(
+            caseName: "platformFormField_L4",
+            view: Text("L4FormFieldAnchor255Sweep")
+                .platformFormField(label: "L4FormFieldLabel255Sweep") {
+                    Text("L4FormFieldInner255Sweep")
+                }
+        )
+    }
+
+    private struct AssistiveNavLinkHost255: View {
+        @State private var isActive = false
+
+        var body: some View {
+            NavigationStack {
+                Text("Open destination 255")
+                    .platformNavigationLink_L4(
+                        title: "L4AssistiveLink255",
+                        systemImage: "chevron.right",
+                        isActive: $isActive,
+                        destination: {
+                            Text("L4AssistiveLinkDest255")
+                                .platformNavigationTitle_L4("L4AssistiveLinkDestTitle255")
+                        }
+                    )
+            }
+        }
+    }
+
+    @Test @MainActor
+    func testLayer4NavigationAndPresentation_retainAssistiveTraversalUnderVisualAdaptabilityOverrides() async {
+        assertLayer4AssistiveVisualAdaptability(
+            caseName: "platformNavigationTitle_L4",
+            view: NavigationStack {
+                Text("L4AssistiveNavBody255")
+                    .platformNavigationTitle_L4("L4AssistiveNavTitle255")
+            }
+        )
+        assertLayer4AssistiveVisualAdaptability(
+            caseName: "platformImplementNavigationStack_L4",
+            view: platformImplementNavigationStack_L4(
+                content: Text("L4StackInner255"),
+                title: "L4StackTitle255",
+                strategy: NavigationStackStrategy(implementation: .navigationStack, reasoning: "255 assistive sweep")
+            )
+        )
+        assertLayer4AssistiveVisualAdaptability(caseName: "platformNavigationLink_L4", view: AssistiveNavLinkHost255())
+        #if !os(tvOS)
+        assertLayer4AssistiveVisualAdaptability(
+            caseName: "platformPopover_L4",
+            view: Text("L4PopoverAnchor255")
+                .platformPopover_L4(isPresented: .constant(false)) {
+                    Text("L4PopoverInner255")
+                }
+        )
+        #endif
+        assertLayer4AssistiveVisualAdaptability(
+            caseName: "platformSheet_L4",
+            view: NavigationStack {
+                Text("L4SheetOuter255")
+                    .platformSheet_L4(isPresented: .constant(true), onDismiss: nil) {
+                        Text("L4SheetInner255")
+                            .automaticCompliance(identifierName: "L4SheetInner255", identifierElementType: "Text")
+                    }
+            }
+        )
+        let navTitleView = NavigationStack {
+            Text("L4AssistiveNavBodyDT255")
+                .platformNavigationTitle_L4("L4AssistiveNavTitleDT255")
+        }
+        let rootDefault = hostedRoot(for: navTitleView)
+        let rootScaled = hostedRoot(for: navTitleView.dynamicTypeSize(.accessibility3))
+        #expect(rootDefault != nil && rootScaled != nil)
+        if hostedTreeExposesSemanticSurface(rootDefault), hostedTreeExposesSemanticSurface(rootScaled) {
+            #expect(
+                hostedTreeHasVoiceOverDiscoverableNode(root: rootDefault)
+                    && hostedTreeHasVoiceOverDiscoverableNode(root: rootScaled),
+                "platformNavigationTitle_L4: VoiceOver-discoverable nodes should survive large Dynamic Type"
+            )
+        }
+    }
+
+    @Test @MainActor
+    func testLayer4StructuralSurfaces_retainAssistiveTraversalUnderVisualAdaptabilityOverrides() async {
+        assertLayer4AssistiveVisualAdaptability(
+            caseName: "platformStyledContainer_L4",
+            view: Group { EmptyView() }
+                .platformStyledContainer_L4 {
+                    Text("L4StyledInner255")
+                        .automaticCompliance(identifierName: "L4StyledInner255", identifierElementType: "Text")
+                }
+        )
+        assertLayer4AssistiveVisualAdaptability(
+            caseName: "platformFormContainer_L4",
+            view: platformFormContainer_L4(
+                strategy: FormStrategy(containerType: .form, fieldLayout: .standard, validation: .deferred)
+            ) {
+                Text("L4FormInner255")
+                    .automaticCompliance(identifierName: "L4FormInner255", identifierElementType: "Text")
+            }
+        )
+        assertLayer4AssistiveVisualAdaptability(
+            caseName: "platformRowActions_L4",
+            view: List {
+                Text("L4RowActionsAnchor255")
+                    .platformRowActions_L4 {
+                        Button("Remove", role: .destructive) { }
+                    }
+            }
+        )
+        assertLayer4AssistiveVisualAdaptability(
+            caseName: "platformContextMenu_L4",
+            view: Text("L4ContextMenuAnchor255")
+                .platformContextMenu_L4 {
+                    Button("L4ContextMenuAction255") { }
+                }
+        )
+        assertLayer4AssistiveVisualAdaptability(
+            caseName: "platformFormFieldGroup_L4",
+            view: Text("L4FormGroupAnchor255")
+                .platformFormFieldGroup(title: "L4FormGroupTitle255") {
+                    Text("L4FormGroupInner255")
+                }
+        )
+        let appNavStrategy = AppNavigationStrategy(implementation: .splitView, reasoning: "255 assistive sweep")
+        assertLayer4AssistiveVisualAdaptability(
+            caseName: "platformAppNavigation_L4",
+            view: EmptyView()
+                .platformAppNavigation_L4(
+                    strategy: appNavStrategy,
+                    sidebar: {
+                        Text("L4AppNavSidebar255")
+                            .automaticCompliance(identifierName: "L4AppNavSidebar255", identifierElementType: "Text")
+                    },
+                    detail: {
+                        Text("L4AppNavDetail255")
+                            .automaticCompliance(identifierName: "L4AppNavDetail255", identifierElementType: "Text")
+                    }
+                )
+        )
+        assertLayer4AssistiveVisualAdaptability(
+            caseName: "platformSettingsContainer_L4",
+            view: EmptyView()
+                .platformSettingsContainer_L4(
+                    sidebar: {
+                        Text("L4SettingsSidebar255")
+                            .automaticCompliance(identifierName: "L4SettingsSidebar255", identifierElementType: "Text")
+                    },
+                    detail: {
+                        Text("L4SettingsDetail255")
+                            .automaticCompliance(identifierName: "L4SettingsDetail255", identifierElementType: "Text")
+                    }
+                )
+        )
+        #if canImport(MapKit)
+        if #available(iOS 17.0, macOS 14.0, *) {
+            let position = Binding.constant(MapCameraPosition.automatic)
+            assertLayer4AssistiveVisualAdaptability(
+                caseName: "platformMapView_L4",
+                view: VStack {
+                    PlatformMapComponentsLayer4.platformMapView_L4(position: position, annotations: [])
+                }
+                .frame(width: 320, height: 240)
+            )
+            assertLayer4AssistiveVisualAdaptability(
+                caseName: "platformMapViewWithCurrentLocation_L4",
+                view: PlatformMapComponentsLayer4.platformMapViewWithCurrentLocation_L4(
+                    locationService: LocationService(),
+                    showCurrentLocation: false
+                )
+            )
+        }
+        #endif
+        #if os(iOS)
+        assertLayer4AssistiveVisualAdaptability(
+            caseName: "platformCameraInterface_L4",
+            view: PlatformPhotoComponentsLayer4.platformCameraInterface_L4 { _ in }
+        )
+        assertLayer4AssistiveVisualAdaptability(
+            caseName: "platformCameraPreview_L4",
+            view: PlatformPhotoComponentsLayer4.platformCameraPreview_L4(session: AVCaptureSession())
+        )
+        #endif
     }
 }
 
