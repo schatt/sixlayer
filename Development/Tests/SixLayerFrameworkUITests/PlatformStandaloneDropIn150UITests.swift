@@ -87,11 +87,19 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
         element.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
     }
 
-    /// Resolves a secure field by accessibility label/id or by generated `SixLayer.main.ui…` identifier fragment (iOS Form).
+    /// Resolves a secure field by label, `exactNamed`, or generated `SixLayer.main.ui.<sanitized>.SecureField` id (hyphenated).
     private func sd150SecureField(matching fragment: String) -> XCUIElement {
-        let direct = app.secureTextFields[fragment]
-        if direct.waitForExistence(timeout: 0.25) { return direct }
-        let pred = NSPredicate(format: "identifier CONTAINS[c] %@ OR label CONTAINS[c] %@", fragment, fragment)
+        let hyphenated = fragment
+            .replacingOccurrences(of: "_", with: "-")
+            .lowercased()
+        let candidates = [fragment, hyphenated, "UITest_\(fragment)"]
+        for key in candidates {
+            let direct = app.secureTextFields[key]
+            if direct.waitForExistence(timeout: 0.25) { return direct }
+        }
+        let pred = NSCompoundPredicate(orPredicateWithSubpredicates: candidates.map {
+            NSPredicate(format: "identifier CONTAINS[c] %@ OR label CONTAINS[c] %@", $0, $0)
+        })
         return app.descendants(matching: .secureTextField).matching(pred).firstMatch
     }
 
@@ -167,7 +175,7 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
     func test150_platformSecureField_typingUpdatesBinding() throws {
         #if os(iOS) || os(macOS)
         scrollToSectionHeader("SD150 Secure")
-        let field = sd150SecureField(matching: "SD150_SecureField")
+        let field = sd150SecureField(matching: "sd150-securefield")
         scrollUntilHittable(field)
         XCTAssertTrue(field.waitForExistence(timeout: 2.0), "Secure field")
         field.xcuiTapToBecomeFirstResponder()
@@ -249,7 +257,7 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
     func test150_platformForm_integrationMultipleControls() throws {
         #if os(iOS) || os(macOS)
         let name = sd150TextField(matching: "SD150_Integration_Name")
-        let pass = sd150SecureField(matching: "SD150_Integration_Password")
+        let pass = sd150SecureField(matching: "sd150-integration-password")
         let toggle = sd150Switch(matching: "SD150_Integration_Toggle")
         scrollUntilHittable(name)
         XCTAssertTrue(name.waitForExistence(timeout: 2.0), "Integration name")
