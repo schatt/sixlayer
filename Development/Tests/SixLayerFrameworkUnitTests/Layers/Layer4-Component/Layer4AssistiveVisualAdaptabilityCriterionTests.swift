@@ -502,6 +502,14 @@ open class Layer4AssistiveVisualAdaptabilityCriterionTests: BaseTestClass {
                     .automaticCompliance(identifierName: "L4SplitBottom255Sweep", identifierElementType: "Text")
             }
         assertLayer4AssistiveVisualAdaptability(caseName: "platformVerticalSplit_L4", view: splitView)
+        let horizontalSplit = Text("SplitLeading255Sweep")
+            .platformHorizontalSplit_L4(spacing: 0) {
+                Text("SplitLeadingPane255Sweep")
+                    .automaticCompliance(identifierName: "L4SplitLeading255Sweep", identifierElementType: "Text")
+                Text("SplitTrailingPane255Sweep")
+                    .automaticCompliance(identifierName: "L4SplitTrailing255Sweep", identifierElementType: "Text")
+            }
+        assertLayer4AssistiveVisualAdaptability(caseName: "platformHorizontalSplit_L4", view: horizontalSplit)
         assertLayer4AssistiveVisualAdaptability(
             caseName: "platformFormField_L4",
             view: Text("L4FormFieldAnchor255Sweep")
