@@ -1005,16 +1005,19 @@ struct Layer4ContractOnlyView: View {
     @ViewBuilder
     private var contractControlsContent: some View {
         platformVStack(alignment: .leading, spacing: 16) {
-            platformButton("L4ContractButton") { }
-            SixLayerFramework.platformTextField("L4ContractTextField", text: $l4ContractText)
+            platformButton(label: "L4ContractButton", id: "l4contractbutton") { }
+            SixLayerFramework.platformTextField("L4ContractTextField", text: $l4ContractText, id: "l4contracttextfield")
             platformPicker(
                 label: "L4ContractPicker",
                 selection: $l4ContractPickerSelection,
-                options: ["A", "B", "C"]
+                options: ["A", "B", "C"],
+                pickerName: "l4contractpicker"
             )
-            platformSecureField("L4ContractSecureField", text: $l4ContractSecureText)
-            SixLayerFramework.platformToggle("L4ContractToggle", isOn: $l4ContractToggleOn)
-            SixLayerFramework.platformTextEditor("L4ContractTextEditor", text: $l4ContractEditorText)
+            platformSecureField("L4ContractSecureField", text: $l4ContractSecureText, id: "l4contractsecurefield")
+                .accessibilityIdentifier("SixLayer.main.ui.l4contractsecurefield.SecureField")
+            SixLayerFramework.platformToggle("L4ContractToggle", isOn: $l4ContractToggleOn, id: "l4contracttoggle")
+            SixLayerFramework.platformTextEditor("L4ContractTextEditor", text: $l4ContractEditorText, id: "l4contracttexteditor")
+                .accessibilityIdentifier("SixLayer.main.ui.l4contracttexteditor.TextEditor")
             EmptyView()
                 .platformDatePicker(selection: $l4ContractDate, displayedComponents: .date) { Text("L4ContractDatePicker") }
         }
@@ -1071,7 +1074,8 @@ struct Layer4ContractOnlyView: View {
                         Button("L4RowActionContract", role: .destructive) { }
                     }
             }
-            .frame(height: 140)
+            // Taller than two platformListRow rows so XCUITest sees row titles without inner List clipping (iOS 26 Form).
+            .frame(height: 260)
             EmptyView()
                 .platformListSectionHeader(title: "L4ListSectionHeaderContract")
             EmptyView()

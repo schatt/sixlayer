@@ -1,10 +1,17 @@
 ---
-description: Post GitHub issue/PR comments via --body-file; post TDD red evidence to the issue when issue-driven.
+description: GitHub issue workflow — wip branch for all issue-linked work, --body-file comments, TDD red on issue, closure sequence.
 globs: **/*
 alwaysApply: true
 ---
 
 # GitHub Issue Workflow
+
+## Issue-linked work — `wip/` branch (**MANDATORY**)
+
+- **When this applies:** Any work tied to a **numbered GitHub issue** (commits use `Fixes #N` / `Resolves #N` / `Closes #N` / `Refs #N`, TDD red/green evidence is posted on the issue, or the task is explicitly tracked as that issue). Chores/docs **without** an issue are exempt.
+- **Branch rule — always:** **All** implementation for that scope happens on **`wip/<issue-slug>`** (e.g. `wip/278-capability-test-hygiene`). **Do not** land issue-scoped implementation by committing **directly** to `next`, `main`, or other integration lines; merge the completed `wip/` branch (or open a PR from it) per repo practice.
+- **Worktree:** **Strongly prefer** a **dedicated `git worktree`** for the `wip/` checkout when the change is non-trivial or other agents use `next` — same rationale as the closure flow below (isolation + audit trail).
+- **Integration:** After review, merge `wip/` → `next` (or the project’s integration branch), then follow **retention / rename** (`wip/` → `done/`) when using the workflow below.
 
 ## Comment posting — MANDATORY
 
@@ -38,12 +45,12 @@ See [strict-tdd-definition.mdc](mdc:.cursor/rules/strict-tdd-definition.mdc) →
 
 ## When to close issues
 
-- **Default:** **Close when the work is done on its branch** — don't wait for merge to `main`. Name the branch in the closing comment (e.g. "Implemented on `b7.6.0`, pushed").
+- **Default:** **Close when the work is done on its branch** — don't wait for merge to `main`. Name the branch in the closing comment (e.g. implemented on **`wip/…`** then merged, or on **`done/…`** after rename). Issue-linked implementation should have lived on **`wip/<issue-slug>`** before integration (see above).
 - Merge to `main` is part of the release process, not a prerequisite for closing (unless you are using the integration-line workflow below — then `next` is part of “done”).
 
 ### Worklist closure: `wip/` + `next` + dedicated worktree
 
-When the linked work uses a **`wip/<issue-slug>`** branch (often in a **temp worktree**) and lands on **`next`** (not necessarily `main`), **do not close the issue until** this sequence is finished; then post the **final** comment and close.
+When issue-linked work used a **`wip/<issue-slug>`** branch (often in a **temp worktree**) and lands on **`next`** (not necessarily `main`), **do not close the issue until** this sequence is finished; then post the **final** comment and close. If no temp worktree was used, **skip step 4** and state that explicitly in the closing comment.
 
 1. **Merge `next` into `wip/...`** (in the worktree or equivalent checkout), resolve conflicts, commit the merge if needed, push.
 2. **Merge `wip/...` into `next`** in the primary clone, push `next` (`git push all next` or repo convention).

@@ -87,6 +87,12 @@ This script will:
 - **Rationale**: Hosting UIs group branches by the `b<major>/` prefix like folders, so parallel majors stay easy to scan.
 - **Renaming**: Older flat names (e.g. `b7.7.1`) should be migrated to `b7/b7.7.1` when you next touch that line (update default branch settings, CI, and open PRs if any point at the old ref).
 
+#### GitHub issue–linked work (`wip/` branches)
+
+**MANDATORY**: Any work scoped to a **numbered GitHub issue** is implemented on **`wip/<issue-slug>`** and merged (or PR’d) into the integration line — **not** committed directly to `next` / `main` for that scope. Full workflow, worktree preference, and closure steps: [.cursor/rules/github-issue-workflow.mdc](.cursor/rules/github-issue-workflow.mdc).
+
+**Mechanical enforcement (optional but recommended):** After `pre-commit install`, the local hook `no-commit-on-integration-branches` blocks **non-merge** commits on `main` and `next` while allowing commits that complete an in-progress `git merge` (when `MERGE_HEAD` is present). Emergency bypass: `SIXLAYER_GIT_HOOK_BYPASS=1`, or one-shot `SKIP=no-commit-on-integration-branches`. See `.pre-commit-config.yaml` and `scripts/git-hooks/block-integration-branch-commits.sh`.
+
 #### Benefits
 - Easier to review changes
 - Simpler to identify and revert problematic commits

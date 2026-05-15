@@ -81,6 +81,7 @@ public func platformCloudKitProgress_L4(
         }
     }
     .automaticCompliance(named: "platformCloudKitProgress_L4", accessibilityLabel: summary)
+    .accessibilityIdentifier("platformCloudKitProgress_L4")
 }
 
 // MARK: - CloudKit Account Status Display
@@ -113,6 +114,7 @@ public func platformCloudKitAccountStatus_L4(status: CKAccountStatus) -> some Vi
         }
     }
     .automaticCompliance(named: "platformCloudKitAccountStatus_L4", accessibilityLabel: summary)
+    .accessibilityIdentifier("platformCloudKitAccountStatus_L4")
 }
 
 // MARK: - CloudKit Service Status View
@@ -166,6 +168,7 @@ public func platformCloudKitServiceStatus_L4(service: CloudKitService) -> some V
     #endif
     .cornerRadius(8)
     .automaticCompliance(named: "platformCloudKitServiceStatus_L4", accessibilityLabel: summary)
+    .accessibilityIdentifier("platformCloudKitServiceStatus_L4")
 }
 
 // MARK: - CloudKit Sync Button
@@ -197,6 +200,8 @@ public func platformCloudKitSyncButton_L4(
         accessibilityLabel: label,
         accessibilityHint: "Starts syncing your data with iCloud when your account is available and sync is not already running"
     )
+    // Stable id for XCUITest (Form + Label can move generated ids; explicit id matches sync status pattern).
+    .accessibilityIdentifier("platformCloudKitSyncButton_L4")
 }
 
 // MARK: - CloudKit Compact Status Badge
@@ -229,6 +234,8 @@ public func platformCloudKitStatusBadge_L4(service: CloudKitService) -> some Vie
     .accessibilityElement(children: .combine)
     .help(service.syncStatus == .syncing ? "Syncing..." : "CloudKit Status")
     .automaticCompliance(named: "platformCloudKitStatusBadge_L4", accessibilityLabel: badgeLabel)
+    // Stable id for XCUITest (same pattern as platformCloudKitSyncStatus_L4; Label + combine can hide generated id on some OS).
+    .accessibilityIdentifier("platformCloudKitStatusBadge_L4")
 }
 
 // MARK: - Accessibility summaries (Issue #169)

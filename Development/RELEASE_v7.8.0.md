@@ -3,7 +3,7 @@
 **Release Date**: May 13, 2026  
 **Release Type**: Minor  
 **Previous Release**: v7.7.2  
-**Status**: In preparation
+**Status**: Released
 
 ---
 
