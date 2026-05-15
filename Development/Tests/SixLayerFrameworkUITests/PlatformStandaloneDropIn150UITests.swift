@@ -72,6 +72,21 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
         }
     }
 
+    private func scrollToSectionHeader(_ title: String) {
+        if app.staticTexts[title].waitForExistence(timeout: 0.35) { return }
+        let pred = NSPredicate(format: "label == %@ OR label CONTAINS[c] %@", title, title)
+        if app.descendants(matching: .any).matching(pred).firstMatch.waitForExistence(timeout: 0.35) { return }
+        for _ in 0..<Self.maxFormScrolls {
+            app.xcuiSwipeScrollHostsUp()
+            if app.staticTexts[title].waitForExistence(timeout: 0.35) { return }
+            if app.descendants(matching: .any).matching(pred).firstMatch.waitForExistence(timeout: 0.35) { return }
+        }
+    }
+
+    private func tapCenter(_ element: XCUIElement) {
+        element.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
+    }
+
     /// Resolves a secure field by accessibility label/id or by generated `SixLayer.main.ui…` identifier fragment (iOS Form).
     private func sd150SecureField(matching fragment: String) -> XCUIElement {
         let direct = app.secureTextFields[fragment]
@@ -151,6 +166,7 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
 
     func test150_platformSecureField_typingUpdatesBinding() throws {
         #if os(iOS) || os(macOS)
+        scrollToSectionHeader("SD150 Secure")
         let field = sd150SecureField(matching: "SD150_SecureField")
         scrollUntilHittable(field)
         XCTAssertTrue(field.waitForExistence(timeout: 2.0), "Secure field")
@@ -243,13 +259,22 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
         app.xcuiDismissSoftwareKeyboardIfPresent()
         RunLoop.current.run(until: Date().addingTimeInterval(0.35))
         #endif
+        scrollToSectionHeader("SD150 Integration")
         scrollUntilHittable(pass)
         XCTAssertTrue(pass.waitForExistence(timeout: 2.5), "Integration password field should exist")
         if !pass.isHittable {
             app.xcuiSwipeScrollHostsUp()
             RunLoop.current.run(until: Date().addingTimeInterval(0.25))
         }
+        #if os(iOS)
+        app.xcuiDismissSoftwareKeyboardIfPresent()
+        tapCenter(pass)
+        RunLoop.current.run(until: Date().addingTimeInterval(0.25))
+        tapCenter(pass)
+        RunLoop.current.run(until: Date().addingTimeInterval(0.35))
+        #else
         pass.xcuiTapToBecomeFirstResponder()
+        #endif
         pass.typeText("secret")
         #if os(iOS)
         app.xcuiDismissSoftwareKeyboardIfPresent()
