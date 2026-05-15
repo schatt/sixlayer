@@ -72,6 +72,17 @@ open class Layer4AssistiveVisualAdaptabilityCriterionTests: BaseTestClass {
         let defaultRoot = hostedRoot(for: view)
         let adaptedRoot = hostedRoot(for: view, increasedContrast: true)
         #expect(defaultRoot != nil && adaptedRoot != nil, "\(caseName): hosted roots should exist")
+        #if canImport(MapKit)
+        if caseName.hasPrefix("platformMapView_L4") {
+            let mapDefault = hostedUIKitAccessibilityHierarchyContains(root: defaultRoot) { $0 is MKMapView }
+            let mapAdapted = hostedUIKitAccessibilityHierarchyContains(root: adaptedRoot) { $0 is MKMapView }
+            #expect(
+                mapDefault && mapAdapted,
+                "\(caseName): MKMapView should remain in hosted tree under increased accessibility contrast (wrapper ids often absorbed by MapKit; see #254)"
+            )
+            return
+        }
+        #endif
         guard hostedTreeExposesSemanticSurface(defaultRoot), hostedTreeExposesSemanticSurface(adaptedRoot) else {
             #expect(Bool(true), "\(caseName): hosted UIKit tree did not expose semantic accessibility surface in this lane")
             return
