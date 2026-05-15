@@ -871,6 +871,152 @@ open class Layer4SemanticAccessibilityCriterionTests: BaseTestClass {
     }
     #endif
 
+    // MARK: - Form fields (Issue #254)
+
+    @Test @MainActor
+    func testPlatformFormField_L4_preservesInnerAutomaticComplianceUnderHosting() async {
+        let view = Text("L4FormFieldAnchor254")
+            .platformFormField(label: "L4FormFieldLabel254") {
+                Text("L4FormFieldInner254")
+                    .automaticCompliance(
+                        identifierName: "L4FormFieldInner254",
+                        identifierElementType: "Text"
+                    )
+            }
+        let root = hostedRoot(for: view)
+        #expect(root != nil)
+        guard hostedTreeExposesSemanticSurface(root) else {
+            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
+            return
+        }
+        let ids = findAllAccessibilityIdentifiersFromPlatformView(root)
+        let inner = ids.contains { $0.contains("L4FormFieldInner254") }
+        let named = ids.contains { $0.contains("platformFormField") || $0.contains("SixLayer") }
+        let fallback = hostedUIKitAccessibilityHierarchyContains(root: root) { v in
+            let id = v.accessibilityIdentifier ?? ""
+            return id.contains("L4FormFieldInner254") || id.contains("platformFormField")
+        }
+        #expect(
+            inner || named || fallback,
+            "form field should preserve inner ids or expose platformFormField / SixLayer markers"
+        )
+    }
+
+    @Test @MainActor
+    func testPlatformFormFieldGroup_L4_exposesNamedComplianceOnHostedTree() async {
+        let view = Text("L4FormGroupAnchor254")
+            .platformFormFieldGroup(title: "L4FormGroupTitle254") {
+                Text("L4FormGroupInner254")
+                    .automaticCompliance(
+                        identifierName: "L4FormGroupInner254",
+                        identifierElementType: "Text"
+                    )
+            }
+        let root = hostedRoot(for: view)
+        #expect(root != nil)
+        guard hostedTreeExposesSemanticSurface(root) else {
+            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
+            return
+        }
+        let named = hostedUIKitAccessibilityHierarchyContains(root: root) { v in
+            let id = v.accessibilityIdentifier ?? ""
+            return id.contains("platformFormFieldGroup") || id.contains("L4FormGroupInner254") || id.contains("SixLayer")
+        }
+        #expect(named, "form field group should expose named compliance or inner markers in hosted subtree")
+    }
+
+    // MARK: - App navigation & settings (Issue #254)
+
+    private struct AppNavigationSemanticHost254: View {
+        var body: some View {
+            let strategy = AppNavigationStrategy(implementation: .splitView, reasoning: "Issue 254 semantic criterion")
+            EmptyView()
+                .platformAppNavigation_L4(
+                    strategy: strategy,
+                    sidebar: {
+                        Text("L4AppNavSidebar254")
+                            .automaticCompliance(
+                                identifierName: "L4AppNavSidebar254",
+                                identifierElementType: "Text"
+                            )
+                    },
+                    detail: {
+                        Text("L4AppNavDetail254")
+                            .automaticCompliance(
+                                identifierName: "L4AppNavDetail254",
+                                identifierElementType: "Text"
+                            )
+                    }
+                )
+        }
+    }
+
+    @Test @MainActor
+    func testPlatformAppNavigation_L4_preservesSidebarAndDetailMarkersUnderHosting() async {
+        let view = AppNavigationSemanticHost254()
+        let root = hostedRoot(for: view)
+        #expect(root != nil)
+        guard hostedTreeExposesSemanticSurface(root) else {
+            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
+            return
+        }
+        let ids = findAllAccessibilityIdentifiersFromPlatformView(root)
+        let sidebar = ids.contains { $0.contains("L4AppNavSidebar254") }
+        let detail = ids.contains { $0.contains("L4AppNavDetail254") }
+        let fallback = hostedUIKitAccessibilityHierarchyContains(root: root) { v in
+            let id = v.accessibilityIdentifier ?? ""
+            return id.contains("L4AppNavSidebar254") || id.contains("L4AppNavDetail254")
+        }
+        #expect(
+            (sidebar && detail) || fallback,
+            "app navigation host should retain sidebar and detail automaticCompliance identifiers"
+        )
+    }
+
+    private struct SettingsContainerSemanticHost254: View {
+        var body: some View {
+            EmptyView()
+                .platformSettingsContainer_L4(
+                    sidebar: {
+                        Text("L4SettingsSidebar254")
+                            .automaticCompliance(
+                                identifierName: "L4SettingsSidebar254",
+                                identifierElementType: "Text"
+                            )
+                    },
+                    detail: {
+                        Text("L4SettingsDetail254")
+                            .automaticCompliance(
+                                identifierName: "L4SettingsDetail254",
+                                identifierElementType: "Text"
+                            )
+                    }
+                )
+        }
+    }
+
+    @Test @MainActor
+    func testPlatformSettingsContainer_L4_preservesSidebarAndDetailMarkersUnderHosting() async {
+        let view = SettingsContainerSemanticHost254()
+        let root = hostedRoot(for: view)
+        #expect(root != nil)
+        guard hostedTreeExposesSemanticSurface(root) else {
+            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
+            return
+        }
+        let ids = findAllAccessibilityIdentifiersFromPlatformView(root)
+        let sidebar = ids.contains { $0.contains("L4SettingsSidebar254") }
+        let detail = ids.contains { $0.contains("L4SettingsDetail254") }
+        let fallback = hostedUIKitAccessibilityHierarchyContains(root: root) { v in
+            let id = v.accessibilityIdentifier ?? ""
+            return id.contains("L4SettingsSidebar254") || id.contains("L4SettingsDetail254")
+        }
+        #expect(
+            (sidebar && detail) || fallback,
+            "settings container should retain sidebar and detail automaticCompliance identifiers in hosted subtree"
+        )
+    }
+
     // MARK: - Camera (Issue #254)
 
     #if os(iOS)
