@@ -40,8 +40,11 @@ public enum PlatformMapComponentsLayer4 {
         #if os(iOS) || os(macOS)
         // Use modern SwiftUI Map API (requires iOS 17+, macOS 14+)
         // Since minimum macOS is 15, Map types are always available
-        Map(position: position) {
-            content()
+        // Wrap Map in Group so automaticCompliance is visible to UIKit hosting (Map alone often omits ids).
+        Group {
+            Map(position: position) {
+                content()
+            }
         }
         .automaticCompliance(named: "platformMapView_L4")
         #else
@@ -63,13 +66,15 @@ public enum PlatformMapComponentsLayer4 {
     ) -> some View {
         #if os(iOS) || os(macOS)
         // Use modern SwiftUI Map API (requires iOS 17+, macOS 14+)
-        Map(position: position) {
-            ForEach(annotations) { annotation in
-                Annotation(annotation.title, coordinate: annotation.coordinate) {
-                    annotation.content
-                        .onTapGesture {
-                            onAnnotationTapped?(annotation)
-                        }
+        Group {
+            Map(position: position) {
+                ForEach(annotations) { annotation in
+                    Annotation(annotation.title, coordinate: annotation.coordinate) {
+                        annotation.content
+                            .onTapGesture {
+                                onAnnotationTapped?(annotation)
+                            }
+                    }
                 }
             }
         }
