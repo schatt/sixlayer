@@ -193,8 +193,25 @@ final class Layer4UITests: XCTestCase {
     /// Captions and controls under L4 System often sit below the section header in the root Form.
     @MainActor
     private func nudgeScrollInsideL4SystemSection() {
-        for _ in 0..<4 {
+        for _ in 0..<8 {
             app.xcuiSwipeScrollHostsUp()
+        }
+    }
+
+    /// Scroll until a contract accessibility identifier is on-screen (L4 System rows are deep under overlay section).
+    @MainActor
+    private func scrollToContractIdentifier(_ identifier: String) {
+        let node = element(matchingIdentifier: identifier)
+        if node.waitForExistence(timeout: Self.quickWait) { return }
+        let contains = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "identifier CONTAINS[c] %@", identifier))
+            .firstMatch
+        if contains.waitForExistence(timeout: Self.quickWait) { return }
+        if !app.xcuiPrimaryScrollHost().exists, !app.tables.firstMatch.exists, !app.scrollViews.firstMatch.exists { return }
+        for _ in 0..<Self.maxScrollAttempts {
+            app.xcuiSwipeScrollHostsUp()
+            if node.waitForExistence(timeout: Self.quickWait) { return }
+            if contains.waitForExistence(timeout: Self.quickWait) { return }
         }
     }
 
@@ -1021,6 +1038,7 @@ final class Layer4UITests: XCTestCase {
         ensureContractRoot()
         scrollToFormSectionHeader(title: "L4 System")
         nudgeScrollInsideL4SystemSection()
+        scrollToContractIdentifier("platformCloudKitSyncStatus_L4")
         scrollToElement(label: "CloudKit Sync Status")
         let idleContract =
             waitForCombinedAccessibilityLabel(containing: "CloudKit Sync: Idle", timeout: 3.5)
@@ -1153,6 +1171,7 @@ final class Layer4UITests: XCTestCase {
         ensureContractRoot()
         scrollToFormSectionHeader(title: "L4 System")
         nudgeScrollInsideL4SystemSection()
+        scrollToContractIdentifier("L4ContractPhotoPickerOpen")
         scrollToElement(label: "Photo Picker Contract")
         let openPred = NSPredicate(
             format: "identifier == %@ OR label == %@ OR label CONTAINS[c] %@",
