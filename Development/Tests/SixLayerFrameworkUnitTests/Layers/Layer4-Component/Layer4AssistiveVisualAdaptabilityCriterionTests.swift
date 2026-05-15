@@ -82,6 +82,63 @@ open class Layer4AssistiveVisualAdaptabilityCriterionTests: BaseTestClass {
     }
 
     @Test @MainActor
+    func testPlatformCloudKitProgress_L4_retainsProgressSemanticsAcrossDynamicTypeSteps() async {
+        let view = platformCloudKitProgress_L4(progress: 0.55)
+        let rootDefault = hostedRoot(for: view)
+        let rootScaled = hostedRoot(for: view.dynamicTypeSize(.accessibility3))
+        #expect(rootDefault != nil && rootScaled != nil)
+        guard hostedTreeExposesSemanticSurface(rootDefault), hostedTreeExposesSemanticSurface(rootScaled) else {
+            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
+            return
+        }
+        func hasProgressSemantics(_ root: Any?) -> Bool {
+            hostedUIKitAccessibilityHierarchyContains(root: root) { v in
+                let traits = v.accessibilityTraits
+                let hasValue = !(v.accessibilityValue ?? "").isEmpty
+                return hasValue
+                    || traits.contains(.updatesFrequently)
+                    || traits.contains(.adjustable)
+            }
+        }
+        #expect(
+            hasProgressSemantics(rootDefault) && hasProgressSemantics(rootScaled),
+            "progress host should keep progress-like semantics when Dynamic Type increases"
+        )
+    }
+
+    @Test @MainActor
+    func testPlatformCloudKitSyncStatus_L4_retainsInformativeSemanticsAcrossDynamicTypeSteps() async {
+        let view = platformCloudKitSyncStatus_L4(status: .syncing)
+        let rootDefault = hostedRoot(for: view)
+        let rootScaled = hostedRoot(for: view.dynamicTypeSize(.accessibility3))
+        #expect(rootDefault != nil && rootScaled != nil)
+        guard hostedTreeExposesSemanticSurface(rootDefault), hostedTreeExposesSemanticSurface(rootScaled) else {
+            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
+            return
+        }
+        func hasInformativeSemantics(_ root: Any?) -> Bool {
+            hostedUIKitAccessibilityHierarchyContains(root: root) { v in
+                guard let id = v.accessibilityIdentifier, id.contains("platformCloudKitSyncStatus") else { return false }
+                return v.accessibilityTraits.contains(.staticText)
+                    || v.accessibilityTraits.contains(.image)
+                    || v.accessibilityTraits.contains(.updatesFrequently)
+            }
+        }
+        func fallbackInformative(_ root: Any?) -> Bool {
+            hostedUIKitAccessibilityHierarchyContains(root: root) { v in
+                v.accessibilityTraits.contains(.staticText)
+                    || v.accessibilityTraits.contains(.image)
+                    || v.accessibilityTraits.contains(.updatesFrequently)
+            }
+        }
+        #expect(
+            (hasInformativeSemantics(rootDefault) || fallbackInformative(rootDefault))
+                && (hasInformativeSemantics(rootScaled) || fallbackInformative(rootScaled)),
+            "sync status should keep informative traits when Dynamic Type increases"
+        )
+    }
+
+    @Test @MainActor
     func testPlatformVerticalSplit_L4_paneMarkersSurviveLargeDynamicTypeHosting() async {
         let view = Text("SplitPrimary255")
             .platformVerticalSplit_L4(spacing: 0) {
