@@ -743,7 +743,10 @@ open class Layer4SemanticAccessibilityCriterionTests: BaseTestClass {
     @available(iOS 17.0, macOS 14.0, *)
     func testPlatformMapView_L4_exposesNamedComplianceOnHostedTree() async {
         let position = Binding.constant(MapCameraPosition.automatic)
-        let view = PlatformMapComponentsLayer4.platformMapView_L4(position: position, annotations: [])
+        let view = VStack(spacing: 0) {
+            PlatformMapComponentsLayer4.platformMapView_L4(position: position, annotations: [])
+        }
+        .frame(width: 320, height: 240)
         let root = hostedRoot(for: view)
         #expect(root != nil)
         guard hostedTreeExposesSemanticSurface(root) else {
@@ -751,14 +754,13 @@ open class Layer4SemanticAccessibilityCriterionTests: BaseTestClass {
             return
         }
         let ids = findAllAccessibilityIdentifiersFromPlatformView(root)
-        let idHit = ids.contains { $0.contains("platformMapView_L4") || $0.contains("SixLayer") }
-        let hierarchyHit = hostedUIKitAccessibilityHierarchyContains(root: root) { v in
-            let id = v.accessibilityIdentifier ?? ""
-            return id.contains("platformMapView_L4") || id.contains("SixLayer")
-        }
+        let contractId = ids.contains { $0.contains("platformMapView_L4") }
+            || hostedUIKitAccessibilityHierarchyContains(root: root) { ( $0.accessibilityIdentifier ?? "" ).contains("platformMapView_L4") }
+        let sixLayer = ids.contains { $0.contains("SixLayer") }
+            || hostedUIKitAccessibilityHierarchyContains(root: root) { ( $0.accessibilityIdentifier ?? "" ).contains("SixLayer") }
         #expect(
-            idHit || hierarchyHit,
-            "platformMapView_L4 should attach named automaticCompliance to the hosted map subtree (identifier sweep or hierarchy)"
+            contractId || sixLayer,
+            "platformMapView_L4 should expose contract or SixLayer identifiers when hosted with non-zero layout"
         )
     }
     #endif
