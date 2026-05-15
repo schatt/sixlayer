@@ -36,6 +36,7 @@ final class Layer4UITests: XCTestCase {
     private static let rootReadyTimeout: TimeInterval = 3.0
     /// Deep `Form` hosts need more than a handful of swipes; still capped (Refs #261).
     private static let maxScrollAttempts = 12
+    private static let maxL4SystemScrollAttempts = 20
 
     nonisolated override func setUpWithError() throws {
         continueAfterFailure = false
@@ -134,14 +135,14 @@ final class Layer4UITests: XCTestCase {
     /// Scroll so the element with the given label is visible (content may be below fold).
     /// Bounded `maxScrollAttempts` so a wrong scroll host fails fast instead of long idle loops (Refs #261).
     @MainActor
-    private func scrollToElement(label: String) {
+    private func scrollToElement(label: String, maxAttempts: Int = maxScrollAttempts) {
         if app.staticTexts[label].waitForExistence(timeout: Self.quickWait) { return }
         if anyDescendantHasLabel(equalTo: label, timeout: Self.quickWait) { return }
         if app.buttons[label].waitForExistence(timeout: Self.quickWait) { return }
         if app.links[label].waitForExistence(timeout: Self.quickWait) { return }
         if element(matchingIdentifier: label).waitForExistence(timeout: Self.quickWait) { return }
         if !app.xcuiPrimaryScrollHost().exists, !app.tables.firstMatch.exists, !app.scrollViews.firstMatch.exists { return }
-        for _ in 0..<Self.maxScrollAttempts {
+        for _ in 0..<maxAttempts {
             app.xcuiSwipeScrollHostsUp()
             if app.staticTexts[label].waitForExistence(timeout: Self.quickWait) { return }
             if anyDescendantHasLabel(equalTo: label, timeout: Self.quickWait) { return }
@@ -185,7 +186,7 @@ final class Layer4UITests: XCTestCase {
     /// Rows below the L4 Controls header can stay off-screen until the Form scrolls a few more notches (iOS 26).
     @MainActor
     private func nudgeScrollInsideL4ControlsSection() {
-        for _ in 0..<2 {
+        for _ in 0..<5 {
             app.xcuiSwipeScrollHostsUp()
         }
     }
@@ -193,9 +194,24 @@ final class Layer4UITests: XCTestCase {
     /// Captions and controls under L4 System often sit below the section header in the root Form.
     @MainActor
     private func nudgeScrollInsideL4SystemSection() {
-        for _ in 0..<8 {
+        for _ in 0..<6 {
             app.xcuiSwipeScrollHostsUp()
         }
+    }
+
+    /// L4 Controls contract rows (secure field, editor, date picker) sit below the section header.
+    @MainActor
+    private func scrollToL4ControlsContracts() {
+        scrollToL4ControlsSection()
+        nudgeScrollInsideL4ControlsSection()
+    }
+
+    /// CloudKit + photo picker rows are deep in L4 System (after clipboard/print/url rows and overlay above).
+    @MainActor
+    private func scrollToL4SystemCloudKitContracts() {
+        scrollToFormSectionHeader(title: "L4 System")
+        scrollToElement(label: "CloudKit Sync Status", maxAttempts: Self.maxL4SystemScrollAttempts)
+        nudgeScrollInsideL4SystemSection()
     }
 
     /// Scroll until a contract accessibility identifier is on-screen (L4 System rows are deep under overlay section).
@@ -401,12 +417,16 @@ final class Layer4UITests: XCTestCase {
     ) {
         scrollToElement(label: label)
         let identifier = Self.l4ContractIdentifier(sanitizedName: sanitizedIdentifierName, elementType: identifierElementType)
+        let hostExplicitId = identifier
         // Prefer contract type first so we find the real control; then .other as fallback (type assertion will fail if only wrapper has id).
         let typesToTry: [(XCUIElement.ElementType, TimeInterval)] = (type == .textField || type == .secureTextField || type == .switch || type == .textView)
             ? [(type, 1.8), (.other, 0.9)]
             : [(type, 1.8)]
         var el: XCUIElement?
-        for (primaryType, timeout) in typesToTry {
+        if element(matchingIdentifier: hostExplicitId).waitForExistence(timeout: 1.2) {
+            el = element(matchingIdentifier: hostExplicitId)
+        }
+        for (primaryType, timeout) in typesToTry where el == nil {
             el = app.findElement(byIdentifier: identifier, primaryType: primaryType, secondaryTypes: [.other, .button, .staticText, .any], timeout: timeout)
             if el != nil { break }
         }
@@ -501,8 +521,7 @@ final class Layer4UITests: XCTestCase {
     @MainActor
     func testL4_platformSecureField() throws {
         ensureContractRoot()
-        scrollToL4ControlsSection()
-        nudgeScrollInsideL4ControlsSection()
+        scrollToL4ControlsContracts()
         assertElementHasIdentifierFromComponent(
             label: "L4ContractSecureField",
             type: .secureTextField,
@@ -528,8 +547,7 @@ final class Layer4UITests: XCTestCase {
     @MainActor
     func testL4_platformTextEditor() throws {
         ensureContractRoot()
-        scrollToL4ControlsSection()
-        nudgeScrollInsideL4ControlsSection()
+        scrollToL4ControlsContracts()
         assertElementHasIdentifierFromComponent(
             label: "L4ContractTextEditor",
             type: .textView,
@@ -542,11 +560,11 @@ final class Layer4UITests: XCTestCase {
     @MainActor
     func testL4_platformDatePicker() throws {
         ensureContractRoot()
-        scrollToL4ControlsSection()
-        nudgeScrollInsideL4ControlsSection()
+        scrollToL4ControlsContracts()
         scrollToElement(label: "L4ContractDatePicker")
         let hasLabel = app.staticTexts["L4ContractDatePicker"].waitForExistence(timeout: 2.5)
             || app.buttons["L4ContractDatePicker"].waitForExistence(timeout: 1.5)
+            || app.datePickers.firstMatch.waitForExistence(timeout: 2.0)
             || app.descendants(matching: .any).matching(NSPredicate(format: "label == %@", "L4ContractDatePicker")).firstMatch.waitForExistence(timeout: 1.5)
             || app.descendants(matching: .any).matching(NSPredicate(format: "label CONTAINS[c] %@", "L4ContractDatePicker")).firstMatch.waitForExistence(timeout: 2.5)
         XCTAssertTrue(hasLabel,
@@ -1036,8 +1054,7 @@ final class Layer4UITests: XCTestCase {
     @MainActor
     func testL4_platformCloudKitSyncStatus_L4() throws {
         ensureContractRoot()
-        scrollToFormSectionHeader(title: "L4 System")
-        nudgeScrollInsideL4SystemSection()
+        scrollToL4SystemCloudKitContracts()
         scrollToContractIdentifier("platformCloudKitSyncStatus_L4")
         let exactId = element(matchingIdentifier: "platformCloudKitSyncStatus_L4")
         XCTAssertTrue(
@@ -1063,9 +1080,8 @@ final class Layer4UITests: XCTestCase {
     @MainActor
     func testL4_platformCloudKitProgress_L4() throws {
         ensureContractRoot()
-        scrollToFormSectionHeader(title: "L4 System")
-        nudgeScrollInsideL4SystemSection()
-        scrollToElement(label: "CloudKit Progress")
+        scrollToL4SystemCloudKitContracts()
+        scrollToElement(label: "CloudKit Progress", maxAttempts: Self.maxL4SystemScrollAttempts)
         XCTAssertTrue(
             app.descendants(matching: .any).matching(NSPredicate(format: "label CONTAINS %@", "60")).firstMatch.waitForExistence(timeout: 2.0),
             "platformCloudKitProgress_L4: progress caption must be visible (contract structure)"
@@ -1085,9 +1101,8 @@ final class Layer4UITests: XCTestCase {
     @MainActor
     func testL4_platformCloudKitAccountStatus_L4() throws {
         ensureContractRoot()
-        scrollToFormSectionHeader(title: "L4 System")
-        nudgeScrollInsideL4SystemSection()
-        scrollToElement(label: "CloudKit Account")
+        scrollToL4SystemCloudKitContracts()
+        scrollToElement(label: "CloudKit Account", maxAttempts: Self.maxL4SystemScrollAttempts)
         let accountContract =
             waitForCombinedAccessibilityLabel(containing: "iCloud Account: Available", timeout: 3.5)
             || app.staticTexts.matching(NSPredicate(format: "label CONTAINS[c] %@", "iCloud Account")).firstMatch.waitForExistence(timeout: 2.5)
@@ -1106,9 +1121,8 @@ final class Layer4UITests: XCTestCase {
     @MainActor
     func testL4_platformCloudKitServiceStatus_L4() throws {
         ensureContractRoot()
-        scrollToFormSectionHeader(title: "L4 System")
-        nudgeScrollInsideL4SystemSection()
-        scrollToElement(label: "CloudKit Service Status")
+        scrollToL4SystemCloudKitContracts()
+        scrollToElement(label: "CloudKit Service Status", maxAttempts: Self.maxL4SystemScrollAttempts)
         let containsId = app.descendants(matching: .any)
             .matching(NSPredicate(format: "identifier CONTAINS[c] %@", "platformCloudKitServiceStatus_L4"))
             .firstMatch
@@ -1127,9 +1141,8 @@ final class Layer4UITests: XCTestCase {
     @MainActor
     func testL4_platformCloudKitSyncButton_L4() throws {
         ensureContractRoot()
-        scrollToFormSectionHeader(title: "L4 System")
-        nudgeScrollInsideL4SystemSection()
-        scrollToElement(label: "CloudKit Sync Button")
+        scrollToL4SystemCloudKitContracts()
+        scrollToElement(label: "CloudKit Sync Button", maxAttempts: Self.maxL4SystemScrollAttempts)
         let exactId = element(matchingIdentifier: "platformCloudKitSyncButton_L4")
         let containsId = app.descendants(matching: .any)
             .matching(NSPredicate(format: "identifier CONTAINS[c] %@", "platformCloudKitSyncButton_L4"))
@@ -1152,9 +1165,8 @@ final class Layer4UITests: XCTestCase {
     @MainActor
     func testL4_platformCloudKitStatusBadge_L4() throws {
         ensureContractRoot()
-        scrollToFormSectionHeader(title: "L4 System")
-        nudgeScrollInsideL4SystemSection()
-        scrollToElement(label: "CloudKit Status Badge")
+        scrollToL4SystemCloudKitContracts()
+        scrollToElement(label: "CloudKit Status Badge", maxAttempts: Self.maxL4SystemScrollAttempts)
         let containsId = app.descendants(matching: .any)
             .matching(NSPredicate(format: "identifier CONTAINS[c] %@", "platformCloudKitStatusBadge_L4"))
             .firstMatch
@@ -1171,8 +1183,7 @@ final class Layer4UITests: XCTestCase {
     @MainActor
     func testL4_platformPhotoPicker_L4() throws {
         ensureContractRoot()
-        scrollToFormSectionHeader(title: "L4 System")
-        nudgeScrollInsideL4SystemSection()
+        scrollToL4SystemCloudKitContracts()
         scrollToContractIdentifier("L4ContractPhotoPickerOpen")
         let openBtn = app.buttons["L4ContractPhotoPickerOpen"].firstMatch
         let openAny = app.descendants(matching: .any)
