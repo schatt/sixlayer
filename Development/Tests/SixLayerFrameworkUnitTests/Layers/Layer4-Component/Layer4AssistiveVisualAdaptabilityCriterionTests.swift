@@ -42,15 +42,17 @@ open class Layer4AssistiveVisualAdaptabilityCriterionTests: BaseTestClass {
         config.enableUITestIntegration = true
         config.enableDebugLogging = false
         return AccessibilityIdentifierConfig.$taskLocalConfig.withValue(config) {
-            var configured = view.environment(\.accessibilityIdentifierConfig, config)
-            if differentiateWithoutColor {
-                configured = configured.environment(\.accessibilityDifferentiateWithoutColor, true)
-            }
-            if increasedContrast {
+            let withConfig = view.environment(\.accessibilityIdentifierConfig, config)
+            let withDifferentiate = differentiateWithoutColor
+                ? AnyView(withConfig.environment(\.accessibilityDifferentiateWithoutColor, true))
+                : AnyView(withConfig)
+            let configured: AnyView = {
+                guard increasedContrast else { return withDifferentiate }
                 if #available(iOS 17.0, macOS 14.0, *) {
-                    configured = configured.environment(\.colorSchemeContrast, .increased)
+                    return AnyView(withDifferentiate.environment(\.colorSchemeContrast, .increased))
                 }
-            }
+                return withDifferentiate
+            }()
             return Self.hostRootPlatformView(
                 configured,
                 forceLayout: true,
