@@ -321,6 +321,57 @@ open class Layer4AssistiveVisualAdaptabilityCriterionTests: BaseTestClass {
             "idle status badge should keep informative traits when Dynamic Type increases"
         )
     }
+
+    @Test @MainActor
+    func testPlatformCloudKitStatusBadge_L4_syncing_retainsInformativeSemanticsAcrossDynamicTypeSteps() async {
+        let delegate = TestCloudKitDelegate()
+        let service = CloudKitService(delegate: delegate)
+        service.syncStatus = .syncing
+        let view = platformCloudKitStatusBadge_L4(service: service)
+        let rootDefault = hostedRoot(for: view)
+        let rootScaled = hostedRoot(for: view.dynamicTypeSize(.accessibility3))
+        #expect(rootDefault != nil && rootScaled != nil)
+        guard hostedTreeExposesSemanticSurface(rootDefault), hostedTreeExposesSemanticSurface(rootScaled) else {
+            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
+            return
+        }
+        func hasBadgeSemantics(_ root: Any?) -> Bool {
+            hostedUIKitAccessibilityHierarchyContains(root: root) { v in
+                v.accessibilityTraits.contains(.image)
+                    || v.accessibilityTraits.contains(.updatesFrequently)
+                    || v.accessibilityTraits.contains(.adjustable)
+            }
+        }
+        #expect(
+            hasBadgeSemantics(rootDefault) && hasBadgeSemantics(rootScaled),
+            "syncing status badge should keep progress-like traits when Dynamic Type increases"
+        )
+    }
+
+    @Test @MainActor
+    func testPlatformFormField_L4_retainsNamedComplianceAcrossDynamicTypeSteps() async {
+        let view = Text("L4FormFieldAnchor255")
+            .platformFormField(label: "L4FormFieldLabel255") {
+                Text("L4FormFieldInner255")
+            }
+        let rootDefault = hostedRoot(for: view)
+        let rootScaled = hostedRoot(for: view.dynamicTypeSize(.accessibility3))
+        #expect(rootDefault != nil && rootScaled != nil)
+        guard hostedTreeExposesSemanticSurface(rootDefault), hostedTreeExposesSemanticSurface(rootScaled) else {
+            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
+            return
+        }
+        func hasFormFieldMarkers(_ root: Any?) -> Bool {
+            hostedUIKitAccessibilityHierarchyContains(root: root) { v in
+                let id = v.accessibilityIdentifier ?? ""
+                return id.contains("platformFormField") || id.contains("SixLayer")
+            }
+        }
+        #expect(
+            hasFormFieldMarkers(rootDefault) && hasFormFieldMarkers(rootScaled),
+            "form field should keep discoverable identifiers when Dynamic Type increases"
+        )
+    }
 }
 
 #endif
