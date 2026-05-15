@@ -118,6 +118,44 @@ open class Layer4AssistiveVisualAdaptabilityCriterionTests: BaseTestClass {
             "split pane markers should remain in the hosted tree when Dynamic Type increases"
         )
     }
+
+    @Test @MainActor
+    func testPlatformPhotoPicker_L4_retainsNamedIdentifiersAcrossDynamicTypeSteps() async {
+        let view = PlatformPhotoComponentsLayer4.platformPhotoPicker_L4 { _ in }
+        let rootDefault = hostedRoot(for: view)
+        let rootScaled = hostedRoot(for: view.dynamicTypeSize(.accessibility3))
+        #expect(rootDefault != nil && rootScaled != nil)
+        guard hostedTreeExposesSemanticSurface(rootDefault), hostedTreeExposesSemanticSurface(rootScaled) else {
+            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
+            return
+        }
+        func hasPickerMarkers(_ root: Any?) -> Bool {
+            hostedUIKitAccessibilityHierarchyContains(root: root) { v in
+                let id = v.accessibilityIdentifier ?? ""
+                return id.contains("platformPhotoPicker_L4") || id.contains("SixLayer")
+            }
+        }
+        #expect(
+            hasPickerMarkers(rootDefault) && hasPickerMarkers(rootScaled),
+            "photo picker should keep discoverable identifiers when Dynamic Type increases"
+        )
+    }
+
+    @Test @MainActor
+    func testPlatformShare_L4_retainsButtonSemanticsAcrossDynamicTypeSteps() async {
+        let view = Button("Share255") { }
+            .platformShare_L4(isPresented: .constant(false), items: ["hello"])
+        let rootDefault = hostedRoot(for: view)
+        let rootScaled = hostedRoot(for: view.dynamicTypeSize(.accessibility3))
+        #expect(rootDefault != nil && rootScaled != nil)
+        guard hostedTreeExposesSemanticSurface(rootDefault), hostedTreeExposesSemanticSurface(rootScaled) else {
+            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
+            return
+        }
+        let buttonDefault = hostedUIKitAccessibilityHierarchyContains(root: rootDefault) { $0.accessibilityTraits.contains(.button) }
+        let buttonScaled = hostedUIKitAccessibilityHierarchyContains(root: rootScaled) { $0.accessibilityTraits.contains(.button) }
+        #expect(buttonDefault && buttonScaled, "share trigger should remain button-discoverable under elevated Dynamic Type")
+    }
 }
 
 #endif
