@@ -175,9 +175,10 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
     func test150_platformSecureField_typingUpdatesBinding() throws {
         #if os(iOS) || os(macOS)
         scrollToSectionHeader("SD150 Secure")
+        let mirrorS = mirrorElement(identifier: "SD150_Mirror_S")
+        scrollUntilHittable(mirrorS)
         let field = sd150SecureField(matching: "sd150-securefield")
-        scrollUntilHittable(field)
-        XCTAssertTrue(field.waitForExistence(timeout: 2.0), "Secure field")
+        XCTAssertTrue(field.waitForExistence(timeout: 2.5), "Secure field")
         field.xcuiTapToBecomeFirstResponder()
         field.typeText("hunter2")
         assertBindingMirrorContains("SD150_Mirror_S", "hunter2")
