@@ -15,6 +15,9 @@ import UIKit
 #if canImport(MapKit)
 import MapKit
 #endif
+#if os(iOS)
+import AVFoundation
+#endif
 @testable import SixLayerFramework
 
 #if canImport(UIKit) && !os(watchOS)
@@ -865,6 +868,49 @@ open class Layer4SemanticAccessibilityCriterionTests: BaseTestClass {
             named,
             "platformMapViewWithCurrentLocation_L4 should attach named automaticCompliance to the hosted map subtree"
         )
+    }
+    #endif
+
+    // MARK: - Camera (Issue #254)
+
+    #if os(iOS)
+    @Test @MainActor
+    func testPlatformCameraInterface_L4_exposesNamedComplianceOnHostedTree() async {
+        let view = PlatformPhotoComponentsLayer4.platformCameraInterface_L4 { _ in }
+        let root = hostedRoot(for: view)
+        #expect(root != nil)
+        guard hostedTreeExposesSemanticSurface(root) else {
+            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
+            return
+        }
+        let named = hostedUIKitAccessibilityHierarchyContains(root: root) { v in
+            let id = v.accessibilityIdentifier ?? ""
+            return id.contains("platformCameraInterface_L4") || id.contains("SixLayer.main.ui")
+        }
+        let buttonLike = hostedUIKitAccessibilityHierarchyContains(root: root) { v in
+            v.accessibilityTraits.contains(.button)
+        }
+        #expect(
+            named || buttonLike,
+            "camera interface should expose platformCameraInterface_L4 / SixLayer identifiers or button semantics"
+        )
+    }
+
+    @Test @MainActor
+    func testPlatformCameraPreview_L4_exposesNamedComplianceOnHostedTree() async {
+        let session = AVCaptureSession()
+        let view = PlatformPhotoComponentsLayer4.platformCameraPreview_L4(session: session)
+        let root = hostedRoot(for: view)
+        #expect(root != nil)
+        guard hostedTreeExposesSemanticSurface(root) else {
+            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
+            return
+        }
+        let named = hostedUIKitAccessibilityHierarchyContains(root: root) { v in
+            let id = v.accessibilityIdentifier ?? ""
+            return id.contains("platformCameraPreview_L4") || id.contains("SixLayer.main.ui")
+        }
+        #expect(named, "platformCameraPreview_L4 should attach named automaticCompliance to the hosted preview subtree")
     }
     #endif
 }
