@@ -46,7 +46,9 @@ public enum PlatformMapComponentsLayer4 {
                 content()
             }
         }
+        .accessibilityElement(children: .contain)
         .automaticCompliance(named: "platformMapView_L4")
+        .accessibilityIdentifier("platformMapView_L4")
         #else
         // MapKit not available - provide fallback UI
         UnsupportedPlatformMapView()
@@ -78,7 +80,9 @@ public enum PlatformMapComponentsLayer4 {
                 }
             }
         }
+        .accessibilityElement(children: .contain)
         .automaticCompliance(named: "platformMapView_L4")
+        .accessibilityIdentifier("platformMapView_L4")
         #else
         // MapKit not available
         UnsupportedPlatformMapView()
