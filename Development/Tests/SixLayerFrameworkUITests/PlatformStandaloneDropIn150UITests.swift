@@ -277,10 +277,12 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
         }
         #if os(iOS)
         app.xcuiDismissSoftwareKeyboardIfPresent()
-        tapCenter(pass)
-        RunLoop.current.run(until: Date().addingTimeInterval(0.25))
-        tapCenter(pass)
         RunLoop.current.run(until: Date().addingTimeInterval(0.35))
+        if app.staticTexts["SD150 Integration"].firstMatch.waitForExistence(timeout: 0.5) {
+            app.staticTexts["SD150 Integration"].firstMatch.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.1)).tap()
+            RunLoop.current.run(until: Date().addingTimeInterval(0.25))
+        }
+        pass.xcuiTapToBecomeFirstResponder()
         #else
         pass.xcuiTapToBecomeFirstResponder()
         #endif
