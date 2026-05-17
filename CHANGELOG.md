@@ -1,5 +1,24 @@
 # Changelog
 
+## v7.8.2 - L4 assistive adaptability, map a11y, UITest stabilization (May 17, 2026)
+
+### ✨ Added
+- **Layer 4 assistive visual adaptability** matrix tests and hosted helpers for VoiceOver, Switch Control, and increased contrast (#255).
+- **Layer 4 semantic** hosted criterion tests and matrix evidence for split views, maps, forms, CloudKit, camera, photo, and related APIs (#254).
+
+### 🧩 Changed
+- **`platformMapView_L4`**: contract `accessibilityIdentifier`, container semantics, minimum frame, and `Group` wrapper for reliable UIKit a11y hosting.
+- **XCUITest**: shared L4 System scroll helpers, CloudKit/photo query stabilization, SD150 secure-field and Form scroll budgets.
+
+### 🐛 Fixed
+- Duplicate **CloudKit sync status** accessibility identifier in L4 examples.
+
+### 📚 Documentation
+- Integration-branch pre-commit hook merge allowance; assistive/semantic test matrices updated.
+- Full notes: [`Development/RELEASE_v7.8.2.md`](Development/RELEASE_v7.8.2.md), index [`Development/RELEASES.md`](Development/RELEASES.md).
+
+---
+
 ## v7.8.1 - OCR inclusive defaults, EXIF date/orientation writers, L4 a11y/UITest (May 14, 2026)
 
 ### ✨ Added
