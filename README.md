@@ -27,7 +27,7 @@ Navigate to the `Framework/` directory and use it as a Swift Package:
 ```swift
 // In your Package.swift
 dependencies: [
-    .package(url: "https://github.com/schatt/sixlayer.git", from: "7.8.1")
+    .package(url: "https://github.com/schatt/sixlayer.git", from: "7.8.2")
 ]
 ```
 
@@ -41,9 +41,12 @@ dependencies: [
 
 The framework is distributed as a Swift Package from the `Framework/` directory. This ensures that only the essential framework code is included when other projects consume it.
 
-## 🆕 Latest Release: v7.8.1
+## 🆕 Latest Release: v7.8.2
 
 ### **Patch release**
+🔧 **Patch**: Layer 4 assistive visual adaptability matrix (#255) and semantic criterion evidence (#254); `platformMapView_L4` map contract accessibility and UIKit hosting; XCUITest scroll/query stabilization for L4 System and SD150 integration flows; duplicate CloudKit sync status accessibility identifier fix. See [RELEASE_v7.8.2.md](Development/RELEASE_v7.8.2.md).
+
+### **Previous Release: v7.8.1 - Patch release**
 🔧 **Patch**: Structured OCR inclusive extraction and Layer 2 forwarding (#279); `PlatformImage` EXIF capture date and orientation writers (#275); Layer 4 accessibility identifiers for CloudKit, photo picker, and UITest contract surfaces; agent `wip/` worktree checklist (#280); assorted UITest harness hardening and Layer 4 compile/`platformPrint_L4` isolation fixes. See [RELEASE_v7.8.1.md](Development/RELEASE_v7.8.1.md).
 
 ### **Previous Release: v7.8.0 - Minor release**
@@ -262,7 +265,7 @@ These guides contain critical information about the Layer 1 Semantic Intent phil
 
 ## 📋 Current Status
 
-**Version**: v7.8.1 (Patch)
+**Version**: v7.8.2 (Patch)
 **Phase**: Patch release
 **Next**: TBD
 

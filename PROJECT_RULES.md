@@ -91,6 +91,8 @@ This script will:
 
 **MANDATORY**: Any work scoped to a **numbered GitHub issue** is implemented on **`wip/<issue-slug>`** and merged (or PR’d) into the integration line — **not** committed directly to `next` / `main` for that scope. Full workflow, worktree preference, and closure steps: [.cursor/rules/github-issue-workflow.mdc](.cursor/rules/github-issue-workflow.mdc).
 
+**Mechanical enforcement (optional but recommended):** After `pre-commit install`, the local hook `no-commit-on-integration-branches` blocks **non-merge** commits on `main` and `next` while allowing commits that complete an in-progress `git merge` (when `MERGE_HEAD` is present). Emergency bypass: `SIXLAYER_GIT_HOOK_BYPASS=1`, or one-shot `SKIP=no-commit-on-integration-branches`. See `.pre-commit-config.yaml` and `scripts/git-hooks/block-integration-branch-commits.sh`.
+
 #### Benefits
 - Easier to review changes
 - Simpler to identify and revert problematic commits

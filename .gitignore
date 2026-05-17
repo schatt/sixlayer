@@ -52,3 +52,6 @@ test_output.log
 
 # Local agent / CLI full logs (tee targets); not for version control
 .logs/
+
+# Ephemeral Xcode DerivedData access logs (per-worktree random suffix)
+.derived-data-log-*

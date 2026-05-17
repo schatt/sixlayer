@@ -1,5 +1,5 @@
 // swift-tools-version: 6.0
-// SixLayerFramework v7.8.1 - Patch: OCR structured extraction (#279), EXIF date/orientation writers (#275), L4 a11y identifiers and UITest hardening, agent wip docs (#280), platformPrint_L4 isolation
+// SixLayerFramework v7.8.2 - Patch: L4 assistive adaptability (#255), semantic matrix (#254), map a11y, UITest stabilization (#261), integration git hook docs
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
