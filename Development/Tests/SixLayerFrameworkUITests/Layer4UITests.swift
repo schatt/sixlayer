@@ -220,7 +220,7 @@ final class Layer4UITests: XCTestCase {
 
     /// Scroll until a contract accessibility identifier is on-screen (L4 System rows are deep under overlay section).
     @MainActor
-    private func scrollToContractIdentifier(_ identifier: String, maxAttempts: Int = Self.maxScrollAttempts) {
+    private func scrollToContractIdentifier(_ identifier: String, maxAttempts: Int = Layer4UITests.maxScrollAttempts) {
         let node = element(matchingIdentifier: identifier)
         if node.waitForExistence(timeout: Self.quickWait) { return }
         let contains = app.descendants(matching: .any)
