@@ -1,12 +1,21 @@
 # 🚀 Six-Layer Framework Release History
 
-## 📍 **Current Release: v7.8.1** 🎯
+## 📍 **Current Release: v7.8.2** 🎯
 
-**Release Date**: May 14, 2026
+**Release Date**: May 17, 2026
 **Status**: Patch release
-**Previous Release**: v7.8.0 - Minor release
-**Note**: Structured OCR inclusive extraction and Layer 2 forwarding (#279); PlatformImage EXIF capture date and orientation writers (#275); L4 accessibility identifiers and UITest contract stabilization; agent `wip/` worktree checklist (#280); Layer 4 compile and platformPrint isolation fixes.
+**Previous Release**: v7.8.1 - Patch release
+**Note**: Layer 4 assistive visual adaptability matrix (#255) and semantic criterion evidence (#254); platformMapView_L4 map contract accessibility and UIKit hosting; XCUITest scroll/query stabilization for L4 System and SD150; duplicate CloudKit sync status a11y id fix; integration-branch git hook docs.
 **Next Release**: TBD
+
+---
+
+## 🎯 **v7.8.2 - L4 assistive adaptability, map a11y, and UITest stabilization** (May 17, 2026)
+
+### **What's in v7.8.2:**
+- Patch release. See [RELEASE_v7.8.2.md](RELEASE_v7.8.2.md) for details.
+
+**See [RELEASE_v7.8.2.md](RELEASE_v7.8.2.md) for complete release notes.**
 
 ---
 
