@@ -133,7 +133,7 @@ enum OCRLabelAnchoredExtraction {
     private static func splitBidirectionalPattern(_ pattern: String) -> (hintFirst: String, numberFirst: String)? {
         guard pattern.hasPrefix("(?i)(("), pattern.hasSuffix("))") else { return nil }
         let innerStart = pattern.index(pattern.startIndex, offsetBy: 5)
-        let innerEnd = pattern.index(pattern.endIndex, offsetBy: -2)
+        let innerEnd = pattern.index(pattern.endIndex, offsetBy: -1)
         let inner = String(pattern[innerStart..<innerEnd])
         guard let pipeRange = inner.range(of: "|(") else { return nil }
         let hintArm = String(inner[inner.startIndex..<pipeRange.lowerBound])
@@ -271,10 +271,13 @@ enum OCRLabelAnchoredExtraction {
         isHintFirst: Bool,
         in text: String
     ) -> String? {
-        let hintIndex = isHintFirst ? 2 : 3
-        guard hintIndex < match.numberOfRanges,
-              match.range(at: hintIndex).location != NSNotFound,
-              let range = Range(match.range(at: hintIndex), in: text) else {
+        guard let numberGroupIndex = numericCaptureGroupIndex(in: match, text: text) else {
+            return nil
+        }
+        let hintGroupIndex = isHintFirst ? max(1, numberGroupIndex - 1) : numberGroupIndex + 1
+        guard hintGroupIndex < match.numberOfRanges,
+              match.range(at: hintGroupIndex).location != NSNotFound,
+              let range = Range(match.range(at: hintGroupIndex), in: text) else {
             return nil
         }
         return String(text[range])
