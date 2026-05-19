@@ -268,7 +268,7 @@ These guides contain critical information about the Layer 1 Semantic Intent phil
 
 ## 📋 Current Status
 
-**Version**: v7.8.2 (Patch)
+**Version**: v7.8.3 (Patch)
 **Phase**: Patch release
 **Next**: TBD
 
