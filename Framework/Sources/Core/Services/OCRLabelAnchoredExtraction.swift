@@ -32,16 +32,19 @@ enum OCRLabelAnchoredExtraction {
         recognitionLines: [OCRRecognitionLine]?
     ) -> [String: String] {
         if let recognitionLines, !recognitionLines.isEmpty {
-            var lineCandidates: [Candidate] = []
+            var lineAssignments: [String: String] = [:]
             for line in recognitionLines {
-                collectCandidates(
-                    in: line.text,
-                    patterns: patterns,
-                    recognitionLines: recognitionLines,
-                    into: &lineCandidates
+                let lineOnly = assignExclusive(
+                    collectCandidates(
+                        in: line.text,
+                        patterns: patterns,
+                        recognitionLines: recognitionLines
+                    )
                 )
+                for (fieldId, value) in lineOnly {
+                    lineAssignments[fieldId] = value
+                }
             }
-            let lineAssignments = assignExclusive(lineCandidates)
             let flatAssignments = assignExclusive(
                 collectCandidates(
                     in: extractedText,
