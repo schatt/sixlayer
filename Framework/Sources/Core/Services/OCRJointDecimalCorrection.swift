@@ -135,6 +135,25 @@ enum OCRJointDecimalCorrection {
             return JointOutcome(data: structuredData, adjustments: [:], blockedFields: [])
         }
         
+        let rateField = identifyRateField(relationship: relationship, ranges: allRanges)
+        let volumeField = identifyVolumeField(
+            relationship: relationship,
+            rateField: rateField,
+            ranges: allRanges
+        )
+        if let volumeField,
+           let productRaw = structuredData[relationship.productField],
+           let volumeRaw = structuredData[volumeField],
+           productRaw == volumeRaw,
+           valueNeedsDecimalPlacement(productRaw, language: context.language),
+           valueNeedsDecimalPlacement(volumeRaw, language: context.language) {
+            return jointFailureOutcome(
+                relationship: relationship,
+                structuredData: structuredData,
+                reason: "no retail-plausible pair"
+            )
+        }
+        
         let needsCorrection: [String: Bool] = Dictionary(uniqueKeysWithValues: fields.map { field in
             (field, valueNeedsDecimalPlacement(structuredData[field] ?? "", language: context.language))
         })
@@ -142,13 +161,6 @@ enum OCRJointDecimalCorrection {
         guard needsCorrection.values.contains(true) else {
             return JointOutcome(data: structuredData, adjustments: [:], blockedFields: [])
         }
-        
-        let rateField = identifyRateField(relationship: relationship, ranges: allRanges)
-        let volumeField = identifyVolumeField(
-            relationship: relationship,
-            rateField: rateField,
-            ranges: allRanges
-        )
         
         let rateRange = rateField.flatMap { allRanges[$0] } ?? ValueRange(min: 2.0, max: 10.0)
         let printedRate: Double? = rateField.flatMap { field in
