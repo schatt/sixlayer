@@ -1,6 +1,6 @@
 # SixLayer Framework
 
-[![Version](https://img.shields.io/badge/version-v7.8.2-blue.svg)](https://github.com/schatt/sixlayer/releases/tag/v7.8.2)
+[![Version](https://img.shields.io/badge/version-v7.8.3-blue.svg)](https://github.com/schatt/sixlayer/releases/tag/v7.8.3)
 [![Platform](https://img.shields.io/badge/platform-iOS%2016%2B%20%7C%20macOS%2013%2B-lightgrey.svg)](https://github.com/schatt/6layer)
 [![Swift](https://img.shields.io/badge/Swift-5.9+-orange.svg)](https://swift.org)
 
@@ -39,6 +39,12 @@ Layer 1: Semantic Intent → Layer 2: Layout Decision → Layer 3: Strategy Sele
 - **Extensible**: Easy to extend with custom layers and strategies
 - **Comprehensively Tested**: 800+ tests with platform-aware testing and mandatory TDD implementation
 - **DRY Architecture**: Define hints once in files, use everywhere automatically
+
+## 🆕 What's New in v7.8.3
+
+### Patch release
+
+Pump LCD label-anchored structured OCR (#282); calculation-group joint decimal correction (#283); printed price-per-gallon joint scoring (#284); Vision line layout anchoring (#285); fail-closed joint failure (#286); locale decimal parsing (#287). See [RELEASE_v7.8.3.md](../Development/RELEASE_v7.8.3.md).
 
 ## 🆕 What's New in v7.8.2
 

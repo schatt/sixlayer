@@ -140,35 +140,19 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
             strategy: structuredStrategy
         )
         let baseResult = visionOutcome.result
-        
-        // Perform structured extraction
-        var structuredData = extractStructuredData(from: baseResult, context: context)
-        var adjustedFields: [String: String] = [:]
-        
-        // Apply decimal correction heuristic based on expected ranges
-        let (correctedData, decimalAdjustments) = correctDecimalPlacement(in: structuredData, context: context)
-        structuredData = correctedData
-        adjustedFields.merge(decimalAdjustments) { _, new in new }
-        
-        // Validate extracted values against expected ranges (guidelines, not hard requirements)
-        let (validatedData, rangeWarnings) = validateFieldRanges(in: structuredData, context: context)
-        structuredData = validatedData
-        adjustedFields.merge(rangeWarnings) { existing, new in
-            // Combine warnings if field already has an adjustment
-            "\(existing). \(new)"
-        }
-        
-        // Apply calculation groups to derive missing values
-        var calculatedFields: [String: String] = [:]
-        if context.extractionMode == .automatic || context.extractionMode == .hybrid {
-            let (calculatedData, calculatedAdjustments) = applyCalculationGroups(to: structuredData, context: context)
-            structuredData = calculatedData
-            calculatedFields = calculatedAdjustments
-        }
-        adjustedFields.merge(calculatedFields) { _, new in new }
-        
-        let extractionConfidence = calculateExtractionConfidence(structuredData, context: context)
-        let missingFields = findMissingRequiredFields(structuredData, context: context)
+        let recognitionLines = recognitionLines(
+            texts: visionOutcome.recognizedLineTexts,
+            boundingBoxes: baseResult.boundingBoxes
+        )
+        let pipeline = applyStructuredExtraction(
+            from: baseResult,
+            context: context,
+            recognitionLines: recognitionLines
+        )
+        let structuredData = pipeline.structuredData
+        let adjustedFields = pipeline.adjustedFields
+        let extractionConfidence = pipeline.extractionConfidence
+        let missingFields = pipeline.missingRequiredFields
         
         let structuredValues = Set(
             structuredData.values.map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }.filter { !$0.isEmpty }
@@ -215,58 +199,68 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
         #endif
     }
     
-    // MARK: - Structured Extraction Helper Methods
+    // MARK: - Structured Extraction
     
-    private func extractStructuredData(from result: OCRResult, context: OCRContext) -> [String: String] {
-        var structuredData: [String: String] = [:]
+    /// Applies hints-based structured extraction to existing OCR text (unit tests and pipeline reuse).
+    internal func applyStructuredExtraction(
+        from baseResult: OCRResult,
+        context: OCRContext,
+        recognitionLines: [OCRRecognitionLine]? = nil
+    ) -> (
+        structuredData: [String: String],
+        adjustedFields: [String: String],
+        extractionConfidence: Float,
+        missingRequiredFields: [String]
+    ) {
+        var structuredData = extractStructuredData(
+            from: baseResult,
+            context: context,
+            recognitionLines: recognitionLines
+        )
+        var adjustedFields: [String: String] = [:]
         
-        // Get patterns for extraction
-        let patterns = getPatterns(for: context)
+        let (correctedData, decimalAdjustments) = correctDecimalPlacement(in: structuredData, context: context)
+        structuredData = correctedData
+        adjustedFields.merge(decimalAdjustments) { _, new in new }
         
-        // Extract data using patterns (hints-based extraction or custom extractionHints)
-        for (field, pattern) in patterns {
-            if let regex = try? NSRegularExpression(pattern: pattern, options: []) {
-                let range = NSRange(location: 0, length: result.extractedText.utf16.count)
-                // Try to find all matches (not just first) to handle multiple occurrences
-                let matches = regex.matches(in: result.extractedText, options: [], range: range)
-                for match in matches {
-                    // Bidirectional pattern structure:
-                    // Group 1: entire match
-                    // Group 2: hint (if hint comes first)
-                    // Group 3: number (if hint comes first)
-                    // Group 4: number (if number comes first)
-                    // Group 5: hint (if number comes first)
-                    var value: String?
-                    
-                    // Check if hint-first pattern matched (group 3 has the number)
-                    if match.numberOfRanges > 3, match.range(at: 3).location != NSNotFound {
-                        if let valueRange = Range(match.range(at: 3), in: result.extractedText) {
-                            value = String(result.extractedText[valueRange])
-                        }
-                    }
-                    // Check if number-first pattern matched (group 4 has the number)
-                    else if match.numberOfRanges > 4, match.range(at: 4).location != NSNotFound {
-                        if let valueRange = Range(match.range(at: 4), in: result.extractedText) {
-                            value = String(result.extractedText[valueRange])
-                        }
-                    }
-                    // Fallback: old pattern format (group 2 has the number)
-                    else if match.numberOfRanges > 2, let valueRange = Range(match.range(at: 2), in: result.extractedText) {
-                        value = String(result.extractedText[valueRange])
-                    }
-                    
-                    if let value = value, structuredData[field] == nil {
-                        structuredData[field] = value
-                    }
-                }
-            }
+        let (validatedData, rangeWarnings) = validateFieldRanges(in: structuredData, context: context)
+        structuredData = validatedData
+        adjustedFields.merge(rangeWarnings) { existing, new in
+            "\(existing). \(new)"
         }
         
-        // Note: We no longer add generic text types (like "price", "number") to structuredData
-        // Developers should use hints files (entityName) or custom extractionHints for explicit field mapping
-        // This prevents confusion and ensures structuredData contains only explicitly mapped fields
+        if context.extractionMode == .automatic || context.extractionMode == .hybrid {
+            let (calculatedData, calculatedAdjustments) = applyCalculationGroups(to: structuredData, context: context)
+            structuredData = calculatedData
+            adjustedFields.merge(calculatedAdjustments) { _, new in new }
+        }
         
-        return structuredData
+        var extractionConfidence = calculateExtractionConfidence(structuredData, context: context)
+        if adjustedFields.values.contains(where: { $0.contains("no retail-plausible pair") }) {
+            extractionConfidence = min(extractionConfidence, 0.5)
+        }
+        let missingFields = findMissingRequiredFields(structuredData, context: context)
+        return (structuredData, adjustedFields, extractionConfidence, missingFields)
+    }
+    
+    private func recognitionLines(texts: [String], boundingBoxes: [CGRect]) -> [OCRRecognitionLine]? {
+        guard !texts.isEmpty, texts.count == boundingBoxes.count else { return nil }
+        return zip(texts, boundingBoxes).map { OCRRecognitionLine(text: $0.0, boundingBox: $0.1) }
+    }
+    
+    // MARK: - Structured Extraction Helper Methods
+    
+    private func extractStructuredData(
+        from result: OCRResult,
+        context: OCRContext,
+        recognitionLines: [OCRRecognitionLine]? = nil
+    ) -> [String: String] {
+        let patterns = getPatterns(for: context)
+        return OCRLabelAnchoredExtraction.extract(
+            from: result.extractedText,
+            patterns: patterns,
+            recognitionLines: recognitionLines
+        )
     }
     
     private func getPatterns(for context: OCRContext) -> [String: String] {
@@ -322,7 +316,9 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
                 // Pattern supports bidirectional matching: hint before number OR number before hint
                 // This handles cases where Vision reads text in different orders
                 // Pattern: (?i)((hint1|hint2|hint3)\s*[:=]?\s*([\d.,]+)|([\d.,]+)\s+(hint1|hint2|hint3))
-                let escapedHints = ocrHints.map { NSRegularExpression.escapedPattern(for: $0) }
+                let escapedHints = ocrHints
+                    .sorted { $0.count > $1.count }
+                    .map { NSRegularExpression.escapedPattern(for: $0) }
                 let hintsGroup = escapedHints.joined(separator: "|")
                 
                 // Check if any hint is a currency symbol (needs special handling)
@@ -385,6 +381,16 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
             }
         }
         
+        let jointResult = OCRJointDecimalCorrection.apply(
+            to: correctedData,
+            hintsRanges: hintsRanges,
+            hintsCalculationGroups: hintsCalculationGroups,
+            context: context
+        )
+        correctedData = jointResult.structuredData
+        adjustments.merge(jointResult.adjustments) { _, new in new }
+        let jointBlockedFields = jointResult.fieldsBlockedFromPerFieldCorrection
+        
         // Infer ranges for fields that don't have explicit ranges but have calculation groups
         // Example: totalCost = pricePerGallon * gallons
         // If pricePerGallon has range 0-10 and gallons has range 0-32, then totalCost inferred range is 0-320
@@ -407,9 +413,11 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
         }
         
         // Try to correct each extracted value
-        for (fieldId, valueString) in structuredData {
-            // Skip if value already has a decimal point or comma
-            guard !valueString.contains(".") && !valueString.contains(",") else {
+        for (fieldId, valueString) in correctedData {
+            if adjustments[fieldId] != nil || jointBlockedFields.contains(fieldId) {
+                continue
+            }
+            guard OCRJointDecimalCorrection.valueNeedsDecimalPlacement(valueString, language: context.language) else {
                 continue
             }
             
@@ -843,29 +851,30 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
         let requestedFields = Set(context.extractionHints.keys)
         let shouldFilterCalculations = !requestedFields.isEmpty
         
-        for (fieldId, group) in allGroups {
-            // Skip if field already has a value
-            if result[fieldId] != nil {
+        for (_, group) in allGroups {
+            let parts = group.formula.split(separator: "=", maxSplits: 1).map {
+                $0.trimmingCharacters(in: .whitespaces)
+            }
+            guard parts.count == 2 else { continue }
+            let targetField = parts[0]
+            
+            if result[targetField] != nil {
                 continue
             }
             
-            // Only calculate fields that were explicitly requested (if extractionHints is provided)
-            if shouldFilterCalculations && !requestedFields.contains(fieldId) {
+            if shouldFilterCalculations && !requestedFields.contains(targetField) {
                 continue
             }
             
-            // Check if all dependent fields are available
             let allDependenciesAvailable = group.dependentFields.allSatisfy { fieldId in
                 result[fieldId] != nil
             }
             
             if allDependenciesAvailable {
-                // Calculate the value
                 if let calculatedValue = evaluateCalculationGroup(group, fieldValues: result) {
-                    result[fieldId] = String(calculatedValue)
-                    // Format the calculation for the adjustment message
+                    result[targetField] = String(calculatedValue)
                     let formula = group.formula
-                    adjustments[fieldId] = "Calculated from formula: \(formula) = \(String(format: "%.2f", calculatedValue))"
+                    adjustments[targetField] = "Calculated from formula: \(formula) = \(String(format: "%.2f", calculatedValue))"
                 }
             }
         }

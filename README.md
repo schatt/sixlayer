@@ -27,7 +27,7 @@ Navigate to the `Framework/` directory and use it as a Swift Package:
 ```swift
 // In your Package.swift
 dependencies: [
-    .package(url: "https://github.com/schatt/sixlayer.git", from: "7.8.2")
+    .package(url: "https://github.com/schatt/sixlayer.git", from: "7.8.3")
 ]
 ```
 
@@ -41,9 +41,12 @@ dependencies: [
 
 The framework is distributed as a Swift Package from the `Framework/` directory. This ensures that only the essential framework code is included when other projects consume it.
 
-## 🆕 Latest Release: v7.8.2
+## 🆕 Latest Release: v7.8.3
 
 ### **Patch release**
+🔧 **Patch**: Pump LCD label-anchored structured OCR (#282); calculation-group joint decimal correction (#283); printed price-per-gallon joint scoring (#284); Vision line layout anchoring (#285); fail-closed joint failure (#286); locale decimal parsing (#287). See [RELEASE_v7.8.3.md](Development/RELEASE_v7.8.3.md).
+
+### **Previous Release: v7.8.2 - Patch release**
 🔧 **Patch**: Layer 4 assistive visual adaptability matrix (#255) and semantic criterion evidence (#254); `platformMapView_L4` map contract accessibility and UIKit hosting; XCUITest scroll/query stabilization for L4 System and SD150 integration flows; duplicate CloudKit sync status accessibility identifier fix. See [RELEASE_v7.8.2.md](Development/RELEASE_v7.8.2.md).
 
 ### **Previous Release: v7.8.1 - Patch release**
@@ -265,7 +268,7 @@ These guides contain critical information about the Layer 1 Semantic Intent phil
 
 ## 📋 Current Status
 
-**Version**: v7.8.2 (Patch)
+**Version**: v7.8.3 (Patch)
 **Phase**: Patch release
 **Next**: TBD
 
