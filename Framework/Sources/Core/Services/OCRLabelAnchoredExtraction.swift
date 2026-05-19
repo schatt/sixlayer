@@ -206,13 +206,15 @@ enum OCRLabelAnchoredExtraction {
         }
         
         var structuredData: [String: String] = [:]
-        var claimedValues: Set<String> = []
+        var claimedNumberRanges: [NSRange] = []
         
         for candidate in sorted {
             if structuredData[candidate.fieldId] != nil { continue }
-            if claimedValues.contains(candidate.value) { continue }
+            if claimedNumberRanges.contains(where: { NSIntersectionRange($0, candidate.numberRange).length > 0 }) {
+                continue
+            }
             structuredData[candidate.fieldId] = candidate.value
-            claimedValues.insert(candidate.value)
+            claimedNumberRanges.append(candidate.numberRange)
         }
         return structuredData
     }
