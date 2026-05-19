@@ -117,12 +117,10 @@ enum OCRLabelAnchoredExtraction {
         let inner = String(pattern[innerStart..<innerEnd])
         guard let pipeRange = inner.range(of: "|(") else { return nil }
         let hintArm = String(inner[inner.startIndex..<pipeRange.lowerBound])
-        var numberArm = String(inner[pipeRange.upperBound...])
-        if numberArm.hasPrefix("(") { numberArm.removeFirst() }
-        if numberArm.hasSuffix(")") { numberArm.removeLast() }
+        let numberArm = String(inner[pipeRange.upperBound...])
         return (
-            hintFirst: "(?i)(" + hintArm + ")",
-            numberFirst: "(?i)(" + numberArm + ")"
+            hintFirst: "(?i)" + hintArm,
+            numberFirst: "(?i)" + numberArm
         )
     }
     
