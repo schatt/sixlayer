@@ -151,21 +151,22 @@ enum OCRLabelAnchoredExtraction {
         recognitionLines: [OCRRecognitionLine]?
     ) -> Int {
         guard let recognitionLines, !recognitionLines.isEmpty else { return 0 }
-        
-        let numberLineIndex = recognitionLines.firstIndex { line in
-            line.text.contains(value) || value.contains(line.text.trimmingCharacters(in: .whitespaces))
-        }
-        
         let hintSubstring = hintSubstringForMatch(match, isHintFirst: isHintFirst, in: extractedText)
-        let hintLineIndex = hintSubstring.flatMap { hint in
-            recognitionLines.firstIndex { $0.text.localizedCaseInsensitiveContains(hint) }
+        
+        for (index, line) in recognitionLines.enumerated() {
+            guard line.text.contains(value) else { continue }
+            guard let hintSubstring, !hintSubstring.isEmpty else { return 0 }
+            if line.text.localizedCaseInsensitiveContains(hintSubstring) {
+                return 30
+            }
+            let neighborIndices = [index - 1, index + 1]
+            for neighborIndex in neighborIndices where neighborIndex >= 0 && neighborIndex < recognitionLines.count {
+                if recognitionLines[neighborIndex].text.localizedCaseInsensitiveContains(hintSubstring) {
+                    return 15
+                }
+            }
+            return 0
         }
-        
-        guard let numberLineIndex else { return 0 }
-        guard let hintLineIndex else { return 0 }
-        
-        if numberLineIndex == hintLineIndex { return 30 }
-        if abs(numberLineIndex - hintLineIndex) == 1 { return 15 }
         return 0
     }
     
