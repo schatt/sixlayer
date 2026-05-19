@@ -45,49 +45,116 @@ enum OCRLabelAnchoredExtraction {
         recognitionLines: [OCRRecognitionLine]?
     ) -> [Candidate] {
         var candidates: [Candidate] = []
-        let fullRange = NSRange(location: 0, length: extractedText.utf16.count)
+        
+        if let recognitionLines, !recognitionLines.isEmpty {
+            for line in recognitionLines {
+                collectCandidates(
+                    in: line.text,
+                    patterns: patterns,
+                    recognitionLines: recognitionLines,
+                    into: &candidates
+                )
+            }
+            return candidates
+        }
+        
+        collectCandidates(
+            in: extractedText,
+            patterns: patterns,
+            recognitionLines: recognitionLines,
+            into: &candidates
+        )
+        return candidates
+    }
+    
+    private static func collectCandidates(
+        in text: String,
+        patterns: [String: String],
+        recognitionLines: [OCRRecognitionLine]?,
+        into candidates: inout [Candidate]
+    ) {
+        let fullRange = NSRange(location: 0, length: text.utf16.count)
         
         for (fieldId, pattern) in patterns {
-            guard let regex = try? NSRegularExpression(pattern: pattern, options: []) else { continue }
-            let matches = regex.matches(in: extractedText, options: [], range: fullRange)
-            for match in matches {
-                if match.numberOfRanges > 3, match.range(at: 3).location != NSNotFound {
-                    appendCandidate(
-                        fieldId: fieldId,
-                        numberRange: match.range(at: 3),
-                        hintLength: hintLengthFromMatch(match, hintGroupIndex: 2, in: extractedText),
-                        isHintFirst: true,
-                        match: match,
-                        extractedText: extractedText,
-                        recognitionLines: recognitionLines,
-                        to: &candidates
-                    )
-                } else if match.numberOfRanges > 4, match.range(at: 4).location != NSNotFound {
-                    appendCandidate(
-                        fieldId: fieldId,
-                        numberRange: match.range(at: 4),
-                        hintLength: hintLengthFromMatch(match, hintGroupIndex: 5, in: extractedText),
-                        isHintFirst: false,
-                        match: match,
-                        extractedText: extractedText,
-                        recognitionLines: recognitionLines,
-                        to: &candidates
-                    )
-                } else if match.numberOfRanges > 2, match.range(at: 2).location != NSNotFound {
-                    appendCandidate(
-                        fieldId: fieldId,
-                        numberRange: match.range(at: 2),
-                        hintLength: 0,
-                        isHintFirst: true,
-                        match: match,
-                        extractedText: extractedText,
-                        recognitionLines: recognitionLines,
-                        to: &candidates
-                    )
-                }
+            if let parts = splitBidirectionalPattern(pattern) {
+                collectMatches(
+                    fieldId: fieldId,
+                    pattern: parts.hintFirst,
+                    in: text,
+                    range: fullRange,
+                    isHintFirst: true,
+                    recognitionLines: recognitionLines,
+                    into: &candidates
+                )
+                collectMatches(
+                    fieldId: fieldId,
+                    pattern: parts.numberFirst,
+                    in: text,
+                    range: fullRange,
+                    isHintFirst: false,
+                    recognitionLines: recognitionLines,
+                    into: &candidates
+                )
+            } else {
+                collectMatches(
+                    fieldId: fieldId,
+                    pattern: pattern,
+                    in: text,
+                    range: fullRange,
+                    isHintFirst: true,
+                    recognitionLines: recognitionLines,
+                    into: &candidates
+                )
             }
         }
-        return candidates
+    }
+    
+    /// Split `(?i)((hint…num)|(num…hint))` into separate arms so both can match without alternation overlap.
+    private static func splitBidirectionalPattern(_ pattern: String) -> (hintFirst: String, numberFirst: String)? {
+        guard pattern.hasPrefix("(?i)(("), pattern.hasSuffix("))") else { return nil }
+        let innerStart = pattern.index(pattern.startIndex, offsetBy: 5)
+        let innerEnd = pattern.index(pattern.endIndex, offsetBy: -2)
+        let inner = String(pattern[innerStart..<innerEnd])
+        guard let pipeRange = inner.range(of: "|(") else { return nil }
+        let hintArm = String(inner[inner.startIndex..<pipeRange.lowerBound])
+        var numberArm = String(inner[pipeRange.upperBound...])
+        if numberArm.hasPrefix("(") { numberArm.removeFirst() }
+        if numberArm.hasSuffix(")") { numberArm.removeLast() }
+        return (
+            hintFirst: "(?i)(" + hintArm + ")",
+            numberFirst: "(?i)(" + numberArm + ")"
+        )
+    }
+    
+    private static func collectMatches(
+        fieldId: String,
+        pattern: String,
+        in text: String,
+        range: NSRange,
+        isHintFirst: Bool,
+        recognitionLines: [OCRRecognitionLine]?,
+        into candidates: inout [Candidate]
+    ) {
+        guard let regex = try? NSRegularExpression(pattern: pattern, options: []) else { return }
+        let matches = regex.matches(in: text, options: [], range: range)
+        for match in matches {
+            let numberGroupIndex = isHintFirst ? 3 : 2
+            let hintGroupIndex = isHintFirst ? 2 : 3
+            guard match.numberOfRanges > numberGroupIndex,
+                  match.range(at: numberGroupIndex).location != NSNotFound else {
+                continue
+            }
+            appendCandidate(
+                fieldId: fieldId,
+                numberRange: match.range(at: numberGroupIndex),
+                hintLength: hintLengthFromMatch(match, hintGroupIndex: hintGroupIndex, in: text),
+                isHintFirst: isHintFirst,
+                match: match,
+                extractedText: text,
+                recognitionLines: recognitionLines,
+                to: &candidates
+            )
+        }
     }
     
     private static func appendCandidate(
@@ -130,15 +197,13 @@ enum OCRLabelAnchoredExtraction {
         }
         
         var structuredData: [String: String] = [:]
-        var claimedNumberRanges: [NSRange] = []
+        var claimedValues: Set<String> = []
         
         for candidate in sorted {
             if structuredData[candidate.fieldId] != nil { continue }
-            if claimedNumberRanges.contains(where: { NSIntersectionRange($0, candidate.numberRange).length > 0 }) {
-                continue
-            }
+            if claimedValues.contains(candidate.value) { continue }
             structuredData[candidate.fieldId] = candidate.value
-            claimedNumberRanges.append(candidate.numberRange)
+            claimedValues.insert(candidate.value)
         }
         return structuredData
     }
@@ -175,7 +240,7 @@ enum OCRLabelAnchoredExtraction {
         isHintFirst: Bool,
         in text: String
     ) -> String? {
-        let hintIndex = isHintFirst ? 2 : 5
+        let hintIndex = isHintFirst ? 2 : 3
         guard hintIndex < match.numberOfRanges,
               match.range(at: hintIndex).location != NSNotFound,
               let range = Range(match.range(at: hintIndex), in: text) else {
