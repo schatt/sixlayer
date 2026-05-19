@@ -169,8 +169,9 @@ enum OCRJointDecimalCorrection {
             }
         }
         
-        let fieldsWithCandidates = fields.filter { !(candidateMap[$0] ?? []).isEmpty }
-        guard fieldsWithCandidates.count >= 2 else {
+        let fieldsNeedingCorrection = fields.filter { needsCorrection[$0] == true && !(candidateMap[$0] ?? []).isEmpty }
+        let fixedFields = fields.filter { needsCorrection[$0] != true && !(structuredData[$0] ?? "").isEmpty }
+        guard fieldsNeedingCorrection.count + fixedFields.count >= 2 else {
             return jointFailureOutcome(
                 relationship: relationship,
                 structuredData: structuredData,
@@ -187,6 +188,9 @@ enum OCRJointDecimalCorrection {
                 for (field, value) in assignments {
                     merged[field] = value
                 }
+                for field in fixedFields {
+                    merged[field] = structuredData[field] ?? merged[field] ?? ""
+                }
                 guard let productVal = parseOCRNumericValue(merged[relationship.productField] ?? "", language: context.language) else {
                     return
                 }
@@ -197,7 +201,7 @@ enum OCRJointDecimalCorrection {
                 }
                 
                 var score = 0.0
-                for field in fields where needsCorrection[field] == true {
+                for field in fieldsNeedingCorrection {
                     guard let raw = structuredData[field],
                           let candidate = assignments[field],
                           let numeric = parseOCRNumericValue(candidate, language: context.language) else {
@@ -218,6 +222,7 @@ enum OCRJointDecimalCorrection {
                     guard impliedRate >= rateRange.min && impliedRate <= rateRange.max else { return }
                     score += 10
                     if let printedRate {
+                        guard abs(impliedRate - printedRate) < ppgTolerance else { return }
                         score += max(0, 50 - abs(impliedRate - printedRate) * 100)
                     } else {
                         let midRate = (rateRange.min + rateRange.max) / 2
@@ -246,7 +251,7 @@ enum OCRJointDecimalCorrection {
             }
         }
         
-        search(assignments: [:], remaining: fieldsWithCandidates)
+        search(assignments: [:], remaining: fieldsNeedingCorrection)
         
         guard let best else {
             return jointFailureOutcome(
@@ -258,7 +263,7 @@ enum OCRJointDecimalCorrection {
         
         var result = structuredData
         var adjustments: [String: String] = [:]
-        for field in fields where needsCorrection[field] == true {
+        for field in fieldsNeedingCorrection {
             let original = structuredData[field] ?? ""
             let corrected = best.values[field] ?? original
             if corrected != original {
