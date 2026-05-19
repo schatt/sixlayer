@@ -71,13 +71,13 @@ struct OCRStructuredExtractionFollowups283Tests {
             extractionMode: .automatic,
             entityName: modelName
         )
-        let text = "This Sale 9999 Gallons 9999"
+        let text = "This Sale 5000 Gallons 5000"
 
         let pipeline = structuredPipeline(from: text, context: context)
 
         let adjustment = pipeline.adjustedFields["totalCost"] ?? ""
         #expect(adjustment.contains("no retail-plausible pair"))
-        #expect(pipeline.structuredData["totalCost"] == "9999")
+        #expect(pipeline.structuredData["totalCost"] == "5000")
         #expect(pipeline.extractionConfidence <= 0.5)
     }
 
