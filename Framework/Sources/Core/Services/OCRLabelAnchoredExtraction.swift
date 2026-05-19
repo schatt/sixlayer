@@ -135,9 +135,9 @@ enum OCRLabelAnchoredExtraction {
         let innerStart = pattern.index(pattern.startIndex, offsetBy: 5)
         let innerEnd = pattern.index(pattern.endIndex, offsetBy: -2)
         let inner = String(pattern[innerStart..<innerEnd])
-        guard let pipeRange = inner.range(of: "|(") else { return nil }
-        let hintArm = String(inner[inner.startIndex..<pipeRange.lowerBound])
-        let numberArm = String(inner[pipeRange.upperBound...])
+        guard let pipeIndex = inner.lastIndex(of: "|") else { return nil }
+        let hintArm = String(inner[inner.startIndex..<pipeIndex])
+        let numberArm = String(inner[inner.index(after: pipeIndex)...])
         return (
             hintFirst: "(?i)" + hintArm,
             numberFirst: "(?i)" + numberArm
