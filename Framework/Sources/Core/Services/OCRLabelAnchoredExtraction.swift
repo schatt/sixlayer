@@ -132,13 +132,30 @@ enum OCRLabelAnchoredExtraction {
     /// Split `(?i)((hint…num)|(num…hint))` into separate arms so both can match without alternation overlap.
     private static func splitBidirectionalPattern(_ pattern: String) -> (hintFirst: String, numberFirst: String)? {
         guard pattern.hasPrefix("(?i)(("), pattern.hasSuffix("))") else { return nil }
-        let innerStart = pattern.index(pattern.startIndex, offsetBy: 6)
-        let innerEnd = pattern.index(pattern.endIndex, offsetBy: -1)
-        let inner = String(pattern[innerStart..<innerEnd])
-        guard let pipeRange = inner.range(of: "|(") else { return nil }
-        let hintArm = String(inner[inner.startIndex..<pipeRange.lowerBound])
-        // Keep the '(' that begins the number-before-hint arm (it is part of the "|(" delimiter).
-        let numberArm = String(inner[pipeRange.lowerBound...].dropFirst())
+        let contentStart = pattern.index(pattern.startIndex, offsetBy: 6)
+        let contentEnd = pattern.index(pattern.endIndex, offsetBy: -1)
+        var depth = 0
+        var pipeIndex: String.Index?
+        var index = contentStart
+        while index < contentEnd {
+            switch pattern[index] {
+            case "(":
+                depth += 1
+            case ")":
+                depth -= 1
+            case "|" where depth == 0:
+                pipeIndex = index
+                index = contentEnd
+            default:
+                break
+            }
+            if index < contentEnd {
+                index = pattern.index(after: index)
+            }
+        }
+        guard let pipeIndex else { return nil }
+        let hintArm = String(pattern[contentStart..<pipeIndex])
+        let numberArm = String(pattern[pattern.index(after: pipeIndex)..<contentEnd])
         return (
             hintFirst: "(?i)" + hintArm,
             numberFirst: "(?i)" + numberArm
