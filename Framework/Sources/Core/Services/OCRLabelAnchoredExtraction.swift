@@ -31,12 +31,34 @@ enum OCRLabelAnchoredExtraction {
         patterns: [String: String],
         recognitionLines: [OCRRecognitionLine]?
     ) -> [String: String] {
-        let candidates = collectCandidates(
-            in: extractedText,
-            patterns: patterns,
-            recognitionLines: recognitionLines
+        if let recognitionLines, !recognitionLines.isEmpty {
+            var lineCandidates: [Candidate] = []
+            for line in recognitionLines {
+                collectCandidates(
+                    in: line.text,
+                    patterns: patterns,
+                    recognitionLines: recognitionLines,
+                    into: &lineCandidates
+                )
+            }
+            let lineAssignments = assignExclusive(lineCandidates)
+            let flatAssignments = assignExclusive(
+                collectCandidates(
+                    in: extractedText,
+                    patterns: patterns,
+                    recognitionLines: nil
+                )
+            )
+            return mergeAssignments(preferred: lineAssignments, fallback: flatAssignments)
+        }
+        
+        return assignExclusive(
+            collectCandidates(
+                in: extractedText,
+                patterns: patterns,
+                recognitionLines: nil
+            )
         )
-        return assignExclusive(candidates)
     }
     
     static func collectCandidates(
@@ -45,18 +67,6 @@ enum OCRLabelAnchoredExtraction {
         recognitionLines: [OCRRecognitionLine]?
     ) -> [Candidate] {
         var candidates: [Candidate] = []
-        
-        if let recognitionLines, !recognitionLines.isEmpty {
-            for line in recognitionLines {
-                collectCandidates(
-                    in: line.text,
-                    patterns: patterns,
-                    recognitionLines: recognitionLines,
-                    into: &candidates
-                )
-            }
-        }
-        
         collectCandidates(
             in: extractedText,
             patterns: patterns,
@@ -64,6 +74,17 @@ enum OCRLabelAnchoredExtraction {
             into: &candidates
         )
         return candidates
+    }
+    
+    private static func mergeAssignments(
+        preferred: [String: String],
+        fallback: [String: String]
+    ) -> [String: String] {
+        var merged = fallback
+        for (fieldId, value) in preferred {
+            merged[fieldId] = value
+        }
+        return merged
     }
     
     private static func collectCandidates(
