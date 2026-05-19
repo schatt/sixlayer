@@ -9,7 +9,7 @@ import Foundation
 import Testing
 @testable import SixLayerFramework
 
-@Suite("OCR pump label-anchored extraction (#282)")
+@Suite("OCR pump label-anchored extraction (#282)", .serialized)
 struct OCRPumpLabelAnchoredExtraction282Tests {
 
     private let service = OCRService()
