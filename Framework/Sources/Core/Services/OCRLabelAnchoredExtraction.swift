@@ -136,12 +136,10 @@ enum OCRLabelAnchoredExtraction {
         guard let regex = try? NSRegularExpression(pattern: pattern, options: []) else { return }
         let matches = regex.matches(in: text, options: [], range: range)
         for match in matches {
-            let numberGroupIndex = isHintFirst ? 3 : 2
-            let hintGroupIndex = isHintFirst ? 2 : 3
-            guard match.numberOfRanges > numberGroupIndex,
-                  match.range(at: numberGroupIndex).location != NSNotFound else {
+            guard let numberGroupIndex = numericCaptureGroupIndex(in: match, text: text) else {
                 continue
             }
+            let hintGroupIndex = isHintFirst ? max(1, numberGroupIndex - 1) : numberGroupIndex + 1
             appendCandidate(
                 fieldId: fieldId,
                 numberRange: match.range(at: numberGroupIndex),
@@ -153,6 +151,19 @@ enum OCRLabelAnchoredExtraction {
                 to: &candidates
             )
         }
+    }
+    
+    /// Highest-index capture group whose value parses as a number (the OCR value).
+    private static func numericCaptureGroupIndex(in match: NSTextCheckingResult, text: String) -> Int? {
+        for index in stride(from: match.numberOfRanges - 1, through: 1, by: -1) {
+            let range = match.range(at: index)
+            guard range.location != NSNotFound, let valueRange = Range(range, in: text) else { continue }
+            let value = String(text[valueRange])
+            if Double(value.replacingOccurrences(of: ",", with: ".")) != nil {
+                return index
+            }
+        }
+        return nil
     }
     
     private static func appendCandidate(
