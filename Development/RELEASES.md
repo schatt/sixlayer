@@ -1,12 +1,21 @@
 # 🚀 Six-Layer Framework Release History
 
-## 📍 **Current Release: v7.8.2** 🎯
+## 📍 **Current Release: v7.8.3** 🎯
 
-**Release Date**: May 17, 2026
+**Release Date**: May 19, 2026
 **Status**: Patch release
-**Previous Release**: v7.8.1 - Patch release
-**Note**: Layer 4 assistive visual adaptability matrix (#255) and semantic criterion evidence (#254); platformMapView_L4 map contract accessibility and UIKit hosting; XCUITest scroll/query stabilization for L4 System and SD150; duplicate CloudKit sync status a11y id fix; integration-branch git hook docs.
+**Previous Release**: v7.8.2 - Patch release
+**Note**: Pump LCD label-anchored OCR (#282); joint decimal correction from calculation groups (#283); printed PPG joint scoring (#284); Vision line layout anchoring (#285); fail-closed joint failure (#286); locale decimal parsing (#287).
 **Next Release**: TBD
+
+---
+
+## 🎯 **v7.8.3 - Pump label-anchored OCR and joint decimal correction** (May 19, 2026)
+
+### **What's in v7.8.3:**
+- Patch release. See [RELEASE_v7.8.3.md](RELEASE_v7.8.3.md) for details.
+
+**See [RELEASE_v7.8.3.md](RELEASE_v7.8.3.md) for complete release notes.**
 
 ---
 
