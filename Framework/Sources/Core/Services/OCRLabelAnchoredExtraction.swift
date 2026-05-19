@@ -55,7 +55,6 @@ enum OCRLabelAnchoredExtraction {
                     into: &candidates
                 )
             }
-            return candidates
         }
         
         collectCandidates(
