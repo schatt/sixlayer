@@ -851,29 +851,30 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
         let requestedFields = Set(context.extractionHints.keys)
         let shouldFilterCalculations = !requestedFields.isEmpty
         
-        for (fieldId, group) in allGroups {
-            // Skip if field already has a value
-            if result[fieldId] != nil {
+        for (_, group) in allGroups {
+            let parts = group.formula.split(separator: "=", maxSplits: 1).map {
+                $0.trimmingCharacters(in: .whitespaces)
+            }
+            guard parts.count == 2 else { continue }
+            let targetField = parts[0]
+            
+            if result[targetField] != nil {
                 continue
             }
             
-            // Only calculate fields that were explicitly requested (if extractionHints is provided)
-            if shouldFilterCalculations && !requestedFields.contains(fieldId) {
+            if shouldFilterCalculations && !requestedFields.contains(targetField) {
                 continue
             }
             
-            // Check if all dependent fields are available
             let allDependenciesAvailable = group.dependentFields.allSatisfy { fieldId in
                 result[fieldId] != nil
             }
             
             if allDependenciesAvailable {
-                // Calculate the value
                 if let calculatedValue = evaluateCalculationGroup(group, fieldValues: result) {
-                    result[fieldId] = String(calculatedValue)
-                    // Format the calculation for the adjustment message
+                    result[targetField] = String(calculatedValue)
                     let formula = group.formula
-                    adjustments[fieldId] = "Calculated from formula: \(formula) = \(String(format: "%.2f", calculatedValue))"
+                    adjustments[targetField] = "Calculated from formula: \(formula) = \(String(format: "%.2f", calculatedValue))"
                 }
             }
         }
