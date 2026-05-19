@@ -115,15 +115,16 @@ enum OCRLabelAnchoredExtraction {
                     recognitionLines: recognitionLines,
                     into: &candidates
                 )
+            } else {
+                collectMatchesFromCombinedPattern(
+                    fieldId: fieldId,
+                    pattern: pattern,
+                    in: text,
+                    range: fullRange,
+                    recognitionLines: recognitionLines,
+                    into: &candidates
+                )
             }
-            collectMatchesFromCombinedPattern(
-                fieldId: fieldId,
-                pattern: pattern,
-                in: text,
-                range: fullRange,
-                recognitionLines: recognitionLines,
-                into: &candidates
-            )
         }
     }
     
