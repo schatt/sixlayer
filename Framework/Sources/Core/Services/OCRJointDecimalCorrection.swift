@@ -183,11 +183,15 @@ enum OCRJointDecimalCorrection {
         
         func search(assignments: [String: String], remaining: [String]) {
             if remaining.isEmpty {
-                guard let productVal = parseOCRNumericValue(assignments[relationship.productField] ?? "", language: context.language) else {
+                var merged = structuredData
+                for (field, value) in assignments {
+                    merged[field] = value
+                }
+                guard let productVal = parseOCRNumericValue(merged[relationship.productField] ?? "", language: context.language) else {
                     return
                 }
-                let factorAVal = parseOCRNumericValue(assignments[relationship.factorFieldA] ?? "", language: context.language)
-                let factorBVal = parseOCRNumericValue(assignments[relationship.factorFieldB] ?? "", language: context.language)
+                let factorAVal = parseOCRNumericValue(merged[relationship.factorFieldA] ?? "", language: context.language)
+                let factorBVal = parseOCRNumericValue(merged[relationship.factorFieldB] ?? "", language: context.language)
                 if let factorAVal, let factorBVal {
                     guard abs(factorAVal * factorBVal - productVal) < 0.15 else { return }
                 }
@@ -208,7 +212,7 @@ enum OCRJointDecimalCorrection {
                 }
                 
                 if let volumeField, let rateField, volumeField != rateField,
-                   let volumeVal = parseOCRNumericValue(assignments[volumeField] ?? "", language: context.language),
+                   let volumeVal = parseOCRNumericValue(merged[volumeField] ?? "", language: context.language),
                    volumeVal > 0 {
                     let impliedRate = productVal / volumeVal
                     guard impliedRate >= rateRange.min && impliedRate <= rateRange.max else { return }
