@@ -83,6 +83,24 @@ struct OCRStructuredExtractionFollowups283Tests {
 
     // MARK: #285 — layout
 
+    @Test func labelAnchoring_collectsGallonsFromLineAndFlatText() {
+        let patterns = [
+            "gallons": "(?i)((gallons)\\s*[:=]?\\s*([\\d.,]+)|([\\d.,]+)\\s+(gallons))"
+        ]
+        let lineCandidates = OCRLabelAnchoredExtraction.collectCandidates(
+            in: "Gallons 6.775",
+            patterns: patterns,
+            recognitionLines: nil
+        )
+        let flatCandidates = OCRLabelAnchoredExtraction.collectCandidates(
+            in: "3726 Gallons This Sale 6.775",
+            patterns: patterns,
+            recognitionLines: nil
+        )
+        #expect(lineCandidates.contains { $0.fieldId == "gallons" && $0.value == "6.775" })
+        #expect(flatCandidates.contains { $0.fieldId == "gallons" && $0.value == "3726" })
+    }
+
     @Test func labelAnchoring_prefersLayoutProximityOverShuffledFlatText() {
         let patterns = [
             "totalCost": "(?i)((this sale|sale)\\s*[:=]?\\s*([\\d.,]+)|([\\d.,]+)\\s+(this sale|sale))",
