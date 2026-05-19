@@ -211,7 +211,7 @@ enum OCRJointDecimalCorrection {
                     _ = raw
                 }
                 
-                if let volumeField, let rateField, volumeField != rateField,
+                if let volumeField,
                    let volumeVal = parseOCRNumericValue(merged[volumeField] ?? "", language: context.language),
                    volumeVal > 0 {
                     let impliedRate = productVal / volumeVal
@@ -223,7 +223,6 @@ enum OCRJointDecimalCorrection {
                         let midRate = (rateRange.min + rateRange.max) / 2
                         score += max(0, 10 - abs(impliedRate - midRate))
                     }
-                    _ = rateField
                 }
                 
                 if let productCandidate = assignments[relationship.productField], productCandidate.contains(".") {
