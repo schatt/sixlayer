@@ -10,7 +10,7 @@ import Foundation
 import Testing
 @testable import SixLayerFramework
 
-@Suite("OCR structured extraction follow-ups (#283–#287)")
+@Suite("OCR structured extraction follow-ups (#283–#287)", .serialized)
 struct OCRStructuredExtractionFollowups283Tests {
 
     private let service = OCRService()
