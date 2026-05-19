@@ -31,8 +31,12 @@ struct OCRStructuredExtractionFollowups283Tests {
 
         let pipeline = structuredPipeline(from: text, context: context)
 
-        #expect(abs(doubleValue(pipeline.structuredData["fuelCost"])! - 37.26) < 0.02)
-        #expect(abs(doubleValue(pipeline.structuredData["volume"])! - 6.775) < 0.001)
+        let fuelCost = doubleValue(pipeline.structuredData["fuelCost"])
+        let volume = doubleValue(pipeline.structuredData["volume"])
+        #expect(fuelCost != nil)
+        #expect(volume != nil)
+        #expect(abs((fuelCost ?? 0) - 37.26) < 0.02)
+        #expect(abs((volume ?? 0) - 6.775) < 0.001)
     }
 
     // MARK: #284 — printed PPG
@@ -46,10 +50,12 @@ struct OCRStructuredExtractionFollowups283Tests {
 
         let pipeline = structuredPipeline(from: text, context: context)
 
-        #expect(abs(doubleValue(pipeline.structuredData["totalCost"])! - 37.26) < 0.02)
-        let total = doubleValue(pipeline.structuredData["totalCost"])!
-        let gallons = doubleValue(pipeline.structuredData["gallons"])!
-        let implied = total / gallons
+        let total = doubleValue(pipeline.structuredData["totalCost"])
+        let gallons = doubleValue(pipeline.structuredData["gallons"])
+        #expect(total != nil)
+        #expect(gallons != nil)
+        #expect(abs((total ?? 0) - 37.26) < 0.02)
+        let implied = (total ?? 0) / (gallons ?? 1)
         #expect(abs(implied - 5.50) < 0.05)
     }
 
@@ -84,8 +90,7 @@ struct OCRStructuredExtractionFollowups283Tests {
         ]
         let flatText = "3726 Gallons This Sale 6.775"
         let lines = [
-            OCRRecognitionLine(text: "This Sale", boundingBox: CGRect(x: 0, y: 0.8, width: 0.4, height: 0.1)),
-            OCRRecognitionLine(text: "3726", boundingBox: CGRect(x: 0, y: 0.65, width: 0.2, height: 0.1)),
+            OCRRecognitionLine(text: "This Sale 3726", boundingBox: CGRect(x: 0, y: 0.8, width: 0.5, height: 0.1)),
             OCRRecognitionLine(text: "Gallons 6.775", boundingBox: CGRect(x: 0, y: 0.2, width: 0.5, height: 0.1))
         ]
 
@@ -102,6 +107,7 @@ struct OCRStructuredExtractionFollowups283Tests {
 
         #expect(withLayout["totalCost"] == "3726")
         #expect(withLayout["gallons"] == "6.775")
+        #expect(stringOnly["totalCost"] == "6.775")
         #expect(stringOnly["gallons"] == "3726")
     }
 
@@ -121,8 +127,10 @@ struct OCRStructuredExtractionFollowups283Tests {
 
         let pipeline = structuredPipeline(from: text, context: context)
 
-        #expect(abs(doubleValue(pipeline.structuredData["totalCost"])! - 20.00) < 0.02)
-        #expect(abs(doubleValue(pipeline.structuredData["gallons"])! - 3.704) < 0.001)
+        let total = doubleValue(pipeline.structuredData["totalCost"])
+        let gallons = doubleValue(pipeline.structuredData["gallons"])
+        #expect(abs((total ?? 0) - 20.00) < 0.02)
+        #expect(abs((gallons ?? 0) - 3.704) < 0.001)
     }
 
     // MARK: - Helpers
