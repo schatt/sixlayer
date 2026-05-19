@@ -140,7 +140,15 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
             strategy: structuredStrategy
         )
         let baseResult = visionOutcome.result
-        let pipeline = applyStructuredExtraction(from: baseResult, context: context)
+        let recognitionLines = recognitionLines(
+            texts: visionOutcome.recognizedLineTexts,
+            boundingBoxes: baseResult.boundingBoxes
+        )
+        let pipeline = applyStructuredExtraction(
+            from: baseResult,
+            context: context,
+            recognitionLines: recognitionLines
+        )
         let structuredData = pipeline.structuredData
         let adjustedFields = pipeline.adjustedFields
         let extractionConfidence = pipeline.extractionConfidence
@@ -194,13 +202,21 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
     // MARK: - Structured Extraction
     
     /// Applies hints-based structured extraction to existing OCR text (unit tests and pipeline reuse).
-    internal func applyStructuredExtraction(from baseResult: OCRResult, context: OCRContext) -> (
+    internal func applyStructuredExtraction(
+        from baseResult: OCRResult,
+        context: OCRContext,
+        recognitionLines: [OCRRecognitionLine]? = nil
+    ) -> (
         structuredData: [String: String],
         adjustedFields: [String: String],
         extractionConfidence: Float,
         missingRequiredFields: [String]
     ) {
-        var structuredData = extractStructuredData(from: baseResult, context: context)
+        var structuredData = extractStructuredData(
+            from: baseResult,
+            context: context,
+            recognitionLines: recognitionLines
+        )
         var adjustedFields: [String: String] = [:]
         
         let (correctedData, decimalAdjustments) = correctDecimalPlacement(in: structuredData, context: context)
@@ -219,109 +235,32 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
             adjustedFields.merge(calculatedAdjustments) { _, new in new }
         }
         
-        let extractionConfidence = calculateExtractionConfidence(structuredData, context: context)
+        var extractionConfidence = calculateExtractionConfidence(structuredData, context: context)
+        if adjustedFields.values.contains(where: { $0.contains("no retail-plausible pair") }) {
+            extractionConfidence = min(extractionConfidence, 0.5)
+        }
         let missingFields = findMissingRequiredFields(structuredData, context: context)
         return (structuredData, adjustedFields, extractionConfidence, missingFields)
     }
     
+    private func recognitionLines(texts: [String], boundingBoxes: [CGRect]) -> [OCRRecognitionLine]? {
+        guard !texts.isEmpty, texts.count == boundingBoxes.count else { return nil }
+        return zip(texts, boundingBoxes).map { OCRRecognitionLine(text: $0.0, boundingBox: $0.1) }
+    }
+    
     // MARK: - Structured Extraction Helper Methods
     
-    private struct LabelAnchoredCandidate {
-        let fieldId: String
-        let value: String
-        let numberRange: NSRange
-        let hintLength: Int
-        let isHintFirst: Bool
-        let matchLocation: Int
-    }
-    
-    private func extractStructuredData(from result: OCRResult, context: OCRContext) -> [String: String] {
+    private func extractStructuredData(
+        from result: OCRResult,
+        context: OCRContext,
+        recognitionLines: [OCRRecognitionLine]? = nil
+    ) -> [String: String] {
         let patterns = getPatterns(for: context)
-        let candidates = collectLabelAnchoredCandidates(in: result.extractedText, patterns: patterns)
-        return assignExclusiveLabelAnchored(candidates)
-    }
-    
-    private func collectLabelAnchoredCandidates(
-        in extractedText: String,
-        patterns: [String: String]
-    ) -> [LabelAnchoredCandidate] {
-        var candidates: [LabelAnchoredCandidate] = []
-        let fullRange = NSRange(location: 0, length: extractedText.utf16.count)
-        
-        for (fieldId, pattern) in patterns {
-            guard let regex = try? NSRegularExpression(pattern: pattern, options: []) else { continue }
-            let matches = regex.matches(in: extractedText, options: [], range: fullRange)
-            for match in matches {
-                if match.numberOfRanges > 3, match.range(at: 3).location != NSNotFound {
-                    let numberRange = match.range(at: 3)
-                    guard let valueRange = Range(numberRange, in: extractedText) else { continue }
-                    let hintLength = hintLengthFromMatch(match, hintGroupIndex: 2, in: extractedText)
-                    candidates.append(LabelAnchoredCandidate(
-                        fieldId: fieldId,
-                        value: String(extractedText[valueRange]),
-                        numberRange: numberRange,
-                        hintLength: hintLength,
-                        isHintFirst: true,
-                        matchLocation: match.range.location
-                    ))
-                } else if match.numberOfRanges > 4, match.range(at: 4).location != NSNotFound {
-                    let numberRange = match.range(at: 4)
-                    guard let valueRange = Range(numberRange, in: extractedText) else { continue }
-                    let hintLength = hintLengthFromMatch(match, hintGroupIndex: 5, in: extractedText)
-                    candidates.append(LabelAnchoredCandidate(
-                        fieldId: fieldId,
-                        value: String(extractedText[valueRange]),
-                        numberRange: numberRange,
-                        hintLength: hintLength,
-                        isHintFirst: false,
-                        matchLocation: match.range.location
-                    ))
-                } else if match.numberOfRanges > 2, match.range(at: 2).location != NSNotFound {
-                    let numberRange = match.range(at: 2)
-                    guard let valueRange = Range(numberRange, in: extractedText) else { continue }
-                    candidates.append(LabelAnchoredCandidate(
-                        fieldId: fieldId,
-                        value: String(extractedText[valueRange]),
-                        numberRange: numberRange,
-                        hintLength: 0,
-                        isHintFirst: true,
-                        matchLocation: match.range.location
-                    ))
-                }
-            }
-        }
-        return candidates
-    }
-    
-    private func hintLengthFromMatch(_ match: NSTextCheckingResult, hintGroupIndex: Int, in text: String) -> Int {
-        guard hintGroupIndex < match.numberOfRanges,
-              match.range(at: hintGroupIndex).location != NSNotFound,
-              let hintRange = Range(match.range(at: hintGroupIndex), in: text) else {
-            return 0
-        }
-        return text[hintRange].count
-    }
-    
-    private func assignExclusiveLabelAnchored(_ candidates: [LabelAnchoredCandidate]) -> [String: String] {
-        let sorted = candidates.sorted { lhs, rhs in
-            if lhs.isHintFirst != rhs.isHintFirst { return lhs.isHintFirst && !rhs.isHintFirst }
-            if lhs.hintLength != rhs.hintLength { return lhs.hintLength > rhs.hintLength }
-            if lhs.matchLocation != rhs.matchLocation { return lhs.matchLocation < rhs.matchLocation }
-            return lhs.fieldId < rhs.fieldId
-        }
-        
-        var structuredData: [String: String] = [:]
-        var claimedNumberRanges: [NSRange] = []
-        
-        for candidate in sorted {
-            if structuredData[candidate.fieldId] != nil { continue }
-            if claimedNumberRanges.contains(where: { NSIntersectionRange($0, candidate.numberRange).length > 0 }) {
-                continue
-            }
-            structuredData[candidate.fieldId] = candidate.value
-            claimedNumberRanges.append(candidate.numberRange)
-        }
-        return structuredData
+        return OCRLabelAnchoredExtraction.extract(
+            from: result.extractedText,
+            patterns: patterns,
+            recognitionLines: recognitionLines
+        )
     }
     
     private func getPatterns(for context: OCRContext) -> [String: String] {
@@ -442,13 +381,15 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
             }
         }
         
-        let (jointCorrected, jointAdjustments) = applyJointFuelDecimalCorrection(
+        let jointResult = OCRJointDecimalCorrection.apply(
             to: correctedData,
             hintsRanges: hintsRanges,
+            hintsCalculationGroups: hintsCalculationGroups,
             context: context
         )
-        correctedData = jointCorrected
-        adjustments.merge(jointAdjustments) { _, new in new }
+        correctedData = jointResult.structuredData
+        adjustments.merge(jointResult.adjustments) { _, new in new }
+        let jointBlockedFields = jointResult.fieldsBlockedFromPerFieldCorrection
         
         // Infer ranges for fields that don't have explicit ranges but have calculation groups
         // Example: totalCost = pricePerGallon * gallons
@@ -473,11 +414,10 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
         
         // Try to correct each extracted value
         for (fieldId, valueString) in correctedData {
-            if adjustments[fieldId] != nil {
+            if adjustments[fieldId] != nil || jointBlockedFields.contains(fieldId) {
                 continue
             }
-            // Skip if value already has a decimal point or comma
-            guard !valueString.contains(".") && !valueString.contains(",") else {
+            guard OCRJointDecimalCorrection.valueNeedsDecimalPlacement(valueString, language: context.language) else {
                 continue
             }
             
@@ -595,105 +535,6 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
         }
         
         return (correctedData, adjustments)
-    }
-    
-    /// When total cost and gallons share a fuel calculation group, score decimal placement jointly using implied price-per-gallon.
-    private func applyJointFuelDecimalCorrection(
-        to structuredData: [String: String],
-        hintsRanges: [String: ValueRange],
-        context: OCRContext
-    ) -> ([String: String], [String: String]) {
-        guard let totalRaw = structuredData["totalCost"],
-              let gallonsRaw = structuredData["gallons"] else {
-            return (structuredData, [:])
-        }
-        
-        let totalNeedsCorrection = !totalRaw.contains(".") && !totalRaw.contains(",")
-        let gallonsNeedCorrection = !gallonsRaw.contains(".") && !gallonsRaw.contains(",")
-        guard totalNeedsCorrection || gallonsNeedCorrection else {
-            return (structuredData, [:])
-        }
-        
-        var allRanges = hintsRanges
-        if let overrideRanges = context.fieldRanges {
-            for (fieldId, range) in overrideRanges {
-                allRanges[fieldId] = range
-            }
-        }
-        
-        let ppgRange = allRanges["pricePerGallon"] ?? ValueRange(min: 2.0, max: 10.0)
-        let totalCandidates = totalNeedsCorrection ? decimalPlacementCandidates(for: totalRaw) : [totalRaw]
-        let gallonCandidates = gallonsNeedCorrection ? decimalPlacementCandidates(for: gallonsRaw) : [gallonsRaw]
-        
-        var best: (total: String, gallons: String, score: Double)?
-        
-        for totalCandidate in totalCandidates {
-            guard let totalValue = parseOCRNumericValue(totalCandidate) else { continue }
-            for gallonCandidate in gallonCandidates {
-                guard let gallonValue = parseOCRNumericValue(gallonCandidate), gallonValue > 0 else { continue }
-                let impliedPPG = totalValue / gallonValue
-                guard impliedPPG >= ppgRange.min && impliedPPG <= ppgRange.max else { continue }
-                
-                var score = impliedPPG
-                if let totalRange = allRanges["totalCost"], totalRange.contains(totalValue) {
-                    score += 20
-                } else if totalNeedsCorrection {
-                    continue
-                }
-                if let gallonRange = allRanges["gallons"], gallonRange.contains(gallonValue) {
-                    score += 20
-                } else if gallonsNeedCorrection {
-                    continue
-                }
-                if totalCandidate.contains(".") {
-                    let fraction = totalCandidate.split(separator: ".", omittingEmptySubsequences: false)
-                    if fraction.count == 2, fraction[1].count == 2 {
-                        score += 2
-                    }
-                }
-                
-                if best == nil || score > best!.score {
-                    best = (totalCandidate, gallonCandidate, score)
-                }
-            }
-        }
-        
-        guard let best else {
-            return (structuredData, [:])
-        }
-        
-        var result = structuredData
-        var adjustments: [String: String] = [:]
-        if best.total != totalRaw {
-            result["totalCost"] = best.total
-            adjustments["totalCost"] = "Joint decimal correction (fuel PPG): '\(totalRaw)' → '\(best.total)'"
-        }
-        if best.gallons != gallonsRaw {
-            result["gallons"] = best.gallons
-            adjustments["gallons"] = "Joint decimal correction (fuel PPG): '\(gallonsRaw)' → '\(best.gallons)'"
-        }
-        return (result, adjustments)
-    }
-    
-    private func decimalPlacementCandidates(for valueString: String) -> [String] {
-        guard !valueString.contains(".") && !valueString.contains(",") else {
-            return [valueString]
-        }
-        guard Int(valueString) != nil else {
-            return [valueString]
-        }
-        var candidates = [valueString]
-        let chars = Array(valueString)
-        for decimalPos in 1..<chars.count {
-            var correctedChars = chars
-            correctedChars.insert(".", at: chars.count - decimalPos)
-            candidates.append(String(correctedChars))
-        }
-        return candidates
-    }
-    
-    private func parseOCRNumericValue(_ valueString: String) -> Double? {
-        Double(valueString.replacingOccurrences(of: ",", with: ""))
     }
     
     /// Infer expected ranges for fields that don't have explicit ranges but have calculation groups
