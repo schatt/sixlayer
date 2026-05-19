@@ -200,6 +200,14 @@ struct ComprehensiveCapabilityTestRunner {
         testCapabilityDetection(disabledConfig, capability: capability, enabled: false)
     }
     
+    /// AssistiveTouch implies touch only on platforms that ship the OS feature (iOS/watchOS).
+    /// macOS card expansion may report `supportsTouch == false` while overrides exercise other axes.
+    @MainActor
+    private func assertAssistiveTouchImpliesTouchWhenPlatformShips(_ config: CardExpansionPlatformConfig) {
+        guard SixLayerPlatform.current.supportsAssistiveTouch, config.supportsAssistiveTouch else { return }
+        #expect(config.supportsTouch, "AssistiveTouch requires touch")
+    }
+    
     /// Thread-local touch `false` is ignored on iOS/watchOS (platform guarantee); elsewhere it is honored.
     @MainActor
     private func assertTouchMatchesThreadLocalMock(_ config: CardExpansionPlatformConfig, mockTouchEnabled: Bool) {
@@ -305,7 +313,7 @@ struct ComprehensiveCapabilityTestRunner {
             // AssistiveTouch should match the enabled state (runtime detection)
             #expect(config.supportsAssistiveTouch == enabled, "AssistiveTouch UI should be \(enabled ? "generated" : "not generated") based on runtime detection")
             if enabled {
-                #expect(config.supportsTouch, "AssistiveTouch requires touch")
+                assertAssistiveTouchImpliesTouchWhenPlatformShips(config)
             }
         case .voiceOver:
             // VoiceOver should match the enabled state
@@ -362,9 +370,7 @@ struct ComprehensiveCapabilityTestRunner {
         if platformConfig.supportsHapticFeedback {
             #expect(platformConfig.supportsTouch, "Haptic feedback requires touch")
         }
-        if platformConfig.supportsAssistiveTouch {
-            #expect(platformConfig.supportsTouch, "AssistiveTouch requires touch")
-        }
+        assertAssistiveTouchImpliesTouchWhenPlatformShips(platformConfig)
         
         // Platform-specific typical behaviors (but not requirements - runtime detection takes precedence)
         switch platform {
@@ -516,7 +522,7 @@ struct ComprehensiveCapabilityTestRunner {
             // AssistiveTouch should match the enabled state (runtime detection)
             #expect(config.supportsAssistiveTouch == enabled, "AssistiveTouch behavior should be \(enabled ? "enabled" : "disabled") based on runtime detection")
             if enabled {
-                #expect(config.supportsTouch, "AssistiveTouch requires touch")
+                assertAssistiveTouchImpliesTouchWhenPlatformShips(config)
             }
         case .voiceOver:
             // VoiceOver should match the enabled state
