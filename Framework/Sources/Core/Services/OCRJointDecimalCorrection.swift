@@ -183,13 +183,14 @@ enum OCRJointDecimalCorrection {
         
         func search(assignments: [String: String], remaining: [String]) {
             if remaining.isEmpty {
-                guard let productVal = parseOCRNumericValue(assignments[relationship.productField] ?? "", language: context.language),
-                      let factorAVal = parseOCRNumericValue(assignments[relationship.factorFieldA] ?? "", language: context.language),
-                      let factorBVal = parseOCRNumericValue(assignments[relationship.factorFieldB] ?? "", language: context.language) else {
+                guard let productVal = parseOCRNumericValue(assignments[relationship.productField] ?? "", language: context.language) else {
                     return
                 }
-                let expectedProduct = factorAVal * factorBVal
-                guard abs(expectedProduct - productVal) < 0.15 else { return }
+                let factorAVal = parseOCRNumericValue(assignments[relationship.factorFieldA] ?? "", language: context.language)
+                let factorBVal = parseOCRNumericValue(assignments[relationship.factorFieldB] ?? "", language: context.language)
+                if let factorAVal, let factorBVal {
+                    guard abs(factorAVal * factorBVal - productVal) < 0.15 else { return }
+                }
                 
                 var score = 0.0
                 for field in fields where needsCorrection[field] == true {
