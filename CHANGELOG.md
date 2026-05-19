@@ -1,5 +1,23 @@
 # Changelog
 
+## v7.8.3 - Pump label-anchored OCR and joint decimal correction (May 19, 2026)
+
+### ✨ Added
+- **`OCRLabelAnchoredExtraction`**: bidirectional hint regex binding with Vision line layout preference (#282, #285).
+- **`OCRJointDecimalCorrection`**: calculation-group-driven joint decimal placement, printed PPG scoring, fail-closed ambiguous pairs, locale decimal parsing (#283–#287).
+
+### 🧩 Changed
+- **`OCRService`**: structured extraction and decimal correction delegate to dedicated OCR modules.
+
+### 🐛 Fixed
+- Split-arm regex extraction prevents pump LCD digit mis-binding (e.g. sale vs gallons on IMG5145).
+- macOS capability runner: AssistiveTouch-vs-touch assertion only on platforms that ship AssistiveTouch.
+
+### 📚 Documentation
+- Full notes: [`Development/RELEASE_v7.8.3.md`](Development/RELEASE_v7.8.3.md), index [`Development/RELEASES.md`](Development/RELEASES.md).
+
+---
+
 ## v7.8.2 - L4 assistive adaptability, map a11y, UITest stabilization (May 17, 2026)
 
 ### ✨ Added
