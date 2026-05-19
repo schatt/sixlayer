@@ -1,5 +1,5 @@
 // swift-tools-version: 6.0
-// SixLayerFramework v7.8.2 - Patch: L4 assistive adaptability (#255), semantic matrix (#254), map a11y, UITest stabilization (#261), integration git hook docs
+// SixLayerFramework v7.8.3 - Patch: pump label-anchored OCR (#282), joint decimal correction (#283-#287)
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
