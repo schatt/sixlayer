@@ -1,12 +1,21 @@
 # 🚀 Six-Layer Framework Release History
 
-## 📍 **Current Release: v7.8.3** 🎯
+## 📍 **Current Release: v7.8.4** 🎯
 
-**Release Date**: May 19, 2026
+**Release Date**: May 20, 2026
 **Status**: Patch release
-**Previous Release**: v7.8.2 - Patch release
-**Note**: Pump LCD label-anchored OCR (#282); joint decimal correction from calculation groups (#283); printed PPG joint scoring (#284); Vision line layout anchoring (#285); fail-closed joint failure (#286); locale decimal parsing (#287).
+**Previous Release**: v7.8.3 - Patch release
+**Note**: Configurable Vision `minimumTextHeight` with pump-friendly default 0.003 for full-resolution pump LCD OCR (#288).
 **Next Release**: TBD
+
+---
+
+## 🎯 **v7.8.4 - Configurable Vision minimumTextHeight for pump LCD OCR** (May 20, 2026)
+
+### **What's in v7.8.4:**
+- Patch release. See [RELEASE_v7.8.4.md](RELEASE_v7.8.4.md) for details.
+
+**See [RELEASE_v7.8.4.md](RELEASE_v7.8.4.md) for complete release notes.**
 
 ---
 
