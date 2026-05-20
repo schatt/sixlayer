@@ -8,6 +8,9 @@
 //
 
 import XCTest
+#if os(iOS)
+import UIKit
+#endif
 
 /// XCUITest for Issue #150 — binding propagation and user interaction on `StandaloneDropIn150HostView` (`-OpenStandaloneDropIn150`).
 @MainActor
@@ -139,6 +142,13 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
         }
         XCTAssertTrue(keyboard.waitForExistence(timeout: 3.0), "Keyboard required for secure field", file: file, line: line)
         RunLoop.current.run(until: Date().addingTimeInterval(0.35))
+        UIPasteboard.general.string = text
+        field.press(forDuration: 1.2)
+        let paste = app.menuItems["Paste"]
+        if paste.waitForExistence(timeout: 2.0) {
+            paste.tap()
+            return
+        }
         field.typeText(text)
     }
     #endif
