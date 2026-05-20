@@ -1031,8 +1031,8 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
             // We'll filter results based on our text types
         }
         
-        // Configure confidence threshold
-        request.minimumTextHeight = 0.01 // Minimum text height
+        // Pump/receipt LCD lines are a small fraction of full-resolution photos; 0.01 drops them (#279).
+        request.minimumTextHeight = 0.003
     }
     
     private func processVisionResults(
