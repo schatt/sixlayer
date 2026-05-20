@@ -1,5 +1,5 @@
 // swift-tools-version: 6.0
-// SixLayerFramework v7.8.3 - Patch: pump label-anchored OCR (#282), joint decimal correction (#283-#287)
+// SixLayerFramework v7.8.4 - Patch: configurable Vision minimumTextHeight for pump LCD OCR (#288)
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
