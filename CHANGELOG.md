@@ -1,5 +1,23 @@
 # Changelog
 
+## v7.8.4 - Configurable Vision minimumTextHeight for pump LCD OCR (May 20, 2026)
+
+### ✨ Added
+- **`OCRVisionDefaults.minimumTextHeight`**: shared framework default (`0.003`) for Vision text recognition.
+- **`OCRContext.visionMinimumTextHeight`**: per-request override (e.g. `0.01` for receipt-style documents) (#288).
+- **`OCRVisionMinimumTextHeight288Tests`**: unit tests for default and custom threshold.
+
+### 🧩 Changed
+- **`OCRService`**, **`SafeVisionOCRView`**, and Layer2 OCR context copies apply `context.visionMinimumTextHeight` to `VNRecognizeTextRequest`.
+
+### 🐛 Fixed
+- Pump LCD digits no longer dropped on full-resolution iPhone photos when only printed labels were recognized (Vision size filter at `0.01` fraction of image height).
+
+### 📚 Documentation
+- Full notes: [`Development/RELEASE_v7.8.4.md`](Development/RELEASE_v7.8.4.md), index [`Development/RELEASES.md`](Development/RELEASES.md).
+
+---
+
 ## v7.8.3 - Pump label-anchored OCR and joint decimal correction (May 19, 2026)
 
 ### ✨ Added
