@@ -202,7 +202,7 @@ public enum OCRUncategorizedExtractionBuilder: Sendable {
 public enum OCRVisionDefaults: Sendable {
     /// Minimum text height as a fraction of image height.
     /// `0.01` drops pump LCD digits on full-resolution photos; `0.003` retains them (#288).
-    public static let minimumTextHeight: Float = 0.01
+    public static let minimumTextHeight: Float = 0.003
 }
 
 // MARK: - OCR Context
