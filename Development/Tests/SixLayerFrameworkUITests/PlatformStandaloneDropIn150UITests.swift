@@ -179,8 +179,12 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
     private func sd150TextField(matching fragment: String) -> XCUIElement {
         let direct = app.textFields[fragment]
         if direct.waitForExistence(timeout: 0.25) { return direct }
+        let textView = app.textViews[fragment]
+        if textView.waitForExistence(timeout: 0.25) { return textView }
         let pred = NSPredicate(format: "identifier CONTAINS[c] %@ OR label CONTAINS[c] %@", fragment, fragment)
-        return app.descendants(matching: .textField).matching(pred).firstMatch
+        let byField = app.descendants(matching: .textField).matching(pred).firstMatch
+        if byField.waitForExistence(timeout: 0.25) { return byField }
+        return app.descendants(matching: .textView).matching(pred).firstMatch
     }
 
     private func assertBindingMirrorContains(
