@@ -116,13 +116,16 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
     }
 
     #if os(iOS)
-    /// iOS 26 secure fields often reject `field.typeText` even when the keyboard is visible; use `app.typeText` (Refs #261).
+    /// iOS 26 secure fields often reject `field.typeText`; dismiss prior field, refocus, then `app.typeText` (Refs #261).
     private func sd150TypeIntoSecureField(
         _ field: XCUIElement,
         _ text: String,
         file: StaticString = #filePath,
         line: UInt = #line
     ) {
+        app.xcuiDismissSoftwareKeyboardIfPresent()
+        RunLoop.current.run(until: Date().addingTimeInterval(0.35))
+        scrollUntilHittable(field)
         field.xcuiTapToBecomeFirstResponder()
         let keyboard = app.keyboards.firstMatch
         if !keyboard.waitForExistence(timeout: 2.0) {
@@ -131,6 +134,7 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
             field.xcuiTapToBecomeFirstResponder()
         }
         XCTAssertTrue(keyboard.waitForExistence(timeout: 3.0), "Keyboard required for secure field", file: file, line: line)
+        RunLoop.current.run(until: Date().addingTimeInterval(0.35))
         app.typeText(text)
     }
     #endif
