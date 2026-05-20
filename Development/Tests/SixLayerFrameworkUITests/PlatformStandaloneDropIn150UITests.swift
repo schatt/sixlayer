@@ -331,9 +331,12 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
 
     func test150_platformForm_integrationMultipleControls() throws {
         #if os(iOS) || os(macOS)
-        let name = sd150TextField(matching: "sd150-integration-name")
+        scrollToSectionHeader("SD150 Integration")
+        let name = sd150TextField(matching: "SD150_Integration_Name")
         let pass = sd150SecureField(matching: "sd150-integration-password")
         let toggle = sd150Switch(matching: "SD150_Integration_Toggle")
+        XCTAssertTrue(name.waitForExistence(timeout: 2.5), "Integration name field")
+        XCTAssertTrue(pass.waitForExistence(timeout: 2.5), "Integration password field")
         sd150FocusAndType(name, "Pat")
         sd150FocusAndType(pass, "secret")
         #if os(iOS)
