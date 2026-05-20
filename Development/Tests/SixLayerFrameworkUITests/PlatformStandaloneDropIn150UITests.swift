@@ -91,6 +91,12 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
     private func sd150FocusAndType(_ field: XCUIElement, _ text: String, file: StaticString = #filePath, line: UInt = #line) {
         scrollUntilHittable(field)
         XCTAssertTrue(field.waitForExistence(timeout: 2.5), "Field should exist before typing", file: file, line: line)
+        #if os(iOS)
+        if field.elementType == .secureTextField {
+            sd150TypeIntoSecureField(field, text, file: file, line: line)
+            return
+        }
+        #endif
         field.xcuiTapToBecomeFirstResponder()
         #if os(iOS)
         let keyboard = app.keyboards.firstMatch
@@ -108,6 +114,36 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
         #endif
         field.typeText(text)
     }
+
+    #if os(iOS)
+    /// iOS 26 often shows the keyboard without `hasKeyboardFocus` on the secure leaf; fall back to `app.typeText` (Refs #261).
+    private func sd150TypeIntoSecureField(
+        _ field: XCUIElement,
+        _ text: String,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) {
+        let cell = app.tables.cells.containing(field).firstMatch
+        if cell.waitForExistence(timeout: 0.6) {
+            cell.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
+            RunLoop.current.run(until: Date().addingTimeInterval(0.25))
+        }
+        field.xcuiTapToBecomeFirstResponder()
+        let keyboard = app.keyboards.firstMatch
+        XCTAssertTrue(keyboard.waitForExistence(timeout: 3.0), "Keyboard required for secure field", file: file, line: line)
+        let deadline = Date().addingTimeInterval(4.0)
+        while Date() < deadline {
+            if field.hasKeyboardFocus {
+                field.typeText(text)
+                return
+            }
+            tapCenter(field)
+            RunLoop.current.run(until: Date().addingTimeInterval(0.25))
+            field.xcuiTapToBecomeFirstResponder()
+        }
+        app.typeText(text)
+    }
+    #endif
 
     /// Resolves a secure field by label, `exactNamed`, or generated `SixLayer.main.ui.<sanitized>.SecureField` id (hyphenated).
     private func sd150SecureField(matching fragment: String) -> XCUIElement {
@@ -286,11 +322,7 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
         let pass = sd150SecureField(matching: "sd150-integration-password")
         let toggle = sd150Switch(matching: "SD150_Integration_Toggle")
         sd150FocusAndType(name, "Pat")
-        #if os(iOS)
-        app.xcuiDismissSoftwareKeyboardIfPresent()
-        RunLoop.current.run(until: Date().addingTimeInterval(0.35))
-        #endif
-        scrollToSectionHeader("SD150 Integration")
+        scrollUntilHittable(pass)
         sd150FocusAndType(pass, "secret")
         #if os(iOS)
         app.xcuiDismissSoftwareKeyboardIfPresent()
