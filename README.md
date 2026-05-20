@@ -27,7 +27,7 @@ Navigate to the `Framework/` directory and use it as a Swift Package:
 ```swift
 // In your Package.swift
 dependencies: [
-    .package(url: "https://github.com/schatt/sixlayer.git", from: "7.8.3")
+    .package(url: "https://github.com/schatt/sixlayer.git", from: "7.8.4")
 ]
 ```
 
@@ -41,9 +41,12 @@ dependencies: [
 
 The framework is distributed as a Swift Package from the `Framework/` directory. This ensures that only the essential framework code is included when other projects consume it.
 
-## 🆕 Latest Release: v7.8.3
+## 🆕 Latest Release: v7.8.4
 
 ### **Patch release**
+🔧 **Patch**: Configurable Vision `minimumTextHeight` with pump-friendly default **0.003** for full-resolution pump LCD OCR (#288). See [RELEASE_v7.8.4.md](Development/RELEASE_v7.8.4.md).
+
+### **Previous Release: v7.8.3 - Patch release**
 🔧 **Patch**: Pump LCD label-anchored structured OCR (#282); calculation-group joint decimal correction (#283); printed price-per-gallon joint scoring (#284); Vision line layout anchoring (#285); fail-closed joint failure (#286); locale decimal parsing (#287). See [RELEASE_v7.8.3.md](Development/RELEASE_v7.8.3.md).
 
 ### **Previous Release: v7.8.2 - Patch release**
@@ -268,7 +271,7 @@ These guides contain critical information about the Layer 1 Semantic Intent phil
 
 ## 📋 Current Status
 
-**Version**: v7.8.3 (Patch)
+**Version**: v7.8.4 (Patch)
 **Phase**: Patch release
 **Next**: TBD
 
