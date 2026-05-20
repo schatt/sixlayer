@@ -89,14 +89,16 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
 
     /// Focus a `Form` control and type; on iOS waits for the software keyboard before `typeText` (Refs #261).
     private func sd150FocusAndType(_ field: XCUIElement, _ text: String, file: StaticString = #filePath, line: UInt = #line) {
-        scrollUntilHittable(field)
-        XCTAssertTrue(field.waitForExistence(timeout: 2.5), "Field should exist before typing", file: file, line: line)
         #if os(iOS)
         if field.elementType == .secureTextField {
+            app.xcuiDismissSoftwareKeyboardIfPresent()
+            RunLoop.current.run(until: Date().addingTimeInterval(0.4))
             sd150TypeIntoSecureField(field, text, file: file, line: line)
             return
         }
         #endif
+        scrollUntilHittable(field)
+        XCTAssertTrue(field.waitForExistence(timeout: 2.5), "Field should exist before typing", file: file, line: line)
         field.xcuiTapToBecomeFirstResponder()
         #if os(iOS)
         let keyboard = app.keyboards.firstMatch
@@ -116,15 +118,17 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
     }
 
     #if os(iOS)
-    /// iOS 26 secure fields often reject `field.typeText`; dismiss prior field, refocus, then `app.typeText` (Refs #261).
+    /// iOS 26 integration `Form`: blur prior field, refocus secure row, then `typeText` on the leaf (Refs #261).
     private func sd150TypeIntoSecureField(
         _ field: XCUIElement,
         _ text: String,
         file: StaticString = #filePath,
         line: UInt = #line
     ) {
-        app.xcuiDismissSoftwareKeyboardIfPresent()
-        RunLoop.current.run(until: Date().addingTimeInterval(0.35))
+        if app.navigationBars.firstMatch.waitForExistence(timeout: 0.5) {
+            app.navigationBars.firstMatch.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
+            RunLoop.current.run(until: Date().addingTimeInterval(0.25))
+        }
         scrollUntilHittable(field)
         field.xcuiTapToBecomeFirstResponder()
         let keyboard = app.keyboards.firstMatch
@@ -135,7 +139,7 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
         }
         XCTAssertTrue(keyboard.waitForExistence(timeout: 3.0), "Keyboard required for secure field", file: file, line: line)
         RunLoop.current.run(until: Date().addingTimeInterval(0.35))
-        app.typeText(text)
+        field.typeText(text)
     }
     #endif
 
@@ -316,7 +320,6 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
         let pass = sd150SecureField(matching: "sd150-integration-password")
         let toggle = sd150Switch(matching: "SD150_Integration_Toggle")
         sd150FocusAndType(name, "Pat")
-        scrollUntilHittable(pass)
         sd150FocusAndType(pass, "secret")
         #if os(iOS)
         app.xcuiDismissSoftwareKeyboardIfPresent()
@@ -324,7 +327,11 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
         #endif
         scrollUntilHittable(toggle)
         XCTAssertTrue(toggle.waitForExistence(timeout: 2.0), "Integration toggle should exist")
-        toggle.xcuiTapToBecomeFirstResponder()
+        #if os(iOS)
+        app.xcuiDismissSoftwareKeyboardIfPresent()
+        RunLoop.current.run(until: Date().addingTimeInterval(0.35))
+        #endif
+        toggle.tap()
         assertBindingMirrorContains("SD150_Mirror_IN", "Pat|secret|1")
         #else
         throw XCTSkip("Issue #150 host UI tests require iOS or macOS TestApp")
