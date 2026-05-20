@@ -177,11 +177,22 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
     }
 
     private func sd150TextField(matching fragment: String) -> XCUIElement {
+        let hyphenated = fragment
+            .replacingOccurrences(of: "_", with: "-")
+            .lowercased()
+        let genPred = NSPredicate(format: "identifier CONTAINS[c] %@", "SixLayer.main.ui.\(hyphenated)")
+        let byGenField = app.descendants(matching: .textField).matching(genPred).firstMatch
+        if byGenField.waitForExistence(timeout: 0.6) { return byGenField }
+        let byGenView = app.descendants(matching: .textView).matching(genPred).firstMatch
+        if byGenView.waitForExistence(timeout: 0.6) { return byGenView }
         let direct = app.textFields[fragment]
         if direct.waitForExistence(timeout: 0.25) { return direct }
         let textView = app.textViews[fragment]
         if textView.waitForExistence(timeout: 0.25) { return textView }
-        let pred = NSPredicate(format: "identifier CONTAINS[c] %@ OR label CONTAINS[c] %@", fragment, fragment)
+        let candidates = [fragment, hyphenated, "UITest_\(fragment)"]
+        let pred = NSCompoundPredicate(orPredicateWithSubpredicates: candidates.map {
+            NSPredicate(format: "identifier CONTAINS[c] %@ OR label CONTAINS[c] %@", $0, $0)
+        })
         let byField = app.descendants(matching: .textField).matching(pred).firstMatch
         if byField.waitForExistence(timeout: 0.25) { return byField }
         return app.descendants(matching: .textView).matching(pred).firstMatch
@@ -320,7 +331,7 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
 
     func test150_platformForm_integrationMultipleControls() throws {
         #if os(iOS) || os(macOS)
-        let name = sd150TextField(matching: "SD150_Integration_Name")
+        let name = sd150TextField(matching: "sd150-integration-name")
         let pass = sd150SecureField(matching: "sd150-integration-password")
         let toggle = sd150Switch(matching: "SD150_Integration_Toggle")
         sd150FocusAndType(name, "Pat")
