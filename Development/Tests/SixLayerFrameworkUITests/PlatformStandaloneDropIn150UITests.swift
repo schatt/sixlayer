@@ -116,31 +116,21 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
     }
 
     #if os(iOS)
-    /// iOS 26 often shows the keyboard without `hasKeyboardFocus` on the secure leaf; fall back to `app.typeText` (Refs #261).
+    /// iOS 26 secure fields often reject `field.typeText` even when the keyboard is visible; use `app.typeText` (Refs #261).
     private func sd150TypeIntoSecureField(
         _ field: XCUIElement,
         _ text: String,
         file: StaticString = #filePath,
         line: UInt = #line
     ) {
-        let cell = app.tables.cells.containing(field).firstMatch
-        if cell.waitForExistence(timeout: 0.6) {
-            cell.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
-            RunLoop.current.run(until: Date().addingTimeInterval(0.25))
-        }
         field.xcuiTapToBecomeFirstResponder()
         let keyboard = app.keyboards.firstMatch
-        XCTAssertTrue(keyboard.waitForExistence(timeout: 3.0), "Keyboard required for secure field", file: file, line: line)
-        let deadline = Date().addingTimeInterval(4.0)
-        while Date() < deadline {
-            if field.hasKeyboardFocus {
-                field.typeText(text)
-                return
-            }
+        if !keyboard.waitForExistence(timeout: 2.0) {
             tapCenter(field)
-            RunLoop.current.run(until: Date().addingTimeInterval(0.25))
+            RunLoop.current.run(until: Date().addingTimeInterval(0.35))
             field.xcuiTapToBecomeFirstResponder()
         }
+        XCTAssertTrue(keyboard.waitForExistence(timeout: 3.0), "Keyboard required for secure field", file: file, line: line)
         app.typeText(text)
     }
     #endif
