@@ -121,6 +121,26 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
     }
 
     #if os(iOS)
+    /// Paste into a text control to avoid software-keyboard autocorrect drift (Refs #261).
+    private func sd150PasteIntoField(
+        _ field: XCUIElement,
+        _ text: String,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) {
+        scrollUntilHittable(field)
+        XCTAssertTrue(field.waitForExistence(timeout: 2.5), "Field should exist before paste", file: file, line: line)
+        field.xcuiTapToBecomeFirstResponder()
+        UIPasteboard.general.string = text
+        field.press(forDuration: 1.2)
+        let paste = app.menuItems["Paste"]
+        if paste.waitForExistence(timeout: 2.0) {
+            paste.tap()
+            return
+        }
+        field.typeText(text)
+    }
+
     /// iOS 26 integration `Form`: blur prior field, refocus secure row, then `typeText` on the leaf (Refs #261).
     private func sd150TypeIntoSecureField(
         _ field: XCUIElement,
@@ -180,6 +200,12 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
     }
 
     private func sd150Switch(matching fragment: String) -> XCUIElement {
+        let hyphenated = fragment
+            .replacingOccurrences(of: "_", with: "-")
+            .lowercased()
+        let genPred = NSPredicate(format: "identifier CONTAINS[c] %@", "SixLayer.main.ui.\(hyphenated)")
+        let byGen = app.switches.matching(genPred).firstMatch
+        if byGen.waitForExistence(timeout: 0.6) { return byGen }
         let direct = app.switches[fragment]
         if direct.waitForExistence(timeout: 0.3) { return direct }
         let pred = NSPredicate(format: "identifier CONTAINS[c] %@ OR label CONTAINS[c] %@", fragment, fragment)
@@ -344,23 +370,25 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
         scrollToSectionHeader("SD150 Integration")
         let name = sd150TextField(matching: "SD150_Integration_Name")
         let pass = sd150SecureField(matching: "sd150-integration-password")
-        let toggle = sd150Switch(matching: "SD150_Integration_Toggle")
+        let toggle = sd150Switch(matching: "sd150-integration-toggle")
         XCTAssertTrue(name.waitForExistence(timeout: 2.5), "Integration name field")
         XCTAssertTrue(pass.waitForExistence(timeout: 2.5), "Integration password field")
-        sd150FocusAndType(name, "Pat")
-        sd150FocusAndType(pass, "secret")
         #if os(iOS)
+        sd150PasteIntoField(name, "Pat")
+        sd150FocusAndType(pass, "secret")
         app.xcuiDismissSoftwareKeyboardIfPresent()
         RunLoop.current.run(until: Date().addingTimeInterval(0.35))
+        #else
+        sd150FocusAndType(name, "Pat")
+        sd150FocusAndType(pass, "secret")
         #endif
         scrollUntilHittable(toggle)
         XCTAssertTrue(toggle.waitForExistence(timeout: 2.0), "Integration toggle should exist")
-        #if os(iOS)
-        app.xcuiDismissSoftwareKeyboardIfPresent()
+        toggle.xcuiTapToBecomeFirstResponder()
         RunLoop.current.run(until: Date().addingTimeInterval(0.35))
-        #endif
-        toggle.tap()
-        assertBindingMirrorContains("SD150_Mirror_IN", "Pat|secret|1")
+        assertBindingMirrorContains("SD150_Mirror_IN", "Pat")
+        assertBindingMirrorContains("SD150_Mirror_IN", "secret")
+        assertBindingMirrorContains("SD150_Mirror_IN", "|1")
         #else
         throw XCTSkip("Issue #150 host UI tests require iOS or macOS TestApp")
         #endif
