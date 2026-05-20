@@ -382,17 +382,19 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
         sd150FocusAndType(name, "Pat")
         sd150FocusAndType(pass, "secret")
         #endif
+        assertBindingMirrorContains("SD150_Mirror_IN", "Pat")
+        assertBindingMirrorContains("SD150_Mirror_IN", "secret")
+        #if os(iOS)
+        app.xcuiDismissSoftwareKeyboardIfPresent()
+        RunLoop.current.run(until: Date().addingTimeInterval(0.4))
+        if app.navigationBars.firstMatch.waitForExistence(timeout: 0.5) {
+            app.navigationBars.firstMatch.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
+            RunLoop.current.run(until: Date().addingTimeInterval(0.25))
+        }
+        #endif
         scrollUntilHittable(toggle)
         XCTAssertTrue(toggle.waitForExistence(timeout: 2.0), "Integration toggle should exist")
         toggle.xcuiTapToBecomeFirstResponder()
-        let toggleDeadline = Date().addingTimeInterval(4.0)
-        while Date() < toggleDeadline {
-            if mirrorElement(identifier: "SD150_Mirror_IN").label.contains("|1") { break }
-            toggle.coordinate(withNormalizedOffset: CGVector(dx: 0.92, dy: 0.5)).tap()
-            RunLoop.current.run(until: Date().addingTimeInterval(0.4))
-        }
-        assertBindingMirrorContains("SD150_Mirror_IN", "Pat")
-        assertBindingMirrorContains("SD150_Mirror_IN", "secret")
         assertBindingMirrorContains("SD150_Mirror_IN", "|1")
         #else
         throw XCTSkip("Issue #150 host UI tests require iOS or macOS TestApp")
