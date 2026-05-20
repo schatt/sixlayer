@@ -94,7 +94,8 @@ public func platformReceiptOCRLayout_L2(
         entityName: context.entityName,
         fieldRanges: context.fieldRanges,
         fieldAverages: context.fieldAverages,
-        strictVisionTextTypeFiltering: context.strictVisionTextTypeFiltering
+        strictVisionTextTypeFiltering: context.strictVisionTextTypeFiltering,
+        visionMinimumTextHeight: context.visionMinimumTextHeight
     )
     
     // Use document layout for receipts
@@ -123,7 +124,8 @@ public func platformBusinessCardOCRLayout_L2(
         entityName: context.entityName,
         fieldRanges: context.fieldRanges,
         fieldAverages: context.fieldAverages,
-        strictVisionTextTypeFiltering: context.strictVisionTextTypeFiltering
+        strictVisionTextTypeFiltering: context.strictVisionTextTypeFiltering,
+        visionMinimumTextHeight: context.visionMinimumTextHeight
     )
     
     // Use document layout for business cards
@@ -398,7 +400,8 @@ private func adjustContextForDocument(
         entityName: context.entityName,
         fieldRanges: context.fieldRanges,
         fieldAverages: context.fieldAverages,
-        strictVisionTextTypeFiltering: context.strictVisionTextTypeFiltering
+        strictVisionTextTypeFiltering: context.strictVisionTextTypeFiltering,
+        visionMinimumTextHeight: context.visionMinimumTextHeight
     )
 }
 
