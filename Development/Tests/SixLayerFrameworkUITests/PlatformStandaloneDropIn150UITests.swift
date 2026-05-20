@@ -384,20 +384,13 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
         #endif
         scrollUntilHittable(toggle)
         XCTAssertTrue(toggle.waitForExistence(timeout: 2.0), "Integration toggle should exist")
-        #if os(iOS)
-        if (toggle.value as? String) != "1" {
-            toggle.adjust(toNormalizedSliderPosition: 1.0)
-            RunLoop.current.run(until: Date().addingTimeInterval(0.35))
-        }
-        if (toggle.value as? String) != "1" {
-            toggle.coordinate(withNormalizedOffset: CGVector(dx: 0.92, dy: 0.5)).tap()
-            RunLoop.current.run(until: Date().addingTimeInterval(0.35))
-        }
-        XCTAssertEqual(toggle.value as? String, "1", "Integration toggle should be on")
-        #else
         toggle.xcuiTapToBecomeFirstResponder()
-        RunLoop.current.run(until: Date().addingTimeInterval(0.35))
-        #endif
+        let toggleDeadline = Date().addingTimeInterval(4.0)
+        while Date() < toggleDeadline {
+            if mirrorElement(identifier: "SD150_Mirror_IN").label.contains("|1") { break }
+            toggle.coordinate(withNormalizedOffset: CGVector(dx: 0.92, dy: 0.5)).tap()
+            RunLoop.current.run(until: Date().addingTimeInterval(0.4))
+        }
         assertBindingMirrorContains("SD150_Mirror_IN", "Pat")
         assertBindingMirrorContains("SD150_Mirror_IN", "secret")
         assertBindingMirrorContains("SD150_Mirror_IN", "|1")
