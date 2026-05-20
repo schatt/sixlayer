@@ -87,6 +87,28 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
         element.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
     }
 
+    /// Focus a `Form` control and type; on iOS waits for the software keyboard before `typeText` (Refs #261).
+    private func sd150FocusAndType(_ field: XCUIElement, _ text: String, file: StaticString = #filePath, line: UInt = #line) {
+        scrollUntilHittable(field)
+        XCTAssertTrue(field.waitForExistence(timeout: 2.5), "Field should exist before typing", file: file, line: line)
+        field.xcuiTapToBecomeFirstResponder()
+        #if os(iOS)
+        let keyboard = app.keyboards.firstMatch
+        if !keyboard.waitForExistence(timeout: 2.0) {
+            tapCenter(field)
+            RunLoop.current.run(until: Date().addingTimeInterval(0.35))
+            field.xcuiTapToBecomeFirstResponder()
+        }
+        XCTAssertTrue(
+            keyboard.waitForExistence(timeout: 2.5),
+            "Software keyboard should be visible before typeText",
+            file: file,
+            line: line
+        )
+        #endif
+        field.typeText(text)
+    }
+
     /// Resolves a secure field by label, `exactNamed`, or generated `SixLayer.main.ui.<sanitized>.SecureField` id (hyphenated).
     private func sd150SecureField(matching fragment: String) -> XCUIElement {
         let hyphenated = fragment
@@ -263,33 +285,13 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
         let name = sd150TextField(matching: "SD150_Integration_Name")
         let pass = sd150SecureField(matching: "sd150-integration-password")
         let toggle = sd150Switch(matching: "SD150_Integration_Toggle")
-        scrollUntilHittable(name)
-        XCTAssertTrue(name.waitForExistence(timeout: 2.0), "Integration name")
-        name.xcuiTapToBecomeFirstResponder()
-        name.typeText("Pat")
+        sd150FocusAndType(name, "Pat")
         #if os(iOS)
         app.xcuiDismissSoftwareKeyboardIfPresent()
         RunLoop.current.run(until: Date().addingTimeInterval(0.35))
         #endif
         scrollToSectionHeader("SD150 Integration")
-        scrollUntilHittable(pass)
-        XCTAssertTrue(pass.waitForExistence(timeout: 2.5), "Integration password field should exist")
-        if !pass.isHittable {
-            app.xcuiSwipeScrollHostsUp()
-            RunLoop.current.run(until: Date().addingTimeInterval(0.25))
-        }
-        #if os(iOS)
-        app.xcuiDismissSoftwareKeyboardIfPresent()
-        RunLoop.current.run(until: Date().addingTimeInterval(0.35))
-        if app.staticTexts["SD150 Integration"].firstMatch.waitForExistence(timeout: 0.5) {
-            app.staticTexts["SD150 Integration"].firstMatch.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.1)).tap()
-            RunLoop.current.run(until: Date().addingTimeInterval(0.25))
-        }
-        pass.xcuiTapToBecomeFirstResponder()
-        #else
-        pass.xcuiTapToBecomeFirstResponder()
-        #endif
-        pass.typeText("secret")
+        sd150FocusAndType(pass, "secret")
         #if os(iOS)
         app.xcuiDismissSoftwareKeyboardIfPresent()
         RunLoop.current.run(until: Date().addingTimeInterval(0.35))
