@@ -17,6 +17,7 @@ struct OCRVisionMinimumTextHeight288Tests {
         #expect(context.visionMinimumTextHeight == 0.003)
     }
 
+    /// Apps may pass `0.01` for receipt-style documents when less small-text noise is desired.
     @Test func customVisionMinimumTextHeight_isPreserved() {
         let context = OCRContext(visionMinimumTextHeight: 0.01)
         #expect(context.visionMinimumTextHeight == 0.01)
