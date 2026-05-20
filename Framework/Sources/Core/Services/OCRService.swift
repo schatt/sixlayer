@@ -1031,8 +1031,7 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
             // We'll filter results based on our text types
         }
         
-        // Configure confidence threshold
-        request.minimumTextHeight = 0.01 // Minimum text height
+        request.minimumTextHeight = context.visionMinimumTextHeight
     }
     
     private func processVisionResults(

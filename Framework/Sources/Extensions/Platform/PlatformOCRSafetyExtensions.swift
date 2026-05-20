@@ -199,7 +199,7 @@ struct SafeVisionOCRView: View {
             }
             
             // Configure request based on strategy
-            configureVisionRequest(request, strategy: strategy)
+            configureVisionRequest(request, context: context, strategy: strategy)
             
             // Perform request
             let handler = VNImageRequestHandler(cgImage: cgImage, options: [:])
@@ -211,10 +211,15 @@ struct SafeVisionOCRView: View {
         }
     }
     
-    private func configureVisionRequest(_ request: VNRecognizeTextRequest, strategy: OCRStrategy) {
+    private func configureVisionRequest(
+        _ request: VNRecognizeTextRequest,
+        context: OCRContext,
+        strategy: OCRStrategy
+    ) {
         request.recognitionLevel = strategy.processingMode == .neural ? .accurate : .fast
         request.usesLanguageCorrection = true
         request.recognitionLanguages = strategy.supportedLanguages.map { $0.rawValue }
+        request.minimumTextHeight = context.visionMinimumTextHeight
     }
     
     private func processVisionResults(_ observations: [VNRecognizedTextObservation], context: OCRContext) -> OCRResult {

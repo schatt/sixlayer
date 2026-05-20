@@ -1,8 +1,8 @@
 # 🚀 Six-Layer Framework Development Roadmap
 
 **Purpose**: Track planned upcoming work and future enhancements.  
-**Last Updated**: May 19, 2026  
-**Current Release**: v7.8.3
+**Last Updated**: May 20, 2026  
+**Current Release**: v7.8.4
 
 > **Note**: This roadmap tracks planned work. For active todos, see [`todos.md`](../todos.md). For release history, see [`RELEASES.md`](RELEASES.md).
 
@@ -10,11 +10,12 @@
 
 ## 📍 **Current Status**
 
-**Last Release**: v7.8.3
+**Last Release**: v7.8.4
 **Current Phase**: Patch Release
 **Next Phase**: Continue framework evolution and stability improvements
 
 ### ✅ **Recently Completed**
+- **Configurable Vision `minimumTextHeight`** (#288) - Pump-friendly default `0.003` and `OCRContext.visionMinimumTextHeight` for full-resolution pump LCD OCR
 - **Count-Aware Automatic Presentation** (Phase 1) - Enhanced `.automatic` to consider item count
 - **Explicit Count-Based Preferences** (Phase 2) - Added `.countBased(lowCount:highCount:threshold:)` enum case for explicit control
 

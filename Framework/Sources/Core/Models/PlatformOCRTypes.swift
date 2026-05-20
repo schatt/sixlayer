@@ -196,6 +196,15 @@ public enum OCRUncategorizedExtractionBuilder: Sendable {
     }
 }
 
+// MARK: - Vision OCR defaults
+
+/// Shared defaults for Vision text recognition requests.
+public enum OCRVisionDefaults: Sendable {
+    /// Minimum text height as a fraction of image height.
+    /// `0.01` drops pump LCD digits on full-resolution photos; `0.003` retains them (#288).
+    public static let minimumTextHeight: Float = 0.003
+}
+
 // MARK: - OCR Context
 
 /// Context information for OCR operations
@@ -247,6 +256,10 @@ public struct OCRContext: Sendable {
     /// solely because the app requested semantic types like ``TextType/quantity`` (GitHub #279).
     public let strictVisionTextTypeFiltering: Bool
     
+    /// Vision `VNRecognizeTextRequest.minimumTextHeight` (fraction of image height).
+    /// Lower values retain small pump LCD digits on full-resolution photos (#288).
+    public let visionMinimumTextHeight: Float
+    
     public init(
         textTypes: [TextType] = [.general],
         language: OCRLanguage = .english,
@@ -259,7 +272,8 @@ public struct OCRContext: Sendable {
         entityName: String? = nil,
         fieldRanges: [String: ValueRange]? = nil,
         fieldAverages: [String: Double]? = nil,
-        strictVisionTextTypeFiltering: Bool = false
+        strictVisionTextTypeFiltering: Bool = false,
+        visionMinimumTextHeight: Float = OCRVisionDefaults.minimumTextHeight
     ) {
         self.textTypes = textTypes
         self.language = language
@@ -273,6 +287,7 @@ public struct OCRContext: Sendable {
         self.fieldRanges = fieldRanges
         self.fieldAverages = fieldAverages
         self.strictVisionTextTypeFiltering = strictVisionTextTypeFiltering
+        self.visionMinimumTextHeight = visionMinimumTextHeight
     }
     
     /// Text types supplied to Vision for observation filtering. Empty means **no** per-line type filter.
