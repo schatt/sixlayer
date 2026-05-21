@@ -96,16 +96,40 @@ extension XCUIApplication {
             return
         }
 
-        // `count == 0`: latent Form hosts — `firstMatch.exists` is often false at swipe time while boundBy:0 scrolls.
+        let cols = collectionViews
+        let collectionCount = cols.count
+        // Root `Form` is usually the outermost list; boundBy:0 is often overlay split chrome (#261).
+        if collectionCount > 1 {
+            swipe(cols.element(boundBy: collectionCount - 1))
+            return
+        }
+        if collectionCount == 1 {
+            swipe(cols.element(boundBy: 0))
+            return
+        }
+
+        let svs = scrollViews
+        let scrollCount = svs.count
+        if scrollCount > 1 {
+            swipe(svs.element(boundBy: scrollCount - 1))
+            return
+        }
+        if scrollCount == 1 {
+            swipe(svs.element(boundBy: 0))
+            return
+        }
+
+        // `count == 0`: latent hosts — prefer table/outer collection before overlay inner lists.
         let latentHosts: [XCUIElement] = [
             tbls.element(boundBy: 0),
             tbls.element(boundBy: 1),
+            cols.element(boundBy: 1),
+            cols.element(boundBy: 0),
+            svs.element(boundBy: 1),
+            svs.element(boundBy: 0),
             tbls.firstMatch,
-            scrollViews.element(boundBy: max(0, scrollViews.count - 1)),
-            scrollViews.element(boundBy: 0),
-            scrollViews.firstMatch,
-            collectionViews.element(boundBy: 0),
-            collectionViews.firstMatch,
+            cols.firstMatch,
+            svs.firstMatch,
         ]
         for host in latentHosts where host.exists {
             swipe(host)
