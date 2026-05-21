@@ -36,8 +36,8 @@ final class Layer4UITests: XCTestCase {
     private static let rootReadyTimeout: TimeInterval = 3.0
     /// Deep `Form` hosts need more than a handful of swipes; still capped (Refs #261).
     /// Root `Form` is tall (overlay ~400pt + full L4 sections); shallow caps miss L4 Controls / System (#261).
-    private static let maxScrollAttempts = 28
-    private static let maxL4SystemScrollAttempts = 36
+    private static let maxScrollAttempts = 18
+    private static let maxL4SystemScrollAttempts = 20
 
     nonisolated override func setUpWithError() throws {
         continueAfterFailure = false
@@ -161,21 +161,10 @@ final class Layer4UITests: XCTestCase {
     @MainActor
     private func scrollToFormSectionHeader(title: String) {
         let headerId = Self.l4ContractSectionHeaderIdentifier(sectionTitle: title)
+        scrollToContractIdentifier(headerId, maxAttempts: Self.maxScrollAttempts)
         if element(matchingIdentifier: headerId).waitForExistence(timeout: Self.quickWait) { return }
-        if app.staticTexts[title].waitForExistence(timeout: Self.quickWait) { return }
         if anyDescendantHasLabel(equalTo: title, timeout: Self.quickWait) { return }
-        if app.buttons[title].waitForExistence(timeout: Self.quickWait) { return }
-        if app.links[title].waitForExistence(timeout: Self.quickWait) { return }
-        if element(matchingIdentifier: title).waitForExistence(timeout: Self.quickWait) { return }
-        if !app.xcuiPrimaryScrollHost().exists, app.tables.count < 1, !app.scrollViews.firstMatch.exists { return }
-        for _ in 0..<Self.maxScrollAttempts {
-            app.xcuiSwipeScrollHostsUp()
-            if element(matchingIdentifier: headerId).waitForExistence(timeout: Self.quickWait) { return }
-            if app.staticTexts[title].waitForExistence(timeout: Self.quickWait) { return }
-            if anyDescendantHasLabel(equalTo: title, timeout: Self.quickWait) { return }
-            if app.buttons[title].waitForExistence(timeout: Self.quickWait) { return }
-            if element(matchingIdentifier: title).waitForExistence(timeout: Self.quickWait) { return }
-        }
+        if app.staticTexts[title].waitForExistence(timeout: Self.quickWait) { return }
     }
 
     /// `Form` rows for L4 Controls sit mid-scroll; anchor on the section header before field/button contract checks.
@@ -195,7 +184,7 @@ final class Layer4UITests: XCTestCase {
     /// Captions and controls under L4 System often sit below the section header in the root Form.
     @MainActor
     private func nudgeScrollInsideL4SystemSection() {
-        for _ in 0..<6 {
+        for _ in 0..<3 {
             app.xcuiSwipeScrollHostsUp()
         }
     }
@@ -205,17 +194,16 @@ final class Layer4UITests: XCTestCase {
     private func scrollToL4ControlsContracts() {
         scrollToL4ControlsSection()
         nudgeScrollInsideL4ControlsSection()
+        scrollToContractIdentifier("SixLayer.main.ui.l4contractsecurefield.SecureField", maxAttempts: 14)
     }
 
     /// CloudKit + photo picker rows are deep in L4 System (after clipboard/print/url rows and overlay above).
     @MainActor
     private func scrollToL4SystemCloudKitContracts() {
         scrollToFormSectionHeader(title: "L4 System")
-        // Caption labels are flaky; anchor on the first L4 System contract control (clipboard row).
         scrollToContractIdentifier("L4ContractCopy", maxAttempts: Self.maxL4SystemScrollAttempts)
         nudgeScrollInsideL4SystemSection()
-        scrollToContractIdentifier("platformCloudKitSyncStatus_L4", maxAttempts: Self.maxL4SystemScrollAttempts)
-        nudgeScrollInsideL4SystemSection()
+        scrollToElement(label: "CloudKit Sync: Idle", maxAttempts: Self.maxL4SystemScrollAttempts)
     }
 
     /// Scroll until a contract accessibility identifier is on-screen (L4 System rows are deep under overlay section).
