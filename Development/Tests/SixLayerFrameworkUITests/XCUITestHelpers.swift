@@ -70,41 +70,52 @@ extension XCUIApplication {
 
     /// Scroll the primary content up: prefers table(s); when two tables exist, swipes both outer and inner; otherwise swipes `xcuiPrimaryScrollHost()`.
     func xcuiSwipeScrollHostsUp() {
-        let tbls = tables
-        let tableCount = tbls.count
-        // Prefer `count` + `boundBy` over `firstMatch.exists`; on some iOS/SwiftUI Form runs the
-        // table is present in the snapshot while `firstMatch` does not resolve (window swipe fallback).
-        if tableCount > 1 {
-            tbls.element(boundBy: tableCount - 1).swipeUp()
-            tbls.element(boundBy: 0).swipeUp()
-        } else if tableCount == 1 {
-            tbls.element(boundBy: 0).swipeUp()
-        } else {
-            let host = xcuiPrimaryScrollHost()
-            if host.exists {
-                host.swipeUp()
-            } else {
-                windows.firstMatch.swipeUp()
-            }
-        }
+        xcuiSwipePrimaryContent(up: true)
     }
 
     /// Mirror of ``xcuiSwipeScrollHostsUp()`` for scrolling toward the top of Form/table content (e.g. `ensureContractRoot`).
     func xcuiSwipeScrollHostsDown() {
+        xcuiSwipePrimaryContent(up: false)
+    }
+
+    /// iOS 26 SwiftUI `Form` often reports `tables.count == 0` while `tables.firstMatch` exists; window swipes do not move rows (#261).
+    private func xcuiSwipePrimaryContent(up: Bool) {
         let tbls = tables
         let tableCount = tbls.count
         if tableCount > 1 {
-            tbls.element(boundBy: tableCount - 1).swipeDown()
-            tbls.element(boundBy: 0).swipeDown()
-        } else if tableCount == 1 {
-            tbls.element(boundBy: 0).swipeDown()
+            let outer = tbls.element(boundBy: tableCount - 1)
+            let inner = tbls.element(boundBy: 0)
+            if up { outer.swipeUp(); inner.swipeUp() } else { outer.swipeDown(); inner.swipeDown() }
+            return
+        }
+        if tableCount == 1 {
+            if up { tbls.element(boundBy: 0).swipeUp() } else { tbls.element(boundBy: 0).swipeDown() }
+            return
+        }
+        if tbls.firstMatch.exists {
+            if up { tbls.firstMatch.swipeUp() } else { tbls.firstMatch.swipeDown() }
+            return
+        }
+        let svs = scrollViews
+        let scrollCount = svs.count
+        if scrollCount > 1 {
+            let host = svs.element(boundBy: scrollCount - 1)
+            if up { host.swipeUp() } else { host.swipeDown() }
+            return
+        }
+        if scrollCount == 1 {
+            if up { svs.element(boundBy: 0).swipeUp() } else { svs.element(boundBy: 0).swipeDown() }
+            return
+        }
+        if svs.firstMatch.exists {
+            if up { svs.firstMatch.swipeUp() } else { svs.firstMatch.swipeDown() }
+            return
+        }
+        let host = xcuiPrimaryScrollHost()
+        if host.exists, host.elementType != .window {
+            if up { host.swipeUp() } else { host.swipeDown() }
         } else {
-            let host = xcuiPrimaryScrollHost()
-            if host.exists {
-                host.swipeDown()
-            } else {
-                windows.firstMatch.swipeDown()
-            }
+            if up { windows.firstMatch.swipeUp() } else { windows.firstMatch.swipeDown() }
         }
     }
 
