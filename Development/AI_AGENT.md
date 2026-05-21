@@ -11,6 +11,7 @@ This document provides guidance for AI assistants working with the SixLayer Fram
 ## 📚 Version-Specific Guides
 
 ### Latest Versions (Recommended)
+- **v7.8.5** — Patch release: numeric form field display coercion (#289), UITest/L4 stabilization, build hygiene (see [RELEASE_v7.8.5.md](RELEASE_v7.8.5.md))
 - **v7.8.4** — Patch release: configurable Vision `minimumTextHeight` for pump LCD OCR (#288) (see [RELEASE_v7.8.4.md](RELEASE_v7.8.4.md))
 - **v7.8.3** — Patch release: pump label-anchored OCR (#282), joint decimal correction (#283–#287) (see [RELEASE_v7.8.3.md](RELEASE_v7.8.3.md))
 - **v7.8.2** — Patch release: Layer 4 assistive adaptability (#255), semantic matrix evidence (#254), map a11y and UITest stabilization (#261) (see [RELEASE_v7.8.2.md](RELEASE_v7.8.2.md))
