@@ -4,7 +4,7 @@ import Testing
 @testable import SixLayerFramework
 
 @Suite("DynamicFormStoredNumericDisplay")
-struct DynamicFormStoredNumericDisplayTests {
+open class DynamicFormStoredNumericDisplayTests: BaseTestClass {
 
     @Test func displayString_usesStringAsIs() {
         #expect(
