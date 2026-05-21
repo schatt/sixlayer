@@ -203,6 +203,7 @@ final class Layer4UITests: XCTestCase {
         scrollToFormSectionHeader(title: "L4 System")
         scrollToContractIdentifier("L4ContractCopy", maxAttempts: Self.maxL4SystemScrollAttempts)
         nudgeScrollInsideL4SystemSection()
+        scrollToElement(label: "CloudKit Sync: Idle", maxAttempts: Self.maxL4SystemScrollAttempts)
     }
 
     /// Scroll until a contract accessibility identifier is on-screen (L4 System rows are deep under overlay section).
