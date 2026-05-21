@@ -1,12 +1,21 @@
 # 🚀 Six-Layer Framework Release History
 
-## 📍 **Current Release: v7.8.4** 🎯
+## 📍 **Current Release: v7.8.5** 🎯
 
-**Release Date**: May 20, 2026
+**Release Date**: May 21, 2026
 **Status**: Patch release
-**Previous Release**: v7.8.3 - Patch release
-**Note**: Configurable Vision `minimumTextHeight` with pump-friendly default 0.003 for full-resolution pump LCD OCR (#288).
+**Previous Release**: v7.8.4 - Patch release
+**Note**: Numeric form field display coercion for `Int`/`Double`/`NSNumber` prefills (#289); UITest/L4 stabilization; build hygiene.
 **Next Release**: TBD
+
+---
+
+## 🎯 **v7.8.5 - Numeric form field display coercion and test stabilization** (May 21, 2026)
+
+### **What's in v7.8.5:**
+- Patch release. See [RELEASE_v7.8.5.md](RELEASE_v7.8.5.md) for details.
+
+**See [RELEASE_v7.8.5.md](RELEASE_v7.8.5.md) for complete release notes.**
 
 ---
 
