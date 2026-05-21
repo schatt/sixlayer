@@ -1,5 +1,5 @@
 // swift-tools-version: 6.0
-// SixLayerFramework v7.8.4 - Patch: configurable Vision minimumTextHeight for pump LCD OCR (#288)
+// SixLayerFramework v7.8.5 - Patch: numeric form field display coercion (#289)
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
