@@ -435,7 +435,6 @@ open class Layer1PresentationTests: BaseTestClass {
         #expect(field.label == expectedLabel, "Field label should match expected value")
         #expect(!field.label.isEmpty, "Field label should not be empty")
         _ = view  // View creation succeeds, which means automaticCompliance was called
-        #expect(true, "View should be created with field.label passed to automaticCompliance")
     }
     
     /// BUSINESS PURPOSE: Layer 1 functions should leverage hints system for labels
@@ -482,7 +481,6 @@ open class Layer1PresentationTests: BaseTestClass {
         // automaticCompliance(accessibilityLabel: field.label) in PlatformSemanticLayer1.swift
         #expect(!field.label.isEmpty, "Field label from hints system should not be empty")
         _ = view  // View creation succeeds, which means automaticCompliance was called with field.label
-        #expect(true, "View should be created with field.label from hints passed to automaticCompliance")
     }
     
     /// BUSINESS PURPOSE: Multiple form fields should all have accessibility labels
@@ -517,6 +515,5 @@ open class Layer1PresentationTests: BaseTestClass {
             #expect(!field.label.isEmpty, "Field '\(field.id)' should have a label")
         }
         _ = view  // View creation succeeds, which means all fields had automaticCompliance called
-        #expect(true, "View should be created with all field labels passed to automaticCompliance")
     }
 }
