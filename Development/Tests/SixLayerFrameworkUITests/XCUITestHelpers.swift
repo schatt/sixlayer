@@ -80,43 +80,50 @@ extension XCUIApplication {
 
     /// iOS 26 SwiftUI `Form` often reports `tables.count == 0` while `tables.firstMatch` exists; window swipes do not move rows (#261).
     private func xcuiSwipePrimaryContent(up: Bool) {
+        func swipe(_ element: XCUIElement) {
+            if up { element.swipeUp() } else { element.swipeDown() }
+        }
+
         let tbls = tables
         let tableCount = tbls.count
         if tableCount > 1 {
-            let outer = tbls.element(boundBy: tableCount - 1)
-            let inner = tbls.element(boundBy: 0)
-            if up { outer.swipeUp(); inner.swipeUp() } else { outer.swipeDown(); inner.swipeDown() }
+            swipe(tbls.element(boundBy: tableCount - 1))
+            swipe(tbls.element(boundBy: 0))
             return
         }
         if tableCount == 1 {
-            if up { tbls.element(boundBy: 0).swipeUp() } else { tbls.element(boundBy: 0).swipeDown() }
+            swipe(tbls.element(boundBy: 0))
             return
         }
-        if tbls.firstMatch.exists {
-            if up { tbls.firstMatch.swipeUp() } else { tbls.firstMatch.swipeDown() }
+
+        // `count == 0`: latent Form hosts — `firstMatch.exists` is often false at swipe time while boundBy:0 scrolls.
+        let latentHosts: [XCUIElement] = [
+            tbls.element(boundBy: 0),
+            tbls.element(boundBy: 1),
+            tbls.firstMatch,
+            scrollViews.element(boundBy: max(0, scrollViews.count - 1)),
+            scrollViews.element(boundBy: 0),
+            scrollViews.firstMatch,
+            collectionViews.element(boundBy: 0),
+            collectionViews.firstMatch,
+        ]
+        for host in latentHosts where host.exists {
+            swipe(host)
             return
         }
-        let svs = scrollViews
-        let scrollCount = svs.count
-        if scrollCount > 1 {
-            let host = svs.element(boundBy: scrollCount - 1)
-            if up { host.swipeUp() } else { host.swipeDown() }
-            return
-        }
-        if scrollCount == 1 {
-            if up { svs.element(boundBy: 0).swipeUp() } else { svs.element(boundBy: 0).swipeDown() }
-            return
-        }
-        if svs.firstMatch.exists {
-            if up { svs.firstMatch.swipeUp() } else { svs.firstMatch.swipeDown() }
-            return
-        }
-        let host = xcuiPrimaryScrollHost()
-        if host.exists, host.elementType != .window {
-            if up { host.swipeUp() } else { host.swipeDown() }
-        } else {
-            if up { windows.firstMatch.swipeUp() } else { windows.firstMatch.swipeDown() }
-        }
+        swipe(tbls.element(boundBy: 0))
+        xcuiDragScrollContent(up: up)
+    }
+
+    /// Coordinate drag when element `swipeUp`/`swipeDown` hits Window and does not move Form rows (#261).
+    private func xcuiDragScrollContent(up: Bool) {
+        let win = windows.firstMatch
+        guard win.exists else { return }
+        let startY: CGFloat = up ? 0.78 : 0.22
+        let endY: CGFloat = up ? 0.28 : 0.72
+        let start = win.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: startY))
+        let end = win.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: endY))
+        start.press(forDuration: 0.05, thenDragTo: end)
     }
 
     /// Swipe down on the software keyboard when present so the next `Form` row can scroll above the
