@@ -98,13 +98,17 @@ extension XCUIApplication {
 
         let cols = collectionViews
         let collectionCount = cols.count
-        // Root `Form` is usually the outermost list; boundBy:0 is often overlay split chrome (#261).
+        // Root `Form` is usually the outermost list; a lone CollectionView is often overlay split (#261).
         if collectionCount > 1 {
             swipe(cols.element(boundBy: collectionCount - 1))
             return
         }
         if collectionCount == 1 {
-            swipe(cols.element(boundBy: 0))
+            if tbls.element(boundBy: 0).exists {
+                swipe(tbls.element(boundBy: 0))
+                return
+            }
+            xcuiDragScrollContent(up: up)
             return
         }
 
