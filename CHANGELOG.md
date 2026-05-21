@@ -1,5 +1,26 @@
 # Changelog
 
+## v7.8.5 - Numeric form field display coercion and test stabilization (May 21, 2026)
+
+### ✨ Added
+- **`DynamicFormStoredNumericDisplay`**: formats `Int`, `Double`, and `NSNumber` stored in `DynamicFormState` for numeric text fields (#289).
+- **`DynamicFormField.numericTextBinding(in:)`**: read/write binding with numeric read coercion and `String` write.
+
+### 🧩 Changed
+- **`DynamicNumberField`** / **`DynamicIntegerField`**: use stored-value display helper; document draft key vs value typing in `FormAutoSaveGuide.md`.
+- **Tests**: SD150 / L4 XCUITest scroll, keyboard, and integration-toggle stabilization; Layer 4 high-contrast hosting via `traitOverrides`.
+
+### 🐛 Fixed
+- Number/integer fields no longer render blank when hosts prefill `fieldValues` with numeric types (#289).
+
+### 🔧 Build hygiene
+- Deprecated `onChange(of:perform:)` in date/time pickers; `setOverrideTraitCollection` replaced in assistive adaptability tests; tautological `#expect(true)` removed from Layer 1 presentation tests.
+
+### 📚 Documentation
+- Full notes: [`Development/RELEASE_v7.8.5.md`](Development/RELEASE_v7.8.5.md), index [`Development/RELEASES.md`](Development/RELEASES.md).
+
+---
+
 ## v7.8.4 - Configurable Vision minimumTextHeight for pump LCD OCR (May 20, 2026)
 
 ### ✨ Added
