@@ -68,7 +68,15 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
             .firstMatch
     }
 
+    private func scrollUntilExists(_ element: XCUIElement) {
+        for _ in 0..<Self.maxFormScrolls {
+            if element.waitForExistence(timeout: 0.35) { return }
+            app.xcuiSwipeScrollHostsUp()
+        }
+    }
+
     private func scrollUntilHittable(_ element: XCUIElement) {
+        scrollUntilExists(element)
         for _ in 0..<Self.maxFormScrolls {
             if element.waitForExistence(timeout: 0.35), element.isHittable { return }
             app.xcuiSwipeScrollHostsUp()
@@ -285,9 +293,8 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
     func test150_platformSecureField_typingUpdatesBinding() throws {
         #if os(iOS) || os(macOS)
         scrollToSectionHeader("SD150 Secure")
-        let mirrorS = mirrorElement(identifier: "SD150_Mirror_S")
-        scrollUntilHittable(mirrorS)
         let field = sd150SecureField(matching: "sd150-securefield")
+        scrollUntilExists(field)
         XCTAssertTrue(field.waitForExistence(timeout: 2.5), "Secure field")
         field.xcuiTapToBecomeFirstResponder()
         field.typeText("hunter2")
