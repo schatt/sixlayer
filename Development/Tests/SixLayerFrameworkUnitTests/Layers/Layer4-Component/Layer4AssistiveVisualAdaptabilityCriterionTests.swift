@@ -58,9 +58,8 @@ open class Layer4AssistiveVisualAdaptabilityCriterionTests: BaseTestClass {
     @MainActor
     private func applyHostedIncreasedAccessibilityContrast(to root: Any?) {
         guard let rootView = root as? UIView else { return }
-        let highContrast = UITraitCollection(accessibilityContrast: .high)
         if let window = rootView.window, let host = window.rootViewController {
-            host.setOverrideTraitCollection(highContrast, forChild: host)
+            host.traitOverrides.accessibilityContrast = .high
         }
         rootView.setNeedsLayout()
         rootView.layoutIfNeeded()
