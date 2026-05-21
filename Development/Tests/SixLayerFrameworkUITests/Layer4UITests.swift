@@ -194,6 +194,7 @@ final class Layer4UITests: XCTestCase {
     private func scrollToL4ControlsContracts() {
         scrollToL4ControlsSection()
         nudgeScrollInsideL4ControlsSection()
+        scrollToContractIdentifier("SixLayer.main.ui.l4contractsecurefield.SecureField", maxAttempts: 14)
     }
 
     /// CloudKit + photo picker rows are deep in L4 System (after clipboard/print/url rows and overlay above).
