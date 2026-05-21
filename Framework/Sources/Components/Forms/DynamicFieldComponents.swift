@@ -927,10 +927,7 @@ public struct DynamicNumberField: View {
     public var body: some View {
         platformVStackContainer(alignment: .leading) {
             let i18n = InternationalizationService()
-            TextField(field.placeholder ?? i18n.localizedString(for: "SixLayerFramework.form.placeholder.enterNumber"), text: Binding(
-                get: { (formState.getValue(for: field.id) as String?) ?? field.defaultValue ?? "" },
-                set: { formState.setValue($0, for: field.id) }
-            ))
+            TextField(field.placeholder ?? i18n.localizedString(for: "SixLayerFramework.form.placeholder.enterNumber"), text: field.numericTextBinding(formState: formState))
             .platformTextFieldStyle()
             #if os(iOS)
             .keyboardType(UIKeyboardType.decimalPad)
@@ -958,10 +955,7 @@ public struct DynamicIntegerField: View {
     public var body: some View {
         platformVStackContainer(alignment: .leading) {
             let i18n = InternationalizationService()
-            TextField(field.placeholder ?? i18n.localizedString(for: "SixLayerFramework.form.placeholder.enterInteger"), text: Binding(
-                get: { (formState.getValue(for: field.id) as String?) ?? field.defaultValue ?? "" },
-                set: { formState.setValue($0, for: field.id) }
-            ))
+            TextField(field.placeholder ?? i18n.localizedString(for: "SixLayerFramework.form.placeholder.enterInteger"), text: field.numericTextBinding(formState: formState))
             .platformTextFieldStyle()
             #if os(iOS)
             .keyboardType(UIKeyboardType.numberPad)
