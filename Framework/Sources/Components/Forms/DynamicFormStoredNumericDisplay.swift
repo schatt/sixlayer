@@ -1,4 +1,5 @@
 import Foundation
+import SwiftUI
 
 /// Formats values stored in ``DynamicFormState`` for numeric text fields (`DynamicNumberField`, `DynamicIntegerField`).
 ///
