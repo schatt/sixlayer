@@ -183,6 +183,42 @@ state2.saveDraft()
 // Each draft is independent
 ```
 
+### Optional draft storage key (Issue #273)
+
+Draft persistence is keyed separately from **field values** and from **form definition identity**.
+
+| Concept | Role |
+|--------|------|
+| `DynamicFormConfiguration.id` | Stable form definition identity (schema, labels, sections). |
+| `draftStorageKey` | Optional UserDefaults draft **bucket** for `saveDraft`, `loadDraft`, `clearDraft`, and `hasDraft`. |
+| Resolved persistence id | Non-empty `draftStorageKey` if provided; otherwise `configuration.id`. |
+
+`draftStorageKey` is fixed for the lifetime of the `DynamicFormState` instance (v1 does not support changing it after init). Passing `nil` or `""` uses `configuration.id`, same as omitting the parameter.
+
+Use this when multiple screens share one configuration but must not share drafts—for example add vs edit using the same form JSON:
+
+```swift
+let sharedConfig = DynamicFormConfiguration(id: "fuel-entry", title: "Fuel", sections: [...])
+
+let addState = DynamicFormState(
+    configuration: sharedConfig,
+    draftStorageKey: "fuel-entry-add"
+)
+let editState = DynamicFormState(
+    configuration: sharedConfig,
+    draftStorageKey: "fuel-entry-edit"
+)
+// addState and editState persist under different keys despite the same configuration.id
+```
+
+**Not covered here:** how individual field values are typed in `fieldValues` (e.g. `Double` vs `String` for number fields). See [Number and integer field values](#number-and-integer-field-values-issue-289) below.
+
+### Number and integer field values (Issue #289)
+
+`DynamicNumberField` and `DynamicIntegerField` bind to a `TextField` and **store `String` on edit**. On read, they also accept `Int`, `Double`, or `NSNumber` in `fieldValues` (common when hosts prefill from Core Data or DTOs) and format them for display.
+
+Prefer `String` when you control the host mapping; numeric types are tolerated on read so prefilled forms do not render blank.
+
 ### Draft Entity Management
 
 For IntelligentFormView, draft entities are automatically handled:
@@ -207,7 +243,7 @@ IntelligentFormView.generateForm(
 
 ### Default Storage
 
-By default, drafts are stored in `UserDefaults` with the key prefix `"form_draft_"`. The storage key is `"form_draft_{formId}"`.
+By default, drafts are stored in `UserDefaults` with the key prefix `"form_draft_"`. The storage key is `"form_draft_{formId}"` where `{formId}` is the resolved persistence id (`draftStorageKey` when non-empty, otherwise `configuration.id`).
 
 ### Storage Protocol
 
@@ -320,6 +356,7 @@ let draft = FormDraft(
 
 ### DynamicFormState
 
+- `init(configuration:draftStorageKey:storage:)` - Optional `draftStorageKey` for draft bucket (Issue #273)
 - `startAutoSave(interval:)` - Start periodic auto-save
 - `stopAutoSave()` - Stop auto-save timer
 - `saveDraft()` - Save current state as draft

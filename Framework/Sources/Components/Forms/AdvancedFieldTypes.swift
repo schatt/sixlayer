@@ -616,10 +616,10 @@ public struct DatePickerField: View {
             )
             .datePickerStyle(.wheel)
             .selfLabelingControl(label: field.label)
-            .onChange(of: selectedDate) { newDate in
+            .onChange(of: selectedDate) {
                 let formatter = DateFormatter()
                 formatter.dateStyle = .medium
-                formState.setValue(formatter.string(from: newDate), for: field.id)
+                formState.setValue(formatter.string(from: selectedDate), for: field.id)
             }
             .onAppear {
                 if let existingValue: String = formState.getValue(for: field.id) {
@@ -632,10 +632,10 @@ public struct DatePickerField: View {
             }
             #else
             platformDateInput(selection: $selectedDate, label: field.label)
-            .onChange(of: selectedDate) { newDate in
+            .onChange(of: selectedDate) {
                 let formatter = DateFormatter()
                 formatter.dateStyle = .medium
-                formState.setValue(formatter.string(from: newDate), for: field.id)
+                formState.setValue(formatter.string(from: selectedDate), for: field.id)
             }
             .onAppear {
                 // Load existing value if available
@@ -676,10 +676,10 @@ public struct TimePickerField: View {
             )
             .datePickerStyle(.wheel)
             .selfLabelingControl(label: field.label)
-            .onChange(of: selectedTime) { newTime in
+            .onChange(of: selectedTime) {
                 let formatter = DateFormatter()
                 formatter.timeStyle = .short
-                formState.setValue(formatter.string(from: newTime), for: field.id)
+                formState.setValue(formatter.string(from: selectedTime), for: field.id)
             }
             .onAppear {
                 if let existingValue: String = formState.getValue(for: field.id) {
@@ -692,10 +692,10 @@ public struct TimePickerField: View {
             }
             #else
             platformTimeInput(selection: $selectedTime, label: field.label)
-            .onChange(of: selectedTime) { newTime in
+            .onChange(of: selectedTime) {
                 let formatter = DateFormatter()
                 formatter.timeStyle = .short
-                formState.setValue(formatter.string(from: newTime), for: field.id)
+                formState.setValue(formatter.string(from: selectedTime), for: field.id)
             }
             .onAppear {
                 // Load existing value if available
@@ -736,11 +736,11 @@ public struct DateTimePickerField: View {
             )
             .datePickerStyle(.wheel)
             .selfLabelingControl(label: field.label)
-            .onChange(of: selectedDateTime) { newDateTime in
+            .onChange(of: selectedDateTime) {
                 let formatter = DateFormatter()
                 formatter.dateStyle = .medium
                 formatter.timeStyle = .short
-                formState.setValue(formatter.string(from: newDateTime), for: field.id)
+                formState.setValue(formatter.string(from: selectedDateTime), for: field.id)
             }
             .onAppear {
                 if let existingValue: String = formState.getValue(for: field.id) {
@@ -754,11 +754,11 @@ public struct DateTimePickerField: View {
             }
             #else
             platformDateTimeInput(selection: $selectedDateTime, label: field.label)
-            .onChange(of: selectedDateTime) { newDateTime in
+            .onChange(of: selectedDateTime) {
                 let formatter = DateFormatter()
                 formatter.dateStyle = .medium
                 formatter.timeStyle = .short
-                formState.setValue(formatter.string(from: newDateTime), for: field.id)
+                formState.setValue(formatter.string(from: selectedDateTime), for: field.id)
             }
             .onAppear {
                 // Load existing value if available

@@ -70,42 +70,88 @@ extension XCUIApplication {
 
     /// Scroll the primary content up: prefers table(s); when two tables exist, swipes both outer and inner; otherwise swipes `xcuiPrimaryScrollHost()`.
     func xcuiSwipeScrollHostsUp() {
-        let tbls = tables
-        let tableCount = tbls.count
-        // Prefer `count` + `boundBy` over `firstMatch.exists`; on some iOS/SwiftUI Form runs the
-        // table is present in the snapshot while `firstMatch` does not resolve (window swipe fallback).
-        if tableCount > 1 {
-            tbls.element(boundBy: tableCount - 1).swipeUp()
-            tbls.element(boundBy: 0).swipeUp()
-        } else if tableCount == 1 {
-            tbls.element(boundBy: 0).swipeUp()
-        } else {
-            let host = xcuiPrimaryScrollHost()
-            if host.exists {
-                host.swipeUp()
-            } else {
-                windows.firstMatch.swipeUp()
-            }
-        }
+        xcuiSwipePrimaryContent(up: true)
     }
 
     /// Mirror of ``xcuiSwipeScrollHostsUp()`` for scrolling toward the top of Form/table content (e.g. `ensureContractRoot`).
     func xcuiSwipeScrollHostsDown() {
+        xcuiSwipePrimaryContent(up: false)
+    }
+
+    /// iOS 26 SwiftUI `Form` often reports `tables.count == 0` while `tables.firstMatch` exists; window swipes do not move rows (#261).
+    private func xcuiSwipePrimaryContent(up: Bool) {
+        func swipe(_ element: XCUIElement) {
+            if up { element.swipeUp() } else { element.swipeDown() }
+        }
+
         let tbls = tables
         let tableCount = tbls.count
         if tableCount > 1 {
-            tbls.element(boundBy: tableCount - 1).swipeDown()
-            tbls.element(boundBy: 0).swipeDown()
-        } else if tableCount == 1 {
-            tbls.element(boundBy: 0).swipeDown()
-        } else {
-            let host = xcuiPrimaryScrollHost()
-            if host.exists {
-                host.swipeDown()
-            } else {
-                windows.firstMatch.swipeDown()
-            }
+            swipe(tbls.element(boundBy: tableCount - 1))
+            swipe(tbls.element(boundBy: 0))
+            return
         }
+        if tableCount == 1 {
+            swipe(tbls.element(boundBy: 0))
+            return
+        }
+
+        let cols = collectionViews
+        let collectionCount = cols.count
+        // Root `Form` is usually the outermost list; a lone CollectionView is often overlay split (#261).
+        if collectionCount > 1 {
+            swipe(cols.element(boundBy: collectionCount - 1))
+            return
+        }
+        if collectionCount == 1 {
+            if tbls.element(boundBy: 0).exists {
+                swipe(tbls.element(boundBy: 0))
+                return
+            }
+            xcuiDragScrollContent(up: up)
+            return
+        }
+
+        let svs = scrollViews
+        let scrollCount = svs.count
+        if scrollCount > 1 {
+            swipe(svs.element(boundBy: scrollCount - 1))
+            return
+        }
+        if scrollCount == 1 {
+            swipe(svs.element(boundBy: 0))
+            return
+        }
+
+        // `count == 0`: latent hosts — prefer table/outer collection before overlay inner lists.
+        let latentHosts: [XCUIElement] = [
+            tbls.element(boundBy: 0),
+            tbls.element(boundBy: 1),
+            cols.element(boundBy: 1),
+            cols.element(boundBy: 0),
+            svs.element(boundBy: 1),
+            svs.element(boundBy: 0),
+            tbls.firstMatch,
+            cols.firstMatch,
+            svs.firstMatch,
+        ]
+        for host in latentHosts where host.exists {
+            swipe(host)
+            return
+        }
+        swipe(tbls.element(boundBy: 0))
+        xcuiDragScrollContent(up: up)
+    }
+
+    /// Coordinate drag when element `swipeUp`/`swipeDown` hits Window and does not move Form rows (#261).
+    private func xcuiDragScrollContent(up: Bool) {
+        let win = windows.firstMatch
+        guard win.exists else { return }
+        let startY: CGFloat = up ? 0.78 : 0.22
+        let endY: CGFloat = up ? 0.28 : 0.72
+        let start = win.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: startY))
+        let end = win.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: endY))
+        start.press(forDuration: 0.05, thenDragTo: end)
     }
 
     /// Swipe down on the software keyboard when present so the next `Form` row can scroll above the
