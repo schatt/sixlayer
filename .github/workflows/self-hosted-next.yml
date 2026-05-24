@@ -55,7 +55,7 @@ jobs:
           xcodebuild test \
             -project SixLayerFramework.xcodeproj \
             -scheme "SLF-iOS-AllTests" \
-            -destination 'platform=iOS Simulator,name=iPhone 16' \
+            -destination 'platform=iOS Simulator,name=iPhone 17 Pro Max' \
             -configuration Debug \
             -allowProvisioningUpdates \
             -parallel-testing-enabled YES \
