@@ -1,12 +1,21 @@
 # 🚀 Six-Layer Framework Release History
 
-## 📍 **Current Release: v7.8.5** 🎯
+## 📍 **Current Release: v7.8.6** 🎯
 
-**Release Date**: May 21, 2026
+**Release Date**: May 24, 2026
 **Status**: Patch release
-**Previous Release**: v7.8.4 - Patch release
-**Note**: Milestone closure — OCR (#282–#287), UITest (#261), numeric form display (#289), build hygiene.
+**Previous Release**: v7.8.5 - Patch release
+**Note**: OCR overlay Vision bounding boxes (#291) for CarManager pump/receipt preview.
 **Next Release**: TBD
+
+---
+
+## 🎯 **v7.8.6 - OCR overlay Vision bounding boxes** (May 24, 2026)
+
+### **What's in v7.8.6:**
+- Patch release (#291). See [RELEASE_v7.8.6.md](RELEASE_v7.8.6.md) for details.
+
+**See [RELEASE_v7.8.6.md](RELEASE_v7.8.6.md) for complete release notes.**
 
 ---
 
