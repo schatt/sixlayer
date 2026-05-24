@@ -27,11 +27,6 @@ public struct OCROverlayView: View {
             GeometryReader { geometry in
                 let containerSize = geometry.size
                 let imageSize = image.size
-                let imageFrame = OCRBoundingBoxLayout.aspectFitImageFrame(
-                    imageSize: imageSize,
-                    containerSize: containerSize
-                )
-
                 ZStack(alignment: .topLeading) {
                     image.platformImageView()
                         .resizable()
