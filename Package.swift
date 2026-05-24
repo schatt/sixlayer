@@ -99,7 +99,7 @@ let package = Package(
             path: "Development/Tests/SixLayerUITestNavigationContractTests"
         ),
 
-        /// Pure OCR overlay geometry helpers (#328).
+        /// Pure OCR overlay geometry helpers (#291).
         .testTarget(
             name: "OCRBoundingBoxLayoutTests",
             dependencies: [
