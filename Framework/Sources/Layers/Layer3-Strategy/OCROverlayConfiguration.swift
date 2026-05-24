@@ -8,6 +8,7 @@ public struct OCROverlayConfiguration {
     public let allowsEditing: Bool
     public let allowsDeletion: Bool
     public let showConfidenceIndicators: Bool
+    public let showBoundingBoxes: Bool
     public let highlightColor: Color
     public let editingColor: Color
     public let lowConfidenceThreshold: Float
@@ -17,7 +18,8 @@ public struct OCROverlayConfiguration {
         allowsEditing: Bool = true,
         allowsDeletion: Bool = true,
         showConfidenceIndicators: Bool = true,
-        highlightColor: Color = .blue,
+        showBoundingBoxes: Bool = true,
+        highlightColor: Color = .yellow,
         editingColor: Color = .green,
         lowConfidenceThreshold: Float = 0.7,
         highConfidenceThreshold: Float = 0.9
@@ -25,6 +27,7 @@ public struct OCROverlayConfiguration {
         self.allowsEditing = allowsEditing
         self.allowsDeletion = allowsDeletion
         self.showConfidenceIndicators = showConfidenceIndicators
+        self.showBoundingBoxes = showBoundingBoxes
         self.highlightColor = highlightColor
         self.editingColor = editingColor
         self.lowConfidenceThreshold = lowConfidenceThreshold

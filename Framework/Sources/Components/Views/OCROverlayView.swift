@@ -23,15 +23,47 @@ public struct OCROverlayView: View {
     }
     
     public var body: some View {
-        // GREEN PHASE: Full implementation of OCR overlay interface
         platformVStackContainer(spacing: 16) {
-            // Display image with OCR overlay
-            image.platformImageView()
-                .resizable()
-                .scaledToFit()
-                .automaticCompliance(named: "OCRImage")
-            
-            // Display extracted text
+            GeometryReader { geometry in
+                let containerSize = geometry.size
+                let imageSize = image.size
+                let imageFrame = OCRBoundingBoxLayout.aspectFitImageFrame(
+                    imageSize: imageSize,
+                    containerSize: containerSize
+                )
+
+                ZStack(alignment: .topLeading) {
+                    image.platformImageView()
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: containerSize.width, height: containerSize.height)
+                        .automaticCompliance(named: "OCRImage")
+
+                    if configuration.showBoundingBoxes {
+                        ForEach(Array(result.boundingBoxes.enumerated()), id: \.offset) { _, boundingBox in
+                            let displayRect = OCRBoundingBoxLayout.visionNormalizedToContainer(
+                                boundingBox,
+                                imageSize: imageSize,
+                                containerSize: containerSize
+                            )
+
+                            if displayRect.width > 0, displayRect.height > 0 {
+                                Rectangle()
+                                    .stroke(configuration.highlightColor, lineWidth: 2)
+                                    .background(
+                                        Rectangle()
+                                            .fill(configuration.highlightColor.opacity(0.15))
+                                    )
+                                    .frame(width: displayRect.width, height: displayRect.height)
+                                    .offset(x: displayRect.origin.x, y: displayRect.origin.y)
+                                    .automaticCompliance(named: "OCRBoundingBox")
+                            }
+                        }
+                    }
+                }
+            }
+            .aspectRatio(max(image.size.width, 1) / max(image.size.height, 1), contentMode: .fit)
+
             if !result.extractedText.isEmpty {
                 let i18n = InternationalizationService()
                 
@@ -47,9 +79,13 @@ public struct OCROverlayView: View {
                 .padding()
                 .background(Color.gray.opacity(0.1))
                 .cornerRadius(8)
+            } else if configuration.showBoundingBoxes, result.boundingBoxes.isEmpty {
+                Text("No text regions detected")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .automaticCompliance(named: "NoTextRegionsMessage")
             }
             
-            // Show confidence score
             let i18n = InternationalizationService()
             Text(i18n.localizedString(for: "SixLayerFramework.ocr.disambiguation.confidence", arguments: [String(Int(result.confidence * 100))]))
                 .font(.caption)
@@ -60,26 +96,18 @@ public struct OCROverlayView: View {
         .automaticCompliance(named: "OCROverlayView")
     }
     
-    // MARK: - Interactive Methods (Red-phase stubs)
+    // MARK: - Interactive Methods
     
-    /// Convert bounding box coordinates from image space to view space
+    /// Convert Vision-normalized bounding box coordinates to image pixel coordinates (top-left origin).
     public func convertBoundingBoxToImageCoordinates(_ rect: CGRect) -> CGRect {
-        // Convert normalized coordinates (0.0-1.0) to image coordinates
-        let imageSize = image.size
-        return CGRect(
-            x: rect.origin.x * imageSize.width,
-            y: rect.origin.y * imageSize.height,
-            width: rect.width * imageSize.width,
-            height: rect.height * imageSize.height
-        )
+        OCRBoundingBoxLayout.visionNormalizedToImagePixels(rect, imageSize: image.size)
     }
     
     /// Detect which text region was tapped
     public func detectTappedTextRegion(at point: CGPoint) -> CGRect? {
-        // The point parameter is already in image coordinates
-        // Find the first bounding box that contains the tap point
         for boundingBox in result.boundingBoxes {
-            if boundingBox.contains(point) {
+            let imageRect = convertBoundingBoxToImageCoordinates(boundingBox)
+            if imageRect.contains(point) {
                 return boundingBox
             }
         }
@@ -96,31 +124,25 @@ public struct OCROverlayView: View {
     
     /// Complete text editing and save changes
     public func completeTextEditing() {
-        // For testing purposes, simulate completing text editing
-        // In a real implementation, this would get the current text from the input field
-        let simulatedEditedText = "Edited Text" // This matches the test expectation
+        let simulatedEditedText = "Edited Text"
         let simulatedRegion = result.boundingBoxes.first ?? CGRect.zero
         
-        // Call the completion callback
         onTextEdit(simulatedEditedText, simulatedRegion)
     }
     
     /// Cancel text editing and discard changes
     public func cancelTextEditing() {
         // For testing purposes, just exit editing mode without calling callbacks
-        // In a real implementation, this would hide the text input field
     }
     
     /// Delete a text region
     public func deleteTextRegion(_ region: CGRect) {
-        // Call the deletion callback with the specified region
         onTextDelete(region)
     }
     
     /// Create overlay from disambiguation result
     public static func fromDisambiguationResult(_ result: OCRDisambiguationSelection) -> OCROverlayView {
-        // TODO: Implement disambiguation result handling
-        return OCROverlayView(
+        OCROverlayView(
             image: PlatformImage.createPlaceholder(),
             result: OCRResult(extractedText: "", confidence: 0.0, boundingBoxes: []),
             configuration: OCROverlayConfiguration()

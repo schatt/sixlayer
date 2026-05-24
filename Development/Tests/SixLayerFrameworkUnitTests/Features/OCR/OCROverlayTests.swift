@@ -133,7 +133,7 @@ open class OCROverlayTests: BaseTestClass {
         
         // Then: Should convert correctly
         #expect(convertedBox.origin.x == 10) // 0.1 * 100
-        #expect(convertedBox.origin.y == 20) // 0.2 * 100
+        #expect(convertedBox.origin.y == 50) // Vision bottom-left origin flipped
         #expect(convertedBox.width == 50)   // 0.5 * 100
         #expect(convertedBox.height == 30)  // 0.3 * 100
     }
