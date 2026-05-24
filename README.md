@@ -27,7 +27,7 @@ Navigate to the `Framework/` directory and use it as a Swift Package:
 ```swift
 // In your Package.swift
 dependencies: [
-    .package(url: "https://github.com/schatt/sixlayer.git", from: "7.8.5")
+    .package(url: "https://github.com/schatt/sixlayer.git", from: "7.8.6")
 ]
 ```
 
@@ -41,12 +41,12 @@ dependencies: [
 
 The framework is distributed as a Swift Package from the `Framework/` directory. This ensures that only the essential framework code is included when other projects consume it.
 
-## 🆕 Latest Release: v7.8.5
+## 🆕 Latest Release: v7.8.6
 
 ### **Patch release**
-🔧 **Patch**: Numeric form field display coercion for `Int`/`Double`/`NSNumber` prefills (#289); SD150/L4 XCUITest stabilization; deprecated API cleanup. See [RELEASE_v7.8.5.md](Development/RELEASE_v7.8.5.md).
+🔧 **Patch**: Vision OCR text-discovery bounding boxes in `OCROverlayView` with `OCRBoundingBoxLayout` geometry helpers (#291). See [RELEASE_v7.8.6.md](Development/RELEASE_v7.8.6.md).
 
-### **Previous Release: v7.8.4 - Patch release**
+### **Previous Release: v7.8.5 - Patch release**
 🔧 **Patch**: Configurable Vision `minimumTextHeight` with pump-friendly default **0.003** for full-resolution pump LCD OCR (#288). See [RELEASE_v7.8.4.md](Development/RELEASE_v7.8.4.md).
 
 ### **Previous Release: v7.8.3 - Patch release**
@@ -274,7 +274,7 @@ These guides contain critical information about the Layer 1 Semantic Intent phil
 
 ## 📋 Current Status
 
-**Version**: v7.8.5 (Patch)
+**Version**: v7.8.6 (Patch)
 **Phase**: Patch release
 **Next**: TBD
 
