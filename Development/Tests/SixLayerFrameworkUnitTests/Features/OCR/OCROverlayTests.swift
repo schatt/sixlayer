@@ -133,7 +133,7 @@ open class OCROverlayTests: BaseTestClass {
         
         // Then: Should convert correctly
         #expect(convertedBox.origin.x == 10) // 0.1 * 100
-        #expect(convertedBox.origin.y == 20) // 0.2 * 100
+        #expect(convertedBox.origin.y == 50) // Vision bottom-left origin flipped
         #expect(convertedBox.width == 50)   // 0.5 * 100
         #expect(convertedBox.height == 30)  // 0.3 * 100
     }
@@ -141,12 +141,12 @@ open class OCROverlayTests: BaseTestClass {
     // MARK: - Text Region Interaction Tests
     
     @Test @MainActor func testTextRegionTapDetection() {
-        // Given: OCR overlay with text regions
-        let testImage = PlatformImage()
+        // Given: OCR overlay with Vision-normalized text regions on a 100×100 image
+        let testImage = PlatformImage.createPlaceholder()
         let testBoundingBoxes = [
-            CGRect(x: 10, y: 20, width: 100, height: 30),  // First text region
-            CGRect(x: 50, y: 60, width: 80, height: 25),   // Second text region
-            CGRect(x: 120, y: 100, width: 60, height: 20)  // Third text region
+            CGRect(x: 0.1, y: 0.5, width: 0.5, height: 0.3),   // pixels (10, 20, 50, 30)
+            CGRect(x: 0.5, y: 0.15, width: 0.3, height: 0.25), // pixels (50, 60, 30, 25)
+            CGRect(x: 0.2, y: 0.0, width: 0.4, height: 0.2)   // pixels (20, 80, 40, 20)
         ]
         let testOCRResult = OCRResult(
             extractedText: "Hello World\nTest Text\nAnother Line",
@@ -179,8 +179,8 @@ open class OCROverlayTests: BaseTestClass {
             onTextDelete: { _ in }
         )
         
-        // When: Simulating tap on first text region
-        let tapPoint = CGPoint(x: 60, y: 35) // Within first bounding box
+        // When: Simulating tap on first text region (image pixel coordinates)
+        let tapPoint = CGPoint(x: 35, y: 35)
         let detectedRegion = overlayView.detectTappedTextRegion(at: tapPoint)
         
         // Then: Should detect correct region
@@ -226,12 +226,12 @@ open class OCROverlayTests: BaseTestClass {
     // MARK: - Text Editing Tests
     
     @Test @MainActor func testTextEditingModeToggle() {
-        // Given: OCR overlay
-        let testImage = PlatformImage()
+        // Given: OCR overlay with Vision-normalized regions on a 100×100 image
+        let testImage = PlatformImage.createPlaceholder()
         let testBoundingBoxes = [
-            CGRect(x: 10, y: 20, width: 100, height: 30),  // First text region
-            CGRect(x: 50, y: 60, width: 80, height: 25),   // Second text region
-            CGRect(x: 120, y: 100, width: 60, height: 20)  // Third text region
+            CGRect(x: 0.1, y: 0.5, width: 0.5, height: 0.3),
+            CGRect(x: 0.5, y: 0.15, width: 0.3, height: 0.25),
+            CGRect(x: 0.2, y: 0.0, width: 0.4, height: 0.2)
         ]
         let testOCRResult = OCRResult(
             extractedText: "Hello World\nTest Text\nAnother Line",
@@ -257,7 +257,10 @@ open class OCROverlayTests: BaseTestClass {
         overlayView.startTextEditing(in: testBoundingBoxes[0])
         
         // Then: Should be able to detect tapped region
-        let tappedRegion = overlayView.detectTappedTextRegion(at: CGPoint(x: testBoundingBoxes[0].midX, y: testBoundingBoxes[0].midY))
+        let firstRegionPixels = overlayView.convertBoundingBoxToImageCoordinates(testBoundingBoxes[0])
+        let tappedRegion = overlayView.detectTappedTextRegion(
+            at: CGPoint(x: firstRegionPixels.midX, y: firstRegionPixels.midY)
+        )
         #expect(Bool(true), "Should detect tapped region")  // tappedRegion is non-optional
         #expect(tappedRegion == testBoundingBoxes[0], "Should return correct bounding box")
     }

@@ -1,5 +1,5 @@
 // swift-tools-version: 6.0
-// SixLayerFramework v7.8.5 - Patch: numeric form field display coercion (#289)
+// SixLayerFramework v7.8.6 - Patch: OCR overlay bounding boxes (#291)
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
@@ -97,6 +97,15 @@ let package = Package(
                 "SixLayerTestKit"
             ],
             path: "Development/Tests/SixLayerUITestNavigationContractTests"
+        ),
+
+        /// Pure OCR overlay geometry helpers (#291).
+        .testTarget(
+            name: "OCRBoundingBoxLayoutTests",
+            dependencies: [
+                "SixLayerFramework"
+            ],
+            path: "Development/Tests/OCRBoundingBoxLayoutTests"
         ),
 
     ]
