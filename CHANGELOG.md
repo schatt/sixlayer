@@ -1,5 +1,22 @@
 # Changelog
 
+## v7.8.6 - OCR overlay Vision bounding boxes (May 24, 2026)
+
+### ✨ Added
+- **`OCRBoundingBoxLayout`**: Vision normalized → image pixel → aspect-fit container geometry (#291).
+- **`OCROverlayView`**: yellow discovery bounding boxes over aspect-fit OCR preview images (#291).
+- **`OCROverlayConfiguration.showBoundingBoxes`** and **`highlightColor`** (default yellow).
+- **`OCRBoundingBoxLayoutTests`**: SPM unit tests for layout helpers.
+
+### 🧩 Changed
+- **`convertBoundingBoxToImageCoordinates`** / tap detection use Vision bottom-left Y-flip (#291).
+- Empty `boundingBoxes` shows **"No text regions detected"** when box display is enabled.
+
+### 📚 Documentation
+- Full notes: [`Development/RELEASE_v7.8.6.md`](Development/RELEASE_v7.8.6.md), index [`Development/RELEASES.md`](Development/RELEASES.md).
+
+---
+
 ## v7.8.5 - Numeric form field display coercion and test stabilization (May 21, 2026)
 
 ### ✨ Added
