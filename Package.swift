@@ -1,5 +1,5 @@
 // swift-tools-version: 6.0
-// SixLayerFramework v7.8.6 - Patch: OCR overlay bounding boxes (#291)
+// SixLayerFramework v7.8.7 - Patch: PlatformTabStrip public initializer (#292)
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
