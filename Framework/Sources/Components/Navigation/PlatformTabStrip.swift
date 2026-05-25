@@ -4,6 +4,11 @@ public struct PlatformTabStrip: View {
     @Binding var selection: Int
     let items: [PlatformTabItem]
 
+    public init(selection: Binding<Int>, items: [PlatformTabItem]) {
+        self._selection = selection
+        self.items = items
+    }
+
     public var body: some View {
         #if os(iOS)
         ScrollView(.horizontal, showsIndicators: false) {
