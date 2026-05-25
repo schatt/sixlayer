@@ -1,6 +1,6 @@
 # Changelog
 
-## v7.8.7 - PlatformTabStrip public initializer (Unreleased)
+## v7.8.7 - PlatformTabStrip public initializer (May 25, 2026)
 
 ### ✨ Added
 - **`PlatformTabStrip`**: `public init(selection: Binding<Int>, items: [PlatformTabItem])` for app-target consumers (#292).
@@ -8,6 +8,7 @@
 
 ### 📚 Documentation
 - CarManager and other external apps can replace duplicated report-type tab strips with `PlatformTabStrip` directly.
+- Full notes: [`Development/RELEASE_v7.8.7.md`](Development/RELEASE_v7.8.7.md), index [`Development/RELEASES.md`](Development/RELEASES.md).
 
 ---
 
