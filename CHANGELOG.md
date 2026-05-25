@@ -1,5 +1,17 @@
 # Changelog
 
+## v7.8.7 - PlatformTabStrip public initializer (May 25, 2026)
+
+### ✨ Added
+- **`PlatformTabStrip`**: `public init(selection: Binding<Int>, items: [PlatformTabItem])` for app-target consumers (#292).
+- **`ExternalModuleIntegrationTests`**: `testPlatformTabStripAccessible` guards public API visibility (non-`@testable` import).
+
+### 📚 Documentation
+- CarManager and other external apps can replace duplicated report-type tab strips with `PlatformTabStrip` directly.
+- Full notes: [`Development/RELEASE_v7.8.7.md`](Development/RELEASE_v7.8.7.md), index [`Development/RELEASES.md`](Development/RELEASES.md).
+
+---
+
 ## v7.8.6 - OCR overlay Vision bounding boxes (May 24, 2026)
 
 ### ✨ Added

@@ -341,5 +341,17 @@ struct ExternalModuleIntegrationTests {
 
         #expect(Bool(true), "AccessibilityManager is accessible from external modules")
     }
+
+    /// Tests that PlatformTabStrip is constructible from external modules (#292).
+    @Test("PlatformTabStrip public initializer accessible") @MainActor
+    func testPlatformTabStripAccessible() {
+        let items = [
+            PlatformTabItem(title: "Costs", systemImage: "dollarsign.circle"),
+            PlatformTabItem(title: "Fuel", systemImage: "fuelpump"),
+        ]
+        let selection = Binding.constant(0)
+        let _ = PlatformTabStrip(selection: selection, items: items)
+        #expect(Bool(true), "PlatformTabStrip is accessible from external modules")
+    }
 }
 

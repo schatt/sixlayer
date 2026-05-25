@@ -1,12 +1,21 @@
 # 🚀 Six-Layer Framework Release History
 
-## 📍 **Current Release: v7.8.6** 🎯
+## 📍 **Current Release: v7.8.7** 🎯
 
-**Release Date**: May 24, 2026
+**Release Date**: May 25, 2026
 **Status**: Patch release
-**Previous Release**: v7.8.5 - Patch release
-**Note**: OCR overlay Vision bounding boxes (#291) for CarManager pump/receipt preview.
+**Previous Release**: v7.8.6 - Patch release
+**Note**: `PlatformTabStrip` public initializer for app-target consumers (#292).
 **Next Release**: TBD
+
+---
+
+## 🎯 **v7.8.7 - PlatformTabStrip public initializer** (May 25, 2026)
+
+### **What's in v7.8.7:**
+- Patch release (#292). See [RELEASE_v7.8.7.md](RELEASE_v7.8.7.md) for details.
+
+**See [RELEASE_v7.8.7.md](RELEASE_v7.8.7.md) for complete release notes.**
 
 ---
 

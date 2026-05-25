@@ -27,7 +27,7 @@ Navigate to the `Framework/` directory and use it as a Swift Package:
 ```swift
 // In your Package.swift
 dependencies: [
-    .package(url: "https://github.com/schatt/sixlayer.git", from: "7.8.6")
+    .package(url: "https://github.com/schatt/sixlayer.git", from: "7.8.7")
 ]
 ```
 
@@ -41,9 +41,12 @@ dependencies: [
 
 The framework is distributed as a Swift Package from the `Framework/` directory. This ensures that only the essential framework code is included when other projects consume it.
 
-## 🆕 Latest Release: v7.8.6
+## 🆕 Latest Release: v7.8.7
 
 ### **Patch release**
+🔧 **Patch**: `PlatformTabStrip` public initializer for app-target consumers (#292). See [RELEASE_v7.8.7.md](Development/RELEASE_v7.8.7.md).
+
+### **Previous Release: v7.8.6 - Patch release**
 🔧 **Patch**: Vision OCR text-discovery bounding boxes in `OCROverlayView` with `OCRBoundingBoxLayout` geometry helpers (#291). See [RELEASE_v7.8.6.md](Development/RELEASE_v7.8.6.md).
 
 ### **Previous Release: v7.8.5 - Patch release**
@@ -274,7 +277,7 @@ These guides contain critical information about the Layer 1 Semantic Intent phil
 
 ## 📋 Current Status
 
-**Version**: v7.8.6 (Patch)
+**Version**: v7.8.7 (Patch)
 **Phase**: Patch release
 **Next**: TBD
 
