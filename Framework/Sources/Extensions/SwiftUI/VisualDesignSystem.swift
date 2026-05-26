@@ -815,11 +815,12 @@ public class VisualDesignSystem: ObservableObject {
     private let usesBuiltInSixLayerDesignSystem: Bool
 
     private init() {
+        let detectedAccessibility = detectAccessibilitySettings()
         self.currentTheme = Self.detectSystemTheme()
         self.platformStyle = Self.detectPlatformStyle()
-        self.accessibilitySettings = detectAccessibilitySettings()
+        self.accessibilitySettings = detectedAccessibility
         self.usesBuiltInSixLayerDesignSystem = true
-        self.designSystem = SixLayerDesignSystem(accessibility: accessibilitySettings)
+        self.designSystem = SixLayerDesignSystem(accessibility: detectedAccessibility)
         self.previousTheme = self.currentTheme
 
         // Listen for system theme changes
