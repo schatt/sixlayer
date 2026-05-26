@@ -949,7 +949,11 @@ public struct AutomaticHIGMotionPreferenceModifier: ViewModifier {
     public func body(content: Content) -> some View {
         let reduceMotion = accessibilityReduceMotion
             || PlatformReduceMotionPreference.isReduceMotionEnabled
-        content.modifier(ReducedMotionModifier(isEnabled: reduceMotion))
+        if reduceMotion {
+            content.animation(.none, value: UUID())
+        } else {
+            content
+        }
     }
 }
 
