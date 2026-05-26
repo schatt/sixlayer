@@ -539,10 +539,10 @@ public struct AccessibilitySystemState {
         self.isVoiceOverRunning = UIAccessibility.isVoiceOverRunning
         self.isDarkerSystemColorsEnabled = UIAccessibility.isDarkerSystemColorsEnabled
         self.isReduceTransparencyEnabled = UIAccessibility.isReduceTransparencyEnabled
-        self.isHighContrastEnabled = UIAccessibility.isBoldTextEnabled
+        self.isHighContrastEnabled = UIAccessibility.isDarkerSystemColorsEnabled
         self.isReducedMotionEnabled = PlatformReduceMotionPreference.isReduceMotionEnabled
         self.hasKeyboardSupport = true
-        self.hasFullKeyboardAccess = UIAccessibility.isAssistiveTouchRunning
+        self.hasFullKeyboardAccess = false
         self.hasSwitchControl = UIAccessibility.isSwitchControlRunning
         #elseif os(macOS)
         self.isVoiceOverRunning = NSWorkspace.shared.isVoiceOverEnabled
