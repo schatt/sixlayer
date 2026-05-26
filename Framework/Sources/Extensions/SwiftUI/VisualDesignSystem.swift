@@ -1,5 +1,8 @@
 import Foundation
 import SwiftUI
+#if os(iOS)
+import UIKit
+#endif
 
 // MARK: - Design System Bridge
 // Comprehensive theming system that maps external design tokens to SixLayer components
@@ -1086,6 +1089,45 @@ public enum SixLayerContentSizeCategory: String, CaseIterable, Sendable {
 
 @available(*, deprecated, renamed: "SixLayerContentSizeCategory")
 public typealias ContentSizeCategory = SixLayerContentSizeCategory
+
+public extension SixLayerContentSizeCategory {
+    /// Relative scale vs `.large` (1.0). Used on macOS; iOS uses UIKit preferred fonts via ``DynamicFontResolver``.
+    var typographyScaleFactor: CGFloat {
+        switch self {
+        case .extraSmall: return 0.82
+        case .small: return 0.88
+        case .medium: return 0.94
+        case .large: return 1.0
+        case .extraLarge: return 1.06
+        case .extraExtraLarge: return 1.12
+        case .extraExtraExtraLarge: return 1.18
+        case .accessibilityMedium: return 1.31
+        case .accessibilityLarge: return 1.44
+        case .accessibilityExtraLarge: return 1.64
+        case .accessibilityExtraExtraLarge: return 1.84
+        case .accessibilityExtraExtraExtraLarge: return 2.04
+        }
+    }
+
+    #if os(iOS)
+    var uiContentSizeCategory: UIContentSizeCategory {
+        switch self {
+        case .extraSmall: return .extraSmall
+        case .small: return .small
+        case .medium: return .medium
+        case .large: return .large
+        case .extraLarge: return .extraLarge
+        case .extraExtraLarge: return .extraExtraLarge
+        case .extraExtraExtraLarge: return .extraExtraExtraLarge
+        case .accessibilityMedium: return .accessibilityMedium
+        case .accessibilityLarge: return .accessibilityLarge
+        case .accessibilityExtraLarge: return .accessibilityExtraLarge
+        case .accessibilityExtraExtraLarge: return .accessibilityExtraExtraLarge
+        case .accessibilityExtraExtraExtraLarge: return .accessibilityExtraExtraExtraLarge
+        }
+    }
+    #endif
+}
 
 // MARK: - View Extensions
 
