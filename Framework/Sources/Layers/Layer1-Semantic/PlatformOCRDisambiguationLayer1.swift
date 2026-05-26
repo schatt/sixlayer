@@ -129,7 +129,7 @@ private struct OCRDisambiguationWrapper: View {
         let i18n = InternationalizationService()
         return platformVStackContainer(spacing: 16) {
             Image(systemName: "checkmark.circle.fill")
-                .font(.system(size: 48))
+                .platformDecorativeIconFont(designSize: 48)
                 .foregroundColor(.green)
             
             Text(i18n.localizedString(for: "SixLayerFramework.ocr.complete"))
@@ -154,7 +154,7 @@ private struct OCRDisambiguationWrapper: View {
         let i18n = InternationalizationService()
         return platformVStackContainer(spacing: 16) {
             Image(systemName: "exclamationmark.triangle.fill")
-                .font(.system(size: 48))
+                .platformDecorativeIconFont(designSize: 48)
                 .foregroundColor(.red)
             
             Text(i18n.localizedString(for: "SixLayerFramework.ocr.error"))
@@ -179,7 +179,7 @@ private struct OCRDisambiguationWrapper: View {
         let i18n = InternationalizationService()
         return platformVStackContainer(spacing: 16) {
             Image(systemName: "doc.text.viewfinder")
-                .font(.system(size: 48))
+                .platformDecorativeIconFont(designSize: 48)
                 .foregroundColor(.blue)
             
             Text(i18n.localizedString(for: "SixLayerFramework.ocr.readyToProcess"))

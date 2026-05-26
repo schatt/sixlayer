@@ -84,17 +84,17 @@ public extension View {
             #if os(macOS)
             if #available(macOS 11.0, *) {
                 Image(systemName: systemImage)
-                    .font(.system(size: 48))
+                    .platformDecorativeIconFont(designSize: 48)
                     .foregroundColor(.secondary)
             } else {
                 // Fallback for older macOS versions
                 Text("📋")
-                    .font(.system(size: 48))
+                    .platformDecorativeIconFont(designSize: 48)
                     .foregroundColor(.secondary)
             }
             #else
             Image(systemName: systemImage)
-                .font(.system(size: 48))
+                .platformDecorativeIconFont(designSize: 48)
                 .foregroundColor(.secondary)
             #endif
             
@@ -177,7 +177,7 @@ public extension View {
     ) -> some View {
         platformVStackContainer(spacing: 20) {
             Image(systemName: systemImage)
-                .font(.system(size: 60))
+                .platformDecorativeIconFont(designSize: 60)
                 .foregroundColor(.secondary)
             
             platformVStackContainer(spacing: 8) {
