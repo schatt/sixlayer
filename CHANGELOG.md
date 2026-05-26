@@ -1,5 +1,20 @@
 # Changelog
 
+## v7.8.9 - Reduce Motion for platform animation APIs (May 26, 2026)
+
+### ✨ Added
+- **`PlatformReduceMotionPreference`** and **`withPlatformAnimation`**: framework-owned reduce-motion policy for animation APIs (#298).
+- Unit and ViewInspector tests proving on/off behavior for `platformAnimation`, `higAnimationCategory`, and `AccessibilityManager`.
+
+### 🧩 Changed
+- **`platformAnimation`**, **`higAnimationCategory`**, and **`AutomaticHIGMotionPreferenceModifier`** respect reduce motion (environment + system APIs).
+- **`AccessibilitySystemState`** and **`AccessibilityManager.isReduceMotionEnabled()`** read live system state instead of stubs.
+
+### 📚 Documentation
+- Full notes: [`Development/RELEASE_v7.8.9.md`](Development/RELEASE_v7.8.9.md).
+
+---
+
 ## v7.8.7 - PlatformTabStrip public initializer (May 25, 2026)
 
 ### ✨ Added
