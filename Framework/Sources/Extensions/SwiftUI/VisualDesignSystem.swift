@@ -4,6 +4,10 @@ import SwiftUI
 import UIKit
 #endif
 
+private func resolvedTypographyContentSize(for accessibility: AccessibilitySettings) -> SixLayerContentSizeCategory {
+    accessibility.dynamicType ? accessibility.preferredContentSize : .large
+}
+
 // MARK: - Design System Bridge
 // Comprehensive theming system that maps external design tokens to SixLayer components
 
@@ -358,7 +362,7 @@ public struct SixLayerDesignSystem: DesignSystem {
     private static func createTypographyForTheme(_ theme: Theme, platform: PlatformStyle, accessibility: AccessibilitySettings) -> DesignTokens.Typography {
         let _ = theme
         let _ = platform
-        let contentSize = resolvedContentSize(for: accessibility)
+        let contentSize = resolvedTypographyContentSize(for: accessibility)
         let resolver = DynamicFontResolver(defaultContentSize: contentSize)
         return DesignTokens.Typography(
             largeTitle: resolver.font(for: .largeTitle, contentSize: contentSize),
@@ -373,10 +377,6 @@ public struct SixLayerDesignSystem: DesignSystem {
             caption1: resolver.font(for: .caption1, contentSize: contentSize),
             caption2: resolver.font(for: .caption2, contentSize: contentSize)
         )
-    }
-
-    private static func resolvedContentSize(for accessibility: AccessibilitySettings) -> SixLayerContentSizeCategory {
-        accessibility.dynamicType ? accessibility.preferredContentSize : .large
     }
 
     /// Typography tokens for a theme and accessibility profile (defaults, tests, app overrides).
@@ -551,7 +551,7 @@ public struct HighContrastDesignSystem: DesignSystem {
 
     private static func createHighContrastTypographyTokens() -> [Theme: DesignTokens.Typography] {
         let accessibility = AccessibilitySettings()
-        let contentSize = resolvedContentSize(for: accessibility)
+        let contentSize = resolvedTypographyContentSize(for: accessibility)
         let resolver = DynamicFontResolver(defaultContentSize: contentSize)
 
         // High contrast typography - bolder weights for better readability
