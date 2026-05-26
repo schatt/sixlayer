@@ -14908,7 +14908,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             self.runWithTaskLocalConfig {
         // GIVEN: A button with automatic compliance
         let button = Button("Hover Test Button") { }
-            .automaticCompliance(named: "ButtonWithHover-\(platform)")
+            .automaticCompliance(named: "ButtonWithHover")
         
         // WHEN: View is created on hover-capable platforms (macOS, visionOS, iPad)
         // THEN: Hover support should work appropriately
@@ -16541,7 +16541,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             self.runWithTaskLocalConfig {
         // GIVEN: A button with automatic compliance
         let button = Button("Test Button") { }
-            .automaticCompliance(named: "Button-\(platform)")
+            .automaticCompliance(named: "Button")
         
         // WHEN: View is created on a platform that requires touch targets
         // THEN: Button should have minimum touch target size based on RuntimeCapabilityDetection
@@ -16586,7 +16586,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             self.runWithTaskLocalConfig {
         // GIVEN: A link with automatic compliance
         let link = Link("Test Link", destination: URL(string: "https://example.com")!)
-            .automaticCompliance(named: "Link-\(platform)")
+            .automaticCompliance(named: "Link")
         
         // WHEN: View is created
         // THEN: Link should respect runtime touch target detection
@@ -16622,7 +16622,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         // GIVEN: An interactive view (tappable) with automatic compliance
         let interactiveView = Text("Tap Me")
             .onTapGesture { }
-            .automaticCompliance(named: "InteractiveView-\(platform)")
+            .automaticCompliance(named: "InteractiveView")
         
         // WHEN: View is created
         // THEN: Interactive view should respect runtime touch target detection
@@ -16657,7 +16657,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             self.runWithTaskLocalConfig {
         // GIVEN: A button with automatic compliance
         let button = Button("Test Button") { }
-            .automaticCompliance(named: "Button-\(platform)")
+            .automaticCompliance(named: "Button")
         
         // WHEN: View is created on platforms that don't require touch targets
         // THEN: Touch target sizing should not be applied (but other HIG compliance should be)
