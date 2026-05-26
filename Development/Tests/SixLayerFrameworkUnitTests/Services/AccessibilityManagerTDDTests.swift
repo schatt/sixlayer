@@ -110,7 +110,7 @@ open class AccessibilityManagerTDDTests: BaseTestClass {
 
         if let config = config {
             #expect(config.enableVoiceOver == false, "VoiceOver currently stub as disabled")
-            #expect(config.enableReduceMotion == false, "Reduce motion currently stub as disabled")
+            #expect(config.enableReduceMotion == manager.isReduceMotionEnabled())
             #expect(config.enableHighContrast == true, "High contrast currently stub as enabled")
         }
 
