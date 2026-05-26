@@ -35,7 +35,7 @@ public struct ExpandableCardCollectionView<Item: Identifiable>: View {
             if items.isEmpty {
                 platformVStackContainer(spacing: 16) {
                     Image(systemName: "tray")
-                        .font(.system(size: 48))
+                        .platformDecorativeIconFont(designSize: 48)
                         .foregroundColor(.secondary)
                     
                     Text("No items available")
@@ -404,7 +404,7 @@ public struct CoverFlowCollectionView<Item: Identifiable>: View {
             if items.isEmpty {
                 platformVStackContainer(spacing: 16) {
                     Image(systemName: "tray")
-                        .font(.system(size: 48))
+                        .platformDecorativeIconFont(designSize: 48)
                         .foregroundColor(.secondary)
                     
                     Text("No items available")
@@ -550,7 +550,7 @@ public struct GridCollectionView<Item: Identifiable>: View {
             if items.isEmpty {
                 platformVStackContainer(spacing: 16) {
                     Image(systemName: "tray")
-                        .font(.system(size: 48))
+                        .platformDecorativeIconFont(designSize: 48)
                         .foregroundColor(.secondary)
                     
                     Text("No items available")
@@ -633,7 +633,7 @@ public struct ListCollectionView<Item: Identifiable>: View {
             if items.isEmpty {
                 platformVStackContainer(spacing: 16) {
                     Image(systemName: "tray")
-                        .font(.system(size: 48))
+                        .platformDecorativeIconFont(designSize: 48)
                         .foregroundColor(.secondary)
                     
                     Text("No items available")
@@ -701,7 +701,7 @@ public struct MasonryCollectionView<Item: Identifiable>: View {
             if items.isEmpty {
                 platformVStackContainer(spacing: 16) {
                     Image(systemName: "tray")
-                        .font(.system(size: 48))
+                        .platformDecorativeIconFont(designSize: 48)
                         .foregroundColor(.secondary)
                     
                     Text("No items available")
@@ -766,7 +766,7 @@ public struct AdaptiveCollectionView<Item: Identifiable>: View {
             if items.isEmpty {
                 platformVStackContainer(spacing: 16) {
                     Image(systemName: "tray")
-                        .font(.system(size: 48))
+                        .platformDecorativeIconFont(designSize: 48)
                         .foregroundColor(.secondary)
                     
                     Text("No items available")
