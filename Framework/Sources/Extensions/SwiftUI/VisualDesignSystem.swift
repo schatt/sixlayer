@@ -2,10 +2,57 @@ import Foundation
 import SwiftUI
 #if os(iOS)
 import UIKit
+#elseif os(macOS)
+import AppKit
 #endif
 
 private func resolvedTypographyContentSize(for accessibility: AccessibilitySettings) -> SixLayerContentSizeCategory {
     accessibility.dynamicType ? accessibility.preferredContentSize : .large
+}
+
+/// Whether XCTest / Swift Testing is active (avoid AppKit/UIKit appearance APIs).
+private func isAccessibilityDetectionTestEnvironment() -> Bool {
+    #if DEBUG
+    let environment = ProcessInfo.processInfo.environment
+    if environment["XCTestConfigurationFilePath"] != nil ||
+       environment["XCTestSessionIdentifier"] != nil ||
+       environment["XCTestBundlePath"] != nil ||
+       NSClassFromString("XCTestCase") != nil {
+        return true
+    }
+    if NSClassFromString("Testing.Test") != nil {
+        return true
+    }
+    return false
+    #else
+    return false
+    #endif
+}
+
+/// System accessibility profile for design-token generation.
+private func detectAccessibilitySettings() -> AccessibilitySettings {
+    #if os(iOS) || os(visionOS)
+    return AccessibilitySettings(
+        voiceOverSupport: UIAccessibility.isVoiceOverRunning,
+        keyboardNavigation: true,
+        highContrastMode: UIAccessibility.isDarkerSystemColorsEnabled,
+        dynamicType: true,
+        preferredContentSize: SixLayerContentSizeCategory.fromSystemPreferredContentSize(),
+        reducedMotion: UIAccessibility.isReduceMotionEnabled,
+        hapticFeedback: true
+    )
+    #elseif os(macOS)
+    return AccessibilitySettings(
+        voiceOverSupport: NSWorkspace.shared.isVoiceOverEnabled,
+        keyboardNavigation: true,
+        highContrastMode: false,
+        dynamicType: true,
+        reducedMotion: false,
+        hapticFeedback: false
+    )
+    #else
+    return AccessibilitySettings()
+    #endif
 }
 
 // MARK: - Design System Bridge
@@ -275,13 +322,15 @@ public struct SixLayerDesignSystem: DesignSystem {
     private let componentStatesTokens: DesignTokens.ComponentStates
 
     public init(
+        accessibility: AccessibilitySettings? = nil,
         colorTokens: [Theme: DesignTokens.Colors]? = nil,
         typographyTokens: [Theme: DesignTokens.Typography]? = nil,
         spacingTokens: DesignTokens.Spacing? = nil,
         componentStatesTokens: DesignTokens.ComponentStates? = nil
     ) {
+        let resolvedAccessibility = accessibility ?? detectAccessibilitySettings()
         self.colorTokens = colorTokens ?? Self.defaultColorTokens()
-        self.typographyTokens = typographyTokens ?? Self.defaultTypographyTokens()
+        self.typographyTokens = typographyTokens ?? Self.typographyTokensByTheme(for: resolvedAccessibility)
         self.spacingTokens = spacingTokens ?? Self.defaultSpacingTokens()
         self.componentStatesTokens = componentStatesTokens ?? Self.defaultComponentStatesTokens()
     }
@@ -349,14 +398,16 @@ public struct SixLayerDesignSystem: DesignSystem {
         )
     }
 
-    private static func defaultTypographyTokens() -> [Theme: DesignTokens.Typography] {
+    private static func typographyTokensByTheme(for accessibility: AccessibilitySettings) -> [Theme: DesignTokens.Typography] {
         let platform = Self.detectPlatformStyle()
-        let accessibility = AccessibilitySettings()
-
         return [
             .light: Self.createTypographyForTheme(.light, platform: platform, accessibility: accessibility),
             .dark: Self.createTypographyForTheme(.dark, platform: platform, accessibility: accessibility)
         ]
+    }
+
+    private static func defaultTypographyTokens() -> [Theme: DesignTokens.Typography] {
+        typographyTokensByTheme(for: detectAccessibilitySettings())
     }
 
     private static func createTypographyForTheme(_ theme: Theme, platform: PlatformStyle, accessibility: AccessibilitySettings) -> DesignTokens.Typography {
@@ -550,7 +601,7 @@ public struct HighContrastDesignSystem: DesignSystem {
     }
 
     private static func createHighContrastTypographyTokens() -> [Theme: DesignTokens.Typography] {
-        let accessibility = AccessibilitySettings()
+        let accessibility = detectAccessibilitySettings()
         let contentSize = resolvedTypographyContentSize(for: accessibility)
         let resolver = DynamicFontResolver(defaultContentSize: contentSize)
 
@@ -759,12 +810,16 @@ public class VisualDesignSystem: ObservableObject {
 
     /// Previous theme for change detection
     private var previousTheme: Theme = .light
-    
+
+    /// When true, ``designSystem`` is rebuilt when detected accessibility changes.
+    private let usesBuiltInSixLayerDesignSystem: Bool
+
     private init() {
         self.currentTheme = Self.detectSystemTheme()
         self.platformStyle = Self.detectPlatformStyle()
-        self.accessibilitySettings = Self.detectAccessibilitySettings()
-        self.designSystem = SixLayerDesignSystem()
+        self.accessibilitySettings = detectAccessibilitySettings()
+        self.usesBuiltInSixLayerDesignSystem = true
+        self.designSystem = SixLayerDesignSystem(accessibility: accessibilitySettings)
         self.previousTheme = self.currentTheme
 
         // Listen for system theme changes
@@ -774,7 +829,7 @@ public class VisualDesignSystem: ObservableObject {
             queue: .main
         ) { [weak self] _ in
             Task { @MainActor in
-                self?.updateTheme()
+                self?.updateFromSystemEnvironment()
             }
         }
 
@@ -786,7 +841,16 @@ public class VisualDesignSystem: ObservableObject {
             queue: .main
         ) { [weak self] _ in
             Task { @MainActor in
-                self?.updateTheme()
+                self?.updateFromSystemEnvironment()
+            }
+        }
+        NotificationCenter.default.addObserver(
+            forName: UIContentSizeCategory.didChangeNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor in
+                self?.updateFromSystemEnvironment()
             }
         }
         #endif
@@ -796,7 +860,8 @@ public class VisualDesignSystem: ObservableObject {
     public init(designSystem: DesignSystem) {
         self.currentTheme = Self.detectSystemTheme()
         self.platformStyle = Self.detectPlatformStyle()
-        self.accessibilitySettings = Self.detectAccessibilitySettings()
+        self.accessibilitySettings = detectAccessibilitySettings()
+        self.usesBuiltInSixLayerDesignSystem = false
         self.designSystem = designSystem
         self.previousTheme = self.currentTheme
     }
@@ -809,29 +874,9 @@ public class VisualDesignSystem: ObservableObject {
     
     /// Check if we're running in a test environment
     /// NSApp.effectiveAppearance can assert/crash in test environments, especially on macOS
-    private static func isTestEnvironment() -> Bool {
-        #if DEBUG
-        // Check for XCTest environment variables
-        let environment = ProcessInfo.processInfo.environment
-        if environment["XCTestConfigurationFilePath"] != nil ||
-           environment["XCTestSessionIdentifier"] != nil ||
-           environment["XCTestBundlePath"] != nil ||
-           NSClassFromString("XCTestCase") != nil {
-            return true
-        }
-        // Check for Swift Testing framework (Testing.Test class)
-        if NSClassFromString("Testing.Test") != nil {
-            return true
-        }
-        return false
-        #else
-        return false
-        #endif
-    }
-    
     private static func detectSystemTheme() -> Theme {
         // In test environments, default to light theme to avoid crashes
-        if isTestEnvironment() {
+        if isAccessibilityDetectionTestEnvironment() {
             return .light
         }
         
@@ -867,45 +912,29 @@ public class VisualDesignSystem: ObservableObject {
         #endif
     }
     
-    private static func detectAccessibilitySettings() -> AccessibilitySettings {
-        #if os(iOS) || os(visionOS)
-        return AccessibilitySettings(
-            voiceOverSupport: UIAccessibility.isVoiceOverRunning,
-            keyboardNavigation: true,
-            highContrastMode: UIAccessibility.isDarkerSystemColorsEnabled,
-            dynamicType: true,
-            preferredContentSize: SixLayerContentSizeCategory.fromSystemPreferredContentSize(),
-            reducedMotion: UIAccessibility.isReduceMotionEnabled,
-            hapticFeedback: true
-        )
-        #elseif os(macOS)
-        return AccessibilitySettings(
-            voiceOverSupport: NSWorkspace.shared.isVoiceOverEnabled,
-            keyboardNavigation: true,
-            highContrastMode: false,
-            dynamicType: true,
-            reducedMotion: false,
-            hapticFeedback: false
-        )
-        #else
-        return AccessibilitySettings()
-        #endif
-    }
-    
-    private func updateTheme() {
+    /// Re-read system theme and accessibility; rebuild built-in typography when content size changes.
+    private func updateFromSystemEnvironment() {
         let newTheme = Self.detectSystemTheme()
+        let newAccessibility = detectAccessibilitySettings()
         let themeChanged = newTheme != previousTheme
+        let accessibilityChanged = newAccessibility != accessibilitySettings
 
         currentTheme = newTheme
-        accessibilitySettings = Self.detectAccessibilitySettings()
-
-        // Update previous theme
+        accessibilitySettings = newAccessibility
         previousTheme = newTheme
 
-        // Trigger theme change callback if theme actually changed
-        if themeChanged {
+        if usesBuiltInSixLayerDesignSystem, accessibilityChanged {
+            designSystem = SixLayerDesignSystem(accessibility: newAccessibility)
+        }
+
+        if themeChanged || accessibilityChanged {
             onThemeChange?()
         }
+    }
+
+    /// Refreshes detected accessibility and rebuilds built-in ``SixLayerDesignSystem`` typography.
+    public func syncAccessibilityFromSystem() {
+        updateFromSystemEnvironment()
     }
 
     /// Switch to a different design system
