@@ -74,7 +74,7 @@ public struct BarcodeOverlayView: View {
             } else {
                 platformVStackContainer(spacing: 8) {
                     Image(systemName: "barcode.viewfinder")
-                        .font(.system(size: 32))
+                        .font(.platformFixedSystem(size: 32)) // overlay chrome: fixed size by design
                         .foregroundColor(.secondary)
                     
                     Text(i18n.localizedString(for: "SixLayerFramework.barcode.noBarcodesDetected"))

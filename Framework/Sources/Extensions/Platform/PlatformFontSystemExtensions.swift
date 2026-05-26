@@ -218,18 +218,58 @@ public extension Font {
     
     // MARK: - Cross-Platform System Font Creation
     
-    /// Create a platform-appropriate system font
+    /// System font at a design-time point size, scaled for Dynamic Type.
     /// - Parameters:
-    ///   - size: The font size in points
-    ///   - weight: The font weight (default: .regular)
-    ///   - design: The font design (default: .default)
-    /// - Returns: A platform-appropriate system font
+    ///   - size: Design-time point size (e.g. empty-state icon at 48pt at `.large`).
+    ///   - weight: Font weight (default: `.regular`).
+    ///   - design: Font design (default: `.default`).
+    ///   - relativeTo: Text style for scaling curve (default: `.body`; use `.largeTitle` for hero icons).
+    ///   - contentSize: Override content size; `nil` uses resolver default / environment.
     static func platformSystem(
+        size: CGFloat,
+        weight: Font.Weight = .regular,
+        design: Font.Design = .default,
+        relativeTo style: SixLayerTextStyle = .body,
+        contentSize: SixLayerContentSizeCategory? = nil
+    ) -> Font {
+        DynamicFontResolver().fontForScaledSystem(
+            designSize: size,
+            relativeTo: style,
+            weight: weight,
+            design: design,
+            contentSize: contentSize
+        )
+    }
+
+    /// Fixed system font that does not scale with Dynamic Type (overlays, camera chrome).
+    static func platformFixedSystem(
         size: CGFloat,
         weight: Font.Weight = .regular,
         design: Font.Design = .default
     ) -> Font {
-        return .system(size: size, weight: weight, design: design)
+        .system(size: size, weight: weight, design: design)
+    }
+}
+
+// MARK: - Decorative icon typography
+
+private struct PlatformDecorativeIconFontModifier: ViewModifier {
+    @Environment(\.dynamicFontResolver) private var resolver
+    let designSize: CGFloat
+    let relativeTo: SixLayerTextStyle
+
+    func body(content: Content) -> some View {
+        content.font(resolver.fontForScaledSystem(designSize: designSize, relativeTo: relativeTo))
+    }
+}
+
+public extension View {
+    /// Dynamic Type–scaled system font for decorative icons (empty states, hero glyphs).
+    func platformDecorativeIconFont(
+        designSize: CGFloat,
+        relativeTo style: SixLayerTextStyle = .largeTitle
+    ) -> some View {
+        modifier(PlatformDecorativeIconFontModifier(designSize: designSize, relativeTo: style))
     }
 }
 
