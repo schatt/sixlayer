@@ -614,7 +614,7 @@ open class Layer4AssistiveVisualAdaptabilityCriterionTests: BaseTestClass {
         )
     }
 
-    #if canImport(MapKit)
+    #if canImport(MapKit) && (os(iOS) || os(macOS))
     @Test @MainActor
     @available(iOS 17.0, macOS 14.0, *)
     func testPlatformMapView_L4_retainsMapSubtreeAcrossDynamicTypeSteps() async {
@@ -939,7 +939,7 @@ open class Layer4AssistiveVisualAdaptabilityCriterionTests: BaseTestClass {
                     }
                 )
         )
-        #if canImport(MapKit)
+        #if canImport(MapKit) && (os(iOS) || os(macOS))
         if #available(iOS 17.0, macOS 14.0, *) {
             let position = Binding.constant(MapCameraPosition.automatic)
             assertLayer4AssistiveVisualAdaptability(

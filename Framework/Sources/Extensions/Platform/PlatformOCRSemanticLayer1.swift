@@ -191,7 +191,7 @@ private struct OCRWithVisualCorrectionWrapper: View {
         let i18n = InternationalizationService()
         return platformVStackContainer(spacing: 16) {
             Image(systemName: "exclamationmark.triangle.fill")
-                .font(.system(size: 48))
+                .platformDecorativeIconFont(designSize: 48)
                 .foregroundColor(.red)
             
             Text(i18n.localizedString(for: "SixLayerFramework.ocr.error"))
@@ -216,7 +216,7 @@ private struct OCRWithVisualCorrectionWrapper: View {
         let i18n = InternationalizationService()
         return platformVStackContainer(spacing: 16) {
             Image(systemName: "doc.text.viewfinder")
-                .font(.system(size: 48))
+                .platformDecorativeIconFont(designSize: 48)
                 .foregroundColor(.blue)
             
             Text(i18n.localizedString(for: "SixLayerFramework.ocr.readyToProcess"))

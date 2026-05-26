@@ -428,7 +428,7 @@ public extension CrossPlatformNavigation {
     static func platformEmptyDetailView() -> some View {
         VStack {
             Image(systemName: "doc.text")
-                .font(.system(size: 48))
+                .platformDecorativeIconFont(designSize: 48)
                 .foregroundColor(.secondary)
             
             let i18n = InternationalizationService()

@@ -1,5 +1,59 @@
 import Foundation
 import SwiftUI
+#if os(iOS)
+import UIKit
+#elseif os(macOS)
+import AppKit
+#endif
+
+private func resolvedTypographyContentSize(for accessibility: AccessibilitySettings) -> SixLayerContentSizeCategory {
+    accessibility.dynamicType ? accessibility.preferredContentSize : .large
+}
+
+/// Whether XCTest / Swift Testing is active (avoid AppKit/UIKit appearance APIs).
+private func isAccessibilityDetectionTestEnvironment() -> Bool {
+    #if DEBUG
+    let environment = ProcessInfo.processInfo.environment
+    if environment["XCTestConfigurationFilePath"] != nil ||
+       environment["XCTestSessionIdentifier"] != nil ||
+       environment["XCTestBundlePath"] != nil ||
+       NSClassFromString("XCTestCase") != nil {
+        return true
+    }
+    if NSClassFromString("Testing.Test") != nil {
+        return true
+    }
+    return false
+    #else
+    return false
+    #endif
+}
+
+/// System accessibility profile for design-token generation.
+private func detectAccessibilitySettings() -> AccessibilitySettings {
+    #if os(iOS) || os(visionOS)
+    return AccessibilitySettings(
+        voiceOverSupport: UIAccessibility.isVoiceOverRunning,
+        keyboardNavigation: true,
+        highContrastMode: UIAccessibility.isDarkerSystemColorsEnabled,
+        dynamicType: true,
+        preferredContentSize: SixLayerContentSizeCategory.fromSystemPreferredContentSize(),
+        reducedMotion: UIAccessibility.isReduceMotionEnabled,
+        hapticFeedback: true
+    )
+    #elseif os(macOS)
+    return AccessibilitySettings(
+        voiceOverSupport: NSWorkspace.shared.isVoiceOverEnabled,
+        keyboardNavigation: true,
+        highContrastMode: false,
+        dynamicType: true,
+        reducedMotion: false,
+        hapticFeedback: false
+    )
+    #else
+    return AccessibilitySettings()
+    #endif
+}
 
 // MARK: - Design System Bridge
 // Comprehensive theming system that maps external design tokens to SixLayer components
@@ -268,13 +322,15 @@ public struct SixLayerDesignSystem: DesignSystem {
     private let componentStatesTokens: DesignTokens.ComponentStates
 
     public init(
+        accessibility: AccessibilitySettings? = nil,
         colorTokens: [Theme: DesignTokens.Colors]? = nil,
         typographyTokens: [Theme: DesignTokens.Typography]? = nil,
         spacingTokens: DesignTokens.Spacing? = nil,
         componentStatesTokens: DesignTokens.ComponentStates? = nil
     ) {
+        let resolvedAccessibility = accessibility ?? detectAccessibilitySettings()
         self.colorTokens = colorTokens ?? Self.defaultColorTokens()
-        self.typographyTokens = typographyTokens ?? Self.defaultTypographyTokens()
+        self.typographyTokens = typographyTokens ?? Self.typographyTokensByTheme(for: resolvedAccessibility)
         self.spacingTokens = spacingTokens ?? Self.defaultSpacingTokens()
         self.componentStatesTokens = componentStatesTokens ?? Self.defaultComponentStatesTokens()
     }
@@ -342,32 +398,44 @@ public struct SixLayerDesignSystem: DesignSystem {
         )
     }
 
-    private static func defaultTypographyTokens() -> [Theme: DesignTokens.Typography] {
+    private static func typographyTokensByTheme(for accessibility: AccessibilitySettings) -> [Theme: DesignTokens.Typography] {
         let platform = Self.detectPlatformStyle()
-        let accessibility = AccessibilitySettings()
-
         return [
             .light: Self.createTypographyForTheme(.light, platform: platform, accessibility: accessibility),
             .dark: Self.createTypographyForTheme(.dark, platform: platform, accessibility: accessibility)
         ]
     }
 
-    private static func createTypographyForTheme(_ theme: Theme, platform: PlatformStyle, accessibility: AccessibilitySettings) -> DesignTokens.Typography {
-        let scaleFactor = accessibility.typographyScaleFactor
+    private static func defaultTypographyTokens() -> [Theme: DesignTokens.Typography] {
+        typographyTokensByTheme(for: detectAccessibilitySettings())
+    }
 
+    private static func createTypographyForTheme(_ theme: Theme, platform: PlatformStyle, accessibility: AccessibilitySettings) -> DesignTokens.Typography {
+        let _ = theme
+        let _ = platform
+        let contentSize = resolvedTypographyContentSize(for: accessibility)
+        let resolver = DynamicFontResolver(defaultContentSize: contentSize)
         return DesignTokens.Typography(
-            largeTitle: Font.platformLargeTitle.scale(scaleFactor),
-            title1: Font.platformTitle.scale(scaleFactor),
-            title2: Font.platformTitle2.scale(scaleFactor),
-            title3: Font.platformTitle3.scale(scaleFactor),
-            headline: Font.platformHeadline.scale(scaleFactor),
-            body: Font.platformBody.scale(scaleFactor),
-            callout: Font.platformCallout.scale(scaleFactor),
-            subheadline: Font.platformSubheadline.scale(scaleFactor),
-            footnote: Font.platformFootnote.scale(scaleFactor),
-            caption1: Font.platformCaption.scale(scaleFactor),
-            caption2: Font.platformCaption2.scale(scaleFactor)
+            largeTitle: resolver.font(for: .largeTitle, contentSize: contentSize),
+            title1: resolver.font(for: .title1, contentSize: contentSize),
+            title2: resolver.font(for: .title2, contentSize: contentSize),
+            title3: resolver.font(for: .title3, contentSize: contentSize),
+            headline: resolver.font(for: .headline, contentSize: contentSize),
+            body: resolver.font(for: .body, contentSize: contentSize),
+            callout: resolver.font(for: .callout, contentSize: contentSize),
+            subheadline: resolver.font(for: .subheadline, contentSize: contentSize),
+            footnote: resolver.font(for: .footnote, contentSize: contentSize),
+            caption1: resolver.font(for: .caption1, contentSize: contentSize),
+            caption2: resolver.font(for: .caption2, contentSize: contentSize)
         )
+    }
+
+    /// Typography tokens for a theme and accessibility profile (defaults, tests, app overrides).
+    public static func typographyTokens(
+        for theme: Theme = .light,
+        accessibility: AccessibilitySettings
+    ) -> DesignTokens.Typography {
+        createTypographyForTheme(theme, platform: detectPlatformStyle(), accessibility: accessibility)
     }
 
     private static func defaultSpacingTokens() -> DesignTokens.Spacing {
@@ -533,23 +601,23 @@ public struct HighContrastDesignSystem: DesignSystem {
     }
 
     private static func createHighContrastTypographyTokens() -> [Theme: DesignTokens.Typography] {
-        let _ = Self.detectPlatformStyle() // Reserved for future platform-specific typography
-        let accessibility = AccessibilitySettings()
-        let scaleFactor = accessibility.typographyScaleFactor
+        let accessibility = detectAccessibilitySettings()
+        let contentSize = resolvedTypographyContentSize(for: accessibility)
+        let resolver = DynamicFontResolver(defaultContentSize: contentSize)
 
         // High contrast typography - bolder weights for better readability
         let baseTypography = DesignTokens.Typography(
-            largeTitle: Font.platformLargeTitle.weight(.black).scale(scaleFactor),
-            title1: Font.platformTitle.weight(.black).scale(scaleFactor),
-            title2: Font.platformTitle2.weight(.black).scale(scaleFactor),
-            title3: Font.platformTitle3.weight(.bold).scale(scaleFactor),
-            headline: Font.platformHeadline.weight(.bold).scale(scaleFactor),
-            body: Font.platformBody.weight(.semibold).scale(scaleFactor),
-            callout: Font.platformCallout.weight(.semibold).scale(scaleFactor),
-            subheadline: Font.platformSubheadline.weight(.semibold).scale(scaleFactor),
-            footnote: Font.platformFootnote.weight(.semibold).scale(scaleFactor),
-            caption1: Font.platformCaption.weight(.semibold).scale(scaleFactor),
-            caption2: Font.platformCaption2.weight(.semibold).scale(scaleFactor)
+            largeTitle: resolver.font(for: .largeTitle, contentSize: contentSize).weight(.black),
+            title1: resolver.font(for: .title1, contentSize: contentSize).weight(.black),
+            title2: resolver.font(for: .title2, contentSize: contentSize).weight(.black),
+            title3: resolver.font(for: .title3, contentSize: contentSize).weight(.bold),
+            headline: resolver.font(for: .headline, contentSize: contentSize).weight(.bold),
+            body: resolver.font(for: .body, contentSize: contentSize).weight(.semibold),
+            callout: resolver.font(for: .callout, contentSize: contentSize).weight(.semibold),
+            subheadline: resolver.font(for: .subheadline, contentSize: contentSize).weight(.semibold),
+            footnote: resolver.font(for: .footnote, contentSize: contentSize).weight(.semibold),
+            caption1: resolver.font(for: .caption1, contentSize: contentSize).weight(.semibold),
+            caption2: resolver.font(for: .caption2, contentSize: contentSize).weight(.semibold)
         )
 
         return [.light: baseTypography, .dark: baseTypography]
@@ -742,12 +810,17 @@ public class VisualDesignSystem: ObservableObject {
 
     /// Previous theme for change detection
     private var previousTheme: Theme = .light
-    
+
+    /// When true, ``designSystem`` is rebuilt when detected accessibility changes.
+    private let usesBuiltInSixLayerDesignSystem: Bool
+
     private init() {
+        let detectedAccessibility = detectAccessibilitySettings()
         self.currentTheme = Self.detectSystemTheme()
         self.platformStyle = Self.detectPlatformStyle()
-        self.accessibilitySettings = Self.detectAccessibilitySettings()
-        self.designSystem = SixLayerDesignSystem()
+        self.accessibilitySettings = detectedAccessibility
+        self.usesBuiltInSixLayerDesignSystem = true
+        self.designSystem = SixLayerDesignSystem(accessibility: detectedAccessibility)
         self.previousTheme = self.currentTheme
 
         // Listen for system theme changes
@@ -757,7 +830,7 @@ public class VisualDesignSystem: ObservableObject {
             queue: .main
         ) { [weak self] _ in
             Task { @MainActor in
-                self?.updateTheme()
+                self?.updateFromSystemEnvironment()
             }
         }
 
@@ -769,7 +842,16 @@ public class VisualDesignSystem: ObservableObject {
             queue: .main
         ) { [weak self] _ in
             Task { @MainActor in
-                self?.updateTheme()
+                self?.updateFromSystemEnvironment()
+            }
+        }
+        NotificationCenter.default.addObserver(
+            forName: UIContentSizeCategory.didChangeNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor in
+                self?.updateFromSystemEnvironment()
             }
         }
         #endif
@@ -779,7 +861,8 @@ public class VisualDesignSystem: ObservableObject {
     public init(designSystem: DesignSystem) {
         self.currentTheme = Self.detectSystemTheme()
         self.platformStyle = Self.detectPlatformStyle()
-        self.accessibilitySettings = Self.detectAccessibilitySettings()
+        self.accessibilitySettings = detectAccessibilitySettings()
+        self.usesBuiltInSixLayerDesignSystem = false
         self.designSystem = designSystem
         self.previousTheme = self.currentTheme
     }
@@ -792,29 +875,9 @@ public class VisualDesignSystem: ObservableObject {
     
     /// Check if we're running in a test environment
     /// NSApp.effectiveAppearance can assert/crash in test environments, especially on macOS
-    private static func isTestEnvironment() -> Bool {
-        #if DEBUG
-        // Check for XCTest environment variables
-        let environment = ProcessInfo.processInfo.environment
-        if environment["XCTestConfigurationFilePath"] != nil ||
-           environment["XCTestSessionIdentifier"] != nil ||
-           environment["XCTestBundlePath"] != nil ||
-           NSClassFromString("XCTestCase") != nil {
-            return true
-        }
-        // Check for Swift Testing framework (Testing.Test class)
-        if NSClassFromString("Testing.Test") != nil {
-            return true
-        }
-        return false
-        #else
-        return false
-        #endif
-    }
-    
     private static func detectSystemTheme() -> Theme {
         // In test environments, default to light theme to avoid crashes
-        if isTestEnvironment() {
+        if isAccessibilityDetectionTestEnvironment() {
             return .light
         }
         
@@ -850,44 +913,29 @@ public class VisualDesignSystem: ObservableObject {
         #endif
     }
     
-    private static func detectAccessibilitySettings() -> AccessibilitySettings {
-        #if os(iOS) || os(visionOS)
-        return AccessibilitySettings(
-            voiceOverSupport: UIAccessibility.isVoiceOverRunning,
-            keyboardNavigation: true,
-            highContrastMode: UIAccessibility.isDarkerSystemColorsEnabled,
-            dynamicType: true,
-            reducedMotion: UIAccessibility.isReduceMotionEnabled,
-            hapticFeedback: true
-        )
-        #elseif os(macOS)
-        return AccessibilitySettings(
-            voiceOverSupport: NSWorkspace.shared.isVoiceOverEnabled,
-            keyboardNavigation: true,
-            highContrastMode: false,
-            dynamicType: true,
-            reducedMotion: false,
-            hapticFeedback: false
-        )
-        #else
-        return AccessibilitySettings()
-        #endif
-    }
-    
-    private func updateTheme() {
+    /// Re-read system theme and accessibility; rebuild built-in typography when content size changes.
+    private func updateFromSystemEnvironment() {
         let newTheme = Self.detectSystemTheme()
+        let newAccessibility = detectAccessibilitySettings()
         let themeChanged = newTheme != previousTheme
+        let accessibilityChanged = newAccessibility != accessibilitySettings
 
         currentTheme = newTheme
-        accessibilitySettings = Self.detectAccessibilitySettings()
-
-        // Update previous theme
+        accessibilitySettings = newAccessibility
         previousTheme = newTheme
 
-        // Trigger theme change callback if theme actually changed
-        if themeChanged {
+        if usesBuiltInSixLayerDesignSystem, accessibilityChanged {
+            designSystem = SixLayerDesignSystem(accessibility: newAccessibility)
+        }
+
+        if themeChanged || accessibilityChanged {
             onThemeChange?()
         }
+    }
+
+    /// Refreshes detected accessibility and rebuilds built-in ``SixLayerDesignSystem`` typography.
+    public func syncAccessibilityFromSystem() {
+        updateFromSystemEnvironment()
     }
 
     /// Switch to a different design system
@@ -1063,13 +1111,14 @@ public struct TypographySystem: Sendable {
 // MARK: - Accessibility Settings Extension
 
 public extension AccessibilitySettings {
+    /// Scale factor for fixed-size typography; semantic tokens use ``DynamicFontResolver`` directly.
     var typographyScaleFactor: CGFloat {
-        // Simplified scale factor for now
-        return 1.0
+        guard dynamicType else { return 1.0 }
+        return preferredContentSize.typographyScaleFactor
     }
 }
 
-public enum ContentSizeCategory: String, CaseIterable {
+public enum SixLayerContentSizeCategory: String, CaseIterable, Sendable {
     case extraSmall = "extraSmall"
     case small = "small"
     case medium = "medium"
@@ -1082,6 +1131,70 @@ public enum ContentSizeCategory: String, CaseIterable {
     case accessibilityExtraLarge = "accessibilityExtraLarge"
     case accessibilityExtraExtraLarge = "accessibilityExtraExtraLarge"
     case accessibilityExtraExtraExtraLarge = "accessibilityExtraExtraExtraLarge"
+}
+
+@available(*, deprecated, renamed: "SixLayerContentSizeCategory")
+public typealias ContentSizeCategory = SixLayerContentSizeCategory
+
+public extension SixLayerContentSizeCategory {
+    /// Relative scale vs `.large` (1.0). Used on macOS; iOS uses UIKit preferred fonts via ``DynamicFontResolver``.
+    var typographyScaleFactor: CGFloat {
+        switch self {
+        case .extraSmall: return 0.82
+        case .small: return 0.88
+        case .medium: return 0.94
+        case .large: return 1.0
+        case .extraLarge: return 1.06
+        case .extraExtraLarge: return 1.12
+        case .extraExtraExtraLarge: return 1.18
+        case .accessibilityMedium: return 1.31
+        case .accessibilityLarge: return 1.44
+        case .accessibilityExtraLarge: return 1.64
+        case .accessibilityExtraExtraLarge: return 1.84
+        case .accessibilityExtraExtraExtraLarge: return 2.04
+        }
+    }
+
+    #if os(iOS)
+    var uiContentSizeCategory: UIContentSizeCategory {
+        switch self {
+        case .extraSmall: return .extraSmall
+        case .small: return .small
+        case .medium: return .medium
+        case .large: return .large
+        case .extraLarge: return .extraLarge
+        case .extraExtraLarge: return .extraExtraLarge
+        case .extraExtraExtraLarge: return .extraExtraExtraLarge
+        case .accessibilityMedium: return .accessibilityMedium
+        case .accessibilityLarge: return .accessibilityLarge
+        case .accessibilityExtraLarge: return .accessibilityExtraLarge
+        case .accessibilityExtraExtraLarge: return .accessibilityExtraExtraLarge
+        case .accessibilityExtraExtraExtraLarge: return .accessibilityExtraExtraExtraLarge
+        }
+    }
+
+    static func fromSystemPreferredContentSize() -> SixLayerContentSizeCategory {
+        from(uiContentSizeCategory: UITraitCollection.current.preferredContentSizeCategory)
+    }
+
+    static func from(uiContentSizeCategory category: UIContentSizeCategory) -> SixLayerContentSizeCategory {
+        switch category {
+        case .extraSmall: return .extraSmall
+        case .small: return .small
+        case .medium: return .medium
+        case .large: return .large
+        case .extraLarge: return .extraLarge
+        case .extraExtraLarge: return .extraExtraLarge
+        case .extraExtraExtraLarge: return .extraExtraExtraLarge
+        case .accessibilityMedium: return .accessibilityMedium
+        case .accessibilityLarge: return .accessibilityLarge
+        case .accessibilityExtraLarge: return .accessibilityExtraLarge
+        case .accessibilityExtraExtraLarge: return .accessibilityExtraExtraLarge
+        case .accessibilityExtraExtraExtraLarge: return .accessibilityExtraExtraExtraLarge
+        default: return .large
+        }
+    }
+    #endif
 }
 
 // MARK: - View Extensions
@@ -1185,12 +1298,3 @@ public extension EnvironmentValues {
     }
 }
 
-// MARK: - Font Extension
-
-extension Font {
-    func scale(_ factor: CGFloat) -> Font {
-        // This is a simplified scaling approach
-        // In a real implementation, you'd want to use Dynamic Type
-        return self
-    }
-}

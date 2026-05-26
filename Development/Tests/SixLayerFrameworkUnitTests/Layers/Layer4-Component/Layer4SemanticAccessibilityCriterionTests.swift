@@ -738,7 +738,7 @@ open class Layer4SemanticAccessibilityCriterionTests: BaseTestClass {
 
     // MARK: - Map (Issue #254)
 
-    #if canImport(MapKit)
+    #if canImport(MapKit) && (os(iOS) || os(macOS))
     @Test @MainActor
     @available(iOS 17.0, macOS 14.0, *)
     func testPlatformMapView_L4_exposesNamedComplianceOnHostedTree() async {
@@ -861,7 +861,7 @@ open class Layer4SemanticAccessibilityCriterionTests: BaseTestClass {
         #expect(named, "platformContextMenu_L4 should attach named automaticCompliance to the hosted anchor subtree")
     }
 
-    #if canImport(MapKit)
+    #if canImport(MapKit) && (os(iOS) || os(macOS))
     @Test @MainActor
     @available(iOS 17.0, macOS 14.0, *)
     func testPlatformMapViewWithCurrentLocation_L4_exposesNamedComplianceOnHostedTree() async {

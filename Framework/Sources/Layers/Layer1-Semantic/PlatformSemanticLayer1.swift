@@ -1765,7 +1765,7 @@ public struct CollectionEmptyStateView: View {
         platformVStackContainer(spacing: 20) {
             // Icon based on data type and context
             Image(systemName: emptyStateIcon)
-                .font(.system(size: 48))
+                .platformDecorativeIconFont(designSize: 48)
                 .foregroundColor(.secondary)
             
             platformVStackContainer(spacing: 8) {
