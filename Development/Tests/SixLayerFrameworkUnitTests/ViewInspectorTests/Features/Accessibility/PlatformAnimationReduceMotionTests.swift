@@ -6,27 +6,33 @@ import Testing
 @Suite("Platform Animation Reduce Motion")
 open class PlatformAnimationReduceMotionTests: BaseTestClass {
 
-    @Test @MainActor func testPlatformAnimationHostsWithReduceMotionEnvironment() async {
-        initializeTestConfig()
-        let view = Text("Animated")
-            .platformAnimation(.easeInOut)
-            .environment(\.accessibilityReduceMotion, true)
-        verifyViewIsHostable(view, description: "platformAnimation with reduce motion environment")
+    @MainActor
+    private func verifyViewIsHostable<V: View>(_ view: V, description: String) {
+        _ = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
+        #expect(Bool(true), "\(description) should be hostable")
     }
 
-    @Test @MainActor func testPlatformAnimationHostsWithoutReduceMotionEnvironment() async {
+    @Test @MainActor func testPlatformAnimationHostsWithReduceMotionOverride() async {
         initializeTestConfig()
-        let view = Text("Animated")
-            .platformAnimation(.easeInOut)
-            .environment(\.accessibilityReduceMotion, false)
-        verifyViewIsHostable(view, description: "platformAnimation without reduce motion")
+        PlatformReduceMotionPreference.withTestOverride(true) {
+            let view = Text("Animated").platformAnimation(.easeInOut)
+            verifyViewIsHostable(view, description: "platformAnimation with reduce motion override")
+        }
     }
 
-    @Test @MainActor func testHigAnimationCategoryHostsWithReduceMotionEnvironment() async {
+    @Test @MainActor func testPlatformAnimationHostsWithoutReduceMotionOverride() async {
         initializeTestConfig()
-        let view = Text("Category")
-            .higAnimationCategory(.easeInOut)
-            .environment(\.accessibilityReduceMotion, true)
-        verifyViewIsHostable(view, description: "higAnimationCategory with reduce motion environment")
+        PlatformReduceMotionPreference.withTestOverride(false) {
+            let view = Text("Animated").platformAnimation(.easeInOut)
+            verifyViewIsHostable(view, description: "platformAnimation without reduce motion override")
+        }
+    }
+
+    @Test @MainActor func testHigAnimationCategoryHostsWithReduceMotionOverride() async {
+        initializeTestConfig()
+        PlatformReduceMotionPreference.withTestOverride(true) {
+            let view = Text("Category").higAnimationCategory(.easeInOut)
+            verifyViewIsHostable(view, description: "higAnimationCategory with reduce motion override")
+        }
     }
 }
