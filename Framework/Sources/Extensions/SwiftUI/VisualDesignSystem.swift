@@ -356,21 +356,35 @@ public struct SixLayerDesignSystem: DesignSystem {
     }
 
     private static func createTypographyForTheme(_ theme: Theme, platform: PlatformStyle, accessibility: AccessibilitySettings) -> DesignTokens.Typography {
-        let scaleFactor = accessibility.typographyScaleFactor
-
+        let _ = theme
+        let _ = platform
+        let contentSize = resolvedContentSize(for: accessibility)
+        let resolver = DynamicFontResolver(defaultContentSize: contentSize)
         return DesignTokens.Typography(
-            largeTitle: Font.platformLargeTitle.scale(scaleFactor),
-            title1: Font.platformTitle.scale(scaleFactor),
-            title2: Font.platformTitle2.scale(scaleFactor),
-            title3: Font.platformTitle3.scale(scaleFactor),
-            headline: Font.platformHeadline.scale(scaleFactor),
-            body: Font.platformBody.scale(scaleFactor),
-            callout: Font.platformCallout.scale(scaleFactor),
-            subheadline: Font.platformSubheadline.scale(scaleFactor),
-            footnote: Font.platformFootnote.scale(scaleFactor),
-            caption1: Font.platformCaption.scale(scaleFactor),
-            caption2: Font.platformCaption2.scale(scaleFactor)
+            largeTitle: resolver.font(for: .largeTitle, contentSize: contentSize),
+            title1: resolver.font(for: .title1, contentSize: contentSize),
+            title2: resolver.font(for: .title2, contentSize: contentSize),
+            title3: resolver.font(for: .title3, contentSize: contentSize),
+            headline: resolver.font(for: .headline, contentSize: contentSize),
+            body: resolver.font(for: .body, contentSize: contentSize),
+            callout: resolver.font(for: .callout, contentSize: contentSize),
+            subheadline: resolver.font(for: .subheadline, contentSize: contentSize),
+            footnote: resolver.font(for: .footnote, contentSize: contentSize),
+            caption1: resolver.font(for: .caption1, contentSize: contentSize),
+            caption2: resolver.font(for: .caption2, contentSize: contentSize)
         )
+    }
+
+    private static func resolvedContentSize(for accessibility: AccessibilitySettings) -> SixLayerContentSizeCategory {
+        accessibility.dynamicType ? accessibility.preferredContentSize : .large
+    }
+
+    /// Typography tokens for a theme and accessibility profile (defaults, tests, app overrides).
+    public static func typographyTokens(
+        for theme: Theme = .light,
+        accessibility: AccessibilitySettings
+    ) -> DesignTokens.Typography {
+        createTypographyForTheme(theme, platform: detectPlatformStyle(), accessibility: accessibility)
     }
 
     private static func defaultSpacingTokens() -> DesignTokens.Spacing {
@@ -536,23 +550,23 @@ public struct HighContrastDesignSystem: DesignSystem {
     }
 
     private static func createHighContrastTypographyTokens() -> [Theme: DesignTokens.Typography] {
-        let _ = Self.detectPlatformStyle() // Reserved for future platform-specific typography
         let accessibility = AccessibilitySettings()
-        let scaleFactor = accessibility.typographyScaleFactor
+        let contentSize = resolvedContentSize(for: accessibility)
+        let resolver = DynamicFontResolver(defaultContentSize: contentSize)
 
         // High contrast typography - bolder weights for better readability
         let baseTypography = DesignTokens.Typography(
-            largeTitle: Font.platformLargeTitle.weight(.black).scale(scaleFactor),
-            title1: Font.platformTitle.weight(.black).scale(scaleFactor),
-            title2: Font.platformTitle2.weight(.black).scale(scaleFactor),
-            title3: Font.platformTitle3.weight(.bold).scale(scaleFactor),
-            headline: Font.platformHeadline.weight(.bold).scale(scaleFactor),
-            body: Font.platformBody.weight(.semibold).scale(scaleFactor),
-            callout: Font.platformCallout.weight(.semibold).scale(scaleFactor),
-            subheadline: Font.platformSubheadline.weight(.semibold).scale(scaleFactor),
-            footnote: Font.platformFootnote.weight(.semibold).scale(scaleFactor),
-            caption1: Font.platformCaption.weight(.semibold).scale(scaleFactor),
-            caption2: Font.platformCaption2.weight(.semibold).scale(scaleFactor)
+            largeTitle: resolver.font(for: .largeTitle, contentSize: contentSize).weight(.black),
+            title1: resolver.font(for: .title1, contentSize: contentSize).weight(.black),
+            title2: resolver.font(for: .title2, contentSize: contentSize).weight(.black),
+            title3: resolver.font(for: .title3, contentSize: contentSize).weight(.bold),
+            headline: resolver.font(for: .headline, contentSize: contentSize).weight(.bold),
+            body: resolver.font(for: .body, contentSize: contentSize).weight(.semibold),
+            callout: resolver.font(for: .callout, contentSize: contentSize).weight(.semibold),
+            subheadline: resolver.font(for: .subheadline, contentSize: contentSize).weight(.semibold),
+            footnote: resolver.font(for: .footnote, contentSize: contentSize).weight(.semibold),
+            caption1: resolver.font(for: .caption1, contentSize: contentSize).weight(.semibold),
+            caption2: resolver.font(for: .caption2, contentSize: contentSize).weight(.semibold)
         )
 
         return [.light: baseTypography, .dark: baseTypography]
@@ -860,6 +874,7 @@ public class VisualDesignSystem: ObservableObject {
             keyboardNavigation: true,
             highContrastMode: UIAccessibility.isDarkerSystemColorsEnabled,
             dynamicType: true,
+            preferredContentSize: SixLayerContentSizeCategory.fromSystemPreferredContentSize(),
             reducedMotion: UIAccessibility.isReduceMotionEnabled,
             hapticFeedback: true
         )
@@ -1066,9 +1081,10 @@ public struct TypographySystem: Sendable {
 // MARK: - Accessibility Settings Extension
 
 public extension AccessibilitySettings {
+    /// Scale factor for fixed-size typography; semantic tokens use ``DynamicFontResolver`` directly.
     var typographyScaleFactor: CGFloat {
-        // Simplified scale factor for now
-        return 1.0
+        guard dynamicType else { return 1.0 }
+        return preferredContentSize.typographyScaleFactor
     }
 }
 
@@ -1124,6 +1140,28 @@ public extension SixLayerContentSizeCategory {
         case .accessibilityExtraLarge: return .accessibilityExtraLarge
         case .accessibilityExtraExtraLarge: return .accessibilityExtraExtraLarge
         case .accessibilityExtraExtraExtraLarge: return .accessibilityExtraExtraExtraLarge
+        }
+    }
+
+    static func fromSystemPreferredContentSize() -> SixLayerContentSizeCategory {
+        from(uiContentSizeCategory: UITraitCollection.current.preferredContentSizeCategory)
+    }
+
+    static func from(uiContentSizeCategory category: UIContentSizeCategory) -> SixLayerContentSizeCategory {
+        switch category {
+        case .extraSmall: return .extraSmall
+        case .small: return .small
+        case .medium: return .medium
+        case .large: return .large
+        case .extraLarge: return .extraLarge
+        case .extraExtraLarge: return .extraExtraLarge
+        case .extraExtraExtraLarge: return .extraExtraExtraLarge
+        case .accessibilityMedium: return .accessibilityMedium
+        case .accessibilityLarge: return .accessibilityLarge
+        case .accessibilityExtraLarge: return .accessibilityExtraLarge
+        case .accessibilityExtraExtraLarge: return .accessibilityExtraExtraLarge
+        case .accessibilityExtraExtraExtraLarge: return .accessibilityExtraExtraExtraLarge
+        default: return .large
         }
     }
     #endif
@@ -1230,12 +1268,3 @@ public extension EnvironmentValues {
     }
 }
 
-// MARK: - Font Extension
-
-extension Font {
-    func scale(_ factor: CGFloat) -> Font {
-        // This is a simplified scaling approach
-        // In a real implementation, you'd want to use Dynamic Type
-        return self
-    }
-}
