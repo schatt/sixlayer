@@ -4,7 +4,7 @@ import SwiftUI
 // MARK: - Accessibility Settings Types
 
 /// Accessibility settings configuration
-public struct AccessibilitySettings: Sendable {
+public struct AccessibilitySettings: Sendable, Equatable {
     public var voiceOverSupport: Bool
     public var keyboardNavigation: Bool
     public var highContrastMode: Bool
