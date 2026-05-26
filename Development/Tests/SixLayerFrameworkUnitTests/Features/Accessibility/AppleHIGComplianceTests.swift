@@ -225,15 +225,15 @@ open class AppleHIGComplianceTests: BaseTestClass {
         // When: Accessibility system state is created from system checker
         let state = SixLayerFramework.AccessibilitySystemState(from: systemState)
         
-        // Then: Should reflect system state
-        #expect(!state.isVoiceOverRunning)
-        #expect(!state.isDarkerSystemColorsEnabled)
-        #expect(!state.isReduceTransparencyEnabled)
-        #expect(!state.isHighContrastEnabled)
-        #expect(!state.isReducedMotionEnabled)
-        #expect(!state.hasKeyboardSupport)
-        #expect(!state.hasFullKeyboardAccess)
-        #expect(!state.hasSwitchControl)
+        // Then: Copy preserves the source snapshot
+        #expect(state.isVoiceOverRunning == systemState.isVoiceOverRunning)
+        #expect(state.isDarkerSystemColorsEnabled == systemState.isDarkerSystemColorsEnabled)
+        #expect(state.isReduceTransparencyEnabled == systemState.isReduceTransparencyEnabled)
+        #expect(state.isHighContrastEnabled == systemState.isHighContrastEnabled)
+        #expect(state.isReducedMotionEnabled == systemState.isReducedMotionEnabled)
+        #expect(state.hasKeyboardSupport == systemState.hasKeyboardSupport)
+        #expect(state.hasFullKeyboardAccess == systemState.hasFullKeyboardAccess)
+        #expect(state.hasSwitchControl == systemState.hasSwitchControl)
     }
     
     // MARK: - HIG Recommendation Tests
