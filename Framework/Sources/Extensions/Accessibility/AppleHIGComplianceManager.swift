@@ -621,17 +621,16 @@ public struct HIGTypographySystem {
     public let footnote: Font
     public let caption: Font
     
-    public init(for platform: SixLayerPlatform) {
-        // Font styles are consistent across all Apple platforms
-        // Removed redundant switch statement (Issue #140)
-            self.largeTitle = .largeTitle
-            self.title = .title
-            self.headline = .headline
-            self.body = .body
-            self.callout = .callout
-            self.subheadline = .subheadline
-            self.footnote = .footnote
-            self.caption = .caption
+    public init(for platform: SixLayerPlatform, contentSize: SixLayerContentSizeCategory? = nil) {
+        let resolver = DynamicFontResolver(defaultContentSize: contentSize ?? .large)
+        self.largeTitle = resolver.font(for: .largeTitle, contentSize: contentSize)
+        self.title = resolver.font(for: .title1, contentSize: contentSize)
+        self.headline = resolver.font(for: .headline, contentSize: contentSize)
+        self.body = resolver.font(for: .body, contentSize: contentSize)
+        self.callout = resolver.font(for: .callout, contentSize: contentSize)
+        self.subheadline = resolver.font(for: .subheadline, contentSize: contentSize)
+        self.footnote = resolver.font(for: .footnote, contentSize: contentSize)
+        self.caption = resolver.font(for: .caption1, contentSize: contentSize)
     }
 }
 
