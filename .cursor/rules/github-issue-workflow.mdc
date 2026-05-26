@@ -53,7 +53,7 @@ See [strict-tdd-definition.mdc](mdc:.cursor/rules/strict-tdd-definition.mdc) →
 When issue-linked work used a **`wip/<issue-slug>`** branch (often in a **temp worktree**) and lands on **`next`** (not necessarily `main`), **do not close the issue until** this sequence is finished; then post the **final** comment and close. If no temp worktree was used, **skip step 4** and state that explicitly in the closing comment.
 
 1. **Merge `next` into `wip/...`** (in the worktree or equivalent checkout), resolve conflicts, commit the merge if needed, push.
-2. **Merge `wip/...` into `next`** in the primary clone, push `next` (`git push all next` or repo convention).
+2. **Merge `wip/...` into `next`** in the primary clone with **`git merge --no-ff`** (never fast-forward — see [no-fast-forward-merges.mdc](mdc:.cursor/rules/no-fast-forward-merges.mdc)), push `next` (`git push all next` or repo convention).
 3. **Rename branch** `wip/<slug>` → **`done/<slug>`** (same history), **`git push all done/<slug>`**, then **`git push all --delete wip/<slug>`** on remotes that still carry the old name (retain history on `done/`, same issue — do not silently drop unpushed commits).
 4. **`git worktree remove <path>`** for the dedicated worktree.
 5. **Then** finalize GitHub state: **`gh issue edit`** replaces the issue body with the **Final Record** (mandatory section below). Add a **`gh issue comment`** (same `--body-file` hygiene) documenting steps 1–4: merge SHAs, `next`/`done/` tips, **worktree path removed**, pushes. **`gh issue close --reason completed`**. **Order:** edits and comment **before** close (close last). If the issue was closed early by mistake, **reopen**, post the closure comment, then close again.
