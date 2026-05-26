@@ -9,6 +9,7 @@ public struct AccessibilitySettings: Sendable {
     public var keyboardNavigation: Bool
     public var highContrastMode: Bool
     public var dynamicType: Bool
+    public var preferredContentSize: SixLayerContentSizeCategory
     public var reducedMotion: Bool
     public var hapticFeedback: Bool
     
@@ -17,6 +18,7 @@ public struct AccessibilitySettings: Sendable {
         keyboardNavigation: Bool = true,
         highContrastMode: Bool = true,
         dynamicType: Bool = true,
+        preferredContentSize: SixLayerContentSizeCategory = .large,
         reducedMotion: Bool = true,
         hapticFeedback: Bool = true
     ) {
@@ -24,6 +26,7 @@ public struct AccessibilitySettings: Sendable {
         self.keyboardNavigation = keyboardNavigation
         self.highContrastMode = highContrastMode
         self.dynamicType = dynamicType
+        self.preferredContentSize = preferredContentSize
         self.reducedMotion = reducedMotion
         self.hapticFeedback = hapticFeedback
     }
