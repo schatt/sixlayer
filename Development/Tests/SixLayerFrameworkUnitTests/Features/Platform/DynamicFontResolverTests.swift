@@ -18,43 +18,34 @@ import AppKit
 @Suite(.serialized)
 struct DynamicFontResolverTests {
 
-    // MARK: - iOS / macOS metrics
-
-    #if os(iOS)
-    private func bodyPointSize(contentSize: SixLayerContentSizeCategory) -> CGFloat {
-        let resolver = DynamicFontResolver(defaultContentSize: contentSize)
+    #if os(iOS) || os(macOS)
+    private func bodyPointSize(resolver: DynamicFontResolver, contentSize: SixLayerContentSizeCategory?) -> CGFloat {
+        #if os(iOS)
         return resolver.uiFont(for: .body, contentSize: contentSize).pointSize
-    }
-    #elseif os(macOS)
-    private func bodyPointSize(contentSize: SixLayerContentSizeCategory) -> CGFloat {
-        let resolver = DynamicFontResolver(defaultContentSize: contentSize)
-        let font = resolver.nsFont(for: .body, contentSize: contentSize)
-        return font.pointSize
+        #elseif os(macOS)
+        return resolver.nsFont(for: .body, contentSize: contentSize).pointSize
+        #endif
     }
     #endif
 
     @Test func testBodyFont_scalesBetweenLargeAndAccessibilityExtraLarge() {
         #if os(iOS) || os(macOS)
-        let largeSize = bodyPointSize(contentSize: .large)
-        let accessibilitySize = bodyPointSize(contentSize: .accessibilityExtraLarge)
+        let resolver = DynamicFontResolver()
+        let largeSize = bodyPointSize(resolver: resolver, contentSize: .large)
+        let accessibilitySize = bodyPointSize(resolver: resolver, contentSize: .accessibilityExtraLarge)
         #expect(accessibilitySize > largeSize, "Body at accessibilityExtraLarge should be larger than at large")
         #else
         let resolver = DynamicFontResolver()
         _ = resolver.font(for: .body, contentSize: .accessibilityExtraLarge)
-        #expect(Bool(true), "Non-iOS/macOS platforms return semantic fonts")
+        #expect(Bool(true), "Non-iOS/macOS platforms return platform reference fonts")
         #endif
     }
 
     @Test func testExplicitContentSizeOverrideDiffersFromLarge() {
         #if os(iOS) || os(macOS)
         let resolver = DynamicFontResolver(defaultContentSize: .large)
-        #if os(iOS)
-        let atDefault = resolver.uiFont(for: .body, contentSize: nil).pointSize
-        let atAX = resolver.uiFont(for: .body, contentSize: .accessibilityExtraLarge).pointSize
-        #elseif os(macOS)
-        let atDefault = resolver.nsFont(for: .body, contentSize: nil).pointSize
-        let atAX = resolver.nsFont(for: .body, contentSize: .accessibilityExtraLarge).pointSize
-        #endif
+        let atDefault = bodyPointSize(resolver: resolver, contentSize: nil)
+        let atAX = bodyPointSize(resolver: resolver, contentSize: .accessibilityExtraLarge)
         #expect(atAX > atDefault, "Explicit accessibilityExtraLarge override should increase body size")
         #else
         #expect(Bool(true))
@@ -81,13 +72,11 @@ struct DynamicFontResolverTests {
 
     @Test func testHIGTypographySystemDelegatesToResolver() {
         #if os(iOS) || os(macOS)
+        let resolver = DynamicFontResolver(defaultContentSize: .large)
         let large = HIGTypographySystem(for: .iOS, contentSize: .large)
         let accessibility = HIGTypographySystem(for: .iOS, contentSize: .accessibilityExtraLarge)
-        let resolver = DynamicFontResolver(defaultContentSize: .large)
-        let expectedLargeBody = resolver.font(for: .body, contentSize: .large)
-        let expectedAXBody = resolver.font(for: .body, contentSize: .accessibilityExtraLarge)
-        #expect(large.body == expectedLargeBody)
-        #expect(accessibility.body == expectedAXBody)
+        #expect(large.body == resolver.font(for: .body, contentSize: .large))
+        #expect(accessibility.body == resolver.font(for: .body, contentSize: .accessibilityExtraLarge))
         #expect(large.body != accessibility.body, "HIG body token should scale with content size")
         #else
         let system = HIGTypographySystem(for: .iOS, contentSize: .large)
