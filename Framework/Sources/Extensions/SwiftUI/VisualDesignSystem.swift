@@ -1069,7 +1069,7 @@ public extension AccessibilitySettings {
     }
 }
 
-public enum ContentSizeCategory: String, CaseIterable, Sendable {
+public enum SixLayerContentSizeCategory: String, CaseIterable, Sendable {
     case extraSmall = "extraSmall"
     case small = "small"
     case medium = "medium"
