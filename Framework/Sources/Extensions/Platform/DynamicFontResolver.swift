@@ -29,112 +29,27 @@ public enum SixLayerTextStyle: String, CaseIterable, Sendable {
     case caption2
 }
 
-// MARK: - Resolver
+// MARK: - Style → platform mapping
 
-/// Resolves SwiftUI and platform fonts for a text style at an explicit or default content size.
-///
-/// - iOS: Uses `UIFont.preferredFont(forTextStyle:compatibleWith:)` so sizes track Dynamic Type.
-/// - macOS: Scales fixed platform baseline sizes by ``SixLayerContentSizeCategory/typographyScaleFactor``
-///   (documented; macOS does not mirror iOS semantic fonts in ``Font/platform*``).
-public struct DynamicFontResolver: Sendable {
-    public let defaultContentSize: SixLayerContentSizeCategory
-
-    public init(defaultContentSize: SixLayerContentSizeCategory = .large) {
-        self.defaultContentSize = defaultContentSize
-    }
-
-    public func resolvedContentSize(_ override: SixLayerContentSizeCategory?) -> SixLayerContentSizeCategory {
-        override ?? defaultContentSize
-    }
-
-    public func font(for style: SixLayerTextStyle, contentSize: SixLayerContentSizeCategory? = nil) -> Font {
-        #if os(iOS)
-        return Font(uiFont(for: style, contentSize: contentSize))
-        #elseif os(macOS)
-        return Font(nsFont(for: style, contentSize: contentSize))
-        #else
-        return semanticSwiftUIFont(for: style)
-        #endif
-    }
-
-    #if os(iOS)
-    public func uiFont(for style: SixLayerTextStyle, contentSize: SixLayerContentSizeCategory? = nil) -> UIFont {
-        let category = resolvedContentSize(contentSize)
-        let traits = UITraitCollection(preferredContentSizeCategory: category.uiContentSizeCategory)
-        return UIFont.preferredFont(forTextStyle: style.uiTextStyle, compatibleWith: traits)
-    }
-    #endif
-
-    #if os(macOS)
-    public func nsFont(for style: SixLayerTextStyle, contentSize: SixLayerContentSizeCategory? = nil) -> NSFont {
-        let category = resolvedContentSize(contentSize)
-        let basePointSize = style.macOSBaselinePointSize
-        let scaledSize = basePointSize * category.typographyScaleFactor
-        let weight = style.macOSFontWeight
-        return NSFont.systemFont(ofSize: scaledSize, weight: weight)
-    }
-    #endif
-
-    private func semanticSwiftUIFont(for style: SixLayerTextStyle) -> Font {
-        switch style {
-        case .largeTitle: return .largeTitle
-        case .title1: return .title
-        case .title2: return .title2
-        case .title3: return .title3
-        case .headline: return .headline
-        case .body: return .body
-        case .callout: return .callout
-        case .subheadline: return .subheadline
-        case .footnote: return .footnote
-        case .caption1: return .caption
-        case .caption2: return .caption2
-        }
-    }
-}
-
-// MARK: - Content size mapping
-
-public extension SixLayerContentSizeCategory {
-    /// Relative scale vs `.large` (1.0). Used on macOS; iOS uses UIKit preferred fonts directly.
-    var typographyScaleFactor: CGFloat {
-        switch self {
-        case .extraSmall: return 0.82
-        case .small: return 0.88
-        case .medium: return 0.94
-        case .large: return 1.0
-        case .extraLarge: return 1.06
-        case .extraExtraLarge: return 1.12
-        case .extraExtraExtraLarge: return 1.18
-        case .accessibilityMedium: return 1.31
-        case .accessibilityLarge: return 1.44
-        case .accessibilityExtraLarge: return 1.64
-        case .accessibilityExtraExtraLarge: return 1.84
-        case .accessibilityExtraExtraExtraLarge: return 2.04
-        }
-    }
-
-    #if os(iOS)
-    var uiContentSizeCategory: UIContentSizeCategory {
-        switch self {
-        case .extraSmall: return .extraSmall
-        case .small: return .small
-        case .medium: return .medium
-        case .large: return .large
-        case .extraLarge: return .extraLarge
-        case .extraExtraLarge: return .extraExtraLarge
-        case .extraExtraExtraLarge: return .extraExtraExtraLarge
-        case .accessibilityMedium: return .accessibilityMedium
-        case .accessibilityLarge: return .accessibilityLarge
-        case .accessibilityExtraLarge: return .accessibilityExtraLarge
-        case .accessibilityExtraExtraLarge: return .accessibilityExtraExtraLarge
-        case .accessibilityExtraExtraExtraLarge: return .accessibilityExtraExtraExtraLarge
-        }
-    }
-    #endif
-}
-
-#if os(iOS)
 private extension SixLayerTextStyle {
+    /// Reference font from ``Font/platform*`` (semantic on iOS, fixed baseline on macOS).
+    var platformReferenceFont: Font {
+        switch self {
+        case .largeTitle: return .platformLargeTitle
+        case .title1: return .platformTitle
+        case .title2: return .platformTitle2
+        case .title3: return .platformTitle3
+        case .headline: return .platformHeadline
+        case .body: return .platformBody
+        case .callout: return .platformCallout
+        case .subheadline: return .platformSubheadline
+        case .footnote: return .platformFootnote
+        case .caption1: return .platformCaption
+        case .caption2: return .platformCaption2
+        }
+    }
+
+    #if os(iOS)
     var uiTextStyle: UIFont.TextStyle {
         switch self {
         case .largeTitle: return .largeTitle
@@ -150,11 +65,10 @@ private extension SixLayerTextStyle {
         case .caption2: return .caption2
         }
     }
-}
-#endif
+    #endif
 
-#if os(macOS)
-private extension SixLayerTextStyle {
+    #if os(macOS)
+    /// Baseline point sizes — keep aligned with ``Font/platform*`` macOS definitions.
     var macOSBaselinePointSize: CGFloat {
         switch self {
         case .largeTitle: return 34
@@ -178,8 +92,52 @@ private extension SixLayerTextStyle {
         case .body, .callout, .subheadline, .footnote, .caption1, .caption2: return .regular
         }
     }
+    #endif
 }
-#endif
+
+// MARK: - Resolver
+
+/// Resolves SwiftUI and platform fonts for a text style at an explicit or default content size.
+///
+/// - iOS: Uses `UIFont.preferredFont(forTextStyle:compatibleWith:)` so sizes track Dynamic Type.
+/// - macOS: Scales ``Font/platform*`` baseline sizes by ``SixLayerContentSizeCategory/typographyScaleFactor``.
+public struct DynamicFontResolver: Sendable {
+    public let defaultContentSize: SixLayerContentSizeCategory
+
+    public init(defaultContentSize: SixLayerContentSizeCategory = .large) {
+        self.defaultContentSize = defaultContentSize
+    }
+
+    public func resolvedContentSize(_ override: SixLayerContentSizeCategory?) -> SixLayerContentSizeCategory {
+        override ?? defaultContentSize
+    }
+
+    public func font(for style: SixLayerTextStyle, contentSize: SixLayerContentSizeCategory? = nil) -> Font {
+        #if os(iOS)
+        return Font(uiFont(for: style, contentSize: contentSize))
+        #elseif os(macOS)
+        return Font(nsFont(for: style, contentSize: contentSize))
+        #else
+        return style.platformReferenceFont
+        #endif
+    }
+
+    #if os(iOS)
+    public func uiFont(for style: SixLayerTextStyle, contentSize: SixLayerContentSizeCategory? = nil) -> UIFont {
+        let category = resolvedContentSize(contentSize)
+        let traits = UITraitCollection(preferredContentSizeCategory: category.uiContentSizeCategory)
+        return UIFont.preferredFont(forTextStyle: style.uiTextStyle, compatibleWith: traits)
+    }
+    #endif
+
+    #if os(macOS)
+    public func nsFont(for style: SixLayerTextStyle, contentSize: SixLayerContentSizeCategory? = nil) -> NSFont {
+        let category = resolvedContentSize(contentSize)
+        let scaledSize = style.macOSBaselinePointSize * category.typographyScaleFactor
+        return NSFont.systemFont(ofSize: scaledSize, weight: style.macOSFontWeight)
+    }
+    #endif
+}
 
 // MARK: - Environment
 
