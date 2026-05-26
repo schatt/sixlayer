@@ -621,7 +621,7 @@ public struct HIGTypographySystem {
     public let footnote: Font
     public let caption: Font
     
-    public init(for platform: SixLayerPlatform, contentSize: ContentSizeCategory? = nil) {
+    public init(for platform: SixLayerPlatform, contentSize: SixLayerContentSizeCategory? = nil) {
         let resolver = DynamicFontResolver(defaultContentSize: contentSize ?? .large)
         self.largeTitle = resolver.font(for: .largeTitle, contentSize: contentSize)
         self.title = resolver.font(for: .title1, contentSize: contentSize)
