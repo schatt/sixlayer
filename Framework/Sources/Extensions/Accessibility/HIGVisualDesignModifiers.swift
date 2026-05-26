@@ -7,14 +7,18 @@ import SwiftUI
 public struct HIGAnimationCategoryModifier: ViewModifier {
     let category: HIGAnimationCategory
     let animationSystem: HIGAnimationSystem
-    
+    @Environment(\.accessibilityReduceMotion) private var accessibilityReduceMotion
+
     public func body(content: Content) -> some View {
-        // Use transaction modifier to set animation configuration
-        // Note: Animations still require value changes to trigger
-        // In practice, use withAnimation or .animation(_:value:) for explicit animations
-        content
+        let reduceMotion = accessibilityReduceMotion
+            || PlatformReduceMotionPreference.isReduceMotionEnabled
+        return content
             .transaction { transaction in
-                transaction.animation = animationSystem.animation(for: category)
+                if reduceMotion {
+                    transaction.animation = nil
+                } else {
+                    transaction.animation = animationSystem.animation(for: category)
+                }
             }
             .automaticCompliance()
     }
