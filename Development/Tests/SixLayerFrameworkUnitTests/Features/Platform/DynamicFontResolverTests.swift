@@ -21,12 +21,12 @@ struct DynamicFontResolverTests {
     // MARK: - iOS / macOS metrics
 
     #if os(iOS)
-    private func bodyPointSize(contentSize: ContentSizeCategory) -> CGFloat {
+    private func bodyPointSize(contentSize: SixLayerContentSizeCategory) -> CGFloat {
         let resolver = DynamicFontResolver(defaultContentSize: contentSize)
         return resolver.uiFont(for: .body, contentSize: contentSize).pointSize
     }
     #elseif os(macOS)
-    private func bodyPointSize(contentSize: ContentSizeCategory) -> CGFloat {
+    private func bodyPointSize(contentSize: SixLayerContentSizeCategory) -> CGFloat {
         let resolver = DynamicFontResolver(defaultContentSize: contentSize)
         let font = resolver.nsFont(for: .body, contentSize: contentSize)
         return font.pointSize
@@ -81,8 +81,8 @@ struct DynamicFontResolverTests {
 
     @Test func testHIGTypographySystemDelegatesToResolver() {
         #if os(iOS) || os(macOS)
-        let large = HIGTypographySystem(for: .ios, contentSize: .large)
-        let accessibility = HIGTypographySystem(for: .ios, contentSize: .accessibilityExtraLarge)
+        let large = HIGTypographySystem(for: .iOS, contentSize: .large)
+        let accessibility = HIGTypographySystem(for: .iOS, contentSize: .accessibilityExtraLarge)
         let resolver = DynamicFontResolver(defaultContentSize: .large)
         let expectedLargeBody = resolver.font(for: .body, contentSize: .large)
         let expectedAXBody = resolver.font(for: .body, contentSize: .accessibilityExtraLarge)
@@ -90,7 +90,7 @@ struct DynamicFontResolverTests {
         #expect(accessibility.body == expectedAXBody)
         #expect(large.body != accessibility.body, "HIG body token should scale with content size")
         #else
-        let system = HIGTypographySystem(for: .ios, contentSize: .large)
+        let system = HIGTypographySystem(for: .iOS, contentSize: .large)
         _ = system.body
         #expect(Bool(true))
         #endif
