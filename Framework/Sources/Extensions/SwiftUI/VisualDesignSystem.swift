@@ -1084,6 +1084,9 @@ public enum SixLayerContentSizeCategory: String, CaseIterable, Sendable {
     case accessibilityExtraExtraExtraLarge = "accessibilityExtraExtraExtraLarge"
 }
 
+@available(*, deprecated, renamed: "SixLayerContentSizeCategory")
+public typealias ContentSizeCategory = SixLayerContentSizeCategory
+
 // MARK: - View Extensions
 
 public extension View {
