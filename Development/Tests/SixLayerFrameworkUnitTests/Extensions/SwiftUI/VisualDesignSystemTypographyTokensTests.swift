@@ -59,6 +59,19 @@ struct VisualDesignSystemTypographyTokensTests {
     }
 
     #if os(iOS) || os(macOS)
+    @Test func testSixLayerDesignSystem_initHonorsAccessibilityProfile() {
+        let large = SixLayerDesignSystem(
+            accessibility: AccessibilitySettings(dynamicType: true, preferredContentSize: .large)
+        )
+        let accessibility = SixLayerDesignSystem(
+            accessibility: AccessibilitySettings(
+                dynamicType: true,
+                preferredContentSize: .accessibilityExtraLarge
+            )
+        )
+        #expect(large.typography(for: .light).body != accessibility.typography(for: .light).body)
+    }
+
     @Test func testTypographyTokens_matchDynamicFontResolver() {
         let contentSize = SixLayerContentSizeCategory.extraLarge
         let settings = AccessibilitySettings(
