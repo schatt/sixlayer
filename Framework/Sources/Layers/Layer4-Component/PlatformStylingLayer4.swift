@@ -434,12 +434,14 @@ struct PlatformOptionalAnimationModifier: ViewModifier {
     let value: AnyHashable
     @Environment(\.accessibilityReduceMotion) private var accessibilityReduceMotion
 
+    @ViewBuilder
     func body(content: Content) -> some View {
         let reduceMotion = accessibilityReduceMotion
             || PlatformReduceMotionPreference.isReduceMotionEnabled
         if reduceMotion {
-            return AnyView(content.animation(.none, value: value).automaticCompliance())
+            content.animation(.none, value: value).automaticCompliance()
+        } else {
+            content.animation(animation, value: value).automaticCompliance()
         }
-        return AnyView(content.animation(animation, value: value).automaticCompliance())
     }
 }
