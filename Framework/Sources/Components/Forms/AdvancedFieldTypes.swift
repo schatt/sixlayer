@@ -415,7 +415,7 @@ public struct FileUploadArea: View {
     public var body: some View {
         platformVStackContainer(spacing: 16) {
             Image(systemName: "doc.badge.plus")
-                .font(.system(size: 48))
+                .platformDecorativeIconFont(designSize: 48)
                 .foregroundColor(.accentColor)
             
             let i18n = InternationalizationService()
