@@ -133,6 +133,7 @@
 		099B1CCF649E9B84A9C48F8A /* PlatformManagedSettingsDetailNavigationLayer4.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5CB1001EDD85C50F49A7F22 /* PlatformManagedSettingsDetailNavigationLayer4.swift */; };
 		09B22E5E0FA31F2168A8150C /* TestPatterns.swift in Sources */ = {isa = PBXBuildFile; fileRef = F512E80E77E2ABD9AAD456FF /* TestPatterns.swift */; };
 		09CD31F03C7452CC008F9197 /* DynamicFormStoredDateValueTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 368FF71A89A9A3ECB835DCBB /* DynamicFormStoredDateValueTests.swift */; };
+		09D036D4C9765AF0860CAD8B /* DynamicFontResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = D32EB3841C0D5FDD4F5051E7 /* DynamicFontResolver.swift */; };
 		09D39EAD5E16E8B8E3C9CCAD /* HIGComplianceTouchTargetTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D73590C3D8CA0873F2020894 /* HIGComplianceTouchTargetTests.swift */; };
 		09D9F1CAE9876022F84C6EB4 /* UITestContractElementQueryModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAFC654A85F9F6F2F6E5581D /* UITestContractElementQueryModels.swift */; };
 		09DFEEC80303E2837CBADDA8 /* MigrationToolingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E921C45D86B18B73143D020B /* MigrationToolingTests.swift */; };
@@ -169,8 +170,10 @@
 		0C93AF5675B85648F212CE5D /* FieldActionScanningHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF962225B133F6E677EAAD5E /* FieldActionScanningHelpers.swift */; };
 		0C9C0AEE903152F49DBF62E4 /* PlatformButtonExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9C830FDFD45FBE080DC1BD5 /* PlatformButtonExtensions.swift */; };
 		0CC2CC4967555B4BC53B1282 /* SystemImageBoundary.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7A28F742F43CB59AB27397B /* SystemImageBoundary.swift */; };
+		0CC497AC4B08DD97B623864E /* DynamicFontResolverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76F5FAE0C23899D94AFA03F0 /* DynamicFontResolverTests.swift */; };
 		0CFB5A624203F4D95A31BEF0 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = C3C3B481D10D3C5A48492842 /* Localizable.xcstrings */; };
 		0D0E40D41CB9A6EFFC5B1C3F /* DynamicSelectField.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7B5709DD9536EEA8468F2A6 /* DynamicSelectField.swift */; };
+		0D2D953C0E153E6C30435523 /* DynamicFontResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = D32EB3841C0D5FDD4F5051E7 /* DynamicFontResolver.swift */; };
 		0D60584EA9A9A183BB65592E /* SecurityHints.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6A88D8E24398AE87D26BAF4 /* SecurityHints.swift */; };
 		0D8F51F4122D81DEFF10DA50 /* PlatformAdaptiveFrameModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34C11B2E2E2FC55792D39F14 /* PlatformAdaptiveFrameModifier.swift */; };
 		0D9F993EC49B1F0812822713 /* MockOCRServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2384310ED2E0DD996B528FD7 /* MockOCRServiceTests.swift */; };
@@ -591,6 +594,7 @@
 		2F45132C482C3B73590AC0DC /* PlatformToolbarPlacement.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5F9E295CE1103F27F5E5EF1 /* PlatformToolbarPlacement.swift */; };
 		2F4B07E242905B42F287CB14 /* ComprehensiveCapabilityTestRunner.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4243B08CE0181F4171060B1 /* ComprehensiveCapabilityTestRunner.swift */; };
 		2F4E61FB98421DE4214E3653 /* NavigationExamplesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF5DD554ADE85FC6D28F5523 /* NavigationExamplesView.swift */; };
+		2F4F905F5FA302F0C1224200 /* DynamicFontResolverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76F5FAE0C23899D94AFA03F0 /* DynamicFontResolverTests.swift */; };
 		2F57EE826967CDA4F6ADE4BB /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FD29C0E22A9BC103BC29D0D /* NotificationService.swift */; };
 		2F67C483BC7EACCF140C347E /* AccessibilityManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C55C9E91F3D2D58EDCEC567F /* AccessibilityManagerTests.swift */; };
 		2F768D0412377A0BF261F4BF /* ExampleHelpersComponentAccessibilityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C30666BFC2D5C03680B560C7 /* ExampleHelpersComponentAccessibilityTests.swift */; };
@@ -852,6 +856,7 @@
 		44D109B560083B7B3F9CC371 /* PlatformMenuContextMenuExtensionsAuditHost.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8841B921B29B9901AA875AD /* PlatformMenuContextMenuExtensionsAuditHost.swift */; };
 		44D9E8A1A53DA82A61BAC3C4 /* Layer6ExamplesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A15A7A41C920496A3AFDD0E /* Layer6ExamplesView.swift */; };
 		44EC478212260F8347ED0267 /* NotificationServiceMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84E2116C4DDE78BBD351B698 /* NotificationServiceMock.swift */; };
+		45140EE22D9A8330033847AB /* DynamicFontResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = D32EB3841C0D5FDD4F5051E7 /* DynamicFontResolver.swift */; };
 		451A32AE7E93E55878D7A69C /* LayoutDecisionReasoningTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BE0A4EC9D131C7148513675 /* LayoutDecisionReasoningTests.swift */; };
 		45334D577456C745BAD4540C /* LocationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5133DA05740E59506EE17AD8 /* LocationService.swift */; };
 		456171BDFA983B9F0270C204 /* TextContentTypeCompletenessTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F27182B9369586BE680DEF55 /* TextContentTypeCompletenessTests.swift */; };
@@ -1050,6 +1055,7 @@
 		54E7F25809FEBE26B475315A /* ViewDefinitionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44FB5F3DEF9510EC97A2B06E /* ViewDefinitionTests.swift */; };
 		54F15CCBF628A7B3B6FFDC52 /* ManagedSettingsPaneList.swift in Sources */ = {isa = PBXBuildFile; fileRef = C89CC72A51B698960367C9CD /* ManagedSettingsPaneList.swift */; };
 		55029DF1B49F32F036BC127A /* LAYER4_ASSISTIVE_VISUAL_EVIDENCE_MATRIX.md in Resources */ = {isa = PBXBuildFile; fileRef = DAFAA2ABB23F7EC2D1A5D131 /* LAYER4_ASSISTIVE_VISUAL_EVIDENCE_MATRIX.md */; };
+		552DEFFA5795FBC8EA7FD960 /* DynamicFontResolverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76F5FAE0C23899D94AFA03F0 /* DynamicFontResolverTests.swift */; };
 		553F04DC3C402E743AF16B74 /* PlatformMessagingLayer5.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEFE5C8E8C4262C2090FBB4B /* PlatformMessagingLayer5.swift */; };
 		5541E38454239B589BCEB6D5 /* UnifiedImagePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = E40D91EA797B81A272545CAE /* UnifiedImagePicker.swift */; };
 		55596E477035D80F94DC58AB /* PlatformRowActionsLayer4.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7490629A7277A0F4CDBC19C /* PlatformRowActionsLayer4.swift */; };
@@ -1420,6 +1426,7 @@
 		725757E048B4A3115511E039 /* SwitchControlTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A8E0E6670EF429DC0C799C4 /* SwitchControlTests.swift */; };
 		725A1DD4640109357E74EDEA /* ResponsiveCardsViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A40742536E1CAB313323560 /* ResponsiveCardsViewTests.swift */; };
 		725BEA23CA1C9417CD31E577 /* HIGPlatformSpecificCategoriesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC03DC263BD5CBD078307C12 /* HIGPlatformSpecificCategoriesTests.swift */; };
+		726BD44E5D2EFF7B634D5FAD /* DynamicFontResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = D32EB3841C0D5FDD4F5051E7 /* DynamicFontResolver.swift */; };
 		7285BEA71054149E8F7E15E5 /* PlatformSplitViewLayer4.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C715F5FCDC823C599F4D5DD /* PlatformSplitViewLayer4.swift */; };
 		7297E0BBB02A60493EF4EE9B /* OCRL1VisualCorrectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC5E09836BEAF088735EC3DC /* OCRL1VisualCorrectionTests.swift */; };
 		729C59A4472B7278B9511EE0 /* PlatformToolbarPlacement.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5F9E295CE1103F27F5E5EF1 /* PlatformToolbarPlacement.swift */; };
@@ -1904,11 +1911,13 @@
 		999E770F3586399161413D9E /* CloudKitServiceCoreDataTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9184510105D2B99D051DB4C /* CloudKitServiceCoreDataTests.swift */; };
 		99AE4A92B256DFBA7E06C294 /* CategoryCCallbackTestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65ED9D9381B8426E60FACF55 /* CategoryCCallbackTestView.swift */; };
 		99CCC681B058FBABE881140A /* PlatformColorExamples.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21B10A7F2C26C64ADEB9CCFB /* PlatformColorExamples.swift */; };
+		9A003D3FD48101692749FA7C /* DynamicFontResolverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76F5FAE0C23899D94AFA03F0 /* DynamicFontResolverTests.swift */; };
 		9A2D44DAC2425243B0510217 /* CardBadgeContentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3D7809919AD19E303A4F8C0 /* CardBadgeContentTests.swift */; };
 		9A6640F04B8D785A54FB10F8 /* PlatformSpecificSecureFieldExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5498792D06A0E16EC58C8494 /* PlatformSpecificSecureFieldExtensions.swift */; };
 		9A79AE3E9EDDF4859CCB5A4F /* BarcodeOverlayConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CFE1F200F268A072CF6C215 /* BarcodeOverlayConfiguration.swift */; };
 		9A7AC3D8D19E4EE0C214EE60 /* MetalRenderingCrashTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CB60BEDCCE42B440A71195F /* MetalRenderingCrashTests.swift */; };
 		9A7EED324C2DF93015376658 /* IntelligentCardExpansionLayer3.swift in Sources */ = {isa = PBXBuildFile; fileRef = C33525F4FAE35F239E081EAD /* IntelligentCardExpansionLayer3.swift */; };
+		9AC01759A5B131EBB1242CF7 /* DynamicFontResolverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76F5FAE0C23899D94AFA03F0 /* DynamicFontResolverTests.swift */; };
 		9AD651D1EF1BEE2FC56454D4 /* OCRDisambiguationL1Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6845A9B57C6ED3EF7F5EC48 /* OCRDisambiguationL1Tests.swift */; };
 		9ADBBAD3A5E4C5F22C6F4BA6 /* HIGVisualDesignSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B645E87128D76711A50651B /* HIGVisualDesignSystem.swift */; };
 		9ADF1DE04BCCDA64B7C3F154 /* NotificationServiceMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84E2116C4DDE78BBD351B698 /* NotificationServiceMock.swift */; };
@@ -2309,6 +2318,7 @@
 		BE202ED5452E55566304746C /* PlatformSafety.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7179F6C5C81A2F929A73299F /* PlatformSafety.swift */; };
 		BE30F97F49F60496B717F0BE /* MigrationToolingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E921C45D86B18B73143D020B /* MigrationToolingTests.swift */; };
 		BE44D23061AA82102AAD9376 /* ImageMetadataTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = A653EAABDBAD48A4CA036606 /* ImageMetadataTypes.swift */; };
+		BE47C5D5EFDE31484525E169 /* DynamicFontResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = D32EB3841C0D5FDD4F5051E7 /* DynamicFontResolver.swift */; };
 		BE5D9B98B58BE3D8FE1F39E9 /* IntelligentCardExpansionLayer5.swift in Sources */ = {isa = PBXBuildFile; fileRef = 206BE61C4C1176A91ED00A04 /* IntelligentCardExpansionLayer5.swift */; };
 		BE626EFCF29CC8668C99CFAC /* PlatformInputExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03DBF8FF4A1E1B6421814CF5 /* PlatformInputExtensions.swift */; };
 		BE6B9803EBDFC1A7948CC95F /* PlatformInternationalizationL1Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23D910EDAF50C965800E5EC1 /* PlatformInternationalizationL1Tests.swift */; };
@@ -3792,6 +3802,7 @@
 		760F5D8E9ACF147C54993CEB /* PlatformSplitViewStateManagementLayer4Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformSplitViewStateManagementLayer4Tests.swift; sourceTree = "<group>"; };
 		76418B4A125D74B578AB05D7 /* AssistiveTouchManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssistiveTouchManager.swift; sourceTree = "<group>"; };
 		76EB9460FC60505CD1433F01 /* PlatformResponsiveCardsLayer4Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformResponsiveCardsLayer4Tests.swift; sourceTree = "<group>"; };
+		76F5FAE0C23899D94AFA03F0 /* DynamicFontResolverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DynamicFontResolverTests.swift; sourceTree = "<group>"; };
 		774BC2A72555B3F0704FA21D /* PlatformImageBreakingChangeDetectionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformImageBreakingChangeDetectionTests.swift; sourceTree = "<group>"; };
 		774E4BFF48F77F4696ED8CB1 /* AccessibilityTestingSuite.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessibilityTestingSuite.swift; sourceTree = "<group>"; };
 		777C5F6F950807A19284B96B /* LabeledContentDisplayFieldTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LabeledContentDisplayFieldTests.swift; sourceTree = "<group>"; };
@@ -4059,6 +4070,7 @@
 		D257A53BE96963E086607067 /* PlatformNavigationRoutingExtensionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformNavigationRoutingExtensionsTests.swift; sourceTree = "<group>"; };
 		D2942FE44CEFD42029C36238 /* PlatformFormsLayer4.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformFormsLayer4.swift; sourceTree = "<group>"; };
 		D2BD56786DF1E1114E1A78C9 /* PlatformPresentContentL1Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformPresentContentL1Tests.swift; sourceTree = "<group>"; };
+		D32EB3841C0D5FDD4F5051E7 /* DynamicFontResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DynamicFontResolver.swift; sourceTree = "<group>"; };
 		D3C47EA99282F785AEBDD55C /* HIGComplianceTabOrderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HIGComplianceTabOrderTests.swift; sourceTree = "<group>"; };
 		D3D00A234DB60BFBA1F5F4F9 /* PlatformManagedSettingsFlowLayer4Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformManagedSettingsFlowLayer4Tests.swift; sourceTree = "<group>"; };
 		D5627BB2C4525E1C9B205E76 /* DynamicFormStoredNumericDisplayTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DynamicFormStoredNumericDisplayTests.swift; sourceTree = "<group>"; };
@@ -4900,6 +4912,7 @@
 		3E97775D20D576607FA90BF8 /* Platform */ = {
 			isa = PBXGroup;
 			children = (
+				76F5FAE0C23899D94AFA03F0 /* DynamicFontResolverTests.swift */,
 				11AA3F1E7257631C0FF13A30 /* PlatformBehaviorTests.swift */,
 				1E7837C18FFE206ECB17A09C /* PlatformColorEncodeTests.swift */,
 				0BD34BB63BF332AB9CB8D585 /* PlatformColorsTests.swift */,
@@ -5062,6 +5075,7 @@
 		5B2E5320D290C2F8361B8C41 /* Platform */ = {
 			isa = PBXGroup;
 			children = (
+				D32EB3841C0D5FDD4F5051E7 /* DynamicFontResolver.swift */,
 				34C11B2E2E2FC55792D39F14 /* PlatformAdaptiveFrameModifier.swift */,
 				8C9E4B02788B28764D4ED21E /* PlatformAdvancedContainerExtensions.swift */,
 				4E13207FD966EB91C1BD0E88 /* PlatformAnimationSystemExtensions.swift */,
@@ -6203,7 +6217,7 @@
 			path = API;
 			sourceTree = "<group>";
 		};
-		"TEMP_4613032E-A1F9-4C6E-BD05-99AB09E2F41D" /* Utilities */ = {
+		"TEMP_380EF336-5614-4533-B2FB-B23847478D85" /* Utilities */ = {
 			isa = PBXGroup;
 			children = (
 			);
@@ -7199,6 +7213,7 @@
 				39FA6A4F40FA39A7104AFB35 /* DefaultRuntimeCapabilityIsolationTrait.swift in Sources */,
 				676D7A6602F16FF593D9C81F /* DefensiveValidation.swift in Sources */,
 				FF11CF45C6C244BEA1E5C438 /* DesignSystemTests.swift in Sources */,
+				552DEFFA5795FBC8EA7FD960 /* DynamicFontResolverTests.swift in Sources */,
 				D66677541A5FFA9B18BCDCE6 /* DynamicFormGridLayoutTests.swift in Sources */,
 				73D148F0BF002932AF98B5AC /* DynamicFormLabelTests.swift in Sources */,
 				E4C1F7BA8D7BE6B8F088F9A3 /* DynamicFormLocalizationKeyTests.swift in Sources */,
@@ -7422,6 +7437,7 @@
 				53C7FB56A0F8E140E84C92C7 /* DataPresentationIntelligence.swift in Sources */,
 				24C99B5982951CCD22EE380B /* DataValueExtraction.swift in Sources */,
 				1D97AA9C6796D3A56C76D4C8 /* DynamicFieldComponents.swift in Sources */,
+				0D2D953C0E153E6C30435523 /* DynamicFontResolver.swift in Sources */,
 				EEE9521A70B2D44A671FB542 /* DynamicFormStoredDateValue.swift in Sources */,
 				BB095166BBD791A5FBA2D598 /* DynamicFormStoredNumericDisplay.swift in Sources */,
 				E6BF8C9C21729A59E11B8464 /* DynamicFormTypes.swift in Sources */,
@@ -7703,6 +7719,7 @@
 				995EE4EFFE7497709A41056F /* DataPresentationIntelligence.swift in Sources */,
 				F5FF5E5BF845E7B01435C9E2 /* DataValueExtraction.swift in Sources */,
 				C7FDD6C9A999B8A37F600C03 /* DynamicFieldComponents.swift in Sources */,
+				BE47C5D5EFDE31484525E169 /* DynamicFontResolver.swift in Sources */,
 				341A93C8DE348BD01F35D6D0 /* DynamicFormStoredDateValue.swift in Sources */,
 				C0A805E6C6843AF4561C575E /* DynamicFormStoredNumericDisplay.swift in Sources */,
 				3BB2CD9453D10FAD54642DF8 /* DynamicFormTypes.swift in Sources */,
@@ -8238,6 +8255,7 @@
 				EF9583FE99A4D9D32E572B14 /* DataPresentationIntelligence.swift in Sources */,
 				67BDED405C0380100F137E81 /* DataValueExtraction.swift in Sources */,
 				02743718BBBC4120F4BA8423 /* DynamicFieldComponents.swift in Sources */,
+				726BD44E5D2EFF7B634D5FAD /* DynamicFontResolver.swift in Sources */,
 				2425DA270EEE3735EE435013 /* DynamicFormStoredDateValue.swift in Sources */,
 				FFCE8405FC024CC395A5F197 /* DynamicFormStoredNumericDisplay.swift in Sources */,
 				C79DB42DFBB242B830633806 /* DynamicFormTypes.swift in Sources */,
@@ -8515,6 +8533,7 @@
 				7D5F95A5147391FB3FF0D46C /* DefaultRuntimeCapabilityIsolationTrait.swift in Sources */,
 				1D65452587B5C16A6ADA99F0 /* DefensiveValidation.swift in Sources */,
 				C930FEF182CFEE6B6BC6BBAF /* DesignSystemTests.swift in Sources */,
+				9AC01759A5B131EBB1242CF7 /* DynamicFontResolverTests.swift in Sources */,
 				E9EC825351D3191F75F8EAD7 /* DynamicFormGridLayoutTests.swift in Sources */,
 				B2ED76D8A07431196B5A51B0 /* DynamicFormLabelTests.swift in Sources */,
 				6E8D332D7D0300DD49183D6E /* DynamicFormLocalizationKeyTests.swift in Sources */,
@@ -9043,6 +9062,7 @@
 				303E97B94F3D5161A4828736 /* DefaultRuntimeCapabilityIsolationTrait.swift in Sources */,
 				3852E6443736AB567C60DCA9 /* DefensiveValidation.swift in Sources */,
 				52BC718F643293F27F427391 /* DesignSystemTests.swift in Sources */,
+				0CC497AC4B08DD97B623864E /* DynamicFontResolverTests.swift in Sources */,
 				361C16C91F895741FAD3CDDF /* DynamicFormGridLayoutTests.swift in Sources */,
 				A3FE5F94E92B63A753CC4BBF /* DynamicFormLabelTests.swift in Sources */,
 				87FFA554785D0275AFCE5A0E /* DynamicFormLocalizationKeyTests.swift in Sources */,
@@ -9266,6 +9286,7 @@
 				ABF5BD7B19DC192861455AB3 /* DataPresentationIntelligence.swift in Sources */,
 				5156017C034C19A72904B45B /* DataValueExtraction.swift in Sources */,
 				960D3127B3282D9E13EBEDDE /* DynamicFieldComponents.swift in Sources */,
+				45140EE22D9A8330033847AB /* DynamicFontResolver.swift in Sources */,
 				AC7BE5AF2C00F9F952C07915 /* DynamicFormStoredDateValue.swift in Sources */,
 				FB17AAF8AD9F6650AAEC5CDD /* DynamicFormStoredNumericDisplay.swift in Sources */,
 				2697C25BF380D6B5FE20739D /* DynamicFormTypes.swift in Sources */,
@@ -9562,6 +9583,7 @@
 				8C9E565D1F7BCF0C9010CFB7 /* DefaultRuntimeCapabilityIsolationTrait.swift in Sources */,
 				F9380C7DA8956971EBB69757 /* DefensiveValidation.swift in Sources */,
 				57ED3784D5FE72374B83AB57 /* DesignSystemTests.swift in Sources */,
+				9A003D3FD48101692749FA7C /* DynamicFontResolverTests.swift in Sources */,
 				3FE39267BA748FC2F399057C /* DynamicFormGridLayoutTests.swift in Sources */,
 				D628FEB6B1D9D3422A71ABF2 /* DynamicFormLabelTests.swift in Sources */,
 				A897519D10FFA9A58453DC93 /* DynamicFormLocalizationKeyTests.swift in Sources */,
@@ -9804,6 +9826,7 @@
 				3533BF547550F389DBC04A86 /* DataPresentationIntelligence.swift in Sources */,
 				9792827A7770FA29AC19FCD6 /* DataValueExtraction.swift in Sources */,
 				722D30406D28D3C0A22191AA /* DynamicFieldComponents.swift in Sources */,
+				09D036D4C9765AF0860CAD8B /* DynamicFontResolver.swift in Sources */,
 				2BC1E670AD8F7F10435BE5D5 /* DynamicFormStoredDateValue.swift in Sources */,
 				DCC0BA4A87BA13997E4D6D36 /* DynamicFormStoredNumericDisplay.swift in Sources */,
 				D606355EA33214B03326E855 /* DynamicFormTypes.swift in Sources */,
@@ -10081,6 +10104,7 @@
 				CD125E55D359027C510E6129 /* DefaultRuntimeCapabilityIsolationTrait.swift in Sources */,
 				B6D43C22ED9D87DF26E53E03 /* DefensiveValidation.swift in Sources */,
 				84224C05A6344864E9F192DC /* DesignSystemTests.swift in Sources */,
+				2F4F905F5FA302F0C1224200 /* DynamicFontResolverTests.swift in Sources */,
 				5105FE40572C16D1D010C1FB /* DynamicFormGridLayoutTests.swift in Sources */,
 				081C12B662B35D8DCB8DF69C /* DynamicFormLabelTests.swift in Sources */,
 				4098149B8DD2126D8EC46DF5 /* DynamicFormLocalizationKeyTests.swift in Sources */,
