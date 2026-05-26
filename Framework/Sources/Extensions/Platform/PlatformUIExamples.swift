@@ -103,7 +103,7 @@ public struct PlatformUIExamples {
                     } else {
                         VStack {
                             Image(systemName: "doc.text")
-                                .font(.system(size: 48))
+                                .platformDecorativeIconFont(designSize: 48)
                                 .foregroundColor(.secondary)
                             Text("Select an item")
                                 .font(.headline)
@@ -522,7 +522,7 @@ private struct DetailView: View {
     var body: some View {
         VStack(spacing: 20) {
             Image(systemName: "doc.text")
-                .font(.system(size: 64))
+                .platformDecorativeIconFont(designSize: 64)
                 .foregroundColor(.blue)
             
             Text("Detail for \(item)")
