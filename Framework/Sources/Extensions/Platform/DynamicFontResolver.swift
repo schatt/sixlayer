@@ -60,7 +60,7 @@ public struct DynamicFontResolver: Sendable {
     #if os(iOS)
     public func uiFont(for style: SixLayerTextStyle, contentSize: SixLayerContentSizeCategory? = nil) -> UIFont {
         let category = resolvedContentSize(contentSize)
-        let traits = UITraitCollection(preferredSixLayerContentSizeCategory: category.uiSixLayerContentSizeCategory)
+        let traits = UITraitCollection(preferredContentSizeCategory: category.uiContentSizeCategory)
         return UIFont.preferredFont(forTextStyle: style.uiTextStyle, compatibleWith: traits)
     }
     #endif
@@ -114,7 +114,7 @@ public extension SixLayerContentSizeCategory {
     }
 
     #if os(iOS)
-    var uiSixLayerContentSizeCategory: UISixLayerContentSizeCategory {
+    var uiContentSizeCategory: UIContentSizeCategory {
         switch self {
         case .extraSmall: return .extraSmall
         case .small: return .small
