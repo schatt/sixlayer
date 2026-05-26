@@ -80,13 +80,23 @@ struct PlatformScalableSystemFontTests {
         #endif
     }
 
-    @Test func testDecorativeIconModifier_usesScaledFont() {
+    @Test func testDecorativeIconModifier_matchesPlatformSystemAtLarge() {
         #if os(iOS) || os(macOS)
         let designSize: CGFloat = 48
-        let expected = Font.platformSystem(size: designSize, relativeTo: .largeTitle, contentSize: .large)
-        let view = Text("★").platformDecorativeIconFont(designSize: designSize, relativeTo: .largeTitle)
-        _ = view
-        #expect(expected == Font.platformSystem(size: designSize, relativeTo: .largeTitle, contentSize: .large))
+        let resolver = DynamicFontResolver(defaultContentSize: .large)
+        let modifierFont = resolver.fontForScaledSystem(
+            designSize: designSize,
+            relativeTo: .largeTitle
+        )
+        let platformSystemFont = Font.platformSystem(
+            size: designSize,
+            relativeTo: .largeTitle,
+            contentSize: .large
+        )
+        #expect(
+            modifierFont == platformSystemFont,
+            "Decorative icon modifier should use the same scaled system font as platformSystem at .large"
+        )
         #else
         #expect(Bool(true))
         #endif
