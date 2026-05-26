@@ -48,8 +48,13 @@ struct DynamicFontResolverTests {
     @Test func testExplicitContentSizeOverrideDiffersFromLarge() {
         #if os(iOS) || os(macOS)
         let resolver = DynamicFontResolver(defaultContentSize: .large)
-        let atDefault = bodyPointSize(contentSize: nil)
-        let atAX = bodyPointSize(contentSize: .accessibilityExtraLarge)
+        #if os(iOS)
+        let atDefault = resolver.uiFont(for: .body, contentSize: nil).pointSize
+        let atAX = resolver.uiFont(for: .body, contentSize: .accessibilityExtraLarge).pointSize
+        #elseif os(macOS)
+        let atDefault = resolver.nsFont(for: .body, contentSize: nil).pointSize
+        let atAX = resolver.nsFont(for: .body, contentSize: .accessibilityExtraLarge).pointSize
+        #endif
         #expect(atAX > atDefault, "Explicit accessibilityExtraLarge override should increase body size")
         #else
         #expect(Bool(true))
