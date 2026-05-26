@@ -8,7 +8,7 @@ open class PlatformReduceMotionPreferenceTests: BaseTestClass {
 
     @Test @MainActor func testSystemReduceMotionMatchesTaskLocalOverrideWhenEnabled() {
         initializeTestConfig()
-        try PlatformReduceMotionPreference.withTestOverride(true) {
+        PlatformReduceMotionPreference.withTestOverride(true) {
             #expect(PlatformReduceMotionPreference.isReduceMotionEnabled)
             let manager = AccessibilityManager()
             #expect(manager.isReduceMotionEnabled())
@@ -19,7 +19,7 @@ open class PlatformReduceMotionPreferenceTests: BaseTestClass {
 
     @Test @MainActor func testSystemReduceMotionMatchesTaskLocalOverrideWhenDisabled() {
         initializeTestConfig()
-        try PlatformReduceMotionPreference.withTestOverride(false) {
+        PlatformReduceMotionPreference.withTestOverride(false) {
             #expect(!PlatformReduceMotionPreference.isReduceMotionEnabled)
             let manager = AccessibilityManager()
             #expect(!manager.isReduceMotionEnabled())
@@ -50,7 +50,7 @@ open class PlatformReduceMotionPreferenceTests: BaseTestClass {
 
     @Test @MainActor func testWithPlatformAnimationSkipsWithAnimationWhenReduceMotionOn() async {
         initializeTestConfig()
-        try PlatformReduceMotionPreference.withTestOverride(true) {
+        PlatformReduceMotionPreference.withTestOverride(true) {
             var changeCount = 0
             withPlatformAnimation(.spring) {
                 changeCount += 1
@@ -61,7 +61,7 @@ open class PlatformReduceMotionPreferenceTests: BaseTestClass {
 
     @Test @MainActor func testAccessibilitySystemStateCopyPreservesSnapshot() {
         initializeTestConfig()
-        try PlatformReduceMotionPreference.withTestOverride(true) {
+        PlatformReduceMotionPreference.withTestOverride(true) {
             let systemState = AccessibilitySystemState()
             let state = AccessibilitySystemState(from: systemState)
             #expect(state.isReducedMotionEnabled == systemState.isReducedMotionEnabled)
