@@ -1,6 +1,6 @@
 import Foundation
 import SwiftUI
-#if os(iOS)
+#if os(iOS) || os(visionOS)
 import UIKit
 #elseif os(macOS)
 import AppKit
@@ -1155,7 +1155,7 @@ public extension SixLayerContentSizeCategory {
         }
     }
 
-    #if os(iOS)
+    #if os(iOS) || os(visionOS)
     var uiContentSizeCategory: UIContentSizeCategory {
         switch self {
         case .extraSmall: return .extraSmall
