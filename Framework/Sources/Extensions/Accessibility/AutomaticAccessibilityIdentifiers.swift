@@ -944,26 +944,12 @@ public struct AutomaticHIGFocusIndicatorModifier: ViewModifier {
 /// Disables or simplifies animations when user prefers reduced motion
 public struct AutomaticHIGMotionPreferenceModifier: ViewModifier {
     let platform: SixLayerPlatform
-    
+    @Environment(\.accessibilityReduceMotion) private var accessibilityReduceMotion
+
     public func body(content: Content) -> some View {
-        // SwiftUI automatically respects reduced motion through its animation environment.
-        // When reduced motion is enabled, SwiftUI's .animation() modifier automatically
-        // disables or simplifies animations.
-        //
-        // This modifier ensures that views with automatic compliance will respect the system
-        // reduced motion setting. SwiftUI handles this automatically, but we apply it explicitly
-        // to ensure compliance.
-        //
-        // Note: SwiftUI's animation system already respects UIAccessibility.isReduceMotionEnabled
-        // (iOS) and system accessibility settings (macOS), so explicit checks are not strictly
-        // necessary. However, this modifier serves as documentation and ensures the behavior
-        // is explicit.
-        //
-        // For views that need explicit animation control, developers should use:
-        // .animation(reducedMotion ? .none : .default, value: someValue)
-        //
-        // The automatic compliance system ensures all animations respect reduced motion preferences.
-        content
+        let reduceMotion = accessibilityReduceMotion
+            || PlatformReduceMotionPreference.isReduceMotionEnabled
+        content.modifier(ReducedMotionModifier(isEnabled: reduceMotion))
     }
 }
 
