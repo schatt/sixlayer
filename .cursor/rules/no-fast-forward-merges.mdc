@@ -1,0 +1,39 @@
+---
+description: Never fast-forward merge onto integration branches — always --no-ff to preserve branch history.
+alwaysApply: true
+---
+
+# No Fast-Forward Merges
+
+**Precedence:** standing user instruction. Fast-forward merges onto integration lines **destroy useful history** (when work landed, which branch, issue scope). Do not rely on `merge.ff=false` in the agent shell — it may not be loaded.
+
+## **MANDATORY**
+
+- **Never** fast-forward `next`, `main`, or other shared integration branches when landing `wip/` / `done/` work.
+- **Always** use an explicit merge commit:
+
+```bash
+git checkout next
+git pull <remote> next   # if needed
+git merge --no-ff done/<issue-slug> -m "$(cat <<'EOF'
+Merge done/<issue-slug> into next
+
+<short summary>
+
+Resolves #N
+EOF
+)"
+```
+
+- **Forbidden on integration branches:**
+  - `git merge <branch>` without `--no-ff` when integrating feature/issue branches
+  - `git pull` / `git merge` outcomes that fast-forward `next` or `main` to absorb a feature branch’s commits without a merge node
+  - Resetting `next` to a feature tip instead of merging (unless explicitly reverting a bad integration per user request)
+
+## **Rationale**
+
+A merge commit keeps the integration graph readable: `git log --merges`, bisect, and release archaeology can see **which branch** and **when** it entered `next`. Fast-forward makes feature commits indistinguishable from direct work on `next`.
+
+## **Related**
+
+- Issue landing: [github-issue-workflow.mdc](mdc:.cursor/rules/github-issue-workflow.mdc) (merge `wip/` → `next`, then rename to `done/`)
