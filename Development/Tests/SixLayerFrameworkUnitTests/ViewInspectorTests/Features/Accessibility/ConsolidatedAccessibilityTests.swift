@@ -301,7 +301,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     @Test @MainActor func testAutomaticAccessibilityIdentifiersModifierGeneratesAccessibilityIdentifiers() async {
         self.initializeTestConfig()
             self.runWithTaskLocalConfig {
-            // Given: A view with .automaticCompliance(named: "AutomaticAccessibilityIdentifiersModifier") modifier
+            // Given: A view with .automaticCompliance() modifier
             let testView = platformVStackContainer {
                 Text("Test Content")
                 Button("Test Button") { }
@@ -316,7 +316,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
                 platform: SixLayerPlatform.iOS,
                 componentName: "AutomaticAccessibilityIdentifiersModifier"
             )
-            #expect(hasAccessibilityID, ".automaticCompliance(named: "AutomaticAccessibilityIdentifiersModifier") modifier should generate accessibility identifiers ")
+            #expect(hasAccessibilityID, ".automaticCompliance() modifier should generate accessibility identifiers ")
             #else
             // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
             // The modifier IS present in the code, but ViewInspector can't detect it on macOS
@@ -8193,7 +8193,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         let view = testContent.modifier(PlatformNavigationModifier(platform: .iOS))
 
         // Then: Should generate accessibility identifiers
-            // TODO: ViewInspector Detection Issue - VERIFIED: PlatformNavigationModifier DOES have .automaticCompliance(named: "PlatformNavigationModifier")
+            // TODO: ViewInspector Detection Issue - VERIFIED: PlatformNavigationModifier DOES have .automaticCompliance()
             // modifier applied in Framework/Sources/Extensions/Accessibility/AppleHIGComplianceModifiers.swift:341.
             // The test needs to be updated to handle ViewInspector's inability to detect these modifiers reliably.
             // This is a ViewInspector limitation, not a missing modifier issue.
@@ -10912,7 +10912,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         let view = testContent.modifier(SystemColorModifier(colorSystem: colorSystem))
         
         // Then: Should generate accessibility identifiers
-        // TODO: ViewInspector Detection Issue - VERIFIED: SystemColorModifier DOES have .automaticCompliance(named: "SystemColorModifier") 
+        // TODO: ViewInspector Detection Issue - VERIFIED: SystemColorModifier DOES have .automaticCompliance() 
         // modifier applied in Framework/Sources/Extensions/Accessibility/AppleHIGComplianceModifiers.swift:280.
         // The test needs to be updated to handle ViewInspector's inability to detect these modifiers reliably.
         // This is a ViewInspector limitation, not a missing modifier issue.
@@ -10943,7 +10943,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         let view = testContent.modifier(SystemTypographyModifier(typographySystem: typographySystem))
         
         // Then: Should generate accessibility identifiers
-        // TODO: ViewInspector Detection Issue - VERIFIED: SystemTypographyModifier DOES have .automaticCompliance(named: "SystemTypographyModifier") 
+        // TODO: ViewInspector Detection Issue - VERIFIED: SystemTypographyModifier DOES have .automaticCompliance() 
         // modifier applied in Framework/Sources/Extensions/Accessibility/AppleHIGComplianceModifiers.swift:291.
         // The test needs to be updated to handle ViewInspector's inability to detect these modifiers reliably.
         // This is a ViewInspector limitation, not a missing modifier issue.
@@ -10974,7 +10974,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         let view = testContent.modifier(SpacingModifier(spacingSystem: spacingSystem))
         
         // Then: Should generate accessibility identifiers
-        // TODO: ViewInspector Detection Issue - VERIFIED: SpacingModifier DOES have .automaticCompliance(named: "SpacingModifier") 
+        // TODO: ViewInspector Detection Issue - VERIFIED: SpacingModifier DOES have .automaticCompliance() 
         // modifier applied in Framework/Sources/Extensions/Accessibility/AppleHIGComplianceModifiers.swift:302.
         // The test needs to be updated to handle ViewInspector's inability to detect these modifiers reliably.
         // This is a ViewInspector limitation, not a missing modifier issue.
@@ -11004,7 +11004,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         let view = testContent.modifier(TouchTargetModifier(platform: .iOS))
         
         // Then: Should generate accessibility identifiers
-            // TODO: ViewInspector Detection Issue - VERIFIED: TouchTargetModifier DOES have .automaticCompliance(named: "TouchTargetModifier")
+            // TODO: ViewInspector Detection Issue - VERIFIED: TouchTargetModifier DOES have .automaticCompliance()
             // modifier applied in Framework/Sources/Extensions/Accessibility/AppleHIGComplianceModifiers.swift:317.
             // The test needs to be updated to handle ViewInspector's inability to detect these modifiers reliably.
             // This is a ViewInspector limitation, not a missing modifier issue.
@@ -11034,7 +11034,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         let view = testContent.modifier(PlatformInteractionModifier(platform: .iOS))
         
         // Then: Should generate accessibility identifiers
-            // TODO: ViewInspector Detection Issue - VERIFIED: PlatformInteractionModifier DOES have .automaticCompliance(named: "PlatformInteractionModifier")
+            // TODO: ViewInspector Detection Issue - VERIFIED: PlatformInteractionModifier DOES have .automaticCompliance()
             // modifier applied in Framework/Sources/Extensions/Accessibility/AppleHIGComplianceModifiers.swift:341.
             // The test needs to be updated to handle ViewInspector's inability to detect these modifiers reliably.
             // This is a ViewInspector limitation, not a missing modifier issue.
@@ -11064,7 +11064,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         let view = testContent.modifier(HapticFeedbackModifier(platform: .iOS))
         
         // Then: Should generate accessibility identifiers
-            // TODO: ViewInspector Detection Issue - VERIFIED: HapticFeedbackModifier DOES have .automaticCompliance(named: "HapticFeedbackModifier")
+            // TODO: ViewInspector Detection Issue - VERIFIED: HapticFeedbackModifier DOES have .automaticCompliance()
             // modifier applied in Framework/Sources/Extensions/Accessibility/AppleHIGComplianceModifiers.swift:358.
             // The test needs to be updated to handle ViewInspector's inability to detect these modifiers reliably.
             // This is a ViewInspector limitation, not a missing modifier issue.
@@ -11094,7 +11094,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         let view = testContent.modifier(GestureRecognitionModifier(platform: .iOS))
         
         // Then: Should generate accessibility identifiers
-            // TODO: ViewInspector Detection Issue - VERIFIED: GestureRecognitionModifier DOES have .automaticCompliance(named: "GestureRecognitionModifier")
+            // TODO: ViewInspector Detection Issue - VERIFIED: GestureRecognitionModifier DOES have .automaticCompliance()
             // modifier applied in Framework/Sources/Extensions/Accessibility/AppleHIGComplianceModifiers.swift:382.
             // The test needs to be updated to handle ViewInspector's inability to detect these modifiers reliably.
             // This is a ViewInspector limitation, not a missing modifier issue.
@@ -13433,7 +13433,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 
     @Test @MainActor func testExactAccessibilityIdentifierModifierGeneratesAccessibilityIdentifiers() async {
         self.initializeTestConfig()
-        // Given: Framework component that should apply .automaticCompliance(named: "platformPresentContent_L1") itself
+        // Given: Framework component that should apply .automaticCompliance() itself
         let testView = platformPresentContent_L1(
         content: "Test Value",
         hints: PresentationHints()
@@ -13478,7 +13478,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 
     @Test @MainActor func testAccessibilityLabelAssignmentModifierGeneratesAccessibilityIdentifiers() async {
         self.initializeTestConfig()
-        // Given: Framework component that should apply .automaticCompliance(named: "platformPresentBasicValue_L1") itself
+        // Given: Framework component that should apply .automaticCompliance() itself
         let testView = platformPresentBasicValue_L1(
         value: "Custom Label",
         hints: PresentationHints()
@@ -13500,7 +13500,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 
     @Test @MainActor func testAccessibilityHintAssignmentModifierGeneratesAccessibilityIdentifiers() async {
         self.initializeTestConfig()
-        // Given: Framework component that should apply .automaticCompliance(named: "platformPresentBasicArray_L1") itself
+        // Given: Framework component that should apply .automaticCompliance() itself
         let testView = platformPresentBasicArray_L1(
         array: ["Custom", "Hint"],
         hints: PresentationHints()
@@ -13544,7 +13544,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testAccessibilityValueAssignmentModifierGeneratesAccessibilityIdentifiers() async {
-        // Given: Framework component that should apply .automaticCompliance(named: "platformPresentBasicValue_L1") itself
+        // Given: Framework component that should apply .automaticCompliance() itself
         let testView = platformPresentBasicValue_L1(
         value: "Custom Value",
         hints: PresentationHints()
@@ -15239,7 +15239,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         .environmentObject(manager)
         
         // Then: Should generate accessibility identifiers
-        // VERIFIED: Framework function has .automaticCompliance(named: "InputHandlingManager") modifier applied
+        // VERIFIED: Framework function has .automaticCompliance() modifier applied
         #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
         view,
@@ -15399,7 +15399,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #expect(Bool(true), "Automatic accessibility identifiers should create view successfully")  // testView is non-optional
             
         // 2. Contains what it needs to contain - The view has the proper accessibility identifier assigned
-        // TODO: ViewInspector Detection Issue - VERIFIED: Framework function (e.g., platformPresentContent_L1) DOES have .automaticCompliance(named: "CombinedBreadcrumbModifiers") 
+        // TODO: ViewInspector Detection Issue - VERIFIED: Framework function (e.g., platformPresentContent_L1) DOES have .automaticCompliance() 
         // modifier applied. The componentName "Framework Function" is a test label, not a framework component.
         // The test needs to be updated to handle ViewInspector's inability to detect these modifiers reliably.
         // This is a ViewInspector limitation, not a missing modifier issue.
@@ -15510,14 +15510,14 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 
     @Test @MainActor func testDirectAutomaticAccessibilityIdentifiersWorks() async {
         self.initializeTestConfig()
-        // Test .automaticCompliance(named: "DirectAutomaticAccessibilityIdentifiers") directly; identifierName so ID is generated (L1 pattern)
+        // Test .automaticCompliance() directly; identifierName so ID is generated (L1 pattern)
         let testView = PlatformInteractionButton(style: .primary, action: {}, identifierName: "Test") {
         platformPresentContent_L1(content: "Test", hints: PresentationHints())
     }
         .automaticCompliance(named: "DirectAutomaticAccessibilityIdentifiers")
         
         // Should look for button-specific accessibility identifier with current format
-        // TODO: ViewInspector Detection Issue - VERIFIED: Framework function (e.g., platformPresentContent_L1) DOES have .automaticCompliance(named: "DirectAutomaticAccessibilityIdentifiers") 
+        // TODO: ViewInspector Detection Issue - VERIFIED: Framework function (e.g., platformPresentContent_L1) DOES have .automaticCompliance() 
         // modifier applied. The componentName "Framework Function" is a test label, not a framework component.
         // The test needs to be updated to handle ViewInspector's inability to detect these modifiers reliably.
         // This is a ViewInspector limitation, not a missing modifier issue.
@@ -15529,12 +15529,12 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         expectedPattern: "SixLayer.*ui", 
         platform: SixLayerPlatform.iOS,
         componentName: "DirectAutomaticAccessibilityIdentifiers"
-        ) , "Direct .automaticCompliance(named: "DirectAutomaticAccessibilityIdentifiers") should generate button-specific accessibility ID")
+        ), "Direct automaticCompliance(named:) should generate button-specific accessibility ID")
         #else
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
         // The modifier IS present in the code, but ViewInspector can't detect it on macOS
         #endif
-        print("🔍 Testing direct .automaticCompliance(named: "DirectAutomaticAccessibilityIdentifiers")")
+        print("🔍 Testing direct .automaticCompliance()")
 }
 
     @Test @MainActor func testNamedModifierWorks() {
@@ -15547,7 +15547,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         .automaticCompliance(named: "NamedModifier")
         
         // Should look for named button-specific accessibility identifier: "SixLayer.main.ui.TestButton"
-        // TODO: ViewInspector Detection Issue - VERIFIED: Framework function (e.g., platformPresentContent_L1) DOES have .automaticCompliance(named: "NamedModifier") 
+        // TODO: ViewInspector Detection Issue - VERIFIED: Framework function (e.g., platformPresentContent_L1) DOES have .automaticCompliance() 
         // modifier applied. The componentName "Framework Function" is a test label, not a framework component.
         // The test needs to be updated to handle ViewInspector's inability to detect these modifiers reliably.
         // This is a ViewInspector limitation, not a missing modifier issue.
@@ -15559,12 +15559,12 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         expectedPattern: "SixLayer.*TestButton", 
         platform: SixLayerPlatform.iOS,
         componentName: "NamedModifier"
-        ) , ".named() + .automaticCompliance(named: "NamedModifier") should generate named button-specific accessibility ID")
+        ), ".named() plus automaticCompliance(named:) should generate named button-specific accessibility ID")
         #else
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
         // The modifier IS present in the code, but ViewInspector can't detect it on macOS
         #endif
-        print("🔍 Testing .named() + .automaticCompliance(named: "NamedModifier")")
+        print("🔍 Testing .named() + .automaticCompliance()")
 }
 
     @Test @MainActor func testAutomaticAccessibilityModifierWorks() {
@@ -15579,7 +15579,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         ))
         
         // Should look for modifier-specific accessibility identifier with current format
-        // TODO: ViewInspector Detection Issue - VERIFIED: Framework function (e.g., platformPresentContent_L1) DOES have .automaticCompliance(named: "AutomaticAccessibilityModifier") 
+        // TODO: ViewInspector Detection Issue - VERIFIED: Framework function (e.g., platformPresentContent_L1) DOES have .automaticCompliance() 
         // modifier applied. The componentName "Framework Function" is a test label, not a framework component.
         // The test needs to be updated to handle ViewInspector's inability to detect these modifiers reliably.
         // This is a ViewInspector limitation, not a missing modifier issue.
@@ -15608,7 +15608,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         .automaticAccessibility()
         
         // Should look for extension-specific accessibility identifier with current format
-        // TODO: ViewInspector Detection Issue - VERIFIED: Framework function (e.g., platformPresentContent_L1) DOES have .automaticCompliance(named: "AutomaticAccessibilityExtension") 
+        // TODO: ViewInspector Detection Issue - VERIFIED: Framework function (e.g., platformPresentContent_L1) DOES have .automaticCompliance() 
         // modifier applied. The componentName "Framework Function" is a test label, not a framework component.
         // The test needs to be updated to handle ViewInspector's inability to detect these modifiers reliably.
         // This is a ViewInspector limitation, not a missing modifier issue.
@@ -15677,7 +15677,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         .automaticCompliance(named: "AppleHIGCompliant")
         
         // When & Then: Should generate accessibility identifiers
-        // TODO: ViewInspector Detection Issue - VERIFIED: AppleHIGCompliant DOES have .automaticCompliance(named: "AppleHIGCompliant") 
+        // TODO: ViewInspector Detection Issue - VERIFIED: AppleHIGCompliant DOES have .automaticCompliance() 
         // modifier applied in Framework/Sources/Extensions/Accessibility/AppleHIGComplianceModifiers.swift:404.
         // The test needs to be updated to handle ViewInspector's inability to detect these modifiers reliably.
         // This is a ViewInspector limitation, not a missing modifier issue.
@@ -15706,7 +15706,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         .automaticCompliance(named: "AppleHIGCompliant")
         
         // When & Then: Should generate accessibility identifiers
-        // TODO: ViewInspector Detection Issue - VERIFIED: AppleHIGCompliant DOES have .automaticCompliance(named: "AppleHIGCompliant") 
+        // TODO: ViewInspector Detection Issue - VERIFIED: AppleHIGCompliant DOES have .automaticCompliance() 
         // modifier applied in Framework/Sources/Extensions/Accessibility/AppleHIGComplianceModifiers.swift:404.
         // The test needs to be updated to handle ViewInspector's inability to detect these modifiers reliably.
         // This is a ViewInspector limitation, not a missing modifier issue.
@@ -15754,7 +15754,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             .automaticCompliance(named: "AssistiveTouchEnabled")
         
         // When & Then: Should generate accessibility identifiers
-        // TODO: ViewInspector Detection Issue - VERIFIED: AssistiveTouchEnabled DOES have .automaticCompliance(named: "AssistiveTouchEnabled") 
+        // TODO: ViewInspector Detection Issue - VERIFIED: AssistiveTouchEnabled DOES have .automaticCompliance() 
         // modifier applied in Framework/Sources/Extensions/Accessibility/AssistiveTouchManager.swift:320.
         // The test needs to be updated to handle ViewInspector's inability to detect these modifiers reliably.
         // This is a ViewInspector limitation, not a missing modifier issue.
@@ -15781,7 +15781,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             .automaticCompliance(named: "AssistiveTouchEnabled")
         
         // When & Then: Should generate accessibility identifiers
-        // TODO: ViewInspector Detection Issue - VERIFIED: AssistiveTouchEnabled DOES have .automaticCompliance(named: "AssistiveTouchEnabled") 
+        // TODO: ViewInspector Detection Issue - VERIFIED: AssistiveTouchEnabled DOES have .automaticCompliance() 
         // modifier applied in Framework/Sources/Extensions/Accessibility/AssistiveTouchManager.swift:320.
         // The test needs to be updated to handle ViewInspector's inability to detect these modifiers reliably.
         // This is a ViewInspector limitation, not a missing modifier issue.
@@ -16062,7 +16062,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         .accessibilityIdentifier("manual-test-button")
             
         // Then: The view should be created successfully with manual accessibility identifier
-        // TODO: ViewInspector Detection Issue - VERIFIED: Framework function (e.g., platformPresentContent_L1) DOES have .automaticCompliance(named: "ManualIdentifiersWorkByDefault") 
+        // TODO: ViewInspector Detection Issue - VERIFIED: Framework function (e.g., platformPresentContent_L1) DOES have .automaticCompliance() 
         // modifier applied. The componentName "Framework Function" is a test label, not a framework component.
         // The test needs to be updated to handle ViewInspector's inability to detect these modifiers reliably.
         // This is a ViewInspector limitation, not a missing modifier issue.
@@ -16105,7 +16105,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         let testView = FormUsageExample()
         
         // Then: Should generate accessibility identifiers
-        // TODO: ViewInspector Detection Issue - VERIFIED: FormUsageExample DOES have .automaticCompliance(named: "FormUsageExample") 
+        // TODO: ViewInspector Detection Issue - VERIFIED: FormUsageExample DOES have .automaticCompliance() 
         // modifier applied in Framework/Sources/Components/Forms/FormUsageExample.swift:33.
         // The test needs to be updated to handle ViewInspector's inability to detect these modifiers reliably.
         // This is a ViewInspector limitation, not a missing modifier issue.
@@ -16129,7 +16129,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         let testView = Text("Test")
         
         // Then: Should generate accessibility identifiers
-        // TODO: ViewInspector Detection Issue - VERIFIED: ExampleProjectCard DOES have .automaticCompliance(named: "ExampleProjectCard") 
+        // TODO: ViewInspector Detection Issue - VERIFIED: ExampleProjectCard DOES have .automaticCompliance() 
         // modifier applied in Framework/Sources/Core/ExampleHelpers.swift:78.
         // The test needs to be updated to handle ViewInspector's inability to detect these modifiers reliably.
         // This is a ViewInspector limitation, not a missing modifier issue.
@@ -16158,7 +16158,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         .automaticCompliance(named: "EyeTrackingModifier")
         
         // When & Then: Should generate accessibility identifiers
-        // TODO: ViewInspector Detection Issue - VERIFIED: EyeTrackingModifier DOES have .automaticCompliance(named: "EyeTrackingModifier") 
+        // TODO: ViewInspector Detection Issue - VERIFIED: EyeTrackingModifier DOES have .automaticCompliance() 
         // modifier applied in Framework/Sources/Extensions/Accessibility/EyeTrackingManager.swift:367.
         // The test needs to be updated to handle ViewInspector's inability to detect these modifiers reliably.
         // This is a ViewInspector limitation, not a missing modifier issue.
@@ -16187,7 +16187,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         .automaticCompliance(named: "EyeTrackingModifier")
         
         // When & Then: Should generate accessibility identifiers
-        // TODO: ViewInspector Detection Issue - VERIFIED: EyeTrackingModifier DOES have .automaticCompliance(named: "EyeTrackingModifier") 
+        // TODO: ViewInspector Detection Issue - VERIFIED: EyeTrackingModifier DOES have .automaticCompliance() 
         // modifier applied in Framework/Sources/Extensions/Accessibility/EyeTrackingManager.swift:367.
         // The test needs to be updated to handle ViewInspector's inability to detect these modifiers reliably.
         // This is a ViewInspector limitation, not a missing modifier issue.
@@ -16964,7 +16964,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         onTextDelete: { _ in })
         // MANDATORY: Test that accessibility identifiers are applied on iOS
         // Should look for OCR-specific accessibility identifier: "TDDTest.ocr.overlay.Test OCR Text"
-        // TODO: ViewInspector Detection Issue - VERIFIED: Framework function (e.g., platformPresentContent_L1) DOES have .automaticCompliance(named: "OCROverlayView") 
+        // TODO: ViewInspector Detection Issue - VERIFIED: Framework function (e.g., platformPresentContent_L1) DOES have .automaticCompliance() 
         // modifier applied. The componentName "Framework Function" is a test label, not a framework component.
         // The test needs to be updated to handle ViewInspector's inability to detect these modifiers reliably.
         // This is a ViewInspector limitation, not a missing modifier issue.
@@ -17005,7 +17005,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         onTextDelete: { _ in })
         // MANDATORY: Test that accessibility identifiers are applied on macOS
         // Should look for OCR-specific accessibility identifier: "TDDTest.ocr.overlay.Test OCR Text"
-        // TODO: ViewInspector Detection Issue - VERIFIED: Framework function (e.g., platformPresentContent_L1) DOES have .automaticCompliance(named: "OCROverlayView") 
+        // TODO: ViewInspector Detection Issue - VERIFIED: Framework function (e.g., platformPresentContent_L1) DOES have .automaticCompliance() 
         // modifier applied. The componentName "Framework Function" is a test label, not a framework component.
         // The test needs to be updated to handle ViewInspector's inability to detect these modifiers reliably.
         // This is a ViewInspector limitation, not a missing modifier issue.
@@ -17051,7 +17051,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         )
         
         // Then: Should generate accessibility identifiers
-        // TODO: ViewInspector Detection Issue - VERIFIED: OCROverlayView DOES have .automaticCompliance(named: "OCROverlayView") 
+        // TODO: ViewInspector Detection Issue - VERIFIED: OCROverlayView DOES have .automaticCompliance() 
         // modifier applied in Framework/Sources/Components/Views/OCROverlayView.swift:33.
         // The test needs to be updated to handle ViewInspector's inability to detect these modifiers reliably.
         // This is a ViewInspector limitation, not a missing modifier issue.
@@ -17093,7 +17093,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         )
         
         // Then: Should generate accessibility identifiers
-        // TODO: ViewInspector Detection Issue - VERIFIED: OCROverlayView DOES have .automaticCompliance(named: "OCROverlayView") 
+        // TODO: ViewInspector Detection Issue - VERIFIED: OCROverlayView DOES have .automaticCompliance() 
         // modifier applied in Framework/Sources/Components/Views/OCROverlayView.swift:33.
         // The test needs to be updated to handle ViewInspector's inability to detect these modifiers reliably.
         // This is a ViewInspector limitation, not a missing modifier issue.
@@ -17329,7 +17329,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         let view = ResponsiveLayoutExample()
         
         // Then: Should generate accessibility identifiers
-        // TODO: ViewInspector Detection Issue - VERIFIED: ResponsiveLayoutExample DOES have .automaticCompliance(named: "ResponsiveLayoutExample") 
+        // TODO: ViewInspector Detection Issue - VERIFIED: ResponsiveLayoutExample DOES have .automaticCompliance() 
         // modifier applied in Framework/Sources/Components/Views/ResponsiveLayout.swift:207.
         // The test needs to be updated to handle ViewInspector's inability to detect these modifiers reliably.
         // This is a ViewInspector limitation, not a missing modifier issue.
@@ -17356,7 +17356,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         let view = ResponsiveNavigationExample()
         
         // Then: Should generate accessibility identifiers
-        // TODO: ViewInspector Detection Issue - VERIFIED: ResponsiveNavigationExample DOES have .automaticCompliance(named: "ResponsiveNavigationExample") 
+        // TODO: ViewInspector Detection Issue - VERIFIED: ResponsiveNavigationExample DOES have .automaticCompliance() 
         // modifier applied in Framework/Sources/Components/Views/ResponsiveLayout.swift:233.
         // The test needs to be updated to handle ViewInspector's inability to detect these modifiers reliably.
         // This is a ViewInspector limitation, not a missing modifier issue.
@@ -17388,7 +17388,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         // When: Applying ResponsivePadding modifier
         let view = testContent.modifier(ResponsivePadding())
         // Then: Should generate accessibility identifiers
-        // TODO: ViewInspector Detection Issue - VERIFIED: ResponsivePadding DOES have .automaticCompliance(named: "ResponsivePadding") 
+        // TODO: ViewInspector Detection Issue - VERIFIED: ResponsivePadding DOES have .automaticCompliance() 
         // modifier applied in Framework/Sources/Components/Views/ResponsiveLayout.swift:100.
         // The test needs to be updated to handle ViewInspector's inability to detect these modifiers reliably.
         // This is a ViewInspector limitation, not a missing modifier issue.
@@ -17413,7 +17413,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         let testView = VisionSafety()
         
         // Then: Should generate accessibility identifiers
-        // VERIFIED: VisionSafety DOES have .automaticCompliance(named: "VisionSafety") modifier applied
+        // VERIFIED: VisionSafety DOES have .automaticCompliance() modifier applied
         #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
         testView,
@@ -17434,7 +17434,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         let testView = PlatformSafety()
         
         // Then: Should generate accessibility identifiers
-        // VERIFIED: PlatformSafety DOES have .automaticCompliance(named: "PlatformSafety") modifier applied
+        // VERIFIED: PlatformSafety DOES have .automaticCompliance() modifier applied
         #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
         testView,
@@ -17455,7 +17455,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         let testView = PlatformSecurity()
         
         // Then: Should generate accessibility identifiers
-        // VERIFIED: PlatformSecurity DOES have .automaticCompliance(named: "PlatformSecurity") modifier applied
+        // VERIFIED: PlatformSecurity DOES have .automaticCompliance() modifier applied
         #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
         testView,
@@ -17476,7 +17476,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         let testView = PlatformPrivacy()
         
         // Then: Should generate accessibility identifiers
-        // VERIFIED: PlatformPrivacy DOES have .automaticCompliance(named: "PlatformPrivacy") modifier applied
+        // VERIFIED: PlatformPrivacy DOES have .automaticCompliance() modifier applied
         #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
         testView,
@@ -17500,7 +17500,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             .automaticCompliance(named: "SwitchControlEnabled")
         
         // When & Then: Should generate accessibility identifiers
-        // TODO: ViewInspector Detection Issue - VERIFIED: SwitchControlEnabled DOES have .automaticCompliance(named: "SwitchControlEnabled") 
+        // TODO: ViewInspector Detection Issue - VERIFIED: SwitchControlEnabled DOES have .automaticCompliance() 
         // modifier applied in Framework/Sources/Extensions/Accessibility/SwitchControlManager.swift:358.
         // The test needs to be updated to handle ViewInspector's inability to detect these modifiers reliably.
         // This is a ViewInspector limitation, not a missing modifier issue.
@@ -17527,7 +17527,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             .automaticCompliance(named: "SwitchControlEnabled")
         
         // When & Then: Should generate accessibility identifiers
-        // TODO: ViewInspector Detection Issue - VERIFIED: SwitchControlEnabled DOES have .automaticCompliance(named: "SwitchControlEnabled") 
+        // TODO: ViewInspector Detection Issue - VERIFIED: SwitchControlEnabled DOES have .automaticCompliance() 
         // modifier applied in Framework/Sources/Extensions/Accessibility/SwitchControlManager.swift:358.
         // The test needs to be updated to handle ViewInspector's inability to detect these modifiers reliably.
         // This is a ViewInspector limitation, not a missing modifier issue.
