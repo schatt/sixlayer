@@ -1316,7 +1316,6 @@
 		693337DA84296CC0CEF10418 /* Layer4SemanticAccessibilityCriterionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C06AB7BE479EC2DDF8186119 /* Layer4SemanticAccessibilityCriterionTests.swift */; };
 		693D814D62C8161FCB1B555C /* DataBindingCoreDataTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E9D0270040692F0C868C5F2 /* DataBindingCoreDataTests.swift */; };
 		694AC53ED528CE68C8210EC5 /* IntelligentDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C82C686B5CB8D7A0AF5C65D /* IntelligentDetailView.swift */; };
-		695924E52F6BD1CBB8A7F164 /* PlatformAnimationReduceMotionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C557574566BB7B3BEFEBD36 /* PlatformAnimationReduceMotionTests.swift */; };
 		6960925DE7280107CD3E2BE4 /* ManagedPlatformSettingsFlowGuideExampleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FD027FDA244C386948E9B66 /* ManagedPlatformSettingsFlowGuideExampleTests.swift */; };
 		69842B87716CE82A68C23964 /* PlatformSpecificViewExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05563B36B69EF88EC0C0254F /* PlatformSpecificViewExtensions.swift */; };
 		69BA600ED9AE24CE277C41E1 /* CardDisplayableBugTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 236BDBEDCD88B9FC47B92285 /* CardDisplayableBugTests.swift */; };
@@ -1513,7 +1512,6 @@
 		794136992B236064D1BB9ECA /* AccessibilityWorkflowTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D01FBA366BFF9EFA92140E1 /* AccessibilityWorkflowTests.swift */; };
 		79566D275D5C68E2DCADFD05 /* PlatformIOSOptimizationsLayer5.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D940A9E24796B88BFEC095D /* PlatformIOSOptimizationsLayer5.swift */; };
 		7976D3662EBD9DF59711572E /* CloudKitServiceQueueStatusTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1221B24719D2AE7644787C06 /* CloudKitServiceQueueStatusTests.swift */; };
-		7987578E0B6611F61EC183B9 /* PlatformAnimationReduceMotionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C557574566BB7B3BEFEBD36 /* PlatformAnimationReduceMotionTests.swift */; };
 		79B9CD74947FB1AB0E8A6553 /* ActionButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A839EC03CCDC55DBC65B761 /* ActionButton.swift */; };
 		79C67C13FB5EF8808ACD6D78 /* FormWizardStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C16732BE92470192DE6039C6 /* FormWizardStateTests.swift */; };
 		79EFA13E8A485D9EE3BA1A07 /* PlatformSplitViewLayer4.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C715F5FCDC823C599F4D5DD /* PlatformSplitViewLayer4.swift */; };
@@ -3612,7 +3610,6 @@
 		2B7AADA3E44B85448CEF2C40 /* NavigationLayoutResolverStress208Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationLayoutResolverStress208Tests.swift; sourceTree = "<group>"; };
 		2C136D0352EC6F64E06F8B38 /* ConsolidatedAccessibilityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConsolidatedAccessibilityTests.swift; sourceTree = "<group>"; };
 		2C2D03FC288F92AD4935153F /* CrossPlatformNavigationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrossPlatformNavigationTests.swift; sourceTree = "<group>"; };
-		2C557574566BB7B3BEFEBD36 /* PlatformAnimationReduceMotionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformAnimationReduceMotionTests.swift; sourceTree = "<group>"; };
 		2C715F5FCDC823C599F4D5DD /* PlatformSplitViewLayer4.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformSplitViewLayer4.swift; sourceTree = "<group>"; };
 		2CBC59F8E4FB7B8B8CB45F8D /* OCROverlayConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OCROverlayConfiguration.swift; sourceTree = "<group>"; };
 		2D0A71DD0F37AC75233997D9 /* DynamicFormTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DynamicFormTypes.swift; sourceTree = "<group>"; };
@@ -5922,7 +5919,6 @@
 				E80E226B4032C55523F36F66 /* NamedModifierRefactoringTests.swift */,
 				E02B663330EC3A73B58F5A61 /* OCROverlayViewAccessibilityTests.swift */,
 				AB35DECEACAF403EBB246937 /* OCRServiceAccessibilityTests.swift */,
-				2C557574566BB7B3BEFEBD36 /* PlatformAnimationReduceMotionTests.swift */,
 				C9CF2D8FF8843D6213664742 /* PlatformOCRSemanticLayer1AccessibilityTests.swift */,
 				20A4B3E0A97C99988EB13BA0 /* PlatformPhotoComponentsLayer4ComponentAccessibilityTests.swift */,
 				B07E518F6C7C3CA19FD1C91F /* PlatformSemanticLayer1HierarchicalTemporalAccessibilityTests.swift */,
@@ -6249,7 +6245,7 @@
 			path = API;
 			sourceTree = "<group>";
 		};
-		"TEMP_2C2218E0-8239-4C58-BFF6-E491E6715632" /* Utilities */ = {
+		"TEMP_48A3FE71-0D3E-4899-8BED-CB9C5294E212" /* Utilities */ = {
 			isa = PBXGroup;
 			children = (
 			);
@@ -8117,7 +8113,6 @@
 				6E59088E7812760E64BF78EE /* OCRViewTests.swift in Sources */,
 				D25027924436E02ED967D2A4 /* PhotoComponentsLayer4Tests.swift in Sources */,
 				BB222796625D92C18871B2E1 /* PlatformAdvancedContainerExtensionsTests.swift in Sources */,
-				7987578E0B6611F61EC183B9 /* PlatformAnimationReduceMotionTests.swift in Sources */,
 				ECCE9B0D5B50701C2CD1E3A4 /* PlatformBasicContainersExtensionsTests.swift in Sources */,
 				E9EB8FE0C47E2F6627F13180 /* PlatformCameraPreviewViewTests.swift in Sources */,
 				B1EFB7BA8637649FAC47C5FE /* PlatformDataFrameAnalysisL1Issue245Tests.swift in Sources */,
@@ -8944,7 +8939,6 @@
 				FF0D8D34F03686F84D87263E /* OCRViewTests.swift in Sources */,
 				EB5B355AEFECB6DB788E32D1 /* PhotoComponentsLayer4Tests.swift in Sources */,
 				4AE4F0927371655C0D4DDF0D /* PlatformAdvancedContainerExtensionsTests.swift in Sources */,
-				695924E52F6BD1CBB8A7F164 /* PlatformAnimationReduceMotionTests.swift in Sources */,
 				DBDB776CE5280A39BEFBC2C0 /* PlatformBasicContainersExtensionsTests.swift in Sources */,
 				034DE88CCA305B8C6573724A /* PlatformCameraPreviewViewTests.swift in Sources */,
 				A647AFF06BE4EBCBFAAD313F /* PlatformDataFrameAnalysisL1Issue245Tests.swift in Sources */,
