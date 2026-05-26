@@ -3,9 +3,8 @@
 #
 # macOS + iOS are required. tvOS, watchOS, and visionOS are informational (continue-on-error).
 #
-# Single self-hosted runner (Mini): jobs run **sequentially** (`needs` chain) so they do not
-# share one checkout + global ~/Library/Developer/Xcode/DerivedData concurrently. Each job
-# also uses its own `-derivedDataPath` under the workspace.
+# Each job uses its own `-derivedDataPath` and SPM checkout dir under the workspace (one
+# runner agent still runs one job at a time; no `needs` chain — avoids blocking extra runners).
 #
 # Runner: `runs-on: self-hosted` — add labels if your runner uses custom tags.
 name: Self-hosted (next)
@@ -69,7 +68,6 @@ jobs:
   ios-tests:
     name: iOS (SLF-iOS-AllTests)
     runs-on: self-hosted
-    needs: macos-tests
     timeout-minutes: 150
     steps:
       - name: Checkout
@@ -117,7 +115,6 @@ jobs:
   tvos-tests:
     name: tvOS (SLF-tvOS-AllTests)
     runs-on: self-hosted
-    needs: ios-tests
     continue-on-error: true
     timeout-minutes: 90
     steps:
@@ -165,7 +162,6 @@ jobs:
   watchos-tests:
     name: watchOS (SLF-watchOS-AllTests)
     runs-on: self-hosted
-    needs: tvos-tests
     continue-on-error: true
     timeout-minutes: 90
     steps:
@@ -213,7 +209,6 @@ jobs:
   visionos-tests:
     name: visionOS (SLF-visionOS-AllTests)
     runs-on: self-hosted
-    needs: watchos-tests
     continue-on-error: true
     timeout-minutes: 90
     steps:
