@@ -3,7 +3,7 @@ import Testing
 @testable import SixLayerFramework
 
 /// View hosting for reduce-motion animation APIs (GitHub #298).
-@Suite(.serialized, "Platform Animation Reduce Motion")
+@Suite(.serialized)
 open class PlatformAnimationReduceMotionTests: BaseTestClass {
 
     @MainActor
