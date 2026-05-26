@@ -114,7 +114,7 @@ private struct BarcodeScanningWrapper: View {
     private func errorView(_ error: String) -> some View {
         platformVStackContainer(spacing: 16) {
             Image(systemName: "exclamationmark.triangle.fill")
-                .font(.system(size: 48))
+                .platformDecorativeIconFont(designSize: 48)
                 .foregroundColor(.red)
             
             Text("Barcode Scanning Error")
@@ -140,7 +140,7 @@ private struct BarcodeScanningWrapper: View {
         platformVStackContainer(spacing: 16) {
             if result.hasBarcodes {
                 Image(systemName: "checkmark.circle.fill")
-                    .font(.system(size: 48))
+                    .platformDecorativeIconFont(designSize: 48)
                     .foregroundColor(.green)
                 
                 Text("Barcode Detected")
@@ -167,7 +167,7 @@ private struct BarcodeScanningWrapper: View {
                 }
             } else {
                 Image(systemName: "barcode.viewfinder")
-                    .font(.system(size: 48))
+                    .platformDecorativeIconFont(designSize: 48)
                     .foregroundColor(.blue)
                 
                 Text("No Barcode Found")
@@ -191,7 +191,7 @@ private struct BarcodeScanningWrapper: View {
     private var initialView: some View {
         platformVStackContainer(spacing: 16) {
             Image(systemName: "barcode.viewfinder")
-                .font(.system(size: 48))
+                .platformDecorativeIconFont(designSize: 48)
                 .foregroundColor(.blue)
             
             Text("Ready to Scan")
