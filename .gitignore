@@ -8,6 +8,8 @@
 .build-clean/
 DerivedData/
 build/
+.ci-derived-data/
+.ci-spm/
 artifacts/
 
 # Compiled objects and binaries
