@@ -1,12 +1,21 @@
 # 🚀 Six-Layer Framework Release History
 
-## 📍 **Current Release: v7.8.7** 🎯
+## 📍 **Current Release: v7.8.8** 🎯
 
-**Release Date**: May 25, 2026
+**Release Date**: May 26, 2026
 **Status**: Patch release
-**Previous Release**: v7.8.6 - Patch release
-**Note**: `PlatformTabStrip` public initializer for app-target consumers (#292).
+**Previous Release**: v7.8.7 - Patch release
+**Note**: Dynamic Type typography: `DynamicFontResolver`, token scaling, scalable decorative icons (#295–#296).
 **Next Release**: TBD
+
+---
+
+## 🎯 **v7.8.8 - Dynamic Type typography APIs** (May 26, 2026)
+
+### **What's in v7.8.8:**
+- Patch release (#295–#296). See [RELEASE_v7.8.8.md](RELEASE_v7.8.8.md) for details.
+
+**See [RELEASE_v7.8.8.md](RELEASE_v7.8.8.md) for complete release notes.**
 
 ---
 
