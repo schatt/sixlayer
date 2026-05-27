@@ -99,8 +99,9 @@ private struct PlatformAnimationModifier: ViewModifier {
     @Environment(\.accessibilityReduceMotion) private var accessibilityReduceMotion
 
     func body(content: Content) -> some View {
-        let reduceMotion = accessibilityReduceMotion
-            || PlatformReduceMotionPreference.isReduceMotionEnabled
+        let reduceMotion = PlatformReduceMotionPreference.effectiveReduceMotionEnabled(
+            accessibilityReduceMotion: accessibilityReduceMotion
+        )
         if let resolved = PlatformReduceMotionPreference.resolvedAnimation(
             animation,
             reduceMotionEnabled: reduceMotion
