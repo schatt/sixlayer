@@ -52,6 +52,32 @@ public enum PlatformReduceMotionPreference: Sendable {
     ) rethrows -> T {
         try $testOverride.withValue(enabled, operation: body)
     }
+
+    /// Effective reduce-motion for SwiftUI modifiers: environment first, then task-local test override.
+    public static func effectiveReduceMotionEnabled(accessibilityReduceMotion: Bool) -> Bool {
+        if let testOverride {
+            return testOverride
+        }
+        return accessibilityReduceMotion
+    }
+}
+
+/// Suppresses implicit animations in this subtree when reduce motion is effective (GitHub #298).
+public struct PlatformReduceMotionSubtreeModifier: ViewModifier {
+    @Environment(\.accessibilityReduceMotion) private var accessibilityReduceMotion
+
+    public init() {}
+
+    public func body(content: Content) -> some View {
+        let reduceMotion = PlatformReduceMotionPreference.effectiveReduceMotionEnabled(
+            accessibilityReduceMotion: accessibilityReduceMotion
+        )
+        return content.transaction { transaction in
+            guard reduceMotion else { return }
+            transaction.animation = nil
+            transaction.disablesAnimations = true
+        }
+    }
 }
 
 /// Imperative animation helper that skips `withAnimation` when reduce motion is enabled.
