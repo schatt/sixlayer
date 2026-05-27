@@ -10,8 +10,9 @@ public struct HIGAnimationCategoryModifier: ViewModifier {
     @Environment(\.accessibilityReduceMotion) private var accessibilityReduceMotion
 
     public func body(content: Content) -> some View {
-        let reduceMotion = accessibilityReduceMotion
-            || PlatformReduceMotionPreference.isReduceMotionEnabled
+        let reduceMotion = PlatformReduceMotionPreference.effectiveReduceMotionEnabled(
+            accessibilityReduceMotion: accessibilityReduceMotion
+        )
         return content
             .transaction { transaction in
                 if reduceMotion {
