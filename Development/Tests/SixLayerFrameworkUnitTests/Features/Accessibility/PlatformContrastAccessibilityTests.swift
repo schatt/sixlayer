@@ -8,6 +8,9 @@ import Testing
     }
 
     @Test func readableSecondary_increased_returnsPrimary() {
-        #expect(PlatformContrastAccessibility.readableSecondary(contrast: .increased) == Color.primary)
+        let increased = PlatformContrastAccessibility.readableSecondary(contrast: .increased)
+        let standard = PlatformContrastAccessibility.readableSecondary(contrast: .standard)
+        #expect(increased == Color.primary)
+        #expect(increased != standard, "Increase Contrast must not leave subtitle text at standard secondary strength")
     }
 }
