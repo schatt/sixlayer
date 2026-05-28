@@ -68,4 +68,36 @@ open class PlatformReduceMotionPreferenceTests: BaseTestClass {
             #expect(state.isVoiceOverRunning == systemState.isVoiceOverRunning)
         }
     }
+
+    @Test @MainActor func testEffectiveReduceMotionPrefersTaskLocalOverride() {
+        initializeTestConfig()
+        PlatformReduceMotionPreference.withTestOverride(true) {
+            #expect(
+                PlatformReduceMotionPreference.effectiveReduceMotionEnabled(
+                    accessibilityReduceMotion: false
+                )
+            )
+        }
+        PlatformReduceMotionPreference.withTestOverride(false) {
+            #expect(
+                !PlatformReduceMotionPreference.effectiveReduceMotionEnabled(
+                    accessibilityReduceMotion: true
+                )
+            )
+        }
+    }
+
+    @Test @MainActor func testEffectiveReduceMotionUsesEnvironmentWhenNoOverride() {
+        initializeTestConfig()
+        #expect(
+            PlatformReduceMotionPreference.effectiveReduceMotionEnabled(
+                accessibilityReduceMotion: true
+            )
+        )
+        #expect(
+            !PlatformReduceMotionPreference.effectiveReduceMotionEnabled(
+                accessibilityReduceMotion: false
+            )
+        )
+    }
 }
