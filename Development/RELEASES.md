@@ -1,12 +1,21 @@
 # 🚀 Six-Layer Framework Release History
 
-## 📍 **Current Release: v7.8.8** 🎯
+## 📍 **Current Release: v7.8.9** 🎯
 
-**Release Date**: May 26, 2026
-**Status**: Patch release
-**Previous Release**: v7.8.7 - Patch release
-**Note**: Dynamic Type typography: `DynamicFontResolver`, token scaling, scalable decorative icons (#295–#296).
+**Release Date**: May 28, 2026
+**Status**: Patch release (prep on `b7/b7.8.9`)
+**Previous Release**: v7.8.8 - Patch release
+**Note**: Increase Contrast readable secondary foreground for caption/subtitle text (#299).
 **Next Release**: TBD
+
+---
+
+## 🎯 **v7.8.9 - Increase Contrast readable secondary foreground** (May 28, 2026)
+
+### **What's in v7.8.9:**
+- Patch release (#299). See [RELEASE_v7.8.9.md](RELEASE_v7.8.9.md) for details.
+
+**See [RELEASE_v7.8.9.md](RELEASE_v7.8.9.md) for complete release notes.**
 
 ---
 
