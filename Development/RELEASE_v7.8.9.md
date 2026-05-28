@@ -9,11 +9,37 @@
 
 ## 🎯 Release Summary
 
-v7.8.9 is a **patch** release that adds **Increase Contrast** support for subtitle/caption text ([#299](https://github.com/schatt/sixlayer/issues/299)). Hosts get view-scoped `.secondary` → `.primary` when `colorSchemeContrast == .increased`, without forcing root high-contrast modifiers or Darker System Colors detection.
+v7.8.9 is a **patch** release combining two accessibility slices:
+
+1. **Reduce Motion** ([#298](https://github.com/schatt/sixlayer/issues/298)) — framework-owned policy for `platformAnimation`, `higAnimationCategory`, and imperative `withPlatformAnimation`.
+2. **Increase Contrast** ([#299](https://github.com/schatt/sixlayer/issues/299)) — view-scoped `.secondary` → `.primary` for subtitle/caption text when `colorSchemeContrast == .increased`.
 
 ---
 
 ## 🆕 Confirmed in v7.8.9 (implemented)
+
+### **Reduce Motion for animation APIs (#298)**
+
+- **`PlatformReduceMotionPreference`**: system reads (UIKit / AppKit), `@TaskLocal` test overrides, `resolvedAnimation` helper.
+- **`withPlatformAnimation`**: imperative `withAnimation` counterpart that no-ops animation when reduce motion is on.
+- **`platformAnimation`** (Platform + Layer 4): `.animation(.none, …)` when reduce motion is enabled.
+- **`higAnimationCategory`**: clears transaction animation when reduce motion is on.
+- **`PlatformReduceMotionSubtreeModifier`**: shared subtree gating via `transaction.disablesAnimations`.
+- **`AutomaticHIGMotionPreferenceModifier`** / **`ReducedMotionModifier`**: real behavior, not pass-through.
+- **`AccessibilityManager.isReduceMotionEnabled()`** and **`AccessibilitySystemState`**: live system state.
+
+**Usage:**
+
+```swift
+import SixLayerFramework
+
+withPlatformAnimation(.easeInOut) {
+    flag = true
+}
+
+Text("Animated")
+    .platformAnimation(.easeInOut, value: count)
+```
 
 ### **Increase Contrast readable secondary (#299)**
 
@@ -35,13 +61,16 @@ Text("Subtitle")
 
 ## ✅ Resolved GitHub issues
 
+- **[Issue #298](https://github.com/schatt/sixlayer/issues/298)** — `platformAnimation` and motion APIs respect Reduce Motion.
 - **[Issue #299](https://github.com/schatt/sixlayer/issues/299)** — `platformForegroundReadableSecondary` for Increase Contrast.
 
 ---
 
 ## ⚠️ Migration / consumer notes
 
-- **CarManager:** Bump SPM to **`7.8.9`** after tag. Replace `foregroundColorReadableSecondary()` with `platformForegroundReadableSecondary()`; remove local `AccessibilityContrast` ([#403](https://github.com/schatt/CarManager/issues/403), [#488](https://github.com/schatt/CarManager/issues/488)).
+- **CarManager:** Bump SPM to **`7.8.9`** after tag.
+  - Reduce Motion: remove duplicate `PlatformAnimationSystemExtensions`; use framework APIs ([#438](https://github.com/schatt/CarManager/issues/438), [#488](https://github.com/schatt/CarManager/issues/488)).
+  - Increase Contrast: replace `foregroundColorReadableSecondary()` with `platformForegroundReadableSecondary()`; remove local `AccessibilityContrast` ([#403](https://github.com/schatt/CarManager/issues/403)).
 - **No breaking changes** — additive public API only.
 - **Do not** use `HighContrastEnabledView` / `isHighContrastEnabled` for Increase Contrast subtitle text.
 

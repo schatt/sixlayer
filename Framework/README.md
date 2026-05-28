@@ -44,7 +44,7 @@ Layer 1: Semantic Intent → Layer 2: Layout Decision → Layer 3: Strategy Sele
 
 ### Patch release
 
-Increase Contrast readable secondary: `PlatformContrastAccessibility` and `platformForegroundReadableSecondary()` (#299). See [RELEASE_v7.8.9.md](../Development/RELEASE_v7.8.9.md).
+Reduce Motion: `PlatformReduceMotionPreference`, `withPlatformAnimation`, and `platformAnimation` gating (#298). Increase Contrast readable secondary: `PlatformContrastAccessibility` and `platformForegroundReadableSecondary()` (#299). See [RELEASE_v7.8.9.md](../Development/RELEASE_v7.8.9.md).
 
 ## 🆕 What's New in v7.8.8
 

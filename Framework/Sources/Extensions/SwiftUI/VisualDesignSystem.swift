@@ -47,7 +47,7 @@ private func detectAccessibilitySettings() -> AccessibilitySettings {
         keyboardNavigation: true,
         highContrastMode: false,
         dynamicType: true,
-        reducedMotion: false,
+        reducedMotion: NSWorkspace.shared.accessibilityDisplayShouldReduceMotion,
         hapticFeedback: false
     )
     #else

@@ -44,7 +44,7 @@ The framework is distributed as a Swift Package from the `Framework/` directory.
 ## 🆕 Latest Release: v7.8.9
 
 ### **Patch release**
-🔧 **Patch**: Increase Contrast readable secondary — `PlatformContrastAccessibility` and `platformForegroundReadableSecondary()` (#299). See [RELEASE_v7.8.9.md](Development/RELEASE_v7.8.9.md).
+🔧 **Patch**: Reduce Motion for `platformAnimation` / `withPlatformAnimation` (#298) and Increase Contrast readable secondary — `platformForegroundReadableSecondary()` (#299). See [RELEASE_v7.8.9.md](Development/RELEASE_v7.8.9.md).
 
 ### **Previous Release: v7.8.8 - Patch release**
 🔧 **Patch**: Dynamic Type typography — `DynamicFontResolver` (#295), design-token scaling (#294), scalable `platformSystem` and `platformDecorativeIconFont` (#296). See [RELEASE_v7.8.8.md](Development/RELEASE_v7.8.8.md).

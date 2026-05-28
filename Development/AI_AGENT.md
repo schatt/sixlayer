@@ -11,7 +11,7 @@ This document provides guidance for AI assistants working with the SixLayer Fram
 ## 📚 Version-Specific Guides
 
 ### Latest Versions (Recommended)
-- **v7.8.9** — Patch release: Increase Contrast readable secondary — `PlatformContrastAccessibility` / `platformForegroundReadableSecondary()` (#299) (see [RELEASE_v7.8.9.md](RELEASE_v7.8.9.md))
+- **v7.8.9** — Patch release: Reduce Motion animation policy (#298) and Increase Contrast readable secondary (#299) (see [RELEASE_v7.8.9.md](RELEASE_v7.8.9.md))
 - **v7.8.8** — Patch release: Dynamic Type typography — `DynamicFontResolver` (#295), token scaling (#294), scalable `platformSystem` / `platformDecorativeIconFont` (#296) (see [RELEASE_v7.8.8.md](RELEASE_v7.8.8.md))
 - **v7.8.7** — Patch release: `PlatformTabStrip` public initializer (#292) (see [RELEASE_v7.8.7.md](RELEASE_v7.8.7.md))
 - **v7.8.6** — Patch release: OCR overlay Vision bounding boxes (#291) (see [RELEASE_v7.8.6.md](RELEASE_v7.8.6.md))
