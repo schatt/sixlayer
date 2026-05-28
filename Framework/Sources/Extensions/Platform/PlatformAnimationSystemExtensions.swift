@@ -20,7 +20,12 @@ public extension View {
     /// ```
     @ViewBuilder
     func platformAnimation(_ animation: PlatformAnimation) -> some View {
-        self.animation(animation.swiftUIAnimation, value: UUID())
+        modifier(
+            PlatformAnimationModifier(
+                animation: animation.swiftUIAnimation,
+                value: UUID()
+            )
+        )
     }
 
     /// Platform animation with custom duration
@@ -42,7 +47,12 @@ public extension View {
         _ animation: PlatformAnimation,
         duration: Double
     ) -> some View {
-        self.animation(animation.swiftUIAnimation(duration: duration), value: UUID())
+        modifier(
+            PlatformAnimationModifier(
+                animation: animation.swiftUIAnimation(duration: duration),
+                value: UUID()
+            )
+        )
     }
 
     /// Platform animation with spring parameters
@@ -68,14 +78,38 @@ public extension View {
         dampingFraction: Double,
         blendDuration: Double = 0
     ) -> some View {
-        self.animation(
-            animation.swiftUIAnimation(
-                response: response,
-                dampingFraction: dampingFraction,
-                blendDuration: blendDuration
-            ),
-            value: UUID()
+        modifier(
+            PlatformAnimationModifier(
+                animation: animation.swiftUIAnimation(
+                    response: response,
+                    dampingFraction: dampingFraction,
+                    blendDuration: blendDuration
+                ),
+                value: UUID()
+            )
         )
+    }
+}
+
+// MARK: - Platform Animation Modifier
+
+private struct PlatformAnimationModifier: ViewModifier {
+    let animation: Animation
+    let value: AnyHashable
+    @Environment(\.accessibilityReduceMotion) private var accessibilityReduceMotion
+
+    func body(content: Content) -> some View {
+        let reduceMotion = PlatformReduceMotionPreference.effectiveReduceMotionEnabled(
+            accessibilityReduceMotion: accessibilityReduceMotion
+        )
+        if let resolved = PlatformReduceMotionPreference.resolvedAnimation(
+            animation,
+            reduceMotionEnabled: reduceMotion
+        ) {
+            content.animation(resolved, value: value)
+        } else {
+            content.animation(.none, value: value)
+        }
     }
 }
 

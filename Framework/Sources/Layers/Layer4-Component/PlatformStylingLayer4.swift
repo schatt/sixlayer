@@ -242,22 +242,27 @@ public extension View {
     
     /// Platform-specific animation modifier
     func platformAnimation() -> some View {
-        #if os(iOS)
-        return self.animation(.easeInOut(duration: 0.3), value: true)
-            .automaticCompliance()
-        #elseif os(macOS)
-        return self.animation(.easeInOut(duration: 0.2), value: true)
-            .automaticCompliance()
+        #if os(macOS)
+        let duration = 0.2
         #else
-        return self.animation(.easeInOut(duration: 0.3), value: true)
-            .automaticCompliance()
+        let duration = 0.3
         #endif
+        return modifier(
+            PlatformDefaultAnimationModifier(
+                animation: .easeInOut(duration: duration),
+                value: true
+            )
+        )
     }
     
     /// Platform-specific animation with custom parameters
     func platformAnimation(_ animation: Animation?, value: AnyHashable) -> some View {
-        return self.animation(animation, value: value)
-            .automaticCompliance()
+        modifier(
+            PlatformOptionalAnimationModifier(
+                animation: animation,
+                value: value
+            )
+        )
     }
     
     // MARK: - Frame Constraints
@@ -401,4 +406,44 @@ public extension View {
     // MARK: - Hover Effects
     
     // Platform-specific hover effect function moved to PlatformSpecificViewExtensions.swift
+}
+
+// MARK: - Reduce-motion animation modifiers (Layer 4 platformAnimation)
+
+struct PlatformDefaultAnimationModifier: ViewModifier {
+    let animation: Animation
+    let value: AnyHashable
+    @Environment(\.accessibilityReduceMotion) private var accessibilityReduceMotion
+
+    func body(content: Content) -> some View {
+        let reduceMotion = PlatformReduceMotionPreference.effectiveReduceMotionEnabled(
+            accessibilityReduceMotion: accessibilityReduceMotion
+        )
+        if let resolved = PlatformReduceMotionPreference.resolvedAnimation(
+            animation,
+            reduceMotionEnabled: reduceMotion
+        ) {
+            content.animation(resolved, value: value).automaticCompliance()
+        } else {
+            content.animation(.none, value: value).automaticCompliance()
+        }
+    }
+}
+
+struct PlatformOptionalAnimationModifier: ViewModifier {
+    let animation: Animation?
+    let value: AnyHashable
+    @Environment(\.accessibilityReduceMotion) private var accessibilityReduceMotion
+
+    @ViewBuilder
+    func body(content: Content) -> some View {
+        let reduceMotion = PlatformReduceMotionPreference.effectiveReduceMotionEnabled(
+            accessibilityReduceMotion: accessibilityReduceMotion
+        )
+        if reduceMotion {
+            content.animation(.none, value: value).automaticCompliance()
+        } else {
+            content.animation(animation, value: value).automaticCompliance()
+        }
+    }
 }
