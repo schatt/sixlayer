@@ -170,7 +170,7 @@ func platformAccessibilityIdentifier(_ identifier: String) -> some View {
 /// Semantic colors for **Increase Contrast** (`colorSchemeContrast`), not `isDarkerSystemColorsEnabled`.
 public enum PlatformContrastAccessibility {
     public static func readableSecondary(contrast: ColorSchemeContrast) -> Color {
-        .secondary
+        contrast == .increased ? .primary : .secondary
     }
 }
 
