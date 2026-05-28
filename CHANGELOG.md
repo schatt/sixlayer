@@ -1,5 +1,19 @@
 # Changelog
 
+## v7.8.9 - Increase Contrast readable secondary foreground (May 28, 2026)
+
+### ✨ Added
+- **`PlatformContrastAccessibility.readableSecondary(contrast:)`**: maps `.secondary` → `.primary` when `colorSchemeContrast` is increased (#299).
+- **`View.platformForegroundReadableSecondary()`**: view-scoped modifier for caption/subtitle text under **Settings → Accessibility → Display → Increase Contrast** (#299).
+- **`PlatformContrastAccessibilityTests`**: unit tests with differential assertion so constant stubs fail at runtime (#299).
+
+### 📚 Documentation
+- **`RuntimeCapabilityDetection.isHighContrastEnabled`**: documented as **Darker System Colors**, not Increase Contrast (#299).
+- CarManager can replace local `AccessibilityContrast` / `foregroundColorReadableSecondary()` after pinning **`7.8.9`** ([#403](https://github.com/schatt/CarManager/issues/403)).
+- Full notes: [`Development/RELEASE_v7.8.9.md`](Development/RELEASE_v7.8.9.md), index [`Development/RELEASES.md`](Development/RELEASES.md).
+
+---
+
 ## v7.8.7 - PlatformTabStrip public initializer (May 25, 2026)
 
 ### ✨ Added
