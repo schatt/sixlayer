@@ -204,7 +204,7 @@ public struct ResponsiveLayoutExample: View {
                 .cornerRadius(8)
             }
         }
-        .automaticCompliance()
+        .automaticCompliance(named: "ResponsiveLayoutExample")
     }
 }
 
@@ -234,6 +234,6 @@ public struct ResponsiveNavigationExample: View {
                 }
             }
         }
-        .automaticCompliance()
+        .automaticCompliance(named: "ResponsiveNavigationExample")
     }
 }
