@@ -57,3 +57,6 @@ test_output.log
 
 # Ephemeral Xcode DerivedData access logs (per-worktree random suffix)
 .derived-data-log-*
+
+# Python bytecode (Cursor hook scripts)
+.cursor/hooks/__pycache__/

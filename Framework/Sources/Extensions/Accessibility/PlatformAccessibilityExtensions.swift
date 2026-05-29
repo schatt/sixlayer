@@ -155,4 +155,31 @@ func platformAccessibilityIdentifier(_ identifier: String) -> some View {
             action()
         }
     }
+
+    /// Foreground for caption/subtitle text when **Increase Contrast** is on (`colorSchemeContrast`).
+    ///
+    /// Uses `.primary` when contrast is increased, `.secondary` otherwise. Not the same as
+    /// **Darker System Colors** (`RuntimeCapabilityDetection.isHighContrastEnabled`).
+    func platformForegroundReadableSecondary() -> some View {
+        modifier(PlatformReadableSecondaryForegroundModifier())
+    }
+}
+
+// MARK: - Increase Contrast (colorSchemeContrast)
+
+/// Semantic colors for **Increase Contrast** (`colorSchemeContrast`), not `isDarkerSystemColorsEnabled`.
+public enum PlatformContrastAccessibility {
+    public static func readableSecondary(contrast: ColorSchemeContrast) -> Color {
+        contrast == .increased ? .primary : .secondary
+    }
+}
+
+private struct PlatformReadableSecondaryForegroundModifier: ViewModifier {
+    @Environment(\.colorSchemeContrast) private var colorSchemeContrast
+
+    func body(content: Content) -> some View {
+        content.foregroundColor(
+            PlatformContrastAccessibility.readableSecondary(contrast: colorSchemeContrast)
+        )
+    }
 }

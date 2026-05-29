@@ -225,14 +225,24 @@ private struct ShareSheetItemsModifier: ViewModifier {
 /// Note: SwiftUI View coordinates aren't directly accessible, so we use center
 /// Future enhancement: could use PreferenceKey to get view frame for sourceView positioning
 @MainActor
-private func platformShareMacOSInternal(items: [Any], sourceView: (any View)? = nil) -> Bool {
+func platformShareMacOSInternal(items: [Any], sourceView: (any View)? = nil) -> Bool {
+    #if DEBUG
+    if NSClassFromString("XCTest") != nil {
+        return true
+    }
+    #endif
+    if ProcessInfo.processInfo.arguments.contains("-UITesting")
+        || ProcessInfo.processInfo.environment["XCUI_TESTING"] == "1" {
+        return true
+    }
+
     guard let window = NSApplication.shared.keyWindow,
           let contentView = window.contentView else {
         return false
     }
-    
+
     let sharingServicePicker = NSSharingServicePicker(items: items)
-    
+
     // Position popover: use center if no sourceView, otherwise would need view coordinates
     let rect = NSRect(x: contentView.bounds.midX, y: contentView.bounds.midY, width: 0, height: 0)
     sharingServicePicker.show(relativeTo: rect, of: contentView, preferredEdge: .minY)
@@ -243,6 +253,100 @@ private func platformShareMacOSInternal(items: [Any], sourceView: (any View)? = 
 @MainActor
 private func platformShareMacOSWithItems(items: [Any], sourceView: (any View)?) {
     _ = platformShareMacOSInternal(items: items, sourceView: sourceView)
+}
+#endif
+
+// MARK: - Imperative Share (Issue #300)
+
+/// Presents the platform share UI immediately without a SwiftUI modifier host.
+///
+/// - **macOS:** `NSSharingServicePicker`
+/// - **iOS:** `UIActivityViewController` from the key window root controller
+///
+/// - Returns: `true` when share UI was presented (or skipped safely under test hosts).
+@MainActor
+@discardableResult
+public func platformShare_L4(
+    items: [Any],
+    from sourceView: (any View)? = nil,
+    onComplete: ((Bool) -> Void)? = nil
+) -> Bool {
+    #if os(iOS)
+    return platformShareIOSImperative(
+        items: items,
+        excludedActivityTypes: nil,
+        onComplete: onComplete
+    )
+    #elseif os(macOS)
+    let success = platformShareMacOSInternal(items: items, sourceView: sourceView)
+    onComplete?(success)
+    return success
+    #else
+    _ = items
+    _ = sourceView
+    _ = onComplete
+    return false
+    #endif
+}
+
+#if os(iOS)
+/// iOS imperative share with optional excluded activity types.
+@MainActor
+@discardableResult
+public func platformShare_L4(
+    items: [Any],
+    from sourceView: (any View)? = nil,
+    excludedActivityTypes: [UIActivity.ActivityType]?,
+    onComplete: ((Bool) -> Void)? = nil
+) -> Bool {
+    _ = sourceView
+    return platformShareIOSImperative(
+        items: items,
+        excludedActivityTypes: excludedActivityTypes,
+        onComplete: onComplete
+    )
+}
+
+@MainActor
+private func platformShareIOSImperative(
+    items: [Any],
+    excludedActivityTypes: [UIActivity.ActivityType]?,
+    onComplete: ((Bool) -> Void)?
+) -> Bool {
+    #if DEBUG
+    if NSClassFromString("XCTest") != nil {
+        onComplete?(true)
+        return true
+    }
+    #endif
+    if ProcessInfo.processInfo.arguments.contains("-UITesting")
+        || ProcessInfo.processInfo.environment["XCUI_TESTING"] == "1" {
+        onComplete?(true)
+        return true
+    }
+
+    guard let windowScene = UIApplication.shared.connectedScenes
+        .compactMap({ $0 as? UIWindowScene })
+        .first(where: { $0.activationState == .foregroundActive }),
+          let root = windowScene.windows.first(where: { $0.isKeyWindow })?.rootViewController else {
+        onComplete?(false)
+        return false
+    }
+
+    let controller = UIActivityViewController(activityItems: items, applicationActivities: nil)
+    if let excludedActivityTypes {
+        controller.excludedActivityTypes = excludedActivityTypes
+    }
+    controller.completionWithItemsHandler = { _, completed, _, _ in
+        onComplete?(completed)
+    }
+
+    var presenter = root
+    while let presented = presenter.presentedViewController {
+        presenter = presented
+    }
+    presenter.present(controller, animated: true)
+    return true
 }
 #endif
 

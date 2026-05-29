@@ -1002,6 +1002,34 @@ final class Layer4UITests: XCTestCase {
     }
 
     @MainActor
+    func testL4_platformExportActions_L4() throws {
+        ensureContractRoot()
+        scrollToElement(label: "L4ContractExportActions")
+        let exportById = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "identifier == %@", "L4ContractExportActions"))
+            .firstMatch
+        let exportByLabel = app.buttons["L4ContractExportActions"].firstMatch
+        let exportButton: XCUIElement
+        if exportById.waitForExistence(timeout: 2.5) {
+            exportButton = exportById
+        } else {
+            XCTAssertTrue(exportByLabel.waitForExistence(timeout: 1.2),
+                          "platformExportActions_L4: export button with identifier or label L4ContractExportActions should exist")
+            exportButton = exportByLabel
+        }
+        tapByNormalizedCenter(exportButton)
+        let cancel = app.buttons["Cancel"].firstMatch
+        if cancel.waitForExistence(timeout: 1.0) {
+            cancel.tap()
+        }
+        XCTAssertTrue(
+            app.navigationBars["Layer 4 Examples"].waitForExistence(timeout: 1.0)
+                || app.buttons["L4ContractSheet"].waitForExistence(timeout: 1.2),
+            "platformExportActions_L4: contract screen must be reachable after export chooser (no stuck modal blocking the suite)"
+        )
+    }
+
+    @MainActor
     func testL4_platformOpenURL_L4() throws {
         ensureContractRoot()
         scrollToElement(label: "L4ContractOpenURL")

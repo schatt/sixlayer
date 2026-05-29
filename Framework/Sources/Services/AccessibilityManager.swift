@@ -39,8 +39,7 @@ public class AccessibilityManager: ObservableObject {
     
     /// Checks if reduce motion is enabled
     public func isReduceMotionEnabled() -> Bool {
-        // TODO: Implement actual reduce motion detection
-        return false // Stub: return false for now
+        PlatformReduceMotionPreference.isReduceMotionEnabled
     }
     
     /// Checks if high contrast is enabled

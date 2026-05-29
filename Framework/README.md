@@ -1,6 +1,6 @@
 # SixLayer Framework
 
-[![Version](https://img.shields.io/badge/version-v7.8.7-blue.svg)](https://github.com/schatt/sixlayer/releases/tag/v7.8.7)
+[![Version](https://img.shields.io/badge/version-v7.8.9-blue.svg)](https://github.com/schatt/sixlayer/releases/tag/v7.8.9)
 [![Platform](https://img.shields.io/badge/platform-iOS%2016%2B%20%7C%20macOS%2013%2B-lightgrey.svg)](https://github.com/schatt/6layer)
 [![Swift](https://img.shields.io/badge/Swift-5.9+-orange.svg)](https://swift.org)
 
@@ -39,6 +39,18 @@ Layer 1: Semantic Intent → Layer 2: Layout Decision → Layer 3: Strategy Sele
 - **Extensible**: Easy to extend with custom layers and strategies
 - **Comprehensively Tested**: 800+ tests with platform-aware testing and mandatory TDD implementation
 - **DRY Architecture**: Define hints once in files, use everywhere automatically
+
+## 🆕 What's New in v7.8.9
+
+### Patch release
+
+Reduce Motion: `PlatformReduceMotionPreference`, `withPlatformAnimation`, and `platformAnimation` gating (#298). Increase Contrast readable secondary: `PlatformContrastAccessibility` and `platformForegroundReadableSecondary()` (#299). See [RELEASE_v7.8.9.md](../Development/RELEASE_v7.8.9.md).
+
+## 🆕 What's New in v7.8.8
+
+### Patch release
+
+Dynamic Type typography: `DynamicFontResolver` (#295), design-token scaling (#294), scalable `platformSystem` and `platformDecorativeIconFont` (#296). See [RELEASE_v7.8.8.md](../Development/RELEASE_v7.8.8.md) and [TypographyMigration.md](docs/TypographyMigration.md).
 
 ## 🆕 What's New in v7.8.7
 

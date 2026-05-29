@@ -1,5 +1,5 @@
 // swift-tools-version: 6.0
-// SixLayerFramework v7.8.7 - Patch: PlatformTabStrip public initializer (#292)
+// SixLayerFramework v7.8.9 - Patch: Increase Contrast readable secondary (#299)
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
