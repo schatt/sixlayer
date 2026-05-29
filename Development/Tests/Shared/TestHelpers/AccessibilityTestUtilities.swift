@@ -1022,15 +1022,35 @@ public enum AccessibilityTestUtilities {
     private static func inferredExplicitName(from expectedPattern: String) -> String? {
         if expectedPattern.contains("*") {
             let parts = expectedPattern.split(separator: ".", omittingEmptySubsequences: true)
-            guard let last = parts.last, !last.contains("*"), last != "ui", last != "main", last != "element" else {
-                return nil
+            for part in parts.reversed() {
+                let cleaned = String(part).trimmingCharacters(in: CharacterSet(charactersIn: "*"))
+                if !cleaned.isEmpty, cleaned != "ui", cleaned != "main", cleaned != "element", cleaned != "SixLayer" {
+                    return cleaned
+                }
             }
-            return String(last)
+            return nil
         }
         if expectedPattern.contains(".") {
             return expectedPattern.split(separator: ".").last.map(String.init)
         }
         return expectedPattern.isEmpty ? nil : expectedPattern
+    }
+
+    /// Returns true when no hosted identifier matches `expectedPattern` (no Issue.record — for negative tests).
+    @MainActor
+    public static func testComponentLacksMatchingIdentifier<V: View>(
+        _ view: V,
+        expectedPattern: String,
+        platform: SixLayerPlatform,
+        componentName: String
+    ) -> Bool {
+        !testComponentComplianceSinglePlatform(
+            view,
+            expectedPattern: expectedPattern,
+            platform: platform,
+            componentName: componentName,
+            recordFailureIssues: false
+        )
     }
 
     /// UIHosting often skips `NamedModifier` / `ExactNamedModifier` bodies; use modifier algorithms as fallback.
@@ -1127,7 +1147,8 @@ public enum AccessibilityTestUtilities {
         platform: SixLayerPlatform,
         componentName: String,
         testHIGCompliance: Bool = true,
-        exposeContentAccessibility: Bool = true
+        exposeContentAccessibility: Bool = true,
+        recordFailureIssues: Bool = true
     ) -> Bool {
         // Prefer task-local config when the test wrapped work in `runWithTaskLocalConfig`.
         // When @TaskLocal is unset, use the same resolution as the framework (`taskLocal ?? shared`).
@@ -1187,15 +1208,7 @@ public enum AccessibilityTestUtilities {
             }
             
             if debugMatches != nil {
-                // Tooling limitation: generator produced the right ID but hosting traversal couldn't see it.
-                // Treat as pass but record diagnostics so we keep pressure on improving the harness.
-                if platformIdentifiers.isEmpty {
-                    Issue.record("""
-                    Tooling limitation: generator produced matching identifier for \(componentName) but platform traversal found none.
-                    Expected pattern: \(expectedPattern)
-                    Debug identifiers (sample): \(debugIdentifiers.prefix(10))
-                    """)
-                }
+                // Swift Testing treats recorded issues as failures (#271) — pass without Issue.record.
                 return true
             }
 
@@ -1211,14 +1224,15 @@ public enum AccessibilityTestUtilities {
             return true
             #endif
             
-            // Hard failure: no evidence in either source.
-            Issue.record("""
-            No accessibility identifiers matched expected pattern for \(componentName).
-            Expected pattern: \(expectedPattern)
-            Platform identifiers (sample): \(platformIdentifiers.prefix(10))
-            Debug identifiers (sample): \(debugIdentifiers.prefix(10))
-            Direct identifiers (sample): \(uniqueSignals.prefix(10))
-            """)
+            if recordFailureIssues {
+                Issue.record("""
+                No accessibility identifiers matched expected pattern for \(componentName).
+                Expected pattern: \(expectedPattern)
+                Platform identifiers (sample): \(platformIdentifiers.prefix(10))
+                Debug identifiers (sample): \(debugIdentifiers.prefix(10))
+                Direct identifiers (sample): \(uniqueSignals.prefix(10))
+                """)
+            }
             return false
         }
         
