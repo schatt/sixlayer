@@ -353,16 +353,8 @@ open class BaseTestClass {
         minChildren: Int? = nil,
         body: (ViewInspector.InspectableView<ViewInspector.ViewType.VStack>) -> Void
     ) {
-        guard let inspected = withInspectedView(view, perform: { $0 }) else {
-            Issue.record("View inspection failed for \(testName): could not obtain inspected view")
-            return
-        }
-        guard let vStack = try? firstVStackInHierarchy(inspected) else {
+        guard let vStack = try? firstVStackInView(view, minChildren: minChildren) else {
             Issue.record("View inspection returned no VStack for \(testName) (ViewInspector cannot traverse hierarchy)")
-            return
-        }
-        if let min = minChildren, vStack.count < min {
-            Issue.record("View inspection for \(testName): VStack has \(vStack.count) children, expected at least \(min) (ViewInspector cannot traverse hierarchy)")
             return
         }
         body(vStack)
@@ -382,12 +374,8 @@ open class BaseTestClass {
             Issue.record("View inspection failed for \(testName): could not obtain inspected view")
             return
         }
-        guard let vStack = try? firstVStackInHierarchy(inspected) else {
+        guard let vStack = try? firstVStackInHierarchy(inspected, minChildren: minChildren) else {
             Issue.record("View inspection returned no VStack for \(testName) (ViewInspector cannot traverse hierarchy)")
-            return
-        }
-        if let min = minChildren, vStack.count < min {
-            Issue.record("View inspection for \(testName): VStack has \(vStack.count) children, expected at least \(min) (ViewInspector cannot traverse hierarchy)")
             return
         }
         body(vStack)
