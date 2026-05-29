@@ -9030,12 +9030,13 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
     
     @Test func testShouldCropImage_Odometer() async {
-        let purpose = PhotoPurpose.odometer
+        // Legacy odometer behavior maps to document-purpose processing (see L2LayoutDecisionTests).
+        let purpose = PhotoPurpose.document
         let imageSize = CGSize(width: 4000, height: 3000)
         let targetSize = CGSize(width: 1000, height: 1000)
         
         let shouldCrop = shouldCropImage(for: purpose, imageSize: imageSize, targetSize: targetSize)
-        #expect(shouldCrop == false, "Odometer photos are flexible and should not be cropped")
+        #expect(shouldCrop == true, "Document/odometer alias should crop when aspect ratios differ")
     }
     
     @Test func testShouldCropImage_Profile() async {
