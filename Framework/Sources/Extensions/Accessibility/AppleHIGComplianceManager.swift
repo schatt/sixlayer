@@ -535,7 +535,7 @@ public struct AccessibilitySystemState {
     public let hasSwitchControl: Bool
     
     public init() {
-        #if os(iOS) || os(visionOS) || os(tvOS) || os(watchOS)
+        #if os(iOS) || os(visionOS) || os(tvOS)
         self.isVoiceOverRunning = UIAccessibility.isVoiceOverRunning
         self.isDarkerSystemColorsEnabled = UIAccessibility.isDarkerSystemColorsEnabled
         self.isReduceTransparencyEnabled = UIAccessibility.isReduceTransparencyEnabled
@@ -544,6 +544,16 @@ public struct AccessibilitySystemState {
         self.hasKeyboardSupport = true
         self.hasFullKeyboardAccess = false
         self.hasSwitchControl = UIAccessibility.isSwitchControlRunning
+        #elseif os(watchOS)
+        // UIAccessibility runtime query APIs are unavailable on watchOS SDK; use conservative defaults.
+        self.isVoiceOverRunning = false
+        self.isDarkerSystemColorsEnabled = false
+        self.isReduceTransparencyEnabled = false
+        self.isHighContrastEnabled = false
+        self.isReducedMotionEnabled = PlatformReduceMotionPreference.isReduceMotionEnabled
+        self.hasKeyboardSupport = true
+        self.hasFullKeyboardAccess = false
+        self.hasSwitchControl = false
         #elseif os(macOS)
         self.isVoiceOverRunning = NSWorkspace.shared.isVoiceOverEnabled
         self.isDarkerSystemColorsEnabled = NSWorkspace.shared.accessibilityDisplayShouldIncreaseContrast
