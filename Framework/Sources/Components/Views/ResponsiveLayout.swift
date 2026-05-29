@@ -97,7 +97,7 @@ public struct ResponsiveStack<Content: View>: View {
 public struct ResponsivePadding: ViewModifier {
     public func body(content: Content) -> some View {
         content.padding(paddingValue)
-            .automaticCompliance()
+            .automaticCompliance(named: "ResponsivePadding")
     }
 
     private var paddingValue: CGFloat {
