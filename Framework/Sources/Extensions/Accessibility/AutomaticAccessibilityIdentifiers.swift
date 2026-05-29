@@ -458,9 +458,7 @@ public struct AutomaticComplianceModifier: ViewModifier {
     /// Determine if an element type is interactive (needs touch target sizing, focus indicators, etc.)
     /// Note: nonisolated because this is pure string logic with no actor isolation requirements
     nonisolated internal func isInteractiveElement(elementType: String?) -> Bool {
-        guard let elementType = elementType?.lowercased() else { return false }
-        let interactiveTypes = ["button", "link", "textfield", "toggle", "picker", "stepper", "slider", "segmentedcontrol"]
-        return interactiveTypes.contains { elementType.contains($0) }
+        slfIsInteractiveAccessibilityElementType(elementType)
     }
 }
 
@@ -1178,6 +1176,28 @@ internal func slfSuppressAnonymousAutomaticComplianceWrapperIdentifier(
         && !traitsNonEmpty
         && !valueNonEmpty
         && accessibilitySortPriority == nil
+}
+
+/// Interactive element types for automatic label policy (Issue #290) and HIG touch-target sizing.
+internal func slfIsInteractiveAccessibilityElementType(_ elementType: String?) -> Bool {
+    guard let elementType = elementType?.lowercased() else { return false }
+    let interactiveTypes = ["button", "link", "textfield", "toggle", "picker", "stepper", "slider", "segmentedcontrol"]
+    return interactiveTypes.contains { elementType.contains($0) }
+}
+
+/// Whether ``BasicAutomaticComplianceModifier`` should apply an automatic VoiceOver label (Issue #290).
+internal func slfShouldApplyAutomaticAccessibilityLabel(
+    effectiveLabel: String?,
+    identifierIsPresent: Bool,
+    identifierElementType: String?,
+    isNavigationHeaderCompliance: Bool,
+    labelsOnlyOnInteractiveElements: Bool
+) -> Bool {
+    guard let effectiveLabel, !effectiveLabel.isEmpty, identifierIsPresent, !isNavigationHeaderCompliance else {
+        return false
+    }
+    // TDD RED: interactive-only flag not enforced yet.
+    return true
 }
 
 /// Whether ``BasicAutomaticComplianceModifier`` should apply ``accessibilityElement(children: .contain)`` on its wrapper.
