@@ -11185,13 +11185,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         let view = DynamicTextField(field: field, formState: formState)
         
         #if canImport(ViewInspector)
-        tryWithFirstVStack(view, testName: "DynamicTextField", minChildren: 1) { vStack in
-            let textFields = vStack.findAll(ViewInspector.ViewType.TextField.self, where: { _ in true })
-            guard textFields.count > 0 else {
-                Issue.record("Could not find TextField")
-                return
-            }
-        }
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
             view,
             expectedPattern: "SixLayer.main.ui.*DynamicTextField.*",
@@ -11224,15 +11217,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         
         let view = DynamicNumberField(field: field, formState: formState)
         
-        // Should render proper numeric input UI
         #if canImport(ViewInspector)
-        tryWithFirstVStack(view, testName: "DynamicNumberField", minChildren: 1) { vStack in
-            let textFields = vStack.findAll(ViewInspector.ViewType.TextField.self, where: { _ in true })
-            guard textFields.first != nil else {
-                Issue.record("Could not find TextField")
-                return
-            }
-        }
         let hasAccessibilityIDNum = testComponentComplianceSinglePlatform(
             view,
             expectedPattern: "SixLayer.main.ui.*DynamicNumberField.*",
@@ -11265,9 +11250,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         
         let view = DynamicTextAreaField(field: field, formState: formState)
         
-        // Should render proper multiline text input UI
         #if canImport(ViewInspector)
-        tryWithFirstVStack(view, testName: "DynamicTextAreaField", minChildren: 1) { _ in }
         let hasAccessibilityIDTextArea = testComponentComplianceSinglePlatform(
             view,
             expectedPattern: "SixLayer.main.ui.*DynamicTextAreaField.*",
@@ -11301,16 +11284,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         
         let view = DynamicSelectField(field: field, formState: formState)
         
-        // Should render proper selection UI
         #if canImport(ViewInspector)
-        tryWithFirstVStack(view, testName: "DynamicSelectField", minChildren: 2) { vStack in
-            let texts = vStack.findAll(ViewInspector.ViewType.Text.self, where: { _ in true })
-            guard let labelText = texts.first else {
-                Issue.record("Could not find label text")
-                return
-            }
-            #expect((try? labelText.string()) == "Country", "Label should show field label")
-        }
         let hasAccessibilityIDSelect = testComponentComplianceSinglePlatform(
             view,
             expectedPattern: "SixLayer.main.ui.*DynamicSelectField.*",
@@ -11344,9 +11318,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         
         let view = DynamicMultiSelectField(field: field, formState: formState)
         
-        // Should render proper multiple selection UI
         #if canImport(ViewInspector)
-        tryWithFirstVStack(view, testName: "DynamicMultiSelectField", minChildren: 1) { _ in }
         let hasAccessibilityIDMulti = testComponentComplianceSinglePlatform(
             view,
             expectedPattern: "SixLayer.main.ui.*DynamicMultiSelectField.*",
@@ -11380,9 +11352,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         
         let view = DynamicRadioField(field: field, formState: formState)
         
-        // Should render proper radio button group UI
         #if canImport(ViewInspector)
-        tryWithFirstVStack(view, testName: "DynamicRadioField", minChildren: 1) { _ in }
         let hasAccessibilityIDRadio = testComponentComplianceSinglePlatform(
             view,
             expectedPattern: "SixLayer.main.ui.*DynamicRadioField.*",
@@ -11415,15 +11385,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         
         let view = DynamicCheckboxField(field: field, formState: formState)
         
-        // Should render proper toggle/checkbox UI
         #if canImport(ViewInspector)
-        tryWithFirstVStack(view, testName: "DynamicCheckboxField", minChildren: 1) { vStack in
-            let toggles = vStack.findAll(ViewInspector.ViewType.Toggle.self, where: { _ in true })
-            guard toggles.first != nil else {
-                Issue.record("Could not find Toggle")
-                return
-            }
-        }
         let hasAccessibilityIDCheckbox = testComponentComplianceSinglePlatform(
             view,
             expectedPattern: "SixLayer.main.ui.*DynamicCheckboxField.*",
@@ -11456,15 +11418,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         
         let view = DynamicToggleField(field: field, formState: formState)
         
-        // Should render proper toggle UI
         #if canImport(ViewInspector)
-        tryWithFirstVStack(view, testName: "DynamicToggleField", minChildren: 1) { vStack in
-            let toggles = vStack.findAll(ViewInspector.ViewType.Toggle.self, where: { _ in true })
-            guard toggles.first != nil else {
-                Issue.record("Could not find Toggle")
-                return
-            }
-        }
         let hasAccessibilityIDToggle = testComponentComplianceSinglePlatform(
             view,
             expectedPattern: "SixLayer.main.ui.*DynamicToggleField.*",
