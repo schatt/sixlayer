@@ -103,6 +103,9 @@ public final class AccessibilityIdentifierConfig: @unchecked Sendable {
     /// Whether to include element types in identifiers
     public var includeElementTypes: Bool = true
     
+    /// When true, automatic VoiceOver labels from ``basicAutomaticCompliance`` / ``automaticCompliance`` apply only to interactive element types (buttons, links, fields, etc.). Identifiers are unchanged. Default false for backward compatibility (Issue #290).
+    public var labelsOnlyOnInteractiveElements: Bool = false
+    
     /// Current view hierarchy for context-aware identifier generation
     public var currentViewHierarchy: [String] = []
     
