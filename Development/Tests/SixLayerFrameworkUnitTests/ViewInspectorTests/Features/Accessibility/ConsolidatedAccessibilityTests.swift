@@ -3117,14 +3117,22 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         self.runWithTaskLocalConfig {
             self.setupTestEnvironment()
             
-            let view = PlatformInteractionButton(style: .primary, action: {}, identifierName: "Test") {
-                Text("Test")
-            }
-                .accessibilityIdentifier("manual-override")
+            let manualID = "manual-override"
+            let view = platformPresentContent_L1(
+                content: "Test",
+                hints: PresentationHints()
+            )
+                .accessibilityIdentifier(manualID)
+                .automaticCompliance()
             
             #if canImport(ViewInspector)
-            let buttonID = AccessibilityTestUtilities.inspectButtonAccessibilityIdentifier(view)
-            #expect(buttonID == "manual-override", "Manual ID should override automatic ID")
+            let hasManualID = testComponentComplianceSinglePlatform(
+                view,
+                expectedPattern: manualID,
+                platform: SixLayerPlatform.iOS,
+                componentName: "ManualIDOverrideTest"
+            )
+            #expect(hasManualID, "Manual ID should override automatic ID")
             #else
             // ViewInspector not available on this platform
             #endif
@@ -13878,8 +13886,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
         
         let submitRoot = self.hostRootPlatformView(submitButton, forceLayout: true)
-        let cancelRoot = self.hostRootPlatformView(cancelButton, forceLayout: true)
         let submitID = getAccessibilityIdentifierForTest(view: submitButton, hostedRoot: submitRoot)
+        let cancelRoot = self.hostRootPlatformView(cancelButton, forceLayout: true)
         let cancelID = getAccessibilityIdentifierForTest(view: cancelButton, hostedRoot: cancelRoot)
         
         #expect((submitID?.localizedCaseInsensitiveContains("submit") ?? false), "Submit button identifier should include 'Submit' label")
