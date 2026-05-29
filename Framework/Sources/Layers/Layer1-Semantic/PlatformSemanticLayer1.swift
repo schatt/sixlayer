@@ -317,7 +317,7 @@ public func platformPresentModalForm_L1(
     
     // Return a modal form with the generated fields
     return ModalFormView(fields: fields, formType: formType, context: context, hints: mergedHints)
-        .automaticCompliance()
+        .automaticCompliance(named: "platformPresentModalForm_L1")
 }
 
 /// Generic function for presenting modal forms with custom form container view
@@ -2234,8 +2234,8 @@ public struct GenericFormView: View {
                 }
             }
         )
-        // Issue #245 / gh-243: caller-defined fields are arbitrary content; anonymous shell (inner controls stay named/typed).
-        .automaticCompliance()
+        // Issue #245 / gh-243: caller-defined fields are arbitrary content; name root for harness.
+        .automaticCompliance(named: "GenericFormView")
     }
 }
 
@@ -2252,7 +2252,7 @@ public struct GenericMediaView: View {
                 .font(.caption)
         }
         .padding()
-        // Compliance is applied on `platformPresentMediaData_L1` (single anonymous root).
+        .automaticCompliance(named: "GenericMediaView")
     }
 }
 
@@ -2269,7 +2269,7 @@ public struct GenericHierarchicalView: View {
                 .font(.caption)
         }
         .padding()
-        // Compliance is applied on `platformPresentHierarchicalData_L1` (single anonymous root).
+        .automaticCompliance(named: "GenericHierarchicalView")
     }
 }
 
@@ -2286,7 +2286,7 @@ public struct GenericTemporalView: View {
                 .font(.caption)
         }
         .padding()
-        // Compliance is applied on `platformPresentTemporalData_L1` (single anonymous root).
+        .automaticCompliance(named: "GenericTemporalView")
     }
 }
 
@@ -2328,7 +2328,7 @@ public struct ModalFormView: View {
         }
         .frame(minWidth: 400, minHeight: 300)
         .background(Color.platformBackground)
-        .automaticCompliance()
+        .automaticCompliance(named: "ModalFormView")
     }
     
     /// Layer 1 **preview** field chrome (fixed `.constant` bindings); not backed by ``DynamicFormState`` — see ``createSimpleFieldView`` / #267.

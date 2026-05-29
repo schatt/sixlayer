@@ -67,6 +67,7 @@ public func platformExtractStructuredData_L1(
     .environment(\.accessibilityIdentifierName, "platformExtractStructuredData_L1")
     .automaticAccessibility()
     .automaticCompliance(named: "platformExtractStructuredData_L1")
+}
 
 /// Direct OCR processing function for testing (bypasses SwiftUI view lifecycle)
 public func processOCRForTesting(
