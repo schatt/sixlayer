@@ -1,17 +1,21 @@
 # Changelog
 
-## v7.8.9 - Reduce Motion for platform animation APIs (May 26, 2026)
+## v7.8.9 - Accessibility: Reduce Motion + Increase Contrast (May 28, 2026)
 
 ### ✨ Added
 - **`PlatformReduceMotionPreference`** and **`withPlatformAnimation`**: framework-owned reduce-motion policy for animation APIs (#298).
-- Unit and ViewInspector tests proving on/off behavior for `platformAnimation`, `higAnimationCategory`, and `AccessibilityManager`.
+- **`PlatformContrastAccessibility.readableSecondary(contrast:)`**: maps `.secondary` → `.primary` when `colorSchemeContrast` is increased (#299).
+- **`View.platformForegroundReadableSecondary()`**: view-scoped modifier for caption/subtitle text under **Increase Contrast** (#299).
+- **`PlatformReduceMotionPreferenceTests`**, **`PlatformAnimationReduceMotionTests`**, **`PlatformContrastAccessibilityTests`**: unit/ViewInspector coverage with effective on/off assertions (#298, #299).
 
 ### 🧩 Changed
-- **`platformAnimation`**, **`higAnimationCategory`**, and **`AutomaticHIGMotionPreferenceModifier`** respect reduce motion (environment + system APIs).
-- **`AccessibilitySystemState`** and **`AccessibilityManager.isReduceMotionEnabled()`** read live system state instead of stubs.
+- **`platformAnimation`**, **`higAnimationCategory`**, and **`AutomaticHIGMotionPreferenceModifier`** respect reduce motion (environment + system APIs) (#298).
+- **`AccessibilitySystemState`** and **`AccessibilityManager.isReduceMotionEnabled()`** read live system state instead of stubs (#298).
+- **`RuntimeCapabilityDetection.isHighContrastEnabled`**: documented as **Darker System Colors**, not Increase Contrast (#299).
 
 ### 📚 Documentation
-- Full notes: [`Development/RELEASE_v7.8.9.md`](Development/RELEASE_v7.8.9.md).
+- CarManager: pin **`7.8.9`** after tag — reduce-motion via framework APIs (#438); replace `foregroundColorReadableSecondary()` with `platformForegroundReadableSecondary()` (#403).
+- Full notes: [`Development/RELEASE_v7.8.9.md`](Development/RELEASE_v7.8.9.md), index [`Development/RELEASES.md`](Development/RELEASES.md).
 
 ---
 
