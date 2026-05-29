@@ -197,20 +197,19 @@ final class Layer4UITests: XCTestCase {
         scrollToContractIdentifier("SixLayer.main.ui.l4contractsecurefield.SecureField", maxAttempts: 14)
     }
 
-    /// Nested overlay host (400pt) sits below the Form section header; toolbar affordance is easy to miss (#259).
+    /// Nested overlay host (400pt) sits below the Form section header; nudge without overscrolling past toolbar (#259).
     @MainActor
     private func nudgeScrollInsideL4OverlayAccessibilitySection() {
-        for _ in 0..<4 {
+        for _ in 0..<2 {
             app.xcuiSwipeScrollHostsUp()
         }
     }
 
-    /// Scroll until overlay contract detail is on-screen before querying toolbar expand affordance (#259).
+    /// Scroll the L4 Overlay Accessibility section into view; keep nested nav toolbar on-screen (#259).
     @MainActor
     private func scrollToL4OverlayAccessibilitySection() {
         scrollToFormSectionHeader(title: "L4 Overlay Accessibility")
         nudgeScrollInsideL4OverlayAccessibilitySection()
-        scrollToContractIdentifier("L4OverlayDetailAction", maxAttempts: 14)
     }
 
     /// CloudKit + photo picker rows are deep in L4 System (after clipboard/print/url rows and overlay above).
