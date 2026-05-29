@@ -148,7 +148,7 @@ public func platformPresentNumericData_L1(
 ) -> some View {
     return GenericNumericDataView(data: data, hints: hints)
         .environment(\.accessibilityIdentifierName, "platformPresentNumericData_L1")
-        .automaticCompliance()
+        .automaticCompliance(identifierName: "platformPresentNumericData_L1")
 }
 
 /// Present a single numeric data item
@@ -177,7 +177,7 @@ public func platformPresentNumericData_L1(
         customDataView: customDataView
     )
     .environment(\.accessibilityIdentifierName, "platformPresentNumericData_L1")
-    .automaticCompliance()
+    .automaticCompliance(identifierName: "platformPresentNumericData_L1")
 }
 
 /// Generic function for presenting numeric data with custom views and enhanced hints
@@ -208,7 +208,7 @@ public func platformPresentNumericData_L1(
     )
     .environment(\.extensibleHints, hints.extensibleHints)
     .environment(\.accessibilityIdentifierName, "platformPresentNumericData_L1")
-    .automaticCompliance()
+    .automaticCompliance(identifierName: "platformPresentNumericData_L1")
 }
 
 /// Generic function for presenting responsive cards
@@ -279,7 +279,8 @@ public func platformPresentFormData_L1(
         modelName: nil,
         layoutSpec: nil
     )
-    .automaticCompliance()
+    .environment(\.accessibilityIdentifierName, "platformPresentFormData_L1")
+    .automaticCompliance(identifierName: "platformPresentFormData_L1")
 }
 
 /// Generic function for presenting modal forms
@@ -317,7 +318,7 @@ public func platformPresentModalForm_L1(
     
     // Return a modal form with the generated fields
     return ModalFormView(fields: fields, formType: formType, context: context, hints: mergedHints)
-        .automaticCompliance()
+        .automaticCompliance(named: "platformPresentModalForm_L1")
 }
 
 /// Generic function for presenting modal forms with custom form container view
@@ -651,7 +652,7 @@ public func platformPresentNavigationStack_L1<Item: Identifiable & Hashable, Ite
         destination: destination
     )
     .environment(\.accessibilityIdentifierName, "platformPresentNavigationStack_L1")
-    .automaticCompliance()
+    .automaticCompliance(identifierName: "platformPresentNavigationStack_L1")
 }
 
 // MARK: - App Navigation Layer 1 Functions
@@ -690,7 +691,7 @@ public func platformPresentAppNavigation_L1<SidebarContent: View, DetailContent:
         detail: detail
     )
     .environment(\.accessibilityIdentifierName, "platformPresentAppNavigation_L1")
-    .automaticCompliance()
+    .automaticCompliance(identifierName: "platformPresentAppNavigation_L1")
 }
 
 /// Internal wrapper view for app navigation
@@ -870,7 +871,7 @@ public func platformPresentSettings_L1(
         customSettingView: customSettingView
     )
     .environment(\.accessibilityIdentifierName, "platformPresentSettings_L1")
-    .automaticCompliance()
+    .automaticCompliance(identifierName: "platformPresentSettings_L1")
 }
 
 /// Generic function for presenting settings interface with custom views and enhanced hints
@@ -906,7 +907,7 @@ public func platformPresentSettings_L1(
     )
     .environment(\.extensibleHints, hints.extensibleHints)
     .environment(\.accessibilityIdentifierName, "platformPresentSettings_L1")
-    .automaticCompliance()
+    .automaticCompliance(identifierName: "platformPresentSettings_L1")
 }
 
 // MARK: - Enhanced Presentation Hints Overloads
@@ -945,7 +946,7 @@ public func platformPresentItemCollection_L1<Item: Identifiable>(
     )
     .environment(\.extensibleHints, hints.extensibleHints)
     .environment(\.accessibilityIdentifierName, "platformPresentItemCollection_L1")
-    .automaticCompliance()
+    .automaticCompliance(identifierName: "platformPresentItemCollection_L1")
 }
 
 // MARK: - Custom View Support Overloads
@@ -992,7 +993,7 @@ public func platformPresentItemCollection_L1<Item: Identifiable>(
         customItemView: customItemView
     )
     .environment(\.accessibilityIdentifierName, "platformPresentItemCollection_L1")
-    .automaticCompliance()
+    .automaticCompliance(identifierName: "platformPresentItemCollection_L1")
 }
 
 /// Generic function for presenting any collection of identifiable items with custom views and enhanced hints
@@ -1030,7 +1031,7 @@ public func platformPresentItemCollection_L1<Item: Identifiable>(
     )
     .environment(\.extensibleHints, hints.extensibleHints)
     .environment(\.accessibilityIdentifierName, "platformPresentItemCollection_L1")
-    .automaticCompliance()
+    .automaticCompliance(identifierName: "platformPresentItemCollection_L1")
 }
 
 /// Generic function for presenting any collection of identifiable items with custom views for all actions
@@ -1056,7 +1057,7 @@ public func platformPresentItemCollection_L1<Item: Identifiable>(
         customItemView: customItemView
     )
     .environment(\.accessibilityIdentifierName, "platformPresentItemCollection_L1")
-    .automaticCompliance()
+    .automaticCompliance(identifierName: "platformPresentItemCollection_L1")
 }
 
 /// Generic function for presenting numeric data with enhanced hints
@@ -1079,7 +1080,7 @@ public func platformPresentNumericData_L1(
     return GenericNumericDataView(data: data, hints: processedHints)
         .environment(\.extensibleHints, hints.extensibleHints)
         .environment(\.accessibilityIdentifierName, "platformPresentNumericData_L1")
-        .automaticCompliance()
+        .automaticCompliance(identifierName: "platformPresentNumericData_L1")
 }
 
 /// Generic function for presenting responsive cards with enhanced hints
@@ -1129,6 +1130,8 @@ public func platformPresentFormData_L1(
         modelName: modelName,
         layoutSpec: layoutSpec
     )
+    .environment(\.accessibilityIdentifierName, "platformPresentFormData_L1")
+    .automaticCompliance(identifierName: "platformPresentFormData_L1")
 }
 
 // MARK: - Async Form View Helper
@@ -1743,7 +1746,7 @@ public struct GenericItemCollectionView<Item: Identifiable>: View {
         }
         .appleHIGCompliant()
         .automaticAccessibility()
-        .automaticCompliance()
+        .automaticCompliance(named: "GenericItemCollectionView")
         .platformPatterns()
         .visualConsistency()
     }
@@ -2133,7 +2136,7 @@ public struct GenericNumericDataView: View {
             .automaticAccessibility()
             .platformPatterns()
             .visualConsistency()
-            .automaticCompliance()
+            .automaticCompliance(named: "GenericNumericDataView")
     }
 }
 
@@ -2234,8 +2237,8 @@ public struct GenericFormView: View {
                 }
             }
         )
-        // Issue #245 / gh-243: caller-defined fields are arbitrary content; anonymous shell (inner controls stay named/typed).
-        .automaticCompliance()
+        // Issue #245 / gh-243: caller-defined fields are arbitrary content; name root for harness.
+        .automaticCompliance(named: "GenericFormView")
     }
 }
 
@@ -2252,7 +2255,7 @@ public struct GenericMediaView: View {
                 .font(.caption)
         }
         .padding()
-        // Compliance is applied on `platformPresentMediaData_L1` (single anonymous root).
+        .automaticCompliance(named: "GenericMediaView")
     }
 }
 
@@ -2269,7 +2272,7 @@ public struct GenericHierarchicalView: View {
                 .font(.caption)
         }
         .padding()
-        // Compliance is applied on `platformPresentHierarchicalData_L1` (single anonymous root).
+        .automaticCompliance(named: "GenericHierarchicalView")
     }
 }
 
@@ -2286,7 +2289,7 @@ public struct GenericTemporalView: View {
                 .font(.caption)
         }
         .padding()
-        // Compliance is applied on `platformPresentTemporalData_L1` (single anonymous root).
+        .automaticCompliance(named: "GenericTemporalView")
     }
 }
 
@@ -2328,7 +2331,7 @@ public struct ModalFormView: View {
         }
         .frame(minWidth: 400, minHeight: 300)
         .background(Color.platformBackground)
-        .automaticCompliance()
+        .automaticCompliance(named: "ModalFormView")
     }
     
     /// Layer 1 **preview** field chrome (fixed `.constant` bindings); not backed by ``DynamicFormState`` — see ``createSimpleFieldView`` / #267.
@@ -4374,8 +4377,8 @@ public struct GenericSettingsView: View {
         .onAppear {
             initializeValues()
         }
-        // Issue #245 / gh-243: anonymous (also when used without `platformPresentSettings_L1` in tests).
-        .automaticCompliance()
+        // Issue #245 / gh-243: named root for direct GenericSettingsView hosting in tests.
+        .automaticCompliance(named: "GenericSettingsView")
     }
     
     private func initializeValues() {

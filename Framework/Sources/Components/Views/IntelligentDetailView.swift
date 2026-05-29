@@ -41,7 +41,7 @@ public struct IntelligentDetailView {
                 onEdit: onEdit,
                 customFieldView: customFieldView
             )
-            .automaticCompliance()
+            .automaticCompliance(named: "IntelligentDetailView")
         case .standard:
             platformStandardDetailView(
                 data: data,
@@ -50,7 +50,7 @@ public struct IntelligentDetailView {
                 onEdit: onEdit,
                 customFieldView: customFieldView
             )
-            .automaticCompliance()
+            .automaticCompliance(named: "IntelligentDetailView")
         case .detailed:
             platformDetailedDetailView(
                 data: data,
@@ -59,7 +59,7 @@ public struct IntelligentDetailView {
                 onEdit: onEdit,
                 customFieldView: customFieldView
             )
-            .automaticCompliance()
+            .automaticCompliance(named: "IntelligentDetailView")
         case .tabbed:
             platformTabbedDetailView(
                 data: data,
@@ -68,7 +68,7 @@ public struct IntelligentDetailView {
                 onEdit: onEdit,
                 customFieldView: customFieldView
             )
-            .automaticCompliance()
+            .automaticCompliance(named: "IntelligentDetailView")
         case .adaptive:
             platformAdaptiveDetailView(
                 data: data,
@@ -77,7 +77,7 @@ public struct IntelligentDetailView {
                 onEdit: onEdit,
                 customFieldView: customFieldView
             )
-            .automaticCompliance()
+            .automaticCompliance(named: "IntelligentDetailView")
         }
     }
     
