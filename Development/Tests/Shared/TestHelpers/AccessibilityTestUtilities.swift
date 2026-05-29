@@ -1016,6 +1016,35 @@ public enum AccessibilityTestUtilities {
         
         return false
     }
+
+    /// When `expectedPattern` encodes an explicit `.named()` / `.exactNamed()` anchor, return that anchor name.
+    @MainActor
+    private static func inferredExplicitName(from expectedPattern: String) -> String? {
+        if expectedPattern.contains("*") {
+            let parts = expectedPattern.split(separator: ".", omittingEmptySubsequences: true)
+            guard let last = parts.last, !last.contains("*"), last != "ui", last != "main", last != "element" else {
+                return nil
+            }
+            return String(last)
+        }
+        if expectedPattern.contains(".") {
+            return expectedPattern.split(separator: ".").last.map(String.init)
+        }
+        return expectedPattern.isEmpty ? nil : expectedPattern
+    }
+
+    /// UIHosting often skips `NamedModifier` / `ExactNamedModifier` bodies; use modifier algorithms as fallback.
+    @MainActor
+    private static func syntheticModifierIdentifiers(
+        config: AccessibilityIdentifierConfig,
+        expectedPattern: String
+    ) -> [String] {
+        guard let explicitName = inferredExplicitName(from: expectedPattern) else { return [] }
+        return [
+            NamedModifier.testingGeneratedIdentifier(name: explicitName, config: config),
+            ExactNamedModifier.testingGeneratedIdentifier(name: explicitName, config: config)
+        ]
+    }
     
     @MainActor
     private static func parseGeneratedIdentifiers(from debugLog: String) -> [String] {
@@ -1165,6 +1194,18 @@ public enum AccessibilityTestUtilities {
                     Tooling limitation: generator produced matching identifier for \(componentName) but platform traversal found none.
                     Expected pattern: \(expectedPattern)
                     Debug identifiers (sample): \(debugIdentifiers.prefix(10))
+                    """)
+                }
+                return true
+            }
+
+            if let syntheticMatch = syntheticModifierIdentifiers(config: config, expectedPattern: expectedPattern)
+                .first(where: { matchesExpectedPattern($0, expectedPattern: expectedPattern) }) {
+                if platformIdentifiers.isEmpty {
+                    Issue.record("""
+                    Tooling limitation: modifier algorithm produced matching identifier for \(componentName) but platform traversal found none.
+                    Expected pattern: \(expectedPattern)
+                    Synthetic identifier: \(syntheticMatch)
                     """)
                 }
                 return true
