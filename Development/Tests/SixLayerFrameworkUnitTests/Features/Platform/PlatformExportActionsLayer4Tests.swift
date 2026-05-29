@@ -16,12 +16,7 @@ open class PlatformExportActionsLayer4Tests: BaseTestClass {
 
     @Test func testEnabledActions_csvPayloadOffersShareOnly() throws {
         let csvURL = try makeTemporaryFile(named: "report.csv", contents: Data("a,b\n1,2".utf8))
-        let payload = ExportActionPayload(
-            fileURL: csvURL,
-            printContent: nil,
-            jobName: nil,
-            excludedShareActivities: nil
-        )
+        let payload = makePayload(fileURL: csvURL)
 
         let actions = ExportActionResolution.enabledActions(payload: payload, options: .init())
 
@@ -30,12 +25,7 @@ open class PlatformExportActionsLayer4Tests: BaseTestClass {
 
     @Test func testEnabledActions_pdfPayloadOffersShareAndPrint() throws {
         let pdfURL = try makeTemporaryFile(named: "report.pdf", contents: minimalPDFData())
-        let payload = ExportActionPayload(
-            fileURL: pdfURL,
-            printContent: nil,
-            jobName: "Trip Report",
-            excludedShareActivities: nil
-        )
+        let payload = makePayload(fileURL: pdfURL, jobName: "Trip Report")
 
         let actions = ExportActionResolution.enabledActions(payload: payload, options: .init())
 
@@ -44,12 +34,7 @@ open class PlatformExportActionsLayer4Tests: BaseTestClass {
 
     @Test func testShowsChooser_falseWhenOnlyShareEnabled() throws {
         let csvURL = try makeTemporaryFile(named: "report.csv", contents: Data("csv".utf8))
-        let payload = ExportActionPayload(
-            fileURL: csvURL,
-            printContent: nil,
-            jobName: nil,
-            excludedShareActivities: nil
-        )
+        let payload = makePayload(fileURL: csvURL)
 
         #expect(
             ExportActionResolution.showsChooser(payload: payload, options: .init()) == false
@@ -58,12 +43,7 @@ open class PlatformExportActionsLayer4Tests: BaseTestClass {
 
     @Test func testShowsChooser_trueWhenShareAndPrintEnabled() throws {
         let pdfURL = try makeTemporaryFile(named: "report.pdf", contents: minimalPDFData())
-        let payload = ExportActionPayload(
-            fileURL: pdfURL,
-            printContent: nil,
-            jobName: nil,
-            excludedShareActivities: nil
-        )
+        let payload = makePayload(fileURL: pdfURL)
 
         #expect(
             ExportActionResolution.showsChooser(payload: payload, options: .init()) == true
@@ -75,8 +55,7 @@ open class PlatformExportActionsLayer4Tests: BaseTestClass {
         let payload = ExportActionPayload(
             fileURL: URL(fileURLWithPath: "/tmp/unused.pdf"),
             printContent: .pdf(pdfData),
-            jobName: nil,
-            excludedShareActivities: nil
+            jobName: nil
         )
 
         let resolved = ExportActionResolution.resolvePrintContent(payload: payload)
@@ -91,12 +70,7 @@ open class PlatformExportActionsLayer4Tests: BaseTestClass {
     @Test func testResolvePrintContent_derivesFromPDFURL() throws {
         let pdfData = minimalPDFData()
         let pdfURL = try makeTemporaryFile(named: "report.pdf", contents: pdfData)
-        let payload = ExportActionPayload(
-            fileURL: pdfURL,
-            printContent: nil,
-            jobName: nil,
-            excludedShareActivities: nil
-        )
+        let payload = makePayload(fileURL: pdfURL)
 
         let resolved = ExportActionResolution.resolvePrintContent(payload: payload)
 
@@ -109,12 +83,7 @@ open class PlatformExportActionsLayer4Tests: BaseTestClass {
 
     @Test func testResolvePrintContent_nilForNonPrintableFile() throws {
         let csvURL = try makeTemporaryFile(named: "report.csv", contents: Data("csv".utf8))
-        let payload = ExportActionPayload(
-            fileURL: csvURL,
-            printContent: nil,
-            jobName: nil,
-            excludedShareActivities: nil
-        )
+        let payload = makePayload(fileURL: csvURL)
 
         #expect(ExportActionResolution.resolvePrintContent(payload: payload) == nil)
     }
@@ -141,12 +110,7 @@ open class PlatformExportActionsLayer4Tests: BaseTestClass {
 
     @Test @MainActor func testImperativeExportActions_shareOnlyFastPath() throws {
         let csvURL = try makeTemporaryFile(named: "report.csv", contents: Data("a,b".utf8))
-        let payload = ExportActionPayload(
-            fileURL: csvURL,
-            printContent: nil,
-            jobName: nil,
-            excludedShareActivities: nil
-        )
+        let payload = makePayload(fileURL: csvURL)
 
         let result = platformExportActions_L4(payload: payload, options: .init())
 
@@ -159,12 +123,7 @@ open class PlatformExportActionsLayer4Tests: BaseTestClass {
 
     @Test @MainActor func testImperativeExportActions_printOnlyFastPath() throws {
         let pdfURL = try makeTemporaryFile(named: "report.pdf", contents: minimalPDFData())
-        let payload = ExportActionPayload(
-            fileURL: pdfURL,
-            printContent: nil,
-            jobName: "Trip Report",
-            excludedShareActivities: nil
-        )
+        let payload = makePayload(fileURL: pdfURL, jobName: "Trip Report")
         var options = ExportActionOptions()
         options.showsShare = false
 
@@ -179,12 +138,7 @@ open class PlatformExportActionsLayer4Tests: BaseTestClass {
 
     @Test @MainActor func testImperativeExportActions_nilWhenNoEnabledActions() throws {
         let csvURL = try makeTemporaryFile(named: "report.csv", contents: Data("csv".utf8))
-        let payload = ExportActionPayload(
-            fileURL: csvURL,
-            printContent: nil,
-            jobName: nil,
-            excludedShareActivities: nil
-        )
+        let payload = makePayload(fileURL: csvURL)
         var options = ExportActionOptions()
         options.showsShare = false
         options.showsPrint = false
@@ -214,6 +168,27 @@ open class PlatformExportActionsLayer4Tests: BaseTestClass {
     }
 
     // MARK: - Helpers
+
+    private func makePayload(
+        fileURL: URL,
+        printContent: PrintContent? = nil,
+        jobName: String? = nil
+    ) -> ExportActionPayload {
+        #if os(iOS)
+        ExportActionPayload(
+            fileURL: fileURL,
+            printContent: printContent,
+            jobName: jobName,
+            excludedShareActivities: nil
+        )
+        #else
+        ExportActionPayload(
+            fileURL: fileURL,
+            printContent: printContent,
+            jobName: jobName
+        )
+        #endif
+    }
 
     private func minimalPDFData() -> Data {
         Data(
