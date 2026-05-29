@@ -238,12 +238,12 @@ open class Layer1AccessibilityTests: BaseTestClass {
             // Then: View should be created
             // view is a non-optional View, so it exists if we reach here
             
-            // TDD RED PHASE: Test accessibility identifiers (representative sampling on iOS)
+            // TDD GREEN: L1 shell uses platformPresentNumericData_L1 identifierName
             let hasSpecificAccessibilityID = testComponentComplianceSinglePlatform(
                 view, 
-                expectedPattern: "*.main.ui.element.*", 
+                expectedPattern: "SixLayer.*ui", 
                 platform: SixLayerPlatform.iOS,
-                componentName: "NumericData"
+                componentName: "platformPresentNumericData_L1"
             )
             #expect(hasSpecificAccessibilityID, "platformPresentNumericData_L1 should generate accessibility identifiers with current pattern ")
             
