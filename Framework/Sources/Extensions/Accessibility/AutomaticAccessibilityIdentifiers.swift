@@ -1196,7 +1196,9 @@ internal func slfShouldApplyAutomaticAccessibilityLabel(
     guard let effectiveLabel, !effectiveLabel.isEmpty, identifierIsPresent, !isNavigationHeaderCompliance else {
         return false
     }
-    // TDD RED: interactive-only flag not enforced yet.
+    if labelsOnlyOnInteractiveElements {
+        return slfIsInteractiveAccessibilityElementType(identifierElementType)
+    }
     return true
 }
 
@@ -1282,6 +1284,7 @@ public struct BasicAutomaticComplianceModifier: ViewModifier {
         let capturedEnableDebugLogging = config.enableDebugLogging
         let capturedNamespace = config.namespace
         let capturedGlobalPrefix = config.globalPrefix
+        let capturedLabelsOnlyOnInteractiveElements = config.labelsOnlyOnInteractiveElements
         
         // Logic: enableAutoIDs, global flag, and no local subtree opt-out (disableAutomaticAccessibilityIdentifiers)
         let shouldApply = capturedEnableAutoIDs
@@ -1401,7 +1404,14 @@ public struct BasicAutomaticComplianceModifier: ViewModifier {
         @ViewBuilder
         func applyAccessibilityLabelIfNeeded<V: View>(to view: V) -> some View {
             let effectiveLabel = accessibilityLabel ?? identifierLabel
-            if let label = effectiveLabel, !label.isEmpty, identifier != nil, !isNavigationHeaderCompliance {
+            let shouldApplyLabel = slfShouldApplyAutomaticAccessibilityLabel(
+                effectiveLabel: effectiveLabel,
+                identifierIsPresent: identifier != nil,
+                identifierElementType: identifierElementType,
+                isNavigationHeaderCompliance: isNavigationHeaderCompliance,
+                labelsOnlyOnInteractiveElements: capturedLabelsOnlyOnInteractiveElements
+            )
+            if shouldApplyLabel, let label = effectiveLabel {
                 // Localize and format label according to Apple HIG guidelines
                 let localizedLabel = localizeAccessibilityLabel(
                     label,
