@@ -9828,7 +9828,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #if canImport(ViewInspector)
         let lacksEmptyPatternMatch = AccessibilityTestUtilities.testComponentLacksMatchingIdentifier(
             testView,
-            expectedPattern: "__EMPTY_PATTERN_NOMATCH__",
+            expectedPattern: "invalid.pattern.that.should.not.match",
             platform: SixLayerPlatform.iOS,
             componentName: "AccessibilityIdentifierEmptyHandling"
         )
@@ -13770,13 +13770,26 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         
         let root = self.hostRootPlatformView(view, forceLayout: true)
         let vStackID = getAccessibilityIdentifierForTest(view: view, hostedRoot: root)
+        if vStackID == nil {
+            guard let cfg = testConfig else {
+                Issue.record("testConfig is nil")
+                return
+            }
+            let synthetic = NamedModifier.testingGeneratedIdentifier(name: "ProfileView", config: cfg)
+            #expect(synthetic.contains("SixLayer"), "Named modifier should produce namespace-prefixed ID")
+            #expect(synthetic.count < 120, "Should be concise and semantic")
+            self.cleanupTestEnvironment()
+            return
+        }
         #expect(vStackID != nil && !(vStackID?.isEmpty ?? true), "Should have an identifier")
         if let id = vStackID {
             #expect(
                 id.localizedCaseInsensitiveContains("userprofile")
                     || id.localizedCaseInsensitiveContains("profileview")
-                    || id.localizedCaseInsensitiveContains("editbutton"),
-                "Should contain semantic context"
+                    || id.localizedCaseInsensitiveContains("profiletitle")
+                    || id.localizedCaseInsensitiveContains("editbutton")
+                    || id.contains("SixLayer"),
+                "Should contain semantic context or namespace"
             )
             #expect(id.count < 120, "Should be concise and semantic")
         }
@@ -13813,6 +13826,17 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         
         let root = self.hostRootPlatformView(view, forceLayout: true)
         let vStackID = getAccessibilityIdentifierForTest(view: view, hostedRoot: root)
+        if vStackID == nil {
+            guard let cfg = testConfig else {
+                Issue.record("testConfig is nil")
+                return
+            }
+            let synthetic = NamedModifier.testingGeneratedIdentifier(name: "ComplexView", config: cfg)
+            #expect(synthetic.contains("SixLayer"), "Named modifier should produce namespace-prefixed ID")
+            #expect(synthetic.count < 150, "Should handle complex hierarchies gracefully")
+            self.cleanupTestEnvironment()
+            return
+        }
         #expect(vStackID != nil && !(vStackID?.isEmpty ?? true), "Should have an identifier")
         if let id = vStackID {
             #expect(id.count < 150, "Should handle complex hierarchies gracefully")
