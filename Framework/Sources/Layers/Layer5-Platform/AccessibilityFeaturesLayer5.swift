@@ -356,10 +356,10 @@ public struct AccessibilityHostingView<Content: View>: View {
         AccessibilityHostingControllerWrapper {
             content()
         }
-        .automaticCompliance()
+        .automaticCompliance(named: "AccessibilityHostingView")
         #else
         content()
-        .automaticCompliance()
+        .automaticCompliance(named: "AccessibilityHostingView")
         #endif
     }
 }
