@@ -925,7 +925,7 @@ public struct DynamicNumberField: View {
     }
 
     public var body: some View {
-        platformVStackContainer(alignment: .leading) {
+        field.fieldContainer(content: {
             let i18n = InternationalizationService()
             TextField(field.placeholder ?? i18n.localizedString(for: "SixLayerFramework.form.placeholder.enterNumber"), text: field.numericTextBinding(formState: formState))
             .platformTextFieldStyle()
@@ -933,10 +933,7 @@ public struct DynamicNumberField: View {
             .keyboardType(UIKeyboardType.decimalPad)
             #endif
             .automaticComplianceForDynamicFormField(field, identifierElementType: "TextField")
-        }
-        .padding()
-        .dynamicFormFieldAccessibilityLabel(field)
-        .automaticComplianceForDynamicFormField(field)
+        }, componentName: "DynamicNumberField")
     }
 }
 
@@ -953,7 +950,7 @@ public struct DynamicIntegerField: View {
     }
 
     public var body: some View {
-        platformVStackContainer(alignment: .leading) {
+        field.fieldContainer(content: {
             let i18n = InternationalizationService()
             TextField(field.placeholder ?? i18n.localizedString(for: "SixLayerFramework.form.placeholder.enterInteger"), text: field.numericTextBinding(formState: formState))
             .platformTextFieldStyle()
@@ -961,10 +958,7 @@ public struct DynamicIntegerField: View {
             .keyboardType(UIKeyboardType.numberPad)
             #endif
             .automaticComplianceForDynamicFormField(field, identifierElementType: "TextField")
-        }
-        .padding()
-        .dynamicFormFieldAccessibilityLabel(field) // Issue #194: resolved label when localized
-        .automaticComplianceForDynamicFormField(field)
+        }, componentName: "DynamicIntegerField")
     }
 }
 
@@ -1321,8 +1315,7 @@ public struct DynamicMultiSelectField: View {
     }
 
     public var body: some View {
-        platformVStackContainer(alignment: .leading, spacing: 8) {
-
+        field.fieldContainer(content: {
             if let options = field.options {
                 ForEach(options, id: \.self) { option in
                     Toggle(option, isOn: Binding(
@@ -1345,10 +1338,7 @@ public struct DynamicMultiSelectField: View {
                     .automaticCompliance(named: "MultiSelectOption")
                 }
             }
-        }
-        .padding()
-        .dynamicFormFieldAccessibilityLabel(field) // Issue #194: resolved label when localized
-        .automaticComplianceForDynamicFormField(field)
+        }, componentName: "DynamicMultiSelectField")
     }
 }
 
@@ -1365,12 +1355,9 @@ public struct DynamicRadioField: View {
     }
 
     public var body: some View {
-        platformVStackContainer(alignment: .leading, spacing: 8) {
-
+        field.fieldContainer(content: {
             if let options = field.options, !options.isEmpty {
                 #if os(macOS)
-                // Use platformPicker helper to automatically apply accessibility (Issue #163)
-                // Note: radioGroup style is macOS-specific for radio button groups
                 platformPicker(
                     label: field.label,
                     selection: Binding(
@@ -1382,7 +1369,6 @@ public struct DynamicRadioField: View {
                     style: RadioGroupPickerStyle()
                 )
                 #else
-                // iOS: Use custom radio button implementation
                 platformVStackContainer(alignment: .leading, spacing: 8) {
                     ForEach(options, id: \.self) { option in
                         platformHStackContainer {
@@ -1404,9 +1390,7 @@ public struct DynamicRadioField: View {
                 .automaticCompliance(named: "RadioGroup")
                 #endif
             }
-        }
-        .padding()
-        .automaticComplianceForDynamicFormField(field)
+        }, componentName: "DynamicRadioField")
     }
 }
 
@@ -1423,9 +1407,8 @@ public struct DynamicCheckboxField: View {
     }
 
     public var body: some View {
-        platformVStackContainer(alignment: .leading, spacing: 8) {
-
-            if let options = field.options {
+        field.fieldContainer(content: {
+            if let options = field.options, !options.isEmpty {
                 ForEach(options, id: \.self) { option in
                     Toggle(option, isOn: Binding(
                         get: {
@@ -1446,11 +1429,24 @@ public struct DynamicCheckboxField: View {
                     ))
                     .automaticCompliance(named: "CheckboxOption")
                 }
+            } else {
+                Toggle(isOn: Binding(
+                    get: {
+                        if let value: Any = formState.getValue(for: field.id) {
+                            if let boolValue = value as? Bool { return boolValue }
+                            if let stringValue = value as? String {
+                                return stringValue.lowercased() == "true" || stringValue == "1"
+                            }
+                        }
+                        return field.defaultValue?.lowercased() == "true" || field.defaultValue == "1"
+                    },
+                    set: { formState.setValue($0, for: field.id) }
+                )) {
+                    Text(field.label)
+                }
+                .automaticComplianceForDynamicFormField(field, identifierElementType: "Toggle")
             }
-        }
-        .padding()
-        .dynamicFormFieldAccessibilityLabel(field) // Issue #194: resolved label when localized
-        .automaticComplianceForDynamicFormField(field)
+        }, componentName: "DynamicCheckboxField")
     }
 }
 
@@ -2014,18 +2010,17 @@ public struct DynamicToggleField: View {
     }
     
     public var body: some View {
-        platformVStackContainer(alignment: .leading) {
-            Toggle("", isOn: isOn)
-                .dynamicFormFieldVoiceOverLabel(field)
-                .automaticComplianceForDynamicFormField(
-                    field,
-                    identifierElementType: "Toggle",
-                    accessibilityValue: generateAccessibilityValueForToggle(isOn: isOn.wrappedValue)  // Issue #165: Dynamic value
-                )
-        }
-        .padding()
-        .dynamicFormFieldAccessibilityLabel(field) // Issue #194: resolved label when localized
-        .automaticComplianceForDynamicFormField(field)
+        field.fieldContainer(content: {
+            Toggle(isOn: isOn) {
+                Text(field.label)
+            }
+            .dynamicFormFieldVoiceOverLabel(field)
+            .automaticComplianceForDynamicFormField(
+                field,
+                identifierElementType: "Toggle",
+                accessibilityValue: generateAccessibilityValueForToggle(isOn: isOn.wrappedValue)
+            )
+        }, componentName: "DynamicToggleField")
     }
 }
 
