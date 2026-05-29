@@ -11168,12 +11168,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 
     @Test @MainActor func testDynamicTextFieldRendersTextFieldWithCorrectBindingAndAccessibility() async {
         self.initializeTestConfig()
-        // TDD: DynamicTextField should render a VStack with:
-        // 1. A Text label showing the field label
-        // 2. A TextField with the correct placeholder and keyboard type
-        // 3. Proper accessibility identifier
-        // 4. Bidirectional binding to form state
-        
+        self.runWithTaskLocalConfig {
+        // Parent DynamicFormFieldView owns the visible label (Issue #189); field hosts control only.
         let field = DynamicFormField(
         id: "test-text-field",
         textContentType: .name,
@@ -11188,17 +11184,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         
         let view = DynamicTextField(field: field, formState: formState)
         
-        // Should render proper UI structure
         #if canImport(ViewInspector)
-        tryWithFirstVStack(view, testName: "DynamicTextField", minChildren: 2) { vStack in
-            let children = vStack.findAll(ViewInspector.ViewType.ClassifiedView.self, where: { _ in true })
-            #expect(children.count >= 2, "Should have label and TextField")
-            let texts = vStack.findAll(ViewInspector.ViewType.Text.self, where: { _ in true })
-            guard let labelText = texts.first else {
-                Issue.record("Could not find label text")
-                return
-            }
-            #expect((try? labelText.string()) == "Full Name", "Label should show field label")
+        tryWithFirstVStack(view, testName: "DynamicTextField", minChildren: 1) { vStack in
             let textFields = vStack.findAll(ViewInspector.ViewType.TextField.self, where: { _ in true })
             guard textFields.count > 0 else {
                 Issue.record("Could not find TextField")
@@ -11217,16 +11204,12 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #else
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
         #endif
-}
+        }
+    }
 
     @Test @MainActor func testDynamicNumberFieldRendersTextFieldWithNumericKeyboard() async {
         self.initializeTestConfig()
-        // TDD: DynamicNumberField should render a VStack with:
-        // 1. A Text label showing "Age"
-        // 2. A TextField with decimalPad keyboard type (iOS) and "Enter age" placeholder
-        // 3. Proper accessibility identifier
-        // 4. Form state binding with numeric value
-        
+        self.runWithTaskLocalConfig {
         let field = DynamicFormField(
         id: "test-number-field",
         textContentType: .telephoneNumber,
@@ -11243,15 +11226,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         
         // Should render proper numeric input UI
         #if canImport(ViewInspector)
-        tryWithFirstVStack(view, testName: "DynamicNumberField", minChildren: 2) { vStack in
-            let children = vStack.findAll(ViewInspector.ViewType.ClassifiedView.self, where: { _ in true })
-            #expect(children.count >= 2, "Should have label and TextField")
-            let texts = vStack.findAll(ViewInspector.ViewType.Text.self, where: { _ in true })
-            guard let labelText = texts.first else {
-                Issue.record("Could not find label text")
-                return
-            }
-            #expect((try? labelText.string()) == "Age", "Label should show field label")
+        tryWithFirstVStack(view, testName: "DynamicNumberField", minChildren: 1) { vStack in
             let textFields = vStack.findAll(ViewInspector.ViewType.TextField.self, where: { _ in true })
             guard textFields.first != nil else {
                 Issue.record("Could not find TextField")
@@ -11270,16 +11245,12 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #else
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
         #endif
-}
+        }
+    }
 
     @Test @MainActor func testDynamicTextAreaFieldRendersMultilineTextEditor() async {
         self.initializeTestConfig()
-        // TDD: DynamicTextAreaField should render a VStack with:
-        // 1. A Text label showing "Description"
-        // 2. A TextEditor (multiline text input) with "Enter description" placeholder
-        // 3. Proper accessibility identifier
-        // 4. Form state binding with multiline text
-        
+        self.runWithTaskLocalConfig {
         let field = DynamicFormField(
         id: "test-textarea-field",
         textContentType: .none,
@@ -11296,14 +11267,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         
         // Should render proper multiline text input UI
         #if canImport(ViewInspector)
-        tryWithFirstVStack(view, testName: "DynamicTextAreaField", minChildren: 2) { vStack in
-            let texts = vStack.findAll(ViewInspector.ViewType.Text.self, where: { _ in true })
-            guard let labelText = texts.first else {
-                Issue.record("Could not find label text")
-                return
-            }
-            #expect((try? labelText.string()) == "Description", "Label should show field label")
-        }
+        tryWithFirstVStack(view, testName: "DynamicTextAreaField", minChildren: 1) { _ in }
         let hasAccessibilityIDTextArea = testComponentComplianceSinglePlatform(
             view,
             expectedPattern: "SixLayer.main.ui.*DynamicTextAreaField.*",
@@ -11316,16 +11280,12 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #else
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
         #endif
-}
+        }
+    }
 
     @Test @MainActor func testDynamicSelectFieldRendersPickerWithSelectableOptions() async {
         self.initializeTestConfig()
-        // TDD: DynamicSelectField should render a VStack with:
-        // 1. A Text label showing "Country"
-        // 2. A Picker with options ["USA", "Canada", "Mexico"]
-        // 3. Proper accessibility identifier
-        // 4. Form state binding that updates when selection changes
-        
+        self.runWithTaskLocalConfig {
         let options = ["USA", "Canada", "Mexico"]
         let field = DynamicFormField(
         id: "test-select-field",
@@ -11363,16 +11323,12 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #else
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
         #endif
-}
+        }
+    }
 
     @Test @MainActor func testDynamicMultiSelectFieldRendersMultipleSelectionControls() async {
         self.initializeTestConfig()
-        // TDD: DynamicMultiSelectField should render a VStack with:
-        // 1. A Text label showing "Interests"
-        // 2. Multiple Toggle controls for options ["Reading", "Sports", "Music"]
-        // 3. Proper accessibility identifier
-        // 4. Form state binding with array of selected values
-        
+        self.runWithTaskLocalConfig {
         let options = ["Reading", "Sports", "Music"]
         let field = DynamicFormField(
         id: "test-multiselect-field",
@@ -11390,14 +11346,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         
         // Should render proper multiple selection UI
         #if canImport(ViewInspector)
-        tryWithFirstVStack(view, testName: "DynamicMultiSelectField", minChildren: 2) { vStack in
-            let texts = vStack.findAll(ViewInspector.ViewType.Text.self, where: { _ in true })
-            guard let labelText = texts.first else {
-                Issue.record("Could not find label text")
-                return
-            }
-            #expect((try? labelText.string()) == "Interests", "Label should show field label")
-        }
+        tryWithFirstVStack(view, testName: "DynamicMultiSelectField", minChildren: 1) { _ in }
         let hasAccessibilityIDMulti = testComponentComplianceSinglePlatform(
             view,
             expectedPattern: "SixLayer.main.ui.*DynamicMultiSelectField.*",
@@ -11410,16 +11359,12 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #else
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
         #endif
-}
+        }
+    }
 
     @Test @MainActor func testDynamicRadioFieldRendersRadioButtonGroup() async {
         self.initializeTestConfig()
-        // TDD: DynamicRadioField should render a VStack with:
-        // 1. A Text label showing "Gender"
-        // 2. Radio button style Picker with options ["Male", "Female", "Other"]
-        // 3. Proper accessibility identifier
-        // 4. Form state binding with single selected value
-        
+        self.runWithTaskLocalConfig {
         let options = ["Male", "Female", "Other"]
         let field = DynamicFormField(
         id: "test-radio-field",
@@ -11437,14 +11382,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         
         // Should render proper radio button group UI
         #if canImport(ViewInspector)
-        tryWithFirstVStack(view, testName: "DynamicRadioField", minChildren: 2) { vStack in
-            let texts = vStack.findAll(ViewInspector.ViewType.Text.self, where: { _ in true })
-            guard let labelText = texts.first else {
-                Issue.record("Could not find label text")
-                return
-            }
-            #expect((try? labelText.string()) == "Gender", "Label should show field label")
-        }
+        tryWithFirstVStack(view, testName: "DynamicRadioField", minChildren: 1) { _ in }
         let hasAccessibilityIDRadio = testComponentComplianceSinglePlatform(
             view,
             expectedPattern: "SixLayer.main.ui.*DynamicRadioField.*",
@@ -11457,16 +11395,12 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #else
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
         #endif
-}
+        }
+    }
 
     @Test @MainActor func testDynamicCheckboxFieldRendersToggleControl() async {
         self.initializeTestConfig()
-        // TDD: DynamicCheckboxField should render a VStack with:
-        // 1. A Text label showing "Subscribe to Newsletter"
-        // 2. A Toggle control bound to boolean form state
-        // 3. Proper accessibility identifier
-        // 4. Form state binding with boolean value
-        
+        self.runWithTaskLocalConfig {
         let field = DynamicFormField(
         id: "test-checkbox-field",
         textContentType: .none,
@@ -11483,13 +11417,12 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         
         // Should render proper toggle/checkbox UI
         #if canImport(ViewInspector)
-        tryWithFirstVStack(view, testName: "DynamicCheckboxField", minChildren: 2) { vStack in
-            let texts = vStack.findAll(ViewInspector.ViewType.Text.self, where: { _ in true })
-            guard let labelText = texts.first else {
-                Issue.record("Could not find label text")
+        tryWithFirstVStack(view, testName: "DynamicCheckboxField", minChildren: 1) { vStack in
+            let toggles = vStack.findAll(ViewInspector.ViewType.Toggle.self, where: { _ in true })
+            guard toggles.first != nil else {
+                Issue.record("Could not find Toggle")
                 return
             }
-            #expect((try? labelText.string()) == "Subscribe to Newsletter", "Label should show field label")
         }
         let hasAccessibilityIDCheckbox = testComponentComplianceSinglePlatform(
             view,
@@ -11503,16 +11436,12 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #else
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
         #endif
-}
+        }
+    }
 
     @Test @MainActor func testDynamicToggleFieldRendersToggleControl() async {
         self.initializeTestConfig()
-        // TDD: DynamicToggleField should render a VStack with:
-        // 1. A Text label showing "Enable Feature"
-        // 2. A Toggle control bound to boolean form state
-        // 3. Proper accessibility identifier
-        // 4. Form state binding with boolean value
-        
+        self.runWithTaskLocalConfig {
         let field = DynamicFormField(
         id: "test-toggle-field",
         textContentType: .none,
@@ -11529,13 +11458,12 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         
         // Should render proper toggle UI
         #if canImport(ViewInspector)
-        tryWithFirstVStack(view, testName: "DynamicToggleField", minChildren: 2) { vStack in
-            let texts = vStack.findAll(ViewInspector.ViewType.Text.self, where: { _ in true })
-            guard let labelText = texts.first else {
-                Issue.record("Could not find label text")
+        tryWithFirstVStack(view, testName: "DynamicToggleField", minChildren: 1) { vStack in
+            let toggles = vStack.findAll(ViewInspector.ViewType.Toggle.self, where: { _ in true })
+            guard toggles.first != nil else {
+                Issue.record("Could not find Toggle")
                 return
             }
-            #expect((try? labelText.string()) == "Enable Feature", "Label should show field label")
         }
         let hasAccessibilityIDToggle = testComponentComplianceSinglePlatform(
             view,
@@ -11549,7 +11477,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #else
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
         #endif
-}
+        }
+    }
 
     @Test @MainActor func testSimpleCardComponentGeneratesAccessibilityIdentifiers() async {
         self.initializeTestConfig()
