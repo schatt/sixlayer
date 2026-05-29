@@ -16159,9 +16159,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     @Test @MainActor func testExampleHelpersGeneratesAccessibilityIdentifiers() async {
         self.initializeTestConfig()
         self.runWithTaskLocalConfig {
-        let testView = ExampleProjectCard(title: "Test") {
-            Text("Test")
-        }
+        let testView = ExampleHelpers()
         
         // Then: Should generate accessibility identifiers
         #if canImport(ViewInspector)
@@ -16169,9 +16167,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         testView,
         expectedPattern: "SixLayer.main.ui.*",
         platform: SixLayerPlatform.iOS,
-        componentName: "ExampleProjectCard"
+        componentName: "ExampleHelpers"
         )
-        #expect(hasAccessibilityID, "ExampleProjectCard should generate accessibility identifiers ")
+        #expect(hasAccessibilityID, "ExampleHelpers should generate accessibility identifiers ")
         #else
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
         // The modifier IS present in the code, but ViewInspector can't detect it on macOS
