@@ -2035,13 +2035,11 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             
             // Using wrapper - when ViewInspector works on macOS, no changes needed here
             #if canImport(ViewInspector)
-            if let inspectedView = try? AnyView(view).inspect(),
-               let _ = try? inspectedView.button() {
-                // When automatic IDs are disabled, the view should not have an accessibility identifier modifier
-                // This means we can't inspect for accessibility identifiers
-                // Just verify the view is inspectable
-            } else {
-                Issue.record("Failed to inspect view")
+            do {
+                let inspected = try AnyView(view).inspect()
+                _ = inspected
+            } catch {
+                Issue.record("Failed to inspect view: \(error)")
             }
             #else
             #endif
@@ -2065,12 +2063,11 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             
             // Using wrapper - when ViewInspector works on macOS, no changes needed here
             #if canImport(ViewInspector)
-            if let inspectedView = try? AnyView(view).inspect(),
-               let buttonID = try? inspectedView.accessibilityIdentifier() {
-                // Manual ID should work regardless of automatic setting
+            if let buttonID = AccessibilityTestUtilities.inspectButtonAccessibilityIdentifier(
+                view,
+                issuePrefix: "Failed to inspect view for manual accessibility identifier"
+            ) {
                 #expect(buttonID == "manual-test-button", "Manual accessibility identifier should work when automatic is disabled")
-            } else {
-                Issue.record("Failed to inspect view")
             }
             #else
             // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
@@ -2805,24 +2802,19 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testAdaptiveButtonIncludesLabelText() {
         self.initializeTestConfig()
+        self.runWithTaskLocalConfig {
         self.setupTestEnvironment()
         
         let button = AdaptiveUIPatterns.AdaptiveButton("Submit", action: { })
             .enableGlobalAutomaticCompliance()
+        let root = self.hostRootPlatformView(button, forceLayout: true)
+        let buttonID = getAccessibilityIdentifierForTest(view: button, hostedRoot: root)
         
-        #if canImport(ViewInspector)
-        if let inspected = try? AnyView(button).inspect() {
-           let buttonID = try? inspected.accessibilityIdentifier()
-            #expect((buttonID?.contains("submit") ?? false) || (buttonID?.contains("Submit") ?? false),
-                   "AdaptiveButton identifier should include label text 'Submit' (implementation verified in code)")
-        } else {
-            #expect(Bool(true), "AdaptiveButton implementation verified - ViewInspector can't detect (known limitation)")
-        }
-        #else
-        #expect(Bool(true), "AdaptiveButton implementation verified - ViewInspector not available on this platform")
-        #endif
+        #expect(buttonID?.localizedCaseInsensitiveContains("submit") ?? false,
+               "AdaptiveButton identifier should include label text 'Submit'")
         
         self.cleanupTestEnvironment()
+        }
     }
     
     @Test @MainActor func testAdaptiveButtonDifferentLabelsDifferentIdentifiers() {
