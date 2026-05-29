@@ -1122,6 +1122,8 @@ public enum AccessibilityTestUtilities {
             }
             if let directID = try? inspected.accessibilityIdentifier(), !directID.isEmpty { return directID }
             if let button = try? inspected.button(), let buttonID = try? button.accessibilityIdentifier(), !buttonID.isEmpty { return buttonID }
+            let deepIDs = allAccessibilityIdentifiersFromViewInspector(view)
+            if let first = deepIDs.first { return first }
             // If we reach here, ViewInspector couldn't find an identifier. This is
             // treated as an inspection limitation rather than a hard failure; the
             // caller can decide whether to assert or treat it as "cannot verify".
