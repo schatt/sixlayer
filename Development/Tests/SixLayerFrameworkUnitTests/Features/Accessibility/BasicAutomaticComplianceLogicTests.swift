@@ -380,6 +380,63 @@ open class BasicAutomaticComplianceLogicTests: BaseTestClass {
         #expect(modifier.isInteractiveElement(elementType: "TextField"), "TextField (capitalized) should be interactive")
     }
     
+    // MARK: - Labels Only On Interactive Elements (Issue #290)
+    
+    /// BUSINESS PURPOSE: Default/off flag keeps automatic labels on non-interactive types (backward compatible).
+    @Test func testShouldApplyAutomaticAccessibilityLabel_WhenFlagOff_AppliesToText() {
+        #expect(slfShouldApplyAutomaticAccessibilityLabel(
+            effectiveLabel: "Hello",
+            identifierIsPresent: true,
+            identifierElementType: "Text",
+            isNavigationHeaderCompliance: false,
+            labelsOnlyOnInteractiveElements: false
+        ), "Text should receive automatic label when interactive-only mode is off")
+    }
+    
+    /// BUSINESS PURPOSE: Interactive-only mode skips decorative/static text labels.
+    @Test func testShouldApplyAutomaticAccessibilityLabel_WhenFlagOn_SkipsText() {
+        #expect(!slfShouldApplyAutomaticAccessibilityLabel(
+            effectiveLabel: "Hello",
+            identifierIsPresent: true,
+            identifierElementType: "Text",
+            isNavigationHeaderCompliance: false,
+            labelsOnlyOnInteractiveElements: true
+        ), "Text should not receive automatic label when interactive-only mode is on")
+    }
+    
+    /// BUSINESS PURPOSE: Interactive-only mode still labels controls.
+    @Test func testShouldApplyAutomaticAccessibilityLabel_WhenFlagOn_AppliesToButton() {
+        #expect(slfShouldApplyAutomaticAccessibilityLabel(
+            effectiveLabel: "Save",
+            identifierIsPresent: true,
+            identifierElementType: "Button",
+            isNavigationHeaderCompliance: false,
+            labelsOnlyOnInteractiveElements: true
+        ), "Button should receive automatic label when interactive-only mode is on")
+    }
+    
+    /// BUSINESS PURPOSE: Empty labels are never applied.
+    @Test func testShouldApplyAutomaticAccessibilityLabel_EmptyLabelNeverApplies() {
+        #expect(!slfShouldApplyAutomaticAccessibilityLabel(
+            effectiveLabel: "",
+            identifierIsPresent: true,
+            identifierElementType: "Button",
+            isNavigationHeaderCompliance: false,
+            labelsOnlyOnInteractiveElements: false
+        ), "Empty label should not be applied")
+    }
+    
+    /// BUSINESS PURPOSE: Navigation header containers must not receive automatic labels (#193).
+    @Test func testShouldApplyAutomaticAccessibilityLabel_SkipsNavigationHeader() {
+        #expect(!slfShouldApplyAutomaticAccessibilityLabel(
+            effectiveLabel: "Settings",
+            identifierIsPresent: true,
+            identifierElementType: "Header",
+            isNavigationHeaderCompliance: true,
+            labelsOnlyOnInteractiveElements: false
+        ), "Navigation header compliance should not receive automatic label")
+    }
+    
     // MARK: - Config Logic Tests
     
     /// BUSINESS PURPOSE: Test that config options are respected in identifier generation
