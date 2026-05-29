@@ -22,12 +22,15 @@ public class PlatformResourceLayer5 {
         return Button(title, action: action)
             .buttonStyle(.borderedProminent)
             .controlSize(.large)
+            .automaticCompliance(named: "PlatformResourceLayer5")
         #elseif os(macOS)
         return Button(title, action: action)
             .buttonStyle(.bordered)
             .controlSize(.large)
+            .automaticCompliance(named: "PlatformResourceLayer5")
         #else
         return Button(title, action: action)
+            .automaticCompliance(named: "PlatformResourceLayer5")
         #endif
     }
     
