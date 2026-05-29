@@ -123,7 +123,16 @@ open class PlatformExportActionsLayer4Tests: BaseTestClass {
 
     @Test @MainActor func testImperativePlatformShare_returnsBool() throws {
         let fileURL = try makeTemporaryFile(named: "share.txt", contents: Data("share me".utf8))
-        let result = platformShare_L4(items: [fileURL], from: nil, excludedActivityTypes: nil, onComplete: nil)
+        #if os(iOS)
+        let result = platformShare_L4(
+            items: [fileURL],
+            from: nil,
+            excludedActivityTypes: nil,
+            onComplete: nil
+        )
+        #else
+        let result = platformShare_L4(items: [fileURL], from: nil, onComplete: nil)
+        #endif
         #expect(type(of: result) == Bool.self)
         #expect(result == true, "Imperative share should succeed in unit test host")
     }
