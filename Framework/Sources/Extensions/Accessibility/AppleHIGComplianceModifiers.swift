@@ -9,8 +9,8 @@ import UIKit
 /// Helper extension to reduce code duplication in platform-specific modifiers
 private extension View {
     /// Wraps content in AnyView with automatic compliance
-    func wrappedWithCompliance() -> AnyView {
-        AnyView(self.automaticCompliance())
+    func wrappedWithCompliance(named name: String) -> AnyView {
+        AnyView(self.automaticCompliance(named: name))
     }
 }
 
@@ -57,7 +57,7 @@ public struct AppleHIGComplianceModifier: ViewModifier {
                 macOSConfig: manager.currentPlatform == .macOS ? manager.macOSCategoryConfig : nil,
                 visionOSConfig: manager.currentPlatform == .visionOS ? manager.visionOSCategoryConfig : nil
             ))
-            .automaticCompliance()
+            .automaticCompliance(named: "AppleHIGComplianceModifier")
     }
 }
 
@@ -84,7 +84,7 @@ public struct SystemAccessibilityModifier: ViewModifier {
                 isEnabled: accessibilityState.isReducedMotionEnabled
             ))
             .modifier(DynamicTypeModifier())
-            .automaticCompliance() // FIXED: Add missing accessibility identifier generation
+            .automaticCompliance(named: "SystemAccessibilityModifier") // FIXED: Add missing accessibility identifier generation
     }
 }
 
@@ -100,7 +100,7 @@ public struct PlatformPatternModifier: ViewModifier {
             .modifier(PlatformNavigationModifier(platform: platform))
             .modifier(PlatformStylingModifier(designSystem: designSystem))
             .modifier(PlatformIconModifier(iconSystem: designSystem.iconSystem))
-            .automaticCompliance()
+            .automaticCompliance(named: "PlatformPatternModifier")
     }
 }
 
@@ -130,7 +130,7 @@ public struct VisualConsistencyModifier: ViewModifier {
                 visualDesignSystem: designSystem.visualDesignSystem,
                 config: visualDesignConfig
             ))
-            .automaticCompliance()
+            .automaticCompliance(named: "VisualConsistencyModifier")
     }
 }
 
@@ -233,7 +233,7 @@ public struct VisualDesignCategoryModifier: ViewModifier {
             )
         }
         
-        return modifiedContent.wrappedWithCompliance()
+        return modifiedContent.wrappedWithCompliance(named: "VisualDesignCategoryModifier")
     }
 }
 
@@ -263,7 +263,7 @@ public struct InteractionPatternModifier: ViewModifier {
             .modifier(PlatformInteractionModifier(platform: platform, macOSConfig: macOSConfig))
             .modifier(HapticFeedbackModifier(platform: platform, iOSConfig: iOSConfig))
             .modifier(GestureRecognitionModifier(platform: platform, iOSConfig: iOSConfig))
-            .automaticCompliance()
+            .automaticCompliance(named: "InteractionPatternModifier")
     }
 }
 
@@ -279,10 +279,10 @@ public struct VoiceOverSupportModifier: ViewModifier {
                 .accessibilityLabel(extractAccessibilityLabel(from: content))
                 .accessibilityHint(extractAccessibilityHint(from: content))
                 .accessibilityAddTraits(extractAccessibilityTraits(from: content))
-                .automaticCompliance()
+                .automaticCompliance(named: "VoiceOverSupportModifier")
         } else {
             content
-                .automaticCompliance()
+                .automaticCompliance(named: "VoiceOverSupportModifier")
         }
     }
     
@@ -321,13 +321,13 @@ public struct KeyboardNavigationModifier: ViewModifier {
         hasFullKeyboardAccess: Bool
     ) -> AnyView {
         guard hasKeyboardSupport else {
-            return content.wrappedWithCompliance()
+            return content.wrappedWithCompliance(named: "KeyboardNavigationModifier")
         }
         
         #if os(macOS)
-        return macOSKeyboardNavigation(to: content, hasFullKeyboardAccess: hasFullKeyboardAccess).wrappedWithCompliance()
+        return macOSKeyboardNavigation(to: content, hasFullKeyboardAccess: hasFullKeyboardAccess).wrappedWithCompliance(named: "KeyboardNavigationModifier")
         #elseif os(iOS) || os(tvOS) || os(watchOS)
-        return iosKeyboardNavigation(to: content).wrappedWithCompliance()
+        return iosKeyboardNavigation(to: content).wrappedWithCompliance(named: "KeyboardNavigationModifier")
         #else
         return fallbackKeyboardNavigation(to: content)
         #endif
@@ -358,7 +358,7 @@ public struct KeyboardNavigationModifier: ViewModifier {
     #endif
     
     private func fallbackKeyboardNavigation<Content: View>(to content: Content) -> AnyView {
-        content.wrappedWithCompliance()
+        content.wrappedWithCompliance(named: "KeyboardNavigationModifier")
     }
 }
 
@@ -375,15 +375,15 @@ public struct HighContrastModifier: ViewModifier {
     /// Apply high contrast with platform-specific behavior
     private func applyHighContrast<Content: View>(to content: Content, isEnabled: Bool) -> AnyView {
         guard isEnabled else {
-            return content.wrappedWithCompliance()
+            return content.wrappedWithCompliance(named: "HighContrastModifier")
         }
         
         // Explicit OS split (#240): `canImport(UIKit)` is true on tvOS but many UIKit color APIs are
         // the wrong shape; routing by OS keeps watchOS/tvOS on the neutral path without relying on UIKit import.
         #if os(macOS)
-        return macOSHighContrast(to: content).wrappedWithCompliance()
+        return macOSHighContrast(to: content).wrappedWithCompliance(named: "HighContrastModifier")
         #elseif os(iOS) || os(tvOS) || os(watchOS) || os(visionOS)
-        return iosHighContrast(to: content).wrappedWithCompliance()
+        return iosHighContrast(to: content).wrappedWithCompliance(named: "HighContrastModifier")
         #else
         return fallbackHighContrast(to: content)
         #endif
@@ -415,7 +415,7 @@ public struct HighContrastModifier: ViewModifier {
     #endif
     
     private func fallbackHighContrast<Content: View>(to content: Content) -> AnyView {
-        content.wrappedWithCompliance()
+        content.wrappedWithCompliance(named: "HighContrastModifier")
     }
 }
 
@@ -427,10 +427,10 @@ public struct ReducedMotionModifier: ViewModifier {
         if isEnabled {
             content
                 .animation(.none, value: UUID())
-                .automaticCompliance()
+                .automaticCompliance(named: "ReducedMotionModifier")
         } else {
             content
-                .automaticCompliance()
+                .automaticCompliance(named: "ReducedMotionModifier")
         }
     }
 }
@@ -440,7 +440,7 @@ public struct DynamicTypeModifier: ViewModifier {
     public func body(content: Content) -> some View {
         content
             .dynamicTypeSize(.accessibility1...)
-            .automaticCompliance()
+            .automaticCompliance(named: "DynamicTypeModifier")
     }
 }
 
@@ -466,13 +466,13 @@ public struct PlatformNavigationModifier: ViewModifier {
         switch platform {
         case .iOS:
             #if os(iOS)
-            return iosPlatformNavigation(to: content).wrappedWithCompliance()
+            return iosPlatformNavigation(to: content).wrappedWithCompliance(named: "PlatformNavigationModifier")
             #else
             return fallbackPlatformNavigation(to: content)
             #endif
         case .macOS:
             #if os(macOS)
-            return macOSPlatformNavigation(to: content).wrappedWithCompliance()
+            return macOSPlatformNavigation(to: content).wrappedWithCompliance(named: "PlatformNavigationModifier")
             #else
             return fallbackPlatformNavigation(to: content)
             #endif
@@ -494,7 +494,7 @@ public struct PlatformNavigationModifier: ViewModifier {
     }
     
     private func fallbackPlatformNavigation<Content: View>(to content: Content) -> AnyView {
-        content.wrappedWithCompliance()
+        content.wrappedWithCompliance(named: "PlatformNavigationModifier")
     }
 }
 
@@ -506,8 +506,8 @@ public struct PlatformStylingModifier: ViewModifier {
         content
             .foregroundStyle(designSystem.colorSystem.text)
             .background(designSystem.colorSystem.background)
-        // CRITICAL: Do NOT call .automaticCompliance() here - it causes infinite recursion
-        // This modifier is already applied within AutomaticComplianceModifier.applyHIGComplianceFeatures
+            .automaticCompliance(named: "PlatformStylingModifier")
+        // Named compliance for standalone hosts (#242); nested under VisualConsistency remains a single outer named shell.
     }
 }
 
@@ -518,8 +518,8 @@ public struct PlatformIconModifier: ViewModifier {
     public func body(content: Content) -> some View {
         content
             .imageScale(.medium)
-        // CRITICAL: Do NOT call .automaticCompliance() here - it causes infinite recursion
-        // This modifier is already applied within AutomaticComplianceModifier.applyHIGComplianceFeatures
+            .automaticCompliance(named: "PlatformIconModifier")
+        // Named compliance for standalone hosts (#242); nested under VisualConsistency remains a single outer named shell.
     }
 }
 
@@ -531,8 +531,8 @@ public struct SystemColorModifier: ViewModifier {
         content
             .foregroundStyle(colorSystem.text)
             .background(colorSystem.background)
-        // CRITICAL: Do NOT call .automaticCompliance() here - it causes infinite recursion
-        // This modifier is already applied within AutomaticComplianceModifier.applyHIGComplianceFeatures
+            .automaticCompliance(named: "SystemColorModifier")
+        // Named compliance for standalone hosts (#242); nested under VisualConsistency remains a single outer named shell.
     }
 }
 
@@ -543,8 +543,8 @@ public struct SystemTypographyModifier: ViewModifier {
     public func body(content: Content) -> some View {
         content
             .font(typographySystem.body)
-        // CRITICAL: Do NOT call .automaticCompliance() here - it causes infinite recursion
-        // This modifier is already applied within AutomaticComplianceModifier.applyHIGComplianceFeatures
+            .automaticCompliance(named: "SystemTypographyModifier")
+        // Named compliance for standalone hosts (#242); nested under VisualConsistency remains a single outer named shell.
     }
 }
 
@@ -555,8 +555,8 @@ public struct SpacingModifier: ViewModifier {
     public func body(content: Content) -> some View {
         content
             .padding(spacingSystem.md)
-        // CRITICAL: Do NOT call .automaticCompliance() here - it causes infinite recursion
-        // This modifier is already applied within AutomaticComplianceModifier.applyHIGComplianceFeatures
+            .automaticCompliance(named: "SpacingModifier")
+        // Named compliance for standalone hosts (#242); nested under VisualConsistency remains a single outer named shell.
     }
 }
 
@@ -587,7 +587,7 @@ public struct TouchTargetModifier: ViewModifier {
         if platform.isTouchFirstPlatform {
             #if os(iOS) || os(watchOS)
             let config = getConfigOrDefault(iOSConfig, default: HIGiOSCategoryConfig())
-            return iosTouchTarget(to: content, config: config).wrappedWithCompliance()
+            return iosTouchTarget(to: content, config: config).wrappedWithCompliance(named: "TouchTargetModifier")
             #else
             return fallbackTouchTarget(to: content)
             #endif
@@ -605,17 +605,17 @@ public struct TouchTargetModifier: ViewModifier {
         config: HIGiOSCategoryConfig
     ) -> some View {
         guard config.enableTouchTargetValidation else {
-            return content.wrappedWithCompliance()
+            return content.wrappedWithCompliance(named: "TouchTargetModifier")
         }
         
         // Apple HIG: Minimum 44pt touch target for interactive elements
-        return content.frame(minWidth: 44, minHeight: 44).wrappedWithCompliance()
+        return content.frame(minWidth: 44, minHeight: 44).wrappedWithCompliance(named: "TouchTargetModifier")
     }
     #endif
     
     /// Fallback for platforms without touch target requirements
     private func fallbackTouchTarget<Content: View>(to content: Content) -> AnyView {
-        content.wrappedWithCompliance()
+        content.wrappedWithCompliance(named: "TouchTargetModifier")
     }
 }
 
@@ -648,7 +648,7 @@ public struct SafeAreaComplianceModifier: ViewModifier {
         if platform.isTouchFirstPlatform {
             #if os(iOS) || os(watchOS)
             let config = getConfigOrDefault(iOSConfig, default: HIGiOSCategoryConfig())
-            return iosSafeAreaCompliance(to: content, config: config).wrappedWithCompliance()
+            return iosSafeAreaCompliance(to: content, config: config).wrappedWithCompliance(named: "SafeAreaComplianceModifier")
             #else
             return fallbackSafeAreaCompliance(to: content)
             #endif
@@ -666,7 +666,7 @@ public struct SafeAreaComplianceModifier: ViewModifier {
         config: HIGiOSCategoryConfig
     ) -> some View {
         guard config.enableSafeAreaCompliance else {
-            return content.wrappedWithCompliance()
+            return content.wrappedWithCompliance(named: "SafeAreaComplianceModifier")
         }
         
         // Safe area is automatically handled by SwiftUI when using proper container views
@@ -674,13 +674,13 @@ public struct SafeAreaComplianceModifier: ViewModifier {
         // For most cases, SwiftUI's automatic safe area handling is sufficient
         return content
             .ignoresSafeArea(.container, edges: []) // Respect all safe areas
-            .wrappedWithCompliance()
+            .wrappedWithCompliance(named: "SafeAreaComplianceModifier")
     }
     #endif
     
     /// Fallback for platforms without safe area requirements
     private func fallbackSafeAreaCompliance<Content: View>(to content: Content) -> AnyView {
-        content.wrappedWithCompliance()
+        content.wrappedWithCompliance(named: "SafeAreaComplianceModifier")
     }
 }
 
@@ -735,7 +735,7 @@ public struct PlatformInteractionModifier: ViewModifier {
     #if os(iOS)
     /// iOS: Touch-based interactions with button styling
     private func iosPlatformInteraction<Content: View>(to content: Content) -> AnyView {
-        content.buttonStyle(.bordered).wrappedWithCompliance()
+        content.buttonStyle(.bordered).wrappedWithCompliance(named: "PlatformInteractionModifier")
     }
     #endif
     
@@ -748,7 +748,7 @@ public struct PlatformInteractionModifier: ViewModifier {
         let baseContent = content.buttonStyle(.bordered)
         
         guard config.enableMouseInteractions else {
-            return baseContent.wrappedWithCompliance()
+            return baseContent.wrappedWithCompliance(named: "PlatformInteractionModifier")
         }
         
         // Apply macOS-appropriate mouse interaction patterns
@@ -758,12 +758,12 @@ public struct PlatformInteractionModifier: ViewModifier {
                 // Handle hover state - cursor changes are automatic in SwiftUI
                 // Additional hover effects can be added here
             }
-            .wrappedWithCompliance()
+            .wrappedWithCompliance(named: "PlatformInteractionModifier")
     }
     #endif
     
     private func fallbackPlatformInteraction<Content: View>(to content: Content) -> AnyView {
-        content.wrappedWithCompliance()
+        content.wrappedWithCompliance(named: "PlatformInteractionModifier")
     }
 }
 
@@ -794,13 +794,13 @@ public struct HapticFeedbackModifier: ViewModifier {
         if platform.isTouchFirstPlatform {
             #if os(iOS) || os(watchOS)
             let config = getConfigOrDefault(iOSConfig, default: HIGiOSCategoryConfig())
-            return iosHapticFeedback(to: content, config: config).wrappedWithCompliance()
+            return iosHapticFeedback(to: content, config: config).wrappedWithCompliance(named: "HapticFeedbackModifier")
             #else
             return fallbackHapticFeedback(to: content)
             #endif
         } else if platform == .macOS {
             #if os(macOS)
-            return macOSHapticFeedback(to: content).wrappedWithCompliance()
+            return macOSHapticFeedback(to: content).wrappedWithCompliance(named: "HapticFeedbackModifier")
             #else
             return fallbackHapticFeedback(to: content)
             #endif
@@ -818,7 +818,7 @@ public struct HapticFeedbackModifier: ViewModifier {
         config: HIGiOSCategoryConfig
     ) -> AnyView {
         guard config.enableHapticFeedback else {
-            return content.wrappedWithCompliance()
+            return content.wrappedWithCompliance(named: "HapticFeedbackModifier")
         }
         
         let hapticType = config.defaultHapticFeedbackType
@@ -827,7 +827,7 @@ public struct HapticFeedbackModifier: ViewModifier {
             .onTapGesture {
                 triggerIOSHapticFeedback(type: hapticType)
             }
-            .wrappedWithCompliance()
+            .wrappedWithCompliance(named: "HapticFeedbackModifier")
     }
     
     /// Trigger iOS haptic feedback based on type
@@ -878,13 +878,13 @@ public struct HapticFeedbackModifier: ViewModifier {
     private func macOSHapticFeedback<Content: View>(to content: Content) -> AnyView {
         // macOS doesn't have haptic feedback, so we return content unchanged
         // In a full implementation, this could trigger sound feedback
-        content.wrappedWithCompliance()
+        content.wrappedWithCompliance(named: "HapticFeedbackModifier")
     }
     #endif
     
     /// Fallback for platforms without haptic feedback support
     private func fallbackHapticFeedback<Content: View>(to content: Content) -> AnyView {
-        content.wrappedWithCompliance()
+        content.wrappedWithCompliance(named: "HapticFeedbackModifier")
     }
 }
 
@@ -915,13 +915,13 @@ public struct GestureRecognitionModifier: ViewModifier {
         if platform.isTouchFirstPlatform {
             #if os(iOS) || os(watchOS)
             let config = getConfigOrDefault(iOSConfig, default: HIGiOSCategoryConfig())
-            return iosGestureRecognition(to: content, config: config).wrappedWithCompliance()
+            return iosGestureRecognition(to: content, config: config).wrappedWithCompliance(named: "GestureRecognitionModifier")
             #else
             return fallbackGestureRecognition(to: content)
             #endif
         } else if platform == .macOS {
             #if os(macOS)
-            return macOSGestureRecognition(to: content).wrappedWithCompliance()
+            return macOSGestureRecognition(to: content).wrappedWithCompliance(named: "GestureRecognitionModifier")
             #else
             return fallbackGestureRecognition(to: content)
             #endif
@@ -939,7 +939,7 @@ public struct GestureRecognitionModifier: ViewModifier {
         config: HIGiOSCategoryConfig
     ) -> AnyView {
         guard config.enableGestureRecognition else {
-            return content.wrappedWithCompliance()
+            return content.wrappedWithCompliance(named: "GestureRecognitionModifier")
         }
         
         // Apply basic tap gesture recognition
@@ -952,7 +952,7 @@ public struct GestureRecognitionModifier: ViewModifier {
                         // Tap gesture handled - additional gestures can be added explicitly
                     }
             )
-            .wrappedWithCompliance()
+            .wrappedWithCompliance(named: "GestureRecognitionModifier")
     }
     #endif
     
@@ -963,13 +963,13 @@ public struct GestureRecognitionModifier: ViewModifier {
             .onTapGesture {
                 // Handle click gesture
             }
-            .wrappedWithCompliance()
+            .wrappedWithCompliance(named: "GestureRecognitionModifier")
     }
     #endif
     
     /// Fallback for platforms without gesture recognition
     private func fallbackGestureRecognition<Content: View>(to content: Content) -> AnyView {
-        content.wrappedWithCompliance()
+        content.wrappedWithCompliance(named: "GestureRecognitionModifier")
     }
 }
 
@@ -1068,23 +1068,23 @@ public struct PlatformSpecificCategoryModifier: ViewModifier {
         // Use PlatformStrategy to reduce code duplication (Issue #140)
         // Touch-first platforms (iOS/watchOS) - categories handled by other modifiers
         if platform.isTouchFirstPlatform {
-            return content.wrappedWithCompliance()
+            return content.wrappedWithCompliance(named: "PlatformSpecificCategoryModifier")
         } else if platform == .macOS {
             #if os(macOS)
             let config = getConfigOrDefault(macOSConfig, default: HIGmacOSCategoryConfig())
             return macOSPlatformSpecificCategories(to: content, config: config)
             #else
-            return content.wrappedWithCompliance()
+            return content.wrappedWithCompliance(named: "PlatformSpecificCategoryModifier")
             #endif
         } else if platform == .visionOS {
             #if os(visionOS)
             let config = getConfigOrDefault(visionOSConfig, default: HIGvisionOSCategoryConfig())
             return visionOSPlatformSpecificCategories(to: content, config: config)
             #else
-            return content.wrappedWithCompliance()
+            return content.wrappedWithCompliance(named: "PlatformSpecificCategoryModifier")
             #endif
         } else {
-            return content.wrappedWithCompliance()
+            return content.wrappedWithCompliance(named: "PlatformSpecificCategoryModifier")
         }
     }
     
@@ -1107,7 +1107,7 @@ public struct PlatformSpecificCategoryModifier: ViewModifier {
         // Additional macOS-specific view-level enhancements can be added here
         // For now, the existing modifiers handle the core functionality
         
-        return content.wrappedWithCompliance()
+        return content.wrappedWithCompliance(named: "PlatformSpecificCategoryModifier")
     }
     #endif
     
@@ -1128,7 +1128,7 @@ public struct PlatformSpecificCategoryModifier: ViewModifier {
         // Note: Eye tracking is not available via public API as of visionOS 1.0
         // This is reserved for future use when Apple provides a public API
         
-        return content.wrappedWithCompliance()
+        return content.wrappedWithCompliance(named: "PlatformSpecificCategoryModifier")
     }
     #endif
 }
