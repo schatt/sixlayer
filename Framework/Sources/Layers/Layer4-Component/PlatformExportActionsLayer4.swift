@@ -152,44 +152,56 @@ enum ExportActionExecutor {
         onComplete: ((ExportActionResult) -> Void)? = nil
     ) -> ExportActionResult? {
         let actions = ExportActionResolution.enabledActions(payload: payload, options: options)
-        guard let action = actions.first else {
-            return nil
-        }
-        guard actions.count == 1 else {
+        guard actions.count == 1, let action = actions.first else {
             return nil
         }
 
         switch action {
         case .share:
-            #if os(iOS)
-            let success = platformShare_L4(
-                items: [payload.fileURL],
-                from: sourceView,
-                excludedActivityTypes: payload.excludedShareActivities,
-                onComplete: { completed in
-                    onComplete?(.shared(completed))
-                }
-            )
-            #else
-            let success = platformShare_L4(
-                items: [payload.fileURL],
-                from: sourceView,
-                onComplete: { completed in
-                    onComplete?(.shared(completed))
-                }
-            )
-            #endif
-            return .shared(success)
+            return performShare(payload: payload, from: sourceView, onComplete: onComplete)
         case .print:
-            guard let printContent = ExportActionResolution.resolvePrintContent(payload: payload) else {
-                return nil
-            }
-            var printOptions = PrintOptions()
-            printOptions.jobName = payload.jobName
-            let success = platformPrint_L4(content: printContent, options: printOptions)
-            onComplete?(.printed(success))
-            return .printed(success)
+            return performPrint(payload: payload, onComplete: onComplete)
         }
+    }
+
+    private static func performShare(
+        payload: ExportActionPayload,
+        from sourceView: (any View)?,
+        onComplete: ((ExportActionResult) -> Void)?
+    ) -> ExportActionResult {
+        #if os(iOS)
+        let success = platformShare_L4(
+            items: [payload.fileURL],
+            from: sourceView,
+            excludedActivityTypes: payload.excludedShareActivities,
+            onComplete: { completed in
+                onComplete?(.shared(completed))
+            }
+        )
+        #else
+        let success = platformShare_L4(
+            items: [payload.fileURL],
+            from: sourceView,
+            onComplete: { completed in
+                onComplete?(.shared(completed))
+            }
+        )
+        #endif
+        return .shared(success)
+    }
+
+    private static func performPrint(
+        payload: ExportActionPayload,
+        onComplete: ((ExportActionResult) -> Void)?
+    ) -> ExportActionResult? {
+        guard let printContent = ExportActionResolution.resolvePrintContent(payload: payload) else {
+            return nil
+        }
+        var printOptions = PrintOptions()
+        printOptions.jobName = payload.jobName
+        let success = platformPrint_L4(content: printContent, options: printOptions)
+        onComplete?(.printed(success))
+        return .printed(success)
     }
 }
 
