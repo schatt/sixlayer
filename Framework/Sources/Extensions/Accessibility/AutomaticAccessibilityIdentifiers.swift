@@ -458,9 +458,7 @@ public struct AutomaticComplianceModifier: ViewModifier {
     /// Determine if an element type is interactive (needs touch target sizing, focus indicators, etc.)
     /// Note: nonisolated because this is pure string logic with no actor isolation requirements
     nonisolated internal func isInteractiveElement(elementType: String?) -> Bool {
-        guard let elementType = elementType?.lowercased() else { return false }
-        let interactiveTypes = ["button", "link", "textfield", "toggle", "picker", "stepper", "slider", "segmentedcontrol"]
-        return interactiveTypes.contains { elementType.contains($0) }
+        slfIsInteractiveAccessibilityElementType(elementType)
     }
 }
 
@@ -944,26 +942,9 @@ public struct AutomaticHIGFocusIndicatorModifier: ViewModifier {
 /// Disables or simplifies animations when user prefers reduced motion
 public struct AutomaticHIGMotionPreferenceModifier: ViewModifier {
     let platform: SixLayerPlatform
-    
+
     public func body(content: Content) -> some View {
-        // SwiftUI automatically respects reduced motion through its animation environment.
-        // When reduced motion is enabled, SwiftUI's .animation() modifier automatically
-        // disables or simplifies animations.
-        //
-        // This modifier ensures that views with automatic compliance will respect the system
-        // reduced motion setting. SwiftUI handles this automatically, but we apply it explicitly
-        // to ensure compliance.
-        //
-        // Note: SwiftUI's animation system already respects UIAccessibility.isReduceMotionEnabled
-        // (iOS) and system accessibility settings (macOS), so explicit checks are not strictly
-        // necessary. However, this modifier serves as documentation and ensures the behavior
-        // is explicit.
-        //
-        // For views that need explicit animation control, developers should use:
-        // .animation(reducedMotion ? .none : .default, value: someValue)
-        //
-        // The automatic compliance system ensures all animations respect reduced motion preferences.
-        content
+        content.modifier(PlatformReduceMotionSubtreeModifier())
     }
 }
 
@@ -1197,6 +1178,30 @@ internal func slfSuppressAnonymousAutomaticComplianceWrapperIdentifier(
         && accessibilitySortPriority == nil
 }
 
+/// Interactive element types for automatic label policy (Issue #290) and HIG touch-target sizing.
+internal func slfIsInteractiveAccessibilityElementType(_ elementType: String?) -> Bool {
+    guard let elementType = elementType?.lowercased() else { return false }
+    let interactiveTypes = ["button", "link", "textfield", "toggle", "picker", "stepper", "slider", "segmentedcontrol"]
+    return interactiveTypes.contains { elementType.contains($0) }
+}
+
+/// Whether ``BasicAutomaticComplianceModifier`` should apply an automatic VoiceOver label (Issue #290).
+internal func slfShouldApplyAutomaticAccessibilityLabel(
+    effectiveLabel: String?,
+    identifierIsPresent: Bool,
+    identifierElementType: String?,
+    isNavigationHeaderCompliance: Bool,
+    labelsOnlyOnInteractiveElements: Bool
+) -> Bool {
+    guard let effectiveLabel, !effectiveLabel.isEmpty, identifierIsPresent, !isNavigationHeaderCompliance else {
+        return false
+    }
+    if labelsOnlyOnInteractiveElements {
+        return slfIsInteractiveAccessibilityElementType(identifierElementType)
+    }
+    return true
+}
+
 /// Whether ``BasicAutomaticComplianceModifier`` should apply ``accessibilityElement(children: .contain)`` on its wrapper.
 /// Named rows use ``.contain`` so the Group keeps a stable identifier on iOS (#172). Navigation **Header** compliance
 /// is applied to full destination roots (``platformNavigationTitle_L4``); wrapping that subtree in ``.contain`` can
@@ -1279,6 +1284,7 @@ public struct BasicAutomaticComplianceModifier: ViewModifier {
         let capturedEnableDebugLogging = config.enableDebugLogging
         let capturedNamespace = config.namespace
         let capturedGlobalPrefix = config.globalPrefix
+        let capturedLabelsOnlyOnInteractiveElements = config.labelsOnlyOnInteractiveElements
         
         // Logic: enableAutoIDs, global flag, and no local subtree opt-out (disableAutomaticAccessibilityIdentifiers)
         let shouldApply = capturedEnableAutoIDs
@@ -1398,7 +1404,14 @@ public struct BasicAutomaticComplianceModifier: ViewModifier {
         @ViewBuilder
         func applyAccessibilityLabelIfNeeded<V: View>(to view: V) -> some View {
             let effectiveLabel = accessibilityLabel ?? identifierLabel
-            if let label = effectiveLabel, !label.isEmpty, identifier != nil, !isNavigationHeaderCompliance {
+            let shouldApplyLabel = slfShouldApplyAutomaticAccessibilityLabel(
+                effectiveLabel: effectiveLabel,
+                identifierIsPresent: identifier != nil,
+                identifierElementType: identifierElementType,
+                isNavigationHeaderCompliance: isNavigationHeaderCompliance,
+                labelsOnlyOnInteractiveElements: capturedLabelsOnlyOnInteractiveElements
+            )
+            if shouldApplyLabel, let label = effectiveLabel {
                 // Localize and format label according to Apple HIG guidelines
                 let localizedLabel = localizeAccessibilityLabel(
                     label,

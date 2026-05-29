@@ -425,12 +425,10 @@ public struct ReducedMotionModifier: ViewModifier {
     
     public func body(content: Content) -> some View {
         if isEnabled {
-            content
-                .animation(.none, value: UUID())
-                .automaticCompliance(named: "ReducedMotionModifier")
+            content.modifier(PlatformReduceMotionSubtreeModifier())
+                .wrappedWithCompliance(named: "ReducedMotionModifier")
         } else {
-            content
-                .automaticCompliance(named: "ReducedMotionModifier")
+            content.wrappedWithCompliance(named: "ReducedMotionModifier")
         }
     }
 }

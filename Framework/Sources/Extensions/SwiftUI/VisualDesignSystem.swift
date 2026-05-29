@@ -1,6 +1,6 @@
 import Foundation
 import SwiftUI
-#if os(iOS)
+#if os(iOS) || os(visionOS)
 import UIKit
 #elseif os(macOS)
 import AppKit
@@ -47,7 +47,7 @@ private func detectAccessibilitySettings() -> AccessibilitySettings {
         keyboardNavigation: true,
         highContrastMode: false,
         dynamicType: true,
-        reducedMotion: false,
+        reducedMotion: NSWorkspace.shared.accessibilityDisplayShouldReduceMotion,
         hapticFeedback: false
     )
     #else
@@ -1155,7 +1155,7 @@ public extension SixLayerContentSizeCategory {
         }
     }
 
-    #if os(iOS)
+    #if os(iOS) || os(visionOS)
     var uiContentSizeCategory: UIContentSizeCategory {
         switch self {
         case .extraSmall: return .extraSmall

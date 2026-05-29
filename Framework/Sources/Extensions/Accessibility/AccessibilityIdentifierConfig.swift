@@ -103,6 +103,9 @@ public final class AccessibilityIdentifierConfig: @unchecked Sendable {
     /// Whether to include element types in identifiers
     public var includeElementTypes: Bool = true
     
+    /// When true, automatic VoiceOver labels from ``basicAutomaticCompliance`` / ``automaticCompliance`` apply only to interactive element types (buttons, links, fields, etc.). Identifiers are unchanged. Default false for backward compatibility (Issue #290).
+    public var labelsOnlyOnInteractiveElements: Bool = false
+    
     /// Current view hierarchy for context-aware identifier generation
     public var currentViewHierarchy: [String] = []
     
@@ -418,6 +421,7 @@ public final class AccessibilityIdentifierConfig: @unchecked Sendable {
         userDefaults.set(globalAutomaticAccessibilityIdentifiers, forKey: storageKey("globalAutomaticAccessibilityIdentifiers"))
         userDefaults.set(includeComponentNames, forKey: storageKey("includeComponentNames"))
         userDefaults.set(includeElementTypes, forKey: storageKey("includeElementTypes"))
+        userDefaults.set(labelsOnlyOnInteractiveElements, forKey: storageKey("labelsOnlyOnInteractiveElements"))
         userDefaults.set(enableUITestIntegration, forKey: storageKey("enableUITestIntegration"))
         userDefaults.set(namespace, forKey: storageKey("namespace"))
         userDefaults.set(globalPrefix, forKey: storageKey("globalPrefix"))
@@ -440,6 +444,9 @@ public final class AccessibilityIdentifierConfig: @unchecked Sendable {
         }
         if userDefaults.object(forKey: storageKey("includeElementTypes")) != nil {
             includeElementTypes = userDefaults.bool(forKey: storageKey("includeElementTypes"))
+        }
+        if userDefaults.object(forKey: storageKey("labelsOnlyOnInteractiveElements")) != nil {
+            labelsOnlyOnInteractiveElements = userDefaults.bool(forKey: storageKey("labelsOnlyOnInteractiveElements"))
         }
         if userDefaults.object(forKey: storageKey("enableUITestIntegration")) != nil {
             enableUITestIntegration = userDefaults.bool(forKey: storageKey("enableUITestIntegration"))

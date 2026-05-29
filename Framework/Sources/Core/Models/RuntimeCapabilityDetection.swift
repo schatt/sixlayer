@@ -298,8 +298,13 @@ public struct RuntimeCapabilityDetection {
     
     // MARK: - High Contrast Detection
     
-    /// Detects if high contrast mode is enabled
-    /// Respects test override if set, otherwise queries the actual system setting
+    /// Detects if **Darker System Colors** is enabled (`UIAccessibility.isDarkerSystemColorsEnabled` on iOS).
+    ///
+    /// This is not **Increase Contrast** (`colorSchemeContrast`). For subtitle/caption text under
+    /// Increase Contrast, use `PlatformContrastAccessibility.readableSecondary(contrast:)` or
+    /// `View.platformForegroundReadableSecondary()`.
+    ///
+    /// Respects test override if set, otherwise queries the actual system setting.
     @MainActor
     public static var isHighContrastEnabled: Bool {
         // Check for capability override first (thread-local, no MainActor needed for override)

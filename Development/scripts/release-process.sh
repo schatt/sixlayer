@@ -181,6 +181,21 @@ next_release_prep_branch_name() {
     echo "b${major}/b${next_semver}"
 }
 
+# git push all does not set branch.*.merge; track origin so status/hooks see ahead/behind.
+set_branch_upstream_to_origin() {
+    local branch="${1:-$(git branch --show-current)}"
+    if [ -z "$branch" ]; then
+        return 0
+    fi
+    git fetch origin "$branch" 2>/dev/null || true
+    if git rev-parse --verify --quiet "refs/remotes/origin/$branch" >/dev/null 2>&1; then
+        git branch --set-upstream-to="origin/$branch" "$branch"
+        echo "✅ Tracking origin/$branch"
+    else
+        echo "⚠️  Could not set upstream: origin/$branch not found after push"
+    fi
+}
+
 # Function to check if a string looks like a version number (X.Y.Z)
 is_version_number() {
     [[ "$1" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
@@ -1159,6 +1174,7 @@ else
             exit 1
         fi
         echo "✅ Branch $CURRENT_BRANCH pushed to all remotes"
+        set_branch_upstream_to_origin "$CURRENT_BRANCH"
 
         # Switch to main
         echo "🔄 Switching to main branch..."
@@ -1237,6 +1253,7 @@ else
                 echo "⚠️  Could not push $NEXT_RELEASE_BRANCH to all remotes; push manually: git push all $NEXT_RELEASE_BRANCH"
             else
                 echo "✅ Pushed $NEXT_RELEASE_BRANCH to all remotes"
+                set_branch_upstream_to_origin "$NEXT_RELEASE_BRANCH"
             fi
             echo "✅ Now on $NEXT_RELEASE_BRANCH for work after v$VERSION"
             if [ "$AUTO_RELEASE" -ne 1 ]; then

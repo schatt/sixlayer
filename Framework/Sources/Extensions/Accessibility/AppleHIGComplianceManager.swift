@@ -2,6 +2,14 @@ import Foundation
 import SwiftUI
 import Combine
 
+#if canImport(UIKit)
+import UIKit
+#endif
+
+#if canImport(AppKit) && !targetEnvironment(macCatalyst)
+import AppKit
+#endif
+
 // MARK: - Apple HIG Compliance Manager
 
 /// Central manager for automatic Apple Human Interface Guidelines compliance
@@ -527,14 +535,44 @@ public struct AccessibilitySystemState {
     public let hasSwitchControl: Bool
     
     public init() {
+        #if os(iOS) || os(visionOS) || os(tvOS)
+        self.isVoiceOverRunning = UIAccessibility.isVoiceOverRunning
+        self.isDarkerSystemColorsEnabled = UIAccessibility.isDarkerSystemColorsEnabled
+        self.isReduceTransparencyEnabled = UIAccessibility.isReduceTransparencyEnabled
+        self.isHighContrastEnabled = UIAccessibility.isDarkerSystemColorsEnabled
+        self.isReducedMotionEnabled = PlatformReduceMotionPreference.isReduceMotionEnabled
+        self.hasKeyboardSupport = true
+        self.hasFullKeyboardAccess = false
+        self.hasSwitchControl = UIAccessibility.isSwitchControlRunning
+        #elseif os(watchOS)
+        // UIAccessibility runtime query APIs are unavailable on watchOS SDK; use conservative defaults.
         self.isVoiceOverRunning = false
         self.isDarkerSystemColorsEnabled = false
         self.isReduceTransparencyEnabled = false
         self.isHighContrastEnabled = false
-        self.isReducedMotionEnabled = false
+        self.isReducedMotionEnabled = PlatformReduceMotionPreference.isReduceMotionEnabled
+        self.hasKeyboardSupport = true
+        self.hasFullKeyboardAccess = false
+        self.hasSwitchControl = false
+        #elseif os(macOS)
+        self.isVoiceOverRunning = NSWorkspace.shared.isVoiceOverEnabled
+        self.isDarkerSystemColorsEnabled = NSWorkspace.shared.accessibilityDisplayShouldIncreaseContrast
+        self.isReduceTransparencyEnabled = NSWorkspace.shared.accessibilityDisplayShouldReduceTransparency
+        self.isHighContrastEnabled = NSWorkspace.shared.accessibilityDisplayShouldIncreaseContrast
+        self.isReducedMotionEnabled = PlatformReduceMotionPreference.isReduceMotionEnabled
+        self.hasKeyboardSupport = true
+        self.hasFullKeyboardAccess = false
+        self.hasSwitchControl = false
+        #else
+        self.isVoiceOverRunning = false
+        self.isDarkerSystemColorsEnabled = false
+        self.isReduceTransparencyEnabled = false
+        self.isHighContrastEnabled = false
+        self.isReducedMotionEnabled = PlatformReduceMotionPreference.isReduceMotionEnabled
         self.hasKeyboardSupport = false
         self.hasFullKeyboardAccess = false
         self.hasSwitchControl = false
+        #endif
     }
     
     public init(from systemState: AccessibilitySystemState) {

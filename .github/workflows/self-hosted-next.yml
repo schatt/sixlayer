@@ -1,10 +1,13 @@
-# Self-hosted runner: per-platform AllTests when `next` updates.
-# Schemes match project.yml / buildconfig.yml (unit + ViewInspector + UI + external integration).
+# Self-hosted runner: per-scheme test jobs when `next` updates.
+# Required iOS + macOS schemes match project.yml / buildconfig.yml and Cirrus CI
+# (unit, ViewInspector, UI, Framework). AllTests schemes remain for local use only.
 #
-# iOS + macOS are required. tvOS, watchOS, and visionOS are informational (continue-on-error).
+# iOS + macOS matrix jobs are required. tvOS, watchOS, and visionOS AllTests are
+# informational (continue-on-error).
 #
-# iOS is listed first so a single runner agent tends to dequeue it before other jobs (no
-# `needs` chain). Each job uses its own `-derivedDataPath` and SPM checkout under the workspace.
+# Platform order in file: iOS → macOS → tvOS → visionOS → watchOS (no `needs` chain — a
+# single self-hosted runner tends to dequeue jobs in declaration order). Each job uses its
+# own `-derivedDataPath` and SPM checkout under the workspace.
 #
 # Runner: `runs-on: self-hosted` — add labels if your runner uses custom tags.
 name: Self-hosted (next)
@@ -19,10 +22,26 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  ios-tests:
-    name: iOS (SLF-iOS-AllTests)
+  ios-required-tests:
+    name: iOS (${{ matrix.label }})
     runs-on: self-hosted
-    timeout-minutes: 150
+    timeout-minutes: ${{ matrix.timeout_minutes }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: UnitTests
+            scheme: SLF-iOS-UnitTests
+            timeout_minutes: 90
+          - label: ViewInspectorTests
+            scheme: SLF-iOS-ViewInspectorTests
+            timeout_minutes: 90
+          - label: UITests
+            scheme: SLF-iOS-UITests
+            timeout_minutes: 120
+          - label: Framework
+            scheme: SLF-iOS-Framework
+            timeout_minutes: 90
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -38,17 +57,17 @@ jobs:
           command -v xcodegen >/dev/null 2>&1 || brew install xcodegen
           xcodegen generate
 
-      - name: Run iOS tests (SLF-iOS-AllTests)
+      - name: Run iOS tests (${{ matrix.scheme }})
         env:
-          CI_DERIVED_DATA: ${{ github.workspace }}/.ci-derived-data/${{ github.job }}
-          CI_SPM_CHECKOUTS: ${{ github.workspace }}/.ci-spm/${{ github.job }}
+          CI_DERIVED_DATA: ${{ github.workspace }}/.ci-derived-data/${{ matrix.scheme }}
+          CI_SPM_CHECKOUTS: ${{ github.workspace }}/.ci-spm/${{ matrix.scheme }}
         run: |
           set -euo pipefail
           mkdir -p build "$CI_DERIVED_DATA" "$CI_SPM_CHECKOUTS"
           set -o pipefail
           xcodebuild test \
             -project SixLayerFramework.xcodeproj \
-            -scheme "SLF-iOS-AllTests" \
+            -scheme "${{ matrix.scheme }}" \
             -destination 'platform=iOS Simulator,name=iPhone 17 Pro Max' \
             -configuration Debug \
             -allowProvisioningUpdates \
@@ -56,20 +75,36 @@ jobs:
             -clonedSourcePackagesDirPath "$CI_SPM_CHECKOUTS" \
             -parallel-testing-enabled YES \
             -maximum-concurrent-test-simulator-destinations 2 \
-            -resultBundlePath "build/SLF-iOS-AllTests.xcresult"
+            -resultBundlePath "build/${{ matrix.scheme }}.xcresult"
 
       - name: Upload iOS test result bundle
         if: failure()
         uses: actions/upload-artifact@v7
         with:
-          name: xcresult-ios
-          path: build/SLF-iOS-AllTests.xcresult
+          name: xcresult-${{ matrix.scheme }}
+          path: build/${{ matrix.scheme }}.xcresult
           if-no-files-found: ignore
 
-  macos-tests:
-    name: macOS (SLF-macOS-AllTests)
+  macos-required-tests:
+    name: macOS (${{ matrix.label }})
     runs-on: self-hosted
-    timeout-minutes: 120
+    timeout-minutes: ${{ matrix.timeout_minutes }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: UnitTests
+            scheme: SLF-macOS-UnitTests
+            timeout_minutes: 60
+          - label: ViewInspectorTests
+            scheme: SLF-macOS-ViewInspectorTests
+            timeout_minutes: 60
+          - label: UITests
+            scheme: SLF-macOS-UITests
+            timeout_minutes: 90
+          - label: Framework
+            scheme: SLF-macOS-Framework
+            timeout_minutes: 60
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -85,31 +120,31 @@ jobs:
           command -v xcodegen >/dev/null 2>&1 || brew install xcodegen
           xcodegen generate
 
-      - name: Run macOS tests (SLF-macOS-AllTests)
+      - name: Run macOS tests (${{ matrix.scheme }})
         env:
-          CI_DERIVED_DATA: ${{ github.workspace }}/.ci-derived-data/${{ github.job }}
-          CI_SPM_CHECKOUTS: ${{ github.workspace }}/.ci-spm/${{ github.job }}
+          CI_DERIVED_DATA: ${{ github.workspace }}/.ci-derived-data/${{ matrix.scheme }}
+          CI_SPM_CHECKOUTS: ${{ github.workspace }}/.ci-spm/${{ matrix.scheme }}
         run: |
           set -euo pipefail
           mkdir -p build "$CI_DERIVED_DATA" "$CI_SPM_CHECKOUTS"
           set -o pipefail
           xcodebuild test \
             -project SixLayerFramework.xcodeproj \
-            -scheme "SLF-macOS-AllTests" \
+            -scheme "${{ matrix.scheme }}" \
             -destination 'platform=macOS,arch=arm64' \
             -configuration Debug \
             -allowProvisioningUpdates \
             -derivedDataPath "$CI_DERIVED_DATA" \
             -clonedSourcePackagesDirPath "$CI_SPM_CHECKOUTS" \
             -parallel-testing-enabled YES \
-            -resultBundlePath "build/SLF-macOS-AllTests.xcresult"
+            -resultBundlePath "build/${{ matrix.scheme }}.xcresult"
 
       - name: Upload macOS test result bundle
         if: failure()
         uses: actions/upload-artifact@v7
         with:
-          name: xcresult-macos
-          path: build/SLF-macOS-AllTests.xcresult
+          name: xcresult-${{ matrix.scheme }}
+          path: build/${{ matrix.scheme }}.xcresult
           if-no-files-found: ignore
 
   tvos-tests:
@@ -159,53 +194,6 @@ jobs:
           path: build/SLF-tvOS-AllTests.xcresult
           if-no-files-found: ignore
 
-  watchos-tests:
-    name: watchOS (SLF-watchOS-AllTests)
-    runs-on: self-hosted
-    continue-on-error: true
-    timeout-minutes: 90
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-
-      - name: Generate Xcode project (XcodeGen)
-        run: |
-          set -euo pipefail
-          if [[ -x /opt/homebrew/bin/brew ]]; then
-            eval "$(/opt/homebrew/bin/brew shellenv)"
-          elif [[ -x /usr/local/bin/brew ]]; then
-            eval "$(/usr/local/bin/brew shellenv)"
-          fi
-          command -v xcodegen >/dev/null 2>&1 || brew install xcodegen
-          xcodegen generate
-
-      - name: Run watchOS tests (SLF-watchOS-AllTests)
-        env:
-          CI_DERIVED_DATA: ${{ github.workspace }}/.ci-derived-data/${{ github.job }}
-          CI_SPM_CHECKOUTS: ${{ github.workspace }}/.ci-spm/${{ github.job }}
-        run: |
-          set -euo pipefail
-          mkdir -p build "$CI_DERIVED_DATA" "$CI_SPM_CHECKOUTS"
-          set -o pipefail
-          xcodebuild test \
-            -project SixLayerFramework.xcodeproj \
-            -scheme "SLF-watchOS-AllTests" \
-            -destination 'platform=watchOS Simulator,name=Apple Watch Series 11 (46mm)' \
-            -configuration Debug \
-            -allowProvisioningUpdates \
-            -derivedDataPath "$CI_DERIVED_DATA" \
-            -clonedSourcePackagesDirPath "$CI_SPM_CHECKOUTS" \
-            -parallel-testing-enabled YES \
-            -resultBundlePath "build/SLF-watchOS-AllTests.xcresult"
-
-      - name: Upload watchOS test result bundle
-        if: failure()
-        uses: actions/upload-artifact@v7
-        with:
-          name: xcresult-watchos
-          path: build/SLF-watchOS-AllTests.xcresult
-          if-no-files-found: ignore
-
   visionos-tests:
     name: visionOS (SLF-visionOS-AllTests)
     runs-on: self-hosted
@@ -251,4 +239,51 @@ jobs:
         with:
           name: xcresult-visionos
           path: build/SLF-visionOS-AllTests.xcresult
+          if-no-files-found: ignore
+
+  watchos-tests:
+    name: watchOS (SLF-watchOS-AllTests)
+    runs-on: self-hosted
+    continue-on-error: true
+    timeout-minutes: 90
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Generate Xcode project (XcodeGen)
+        run: |
+          set -euo pipefail
+          if [[ -x /opt/homebrew/bin/brew ]]; then
+            eval "$(/opt/homebrew/bin/brew shellenv)"
+          elif [[ -x /usr/local/bin/brew ]]; then
+            eval "$(/usr/local/bin/brew shellenv)"
+          fi
+          command -v xcodegen >/dev/null 2>&1 || brew install xcodegen
+          xcodegen generate
+
+      - name: Run watchOS tests (SLF-watchOS-AllTests)
+        env:
+          CI_DERIVED_DATA: ${{ github.workspace }}/.ci-derived-data/${{ github.job }}
+          CI_SPM_CHECKOUTS: ${{ github.workspace }}/.ci-spm/${{ github.job }}
+        run: |
+          set -euo pipefail
+          mkdir -p build "$CI_DERIVED_DATA" "$CI_SPM_CHECKOUTS"
+          set -o pipefail
+          xcodebuild test \
+            -project SixLayerFramework.xcodeproj \
+            -scheme "SLF-watchOS-AllTests" \
+            -destination 'platform=watchOS Simulator,name=Apple Watch Series 11 (46mm)' \
+            -configuration Debug \
+            -allowProvisioningUpdates \
+            -derivedDataPath "$CI_DERIVED_DATA" \
+            -clonedSourcePackagesDirPath "$CI_SPM_CHECKOUTS" \
+            -parallel-testing-enabled YES \
+            -resultBundlePath "build/SLF-watchOS-AllTests.xcresult"
+
+      - name: Upload watchOS test result bundle
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: xcresult-watchos
+          path: build/SLF-watchOS-AllTests.xcresult
           if-no-files-found: ignore

@@ -38,20 +38,14 @@ open class AccessibilityManagerTDDTests: BaseTestClass {
     }
 
     @Test @MainActor func testAccessibilityManagerDetectsReduceMotionPreference() async {
-        // TDD: AccessibilityManager.isReduceMotionEnabled() should:
-        // 1. Return true when reduce motion is enabled in accessibility settings
-        // 2. Return false when reduce motion is disabled
-        // 3. Respect system-wide motion preferences
-        // 4. Work across all supported platforms
-
         let manager = AccessibilityManager()
 
-        // Currently returns false (stub), should detect actual reduce motion setting
-        let reduceMotionEnabled = manager.isReduceMotionEnabled()
-        #expect(reduceMotionEnabled == false, "Currently stub implementation returns false")
-
-        // TODO: When implemented, this should reflect actual reduce motion setting
-        // #expect(reduceMotionEnabled == actualReduceMotionStatus, "Should detect actual reduce motion setting")
+        PlatformReduceMotionPreference.withTestOverride(true) {
+            #expect(manager.isReduceMotionEnabled())
+        }
+        PlatformReduceMotionPreference.withTestOverride(false) {
+            #expect(!manager.isReduceMotionEnabled())
+        }
     }
 
     @Test @MainActor func testAccessibilityManagerProvidesHighContrastColors() async {
@@ -116,7 +110,7 @@ open class AccessibilityManagerTDDTests: BaseTestClass {
 
         if let config = config {
             #expect(config.enableVoiceOver == false, "VoiceOver currently stub as disabled")
-            #expect(config.enableReduceMotion == false, "Reduce motion currently stub as disabled")
+            #expect(config.enableReduceMotion == manager.isReduceMotionEnabled())
             #expect(config.enableHighContrast == true, "High contrast currently stub as enabled")
         }
 
