@@ -5532,12 +5532,11 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
                 .automaticCompliance()
             
             #if canImport(ViewInspector)
-            let hasAutomaticID = testComponentComplianceSinglePlatform(
+            let hasAutomaticID = !AccessibilityTestUtilities.testComponentLacksMatchingIdentifier(
                 view,
                 expectedPattern: "SixLayer.*ui*",
                 platform: SixLayerPlatform.iOS,
-                componentName: "AutomaticIdentifierTest",
-                recordFailureIssues: false
+                componentName: "AutomaticIdentifierTest"
             )
             #expect(!hasAutomaticID, "View should not have automatic ID when disabled globally")
             #else
