@@ -618,7 +618,7 @@ public struct DynamicTextField: View {
                 // Move focus to next field on Enter/Return (Issue #81)
                 formState.focusNextField(from: field.id)
             }
-            .automaticCompliance()
+            .automaticComplianceForDynamicFormField(field, identifierElementType: "TextField")
     }
     
     /// Multi-line TextField view with axis parameter (iOS 16+ / macOS 13+)
@@ -669,7 +669,7 @@ public struct DynamicTextField: View {
         .platformTextFieldStyle()
         .lineLimit(field.minLines...field.maxLines)
         .focused($isFocused)
-        .automaticCompliance()
+        .automaticComplianceForDynamicFormField(field, identifierElementType: "TextField")
     }
     
     /// TextEditor fallback for older OS versions
@@ -679,19 +679,19 @@ public struct DynamicTextField: View {
         EmptyView().platformTextEditor(text: field.textBinding(formState: formState), prompt: "")
             .frame(minHeight: CGFloat(field.minLines * 20))
             .border(Color.gray.opacity(0.2))
-            .automaticCompliance()
+            .automaticComplianceForDynamicFormField(field, identifierElementType: "TextField")
         #elseif os(watchOS)
         TextField("", text: field.textBinding(formState: formState), axis: .vertical)
             .platformTextFieldStyle()
             .lineLimit(field.minLines...field.maxLines)
             .frame(minHeight: CGFloat(field.minLines * 20))
             .border(Color.gray.opacity(0.2))
-            .automaticCompliance()
+            .automaticComplianceForDynamicFormField(field, identifierElementType: "TextField")
         #else
         TextEditor(text: field.textBinding(formState: formState))
             .frame(minHeight: CGFloat(field.minLines * 20))
             .border(Color.gray.opacity(0.2))
-            .automaticCompliance()
+            .automaticComplianceForDynamicFormField(field, identifierElementType: "TextField")
         #endif
     }
 }
@@ -731,7 +731,7 @@ public struct DynamicEmailField: View {
                     // Move focus to next field on Enter/Return (Issue #81)
                     formState.focusNextField(from: field.id)
                 }
-                .automaticCompliance()
+                .automaticComplianceForDynamicFormField(field, identifierElementType: "TextField")
             
             // Character counter for fields with maxLength validation
             field.characterCounterView(formState: formState)
@@ -782,7 +782,7 @@ public struct DynamicPasswordField: View {
                     // Move focus to next field on Enter/Return (Issue #81)
                     formState.focusNextField(from: field.id)
                 }
-                .automaticCompliance()
+                .automaticComplianceForDynamicFormField(field, identifierElementType: "TextField")
             
             // Character counter for fields with maxLength validation
             field.characterCounterView(formState: formState)
@@ -830,7 +830,7 @@ public struct DynamicPhoneField: View {
                 #if os(iOS)
                 .keyboardType(UIKeyboardType.phonePad)
                 #endif
-                .automaticCompliance()
+                .automaticComplianceForDynamicFormField(field, identifierElementType: "TextField")
             
             // Character counter for fields with maxLength validation
             field.characterCounterView(formState: formState)
@@ -886,11 +886,11 @@ public struct DynamicURLField: View {
         if isValid, let url = url {
             Link(urlValue, destination: url)
                 .foregroundColor(.blue)
-                .automaticCompliance()
+                .automaticComplianceForDynamicFormField(field, identifierElementType: "TextField")
         } else {
             Text(urlValue.isEmpty ? "—" : urlValue)
                 .foregroundColor(.secondary)
-                .automaticCompliance()
+                .automaticComplianceForDynamicFormField(field, identifierElementType: "TextField")
         }
     }
     
@@ -904,7 +904,7 @@ public struct DynamicURLField: View {
                 #if os(iOS)
                 .keyboardType(UIKeyboardType.URL)
                 #endif
-                .automaticCompliance()
+                .automaticComplianceForDynamicFormField(field, identifierElementType: "TextField")
             
             // Character counter for fields with maxLength validation
             field.characterCounterView(formState: formState)
@@ -932,7 +932,7 @@ public struct DynamicNumberField: View {
             #if os(iOS)
             .keyboardType(UIKeyboardType.decimalPad)
             #endif
-            .automaticCompliance()
+            .automaticComplianceForDynamicFormField(field, identifierElementType: "TextField")
         }
         .padding()
         .dynamicFormFieldAccessibilityLabel(field)
@@ -960,7 +960,7 @@ public struct DynamicIntegerField: View {
             #if os(iOS)
             .keyboardType(UIKeyboardType.numberPad)
             #endif
-            .automaticCompliance()
+            .automaticComplianceForDynamicFormField(field, identifierElementType: "TextField")
         }
         .padding()
         .dynamicFormFieldAccessibilityLabel(field) // Issue #194: resolved label when localized
@@ -1042,7 +1042,7 @@ public struct DynamicStepperField: View {
         }
         .padding()
         .dynamicFormFieldAccessibilityLabel(field)
-        .automaticCompliance()  // Container view - no identifierName
+        .automaticCompliance(named: "DynamicStepperField")
     }
 }
 
@@ -1093,7 +1093,7 @@ public struct DynamicDateField: View {
         }
         .padding()
         .dynamicFormFieldAccessibilityLabel(field) // Issue #194: resolved label when localized
-        .automaticCompliance()  // Container view - no identifierName
+        .automaticCompliance(named: "DynamicDateField")
     }
 }
 
@@ -1127,11 +1127,11 @@ public struct DynamicTimeField: View {
                     selection: selectedTime,
                     label: field.placeholder ?? i18n.placeholderSelectTime()
                 )
-                .automaticCompliance()
+                .automaticComplianceForDynamicFormField(field, identifierElementType: "TextField")
             } else {
                 Text(field.placeholder ?? i18n.placeholderSelectTime())
                     .foregroundStyle(.secondary)
-                    .automaticCompliance()
+                    .automaticComplianceForDynamicFormField(field, identifierElementType: "TextField")
             }
             #else
             DatePicker(
@@ -1139,7 +1139,7 @@ public struct DynamicTimeField: View {
                 selection: selectedTime,
                 displayedComponents: .hourAndMinute
             )
-            .automaticCompliance()
+            .automaticComplianceForDynamicFormField(field, identifierElementType: "TextField")
             #endif
         }
         .padding()
@@ -1178,18 +1178,18 @@ public struct DynamicDateTimeField: View {
                     selection: selectedDateTime,
                     label: field.placeholder ?? i18n.placeholderSelectDateTime()
                 )
-                .automaticCompliance()
+                .automaticComplianceForDynamicFormField(field, identifierElementType: "TextField")
             } else {
                 Text(field.placeholder ?? i18n.placeholderSelectDateTime())
                     .foregroundStyle(.secondary)
-                    .automaticCompliance()
+                    .automaticComplianceForDynamicFormField(field, identifierElementType: "TextField")
             }
             #else
             DatePicker(
                 field.placeholder ?? i18n.placeholderSelectDateTime(),
                 selection: selectedDateTime
             )
-            .automaticCompliance()
+            .automaticComplianceForDynamicFormField(field, identifierElementType: "TextField")
             #endif
         }
         .padding()
