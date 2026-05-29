@@ -5,8 +5,9 @@
 # iOS + macOS matrix jobs are required. tvOS, watchOS, and visionOS AllTests are
 # informational (continue-on-error).
 #
-# iOS is listed first so a single runner agent tends to dequeue it before macOS (no
-# `needs` chain). Each job uses its own `-derivedDataPath` and SPM checkout under the workspace.
+# Platform order in file: iOS → macOS → tvOS → visionOS → watchOS (no `needs` chain — a
+# single self-hosted runner tends to dequeue jobs in declaration order). Each job uses its
+# own `-derivedDataPath` and SPM checkout under the workspace.
 #
 # Runner: `runs-on: self-hosted` — add labels if your runner uses custom tags.
 name: Self-hosted (next)
@@ -193,53 +194,6 @@ jobs:
           path: build/SLF-tvOS-AllTests.xcresult
           if-no-files-found: ignore
 
-  watchos-tests:
-    name: watchOS (SLF-watchOS-AllTests)
-    runs-on: self-hosted
-    continue-on-error: true
-    timeout-minutes: 90
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-
-      - name: Generate Xcode project (XcodeGen)
-        run: |
-          set -euo pipefail
-          if [[ -x /opt/homebrew/bin/brew ]]; then
-            eval "$(/opt/homebrew/bin/brew shellenv)"
-          elif [[ -x /usr/local/bin/brew ]]; then
-            eval "$(/usr/local/bin/brew shellenv)"
-          fi
-          command -v xcodegen >/dev/null 2>&1 || brew install xcodegen
-          xcodegen generate
-
-      - name: Run watchOS tests (SLF-watchOS-AllTests)
-        env:
-          CI_DERIVED_DATA: ${{ github.workspace }}/.ci-derived-data/${{ github.job }}
-          CI_SPM_CHECKOUTS: ${{ github.workspace }}/.ci-spm/${{ github.job }}
-        run: |
-          set -euo pipefail
-          mkdir -p build "$CI_DERIVED_DATA" "$CI_SPM_CHECKOUTS"
-          set -o pipefail
-          xcodebuild test \
-            -project SixLayerFramework.xcodeproj \
-            -scheme "SLF-watchOS-AllTests" \
-            -destination 'platform=watchOS Simulator,name=Apple Watch Series 11 (46mm)' \
-            -configuration Debug \
-            -allowProvisioningUpdates \
-            -derivedDataPath "$CI_DERIVED_DATA" \
-            -clonedSourcePackagesDirPath "$CI_SPM_CHECKOUTS" \
-            -parallel-testing-enabled YES \
-            -resultBundlePath "build/SLF-watchOS-AllTests.xcresult"
-
-      - name: Upload watchOS test result bundle
-        if: failure()
-        uses: actions/upload-artifact@v7
-        with:
-          name: xcresult-watchos
-          path: build/SLF-watchOS-AllTests.xcresult
-          if-no-files-found: ignore
-
   visionos-tests:
     name: visionOS (SLF-visionOS-AllTests)
     runs-on: self-hosted
@@ -285,4 +239,51 @@ jobs:
         with:
           name: xcresult-visionos
           path: build/SLF-visionOS-AllTests.xcresult
+          if-no-files-found: ignore
+
+  watchos-tests:
+    name: watchOS (SLF-watchOS-AllTests)
+    runs-on: self-hosted
+    continue-on-error: true
+    timeout-minutes: 90
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Generate Xcode project (XcodeGen)
+        run: |
+          set -euo pipefail
+          if [[ -x /opt/homebrew/bin/brew ]]; then
+            eval "$(/opt/homebrew/bin/brew shellenv)"
+          elif [[ -x /usr/local/bin/brew ]]; then
+            eval "$(/usr/local/bin/brew shellenv)"
+          fi
+          command -v xcodegen >/dev/null 2>&1 || brew install xcodegen
+          xcodegen generate
+
+      - name: Run watchOS tests (SLF-watchOS-AllTests)
+        env:
+          CI_DERIVED_DATA: ${{ github.workspace }}/.ci-derived-data/${{ github.job }}
+          CI_SPM_CHECKOUTS: ${{ github.workspace }}/.ci-spm/${{ github.job }}
+        run: |
+          set -euo pipefail
+          mkdir -p build "$CI_DERIVED_DATA" "$CI_SPM_CHECKOUTS"
+          set -o pipefail
+          xcodebuild test \
+            -project SixLayerFramework.xcodeproj \
+            -scheme "SLF-watchOS-AllTests" \
+            -destination 'platform=watchOS Simulator,name=Apple Watch Series 11 (46mm)' \
+            -configuration Debug \
+            -allowProvisioningUpdates \
+            -derivedDataPath "$CI_DERIVED_DATA" \
+            -clonedSourcePackagesDirPath "$CI_SPM_CHECKOUTS" \
+            -parallel-testing-enabled YES \
+            -resultBundlePath "build/SLF-watchOS-AllTests.xcresult"
+
+      - name: Upload watchOS test result bundle
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: xcresult-watchos
+          path: build/SLF-watchOS-AllTests.xcresult
           if-no-files-found: ignore
