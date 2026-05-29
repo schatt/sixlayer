@@ -15,15 +15,17 @@ public struct PlatformMaintenanceLayer5: View {
     public init() {}
     
     public var body: some View {
-        VStack {
+        VStack(spacing: 16) {
             Text("Platform Maintenance Layer 5")
                 .font(.headline)
+                .automaticCompliance(named: "Title")
             Text("Maintenance and lifecycle management features")
                 .font(.caption)
                 .foregroundColor(.secondary)
+                .automaticCompliance(named: "Description")
         }
         .padding()
-        .automaticCompliance()
+        .automaticCompliance(named: "PlatformMaintenanceLayer5")
     }
 }
 
