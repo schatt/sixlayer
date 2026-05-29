@@ -56,4 +56,23 @@ open class PlatformSharePrintLayer4ComponentAccessibilityTests: BaseTestClass {
         )
         #expect(hasAccessibilityID, "platformPrint_L4 should generate accessibility identifiers")
     }
+
+    // MARK: - platformExportActions_L4
+
+    @Test @MainActor func testPlatformExportActionsL4GeneratesAccessibilityIdentifiers() async {
+        let view = Text("Export trigger")
+            .platformExportActions_L4(
+                isPresented: .constant(false),
+                payload: nil,
+                options: .init(),
+                onComplete: nil
+            )
+        let hasAccessibilityID = testComponentComplianceSinglePlatform(
+            view,
+            expectedPattern: "SixLayer.main.ui.*",
+            platform: SixLayerPlatform.iOS,
+            componentName: "platformExportActions_L4"
+        )
+        #expect(hasAccessibilityID, "platformExportActions_L4 should generate accessibility identifiers")
+    }
 }

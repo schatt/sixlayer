@@ -633,6 +633,10 @@ struct SystemIntegrationExamples: View {
             ExampleCard(title: "Print", description: "platformPrint_L4") {
                 PrintExample()
             }
+
+            ExampleCard(title: "Export Actions", description: "platformExportActions_L4") {
+                ExportActionsExample()
+            }
             
             ExampleCard(title: "Register for Remote Notifications", description: "platformRegisterForRemoteNotifications_L4") {
                 RemoteNotificationsExample()
@@ -699,6 +703,51 @@ struct PrintExample: View {
         .padding()
         .background(Color.platformSecondaryBackground)
         .cornerRadius(8)
+    }
+}
+
+struct ExportActionsExample: View {
+    @State private var showExportActions = false
+    @State private var exportPayload: ExportActionPayload?
+
+    var body: some View {
+        platformVStack(alignment: .leading, spacing: 12) {
+            Text("Export Actions Example")
+                .font(.headline)
+
+            platformButton("Export Sample PDF") {
+                exportPayload = makeSampleExportPayload()
+                showExportActions = true
+            }
+            .platformExportActions_L4(
+                isPresented: $showExportActions,
+                payload: exportPayload,
+                options: .init(),
+                onComplete: nil
+            )
+        }
+        .padding()
+        .background(Color.platformSecondaryBackground)
+        .cornerRadius(8)
+    }
+
+    private func makeSampleExportPayload() -> ExportActionPayload? {
+        let pdfData = Data(
+            """
+            %PDF-1.1
+            1 0 obj<<>>endobj
+            trailer<<>>
+            %%EOF
+            """.utf8
+        )
+        let url = FileManager.default.temporaryDirectory
+            .appendingPathComponent("layer4-export-example.pdf")
+        do {
+            try pdfData.write(to: url)
+            return ExportActionPayload(fileURL: url, jobName: "Layer 4 Export Example")
+        } catch {
+            return nil
+        }
     }
 }
 
@@ -821,6 +870,8 @@ struct Layer4ContractOnlyView: View {
     @State private var l4ShowPopover = false
     @State private var l4ContractCopySource = "L4CopyContractText"
     @State private var l4ShowPrint = false
+    @State private var l4ShowExportActions = false
+    @State private var l4ExportPayload: ExportActionPayload?
     @State private var l4ContractShowPhotoPicker = false
     @State private var l4ContractOpenURLResult: Bool?
     @State private var l4ContractRegisterRemoteNotificationsResult: Bool?
@@ -927,6 +978,21 @@ struct Layer4ContractOnlyView: View {
                 .platformPrint_L4(isPresented: $l4ShowPrint, content: .text("L4 Print Contract"))
                 .accessibilityIdentifier("L4ContractPrint")
                 .accessibilityLabel("L4ContractPrint")
+            Text("Export Actions (platformExportActions_L4)")
+                .font(.caption)
+                .foregroundColor(.secondary)
+            Button("L4ContractExportActions") {
+                l4ExportPayload = makeL4ContractExportPayload()
+                l4ShowExportActions = true
+            }
+            .platformExportActions_L4(
+                isPresented: $l4ShowExportActions,
+                payload: l4ExportPayload,
+                options: .init(),
+                onComplete: nil
+            )
+            .accessibilityIdentifier("L4ContractExportActions")
+            .accessibilityLabel("L4ContractExportActions")
             Text("Open URL (platformOpenURL_L4)")
                 .font(.caption)
                 .foregroundColor(.secondary)
@@ -1180,5 +1246,24 @@ struct Layer4ContractOnlyView: View {
             }
         }
         #endif
+    }
+
+    private func makeL4ContractExportPayload() -> ExportActionPayload? {
+        let pdfData = Data(
+            """
+            %PDF-1.1
+            1 0 obj<<>>endobj
+            trailer<<>>
+            %%EOF
+            """.utf8
+        )
+        let url = FileManager.default.temporaryDirectory
+            .appendingPathComponent("l4-contract-export.pdf")
+        do {
+            try pdfData.write(to: url)
+            return ExportActionPayload(fileURL: url, jobName: "L4 Export Contract")
+        } catch {
+            return nil
+        }
     }
 }
