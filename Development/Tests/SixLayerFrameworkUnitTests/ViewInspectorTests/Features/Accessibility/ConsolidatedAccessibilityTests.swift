@@ -13947,17 +13947,17 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         .enableGlobalAutomaticCompliance()
         
         #if canImport(ViewInspector)
-        if let inspected = try? AnyView(button).inspect() {
-            let buttonID = try? inspected.accessibilityIdentifier()
-            
-            // TDD RED: Should FAIL - labels not sanitized
-            // Should contain sanitized version: "add-new-item" or similar
-            #expect((buttonID?.contains("add") ?? false) || (buttonID?.contains("new") ?? false) || (buttonID?.contains("item") ?? false), 
-                   "Identifier should include sanitized label text")
-            #expect(!(buttonID?.contains("Add New Item") ?? false), 
-                   "Identifier should not contain raw label with spaces")
-        
-        }
+        let buttonIDs = AccessibilityTestUtilities.allAccessibilityIdentifiersFromViewInspector(button)
+        #expect(
+            buttonIDs.contains(where: { id in
+                id.localizedCaseInsensitiveContains("add")
+                    || id.localizedCaseInsensitiveContains("new")
+                    || id.localizedCaseInsensitiveContains("item")
+            }),
+            "Identifier should include sanitized label text: \(buttonIDs)"
+        )
+        #expect(!buttonIDs.contains(where: { $0.contains("Add New Item") }),
+               "Identifier should not contain raw label with spaces")
         #else
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
         #endif
