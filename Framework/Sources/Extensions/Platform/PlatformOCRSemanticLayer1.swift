@@ -27,7 +27,7 @@ public func platformOCRWithVisualCorrection_L1(
     )
     .environment(\.accessibilityIdentifierName, "platformOCRWithVisualCorrection_L1")
     .automaticAccessibility()
-    .automaticCompliance()
+    .automaticCompliance(named: "platformOCRWithVisualCorrection_L1")
 }
 
 /// Cross-platform semantic OCR intent interface with custom configuration
@@ -47,7 +47,7 @@ public func platformOCRWithVisualCorrection_L1(
     )
     .environment(\.accessibilityIdentifierName, "platformOCRWithVisualCorrection_L1")
     .automaticAccessibility()
-    .automaticCompliance()
+    .automaticCompliance(named: "platformOCRWithVisualCorrection_L1")
 }
 
 /// Cross-platform semantic structured data extraction interface
@@ -66,10 +66,7 @@ public func platformExtractStructuredData_L1(
     )
     .environment(\.accessibilityIdentifierName, "platformExtractStructuredData_L1")
     .automaticAccessibility()
-    .automaticCompliance()
-}
-
-// MARK: - Test Helper Functions
+    .automaticCompliance(named: "platformExtractStructuredData_L1")
 
 /// Direct OCR processing function for testing (bypasses SwiftUI view lifecycle)
 public func processOCRForTesting(
@@ -160,7 +157,7 @@ private struct OCRWithVisualCorrectionWrapper: View {
                 initialView
             }
         }
-        .automaticCompliance()
+        .automaticCompliance(named: "platformOCRWithVisualCorrection_L1")
         .task {
             // Process image when view appears
             processImage()
@@ -369,7 +366,7 @@ private struct StructuredDataExtractionWrapper: View {
                     .foregroundColor(.secondary)
             }
         }
-        .automaticCompliance()
+        .automaticCompliance(named: "platformExtractStructuredData_L1")
         .onAppear {
             startStructuredExtraction()
         }
