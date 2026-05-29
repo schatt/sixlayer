@@ -54,6 +54,8 @@ extension DynamicTextAreaField: ViewInspector.Inspectable {}
 extension DynamicDisplayField: ViewInspector.Inspectable {}
 extension DynamicGaugeField: ViewInspector.Inspectable {}
 
+extension DynamicSelectField: ViewInspector.Inspectable {}
+
 // MARK: - Layer 5 platform components (so firstVStackInHierarchy(inspected) works)
 
 extension PlatformRecognitionLayer5: ViewInspector.Inspectable {}
