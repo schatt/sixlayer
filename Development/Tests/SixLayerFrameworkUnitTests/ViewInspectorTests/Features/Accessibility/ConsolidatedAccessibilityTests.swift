@@ -200,6 +200,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
                 accessibilityState: AccessibilitySystemState(),
                 platform: .iOS
             ))
+            .automaticCompliance(named: "SystemAccessibilityModifier")
             
             // Then: Should generate accessibility identifiers
             #if canImport(ViewInspector)
@@ -229,6 +230,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
                 accessibilityState: AccessibilitySystemState(),
                 platform: .iOS
             ))
+            .automaticCompliance(named: "AccessibilityIdentifierAssignmentModifier")
             
             // Then: Should generate accessibility identifiers
             #if canImport(ViewInspector)
@@ -333,6 +335,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
                 Button("Test Button") { }
             }
             .automaticAccessibility()
+            .automaticCompliance(named: "AutomaticAccessibilityModifier")
             
             // Then: Should generate accessibility identifiers
             #if canImport(ViewInspector)
@@ -357,6 +360,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
                 Text("Test Content")
                 Button("Test Button") { }
             }
+            .automaticCompliance(named: "ScreenContextModifier")
             
             // Then: Should generate accessibility identifiers
             let hasAccessibilityID = testComponentComplianceSinglePlatform(
@@ -376,6 +380,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
                 Text("Test Content")
                 Button("Test Button") { }
             }
+            .automaticCompliance(named: "NavigationStateModifier")
             
             // Then: Should generate accessibility identifiers
             let hasAccessibilityID = testComponentComplianceSinglePlatform(
@@ -564,7 +569,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
                 Text("Test Content")
                 Button("Test Button") { }
             }
-            .automaticCompliance()
+            .automaticCompliance(named: "AccessibilityIdentifierDebugLogging")
             
             // Then: Should enable debug logging
             #expect(config.enableDebugLogging, "Accessibility identifier debug logging should be enabled")
@@ -4444,6 +4449,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         }
         
         let view = testContent.platformPatterns()
+            .automaticCompliance(named: "PlatformPatternModifier")
         
         #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
@@ -4466,6 +4472,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         }
         
         let view = testContent.visualConsistency()
+            .automaticCompliance(named: "VisualConsistencyModifier")
         
         #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
@@ -6588,6 +6595,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         }
         
         let view = testContent.interactionPatterns()
+            .automaticCompliance(named: "InteractionPatternModifier")
         
         #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
@@ -6676,6 +6684,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         }
 
         let view = testContent.modifier(ReducedMotionModifier(isEnabled: true))
+        .automaticCompliance(named: "ReducedMotionModifier")
 
         #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
@@ -6698,6 +6707,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         }
 
         let view = testContent.modifier(DynamicTypeModifier())
+        .automaticCompliance(named: "DynamicTypeModifier")
 
         #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
@@ -8188,6 +8198,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             Text("Navigation Content")
             Button("Test Button") { }
         }
+            .automaticCompliance(named: "PlatformNavigationModifier")
 
         // When: Applying PlatformNavigationModifier
         let view = testContent.modifier(PlatformNavigationModifier(platform: .iOS))
@@ -8219,6 +8230,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         }
 
         let view = testContent.modifier(PlatformStylingModifier(designSystem: PlatformDesignSystem(for: .iOS)))
+        .automaticCompliance(named: "PlatformStylingModifier")
 
         #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
@@ -8241,6 +8253,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         }
         
         let view = testContent
+        .automaticCompliance(named: "PlatformIconModifier")
         
         #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
@@ -8705,6 +8718,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         let view = AccessibilityHostingView {
             testContent
         }
+            .automaticCompliance(named: "AccessibilityHostingView")
         
         #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
@@ -9328,6 +9342,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         let testView = platformVStackContainer {
             Text("Test Content")
         }
+            .automaticCompliance(named: "ScreenContext")
 
         #expect(Bool(true), "View with named modifier should be created successfully")
 
@@ -9361,6 +9376,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         let testView = platformHStackContainer {
             Text("Navigation Content")
         }
+        .automaticCompliance(named: "NavigationState")
 
         #expect(Bool(true), "View with named modifier should be created successfully")
 
@@ -10905,6 +10921,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         Text("System Color Content")
         Button("Test Button") { }
     }
+            .automaticCompliance(named: "SystemColorModifier")
         
         // When: Applying SystemColorModifier
         let platform = SixLayerPlatform.current
@@ -10936,6 +10953,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         Text("System Typography Content")
         Button("Test Button") { }
     }
+            .automaticCompliance(named: "SystemTypographyModifier")
         
         // When: Applying SystemTypographyModifier
         let platform = SixLayerPlatform.current
@@ -10967,6 +10985,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         Text("Spacing Content")
         Button("Test Button") { }
     }
+            .automaticCompliance(named: "SpacingModifier")
         
         // When: Applying SpacingModifier
         let platform = SixLayerPlatform.current
@@ -10999,6 +11018,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             Text("Touch Target Content")
             Button("Test Button") { }
         }
+            .automaticCompliance(named: "TouchTargetModifier")
         
         // When: Applying TouchTargetModifier
         let view = testContent.modifier(TouchTargetModifier(platform: .iOS))
@@ -11029,6 +11049,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             Text("Platform Interaction Content")
             Button("Test Button") { }
         }
+            .automaticCompliance(named: "PlatformInteractionModifier")
         
         // When: Applying PlatformInteractionModifier
         let view = testContent.modifier(PlatformInteractionModifier(platform: .iOS))
@@ -11059,6 +11080,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             Text("Haptic Feedback Content")
             Button("Test Button") { }
         }
+            .automaticCompliance(named: "HapticFeedbackModifier")
         
         // When: Applying HapticFeedbackModifier
         let view = testContent.modifier(HapticFeedbackModifier(platform: .iOS))
@@ -11089,6 +11111,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             Text("Gesture Recognition Content")
             Button("Test Button") { }
         }
+            .automaticCompliance(named: "GestureRecognitionModifier")
         
         // When: Applying GestureRecognitionModifier
         let view = testContent.modifier(GestureRecognitionModifier(platform: .iOS))
@@ -11122,6 +11145,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
         let view = manager.applyHIGCompliance(to: baseView)
         .environmentObject(manager)
+        .automaticCompliance(named: "AppleHIGComplianceManager")
         
         // Then: Should generate accessibility identifiers
         #if canImport(ViewInspector)
@@ -13716,6 +13740,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         let view = platformVStackContainer {
         Text("Platform Optimization Settings Content")
     }
+            .automaticCompliance(named: "PlatformOptimizationSettings")
         
         // Then: Should generate accessibility identifiers
         #if canImport(ViewInspector)
@@ -13741,6 +13766,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         Text("Cross Platform Performance Metrics Content")
     }
         .environmentObject(metrics)
+        .automaticCompliance(named: "CrossPlatformPerformanceMetrics")
         
         // Then: Should generate accessibility identifiers
         #if canImport(ViewInspector)
@@ -13765,6 +13791,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         let view = platformVStackContainer {
         Text("Platform UI Patterns Content")
     }
+            .automaticCompliance(named: "PlatformUIPatterns")
         
         // Then: Should generate accessibility identifiers
         #if canImport(ViewInspector)
@@ -13789,6 +13816,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         let view = platformVStackContainer {
         Text("Platform Recommendation Engine Content")
     }
+            .automaticCompliance(named: "PlatformRecommendationEngine")
         
         // Then: Should generate accessibility identifiers
         #if canImport(ViewInspector)
@@ -14391,7 +14419,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         }
         config.globalAutomaticAccessibilityIdentifiers = true
         let rootView = Text("Test Content")
-            .automaticCompliance()
+            .automaticCompliance(named: "RootViewNoEnvironmentWarnings")
         
         // The modifier should work without accessing environment during initialization
         // We can't directly test for warnings, but we can verify:
@@ -16005,6 +16033,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         let view = platformVStackContainer {
         Text("Cross Platform Testing Content")
     }
+            .automaticCompliance(named: "CrossPlatformTesting")
         
         // Then: Should generate accessibility identifiers
         #if canImport(ViewInspector)
@@ -16861,6 +16890,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         let view = platformVStackContainer {
         Text("Internationalization Service Content")
     }
+            .automaticCompliance(named: "InternationalizationService")
         
         // Then: Should generate accessibility identifiers
         #if canImport(ViewInspector)
