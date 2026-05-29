@@ -279,7 +279,8 @@ public func platformPresentFormData_L1(
         modelName: nil,
         layoutSpec: nil
     )
-    .automaticCompliance()
+    .environment(\.accessibilityIdentifierName, "platformPresentFormData_L1")
+    .automaticCompliance(identifierName: "platformPresentFormData_L1")
 }
 
 /// Generic function for presenting modal forms
@@ -651,7 +652,7 @@ public func platformPresentNavigationStack_L1<Item: Identifiable & Hashable, Ite
         destination: destination
     )
     .environment(\.accessibilityIdentifierName, "platformPresentNavigationStack_L1")
-    .automaticCompliance()
+    .automaticCompliance(identifierName: "platformPresentNavigationStack_L1")
 }
 
 // MARK: - App Navigation Layer 1 Functions
@@ -690,7 +691,7 @@ public func platformPresentAppNavigation_L1<SidebarContent: View, DetailContent:
         detail: detail
     )
     .environment(\.accessibilityIdentifierName, "platformPresentAppNavigation_L1")
-    .automaticCompliance()
+    .automaticCompliance(identifierName: "platformPresentAppNavigation_L1")
 }
 
 /// Internal wrapper view for app navigation
@@ -945,7 +946,7 @@ public func platformPresentItemCollection_L1<Item: Identifiable>(
     )
     .environment(\.extensibleHints, hints.extensibleHints)
     .environment(\.accessibilityIdentifierName, "platformPresentItemCollection_L1")
-    .automaticCompliance()
+    .automaticCompliance(identifierName: "platformPresentItemCollection_L1")
 }
 
 // MARK: - Custom View Support Overloads
@@ -992,7 +993,7 @@ public func platformPresentItemCollection_L1<Item: Identifiable>(
         customItemView: customItemView
     )
     .environment(\.accessibilityIdentifierName, "platformPresentItemCollection_L1")
-    .automaticCompliance()
+    .automaticCompliance(identifierName: "platformPresentItemCollection_L1")
 }
 
 /// Generic function for presenting any collection of identifiable items with custom views and enhanced hints
@@ -1030,7 +1031,7 @@ public func platformPresentItemCollection_L1<Item: Identifiable>(
     )
     .environment(\.extensibleHints, hints.extensibleHints)
     .environment(\.accessibilityIdentifierName, "platformPresentItemCollection_L1")
-    .automaticCompliance()
+    .automaticCompliance(identifierName: "platformPresentItemCollection_L1")
 }
 
 /// Generic function for presenting any collection of identifiable items with custom views for all actions
@@ -1056,7 +1057,7 @@ public func platformPresentItemCollection_L1<Item: Identifiable>(
         customItemView: customItemView
     )
     .environment(\.accessibilityIdentifierName, "platformPresentItemCollection_L1")
-    .automaticCompliance()
+    .automaticCompliance(identifierName: "platformPresentItemCollection_L1")
 }
 
 /// Generic function for presenting numeric data with enhanced hints
@@ -1129,6 +1130,8 @@ public func platformPresentFormData_L1(
         modelName: modelName,
         layoutSpec: layoutSpec
     )
+    .environment(\.accessibilityIdentifierName, "platformPresentFormData_L1")
+    .automaticCompliance(identifierName: "platformPresentFormData_L1")
 }
 
 // MARK: - Async Form View Helper
