@@ -148,7 +148,7 @@ public func platformPresentNumericData_L1(
 ) -> some View {
     return GenericNumericDataView(data: data, hints: hints)
         .environment(\.accessibilityIdentifierName, "platformPresentNumericData_L1")
-        .automaticCompliance()
+        .automaticCompliance(identifierName: "platformPresentNumericData_L1")
 }
 
 /// Present a single numeric data item
@@ -177,7 +177,7 @@ public func platformPresentNumericData_L1(
         customDataView: customDataView
     )
     .environment(\.accessibilityIdentifierName, "platformPresentNumericData_L1")
-    .automaticCompliance()
+    .automaticCompliance(identifierName: "platformPresentNumericData_L1")
 }
 
 /// Generic function for presenting numeric data with custom views and enhanced hints
@@ -208,7 +208,7 @@ public func platformPresentNumericData_L1(
     )
     .environment(\.extensibleHints, hints.extensibleHints)
     .environment(\.accessibilityIdentifierName, "platformPresentNumericData_L1")
-    .automaticCompliance()
+    .automaticCompliance(identifierName: "platformPresentNumericData_L1")
 }
 
 /// Generic function for presenting responsive cards
@@ -870,7 +870,7 @@ public func platformPresentSettings_L1(
         customSettingView: customSettingView
     )
     .environment(\.accessibilityIdentifierName, "platformPresentSettings_L1")
-    .automaticCompliance()
+    .automaticCompliance(identifierName: "platformPresentSettings_L1")
 }
 
 /// Generic function for presenting settings interface with custom views and enhanced hints
@@ -906,7 +906,7 @@ public func platformPresentSettings_L1(
     )
     .environment(\.extensibleHints, hints.extensibleHints)
     .environment(\.accessibilityIdentifierName, "platformPresentSettings_L1")
-    .automaticCompliance()
+    .automaticCompliance(identifierName: "platformPresentSettings_L1")
 }
 
 // MARK: - Enhanced Presentation Hints Overloads
@@ -1079,7 +1079,7 @@ public func platformPresentNumericData_L1(
     return GenericNumericDataView(data: data, hints: processedHints)
         .environment(\.extensibleHints, hints.extensibleHints)
         .environment(\.accessibilityIdentifierName, "platformPresentNumericData_L1")
-        .automaticCompliance()
+        .automaticCompliance(identifierName: "platformPresentNumericData_L1")
 }
 
 /// Generic function for presenting responsive cards with enhanced hints
@@ -1743,7 +1743,7 @@ public struct GenericItemCollectionView<Item: Identifiable>: View {
         }
         .appleHIGCompliant()
         .automaticAccessibility()
-        .automaticCompliance()
+        .automaticCompliance(named: "GenericItemCollectionView")
         .platformPatterns()
         .visualConsistency()
     }
@@ -2133,7 +2133,7 @@ public struct GenericNumericDataView: View {
             .automaticAccessibility()
             .platformPatterns()
             .visualConsistency()
-            .automaticCompliance()
+            .automaticCompliance(named: "GenericNumericDataView")
     }
 }
 
@@ -4374,8 +4374,8 @@ public struct GenericSettingsView: View {
         .onAppear {
             initializeValues()
         }
-        // Issue #245 / gh-243: anonymous (also when used without `platformPresentSettings_L1` in tests).
-        .automaticCompliance()
+        // Issue #245 / gh-243: named root for direct GenericSettingsView hosting in tests.
+        .automaticCompliance(named: "GenericSettingsView")
     }
     
     private func initializeValues() {
