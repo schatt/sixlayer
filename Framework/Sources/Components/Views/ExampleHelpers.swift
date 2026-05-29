@@ -21,7 +21,7 @@ public struct ExampleHelpers: View {
         .padding()
         .background(Color.platformBackground)
         .cornerRadius(12)
-        .automaticCompliance(named: "ExampleHelpers")
+        .automaticCompliance()
     }
 }
 
