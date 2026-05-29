@@ -132,31 +132,80 @@ public func withInspectedView<R>(
 /// Thrown when no VStack is found in the inspected hierarchy.
 public struct NoVStackInHierarchy: Error {}
 
-/// When the root is InspectableView<ViewType.ClassifiedView> (e.g. from AnyView.inspect()), get the first VStack in the hierarchy.
-/// findAll from the root traverses into type-erased content so VStacks inside AnyView are found.
-/// On traversal errors (e.g. type mismatch), throws NoVStackInHierarchy so callers get a consistent error.
+/// When the root is InspectableView<ViewType.ClassifiedView>, get the best VStack in the hierarchy.
+/// When `minChildren` is set, prefers the first VStack with at least that many direct children.
+@MainActor
+public func firstVStackInHierarchy(
+    _ inspected: ViewInspector.InspectableView<ViewInspector.ViewType.ClassifiedView>,
+    minChildren: Int? = nil
+) throws -> ViewInspector.InspectableView<ViewInspector.ViewType.VStack> {
+    let list = inspected.findAll(ViewInspector.ViewType.VStack.self)
+    guard !list.isEmpty else { throw NoVStackInHierarchy() }
+    if let min = minChildren, let match = list.first(where: { $0.count >= min }) {
+        return match
+    }
+    guard let first = list.first else { throw NoVStackInHierarchy() }
+    return first
+}
+
+/// Legacy overload without minChildren preference.
 @MainActor
 public func firstVStackInHierarchy(_ inspected: ViewInspector.InspectableView<ViewInspector.ViewType.ClassifiedView>) throws -> ViewInspector.InspectableView<ViewInspector.ViewType.VStack> {
+    try firstVStackInHierarchy(inspected, minChildren: nil)
+}
+
+/// When the root is InspectableView<ViewType.AnyView>, get the best VStack in the hierarchy.
+@MainActor
+public func firstVStackInHierarchy(
+    _ inspected: ViewInspector.InspectableView<ViewInspector.ViewType.AnyView>,
+    minChildren: Int? = nil
+) throws -> ViewInspector.InspectableView<ViewInspector.ViewType.VStack> {
     let list = inspected.findAll(ViewInspector.ViewType.VStack.self)
+    guard !list.isEmpty else { throw NoVStackInHierarchy() }
+    if let min = minChildren, let match = list.first(where: { $0.count >= min }) {
+        return match
+    }
     guard let first = list.first else { throw NoVStackInHierarchy() }
     return first
 }
 
-/// When the root is InspectableView<ViewType.AnyView> (e.g. after unwrap), get the first VStack in the hierarchy.
 @MainActor
 public func firstVStackInHierarchy(_ inspected: ViewInspector.InspectableView<ViewInspector.ViewType.AnyView>) throws -> ViewInspector.InspectableView<ViewInspector.ViewType.VStack> {
+    try firstVStackInHierarchy(inspected, minChildren: nil)
+}
+
+/// When the root is InspectableView<ViewType.View<V>>, get the best VStack in the hierarchy.
+@MainActor
+public func firstVStackInHierarchy<V: View & ViewInspector.Inspectable>(
+    _ inspected: ViewInspector.InspectableView<ViewInspector.ViewType.View<V>>,
+    minChildren: Int? = nil
+) throws -> ViewInspector.InspectableView<ViewInspector.ViewType.VStack> {
     let list = inspected.findAll(ViewInspector.ViewType.VStack.self)
+    guard !list.isEmpty else { throw NoVStackInHierarchy() }
+    if let min = minChildren, let match = list.first(where: { $0.count >= min }) {
+        return match
+    }
     guard let first = list.first else { throw NoVStackInHierarchy() }
     return first
 }
 
-/// When the root is InspectableView<ViewType.View<V>> (direct inspect of Inspectable view), get the first VStack in the hierarchy.
-/// Use when the view type is the root (e.g. PlatformRecognitionLayer5) and its body contains a VStack — Issue 178.
 @MainActor
 public func firstVStackInHierarchy<V: View & ViewInspector.Inspectable>(_ inspected: ViewInspector.InspectableView<ViewInspector.ViewType.View<V>>) throws -> ViewInspector.InspectableView<ViewInspector.ViewType.VStack> {
-    let list = inspected.findAll(ViewInspector.ViewType.VStack.self)
-    guard let first = list.first else { throw NoVStackInHierarchy() }
-    return first
+    try firstVStackInHierarchy(inspected, minChildren: nil)
+}
+
+/// Resolve a VStack from a view, preferring direct Inspectable inspection then AnyView fallback (#242).
+@MainActor
+public func firstVStackInView<V: View & ViewInspector.Inspectable>(
+    _ view: V,
+    minChildren: Int? = nil
+) throws -> ViewInspector.InspectableView<ViewInspector.ViewType.VStack> {
+    if let inspected = try? view.inspect(),
+       let vStack = try? firstVStackInHierarchy(inspected, minChildren: minChildren) {
+        return vStack
+    }
+    let anyInspected = try AnyView(view).inspect()
+    return try firstVStackInHierarchy(anyInspected, minChildren: minChildren)
 }
 
 // MARK: - Inspection from View instances
