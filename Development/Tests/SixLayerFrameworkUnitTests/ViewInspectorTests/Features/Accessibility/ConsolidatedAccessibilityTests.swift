@@ -673,12 +673,12 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             hints: testHints
         )
         
-        // TDD RED PHASE: Test accessibility identifiers across both platforms
+        // TDD GREEN: L1 shell uses platformPresentItemCollection_L1 identifierName
         #if canImport(ViewInspector)
         let hasSpecificAccessibilityID = testAccessibilityIdentifiersCrossPlatform(
             view,
-            expectedPattern: "*.main.ui.element.*",
-            componentName: "ItemCollection"
+            expectedPattern: "SixLayer.*ui",
+            componentName: "platformPresentItemCollection_L1"
             
         )
         #expect(hasSpecificAccessibilityID, "platformPresentItemCollection_L1 should generate accessibility identifiers with current pattern ")
