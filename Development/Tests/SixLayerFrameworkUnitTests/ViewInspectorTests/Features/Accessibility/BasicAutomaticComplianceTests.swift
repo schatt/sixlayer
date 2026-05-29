@@ -235,6 +235,78 @@ open class BasicAutomaticComplianceTests: BaseTestClass {
         }
     }
     
+    /// BUSINESS PURPOSE: labelsOnlyOnInteractiveElements skips VoiceOver labels on static text (Issue #290)
+    /// TESTING SCOPE: Config option labelsOnlyOnInteractiveElements with Text element type
+    /// METHODOLOGY: ViewInspector verifies label is not stamped on non-interactive content
+    @Test @MainActor func testBasicAutomaticCompliance_LabelsOnlyOnInteractiveElements_SkipsNonInteractive() {
+        initializeTestConfig()
+        runWithTaskLocalConfig {
+            guard let config = self.testConfig else {
+                Issue.record("testConfig is nil")
+                return
+            }
+            config.labelsOnlyOnInteractiveElements = true
+            
+            let view = Text("Body")
+                .basicAutomaticCompliance(
+                    identifierName: "bodyText",
+                    identifierElementType: "Text",
+                    identifierLabel: "Body copy"
+                )
+            
+            #if canImport(ViewInspector)
+            do {
+                let inspected = try view.inspect()
+                let labelView = try? inspected.accessibilityLabel()
+                let labelText = labelView.flatMap { try? $0.string() }
+                #expect(labelText == nil, "Non-interactive Text should not receive automatic accessibility label when interactive-only mode is on")
+            } catch {
+                Issue.record("Failed to inspect view: \(error)")
+            }
+            #else
+            #expect(Bool(true), "ViewInspector not available on this platform")
+            #endif
+        }
+    }
+    
+    /// BUSINESS PURPOSE: labelsOnlyOnInteractiveElements still labels buttons (Issue #290)
+    /// TESTING SCOPE: Config option with Button element type
+    @Test @MainActor func testBasicAutomaticCompliance_LabelsOnlyOnInteractiveElements_AppliesToInteractive() {
+        initializeTestConfig()
+        runWithTaskLocalConfig {
+            guard let config = self.testConfig else {
+                Issue.record("testConfig is nil")
+                return
+            }
+            config.labelsOnlyOnInteractiveElements = true
+            
+            let view = Button("Save") {}
+                .basicAutomaticCompliance(
+                    identifierName: "saveButton",
+                    identifierElementType: "Button",
+                    identifierLabel: "Save document"
+                )
+            
+            #if canImport(ViewInspector)
+            do {
+                let inspected = try view.inspect()
+                // Label is applied to the Button; identifier wrapper is an outer Group (#172).
+                let button = try inspected.find(ViewType.Button.self)
+                let labelView = try? button.accessibilityLabel()
+                let labelText = labelView.flatMap { try? $0.string() }
+                #expect(
+                    labelText?.localizedCaseInsensitiveContains("Save document") == true,
+                    "Interactive Button should receive automatic accessibility label when interactive-only mode is on"
+                )
+            } catch {
+                Issue.record("Failed to inspect view: \(error)")
+            }
+            #else
+            #expect(Bool(true), "ViewInspector not available on this platform")
+            #endif
+        }
+    }
+    
     /// BUSINESS PURPOSE: .basicAutomaticCompliance() should respect globalAutomaticAccessibilityIdentifiers
     /// TESTING SCOPE: Config option globalAutomaticAccessibilityIdentifiers
     /// METHODOLOGY: Test with globalAutomaticAccessibilityIdentifiers disabled, verify identifier is not applied
