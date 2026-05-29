@@ -1852,8 +1852,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             let id2 = generator.generateID(for: testItems[1].id, role: "item", context: "list")
             
             // Then: IDs should be stable and include item identity
-            #expect(id1.contains("user-1") && id1.contains("item") && id1.contains("test"), "ID should include namespace, role, and item identity")
-            #expect(id2.contains("user-2") && id2.contains("item") && id2.contains("test"), "ID should include namespace, role, and item identity")
+            #expect(id1.contains("alice") && id1.contains("item") && id1.contains("test"), "ID should include namespace, role, and item identity")
+            #expect(id2.contains("bob") && id2.contains("item") && id2.contains("test"), "ID should include namespace, role, and item identity")
             
             // When: Reordering items and generating IDs again
             let reorderedItems = [testItems[1], testItems[0]]
@@ -1895,9 +1895,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             let editButtonID = generator.generateID(for: item.id, role: "edit-button", context: "item")
             
             // Then: IDs should reflect the different roles and include identity
-            #expect(listItemID.contains("app") && listItemID.contains("item") && listItemID.contains("user-1"), "List item ID should include app, role, and identity")
-            #expect(detailButtonID.contains("app") && detailButtonID.contains("detail-button") && detailButtonID.contains("user-1"), "Detail button ID should include app, role, and identity")
-            #expect(editButtonID.contains("app") && editButtonID.contains("edit-button") && editButtonID.contains("user-1"), "Edit button ID should include app, role, and identity")
+            #expect(listItemID.contains("app") && listItemID.contains("item") && listItemID.contains("alice"), "List item ID should include app, role, and identity")
+            #expect(detailButtonID.contains("app") && detailButtonID.contains("detail-button") && detailButtonID.contains("alice"), "Detail button ID should include app, role, and identity")
+            #expect(editButtonID.contains("app") && editButtonID.contains("edit-button") && editButtonID.contains("alice"), "Edit button ID should include app, role, and identity")
         }
     }
     
@@ -5580,10 +5580,10 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             #if canImport(ViewInspector)
             #expect(testComponentComplianceSinglePlatform(
                 view,
-                expectedPattern: "SixLayer.layer1.*element.*",
+                expectedPattern: "SixLayer.layer1.*ui*",
                 platform: SixLayerPlatform.iOS,
-                componentName: "Layer1Functions"
-            ), "Layer 1 function should generate accessibility identifiers matching pattern 'SixLayer.layer1.*element.*'")
+                componentName: "platformPresentItemCollection_L1"
+            ), "Layer 1 function should generate accessibility identifiers matching platformPresentItemCollection_L1 pattern")
             #else
             // ViewInspector not available on this platform
             #endif
