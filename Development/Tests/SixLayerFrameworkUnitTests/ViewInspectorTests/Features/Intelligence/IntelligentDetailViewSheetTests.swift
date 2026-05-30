@@ -178,7 +178,7 @@ struct IntelligentDetailViewSheetTests {
             let _ = try? AnyView(numericDetail).inspect()
 
             let textDetail = IntelligentDetailView.platformDetailView(for: textData)
-            _ = = try? AnyView(textDetail).inspect()
+            _ = try? AnyView(textDetail).inspect()
 
             #expect(Bool(true), "platformDetailView should work with different data types in sheets")
     }
