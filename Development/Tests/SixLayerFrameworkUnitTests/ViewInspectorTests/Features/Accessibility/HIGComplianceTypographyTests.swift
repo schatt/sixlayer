@@ -20,11 +20,18 @@ open class HIGComplianceTypographyTests: BaseTestClass {
     // MARK: - Helpers
 
     @MainActor
-    private func hostTypographyView<V: View>(_ view: V) -> Any? {
+    private func hostTypographyView<V: View>(
+        _ view: V,
+        dynamicTypeSize dynamicType: DynamicTypeSize? = nil
+    ) -> Any? {
         initializeTestConfig()
         return runWithTaskLocalConfig {
-            Self.hostRootPlatformView(
-                view.automaticCompliance(named: "HIGTypographyHost"),
+            var hosted = view.automaticCompliance(named: "HIGTypographyHost")
+            if let dynamicType {
+                hosted = hosted.dynamicTypeSize(dynamicType)
+            }
+            return Self.hostRootPlatformView(
+                hosted,
                 forceLayout: true,
                 exposeContentAccessibility: true
             )
@@ -105,7 +112,7 @@ open class HIGComplianceTypographyTests: BaseTestClass {
         let view = Text("Test Text")
             .font(.body)
         let defaultRoot = hostTypographyView(view)
-        let scaledRoot = hostTypographyView(view.dynamicTypeSize(.accessibility3))
+        let scaledRoot = hostTypographyView(view, dynamicTypeSize: .accessibility3)
         let defaultSize = maximumUILabelPointSize(in: defaultRoot)
         let scaledSize = maximumUILabelPointSize(in: scaledRoot)
         #expect(defaultRoot != nil && scaledRoot != nil, "Text host should layout")
@@ -125,7 +132,7 @@ open class HIGComplianceTypographyTests: BaseTestClass {
         #if canImport(UIKit) && !os(watchOS)
         let button = Button("Test Button") { }
         let defaultRoot = hostTypographyView(button)
-        let scaledRoot = hostTypographyView(button.dynamicTypeSize(.accessibility3))
+        let scaledRoot = hostTypographyView(button, dynamicTypeSize: .accessibility3)
         let defaultSize = maximumUILabelPointSize(in: defaultRoot)
         let scaledSize = maximumUILabelPointSize(in: scaledRoot)
         #expect(defaultRoot != nil && scaledRoot != nil)
@@ -140,7 +147,7 @@ open class HIGComplianceTypographyTests: BaseTestClass {
         #if canImport(UIKit) && !os(watchOS)
         let label = Label("Test Label", systemImage: "star")
         let defaultRoot = hostTypographyView(label)
-        let scaledRoot = hostTypographyView(label.dynamicTypeSize(.accessibility3))
+        let scaledRoot = hostTypographyView(label, dynamicTypeSize: .accessibility3)
         let defaultSize = maximumUILabelPointSize(in: defaultRoot)
         let scaledSize = maximumUILabelPointSize(in: scaledRoot)
         #expect(defaultRoot != nil && scaledRoot != nil)
