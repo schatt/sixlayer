@@ -160,6 +160,27 @@ open class BaseTestClass {
     }
     
     // MARK: - View Verification Helpers
+    
+    /// `Mirror.subjectType` description for `some View` (includes modifier/compliance wrappers).
+    @MainActor
+    open func viewSubjectTypeDescription(for view: some View) -> String {
+        String(describing: Mirror(reflecting: view).subjectType)
+    }
+    
+    /// Assert the subject type string contains a semantic root view (e.g. `AsyncFormView` through wrappers).
+    @MainActor
+    open func expectViewSubjectTypeContains(
+        _ view: some View,
+        rootViewName: String,
+        _ comment: @autoclosure () -> String = { "" }
+    ) {
+        let description = viewSubjectTypeDescription(for: view)
+        let message = comment().isEmpty
+            ? "Subject type should contain \(rootViewName), got: \(description)"
+            : comment()
+        #expect(description.contains(rootViewName), message)
+    }
+    
     //
     // When ViewInspector cannot traverse the hierarchy, helpers below call Issue.record(...) and return
     // instead of #expect. That keeps the test from failing while marking the result as inconclusive:
