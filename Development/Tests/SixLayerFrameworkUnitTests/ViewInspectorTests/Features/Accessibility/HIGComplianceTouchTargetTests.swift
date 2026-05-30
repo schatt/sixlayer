@@ -31,6 +31,61 @@ open class HIGComplianceTouchTargetTests: BaseTestClass {
     
     // MARK: - Runtime Detection Based Tests
     
+    // MARK: - Tri-state touch capability (#251)
+
+    /// Button + `.automaticCompliance()` on the **current host** through touch tri-state.
+    @Test @MainActor func testButtonTouchTargetComplianceTriStatePhases() async {
+        initializeTestConfig()
+        defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
+
+        runWithTaskLocalConfig {
+            let button = Button("Touch Tri-State Button") { }
+                .automaticCompliance()
+
+            @MainActor func assertTouchTargetComplianceLaw(phase: String) {
+                let platform = SixLayerPlatform.current
+                let effectiveTouch = RuntimeCapabilityDetection.supportsTouch
+                let expectedMin = PlatformTestUtilities.expectedMinTouchTarget(
+                    for: platform,
+                    touchDetected: effectiveTouch
+                )
+                let runtimeMin = RuntimeCapabilityDetection.minTouchTarget
+
+                #expect(
+                    runtimeMin == expectedMin,
+                    "\(phase) on \(platform): minTouchTarget should match HIG floor (touch=\(effectiveTouch), expected=\(expectedMin))"
+                )
+
+                let passed = testComponentComplianceSinglePlatform(
+                    button,
+                    expectedPattern: "SixLayer.*ui",
+                    platform: platform,
+                    componentName: "ButtonTouch-\(phase)-\(platform)"
+                )
+
+                switch platform {
+                case .iOS, .watchOS:
+                    #expect(passed, "\(phase) on \(platform): compliant button with touch-first HIG floor")
+                    #expect(expectedMin >= 44.0, "\(phase) on \(platform): touch-first platforms use 44pt floor")
+                case .macOS:
+                    #expect(passed, "\(phase) on \(platform): compliant button (touch=\(effectiveTouch))")
+                case .tvOS, .visionOS:
+                    #expect(passed, "\(phase) on \(platform): compliant button with focus/gaze HIG floor")
+                    #expect(expectedMin == 60.0, "\(phase) on \(platform): tvOS/visionOS use 60pt floor")
+                }
+            }
+
+            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+            assertTouchTargetComplianceLaw(phase: "current")
+
+            RuntimeCapabilityDetection.setTestTouchSupport(false)
+            assertTouchTargetComplianceLaw(phase: "disabled")
+
+            RuntimeCapabilityDetection.setTestTouchSupport(true)
+            assertTouchTargetComplianceLaw(phase: "enabled")
+        }
+    }
+
     @Test @MainActor func testButtonRespectsRuntimeTouchTargetDetection() async {
             initializeTestConfig()
         runWithTaskLocalConfig {
