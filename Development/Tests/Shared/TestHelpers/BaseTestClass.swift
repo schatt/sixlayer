@@ -163,13 +163,13 @@ open class BaseTestClass {
     
     /// `Mirror.subjectType` description for `some View` (includes modifier/compliance wrappers).
     @MainActor
-    open func viewSubjectTypeDescription(for view: some View) -> String {
+    public static func viewSubjectTypeDescription(for view: some View) -> String {
         String(describing: Mirror(reflecting: view).subjectType)
     }
     
     /// Assert the subject type string contains a semantic root view (e.g. `AsyncFormView` through wrappers).
     @MainActor
-    open func expectViewSubjectTypeContains(
+    public static func expectViewSubjectTypeContains(
         _ view: some View,
         rootViewName: String,
         _ comment: @autoclosure () -> String = { "" }
