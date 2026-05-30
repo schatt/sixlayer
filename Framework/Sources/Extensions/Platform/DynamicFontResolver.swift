@@ -103,9 +103,14 @@ private extension SixLayerTextStyle {
 /// - macOS: Scales ``Font/platform*`` baseline sizes by ``SixLayerContentSizeCategory/typographyScaleFactor``.
 public struct DynamicFontResolver: Sendable {
     public let defaultContentSize: SixLayerContentSizeCategory
+    public let minimumTypographyPolicy: HIGMinimumTypographyPolicy?
 
-    public init(defaultContentSize: SixLayerContentSizeCategory = .large) {
+    public init(
+        defaultContentSize: SixLayerContentSizeCategory = .large,
+        minimumTypographyPolicy: HIGMinimumTypographyPolicy? = nil
+    ) {
         self.defaultContentSize = defaultContentSize
+        self.minimumTypographyPolicy = minimumTypographyPolicy
     }
 
     public func resolvedContentSize(_ override: SixLayerContentSizeCategory?) -> SixLayerContentSizeCategory {
