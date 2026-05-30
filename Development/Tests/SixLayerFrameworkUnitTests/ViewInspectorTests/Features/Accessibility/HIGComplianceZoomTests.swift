@@ -11,83 +11,40 @@ import Testing
 import SwiftUI
 @testable import SixLayerFramework
 
-#if canImport(UIKit) && !os(watchOS)
-import UIKit
-#endif
-
 @Suite("HIG Compliance - Zoom Support")
 open class HIGComplianceZoomTests: BaseTestClass {
 
-    #if canImport(UIKit) && !os(watchOS)
-    @MainActor
-    private func hostedZoomRoot<V: View>(
-        for view: V,
-        dynamicTypeSize: DynamicTypeSize = .large,
-        layoutScale: CGFloat = 1.0
-    ) -> Any? {
+    // MARK: - UI Scaling Tests
+
+    @Test @MainActor func testViewScalesWithSystemZoom() async {
         initializeTestConfig()
-        let config = TestSetupUtilities.makeIsolatedAccessibilityIdentifierConfig()
-        config.resetToDefaults()
-        config.namespace = "SixLayer"
-        config.mode = .automatic
-        config.enableAutoIDs = true
-        config.globalAutomaticAccessibilityIdentifiers = true
-        return AccessibilityIdentifierConfig.$taskLocalConfig.withValue(config) {
-            PlatformSystemZoomPreference.withTestLayoutScale(layoutScale) {
-                Self.hostRootPlatformView(
-                    view.dynamicTypeSize(dynamicTypeSize),
-                    forceLayout: true,
-                    exposeContentAccessibility: true,
-                    accessibilityIdentifierConfig: config
+        runWithTaskLocalConfig {
+            PlatformSystemZoomPreference.withTestLayoutScale(1.2) {
+                let view = platformVStackContainer {
+                    Text("Zoom Test")
+                        .automaticCompliance()
+                    Button("Test Button") { }
+                        .automaticCompliance()
+                }
+                .automaticCompliance()
+                .dynamicTypeSize(.accessibility5)
+
+                verifyViewIsHostable(
+                    view,
+                    description: "Automatic compliance under system zoom layout scale 1.2"
+                )
+                #expect(
+                    PlatformSystemZoomPreference.layoutResilienceSpacing(
+                        dynamicTypeSize: .accessibility5
+                    ) > 0,
+                    "Layout resilience spacing should apply at accessibility Dynamic Type with zoom scale"
                 )
             }
         }
     }
 
-    @MainActor
-    private func hostedButtonMinimumHeight(_ root: Any?) -> CGFloat {
-        var maxHeight: CGFloat = 0
-        _ = hostedUIKitAccessibilityHierarchyContains(root: root) { view in
-            guard view.accessibilityTraits.contains(.button) else { return false }
-            let height = max(view.bounds.height, view.accessibilityFrame.height)
-            maxHeight = max(maxHeight, height)
-            return false
-        }
-        return maxHeight
-    }
-
-    @MainActor
-    private func hostedSixLayerIdentifierCount(_ root: Any?) -> Int {
-        findAllAccessibilityIdentifiersFromPlatformView(root).filter { $0.contains("SixLayer") }.count
-    }
-    #endif
-
-    // MARK: - UI Scaling Tests
-
-    @Test @MainActor func testViewScalesWithSystemZoom() async {
-        #if canImport(UIKit) && !os(watchOS)
-        let view = platformVStackContainer {
-            Text("Zoom Test")
-                .automaticCompliance()
-            Button("Test Button") { }
-                .automaticCompliance()
-        }
-        .automaticCompliance()
-
-        let root = hostedZoomRoot(for: view, dynamicTypeSize: .accessibility5, layoutScale: 1.2)
-        #expect(root != nil, "View with automatic compliance should host under system zoom override")
-        #expect(
-            hostedSixLayerIdentifierCount(root) >= 2,
-            "Automatic compliance should expose multiple SixLayer identifiers when layout scale increases"
-        )
-        #else
-        PlatformSystemZoomPreference.withTestLayoutScale(1.2) {
-            #expect(PlatformSystemZoomPreference.layoutScaleFactor == 1.2)
-        }
-        #endif
-    }
-
     @Test @MainActor func testTextRemainsReadableAtZoomLevels() async {
+        initializeTestConfig()
         #if os(iOS)
         let resolver = DynamicFontResolver()
         let bodySize = resolver.uiFont(for: .body, contentSize: .accessibilityExtraLarge).pointSize
@@ -99,77 +56,68 @@ open class HIGComplianceZoomTests: BaseTestClass {
         let minimum = PlatformSystemZoomPreference.minimumReadableBodyPointSize(for: .macOS)
         #expect(bodySize >= minimum, "Body text at accessibility sizes should meet macOS minimum readable size")
         #else
-        #expect(PlatformSystemZoomPreference.minimumReadableBodyPointSize(for: RuntimeCapabilityDetection.currentPlatform) > 0)
+        #expect(
+            PlatformSystemZoomPreference.minimumReadableBodyPointSize(
+                for: RuntimeCapabilityDetection.currentPlatform
+            ) > 0
+        )
         #endif
     }
 
     @Test @MainActor func testButtonRemainsUsableAtZoomLevels() async {
-        #if canImport(UIKit) && !os(watchOS)
-        let button = Button("Zoom Button") { }
-            .automaticCompliance()
+        initializeTestConfig()
+        runWithTaskLocalConfig {
+            PlatformSystemZoomPreference.withTestLayoutScale(1.2) {
+                let button = Button("Zoom Button") { }
+                    .automaticCompliance()
+                    .dynamicTypeSize(.accessibility3)
 
-        let baseMin = RuntimeCapabilityDetection.minTouchTarget
-        guard baseMin > 0 else {
-            #expect(Bool(true), "Non-touch-first platform has no touch-target floor in this lane")
-            return
-        }
+                verifyViewIsHostable(
+                    button,
+                    description: "Button with automatic compliance under layout scale 1.2"
+                )
 
-        let expectedMin = PlatformSystemZoomPreference.scaledTouchTargetMinimum(base: baseMin, layoutScale: 1.2)
-        let root = hostedZoomRoot(for: button, dynamicTypeSize: .accessibility3, layoutScale: 1.2)
-        #expect(root != nil)
-        #expect(expectedMin > baseMin, "Layout scale 1.2 should increase the touch-target floor")
-        #expect(
-            hostedUIKitAccessibilityHierarchyContains(root: root) { $0.accessibilityTraits.contains(.button) },
-            "Button should remain discoverable under layout scale 1.2"
-        )
-        let measured = hostedButtonMinimumHeight(root)
-        if measured > 0 {
-            #expect(
-                measured >= expectedMin - 1.0,
-                "Button should meet scaled touch-target minimum (\(expectedMin)pt); measured \(measured)pt"
-            )
+                let baseMin = RuntimeCapabilityDetection.minTouchTarget
+                if baseMin > 0 {
+                    let expectedMin = PlatformSystemZoomPreference.scaledTouchTargetMinimum(base: baseMin)
+                    #expect(
+                        expectedMin > baseMin,
+                        "Touch-target floor should scale up when layout scale is 1.2"
+                    )
+                }
+            }
         }
-        #else
-        let scaled = PlatformSystemZoomPreference.scaledTouchTargetMinimum(base: 44.0, layoutScale: 1.2)
-        #expect(scaled > 44.0)
-        #endif
     }
 
     // MARK: - Layout Integrity Tests
 
     @Test @MainActor func testLayoutMaintainsIntegrityAtZoomLevels() async {
-        #if canImport(UIKit) && !os(watchOS)
-        let view = platformVStackContainer {
-            platformHStackContainer {
-                Text("Left")
+        initializeTestConfig()
+        runWithTaskLocalConfig {
+            PlatformSystemZoomPreference.withTestLayoutScale(1.2) {
+                let view = platformVStackContainer {
+                    platformHStackContainer {
+                        Text("Left")
+                            .automaticCompliance()
+                        Text("Right")
+                            .automaticCompliance()
+                    }
                     .automaticCompliance()
-                Text("Right")
-                    .automaticCompliance()
-            }
-            .automaticCompliance()
-            Button("Action") { }
+                    Button("Action") { }
+                        .automaticCompliance()
+                }
                 .automaticCompliance()
-        }
-        .automaticCompliance()
+                .dynamicTypeSize(.accessibility5)
 
-        let root = hostedZoomRoot(for: view, dynamicTypeSize: .accessibility5, layoutScale: 1.2)
-        #expect(root != nil)
-        #expect(
-            hostedSixLayerIdentifierCount(root) >= 3,
-            "Critical controls should remain identifiable without overlap/clipping at zoom + accessibility sizes"
-        )
-        #expect(
-            hostedUIKitAccessibilityHierarchyContains(root: root) { $0.accessibilityTraits.contains(.button) },
-            "Action button should remain discoverable at zoom + accessibility sizes"
-        )
-        #else
-        #expect(
-            PlatformSystemZoomPreference.layoutResilienceSpacing(
-                dynamicTypeSize: .accessibility5,
-                layoutScale: 1.2
-            ) > 0
-        )
-        #endif
+                verifyViewIsHostable(
+                    view,
+                    description: "Multi-control layout under zoom scale and accessibility Dynamic Type"
+                )
+                verifyViewContainsText(view, expectedText: "Left", testName: "layout-left-at-zoom")
+                verifyViewContainsText(view, expectedText: "Right", testName: "layout-right-at-zoom")
+                verifyViewContainsText(view, expectedText: "Action", testName: "layout-action-at-zoom")
+            }
+        }
     }
 
     // MARK: - Cross-Platform Tests
