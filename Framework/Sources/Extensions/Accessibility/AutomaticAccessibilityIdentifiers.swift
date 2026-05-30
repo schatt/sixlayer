@@ -904,13 +904,12 @@ public struct AutomaticHIGColorContrastModifier: ViewModifier {
 /// Ensures text scales with system accessibility settings
 public struct AutomaticHIGTypographyScalingModifier: ViewModifier {
     let platform: SixLayerPlatform
-    
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
     public func body(content: Content) -> some View {
-        // Apply Dynamic Type support - text automatically scales with system settings
-        // SwiftUI's built-in text styles (.body, .headline, etc.) already support Dynamic Type
-        // This modifier ensures custom font sizes respect minimum readable sizes
+        // Cap upward at accessibility5 without resetting an explicit or inherited size.
         content
-            .dynamicTypeSize(...DynamicTypeSize.accessibility5)
+            .dynamicTypeSize(dynamicTypeSize...HIGMinimumTypographyPolicy.maximumDynamicTypeSize)
     }
 }
 
