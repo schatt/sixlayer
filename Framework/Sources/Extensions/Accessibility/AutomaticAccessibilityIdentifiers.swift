@@ -907,9 +907,18 @@ public struct AutomaticHIGTypographyScalingModifier: ViewModifier {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     public func body(content: Content) -> some View {
+        let policy = HIGMinimumTypographyPolicy(platform: platform)
         // Cap upward at accessibility5 without resetting an explicit or inherited size.
+        // Custom fixed sizes should use Font.higCompliantSystem so floors apply via resolver policy.
         content
             .dynamicTypeSize(dynamicTypeSize...HIGMinimumTypographyPolicy.maximumDynamicTypeSize)
+            .environment(\.higMinimumTypographyPolicy, policy)
+            .dynamicFontResolver(
+                DynamicFontResolver(
+                    defaultContentSize: .large,
+                    minimumTypographyPolicy: policy
+                )
+            )
     }
 }
 
