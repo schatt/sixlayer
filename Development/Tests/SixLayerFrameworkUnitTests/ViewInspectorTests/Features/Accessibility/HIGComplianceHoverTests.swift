@@ -24,7 +24,7 @@ import Testing
 import SwiftUI
 @testable import SixLayerFramework
 
-@Suite("HIG Compliance - Hover Support")
+@Suite("HIG Compliance - Hover Support", DefaultRuntimeCapabilityIsolationTrait())
 /// NOTE: Not marked @MainActor on class to allow parallel execution
 open class HIGComplianceHoverTests: BaseTestClass {
     
@@ -111,6 +111,49 @@ open class HIGComplianceHoverTests: BaseTestClass {
         }
     }
     
+    // MARK: - Tri-state hover capability (#251)
+
+    /// Button + `.automaticCompliance()` on the **current host** through hover tri-state.
+    @Test @MainActor func testButtonHoverComplianceTriStatePhases() async {
+        initializeTestConfig()
+        defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
+
+        runWithTaskLocalConfig {
+            let button = Button("Hover Tri-State Button") { }
+                .automaticCompliance()
+
+            @MainActor func assertHoverComplianceLaw(phase: String) {
+                let platform = SixLayerPlatform.current
+                let effectiveHover = RuntimeCapabilityDetection.supportsHover
+                let passed = testComponentComplianceSinglePlatform(
+                    button,
+                    expectedPattern: "SixLayer.*ui",
+                    platform: platform,
+                    componentName: "ButtonHover-\(phase)-\(platform)"
+                )
+
+                switch platform {
+                case .iOS:
+                    #expect(passed, "\(phase) on iOS: compliant button (hover=\(effectiveHover))")
+                case .macOS, .visionOS:
+                    #expect(passed, "\(phase) on \(platform): compliant button on hover-capable host (hover=\(effectiveHover))")
+                case .watchOS, .tvOS:
+                    #expect(passed, "\(phase) on \(platform): compliant button without hover (hover=\(effectiveHover))")
+                    #expect(!effectiveHover, "\(phase) on \(platform): host should not report hover")
+                }
+            }
+
+            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+            assertHoverComplianceLaw(phase: "current")
+
+            RuntimeCapabilityDetection.setTestHover(false)
+            assertHoverComplianceLaw(phase: "disabled")
+
+            RuntimeCapabilityDetection.setTestHover(true)
+            assertHoverComplianceLaw(phase: "enabled")
+        }
+    }
+
     // MARK: - Cross-Platform Tests
     
     @Test @MainActor func testHoverSupportOnHoverCapablePlatforms() async {
