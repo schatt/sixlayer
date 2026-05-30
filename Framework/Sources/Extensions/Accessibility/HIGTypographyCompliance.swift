@@ -64,6 +64,10 @@ public enum HIGTypographyCompliance {
         for platform: SixLayerPlatform,
         contentSize: SixLayerContentSizeCategory = .large
     ) -> DynamicFontResolver {
-        DynamicFontResolver(defaultContentSize: contentSize, platform: platform)
+        DynamicFontResolver(
+            defaultContentSize: contentSize,
+            enforceMinimumReadableSizes: true,
+            platform: platform
+        )
     }
 }
