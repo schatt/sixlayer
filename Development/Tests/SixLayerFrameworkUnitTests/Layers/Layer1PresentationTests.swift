@@ -99,7 +99,7 @@ open class Layer1PresentationTests: BaseTestClass {
         // Then: Should return a view (AsyncFormView is the actual implementation)
         #expect(Bool(true), "view is non-optional")  // view is non-optional
         
-        expectViewSubjectTypeContains(view, rootViewName: "AsyncFormView")
+        Self.expectViewSubjectTypeContains(view, rootViewName: "AsyncFormView")
     }
     
     @Test @MainActor func testPlatformPresentFormData_L1_HandlesEmptyFields() {
@@ -120,7 +120,7 @@ open class Layer1PresentationTests: BaseTestClass {
         // Then: Should return a view even with empty fields (AsyncFormView is the actual implementation)
         #expect(Bool(true), "view is non-optional")  // view is non-optional
         
-        expectViewSubjectTypeContains(view, rootViewName: "AsyncFormView")
+        Self.expectViewSubjectTypeContains(view, rootViewName: "AsyncFormView")
     }
     
     @Test @MainActor func testPlatformPresentFormData_L1_HandlesDifferentComplexityLevels() {
@@ -147,8 +147,8 @@ open class Layer1PresentationTests: BaseTestClass {
         #expect(Bool(true), "simpleView is non-optional")  // simpleView is non-optional
         #expect(Bool(true), "complexView is non-optional")  // complexView is non-optional
         
-        expectViewSubjectTypeContains(simpleView, rootViewName: "AsyncFormView")
-        expectViewSubjectTypeContains(complexView, rootViewName: "AsyncFormView")
+        Self.expectViewSubjectTypeContains(simpleView, rootViewName: "AsyncFormView")
+        Self.expectViewSubjectTypeContains(complexView, rootViewName: "AsyncFormView")
     }
     
     @Test @MainActor func testPlatformPresentFormData_L1_HandlesDifferentDataTypes() {
@@ -175,8 +175,8 @@ open class Layer1PresentationTests: BaseTestClass {
         #expect(Bool(true), "formView is non-optional")  // formView is non-optional
         #expect(Bool(true), "textView is non-optional")  // textView is non-optional
         
-        expectViewSubjectTypeContains(formView, rootViewName: "AsyncFormView")
-        expectViewSubjectTypeContains(textView, rootViewName: "AsyncFormView")
+        Self.expectViewSubjectTypeContains(formView, rootViewName: "AsyncFormView")
+        Self.expectViewSubjectTypeContains(textView, rootViewName: "AsyncFormView")
     }
     
     // MARK: - platformPresentModalForm_L1 Tests
@@ -192,7 +192,7 @@ open class Layer1PresentationTests: BaseTestClass {
         // Then: Should return a ModalFormView
         #expect(Bool(true), "view is non-optional")  // view is non-optional
         
-        expectViewSubjectTypeContains(view, rootViewName: "ModalFormView")
+        Self.expectViewSubjectTypeContains(view, rootViewName: "ModalFormView")
     }
     
     @Test @MainActor func testPlatformPresentModalForm_L1_HandlesDifferentFormTypes() {
@@ -210,7 +210,7 @@ open class Layer1PresentationTests: BaseTestClass {
             // Then: Should return a ModalFormView for each type
             // view is non-optional, not used further
             
-            expectViewSubjectTypeContains(
+            Self.expectViewSubjectTypeContains(
                 view,
                 rootViewName: "ModalFormView",
                 "Should return ModalFormView with accessibility modifiers for type: \(formType)"
@@ -233,7 +233,7 @@ open class Layer1PresentationTests: BaseTestClass {
             // Then: Should return a ModalFormView for each context
             #expect(Bool(true), "Should handle context: \(context)")  // view is non-optional
             
-            expectViewSubjectTypeContains(
+            Self.expectViewSubjectTypeContains(
                 view,
                 rootViewName: "ModalFormView",
                 "Should return ModalFormView with accessibility modifiers for context: \(context)"
@@ -261,7 +261,7 @@ open class Layer1PresentationTests: BaseTestClass {
             // Then: Should return a ModalFormView
             #expect(Bool(true), "Should handle form type: \(formType)")  // view is non-optional
             
-            expectViewSubjectTypeContains(
+            Self.expectViewSubjectTypeContains(
                 view,
                 rootViewName: "ModalFormView",
                 "Should return ModalFormView with accessibility modifiers for type: \(formType)"
@@ -293,7 +293,7 @@ open class Layer1PresentationTests: BaseTestClass {
         // Then: Should handle large field sets gracefully
         #expect(Bool(true), "view is non-optional")  // view is non-optional
         
-        expectViewSubjectTypeContains(view, rootViewName: "AsyncFormView")
+        Self.expectViewSubjectTypeContains(view, rootViewName: "AsyncFormView")
     }
     
     @Test @MainActor func testPlatformPresentFormData_L1_HandlesSpecialCharacters() {
@@ -322,7 +322,7 @@ open class Layer1PresentationTests: BaseTestClass {
         // Then: Should handle special characters gracefully
         #expect(Bool(true), "view is non-optional")  // view is non-optional
         
-        expectViewSubjectTypeContains(view, rootViewName: "AsyncFormView")
+        Self.expectViewSubjectTypeContains(view, rootViewName: "AsyncFormView")
     }
     
     @Test @MainActor func testPlatformPresentModalForm_L1_HandlesCustomFormType() {
@@ -336,7 +336,7 @@ open class Layer1PresentationTests: BaseTestClass {
         // Then: Should return a ModalFormView (falls back to generic form)
         #expect(Bool(true), "view is non-optional")  // view is non-optional
         
-        expectViewSubjectTypeContains(view, rootViewName: "ModalFormView")
+        Self.expectViewSubjectTypeContains(view, rootViewName: "ModalFormView")
     }
     
     // MARK: - Integration Tests
@@ -361,7 +361,7 @@ open class Layer1PresentationTests: BaseTestClass {
         // Then: Should return a view (AsyncFormView is the actual implementation)
         #expect(Bool(true), "view is non-optional")  // view is non-optional
         
-        expectViewSubjectTypeContains(view, rootViewName: "AsyncFormView")
+        Self.expectViewSubjectTypeContains(view, rootViewName: "AsyncFormView")
     }
     
     @Test @MainActor func testPlatformPresentModalForm_L1_IntegrationWithAllParameters() {
@@ -375,7 +375,7 @@ open class Layer1PresentationTests: BaseTestClass {
         // Then: Should return a ModalFormView
         #expect(Bool(true), "view is non-optional")  // view is non-optional
         
-        expectViewSubjectTypeContains(view, rootViewName: "ModalFormView")
+        Self.expectViewSubjectTypeContains(view, rootViewName: "ModalFormView")
     }
     
     // MARK: - Performance Tests
