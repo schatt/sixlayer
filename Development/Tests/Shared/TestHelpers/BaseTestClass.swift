@@ -175,8 +175,14 @@ open class BaseTestClass {
         _ comment: String? = nil
     ) {
         let description = viewSubjectTypeDescription(for: view)
-        let message = comment ?? "Subject type should contain \(rootViewName), got: \(description)"
-        #expect(description.contains(rootViewName), message)
+        if let comment {
+            #expect(description.contains(rootViewName), comment)
+        } else {
+            #expect(
+                description.contains(rootViewName),
+                "Subject type should contain \(rootViewName), got: \(description)"
+            )
+        }
     }
     
     //
