@@ -172,12 +172,10 @@ open class BaseTestClass {
     public static func expectViewSubjectTypeContains(
         _ view: some View,
         rootViewName: String,
-        _ comment: @autoclosure () -> String = { "" }
+        _ comment: String? = nil
     ) {
         let description = viewSubjectTypeDescription(for: view)
-        let message = comment().isEmpty
-            ? "Subject type should contain \(rootViewName), got: \(description)"
-            : comment()
+        let message = comment ?? "Subject type should contain \(rootViewName), got: \(description)"
         #expect(description.contains(rootViewName), message)
     }
     
