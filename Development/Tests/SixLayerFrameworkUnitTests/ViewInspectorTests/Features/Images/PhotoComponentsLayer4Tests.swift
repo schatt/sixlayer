@@ -54,7 +54,7 @@ open class PhotoComponentsLayer4Tests: BaseTestClass {
     /// METHODOLOGY: Tests Layer 4 functionality and modifier application
     @Test @MainActor func testPlatformCameraInterface_L4_AppliesAutomaticAccessibilityIdentifiers() async {
             initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             // Enable debug logging to see what identifier is generated
             guard let config = self.testConfig else {
                 Issue.record("testConfig is nil")
@@ -141,7 +141,7 @@ open class PhotoComponentsLayer4Tests: BaseTestClass {
     /// METHODOLOGY: Tests Layer 4 functionality and modifier application
     @Test @MainActor func testPlatformPhotoPicker_L4_AppliesAutomaticAccessibilityIdentifiers() async {
             initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             // Given: Layer 4 function with test data
             var selectedImage: PlatformImage?
             
@@ -189,7 +189,7 @@ open class PhotoComponentsLayer4Tests: BaseTestClass {
     /// METHODOLOGY: Tests Layer 4 functionality and modifier application
     @Test @MainActor func testPlatformPhotoDisplay_L4_AppliesAutomaticAccessibilityIdentifiers() async {
             initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             // Given: Layer 4 function with test data
             let testImage = PlatformImage()
             let style = PhotoDisplayStyle.thumbnail
