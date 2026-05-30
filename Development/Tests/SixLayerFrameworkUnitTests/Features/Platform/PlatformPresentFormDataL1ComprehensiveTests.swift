@@ -151,8 +151,7 @@ open class PlatformPresentFormDataL1ComprehensiveTests: BaseTestClass {
         // Then: Should create view successfully
         // view is a non-optional View, so it exists if we reach here
 
-        let mirror = Mirror(reflecting: view)
-        #expect(String(describing: mirror.subjectType) == "AsyncFormView")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "AsyncFormView")
 
         // Verify field count matches
         #expect(fields.count == 21, "Should have 21 fields for all types")
@@ -259,10 +258,7 @@ open class PlatformPresentFormDataL1ComprehensiveTests: BaseTestClass {
         // Then: Should create view with enhanced hints support
         #expect(Bool(true), "Should create view with enhanced hints")  // view is non-optional
 
-        let mirror = Mirror(reflecting: view)
-        let viewType = String(describing: mirror.subjectType)
-        // Enhanced hints create an AsyncFormView
-        #expect(viewType.contains("AsyncFormView"), "Should contain AsyncFormView, got: \(viewType)")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "AsyncFormView")
     }
 
     @Test @MainActor func testPlatformPresentFormData_L1_ExtensibleHintsProcessing() {
@@ -347,8 +343,7 @@ open class PlatformPresentFormDataL1ComprehensiveTests: BaseTestClass {
             // Then: Should work across all platforms
             #expect(Bool(true), "Should work with context: \(context)")  // view is non-optional
 
-            let mirror = Mirror(reflecting: view)
-            #expect(String(describing: mirror.subjectType) == "AsyncFormView")
+            BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "AsyncFormView")
         }
     }
 
@@ -405,8 +400,7 @@ open class PlatformPresentFormDataL1ComprehensiveTests: BaseTestClass {
         #expect(Bool(true), "view is non-optional")  // view is non-optional
 
         // Verify view type
-        let mirror = Mirror(reflecting: view)
-        #expect(String(describing: mirror.subjectType) == "AsyncFormView")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "AsyncFormView")
     }
 
     // MARK: - Validation and Edge Cases
@@ -657,8 +651,7 @@ open class PlatformPresentFormDataL1ComprehensiveTests: BaseTestClass {
         // Then: Should handle errors gracefully and still create view
         #expect(Bool(true), "Should handle problematic data gracefully")  // view is non-optional
 
-        let mirror = Mirror(reflecting: view)
-        #expect(String(describing: mirror.subjectType) == "AsyncFormView")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "AsyncFormView")
     }
 
     // MARK: - Helper Methods
