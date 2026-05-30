@@ -85,7 +85,7 @@ open class NavigationLayer4Tests: BaseTestClass {
             }
         
         // Then: Should create valid navigation link that can be hosted
-        let hostingView = hostRootPlatformView(link.enableGlobalAutomaticCompliance())
+        _ = hostRootPlatformView(link.enableGlobalAutomaticCompliance())
         #expect(Bool(true), "Navigation link with title and system image should be hostable")  // hostingView is non-optional
         #expect(Bool(true), "Navigation link with title and system image should be created")  // link is non-optional
     }
@@ -96,7 +96,7 @@ open class NavigationLayer4Tests: BaseTestClass {
         let label = Text("Navigate to Value")
         
         // When: Creating navigation link with value
-        let link = label.platformNavigationLink_L4(value: value) { value in
+        _ = label.platformNavigationLink_L4(value: value) { value in
             Text("Value: \(value)")
         } label: {
             Text("Navigate")
@@ -112,7 +112,7 @@ open class NavigationLayer4Tests: BaseTestClass {
         let label = Text("Navigate to Nil")
         
         // When: Creating navigation link with nil value
-        let link = label.platformNavigationLink_L4(value: value) { value in
+        _ = label.platformNavigationLink_L4(value: value) { value in
             Text("Value: \(value)")
         } label: {
             Text("Navigate")
@@ -128,7 +128,7 @@ open class NavigationLayer4Tests: BaseTestClass {
         let selection = Binding<String?>(get: { nil }, set: { _ in })
         
         // When: Creating navigation link with tag
-        let link = Text("Trigger")
+        _ = Text("Trigger")
             .platformNavigationLink_L4(
                 tag: tag,
                 selection: selection
@@ -153,21 +153,21 @@ open class NavigationLayer4Tests: BaseTestClass {
         let uuidSelection = Binding<UUID?>(get: { nil }, set: { _ in })
         
         // When: Creating navigation links with different tag types
-        let stringLink = Text("String")
+        _ = Text("String")
             .platformNavigationLink_L4(tag: stringTag, selection: stringSelection) { tag in
                 Text("String: \(tag)")
             } label: {
                 Text("String Link")
             }
         
-        let intLink = Text("Int")
+        _ = Text("Int")
             .platformNavigationLink_L4(tag: intTag, selection: intSelection) { tag in
                 Text("Int: \(tag)")
             } label: {
                 Text("Int Link")
             }
         
-        let uuidLink = Text("UUID")
+        _ = Text("UUID")
             .platformNavigationLink_L4(tag: uuidTag, selection: uuidSelection) { tag in
                 Text("UUID: \(tag)")
             } label: {
@@ -187,7 +187,7 @@ open class NavigationLayer4Tests: BaseTestClass {
         let trailingItem = Button("Save") { }
         
         // When: Adding navigation bar items
-        let view = Text("Content")
+        _ = Text("Content")
             .platformNavigationBarItems_L4(trailing: trailingItem)
         
         // Then: Should create view with navigation bar items
@@ -201,13 +201,13 @@ open class NavigationLayer4Tests: BaseTestClass {
         let imageItem = Image(systemName: "star")
         
         // When: Adding different trailing items
-        let buttonView = Text("Content")
+        _ = Text("Content")
             .platformNavigationBarItems_L4(trailing: buttonItem)
         
-        let textView = Text("Content")
+        _ = Text("Content")
             .platformNavigationBarItems_L4(trailing: textItem)
         
-        let imageView = Text("Content")
+        _ = Text("Content")
             .platformNavigationBarItems_L4(trailing: imageItem)
         
         // Then: All views should be created successfully
@@ -223,7 +223,7 @@ open class NavigationLayer4Tests: BaseTestClass {
         let content = Text("Navigation Content")
         
         // When: Wrapping content in navigation container
-        let container = content.platformNavigation_L4 {
+        _ = content.platformNavigation_L4 {
             Text("Wrapped Content")
         }
         
@@ -244,7 +244,7 @@ open class NavigationLayer4Tests: BaseTestClass {
         }
         
         // When: Wrapping complex content
-        let container = Text("Trigger")
+        _ = Text("Trigger")
             .platformNavigation_L4 {
                 complexContent
             }
@@ -260,7 +260,7 @@ open class NavigationLayer4Tests: BaseTestClass {
         let item = Binding<TestPatterns.TestItem?>(get: { TestPatterns.TestItem(id: "test-item", title: "test-item") }, set: { _ in })
         
         // When: Creating navigation destination
-        let destination = Text("Trigger")
+        _ = Text("Trigger")
             .platformNavigationDestination_L4(item: item) { item in
                 Text("Destination: \(item.title)")
             }
@@ -274,7 +274,7 @@ open class NavigationLayer4Tests: BaseTestClass {
         let item = Binding<TestPatterns.TestItem?>(get: { nil }, set: { _ in })
         
         // When: Creating navigation destination with nil item
-        let destination = Text("Trigger")
+        _ = Text("Trigger")
             .platformNavigationDestination_L4(item: item) { item in
                 Text("Destination: \(item.title)")
             }
@@ -290,17 +290,17 @@ open class NavigationLayer4Tests: BaseTestClass {
         let item3 = Binding<TestPatterns.TestItem?>(get: { TestPatterns.TestItem(id: "uuid", title: "uuid") }, set: { _ in })
         
         // When: Creating destinations with different item types
-        let destination1 = Text("String")
+        _ = Text("String")
             .platformNavigationDestination_L4(item: item1) { item in
                 Text("String: \(item.title)")
             }
         
-        let destination2 = Text("Int")
+        _ = Text("Int")
             .platformNavigationDestination_L4(item: item2) { item in
                 Text("Number: \(item.title)")
             }
         
-        let destination3 = Text("UUID")
+        _ = Text("UUID")
             .platformNavigationDestination_L4(item: item3) { item in
                 Text("UUID: \(item.title)")
             }
@@ -318,7 +318,7 @@ open class NavigationLayer4Tests: BaseTestClass {
         let content = Text("Navigation Content")
         
         // When: Wrapping content in platform navigation
-        let navigation = content.platformNavigation_L4 {
+        _ = content.platformNavigation_L4 {
             Text("Wrapped Content")
         }
         
@@ -339,7 +339,7 @@ open class NavigationLayer4Tests: BaseTestClass {
         let content = Text("Navigation Content")
         
         // When: Wrapping content in platform navigation
-        let navigation = content.platformNavigation_L4 {
+        _ = content.platformNavigation_L4 {
             Text("Wrapped Content")
         }
         
@@ -366,7 +366,7 @@ open class NavigationLayer4Tests: BaseTestClass {
         }
         
         // When: Wrapping complex content in platform navigation
-        let navigation = Text("Trigger")
+        _ = Text("Trigger")
             .platformNavigation_L4 {
                 complexContent
             }
@@ -383,7 +383,7 @@ open class NavigationLayer4Tests: BaseTestClass {
         let selection = Binding<String?>(get: { nil }, set: { _ in })
         
         // When: Combining multiple navigation components
-        let integratedView = Text("Content")
+        _ = Text("Content")
             .platformNavigation_L4 {
                 platformVStackContainer {
                     Text("Title")
@@ -426,7 +426,7 @@ open class NavigationLayer4Tests: BaseTestClass {
         #expect(!isActive.wrappedValue, "IsActive binding should return false")
         
         // When: Creating navigation components with state
-        let statefulView = Text("Content")
+        _ = Text("Content")
             .platformNavigation_L4 {
                 platformVStackContainer {
                     Text("Stateful Navigation")
@@ -459,11 +459,11 @@ open class NavigationLayer4Tests: BaseTestClass {
         let emptyContent = EmptyView()
         
         // When: Using empty content with navigation components
-        let emptyNavigation = emptyContent.platformNavigation_L4 {
+        _ = emptyContent.platformNavigation_L4 {
             EmptyView()
         }
         
-        let emptyContainer = emptyContent.platformNavigation_L4 {
+        _ = emptyContent.platformNavigation_L4 {
             EmptyView()
         }
         
@@ -484,7 +484,7 @@ open class NavigationLayer4Tests: BaseTestClass {
         #expect(!nilIsActive.wrappedValue, "Nil isActive binding should return false")
         
         // When: Using nil bindings with navigation components
-        let nilLink = Text("Nil Link")
+        _ = Text("Nil Link")
             .platformNavigationLink_L4(
                 title: "Nil",
                 systemImage: "questionmark",
@@ -493,7 +493,7 @@ open class NavigationLayer4Tests: BaseTestClass {
                 Text("Nil Destination")
             }
         
-        let nilDestination = Text("Nil Destination")
+        _ = Text("Nil Destination")
             .platformNavigationDestination_L4(item: nilItem) { item in
                 Text("Nil: \(item.title)")
             }
@@ -517,7 +517,7 @@ open class NavigationLayer4Tests: BaseTestClass {
         )
         
         // When: Creating app navigation with strategy
-        let navigation = EmptyView()
+        _ = EmptyView()
             .platformAppNavigation_L4(
                 columnVisibility: columnVisibility,
                 showingNavigationSheet: showingSheet,
@@ -538,7 +538,7 @@ open class NavigationLayer4Tests: BaseTestClass {
         let showingSheet = Binding<Bool>(get: { false }, set: { _ in })
         
         // When: Creating app navigation with automatic strategy detection
-        let navigation = EmptyView()
+        _ = EmptyView()
             .platformAppNavigation_L4(
                 columnVisibility: columnVisibility,
                 showingNavigationSheet: showingSheet,
@@ -556,7 +556,7 @@ open class NavigationLayer4Tests: BaseTestClass {
         let detail = Text("Detail")
         
         // When: Creating app navigation without bindings
-        let navigation = EmptyView()
+        _ = EmptyView()
             .platformAppNavigation_L4(
                 columnVisibility: nil,
                 showingNavigationSheet: nil,
@@ -578,7 +578,7 @@ open class NavigationLayer4Tests: BaseTestClass {
         )
         
         // When: Creating app navigation with empty content
-        let navigation = EmptyView()
+        _ = EmptyView()
             .platformAppNavigation_L4(
                 columnVisibility: nil,
                 showingNavigationSheet: nil,
@@ -610,7 +610,7 @@ open class NavigationLayer4Tests: BaseTestClass {
         )
         
         // When: Creating app navigation with complex content
-        let navigation = EmptyView()
+        _ = EmptyView()
             .platformAppNavigation_L4(
                 columnVisibility: columnVisibility,
                 showingNavigationSheet: nil,
