@@ -64,12 +64,11 @@ open class PhotoComponentsLayer4Tests: BaseTestClass {
             config.enableDebugLogging = true
             
             // Given: Layer 4 function with test data
-            var capturedImage: PlatformImage?
             
             // When: Call Layer 4 function
             let cameraView = PlatformPhotoComponentsLayer4.platformCameraInterface_L4(
                 onImageCaptured: { image in
-                    capturedImage = image
+                    _ = image
                 }
             )
             
@@ -143,13 +142,12 @@ open class PhotoComponentsLayer4Tests: BaseTestClass {
             initializeTestConfig()
         runWithTaskLocalConfig {
             // Given: Layer 4 function with test data
-            var selectedImage: PlatformImage?
             
             // When: Call Layer 4 function
             
             let result = PlatformPhotoComponentsLayer4.platformPhotoPicker_L4(
                 onImageSelected: { image in
-                    selectedImage = image
+                    _ = image
                 }
             )
             
