@@ -433,6 +433,8 @@ public struct AutomaticComplianceModifier: ViewModifier {
             .modifier(AutomaticHIGColorContrastModifier(platform: platform))
             // 6. Typography Scaling (Dynamic Type) - Support accessibility text sizes
             .modifier(AutomaticHIGTypographyScalingModifier(platform: platform))
+            // 6b. System Zoom / layout resilience (Display Zoom — not pinch-to-zoom, GitHub #303)
+            .modifier(AutomaticHIGSystemZoomModifier(platform: platform))
             // 7. Focus Indicators - Visible and accessible focus rings
             .modifier(AutomaticHIGFocusIndicatorModifier(
                 isInteractive: isInteractive,
@@ -877,9 +879,10 @@ public struct AutomaticHIGTouchTargetModifier: ViewModifier {
     
     public func body(content: Content) -> some View {
         if isInteractive && minSize > 0 {
+            let effectiveMin = PlatformSystemZoomPreference.scaledTouchTargetMinimum(base: minSize)
             // Apply minimum touch target for interactive elements on touch platforms
             content
-                .frame(minWidth: minSize, minHeight: minSize)
+                .frame(minWidth: effectiveMin, minHeight: effectiveMin)
         } else {
             content
         }
