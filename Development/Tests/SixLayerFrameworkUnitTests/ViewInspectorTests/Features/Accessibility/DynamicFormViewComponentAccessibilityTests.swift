@@ -222,7 +222,7 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
         #if canImport(ViewInspector)
         verifyViewContainsAtLeastOneVStack(view, testName: "Collapsible section")
         if let inspected = try? AnyView(view).inspect() {
-                let vStacks = (try? inspected.findAll(ViewType.VStack.self)) ?? []
+                let vStacks = inspected.findAll(ViewType.VStack.self)
                 if let vStack = vStacks.first {
                     let children = vStack.findAll(ViewInspector.ViewType.AnyView.self)
                     #expect(children.count >= 1, "Should have DisclosureGroup for collapsible section")
@@ -300,7 +300,7 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
         #if canImport(ViewInspector)
         verifyViewContainsAtLeastOneVStack(view, testName: "DynamicTextField")
         if let inspected = try? AnyView(view).inspect() {
-                let vStacks = (try? inspected.findAll(ViewType.VStack.self)) ?? []
+                let vStacks = inspected.findAll(ViewType.VStack.self)
                 if let vStack = vStacks.first {
                     let children = vStack.findAll(ViewInspector.ViewType.AnyView.self)
                     #expect(children.count >= 2, "Should have label and TextField")
@@ -378,7 +378,7 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
         #if canImport(ViewInspector)
         verifyViewContainsAtLeastOneVStack(view, testName: "DynamicNumberField")
         if let inspected = try? AnyView(view).inspect() {
-                let vStacks = (try? inspected.findAll(ViewType.VStack.self)) ?? []
+                let vStacks = inspected.findAll(ViewType.VStack.self)
                 if let vStack = vStacks.first {
                     let children = vStack.findAll(ViewInspector.ViewType.AnyView.self)
                     #expect(children.count >= 2, "Should have label and TextField")
@@ -462,7 +462,7 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
         #if canImport(ViewInspector)
         verifyViewContainsAtLeastOneVStack(view, testName: "DynamicTextAreaField")
         if let inspected = try? AnyView(view).inspect() {
-                let vStacks = (try? inspected.findAll(ViewType.VStack.self)) ?? []
+                let vStacks = inspected.findAll(ViewType.VStack.self)
                 if let vStack = vStacks.first {
                     #expect(vStack.count >= 2, "Should have label and TextEditor")
 
@@ -533,7 +533,7 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
         // Should render proper selection UI
         #if canImport(ViewInspector)
         if let inspected = try? AnyView(view).inspect() {
-                let vStacks = (try? inspected.findAll(ViewType.VStack.self)) ?? []
+                let vStacks = inspected.findAll(ViewType.VStack.self)
                 if let vStack = vStacks.first {
                     #expect(vStack.count >= 2, "Should have label and Picker")
 
@@ -605,7 +605,7 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
         #if canImport(ViewInspector)
         verifyViewContainsAtLeastOneVStack(view, testName: "DynamicMultiSelectField")
         if let inspected = try? AnyView(view).inspect() {
-                let vStacks = (try? inspected.findAll(ViewType.VStack.self)) ?? []
+                let vStacks = inspected.findAll(ViewType.VStack.self)
                 if let vStack = vStacks.first {
                 let children = vStack.findAll(ViewInspector.ViewType.AnyView.self)
                 #expect(children.count >= 2, "Should have label and selection controls")
@@ -678,7 +678,7 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
         #if canImport(ViewInspector)
         verifyViewContainsAtLeastOneVStack(view, testName: "DynamicRadioField")
         if let inspected = try? AnyView(view).inspect() {
-                let vStacks = (try? inspected.findAll(ViewType.VStack.self)) ?? []
+                let vStacks = inspected.findAll(ViewType.VStack.self)
                 if let vStack = vStacks.first {
                 let children = vStack.findAll(ViewInspector.ViewType.AnyView.self)
                 #expect(children.count >= 2, "Should have label and radio controls")
@@ -750,7 +750,7 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
         #if canImport(ViewInspector)
         verifyViewContainsAtLeastOneVStack(view, testName: "DynamicCheckboxField")
         if let inspected = try? AnyView(view).inspect() {
-                let vStacks = (try? inspected.findAll(ViewType.VStack.self)) ?? []
+                let vStacks = inspected.findAll(ViewType.VStack.self)
                 if let vStack = vStacks.first {
                 let children = vStack.findAll(ViewInspector.ViewType.AnyView.self)
                 #expect(children.count >= 2, "Should have label and Toggle")
@@ -822,7 +822,7 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
         #if canImport(ViewInspector)
         verifyViewContainsAtLeastOneVStack(view, testName: "DynamicToggleField")
         if let inspected = try? AnyView(view).inspect() {
-                let vStacks = (try? inspected.findAll(ViewType.VStack.self)) ?? []
+                let vStacks = inspected.findAll(ViewType.VStack.self)
                 if let vStack = vStacks.first {
                 let children = vStack.findAll(ViewInspector.ViewType.AnyView.self)
                 #expect(children.count >= 2, "Should have label and Toggle")
