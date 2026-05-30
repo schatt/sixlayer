@@ -38,19 +38,11 @@ open class OCRComponentsTDDTests: BaseTestClass {
             confidence: 0.95,
             boundingBoxes: [CGRect(x: 0, y: 0, width: 100, height: 100)]
         )
-
-        var textEdited = false
-        var textDeleted = false
-
         let view = OCROverlayView(
             image: testImage,
             result: testResult,
-            onTextEdit: { text, rect in
-                textEdited = true
-            },
-            onTextDelete: { rect in
-                textDeleted = true
-            }
+            onTextEdit: { _, _ in },
+            onTextDelete: { _ in }
         )
 
         // Should render overlay interface
@@ -166,13 +158,9 @@ open class OCRComponentsTDDTests: BaseTestClass {
             confidence: 0.85,
             requiresUserSelection: true
         )
-
-        var selectedValue: OCRDisambiguationSelection? = nil
         let view = OCRDisambiguationView(
             result: result,
-            onSelection: { selection in
-                selectedValue = selection
-            }
+            onSelection: { _ in }
         )
 
         // Should render disambiguation options
@@ -243,13 +231,9 @@ open class OCRComponentsTDDTests: BaseTestClass {
             confidence: 0.8,
             requiresUserSelection: true
         )
-
-        var selectedValue: OCRDisambiguationSelection? = nil
         let view = OCRDisambiguationView(
             result: result,
-            onSelection: { selection in
-                selectedValue = selection
-            }
+            onSelection: { _ in }
         )
 
         // Should display all candidates
@@ -292,13 +276,9 @@ open class OCRComponentsTDDTests: BaseTestClass {
             confidence: 0.99,
             requiresUserSelection: false
         )
-
-        var selectedValue: OCRDisambiguationSelection? = nil
         let view = OCRDisambiguationView(
             result: result,
-            onSelection: { selection in
-                selectedValue = selection
-            }
+            onSelection: { _ in }
         )
 
         // Should handle non-disambiguation case
