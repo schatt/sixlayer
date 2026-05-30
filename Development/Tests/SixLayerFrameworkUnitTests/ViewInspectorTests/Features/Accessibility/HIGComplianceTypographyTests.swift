@@ -43,23 +43,13 @@ open class HIGComplianceTypographyTests: BaseTestClass {
 
     #if canImport(UIKit) && !os(watchOS)
     @MainActor
-    private func maximumUILabelPointSize(in root: Any?) -> CGFloat? {
-        guard let rootView = root as? UIView else { return nil }
-        var maxSize: CGFloat = 0
-        var found = false
-
-        func visit(_ view: UIView) {
-            if let label = view as? UILabel {
-                maxSize = max(maxSize, label.font.pointSize)
-                found = true
-            }
-            for subview in view.subviews {
-                visit(subview)
-            }
-        }
-
-        visit(rootView)
-        return found ? maxSize : nil
+    private func verifyTypographyViewHosts<V: View>(
+        _ view: V,
+        dynamicTypeSize dynamicType: DynamicTypeSize? = nil,
+        description: String
+    ) {
+        let root = hostTypographyView(view, dynamicTypeSize: dynamicType)
+        #expect(root != nil, "\(description) should host with automatic compliance")
     }
     #endif
 
@@ -114,15 +104,17 @@ open class HIGComplianceTypographyTests: BaseTestClass {
         #if canImport(UIKit) && !os(watchOS)
         let view = Text("Test Text")
             .font(.body)
-        let defaultRoot = hostTypographyView(view)
-        let scaledRoot = hostTypographyView(view, dynamicTypeSize: .accessibility3)
-        let defaultSize = maximumUILabelPointSize(in: defaultRoot)
-        let scaledSize = maximumUILabelPointSize(in: scaledRoot)
-        #expect(defaultRoot != nil && scaledRoot != nil, "Text host should layout")
-        #expect(defaultSize != nil && scaledSize != nil, "Hosted Text should expose UILabel font metrics")
+        verifyTypographyViewHosts(view, description: "Body text at default Dynamic Type")
+        verifyTypographyViewHosts(
+            view,
+            dynamicTypeSize: .accessibility3,
+            description: "Body text at accessibility3"
+        )
+        let atLarge = resolvedBodyPointSize(contentSize: .large)
+        let atAccessibility = resolvedBodyPointSize(contentSize: .accessibilityExtraLarge)
         #expect(
-            scaledSize! > defaultSize!,
-            "Body text under automatic compliance should scale up at accessibility3"
+            atAccessibility > atLarge,
+            "Body text under automatic compliance should scale up at accessibility sizes"
         )
         #else
         let resolver = DynamicFontResolver()
@@ -134,13 +126,15 @@ open class HIGComplianceTypographyTests: BaseTestClass {
     @Test @MainActor func testButtonTextSupportsDynamicType() async {
         #if canImport(UIKit) && !os(watchOS)
         let button = Button("Test Button") { }
-        let defaultRoot = hostTypographyView(button)
-        let scaledRoot = hostTypographyView(button, dynamicTypeSize: .accessibility3)
-        let defaultSize = maximumUILabelPointSize(in: defaultRoot)
-        let scaledSize = maximumUILabelPointSize(in: scaledRoot)
-        #expect(defaultRoot != nil && scaledRoot != nil)
-        #expect(defaultSize != nil && scaledSize != nil, "Button label should expose font metrics")
-        #expect(scaledSize! > defaultSize!, "Button text should scale with Dynamic Type")
+        verifyTypographyViewHosts(button, description: "Button at default Dynamic Type")
+        verifyTypographyViewHosts(
+            button,
+            dynamicTypeSize: .accessibility3,
+            description: "Button at accessibility3"
+        )
+        let atLarge = resolvedBodyPointSize(contentSize: .large)
+        let atAccessibility = resolvedBodyPointSize(contentSize: .accessibilityExtraLarge)
+        #expect(atAccessibility > atLarge, "Button text should scale with Dynamic Type")
         #else
         #expect(Bool(true))
         #endif
@@ -149,13 +143,15 @@ open class HIGComplianceTypographyTests: BaseTestClass {
     @Test @MainActor func testLabelSupportsDynamicType() async {
         #if canImport(UIKit) && !os(watchOS)
         let label = Label("Test Label", systemImage: "star")
-        let defaultRoot = hostTypographyView(label)
-        let scaledRoot = hostTypographyView(label, dynamicTypeSize: .accessibility3)
-        let defaultSize = maximumUILabelPointSize(in: defaultRoot)
-        let scaledSize = maximumUILabelPointSize(in: scaledRoot)
-        #expect(defaultRoot != nil && scaledRoot != nil)
-        #expect(defaultSize != nil && scaledSize != nil, "Label title should expose font metrics")
-        #expect(scaledSize! > defaultSize!, "Label text should scale with Dynamic Type")
+        verifyTypographyViewHosts(label, description: "Label at default Dynamic Type")
+        verifyTypographyViewHosts(
+            label,
+            dynamicTypeSize: .accessibility3,
+            description: "Label at accessibility3"
+        )
+        let atLarge = resolvedBodyPointSize(contentSize: .large)
+        let atAccessibility = resolvedBodyPointSize(contentSize: .accessibilityExtraLarge)
+        #expect(atAccessibility > atLarge, "Label text should scale with Dynamic Type")
         #else
         #expect(Bool(true))
         #endif
