@@ -353,6 +353,7 @@ private enum PlatformCameraInterfaceLayer4Accessibility {
     static let anchorViewTag = 0x534C4604
 }
 
+@MainActor
 private func applyPlatformCameraInterfaceLayer4Accessibility(to picker: UIImagePickerController) {
     picker.view.accessibilityIdentifier = PlatformCameraInterfaceLayer4Accessibility.hostedTreeIdentifier
     let tag = PlatformCameraInterfaceLayer4Accessibility.anchorViewTag
