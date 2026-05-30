@@ -60,7 +60,6 @@ open class DynamicFormViewTests: BaseTestClass {
             cancelButtonText: "Cancel"
         )
 
-        var submittedData: [String: Any]? = nil
         let view = DynamicFormView(
             configuration: configuration,
             onSubmit: { _ in }
@@ -972,7 +971,7 @@ open class DynamicFormViewTests: BaseTestClass {
         if let inspected = try? AnyView(regularFieldView).inspect() {
             // Regular field should not have HStack (just VStack with label and TextField)
             let hStacks = inspected.findAll(ViewInspector.ViewType.HStack.self)
-            let hStack = hStacks.first
+            _ = hStacks.first
             #expect(Bool(false), "Regular field should not have HStack (no OCR button)")  // hStack is non-optional
         }
         #else
@@ -1220,7 +1219,7 @@ open class DynamicFormViewTests: BaseTestClass {
         if let inspected = try? AnyView(viewWithOCR).inspect() {
             // Should find the batch OCR button by finding buttons and checking their accessibility identifiers
             let buttons = inspected.findAll(ViewInspector.ViewType.Button.self)
-            let hasOCRButton = buttons.contains { button in
+            _ = buttons.contains { button in
                 (try? button.accessibilityIdentifier())?.contains("Scan Document") ?? false
             }
             // Batch OCR button check - implementation pending
@@ -1322,7 +1321,6 @@ open class DynamicFormViewTests: BaseTestClass {
             modelName: "TestEntity"
         )
 
-        var ocrTriggered = false
         let view = DynamicFormView(configuration: config, onSubmit: { _ in })
 
         // Test that button exists and can be triggered
@@ -2135,7 +2133,7 @@ open class DynamicFormViewTests: BaseTestClass {
         #expect(updatedPasswordField?.ocrHints == nil, "Password field should have nil OCR hints")
         
         // Verify DynamicFormView can be created with this configuration
-        let view = DynamicFormView(
+        _ = DynamicFormView(
             configuration: configuration,
             onSubmit: { _ in }
         )
@@ -2465,15 +2463,12 @@ open class DynamicFormViewTests: BaseTestClass {
                 modelName: uniqueModelName
             )
             
-            var submittedValues: [String: Any]? = nil
-            var createdEntity: Any? = nil
-            
             // WHEN: Form is submitted with values
-            let view = DynamicFormView(
+            _ = DynamicFormView(
                 configuration: configuration,
                 onSubmit: { _ in },
                 onEntityCreated: { entity in
-                    createdEntity = entity
+                    _ = entity
                 }
             )
             
@@ -2528,7 +2523,7 @@ open class DynamicFormViewTests: BaseTestClass {
             var onEntityCreatedCalled = false
             
             // WHEN: Form is created
-            let view = DynamicFormView(
+            _ = DynamicFormView(
                 configuration: configuration,
                 onSubmit: { _ in
                     onSubmitCalled = true
@@ -2571,22 +2566,15 @@ open class DynamicFormViewTests: BaseTestClass {
                 // modelName is nil by default
             )
             
-            var onSubmitCalled = false
-            var onEntityCreatedCalled = false
-            
             // WHEN: Form is created
-            let view = DynamicFormView(
+            _ = DynamicFormView(
                 configuration: configuration,
-                onSubmit: { _ in
-                    onSubmitCalled = true
-                },
-                onEntityCreated: { _ in
-                    onEntityCreatedCalled = true
-                }
+                onSubmit: { _ in },
+                onEntityCreated: { _ in }
             )
             
             // THEN: View should be created successfully
-            #expect(view is DynamicFormView, "View should be created without modelName")
+            #expect(Bool(true), "View should be created without modelName")
             #expect(configuration.modelName == nil, "Configuration should have nil modelName")
             
             cleanupTestEnvironment()
@@ -2720,7 +2708,7 @@ open class DynamicFormViewTests: BaseTestClass {
                 break
             }
         }
-        let submittedImage = submittedValues?[imageFieldId] as? PlatformImage
+        _ = submittedValues?[imageFieldId] as? PlatformImage
         if submittedValues != nil {
             #expect(Bool(true), "onSubmit should include image when image field is set")
         }
