@@ -81,7 +81,6 @@ open class IntelligentFormViewTests: BaseTestClass {
             setupTestEnvironment()
 
             var onSubmitCalled = false
-            var submittedData: TestFormDataModel?
 
             let testData = TestFormDataModel(name: "Test Name", email: "test@example.com")
 
@@ -90,7 +89,7 @@ open class IntelligentFormViewTests: BaseTestClass {
                 initialData: testData,
                 onSubmit: { data in
                     onSubmitCalled = true
-                    submittedData = data
+                    _ = data
                 },
                 onCancel: {}
             )
