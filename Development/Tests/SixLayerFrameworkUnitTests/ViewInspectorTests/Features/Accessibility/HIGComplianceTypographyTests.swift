@@ -26,10 +26,13 @@ open class HIGComplianceTypographyTests: BaseTestClass {
     ) -> Any? {
         initializeTestConfig()
         return runWithTaskLocalConfig {
-            var hosted = view.automaticCompliance(named: "HIGTypographyHost")
-            if let dynamicType {
-                hosted = hosted.dynamicTypeSize(dynamicType)
-            }
+            let hosted: AnyView = {
+                let compliant = view.automaticCompliance(named: "HIGTypographyHost")
+                if let dynamicType {
+                    return AnyView(compliant.dynamicTypeSize(dynamicType))
+                }
+                return AnyView(compliant)
+            }()
             return Self.hostRootPlatformView(
                 hosted,
                 forceLayout: true,
