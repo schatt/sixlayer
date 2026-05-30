@@ -53,6 +53,7 @@ public enum PlatformPhotoComponentsLayer4 {
         #if os(iOS)
         CameraView(onImageCaptured: onImageCaptured, onCameraAuthorizationState: onCameraAuthorizationState)
             .automaticCompliance(named: "platformCameraInterface_L4")
+            .accessibilityIdentifier("platformCameraInterface_L4")
         #elseif os(macOS)
         MacCameraView(onImageCaptured: onImageCaptured)
             .automaticCompliance(named: "platformCameraInterface_L4")
@@ -345,6 +346,31 @@ public struct PlatformCameraPreviewView: View {
 #if os(iOS)
 import UIKit
 
+/// Hosted-tree contract for `platformCameraInterface_L4` (#254 / #255). SwiftUI modifiers on
+/// `UIViewControllerRepresentable` do not reliably propagate into the embedded picker hierarchy.
+private enum PlatformCameraInterfaceLayer4Accessibility {
+    static let hostedTreeIdentifier = "SixLayer.main.ui.platformCameraInterface_L4.View"
+    static let anchorViewTag = 0x534C4604
+}
+
+private func applyPlatformCameraInterfaceLayer4Accessibility(to picker: UIImagePickerController) {
+    picker.view.accessibilityIdentifier = PlatformCameraInterfaceLayer4Accessibility.hostedTreeIdentifier
+    let tag = PlatformCameraInterfaceLayer4Accessibility.anchorViewTag
+    if let anchor = picker.view.viewWithTag(tag) {
+        anchor.accessibilityIdentifier = PlatformCameraInterfaceLayer4Accessibility.hostedTreeIdentifier
+        return
+    }
+    let anchor = UIView(frame: CGRect(x: 0, y: 0, width: 1, height: 1))
+    anchor.tag = tag
+    anchor.isUserInteractionEnabled = false
+    anchor.isAccessibilityElement = true
+    anchor.accessibilityIdentifier = PlatformCameraInterfaceLayer4Accessibility.hostedTreeIdentifier
+    anchor.accessibilityLabel = "platformCameraInterface_L4"
+    anchor.accessibilityTraits = [.button]
+    anchor.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+    picker.view.addSubview(anchor)
+}
+
 public struct CameraView: UIViewControllerRepresentable {
     let onImageCaptured: (PlatformImage) -> Void
     let onCameraAuthorizationState: ((CameraAuthorizationState) -> Void)?
@@ -381,10 +407,13 @@ public struct CameraView: UIViewControllerRepresentable {
             picker.sourceType = .photoLibrary
         }
         picker.delegate = context.coordinator
+        applyPlatformCameraInterfaceLayer4Accessibility(to: picker)
         return picker
     }
     
-    public func updateUIViewController(_ uiViewController: UIImagePickerController, context: Context) {}
+    public func updateUIViewController(_ uiViewController: UIImagePickerController, context: Context) {
+        applyPlatformCameraInterfaceLayer4Accessibility(to: uiViewController)
+    }
     
     public func makeCoordinator() -> Coordinator {
         Coordinator(self)
