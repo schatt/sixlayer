@@ -287,7 +287,7 @@ open class Layer4ViewExtensionTests: BaseTestClass {
                 }
             }
         
-        let hostedView = hostRootPlatformView(view)
+        _ = hostRootPlatformView(view)
         #expect(Bool(true), "platformBackground with view-based background and alignment should render")
     }
     
@@ -310,8 +310,8 @@ open class Layer4ViewExtensionTests: BaseTestClass {
             .platformBackground(.blue, ignoresSafeAreaEdges: .all)
         
         // Then: Both should render successfully
-        let swiftUIHosted = hostRootPlatformView(swiftUIView)
-        let platformHosted = hostRootPlatformView(platformView)
+        _ = hostRootPlatformView(swiftUIView)
+        _ = hostRootPlatformView(platformView)
         
         #expect(Bool(true), "SwiftUI background with ignoresSafeAreaEdges should render")
         #expect(Bool(true), "platformBackground with ignoresSafeAreaEdges should match SwiftUI behavior")
@@ -343,7 +343,7 @@ open class Layer4ViewExtensionTests: BaseTestClass {
             }
         
         // Then: View should render successfully
-        let hostedView = hostRootPlatformView(view)
+        _ = hostRootPlatformView(view)
         #expect(Bool(true), "platformAlert with data-presenting should render")
     }
     
@@ -367,7 +367,7 @@ open class Layer4ViewExtensionTests: BaseTestClass {
             }
         
         // Then: View should render successfully
-        let hostedView = hostRootPlatformView(view)
+        _ = hostRootPlatformView(view)
         #expect(Bool(true), "platformAlert with data-presenting (no message) should render")
     }
     
@@ -393,7 +393,7 @@ open class Layer4ViewExtensionTests: BaseTestClass {
             }
         
         // Then: View should still be created (binding controls presentation)
-        let hostedView = hostRootPlatformView(view)
+        _ = hostRootPlatformView(view)
         #expect(Bool(true), "platformAlert with nil data should still create view")
     }
     
@@ -432,8 +432,8 @@ open class Layer4ViewExtensionTests: BaseTestClass {
             }
         
         // Then: Both should render successfully
-        let swiftUIHosted = hostRootPlatformView(swiftUIView)
-        let platformHosted = hostRootPlatformView(platformView)
+        _ = hostRootPlatformView(swiftUIView)
+        _ = hostRootPlatformView(platformView)
         
         #expect(Bool(true), "SwiftUI alert with data-presenting should render")
         #expect(Bool(true), "platformAlert with data-presenting should match SwiftUI behavior")
@@ -486,8 +486,8 @@ open class Layer4ViewExtensionTests: BaseTestClass {
             .platformPadding(insets)
         
         // Then: Both should render successfully
-        let swiftUIHosted = hostRootPlatformView(swiftUIView)
-        let platformHosted = hostRootPlatformView(platformView)
+        _ = hostRootPlatformView(swiftUIView)
+        _ = hostRootPlatformView(platformView)
         
         #expect(Bool(true), "SwiftUI padding with EdgeInsets should render")
         #expect(Bool(true), "platformPadding with EdgeInsets should render and match SwiftUI behavior")
@@ -701,7 +701,7 @@ open class Layer4ViewExtensionTests: BaseTestClass {
         let isolated = TestSetupUtilities.makeIsolatedAccessibilityIdentifierConfig()
         AccessibilityIdentifierConfig.$taskLocalConfig.withValue(isolated) {
             let anonymous = root()
-            let anonymousHost = hostRootPlatformView(anonymous, accessibilityIdentifierConfig: isolated)
+            _ = hostRootPlatformView(anonymous, accessibilityIdentifierConfig: isolated)
             #expect(Bool(true), "\(context): anonymous compliance path should render")
 
             let named = root().named(anchorName)
