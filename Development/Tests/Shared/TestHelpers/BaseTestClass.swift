@@ -314,6 +314,21 @@ open class BaseTestClass {
         }
     }
 
+    /// Verify VStack presence via direct inspection when the view type is Inspectable (Issue 178 / #242).
+    @MainActor
+    open func verifyViewContainsAtLeastOneVStack<V: View & ViewInspector.Inspectable>(_ view: V, testName: String) {
+        guard let vStacks = withInspectedView(view, perform: { inspected in
+            inspected.findAll(ViewInspector.ViewType.VStack.self)
+        }) else {
+            Issue.record("View inspection failed for \(testName): could not obtain inspected view")
+            return
+        }
+        guard !vStacks.isEmpty else {
+            Issue.record("View inspection returned no VStack for \(testName) (ViewInspector cannot traverse hierarchy)")
+            return
+        }
+    }
+
     /// Verify that the view hierarchy contains at least one VStack (type-erased inspection).
     /// Records an issue and returns when inspection fails or no VStack is found (traversal limitation).
     @MainActor
@@ -330,6 +345,21 @@ open class BaseTestClass {
         }
     }
 
+    /// Run a closure with the first VStack when the view type is Inspectable (Issue 178 / #242).
+    @MainActor
+    open func tryWithFirstVStack<V: View & ViewInspector.Inspectable>(
+        _ view: V,
+        testName: String,
+        minChildren: Int? = nil,
+        body: (ViewInspector.InspectableView<ViewInspector.ViewType.VStack>) -> Void
+    ) {
+        guard let vStack = try? firstVStackInView(view, minChildren: minChildren) else {
+            Issue.record("View inspection returned no VStack for \(testName) (ViewInspector cannot traverse hierarchy)")
+            return
+        }
+        body(vStack)
+    }
+
     /// Run a closure with the first VStack in the view hierarchy when inspection succeeds.
     /// When inspection fails, no VStack is found, or minChildren is not met, records an issue and returns without calling body.
     /// Use this instead of direct firstVStackInHierarchy + #expect so traversal limitations are recorded as issues.
@@ -344,12 +374,8 @@ open class BaseTestClass {
             Issue.record("View inspection failed for \(testName): could not obtain inspected view")
             return
         }
-        guard let vStack = try? firstVStackInHierarchy(inspected) else {
+        guard let vStack = try? firstVStackInHierarchy(inspected, minChildren: minChildren) else {
             Issue.record("View inspection returned no VStack for \(testName) (ViewInspector cannot traverse hierarchy)")
-            return
-        }
-        if let min = minChildren, vStack.count < min {
-            Issue.record("View inspection for \(testName): VStack has \(vStack.count) children, expected at least \(min) (ViewInspector cannot traverse hierarchy)")
             return
         }
         body(vStack)

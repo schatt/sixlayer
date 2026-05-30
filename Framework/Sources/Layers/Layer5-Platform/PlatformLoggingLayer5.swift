@@ -15,15 +15,17 @@ public struct PlatformLoggingLayer5: View {
     public init() {}
     
     public var body: some View {
-        VStack {
+        VStack(spacing: 16) {
             Text("Platform Logging Layer 5")
                 .font(.headline)
+                .automaticCompliance(named: "Title")
             Text("Logging and monitoring features")
                 .font(.caption)
                 .foregroundColor(.secondary)
+                .automaticCompliance(named: "Description")
         }
         .padding()
-        .automaticCompliance()
+        .automaticCompliance(named: "PlatformLoggingLayer5")
     }
 }
 

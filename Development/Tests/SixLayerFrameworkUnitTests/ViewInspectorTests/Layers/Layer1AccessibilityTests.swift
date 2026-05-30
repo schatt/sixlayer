@@ -41,11 +41,11 @@ open class Layer1AccessibilityTests: BaseTestClass {
             // Then: View should be created
             // view is a non-optional View, so it exists if we reach here
             
-            // TDD RED PHASE: Test accessibility identifiers across both platforms
+            // TDD GREEN: L1 shell uses platformPresentItemCollection_L1 identifierName
             let hasSpecificAccessibilityID = testComponentComplianceCrossPlatform(
                 view, 
-                expectedPattern: "*.main.ui.element.*", 
-                componentName: "ItemCollection"
+                expectedPattern: "SixLayer.*ui", 
+                componentName: "platformPresentItemCollection_L1"
             )
             #expect(hasSpecificAccessibilityID, "platformPresentItemCollection_L1 should generate accessibility identifiers with current pattern ")
             
@@ -212,11 +212,11 @@ open class Layer1AccessibilityTests: BaseTestClass {
             // Then: View should be created
             // view is a non-optional View, so it exists if we reach here
             
-            // TDD RED PHASE: Test accessibility identifiers across both platforms (platform-dependent behavior)
+            // TDD GREEN: L1 shell uses platformPresentFormData_L1 identifierName
             let hasSpecificAccessibilityID = testComponentComplianceCrossPlatform(
                 view, 
-                expectedPattern: "*.main.ui.element.*", 
-                componentName: "FormField"
+                expectedPattern: "SixLayer.*ui", 
+                componentName: "platformPresentFormData_L1"
             )
             #expect(hasSpecificAccessibilityID, "platformPresentFormData_L1 should generate accessibility identifiers with new hierarchical naming ")
             
@@ -238,12 +238,12 @@ open class Layer1AccessibilityTests: BaseTestClass {
             // Then: View should be created
             // view is a non-optional View, so it exists if we reach here
             
-            // TDD RED PHASE: Test accessibility identifiers (representative sampling on iOS)
+            // TDD GREEN: L1 shell uses platformPresentNumericData_L1 identifierName
             let hasSpecificAccessibilityID = testComponentComplianceSinglePlatform(
                 view, 
-                expectedPattern: "*.main.ui.element.*", 
+                expectedPattern: "SixLayer.*ui", 
                 platform: SixLayerPlatform.iOS,
-                componentName: "NumericData"
+                componentName: "platformPresentNumericData_L1"
             )
             #expect(hasSpecificAccessibilityID, "platformPresentNumericData_L1 should generate accessibility identifiers with current pattern ")
             

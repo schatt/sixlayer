@@ -356,10 +356,10 @@ public struct AccessibilityHostingView<Content: View>: View {
         AccessibilityHostingControllerWrapper {
             content()
         }
-        .automaticCompliance()
+        .automaticCompliance(named: "AccessibilityHostingView")
         #else
         content()
-        .automaticCompliance()
+        .automaticCompliance(named: "AccessibilityHostingView")
         #endif
     }
 }
@@ -486,7 +486,7 @@ public struct AccessibilityTestingView: View {
         }
         .padding()
         .environmentObject(testingManager)
-        .automaticCompliance()
+        .automaticCompliance(named: "AccessibilityTestingView")
     }
     
     private func statusIcon(for status: TestStatus) -> String {
