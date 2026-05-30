@@ -151,22 +151,26 @@ public struct DynamicFontResolver: Sendable {
         design: Font.Design = .default,
         contentSize: SixLayerContentSizeCategory? = nil
     ) -> Font {
+        let effectiveDesignSize = minimumTypographyPolicy?.clampedDesignSize(
+            designSize,
+            relativeTo: style
+        ) ?? designSize
         #if os(iOS)
         return Font(uiFontForScaledSystem(
-            designSize: designSize,
+            designSize: effectiveDesignSize,
             relativeTo: style,
             weight: weight,
             contentSize: contentSize
         ))
         #elseif os(macOS)
         return Font(nsFontForScaledSystem(
-            designSize: designSize,
+            designSize: effectiveDesignSize,
             relativeTo: style,
             weight: weight,
             contentSize: contentSize
         ))
         #else
-        return .system(size: designSize, weight: weight, design: design)
+        return .system(size: effectiveDesignSize, weight: weight, design: design)
         #endif
     }
 
