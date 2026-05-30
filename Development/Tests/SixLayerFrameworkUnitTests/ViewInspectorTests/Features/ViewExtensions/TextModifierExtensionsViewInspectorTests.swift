@@ -35,7 +35,7 @@ open class TextModifierExtensionsViewInspectorTests: BaseTestClass {
     /// METHODOLOGY: Use ViewInspector to verify view can be inspected
     @Test @MainActor func testBoldExtension_AppliesFontWeight() async {
         initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             // Given: Text with basicAutomaticCompliance and .bold()
             let view = Text("Hello")
                 .basicAutomaticCompliance()
@@ -71,7 +71,7 @@ open class TextModifierExtensionsViewInspectorTests: BaseTestClass {
     /// METHODOLOGY: Use ViewInspector to verify view can be inspected
     @Test @MainActor func testItalicExtension_AppliesItalicStyle() async {
         initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             // Given: Text with basicAutomaticCompliance and .italic()
             let view = Text("Hello")
                 .basicAutomaticCompliance()
@@ -106,7 +106,7 @@ open class TextModifierExtensionsViewInspectorTests: BaseTestClass {
     /// METHODOLOGY: Use ViewInspector to verify view can be inspected
     @Test @MainActor func testFontExtension_AppliesFont() async {
         initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             // Given: Text with basicAutomaticCompliance and .font(.title)
             let view = Text("Hello")
                 .basicAutomaticCompliance()
@@ -139,7 +139,7 @@ open class TextModifierExtensionsViewInspectorTests: BaseTestClass {
     /// METHODOLOGY: Use ViewInspector to verify chaining works
     @Test @MainActor func testChaining_BoldAndItalic_AppliesBothModifiers() async {
         initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             // Given: Text with basicAutomaticCompliance and chained .bold().italic()
             let view = Text("Hello")
                 .basicAutomaticCompliance()
@@ -174,7 +174,7 @@ open class TextModifierExtensionsViewInspectorTests: BaseTestClass {
     /// METHODOLOGY: Use ViewInspector to verify view structure
     @Test @MainActor func testBoldExtension_PropagatesToVStackChildren() async {
         initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             // Given: VStack with Text children and .bold()
             let view = VStack {
                 Text("A")
