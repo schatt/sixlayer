@@ -25,7 +25,7 @@ open class PlatformSystemZoomPreferenceTests: BaseTestClass {
         initializeTestConfig()
         PlatformSystemZoomPreference.withTestLayoutScale(1.2) {
             let scaled = PlatformSystemZoomPreference.scaledTouchTargetMinimum(base: 44.0)
-            #expect(scaled == 52.8, accuracy: 0.01)
+            #expect(abs(scaled - 52.8) < 0.01, "Touch target should scale 44pt by layout scale 1.2")
         }
     }
 
