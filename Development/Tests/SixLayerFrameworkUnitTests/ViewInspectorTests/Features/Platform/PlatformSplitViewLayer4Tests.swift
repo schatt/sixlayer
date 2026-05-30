@@ -27,7 +27,7 @@ open class PlatformSplitViewLayer4Tests: BaseTestClass {
     @Test @MainActor func testPlatformVerticalSplitL4CreatesView() async {
         initializeTestConfig()
         // Given: A view with vertical split
-        let view = Text("Top")
+        _ = Text("Top")
             .platformVerticalSplit_L4(spacing: 0) {
                 Text("Top Content")
                 Text("Bottom Content")
@@ -41,7 +41,7 @@ open class PlatformSplitViewLayer4Tests: BaseTestClass {
     @Test @MainActor func testPlatformVerticalSplitL4WithSpacing() async {
         initializeTestConfig()
         // Given: A view with vertical split and spacing
-        let view = Text("Top")
+        _ = Text("Top")
             .platformVerticalSplit_L4(spacing: 16) {
                 Text("Top Content")
                 Text("Bottom Content")
@@ -133,7 +133,7 @@ open class PlatformSplitViewLayer4Tests: BaseTestClass {
     @Test @MainActor func testPlatformHorizontalSplitL4CreatesView() async {
         initializeTestConfig()
         // Given: A view with horizontal split
-        let view = Text("Left")
+        _ = Text("Left")
             .platformHorizontalSplit_L4(spacing: 0) {
                 Text("Left Content")
                 Text("Right Content")
@@ -146,7 +146,7 @@ open class PlatformSplitViewLayer4Tests: BaseTestClass {
     @Test @MainActor func testPlatformHorizontalSplitL4WithSpacing() async {
         initializeTestConfig()
         // Given: A view with horizontal split and spacing
-        let view = Text("Left")
+        _ = Text("Left")
             .platformHorizontalSplit_L4(spacing: 16) {
                 Text("Left Content")
                 Text("Right Content")
