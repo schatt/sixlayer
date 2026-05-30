@@ -210,11 +210,7 @@ open class Layer1PresentationTests: BaseTestClass {
             // Then: Should return a ModalFormView for each type
             // view is non-optional, not used further
             
-            BaseTestClass.expectViewSubjectTypeContains(
-                view,
-                rootViewName: "ModalFormView",
-                "Should return ModalFormView with accessibility modifiers for type: \(formType)"
-            )
+            BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "ModalFormView")
         }
     }
     
@@ -233,11 +229,7 @@ open class Layer1PresentationTests: BaseTestClass {
             // Then: Should return a ModalFormView for each context
             #expect(Bool(true), "Should handle context: \(context)")  // view is non-optional
             
-            BaseTestClass.expectViewSubjectTypeContains(
-                view,
-                rootViewName: "ModalFormView",
-                "Should return ModalFormView with accessibility modifiers for context: \(context)"
-            )
+            BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "ModalFormView")
         }
     }
     
@@ -261,11 +253,7 @@ open class Layer1PresentationTests: BaseTestClass {
             // Then: Should return a ModalFormView
             #expect(Bool(true), "Should handle form type: \(formType)")  // view is non-optional
             
-            BaseTestClass.expectViewSubjectTypeContains(
-                view,
-                rootViewName: "ModalFormView",
-                "Should return ModalFormView with accessibility modifiers for type: \(formType)"
-            )
+            BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "ModalFormView")
             
             // Note: We can't easily test the internal field count without accessing private properties
             // The important thing is that the function returns the correct view type
