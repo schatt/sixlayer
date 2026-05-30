@@ -466,7 +466,7 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
         // Then: Each indicator should have appropriate accessibility support
         #if canImport(ViewInspector)
         // Verify all indicators have accessibility modifiers
-        for (indicator, expectedCompleted) in [(indicator0, 0), (indicator1, 1), (indicator3, 3)] {
+        for (indicator, _) in [(indicator0, 0), (indicator1, 1), (indicator3, 3)] {
             withInspectedView(indicator) { inspected in
                 // Verify accessibility identifier is set
                 let hasAccessibilityID = testComponentComplianceSinglePlatform(
