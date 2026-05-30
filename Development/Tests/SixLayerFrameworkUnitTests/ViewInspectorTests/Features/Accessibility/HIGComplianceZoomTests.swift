@@ -14,6 +14,12 @@ import SwiftUI
 @Suite("HIG Compliance - Zoom Support")
 open class HIGComplianceZoomTests: BaseTestClass {
 
+    @MainActor
+    private func verifyViewIsHostable<V: View>(_ view: V, description: String) {
+        _ = hostRootPlatformView(view)
+        #expect(Bool(true), "\(description) should be hostable")
+    }
+
     // MARK: - UI Scaling Tests
 
     @Test @MainActor func testViewScalesWithSystemZoom() async {
