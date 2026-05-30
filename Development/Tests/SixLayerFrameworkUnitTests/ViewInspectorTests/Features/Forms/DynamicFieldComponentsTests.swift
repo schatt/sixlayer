@@ -1904,7 +1904,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         #expect(expectedRange.min == 2.0, "ExpectedRange min should be 2.0")
         #expect(expectedRange.max == 8.0, "ExpectedRange max should be 8.0")
 
-        let view = DynamicStepperField(field: field, formState: formState)
+        _ = DynamicStepperField(field: field, formState: formState)
             .enableGlobalAutomaticCompliance()
 
         // The stepper should use the expectedRange (2...8) not the metadata min/max (1...10)
@@ -2320,7 +2320,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         #endif
 
         // Should read value from form state
-        let value: String? = formState.getValue(for: "gauge")
+        _ = formState.getValue(for: "gauge") as String?
         #expect(Bool(true), "Should read value from form state")
     }
 
@@ -2581,9 +2581,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
 
         // Should handle String value
-        let value: String? = formState.getValue(for: "gauge")
-        #expect(Bool(true), "Should handle String value")
-
+        _ = formState.getValue(for: "gauge") as String?
         #expect(Bool(true), "Should handle String value")
     }
 
