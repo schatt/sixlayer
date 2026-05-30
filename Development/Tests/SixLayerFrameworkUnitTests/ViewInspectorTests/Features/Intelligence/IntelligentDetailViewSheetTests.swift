@@ -65,11 +65,11 @@ struct IntelligentDetailViewSheetTests {
         let base = BaseTestClass()
         base.verifyViewContainsAtLeastOneVStack(sheetContent, testName: "platformDetailView sheet content")
         if let inspector = try? AnyView(sheetContent).inspect() {
-            let vStacks = (try? inspector.findAll(ViewInspector.ViewType.VStack.self)) ?? []
+            let vStacks = inspector.findAll(ViewInspector.ViewType.VStack.self)
             if !vStacks.isEmpty {
                 #expect(Bool(true), "platformDetailView should have view structure (proves it's not blank)")
             } else {
-                let hStacks = (try? inspector.findAll(ViewInspector.ViewType.HStack.self)) ?? []
+                let hStacks = inspector.findAll(ViewInspector.ViewType.HStack.self)
                 if !hStacks.isEmpty {
                     #expect(Bool(true), "platformDetailView should have view structure (proves it's not blank)")
                 } else {
