@@ -37,7 +37,7 @@ open class PlatformSplitViewOptimizationsLayer5Tests: BaseTestClass {
         // Given: A split view
         let runtimePlatform = RuntimeCapabilityDetection.currentPlatform
         if runtimePlatform == .iOS {
-            let view = Text("Test")
+            _ = Text("Test")
                 .platformVerticalSplit_L4(spacing: 8) {
                     Text("First Pane")
                     Text("Second Pane")
@@ -64,7 +64,7 @@ open class PlatformSplitViewOptimizationsLayer5Tests: BaseTestClass {
         // Given: A split view
         let runtimePlatform = RuntimeCapabilityDetection.currentPlatform
         if runtimePlatform == .macOS {
-            let view = Text("Test")
+            _ = Text("Test")
                 .platformVerticalSplit_L4(spacing: 0) {
                     Text("First Pane")
                     Text("Second Pane")
