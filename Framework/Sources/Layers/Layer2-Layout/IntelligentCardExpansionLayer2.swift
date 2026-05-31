@@ -48,8 +48,10 @@ public func determineIntelligentCardLayout_L2(
     screenWidth: CGFloat,
     deviceType: DeviceType,
     contentComplexity: ContentComplexity,
-    viewportHeight: CGFloat? = nil
+    viewportHeight: CGFloat? = nil,
+    viewportHints: CardViewportHints? = nil
 ) -> IntelligentCardLayoutDecision {
+    _ = viewportHints
     
     // Base calculations
     let layoutPadding: CGFloat = 16
