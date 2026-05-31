@@ -346,6 +346,40 @@ open class PlatformMatrixTests: BaseTestClass {
     
     // MARK: - Platform Feature Matrix constraint law
 
+    @Test func testPlatformFeatureMatrixConstraints_macOSHapticWithoutTouchscreen() {
+        // macOS may report haptics without a touchscreen (trackpad prefs, external actuators).
+        let matrix = PlatformFeatureMatrix.testFixture(
+            platform: .macOS,
+            deviceType: .mac,
+            supportsTouch: false,
+            supportsHover: true,
+            supportsHapticFeedback: true
+        )
+        #expect(matrix.satisfiesCapabilityPrecursors())
+        #expect(matrix.satisfiesPlatformConstraints())
+    }
+
+    @Test func testPlatformFeatureMatrixConstraints_touchFirstHapticRequiresTouch() {
+        for platform in [SixLayerPlatform.iOS, .watchOS] {
+            let matrix = PlatformFeatureMatrix.testFixture(
+                platform: platform,
+                deviceType: PlatformFeatureMatrix.defaultDeviceType(for: platform),
+                supportsTouch: false,
+                supportsHapticFeedback: true
+            )
+            #expect(!matrix.satisfiesCapabilityPrecursors(), "\(platform) haptics require touch")
+        }
+    }
+
+    @Test func testPlatformFeatureMatrixConstraints_assistiveTouchRequiresTouch() {
+        let matrix = PlatformFeatureMatrix.testFixture(
+            platform: .iOS,
+            supportsTouch: false,
+            supportsAssistiveTouch: true
+        )
+        #expect(!matrix.satisfiesCapabilityPrecursors())
+    }
+
     @Test func testPlatformFeatureMatrixConstraints_macOSWithTouchscreenAndHover() {
         let matrix = PlatformFeatureMatrix.testFixture(
             platform: .macOS,
@@ -354,7 +388,7 @@ open class PlatformMatrixTests: BaseTestClass {
             supportsHover: true,
             supportsHapticFeedback: true
         )
-        #expect(matrix.isInternallyConsistent())
+        #expect(matrix.satisfiesCapabilityPrecursors())
         #expect(matrix.satisfiesPlatformConstraints())
     }
 
@@ -366,7 +400,7 @@ open class PlatformMatrixTests: BaseTestClass {
             supportsHover: true,
             supportsAssistiveTouch: true
         )
-        #expect(matrix.isInternallyConsistent())
+        #expect(matrix.satisfiesCapabilityPrecursors())
         #expect(matrix.satisfiesPlatformConstraints())
     }
 
@@ -378,7 +412,7 @@ open class PlatformMatrixTests: BaseTestClass {
                 supportsTouch: true,
                 supportsAssistiveTouch: true
             )
-            #expect(matrix.isInternallyConsistent())
+            #expect(matrix.satisfiesCapabilityPrecursors())
             #expect(!matrix.satisfiesPlatformConstraints(), "\(platform) must not report AssistiveTouch")
         }
     }
@@ -399,7 +433,7 @@ open class PlatformMatrixTests: BaseTestClass {
                 supportsTouch: false,
                 supportsAssistiveTouch: true
             )
-            #expect(!missingTouch.isInternallyConsistent())
+            #expect(!missingTouch.satisfiesCapabilityPrecursors())
             #expect(!missingTouch.satisfiesPlatformConstraints())
         }
     }
@@ -412,7 +446,7 @@ open class PlatformMatrixTests: BaseTestClass {
             supportsHover: false,
             supportsHapticFeedback: false
         )
-        #expect(matrix.isInternallyConsistent())
+        #expect(matrix.satisfiesCapabilityPrecursors())
         #expect(matrix.satisfiesPlatformConstraints())
     }
 
@@ -433,7 +467,7 @@ open class PlatformMatrixTests: BaseTestClass {
             isCarPlayActive: true,
             deviceContext: .standard
         )
-        #expect(!activeWithoutCarContext.satisfiesPlatformConstraints())
+        #expect(!activeWithoutCarContext.satisfiesCapabilityPrecursors())
 
         let validCarPlay = PlatformFeatureMatrix.testFixture(
             platform: .iOS,
@@ -444,6 +478,7 @@ open class PlatformMatrixTests: BaseTestClass {
             isCarPlayActive: true,
             deviceContext: .carPlay
         )
+        #expect(validCarPlay.satisfiesCapabilityPrecursors())
         #expect(validCarPlay.satisfiesPlatformConstraints())
     }
 
@@ -478,10 +513,12 @@ open class PlatformMatrixTests: BaseTestClass {
 
             switch platform {
             case .iOS, .watchOS, .macOS, .tvOS, .visionOS:
-                #expect(featureMatrix.isInternallyConsistent(), "\(phase): matrix should be consistent on \(platform)")
-                // Override phases inject profiles that may differ from this host's native
-                // detection (touchscreen Mac, pointer hover on iPad, etc.). Platform law
-                // applies only when overrides are cleared.
+                // Precursor dependencies apply in every phase (including injected profiles).
+                #expect(
+                    featureMatrix.satisfiesCapabilityPrecursors(),
+                    "\(phase): matrix capability precursors should hold on \(platform)"
+                )
+                // Compile-time platform law applies only to this host's native detection.
                 if phase == "current" {
                     #expect(
                         featureMatrix.satisfiesPlatformConstraints(),
@@ -527,57 +564,51 @@ struct PlatformFeatureMatrix {
     let supportsVision: Bool
     let supportsOCR: Bool
     
-    func isInternallyConsistent() -> Bool {
-        // Dependencies (logical constraints, not OS-reported):
-        // - Haptic feedback requires touch
-        if supportsHapticFeedback && !supportsTouch {
+    /// Capability precursor dependencies — apply in every phase (native or injected).
+    ///
+    /// If a capability is reported, its prerequisites must also be reported. Touch and hover
+    /// may coexist (mouse on iPhone, touchscreen on Mac). Haptics without touch are valid on
+    /// non-touch-first platforms (macOS trackpad prefs, external actuators); on touch-first
+    /// platforms haptics imply a touch channel (Taptic Engine).
+    func satisfiesCapabilityPrecursors() -> Bool {
+        if supportsHapticFeedback && !supportsTouch && platform.isTouchFirstPlatform {
             return false
         }
-        
-        // - AssistiveTouch requires touch
+
         if supportsAssistiveTouch && !supportsTouch {
             return false
         }
-        
-        // Note: Touch and hover CAN coexist (iPad with mouse, macOS with touchscreen, visionOS)
-        // We trust what the OS reports - if both are available, both are available
-        // No mutual exclusivity check needed
-        
-        // OCR should only be available if Vision is available
+
         if supportsOCR && !supportsVision {
             return false
         }
-        
-        // CarPlay should only be active if supported
+
         if isCarPlayActive && !supportsCarPlay {
             return false
         }
-        
-        // CarPlay should only be supported on iOS
-        if supportsCarPlay && platform != SixLayerPlatform.iOS {
-            return false
-        }
-        
-        // CarPlay active should only be true when device context is carPlay
+
         if isCarPlayActive && deviceContext != .carPlay {
             return false
         }
-        
-        // Car device type should only be used in CarPlay context
+
         if deviceType == .car && deviceContext != .carPlay {
             return false
         }
-        
+
         return true
     }
-    
+
+    /// Alias retained for readability in older call sites.
+    func isInternallyConsistent() -> Bool {
+        satisfiesCapabilityPrecursors()
+            && !(supportsCarPlay && platform != .iOS)
+    }
+
     func satisfiesPlatformConstraints() -> Bool {
-        // Native-host constraints only — call when capability overrides are cleared.
+        // Native-host compile-time platform law only — call when overrides are cleared.
         //
-        // Compile-time platform law (PlatformStrategy), not typical desk hardware.
-        // Touch, hover, and haptics follow runtime detection; unusual but real setups
-        // must pass (mouse on iPhone, touchscreen on Mac, Pencil hover on iPad).
-        // Injected override profiles: assert isInternallyConsistent() only.
+        // Does not encode typical desk hardware (mouse on iPhone, touchscreen on Mac).
+        // Precursor dependencies live in satisfiesCapabilityPrecursors().
 
         if supportsAssistiveTouch != platform.supportsAssistiveTouch {
             return false
@@ -591,12 +622,8 @@ struct PlatformFeatureMatrix {
                 return false
             }
         }
-        if deviceType == .car && deviceContext != .carPlay {
-            return false
-        }
 
         if platform.isTouchFirstPlatform {
-            // Touch-first: native host guarantees primary touch; haptics may be absent on Simulator.
             return supportsTouch && supportsAssistiveTouch
         }
 
