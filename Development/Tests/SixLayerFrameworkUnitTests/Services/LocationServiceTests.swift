@@ -232,7 +232,7 @@ open class LocationServiceTests: BaseTestClass {
 
         try await service.requestAuthorization()
 
-        #expect(service.hasLocationAuthorizationForTesting)
+        #expect(service.isLocationEnabled)
     }
 
     /// Stub coordinate matches MapViewExample / CI-safe map-with-location host behavior.
@@ -243,18 +243,6 @@ open class LocationServiceTests: BaseTestClass {
 
         #expect(abs(location.coordinate.latitude - LocationService.stubTestCoordinate.latitude) < 0.000_001)
         #expect(abs(location.coordinate.longitude - LocationService.stubTestCoordinate.longitude) < 0.000_001)
-    }
-}
-
-private extension LocationService {
-    var hasLocationAuthorizationForTesting: Bool {
-        #if os(iOS)
-        authorizationStatus == .authorizedWhenInUse || authorizationStatus == .authorizedAlways
-        #elseif os(macOS)
-        authorizationStatus == .authorizedAlways || authorizationStatus == .authorized
-        #else
-        false
-        #endif
     }
 }
 
