@@ -86,8 +86,9 @@ public func determineIntelligentCardLayout_L2(
         deviceType: deviceType,
         preferredContentSizeCategory: contentSize
     )
-    let defaultClampedHeight = cardHeightRespectingViewport(
-        intrinsicHeight: defaultIntrinsicHeight,
+    let cardHeight = resolvedIntelligentCardHeight(
+        defaultIntrinsicHeight: defaultIntrinsicHeight,
+        contentIntrinsicHeight: contentIntrinsicHeight,
         contentCount: contentCount,
         columns: columns,
         spacing: spacing,
@@ -96,24 +97,6 @@ public func determineIntelligentCardLayout_L2(
         viewportHeight: viewportHeight,
         viewportHints: viewportHints
     )
-    let contentClampedHeight = cardHeightRespectingViewport(
-        intrinsicHeight: contentIntrinsicHeight,
-        contentCount: contentCount,
-        columns: columns,
-        spacing: spacing,
-        layoutPadding: layoutPadding,
-        deviceType: deviceType,
-        viewportHeight: viewportHeight,
-        viewportHints: viewportHints
-    )
-    let cardHeight: CGFloat = {
-        let viewportLimited = contentClampedHeight < contentIntrinsicHeight - 0.5
-            || defaultClampedHeight < defaultIntrinsicHeight - 0.5
-        if viewportLimited {
-            return defaultClampedHeight
-        }
-        return contentClampedHeight
-    }()
     
     // Determine expansion behavior
     let expansionScale = calculateExpansionScale(deviceType: deviceType, contentComplexity: contentComplexity)
@@ -271,6 +254,61 @@ private func cardHeightRespectingViewport(
     return height
 }
 
+/// Applies viewport clamp; when the budget is binding, ignore Dynamic Type uplift (#309).
+private func resolvedIntelligentCardHeight(
+    defaultIntrinsicHeight: CGFloat,
+    contentIntrinsicHeight: CGFloat,
+    contentCount: Int,
+    columns: Int,
+    spacing: CGFloat,
+    layoutPadding: CGFloat,
+    deviceType: DeviceType,
+    viewportHeight: CGFloat?,
+    viewportHints: CardViewportHints?
+) -> CGFloat {
+    let defaultClampedHeight = cardHeightRespectingViewport(
+        intrinsicHeight: defaultIntrinsicHeight,
+        contentCount: contentCount,
+        columns: columns,
+        spacing: spacing,
+        layoutPadding: layoutPadding,
+        deviceType: deviceType,
+        viewportHeight: viewportHeight,
+        viewportHints: viewportHints
+    )
+    let contentClampedHeight = cardHeightRespectingViewport(
+        intrinsicHeight: contentIntrinsicHeight,
+        contentCount: contentCount,
+        columns: columns,
+        spacing: spacing,
+        layoutPadding: layoutPadding,
+        deviceType: deviceType,
+        viewportHeight: viewportHeight,
+        viewportHints: viewportHints
+    )
+    let viewportLimited = contentClampedHeight < contentIntrinsicHeight - 0.5
+        || defaultClampedHeight < defaultIntrinsicHeight - 0.5
+    return viewportLimited ? defaultClampedHeight : contentClampedHeight
+}
+
+private func typographyContentDensity(for contentComplexity: ContentComplexity) -> CGFloat {
+    switch contentComplexity {
+    case .simple: return 0.35
+    case .moderate: return 0.5
+    case .complex: return 0.65
+    case .veryComplex, .advanced: return 0.85
+    }
+}
+
+private func contentAwareTextLineCount(for contentComplexity: ContentComplexity) -> CGFloat {
+    switch contentComplexity {
+    case .simple: return 2
+    case .moderate: return 3
+    case .complex: return 4
+    case .veryComplex, .advanced: return 5
+    }
+}
+
 /// Calculate optimal card height
 private func calculateOptimalHeight(
     cardWidth: CGFloat,
@@ -307,12 +345,7 @@ private func calculateOptimalHeight(
     let contentSize = preferredContentSizeCategory ?? .large
     let typographyScale = contentSize.typographyScaleFactor
     if typographyScale > 1.0 {
-        let contentDensity: CGFloat = switch contentComplexity {
-        case .simple: 0.35
-        case .moderate: 0.5
-        case .complex: 0.65
-        case .veryComplex, .advanced: 0.85
-        }
+        let contentDensity = typographyContentDensity(for: contentComplexity)
         height *= 1 + (typographyScale - 1) * contentDensity
     }
 
@@ -336,12 +369,7 @@ public func contentAwareMinimumIntelligentCardHeight(
     let bodySize = policy.minimumReadableBodyPointSize * scale
     let captionSize = policy.minimumReadableCaptionPointSize * scale
 
-    let textLineCount: CGFloat = switch contentComplexity {
-    case .simple: 2
-    case .moderate: 3
-    case .complex: 4
-    case .veryComplex, .advanced: 5
-    }
+    let textLineCount = contentAwareTextLineCount(for: contentComplexity)
 
     let lineGap = 4 * scale
     let verticalInset: CGFloat = 24
