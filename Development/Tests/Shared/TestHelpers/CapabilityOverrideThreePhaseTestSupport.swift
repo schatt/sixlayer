@@ -162,7 +162,10 @@ public enum CapabilityOverrideThreePhaseTestSupport {
 
         RuntimeCapabilityDetection.setTestAssistiveTouch(true)
         mirror()
-        #expect(RuntimeCapabilityDetection.supportsAssistiveTouch)
+        #expect(
+            RuntimeCapabilityDetection.supportsAssistiveTouch
+                == PlatformTestUtilities.expectedAssistiveTouchAfterTestOverride(true)
+        )
 
         RuntimeCapabilityDetection.clearAllCapabilityOverrides()
     }
