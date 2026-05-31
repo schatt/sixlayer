@@ -329,6 +329,37 @@ open class RuntimeCapabilityDetectionTDDTests: BaseTestClass {
                 "Apple HIG: \(platform) expected \(expected)pt, got \(actual)pt (supportsTouch=\(RuntimeCapabilityDetection.supportsTouch))")
     }
 
+    @Test func testMinTouchTargetTriStatePhases() {
+        defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
+
+        func assertMinTouchTargetLaw(phase: String) {
+            let platform = SixLayerPlatform.current
+            let effectiveTouch = RuntimeCapabilityDetection.supportsTouch
+            let expected = PlatformTestUtilities.expectedMinTouchTarget(
+                for: platform,
+                touchDetected: effectiveTouch
+            )
+            let actual = RuntimeCapabilityDetection.minTouchTarget
+
+            switch platform {
+            case .iOS, .watchOS, .macOS, .tvOS, .visionOS:
+                #expect(
+                    abs(actual - expected) < 0.001,
+                    "\(phase) on \(platform): expected \(expected)pt, got \(actual)pt (touch=\(effectiveTouch))"
+                )
+            }
+        }
+
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        assertMinTouchTargetLaw(phase: "current")
+
+        RuntimeCapabilityDetection.setTestTouchSupport(false)
+        assertMinTouchTargetLaw(phase: "disabled")
+
+        RuntimeCapabilityDetection.setTestTouchSupport(true)
+        assertMinTouchTargetLaw(phase: "enabled")
+    }
+
     @Test func testMinTouchTargetIsNonNegative() {
         // minTouchTarget should never be negative
         #expect(RuntimeCapabilityDetection.minTouchTarget >= 0.0, "Minimum touch target should never be negative")
