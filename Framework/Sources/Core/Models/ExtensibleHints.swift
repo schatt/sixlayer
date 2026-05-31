@@ -39,7 +39,11 @@ public enum HintPriority: Int, CaseIterable, Comparable, Sendable {
 
 // MARK: - Framework User Extensibility
 
-/// Base class for framework users to create custom hints
+/// Base class for framework users to create custom hints.
+///
+/// **Sendable:** `@unchecked Sendable` because ``ExtensibleHint`` requires `Sendable` but
+/// ``customData`` is `[String: Any]`. Prefer typed hint structs or `[String: String]` metadata
+/// when crossing actors; audit before adding new `@unchecked` conformers.
 open class CustomHint: ExtensibleHint, @unchecked Sendable {
     public let hintType: String
     public let priority: HintPriority
