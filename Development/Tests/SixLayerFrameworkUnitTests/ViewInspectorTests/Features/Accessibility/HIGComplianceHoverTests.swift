@@ -157,34 +157,26 @@ open class HIGComplianceHoverTests: BaseTestClass {
     // MARK: - Cross-Platform Tests
     
     @Test @MainActor func testHoverSupportOnHoverCapablePlatforms() async {
-            initializeTestConfig()
+        initializeTestConfig()
+        defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
+
         runWithTaskLocalConfig {
-            // GIVEN: A button with automatic compliance
+            let platform = SixLayerPlatform.current
+            guard platform == .macOS || platform == .visionOS else { return }
+
             let button = Button("Hover Test Button") { }
                 .automaticCompliance()
-            
-            // WHEN: View is created on hover-capable platforms (macOS, visionOS, iPad)
-            // THEN: Hover support should work appropriately
-            // RED PHASE: This will fail until hover support is implemented
-            
-            // Test on platforms that support hover
-            let hoverPlatforms: [SixLayerPlatform] = [.macOS, .visionOS]
-            
-            for platform in hoverPlatforms {
-                let supportsHover = RuntimeCapabilityDetection.supportsHover
-                
-                if supportsHover {
-                    let passed = testComponentComplianceSinglePlatform(
-                        button,
-                        expectedPattern: "SixLayer.*ui",
-                        platform: platform,
-                        componentName: "ButtonWithHover-\(platform)"
-                    )
-                    #expect(passed, "Hover support should work on \(platform)")
-                }
-                
-                RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-            }
+
+            let supportsHover = RuntimeCapabilityDetection.supportsHover
+            #expect(supportsHover, "\(platform) host should report hover support")
+
+            let passed = testComponentComplianceSinglePlatform(
+                button,
+                expectedPattern: "SixLayer.*ui",
+                platform: platform,
+                componentName: "ButtonWithHover-\(platform)"
+            )
+            #expect(passed, "Hover support should work on \(platform)")
         }
     }
 }
