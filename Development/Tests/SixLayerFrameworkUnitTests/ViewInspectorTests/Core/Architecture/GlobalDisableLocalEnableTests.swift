@@ -162,22 +162,21 @@ open class GlobalDisableLocalEnableTDDTests: BaseTestClass {
     
     @MainActor
     private func generateIDForView(_ view: some View) -> String {
-        // Optimized: Reduced ViewInspector deep searches to improve performance
-        guard let inspectedView = try? AnyView(view).inspect() else {
-            return ""
-        }
-
-        #if canImport(ViewInspector)
-        // Optimized: Check root view first (most common case)
-        // Note: InspectableView doesn't have direct accessibilityIdentifier() method
-        // We need to find a Button or other view that has it
-        let buttons = inspectedView.findAll(ViewInspector.ViewType.Button.self)
-        if let button = buttons.first,
-           let id = try? button.accessibilityIdentifier(), !id.isEmpty {
+        if let id = AccessibilityTestUtilities.inspectButtonAccessibilityIdentifier(
+            view,
+            issuePrefix: "Failed to inspect view for accessibility identifier"
+        ) {
             return id
         }
-        #endif
-        
+
+        let hostedRoot = hostRootPlatformView(
+            view,
+            accessibilityIdentifierConfig: testConfig
+        )
+        if let id = getAccessibilityIdentifierForTest(view: view, hostedRoot: hostedRoot) {
+            return id
+        }
+
         return ""
     }
 }

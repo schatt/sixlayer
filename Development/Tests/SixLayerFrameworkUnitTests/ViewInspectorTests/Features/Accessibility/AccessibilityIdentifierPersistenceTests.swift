@@ -321,23 +321,45 @@ open class AccessibilityIdentifierPersistenceTests: BaseTestClass {
             cleanupTestEnvironment()
         }
     }
+
+    @Test @MainActor func testGenerateIDForViewFindsNamedButtonIdentifier() {
+            initializeTestConfig()
+        runWithTaskLocalConfig {
+            setupTestEnvironment()
+
+            let view = Button("Issue 314") { }
+                .named("Issue314Button")
+
+            let id = generateIDForView(view)
+
+            #expect(!id.isEmpty, "Harness should find a named button accessibility identifier")
+            #expect(id.contains("Issue314Button"), "Identifier should include the explicit named anchor")
+
+            cleanupTestEnvironment()
+        }
+    }
     
     // MARK: - Helper Methods
     
     @MainActor
     private func generateIDForView(_ view: some View) -> String {
-        // Using wrapper - when ViewInspector works on macOS, no changes needed here
-        #if canImport(ViewInspector)
-        if let inspectedView = try? AnyView(view).inspect(),
-           let button = try? inspectedView.button(),
-           let id = try? button.accessibilityIdentifier() {
+        if let id = AccessibilityTestUtilities.inspectButtonAccessibilityIdentifier(
+            view,
+            issuePrefix: "Failed to inspect view for accessibility identifier"
+        ) {
             return id
-        } else {
-            Issue.record("Failed to generate ID for view")
-            return ""
         }
-        #else
+
+        let hostedRoot = hostRootPlatformView(
+            view,
+            forceLayout: true,
+            accessibilityIdentifierConfig: testConfig
+        )
+        if let id = getAccessibilityIdentifierForTest(view: view, hostedRoot: hostedRoot) {
+            return id
+        }
+
+        Issue.record("Failed to generate ID for view")
         return ""
-        #endif
     }
 }
