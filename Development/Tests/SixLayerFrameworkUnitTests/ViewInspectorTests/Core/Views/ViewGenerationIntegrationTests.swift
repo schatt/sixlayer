@@ -1063,63 +1063,44 @@ open class ViewGenerationIntegrationTests: BaseTestClass {
         }
     }
     
-    /// Test that platform mocking actually creates different underlying view types
-    @Test @MainActor func testPlatformMockingCreatesDifferentViewTypes() {
-        // This test verifies that platform mocking works correctly
-        // by ensuring different platforms generate different underlying view types
-        
-        // Simulate iOS platform (touch-enabled)
-        RuntimeCapabilityDetection.setTestTouchSupport(true); RuntimeCapabilityDetection.setTestHapticFeedback(true); RuntimeCapabilityDetection.setTestHover(false)
-        let iOSConfig = getCardExpansionPlatformConfig()
-        
-        // Simulate macOS platform (hover-enabled)
-        RuntimeCapabilityDetection.setTestTouchSupport(false); RuntimeCapabilityDetection.setTestHapticFeedback(false); RuntimeCapabilityDetection.setTestHover(true)
-        let macOSConfig = getCardExpansionPlatformConfig()
-        
-        // Generate views for different platforms
-        let iOSView = createTestViewWithMockConfig(iOSConfig)
-        let macOSView = createTestViewWithMockConfig(macOSConfig)
-        
-        // Then: Test the two critical aspects
-        
-        // 1. Does it return a valid structure of the kind it's supposed to?
-        #expect(Bool(true), "iOS platform should generate a valid view")  // iOSView is non-optional
-        #expect(Bool(true), "macOS platform should generate a valid view")  // macOSView is non-optional
-        
-        // 2. Does that structure contain what it should?
-        let iOSInspectionResult = try? AnyView(iOSView).inspect()
-        if iOSInspectionResult != nil {
-            // iOS view should be valid SwiftUI view
-            #expect(Bool(true), "iOS view should be inspectable")
+    /// View generation config on the **current host** through touch/hover tri-state (#251).
+    @Test @MainActor func testViewGenerationConfigTriStatePhases() {
+        defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
+
+        func assertConfigDrivesViewCreation(phase: String) {
+            let platform = SixLayerPlatform.current
+            let config = getCardExpansionPlatformConfig()
+            let effectiveTouch = RuntimeCapabilityDetection.supportsTouch
+            let expectedMin = PlatformTestUtilities.expectedMinTouchTarget(
+                for: platform,
+                touchDetected: effectiveTouch
+            )
+
+            switch platform {
+            case .iOS, .watchOS, .macOS, .tvOS, .visionOS:
+                #expect(config.minTouchTarget == expectedMin, "\(phase): minTouchTarget should match HIG on \(platform)")
+                #expect(config.supportsTouch == effectiveTouch, "\(phase): touch should mirror detection")
+                #expect(config.supportsHover == RuntimeCapabilityDetection.supportsHover, "\(phase): hover should mirror detection")
+            }
+
+            let view = createTestViewWithMockConfig(config)
+            #expect(Bool(true), "\(phase): view should be created on \(platform)")
+            if let _ = try? AnyView(view).inspect() {
+                #expect(Bool(true), "\(phase): generated view should be inspectable when ViewInspector allows")
+            }
         }
 
-        let macOSInspectionResult = try? AnyView(macOSView).inspect()
-        if macOSInspectionResult != nil {
-            // macOS view should be valid SwiftUI view
-            #expect(Bool(true), "macOS view should be inspectable")
-        }
-
-            // Verify platform-specific capabilities
-            #expect(iOSConfig.supportsTouch, "iOS should support touch")
-            #expect(!macOSConfig.supportsTouch, "macOS should not support touch")
-            #expect(macOSConfig.supportsHover, "macOS should support hover")
-            #expect(!iOSConfig.supportsHover, "iOS should not support hover")
-            
-            // The key test: different platforms should generate different view configurations
-            // This verifies that platform mocking is working correctly
-            // Note: iOS and macOS both use 44pt touch targets per Apple HIG
-            #expect(iOSConfig.supportsTouch != macOSConfig.supportsTouch, 
-                            "Different platforms should have different touch support")
-            #expect(iOSConfig.supportsHover != macOSConfig.supportsHover, 
-                            "Different platforms should have different hover support")
-            
-        // The views are created successfully, but ViewInspector has limitations. This is a ViewInspector limitation.
-        if iOSInspectionResult == nil || macOSInspectionResult == nil {
-            // ViewInspector limitation - views are created successfully but cannot be inspected
-            // This is expected and not a failure of the framework
-        }
-        
-        // Clean up
         RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        assertConfigDrivesViewCreation(phase: "current")
+
+        RuntimeCapabilityDetection.setTestTouchSupport(false)
+        RuntimeCapabilityDetection.setTestHapticFeedback(false)
+        RuntimeCapabilityDetection.setTestHover(false)
+        assertConfigDrivesViewCreation(phase: "disabled")
+
+        RuntimeCapabilityDetection.setTestTouchSupport(true)
+        RuntimeCapabilityDetection.setTestHapticFeedback(true)
+        RuntimeCapabilityDetection.setTestHover(true)
+        assertConfigDrivesViewCreation(phase: "enabled")
     }
 }

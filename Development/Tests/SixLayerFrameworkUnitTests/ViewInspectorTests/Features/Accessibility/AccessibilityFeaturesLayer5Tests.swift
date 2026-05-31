@@ -35,7 +35,7 @@ import Combine
 
 /// Comprehensive TDD tests for AccessibilityFeaturesLayer5.swift
 /// Tests keyboard navigation algorithms, color calculation, and accessibility label application
-@Suite("Accessibility Features Layer")
+@Suite("Accessibility Features Layer", DefaultRuntimeCapabilityIsolationTrait())
 /// NOTE: Not marked @MainActor on class to allow parallel execution
 open class AccessibilityFeaturesLayer5Tests: BaseTestClass {
     
@@ -310,11 +310,47 @@ open class AccessibilityFeaturesLayer5Tests: BaseTestClass {
     }
     
     // MARK: - HighContrastManager Color Calculation Tests
-    
-    
-    
-    
-    
+
+    /// Control-first tri-state (#251): `HighContrastManager.getHighContrastColor` on the **current host**.
+    @Test @MainActor func testHighContrastManagerColorCalculationTriStatePhases() {
+        defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
+
+        let baseColor = Color.blue
+
+        func assertHighContrastColorLaw(for manager: HighContrastManager, phase: String) {
+            manager.contrastLevel = .high
+            let result = manager.getHighContrastColor(baseColor)
+
+            switch SixLayerPlatform.current {
+            case .iOS, .macOS, .watchOS, .tvOS, .visionOS:
+                if manager.isHighContrastEnabled {
+                    #expect(
+                        result == baseColor.opacity(0.9),
+                        "\(phase) on \(SixLayerPlatform.current): high contrast should reduce opacity at .high level"
+                    )
+                } else {
+                    #expect(
+                        result == baseColor,
+                        "\(phase) on \(SixLayerPlatform.current): color should pass through when high contrast is off"
+                    )
+                }
+            }
+        }
+
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        assertHighContrastColorLaw(for: HighContrastManager(), phase: "current")
+
+        RuntimeCapabilityDetection.setTestHighContrast(false)
+        let disabledManager = HighContrastManager()
+        #expect(!disabledManager.isHighContrastEnabled, "disabled phase: high contrast override should read false")
+        assertHighContrastColorLaw(for: disabledManager, phase: "disabled")
+
+        RuntimeCapabilityDetection.setTestHighContrast(true)
+        let enabledManager = HighContrastManager()
+        #expect(enabledManager.isHighContrastEnabled, "enabled phase: high contrast override should read true")
+        assertHighContrastColorLaw(for: enabledManager, phase: "enabled")
+    }
+
     
     // MARK: - View Modifier Tests
     

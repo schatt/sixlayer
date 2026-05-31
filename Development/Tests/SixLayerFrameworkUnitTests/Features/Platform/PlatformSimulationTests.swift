@@ -61,23 +61,35 @@ open class PlatformSimulationTests: BaseTestClass {
         #expect(supportsSwitchControl == true)
     }
 
-    @Test func testPlatformSpecificCapabilities() {
-        // Apple HIG per platform (Issue #237):
-        //   iOS:      44pt (touch HIG)
-        //   watchOS:  44pt (inherited — watchOS HIG does not publish a numeric minimum)
-        //   tvOS:     60pt (focus engine at 10-foot distance, independent of touch)
-        //   visionOS: 60pt (gaze+pinch minimum, independent of hand-tracking touch)
-        //   macOS:    44pt if runtime touch detected, else 0pt
-        //
-        // Prior test collapsed tvOS + visionOS under the macOS pointer-driven
-        // branch ("44 if touch, else 0"), which violated their respective HIGs.
+    /// `minTouchTarget` on the **current host** through touch tri-state (#251).
+    @Test func testPlatformSpecificCapabilitiesTriStatePhases() {
+        defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
+
+        func assertMinTouchTargetLaw(phase: String) {
+            let platform = SixLayerPlatform.current
+            let effectiveTouch = RuntimeCapabilityDetection.supportsTouch
+            let expected = PlatformTestUtilities.expectedMinTouchTarget(
+                for: platform,
+                touchDetected: effectiveTouch
+            )
+            let actual = RuntimeCapabilityDetection.minTouchTarget
+
+            switch platform {
+            case .iOS, .watchOS, .macOS, .tvOS, .visionOS:
+                #expect(
+                    abs(actual - expected) < 0.001,
+                    "\(phase) on \(platform): Apple HIG expected \(expected)pt, got \(actual)pt (touch=\(effectiveTouch))"
+                )
+            }
+        }
+
         RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        assertMinTouchTargetLaw(phase: "current")
 
-        let platform = SixLayerPlatform.current
-        let expected = PlatformTestUtilities.expectedMinTouchTarget(for: platform)
-        let actual = RuntimeCapabilityDetection.minTouchTarget
+        RuntimeCapabilityDetection.setTestTouchSupport(false)
+        assertMinTouchTargetLaw(phase: "disabled")
 
-        #expect(abs(actual - expected) < 0.001,
-                "Apple HIG: \(platform) expected \(expected)pt, got \(actual)pt (supportsTouch=\(RuntimeCapabilityDetection.supportsTouch))")
+        RuntimeCapabilityDetection.setTestTouchSupport(true)
+        assertMinTouchTargetLaw(phase: "enabled")
     }
 }

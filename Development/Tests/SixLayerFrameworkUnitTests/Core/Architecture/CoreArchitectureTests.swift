@@ -67,7 +67,7 @@ open class CoreArchitectureTests: BaseTestClass {
     
     /// BUSINESS PURPOSE: Validate data type hint creation functionality for presentation hints
     /// TESTING SCOPE: DataTypeHint creation, EnhancedPresentationHints initialization, data type validation
-    /// METHODOLOGY: Use RuntimeCapabilityDetection mock framework to test data type hint creation
+    /// METHODOLOGY: Test DTO/enum logic on the current host (no capability overrides) data type hint creation
     @Test func testDataTypeHintCreation() throws {
         // Given
         let dataType = DataTypeHint.text
@@ -107,7 +107,7 @@ open class CoreArchitectureTests: BaseTestClass {
     
     /// BUSINESS PURPOSE: Validate content complexity enumeration completeness functionality
     /// TESTING SCOPE: ContentComplexity enum completeness, enumeration validation, complexity level testing
-    /// METHODOLOGY: Use RuntimeCapabilityDetection mock framework to test content complexity enumeration
+    /// METHODOLOGY: Test DTO/enum logic on the current host (no capability overrides) content complexity enumeration
     @Test func testContentComplexityEnumeration() throws {
         // Given & When
         let complexities = ContentComplexity.allCases
@@ -123,7 +123,7 @@ open class CoreArchitectureTests: BaseTestClass {
     
     /// BUSINESS PURPOSE: Validate presentation context business behavior functionality for different user experiences
     /// TESTING SCOPE: PresentationContext business logic, context-specific field generation, user experience validation
-    /// METHODOLOGY: Use RuntimeCapabilityDetection mock framework to test presentation context behavior
+    /// METHODOLOGY: Test DTO/enum logic on the current host (no capability overrides) presentation context behavior
     @Test func testPresentationContextBusinessBehavior() throws {
         // Test that PresentationContext creates different user experiences
         // This tests the actual business value, not just technical properties
@@ -172,7 +172,7 @@ open class CoreArchitectureTests: BaseTestClass {
     
     /// BUSINESS PURPOSE: Validate presentation context field generation completeness functionality
     /// TESTING SCOPE: PresentationContext field generation completeness, exhaustive context handling, field creation validation
-    /// METHODOLOGY: Use RuntimeCapabilityDetection mock framework to test presentation context field generation
+    /// METHODOLOGY: Test DTO/enum logic on the current host (no capability overrides) presentation context field generation
     @Test func testPresentationContextFieldGenerationCompleteness() throws {
         // Test that ALL PresentationContext cases are handled in createDynamicFormFields
         // This will FAIL if we add a new context without handling it in createDynamicFormFields
@@ -193,7 +193,7 @@ open class CoreArchitectureTests: BaseTestClass {
     
     /// BUSINESS PURPOSE: Validate presentation context field generation behavior functionality for context-specific field creation
     /// TESTING SCOPE: PresentationContext field generation behavior, context-specific field validation, business logic testing
-    /// METHODOLOGY: Use RuntimeCapabilityDetection mock framework to test presentation context field generation behavior
+    /// METHODOLOGY: Test DTO/enum logic on the current host (no capability overrides) presentation context field generation behavior
     @Test func testPresentationContextFieldGenerationBehavior() throws {
         // Test that each PresentationContext returns appropriate fields for its business purpose
         // This tests the actual business behavior, not just existence
@@ -331,7 +331,7 @@ open class CoreArchitectureTests: BaseTestClass {
     
     /// BUSINESS PURPOSE: Validate presentation context field generation exhaustiveness functionality for complete context handling
     /// TESTING SCOPE: PresentationContext field generation exhaustiveness, complete context coverage, exhaustive handling validation
-    /// METHODOLOGY: Use RuntimeCapabilityDetection mock framework to test presentation context field generation exhaustiveness
+    /// METHODOLOGY: Test DTO/enum logic on the current host (no capability overrides) presentation context field generation exhaustiveness
     @Test func testPresentationContextFieldGenerationExhaustiveness() throws {
         // Test that createDynamicFormFields handles ALL PresentationContext cases
         // This will FAIL if we add a new context without handling it
@@ -356,7 +356,7 @@ open class CoreArchitectureTests: BaseTestClass {
     
     /// BUSINESS PURPOSE: Validate presentation context completeness functionality for complete context enumeration
     /// TESTING SCOPE: PresentationContext completeness, context enumeration validation, expected context verification
-    /// METHODOLOGY: Use RuntimeCapabilityDetection mock framework to test presentation context completeness
+    /// METHODOLOGY: Test DTO/enum logic on the current host (no capability overrides) presentation context completeness
     @Test func testPresentationContextCompleteness() throws {
         // Test that we have all expected contexts and no unexpected ones
         // This will FAIL if someone adds/removes contexts without updating tests
@@ -377,7 +377,7 @@ open class CoreArchitectureTests: BaseTestClass {
     
     /// BUSINESS PURPOSE: Validate presentation context semantic meaning functionality for distinct context identification
     /// TESTING SCOPE: PresentationContext semantic meaning, context distinction validation, semantic uniqueness testing
-    /// METHODOLOGY: Use RuntimeCapabilityDetection mock framework to test presentation context semantic meaning
+    /// METHODOLOGY: Test DTO/enum logic on the current host (no capability overrides) presentation context semantic meaning
     @Test func testPresentationContextSemanticMeaning() throws {
         // Test that contexts have distinct semantic meanings
         // This verifies that each context represents a different use case
@@ -399,7 +399,7 @@ open class CoreArchitectureTests: BaseTestClass {
     
     /// BUSINESS PURPOSE: Validate data type hint behavior functionality for data type-specific presentation behavior
     /// TESTING SCOPE: DataTypeHint behavior, data type-specific presentation validation, hint behavior testing
-    /// METHODOLOGY: Use RuntimeCapabilityDetection mock framework to test data type hint behavior
+    /// METHODOLOGY: Test DTO/enum logic on the current host (no capability overrides) data type hint behavior
     @Test func testDataTypeHintBehavior() throws {
         // Test that DataTypeHint provides the behavior it's supposed to provide
         // This tests actual functionality, not just existence
@@ -436,7 +436,7 @@ open class CoreArchitectureTests: BaseTestClass {
     
     /// BUSINESS PURPOSE: Validate data type hint completeness functionality for complete data type enumeration
     /// TESTING SCOPE: DataTypeHint completeness, data type enumeration validation, expected data type verification
-    /// METHODOLOGY: Use RuntimeCapabilityDetection mock framework to test data type hint completeness
+    /// METHODOLOGY: Test DTO/enum logic on the current host (no capability overrides) data type hint completeness
     @Test func testDataTypeHintCompleteness() throws {
         // Test that we have all expected data types and no unexpected ones
         // This will FAIL if someone adds/removes data types without updating tests
@@ -457,7 +457,7 @@ open class CoreArchitectureTests: BaseTestClass {
     
     /// BUSINESS PURPOSE: Validate data type hint semantic meaning functionality for distinct data type identification
     /// TESTING SCOPE: DataTypeHint semantic meaning, data type distinction validation, semantic uniqueness testing
-    /// METHODOLOGY: Use RuntimeCapabilityDetection mock framework to test data type hint semantic meaning
+    /// METHODOLOGY: Test DTO/enum logic on the current host (no capability overrides) data type hint semantic meaning
     @Test func testDataTypeHintSemanticMeaning() throws {
         // Test that data types have distinct semantic meanings
         // This verifies that each data type represents a different content type
@@ -479,7 +479,7 @@ open class CoreArchitectureTests: BaseTestClass {
     
     /// BUSINESS PURPOSE: Validate presentation preference behavior functionality for preference-specific presentation behavior
     /// TESTING SCOPE: PresentationPreference behavior, preference-specific presentation validation, preference behavior testing
-    /// METHODOLOGY: Use RuntimeCapabilityDetection mock framework to test presentation preference behavior
+    /// METHODOLOGY: Test DTO/enum logic on the current host (no capability overrides) presentation preference behavior
     @Test func testPresentationPreferenceBehavior() throws {
         // Test that PresentationPreference provides the behavior it's supposed to provide
         // This tests actual functionality, not just existence
@@ -515,7 +515,7 @@ open class CoreArchitectureTests: BaseTestClass {
     
     /// BUSINESS PURPOSE: Validate form content metrics creation functionality for metrics initialization
     /// TESTING SCOPE: FormContentMetrics creation, metrics initialization validation, metrics object creation testing
-    /// METHODOLOGY: Use RuntimeCapabilityDetection mock framework to test form content metrics creation
+    /// METHODOLOGY: Test DTO/enum logic on the current host (no capability overrides) form content metrics creation
     @Test func testFormContentMetricsCreation() throws {
         // Given
         let fieldCount = 5
@@ -542,7 +542,7 @@ open class CoreArchitectureTests: BaseTestClass {
     
     /// BUSINESS PURPOSE: Validate form content metrics default values functionality for metrics initialization
     /// TESTING SCOPE: FormContentMetrics default values, metrics initialization validation, default value testing
-    /// METHODOLOGY: Use RuntimeCapabilityDetection mock framework to test form content metrics default values
+    /// METHODOLOGY: Test DTO/enum logic on the current host (no capability overrides) form content metrics default values
     @Test func testFormContentMetricsDefaultValues() throws {
         // When
         let metrics = FormContentMetrics(fieldCount: 0)
@@ -556,7 +556,7 @@ open class CoreArchitectureTests: BaseTestClass {
     
     /// BUSINESS PURPOSE: Validate form content metrics equatable functionality for metrics comparison
     /// TESTING SCOPE: FormContentMetrics equatable, metrics comparison validation, equality testing
-    /// METHODOLOGY: Use RuntimeCapabilityDetection mock framework to test form content metrics equatable
+    /// METHODOLOGY: Test DTO/enum logic on the current host (no capability overrides) form content metrics equatable
     @Test func testFormContentMetricsEquatable() throws {
         // Given
         let metrics1 = FormContentMetrics(
@@ -590,7 +590,7 @@ open class CoreArchitectureTests: BaseTestClass {
     
     /// BUSINESS PURPOSE: Validate form strategy creation functionality for strategy initialization
     /// TESTING SCOPE: FormStrategy creation, strategy initialization validation, strategy object creation testing
-    /// METHODOLOGY: Use RuntimeCapabilityDetection mock framework to test form strategy creation
+    /// METHODOLOGY: Test DTO/enum logic on the current host (no capability overrides) form strategy creation
     @Test func testFormStrategyCreation() throws {
         // Given
         let containerType = FormContainerType.adaptive
@@ -612,7 +612,7 @@ open class CoreArchitectureTests: BaseTestClass {
     
     /// BUSINESS PURPOSE: Validate form strategy default values functionality for strategy initialization
     /// TESTING SCOPE: FormStrategy default values, strategy initialization validation, default value testing
-    /// METHODOLOGY: Use RuntimeCapabilityDetection mock framework to test form strategy default values
+    /// METHODOLOGY: Test DTO/enum logic on the current host (no capability overrides) form strategy default values
     @Test func testFormStrategyDefaultValues() throws {
         // When
         let strategy = FormStrategy(
@@ -631,7 +631,7 @@ open class CoreArchitectureTests: BaseTestClass {
     
     /// BUSINESS PURPOSE: Validate dynamic form field creation functionality for field initialization
     /// TESTING SCOPE: DynamicFormField creation, field initialization validation, field object creation testing
-    /// METHODOLOGY: Use RuntimeCapabilityDetection mock framework to test dynamic form field creation
+    /// METHODOLOGY: Test DTO/enum logic on the current host (no capability overrides) dynamic form field creation
     @Test func testDynamicFormFieldCreation() throws {
         // Given
         let label = "Test Field"
@@ -653,7 +653,7 @@ open class CoreArchitectureTests: BaseTestClass {
     
     /// BUSINESS PURPOSE: Validate generic media item creation functionality for media item initialization
     /// TESTING SCOPE: GenericMediaItem creation, media item initialization validation, media item object creation testing
-    /// METHODOLOGY: Use RuntimeCapabilityDetection mock framework to test generic media item creation
+    /// METHODOLOGY: Test DTO/enum logic on the current host (no capability overrides) generic media item creation
     @Test func testGenericMediaItemCreation() throws {
         // Given
         let title = "Test Image"
@@ -674,7 +674,7 @@ open class CoreArchitectureTests: BaseTestClass {
     
     /// BUSINESS PURPOSE: Validate device type cases functionality for device type enumeration
     /// TESTING SCOPE: DeviceType cases, device type enumeration validation, device type testing
-    /// METHODOLOGY: Use RuntimeCapabilityDetection mock framework to test device type cases
+    /// METHODOLOGY: Test DTO/enum logic on the current host (no capability overrides) device type cases
     @Test func testDeviceTypeCases() throws {
         // Given & When
         let deviceTypes = DeviceType.allCases
@@ -689,33 +689,24 @@ open class CoreArchitectureTests: BaseTestClass {
     
     /// BUSINESS PURPOSE: Validate platform cases functionality for platform enumeration
     /// TESTING SCOPE: SixLayerPlatform cases, platform enumeration validation, platform testing
-    /// METHODOLOGY: Use RuntimeCapabilityDetection mock framework to test platform cases
+    /// METHODOLOGY: Test DTO/enum logic on the current host (no capability overrides) platform cases
     @Test func testPlatformCases() throws {
-        // Given & When
         let platforms = SixLayerPlatform.allCases
         
-        // Then
         #expect(platforms.contains(SixLayerPlatform.iOS))
         #expect(platforms.contains(SixLayerPlatform.macOS))
         #expect(platforms.contains(SixLayerPlatform.tvOS))
         #expect(platforms.contains(SixLayerPlatform.watchOS))
         
-        // Test platform detection with mock framework
-        for platform in platforms {
-            
-            // Test platform-specific behavior
-            let platformHints = PresentationHints(context: .dashboard)
-            #expect(platformHints.context == .dashboard, "Presentation hints should work on \(platform)")
-        }
-        
-        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        let platformHints = PresentationHints(context: .dashboard)
+        #expect(platformHints.context == .dashboard, "Presentation hints should work on \(SixLayerPlatform.current)")
     }
     
     // MARK: - Layer 6: Platform System Integration Tests
     
     /// BUSINESS PURPOSE: Validate responsive behavior creation functionality for responsive behavior initialization
     /// TESTING SCOPE: ResponsiveBehavior creation, responsive behavior initialization validation, responsive behavior object creation testing
-    /// METHODOLOGY: Use RuntimeCapabilityDetection mock framework to test responsive behavior creation
+    /// METHODOLOGY: Test DTO/enum logic on the current host (no capability overrides) responsive behavior creation
     @Test func testResponsiveBehaviorCreation() throws {
         // Given
         let type = ResponsiveType.adaptive
@@ -745,7 +736,7 @@ open class CoreArchitectureTests: BaseTestClass {
     
     /// BUSINESS PURPOSE: Validate responsive behavior default values functionality for responsive behavior initialization
     /// TESTING SCOPE: ResponsiveBehavior default values, responsive behavior initialization validation, default value testing
-    /// METHODOLOGY: Use RuntimeCapabilityDetection mock framework to test responsive behavior default values
+    /// METHODOLOGY: Test DTO/enum logic on the current host (no capability overrides) responsive behavior default values
     @Test func testResponsiveBehaviorDefaultValues() throws {
         // When
         let behavior = ResponsiveBehavior(

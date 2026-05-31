@@ -5,7 +5,7 @@ import SwiftUI
 /// Integration tests for platformAdaptiveDetailView rendering
 /// These test the ACTUAL framework behavior - that the view renders correctly
 /// BUSINESS PURPOSE: Verify that platformAdaptiveDetailView actually renders the right view AND has accessibility IDs
-@Suite("Adaptive Detail View Rendering")
+@Suite("Adaptive Detail View Rendering", DefaultRuntimeCapabilityIsolationTrait())
 /// NOTE: Not marked @MainActor on class to allow parallel execution
 open class AdaptiveDetailViewRenderingTests: BaseTestClass {
     
@@ -18,8 +18,6 @@ open class AdaptiveDetailViewRenderingTests: BaseTestClass {
     
     @Test @MainActor func testAdaptiveViewUsesDecisionFunction() async {
         initializeTestConfig()
-        // Given: Phone device type
-        RuntimeCapabilityDetection.setTestTouchSupport(true); RuntimeCapabilityDetection.setTestHapticFeedback(true); RuntimeCapabilityDetection.setTestHover(false)
         
         let testData = TestDataModel(name: "Test", value: 42)
         let analysis = DataIntrospectionEngine.analyze(testData)
@@ -53,9 +51,6 @@ open class AdaptiveDetailViewRenderingTests: BaseTestClass {
     @Test @MainActor func testPhoneRendersStandardView() async {
         initializeTestConfig()
         // Given: Phone device (should render standard view)
-        RuntimeCapabilityDetection.setTestTouchSupport(true)
-        RuntimeCapabilityDetection.setTestHapticFeedback(true)
-        RuntimeCapabilityDetection.setTestHover(false)
         let deviceType = SixLayerPlatform.deviceType
         
         // Verify decision logic - check actual device type and expected strategy
@@ -110,8 +105,6 @@ open class AdaptiveDetailViewRenderingTests: BaseTestClass {
     
     @Test @MainActor func testAdaptiveViewGeneratesAccessibilityIdentifiers() async {
         initializeTestConfig()
-        // Given: Adaptive view (ACTUAL framework code that users call)
-        RuntimeCapabilityDetection.setTestTouchSupport(true); RuntimeCapabilityDetection.setTestHapticFeedback(true); RuntimeCapabilityDetection.setTestHover(false)
         
         let testData = TestDataModel(name: "Test", value: 42)
         let analysis = DataIntrospectionEngine.analyze(testData)

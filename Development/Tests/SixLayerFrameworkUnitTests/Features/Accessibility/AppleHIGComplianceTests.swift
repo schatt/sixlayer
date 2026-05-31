@@ -325,73 +325,32 @@ open class AppleHIGComplianceTests: BaseTestClass {
     
     // MARK: - Integration Tests
     
-    /**
-     * BUSINESS PURPOSE: AppleHIGComplianceManager automatically applies Apple Human Interface Guidelines compliance
-     * to UI elements, ensuring consistent design patterns, accessibility features, and platform-specific behaviors
-     * without requiring manual configuration from developers.
-     * TESTING SCOPE: Tests accessibility integration through platform configuration
-     * METHODOLOGY: Uses mock capability detection to test both enabled and disabled states
-     */
-    @Test @MainActor func testAccessibilityOptimizationManagerIntegration() async {
-        // Test with accessibility features enabled
-        RuntimeCapabilityDetection.setTestVoiceOver(true)
-        RuntimeCapabilityDetection.setTestSwitchControl(true)
-        RuntimeCapabilityDetection.setTestAssistiveTouch(true)
-        
-        let enabledConfig = getCardExpansionPlatformConfig()
-        
-        // When: Apple HIG compliance is applied through platform configuration
-        // Then: Should have proper accessibility support
-        #expect(enabledConfig.supportsVoiceOver, "VoiceOver should be supported when enabled")
-        #expect(enabledConfig.supportsSwitchControl, "Switch Control should be supported when enabled")
-        #expect(enabledConfig.supportsAssistiveTouch, "AssistiveTouch should be supported when enabled")
-        
-        // Test with accessibility features disabled
+    /// Card expansion a11y config mirrors detection through tri-state on **current host** (#251).
+    @Test @MainActor func testCardExpansionAccessibilityConfigTriStatePhases() async {
+        defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
+
+        func assertConfigMirrors(phase: String) {
+            let config = getCardExpansionPlatformConfig()
+            switch SixLayerPlatform.current {
+            case .iOS, .watchOS, .macOS, .tvOS, .visionOS:
+                #expect(config.supportsVoiceOver == RuntimeCapabilityDetection.supportsVoiceOver, "\(phase): VoiceOver should mirror detection")
+                #expect(config.supportsSwitchControl == RuntimeCapabilityDetection.supportsSwitchControl, "\(phase): SwitchControl should mirror detection")
+                #expect(config.supportsAssistiveTouch == RuntimeCapabilityDetection.supportsAssistiveTouch, "\(phase): AssistiveTouch should mirror detection")
+            }
+        }
+
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        assertConfigMirrors(phase: "current")
+
         RuntimeCapabilityDetection.setTestVoiceOver(false)
         RuntimeCapabilityDetection.setTestSwitchControl(false)
         RuntimeCapabilityDetection.setTestAssistiveTouch(false)
-        
-        let disabledConfig = getCardExpansionPlatformConfig()
-        
-        // Then: Should reflect disabled state
-        #expect(!disabledConfig.supportsVoiceOver, "VoiceOver should be disabled when disabled")
-        #expect(!disabledConfig.supportsSwitchControl, "Switch Control should be disabled when disabled")
-        #expect(!disabledConfig.supportsAssistiveTouch, "AssistiveTouch should be disabled when disabled")
-    }
-    
-    /**
-     * BUSINESS PURPOSE: AppleHIGComplianceManager automatically applies Apple Human Interface Guidelines compliance
-     * to UI elements, ensuring consistent design patterns, accessibility features, and platform-specific behaviors
-     * without requiring manual configuration from developers.
-     * TESTING SCOPE: Tests automatic accessibility integration through platform configuration
-     * METHODOLOGY: Uses mock capability detection to test both enabled and disabled states
-     */
-    @Test @MainActor func testAutomaticAccessibilityIntegration() async {
-        initializeTestConfig()
-        // Test with accessibility features enabled
+        assertConfigMirrors(phase: "disabled")
+
         RuntimeCapabilityDetection.setTestVoiceOver(true)
         RuntimeCapabilityDetection.setTestSwitchControl(true)
         RuntimeCapabilityDetection.setTestAssistiveTouch(true)
-        
-        let enabledConfig = getCardExpansionPlatformConfig()
-        
-        // When: Automatic accessibility is applied through platform configuration
-        // Then: Should have proper accessibility support
-        #expect(enabledConfig.supportsVoiceOver, "VoiceOver should be supported when enabled")
-        #expect(enabledConfig.supportsSwitchControl, "Switch Control should be supported when enabled")
-        #expect(enabledConfig.supportsAssistiveTouch, "AssistiveTouch should be supported when enabled")
-        
-        // Test with accessibility features disabled
-        RuntimeCapabilityDetection.setTestVoiceOver(false)
-        RuntimeCapabilityDetection.setTestSwitchControl(false)
-        RuntimeCapabilityDetection.setTestAssistiveTouch(false)
-        
-        let disabledConfig = getCardExpansionPlatformConfig()
-        
-        // Then: Should reflect disabled state
-        #expect(!disabledConfig.supportsVoiceOver, "VoiceOver should be disabled when disabled")
-        #expect(!disabledConfig.supportsSwitchControl, "Switch Control should be disabled when disabled")
-        #expect(!disabledConfig.supportsAssistiveTouch, "AssistiveTouch should be disabled when disabled")
+        assertConfigMirrors(phase: "enabled")
     }
     
     // MARK: - Platform Testing

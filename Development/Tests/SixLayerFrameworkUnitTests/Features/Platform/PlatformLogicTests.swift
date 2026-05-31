@@ -8,7 +8,7 @@ import SwiftUI
 /// Tests the platform detection and configuration logic without relying on runtime platform detection
 /// These tests focus on the logic that determines platform-specific behavior
 /// NOTE: Not marked @MainActor on class to allow parallel execution
-@Suite("Platform Logic")
+@Suite("Platform Logic", DefaultRuntimeCapabilityIsolationTrait())
 open class PlatformLogicTests: BaseTestClass {
     
     // Local, general-purpose capability snapshot for tests (do not use card-specific config)
@@ -130,7 +130,38 @@ open class PlatformLogicTests: BaseTestClass {
     }
     
     // MARK: - Capability Matrix Tests
-    
+
+    /// Secondary plumbing (#251): `minTouchTarget` tracks touch override on **current host**.
+    @Test @MainActor func testMinTouchTargetTriStateOnCurrentHost() {
+        defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
+
+        func assertMinTouchTargetLaw(phase: String) {
+            let platform = SixLayerPlatform.current
+            let effectiveTouch = RuntimeCapabilityDetection.supportsTouch
+            let expected = PlatformTestUtilities.expectedMinTouchTarget(
+                for: platform,
+                touchDetected: effectiveTouch
+            )
+
+            switch platform {
+            case .iOS, .watchOS, .macOS, .tvOS, .visionOS:
+                #expect(
+                    RuntimeCapabilityDetection.minTouchTarget == expected,
+                    "\(phase) on \(platform): minTouchTarget should match HIG (touch=\(effectiveTouch))"
+                )
+            }
+        }
+
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        assertMinTouchTargetLaw(phase: "current")
+
+        RuntimeCapabilityDetection.setTestTouchSupport(false)
+        assertMinTouchTargetLaw(phase: "disabled")
+
+        RuntimeCapabilityDetection.setTestTouchSupport(true)
+        assertMinTouchTargetLaw(phase: "enabled")
+    }
+
 
     @Test func testAccessibilityRequirements() {
         // Clear any test overrides to use real platform detection

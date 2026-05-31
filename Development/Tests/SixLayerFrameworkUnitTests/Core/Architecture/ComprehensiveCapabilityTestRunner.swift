@@ -184,10 +184,39 @@ struct ComprehensiveCapabilityTestRunner {
         }
     }
     
+    @MainActor
+    private func testCapabilityDetectionIntrinsic(_ config: CardExpansionPlatformConfig, capability: TestRunnerConfig.CapabilityType) {
+        switch capability {
+        case .touch:
+            #expect(config.supportsTouch == RuntimeCapabilityDetection.supportsTouch, "Current: touch should mirror detection")
+        case .hover:
+            #expect(config.supportsHover == RuntimeCapabilityDetection.supportsHover, "Current: hover should mirror detection")
+        case .hapticFeedback:
+            #expect(config.supportsHapticFeedback == RuntimeCapabilityDetection.supportsHapticFeedback, "Current: haptic should mirror detection")
+        case .assistiveTouch:
+            #expect(config.supportsAssistiveTouch == RuntimeCapabilityDetection.supportsAssistiveTouch, "Current: AssistiveTouch should mirror detection")
+        case .voiceOver:
+            #expect(config.supportsVoiceOver == RuntimeCapabilityDetection.supportsVoiceOver, "Current: VoiceOver should mirror detection")
+        case .switchControl:
+            #expect(config.supportsSwitchControl == RuntimeCapabilityDetection.supportsSwitchControl, "Current: SwitchControl should mirror detection")
+        case .vision:
+            _ = RuntimeCapabilityDetection.Vision.isFrameworkAvailable
+        case .ocr:
+            #expect(
+                RuntimeCapabilityDetection.Vision.supportsOCR == RuntimeCapabilityDetection.Vision.isFrameworkAvailable,
+                "Current: OCR availability should match Vision framework"
+            )
+        }
+    }
+
     /// Run capability detection test for a specific capability
     @MainActor
     private func runCapabilityDetectionTest(_ capability: TestRunnerConfig.CapabilityType, config: TestRunnerConfig) {
         print("     🔍 Testing \(capability) detection...")
+        
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        let currentConfig = getCardExpansionPlatformConfig()
+        testCapabilityDetectionIntrinsic(currentConfig, capability: capability)
         
         // Test enabled state
         setMockCapabilityState(capability, enabled: true)
@@ -269,6 +298,10 @@ struct ComprehensiveCapabilityTestRunner {
     @MainActor
     private func runUIGenerationTest(_ capability: TestRunnerConfig.CapabilityType, config: TestRunnerConfig) {
         print("     🎨 Testing \(capability) UI generation...")
+        
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        let currentConfig = getCardExpansionPlatformConfig()
+        testCapabilityDetectionIntrinsic(currentConfig, capability: capability)
         
         // Test with capability enabled
         setMockCapabilityState(capability, enabled: true)
@@ -480,6 +513,10 @@ struct ComprehensiveCapabilityTestRunner {
     /// Run behavior validation test for a specific capability
     @MainActor
     private func runBehaviorValidationTest(_ capability: TestRunnerConfig.CapabilityType, config: TestRunnerConfig) {
+        
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        let currentConfig = getCardExpansionPlatformConfig()
+        testCapabilityDetectionIntrinsic(currentConfig, capability: capability)
         
         // Test with capability enabled
         setMockCapabilityState(capability, enabled: true)

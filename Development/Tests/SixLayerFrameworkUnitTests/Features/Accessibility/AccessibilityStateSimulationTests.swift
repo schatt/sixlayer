@@ -30,7 +30,7 @@ import SwiftUI
 /// Accessibility state simulation testing
 /// Tests accessibility configuration and platform-specific behavior
 /// NOTE: Not marked @MainActor on class to allow parallel execution
-@Suite("Accessibility State Simulation")
+@Suite("Accessibility State Simulation", DefaultRuntimeCapabilityIsolationTrait())
 open class AccessibilityStateSimulationTests: BaseTestClass {
     
     // MARK: - Configuration Initialization Tests
@@ -138,6 +138,36 @@ open class AccessibilityStateSimulationTests: BaseTestClass {
             #expect(config.supportsDynamicType, "visionOS should support dynamic type")
             #expect(config.focusManagement, "visionOS should support focus management")
         }
+    }
+
+    /// Card expansion accessibility config on the **current host** through a11y tri-state (#251).
+    @Test @MainActor func testCardExpansionAccessibilityConfigTriStatePhases() {
+        defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
+
+        func assertAccessibilityConfigLaw(phase: String) {
+            let platform = SixLayerPlatform.current
+            let config = getCardExpansionAccessibilityConfig()
+
+            switch platform {
+            case .iOS, .watchOS, .macOS, .tvOS, .visionOS:
+                #expect(config.supportsVoiceOver == RuntimeCapabilityDetection.supportsVoiceOver, "\(phase): VoiceOver should mirror detection")
+                #expect(config.supportsSwitchControl == RuntimeCapabilityDetection.supportsSwitchControl, "\(phase): SwitchControl should mirror detection")
+                #expect(config.supportsAssistiveTouch == RuntimeCapabilityDetection.supportsAssistiveTouch, "\(phase): AssistiveTouch should mirror detection")
+            }
+        }
+
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        assertAccessibilityConfigLaw(phase: "current")
+
+        RuntimeCapabilityDetection.setTestVoiceOver(false)
+        RuntimeCapabilityDetection.setTestSwitchControl(false)
+        RuntimeCapabilityDetection.setTestAssistiveTouch(false)
+        assertAccessibilityConfigLaw(phase: "disabled")
+
+        RuntimeCapabilityDetection.setTestVoiceOver(true)
+        RuntimeCapabilityDetection.setTestSwitchControl(true)
+        RuntimeCapabilityDetection.setTestAssistiveTouch(true)
+        assertAccessibilityConfigLaw(phase: "enabled")
     }
     
     // MARK: - Configuration Parameter Validation Tests
