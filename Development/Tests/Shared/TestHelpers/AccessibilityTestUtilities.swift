@@ -1065,6 +1065,48 @@ public enum AccessibilityTestUtilities {
             ExactNamedModifier.testingGeneratedIdentifier(name: explicitName, config: config)
         ]
     }
+
+    /// UIHosting/ViewInspector can skip modifier bodies for direct `.named()` checks; recover the explicit
+    /// modifier name from the SwiftUI value so direct helper lookups exercise the same generator path.
+    @MainActor
+    private static func syntheticModifierIdentifierFromView<V: View>(_ view: V) -> String? {
+        let config = AccessibilityIdentifierConfig.currentTaskLocalConfig
+            ?? TestSetupUtilities.makeIsolatedAccessibilityIdentifierConfig()
+        if let exactName = explicitModifierName(in: view, modifierTypeFragment: "ExactNamedModifier") {
+            return ExactNamedModifier.testingGeneratedIdentifier(name: exactName, config: config)
+        }
+        if let named = explicitModifierName(in: view, modifierTypeFragment: "NamedModifier") {
+            return NamedModifier.testingGeneratedIdentifier(name: named, config: config)
+        }
+        return nil
+    }
+
+    private static func explicitModifierName(
+        in value: Any,
+        modifierTypeFragment: String,
+        remainingDepth: Int = 8
+    ) -> String? {
+        guard remainingDepth >= 0 else { return nil }
+
+        let typeName = String(describing: Swift.type(of: value))
+        let mirror = Mirror(reflecting: value)
+        if typeName.contains(modifierTypeFragment) {
+            for child in mirror.children where child.label == "name" {
+                return child.value as? String
+            }
+        }
+
+        for child in mirror.children {
+            if let name = explicitModifierName(
+                in: child.value,
+                modifierTypeFragment: modifierTypeFragment,
+                remainingDepth: remainingDepth - 1
+            ) {
+                return name
+            }
+        }
+        return nil
+    }
     
     @MainActor
     private static func parseGeneratedIdentifiers(from debugLog: String) -> [String] {
@@ -1124,6 +1166,7 @@ public enum AccessibilityTestUtilities {
             if let button = try? inspected.button(), let buttonID = try? button.accessibilityIdentifier(), !buttonID.isEmpty { return buttonID }
             let deepIDs = allAccessibilityIdentifiersFromViewInspector(view)
             if let first = deepIDs.first { return first }
+            if let syntheticID = syntheticModifierIdentifierFromView(view), !syntheticID.isEmpty { return syntheticID }
             // If we reach here, ViewInspector couldn't find an identifier. This is
             // treated as an inspection limitation rather than a hard failure; the
             // caller can decide whether to assert or treat it as "cannot verify".
