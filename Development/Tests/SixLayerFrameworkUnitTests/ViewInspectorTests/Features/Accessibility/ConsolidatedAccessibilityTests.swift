@@ -16161,7 +16161,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             #endif
         }
     }
-}
 
     @Test @MainActor func testImageProcessorGeneratesAccessibilityIdentifiersOnIOS() {
         self.initializeTestConfig()
