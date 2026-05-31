@@ -171,7 +171,10 @@ open class CapabilityAwareFunctionTests: BaseTestClass {
                 "Touch targets must match Apple HIG for \(currentPlatform): expected \(expectedMinTouchTarget)pt")
         #expect(config.supportsTouch)
         #expect(config.supportsHapticFeedback)
-        #expect(config.supportsAssistiveTouch)
+        #expect(
+            config.supportsAssistiveTouch
+                == PlatformTestUtilities.expectedAssistiveTouchAfterTestOverride(true)
+        )
     }
     
     /// BUSINESS PURPOSE: Negative path slice without hover (delegates to shared negative semantics).
