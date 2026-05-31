@@ -10,13 +10,13 @@ struct OptimalCardLayoutViewportChromeTests {
         let geometryHeight: CGFloat = 800
         let chrome = CardViewportHints(topChromeInset: 96, bottomChromeInset: 83)
         let withChrome = ResponsiveCardsView.optimalLayoutDecision(
-            contentCount: 6,
+            contentCount: 12,
             screenWidth: 390,
             geometryHeight: geometryHeight,
             viewportHints: chrome
         )
         let withoutChrome = ResponsiveCardsView.optimalLayoutDecision(
-            contentCount: 6,
+            contentCount: 12,
             screenWidth: 390,
             geometryHeight: geometryHeight,
             viewportHints: nil
