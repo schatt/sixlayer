@@ -76,12 +76,43 @@ Depending on internal types or copying internal implementation details may work 
 ## Table of Contents
 
 1. [Quick Start](#quick-start)
-2. [Extension Mechanisms](#extension-mechanisms)
-3. [Custom Hints System](#custom-hints-system)
-4. [Integration Patterns](#integration-patterns)
-5. [Best Practices](#best-practices)
-6. [Examples](#examples)
-7. [Troubleshooting](#troubleshooting)
+2. [Concurrency and Sendable](#concurrency-and-sendable)
+3. [Extension Mechanisms](#extension-mechanisms)
+4. [Custom Hints System](#custom-hints-system)
+5. [Integration Patterns](#integration-patterns)
+6. [Best Practices](#best-practices)
+7. [Examples](#examples)
+8. [Troubleshooting](#troubleshooting)
+
+## Concurrency and Sendable
+
+SixLayer separates **immutable hints** (loaded at launch, safe across actors) from **runtime presentation** (form state, closures, SwiftUI views on `@MainActor`).
+
+### Rule of thumb
+
+**`Sendable`** = immutable, shareable configuration. **Not `Sendable`** = live UI, callbacks, or type-erased runtime bags.
+
+| Category | `Sendable`? | Examples |
+|----------|-------------|----------|
+| Declarative config / metadata | **Yes** | `FieldDisplayHints`, `PresentationHints`, `HintsSectionLayout`, `DataHintsResult`, `ItemColorProviderConfig` |
+| UI-bound / mutable state | **No** — `@MainActor` | `DynamicFormState` |
+| Fields with closures or `[String: Any]` | **No** | `DynamicFormField`, runtime `DynamicFormSection` |
+| App business models | **Optional** | Only if your app crosses actors; framework uses `CardDisplayable`, not required `Sendable` |
+| Audited escape hatch | **`@unchecked Sendable`** sparingly | `CustomHint` (`[String: Any]` metadata), `PlatformImage` |
+
+### Hints vs form presentation
+
+- **Cached at launch:** `DataHintsResult` — field hints, `HintsSectionLayout` recipes (section IDs, ordered field IDs, layout style), colors, OCR groups.
+- **Resolved at form open:** `SectionBuilder.buildSections(from:matching:)` wires layout recipes to live `DynamicFormField` instances.
+- **Rendered on `@MainActor`:** visibility filters, collapse state, custom trailing/value views.
+
+Do not store closure-bearing `DynamicFormField` values in hints caches. Behavior is derived from hint flags (e.g. OCR/barcode) or attached by app code when the form is presented.
+
+### Review checklist (new public value types)
+
+1. Will this type cross actor boundaries or sit in a shared cache?
+2. If yes, are all stored properties provably `Sendable`?
+3. If no, document `@MainActor` or intentional non-`Sendable` in the type’s doc comment.
 
 ## Quick Start
 
