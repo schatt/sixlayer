@@ -1091,7 +1091,10 @@ open class AdvancedFieldTypesTests: BaseTestClass {
         assertAccessibilityOverrides(phase: "enabled")
         #expect(RuntimeCapabilityDetection.supportsVoiceOver)
         #expect(RuntimeCapabilityDetection.supportsSwitchControl)
-        #expect(RuntimeCapabilityDetection.supportsAssistiveTouch)
+        #expect(
+            RuntimeCapabilityDetection.supportsAssistiveTouch
+                == PlatformTestUtilities.expectedAssistiveTouchAfterTestOverride(true)
+        )
     }
     
     /// BUSINESS PURPOSE: Advanced field types should provide enhanced accessibility labels when VoiceOver is enabled
@@ -1178,7 +1181,10 @@ open class AdvancedFieldTypesTests: BaseTestClass {
         #expect(field.id == "testField", "Field should have correct ID")
         #expect(field.label == "Test Field", "Field should have correct label")
         #expect(field.contentType == .text, "Field should have correct content type")
-        #expect(RuntimeCapabilityDetection.supportsAssistiveTouch, "AssistiveTouch should be enabled")
+        #expect(
+            RuntimeCapabilityDetection.supportsAssistiveTouch
+                == PlatformTestUtilities.expectedAssistiveTouchAfterTestOverride(true)
+        )
 
         // Test that form state is properly configured
         // formState is a non-optional class instance, so it exists if we reach here
@@ -1199,7 +1205,10 @@ open class AdvancedFieldTypesTests: BaseTestClass {
         // Verify all capabilities are enabled
         #expect(RuntimeCapabilityDetection.supportsVoiceOver, "VoiceOver should be enabled")
         #expect(RuntimeCapabilityDetection.supportsSwitchControl, "Switch Control should be enabled")
-        #expect(RuntimeCapabilityDetection.supportsAssistiveTouch, "AssistiveTouch should be enabled")
+        #expect(
+            RuntimeCapabilityDetection.supportsAssistiveTouch
+                == PlatformTestUtilities.expectedAssistiveTouchAfterTestOverride(true)
+        )
 
         // Test that field types handle multiple capabilities
         // Note: In a real implementation, these would check actual combined behavior
