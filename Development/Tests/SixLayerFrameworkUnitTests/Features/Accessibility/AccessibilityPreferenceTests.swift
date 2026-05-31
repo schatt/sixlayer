@@ -57,31 +57,15 @@ open class AccessibilityPreferenceTests: BaseTestClass {
     
     /// Tests that getCardExpansionAccessibilityConfig returns different configurations for different platforms
     @Test @MainActor func testCardExpansionAccessibilityConfig_PlatformSpecificBehavior() {
-        // Given: Different platform contexts
-        let platforms: [SixLayerPlatform] = [SixLayerPlatform.iOS, SixLayerPlatform.macOS, SixLayerPlatform.watchOS, SixLayerPlatform.tvOS, SixLayerPlatform.visionOS]
-        
-        // When: Get accessibility configuration for each platform
-        var configurations: [SixLayerPlatform: CardExpansionAccessibilityConfig] = [:]
-        for platform in platforms {
-            // Note: We can't actually change Platform.current in tests, so we test the current platform
-            // and verify it returns a valid configuration
-            let config = getCardExpansionAccessibilityConfig()
-            configurations[platform] = config
-        }
-        
-        // Then: Test actual business logic
-        // Each platform should return a valid configuration
-        for (platform, config) in configurations {
-            // config is non-optional (we just set it above), so it exists if we reach here
-            
-            // Test that the configuration has valid values
-            #expect(config.supportsVoiceOver == true || config.supportsVoiceOver == false, 
-                         "\(platform) VoiceOver support should be determinable")
-            #expect(config.supportsSwitchControl == true || config.supportsSwitchControl == false, 
-                         "\(platform) Switch Control support should be determinable")
-            #expect(config.supportsAssistiveTouch == true || config.supportsAssistiveTouch == false, 
-                         "\(platform) AssistiveTouch support should be determinable")
-        }
+        let platform = SixLayerPlatform.current
+        let config = getCardExpansionAccessibilityConfig()
+
+        #expect(config.supportsVoiceOver == true || config.supportsVoiceOver == false,
+                     "\(platform) VoiceOver support should be determinable")
+        #expect(config.supportsSwitchControl == true || config.supportsSwitchControl == false,
+                     "\(platform) Switch Control support should be determinable")
+        #expect(config.supportsAssistiveTouch == true || config.supportsAssistiveTouch == false,
+                     "\(platform) AssistiveTouch support should be determinable")
     }
     
     /// Tests that getCardExpansionPlatformConfig returns platform-specific capabilities
