@@ -66,7 +66,7 @@ struct DynamicFontResolverTests {
         let resolver = DynamicFontResolver(defaultContentSize: .extraLarge)
         let uiFont = resolver.uiFont(for: .headline, contentSize: .extraLarge)
         #expect(uiFont.pointSize > 0)
-        #expect(uiFont.fontDescriptor.postscriptName != nil)
+        #expect(!uiFont.fontDescriptor.postscriptName.isEmpty)
     }
     #endif
 
