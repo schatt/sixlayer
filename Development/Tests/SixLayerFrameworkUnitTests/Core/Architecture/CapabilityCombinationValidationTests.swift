@@ -41,6 +41,7 @@ import SwiftUI
 /// Capability combination validation testing
 /// Validates that capability combinations work correctly on the current platform
 /// NOTE: Not marked @MainActor on class to allow parallel execution
+@Suite(DefaultRuntimeCapabilityIsolationTrait())
 open class CapabilityCombinationValidationTests: BaseTestClass {// MARK: - Current Platform Combination Tests
     
     @Test func testCurrentPlatformCombination() {
@@ -89,6 +90,41 @@ open class CapabilityCombinationValidationTests: BaseTestClass {// MARK: - Curre
         
         // Note: We don't assert the reverse (touch doesn't guarantee haptic/AssistiveTouch)
         // because the OS may report touch without these features
+    }
+
+    /// Touch/haptic logical dependency on **current host** through tri-state (#251).
+    @Test func testHapticRequiresTouchTriStatePhases() {
+        defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
+
+        func assertHapticTouchLaw(phase: String) {
+            let platform = SixLayerPlatform.current
+            let hasTouch = RuntimeCapabilityDetection.supportsTouch
+            let hasHaptic = RuntimeCapabilityDetection.supportsHapticFeedback
+            let hasAssistiveTouch = RuntimeCapabilityDetection.supportsAssistiveTouch
+
+            switch platform {
+            case .iOS, .watchOS, .macOS, .tvOS, .visionOS:
+                if hasHaptic {
+                    #expect(hasTouch, "\(phase) on \(platform): haptic logically requires touch")
+                }
+                if hasAssistiveTouch {
+                    #expect(hasTouch, "\(phase) on \(platform): AssistiveTouch logically requires touch")
+                }
+            }
+        }
+
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        assertHapticTouchLaw(phase: "current")
+
+        RuntimeCapabilityDetection.setTestTouchSupport(false)
+        RuntimeCapabilityDetection.setTestHapticFeedback(false)
+        RuntimeCapabilityDetection.setTestAssistiveTouch(false)
+        assertHapticTouchLaw(phase: "disabled")
+
+        RuntimeCapabilityDetection.setTestTouchSupport(true)
+        RuntimeCapabilityDetection.setTestHapticFeedback(true)
+        RuntimeCapabilityDetection.setTestAssistiveTouch(true)
+        assertHapticTouchLaw(phase: "enabled")
     }
     
     @Test func testHoverDependencies() {
