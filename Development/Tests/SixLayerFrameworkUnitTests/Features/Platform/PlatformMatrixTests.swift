@@ -346,8 +346,21 @@ open class PlatformMatrixTests: BaseTestClass {
     
     // MARK: - Platform Feature Matrix constraint law
 
+    @Test func testPlatformFeatureMatrixConstraints_hapticWithoutTouchIsValid() {
+        // Haptics do not require touch — external actuators (vibrating seat), trackpad
+        // prefs, or device engines may report haptics without a touch input channel.
+        for platform in SixLayerPlatform.allCases {
+            let matrix = PlatformFeatureMatrix.testFixture(
+                platform: platform,
+                deviceType: PlatformFeatureMatrix.defaultDeviceType(for: platform),
+                supportsTouch: false,
+                supportsHapticFeedback: true
+            )
+            #expect(matrix.satisfiesCapabilityPrecursors(), "\(platform) haptics without touch should be valid")
+        }
+    }
+
     @Test func testPlatformFeatureMatrixConstraints_macOSHapticWithoutTouchscreen() {
-        // macOS may report haptics without a touchscreen (trackpad prefs, external actuators).
         let matrix = PlatformFeatureMatrix.testFixture(
             platform: .macOS,
             deviceType: .mac,
@@ -357,18 +370,6 @@ open class PlatformMatrixTests: BaseTestClass {
         )
         #expect(matrix.satisfiesCapabilityPrecursors())
         #expect(matrix.satisfiesPlatformConstraints())
-    }
-
-    @Test func testPlatformFeatureMatrixConstraints_touchFirstHapticRequiresTouch() {
-        for platform in [SixLayerPlatform.iOS, .watchOS] {
-            let matrix = PlatformFeatureMatrix.testFixture(
-                platform: platform,
-                deviceType: PlatformFeatureMatrix.defaultDeviceType(for: platform),
-                supportsTouch: false,
-                supportsHapticFeedback: true
-            )
-            #expect(!matrix.satisfiesCapabilityPrecursors(), "\(platform) haptics require touch")
-        }
     }
 
     @Test func testPlatformFeatureMatrixConstraints_assistiveTouchRequiresTouch() {
@@ -566,15 +567,11 @@ struct PlatformFeatureMatrix {
     
     /// Capability precursor dependencies — apply in every phase (native or injected).
     ///
-    /// If a capability is reported, its prerequisites must also be reported. Touch and hover
-    /// may coexist (mouse on iPhone, touchscreen on Mac). Haptics without touch are valid on
-    /// non-touch-first platforms (macOS trackpad prefs, external actuators); on touch-first
-    /// platforms haptics imply a touch channel (Taptic Engine).
+    /// Only enforce prerequisites that are genuinely required. Touch and hover may
+    /// coexist (mouse on iPhone, touchscreen on Mac). Haptics are independent of touch
+    /// (external actuators, trackpad prefs, device engines). AssistiveTouch is a touch
+    /// overlay and requires a touch input channel.
     func satisfiesCapabilityPrecursors() -> Bool {
-        if supportsHapticFeedback && !supportsTouch && platform.isTouchFirstPlatform {
-            return false
-        }
-
         if supportsAssistiveTouch && !supportsTouch {
             return false
         }
