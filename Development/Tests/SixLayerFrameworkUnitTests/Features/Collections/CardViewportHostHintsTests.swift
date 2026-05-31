@@ -72,7 +72,7 @@ struct CardViewportHostHintsTests {
             screenWidth: 390,
             deviceType: .phone,
             contentComplexity: .moderate,
-            viewportHeight: 220,
+            viewportHeight: 500,
             viewportHints: CardViewportHints(preferFitInViewport: false)
         )
         let withLegacyPhoneClamp = determineIntelligentCardLayout_L2(
@@ -80,7 +80,7 @@ struct CardViewportHostHintsTests {
             screenWidth: 390,
             deviceType: .phone,
             contentComplexity: .moderate,
-            viewportHeight: 220
+            viewportHeight: 500
         )
         #expect(withoutFit.cardHeight > withLegacyPhoneClamp.cardHeight)
     }
