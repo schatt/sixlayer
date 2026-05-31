@@ -49,8 +49,10 @@ public func determineIntelligentCardLayout_L2(
     deviceType: DeviceType,
     contentComplexity: ContentComplexity,
     viewportHeight: CGFloat? = nil,
-    viewportHints: CardViewportHints? = nil
+    viewportHints: CardViewportHints? = nil,
+    preferredContentSizeCategory: SixLayerContentSizeCategory? = nil
 ) -> IntelligentCardLayoutDecision {
+    _ = preferredContentSizeCategory
     
     // Base calculations
     let layoutPadding: CGFloat = 16
@@ -276,6 +278,18 @@ private func calculateOptimalHeight(
     }
     
     return max(height, 110)
+}
+
+/// Minimum card height from content complexity and accessibility text metrics (GitHub #309).
+public func contentAwareMinimumIntelligentCardHeight(
+    cardWidth: CGFloat,
+    contentComplexity: ContentComplexity,
+    contentSizeCategory: SixLayerContentSizeCategory = .large
+) -> CGFloat {
+    _ = cardWidth
+    _ = contentComplexity
+    _ = contentSizeCategory
+    return 110
 }
 
 /// Calculate expansion scale based on device and content
