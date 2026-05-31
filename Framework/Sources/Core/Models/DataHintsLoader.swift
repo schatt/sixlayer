@@ -42,6 +42,40 @@ public struct ItemColorProviderConfig: Sendable {
     }
 }
 
+// MARK: - Hints Section Layout (stub — #310 red phase)
+
+/// Immutable section layout recipe from `.hints` `_sections` (Sendable cache type).
+public struct HintsSectionLayout: Sendable, Equatable, Identifiable {
+    public let id: String
+    public let title: String
+    public let description: String?
+    public let fieldIds: [String]
+    public let layoutStyle: FieldLayout?
+    public let isCollapsible: Bool
+    public let isCollapsed: Bool
+    public let metadata: [String: String]?
+
+    public init(
+        id: String,
+        title: String,
+        description: String? = nil,
+        fieldIds: [String] = [],
+        layoutStyle: FieldLayout? = nil,
+        isCollapsible: Bool = false,
+        isCollapsed: Bool = false,
+        metadata: [String: String]? = nil
+    ) {
+        self.id = id
+        self.title = title
+        self.description = description
+        self.fieldIds = fieldIds
+        self.layoutStyle = layoutStyle
+        self.isCollapsible = isCollapsible
+        self.isCollapsed = isCollapsed
+        self.metadata = metadata
+    }
+}
+
 // MARK: - Data Hints Result
 
 /// Complete result from loading a hints file, including both field hints and layout sections
@@ -51,6 +85,8 @@ public struct DataHintsResult: @unchecked Sendable {
     public let fieldHints: [String: FieldDisplayHints]
     /// Layout sections parsed from _sections array in hints file
     public let sections: [DynamicFormSection]
+    /// Section layout recipes for Sendable cache (stub: not populated yet — #310 red)
+    public let sectionLayouts: [HintsSectionLayout]
     /// Default color for card presentation (parsed from _defaultColor in hints file)
     public let defaultColor: String?
     /// Color mapping by type name (parsed from _colorMapping in hints file)
@@ -83,6 +119,7 @@ public struct DataHintsResult: @unchecked Sendable {
     public init(
         fieldHints: [String: FieldDisplayHints] = [:],
         sections: [DynamicFormSection] = [],
+        sectionLayouts: [HintsSectionLayout] = [],
         defaultColor: String? = nil,
         colorMapping: [String: String]? = nil,
         itemColorProviderConfig: ItemColorProviderConfig? = nil,
@@ -95,6 +132,7 @@ public struct DataHintsResult: @unchecked Sendable {
     ) {
         self.fieldHints = fieldHints
         self.sections = sections
+        self.sectionLayouts = sectionLayouts
         self.defaultColor = defaultColor
         self.colorMapping = colorMapping
         self.itemColorProviderConfig = itemColorProviderConfig
@@ -917,6 +955,16 @@ public enum SectionBuilder {
         }
         
         return builtSections
+    }
+
+    /// Stub overload for #310 — intentionally returns empty until green implementation.
+    public static func buildSections(
+        from sectionLayouts: [HintsSectionLayout],
+        matching fields: [DynamicFormField]
+    ) -> [DynamicFormSection] {
+        _ = sectionLayouts
+        _ = fields
+        return []
     }
 }
 
