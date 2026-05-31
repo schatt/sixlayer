@@ -1165,10 +1165,10 @@ private struct AsyncFormView: View {
         // Step 2: If no code hint, try file/cache synchronously
         if let modelName = modelName,
            let cachedHints = DataHintsRegistry.getCachedHints(for: modelName),
-           !cachedHints.sections.isEmpty {
+           !cachedHints.sectionLayouts.isEmpty {
             // File-based hints are cached - use them immediately without async loading
             let sections = SectionBuilder.buildSections(
-                from: cachedHints.sections,
+                from: cachedHints.sectionLayouts,
                 matching: fields
             )
             self._resolvedSections = State(initialValue: sections)
@@ -1251,9 +1251,9 @@ private struct AsyncFormView: View {
             let hintsResult = await globalDataHintsRegistry.loadHintsResult(for: modelName)
             
             // If file/cache has hints, use them
-            if !hintsResult.sections.isEmpty {
+            if !hintsResult.sectionLayouts.isEmpty {
                 resolvedSections = SectionBuilder.buildSections(
-                    from: hintsResult.sections,
+                    from: hintsResult.sectionLayouts,
                     matching: fields
                 )
             } else {

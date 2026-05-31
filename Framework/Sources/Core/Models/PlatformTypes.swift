@@ -553,7 +553,7 @@ public enum SpacingPreference: String, CaseIterable {
 }
 
 /// Represents field layout strategies
-public enum FieldLayout: String, CaseIterable {
+public enum FieldLayout: String, CaseIterable, Sendable {
     case standard = "standard"
     case compact = "compact"
     case spacious = "spacious"

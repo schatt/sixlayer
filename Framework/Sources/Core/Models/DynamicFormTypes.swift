@@ -193,7 +193,11 @@ public enum SixLayerTextSelectionPolicy: Sendable, Hashable {
 
 // MARK: - Dynamic Form Field Types
 
-/// Represents a dynamic form field configuration
+/// Runtime dynamic form field: declarative config plus optional `@MainActor` behavior attachments.
+///
+/// **Sendable:** intentionally not `Sendable`. Closures (`visibilityCondition`, `trailingView`,
+/// `valueView`), `(any FieldAction)?`, and `ocrValidationRules: [String: Any]?` are app or
+/// presentation-layer concerns. Immutable hints use ``FieldDisplayHints`` and ``HintsSectionLayout``.
 public struct DynamicFormField: Identifiable {
     public let id: String
     public let textContentType: SixLayerTextContentType?  // Cross-platform text content type
@@ -869,8 +873,11 @@ public enum DynamicContentType: String, CaseIterable, Hashable {
 
 // MARK: - Dynamic Form Section
 
-/// Represents a section in a dynamic form
-// TODO: Make Sendable once DynamicFormField is Sendable
+/// Runtime section in a presented dynamic form (live ``DynamicFormField`` references).
+///
+/// **Sendable:** intentionally not `Sendable` because it holds ``DynamicFormField`` values that
+/// may include closures. Parsed hints store layout recipes in ``HintsSectionLayout`` instead;
+/// ``SectionBuilder`` produces ``DynamicFormSection`` at form open on `@MainActor`.
 public struct DynamicFormSection: Identifiable {
     public let id: String
     public let title: String
@@ -1231,6 +1238,10 @@ public struct FormProgress {
     }
 }
 
+/// Mutable form presentation state (`@MainActor` only).
+///
+/// **Sendable:** intentionally not `Sendable`. Holds live field values (`[String: Any]`),
+/// validation errors, and section collapse state tied to the current editing session.
 @MainActor
 public class DynamicFormState: ObservableObject {
     @Published public var fieldValues: [String: Any] = [:]
