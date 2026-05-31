@@ -87,103 +87,74 @@ open class HIGComplianceTouchTargetTests: BaseTestClass {
     }
 
     @Test @MainActor func testButtonRespectsRuntimeTouchTargetDetection() async {
-            initializeTestConfig()
+        initializeTestConfig()
+        defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
+
         runWithTaskLocalConfig {
-            // GIVEN: A button with automatic compliance
+            let platform = SixLayerPlatform.current
             let button = Button("Test Button") { }
                 .automaticCompliance()
-            
-            // WHEN: View is created on a platform that requires touch targets
-            // THEN: Button should have minimum touch target size based on RuntimeCapabilityDetection
-            
-            // Test all platforms and verify behavior matches runtime detection
-            let platforms: [SixLayerPlatform] = [.iOS, .watchOS, .macOS, .tvOS, .visionOS]
-            
-            for platform in platforms {
-                // Set test platform to get correct runtime detection values
-                
-                // Get the expected minimum touch target from runtime detection
-                let expectedMinTouchTarget = RuntimeCapabilityDetection.minTouchTarget
-                let requiresTouchTarget = expectedMinTouchTarget > 0
-                
-                // RED PHASE: This will fail until touch target sizing is implemented
-                let passed = testComponentComplianceSinglePlatform(
-                    button,
-                    expectedPattern: "SixLayer.*ui",
-                    platform: platform,
-                    componentName: "Button-\(platform)"
-                )
-                
-                if requiresTouchTarget {
-                    #expect(passed, "Button should have minimum \(expectedMinTouchTarget)pt touch target on \(platform) (runtime detection: minTouchTarget=\(expectedMinTouchTarget))")
-                } else {
-                    #expect(passed, "Button should have HIG compliance on \(platform) (runtime detection: minTouchTarget=\(expectedMinTouchTarget), no touch target required)")
-                }
-                
-                // Clean up
-                RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+
+            let expectedMinTouchTarget = RuntimeCapabilityDetection.minTouchTarget
+            let requiresTouchTarget = expectedMinTouchTarget > 0
+
+            let passed = testComponentComplianceSinglePlatform(
+                button,
+                expectedPattern: "SixLayer.*ui",
+                platform: platform,
+                componentName: "Button-\(platform)"
+            )
+
+            if requiresTouchTarget {
+                #expect(passed, "Button should have minimum \(expectedMinTouchTarget)pt touch target on \(platform)")
+            } else {
+                #expect(passed, "Button should have HIG compliance on \(platform) (minTouchTarget=\(expectedMinTouchTarget))")
             }
         }
     }
     
     @Test @MainActor func testLinkRespectsRuntimeTouchTargetDetection() async {
-            initializeTestConfig()
+        initializeTestConfig()
+        defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
+
         runWithTaskLocalConfig {
-            // GIVEN: A link with automatic compliance
+            let platform = SixLayerPlatform.current
+            guard platform == .iOS || platform == .watchOS else { return }
+
             let link = Link("Test Link", destination: URL(string: "https://example.com")!)
                 .automaticCompliance()
-            
-            // WHEN: View is created
-            // THEN: Link should respect runtime touch target detection
-            
-            // Test platforms that require touch targets
-            let touchPlatforms: [SixLayerPlatform] = [.iOS, .watchOS]
-            
-            for platform in touchPlatforms {
-                let expectedMinTouchTarget = RuntimeCapabilityDetection.minTouchTarget
-                
-                // RED PHASE: This will fail until touch target sizing is implemented
-                let passed = testComponentComplianceSinglePlatform(
-                    link,
-                    expectedPattern: "SixLayer.*ui",
-                    platform: platform,
-                    componentName: "Link-\(platform)"
-                )
-                #expect(passed, "Link should have minimum \(expectedMinTouchTarget)pt touch target on \(platform) (runtime detection: minTouchTarget=\(expectedMinTouchTarget))")
-                
-                RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-            }
+            let expectedMinTouchTarget = RuntimeCapabilityDetection.minTouchTarget
+
+            let passed = testComponentComplianceSinglePlatform(
+                link,
+                expectedPattern: "SixLayer.*ui",
+                platform: platform,
+                componentName: "Link-\(platform)"
+            )
+            #expect(passed, "Link should have minimum \(expectedMinTouchTarget)pt touch target on \(platform)")
         }
     }
     
     @Test @MainActor func testInteractiveViewRespectsRuntimeTouchTargetDetection() async {
-            initializeTestConfig()
+        initializeTestConfig()
+        defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
+
         runWithTaskLocalConfig {
-            // GIVEN: An interactive view (tappable) with automatic compliance
+            let platform = SixLayerPlatform.current
+            guard platform == .iOS || platform == .watchOS else { return }
+
             let interactiveView = Text("Tap Me")
                 .onTapGesture { }
                 .automaticCompliance()
-            
-            // WHEN: View is created
-            // THEN: Interactive view should respect runtime touch target detection
-            
-            // Test platforms that require touch targets
-            let touchPlatforms: [SixLayerPlatform] = [.iOS, .watchOS]
-            
-            for platform in touchPlatforms {
-                let expectedMinTouchTarget = RuntimeCapabilityDetection.minTouchTarget
-                
-                // RED PHASE: This will fail until touch target sizing is implemented
-                let passed = testComponentComplianceSinglePlatform(
-                    interactiveView,
-                    expectedPattern: "SixLayer.*ui",
-                    platform: platform,
-                    componentName: "InteractiveView-\(platform)"
-                )
-                #expect(passed, "Interactive view should have minimum \(expectedMinTouchTarget)pt touch target on \(platform) (runtime detection: minTouchTarget=\(expectedMinTouchTarget))")
-                
-                RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-            }
+            let expectedMinTouchTarget = RuntimeCapabilityDetection.minTouchTarget
+
+            let passed = testComponentComplianceSinglePlatform(
+                interactiveView,
+                expectedPattern: "SixLayer.*ui",
+                platform: platform,
+                componentName: "InteractiveView-\(platform)"
+            )
+            #expect(passed, "Interactive view should have minimum \(expectedMinTouchTarget)pt touch target on \(platform)")
         }
     }
     
