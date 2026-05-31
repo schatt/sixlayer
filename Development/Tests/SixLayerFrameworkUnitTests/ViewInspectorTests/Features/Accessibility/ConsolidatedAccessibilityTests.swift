@@ -14635,7 +14635,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             #endif
         }
     }
-}
 
     @Test @MainActor func testAnimationRespectsReducedMotion() async {
         self.initializeTestConfig()
