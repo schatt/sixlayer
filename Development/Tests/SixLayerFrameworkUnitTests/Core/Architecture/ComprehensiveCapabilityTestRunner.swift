@@ -199,6 +199,13 @@ struct ComprehensiveCapabilityTestRunner {
             #expect(config.supportsVoiceOver == RuntimeCapabilityDetection.supportsVoiceOver, "Current: VoiceOver should mirror detection")
         case .switchControl:
             #expect(config.supportsSwitchControl == RuntimeCapabilityDetection.supportsSwitchControl, "Current: SwitchControl should mirror detection")
+        case .vision:
+            _ = RuntimeCapabilityDetection.Vision.isFrameworkAvailable
+        case .ocr:
+            #expect(
+                RuntimeCapabilityDetection.Vision.supportsOCR == RuntimeCapabilityDetection.Vision.isFrameworkAvailable,
+                "Current: OCR availability should match Vision framework"
+            )
         }
     }
 
