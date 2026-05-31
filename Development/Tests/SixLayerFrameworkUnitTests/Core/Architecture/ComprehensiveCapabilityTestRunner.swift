@@ -230,13 +230,12 @@ struct ComprehensiveCapabilityTestRunner {
     }
     
     /// AssistiveTouch implies touch only on platforms that ship the OS feature (iOS/watchOS).
-    /// macOS card expansion may report `supportsTouch == false` while overrides exercise other axes.
     @MainActor
     private func assertAssistiveTouchImpliesTouchWhenPlatformShips(_ config: CardExpansionPlatformConfig) {
         guard SixLayerPlatform.current.supportsAssistiveTouch, config.supportsAssistiveTouch else { return }
         #expect(config.supportsTouch, "AssistiveTouch requires touch")
     }
-    
+
     /// Thread-local touch `false` is ignored on iOS/watchOS (platform guarantee); elsewhere it is honored.
     @MainActor
     private func assertTouchMatchesThreadLocalMock(_ config: CardExpansionPlatformConfig, mockTouchEnabled: Bool) {
@@ -270,7 +269,11 @@ struct ComprehensiveCapabilityTestRunner {
         case .hapticFeedback:
             #expect(config.supportsHapticFeedback == enabled, "Haptic feedback detection should be \(enabled)")
         case .assistiveTouch:
-            #expect(config.supportsAssistiveTouch == enabled, "AssistiveTouch detection should be \(enabled)")
+            let expected = PlatformTestUtilities.expectedAssistiveTouchAfterTestOverride(enabled)
+            #expect(config.supportsAssistiveTouch == expected, "AssistiveTouch detection should be \(expected)")
+            if expected {
+                assertAssistiveTouchImpliesTouchWhenPlatformShips(config)
+            }
         case .voiceOver:
             #expect(config.supportsVoiceOver == enabled, "VoiceOver detection should be \(enabled)")
         case .switchControl:
@@ -339,9 +342,9 @@ struct ComprehensiveCapabilityTestRunner {
             // Haptic feedback should match the enabled state (runtime detection)
             #expect(config.supportsHapticFeedback == enabled, "Haptic feedback UI should be \(enabled ? "generated" : "not generated") based on runtime detection")
         case .assistiveTouch:
-            // AssistiveTouch should match the enabled state (runtime detection)
-            #expect(config.supportsAssistiveTouch == enabled, "AssistiveTouch UI should be \(enabled ? "generated" : "not generated") based on runtime detection")
-            if enabled {
+            let expected = PlatformTestUtilities.expectedAssistiveTouchAfterTestOverride(enabled)
+            #expect(config.supportsAssistiveTouch == expected, "AssistiveTouch UI should match platform-aware mock (\(expected))")
+            if expected {
                 assertAssistiveTouchImpliesTouchWhenPlatformShips(config)
             }
         case .voiceOver:
@@ -545,9 +548,9 @@ struct ComprehensiveCapabilityTestRunner {
             // Haptic feedback should match the enabled state (runtime detection)
             #expect(config.supportsHapticFeedback == enabled, "Haptic feedback behavior should be \(enabled ? "enabled" : "disabled") based on runtime detection")
         case .assistiveTouch:
-            // AssistiveTouch should match the enabled state (runtime detection)
-            #expect(config.supportsAssistiveTouch == enabled, "AssistiveTouch behavior should be \(enabled ? "enabled" : "disabled") based on runtime detection")
-            if enabled {
+            let expected = PlatformTestUtilities.expectedAssistiveTouchAfterTestOverride(enabled)
+            #expect(config.supportsAssistiveTouch == expected, "AssistiveTouch behavior should match platform-aware mock (\(expected))")
+            if expected {
                 assertAssistiveTouchImpliesTouchWhenPlatformShips(config)
             }
         case .voiceOver:
