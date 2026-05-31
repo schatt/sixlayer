@@ -6,7 +6,7 @@ import SwiftUI
 /// UI Generation Verification Tests
 /// Tests that the correct UI components are generated based on capabilities
 /// NOTE: Not marked @MainActor on class to allow parallel execution
-@Suite("UIGeneration Verification")
+@Suite("UIGeneration Verification", DefaultRuntimeCapabilityIsolationTrait())
 open class UIGenerationVerificationTests: BaseTestClass {
     
     // MARK: - Test Configuration
@@ -319,10 +319,9 @@ open class UIGenerationVerificationTests: BaseTestClass {
         #expect(hoverEnabledConfig.capabilities.supportsHover == config.capabilities.supportsHover, "Hover support should match configuration")
     }
     
-    /// Test platform-specific configuration differences
+    /// Test platform-specific configuration differences (representative DTO shapes, not host emulation).
     @Test func testPlatformSpecificConfigurationDifferences() {
-        // Given
-        let iOSConfig = UIGenerationTestConfig.CapabilitySet(
+        let touchFirstShape = UIGenerationTestConfig.CapabilitySet(
             supportsTouch: true,
             supportsHover: false,
             supportsHapticFeedback: true,
@@ -335,7 +334,7 @@ open class UIGenerationVerificationTests: BaseTestClass {
             hoverDelay: 0.0
         )
         
-        let macOSConfig = UIGenerationTestConfig.CapabilitySet(
+        let hoverFirstShape = UIGenerationTestConfig.CapabilitySet(
             supportsTouch: false,
             supportsHover: true,
             supportsHapticFeedback: false,
@@ -348,46 +347,43 @@ open class UIGenerationVerificationTests: BaseTestClass {
             hoverDelay: 0.1
         )
         
-        // Verify configurations are different
-        #expect(iOSConfig.supportsTouch != macOSConfig.supportsTouch, "iOS and macOS should have different touch support")
-        #expect(iOSConfig.supportsHover != macOSConfig.supportsHover, "iOS and macOS should have different hover support")
-        #expect(iOSConfig.supportsHapticFeedback != macOSConfig.supportsHapticFeedback, "iOS and macOS should have different haptic support")
+        #expect(touchFirstShape.supportsTouch != hoverFirstShape.supportsTouch, "Touch-first and hover-first shapes should differ on touch")
+        #expect(touchFirstShape.supportsHover != hoverFirstShape.supportsHover, "Touch-first and hover-first shapes should differ on hover")
+        #expect(touchFirstShape.supportsHapticFeedback != hoverFirstShape.supportsHapticFeedback, "Touch-first and hover-first shapes should differ on haptic")
     }
     
-    /// Test that platform mocking actually creates different underlying view types
-    @Test func testPlatformMockingCreatesDifferentViewTypes() {
-        // This test verifies that platform mocking works correctly
-        // by ensuring different platforms generate different underlying view types
-        
-        // Simulate iOS platform (touch-enabled)
-        let iOSConfig = CardExpansionPlatformConfig(
-            supportsHapticFeedback: true,
-            supportsHover: false,
-            supportsTouch: true,
-            supportsVoiceOver: true,
-            supportsSwitchControl: true,
-            supportsAssistiveTouch: true,
-            minTouchTarget: 44,
-            hoverDelay: 0.0,
-            animationEasing: .easeInOut(duration: 0.3)
-        )
-        
-        // Simulate macOS platform (hover-enabled)
-        let macOSConfig = CardExpansionPlatformConfig(
-            supportsHapticFeedback: false,
-            supportsHover: true,
-            supportsTouch: false,
-            supportsVoiceOver: true,
-            supportsSwitchControl: true,
-            supportsAssistiveTouch: false,
-            minTouchTarget: 0,
-            hoverDelay: 0.1,
-            animationEasing: Animation.easeInOut(duration: 0.2)
-        )
-        
-        // Verify configurations are different
-        #expect(iOSConfig.supportsTouch != macOSConfig.supportsTouch, "iOS and macOS should have different touch support")
-        #expect(iOSConfig.supportsHover != macOSConfig.supportsHover, "iOS and macOS should have different hover support")
-        #expect(iOSConfig.supportsHapticFeedback != macOSConfig.supportsHapticFeedback, "iOS and macOS should have different haptic support")
+    /// Card expansion config on **current host** through touch/hover tri-state (#251).
+    @Test @MainActor func testCardExpansionConfigTriStatePhases() {
+        defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
+
+        func assertConfigMirrorsDetection(phase: String) {
+            let platform = SixLayerPlatform.current
+            let config = getCardExpansionPlatformConfig()
+            let effectiveTouch = RuntimeCapabilityDetection.supportsTouch
+            let expectedMin = PlatformTestUtilities.expectedMinTouchTarget(
+                for: platform,
+                touchDetected: effectiveTouch
+            )
+
+            switch platform {
+            case .iOS, .watchOS, .macOS, .tvOS, .visionOS:
+                #expect(config.supportsTouch == effectiveTouch, "\(phase): touch should mirror detection")
+                #expect(config.supportsHover == RuntimeCapabilityDetection.supportsHover, "\(phase): hover should mirror detection")
+                #expect(config.minTouchTarget == expectedMin, "\(phase): minTouchTarget should match HIG on \(platform)")
+            }
+        }
+
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        assertConfigMirrorsDetection(phase: "current")
+
+        RuntimeCapabilityDetection.setTestTouchSupport(false)
+        RuntimeCapabilityDetection.setTestHapticFeedback(false)
+        RuntimeCapabilityDetection.setTestHover(false)
+        assertConfigMirrorsDetection(phase: "disabled")
+
+        RuntimeCapabilityDetection.setTestTouchSupport(true)
+        RuntimeCapabilityDetection.setTestHapticFeedback(true)
+        RuntimeCapabilityDetection.setTestHover(true)
+        assertConfigMirrorsDetection(phase: "enabled")
     }
 }
