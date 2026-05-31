@@ -376,22 +376,50 @@ open class CapabilityAwareFunctionTests: BaseTestClass {
     
     // MARK: - Accessibility-Dependent Function Tests
     
-    /// BUSINESS PURPOSE: Accessibility functions provide VoiceOver and Switch Control support for inclusive user interaction
-    /// TESTING SCOPE: VoiceOver support, Switch Control support, accessibility compliance
-    /// METHODOLOGY: Test accessibility capability detection and support
-    @Test @MainActor func testAccessibilityDependentFunctions() {
-        // Test accessibility functions that are available
-        // Note: AccessibilityOptimizationManager was removed - using simplified accessibility testing
-        
-        // Set test overrides for accessibility capabilities
-        RuntimeCapabilityDetection.setTestVoiceOver(true)
-        RuntimeCapabilityDetection.setTestSwitchControl(true)
+    /// Accessibility-dependent card config on the **current host** through a11y tri-state (#251 / #312).
+    @Test @MainActor func testAccessibilityDependentFunctionsTriStatePhases() {
         defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
 
-        // Test that accessibility behavior can be tested
-        let config = getCardExpansionPlatformConfig()
-        #expect(config.supportsVoiceOver, "VoiceOver should be supported")
-        #expect(config.supportsSwitchControl, "Switch Control should be supported")
+        func assertAccessibilityLaw(phase: String) {
+            let platform = SixLayerPlatform.current
+            let config = getCardExpansionPlatformConfig()
+
+            switch platform {
+            case .iOS, .watchOS, .macOS, .tvOS, .visionOS:
+                #expect(
+                    config.supportsVoiceOver == RuntimeCapabilityDetection.supportsVoiceOver,
+                    "\(phase): VoiceOver should mirror detection on \(platform)"
+                )
+                #expect(
+                    config.supportsSwitchControl == RuntimeCapabilityDetection.supportsSwitchControl,
+                    "\(phase): SwitchControl should mirror detection on \(platform)"
+                )
+                #expect(
+                    config.supportsAssistiveTouch == RuntimeCapabilityDetection.supportsAssistiveTouch,
+                    "\(phase): AssistiveTouch should mirror detection on \(platform)"
+                )
+            }
+        }
+
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        assertAccessibilityLaw(phase: "current")
+
+        RuntimeCapabilityDetection.setTestVoiceOver(false)
+        RuntimeCapabilityDetection.setTestSwitchControl(false)
+        RuntimeCapabilityDetection.setTestAssistiveTouch(false)
+        assertAccessibilityLaw(phase: "disabled")
+
+        RuntimeCapabilityDetection.setTestVoiceOver(true)
+        RuntimeCapabilityDetection.setTestSwitchControl(true)
+        RuntimeCapabilityDetection.setTestAssistiveTouch(true)
+        assertAccessibilityLaw(phase: "enabled")
+    }
+
+    /// BUSINESS PURPOSE: Accessibility functions provide VoiceOver and Switch Control support for inclusive user interaction
+    /// TESTING SCOPE: VoiceOver support, Switch Control support, accessibility compliance
+    /// METHODOLOGY: Tri-state card config law beside capability-aware control path
+    @Test @MainActor func testAccessibilityDependentFunctions() {
+        testAccessibilityDependentFunctionsTriStatePhases()
     }
     
     // MARK: - Color Encoding-Dependent Function Tests

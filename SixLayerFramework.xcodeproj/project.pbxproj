@@ -150,6 +150,7 @@
 		0A8F05779E62BA010375350C /* AutomaticAccessibilityIdentifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A51921688AA927D4B5CFDE /* AutomaticAccessibilityIdentifiers.swift */; };
 		0AA1D932D28EFEFD7F10FCD2 /* ViewGenerationIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40EEA0D824A969635D086995 /* ViewGenerationIntegrationTests.swift */; };
 		0AAA27300F206B0CA5FBE494 /* PlatformManagedSettingsFlowLogicTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49966B3A14BA13F6454E3D2C /* PlatformManagedSettingsFlowLogicTests.swift */; };
+		0AB0854A45264762E6542874 /* OptimalCardLayoutViewportChromeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4924EFE92AFF46EBDAF125CE /* OptimalCardLayoutViewportChromeTests.swift */; };
 		0AC68C5C236DC6C05FE66C87 /* PlatformImageEXIFWriters.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64EACD90C6C69FAA5D878815 /* PlatformImageEXIFWriters.swift */; };
 		0ACF78DE2792327E06AB8B6D /* RuntimeCapabilityDetectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7A524E6E06C01F309963D05 /* RuntimeCapabilityDetectionTests.swift */; };
 		0AD327AADF7F102BBC0AEEFF /* PlatformTabViewExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = E36CEE58DAF6CB4CAAA9442A /* PlatformTabViewExtensions.swift */; };
@@ -471,6 +472,7 @@
 		2537BBFA3EDA703DF3CF4539 /* Layer1SemanticAPIPresenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A7D1165AF153DA42D36BDAD /* Layer1SemanticAPIPresenceTests.swift */; };
 		254736B63CBE69C9979415E2 /* PlatformModalSheetNavigationChromeLayer4Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DE52CF0CC4961A0BDE514B9 /* PlatformModalSheetNavigationChromeLayer4Tests.swift */; };
 		25476425E028857A60EC92FA /* IntelligentFormView+EntityAutoSave.swift in Sources */ = {isa = PBXBuildFile; fileRef = A126B2E52D169F9A66D218A6 /* IntelligentFormView+EntityAutoSave.swift */; };
+		255A04307605E4851D8AC661 /* CardViewportHostHintsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0ED3F2338F4B022941AF6113 /* CardViewportHostHintsTests.swift */; };
 		255DACA6C59EA18D2F1766DB /* PlatformResourceLayer5.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8BBC4683F95F973F1CE332D /* PlatformResourceLayer5.swift */; };
 		25806E4AD591AC05D4123691 /* ItemCollectionPresentationStrategyResolverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 154666A424FEB9A2AC333AE6 /* ItemCollectionPresentationStrategyResolverTests.swift */; };
 		259E78A14F3AC3B0376AB056 /* Layer4BreakingChangeDetectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4696C53E5DBC5872DE4F728 /* Layer4BreakingChangeDetectionTests.swift */; };
@@ -828,6 +830,7 @@
 		414B27EBCFF4898C0E6541C4 /* PlatformPrivacyLayer5.swift in Sources */ = {isa = PBXBuildFile; fileRef = A79B660D34A588E35C81AD66 /* PlatformPrivacyLayer5.swift */; };
 		414D78C5CC8AEC839F49CB99 /* IntelligentCardExpansionLayer2Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEAAB236351B68057C864ECC /* IntelligentCardExpansionLayer2Tests.swift */; };
 		414F845329E8D3D0ADD5498F /* PlatformFormToolbarAccessibilityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 978E681C1985D5CA035F8ADF /* PlatformFormToolbarAccessibilityTests.swift */; };
+		417CD906EB2EF47D4C6BFCBD /* OptimalCardLayoutViewportChromeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4924EFE92AFF46EBDAF125CE /* OptimalCardLayoutViewportChromeTests.swift */; };
 		418A712A68E80C06866A1F42 /* OCRStructuredExtractionFollowups283Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C8C99AD037438DF85C29547 /* OCRStructuredExtractionFollowups283Tests.swift */; };
 		41BB3D8F58EC8ECE4572B94F /* PlatformMaintenanceLayer5.swift in Sources */ = {isa = PBXBuildFile; fileRef = D72EC17BDBA924A33BA300AA /* PlatformMaintenanceLayer5.swift */; };
 		41D4796FEB0D2F23A758736D /* PlatformSystemZoomPreference.swift in Sources */ = {isa = PBXBuildFile; fileRef = A734A20D26DCDAE6B9BD8644 /* PlatformSystemZoomPreference.swift */; };
@@ -968,6 +971,7 @@
 		4CDD503C3AB4D0CAACA259BD /* WatchOSFormColorPickers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C3CC0A3797BBD65958EAB62 /* WatchOSFormColorPickers.swift */; };
 		4CDFB6858F182F2FD32B2248 /* ThemingIntegration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A8723AE44E462450B23E862 /* ThemingIntegration.swift */; };
 		4CEF1BC7256E1D39752DAF0E /* LayoutParameterCalculatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C7107736EAD12E6DAB4DB06 /* LayoutParameterCalculatorTests.swift */; };
+		4CFF71B8982B62EC689723E1 /* CardViewportHostHintsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0ED3F2338F4B022941AF6113 /* CardViewportHostHintsTests.swift */; };
 		4D007ADE822BAE969A9B4873 /* DefaultRuntimeCapabilityIsolationTrait.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54D20D03C676F8F86FBAF55A /* DefaultRuntimeCapabilityIsolationTrait.swift */; };
 		4D3958E84B576351813D4D7E /* PlatformSystemZoomPreference.swift in Sources */ = {isa = PBXBuildFile; fileRef = A734A20D26DCDAE6B9BD8644 /* PlatformSystemZoomPreference.swift */; };
 		4D509088BB7FF1E14F9DA6D9 /* PlatformOrchestrationLayer5.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FA15693B8533B8E54C0BB25 /* PlatformOrchestrationLayer5.swift */; };
@@ -1584,6 +1588,7 @@
 		7DB4B803FF2D5BA405019C4A /* MockOCRServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2384310ED2E0DD996B528FD7 /* MockOCRServiceTests.swift */; };
 		7E2AE89AB7DC097179208B54 /* PlatformMaintenanceLayer5.swift in Sources */ = {isa = PBXBuildFile; fileRef = D72EC17BDBA924A33BA300AA /* PlatformMaintenanceLayer5.swift */; };
 		7E2BFF07D3FB5BFF5D9B7000 /* CoreDataTestUtilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 959A6C6D0F2BEA9209FB1A6C /* CoreDataTestUtilities.swift */; };
+		7E45FE92A1AF4A336320C893 /* OptimalCardLayoutViewportChromeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4924EFE92AFF46EBDAF125CE /* OptimalCardLayoutViewportChromeTests.swift */; };
 		7E58F0B50004DA08784B440D /* PlatformAdvancedContainerExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C9E4B02788B28764D4ED21E /* PlatformAdvancedContainerExtensions.swift */; };
 		7E923EC0B1FA4EBC53B8EDE3 /* PlatformFrameSpacingUtilitiesAuditHost.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DB1C7B0FC905D229ED0EA3A /* PlatformFrameSpacingUtilitiesAuditHost.swift */; };
 		7E9FFFE0A28533045971D6FD /* CloudKitTestHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = E89ADDFCF2AAEF274C380FDD /* CloudKitTestHelpers.swift */; };
@@ -1857,6 +1862,7 @@
 		92B144D55B54BFDDD3D0CDC8 /* PlatformPhotoLayoutDecisionLayer2.swift in Sources */ = {isa = PBXBuildFile; fileRef = D762AB299089808826BB4966 /* PlatformPhotoLayoutDecisionLayer2.swift */; };
 		92B343E8DCEB74F045E23719 /* RuntimeCapabilityDetectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7A524E6E06C01F309963D05 /* RuntimeCapabilityDetectionTests.swift */; };
 		92D2428B45A5D79CD239469E /* VIEWINSPECTOR_ANYVIEW_INVESTIGATION.md in Resources */ = {isa = PBXBuildFile; fileRef = B79AD98936960569626B63AD /* VIEWINSPECTOR_ANYVIEW_INVESTIGATION.md */; };
+		92DF0EFED98EE0B0AB0C6BD9 /* CardViewportHostHintsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0ED3F2338F4B022941AF6113 /* CardViewportHostHintsTests.swift */; };
 		93157736EEFEC1EFBFCA5FA2 /* PlatformManagedSettingsDetailNavigationState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6823A7FA3CE18BD0484D5534 /* PlatformManagedSettingsDetailNavigationState.swift */; };
 		931FC715DAEC9166A6B9613F /* ItemBadge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2158541D13E0B38AF1084A8E /* ItemBadge.swift */; };
 		9334DCEF02D5841F3B3EBCE9 /* LocationServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EA899D32AD85BF937BD2708 /* LocationServiceTests.swift */; };
@@ -2158,6 +2164,7 @@
 		ADB34291DB40BFC579513625 /* InternationalizationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB696A4D504ABF41B390F445 /* InternationalizationTests.swift */; };
 		ADD72E3E0236269436C5B872 /* NavigationStackLayer5Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B1B95639D24A95365CC9506 /* NavigationStackLayer5Tests.swift */; };
 		AE14FDE0D5C46A7A7E64BB7A /* PlatformGraphicsExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F086EEA41ACC79CE663D07E /* PlatformGraphicsExtensions.swift */; };
+		AE2A6B949D17B66D4A72C3D0 /* OptimalCardLayoutViewportChromeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4924EFE92AFF46EBDAF125CE /* OptimalCardLayoutViewportChromeTests.swift */; };
 		AE313242BA644CCDAF01172A /* RuntimeCapabilityDetectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7A524E6E06C01F309963D05 /* RuntimeCapabilityDetectionTests.swift */; };
 		AE3B34B358AACED598A52B3E /* PlatformImagePhase3Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C805CA9CDAF550856B6C156 /* PlatformImagePhase3Tests.swift */; };
 		AE3BBF4CA651201C5350DF9F /* FieldActionRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 005CBFEDAF661A476589B52D /* FieldActionRenderer.swift */; };
@@ -2263,6 +2270,7 @@
 		B688356D1B3D54DDADA6DD7D /* DataIntrospectionCoreDataTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39254C5791805FB88FB7599F /* DataIntrospectionCoreDataTests.swift */; };
 		B6D43C22ED9D87DF26E53E03 /* DefensiveValidation.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0EE7B0159713978F9A99A36 /* DefensiveValidation.swift */; };
 		B6ECD14909633BA3156FD061 /* MigrationTool.swift in Sources */ = {isa = PBXBuildFile; fileRef = 778732994C806F48DAC91188 /* MigrationTool.swift */; };
+		B71A63D5C81F7C9B613A4943 /* CardViewportHostHintsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0ED3F2338F4B022941AF6113 /* CardViewportHostHintsTests.swift */; };
 		B72D760064A1A59E61B05EAF /* FormStateStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8A87379BEADDCE465F51BCD /* FormStateStorage.swift */; };
 		B73A2346AAD2D94FA8F0027F /* FormDraftTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3615F75BA9368D22967C86F7 /* FormDraftTests.swift */; };
 		B77063AA96BB179B8E224B0D /* Layer5PlatformComponentTDDTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F679B2B923EBECE83276CF6E /* Layer5PlatformComponentTDDTests.swift */; };
@@ -2696,6 +2704,7 @@
 		D943FC2387177A0606DA80ED /* PlatformSidebarHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = A091847EEB0BCF8A6DF1DB7E /* PlatformSidebarHelpers.swift */; };
 		D94DA2B2F39F5B9DC327FD7D /* PlatformDataScannerLiveCapture_iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5269E24920DC1D5AB466C970 /* PlatformDataScannerLiveCapture_iOS.swift */; };
 		D95D0C759EA23A1129D2DA77 /* AccessibilityIdentifierGenerationVerificationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 123C2BE1D9B9D519CF1405E0 /* AccessibilityIdentifierGenerationVerificationTests.swift */; };
+		D9819F7182F381192E7A73AC /* OptimalCardLayoutViewportChromeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4924EFE92AFF46EBDAF125CE /* OptimalCardLayoutViewportChromeTests.swift */; };
 		D98A47C889B4BBBAB6FF65B7 /* PlatformTestUtilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 256AE34B9C5CD499235C10B8 /* PlatformTestUtilities.swift */; };
 		D99BE8EF88DD478470A4E3CE /* LabelPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = D91BA1A47EC7F7586CEC251E /* LabelPolicy.swift */; };
 		D99D61051FB8C2D55A89B8F5 /* InternationalizationTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7931A9A6CD7ED530901663D7 /* InternationalizationTypes.swift */; };
@@ -2881,6 +2890,7 @@
 		E97D8A31433CBDA97AEDEAB4 /* CardBadgeContentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3D7809919AD19E303A4F8C0 /* CardBadgeContentTests.swift */; };
 		E9833AA11A5C0E758605303C /* GenericDataItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43F9BB9F7677DBA23A5A5BD3 /* GenericDataItem.swift */; };
 		E9AE1B44879CFA14634DA3DD /* FormProcessingWorkflowTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD7AFE58993D8F6D3337C6FE /* FormProcessingWorkflowTests.swift */; };
+		E9BC655973C460BD653C563D /* CardViewportHostHintsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0ED3F2338F4B022941AF6113 /* CardViewportHostHintsTests.swift */; };
 		E9C75485F92C113E7684C4E4 /* PlatformImagePhase3Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C805CA9CDAF550856B6C156 /* PlatformImagePhase3Tests.swift */; };
 		E9D3381084C4ABBA71E93867 /* PlatformPrintLayer4.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF8DAF63AF2ABB2AD6E2113D /* PlatformPrintLayer4.swift */; };
 		E9DA515175D90E66DB210766 /* AccessibilityTestUtilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F5B3BCC307862753823EAA9 /* AccessibilityTestUtilities.swift */; };
@@ -3566,6 +3576,7 @@
 		0C6D9391BC17345B4A7D36B5 /* PlatformOCRLayoutDecisionLayer2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformOCRLayoutDecisionLayer2.swift; sourceTree = "<group>"; };
 		0DFA6B3D4FE363D2D4DAFCAB /* PlatformMapComponentsLayer4ComponentAccessibilityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformMapComponentsLayer4ComponentAccessibilityTests.swift; sourceTree = "<group>"; };
 		0E23733C51C38B31500DD2B1 /* OCRLabelAnchoredExtraction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OCRLabelAnchoredExtraction.swift; sourceTree = "<group>"; };
+		0ED3F2338F4B022941AF6113 /* CardViewportHostHintsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardViewportHostHintsTests.swift; sourceTree = "<group>"; };
 		0EDAB3F7CA12B73D025F8901 /* PlatformOpenSettingsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformOpenSettingsTests.swift; sourceTree = "<group>"; };
 		0EDD4C3EAD17422EDFAD7B67 /* PlatformPhotoComponentsLayer4.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformPhotoComponentsLayer4.swift; sourceTree = "<group>"; };
 		0FBAAD9F09C74615C12EE441 /* WindowRenderingTestHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowRenderingTestHelper.swift; sourceTree = "<group>"; };
@@ -3728,6 +3739,7 @@
 		47DAD3848FE439B29A38F11B /* HintsGeneratorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HintsGeneratorTests.swift; sourceTree = "<group>"; };
 		48C3C4298E1E5EE5690776F1 /* ResponsiveContainerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResponsiveContainerTests.swift; sourceTree = "<group>"; };
 		492193FF463DF906B366E1A2 /* PlatformWisdomLayer5.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformWisdomLayer5.swift; sourceTree = "<group>"; };
+		4924EFE92AFF46EBDAF125CE /* OptimalCardLayoutViewportChromeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OptimalCardLayoutViewportChromeTests.swift; sourceTree = "<group>"; };
 		49832A98CEDE6D96688D6F12 /* AppleHIGComplianceComponentAccessibilityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleHIGComplianceComponentAccessibilityTests.swift; sourceTree = "<group>"; };
 		49966B3A14BA13F6454E3D2C /* PlatformManagedSettingsFlowLogicTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformManagedSettingsFlowLogicTests.swift; sourceTree = "<group>"; };
 		4A09941D76337A14AF4CF46D /* CrossPlatformColorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrossPlatformColorTests.swift; sourceTree = "<group>"; };
@@ -5579,6 +5591,7 @@
 				4EAE6E23F8D885FC37B2D882 /* CardDisplayHelperAccessibilityIdentifierLabelTests.swift */,
 				2DA94093B91151C94B1D4A5C /* CardDisplayHelperHintTests.swift */,
 				7201816514B94A5E1A7864C1 /* CardDisplayHelperNilFallbackTests.swift */,
+				0ED3F2338F4B022941AF6113 /* CardViewportHostHintsTests.swift */,
 				852C59B45D020F375BD1CFF3 /* CountBasedPresentationTests.swift */,
 				401E449BE08E15D98201AE1E /* ExplicitCountBasedPresentationTests.swift */,
 				A6354A896728129174603048 /* HintsDefaultValueTests.swift */,
@@ -5592,6 +5605,7 @@
 				0874EF360179508ADC1316AB /* ItemIconTests.swift */,
 				09FFAA8FB08DDD888050C880 /* ModalContainerTests.swift */,
 				E0C3CB9D020FD66A66030811 /* ModalFormL1Tests.swift */,
+				4924EFE92AFF46EBDAF125CE /* OptimalCardLayoutViewportChromeTests.swift */,
 				7A2E1F31DF09981E263DD46E /* PresentationHintsColorConfigurationTests.swift */,
 			);
 			path = Collections;
@@ -6298,7 +6312,7 @@
 			path = API;
 			sourceTree = "<group>";
 		};
-		"TEMP_FE26E1AC-18C7-4542-9F80-9B3711D116C7" /* Utilities */ = {
+		"TEMP_D3995728-F40B-45F2-8543-1B73CA5A01F4" /* Utilities */ = {
 			isa = PBXGroup;
 			children = (
 			);
@@ -7270,6 +7284,7 @@
 				2AE90A30DAA8E556B65D0FEC /* CardDisplayHelperHintTests.swift in Sources */,
 				2309465EFCF02C67FEEA3A0D /* CardDisplayHelperNilFallbackTests.swift in Sources */,
 				37FDC6E97663A1BB2495B181 /* CardDisplayableBugTests.swift in Sources */,
+				4CFF71B8982B62EC689723E1 /* CardViewportHostHintsTests.swift in Sources */,
 				A137C48E7B63C228E3F315B6 /* CloudKitServiceCoreDataTests.swift in Sources */,
 				55A6867E5BE58DDF7D143385 /* CloudKitServiceQueueStatusTests.swift in Sources */,
 				B00EA0DCE7501C374330961E /* CloudKitServiceSwiftDataTests.swift in Sources */,
@@ -7404,6 +7419,7 @@
 				8E7008594D626386BD87E8CA /* OCRStrategyTests.swift in Sources */,
 				7BD3068C40A3F560E211A813 /* OCRStructuredExtractionFollowups283Tests.swift in Sources */,
 				790857F58B6448526304B732 /* OCRVisionMinimumTextHeight288Tests.swift in Sources */,
+				417CD906EB2EF47D4C6BFCBD /* OptimalCardLayoutViewportChromeTests.swift in Sources */,
 				FC31D6E02E49D1C9549F6A46 /* PhotoCallbackFunctionalTests.swift in Sources */,
 				055DBA6DB1694E7F3973B376 /* PhotoFunctionalityPhase1Tests.swift in Sources */,
 				C6B14C489F56ABAAD98CB9B4 /* PhotoSelectionL1Tests.swift in Sources */,
@@ -8610,6 +8626,7 @@
 				8526528F5CABD4EE8DC67371 /* CardDisplayHelperHintTests.swift in Sources */,
 				13AEADA3A051F39C0653C398 /* CardDisplayHelperNilFallbackTests.swift in Sources */,
 				69BA600ED9AE24CE277C41E1 /* CardDisplayableBugTests.swift in Sources */,
+				B71A63D5C81F7C9B613A4943 /* CardViewportHostHintsTests.swift in Sources */,
 				4DC02A8EF107E71812D699AA /* CloudKitServiceCoreDataTests.swift in Sources */,
 				350CC7144AC61851797986B1 /* CloudKitServiceQueueStatusTests.swift in Sources */,
 				F28FC8CCE73AB8822BA32CFF /* CloudKitServiceSwiftDataTests.swift in Sources */,
@@ -8743,6 +8760,7 @@
 				DB0BA65C1C2685639D06043F /* OCRStrategyTests.swift in Sources */,
 				2665ECA524B9860388487599 /* OCRStructuredExtractionFollowups283Tests.swift in Sources */,
 				FAC798107C35064B93491981 /* OCRVisionMinimumTextHeight288Tests.swift in Sources */,
+				AE2A6B949D17B66D4A72C3D0 /* OptimalCardLayoutViewportChromeTests.swift in Sources */,
 				7A9FD88F86E41F68F63C3F53 /* PhotoCallbackFunctionalTests.swift in Sources */,
 				38133F226DE05CFBB99CE906 /* PhotoFunctionalityPhase1Tests.swift in Sources */,
 				547D79AAFF85B21CEFD3CE2E /* PhotoSelectionL1Tests.swift in Sources */,
@@ -9147,6 +9165,7 @@
 				0C441BBC91BA1FC3F6DC2CAE /* CardDisplayHelperHintTests.swift in Sources */,
 				655418F8EF9287DFF765BA14 /* CardDisplayHelperNilFallbackTests.swift in Sources */,
 				01667BE0CC2FF59928FDDAC8 /* CardDisplayableBugTests.swift in Sources */,
+				E9BC655973C460BD653C563D /* CardViewportHostHintsTests.swift in Sources */,
 				5B5FC036F359B725F7F21B9D /* CloudKitServiceCoreDataTests.swift in Sources */,
 				7976D3662EBD9DF59711572E /* CloudKitServiceQueueStatusTests.swift in Sources */,
 				8586AE5B808DA726725703EE /* CloudKitServiceSwiftDataTests.swift in Sources */,
@@ -9281,6 +9300,7 @@
 				708F0AB946A6AF2D725E80AE /* OCRStrategyTests.swift in Sources */,
 				6CA9DBA894BA626CC2356CE9 /* OCRStructuredExtractionFollowups283Tests.swift in Sources */,
 				75FCD850440ADF18A05A523E /* OCRVisionMinimumTextHeight288Tests.swift in Sources */,
+				0AB0854A45264762E6542874 /* OptimalCardLayoutViewportChromeTests.swift in Sources */,
 				946ADB3369871BCAE48BF6AB /* PhotoCallbackFunctionalTests.swift in Sources */,
 				0FC7A1271EE57A117712C6CF /* PhotoFunctionalityPhase1Tests.swift in Sources */,
 				98D914FF188CCB123147EA8E /* PhotoSelectionL1Tests.swift in Sources */,
@@ -9679,6 +9699,7 @@
 				E635EAB583DC6E17B7FF6E53 /* CardDisplayHelperHintTests.swift in Sources */,
 				C1B7C10EBDE2F054E8239DA7 /* CardDisplayHelperNilFallbackTests.swift in Sources */,
 				BCAC95E7D91A9A8D614ECCB6 /* CardDisplayableBugTests.swift in Sources */,
+				92DF0EFED98EE0B0AB0C6BD9 /* CardViewportHostHintsTests.swift in Sources */,
 				BE9692D7B1FB4268CD2F7775 /* CloudKitServiceCoreDataTests.swift in Sources */,
 				AE483E15325253B521AEAB24 /* CloudKitServiceQueueStatusTests.swift in Sources */,
 				FACAA3BE7A3E075854A27077 /* CloudKitServiceSwiftDataTests.swift in Sources */,
@@ -9813,6 +9834,7 @@
 				E7D4662B0C619F41DC351965 /* OCRStrategyTests.swift in Sources */,
 				418A712A68E80C06866A1F42 /* OCRStructuredExtractionFollowups283Tests.swift in Sources */,
 				25CD496114A1824C781272D4 /* OCRVisionMinimumTextHeight288Tests.swift in Sources */,
+				D9819F7182F381192E7A73AC /* OptimalCardLayoutViewportChromeTests.swift in Sources */,
 				60C48973C2A5DDA81248D810 /* PhotoCallbackFunctionalTests.swift in Sources */,
 				A74F9120F133E8E05776B3D2 /* PhotoFunctionalityPhase1Tests.swift in Sources */,
 				5CA2BDDF2878370328B40664 /* PhotoSelectionL1Tests.swift in Sources */,
@@ -10211,6 +10233,7 @@
 				1D976179C6EE2E95C003FB15 /* CardDisplayHelperHintTests.swift in Sources */,
 				11AF612E7761BC2E172E4147 /* CardDisplayHelperNilFallbackTests.swift in Sources */,
 				49FB81C17C6DCA4FF1DDC1CD /* CardDisplayableBugTests.swift in Sources */,
+				255A04307605E4851D8AC661 /* CardViewportHostHintsTests.swift in Sources */,
 				999E770F3586399161413D9E /* CloudKitServiceCoreDataTests.swift in Sources */,
 				BF21C6565A4A9E0492463DFA /* CloudKitServiceQueueStatusTests.swift in Sources */,
 				8C7B71F421105992FC248FA3 /* CloudKitServiceSwiftDataTests.swift in Sources */,
@@ -10345,6 +10368,7 @@
 				282C3DF7F6CD2B23A8A062CA /* OCRStrategyTests.swift in Sources */,
 				012113888771979304B93B34 /* OCRStructuredExtractionFollowups283Tests.swift in Sources */,
 				531E76775E6A2B6A09A5E2BC /* OCRVisionMinimumTextHeight288Tests.swift in Sources */,
+				7E45FE92A1AF4A336320C893 /* OptimalCardLayoutViewportChromeTests.swift in Sources */,
 				F730C5FEFB401B8CFBCCF9FB /* PhotoCallbackFunctionalTests.swift in Sources */,
 				B5C61AFDEED4250271CBF650 /* PhotoFunctionalityPhase1Tests.swift in Sources */,
 				632F60F51EEE87254955B916 /* PhotoSelectionL1Tests.swift in Sources */,
