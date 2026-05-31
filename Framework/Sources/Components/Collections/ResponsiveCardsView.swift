@@ -9,7 +9,11 @@ public struct ResponsiveCardsView: View {
     @Environment(\.verticalSizeClass) private var verticalSizeClass
 
     /// Optional host viewport hints (navigation chrome, etc.) for L2 layout budget (GitHub #308).
-    private let viewportHints: CardViewportHints? = nil
+    private let viewportHints: CardViewportHints?
+
+    public init(viewportHints: CardViewportHints? = nil) {
+        self.viewportHints = viewportHints
+    }
     
     // Sample card data
     private let cards = [
@@ -498,7 +502,10 @@ extension ResponsiveCardsView {
         contentComplexity: ContentComplexity = .moderate,
         viewportHints: CardViewportHints? = nil
     ) -> CardLayoutDecision {
-        let viewportHeight = PlatformFrameHelpers.finiteViewportHeight(for: geometryHeight)
+        let viewportHeight = PlatformFrameHelpers.effectiveCardCollectionViewportHeight(
+            geometryHeight: geometryHeight,
+            viewportHints: viewportHints
+        )
         return determineOptimalCardLayout_L2(
             contentCount: contentCount,
             screenWidth: screenWidth,
