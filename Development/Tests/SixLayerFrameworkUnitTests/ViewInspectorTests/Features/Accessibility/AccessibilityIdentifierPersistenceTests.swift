@@ -321,6 +321,23 @@ open class AccessibilityIdentifierPersistenceTests: BaseTestClass {
             cleanupTestEnvironment()
         }
     }
+
+    @Test @MainActor func testGenerateIDForViewFindsNamedButtonIdentifier() {
+            initializeTestConfig()
+        runWithTaskLocalConfig {
+            setupTestEnvironment()
+
+            let view = Button("Issue 314") { }
+                .named("Issue314Button")
+
+            let id = generateIDForView(view)
+
+            #expect(!id.isEmpty, "Harness should find a named button accessibility identifier")
+            #expect(id.contains("Issue314Button"), "Identifier should include the explicit named anchor")
+
+            cleanupTestEnvironment()
+        }
+    }
     
     // MARK: - Helper Methods
     
