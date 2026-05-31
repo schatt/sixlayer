@@ -3,6 +3,8 @@
 //  SixLayerFrameworkUnitTests
 //
 //  Swift Testing suite trait: deterministic runtime capability defaults per test (GitHub #236).
+//  GitHub #251 section C: use on **control** suites that call `setTest*` so phases do not leak;
+//  does not replace tri-state assertions beside the control under test.
 //
 
 import Testing

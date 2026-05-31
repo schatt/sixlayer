@@ -97,7 +97,7 @@ public struct ResponsiveStack<Content: View>: View {
 public struct ResponsivePadding: ViewModifier {
     public func body(content: Content) -> some View {
         content.padding(paddingValue)
-            .automaticCompliance()
+            .automaticCompliance(named: "ResponsivePadding")
     }
 
     private var paddingValue: CGFloat {
@@ -204,7 +204,7 @@ public struct ResponsiveLayoutExample: View {
                 .cornerRadius(8)
             }
         }
-        .automaticCompliance()
+        .automaticCompliance(named: "ResponsiveLayoutExample")
     }
 }
 
@@ -234,6 +234,6 @@ public struct ResponsiveNavigationExample: View {
                 }
             }
         }
-        .automaticCompliance()
+        .automaticCompliance(named: "ResponsiveNavigationExample")
     }
 }

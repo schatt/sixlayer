@@ -39,7 +39,7 @@ import SwiftUI
 /// TDD Tests for Runtime Capability Detection
 /// These tests define the expected behavior and will initially fail
 /// NOTE: Not marked @MainActor on class to allow parallel execution
-@Suite("Runtime Capability Detection", DefaultRuntimeCapabilityIsolationTrait())
+@Suite("Runtime Capability Detection", .serialized, DefaultRuntimeCapabilityIsolationTrait())
 open class RuntimeCapabilityDetectionTDDTests: BaseTestClass {
     
     // MARK: - Testing Mode Detection Tests
@@ -132,6 +132,71 @@ open class RuntimeCapabilityDetectionTDDTests: BaseTestClass {
             }
             #expect(!RuntimeCapabilityDetection.supportsTouch)
         }
+    }
+
+    @Test @MainActor func testAssistiveTouchEnableCascadesToTouchOnSupportedPlatforms() {
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
+
+        RuntimeCapabilityDetection.setTestAssistiveTouch(true)
+
+        if SixLayerPlatform.current.supportsAssistiveTouch {
+            #expect(RuntimeCapabilityDetection.supportsAssistiveTouch)
+            #expect(RuntimeCapabilityDetection.supportsTouch)
+        } else {
+            #expect(!RuntimeCapabilityDetection.supportsAssistiveTouch)
+        }
+    }
+
+    @Test @MainActor func testTouchDisableClearsAssistiveTouchBeforeWrite() {
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
+
+        RuntimeCapabilityDetection.setTestAssistiveTouch(true)
+        RuntimeCapabilityDetection.setTestTouchSupport(false)
+
+        #expect(!RuntimeCapabilityDetection.supportsAssistiveTouch)
+        #if os(iOS) || os(watchOS)
+        #expect(RuntimeCapabilityDetection.supportsTouch)
+        #else
+        #expect(!RuntimeCapabilityDetection.supportsTouch)
+        #endif
+    }
+
+    @Test @MainActor func testHapticFeedbackIndependentOfTouchOverride() {
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
+
+        RuntimeCapabilityDetection.setTestTouchSupport(false)
+        RuntimeCapabilityDetection.setTestHapticFeedback(true)
+
+        #expect(RuntimeCapabilityDetection.supportsHapticFeedback)
+        #if !(os(iOS) || os(watchOS))
+        #expect(!RuntimeCapabilityDetection.supportsTouch)
+        #endif
+    }
+
+    @Test @MainActor func testVisionFrameworkEnableCascadesToOCR() {
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
+
+        RuntimeCapabilityDetection.Vision.setTestIsFrameworkAvailable(false)
+        RuntimeCapabilityDetection.Vision.setTestIsFrameworkAvailable(true)
+
+        #expect(RuntimeCapabilityDetection.Vision.isFrameworkAvailable)
+        #expect(RuntimeCapabilityDetection.Vision.supportsOCR)
+    }
+
+    @Test @MainActor func testVisionFrameworkDisableClearsOCR() {
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
+
+        RuntimeCapabilityDetection.Vision.setTestIsFrameworkAvailable(true)
+        RuntimeCapabilityDetection.Vision.setTestSupportsOCR(true)
+        RuntimeCapabilityDetection.Vision.setTestIsFrameworkAvailable(false)
+
+        #expect(!RuntimeCapabilityDetection.Vision.isFrameworkAvailable)
+        #expect(!RuntimeCapabilityDetection.Vision.supportsOCR)
     }
     
     @Test @MainActor func testTouchOverrideTakesPrecedenceOverTestingDefaults() {
@@ -327,6 +392,37 @@ open class RuntimeCapabilityDetectionTDDTests: BaseTestClass {
 
         #expect(abs(actual - expected) < 0.001,
                 "Apple HIG: \(platform) expected \(expected)pt, got \(actual)pt (supportsTouch=\(RuntimeCapabilityDetection.supportsTouch))")
+    }
+
+    @Test func testMinTouchTargetTriStatePhases() {
+        defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
+
+        func assertMinTouchTargetLaw(phase: String) {
+            let platform = SixLayerPlatform.current
+            let effectiveTouch = RuntimeCapabilityDetection.supportsTouch
+            let expected = PlatformTestUtilities.expectedMinTouchTarget(
+                for: platform,
+                touchDetected: effectiveTouch
+            )
+            let actual = RuntimeCapabilityDetection.minTouchTarget
+
+            switch platform {
+            case .iOS, .watchOS, .macOS, .tvOS, .visionOS:
+                #expect(
+                    abs(actual - expected) < 0.001,
+                    "\(phase) on \(platform): expected \(expected)pt, got \(actual)pt (touch=\(effectiveTouch))"
+                )
+            }
+        }
+
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        assertMinTouchTargetLaw(phase: "current")
+
+        RuntimeCapabilityDetection.setTestTouchSupport(false)
+        assertMinTouchTargetLaw(phase: "disabled")
+
+        RuntimeCapabilityDetection.setTestTouchSupport(true)
+        assertMinTouchTargetLaw(phase: "enabled")
     }
 
     @Test func testMinTouchTargetIsNonNegative() {
@@ -600,6 +696,7 @@ open class RuntimeCapabilityDetectionTDDTests: BaseTestClass {
         UserDefaults.standard.set(true, forKey: key)
         defer { UserDefaults.standard.removeObject(forKey: key) }
 
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
         let config = getCardExpansionPlatformConfig()
         #expect(!config.supportsTouch)
         #expect(config.minTouchTarget == 0.0)

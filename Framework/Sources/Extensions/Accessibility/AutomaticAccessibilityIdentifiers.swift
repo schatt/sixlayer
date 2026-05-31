@@ -433,6 +433,8 @@ public struct AutomaticComplianceModifier: ViewModifier {
             .modifier(AutomaticHIGColorContrastModifier(platform: platform))
             // 6. Typography Scaling (Dynamic Type) - Support accessibility text sizes
             .modifier(AutomaticHIGTypographyScalingModifier(platform: platform))
+            // 6b. System Zoom / layout resilience (Display Zoom — not pinch-to-zoom, GitHub #303)
+            .modifier(AutomaticHIGSystemZoomModifier(platform: platform))
             // 7. Focus Indicators - Visible and accessible focus rings
             .modifier(AutomaticHIGFocusIndicatorModifier(
                 isInteractive: isInteractive,
@@ -458,9 +460,7 @@ public struct AutomaticComplianceModifier: ViewModifier {
     /// Determine if an element type is interactive (needs touch target sizing, focus indicators, etc.)
     /// Note: nonisolated because this is pure string logic with no actor isolation requirements
     nonisolated internal func isInteractiveElement(elementType: String?) -> Bool {
-        guard let elementType = elementType?.lowercased() else { return false }
-        let interactiveTypes = ["button", "link", "textfield", "toggle", "picker", "stepper", "slider", "segmentedcontrol"]
-        return interactiveTypes.contains { elementType.contains($0) }
+        slfIsInteractiveAccessibilityElementType(elementType)
     }
 }
 
@@ -879,9 +879,10 @@ public struct AutomaticHIGTouchTargetModifier: ViewModifier {
     
     public func body(content: Content) -> some View {
         if isInteractive && minSize > 0 {
+            let effectiveMin = PlatformSystemZoomPreference.scaledTouchTargetMinimum(base: minSize)
             // Apply minimum touch target for interactive elements on touch platforms
             content
-                .frame(minWidth: minSize, minHeight: minSize)
+                .frame(minWidth: effectiveMin, minHeight: effectiveMin)
         } else {
             content
         }
@@ -906,13 +907,21 @@ public struct AutomaticHIGColorContrastModifier: ViewModifier {
 /// Ensures text scales with system accessibility settings
 public struct AutomaticHIGTypographyScalingModifier: ViewModifier {
     let platform: SixLayerPlatform
-    
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
     public func body(content: Content) -> some View {
-        // Apply Dynamic Type support - text automatically scales with system settings
-        // SwiftUI's built-in text styles (.body, .headline, etc.) already support Dynamic Type
-        // This modifier ensures custom font sizes respect minimum readable sizes
+        let policy = HIGMinimumTypographyPolicy(platform: platform)
+        // Cap upward at accessibility5 without resetting an explicit or inherited size.
+        // Custom fixed sizes should use Font.higCompliantSystem so floors apply via resolver policy.
         content
-            .dynamicTypeSize(...DynamicTypeSize.accessibility5)
+            .dynamicTypeSize(dynamicTypeSize...HIGMinimumTypographyPolicy.maximumDynamicTypeSize)
+            .environment(\.higMinimumTypographyPolicy, policy)
+            .dynamicFontResolver(
+                DynamicFontResolver(
+                    defaultContentSize: .large,
+                    minimumTypographyPolicy: policy
+                )
+            )
     }
 }
 
@@ -1180,6 +1189,30 @@ internal func slfSuppressAnonymousAutomaticComplianceWrapperIdentifier(
         && accessibilitySortPriority == nil
 }
 
+/// Interactive element types for automatic label policy (Issue #290) and HIG touch-target sizing.
+internal func slfIsInteractiveAccessibilityElementType(_ elementType: String?) -> Bool {
+    guard let elementType = elementType?.lowercased() else { return false }
+    let interactiveTypes = ["button", "link", "textfield", "toggle", "picker", "stepper", "slider", "segmentedcontrol"]
+    return interactiveTypes.contains { elementType.contains($0) }
+}
+
+/// Whether ``BasicAutomaticComplianceModifier`` should apply an automatic VoiceOver label (Issue #290).
+internal func slfShouldApplyAutomaticAccessibilityLabel(
+    effectiveLabel: String?,
+    identifierIsPresent: Bool,
+    identifierElementType: String?,
+    isNavigationHeaderCompliance: Bool,
+    labelsOnlyOnInteractiveElements: Bool
+) -> Bool {
+    guard let effectiveLabel, !effectiveLabel.isEmpty, identifierIsPresent, !isNavigationHeaderCompliance else {
+        return false
+    }
+    if labelsOnlyOnInteractiveElements {
+        return slfIsInteractiveAccessibilityElementType(identifierElementType)
+    }
+    return true
+}
+
 /// Whether ``BasicAutomaticComplianceModifier`` should apply ``accessibilityElement(children: .contain)`` on its wrapper.
 /// Named rows use ``.contain`` so the Group keeps a stable identifier on iOS (#172). Navigation **Header** compliance
 /// is applied to full destination roots (``platformNavigationTitle_L4``); wrapping that subtree in ``.contain`` can
@@ -1262,6 +1295,7 @@ public struct BasicAutomaticComplianceModifier: ViewModifier {
         let capturedEnableDebugLogging = config.enableDebugLogging
         let capturedNamespace = config.namespace
         let capturedGlobalPrefix = config.globalPrefix
+        let capturedLabelsOnlyOnInteractiveElements = config.labelsOnlyOnInteractiveElements
         
         // Logic: enableAutoIDs, global flag, and no local subtree opt-out (disableAutomaticAccessibilityIdentifiers)
         let shouldApply = capturedEnableAutoIDs
@@ -1381,7 +1415,14 @@ public struct BasicAutomaticComplianceModifier: ViewModifier {
         @ViewBuilder
         func applyAccessibilityLabelIfNeeded<V: View>(to view: V) -> some View {
             let effectiveLabel = accessibilityLabel ?? identifierLabel
-            if let label = effectiveLabel, !label.isEmpty, identifier != nil, !isNavigationHeaderCompliance {
+            let shouldApplyLabel = slfShouldApplyAutomaticAccessibilityLabel(
+                effectiveLabel: effectiveLabel,
+                identifierIsPresent: identifier != nil,
+                identifierElementType: identifierElementType,
+                isNavigationHeaderCompliance: isNavigationHeaderCompliance,
+                labelsOnlyOnInteractiveElements: capturedLabelsOnlyOnInteractiveElements
+            )
+            if shouldApplyLabel, let label = effectiveLabel {
                 // Localize and format label according to Apple HIG guidelines
                 let localizedLabel = localizeAccessibilityLabel(
                     label,

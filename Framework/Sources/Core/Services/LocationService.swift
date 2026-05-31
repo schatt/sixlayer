@@ -82,6 +82,9 @@ public enum LocationServiceError: LocalizedError {
 @MainActor
 public final class LocationService: NSObject, LocationServiceProtocol, CLLocationManagerDelegate {
 
+    /// Fixed coordinate for test / UI-test hosts — matches `MapViewExample` defaults.
+    static let stubTestCoordinate = CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194)
+
     // MARK: - Public Properties
 
     public private(set) var authorizationStatus: CLAuthorizationStatus = .notDetermined
@@ -110,6 +113,11 @@ public final class LocationService: NSObject, LocationServiceProtocol, CLLocatio
     // MARK: - LocationServiceProtocol Implementation
 
     public func requestAuthorization() async throws {
+        if Self.shouldSkipRealLocationServices() {
+            applySyntheticAuthorizationForTesting()
+            return
+        }
+
         // Check if we can request authorization
         let servicesEnabled = await Self.checkLocationServicesEnabled()
         locationServicesEnabled = servicesEnabled
@@ -147,6 +155,10 @@ public final class LocationService: NSObject, LocationServiceProtocol, CLLocatio
     }
 
     public func startUpdatingLocation() {
+        if Self.shouldSkipRealLocationServices() {
+            return
+        }
+
         // Check authorization status (platform-specific)
         guard hasLocationAuthorization else {
             error = LocationServiceError.unauthorized
@@ -170,6 +182,13 @@ public final class LocationService: NSObject, LocationServiceProtocol, CLLocatio
     }
 
     public func getCurrentLocation() async throws -> CLLocation {
+        if Self.shouldSkipRealLocationServices() {
+            if !hasLocationAuthorization {
+                applySyntheticAuthorizationForTesting()
+            }
+            return Self.stubLocationForTesting()
+        }
+
         // Check authorization status (platform-specific)
         guard hasLocationAuthorization else {
             throw LocationServiceError.unauthorized
@@ -269,19 +288,72 @@ public final class LocationService: NSObject, LocationServiceProtocol, CLLocatio
 
     // MARK: - Private Methods
 
-    /// Check if we're running in test mode
-    private static var isTestMode: Bool {
+    /// Skip CoreLocation permission prompts in XCTest, XCUITest hosts, and the framework test app.
+    private static func shouldSkipRealLocationServices() -> Bool {
+        // XCUITest host: XCTest runs out-of-process; env vars are unset, but the driver passes these.
+        if ProcessInfo.processInfo.arguments.contains("-UITesting") {
+            return true
+        }
+        if ProcessInfo.processInfo.environment["XCUI_TESTING"] == "1" {
+            return true
+        }
+        if isInProcessTestEnvironment {
+            return true
+        }
+        // Manual TestApp runs (Product → Run) and CI hosts without entitlements / stable TCC.
+        if Bundle.main.bundleIdentifier == "com.sixlayer.framework.test-app" {
+            return true
+        }
+        return false
+    }
+
+    private static var isInProcessTestEnvironment: Bool {
+        #if DEBUG
         let environment = ProcessInfo.processInfo.environment
-        return environment["XCTestConfigurationFilePath"] != nil ||
-               environment["XCTestSessionIdentifier"] != nil ||
-               NSClassFromString("XCTestCase") != nil
+        if environment["XCTestConfigurationFilePath"] != nil ||
+           environment["XCTestSessionIdentifier"] != nil ||
+           environment["XCTestBundlePath"] != nil ||
+           NSClassFromString("XCTestCase") != nil {
+            return true
+        }
+        if NSClassFromString("Testing.Test") != nil {
+            return true
+        }
+        return TestingCapabilityDetection.isTestingMode
+        #else
+        return false
+        #endif
+    }
+
+    private static var isTestMode: Bool {
+        shouldSkipRealLocationServices()
+    }
+
+    private func applySyntheticAuthorizationForTesting() {
+        #if os(iOS)
+        authorizationStatus = .authorizedWhenInUse
+        #elseif os(macOS)
+        authorizationStatus = .authorizedAlways
+        #endif
+        locationServicesEnabled = true
+        updateLocationEnabledStatus()
+    }
+
+    private static func stubLocationForTesting() -> CLLocation {
+        CLLocation(
+            coordinate: stubTestCoordinate,
+            altitude: 0,
+            horizontalAccuracy: 5,
+            verticalAccuracy: 5,
+            timestamp: Date()
+        )
     }
 
     private var hasLocationAuthorization: Bool {
         #if os(iOS)
         return authorizationStatus == .authorizedAlways || authorizationStatus == .authorizedWhenInUse
         #elseif os(macOS)
-        return authorizationStatus == .authorizedAlways
+        return authorizationStatus == .authorizedAlways || authorizationStatus == .authorized
         #else
         return false
         #endif

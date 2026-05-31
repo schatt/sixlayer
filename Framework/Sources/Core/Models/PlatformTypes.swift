@@ -93,7 +93,8 @@ public enum DeviceType: String, CaseIterable, Sendable {
         #if os(visionOS)
         return .vision
         #elseif os(iOS)
-        // Check for CarPlay first
+        // CarPlay is iOS-only: `DeviceType.car` and `DeviceContext.carPlay` are not overrideable
+        // today and cannot apply on macOS or other hosts (see CarPlayCapabilityDetection; #311).
         if CarPlayCapabilityDetection.isCarPlayActive {
             return .car
         }
@@ -553,7 +554,7 @@ public enum SpacingPreference: String, CaseIterable {
 }
 
 /// Represents field layout strategies
-public enum FieldLayout: String, CaseIterable {
+public enum FieldLayout: String, CaseIterable, Sendable {
     case standard = "standard"
     case compact = "compact"
     case spacious = "spacious"
@@ -1222,6 +1223,31 @@ public struct FieldDisplayHints: Sendable {
     }
 }
 
+/// Host-supplied viewport hints for card collections (GitHub #306).
+/// Navigation stacks and other hosts know chrome geometry L4 cannot infer from `GeometryReader` alone.
+public struct CardViewportHints: Sendable, Equatable {
+    /// Vertical space consumed above the card collection (navigation bar, large title, etc.).
+    public let topChromeInset: CGFloat
+    /// Vertical space consumed below the card collection (tab bar, home indicator, etc.).
+    public let bottomChromeInset: CGFloat
+    /// Optional hard cap on card height regardless of viewport math.
+    public let maxCardHeight: CGFloat?
+    /// When true, L2 clamps card height to fit within the effective viewport budget.
+    public let preferFitInViewport: Bool
+
+    public init(
+        topChromeInset: CGFloat = 0,
+        bottomChromeInset: CGFloat = 0,
+        maxCardHeight: CGFloat? = nil,
+        preferFitInViewport: Bool = false
+    ) {
+        self.topChromeInset = topChromeInset
+        self.bottomChromeInset = bottomChromeInset
+        self.maxCardHeight = maxCardHeight
+        self.preferFitInViewport = preferFitInViewport
+    }
+}
+
 /// Simple presentation hints for basic usage
 public struct PresentationHints: Sendable {
     public let dataType: DataTypeHint
@@ -1244,6 +1270,9 @@ public struct PresentationHints: Sendable {
     
     /// Default color when no mapping or provider returns a color
     public let defaultColor: Color?
+
+    /// Optional viewport hints for card collection layout (chrome insets, max height, fit preference).
+    public let viewportHints: CardViewportHints?
     
     public init(
         dataType: DataTypeHint = .generic,
@@ -1254,7 +1283,8 @@ public struct PresentationHints: Sendable {
         fieldHints: [String: FieldDisplayHints] = [:],
         colorMapping: [ObjectIdentifier: Color]? = nil,
         itemColorProvider: (@Sendable (any CardDisplayable) -> Color?)? = nil,
-        defaultColor: Color? = nil
+        defaultColor: Color? = nil,
+        viewportHints: CardViewportHints? = nil
     ) {
         self.dataType = dataType
         self.presentationPreference = presentationPreference
@@ -1265,6 +1295,7 @@ public struct PresentationHints: Sendable {
         self.colorMapping = colorMapping
         self.itemColorProvider = itemColorProvider
         self.defaultColor = defaultColor
+        self.viewportHints = viewportHints
     }
     
     /// Get field-level hints for a specific field

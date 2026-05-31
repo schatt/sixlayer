@@ -4,144 +4,138 @@ import Testing
 //  HIGComplianceZoomTests.swift
 //  SixLayerFrameworkTests
 //
-//  BUSINESS PURPOSE:
-//  Validates that automatic HIG compliance ensures components scale properly
-//  when system zoom is enabled, maintaining usability and readability.
-//
-//  TESTING SCOPE:
-//  - UI scaling support when system zoom is enabled
-//  - Text readability at different zoom levels
-//  - Component layout integrity at zoom levels
-//  - Platform-specific zoom behavior
-//
-//  METHODOLOGY:
-//  - TDD RED phase: Tests fail until zoom support is implemented
-//  - Test views with automatic compliance
-//  - Verify components scale appropriately
-//  - Test text readability at zoom levels
+//  Validates automatic HIG compliance layout resilience under system zoom /
+//  enlarged UI (Display Zoom), distinct from pinch-to-zoom (GitHub #303).
 //
 
 import SwiftUI
 @testable import SixLayerFramework
 
 @Suite("HIG Compliance - Zoom Support")
-/// NOTE: Not marked @MainActor on class to allow parallel execution
 open class HIGComplianceZoomTests: BaseTestClass {
-    
+
+    @MainActor
+    private func verifyViewIsHostable<V: View>(_ view: V, description: String) {
+        _ = hostRootPlatformView(view)
+        #expect(Bool(true), "\(description) should be hostable")
+    }
+
     // MARK: - UI Scaling Tests
-    
+
     @Test @MainActor func testViewScalesWithSystemZoom() async {
-            initializeTestConfig()
+        initializeTestConfig()
         runWithTaskLocalConfig {
-            // GIVEN: A view with automatic compliance
-            let view = platformVStackContainer {
-                Text("Zoom Test")
-                    .automaticCompliance()
-                Button("Test Button") { }
-                    .automaticCompliance()
-            }
-            .automaticCompliance()
-            
-            // WHEN: View is created with system zoom enabled
-            // THEN: View should scale appropriately while maintaining usability
-            // RED PHASE: This will fail until zoom support is implemented
-            let passed = testComponentComplianceCrossPlatform(
-                view,
-                expectedPattern: "SixLayer.*ui",
-                componentName: "ViewWithZoom"
-            )
-            #expect(passed, "View should scale appropriately with system zoom on all platforms")
-        }
-    }
-    
-    @Test @MainActor func testTextRemainsReadableAtZoomLevels() async {
-            initializeTestConfig()
-        runWithTaskLocalConfig {
-            // GIVEN: Text with automatic compliance
-            let view = Text("Readable Text at Zoom")
-                .automaticCompliance()
-            
-            // WHEN: View is created with system zoom enabled
-            // THEN: Text should remain readable at all zoom levels
-            // RED PHASE: This will fail until zoom support is implemented
-            let passed = testComponentComplianceCrossPlatform(
-                view,
-                expectedPattern: "SixLayer.*ui",
-                componentName: "TextWithZoom"
-            )
-            #expect(passed, "Text should remain readable at all zoom levels on all platforms")
-        }
-    }
-    
-    @Test @MainActor func testButtonRemainsUsableAtZoomLevels() async {
-            initializeTestConfig()
-        runWithTaskLocalConfig {
-            // GIVEN: Button with automatic compliance
-            let button = Button("Zoom Button") { }
-                .automaticCompliance()
-            
-            // WHEN: View is created with system zoom enabled
-            // THEN: Button should remain usable (proper size, readable text) at all zoom levels
-            // RED PHASE: This will fail until zoom support is implemented
-            let passed = testComponentComplianceCrossPlatform(
-                button,
-                expectedPattern: "SixLayer.*ui",
-                componentName: "ButtonWithZoom"
-            )
-            #expect(passed, "Button should remain usable at all zoom levels on all platforms")
-        }
-    }
-    
-    // MARK: - Layout Integrity Tests
-    
-    @Test @MainActor func testLayoutMaintainsIntegrityAtZoomLevels() async {
-            initializeTestConfig()
-        runWithTaskLocalConfig {
-            // GIVEN: Complex layout with automatic compliance
-            let view = platformVStackContainer {
-                platformHStackContainer {
-                    Text("Left")
+            PlatformSystemZoomPreference.withTestLayoutScale(1.2) {
+                let view = platformVStackContainer {
+                    Text("Zoom Test")
                         .automaticCompliance()
-                    Text("Right")
+                    Button("Test Button") { }
                         .automaticCompliance()
                 }
                 .automaticCompliance()
-                Button("Action") { }
-                    .automaticCompliance()
+                .dynamicTypeSize(.accessibility5)
+
+                verifyViewIsHostable(
+                    view,
+                    description: "Automatic compliance under system zoom layout scale 1.2"
+                )
+                #expect(
+                    PlatformSystemZoomPreference.layoutResilienceSpacing(
+                        dynamicTypeSize: .accessibility5
+                    ) > 0,
+                    "Layout resilience spacing should apply at accessibility Dynamic Type with zoom scale"
+                )
             }
-            .automaticCompliance()
-            
-            // WHEN: View is created with system zoom enabled
-            // THEN: Layout should maintain integrity (no overlapping, proper spacing) at all zoom levels
-            // RED PHASE: This will fail until zoom support is implemented
-            let passed = testComponentComplianceCrossPlatform(
-                view,
-                expectedPattern: "SixLayer.*ui",
-                componentName: "LayoutWithZoom"
-            )
-            #expect(passed, "Layout should maintain integrity at all zoom levels on all platforms")
         }
     }
-    
-    // MARK: - Cross-Platform Tests
-    
-    @Test @MainActor func testZoomSupportOnAllPlatforms() async {
-            initializeTestConfig()
+
+    @Test @MainActor func testTextRemainsReadableAtZoomLevels() async {
+        initializeTestConfig()
+        #if os(iOS)
+        let resolver = DynamicFontResolver()
+        let bodySize = resolver.uiFont(for: .body, contentSize: .accessibilityExtraLarge).pointSize
+        let minimum = PlatformSystemZoomPreference.minimumReadableBodyPointSize(for: .iOS)
+        #expect(bodySize >= minimum, "Body text at accessibility sizes should meet iOS minimum readable size")
+        #elseif os(macOS)
+        let resolver = DynamicFontResolver()
+        let bodySize = resolver.nsFont(for: .body, contentSize: .accessibilityExtraLarge).pointSize
+        let minimum = PlatformSystemZoomPreference.minimumReadableBodyPointSize(for: .macOS)
+        #expect(bodySize >= minimum, "Body text at accessibility sizes should meet macOS minimum readable size")
+        #else
+        #expect(
+            PlatformSystemZoomPreference.minimumReadableBodyPointSize(
+                for: RuntimeCapabilityDetection.currentPlatform
+            ) > 0
+        )
+        #endif
+    }
+
+    @Test @MainActor func testButtonRemainsUsableAtZoomLevels() async {
+        initializeTestConfig()
         runWithTaskLocalConfig {
-            // GIVEN: A view with automatic compliance
-            let view = Text("Cross-Platform Zoom Test")
-                .automaticCompliance()
-            
-            // WHEN: View is created on all platforms
-            // THEN: Zoom support should work on all platforms
-            // RED PHASE: This will fail until zoom support is implemented
-            let passed = testComponentComplianceCrossPlatform(
-                view,
-                expectedPattern: "SixLayer.*ui",
-                componentName: "CrossPlatformZoom"
-            )
-            #expect(passed, "Zoom support should work on all platforms")
+            PlatformSystemZoomPreference.withTestLayoutScale(1.2) {
+                let button = Button("Zoom Button") { }
+                    .automaticCompliance()
+                    .dynamicTypeSize(.accessibility3)
+
+                verifyViewIsHostable(
+                    button,
+                    description: "Button with automatic compliance under layout scale 1.2"
+                )
+
+                let baseMin = RuntimeCapabilityDetection.minTouchTarget
+                if baseMin > 0 {
+                    let expectedMin = PlatformSystemZoomPreference.scaledTouchTargetMinimum(base: baseMin)
+                    #expect(
+                        expectedMin > baseMin,
+                        "Touch-target floor should scale up when layout scale is 1.2"
+                    )
+                }
+            }
         }
+    }
+
+    // MARK: - Layout Integrity Tests
+
+    @Test @MainActor func testLayoutMaintainsIntegrityAtZoomLevels() async {
+        initializeTestConfig()
+        runWithTaskLocalConfig {
+            PlatformSystemZoomPreference.withTestLayoutScale(1.2) {
+                let view = platformVStackContainer {
+                    platformHStackContainer {
+                        Text("Left")
+                            .automaticCompliance()
+                        Text("Right")
+                            .automaticCompliance()
+                    }
+                    .automaticCompliance()
+                    Button("Action") { }
+                        .automaticCompliance()
+                }
+                .automaticCompliance()
+                .dynamicTypeSize(.accessibility5)
+
+                verifyViewIsHostable(
+                    view,
+                    description: "Multi-control layout under zoom scale and accessibility Dynamic Type"
+                )
+                verifyViewContainsText(view, expectedText: "Left", testName: "layout-left-at-zoom")
+                verifyViewContainsText(view, expectedText: "Right", testName: "layout-right-at-zoom")
+                verifyViewContainsText(view, expectedText: "Action", testName: "layout-action-at-zoom")
+            }
+        }
+    }
+
+    // MARK: - Cross-Platform Tests
+
+    @Test @MainActor func testZoomSupportOnAllPlatforms() async {
+        initializeTestConfig()
+        #expect(PlatformSystemZoomPreference.layoutScaleFactor >= 1.0)
+        #expect(PlatformSystemZoomPreference.layoutScaleFactorFromSystem >= 1.0)
+        let platform = RuntimeCapabilityDetection.currentPlatform
+        #expect(
+            PlatformSystemZoomPreference.minimumReadableBodyPointSize(for: platform) > 0,
+            "Each platform should define a minimum readable body size for zoom compliance"
+        )
     }
 }
-

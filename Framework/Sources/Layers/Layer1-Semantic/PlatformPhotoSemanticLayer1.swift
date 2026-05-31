@@ -24,11 +24,11 @@ public func platformPhotoCapture_L1(
     case .camera:
         // Use camera interface for direct capture
         PlatformPhotoComponentsLayer4.platformCameraInterface_L4(onImageCaptured: onImageCaptured)
-            .automaticCompliance()
+            .automaticCompliance(identifierName: "platformPhotoCapture_L1")
     case .photoLibrary:
         // Use photo library picker
         PlatformPhotoComponentsLayer4.platformPhotoPicker_L4(onImageSelected: onImageCaptured)
-            .automaticCompliance()
+            .automaticCompliance(identifierName: "platformPhotoCapture_L1")
     case .both:
         // Provide tabbed interface so camera and library selector is present for both views (Issue #190)
         PlatformPhotoComponentsLayer4.platformPhotoSourceTabbed_L4(
@@ -52,9 +52,10 @@ public func platformPhotoSelection_L1(
     // Determine optimal layout for selection interface
     let layout = determineOptimalPhotoLayout_L2(purpose: purpose, context: context)
     
-    // Use photo picker with optimized layout (compliance already applied in platformPhotoPicker_L4/UnifiedImagePicker; avoid stacking modifiers to prevent copy crash)
+    // Use photo picker with optimized layout (L4 applies named compliance; L1 shell uses identifierName — #222)
     PlatformPhotoComponentsLayer4.platformPhotoPicker_L4(onImageSelected: onImageSelected)
         .frame(width: layout.width, height: layout.height)
+        .automaticCompliance(identifierName: "platformPhotoSelection_L1")
 }
 
 /// Cross-platform semantic photo display interface
@@ -79,7 +80,7 @@ public func platformPhotoDisplay_L1(
         style: displayStyleForPurpose(purpose)
     )
     .frame(width: layout.width, height: layout.height)
-    .automaticCompliance()
+    .automaticCompliance(identifierName: "platformPhotoDisplay_L1")
 }
 
 // MARK: - Custom View Support
@@ -109,11 +110,11 @@ public func platformPhotoCapture_L1<CameraContent: View>(
     case .camera:
         // Use camera interface for direct capture
         baseView = AnyView(PlatformPhotoComponentsLayer4.platformCameraInterface_L4(onImageCaptured: onImageCaptured)
-            .automaticCompliance())
+            .automaticCompliance(identifierName: "platformPhotoCapture_L1"))
     case .photoLibrary:
         // Use photo library picker
         baseView = AnyView(PlatformPhotoComponentsLayer4.platformPhotoPicker_L4(onImageSelected: onImageCaptured)
-            .automaticCompliance())
+            .automaticCompliance(identifierName: "platformPhotoCapture_L1"))
     case .both:
         // Provide tabbed interface so camera and library selector is present for both views (Issue #190)
         baseView = AnyView(PlatformPhotoComponentsLayer4.platformPhotoSourceTabbed_L4(
@@ -154,7 +155,7 @@ public func platformPhotoSelection_L1<PickerContent: View>(
     // Create base picker view
     let basePickerView = AnyView(PlatformPhotoComponentsLayer4.platformPhotoPicker_L4(onImageSelected: onImageSelected)
         .frame(width: layout.width, height: layout.height)
-        .automaticCompliance())
+        .automaticCompliance(identifierName: "platformPhotoSelection_L1"))
     
     // Apply custom wrapper if provided, otherwise return default
     if let customWrapper = customPickerView {
@@ -193,7 +194,7 @@ public func platformPhotoDisplay_L1<DisplayContent: View>(
         style: displayStyleForPurpose(purpose)
     )
     .frame(width: layout.width, height: layout.height)
-    .automaticCompliance())
+    .automaticCompliance(identifierName: "platformPhotoDisplay_L1"))
     
     // Apply custom wrapper if provided, otherwise return default
     if let customWrapper = customDisplayView {

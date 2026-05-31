@@ -415,7 +415,7 @@ public struct AdaptiveUIPatterns {
             .accessibilityLabel(title)
             .accessibilityAddTraits(.isButton)
             .environment(\.accessibilityIdentifierLabel, title)
-            .automaticCompliance(named: "AdaptiveButton")
+            .automaticCompliance(named: "AdaptiveButton", identifierLabel: title)
         }
         
         private var textFont: Font {

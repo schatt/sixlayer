@@ -48,7 +48,9 @@ public func determineIntelligentCardLayout_L2(
     screenWidth: CGFloat,
     deviceType: DeviceType,
     contentComplexity: ContentComplexity,
-    viewportHeight: CGFloat? = nil
+    viewportHeight: CGFloat? = nil,
+    viewportHints: CardViewportHints? = nil,
+    preferredContentSizeCategory: SixLayerContentSizeCategory? = nil
 ) -> IntelligentCardLayoutDecision {
     
     // Base calculations
@@ -69,20 +71,31 @@ public func determineIntelligentCardLayout_L2(
     // Calculate spacing and card dimensions
     let spacing = calculateOptimalSpacing(deviceType: deviceType, contentComplexity: contentComplexity)
     let cardWidth = max(minCardWidth, min(maxCardWidth, (availableWidth - spacing * CGFloat(columns - 1)) / CGFloat(columns)))
-    let intrinsicHeight = calculateOptimalHeight(
+    let defaultIntrinsicHeight = calculateOptimalHeight(
         cardWidth: cardWidth,
         contentComplexity: contentComplexity,
         contentCount: contentCount,
-        deviceType: deviceType
+        deviceType: deviceType,
+        preferredContentSizeCategory: nil
     )
-    let cardHeight = cardHeightRespectingViewport(
-        intrinsicHeight: intrinsicHeight,
+    let contentSize = preferredContentSizeCategory ?? .large
+    let contentIntrinsicHeight = calculateOptimalHeight(
+        cardWidth: cardWidth,
+        contentComplexity: contentComplexity,
+        contentCount: contentCount,
+        deviceType: deviceType,
+        preferredContentSizeCategory: contentSize
+    )
+    let cardHeight = resolvedIntelligentCardHeight(
+        defaultIntrinsicHeight: defaultIntrinsicHeight,
+        contentIntrinsicHeight: contentIntrinsicHeight,
         contentCount: contentCount,
         columns: columns,
         spacing: spacing,
         layoutPadding: layoutPadding,
         deviceType: deviceType,
-        viewportHeight: viewportHeight
+        viewportHeight: viewportHeight,
+        viewportHints: viewportHints
     )
     
     // Determine expansion behavior
@@ -200,8 +213,8 @@ private func calculateOptimalSpacing(deviceType: DeviceType, contentComplexity: 
     }
 }
 
-/// Caps card height on **phone** when a finite viewport height is supplied and the grid has at most two rows,
-/// so small collections can fit without scrolling (see GitHub #249).
+/// Caps card height when a finite viewport height is supplied so collections can fit without scrolling.
+/// Legacy phone behavior (#249) applies when `viewportHints` is nil; hosts override via `preferFitInViewport` and `maxCardHeight` (#306).
 private func cardHeightRespectingViewport(
     intrinsicHeight: CGFloat,
     contentCount: Int,
@@ -209,20 +222,91 @@ private func cardHeightRespectingViewport(
     spacing: CGFloat,
     layoutPadding: CGFloat,
     deviceType: DeviceType,
-    viewportHeight: CGFloat?
+    viewportHeight: CGFloat?,
+    viewportHints: CardViewportHints?
 ) -> CGFloat {
-    guard deviceType == .phone else { return intrinsicHeight }
-    guard let viewport = viewportHeight, viewport.isFinite, viewport > 0 else { return intrinsicHeight }
-    let columnCount = max(columns, 1)
-    let rows = max(1, Int(ceil(Double(contentCount) / Double(columnCount))))
-    guard rows <= PhoneCardViewportHeightClamp.maxRows else { return intrinsicHeight }
-    let interRowSpacing = CGFloat(max(0, rows - 1)) * spacing
-    let verticalChrome = layoutPadding * 2 + interRowSpacing
-    let heightBudget = viewport - verticalChrome
-    guard heightBudget.isFinite, heightBudget > 0 else { return intrinsicHeight }
-    let maxHeightPerRow = heightBudget / CGFloat(rows)
-    guard maxHeightPerRow.isFinite, maxHeightPerRow > 0 else { return intrinsicHeight }
-    return min(intrinsicHeight, maxHeightPerRow)
+    var height = intrinsicHeight
+    let fitInViewport: Bool = {
+        if let hints = viewportHints { return hints.preferFitInViewport }
+        return deviceType == .phone
+    }()
+
+    if fitInViewport, let viewport = viewportHeight, viewport.isFinite, viewport > 0 {
+        let columnCount = max(columns, 1)
+        let rows = max(1, Int(ceil(Double(contentCount) / Double(columnCount))))
+        let enforceLegacyRowCap = viewportHints == nil
+        if !enforceLegacyRowCap || rows <= PhoneCardViewportHeightClamp.maxRows {
+            let interRowSpacing = CGFloat(max(0, rows - 1)) * spacing
+            let verticalChrome = layoutPadding * 2 + interRowSpacing
+            let heightBudget = viewport - verticalChrome
+            if heightBudget.isFinite, heightBudget > 0 {
+                let maxHeightPerRow = heightBudget / CGFloat(rows)
+                if maxHeightPerRow.isFinite, maxHeightPerRow > 0 {
+                    height = min(intrinsicHeight, maxHeightPerRow)
+                }
+            }
+        }
+    }
+
+    if let cap = viewportHints?.maxCardHeight, cap.isFinite, cap > 0 {
+        height = min(height, cap)
+    }
+    return height
+}
+
+/// Applies viewport clamp; when the budget is binding, ignore Dynamic Type uplift (#309).
+private func resolvedIntelligentCardHeight(
+    defaultIntrinsicHeight: CGFloat,
+    contentIntrinsicHeight: CGFloat,
+    contentCount: Int,
+    columns: Int,
+    spacing: CGFloat,
+    layoutPadding: CGFloat,
+    deviceType: DeviceType,
+    viewportHeight: CGFloat?,
+    viewportHints: CardViewportHints?
+) -> CGFloat {
+    let defaultClampedHeight = cardHeightRespectingViewport(
+        intrinsicHeight: defaultIntrinsicHeight,
+        contentCount: contentCount,
+        columns: columns,
+        spacing: spacing,
+        layoutPadding: layoutPadding,
+        deviceType: deviceType,
+        viewportHeight: viewportHeight,
+        viewportHints: viewportHints
+    )
+    let contentClampedHeight = cardHeightRespectingViewport(
+        intrinsicHeight: contentIntrinsicHeight,
+        contentCount: contentCount,
+        columns: columns,
+        spacing: spacing,
+        layoutPadding: layoutPadding,
+        deviceType: deviceType,
+        viewportHeight: viewportHeight,
+        viewportHints: viewportHints
+    )
+    let viewportLimited = contentClampedHeight < contentIntrinsicHeight - 0.5
+        || defaultClampedHeight < defaultIntrinsicHeight - 0.5
+    return viewportLimited ? defaultClampedHeight : contentClampedHeight
+}
+
+private func typographyContentDensity(for contentComplexity: ContentComplexity) -> CGFloat {
+    switch contentComplexity {
+    case .simple: return 0.35
+    case .moderate: return 0.5
+    case .complex: return 0.65
+    case .veryComplex, .advanced: return 0.85
+    }
+}
+
+private func contentAwareTextLineCount(for contentComplexity: ContentComplexity) -> CGFloat {
+    switch contentComplexity {
+    case .simple: return 2
+    case .moderate: return 3
+    case .complex: return 4
+    case .veryComplex, .advanced: return 5
+    }
 }
 
 /// Calculate optimal card height
@@ -230,7 +314,8 @@ private func calculateOptimalHeight(
     cardWidth: CGFloat,
     contentComplexity: ContentComplexity,
     contentCount: Int,
-    deviceType: DeviceType
+    deviceType: DeviceType,
+    preferredContentSizeCategory: SixLayerContentSizeCategory? = nil
 ) -> CGFloat {
     let aspectRatio: CGFloat
     
@@ -256,8 +341,44 @@ private func calculateOptimalHeight(
         let maxHeightForTwoUpPortrait = cardWidth * 0.74
         height = min(height, maxHeightForTwoUpPortrait)
     }
-    
-    return max(height, 110)
+
+    let contentSize = preferredContentSizeCategory ?? .large
+    let typographyScale = contentSize.typographyScaleFactor
+    if typographyScale > 1.0 {
+        let contentDensity = typographyContentDensity(for: contentComplexity)
+        height *= 1 + (typographyScale - 1) * contentDensity
+    }
+
+    let floor = contentAwareMinimumIntelligentCardHeight(
+        cardWidth: cardWidth,
+        contentComplexity: contentComplexity,
+        contentSizeCategory: contentSize
+    )
+    return max(height, floor)
+}
+
+/// Minimum card height from content complexity and accessibility text metrics (GitHub #309).
+public func contentAwareMinimumIntelligentCardHeight(
+    cardWidth: CGFloat,
+    contentComplexity: ContentComplexity,
+    contentSizeCategory: SixLayerContentSizeCategory = .large
+) -> CGFloat {
+    _ = cardWidth
+    let policy = HIGMinimumTypographyPolicy.forCurrentPlatform()
+    let scale = contentSizeCategory.typographyScaleFactor
+    let bodySize = policy.minimumReadableBodyPointSize * scale
+    let captionSize = policy.minimumReadableCaptionPointSize * scale
+
+    let textLineCount = contentAwareTextLineCount(for: contentComplexity)
+
+    let lineGap = 4 * scale
+    let verticalInset: CGFloat = 24
+    let textStackHeight = bodySize * textLineCount
+        + captionSize
+        + lineGap * max(0, textLineCount - 1)
+    let legacyFloor: CGFloat = 110
+
+    return max(legacyFloor, verticalInset * 2 + textStackHeight)
 }
 
 /// Calculate expansion scale based on device and content

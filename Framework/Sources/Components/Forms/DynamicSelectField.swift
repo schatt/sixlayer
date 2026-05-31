@@ -36,45 +36,43 @@ public struct DynamicSelectField: View {
     }
     
     public var body: some View {
-        platformVStackContainer(alignment: .leading, spacing: 8) {
-            // Field label
+        field.fieldContainer(content: {
             Text(field.label)
                 .font(.headline)
                 .foregroundColor(.primary)
             
-            // Select picker - use hints if available, otherwise fallback to field.options
-            let i18n = InternationalizationService()
-            if !pickerOptions.isEmpty {
-                // Convert tuple array to PickerOption array for platformPicker
-                let pickerOptionArray = pickerOptions.map { PickerOption(value: $0.value, label: $0.label) }
-                platformPicker(
-                    label: field.placeholder ?? i18n.localizedString(for: "SixLayerFramework.form.placeholder.select"),
-                    selection: selectedValue,
-                    options: pickerOptionArray,
-                    pickerName: "DynamicSelectField"
-                )
-            } else {
-                // No options available
-                Text(i18n.localizedString(for: "SixLayerFramework.form.noOptionsAvailable"))
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
+            selectFieldContent
             
-            // Error message if any
             if let errors = formState.fieldErrors[field.id], !errors.isEmpty {
                 Text(errors.first!)
                     .font(.caption)
                     .foregroundColor(.red)
             }
-        }
-        .padding()
+        }, componentName: "DynamicSelectField")
         .background(Color.platformBackground)
         .cornerRadius(8)
         .overlay(
             RoundedRectangle(cornerRadius: 8)
                 .stroke(field.isRequired && (selectedValue.wrappedValue.isEmpty) ? Color.red : Color.gray.opacity(0.3), lineWidth: 1)
         )
-        .automaticCompliance()
+    }
+    
+    @ViewBuilder
+    private var selectFieldContent: some View {
+        let i18n = InternationalizationService()
+        if !pickerOptions.isEmpty {
+            let pickerOptionArray = pickerOptions.map { PickerOption(value: $0.value, label: $0.label) }
+            platformPicker(
+                label: field.placeholder ?? i18n.localizedString(for: "SixLayerFramework.form.placeholder.select"),
+                selection: selectedValue,
+                options: pickerOptionArray,
+                pickerName: "DynamicSelectField"
+            )
+        } else {
+            Text(i18n.localizedString(for: "SixLayerFramework.form.noOptionsAvailable"))
+                .font(.caption)
+                .foregroundColor(.secondary)
+        }
     }
 }
 

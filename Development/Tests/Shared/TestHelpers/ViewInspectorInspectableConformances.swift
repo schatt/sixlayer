@@ -22,6 +22,40 @@ extension DynamicFormSectionView: ViewInspector.Inspectable {}
 extension FormWizardView: ViewInspector.Inspectable {}
 extension FormWizardViewInner: ViewInspector.Inspectable {}
 
+// MARK: - Dynamic form field components (direct inspection — Issue 178 / #242)
+
+extension DynamicTextField: ViewInspector.Inspectable {}
+extension DynamicEmailField: ViewInspector.Inspectable {}
+extension DynamicPasswordField: ViewInspector.Inspectable {}
+extension DynamicPhoneField: ViewInspector.Inspectable {}
+extension DynamicURLField: ViewInspector.Inspectable {}
+extension DynamicNumberField: ViewInspector.Inspectable {}
+extension DynamicIntegerField: ViewInspector.Inspectable {}
+extension DynamicStepperField: ViewInspector.Inspectable {}
+extension DynamicDateField: ViewInspector.Inspectable {}
+extension DynamicTimeField: ViewInspector.Inspectable {}
+extension DynamicDateTimeField: ViewInspector.Inspectable {}
+extension DynamicMultiDateField: ViewInspector.Inspectable {}
+extension DynamicMultiSelectField: ViewInspector.Inspectable {}
+extension DynamicRadioField: ViewInspector.Inspectable {}
+extension DynamicCheckboxField: ViewInspector.Inspectable {}
+extension DynamicRichTextField: ViewInspector.Inspectable {}
+extension DynamicFileField: ViewInspector.Inspectable {}
+extension DynamicImageField: ViewInspector.Inspectable {}
+extension DynamicRangeField: ViewInspector.Inspectable {}
+extension DynamicArrayField: ViewInspector.Inspectable {}
+extension DynamicDataField: ViewInspector.Inspectable {}
+extension DynamicAutocompleteField: ViewInspector.Inspectable {}
+extension DynamicEnumField: ViewInspector.Inspectable {}
+extension DynamicCustomField: ViewInspector.Inspectable {}
+extension DynamicColorField: ViewInspector.Inspectable {}
+extension DynamicToggleField: ViewInspector.Inspectable {}
+extension DynamicTextAreaField: ViewInspector.Inspectable {}
+extension DynamicDisplayField: ViewInspector.Inspectable {}
+extension DynamicGaugeField: ViewInspector.Inspectable {}
+
+extension DynamicSelectField: ViewInspector.Inspectable {}
+
 // MARK: - Layer 5 platform components (so firstVStackInHierarchy(inspected) works)
 
 extension PlatformRecognitionLayer5: ViewInspector.Inspectable {}
