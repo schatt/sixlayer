@@ -169,12 +169,9 @@ open class PlatformImageBreakingChangeDetectionTests: BaseTestClass {
         // 2. iOS Simulator: Only iOS code paths (#if os(iOS)) are compiled and tested
         // 
         // Run tests on both destinations:
-        // - `swift test` on macOS → tests macOS paths (nsImage)
-        // - Run tests in Xcode with iOS Simulator destination → tests iOS paths (uiImage)
-        // - Or use CI/CD to run tests on both platforms
-        //
-        // Platform mocking (RuntimeCapabilityDetection.setTestPlatform) affects runtime behavior
-        // but cannot overcome compile-time conditionals - uiImage doesn't exist in macOS builds.
+        // - macOS unit tests → nsImage paths
+        // - iOS Simulator unit tests → uiImage paths
+        // Compile-time `#if os(...)` gates UIKit vs AppKit; overrides cannot bridge that gap.
         #endif
     }
     
