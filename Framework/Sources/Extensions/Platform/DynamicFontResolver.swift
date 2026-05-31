@@ -103,9 +103,14 @@ private extension SixLayerTextStyle {
 /// - macOS: Scales ``Font/platform*`` baseline sizes by ``SixLayerContentSizeCategory/typographyScaleFactor``.
 public struct DynamicFontResolver: Sendable {
     public let defaultContentSize: SixLayerContentSizeCategory
+    public let minimumTypographyPolicy: HIGMinimumTypographyPolicy?
 
-    public init(defaultContentSize: SixLayerContentSizeCategory = .large) {
+    public init(
+        defaultContentSize: SixLayerContentSizeCategory = .large,
+        minimumTypographyPolicy: HIGMinimumTypographyPolicy? = nil
+    ) {
         self.defaultContentSize = defaultContentSize
+        self.minimumTypographyPolicy = minimumTypographyPolicy
     }
 
     public func resolvedContentSize(_ override: SixLayerContentSizeCategory?) -> SixLayerContentSizeCategory {
@@ -146,22 +151,26 @@ public struct DynamicFontResolver: Sendable {
         design: Font.Design = .default,
         contentSize: SixLayerContentSizeCategory? = nil
     ) -> Font {
+        let effectiveDesignSize = minimumTypographyPolicy?.clampedDesignSize(
+            designSize,
+            relativeTo: style
+        ) ?? designSize
         #if os(iOS)
         return Font(uiFontForScaledSystem(
-            designSize: designSize,
+            designSize: effectiveDesignSize,
             relativeTo: style,
             weight: weight,
             contentSize: contentSize
         ))
         #elseif os(macOS)
         return Font(nsFontForScaledSystem(
-            designSize: designSize,
+            designSize: effectiveDesignSize,
             relativeTo: style,
             weight: weight,
             contentSize: contentSize
         ))
         #else
-        return .system(size: designSize, weight: weight, design: design)
+        return .system(size: effectiveDesignSize, weight: weight, design: design)
         #endif
     }
 
@@ -172,10 +181,14 @@ public struct DynamicFontResolver: Sendable {
         weight: Font.Weight = .regular,
         contentSize: SixLayerContentSizeCategory? = nil
     ) -> UIFont {
+        let effectiveDesignSize = minimumTypographyPolicy?.clampedDesignSize(
+            designSize,
+            relativeTo: style
+        ) ?? designSize
         let category = resolvedContentSize(contentSize)
         let traits = UITraitCollection(preferredContentSizeCategory: category.uiContentSizeCategory)
         let metrics = UIFontMetrics(forTextStyle: style.uiTextStyle)
-        let scaledSize = metrics.scaledValue(for: designSize, compatibleWith: traits)
+        let scaledSize = metrics.scaledValue(for: effectiveDesignSize, compatibleWith: traits)
         return UIFont.systemFont(ofSize: scaledSize, weight: weight.uiFontWeight)
     }
     #endif
@@ -187,8 +200,12 @@ public struct DynamicFontResolver: Sendable {
         weight: Font.Weight = .regular,
         contentSize: SixLayerContentSizeCategory? = nil
     ) -> NSFont {
+        let effectiveDesignSize = minimumTypographyPolicy?.clampedDesignSize(
+            designSize,
+            relativeTo: style
+        ) ?? designSize
         let category = resolvedContentSize(contentSize)
-        let scaledSize = designSize * category.typographyScaleFactor
+        let scaledSize = effectiveDesignSize * category.typographyScaleFactor
         return NSFont.systemFont(ofSize: scaledSize, weight: weight.nsFontWeight)
     }
     #endif
