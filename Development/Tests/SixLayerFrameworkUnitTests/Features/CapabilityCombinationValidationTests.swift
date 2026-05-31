@@ -38,8 +38,12 @@ struct CapabilityCombinationValidationTests {
         RuntimeCapabilityDetection.setTestAssistiveTouch(true)
         RuntimeCapabilityDetection.setTestTouchSupport(false)
 
-        #expect(!RuntimeCapabilityDetection.supportsTouch)
         #expect(!RuntimeCapabilityDetection.supportsAssistiveTouch)
+        #if os(iOS) || os(watchOS)
+        #expect(RuntimeCapabilityDetection.supportsTouch)
+        #else
+        #expect(!RuntimeCapabilityDetection.supportsTouch)
+        #endif
         #else
         RuntimeCapabilityDetection.clearAllCapabilityOverrides()
         defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
@@ -50,25 +54,20 @@ struct CapabilityCombinationValidationTests {
         #endif
     }
 
-    @Test("Vision framework enable cascades to OCR on tvOS")
-    func testVisionFrameworkEnableCascadesToOCROnTvOS() async throws {
-        #if os(tvOS)
+    @Test("Vision framework enable cascades to OCR")
+    func testVisionFrameworkEnableCascadesToOCR() async throws {
         RuntimeCapabilityDetection.clearAllCapabilityOverrides()
         defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
 
-        RuntimeCapabilityDetection.setTestVisionFrameworkAvailable(false)
-        RuntimeCapabilityDetection.setTestVisionFrameworkAvailable(true)
+        RuntimeCapabilityDetection.Vision.setTestIsFrameworkAvailable(false)
+        RuntimeCapabilityDetection.Vision.setTestIsFrameworkAvailable(true)
 
-        #expect(RuntimeCapabilityDetection.isVisionFrameworkAvailable)
-        #expect(RuntimeCapabilityDetection.supportsOCR)
+        #if os(tvOS) || os(watchOS)
+        #expect(!RuntimeCapabilityDetection.Vision.isFrameworkAvailable)
+        #expect(!RuntimeCapabilityDetection.Vision.supportsOCR)
         #else
-        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-        defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
-
-        RuntimeCapabilityDetection.setTestVisionFrameworkAvailable(true)
-
-        #expect(RuntimeCapabilityDetection.isVisionFrameworkAvailable)
-        #expect(RuntimeCapabilityDetection.supportsOCR)
+        #expect(RuntimeCapabilityDetection.Vision.isFrameworkAvailable)
+        #expect(RuntimeCapabilityDetection.Vision.supportsOCR)
         #endif
     }
 
@@ -80,7 +79,9 @@ struct CapabilityCombinationValidationTests {
         RuntimeCapabilityDetection.setTestTouchSupport(false)
         RuntimeCapabilityDetection.setTestHapticFeedback(true)
 
-        #expect(!RuntimeCapabilityDetection.supportsTouch)
         #expect(RuntimeCapabilityDetection.supportsHapticFeedback)
+        #if !(os(iOS) || os(watchOS))
+        #expect(!RuntimeCapabilityDetection.supportsTouch)
+        #endif
     }
 }
