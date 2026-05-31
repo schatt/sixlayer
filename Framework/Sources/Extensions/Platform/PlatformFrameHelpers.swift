@@ -251,7 +251,11 @@ public enum PlatformFrameHelpers {
         geometryHeight: CGFloat,
         viewportHints: CardViewportHints?
     ) -> CGFloat {
-        finiteViewportHeight(for: geometryHeight)
+        let base = finiteViewportHeight(for: geometryHeight)
+        guard let hints = viewportHints else { return base }
+        let effective = base - hints.topChromeInset - hints.bottomChromeInset
+        guard effective.isFinite, effective > 0 else { return base }
+        return effective
     }
 }
 
