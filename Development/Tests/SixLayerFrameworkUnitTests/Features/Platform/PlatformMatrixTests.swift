@@ -344,6 +344,109 @@ open class PlatformMatrixTests: BaseTestClass {
                       "Platform capabilities device context should match current context")
     }
     
+    // MARK: - Platform Feature Matrix constraint law
+
+    @Test func testPlatformFeatureMatrixConstraints_macOSWithTouchscreenAndHover() {
+        let matrix = PlatformFeatureMatrix.testFixture(
+            platform: .macOS,
+            deviceType: .mac,
+            supportsTouch: true,
+            supportsHover: true,
+            supportsHapticFeedback: true
+        )
+        #expect(matrix.isInternallyConsistent())
+        #expect(matrix.satisfiesPlatformConstraints())
+    }
+
+    @Test func testPlatformFeatureMatrixConstraints_iOSWithPointerOrPencilHover() {
+        let matrix = PlatformFeatureMatrix.testFixture(
+            platform: .iOS,
+            deviceType: .pad,
+            supportsTouch: true,
+            supportsHover: true,
+            supportsAssistiveTouch: true
+        )
+        #expect(matrix.isInternallyConsistent())
+        #expect(matrix.satisfiesPlatformConstraints())
+    }
+
+    @Test func testPlatformFeatureMatrixConstraints_nonTouchFirstPlatformsForbidAssistiveTouch() {
+        for platform in [SixLayerPlatform.macOS, .tvOS, .visionOS] {
+            let matrix = PlatformFeatureMatrix.testFixture(
+                platform: platform,
+                deviceType: PlatformFeatureMatrix.defaultDeviceType(for: platform),
+                supportsTouch: true,
+                supportsAssistiveTouch: true
+            )
+            #expect(matrix.isInternallyConsistent())
+            #expect(!matrix.satisfiesPlatformConstraints(), "\(platform) must not report AssistiveTouch")
+        }
+    }
+
+    @Test func testPlatformFeatureMatrixConstraints_touchFirstPlatformsRequireNativeTouchAndAssistive() {
+        for platform in [SixLayerPlatform.iOS, .watchOS] {
+            let missingAssistive = PlatformFeatureMatrix.testFixture(
+                platform: platform,
+                deviceType: PlatformFeatureMatrix.defaultDeviceType(for: platform),
+                supportsTouch: true,
+                supportsAssistiveTouch: false
+            )
+            #expect(!missingAssistive.satisfiesPlatformConstraints())
+
+            let missingTouch = PlatformFeatureMatrix.testFixture(
+                platform: platform,
+                deviceType: PlatformFeatureMatrix.defaultDeviceType(for: platform),
+                supportsTouch: false,
+                supportsAssistiveTouch: true
+            )
+            #expect(!missingTouch.isInternallyConsistent())
+            #expect(!missingTouch.satisfiesPlatformConstraints())
+        }
+    }
+
+    @Test func testPlatformFeatureMatrixConstraints_tvOSAllowsRuntimeReportedInputs() {
+        let matrix = PlatformFeatureMatrix.testFixture(
+            platform: .tvOS,
+            deviceType: .tv,
+            supportsTouch: true,
+            supportsHover: false,
+            supportsHapticFeedback: false
+        )
+        #expect(matrix.isInternallyConsistent())
+        #expect(matrix.satisfiesPlatformConstraints())
+    }
+
+    @Test func testPlatformFeatureMatrixConstraints_carPlayOnlyOnIOS() {
+        let macCarPlay = PlatformFeatureMatrix.testFixture(
+            platform: .macOS,
+            deviceType: .mac,
+            supportsCarPlay: true
+        )
+        #expect(!macCarPlay.satisfiesPlatformConstraints())
+
+        let activeWithoutCarContext = PlatformFeatureMatrix.testFixture(
+            platform: .iOS,
+            deviceType: .phone,
+            supportsTouch: true,
+            supportsAssistiveTouch: true,
+            supportsCarPlay: true,
+            isCarPlayActive: true,
+            deviceContext: .standard
+        )
+        #expect(!activeWithoutCarContext.satisfiesPlatformConstraints())
+
+        let validCarPlay = PlatformFeatureMatrix.testFixture(
+            platform: .iOS,
+            deviceType: .car,
+            supportsTouch: true,
+            supportsAssistiveTouch: true,
+            supportsCarPlay: true,
+            isCarPlayActive: true,
+            deviceContext: .carPlay
+        )
+        #expect(validCarPlay.satisfiesPlatformConstraints())
+    }
+
     // MARK: - Comprehensive Platform Feature Matrix
     
     @Test @MainActor func testComprehensivePlatformFeatureMatrixTriStatePhases() {
@@ -376,7 +479,15 @@ open class PlatformMatrixTests: BaseTestClass {
             switch platform {
             case .iOS, .watchOS, .macOS, .tvOS, .visionOS:
                 #expect(featureMatrix.isInternallyConsistent(), "\(phase): matrix should be consistent on \(platform)")
-                #expect(featureMatrix.satisfiesPlatformConstraints(), "\(phase): matrix should satisfy constraints on \(platform)")
+                // Override phases inject profiles that may differ from this host's native
+                // detection (touchscreen Mac, pointer hover on iPad, etc.). Platform law
+                // applies only when overrides are cleared.
+                if phase == "current" {
+                    #expect(
+                        featureMatrix.satisfiesPlatformConstraints(),
+                        "\(phase): matrix should satisfy native platform constraints on \(platform)"
+                    )
+                }
             }
         }
 
@@ -461,20 +572,80 @@ struct PlatformFeatureMatrix {
     }
     
     func satisfiesPlatformConstraints() -> Bool {
-        switch platform {
-        case .iOS:
-            // iOS: touch + AssistiveTouch are platform guarantees for this matrix; haptics can be
-            // absent on Simulator / stripped-down hosts even when actuators exist on hardware.
-            let carPlayConstraint = !isCarPlayActive || (isCarPlayActive && deviceContext == .carPlay && deviceType == .car)
-            return supportsTouch && supportsAssistiveTouch && carPlayConstraint
-        case .macOS:
-            return supportsHover && !supportsTouch && !supportsHapticFeedback && !supportsAssistiveTouch && !supportsCarPlay && !isCarPlayActive
-        case .watchOS:
-            return supportsTouch && supportsAssistiveTouch && !supportsCarPlay && !isCarPlayActive
-        case .tvOS:
-            return !supportsTouch && !supportsHover && !supportsHapticFeedback && !supportsAssistiveTouch && !supportsCarPlay && !isCarPlayActive
-        case .visionOS:
-            return !supportsTouch && supportsHover && !supportsHapticFeedback && !supportsAssistiveTouch && !supportsCarPlay && !isCarPlayActive
+        // Native-host constraints only — call when capability overrides are cleared.
+        //
+        // Compile-time platform law (PlatformStrategy), not typical desk hardware.
+        // Touch, hover, and haptics follow runtime detection; unusual but real setups
+        // must pass (mouse on iPhone, touchscreen on Mac, Pencil hover on iPad).
+        // Injected override profiles: assert isInternallyConsistent() only.
+
+        if supportsAssistiveTouch != platform.supportsAssistiveTouch {
+            return false
         }
+
+        if supportsCarPlay && platform != .iOS {
+            return false
+        }
+        if isCarPlayActive {
+            guard supportsCarPlay, deviceContext == .carPlay, deviceType == .car else {
+                return false
+            }
+        }
+        if deviceType == .car && deviceContext != .carPlay {
+            return false
+        }
+
+        if platform.isTouchFirstPlatform {
+            // Touch-first: native host guarantees primary touch; haptics may be absent on Simulator.
+            return supportsTouch && supportsAssistiveTouch
+        }
+
+        return !supportsCarPlay && !isCarPlayActive
+    }
+
+    static func defaultDeviceType(for platform: SixLayerPlatform) -> DeviceType {
+        switch platform {
+        case .iOS: return .phone
+        case .macOS: return .mac
+        case .watchOS: return .watch
+        case .tvOS: return .tv
+        case .visionOS: return .vision
+        }
+    }
+
+    static func testFixture(
+        platform: SixLayerPlatform,
+        deviceType: DeviceType? = nil,
+        deviceContext: DeviceContext = .standard,
+        supportsTouch: Bool = false,
+        supportsHover: Bool = false,
+        supportsHapticFeedback: Bool = false,
+        supportsVoiceOver: Bool = true,
+        supportsSwitchControl: Bool = true,
+        supportsAssistiveTouch: Bool = false,
+        supportsCarPlay: Bool = false,
+        isCarPlayActive: Bool = false,
+        minTouchTarget: CGFloat = 44,
+        maxAnimationDuration: TimeInterval = 0.3,
+        supportsVision: Bool = true,
+        supportsOCR: Bool = true
+    ) -> PlatformFeatureMatrix {
+        PlatformFeatureMatrix(
+            platform: platform,
+            deviceType: deviceType ?? defaultDeviceType(for: platform),
+            deviceContext: deviceContext,
+            supportsTouch: supportsTouch,
+            supportsHover: supportsHover,
+            supportsHapticFeedback: supportsHapticFeedback,
+            supportsVoiceOver: supportsVoiceOver,
+            supportsSwitchControl: supportsSwitchControl,
+            supportsAssistiveTouch: supportsAssistiveTouch,
+            supportsCarPlay: supportsCarPlay,
+            isCarPlayActive: isCarPlayActive,
+            minTouchTarget: minTouchTarget,
+            maxAnimationDuration: maxAnimationDuration,
+            supportsVision: supportsVision,
+            supportsOCR: supportsOCR
+        )
     }
 }
