@@ -63,139 +63,7 @@ public struct RuntimeCapabilityDetection {
     public static var currentPlatform: SixLayerPlatform {
         return SixLayerPlatform.current
     }
-    
-    // MARK: - Capability-Level Override Support
-    
-    /// Override touch support detection for testing (thread-local).
-    ///
-    /// **iOS and watchOS:** `false` is ignored — touch is a platform guarantee; a
-    /// negative thread-local value cannot simulate “no touch”. `true` and `nil`
-    /// behave as usual (`nil` uses OS detection). Other platforms respect `false`.
-    ///
-    /// A request for `false` on touch-first hosts is logged at most once per thread
-    /// until cleared (`nil` / `true`), so misuse is visible without spamming reads of `supportsTouch`.
-    public static func setTestTouchSupport(_ value: Bool?) {
-        #if os(iOS) || os(watchOS)
-        switch value {
-        case .some(false):
-            let logOnceKey = "SixLayerFramework.didLogIgnoredTestTouchFalse"
-            if Thread.current.threadDictionary[logOnceKey] == nil {
-                Thread.current.threadDictionary[logOnceKey] = true
-                os_log(
-                    "SixLayerFramework: setTestTouchSupport(false) ignored on touch-first platform (primary touch is a platform guarantee).",
-                    log: .default,
-                    type: .info
-                )
-            }
-        default:
-            Thread.current.threadDictionary.removeObject(forKey: "SixLayerFramework.didLogIgnoredTestTouchFalse")
-        }
-        #endif
-        if let value {
-            Thread.current.threadDictionary["testTouchSupport"] = value
-        } else {
-            Thread.current.threadDictionary.removeObject(forKey: "testTouchSupport")
-        }
-    }
-    
-    /// Override haptic feedback detection for testing
-    public static func setTestHapticFeedback(_ value: Bool?) {
-        if let value {
-            Thread.current.threadDictionary["testHapticFeedback"] = value
-        } else {
-            Thread.current.threadDictionary.removeObject(forKey: "testHapticFeedback")
-        }
-    }
-    
-    /// Override hover detection for testing
-    public static func setTestHover(_ value: Bool?) {
-        if let value {
-            Thread.current.threadDictionary["testHover"] = value
-        } else {
-            Thread.current.threadDictionary.removeObject(forKey: "testHover")
-        }
-    }
-    
-    /// Override VoiceOver detection for testing
-    public static func setTestVoiceOver(_ value: Bool?) {
-        if let value {
-            Thread.current.threadDictionary["testVoiceOver"] = value
-        } else {
-            Thread.current.threadDictionary.removeObject(forKey: "testVoiceOver")
-        }
-    }
-    
-    /// Override Switch Control detection for testing
-    public static func setTestSwitchControl(_ value: Bool?) {
-        if let value {
-            Thread.current.threadDictionary["testSwitchControl"] = value
-        } else {
-            Thread.current.threadDictionary.removeObject(forKey: "testSwitchControl")
-        }
-    }
-    
-    /// Override AssistiveTouch detection for testing
-    public static func setTestAssistiveTouch(_ value: Bool?) {
-        if let value {
-            Thread.current.threadDictionary["testAssistiveTouch"] = value
-        } else {
-            Thread.current.threadDictionary.removeObject(forKey: "testAssistiveTouch")
-        }
-    }
-    
-    /// Override high contrast mode detection for testing
-    /// This allows tests to verify color adaptation behavior
-    public static func setTestHighContrast(_ value: Bool?) {
-        if let value {
-            Thread.current.threadDictionary["testHighContrast"] = value
-        } else {
-            Thread.current.threadDictionary.removeObject(forKey: "testHighContrast")
-        }
-    }
 
-    #if os(iOS)
-    /// Override iOS hover-device capability probe (separate from `setTestHover` result override).
-    public static func setTestiOSHoverDeviceCapability(_ value: Bool?) {
-        if let value {
-            Thread.current.threadDictionary["testiOSHoverDeviceCapability"] = value
-        } else {
-            Thread.current.threadDictionary.removeObject(forKey: "testiOSHoverDeviceCapability")
-        }
-    }
-    #endif
-    
-    /// Clear all capability overrides for testing (`nil` clears by **removing** thread-dictionary entries so overrides do not linger as `NSNull` / stale values on any OS).
-    public static func clearAllCapabilityOverrides() {
-        setTestTouchSupport(nil)
-        setTestHapticFeedback(nil)
-        setTestHover(nil)
-        setTestVoiceOver(nil)
-        setTestSwitchControl(nil)
-        setTestAssistiveTouch(nil)
-        setTestHighContrast(nil)
-        #if os(iOS)
-        setTestiOSHoverDeviceCapability(nil)
-        #endif
-        Photos.setTestHasCamera(nil)
-        Photos.setTestIsPhotoLibraryPickerAvailable(nil)
-        Photos.setTestSupportsLiveDataScanner(nil)
-        Vision.setTestIsFrameworkAvailable(nil)
-        Vision.setTestSupportsOCR(nil)
-        Vision.setTestSupportsImageAnalyzer(nil)
-        Vision.setTestSupportsDocumentCamera(nil)
-        Files.setTestSupportsSecurityScopedResources(nil)
-        Files.setTestSupportsSecurityScopedBookmarks(nil)
-        Network.setTestIsConstrained(nil)
-        Network.setTestIsExpensive(nil)
-        Network.setTestHasPathSnapshot(nil)
-        Media.setTestHasMicrophoneInput(nil)
-        Media.setTestSupportsScreenCapture(nil)
-        Pasteboard.setTestCanReadStrings(nil)
-        Pasteboard.setTestCanWriteStrings(nil)
-        CapabilityOverride.clearThreadIsolationFromCurrentThread()
-        RuntimeCapabilityHarness.scrubLegacyCapabilityKeysFromUserDefaultsStandard()
-    }
-    
     // MARK: - Private Capability Override Getters
     
     private static var testTouchSupport: Bool? {
@@ -746,14 +614,16 @@ public struct RuntimeCapabilityDetection {
     /// Test overrides can simulate different platforms, but platform detection is authoritative for availability.
     /// Uses PlatformStrategy to reduce code duplication (Issue #140)
     nonisolated public static var supportsAssistiveTouch: Bool {
-        // Check for capability override first (allows testing different scenarios)
-        // But availability is fundamentally based on platform
+        guard currentPlatform.supportsAssistiveTouch else {
+            return false
+        }
         if let testValue = testAssistiveTouch {
+            if testValue && !supportsTouch {
+                return false
+            }
             return testValue
         }
-        
-        // Platform availability: use PlatformStrategy for platform characteristic
-        return currentPlatform.supportsAssistiveTouch
+        return true
     }
     
     // MARK: - Vision Framework Detection
@@ -797,43 +667,105 @@ public struct RuntimeCapabilityDetection {
     public enum Vision {
         /// Whether the Vision framework is usable on this OS/device class (same logic as legacy ``RuntimeCapabilityDetection/supportsVision``).
         nonisolated public static var isFrameworkAvailable: Bool {
-            if let forced = testVisionIsFrameworkAvailable { return forced }
+            if let forced = testVisionIsFrameworkAvailable {
+                guard platformShipsVisionFramework else { return false }
+                return forced
+            }
             return detectVisionFrameworkAvailability()
         }
 
         /// Vision-backed OCR availability (same logic as legacy ``RuntimeCapabilityDetection/supportsOCR``).
         nonisolated public static var supportsOCR: Bool {
-            if let forced = testVisionSupportsOCR { return forced }
+            if let forced = testVisionSupportsOCR {
+                guard platformShipsVisionFramework, isFrameworkAvailable else { return false }
+                return forced
+            }
             return detectVisionFrameworkAvailability()
         }
 
         /// Still-image Live Text–style analysis (`ImageAnalyzer`), iOS 16+ when VisionKit exposes it.
         nonisolated public static var supportsImageAnalyzer: Bool {
-            if let forced = testVisionSupportsImageAnalyzer { return forced }
+            if let forced = testVisionSupportsImageAnalyzer {
+                guard platformShipsVisionFramework, isFrameworkAvailable else { return false }
+                return forced
+            }
             return detectSupportsImageAnalyzer()
         }
 
         /// Document camera / scan UX (`VNDocumentCameraViewController`) when supported.
         nonisolated public static var supportsDocumentCamera: Bool {
-            if let forced = testVisionSupportsDocumentCamera { return forced }
+            if let forced = testVisionSupportsDocumentCamera {
+                guard platformShipsVisionFramework, isFrameworkAvailable else { return false }
+                return forced
+            }
             return detectSupportsDocumentCamera()
         }
 
         /// `nil` clears the override; `true` / `false` force branch tests (does not change OS hardware).
         public static func setTestIsFrameworkAvailable(_ value: Bool?) {
+            if value == true, !platformShipsVisionFramework {
+                logIgnoredTestOverrideOnce(
+                    key: "SixLayerFramework.didLogIgnoredTestVisionTrue",
+                    message: "SixLayerFramework: setTestIsFrameworkAvailable(true) ignored — Vision framework is unavailable on this platform."
+                )
+                return
+            }
+            if value == false || value == nil {
+                clearVisionDependentTestOverrides()
+            }
             setThreadOptionalBool(key: "testVisionIsFrameworkAvailable", value: value)
         }
 
         public static func setTestSupportsOCR(_ value: Bool?) {
+            if value == true {
+                guard platformShipsVisionFramework else {
+                    logIgnoredTestOverrideOnce(
+                        key: "SixLayerFramework.didLogIgnoredTestOCRTrue",
+                        message: "SixLayerFramework: setTestSupportsOCR(true) ignored — Vision framework is unavailable on this platform."
+                    )
+                    return
+                }
+                setTestIsFrameworkAvailable(true)
+            }
             setThreadOptionalBool(key: "testVisionSupportsOCR", value: value)
         }
 
         public static func setTestSupportsImageAnalyzer(_ value: Bool?) {
+            if value == true {
+                guard platformShipsVisionFramework else {
+                    logIgnoredTestOverrideOnce(
+                        key: "SixLayerFramework.didLogIgnoredTestImageAnalyzerTrue",
+                        message: "SixLayerFramework: setTestSupportsImageAnalyzer(true) ignored — Vision framework is unavailable on this platform."
+                    )
+                    return
+                }
+                setTestIsFrameworkAvailable(true)
+            }
             setThreadOptionalBool(key: "testVisionSupportsImageAnalyzer", value: value)
         }
 
         public static func setTestSupportsDocumentCamera(_ value: Bool?) {
+            if value == true {
+                guard platformShipsVisionFramework else {
+                    logIgnoredTestOverrideOnce(
+                        key: "SixLayerFramework.didLogIgnoredTestDocumentCameraTrue",
+                        message: "SixLayerFramework: setTestSupportsDocumentCamera(true) ignored — Vision framework is unavailable on this platform."
+                    )
+                    return
+                }
+                setTestIsFrameworkAvailable(true)
+            }
             setThreadOptionalBool(key: "testVisionSupportsDocumentCamera", value: value)
+        }
+
+        private static var platformShipsVisionFramework: Bool {
+            detectVisionFrameworkAvailability()
+        }
+
+        private static func clearVisionDependentTestOverrides() {
+            setThreadOptionalBool(key: "testVisionSupportsOCR", value: nil)
+            setThreadOptionalBool(key: "testVisionSupportsImageAnalyzer", value: nil)
+            setThreadOptionalBool(key: "testVisionSupportsDocumentCamera", value: nil)
         }
     }
 
@@ -1331,6 +1263,164 @@ public struct RuntimeCapabilityDetection {
         // On other platforms (iOS, watchOS, tvOS, visionOS), bookmarks are not supported
         // Even though iOS has security-scoped resources, it doesn't have bookmarkData
         return false
+    }
+
+    // MARK: - Test override hooks (public for consumer app tests; Resolves #311)
+
+    private static func logIgnoredTestOverrideOnce(key: String, message: String) {
+        if Thread.current.threadDictionary[key] == nil {
+            Thread.current.threadDictionary[key] = true
+            os_log("%{public}@", log: .default, type: .info, message)
+        }
+    }
+
+    private static func writeTestTouchSupportOverride(_ value: Bool?) {
+        #if os(iOS) || os(watchOS)
+        switch value {
+        case .some(false):
+            logIgnoredTestOverrideOnce(
+                key: "SixLayerFramework.didLogIgnoredTestTouchFalse",
+                message: "SixLayerFramework: setTestTouchSupport(false) ignored on touch-first platform (primary touch is a platform guarantee)."
+            )
+        default:
+            Thread.current.threadDictionary.removeObject(forKey: "SixLayerFramework.didLogIgnoredTestTouchFalse")
+        }
+        #endif
+        if let value {
+            Thread.current.threadDictionary["testTouchSupport"] = value
+        } else {
+            Thread.current.threadDictionary.removeObject(forKey: "testTouchSupport")
+        }
+    }
+
+    private static func writeTestAssistiveTouchOverride(_ value: Bool?) {
+        if let value {
+            Thread.current.threadDictionary["testAssistiveTouch"] = value
+        } else {
+            Thread.current.threadDictionary.removeObject(forKey: "testAssistiveTouch")
+        }
+    }
+
+    /// Override touch support detection for testing (thread-local).
+    ///
+    /// **iOS and watchOS:** `false` is ignored — touch is a platform guarantee. On other platforms,
+    /// forcing touch off also clears AssistiveTouch (precursor dependency). Haptics are independent.
+    public static func setTestTouchSupport(_ value: Bool?) {
+        if value == false {
+            writeTestAssistiveTouchOverride(false)
+        }
+        writeTestTouchSupportOverride(value)
+    }
+
+    /// Override haptic feedback detection for testing
+    public static func setTestHapticFeedback(_ value: Bool?) {
+        if let value {
+            Thread.current.threadDictionary["testHapticFeedback"] = value
+        } else {
+            Thread.current.threadDictionary.removeObject(forKey: "testHapticFeedback")
+        }
+    }
+
+    /// Override hover detection for testing
+    public static func setTestHover(_ value: Bool?) {
+        if let value {
+            Thread.current.threadDictionary["testHover"] = value
+        } else {
+            Thread.current.threadDictionary.removeObject(forKey: "testHover")
+        }
+    }
+
+    /// Override VoiceOver detection for testing
+    public static func setTestVoiceOver(_ value: Bool?) {
+        if let value {
+            Thread.current.threadDictionary["testVoiceOver"] = value
+        } else {
+            Thread.current.threadDictionary.removeObject(forKey: "testVoiceOver")
+        }
+    }
+
+    /// Override Switch Control detection for testing
+    public static func setTestSwitchControl(_ value: Bool?) {
+        if let value {
+            Thread.current.threadDictionary["testSwitchControl"] = value
+        } else {
+            Thread.current.threadDictionary.removeObject(forKey: "testSwitchControl")
+        }
+    }
+
+    /// Override AssistiveTouch detection for testing.
+    ///
+    /// Forcing AssistiveTouch on enables touch; unavailable on platforms that do not ship the feature.
+    public static func setTestAssistiveTouch(_ value: Bool?) {
+        guard let value else {
+            writeTestAssistiveTouchOverride(nil)
+            return
+        }
+        if value {
+            guard currentPlatform.supportsAssistiveTouch else {
+                logIgnoredTestOverrideOnce(
+                    key: "SixLayerFramework.didLogIgnoredTestAssistiveTouchTrue",
+                    message: "SixLayerFramework: setTestAssistiveTouch(true) ignored — AssistiveTouch is unavailable on this platform."
+                )
+                return
+            }
+            writeTestTouchSupportOverride(true)
+            writeTestAssistiveTouchOverride(true)
+            return
+        }
+        writeTestAssistiveTouchOverride(false)
+    }
+
+    /// Override high contrast mode detection for testing
+    public static func setTestHighContrast(_ value: Bool?) {
+        if let value {
+            Thread.current.threadDictionary["testHighContrast"] = value
+        } else {
+            Thread.current.threadDictionary.removeObject(forKey: "testHighContrast")
+        }
+    }
+
+    #if os(iOS)
+    /// Override iOS hover-device capability probe (separate from `setTestHover` result override).
+    public static func setTestiOSHoverDeviceCapability(_ value: Bool?) {
+        if let value {
+            Thread.current.threadDictionary["testiOSHoverDeviceCapability"] = value
+        } else {
+            Thread.current.threadDictionary.removeObject(forKey: "testiOSHoverDeviceCapability")
+        }
+    }
+    #endif
+
+    /// Clear all capability overrides for testing (`nil` clears by **removing** thread-dictionary entries).
+    public static func clearAllCapabilityOverrides() {
+        setTestTouchSupport(nil)
+        setTestHapticFeedback(nil)
+        setTestHover(nil)
+        setTestVoiceOver(nil)
+        setTestSwitchControl(nil)
+        setTestAssistiveTouch(nil)
+        setTestHighContrast(nil)
+        #if os(iOS)
+        setTestiOSHoverDeviceCapability(nil)
+        #endif
+        Photos.setTestHasCamera(nil)
+        Photos.setTestIsPhotoLibraryPickerAvailable(nil)
+        Photos.setTestSupportsLiveDataScanner(nil)
+        Vision.setTestIsFrameworkAvailable(nil)
+        Vision.setTestSupportsOCR(nil)
+        Vision.setTestSupportsImageAnalyzer(nil)
+        Vision.setTestSupportsDocumentCamera(nil)
+        Files.setTestSupportsSecurityScopedResources(nil)
+        Files.setTestSupportsSecurityScopedBookmarks(nil)
+        Network.setTestIsConstrained(nil)
+        Network.setTestIsExpensive(nil)
+        Network.setTestHasPathSnapshot(nil)
+        Media.setTestHasMicrophoneInput(nil)
+        Media.setTestSupportsScreenCapture(nil)
+        Pasteboard.setTestCanReadStrings(nil)
+        Pasteboard.setTestCanWriteStrings(nil)
+        CapabilityOverride.clearThreadIsolationFromCurrentThread()
+        RuntimeCapabilityHarness.scrubLegacyCapabilityKeysFromUserDefaultsStandard()
     }
 }
 
