@@ -62,4 +62,9 @@ public enum PlatformTestUtilities {
             return touchDetected ? 44.0 : 0.0
         }
     }
+
+    /// Expected AssistiveTouch after `setTestAssistiveTouch(_:)` — only true when enabled and the host ships the feature (#311).
+    public static func expectedAssistiveTouchAfterTestOverride(_ enabled: Bool) -> Bool {
+        enabled && SixLayerPlatform.current.supportsAssistiveTouch
+    }
 }

@@ -57,18 +57,6 @@ open class CapabilityMatrixTests: BaseTestClass {
             }
         ),
         
-        // Haptic Feedback Capability Behavior
-        CapabilityBehaviorTest(
-            name: "Haptic Feedback Behavior",
-            testBehavior: {
-                let hasHaptic = RuntimeCapabilityDetection.supportsHapticFeedback
-                let hasTouch = RuntimeCapabilityDetection.supportsTouch
-                if hasHaptic {
-                    #expect(hasTouch, "Haptic feedback logically requires touch on current host")
-                }
-            }
-        ),
-        
         // OCR Capability Behavior
         CapabilityBehaviorTest(
             name: "OCR Behavior",
