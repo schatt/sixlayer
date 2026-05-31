@@ -68,11 +68,17 @@ open class CapabilityAwareFunctionTests: BaseTestClass {
         }
         #expect(RuntimeCapabilityDetection.supportsTouch)
         #expect(RuntimeCapabilityDetection.supportsHapticFeedback)
-        #expect(RuntimeCapabilityDetection.supportsAssistiveTouch)
+        #expect(
+            RuntimeCapabilityDetection.supportsAssistiveTouch
+                == PlatformTestUtilities.expectedAssistiveTouchAfterTestOverride(true)
+        )
         let config = getCardExpansionPlatformConfig()
         #expect(config.supportsTouch)
         #expect(config.supportsHapticFeedback)
-        #expect(config.supportsAssistiveTouch)
+        #expect(
+            config.supportsAssistiveTouch
+                == PlatformTestUtilities.expectedAssistiveTouchAfterTestOverride(true)
+        )
         let currentPlatform = SixLayerPlatform.current
         let expectedMinTouchTarget = PlatformTestUtilities.expectedMinTouchTarget(
             for: currentPlatform,
