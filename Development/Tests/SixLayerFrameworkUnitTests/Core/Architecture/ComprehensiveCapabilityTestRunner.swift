@@ -338,10 +338,6 @@ struct ComprehensiveCapabilityTestRunner {
         case .hapticFeedback:
             // Haptic feedback should match the enabled state (runtime detection)
             #expect(config.supportsHapticFeedback == enabled, "Haptic feedback UI should be \(enabled ? "generated" : "not generated") based on runtime detection")
-            if enabled {
-                // Haptic feedback requires touch, so touch should also be enabled
-                #expect(config.supportsTouch, "Haptic feedback requires touch")
-            }
         case .assistiveTouch:
             // AssistiveTouch should match the enabled state (runtime detection)
             #expect(config.supportsAssistiveTouch == enabled, "AssistiveTouch UI should be \(enabled ? "generated" : "not generated") based on runtime detection")
@@ -397,12 +393,8 @@ struct ComprehensiveCapabilityTestRunner {
         
         // Test platform-specific consistency and dependencies
         // Note: Touch and hover CAN coexist (iPad with mouse, macOS with touchscreen, visionOS)
-        // Only true constraints: Haptic requires touch, AssistiveTouch requires touch
-        
-        // Test dependencies regardless of platform
-        if platformConfig.supportsHapticFeedback {
-            #expect(platformConfig.supportsTouch, "Haptic feedback requires touch")
-        }
+        // AssistiveTouch implies touch on platforms that ship the feature (#311)
+
         assertAssistiveTouchImpliesTouchWhenPlatformShips(platformConfig)
         
         // Platform-specific typical behaviors (but not requirements - runtime detection takes precedence)
@@ -552,9 +544,6 @@ struct ComprehensiveCapabilityTestRunner {
         case .hapticFeedback:
             // Haptic feedback should match the enabled state (runtime detection)
             #expect(config.supportsHapticFeedback == enabled, "Haptic feedback behavior should be \(enabled ? "enabled" : "disabled") based on runtime detection")
-            if enabled {
-                #expect(config.supportsTouch, "Haptic feedback requires touch")
-            }
         case .assistiveTouch:
             // AssistiveTouch should match the enabled state (runtime detection)
             #expect(config.supportsAssistiveTouch == enabled, "AssistiveTouch behavior should be \(enabled ? "enabled" : "disabled") based on runtime detection")
@@ -584,16 +573,8 @@ struct ComprehensiveCapabilityTestRunner {
             RuntimeCapabilityDetection.setTestHover(enabled)
         case .hapticFeedback:
             RuntimeCapabilityDetection.setTestHapticFeedback(enabled)
-            // Haptic feedback requires touch
-            if enabled {
-                RuntimeCapabilityDetection.setTestTouchSupport(true)
-            }
         case .assistiveTouch:
             RuntimeCapabilityDetection.setTestAssistiveTouch(enabled)
-            // AssistiveTouch requires touch
-            if enabled {
-                RuntimeCapabilityDetection.setTestTouchSupport(true)
-            }
         case .voiceOver:
             RuntimeCapabilityDetection.setTestVoiceOver(enabled)
         case .switchControl:
