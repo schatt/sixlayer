@@ -799,7 +799,11 @@ open class IntelligentCardExpansionComprehensiveTests: BaseTestClass {    // MAR
         let platformConfigWithAccessibility = getCardExpansionPlatformConfig()
         #expect(platformConfigWithAccessibility.supportsVoiceOver, "VoiceOver should be available")
         #expect(platformConfigWithAccessibility.supportsSwitchControl, "Switch Control should be available")
-        #expect(platformConfigWithAccessibility.supportsAssistiveTouch, "AssistiveTouch should be available when enabled")
+        #expect(
+            platformConfigWithAccessibility.supportsAssistiveTouch
+                == PlatformTestUtilities.expectedAssistiveTouchAfterTestOverride(true),
+            "AssistiveTouch should match platform-aware override"
+        )
     }
     
     // MARK: - Edge Case Tests
