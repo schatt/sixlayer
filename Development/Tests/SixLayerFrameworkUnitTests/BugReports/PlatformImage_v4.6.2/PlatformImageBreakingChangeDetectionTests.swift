@@ -273,7 +273,7 @@ open class PlatformImageBreakingChangeDetectionTests: BaseTestClass {
             selectedImage = image
         }
         
-        // Simulate macOS photo capture/selection
+        // Exercise macOS photo capture/selection (#if os(macOS) gate)
         // Create coordinators directly with the test callbacks
         let cameraCoordinator = MacCameraView.Coordinator(MacCameraView { image in
             capturedImage = image
