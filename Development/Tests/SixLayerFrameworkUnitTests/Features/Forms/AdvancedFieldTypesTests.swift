@@ -15,11 +15,10 @@ import UniformTypeIdentifiers
  * and performance across all advanced field types. Includes platform-specific behavior testing and mock
  * capability detection for comprehensive validation.
  * 
- * METHODOLOGY: Uses TDD principles with comprehensive test coverage including platform testing, mock testing,
- * accessibility validation, and performance benchmarking. Tests both enabled and disabled states of capabilities
- * using RuntimeCapabilityDetection mock framework.
+ * METHODOLOGY: Field initialization and binding tests on the current host; capability
+ * tri-state for a11y axes where fields branch on RuntimeCapabilityDetection (#251).
  */
-@Suite("Advanced Field Types")
+@Suite("Advanced Field Types", DefaultRuntimeCapabilityIsolationTrait())
 open class AdvancedFieldTypesTests: BaseTestClass {
 
     // MARK: - Test Setup/Teardown
@@ -1061,33 +1060,38 @@ open class AdvancedFieldTypesTests: BaseTestClass {
     /// BUSINESS PURPOSE: Advanced field types should provide different behavior when accessibility capabilities are enabled vs disabled
     /// TESTING SCOPE: Tests that advanced field types adapt their behavior based on VoiceOver, Switch Control, AssistiveTouch, and keyboard navigation capabilities
     /// METHODOLOGY: Uses mock framework to test both enabled and disabled states, verifying that field types provide appropriate accessibility features
-    @Test func testAdvancedFieldTypesAccessibilityBehavior() async {
-        // Test VoiceOver behavior
-        RuntimeCapabilityDetection.setTestVoiceOver(true)
-        let voiceOverEnabled = RuntimeCapabilityDetection.supportsVoiceOver
-        #expect(voiceOverEnabled, "VoiceOver should be enabled for testing")
+    /// A11y override plumbing on **current host** through tri-state (#251).
+    @Test func testAdvancedFieldTypesAccessibilityTriStatePhases() async {
+        defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
+
+        func assertAccessibilityOverrides(phase: String) {
+            switch SixLayerPlatform.current {
+            case .iOS, .watchOS, .macOS, .tvOS, .visionOS:
+                _ = RuntimeCapabilityDetection.supportsVoiceOver
+                _ = RuntimeCapabilityDetection.supportsSwitchControl
+                _ = RuntimeCapabilityDetection.supportsAssistiveTouch
+                #expect(Bool(true), "\(phase): accessibility accessors readable on \(SixLayerPlatform.current)")
+            }
+        }
+
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        assertAccessibilityOverrides(phase: "current")
 
         RuntimeCapabilityDetection.setTestVoiceOver(false)
-        let voiceOverDisabled = RuntimeCapabilityDetection.supportsVoiceOver
-        #expect(!voiceOverDisabled, "VoiceOver should be disabled for testing")
-
-        // Test Switch Control behavior
-        RuntimeCapabilityDetection.setTestSwitchControl(true)
-        let switchControlEnabled = RuntimeCapabilityDetection.supportsSwitchControl
-        #expect(switchControlEnabled, "Switch Control should be enabled for testing")
-
         RuntimeCapabilityDetection.setTestSwitchControl(false)
-        let switchControlDisabled = RuntimeCapabilityDetection.supportsSwitchControl
-        #expect(!switchControlDisabled, "Switch Control should be disabled for testing")
-
-        // Test AssistiveTouch behavior
-        RuntimeCapabilityDetection.setTestAssistiveTouch(true)
-        let assistiveTouchEnabled = RuntimeCapabilityDetection.supportsAssistiveTouch
-        #expect(assistiveTouchEnabled, "AssistiveTouch should be enabled for testing")
-
         RuntimeCapabilityDetection.setTestAssistiveTouch(false)
-        let assistiveTouchDisabled = RuntimeCapabilityDetection.supportsAssistiveTouch
-        #expect(!assistiveTouchDisabled, "AssistiveTouch should be disabled for testing")
+        assertAccessibilityOverrides(phase: "disabled")
+        #expect(!RuntimeCapabilityDetection.supportsVoiceOver)
+        #expect(!RuntimeCapabilityDetection.supportsSwitchControl)
+        #expect(!RuntimeCapabilityDetection.supportsAssistiveTouch)
+
+        RuntimeCapabilityDetection.setTestVoiceOver(true)
+        RuntimeCapabilityDetection.setTestSwitchControl(true)
+        RuntimeCapabilityDetection.setTestAssistiveTouch(true)
+        assertAccessibilityOverrides(phase: "enabled")
+        #expect(RuntimeCapabilityDetection.supportsVoiceOver)
+        #expect(RuntimeCapabilityDetection.supportsSwitchControl)
+        #expect(RuntimeCapabilityDetection.supportsAssistiveTouch)
     }
     
     /// BUSINESS PURPOSE: Advanced field types should provide enhanced accessibility labels when VoiceOver is enabled
