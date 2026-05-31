@@ -70,6 +70,10 @@ This script will:
 
 ## Development Standards
 
+### Concurrency and Sendable (framework types)
+
+Public framework types follow a documented **hints vs presentation** split: immutable parsed hints (`DataHintsResult`, `HintsSectionLayout`, `FieldDisplayHints`) are `Sendable` and cacheable; runtime form types (`DynamicFormField`, `DynamicFormSection`, `DynamicFormState`) stay `@MainActor` and may hold closures. Full policy, table, and review checklist: [Framework/docs/DeveloperExtensionGuide.md — Concurrency and Sendable](Framework/docs/DeveloperExtensionGuide.md#concurrency-and-sendable).
+
 ### Git Workflow and Commit Practices
 **MANDATORY**: Commit early and often.
 
