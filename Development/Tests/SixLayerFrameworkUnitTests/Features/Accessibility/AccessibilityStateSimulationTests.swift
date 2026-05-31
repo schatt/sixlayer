@@ -258,7 +258,11 @@ open class AccessibilityStateSimulationTests: BaseTestClass {
         // All platforms should support basic accessibility features (when enabled)
         #expect(config.supportsVoiceOver, "All platforms should support VoiceOver")
         #expect(config.supportsSwitchControl, "All platforms should support Switch Control")
-        #expect(config.supportsAssistiveTouch, "All platforms should support AssistiveTouch when enabled")
+        #expect(
+            config.supportsAssistiveTouch
+                == PlatformTestUtilities.expectedAssistiveTouchAfterTestOverride(true),
+            "AssistiveTouch should match platform-aware override on \(SixLayerPlatform.current)"
+        )
         #expect(config.supportsReduceMotion, "All platforms should support reduced motion")
         #expect(config.supportsHighContrast, "All platforms should support high contrast")
         #expect(config.supportsDynamicType, "All platforms should support dynamic type")

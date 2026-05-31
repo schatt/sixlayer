@@ -267,7 +267,10 @@ open class AccessibilityPreferenceTests: BaseTestClass {
         RuntimeCapabilityDetection.setTestAssistiveTouch(true)
 
         #expect(RuntimeCapabilityDetection.supportsVoiceOver)
-        #expect(RuntimeCapabilityDetection.supportsAssistiveTouch)
+        #expect(
+            RuntimeCapabilityDetection.supportsAssistiveTouch
+                == PlatformTestUtilities.expectedAssistiveTouchAfterTestOverride(true)
+        )
         #expect(RuntimeCapabilityDetection.supportsSwitchControl)
     }
     

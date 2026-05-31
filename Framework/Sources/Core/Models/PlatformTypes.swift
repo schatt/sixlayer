@@ -93,7 +93,8 @@ public enum DeviceType: String, CaseIterable, Sendable {
         #if os(visionOS)
         return .vision
         #elseif os(iOS)
-        // Check for CarPlay first
+        // CarPlay is iOS-only: `DeviceType.car` and `DeviceContext.carPlay` are not overrideable
+        // today and cannot apply on macOS or other hosts (see CarPlayCapabilityDetection; #311).
         if CarPlayCapabilityDetection.isCarPlayActive {
             return .car
         }

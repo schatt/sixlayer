@@ -133,6 +133,71 @@ open class RuntimeCapabilityDetectionTDDTests: BaseTestClass {
             #expect(!RuntimeCapabilityDetection.supportsTouch)
         }
     }
+
+    @Test @MainActor func testAssistiveTouchEnableCascadesToTouchOnSupportedPlatforms() {
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
+
+        RuntimeCapabilityDetection.setTestAssistiveTouch(true)
+
+        if SixLayerPlatform.current.supportsAssistiveTouch {
+            #expect(RuntimeCapabilityDetection.supportsAssistiveTouch)
+            #expect(RuntimeCapabilityDetection.supportsTouch)
+        } else {
+            #expect(!RuntimeCapabilityDetection.supportsAssistiveTouch)
+        }
+    }
+
+    @Test @MainActor func testTouchDisableClearsAssistiveTouchBeforeWrite() {
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
+
+        RuntimeCapabilityDetection.setTestAssistiveTouch(true)
+        RuntimeCapabilityDetection.setTestTouchSupport(false)
+
+        #expect(!RuntimeCapabilityDetection.supportsAssistiveTouch)
+        #if os(iOS) || os(watchOS)
+        #expect(RuntimeCapabilityDetection.supportsTouch)
+        #else
+        #expect(!RuntimeCapabilityDetection.supportsTouch)
+        #endif
+    }
+
+    @Test @MainActor func testHapticFeedbackIndependentOfTouchOverride() {
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
+
+        RuntimeCapabilityDetection.setTestTouchSupport(false)
+        RuntimeCapabilityDetection.setTestHapticFeedback(true)
+
+        #expect(RuntimeCapabilityDetection.supportsHapticFeedback)
+        #if !(os(iOS) || os(watchOS))
+        #expect(!RuntimeCapabilityDetection.supportsTouch)
+        #endif
+    }
+
+    @Test @MainActor func testVisionFrameworkEnableCascadesToOCR() {
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
+
+        RuntimeCapabilityDetection.Vision.setTestIsFrameworkAvailable(false)
+        RuntimeCapabilityDetection.Vision.setTestIsFrameworkAvailable(true)
+
+        #expect(RuntimeCapabilityDetection.Vision.isFrameworkAvailable)
+        #expect(RuntimeCapabilityDetection.Vision.supportsOCR)
+    }
+
+    @Test @MainActor func testVisionFrameworkDisableClearsOCR() {
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
+
+        RuntimeCapabilityDetection.Vision.setTestIsFrameworkAvailable(true)
+        RuntimeCapabilityDetection.Vision.setTestSupportsOCR(true)
+        RuntimeCapabilityDetection.Vision.setTestIsFrameworkAvailable(false)
+
+        #expect(!RuntimeCapabilityDetection.Vision.isFrameworkAvailable)
+        #expect(!RuntimeCapabilityDetection.Vision.supportsOCR)
+    }
     
     @Test @MainActor func testTouchOverrideTakesPrecedenceOverTestingDefaults() {
         // Set override
