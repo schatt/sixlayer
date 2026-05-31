@@ -135,20 +135,17 @@ struct FieldHintsLoaderTests {
         ]
         
         // Create hints section that references a non-existent field
-        var hintsSectionMetadata: [String: String] = [:]
-        hintsSectionMetadata["_fieldIds"] = "name,nonexistent,email"
+        let layouts = [
+            HintsSectionLayout(
+                id: "basic-info",
+                title: "Basic Information",
+                fieldIds: ["name", "nonexistent", "email"],
+                layoutStyle: .horizontal
+            )
+        ]
         
-        let hintsSection = DynamicFormSection(
-            id: "basic-info",
-            title: "Basic Information",
-            fields: [],
-            metadata: hintsSectionMetadata,
-            layoutStyle: .horizontal
-        )
-        
-        // Build sections - should warn about missing field and only include valid ones
         let builtSections = SectionBuilder.buildSections(
-            from: [hintsSection],
+            from: layouts,
             matching: fields
         )
         
