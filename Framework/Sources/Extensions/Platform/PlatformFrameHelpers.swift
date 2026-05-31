@@ -244,5 +244,18 @@ public enum PlatformFrameHelpers {
         return 800
         #endif
     }
+
+    /// Resolves the effective card collection viewport height from geometry and optional host hints (GitHub #306).
+    @MainActor
+    public static func effectiveCardCollectionViewportHeight(
+        geometryHeight: CGFloat,
+        viewportHints: CardViewportHints?
+    ) -> CGFloat {
+        let base = finiteViewportHeight(for: geometryHeight)
+        guard let hints = viewportHints else { return base }
+        let effective = base - hints.topChromeInset - hints.bottomChromeInset
+        guard effective.isFinite, effective > 0 else { return base }
+        return effective
+    }
 }
 

@@ -471,6 +471,7 @@
 		2537BBFA3EDA703DF3CF4539 /* Layer1SemanticAPIPresenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A7D1165AF153DA42D36BDAD /* Layer1SemanticAPIPresenceTests.swift */; };
 		254736B63CBE69C9979415E2 /* PlatformModalSheetNavigationChromeLayer4Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DE52CF0CC4961A0BDE514B9 /* PlatformModalSheetNavigationChromeLayer4Tests.swift */; };
 		25476425E028857A60EC92FA /* IntelligentFormView+EntityAutoSave.swift in Sources */ = {isa = PBXBuildFile; fileRef = A126B2E52D169F9A66D218A6 /* IntelligentFormView+EntityAutoSave.swift */; };
+		255A04307605E4851D8AC661 /* CardViewportHostHintsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0ED3F2338F4B022941AF6113 /* CardViewportHostHintsTests.swift */; };
 		255DACA6C59EA18D2F1766DB /* PlatformResourceLayer5.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8BBC4683F95F973F1CE332D /* PlatformResourceLayer5.swift */; };
 		25806E4AD591AC05D4123691 /* ItemCollectionPresentationStrategyResolverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 154666A424FEB9A2AC333AE6 /* ItemCollectionPresentationStrategyResolverTests.swift */; };
 		259E78A14F3AC3B0376AB056 /* Layer4BreakingChangeDetectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4696C53E5DBC5872DE4F728 /* Layer4BreakingChangeDetectionTests.swift */; };
@@ -966,6 +967,7 @@
 		4CDD503C3AB4D0CAACA259BD /* WatchOSFormColorPickers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C3CC0A3797BBD65958EAB62 /* WatchOSFormColorPickers.swift */; };
 		4CDFB6858F182F2FD32B2248 /* ThemingIntegration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A8723AE44E462450B23E862 /* ThemingIntegration.swift */; };
 		4CEF1BC7256E1D39752DAF0E /* LayoutParameterCalculatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C7107736EAD12E6DAB4DB06 /* LayoutParameterCalculatorTests.swift */; };
+		4CFF71B8982B62EC689723E1 /* CardViewportHostHintsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0ED3F2338F4B022941AF6113 /* CardViewportHostHintsTests.swift */; };
 		4D007ADE822BAE969A9B4873 /* DefaultRuntimeCapabilityIsolationTrait.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54D20D03C676F8F86FBAF55A /* DefaultRuntimeCapabilityIsolationTrait.swift */; };
 		4D3958E84B576351813D4D7E /* PlatformSystemZoomPreference.swift in Sources */ = {isa = PBXBuildFile; fileRef = A734A20D26DCDAE6B9BD8644 /* PlatformSystemZoomPreference.swift */; };
 		4D509088BB7FF1E14F9DA6D9 /* PlatformOrchestrationLayer5.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FA15693B8533B8E54C0BB25 /* PlatformOrchestrationLayer5.swift */; };
@@ -1853,6 +1855,7 @@
 		92B144D55B54BFDDD3D0CDC8 /* PlatformPhotoLayoutDecisionLayer2.swift in Sources */ = {isa = PBXBuildFile; fileRef = D762AB299089808826BB4966 /* PlatformPhotoLayoutDecisionLayer2.swift */; };
 		92B343E8DCEB74F045E23719 /* RuntimeCapabilityDetectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7A524E6E06C01F309963D05 /* RuntimeCapabilityDetectionTests.swift */; };
 		92D2428B45A5D79CD239469E /* VIEWINSPECTOR_ANYVIEW_INVESTIGATION.md in Resources */ = {isa = PBXBuildFile; fileRef = B79AD98936960569626B63AD /* VIEWINSPECTOR_ANYVIEW_INVESTIGATION.md */; };
+		92DF0EFED98EE0B0AB0C6BD9 /* CardViewportHostHintsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0ED3F2338F4B022941AF6113 /* CardViewportHostHintsTests.swift */; };
 		93157736EEFEC1EFBFCA5FA2 /* PlatformManagedSettingsDetailNavigationState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6823A7FA3CE18BD0484D5534 /* PlatformManagedSettingsDetailNavigationState.swift */; };
 		931FC715DAEC9166A6B9613F /* ItemBadge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2158541D13E0B38AF1084A8E /* ItemBadge.swift */; };
 		9334DCEF02D5841F3B3EBCE9 /* LocationServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EA899D32AD85BF937BD2708 /* LocationServiceTests.swift */; };
@@ -2258,6 +2261,7 @@
 		B688356D1B3D54DDADA6DD7D /* DataIntrospectionCoreDataTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39254C5791805FB88FB7599F /* DataIntrospectionCoreDataTests.swift */; };
 		B6D43C22ED9D87DF26E53E03 /* DefensiveValidation.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0EE7B0159713978F9A99A36 /* DefensiveValidation.swift */; };
 		B6ECD14909633BA3156FD061 /* MigrationTool.swift in Sources */ = {isa = PBXBuildFile; fileRef = 778732994C806F48DAC91188 /* MigrationTool.swift */; };
+		B71A63D5C81F7C9B613A4943 /* CardViewportHostHintsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0ED3F2338F4B022941AF6113 /* CardViewportHostHintsTests.swift */; };
 		B72D760064A1A59E61B05EAF /* FormStateStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8A87379BEADDCE465F51BCD /* FormStateStorage.swift */; };
 		B73A2346AAD2D94FA8F0027F /* FormDraftTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3615F75BA9368D22967C86F7 /* FormDraftTests.swift */; };
 		B77063AA96BB179B8E224B0D /* Layer5PlatformComponentTDDTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F679B2B923EBECE83276CF6E /* Layer5PlatformComponentTDDTests.swift */; };
@@ -2876,6 +2880,7 @@
 		E97D8A31433CBDA97AEDEAB4 /* CardBadgeContentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3D7809919AD19E303A4F8C0 /* CardBadgeContentTests.swift */; };
 		E9833AA11A5C0E758605303C /* GenericDataItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43F9BB9F7677DBA23A5A5BD3 /* GenericDataItem.swift */; };
 		E9AE1B44879CFA14634DA3DD /* FormProcessingWorkflowTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD7AFE58993D8F6D3337C6FE /* FormProcessingWorkflowTests.swift */; };
+		E9BC655973C460BD653C563D /* CardViewportHostHintsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0ED3F2338F4B022941AF6113 /* CardViewportHostHintsTests.swift */; };
 		E9C75485F92C113E7684C4E4 /* PlatformImagePhase3Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C805CA9CDAF550856B6C156 /* PlatformImagePhase3Tests.swift */; };
 		E9D3381084C4ABBA71E93867 /* PlatformPrintLayer4.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF8DAF63AF2ABB2AD6E2113D /* PlatformPrintLayer4.swift */; };
 		E9DA515175D90E66DB210766 /* AccessibilityTestUtilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F5B3BCC307862753823EAA9 /* AccessibilityTestUtilities.swift */; };
@@ -3561,6 +3566,7 @@
 		0C6D9391BC17345B4A7D36B5 /* PlatformOCRLayoutDecisionLayer2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformOCRLayoutDecisionLayer2.swift; sourceTree = "<group>"; };
 		0DFA6B3D4FE363D2D4DAFCAB /* PlatformMapComponentsLayer4ComponentAccessibilityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformMapComponentsLayer4ComponentAccessibilityTests.swift; sourceTree = "<group>"; };
 		0E23733C51C38B31500DD2B1 /* OCRLabelAnchoredExtraction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OCRLabelAnchoredExtraction.swift; sourceTree = "<group>"; };
+		0ED3F2338F4B022941AF6113 /* CardViewportHostHintsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardViewportHostHintsTests.swift; sourceTree = "<group>"; };
 		0EDAB3F7CA12B73D025F8901 /* PlatformOpenSettingsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformOpenSettingsTests.swift; sourceTree = "<group>"; };
 		0EDD4C3EAD17422EDFAD7B67 /* PlatformPhotoComponentsLayer4.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformPhotoComponentsLayer4.swift; sourceTree = "<group>"; };
 		0FBAAD9F09C74615C12EE441 /* WindowRenderingTestHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowRenderingTestHelper.swift; sourceTree = "<group>"; };
@@ -5572,6 +5578,7 @@
 				4EAE6E23F8D885FC37B2D882 /* CardDisplayHelperAccessibilityIdentifierLabelTests.swift */,
 				2DA94093B91151C94B1D4A5C /* CardDisplayHelperHintTests.swift */,
 				7201816514B94A5E1A7864C1 /* CardDisplayHelperNilFallbackTests.swift */,
+				0ED3F2338F4B022941AF6113 /* CardViewportHostHintsTests.swift */,
 				852C59B45D020F375BD1CFF3 /* CountBasedPresentationTests.swift */,
 				401E449BE08E15D98201AE1E /* ExplicitCountBasedPresentationTests.swift */,
 				A6354A896728129174603048 /* HintsDefaultValueTests.swift */,
@@ -6291,7 +6298,7 @@
 			path = API;
 			sourceTree = "<group>";
 		};
-		"TEMP_301A4B9A-76F7-49AD-9AA9-0808E35D77A7" /* Utilities */ = {
+		"TEMP_E5A56E43-B728-481D-968C-18E2BBCEF591" /* Utilities */ = {
 			isa = PBXGroup;
 			children = (
 			);
@@ -7263,6 +7270,7 @@
 				2AE90A30DAA8E556B65D0FEC /* CardDisplayHelperHintTests.swift in Sources */,
 				2309465EFCF02C67FEEA3A0D /* CardDisplayHelperNilFallbackTests.swift in Sources */,
 				37FDC6E97663A1BB2495B181 /* CardDisplayableBugTests.swift in Sources */,
+				4CFF71B8982B62EC689723E1 /* CardViewportHostHintsTests.swift in Sources */,
 				A137C48E7B63C228E3F315B6 /* CloudKitServiceCoreDataTests.swift in Sources */,
 				55A6867E5BE58DDF7D143385 /* CloudKitServiceQueueStatusTests.swift in Sources */,
 				B00EA0DCE7501C374330961E /* CloudKitServiceSwiftDataTests.swift in Sources */,
@@ -8602,6 +8610,7 @@
 				8526528F5CABD4EE8DC67371 /* CardDisplayHelperHintTests.swift in Sources */,
 				13AEADA3A051F39C0653C398 /* CardDisplayHelperNilFallbackTests.swift in Sources */,
 				69BA600ED9AE24CE277C41E1 /* CardDisplayableBugTests.swift in Sources */,
+				B71A63D5C81F7C9B613A4943 /* CardViewportHostHintsTests.swift in Sources */,
 				4DC02A8EF107E71812D699AA /* CloudKitServiceCoreDataTests.swift in Sources */,
 				350CC7144AC61851797986B1 /* CloudKitServiceQueueStatusTests.swift in Sources */,
 				F28FC8CCE73AB8822BA32CFF /* CloudKitServiceSwiftDataTests.swift in Sources */,
@@ -9138,6 +9147,7 @@
 				0C441BBC91BA1FC3F6DC2CAE /* CardDisplayHelperHintTests.swift in Sources */,
 				655418F8EF9287DFF765BA14 /* CardDisplayHelperNilFallbackTests.swift in Sources */,
 				01667BE0CC2FF59928FDDAC8 /* CardDisplayableBugTests.swift in Sources */,
+				E9BC655973C460BD653C563D /* CardViewportHostHintsTests.swift in Sources */,
 				5B5FC036F359B725F7F21B9D /* CloudKitServiceCoreDataTests.swift in Sources */,
 				7976D3662EBD9DF59711572E /* CloudKitServiceQueueStatusTests.swift in Sources */,
 				8586AE5B808DA726725703EE /* CloudKitServiceSwiftDataTests.swift in Sources */,
@@ -9669,6 +9679,7 @@
 				E635EAB583DC6E17B7FF6E53 /* CardDisplayHelperHintTests.swift in Sources */,
 				C1B7C10EBDE2F054E8239DA7 /* CardDisplayHelperNilFallbackTests.swift in Sources */,
 				BCAC95E7D91A9A8D614ECCB6 /* CardDisplayableBugTests.swift in Sources */,
+				92DF0EFED98EE0B0AB0C6BD9 /* CardViewportHostHintsTests.swift in Sources */,
 				BE9692D7B1FB4268CD2F7775 /* CloudKitServiceCoreDataTests.swift in Sources */,
 				AE483E15325253B521AEAB24 /* CloudKitServiceQueueStatusTests.swift in Sources */,
 				FACAA3BE7A3E075854A27077 /* CloudKitServiceSwiftDataTests.swift in Sources */,
@@ -10200,6 +10211,7 @@
 				1D976179C6EE2E95C003FB15 /* CardDisplayHelperHintTests.swift in Sources */,
 				11AF612E7761BC2E172E4147 /* CardDisplayHelperNilFallbackTests.swift in Sources */,
 				49FB81C17C6DCA4FF1DDC1CD /* CardDisplayableBugTests.swift in Sources */,
+				255A04307605E4851D8AC661 /* CardViewportHostHintsTests.swift in Sources */,
 				999E770F3586399161413D9E /* CloudKitServiceCoreDataTests.swift in Sources */,
 				BF21C6565A4A9E0492463DFA /* CloudKitServiceQueueStatusTests.swift in Sources */,
 				8C7B71F421105992FC248FA3 /* CloudKitServiceSwiftDataTests.swift in Sources */,
